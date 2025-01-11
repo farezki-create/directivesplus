@@ -40,15 +40,12 @@ const Index = () => {
         throw new Error(errorData.error || 'Erreur lors du téléchargement');
       }
 
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('spreadsheetml')) {
-        console.error('Invalid content type received:', contentType);
-        throw new Error('Format de fichier invalide');
-      }
-
-      console.log('Download successful, creating blob...');
       const blob = await response.blob();
       
+      if (!blob || blob.size === 0) {
+        throw new Error('Le fichier téléchargé est vide');
+      }
+
       console.log('Creating download link...');
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');

@@ -16,14 +16,13 @@ serve(async (req) => {
   try {
     console.log('Starting download process...');
     
-    // Create Supabase client with service role key
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SERVICE_ROLE_KEY') ?? ''
     )
 
     console.log('Checking if file exists...');
-    const { data: fileList, error: listError } = await supabaseAdmin
+    const { data: fileExists, error: listError } = await supabaseAdmin
       .storage
       .from('questionnaires')
       .list('', {
@@ -36,7 +35,7 @@ serve(async (req) => {
       throw new Error('Could not check if file exists');
     }
 
-    if (!fileList || fileList.length === 0) {
+    if (!fileExists || fileExists.length === 0) {
       console.error('File not found in bucket');
       return new Response(
         JSON.stringify({ error: 'Le questionnaire n\'est pas disponible.' }),
