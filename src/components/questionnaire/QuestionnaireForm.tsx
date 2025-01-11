@@ -28,6 +28,8 @@ export const QuestionnaireForm = () => {
 
   const onSubmit = async (data: QuestionnaireData) => {
     try {
+      console.log('Submitting form data:', data);
+      
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
