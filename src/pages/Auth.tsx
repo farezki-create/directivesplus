@@ -40,18 +40,26 @@ const Auth = () => {
 
         if (error) {
           console.log('Signup error:', error);
+          
+          // Handle user_already_exists error specifically
           if (error instanceof AuthApiError) {
-            const errorBody = JSON.parse(error.message);
-            if (errorBody.code === "user_already_exists") {
-              toast({
-                variant: "destructive",
-                title: "Compte existant",
-                description: "Un compte existe déjà avec cet email. Connectez-vous.",
-              });
-              setIsSignUp(false);
-              return;
+            try {
+              const errorBody = JSON.parse(error.message);
+              if (errorBody.code === "user_already_exists") {
+                console.log('User already exists, switching to login mode');
+                toast({
+                  title: "Compte existant",
+                  description: "Un compte existe déjà avec cet email. Connectez-vous.",
+                });
+                setIsSignUp(false);
+                return;
+              }
+            } catch (e) {
+              console.log('Error parsing error message:', e);
             }
           }
+          
+          // Handle other errors
           const message = getErrorMessage(error);
           toast({
             variant: "destructive",
@@ -85,14 +93,6 @@ const Auth = () => {
       }
     } catch (error) {
       console.error('Auth error:', error);
-      if (error instanceof AuthApiError) {
-        const message = getErrorMessage(error);
-        toast({
-          variant: "destructive",
-          title: "Erreur d'authentification",
-          description: message,
-        });
-      }
     }
   };
 
