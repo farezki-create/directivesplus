@@ -43,7 +43,7 @@ export const useDownloadQuestionnaire = () => {
         throw new Error('Le questionnaire n\'est pas disponible dans le stockage');
       }
 
-      console.log('File found, attempting to get signed URL...');
+      console.log('Files found:', files);
       
       // Obtenir une URL signée pour le téléchargement
       const { data: signedURL, error: signedURLError } = await supabase.storage
@@ -55,21 +55,27 @@ export const useDownloadQuestionnaire = () => {
         throw new Error('Erreur lors de la génération du lien de téléchargement');
       }
 
+      console.log('Signed URL response:', signedURL);
+
       if (!signedURL || !signedURL.signedUrl) {
         console.error('No signed URL generated');
         throw new Error('Impossible de générer le lien de téléchargement');
       }
 
-      console.log('Got signed URL, initiating download...');
+      console.log('Got signed URL:', signedURL.signedUrl);
       
       // Télécharger le fichier via l'URL signée
       const response = await fetch(signedURL.signedUrl);
+      console.log('Fetch response:', response);
+      
       if (!response.ok) {
         console.error('Download response not OK:', response.status, response.statusText);
         throw new Error('Erreur lors du téléchargement du fichier');
       }
 
       const blob = await response.blob();
+      console.log('Blob created:', blob);
+      
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
