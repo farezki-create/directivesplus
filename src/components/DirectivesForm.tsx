@@ -5,6 +5,13 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
 import { Progress } from "./ui/progress";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 
 export const DirectivesForm = () => {
   const [step, setStep] = useState(1);
@@ -31,13 +38,53 @@ export const DirectivesForm = () => {
       {step === 1 && (
         <div className="space-y-4">
           <h2 className="text-2xl font-bold">Informations personnelles</h2>
+          
           <div className="space-y-2">
-            <Label htmlFor="name">Nom complet</Label>
-            <Input id="name" placeholder="Votre nom complet" />
+            <Label htmlFor="gender">Genre</Label>
+            <Select>
+              <SelectTrigger id="gender">
+                <SelectValue placeholder="Sélectionnez votre genre" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="male">Homme</SelectItem>
+                <SelectItem value="female">Femme</SelectItem>
+                <SelectItem value="other">Autre</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="firstName">Prénom</Label>
+            <Input id="firstName" placeholder="Votre prénom" />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="lastName">Nom</Label>
+            <Input id="lastName" placeholder="Votre nom" />
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="birthdate">Date de naissance</Label>
             <Input id="birthdate" type="date" />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="address">Adresse</Label>
+            <Textarea 
+              id="address" 
+              placeholder="Votre adresse complète"
+              className="min-h-[100px]"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="phone">Numéro de téléphone</Label>
+            <Input 
+              id="phone" 
+              type="tel" 
+              placeholder="Votre numéro de téléphone"
+              pattern="[0-9]{10}"
+            />
           </div>
         </div>
       )}
