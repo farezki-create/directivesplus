@@ -9,6 +9,42 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      advance_directives: {
+        Row: {
+          created_at: string
+          general_opinion: boolean | null
+          id: string
+          let_die: string | null
+          life_support: string | null
+          other_directives: boolean | null
+          pain_relief: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          general_opinion?: boolean | null
+          id?: string
+          let_die?: string | null
+          life_support?: string | null
+          other_directives?: boolean | null
+          pain_relief?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          general_opinion?: boolean | null
+          id?: string
+          let_die?: string | null
+          life_support?: string | null
+          other_directives?: boolean | null
+          pain_relief?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
