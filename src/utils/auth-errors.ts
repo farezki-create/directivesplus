@@ -5,7 +5,6 @@ export const getErrorMessage = (error: AuthError) => {
   
   if (error instanceof AuthApiError) {
     try {
-      // Try to parse the error message as JSON
       const errorBody = JSON.parse(error.message);
       console.log('Parsed error body:', errorBody);
       
@@ -23,7 +22,6 @@ export const getErrorMessage = (error: AuthError) => {
           return "Une erreur s'est produite. Veuillez réessayer.";
       }
     } catch (e) {
-      // If error.message is not JSON, handle it as a string
       console.log('Error message is not JSON, handling as string:', error.message);
       
       switch (error.message) {
