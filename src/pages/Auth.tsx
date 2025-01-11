@@ -5,14 +5,26 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import type { AuthError } from "@supabase/supabase-js";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 const Auth = () => {
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState("");
+  const [avatar, setAvatar] = useState<File | null>(null);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === "SIGNED_IN" && session) {
+        if (avatar) {
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('avatars')
+            .upload(`${session.user.id}`, avatar);
+          
+          if (uploadError) {
+            console.error('Error uploading avatar:', uploadError);
+          }
+        }
         navigate("/dashboard");
       }
       if (event === "SIGNED_OUT") {
@@ -22,7 +34,7 @@ const Auth = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, avatar]);
 
   const getErrorMessage = (error: AuthError) => {
     switch (error.message) {
@@ -30,8 +42,16 @@ const Auth = () => {
         return "Email ou mot de passe incorrect.";
       case "Email not confirmed":
         return "Veuillez vérifier votre email pour confirmer votre compte.";
+      case "Password should be at least 8 characters":
+        return "Le mot de passe doit contenir au moins 8 caractères.";
       default:
         return error.message;
+    }
+  };
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setAvatar(e.target.files[0]);
     }
   };
 
@@ -46,6 +66,16 @@ const Auth = () => {
             </Alert>
           )}
           <div className="bg-card p-6 rounded-lg shadow-sm">
+            <div className="mb-6">
+              <Label htmlFor="avatar">Photo de profil</Label>
+              <Input
+                id="avatar"
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarChange}
+                className="mt-2"
+              />
+            </div>
             <SupabaseAuth
               supabaseClient={supabase}
               appearance={{
@@ -65,13 +95,20 @@ const Auth = () => {
                     email_label: "Email",
                     password_label: "Mot de passe",
                     button_label: "Se connecter",
+                    password_input_placeholder: "Minimum 8 caractères, 1 majuscule, 1 chiffre",
                   },
                   sign_up: {
                     email_label: "Email",
                     password_label: "Mot de passe",
                     button_label: "S'inscrire",
+                    password_input_placeholder: "Minimum 8 caractères, 1 majuscule, 1 chiffre",
                   },
                 },
+              }}
+              providers={[]}
+              redirectTo={window.location.origin}
+              onError={(error) => {
+                setErrorMessage(getErrorMessage(error));
               }}
             />
           </div>
