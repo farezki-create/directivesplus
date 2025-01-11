@@ -13,17 +13,28 @@ const Index = () => {
       console.log('Starting questionnaire download...');
       
       // First check if the file exists
-      const { data: fileExists } = await supabase.storage
+      const { data: fileList, error: listError } = await supabase.storage
         .from('questionnaires')
-        .list('', {
-          limit: 1,
-          search: 'questionnaire.xlsx'
-        });
+        .list();
 
-      console.log('Checking if file exists:', fileExists);
+      console.log('Files in bucket:', fileList);
+      console.log('List error:', listError);
       
-      if (!fileExists || fileExists.length === 0) {
-        console.error('File not found in bucket');
+      if (listError) {
+        console.error('Error listing files:', listError);
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Impossible de vérifier la disponibilité du questionnaire. Veuillez réessayer.",
+        });
+        return;
+      }
+
+      const questionnaireFile = fileList?.find(file => file.name === 'questionnaire.xlsx');
+      console.log('Found questionnaire file:', questionnaireFile);
+
+      if (!questionnaireFile) {
+        console.error('Questionnaire file not found in bucket');
         toast({
           variant: "destructive",
           title: "Erreur",
@@ -33,12 +44,15 @@ const Index = () => {
       }
 
       // If file exists, proceed with download
-      const { data, error } = await supabase.storage
+      console.log('Attempting to download file:', questionnaireFile.name);
+      const { data, error: downloadError } = await supabase.storage
         .from('questionnaires')
-        .download('questionnaire.xlsx');
+        .download(questionnaireFile.name);
 
-      if (error) {
-        console.error('Error downloading questionnaire:', error);
+      console.log('Download response - Data:', !!data, 'Error:', downloadError);
+
+      if (downloadError) {
+        console.error('Error downloading questionnaire:', downloadError);
         toast({
           variant: "destructive",
           title: "Erreur",
@@ -57,8 +71,7 @@ const Index = () => {
         return;
       }
 
-      console.log('Questionnaire downloaded successfully, creating download link...');
-      // Create a download link and trigger it
+      console.log('Creating download link...');
       const url = window.URL.createObjectURL(data);
       const link = document.createElement('a');
       link.href = url;
@@ -68,7 +81,7 @@ const Index = () => {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
 
-      console.log('Download completed, navigating to dashboard...');
+      console.log('Download completed successfully');
       
       toast({
         title: "Succès",
@@ -78,11 +91,11 @@ const Index = () => {
       // Navigate to dashboard after successful download
       navigate("/dashboard");
     } catch (error) {
-      console.error('Error in download process:', error);
+      console.error('Unexpected error in download process:', error);
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Une erreur est survenue lors du téléchargement.",
+        description: "Une erreur inattendue est survenue lors du téléchargement.",
       });
     }
   };
