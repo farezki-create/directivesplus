@@ -18,6 +18,8 @@ const Auth = () => {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event, session);
+      
       if (event === "SIGNED_IN" && session) {
         if (avatar) {
           const { data: uploadData, error: uploadError } = await supabase.storage
@@ -38,6 +40,19 @@ const Auth = () => {
       if (event === "SIGNED_OUT") {
         navigate("/");
         setErrorMessage("");
+      }
+      // Handle authentication errors
+      if (event === "USER_UPDATED" || event === "INITIAL_SESSION") {
+        const { error } = await supabase.auth.getSession();
+        if (error) {
+          const translatedError = getErrorMessage(error);
+          setErrorMessage(translatedError);
+          toast({
+            variant: "destructive",
+            title: "Erreur d'authentification",
+            description: translatedError,
+          });
+        }
       }
     });
 
@@ -132,16 +147,6 @@ const Auth = () => {
               }}
               providers={[]}
               redirectTo={window.location.origin}
-              onError={(error) => {
-                console.error('Auth error:', error);
-                const translatedError = getErrorMessage(error);
-                setErrorMessage(translatedError);
-                toast({
-                  variant: "destructive",
-                  title: "Erreur d'authentification",
-                  description: translatedError,
-                });
-              }}
             />
           </div>
         </div>
