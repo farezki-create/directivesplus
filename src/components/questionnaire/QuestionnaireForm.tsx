@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { GeneralOpinion } from "./sections/GeneralOpinion";
+import { OtherDirectives } from "./sections/OtherDirectives";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown } from "lucide-react";
 
@@ -87,7 +88,7 @@ export const QuestionnaireForm = () => {
     {
       id: "other",
       title: "Autres directives",
-      content: <div className="space-y-4">{/* Other directives content */}</div>
+      content: <OtherDirectives form={form} />
     },
     {
       id: "life",
