@@ -65,7 +65,7 @@ const Auth = () => {
             title: "Erreur d'inscription",
             description: message,
           });
-          throw error;
+          return;
         }
 
         toast({
@@ -87,7 +87,7 @@ const Auth = () => {
             title: "Erreur de connexion",
             description: message,
           });
-          throw error;
+          return;
         }
       }
     } catch (error) {
@@ -106,9 +106,8 @@ const Auth = () => {
         return;
       }
 
-      // Check if enough time has passed since the last request
       const now = Date.now();
-      if (now - lastResetRequest < 60000) { // 60000ms = 60 seconds
+      if (now - lastResetRequest < 60000) {
         toast({
           variant: "destructive",
           title: "Patientez",
@@ -130,18 +129,22 @@ const Auth = () => {
           title: "Erreur de réinitialisation",
           description: message,
         });
-        throw error;
+        return;
       }
 
-      // Update the last reset request timestamp
       setLastResetRequest(now);
-
+      
       toast({
         title: "Email envoyé",
         description: "Si un compte existe avec cet email, vous recevrez un lien de réinitialisation.",
       });
     } catch (error) {
       console.error('Password reset error:', error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la demande de réinitialisation.",
+      });
     }
   };
 
