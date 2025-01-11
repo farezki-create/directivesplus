@@ -127,24 +127,30 @@ export const QuestionnaireForm = () => {
                   key={section.id}
                   open={openSection === section.id}
                   onOpenChange={() => handleSectionClick(section.id)}
-                  className="min-w-[300px] border rounded-lg p-4 transition-all duration-200 hover:border-primary/50 snap-start"
+                  className="min-w-[300px] border rounded-lg p-4 transition-all duration-200 hover:border-primary/50 snap-start shadow-sm hover:shadow-md"
                 >
                   <CollapsibleTrigger className="w-full flex items-center justify-between font-semibold group">
-                    <span>{section.title}</span>
-                    <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${
+                    <span className="text-lg">{section.title}</span>
+                    <ChevronDown className={`h-5 w-5 transition-transform duration-300 ease-in-out text-primary ${
                       openSection === section.id ? 'transform rotate-180' : ''
                     }`} />
                   </CollapsibleTrigger>
-                  <CollapsibleContent className="pt-4 transition-all duration-200">
-                    {section.content}
+                  <CollapsibleContent className="pt-4 transition-all duration-300">
+                    <div className="border-t pt-4">
+                      {section.content}
+                    </div>
                   </CollapsibleContent>
                 </Collapsible>
               ))}
             </div>
 
             <div className="flex justify-between mt-6">
-              <Button type="submit">Sauvegarder</Button>
-              <Button type="button" variant="secondary">Suite</Button>
+              <Button type="submit" className="transition-all duration-200 hover:scale-105">
+                Sauvegarder
+              </Button>
+              <Button type="button" variant="secondary" className="transition-all duration-200 hover:scale-105">
+                Suite
+              </Button>
             </div>
           </CardContent>
         </Card>
