@@ -23,37 +23,39 @@ const Index = () => {
         return;
       }
 
-      console.log('Requesting signed URL for questionnaire...');
+      console.log('Downloading questionnaire directly from storage...');
       
-      const response = await fetch(
-        'https://zxytckmvmvtfcihnhlbj.supabase.co/functions/v1/download-questionnaire',
-        {
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-        }
-      );
+      const { data, error } = await supabase.storage
+        .from('questionnaires')
+        .download('questionnaire.xlsx');
 
-      if (!response.ok) {
-        console.error('Request failed with status:', response.status);
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Erreur lors du téléchargement');
+      if (error) {
+        console.error('Download error:', error);
+        throw new Error('Erreur lors du téléchargement du questionnaire');
       }
 
-      const { url } = await response.json();
-      
-      if (!url) {
-        throw new Error('Lien de téléchargement invalide');
+      if (!data) {
+        console.error('No data received');
+        throw new Error('Le fichier est introuvable');
       }
 
-      console.log('Opening download URL in new tab...');
-      window.open(url, '_blank');
+      console.log('Creating download link...');
+      const url = URL.createObjectURL(data);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = "questionnaire-directives-anticipees.xlsx";
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      URL.revokeObjectURL(url);
 
-      console.log('Download initiated successfully');
+      console.log('Download completed successfully');
       
       toast({
         title: "Succès",
-        description: "Le téléchargement du questionnaire a démarré.",
+        description: "Le questionnaire a été téléchargé avec succès.",
       });
 
       navigate("/dashboard");
