@@ -13,23 +13,23 @@ serve(async (req) => {
   }
 
   try {
-    // Create Supabase client
-    const supabaseClient = createClient(
+    console.log('Starting download process...');
+    
+    // Create Supabase client with service role key
+    const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      Deno.env.get('SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Vérifier si le fichier existe
-    const { data: files, error: listError } = await supabaseClient
+    // Get the file from storage
+    console.log('Fetching questionnaire file...');
+    const { data, error } = await supabaseAdmin
       .storage
       .from('questionnaires')
-      .list('', {
-        limit: 1,
-        search: 'questionnaire.xlsx'
-      })
+      .download('questionnaire.xlsx')
 
-    if (listError || !files || files.length === 0) {
-      console.error('Erreur ou fichier non trouvé:', listError)
+    if (error) {
+      console.error('Error fetching file:', error);
       return new Response(
         JSON.stringify({ error: 'Le questionnaire n\'est pas disponible.' }),
         { 
@@ -39,27 +39,12 @@ serve(async (req) => {
       )
     }
 
-    // Télécharger le fichier
-    const { data, error: downloadError } = await supabaseClient
-      .storage
-      .from('questionnaires')
-      .download('questionnaire.xlsx')
-
-    if (downloadError) {
-      console.error('Erreur de téléchargement:', downloadError)
-      return new Response(
-        JSON.stringify({ error: 'Erreur lors du téléchargement du questionnaire.' }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 500 
-        }
-      )
-    }
-
-    // Convertir le fichier en ArrayBuffer
+    // Convert the file to ArrayBuffer
     const arrayBuffer = await data.arrayBuffer()
 
-    // Retourner le fichier
+    console.log('File downloaded successfully, sending response...');
+    
+    // Return the file
     return new Response(arrayBuffer, {
       headers: {
         ...corsHeaders,
@@ -69,7 +54,7 @@ serve(async (req) => {
     })
 
   } catch (error) {
-    console.error('Erreur inattendue:', error)
+    console.error('Unexpected error:', error);
     return new Response(
       JSON.stringify({ error: 'Une erreur inattendue est survenue.' }),
       { 
