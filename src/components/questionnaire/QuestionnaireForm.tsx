@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { GeneralOpinion } from "./sections/GeneralOpinion";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ChevronDown } from "lucide-react";
 
 type QuestionnaireData = {
   medicalDirectives: {
@@ -29,6 +30,7 @@ type QuestionnaireData = {
 export const QuestionnaireForm = () => {
   const form = useForm<QuestionnaireData>();
   const { toast } = useToast();
+  const [openSection, setOpenSection] = React.useState<string | null>(null);
 
   const onSubmit = async (data: QuestionnaireData) => {
     try {
@@ -72,6 +74,38 @@ export const QuestionnaireForm = () => {
     }
   };
 
+  const handleSectionClick = (section: string) => {
+    setOpenSection(openSection === section ? null : section);
+  };
+
+  const sections = [
+    {
+      id: "general",
+      title: "Mon avis d'une façon générale",
+      content: <GeneralOpinion form={form} />
+    },
+    {
+      id: "other",
+      title: "Autres directives",
+      content: <div className="space-y-4">{/* Other directives content */}</div>
+    },
+    {
+      id: "life",
+      title: "Maintien de la vie",
+      content: <div className="space-y-4">{/* Life support content */}</div>
+    },
+    {
+      id: "pain",
+      title: "Allégement des souffrances",
+      content: <div className="space-y-4">{/* Pain relief content */}</div>
+    },
+    {
+      id: "die",
+      title: "Privilégier le laisser mourir",
+      content: <div className="space-y-4">{/* Let die content */}</div>
+    }
+  ];
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -87,59 +121,25 @@ export const QuestionnaireForm = () => {
               </p>
             </div>
 
-            <div className="flex space-x-4 overflow-x-auto pb-4 mt-6">
-              <Collapsible className="min-w-[300px] border rounded-lg p-4">
-                <CollapsibleTrigger className="w-full text-left font-semibold">
-                  Mon avis d'une façon générale
-                </CollapsibleTrigger>
-                <CollapsibleContent className="pt-4">
-                  <GeneralOpinion form={form} />
-                </CollapsibleContent>
-              </Collapsible>
-
-              <Collapsible className="min-w-[300px] border rounded-lg p-4">
-                <CollapsibleTrigger className="w-full text-left font-semibold">
-                  Autres directives
-                </CollapsibleTrigger>
-                <CollapsibleContent className="pt-4">
-                  <div className="space-y-4">
-                    {/* Other directives content */}
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
-
-              <Collapsible className="min-w-[300px] border rounded-lg p-4">
-                <CollapsibleTrigger className="w-full text-left font-semibold">
-                  Maintien de la vie
-                </CollapsibleTrigger>
-                <CollapsibleContent className="pt-4">
-                  <div className="space-y-4">
-                    {/* Life support content */}
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
-
-              <Collapsible className="min-w-[300px] border rounded-lg p-4">
-                <CollapsibleTrigger className="w-full text-left font-semibold">
-                  Allégement des souffrances
-                </CollapsibleTrigger>
-                <CollapsibleContent className="pt-4">
-                  <div className="space-y-4">
-                    {/* Pain relief content */}
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
-
-              <Collapsible className="min-w-[300px] border rounded-lg p-4">
-                <CollapsibleTrigger className="w-full text-left font-semibold">
-                  Privilégier le laisser mourir
-                </CollapsibleTrigger>
-                <CollapsibleContent className="pt-4">
-                  <div className="space-y-4">
-                    {/* Let die content */}
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
+            <div className="flex space-x-4 overflow-x-auto pb-4 mt-6 snap-x snap-mandatory">
+              {sections.map((section) => (
+                <Collapsible
+                  key={section.id}
+                  open={openSection === section.id}
+                  onOpenChange={() => handleSectionClick(section.id)}
+                  className="min-w-[300px] border rounded-lg p-4 transition-all duration-200 hover:border-primary/50 snap-start"
+                >
+                  <CollapsibleTrigger className="w-full flex items-center justify-between font-semibold group">
+                    <span>{section.title}</span>
+                    <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${
+                      openSection === section.id ? 'transform rotate-180' : ''
+                    }`} />
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="pt-4 transition-all duration-200">
+                    {section.content}
+                  </CollapsibleContent>
+                </Collapsible>
+              ))}
             </div>
 
             <div className="flex justify-between mt-6">
