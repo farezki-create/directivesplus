@@ -23,23 +23,12 @@ export const useDownloadQuestionnaire = () => {
         return;
       }
 
-      console.log('Converting Excel to CSV...');
+      console.log('Attempting to download Excel file directly...');
       
-      // Appeler l'Edge Function pour convertir Excel en CSV
-      const { data: conversionData, error: conversionError } = await supabase.functions
-        .invoke('convert-to-csv');
-
-      if (conversionError) {
-        console.error('Conversion error:', conversionError);
-        throw new Error('Erreur lors de la conversion du questionnaire');
-      }
-
-      console.log('Conversion successful, downloading CSV...');
-      
-      // Télécharger le fichier CSV
+      // Télécharger directement le fichier Excel
       const { data, error } = await supabase.storage
         .from('questionnaires')
-        .download('questionnaire.csv');
+        .download('questionnaire.xlsx');
 
       if (error) {
         console.error('Download error:', error);
@@ -55,7 +44,7 @@ export const useDownloadQuestionnaire = () => {
       const url = URL.createObjectURL(data);
       const link = document.createElement('a');
       link.href = url;
-      link.download = "questionnaire-directives-anticipees.csv";
+      link.download = "questionnaire-directives-anticipees.xlsx";
       
       document.body.appendChild(link);
       link.click();
