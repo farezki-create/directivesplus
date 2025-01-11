@@ -10,6 +10,7 @@ type ForgotPasswordProps = {
 
 export const ForgotPassword = ({ email }: ForgotPasswordProps) => {
   const [lastResetRequest, setLastResetRequest] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
   const handleForgotPassword = async () => {
@@ -26,7 +27,7 @@ export const ForgotPassword = ({ email }: ForgotPasswordProps) => {
       }
 
       const now = Date.now();
-      if (now - lastResetRequest < 60000) { // Increased to 60 seconds to match Supabase's requirement
+      if (now - lastResetRequest < 60000) {
         console.log('Rate limit hit on client side');
         toast({
           variant: "destructive",
@@ -36,7 +37,9 @@ export const ForgotPassword = ({ email }: ForgotPasswordProps) => {
         return;
       }
 
+      setIsLoading(true);
       console.log('Attempting to send password reset email to:', email);
+      
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
@@ -47,7 +50,7 @@ export const ForgotPassword = ({ email }: ForgotPasswordProps) => {
         // Parse the error body if it exists
         let errorBody;
         try {
-          if (error.message.includes('{')) {
+          if (typeof error.message === 'string' && error.message.includes('{')) {
             errorBody = JSON.parse(error.message.substring(error.message.indexOf('{')));
             console.log('Parsed error body:', errorBody);
           }
@@ -56,7 +59,10 @@ export const ForgotPassword = ({ email }: ForgotPasswordProps) => {
         }
 
         // Check specifically for rate limit error
-        if (errorBody?.code === "over_email_send_rate_limit") {
+        if (
+          (errorBody?.code === "over_email_send_rate_limit") ||
+          (error.message && error.message.toLowerCase().includes('rate limit'))
+        ) {
           toast({
             variant: "destructive",
             title: "Trop de tentatives",
@@ -88,6 +94,8 @@ export const ForgotPassword = ({ email }: ForgotPasswordProps) => {
         title: "Erreur",
         description: "Une erreur est survenue lors de la demande de réinitialisation.",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -97,8 +105,9 @@ export const ForgotPassword = ({ email }: ForgotPasswordProps) => {
       onClick={handleForgotPassword}
       className="w-full text-sm text-primary hover:underline mt-2"
       variant="link"
+      disabled={isLoading}
     >
-      Mot de passe oublié ?
+      {isLoading ? "Envoi en cours..." : "Mot de passe oublié ?"}
     </Button>
   );
 };
