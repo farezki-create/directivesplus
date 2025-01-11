@@ -21,37 +21,70 @@ serve(async (req) => {
       Deno.env.get('SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Get the file from storage
-    console.log('Fetching questionnaire file...');
-    const { data, error } = await supabaseAdmin
+    console.log('Checking if file exists...');
+    const { data: fileList, error: listError } = await supabaseAdmin
       .storage
       .from('questionnaires')
-      .download('questionnaire.xlsx')
+      .list('', {
+        limit: 1,
+        search: 'questionnaire.xlsx'
+      });
 
-    if (error) {
-      console.error('Error fetching file:', error);
+    if (listError) {
+      console.error('Error listing files:', listError);
+      throw new Error('Could not check if file exists');
+    }
+
+    if (!fileList || fileList.length === 0) {
+      console.error('File not found in bucket');
       return new Response(
         JSON.stringify({ error: 'Le questionnaire n\'est pas disponible.' }),
         { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 404 
         }
-      )
+      );
     }
 
-    // Convert the file to ArrayBuffer
-    const arrayBuffer = await data.arrayBuffer()
+    console.log('File exists, attempting download...');
+    const { data, error: downloadError } = await supabaseAdmin
+      .storage
+      .from('questionnaires')
+      .download('questionnaire.xlsx');
 
-    console.log('File downloaded successfully, sending response...');
+    if (downloadError) {
+      console.error('Error downloading file:', downloadError);
+      return new Response(
+        JSON.stringify({ error: 'Erreur lors du téléchargement du questionnaire.' }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 500 
+        }
+      );
+    }
+
+    if (!data) {
+      console.error('No data received from download');
+      return new Response(
+        JSON.stringify({ error: 'Le fichier est vide ou corrompu.' }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 500 
+        }
+      );
+    }
+
+    console.log('File downloaded successfully, preparing response...');
+    const arrayBuffer = await data.arrayBuffer();
     
-    // Return the file
+    console.log('Sending file response...');
     return new Response(arrayBuffer, {
       headers: {
         ...corsHeaders,
         'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         'Content-Disposition': 'attachment; filename="questionnaire-directives-anticipees.xlsx"'
       }
-    })
+    });
 
   } catch (error) {
     console.error('Unexpected error:', error);
@@ -61,6 +94,6 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500 
       }
-    )
+    );
   }
 })

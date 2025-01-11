@@ -13,6 +13,7 @@ const Index = () => {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
+        console.log('No session found, redirecting to auth...');
         toast({
           variant: "destructive",
           title: "Connexion requise",
@@ -22,7 +23,7 @@ const Index = () => {
         return;
       }
 
-      console.log('Tentative de téléchargement du questionnaire...');
+      console.log('Attempting to download questionnaire...');
       
       const response = await fetch(
         'https://zxytckmvmvtfcihnhlbj.supabase.co/functions/v1/download-questionnaire',
@@ -34,28 +35,33 @@ const Index = () => {
       );
 
       if (!response.ok) {
+        console.error('Download failed with status:', response.status);
         const errorData = await response.json();
         throw new Error(errorData.error || 'Erreur lors du téléchargement');
       }
 
-      // Récupérer le blob
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('spreadsheetml')) {
+        console.error('Invalid content type received:', contentType);
+        throw new Error('Format de fichier invalide');
+      }
+
+      console.log('Download successful, creating blob...');
       const blob = await response.blob();
       
-      // Créer un URL pour le téléchargement
+      console.log('Creating download link...');
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
       link.download = "questionnaire-directives-anticipees.xlsx";
       
-      // Déclencher le téléchargement
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       
-      // Nettoyer l'URL
       window.URL.revokeObjectURL(url);
 
-      console.log('Téléchargement réussi');
+      console.log('Download completed successfully');
       
       toast({
         title: "Succès",
@@ -64,7 +70,7 @@ const Index = () => {
 
       navigate("/dashboard");
     } catch (error) {
-      console.error('Erreur lors du téléchargement:', error);
+      console.error('Error during download:', error);
       toast({
         variant: "destructive",
         title: "Erreur",
