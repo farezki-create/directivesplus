@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { GeneralOpinion } from "./sections/GeneralOpinion";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 type QuestionnaireData = {
   medicalDirectives: {
@@ -19,6 +20,9 @@ type QuestionnaireData = {
       artificialNutrition: boolean;
       painManagement: boolean;
     };
+    lifeSupport: string;
+    painRelief: string;
+    letDie: string;
   };
 };
 
@@ -41,15 +45,15 @@ export const QuestionnaireForm = () => {
         return;
       }
 
-      // Save to Supabase - Note that we now pass an array with a single object
       const { error } = await supabase
         .from('advance_directives')
         .upsert([{
           user_id: session.user.id,
           general_opinion: data.medicalDirectives.generalOpinion.artificialLife,
           other_directives: data.medicalDirectives.otherDirectives.resuscitation,
-          life_support: JSON.stringify(data.medicalDirectives.generalOpinion),
-          pain_relief: JSON.stringify(data.medicalDirectives.otherDirectives),
+          life_support: JSON.stringify(data.medicalDirectives.lifeSupport),
+          pain_relief: JSON.stringify(data.medicalDirectives.painRelief),
+          let_die: JSON.stringify(data.medicalDirectives.letDie),
         }]);
 
       if (error) throw error;
@@ -83,7 +87,60 @@ export const QuestionnaireForm = () => {
               </p>
             </div>
 
-            <GeneralOpinion form={form} />
+            <div className="flex space-x-4 overflow-x-auto pb-4 mt-6">
+              <Collapsible className="min-w-[300px] border rounded-lg p-4">
+                <CollapsibleTrigger className="w-full text-left font-semibold">
+                  Mon avis d'une façon générale
+                </CollapsibleTrigger>
+                <CollapsibleContent className="pt-4">
+                  <GeneralOpinion form={form} />
+                </CollapsibleContent>
+              </Collapsible>
+
+              <Collapsible className="min-w-[300px] border rounded-lg p-4">
+                <CollapsibleTrigger className="w-full text-left font-semibold">
+                  Autres directives
+                </CollapsibleTrigger>
+                <CollapsibleContent className="pt-4">
+                  <div className="space-y-4">
+                    {/* Other directives content */}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+
+              <Collapsible className="min-w-[300px] border rounded-lg p-4">
+                <CollapsibleTrigger className="w-full text-left font-semibold">
+                  Maintien de la vie
+                </CollapsibleTrigger>
+                <CollapsibleContent className="pt-4">
+                  <div className="space-y-4">
+                    {/* Life support content */}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+
+              <Collapsible className="min-w-[300px] border rounded-lg p-4">
+                <CollapsibleTrigger className="w-full text-left font-semibold">
+                  Allégement des souffrances
+                </CollapsibleTrigger>
+                <CollapsibleContent className="pt-4">
+                  <div className="space-y-4">
+                    {/* Pain relief content */}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+
+              <Collapsible className="min-w-[300px] border rounded-lg p-4">
+                <CollapsibleTrigger className="w-full text-left font-semibold">
+                  Privilégier le laisser mourir
+                </CollapsibleTrigger>
+                <CollapsibleContent className="pt-4">
+                  <div className="space-y-4">
+                    {/* Let die content */}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+            </div>
 
             <div className="flex justify-between mt-6">
               <Button type="submit">Sauvegarder</Button>
