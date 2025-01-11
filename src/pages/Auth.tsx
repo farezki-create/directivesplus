@@ -5,15 +5,11 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import type { AuthError } from "@supabase/supabase-js";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 
 const Auth = () => {
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState("");
-  const [avatar, setAvatar] = useState<File | null>(null);
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -21,20 +17,6 @@ const Auth = () => {
       console.log('Auth state changed:', event, session);
       
       if (event === "SIGNED_IN" && session) {
-        if (avatar) {
-          const { data: uploadData, error: uploadError } = await supabase.storage
-            .from('avatars')
-            .upload(`${session.user.id}`, avatar);
-          
-          if (uploadError) {
-            console.error('Error uploading avatar:', uploadError);
-            toast({
-              variant: "destructive",
-              title: "Erreur",
-              description: "Impossible de télécharger l'avatar. Veuillez réessayer.",
-            });
-          }
-        }
         navigate("/dashboard");
       }
       if (event === "SIGNED_OUT") {
@@ -57,7 +39,7 @@ const Auth = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate, avatar, toast]);
+  }, [navigate, toast]);
 
   const getErrorMessage = (error: AuthError) => {
     switch (error.message) {
@@ -72,20 +54,6 @@ const Auth = () => {
     }
   };
 
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setAvatar(file);
-      
-      // Create preview URL
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setAvatarPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   return (
     <div className="min-h-screen flex flex-col">
       <main className="flex-1 container mx-auto px-4 py-8">
@@ -97,25 +65,6 @@ const Auth = () => {
             </Alert>
           )}
           <div className="bg-card p-6 rounded-lg shadow-sm">
-            <div className="mb-6">
-              <Label htmlFor="avatar" className="block mb-2">Photo de profil</Label>
-              {avatarPreview && (
-                <div className="mb-4">
-                  <img 
-                    src={avatarPreview} 
-                    alt="Avatar preview" 
-                    className="w-24 h-24 rounded-full object-cover mx-auto"
-                  />
-                </div>
-              )}
-              <Input
-                id="avatar"
-                type="file"
-                accept="image/*"
-                onChange={handleAvatarChange}
-                className="mt-2"
-              />
-            </div>
             <SupabaseAuth
               supabaseClient={supabase}
               appearance={{
