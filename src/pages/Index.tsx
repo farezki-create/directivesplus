@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -10,6 +10,7 @@ const Index = () => {
 
   const handleDownloadQuestionnaire = async () => {
     try {
+      console.log('Starting questionnaire download...');
       const { data, error } = await supabase.storage
         .from('questionnaires')
         .download('questionnaire.xlsx');
@@ -24,6 +25,7 @@ const Index = () => {
         return;
       }
 
+      console.log('Questionnaire downloaded successfully, creating download link...');
       // Create a download link and trigger it
       const url = window.URL.createObjectURL(data);
       const link = document.createElement('a');
@@ -34,6 +36,7 @@ const Index = () => {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
 
+      console.log('Download completed, navigating to dashboard...');
       // Navigate to dashboard after successful download
       navigate("/dashboard");
     } catch (error) {
