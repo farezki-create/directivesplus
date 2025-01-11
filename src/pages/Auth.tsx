@@ -107,7 +107,20 @@ const Auth = () => {
           email: values.email,
           password: values.password,
         });
-        if (error) throw error;
+        if (error) {
+          console.log('Signup error:', error);
+          const message = getErrorMessage(error);
+          setErrorMessage(message);
+          toast({
+            variant: "destructive",
+            title: "Erreur d'inscription",
+            description: message,
+          });
+          if (error.message.includes("already registered")) {
+            setIsSignUp(false); // Switch to login mode
+          }
+          throw error;
+        }
         toast({
           title: "Inscription réussie",
           description: "Veuillez vérifier votre email pour confirmer votre compte.",
@@ -117,9 +130,20 @@ const Auth = () => {
           email: values.email,
           password: values.password,
         });
-        if (error) throw error;
+        if (error) {
+          console.log('Signin error:', error);
+          const message = getErrorMessage(error);
+          setErrorMessage(message);
+          toast({
+            variant: "destructive",
+            title: "Erreur de connexion",
+            description: message,
+          });
+          throw error;
+        }
       }
     } catch (error) {
+      console.error('Auth error:', error);
       if (error instanceof AuthApiError) {
         const message = getErrorMessage(error);
         setErrorMessage(message);
