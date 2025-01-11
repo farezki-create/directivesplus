@@ -54,6 +54,8 @@ const Auth = () => {
           return "Veuillez vérifier votre email pour confirmer votre compte.";
         case "invalid_grant":
           return "Email ou mot de passe incorrect.";
+        case "user_already_exists":
+          return "Un compte existe déjà avec cet email. Veuillez vous connecter.";
         case "password_too_short":
           return "Le mot de passe doit contenir au moins 8 caractères.";
         default:
