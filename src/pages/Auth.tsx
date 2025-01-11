@@ -12,6 +12,7 @@ const Auth = () => {
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState("");
   const [avatar, setAvatar] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -51,7 +52,15 @@ const Auth = () => {
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setAvatar(e.target.files[0]);
+      const file = e.target.files[0];
+      setAvatar(file);
+      
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -67,7 +76,16 @@ const Auth = () => {
           )}
           <div className="bg-card p-6 rounded-lg shadow-sm">
             <div className="mb-6">
-              <Label htmlFor="avatar">Photo de profil</Label>
+              <Label htmlFor="avatar" className="block mb-2">Photo de profil</Label>
+              {avatarPreview && (
+                <div className="mb-4">
+                  <img 
+                    src={avatarPreview} 
+                    alt="Avatar preview" 
+                    className="w-24 h-24 rounded-full object-cover mx-auto"
+                  />
+                </div>
+              )}
               <Input
                 id="avatar"
                 type="file"
@@ -107,9 +125,6 @@ const Auth = () => {
               }}
               providers={[]}
               redirectTo={window.location.origin}
-              onError={(error) => {
-                setErrorMessage(getErrorMessage(error));
-              }}
             />
           </div>
         </div>
