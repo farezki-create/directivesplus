@@ -36,25 +36,23 @@ const Auth = () => {
         const { error } = await supabase.auth.signUp({
           email: values.email,
           password: values.password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth/callback`
+          }
         });
 
         if (error) {
           console.log('Signup error:', error);
           
           if (error instanceof AuthApiError) {
-            try {
-              const errorBody = JSON.parse(error.message);
-              if (errorBody.code === "user_already_exists") {
-                console.log('User already exists, switching to login mode');
-                toast({
-                  title: "Compte existant",
-                  description: "Un compte existe déjà avec cet email. Connectez-vous.",
-                });
-                setIsSignUp(false);
-                return;
-              }
-            } catch (e) {
-              console.log('Error parsing error message:', e);
+            if (error.status === 400 && error.message === "User already registered") {
+              console.log('User already exists, switching to login mode');
+              toast({
+                title: "Compte existant",
+                description: "Un compte existe déjà avec cet email. Connectez-vous.",
+              });
+              setIsSignUp(false);
+              return;
             }
           }
           
@@ -91,6 +89,11 @@ const Auth = () => {
       }
     } catch (error) {
       console.error('Auth error:', error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur inattendue s'est produite. Veuillez réessayer.",
+      });
     }
   };
 
