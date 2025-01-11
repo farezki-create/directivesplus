@@ -14,6 +14,8 @@ export const ForgotPassword = ({ email }: ForgotPasswordProps) => {
 
   const handleForgotPassword = async () => {
     try {
+      console.log('Starting password reset request for email:', email);
+      
       if (!email) {
         toast({
           variant: "destructive",
@@ -24,11 +26,12 @@ export const ForgotPassword = ({ email }: ForgotPasswordProps) => {
       }
 
       const now = Date.now();
-      if (now - lastResetRequest < 20000) { // Increased to 20 seconds to be safe
+      if (now - lastResetRequest < 30000) { // Increased to 30 seconds to be extra safe
+        console.log('Rate limit hit on client side');
         toast({
           variant: "destructive",
           title: "Patientez",
-          description: "Pour des raisons de sécurité, veuillez patienter 20 secondes entre chaque demande.",
+          description: "Pour des raisons de sécurité, veuillez patienter 30 secondes entre chaque demande.",
         });
         return;
       }
@@ -46,6 +49,7 @@ export const ForgotPassword = ({ email }: ForgotPasswordProps) => {
         try {
           if (error.message.includes('{')) {
             errorBody = JSON.parse(error.message.substring(error.message.indexOf('{')));
+            console.log('Parsed error body:', errorBody);
           }
         } catch (e) {
           console.log('Error parsing error message:', e);
@@ -56,7 +60,7 @@ export const ForgotPassword = ({ email }: ForgotPasswordProps) => {
           toast({
             variant: "destructive",
             title: "Trop de tentatives",
-            description: "Pour des raisons de sécurité, veuillez patienter quelques secondes avant de réessayer.",
+            description: "Pour des raisons de sécurité, veuillez patienter 30 secondes avant de réessayer.",
           });
           return;
         }
@@ -71,13 +75,14 @@ export const ForgotPassword = ({ email }: ForgotPasswordProps) => {
       }
 
       setLastResetRequest(now);
+      console.log('Password reset email sent successfully');
       
       toast({
         title: "Email envoyé",
         description: "Si un compte existe avec cet email, vous recevrez un lien de réinitialisation.",
       });
     } catch (error) {
-      console.error('Password reset error:', error);
+      console.error('Unexpected error during password reset:', error);
       toast({
         variant: "destructive",
         title: "Erreur",
