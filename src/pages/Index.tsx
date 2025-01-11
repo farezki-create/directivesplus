@@ -10,6 +10,8 @@ const Index = () => {
 
   const handleDownloadQuestionnaire = async () => {
     try {
+      console.log('Starting questionnaire download process...');
+      
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
@@ -23,7 +25,7 @@ const Index = () => {
         return;
       }
 
-      console.log('Downloading questionnaire directly from storage...');
+      console.log('Downloading questionnaire from storage bucket...');
       
       const { data, error } = await supabase.storage
         .from('questionnaires')
