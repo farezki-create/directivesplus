@@ -44,29 +44,28 @@ const Auth = () => {
         if (error) {
           console.log('Signup error:', error);
           
-          // Check if the error response contains a JSON body
+          // First, try to parse the error body if it exists
+          let errorBody;
           try {
-            const errorBody = JSON.parse(error.message);
-            if (errorBody.code === "user_already_exists") {
-              console.log('User already exists, switching to login mode');
-              toast({
-                title: "Compte existant",
-                description: "Un compte existe déjà avec cet email. Connectez-vous.",
-              });
-              setIsSignUp(false);
-              return;
+            if (error.message.includes('{')) {
+              errorBody = JSON.parse(error.message.substring(error.message.indexOf('{')));
             }
-          } catch {
-            // If error.message is not JSON, check the error directly
-            if (error instanceof AuthApiError && error.message === "User already registered") {
-              console.log('User already exists (direct message), switching to login mode');
-              toast({
-                title: "Compte existant",
-                description: "Un compte existe déjà avec cet email. Connectez-vous.",
-              });
-              setIsSignUp(false);
-              return;
-            }
+          } catch (e) {
+            console.log('Error parsing error message:', e);
+          }
+
+          // Check for user_already_exists in both parsed body and direct message
+          if (
+            (errorBody && errorBody.code === "user_already_exists") ||
+            (error instanceof AuthApiError && error.message.includes("User already registered"))
+          ) {
+            console.log('User already exists, switching to login mode');
+            toast({
+              title: "Compte existant",
+              description: "Un compte existe déjà avec cet email. Connectez-vous.",
+            });
+            setIsSignUp(false);
+            return;
           }
           
           const message = getErrorMessage(error);
