@@ -39,14 +39,16 @@ export const QuestionnaireForm = () => {
         return;
       }
 
-      // Save to Supabase
+      // Save to Supabase - Note that we now pass an array with a single object
       const { error } = await supabase
         .from('advance_directives')
-        .upsert({
+        .upsert([{
           user_id: session.user.id,
-          general_opinion: data.medicalDirectives.generalOpinion,
-          other_directives: data.medicalDirectives.otherDirectives,
-        });
+          general_opinion: data.medicalDirectives.generalOpinion.artificialLife,
+          other_directives: data.medicalDirectives.otherDirectives.resuscitation,
+          life_support: JSON.stringify(data.medicalDirectives.generalOpinion),
+          pain_relief: JSON.stringify(data.medicalDirectives.otherDirectives),
+        }]);
 
       if (error) throw error;
       
