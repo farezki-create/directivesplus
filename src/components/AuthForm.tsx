@@ -30,9 +30,10 @@ type AuthFormProps = {
   isSignUp: boolean;
   onSubmit: (values: FormValues) => void;
   onToggleMode: () => void;
+  onForgotPassword: (email: string) => void;
 };
 
-export const AuthForm = ({ isSignUp, onSubmit, onToggleMode }: AuthFormProps) => {
+export const AuthForm = ({ isSignUp, onSubmit, onToggleMode, onForgotPassword }: AuthFormProps) => {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -41,6 +42,11 @@ export const AuthForm = ({ isSignUp, onSubmit, onToggleMode }: AuthFormProps) =>
       confirmPassword: "",
     },
   });
+
+  const handleForgotPassword = () => {
+    const email = form.getValues("email");
+    onForgotPassword(email);
+  };
 
   return (
     <Form {...form}>
@@ -103,6 +109,16 @@ export const AuthForm = ({ isSignUp, onSubmit, onToggleMode }: AuthFormProps) =>
         <Button type="submit" className="w-full">
           {isSignUp ? "S'inscrire" : "Se connecter"}
         </Button>
+
+        {!isSignUp && (
+          <button
+            type="button"
+            onClick={handleForgotPassword}
+            className="w-full text-sm text-primary hover:underline mt-2"
+          >
+            Mot de passe oublié ?
+          </button>
+        )}
 
         <p className="text-center text-sm text-muted-foreground mt-4">
           {isSignUp ? (

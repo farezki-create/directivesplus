@@ -41,7 +41,6 @@ const Auth = () => {
         if (error) {
           console.log('Signup error:', error);
           
-          // Handle user_already_exists error specifically
           if (error instanceof AuthApiError) {
             try {
               const errorBody = JSON.parse(error.message);
@@ -59,7 +58,6 @@ const Auth = () => {
             }
           }
           
-          // Handle other errors
           const message = getErrorMessage(error);
           toast({
             variant: "destructive",
@@ -96,6 +94,42 @@ const Auth = () => {
     }
   };
 
+  const handleForgotPassword = async (email: string) => {
+    try {
+      if (!email) {
+        toast({
+          variant: "destructive",
+          title: "Email requis",
+          description: "Veuillez saisir votre adresse email avant de réinitialiser votre mot de passe.",
+        });
+        return;
+      }
+
+      console.log('Attempting to send password reset email to:', email);
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) {
+        console.log('Password reset error:', error);
+        const message = getErrorMessage(error);
+        toast({
+          variant: "destructive",
+          title: "Erreur de réinitialisation",
+          description: message,
+        });
+        throw error;
+      }
+
+      toast({
+        title: "Email envoyé",
+        description: "Si un compte existe avec cet email, vous recevrez un lien de réinitialisation.",
+      });
+    } catch (error) {
+      console.error('Password reset error:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <Card className="w-full max-w-md">
@@ -115,6 +149,7 @@ const Auth = () => {
             isSignUp={isSignUp}
             onSubmit={handleSubmit}
             onToggleMode={() => setIsSignUp(!isSignUp)}
+            onForgotPassword={handleForgotPassword}
           />
         </CardContent>
       </Card>
