@@ -75,20 +75,21 @@ serve(async (req) => {
     }
 
     console.log('File downloaded successfully, preparing response...');
-    const arrayBuffer = await data.arrayBuffer();
-    console.log('File size:', arrayBuffer.byteLength, 'bytes');
-    
-    console.log('Sending file response with Excel MIME type...');
-    const headers = {
+    const buffer = await data.arrayBuffer();
+    console.log('File size:', buffer.byteLength, 'bytes');
+
+    const headers = new Headers({
       ...corsHeaders,
       'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       'Content-Disposition': 'attachment; filename="questionnaire-directives-anticipees.xlsx"',
-      'Content-Length': arrayBuffer.byteLength.toString(),
-      'Cache-Control': 'no-cache'
-    };
+      'Content-Length': buffer.byteLength.toString(),
+      'Cache-Control': 'no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    });
 
-    console.log('Response headers:', headers);
-    return new Response(arrayBuffer, { headers });
+    console.log('Sending response with headers:', Object.fromEntries(headers.entries()));
+    return new Response(buffer, { headers });
 
   } catch (error) {
     console.error('Unexpected error:', error);
