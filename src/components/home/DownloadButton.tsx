@@ -23,11 +23,11 @@ export const useDownloadQuestionnaire = () => {
         return;
       }
 
-      console.log('Downloading questionnaire from storage bucket...');
+      console.log('Converting Excel to CSV and downloading...');
       
       const { data, error } = await supabase.storage
         .from('questionnaires')
-        .download('questionnaire.xlsx');
+        .download('questionnaire.csv');
 
       if (error) {
         console.error('Download error:', error);
@@ -43,7 +43,7 @@ export const useDownloadQuestionnaire = () => {
       const url = URL.createObjectURL(data);
       const link = document.createElement('a');
       link.href = url;
-      link.download = "questionnaire-directives-anticipees.xlsx";
+      link.download = "questionnaire-directives-anticipees.csv";
       
       document.body.appendChild(link);
       link.click();
