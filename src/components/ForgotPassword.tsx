@@ -26,12 +26,12 @@ export const ForgotPassword = ({ email }: ForgotPasswordProps) => {
       }
 
       const now = Date.now();
-      if (now - lastResetRequest < 30000) { // Increased to 30 seconds to be extra safe
+      if (now - lastResetRequest < 60000) { // Increased to 60 seconds to match Supabase's requirement
         console.log('Rate limit hit on client side');
         toast({
           variant: "destructive",
           title: "Patientez",
-          description: "Pour des raisons de sécurité, veuillez patienter 30 secondes entre chaque demande.",
+          description: "Pour des raisons de sécurité, veuillez patienter 60 secondes entre chaque demande.",
         });
         return;
       }
@@ -60,7 +60,7 @@ export const ForgotPassword = ({ email }: ForgotPasswordProps) => {
           toast({
             variant: "destructive",
             title: "Trop de tentatives",
-            description: "Pour des raisons de sécurité, veuillez patienter 30 secondes avant de réessayer.",
+            description: "Pour des raisons de sécurité, veuillez patienter 60 secondes avant de réessayer.",
           });
           return;
         }
