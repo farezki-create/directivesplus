@@ -7,12 +7,14 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import type { AuthError } from "@supabase/supabase-js";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 
 const Auth = () => {
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState("");
   const [avatar, setAvatar] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -24,6 +26,11 @@ const Auth = () => {
           
           if (uploadError) {
             console.error('Error uploading avatar:', uploadError);
+            toast({
+              variant: "destructive",
+              title: "Erreur",
+              description: "Impossible de télécharger l'avatar. Veuillez réessayer.",
+            });
           }
         }
         navigate("/dashboard");
@@ -35,7 +42,7 @@ const Auth = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate, avatar]);
+  }, [navigate, avatar, toast]);
 
   const getErrorMessage = (error: AuthError) => {
     switch (error.message) {
@@ -125,6 +132,16 @@ const Auth = () => {
               }}
               providers={[]}
               redirectTo={window.location.origin}
+              onError={(error) => {
+                console.error('Auth error:', error);
+                const translatedError = getErrorMessage(error);
+                setErrorMessage(translatedError);
+                toast({
+                  variant: "destructive",
+                  title: "Erreur d'authentification",
+                  description: translatedError,
+                });
+              }}
             />
           </div>
         </div>
