@@ -68,13 +68,42 @@ export const DirectivesForm = () => {
             <Input id="birthdate" type="date" />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="address">Adresse</Label>
-            <Textarea 
-              id="address" 
-              placeholder="Votre adresse complète"
-              className="min-h-[100px]"
-            />
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Adresse</h3>
+            
+            <div className="space-y-2">
+              <Label htmlFor="street">Rue</Label>
+              <Textarea 
+                id="street" 
+                placeholder="Numéro et nom de rue"
+                className="min-h-[60px]"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="postalCode">Code postal</Label>
+                <Input 
+                  id="postalCode" 
+                  placeholder="Code postal"
+                  pattern="[0-9]{5}"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="city">Ville</Label>
+                <Input id="city" placeholder="Ville" />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="country">Pays</Label>
+              <Input 
+                id="country" 
+                placeholder="Pays"
+                defaultValue="France"
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
