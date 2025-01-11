@@ -1,8 +1,29 @@
 import { Button } from "./ui/button";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
+import { User } from "@supabase/supabase-js";
 
 export const Header = () => {
   const navigate = useNavigate();
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate("/");
+  };
 
   return (
     <header className="w-full border-b">
@@ -17,15 +38,23 @@ export const Header = () => {
           >
             Accueil
           </Button>
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/dashboard")}
-          >
-            Tableau de bord
-          </Button>
-          <Button variant="default">
-            Connexion
-          </Button>
+          {user && (
+            <Button
+              variant="ghost"
+              onClick={() => navigate("/dashboard")}
+            >
+              Tableau de bord
+            </Button>
+          )}
+          {user ? (
+            <Button variant="default" onClick={handleSignOut}>
+              Déconnexion
+            </Button>
+          ) : (
+            <Button variant="default" onClick={() => navigate("/auth")}>
+              Connexion
+            </Button>
+          )}
         </nav>
       </div>
     </header>
