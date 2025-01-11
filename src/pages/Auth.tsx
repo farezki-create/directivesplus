@@ -96,18 +96,25 @@ const Auth = () => {
                     email_label: "Email",
                     password_label: "Mot de passe",
                     button_label: "Se connecter",
-                    password_input_placeholder: "Minimum 8 caractères, 1 majuscule, 1 chiffre",
+                    loading_button_label: "Connexion en cours...",
+                    password_input_placeholder: "Votre mot de passe",
+                    email_input_placeholder: "Votre adresse email",
+                    link_text: "Vous avez déjà un compte ? Connectez-vous",
                   },
                   sign_up: {
                     email_label: "Email",
                     password_label: "Mot de passe",
                     button_label: "S'inscrire",
-                    password_input_placeholder: "Minimum 8 caractères, 1 majuscule, 1 chiffre",
+                    loading_button_label: "Inscription en cours...",
+                    password_input_placeholder: "Choisissez un mot de passe",
+                    email_input_placeholder: "Votre adresse email",
+                    link_text: "Vous n'avez pas de compte ? Inscrivez-vous",
                   },
                 },
               }}
               providers={[]}
               redirectTo={window.location.origin}
+              view="sign_in"
             />
           </div>
         </div>
