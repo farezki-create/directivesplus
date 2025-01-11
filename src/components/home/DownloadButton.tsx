@@ -38,45 +38,34 @@ export const useDownloadQuestionnaire = () => {
         throw new Error('Erreur lors de la vérification du fichier');
       }
 
+      console.log('Files found in bucket:', files);
+
       if (!files || files.length === 0) {
         console.error('File not found in bucket');
         throw new Error('Le questionnaire n\'est pas disponible dans le stockage');
       }
 
-      console.log('Files found:', files);
+      console.log('Attempting to download file:', files[0].name);
       
-      // Obtenir une URL signée pour le téléchargement
-      const { data: signedURL, error: signedURLError } = await supabase.storage
+      // Télécharger directement le fichier
+      const { data: fileData, error: downloadError } = await supabase.storage
         .from('questionnaires')
-        .createSignedUrl('questionnaire.xlsx', 60);
+        .download('questionnaire.xlsx');
 
-      if (signedURLError) {
-        console.error('Signed URL error:', signedURLError);
-        throw new Error('Erreur lors de la génération du lien de téléchargement');
-      }
-
-      console.log('Signed URL response:', signedURL);
-
-      if (!signedURL || !signedURL.signedUrl) {
-        console.error('No signed URL generated');
-        throw new Error('Impossible de générer le lien de téléchargement');
-      }
-
-      console.log('Got signed URL:', signedURL.signedUrl);
-      
-      // Télécharger le fichier via l'URL signée
-      const response = await fetch(signedURL.signedUrl);
-      console.log('Fetch response:', response);
-      
-      if (!response.ok) {
-        console.error('Download response not OK:', response.status, response.statusText);
+      if (downloadError) {
+        console.error('Download error:', downloadError);
         throw new Error('Erreur lors du téléchargement du fichier');
       }
 
-      const blob = await response.blob();
-      console.log('Blob created:', blob);
+      if (!fileData) {
+        console.error('No file data received');
+        throw new Error('Aucune donnée reçue lors du téléchargement');
+      }
+
+      console.log('File downloaded successfully, creating blob URL...');
       
-      const url = URL.createObjectURL(blob);
+      // Créer un URL pour le blob et déclencher le téléchargement
+      const url = URL.createObjectURL(fileData);
       const link = document.createElement('a');
       link.href = url;
       link.download = "questionnaire-directives-anticipees.xlsx";
@@ -94,7 +83,6 @@ export const useDownloadQuestionnaire = () => {
         description: "Le questionnaire a été téléchargé avec succès.",
       });
 
-      navigate("/dashboard");
     } catch (error) {
       console.error('Error during download:', error);
       toast({
