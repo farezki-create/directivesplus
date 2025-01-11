@@ -14,7 +14,7 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Starting download process...');
+    console.log('Starting signed URL generation process...');
     
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -46,16 +46,16 @@ serve(async (req) => {
       );
     }
 
-    console.log('File exists, attempting download...');
-    const { data, error: downloadError } = await supabaseAdmin
+    console.log('File exists, generating signed URL...');
+    const { data: signedUrl, error: signedUrlError } = await supabaseAdmin
       .storage
       .from('questionnaires')
-      .download('questionnaire.xlsx');
+      .createSignedUrl('questionnaire.xlsx', 60); // URL valide pendant 60 secondes
 
-    if (downloadError) {
-      console.error('Error downloading file:', downloadError);
+    if (signedUrlError) {
+      console.error('Error generating signed URL:', signedUrlError);
       return new Response(
-        JSON.stringify({ error: 'Erreur lors du téléchargement du questionnaire.' }),
+        JSON.stringify({ error: 'Erreur lors de la génération du lien de téléchargement.' }),
         { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 500 
@@ -63,10 +63,10 @@ serve(async (req) => {
       );
     }
 
-    if (!data) {
-      console.error('No data received from download');
+    if (!signedUrl || !signedUrl.signedUrl) {
+      console.error('No signed URL generated');
       return new Response(
-        JSON.stringify({ error: 'Le fichier est vide ou corrompu.' }),
+        JSON.stringify({ error: 'Impossible de générer le lien de téléchargement.' }),
         { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 500 
@@ -74,22 +74,13 @@ serve(async (req) => {
       );
     }
 
-    console.log('File downloaded successfully, preparing response...');
-    const buffer = await data.arrayBuffer();
-    console.log('File size:', buffer.byteLength, 'bytes');
-
-    const headers = new Headers({
-      ...corsHeaders,
-      'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'Content-Disposition': 'attachment; filename="questionnaire-directives-anticipees.xlsx"',
-      'Content-Length': buffer.byteLength.toString(),
-      'Cache-Control': 'no-store, must-revalidate',
-      'Pragma': 'no-cache',
-      'Expires': '0'
-    });
-
-    console.log('Sending response with headers:', Object.fromEntries(headers.entries()));
-    return new Response(buffer, { headers });
+    console.log('Signed URL generated successfully:', signedUrl.signedUrl);
+    return new Response(
+      JSON.stringify({ url: signedUrl.signedUrl }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    );
 
   } catch (error) {
     console.error('Unexpected error:', error);

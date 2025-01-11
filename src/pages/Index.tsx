@@ -23,7 +23,7 @@ const Index = () => {
         return;
       }
 
-      console.log('Attempting to download questionnaire...');
+      console.log('Requesting signed URL for questionnaire...');
       
       const response = await fetch(
         'https://zxytckmvmvtfcihnhlbj.supabase.co/functions/v1/download-questionnaire',
@@ -35,34 +35,25 @@ const Index = () => {
       );
 
       if (!response.ok) {
-        console.error('Download failed with status:', response.status);
+        console.error('Request failed with status:', response.status);
         const errorData = await response.json();
         throw new Error(errorData.error || 'Erreur lors du téléchargement');
       }
 
-      const blob = await response.blob();
+      const { url } = await response.json();
       
-      if (!blob || blob.size === 0) {
-        throw new Error('Le fichier téléchargé est vide');
+      if (!url) {
+        throw new Error('Lien de téléchargement invalide');
       }
 
-      console.log('Creating download link...');
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = "questionnaire-directives-anticipees.xlsx";
-      
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      window.URL.revokeObjectURL(url);
+      console.log('Opening download URL in new tab...');
+      window.open(url, '_blank');
 
-      console.log('Download completed successfully');
+      console.log('Download initiated successfully');
       
       toast({
         title: "Succès",
-        description: "Le questionnaire a été téléchargé avec succès.",
+        description: "Le téléchargement du questionnaire a démarré.",
       });
 
       navigate("/dashboard");
