@@ -7,23 +7,36 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { GeneralOpinion } from "./sections/GeneralOpinion";
 
+type Values = {
+  noLifeSupport: boolean;
+  communicateWithOthers: boolean;
+  selfCare: boolean;
+  noPain: boolean;
+  withFamily: boolean;
+  notABurden: boolean;
+  additionalComments: string;
+};
+
 type QuestionnaireData = {
-  medicalDirectives: {
-    generalOpinion: {
-      artificialLife: boolean;
-      organDonation: boolean;
-      palliativeCare: boolean;
-    };
-    otherDirectives: {
-      resuscitation: boolean;
-      artificialNutrition: boolean;
-      painManagement: boolean;
-    };
-  };
+  doNotWishToAnswer: boolean;
+  values: Values;
 };
 
 export const QuestionnaireForm = () => {
-  const form = useForm<QuestionnaireData>();
+  const form = useForm<QuestionnaireData>({
+    defaultValues: {
+      doNotWishToAnswer: false,
+      values: {
+        noLifeSupport: false,
+        communicateWithOthers: false,
+        selfCare: false,
+        noPain: false,
+        withFamily: false,
+        notABurden: false,
+        additionalComments: "",
+      },
+    },
+  });
   const { toast } = useToast();
 
   const onSubmit = async (data: QuestionnaireData) => {
@@ -41,15 +54,12 @@ export const QuestionnaireForm = () => {
         return;
       }
 
-      // Save to Supabase - Note that we now pass an array with a single object
       const { error } = await supabase
         .from('advance_directives')
         .upsert([{
           user_id: session.user.id,
-          general_opinion: data.medicalDirectives.generalOpinion.artificialLife,
-          other_directives: data.medicalDirectives.otherDirectives.resuscitation,
-          life_support: JSON.stringify(data.medicalDirectives.generalOpinion),
-          pain_relief: JSON.stringify(data.medicalDirectives.otherDirectives),
+          life_support: JSON.stringify(data.values),
+          let_die: data.doNotWishToAnswer ? "true" : "false",
         }]);
 
       if (error) throw error;
@@ -76,13 +86,6 @@ export const QuestionnaireForm = () => {
             <CardTitle>Directives anticipées</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <p className="text-muted-foreground">
-                Vos informations personnelles sont déjà enregistrées dans votre profil. 
-                Vous pouvez maintenant renseigner vos directives médicales.
-              </p>
-            </div>
-
             <GeneralOpinion form={form} />
 
             <div className="flex justify-between mt-6">
