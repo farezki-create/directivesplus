@@ -60,6 +60,30 @@ export type Database = {
         }
         Relationships: []
       }
+      questionnaire_questions: {
+        Row: {
+          category: Database["public"]["Enums"]["question_category"]
+          created_at: string
+          id: string
+          question_text: string
+          updated_at: string
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["question_category"]
+          created_at?: string
+          id?: string
+          question_text: string
+          updated_at?: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["question_category"]
+          created_at?: string
+          id?: string
+          question_text?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -68,7 +92,12 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      question_category:
+        | "general_opinion"
+        | "other_directives"
+        | "life_support"
+        | "pain_relief"
+        | "let_die"
     }
     CompositeTypes: {
       [_ in never]: never
