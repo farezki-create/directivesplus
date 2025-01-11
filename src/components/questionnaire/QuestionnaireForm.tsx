@@ -5,11 +5,20 @@ import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { GeneralOpinion } from "./sections/GeneralOpinion";
 
 type QuestionnaireData = {
   medicalDirectives: {
-    generalOpinion: string;
-    otherDirectives: string;
+    generalOpinion: {
+      artificialLife: boolean;
+      organDonation: boolean;
+      palliativeCare: boolean;
+    };
+    otherDirectives: {
+      resuscitation: boolean;
+      artificialNutrition: boolean;
+      painManagement: boolean;
+    };
   };
 };
 
@@ -30,8 +39,16 @@ export const QuestionnaireForm = () => {
         return;
       }
 
-      // TODO: Sauvegarder les données dans Supabase
-      console.log("Form data:", data);
+      // Save to Supabase
+      const { error } = await supabase
+        .from('advance_directives')
+        .upsert({
+          user_id: session.user.id,
+          general_opinion: data.medicalDirectives.generalOpinion,
+          other_directives: data.medicalDirectives.otherDirectives,
+        });
+
+      if (error) throw error;
       
       toast({
         title: "Succès",
@@ -61,6 +78,8 @@ export const QuestionnaireForm = () => {
                 Vous pouvez maintenant renseigner vos directives médicales.
               </p>
             </div>
+
+            <GeneralOpinion form={form} />
 
             <div className="flex justify-between mt-6">
               <Button type="submit">Sauvegarder</Button>
