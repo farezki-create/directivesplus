@@ -109,7 +109,7 @@ export const QuestionnaireForm = () => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <Card>
+        <Card className="max-w-[95vw] mx-auto">
           <CardHeader>
             <CardTitle>Directives anticipées</CardTitle>
           </CardHeader>
@@ -121,13 +121,13 @@ export const QuestionnaireForm = () => {
               </p>
             </div>
 
-            <div className="flex space-x-4 overflow-x-auto pb-4 mt-6 snap-x snap-mandatory">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mt-6">
               {sections.map((section) => (
                 <Collapsible
                   key={section.id}
                   open={openSection === section.id}
                   onOpenChange={() => handleSectionClick(section.id)}
-                  className="min-w-[300px] border rounded-lg p-4 transition-all duration-200 hover:border-primary/50 snap-start shadow-sm hover:shadow-md"
+                  className="border rounded-lg p-4 transition-all duration-200 hover:border-primary/50 shadow-sm hover:shadow-md h-full"
                 >
                   <CollapsibleTrigger className="w-full flex items-center justify-between font-semibold group">
                     <span className="text-lg">{section.title}</span>
