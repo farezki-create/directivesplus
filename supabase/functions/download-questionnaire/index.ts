@@ -7,10 +7,10 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Handle CORS
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     console.log('Handling CORS preflight request');
-    return new Response(null, { headers: corsHeaders })
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
@@ -77,12 +77,13 @@ serve(async (req) => {
     console.log('File downloaded successfully, preparing response...');
     const arrayBuffer = await data.arrayBuffer();
     
-    console.log('Sending file response...');
+    console.log('Sending file response with Excel MIME type...');
     return new Response(arrayBuffer, {
       headers: {
         ...corsHeaders,
         'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'Content-Disposition': 'attachment; filename="questionnaire-directives-anticipees.xlsx"'
+        'Content-Disposition': 'attachment; filename="questionnaire-directives-anticipees.xlsx"',
+        'Content-Length': arrayBuffer.byteLength.toString()
       }
     });
 
