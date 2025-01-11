@@ -20,14 +20,15 @@ const fetchGeneralOpinionQuestions = async () => {
   const { data, error } = await supabase
     .from('questionnaire_questions')
     .select('*')
-    .eq('category', 'general_opinion');
+    .eq('category', 'general_opinion')
+    .order('created_at', { ascending: true });
     
   if (error) {
-    console.error("Error fetching questions:", error);
+    console.error("Error fetching general opinion questions:", error);
     throw error;
   }
   
-  console.log("Fetched questions:", data);
+  console.log("Fetched general opinion questions:", data);
   return data as Question[];
 };
 
