@@ -13,9 +13,22 @@ import {
   SelectValue,
 } from "./ui/select";
 
+// Définition des préfixes téléphoniques par pays
+const COUNTRY_PREFIXES = {
+  "France": "+33",
+  "Belgique": "+32",
+  "Suisse": "+41",
+  "Luxembourg": "+352",
+  "Canada": "+1",
+  "Monaco": "+377",
+} as const;
+
+type CountryKey = keyof typeof COUNTRY_PREFIXES;
+
 export const DirectivesForm = () => {
   const [step, setStep] = useState(1);
   const [progress, setProgress] = useState(0);
+  const [selectedCountry, setSelectedCountry] = useState<CountryKey>("France");
 
   const nextStep = () => {
     if (step < 4) {
@@ -98,22 +111,45 @@ export const DirectivesForm = () => {
 
             <div className="space-y-2">
               <Label htmlFor="country">Pays</Label>
-              <Input 
-                id="country" 
-                placeholder="Pays"
-                defaultValue="France"
-              />
+              <Select 
+                value={selectedCountry}
+                onValueChange={(value) => setSelectedCountry(value as CountryKey)}
+              >
+                <SelectTrigger id="country">
+                  <SelectValue placeholder="Sélectionnez votre pays" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.keys(COUNTRY_PREFIXES).map((country) => (
+                    <SelectItem key={country} value={country}>
+                      {country}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="phone">Numéro de téléphone</Label>
-            <Input 
-              id="phone" 
-              type="tel" 
-              placeholder="Votre numéro de téléphone"
-              pattern="[0-9]{10}"
-            />
+            <div className="flex gap-2">
+              <Select defaultValue={COUNTRY_PREFIXES[selectedCountry]} disabled>
+                <SelectTrigger className="w-[100px]">
+                  <SelectValue>{COUNTRY_PREFIXES[selectedCountry]}</SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={COUNTRY_PREFIXES[selectedCountry]}>
+                    {COUNTRY_PREFIXES[selectedCountry]}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <Input 
+                id="phone" 
+                type="tel" 
+                placeholder="Votre numéro de téléphone"
+                pattern="[0-9]{9}"
+                className="flex-1"
+              />
+            </div>
           </div>
         </div>
       )}
