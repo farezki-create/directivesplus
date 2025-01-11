@@ -40,21 +40,24 @@ const Auth = () => {
 
         if (error) {
           console.log('Signup error:', error);
-          if (error instanceof AuthApiError && error.message.includes("already registered")) {
-            toast({
-              variant: "destructive",
-              title: "Compte existant",
-              description: "Un compte existe déjà avec cet email. Connectez-vous.",
-            });
-            setIsSignUp(false);
-          } else {
-            const message = getErrorMessage(error);
-            toast({
-              variant: "destructive",
-              title: "Erreur d'inscription",
-              description: message,
-            });
+          if (error instanceof AuthApiError) {
+            const errorBody = JSON.parse(error.message);
+            if (errorBody.code === "user_already_exists") {
+              toast({
+                variant: "destructive",
+                title: "Compte existant",
+                description: "Un compte existe déjà avec cet email. Connectez-vous.",
+              });
+              setIsSignUp(false);
+              return;
+            }
           }
+          const message = getErrorMessage(error);
+          toast({
+            variant: "destructive",
+            title: "Erreur d'inscription",
+            description: message,
+          });
           throw error;
         }
 
