@@ -3,17 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
-import { PersonalInfo } from "./sections/PersonalInfo";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 type QuestionnaireData = {
-  personalInfo: {
-    firstName: string;
-    lastName: string;
-    birthDate: string;
-    address: string;
-    phone: string;
+  medicalDirectives: {
+    generalOpinion: string;
+    otherDirectives: string;
   };
 };
 
@@ -39,7 +35,7 @@ export const QuestionnaireForm = () => {
       
       toast({
         title: "Succès",
-        description: "Vos informations ont été sauvegardées.",
+        description: "Vos directives ont été sauvegardées.",
       });
     } catch (error) {
       console.error("Error saving form:", error);
@@ -59,7 +55,12 @@ export const QuestionnaireForm = () => {
             <CardTitle>Directives anticipées</CardTitle>
           </CardHeader>
           <CardContent>
-            <PersonalInfo form={form} />
+            <div className="space-y-4">
+              <p className="text-muted-foreground">
+                Vos informations personnelles sont déjà enregistrées dans votre profil. 
+                Vous pouvez maintenant renseigner vos directives médicales.
+              </p>
+            </div>
 
             <div className="flex justify-between mt-6">
               <Button type="submit">Sauvegarder</Button>
