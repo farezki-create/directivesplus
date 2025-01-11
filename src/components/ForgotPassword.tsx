@@ -40,8 +40,13 @@ export const ForgotPassword = ({ email }: ForgotPasswordProps) => {
       setIsLoading(true);
       console.log('Attempting to send password reset email to:', email);
       
+      // Get the current URL and construct the redirect URL
+      const baseUrl = window.location.origin;
+      const redirectUrl = `${baseUrl}/auth/callback?next=/reset-password`;
+      console.log('Using redirect URL:', redirectUrl);
+
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: redirectUrl,
       });
 
       if (error) {
