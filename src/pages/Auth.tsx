@@ -44,9 +44,22 @@ const Auth = () => {
         if (error) {
           console.log('Signup error:', error);
           
-          if (error instanceof AuthApiError) {
-            if (error.status === 400 && error.message === "User already registered") {
+          // Check if the error response contains a JSON body
+          try {
+            const errorBody = JSON.parse(error.message);
+            if (errorBody.code === "user_already_exists") {
               console.log('User already exists, switching to login mode');
+              toast({
+                title: "Compte existant",
+                description: "Un compte existe déjà avec cet email. Connectez-vous.",
+              });
+              setIsSignUp(false);
+              return;
+            }
+          } catch {
+            // If error.message is not JSON, check the error directly
+            if (error instanceof AuthApiError && error.message === "User already registered") {
+              console.log('User already exists (direct message), switching to login mode');
               toast({
                 title: "Compte existant",
                 description: "Un compte existe déjà avec cet email. Connectez-vous.",
