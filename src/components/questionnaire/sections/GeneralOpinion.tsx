@@ -20,7 +20,7 @@ const fetchGeneralOpinionQuestions = async () => {
   const { data, error } = await supabase
     .from('questionnaire_questions')
     .select('*')
-    .eq('category', 'general_opinion')
+    .eq('category', 'other_directives')
     .order('created_at', { ascending: true });
     
   if (error) {
