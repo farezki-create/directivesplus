@@ -47,21 +47,23 @@ const Auth = () => {
     console.log('Processing error:', error);
     
     if (error instanceof AuthApiError) {
-      switch (error.message) {
-        case "Invalid login credentials":
+      switch (error.code) {
+        case "invalid_credentials":
           return "Email ou mot de passe incorrect.";
-        case "Email not confirmed":
+        case "email_not_confirmed":
           return "Veuillez vérifier votre email pour confirmer votre compte.";
-        case "Password should be at least 8 characters":
+        case "invalid_grant":
+          return "Email ou mot de passe incorrect.";
+        case "password_too_short":
           return "Le mot de passe doit contenir au moins 8 caractères.";
         default:
-          console.log('Unhandled API error:', error.message);
-          return error.message;
+          console.log('Unhandled API error:', error.code, error.message);
+          return "Une erreur s'est produite lors de la connexion. Veuillez réessayer.";
       }
     }
     
     console.log('Non-API error:', error.message);
-    return error.message;
+    return "Une erreur inattendue s'est produite. Veuillez réessayer.";
   };
 
   return (
