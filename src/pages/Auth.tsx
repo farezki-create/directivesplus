@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 const Auth = () => {
   const navigate = useNavigate();
   const [isSignUp, setIsSignUp] = useState(false);
+  const [lastResetRequest, setLastResetRequest] = useState(0);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -105,6 +106,17 @@ const Auth = () => {
         return;
       }
 
+      // Check if enough time has passed since the last request
+      const now = Date.now();
+      if (now - lastResetRequest < 60000) { // 60000ms = 60 seconds
+        toast({
+          variant: "destructive",
+          title: "Patientez",
+          description: "Pour des raisons de sécurité, veuillez patienter une minute entre chaque demande.",
+        });
+        return;
+      }
+
       console.log('Attempting to send password reset email to:', email);
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
@@ -120,6 +132,9 @@ const Auth = () => {
         });
         throw error;
       }
+
+      // Update the last reset request timestamp
+      setLastResetRequest(now);
 
       toast({
         title: "Email envoyé",

@@ -16,6 +16,8 @@ export const getErrorMessage = (error: AuthError) => {
           return "Email ou mot de passe incorrect";
         case "email_not_confirmed":
           return "Veuillez vérifier votre email pour confirmer votre compte";
+        case "over_email_send_rate_limit":
+          return "Pour des raisons de sécurité, veuillez patienter une minute avant de réessayer";
         default:
           console.log('Unhandled API error code:', errorBody.code);
           return "Une erreur s'est produite. Veuillez réessayer.";
