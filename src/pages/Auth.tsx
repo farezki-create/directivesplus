@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthForm } from "@/components/AuthForm";
 import { getErrorMessage } from "@/utils/auth-errors";
-import type { z } from "zod";
+import type { FormValues } from "@/components/AuthForm";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -43,7 +43,7 @@ const Auth = () => {
     return () => subscription.unsubscribe();
   }, [navigate, toast]);
 
-  const handleSubmit = async (values: z.AnyZodObject) => {
+  const handleSubmit = async (values: FormValues) => {
     try {
       if (isSignUp) {
         const { error } = await supabase.auth.signUp({

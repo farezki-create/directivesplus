@@ -24,14 +24,16 @@ const formSchema = z.object({
   path: ["confirmPassword"],
 });
 
+export type FormValues = z.infer<typeof formSchema>;
+
 type AuthFormProps = {
   isSignUp: boolean;
-  onSubmit: (values: z.infer<typeof formSchema>) => void;
+  onSubmit: (values: FormValues) => void;
   onToggleMode: () => void;
 };
 
 export const AuthForm = ({ isSignUp, onSubmit, onToggleMode }: AuthFormProps) => {
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
