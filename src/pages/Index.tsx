@@ -11,6 +11,28 @@ const Index = () => {
   const handleDownloadQuestionnaire = async () => {
     try {
       console.log('Starting questionnaire download...');
+      
+      // First check if the file exists
+      const { data: fileExists } = await supabase.storage
+        .from('questionnaires')
+        .list('', {
+          limit: 1,
+          search: 'questionnaire.xlsx'
+        });
+
+      console.log('Checking if file exists:', fileExists);
+      
+      if (!fileExists || fileExists.length === 0) {
+        console.error('File not found in bucket');
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Le questionnaire n'est pas disponible pour le moment. Veuillez réessayer plus tard.",
+        });
+        return;
+      }
+
+      // If file exists, proceed with download
       const { data, error } = await supabase.storage
         .from('questionnaires')
         .download('questionnaire.xlsx');
@@ -21,6 +43,16 @@ const Index = () => {
           variant: "destructive",
           title: "Erreur",
           description: "Impossible de télécharger le questionnaire. Veuillez réessayer.",
+        });
+        return;
+      }
+
+      if (!data) {
+        console.error('No data received from download');
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Le téléchargement a échoué. Veuillez réessayer.",
         });
         return;
       }
@@ -37,6 +69,12 @@ const Index = () => {
       window.URL.revokeObjectURL(url);
 
       console.log('Download completed, navigating to dashboard...');
+      
+      toast({
+        title: "Succès",
+        description: "Le questionnaire a été téléchargé avec succès.",
+      });
+
       // Navigate to dashboard after successful download
       navigate("/dashboard");
     } catch (error) {
