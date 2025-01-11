@@ -1,82 +1,77 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AuthApiError } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { AuthForm } from "@/components/AuthForm";
+import { AuthForm, FormValues } from "@/components/AuthForm";
 import { getErrorMessage } from "@/utils/auth-errors";
-import type { FormValues } from "@/components/AuthForm";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 const Auth = () => {
   const navigate = useNavigate();
-  const [errorMessage, setErrorMessage] = useState("");
-  const { toast } = useToast();
   const [isSignUp, setIsSignUp] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
+    console.log("Setting up auth state change listener");
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', event, session);
       
       if (event === "SIGNED_IN" && session) {
+        console.log('User signed in, redirecting to dashboard');
         navigate("/dashboard");
-      }
-      if (event === "SIGNED_OUT") {
-        navigate("/");
-        setErrorMessage("");
-      }
-      if (event === "USER_UPDATED" || event === "INITIAL_SESSION") {
-        const { error } = await supabase.auth.getSession();
-        if (error) {
-          console.log('Auth error:', error);
-          const translatedError = getErrorMessage(error);
-          setErrorMessage(translatedError);
-          toast({
-            variant: "destructive",
-            title: "Erreur d'authentification",
-            description: translatedError,
-          });
-        }
       }
     });
 
-    return () => subscription.unsubscribe();
-  }, [navigate, toast]);
+    return () => {
+      console.log("Cleaning up auth state change listener");
+      subscription.unsubscribe();
+    };
+  }, [navigate]);
 
   const handleSubmit = async (values: FormValues) => {
     try {
       if (isSignUp) {
+        console.log('Attempting signup with email:', values.email);
         const { error } = await supabase.auth.signUp({
           email: values.email,
           password: values.password,
         });
+
         if (error) {
           console.log('Signup error:', error);
-          const message = getErrorMessage(error);
-          setErrorMessage(message);
-          toast({
-            variant: "destructive",
-            title: "Erreur d'inscription",
-            description: message,
-          });
-          if (error.message.includes("already registered")) {
+          if (error instanceof AuthApiError && error.message.includes("already registered")) {
+            toast({
+              variant: "destructive",
+              title: "Compte existant",
+              description: "Un compte existe déjà avec cet email. Connectez-vous.",
+            });
             setIsSignUp(false);
+          } else {
+            const message = getErrorMessage(error);
+            toast({
+              variant: "destructive",
+              title: "Erreur d'inscription",
+              description: message,
+            });
           }
           throw error;
         }
+
         toast({
           title: "Inscription réussie",
           description: "Veuillez vérifier votre email pour confirmer votre compte.",
         });
       } else {
+        console.log('Attempting login with email:', values.email);
         const { error } = await supabase.auth.signInWithPassword({
           email: values.email,
           password: values.password,
         });
+
         if (error) {
-          console.log('Signin error:', error);
+          console.log('Login error:', error);
           const message = getErrorMessage(error);
-          setErrorMessage(message);
           toast({
             variant: "destructive",
             title: "Erreur de connexion",
@@ -89,7 +84,6 @@ const Auth = () => {
       console.error('Auth error:', error);
       if (error instanceof AuthApiError) {
         const message = getErrorMessage(error);
-        setErrorMessage(message);
         toast({
           variant: "destructive",
           title: "Erreur d'authentification",
@@ -100,28 +94,27 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="max-w-md mx-auto">
-          <h1 className="text-2xl font-bold text-center mb-8">
-            {isSignUp ? "Inscription" : "Connexion"}
-          </h1>
-          
-          {errorMessage && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertDescription>{errorMessage}</AlertDescription>
-            </Alert>
-          )}
-
-          <div className="bg-card p-6 rounded-lg shadow-sm">
-            <AuthForm
-              isSignUp={isSignUp}
-              onSubmit={handleSubmit}
-              onToggleMode={() => setIsSignUp(!isSignUp)}
-            />
-          </div>
-        </div>
-      </main>
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl font-bold text-center">
+            {isSignUp ? "Créer un compte" : "Se connecter"}
+          </CardTitle>
+          <CardDescription className="text-center text-muted-foreground">
+            {isSignUp 
+              ? "Inscrivez-vous pour accéder à vos directives anticipées"
+              : "Connectez-vous pour accéder à vos directives anticipées"
+            }
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <AuthForm
+            isSignUp={isSignUp}
+            onSubmit={handleSubmit}
+            onToggleMode={() => setIsSignUp(!isSignUp)}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 };
