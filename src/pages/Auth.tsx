@@ -6,7 +6,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { AuthForm, FormValues } from "@/components/AuthForm";
 import { getErrorMessage } from "@/utils/auth-errors";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ForgotPassword } from "@/components/ForgotPassword";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -114,7 +113,6 @@ const Auth = () => {
             isSignUp={isSignUp}
             onSubmit={handleSubmit}
             onToggleMode={() => setIsSignUp(!isSignUp)}
-            onForgotPassword={(email) => <ForgotPassword email={email} />}
           />
         </CardContent>
       </Card>
