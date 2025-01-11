@@ -24,11 +24,11 @@ export const ForgotPassword = ({ email }: ForgotPasswordProps) => {
       }
 
       const now = Date.now();
-      if (now - lastResetRequest < 60000) {
+      if (now - lastResetRequest < 20000) { // Increased to 20 seconds to be safe
         toast({
           variant: "destructive",
           title: "Patientez",
-          description: "Pour des raisons de sécurité, veuillez patienter une minute entre chaque demande.",
+          description: "Pour des raisons de sécurité, veuillez patienter 20 secondes entre chaque demande.",
         });
         return;
       }
@@ -40,6 +40,27 @@ export const ForgotPassword = ({ email }: ForgotPasswordProps) => {
 
       if (error) {
         console.log('Password reset error:', error);
+        
+        // Parse the error body if it exists
+        let errorBody;
+        try {
+          if (error.message.includes('{')) {
+            errorBody = JSON.parse(error.message.substring(error.message.indexOf('{')));
+          }
+        } catch (e) {
+          console.log('Error parsing error message:', e);
+        }
+
+        // Check specifically for rate limit error
+        if (errorBody?.code === "over_email_send_rate_limit") {
+          toast({
+            variant: "destructive",
+            title: "Trop de tentatives",
+            description: "Pour des raisons de sécurité, veuillez patienter quelques secondes avant de réessayer.",
+          });
+          return;
+        }
+
         const message = getErrorMessage(error);
         toast({
           variant: "destructive",
