@@ -58,6 +58,10 @@ const Auth = () => {
           return "Un compte existe déjà avec cet email. Veuillez vous connecter.";
         case "password_too_short":
           return "Le mot de passe doit contenir au moins 8 caractères.";
+        case "weak_password":
+          return "Le mot de passe est trop faible. Il doit contenir au moins 8 caractères, une majuscule, un chiffre et un caractère spécial.";
+        case "passwords_mismatch":
+          return "Les mots de passe ne correspondent pas.";
         default:
           console.log('Unhandled API error:', error.code, error.message);
           return "Une erreur s'est produite lors de la connexion. Veuillez réessayer.";
@@ -91,6 +95,14 @@ const Auth = () => {
                     },
                   },
                 },
+                style: {
+                  input: {
+                    borderRadius: '0.375rem',
+                  },
+                  message: {
+                    borderRadius: '0.375rem',
+                  },
+                },
               }}
               localization={{
                 variables: {
@@ -105,10 +117,12 @@ const Auth = () => {
                   },
                   sign_up: {
                     email_label: "Email",
-                    password_label: "Mot de passe",
+                    password_label: "Mot de passe (8 caractères min., 1 majuscule, 1 chiffre)",
+                    confirm_password_label: "Confirmer le mot de passe",
                     button_label: "S'inscrire",
                     loading_button_label: "Inscription en cours...",
-                    password_input_placeholder: "Choisissez un mot de passe",
+                    password_input_placeholder: "Choisissez un mot de passe fort",
+                    confirm_password_input_placeholder: "Retapez votre mot de passe",
                     email_input_placeholder: "Votre adresse email",
                     link_text: "Vous n'avez pas de compte ? Inscrivez-vous",
                   },
