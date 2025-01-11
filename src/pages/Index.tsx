@@ -10,76 +10,65 @@ const Index = () => {
 
   const handleDownloadQuestionnaire = async () => {
     try {
-      // First check if the file exists
-      const { data: fileExists, error: listError } = await supabase.storage
-        .from('questionnaires')
-        .list('', {
-          limit: 1,
-          search: 'questionnaire.xlsx'
-        });
-
-      console.log('Checking if file exists:', fileExists);
-
-      if (listError) {
-        console.error('Error checking file existence:', listError);
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
         toast({
           variant: "destructive",
-          title: "Erreur",
-          description: "Impossible de vérifier la disponibilité du questionnaire.",
+          title: "Connexion requise",
+          description: "Veuillez vous connecter pour télécharger le questionnaire.",
         });
+        navigate("/auth");
         return;
       }
 
-      if (!fileExists || fileExists.length === 0) {
-        console.error('File not found in bucket');
-        toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "Le questionnaire n'est pas disponible pour le moment.",
-        });
-        return;
+      console.log('Tentative de téléchargement du questionnaire...');
+      
+      const response = await fetch(
+        'https://zxytckmvmvtfcihnhlbj.supabase.co/functions/v1/download-questionnaire',
+        {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Erreur lors du téléchargement');
       }
 
-      // If file exists, proceed with download
-      const { data, error: downloadError } = await supabase.storage
-        .from('questionnaires')
-        .download('questionnaire.xlsx');
-
-      if (downloadError) {
-        console.error('Error downloading file:', downloadError);
-        toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "Impossible de télécharger le questionnaire.",
-        });
-        return;
-      }
-
-      // Create and trigger download
-      const url = URL.createObjectURL(data);
+      // Récupérer le blob
+      const blob = await response.blob();
+      
+      // Créer un URL pour le téléchargement
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = 'questionnaire-directives-anticipees.xlsx';
+      link.download = "questionnaire-directives-anticipees.xlsx";
+      
+      // Déclencher le téléchargement
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      
+      // Nettoyer l'URL
+      window.URL.revokeObjectURL(url);
 
-      console.log('Download completed successfully');
+      console.log('Téléchargement réussi');
       
       toast({
         title: "Succès",
         description: "Le questionnaire a été téléchargé avec succès.",
       });
 
-      // Navigate to dashboard after successful download
       navigate("/dashboard");
     } catch (error) {
-      console.error('Unexpected error:', error);
+      console.error('Erreur lors du téléchargement:', error);
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Une erreur inattendue est survenue.",
+        description: error.message || "Une erreur est survenue lors du téléchargement.",
       });
     }
   };
