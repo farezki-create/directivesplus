@@ -23,8 +23,20 @@ export const useDownloadQuestionnaire = () => {
         return;
       }
 
-      console.log('Converting Excel to CSV and downloading...');
+      console.log('Converting Excel to CSV...');
       
+      // Appeler l'Edge Function pour convertir Excel en CSV
+      const { data: conversionData, error: conversionError } = await supabase.functions
+        .invoke('convert-to-csv');
+
+      if (conversionError) {
+        console.error('Conversion error:', conversionError);
+        throw new Error('Erreur lors de la conversion du questionnaire');
+      }
+
+      console.log('Conversion successful, downloading CSV...');
+      
+      // Télécharger le fichier CSV
       const { data, error } = await supabase.storage
         .from('questionnaires')
         .download('questionnaire.csv');
