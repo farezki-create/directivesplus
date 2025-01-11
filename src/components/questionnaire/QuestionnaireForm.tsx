@@ -7,24 +7,19 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { GeneralOpinion } from "./sections/GeneralOpinion";
 import { OtherDirectives } from "./sections/OtherDirectives";
+import { LifeSupport } from "./sections/LifeSupport";
+import { PainRelief } from "./sections/PainRelief";
+import { LetDie } from "./sections/LetDie";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown } from "lucide-react";
 
 type QuestionnaireData = {
   medicalDirectives: {
-    generalOpinion: {
-      artificialLife: boolean;
-      organDonation: boolean;
-      palliativeCare: boolean;
-    };
-    otherDirectives: {
-      resuscitation: boolean;
-      artificialNutrition: boolean;
-      painManagement: boolean;
-    };
-    lifeSupport: string;
-    painRelief: string;
-    letDie: string;
+    generalOpinion: Record<string, boolean>;
+    otherDirectives: Record<string, boolean>;
+    lifeSupport: Record<string, boolean>;
+    painRelief: Record<string, boolean>;
+    letDie: Record<string, boolean>;
   };
 };
 
@@ -52,8 +47,8 @@ export const QuestionnaireForm = () => {
         .from('advance_directives')
         .upsert([{
           user_id: session.user.id,
-          general_opinion: data.medicalDirectives.generalOpinion.artificialLife,
-          other_directives: data.medicalDirectives.otherDirectives.resuscitation,
+          general_opinion: JSON.stringify(data.medicalDirectives.generalOpinion),
+          other_directives: JSON.stringify(data.medicalDirectives.otherDirectives),
           life_support: JSON.stringify(data.medicalDirectives.lifeSupport),
           pain_relief: JSON.stringify(data.medicalDirectives.painRelief),
           let_die: JSON.stringify(data.medicalDirectives.letDie),
@@ -93,17 +88,17 @@ export const QuestionnaireForm = () => {
     {
       id: "life",
       title: "Maintien de la vie",
-      content: <div className="space-y-4">{/* Life support content */}</div>
+      content: <LifeSupport form={form} />
     },
     {
       id: "pain",
       title: "Allégement des souffrances",
-      content: <div className="space-y-4">{/* Pain relief content */}</div>
+      content: <PainRelief form={form} />
     },
     {
       id: "die",
       title: "Privilégier le laisser mourir",
-      content: <div className="space-y-4">{/* Let die content */}</div>
+      content: <LetDie form={form} />
     }
   ];
 
