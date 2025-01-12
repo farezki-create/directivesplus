@@ -4,6 +4,9 @@ import { UseFormReturn } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { RefreshCw } from "lucide-react";
 
 interface OtherDirectivesProps {
   form: UseFormReturn<any>;
@@ -41,11 +44,42 @@ const fetchOtherDirectivesQuestions = async () => {
   return uniqueQuestions;
 };
 
+const updateQuestionsFromExcel = async () => {
+  console.log("Updating questions from Excel...");
+  const { data, error } = await supabase.functions.invoke('read-excel-questions');
+  
+  if (error) {
+    console.error("Error updating questions:", error);
+    throw error;
+  }
+  
+  return data;
+};
+
 export const OtherDirectives = ({ form }: OtherDirectivesProps) => {
-  const { data: questions, isLoading, error } = useQuery({
+  const { toast } = useToast();
+  const { data: questions, isLoading, error, refetch } = useQuery({
     queryKey: ['otherDirectivesQuestions'],
     queryFn: fetchOtherDirectivesQuestions,
   });
+
+  const handleUpdateQuestions = async () => {
+    try {
+      await updateQuestionsFromExcel();
+      await refetch();
+      toast({
+        title: "Succès",
+        description: "Les questions ont été mises à jour avec succès.",
+      });
+    } catch (error) {
+      console.error("Error updating questions:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la mise à jour des questions.",
+      });
+    }
+  };
 
   console.log("Component state:", { questions, isLoading, error });
 
@@ -73,12 +107,34 @@ export const OtherDirectives = ({ form }: OtherDirectivesProps) => {
     return (
       <div className="text-muted-foreground">
         Aucune question n'a été trouvée pour cette section.
+        <Button
+          onClick={handleUpdateQuestions}
+          variant="outline"
+          size="sm"
+          className="ml-2"
+        >
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Mettre à jour les questions
+        </Button>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div className="text-sm text-muted-foreground">
+          {questions.length} question{questions.length > 1 ? 's' : ''}
+        </div>
+        <Button
+          onClick={handleUpdateQuestions}
+          variant="outline"
+          size="sm"
+        >
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Mettre à jour
+        </Button>
+      </div>
       <div className="space-y-4">
         {questions.map((question) => (
           <FormField
