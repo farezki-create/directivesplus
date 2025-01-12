@@ -129,28 +129,6 @@ export const QuestionnaireForm = () => {
               </p>
             )}
 
-            {/* Horizontal navigation */}
-            <div className="flex overflow-x-auto gap-2 p-4 bg-muted/10 rounded-lg mb-6">
-              {sections.map((section, index) => (
-                <button
-                  key={section.id}
-                  onClick={() => handleSectionClick(section.id)}
-                  className={`flex-shrink-0 px-4 py-2 rounded-md transition-colors relative ${
-                    openSection === section.id
-                      ? 'bg-primary text-primary-foreground'
-                      : 'hover:bg-muted'
-                  }`}
-                >
-                  <span className="flex items-center gap-2">
-                    <span className="w-6 h-6 flex items-center justify-center rounded-full border">
-                      {index + 1}
-                    </span>
-                    {section.title}
-                  </span>
-                </button>
-              ))}
-            </div>
-
             <div className="grid gap-4">
               {sections.map((section) => (
                 <QuestionnaireSection
