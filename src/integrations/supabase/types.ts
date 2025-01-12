@@ -87,6 +87,30 @@ export type Database = {
         }
         Relationships: []
       }
+      questionnaire_questions: {
+        Row: {
+          id: string
+          question_text: string
+          category: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          question_text: string
+          category: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          question_text?: string
+          category?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -107,8 +131,6 @@ export type Database = {
     }
   }
 }
-
-type PublicSchema = Database[Extract<keyof Database, "public">]
 
 export type Tables<
   PublicTableNameOrOptions extends
@@ -134,6 +156,8 @@ export type Tables<
       ? R
       : never
     : never
+
+type PublicSchema = Database[Extract<keyof Database, "public">]
 
 export type TablesInsert<
   PublicTableNameOrOptions extends

@@ -4,15 +4,12 @@ import { UseFormReturn } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Database } from "@/integrations/supabase/types";
+
+type Question = Database['public']['Tables']['questionnaire_questions']['Row'];
 
 interface GeneralOpinionProps {
   form: UseFormReturn<any>;
-}
-
-interface Question {
-  id: string;
-  question_text: string;
-  category: string;
 }
 
 const fetchGeneralOpinionQuestions = async () => {

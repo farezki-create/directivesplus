@@ -7,15 +7,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { RefreshCw } from "lucide-react";
+import { Database } from "@/integrations/supabase/types";
+
+type Question = Database['public']['Tables']['questionnaire_questions']['Row'];
 
 interface OtherDirectivesProps {
   form: UseFormReturn<any>;
-}
-
-interface Question {
-  id: string;
-  question_text: string;
-  category: string;
 }
 
 const fetchOtherDirectivesQuestions = async () => {
