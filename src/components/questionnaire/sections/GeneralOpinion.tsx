@@ -28,8 +28,10 @@ const fetchGeneralOpinionQuestions = async () => {
     throw error;
   }
   
-  console.log("Fetched general opinion questions:", data);
-  return data as Question[];
+  // Filter out questions with empty question_text
+  const validQuestions = data?.filter(q => q.question_text?.trim()) || [];
+  console.log("Fetched general opinion questions:", validQuestions);
+  return validQuestions as Question[];
 };
 
 export const GeneralOpinion = ({ form }: GeneralOpinionProps) => {
@@ -112,7 +114,7 @@ export const GeneralOpinion = ({ form }: GeneralOpinionProps) => {
       </div>
 
       <div className="space-y-4">
-        {questions?.map((question) => (
+        {questions.map((question) => (
           <FormField
             key={question.id}
             control={form.control}
