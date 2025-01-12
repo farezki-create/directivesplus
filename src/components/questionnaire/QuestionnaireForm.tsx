@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
@@ -10,9 +10,8 @@ import { OtherDirectives } from "./sections/OtherDirectives";
 import { LifeSupport } from "./sections/LifeSupport";
 import { PainRelief } from "./sections/PainRelief";
 import { LetDie } from "./sections/LetDie";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, Home } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { QuestionnaireHeader } from "./components/QuestionnaireHeader";
+import { QuestionnaireSection } from "./components/QuestionnaireSection";
 
 type QuestionnaireData = {
   medicalDirectives: {
@@ -28,7 +27,6 @@ export const QuestionnaireForm = () => {
   const form = useForm<QuestionnaireData>();
   const { toast } = useToast();
   const [openSection, setOpenSection] = React.useState<string | null>(null);
-  const navigate = useNavigate();
 
   const onSubmit = async (data: QuestionnaireData) => {
     try {
@@ -47,14 +45,14 @@ export const QuestionnaireForm = () => {
 
       const { error } = await supabase
         .from('advance_directives')
-        .upsert({
+        .upsert([{
           user_id: session.user.id,
           general_opinion: data.medicalDirectives.generalOpinion,
           other_directives: data.medicalDirectives.otherDirectives,
           life_support: JSON.stringify(data.medicalDirectives.lifeSupport),
           pain_relief: JSON.stringify(data.medicalDirectives.painRelief),
           let_die: JSON.stringify(data.medicalDirectives.letDie),
-        });
+        }]);
 
       if (error) throw error;
       
@@ -112,18 +110,7 @@ export const QuestionnaireForm = () => {
             ? 'fixed inset-0 z-50 rounded-none overflow-hidden' 
             : 'max-w-4xl mx-auto shadow-lg'
         }`}>
-          <CardHeader className="sticky top-0 bg-white z-50 border-b px-6">
-            <div className="flex items-center justify-between">
-              <CardTitle>Directives anticipées</CardTitle>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => navigate("/")}
-              >
-                <Home className="h-5 w-5" />
-              </Button>
-            </div>
-          </CardHeader>
+          <QuestionnaireHeader />
           
           <CardContent className={`${openSection ? 'p-0 h-[calc(100vh-4rem)] overflow-auto' : 'p-6'}`}>
             {!openSection && (
@@ -135,31 +122,14 @@ export const QuestionnaireForm = () => {
 
             <div className="grid gap-4">
               {sections.map((section) => (
-                <Collapsible
+                <QuestionnaireSection
                   key={section.id}
-                  open={openSection === section.id}
-                  onOpenChange={() => handleSectionClick(section.id)}
-                  className={`transition-all duration-300 ${
-                    openSection === section.id 
-                      ? 'fixed inset-0 z-50 bg-white overflow-auto pt-20' 
-                      : 'relative border rounded-lg hover:border-primary/50 shadow-sm hover:shadow-md'
-                  }`}
-                >
-                  <CollapsibleTrigger className={`w-full flex items-center justify-between p-4 ${
-                    openSection === section.id ? 'fixed top-20 left-0 right-0 bg-white z-50 border-b px-6' : ''
-                  }`}>
-                    <span className="text-lg font-semibold">{section.title}</span>
-                    <ChevronDown className={`h-5 w-5 transition-transform duration-300 ease-in-out text-primary ${
-                      openSection === section.id ? 'transform rotate-180' : ''
-                    }`} />
-                  </CollapsibleTrigger>
-                  
-                  <CollapsibleContent className={`transition-all duration-300 ${
-                    openSection === section.id ? 'px-6 pb-6 pt-16' : 'p-4'
-                  }`}>
-                    {section.content}
-                  </CollapsibleContent>
-                </Collapsible>
+                  id={section.id}
+                  title={section.title}
+                  content={section.content}
+                  isOpen={openSection === section.id}
+                  onOpenChange={handleSectionClick}
+                />
               ))}
             </div>
 
