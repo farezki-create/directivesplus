@@ -17,15 +17,30 @@ export const UpdateQuestionsButton = ({
 
   const handleUpdateQuestions = async () => {
     try {
-      const { error } = await supabase.functions.invoke('read-csv-questions');
+      console.log('Calling read-csv-questions function...');
+      const { data, error } = await supabase.functions.invoke('read-csv-questions');
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error from read-csv-questions:', error);
+        throw error;
+      }
+
+      console.log('Response from read-csv-questions:', data);
+      
+      if (data.count === 0) {
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Aucune question n'a été trouvée dans le fichier CSV.",
+        });
+        return;
+      }
       
       await onUpdate();
       
       toast({
         title: "Succès",
-        description: "Les questions ont été mises à jour avec succès.",
+        description: `${data.count} questions ont été mises à jour avec succès.`,
       });
     } catch (error) {
       console.error("Error updating questions:", error);

@@ -35,7 +35,7 @@ serve(async (req) => {
 
     // Convert the blob to text
     const text = await storageData.text()
-    console.log('CSV content retrieved')
+    console.log('CSV content:', text)
     
     try {
       // Parse CSV
@@ -91,10 +91,13 @@ serve(async (req) => {
         throw insertError
       }
 
+      console.log('Successfully inserted questions:', dataRows)
+
       return new Response(
         JSON.stringify({ 
           message: 'Questions updated successfully',
-          count: dataRows.length 
+          count: dataRows.length,
+          questions: dataRows
         }),
         { 
           headers: { 
