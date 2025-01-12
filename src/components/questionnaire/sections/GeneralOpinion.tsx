@@ -1,67 +1,21 @@
-import { FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { UseFormReturn } from "react-hook-form";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Database } from "@/integrations/supabase/types";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-import { RefreshCw } from "lucide-react";
-
-type Question = Database['public']['Tables']['questionnaire_questions']['Row'];
+import { UpdateQuestionsButton } from "../components/UpdateQuestionsButton";
+import { QuestionOptions } from "../components/QuestionOptions";
+import { useQuestionnaireQuestions } from "@/hooks/useQuestionnaireQuestions";
 
 interface GeneralOpinionProps {
   form: UseFormReturn<any>;
 }
 
-const fetchGeneralOpinionQuestions = async () => {
-  console.log("Fetching general opinion questions...");
-  const { data, error } = await supabase
-    .from('questionnaire_questions')
-    .select('*')
-    .eq('category', 'general_opinion')
-    .order('created_at', { ascending: true });
-    
-  if (error) {
-    console.error("Error fetching general opinion questions:", error);
-    throw error;
-  }
-  
-  // Filter out questions with empty question_text
-  const validQuestions = data?.filter(q => q.question_text?.trim()) || [];
-  console.log("Fetched general opinion questions:", validQuestions);
-  return validQuestions as Question[];
-};
-
 export const GeneralOpinion = ({ form }: GeneralOpinionProps) => {
-  const { toast } = useToast();
-  const { data: questions, isLoading, error, refetch } = useQuery({
-    queryKey: ['generalOpinionQuestions'],
-    queryFn: fetchGeneralOpinionQuestions,
-  });
-
-  const handleUpdateQuestions = async () => {
-    try {
-      const { error } = await supabase.functions.invoke('read-csv-questions');
-      
-      if (error) throw error;
-      
-      await refetch();
-      
-      toast({
-        title: "Succès",
-        description: "Les questions ont été mises à jour avec succès.",
-      });
-    } catch (error) {
-      console.error("Error updating questions:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la mise à jour des questions.",
-      });
-    }
-  };
+  const { 
+    data: questions, 
+    isLoading, 
+    error, 
+    refetch 
+  } = useQuestionnaireQuestions('general_opinion');
 
   if (isLoading) {
     return (
@@ -89,13 +43,7 @@ export const GeneralOpinion = ({ form }: GeneralOpinionProps) => {
         <div className="text-muted-foreground">
           Aucune question n'a été trouvée pour cette section.
         </div>
-        <Button 
-          onClick={handleUpdateQuestions}
-          className="flex items-center gap-2"
-        >
-          <RefreshCw className="h-4 w-4" />
-          Mettre à jour les questions
-        </Button>
+        <UpdateQuestionsButton onUpdate={refetch} />
       </div>
     );
   }
@@ -103,14 +51,7 @@ export const GeneralOpinion = ({ form }: GeneralOpinionProps) => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <Button 
-          onClick={handleUpdateQuestions}
-          variant="outline"
-          className="flex items-center gap-2"
-        >
-          <RefreshCw className="h-4 w-4" />
-          Mettre à jour les questions
-        </Button>
+        <UpdateQuestionsButton onUpdate={refetch} />
       </div>
 
       <div className="space-y-4">
@@ -122,80 +63,7 @@ export const GeneralOpinion = ({ form }: GeneralOpinionProps) => {
             render={({ field }) => (
               <FormItem className="space-y-3">
                 <FormLabel>{question.question_text}</FormLabel>
-                <FormControl>
-                  <RadioGroup
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    className="flex flex-col space-y-1"
-                  >
-                    {question.indecision && (
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="indecision" />
-                        </FormControl>
-                        <FormLabel className="font-normal">Indécision</FormLabel>
-                      </FormItem>
-                    )}
-                    {question.plutot_oui && (
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="plutot_oui" />
-                        </FormControl>
-                        <FormLabel className="font-normal">Plutôt oui</FormLabel>
-                      </FormItem>
-                    )}
-                    {question.plutot_oui_duree_moderee && (
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="plutot_oui_duree_moderee" />
-                        </FormControl>
-                        <FormLabel className="font-normal">
-                          Plutôt oui, pour une durée modérée
-                        </FormLabel>
-                      </FormItem>
-                    )}
-                    {question.oui_si_equipe_medicale && (
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="oui_si_equipe_medicale" />
-                        </FormControl>
-                        <FormLabel className="font-normal">
-                          Oui, si l'équipe médicale le juge utile
-                        </FormLabel>
-                      </FormItem>
-                    )}
-                    {question.plutot_non_rapidement && (
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="plutot_non_rapidement" />
-                        </FormControl>
-                        <FormLabel className="font-normal">
-                          Plutôt non, rapidement
-                        </FormLabel>
-                      </FormItem>
-                    )}
-                    {question.non_sauf_equipe_medicale && (
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="non_sauf_equipe_medicale" />
-                        </FormControl>
-                        <FormLabel className="font-normal">
-                          Non, sauf si l'équipe médicale le juge utile
-                        </FormLabel>
-                      </FormItem>
-                    )}
-                    {question.plutot_non_non_souffrance && (
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="plutot_non_non_souffrance" />
-                        </FormControl>
-                        <FormLabel className="font-normal">
-                          Plutôt non, privilégier la non souffrance
-                        </FormLabel>
-                      </FormItem>
-                    )}
-                  </RadioGroup>
-                </FormControl>
+                <QuestionOptions question={question} field={field} />
               </FormItem>
             )}
           />
