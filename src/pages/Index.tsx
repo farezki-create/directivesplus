@@ -1,11 +1,18 @@
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/home/Hero";
 import { Features } from "@/components/home/Features";
-import { useNavigate } from "react-router-dom";
+import { QuestionnaireForm } from "@/components/questionnaire/QuestionnaireForm";
+import { useDownloadQuestionnaire } from "@/components/home/DownloadButton";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { useState } from "react";
 
 const Index = () => {
-  const navigate = useNavigate();
-  const handleStart = () => navigate("/questionnaire");
+  const handleDownload = useDownloadQuestionnaire();
+  const [showQuestionnaire, setShowQuestionnaire] = useState(false);
+
+  const handleStart = () => {
+    setShowQuestionnaire(true);
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -14,6 +21,12 @@ const Index = () => {
       <main className="flex-1 container mx-auto px-4 py-8">
         <Hero onDownload={handleStart} />
         <Features />
+
+        <Dialog open={showQuestionnaire} onOpenChange={setShowQuestionnaire}>
+          <DialogContent className="max-w-4xl">
+            <QuestionnaireForm />
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
   );

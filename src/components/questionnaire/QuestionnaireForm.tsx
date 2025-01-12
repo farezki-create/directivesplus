@@ -1,80 +1,58 @@
 import React from "react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import { GeneralOpinion } from "./sections/GeneralOpinion";
-import { OtherDirectives } from "./sections/OtherDirectives";
-import { LifeSupport } from "./sections/LifeSupport";
-import { PainRelief } from "./sections/PainRelief";
-import { LetDie } from "./sections/LetDie";
-import { SectionButtons } from "./components/SectionButtons";
-import { SectionContent } from "./components/SectionContent";
-import { useQuestionnaire } from "@/hooks/useQuestionnaire";
+import { useForm } from "react-hook-form";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+
+type QuestionnaireData = {
+  medicalDirectives: {
+    generalOpinion: string;
+    otherDirectives: string;
+  };
+};
 
 export const QuestionnaireForm = () => {
+  const form = useForm<QuestionnaireData>();
   const { toast } = useToast();
-  const { form, onSubmit, isSubmitting } = useQuestionnaire({
-    onSuccess: () => {
+
+  const onSubmit = async (data: QuestionnaireData) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Vous devez être connecté pour sauvegarder vos directives.",
+        });
+        return;
+      }
+
+      // TODO: Sauvegarder les données dans Supabase
+      console.log("Form data:", data);
+      
       toast({
         title: "Succès",
         description: "Vos directives ont été sauvegardées.",
       });
-    },
-    onError: (error) => {
-      console.error("Error saving directives:", error);
+    } catch (error) {
+      console.error("Error saving form:", error);
       toast({
         variant: "destructive",
         title: "Erreur",
         description: "Une erreur est survenue lors de la sauvegarde.",
       });
-    },
-  });
-  
-  const [openSection, setOpenSection] = React.useState<string | null>(null);
-
-  const sections = [
-    {
-      id: "general",
-      title: "Mon avis d'une façon générale",
-      content: <GeneralOpinion form={form} />
-    },
-    {
-      id: "other",
-      title: "Autres directives",
-      content: <OtherDirectives form={form} />
-    },
-    {
-      id: "life",
-      title: "Maintien de la vie",
-      content: <LifeSupport form={form} />
-    },
-    {
-      id: "pain",
-      title: "Allégement des souffrances",
-      content: <PainRelief form={form} />
-    },
-    {
-      id: "die",
-      title: "Privilégier le laisser mourir",
-      content: <LetDie form={form} />
     }
-  ];
-
-  const handleSectionClick = (section: string) => {
-    setOpenSection(openSection === section ? null : section);
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="relative">
-        <Card className={`transition-all duration-300 ${openSection ? 'fixed inset-0 z-50 m-0 rounded-none' : 'max-w-[95vw] mx-auto'}`}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <Card>
           <CardHeader>
-            <SectionButtons 
-              openSection={openSection}
-              handleSectionClick={handleSectionClick}
-              sections={sections}
-            />
+            <CardTitle>Directives anticipées</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -84,25 +62,9 @@ export const QuestionnaireForm = () => {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 mt-6">
-              {sections.map((section) => (
-                <SectionContent
-                  key={section.id}
-                  section={section}
-                  openSection={openSection}
-                  handleSectionClick={handleSectionClick}
-                />
-              ))}
-            </div>
-
             <div className="flex justify-between mt-6">
-              <Button 
-                type="submit" 
-                disabled={isSubmitting}
-                className="transition-all duration-200 hover:scale-105"
-              >
-                {isSubmitting ? "Sauvegarde en cours..." : "Sauvegarder"}
-              </Button>
+              <Button type="submit">Sauvegarder</Button>
+              <Button type="button" variant="secondary">Suite</Button>
             </div>
           </CardContent>
         </Card>

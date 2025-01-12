@@ -46,26 +46,8 @@ export const DirectivesForm = () => {
 
   return (
     <Card className="p-6 max-w-2xl mx-auto">
-      <div className="flex items-center justify-center gap-4 mb-6">
-        <Button
-          variant="outline"
-          onClick={prevStep}
-          disabled={step === 1}
-          className="w-32"
-        >
-          Précédent
-        </Button>
-        <Button
-          onClick={nextStep}
-          disabled={step === 3}
-          className="w-32"
-        >
-          Suivant
-        </Button>
-      </div>
-
       <Progress value={progress} className="mb-6" />
-
+      
       {step === 1 && (
         <div className="space-y-4">
           <h2 className="text-2xl font-bold">Informations personnelles</h2>
@@ -199,6 +181,22 @@ export const DirectivesForm = () => {
           </div>
         </div>
       )}
+
+      <div className="flex justify-between mt-6">
+        <Button
+          variant="outline"
+          onClick={prevStep}
+          disabled={step === 1}
+        >
+          Précédent
+        </Button>
+        <Button
+          onClick={nextStep}
+          disabled={step === 3}
+        >
+          Suivant
+        </Button>
+      </div>
     </Card>
   );
 };
