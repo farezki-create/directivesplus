@@ -107,8 +107,8 @@ export const QuestionnaireForm = () => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="relative">
-        <Card className={`transition-all duration-300 ${openSection ? 'fixed inset-0 z-50 m-0 rounded-none' : 'max-w-[95vw] mx-auto'}`}>
-          <CardHeader className="flex flex-row items-center justify-between">
+        <Card className={`transition-all duration-300 ${openSection ? 'fixed inset-0 z-50 m-0 rounded-none overflow-auto' : 'max-w-[95vw] mx-auto'}`}>
+          <CardHeader className="flex flex-row items-center justify-between sticky top-0 bg-white z-50 border-b">
             <CardTitle>Directives anticipées</CardTitle>
             <Button
               variant="ghost"
@@ -119,8 +119,8 @@ export const QuestionnaireForm = () => {
               <Home className="h-5 w-5" />
             </Button>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
+          <CardContent className={openSection ? 'p-0' : ''}>
+            <div className={`space-y-4 ${openSection ? 'h-[calc(100vh-4rem)]' : ''}`}>
               <p className="text-muted-foreground">
                 Vos informations personnelles sont déjà enregistrées dans votre profil. 
                 Vous pouvez maintenant renseigner vos directives médicales.
@@ -135,7 +135,7 @@ export const QuestionnaireForm = () => {
                   onOpenChange={() => handleSectionClick(section.id)}
                   className={`transition-all duration-300 ${
                     openSection === section.id 
-                      ? 'fixed inset-0 z-50 bg-white overflow-auto p-6' 
+                      ? 'fixed inset-0 z-50 bg-white' 
                       : 'relative border rounded-lg p-4 hover:border-primary/50 shadow-sm hover:shadow-md'
                   }`}
                 >
@@ -145,7 +145,9 @@ export const QuestionnaireForm = () => {
                       openSection === section.id ? 'transform rotate-180' : ''
                     }`} />
                   </CollapsibleTrigger>
-                  <CollapsibleContent className="pt-4 transition-all duration-300">
+                  <CollapsibleContent className={`transition-all duration-300 ${
+                    openSection === section.id ? 'p-6 pt-4 h-[calc(100vh-8rem)] overflow-y-auto' : 'pt-4'
+                  }`}>
                     <div className="border-t pt-4">
                       {section.content}
                     </div>
