@@ -11,7 +11,8 @@ import { LifeSupport } from "./sections/LifeSupport";
 import { PainRelief } from "./sections/PainRelief";
 import { LetDie } from "./sections/LetDie";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Home } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 type QuestionnaireData = {
   medicalDirectives: {
@@ -27,6 +28,7 @@ export const QuestionnaireForm = () => {
   const form = useForm<QuestionnaireData>();
   const { toast } = useToast();
   const [openSection, setOpenSection] = React.useState<string | null>(null);
+  const navigate = useNavigate();
 
   const onSubmit = async (data: QuestionnaireData) => {
     try {
@@ -104,10 +106,18 @@ export const QuestionnaireForm = () => {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <Card className="max-w-[95vw] mx-auto">
-          <CardHeader>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="relative">
+        <Card className={`transition-all duration-300 ${openSection ? 'fixed inset-0 z-50 m-0 rounded-none' : 'max-w-[95vw] mx-auto'}`}>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Directives anticipées</CardTitle>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/")}
+              className="ml-auto"
+            >
+              <Home className="h-5 w-5" />
+            </Button>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -123,10 +133,10 @@ export const QuestionnaireForm = () => {
                   key={section.id}
                   open={openSection === section.id}
                   onOpenChange={() => handleSectionClick(section.id)}
-                  className={`border rounded-lg transition-all duration-300 ${
+                  className={`transition-all duration-300 ${
                     openSection === section.id 
-                      ? 'bg-white shadow-lg p-6' 
-                      : 'p-4 hover:border-primary/50 shadow-sm hover:shadow-md'
+                      ? 'fixed inset-0 z-50 bg-white overflow-auto p-6' 
+                      : 'relative border rounded-lg p-4 hover:border-primary/50 shadow-sm hover:shadow-md'
                   }`}
                 >
                   <CollapsibleTrigger className="w-full flex items-center justify-between font-semibold group">
@@ -147,9 +157,6 @@ export const QuestionnaireForm = () => {
             <div className="flex justify-between mt-6">
               <Button type="submit" className="transition-all duration-200 hover:scale-105">
                 Sauvegarder
-              </Button>
-              <Button type="button" variant="secondary" className="transition-all duration-200 hover:scale-105">
-                Suite
               </Button>
             </div>
           </CardContent>
