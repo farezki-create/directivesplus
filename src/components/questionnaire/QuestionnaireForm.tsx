@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
@@ -10,9 +10,8 @@ import { OtherDirectives } from "./sections/OtherDirectives";
 import { LifeSupport } from "./sections/LifeSupport";
 import { PainRelief } from "./sections/PainRelief";
 import { LetDie } from "./sections/LetDie";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, Home } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { SectionButtons } from "./components/SectionButtons";
+import { SectionContent } from "./components/SectionContent";
 
 type QuestionnaireData = {
   medicalDirectives: {
@@ -28,7 +27,38 @@ export const QuestionnaireForm = () => {
   const form = useForm<QuestionnaireData>();
   const { toast } = useToast();
   const [openSection, setOpenSection] = React.useState<string | null>(null);
-  const navigate = useNavigate();
+
+  const sections = [
+    {
+      id: "general",
+      title: "Mon avis d'une façon générale",
+      content: <GeneralOpinion form={form} />
+    },
+    {
+      id: "other",
+      title: "Autres directives",
+      content: <OtherDirectives form={form} />
+    },
+    {
+      id: "life",
+      title: "Maintien de la vie",
+      content: <LifeSupport form={form} />
+    },
+    {
+      id: "pain",
+      title: "Allégement des souffrances",
+      content: <PainRelief form={form} />
+    },
+    {
+      id: "die",
+      title: "Privilégier le laisser mourir",
+      content: <LetDie form={form} />
+    }
+  ];
+
+  const handleSectionClick = (section: string) => {
+    setOpenSection(openSection === section ? null : section);
+  };
 
   const onSubmit = async (data: QuestionnaireData) => {
     try {
@@ -75,52 +105,16 @@ export const QuestionnaireForm = () => {
     }
   };
 
-  const handleSectionClick = (section: string) => {
-    setOpenSection(openSection === section ? null : section);
-  };
-
-  const sections = [
-    {
-      id: "general",
-      title: "Mon avis d'une façon générale",
-      content: <GeneralOpinion form={form} />
-    },
-    {
-      id: "other",
-      title: "Autres directives",
-      content: <OtherDirectives form={form} />
-    },
-    {
-      id: "life",
-      title: "Maintien de la vie",
-      content: <LifeSupport form={form} />
-    },
-    {
-      id: "pain",
-      title: "Allégement des souffrances",
-      content: <PainRelief form={form} />
-    },
-    {
-      id: "die",
-      title: "Privilégier le laisser mourir",
-      content: <LetDie form={form} />
-    }
-  ];
-
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="relative">
         <Card className={`transition-all duration-300 ${openSection ? 'fixed inset-0 z-50 m-0 rounded-none' : 'max-w-[95vw] mx-auto'}`}>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Directives anticipées</CardTitle>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate("/")}
-              className="ml-auto"
-            >
-              <Home className="h-5 w-5" />
-            </Button>
+          <CardHeader>
+            <SectionButtons 
+              openSection={openSection}
+              handleSectionClick={handleSectionClick}
+              sections={sections}
+            />
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -132,28 +126,12 @@ export const QuestionnaireForm = () => {
 
             <div className="grid grid-cols-1 gap-4 mt-6">
               {sections.map((section) => (
-                <Collapsible
+                <SectionContent
                   key={section.id}
-                  open={openSection === section.id}
-                  onOpenChange={() => handleSectionClick(section.id)}
-                  className={`transition-all duration-300 ${
-                    openSection === section.id 
-                      ? 'fixed inset-0 z-50 bg-white overflow-auto p-6' 
-                      : 'relative border rounded-lg p-4 hover:border-primary/50 shadow-sm hover:shadow-md'
-                  }`}
-                >
-                  <CollapsibleTrigger className="w-full flex items-center justify-between font-semibold group">
-                    <span className="text-lg">{section.title}</span>
-                    <ChevronDown className={`h-5 w-5 transition-transform duration-300 ease-in-out text-primary ${
-                      openSection === section.id ? 'transform rotate-180' : ''
-                    }`} />
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="pt-4 transition-all duration-300">
-                    <div className="border-t pt-4">
-                      {section.content}
-                    </div>
-                  </CollapsibleContent>
-                </Collapsible>
+                  section={section}
+                  openSection={openSection}
+                  handleSectionClick={handleSectionClick}
+                />
               ))}
             </div>
 
