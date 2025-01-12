@@ -43,21 +43,16 @@ export const QuestionnaireForm = () => {
         return;
       }
 
-      // Convert Record<string, boolean> to a single boolean value
-      // We'll consider it true if any answer is true
-      const hasPositiveGeneralOpinion = Object.values(data.medicalDirectives.generalOpinion).some(value => value === true);
-      const hasPositiveOtherDirectives = Object.values(data.medicalDirectives.otherDirectives).some(value => value === true);
-
       const { error } = await supabase
         .from('advance_directives')
-        .upsert({
+        .upsert([{
           user_id: session.user.id,
-          general_opinion: hasPositiveGeneralOpinion,
-          other_directives: hasPositiveOtherDirectives,
+          general_opinion: data.medicalDirectives.generalOpinion,
+          other_directives: data.medicalDirectives.otherDirectives,
           life_support: JSON.stringify(data.medicalDirectives.lifeSupport),
           pain_relief: JSON.stringify(data.medicalDirectives.painRelief),
           let_die: JSON.stringify(data.medicalDirectives.letDie),
-        });
+        }]);
 
       if (error) throw error;
       
