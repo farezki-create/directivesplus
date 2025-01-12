@@ -14,8 +14,8 @@ export type Database = {
           category: Database["public"]["Enums"]["question_category"]
           created_at: string
           id: string
-          NON: number | null
-          OUI: number | null
+          NON: boolean | null
+          OUI: boolean | null
           Question: string
           type: Database["public"]["Enums"]["question_type"]
           updated_at: string
@@ -24,8 +24,8 @@ export type Database = {
           category?: Database["public"]["Enums"]["question_category"]
           created_at?: string
           id?: string
-          NON?: number | null
-          OUI?: number | null
+          NON?: boolean | null
+          OUI?: boolean | null
           Question: string
           type?: Database["public"]["Enums"]["question_type"]
           updated_at?: string
@@ -34,8 +34,8 @@ export type Database = {
           category?: Database["public"]["Enums"]["question_category"]
           created_at?: string
           id?: string
-          NON?: number | null
-          OUI?: number | null
+          NON?: boolean | null
+          OUI?: boolean | null
           Question?: string
           type?: Database["public"]["Enums"]["question_type"]
           updated_at?: string
