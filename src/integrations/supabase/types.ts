@@ -9,6 +9,27 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      questionnaire_questions: {
+        Row: {
+          id: number
+          NON: boolean | null
+          OUI: boolean | null
+          Question: string
+        }
+        Insert: {
+          id?: number
+          NON?: boolean | null
+          OUI?: boolean | null
+          Question: string
+        }
+        Update: {
+          id?: number
+          NON?: boolean | null
+          OUI?: boolean | null
+          Question?: string
+        }
+        Relationships: []
+      }
       questionnaires: {
         Row: {
           content_type: string | null
@@ -50,31 +71,31 @@ export type Database = {
           category: Database["public"]["Enums"]["question_category"]
           created_at: string
           id: string
-          no_count: number | null
-          question: string
+          NON: number | null
+          OUI: number | null
+          Question: string
           type: Database["public"]["Enums"]["question_type"]
           updated_at: string
-          yes_count: number | null
         }
         Insert: {
-          category: Database["public"]["Enums"]["question_category"]
+          category?: Database["public"]["Enums"]["question_category"]
           created_at?: string
           id?: string
-          no_count?: number | null
-          question: string
+          NON?: number | null
+          OUI?: number | null
+          Question: string
           type?: Database["public"]["Enums"]["question_type"]
           updated_at?: string
-          yes_count?: number | null
         }
         Update: {
           category?: Database["public"]["Enums"]["question_category"]
           created_at?: string
           id?: string
-          no_count?: number | null
-          question?: string
+          NON?: number | null
+          OUI?: number | null
+          Question?: string
           type?: Database["public"]["Enums"]["question_type"]
           updated_at?: string
-          yes_count?: number | null
         }
         Relationships: []
       }
