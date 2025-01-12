@@ -33,8 +33,11 @@ serve(async (req) => {
 
     console.log('Parsing CSV file...')
     const text = new TextDecoder().decode(await fileData.arrayBuffer())
+    
+    // Parse CSV with specific configuration
     const rows = parse(text, {
       skipFirstRow: true,
+      separator: ',',
       columns: [
         'question',
         'indecision',
@@ -49,7 +52,7 @@ serve(async (req) => {
 
     console.log('Parsed rows:', rows)
 
-    // Supprimer les anciennes questions de la catégorie
+    // Delete existing questions for the category
     const { error: deleteError } = await supabaseAdmin
       .from('questionnaire_questions')
       .delete()
@@ -60,22 +63,24 @@ serve(async (req) => {
       throw deleteError
     }
 
-    // Insérer les nouvelles questions avec les colonnes supplémentaires
+    // Transform and insert the new questions
+    const formattedRows = rows.map((row: any) => ({
+      category: 'general_opinion',
+      question_text: row.question,
+      indecision: row.indecision?.toLowerCase() === 'true' || row.indecision === '1',
+      plutot_oui: row.plutot_oui?.toLowerCase() === 'true' || row.plutot_oui === '1',
+      plutot_oui_duree_moderee: row.plutot_oui_duree_moderee?.toLowerCase() === 'true' || row.plutot_oui_duree_moderee === '1',
+      oui_si_equipe_medicale: row.oui_si_equipe_medicale?.toLowerCase() === 'true' || row.oui_si_equipe_medicale === '1',
+      plutot_non_rapidement: row.plutot_non_rapidement?.toLowerCase() === 'true' || row.plutot_non_rapidement === '1',
+      non_sauf_equipe_medicale: row.non_sauf_equipe_medicale?.toLowerCase() === 'true' || row.non_sauf_equipe_medicale === '1',
+      plutot_non_non_souffrance: row.plutot_non_non_souffrance?.toLowerCase() === 'true' || row.plutot_non_non_souffrance === '1'
+    }))
+
+    console.log('Formatted rows for insertion:', formattedRows)
+
     const { error: insertError } = await supabaseAdmin
       .from('questionnaire_questions')
-      .insert(
-        rows.map((row: any) => ({
-          category: 'general_opinion',
-          question_text: row.question,
-          indecision: row.indecision === 'true',
-          plutot_oui: row.plutot_oui === 'true',
-          plutot_oui_duree_moderee: row.plutot_oui_duree_moderee === 'true',
-          oui_si_equipe_medicale: row.oui_si_equipe_medicale === 'true',
-          plutot_non_rapidement: row.plutot_non_rapidement === 'true',
-          non_sauf_equipe_medicale: row.non_sauf_equipe_medicale === 'true',
-          plutot_non_non_souffrance: row.plutot_non_non_souffrance === 'true'
-        }))
-      )
+      .insert(formattedRows)
 
     if (insertError) {
       console.error('Error inserting new questions:', insertError)
@@ -83,7 +88,11 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ success: true, questionsCount: rows.length }),
+      JSON.stringify({ 
+        success: true, 
+        questionsCount: formattedRows.length,
+        message: 'Questions successfully updated'
+      }),
       { 
         headers: { 
           ...corsHeaders,
@@ -95,7 +104,10 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        details: error.stack
+      }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500
