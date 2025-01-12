@@ -2,17 +2,27 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
 import { parse } from 'https://deno.land/std@0.182.0/csv/mod.ts'
 
-console.log("Hello from read-csv-questions!")
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
 
 serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders })
+  }
+
   try {
+    console.log("Starting CSV questions update process...")
+    
     // Initialize Supabase client
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Get the storage client
+    console.log("Downloading CSV file from storage...")
     const { data: storageData, error: storageError } = await supabaseClient
       .storage
       .from('questionnaires')
@@ -25,48 +35,56 @@ serve(async (req) => {
 
     // Convert the blob to text
     const text = await storageData.text()
-    console.log('CSV content:', text)
+    console.log('CSV content retrieved')
     
     try {
-      // Parse CSV with the French headers
+      // Parse CSV
       const rows = parse(text, {
-        skipFirstRow: false,
+        skipFirstRow: true,
         separator: ";",
       })
 
-      console.log('Raw parsed rows:', rows)
+      console.log('Parsed rows:', rows)
 
-      // Get headers from first row
-      const headers = rows[0].map((header: string) => header.trim())
-      console.log('CSV headers:', headers)
-
-      // Process data rows (skip header row)
-      const dataRows = rows.slice(1).map(row => {
-        const question_text = row[0]?.trim() // First column is the question text
-        const response = row[1]?.trim().toLowerCase() // Second column is the response
-        
-        if (!question_text) {
-          console.log('Skipping empty row')
-          return null
-        }
-
-        return {
-          category: 'general_opinion',
-          question_text,
-          oui: response === 'oui',
-          non: response === 'non'
-        }
-      }).filter(row => row !== null)
+      // Process data rows
+      const dataRows = rows
+        .filter(row => row[0]?.trim()) // Filter out empty rows
+        .map(row => {
+          const question_text = row[0]?.trim()
+          const response = row[1]?.trim().toLowerCase()
+          
+          return {
+            category: 'general_opinion',
+            question_text,
+            oui: response === 'oui',
+            non: response === 'non',
+            indecision: false,
+            plutot_oui: false,
+            plutot_oui_duree_moderee: false,
+            oui_si_equipe_medicale: false,
+            plutot_non_rapidement: false,
+            non_sauf_equipe_medicale: false,
+            plutot_non_non_souffrance: false
+          }
+        })
 
       console.log('Formatted rows for insertion:', dataRows)
 
-      // Insert the questions into the database
+      // First, delete existing general_opinion questions
+      const { error: deleteError } = await supabaseClient
+        .from('questionnaire_questions')
+        .delete()
+        .eq('category', 'general_opinion')
+
+      if (deleteError) {
+        console.error('Error deleting existing questions:', deleteError)
+        throw deleteError
+      }
+
+      // Insert the new questions
       const { error: insertError } = await supabaseClient
         .from('questionnaire_questions')
-        .upsert(dataRows, {
-          onConflict: 'question_text',
-          ignoreDuplicates: false
-        })
+        .insert(dataRows)
 
       if (insertError) {
         console.error('Error inserting questions:', insertError)
@@ -74,8 +92,16 @@ serve(async (req) => {
       }
 
       return new Response(
-        JSON.stringify({ message: 'Questions updated successfully' }),
-        { headers: { 'Content-Type': 'application/json' } }
+        JSON.stringify({ 
+          message: 'Questions updated successfully',
+          count: dataRows.length 
+        }),
+        { 
+          headers: { 
+            ...corsHeaders,
+            'Content-Type': 'application/json' 
+          } 
+        }
       )
 
     } catch (error) {
@@ -89,7 +115,10 @@ serve(async (req) => {
       JSON.stringify({ error: error.message }),
       { 
         status: 500,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 
+          ...corsHeaders,
+          'Content-Type': 'application/json' 
+        }
       }
     )
   }
