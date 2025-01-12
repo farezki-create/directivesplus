@@ -53,14 +53,21 @@ serve(async (req) => {
     console.log('CSV content:', text)
     
     try {
-      const rows = parse(text, {
-        skipFirstRow: true,
+      const parsedRows = parse(text, {
+        skipFirstRow: false,
         separator: ";",
         trimLeadingSpace: true,
         trimTrailingSpace: true
       })
 
-      console.log('Parsed rows:', rows)
+      console.log('Parsed rows:', parsedRows)
+
+      if (!parsedRows || parsedRows.length < 2) {
+        throw new Error('Invalid CSV format: Not enough rows')
+      }
+
+      const headers = parsedRows[0].map(header => header.trim())
+      console.log('CSV Headers:', headers)
 
       const headerMappings = {
         "Question": "question_text",
@@ -71,12 +78,9 @@ serve(async (req) => {
         "Oui si l'équipe médicale le juge utile après une procédure collégiale": "oui_si_equipe_medicale",
         "Non rapidement abandonner le thérapeutique au profit de la non souffrance": "plutot_non_rapidement",
         "Non privilégier seulement la non souffrance": "plutot_non_non_souffrance"
-      };
+      }
 
-      const headers = rows[0].map(header => header.trim());
-      console.log('CSV Headers:', headers);
-
-      const dataRows = rows.slice(1)
+      const dataRows = parsedRows.slice(1)
         .filter(row => row && row.length >= headers.length && row[0]?.trim())
         .map(row => {
           const questionData = {
@@ -92,30 +96,29 @@ serve(async (req) => {
             plutot_non_rapidement: false,
             non_sauf_equipe_medicale: false,
             plutot_non_non_souffrance: false
-          };
+          }
 
           headers.forEach((header, index) => {
-            const dbField = headerMappings[header];
+            const dbField = headerMappings[header]
             if (dbField) {
-              const value = row[index]?.trim().toLowerCase();
+              const value = row[index]?.trim().toLowerCase()
               if (dbField === 'question_text') {
-                questionData[dbField] = row[index]?.trim() || '';
+                questionData[dbField] = row[index]?.trim() || ''
               } else {
-                questionData[dbField] = value === 'oui' || value === '1' || value === 'true';
+                questionData[dbField] = value === 'oui' || value === '1' || value === 'true'
               }
             }
-          });
+          })
 
-          // Determine question type based on the presence of detailed options
           questionData.question_type = (
             questionData.plutot_oui_duree_moderee ||
             questionData.oui_si_equipe_medicale ||
             questionData.plutot_non_rapidement ||
             questionData.plutot_non_non_souffrance
-          ) ? 'detailed' : 'simple';
+          ) ? 'detailed' : 'simple'
 
-          return questionData;
-        });
+          return questionData
+        })
 
       if (dataRows.length === 0) {
         console.error('No valid questions found in CSV')
@@ -142,8 +145,6 @@ serve(async (req) => {
         console.error('Error inserting questions:', insertError)
         throw insertError
       }
-
-      console.log('Successfully inserted questions:', dataRows)
 
       return new Response(
         JSON.stringify({ 
