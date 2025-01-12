@@ -10,9 +10,27 @@ import { LetDie } from "./sections/LetDie";
 import { SectionButtons } from "./components/SectionButtons";
 import { SectionContent } from "./components/SectionContent";
 import { useQuestionnaire } from "@/hooks/useQuestionnaire";
+import { useToast } from "@/hooks/use-toast";
 
 export const QuestionnaireForm = () => {
-  const { form, onSubmit } = useQuestionnaire();
+  const { toast } = useToast();
+  const { form, onSubmit, isSubmitting } = useQuestionnaire({
+    onSuccess: () => {
+      toast({
+        title: "Succès",
+        description: "Vos directives ont été sauvegardées.",
+      });
+    },
+    onError: (error) => {
+      console.error("Error saving directives:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la sauvegarde.",
+      });
+    },
+  });
+  
   const [openSection, setOpenSection] = React.useState<string | null>(null);
 
   const sections = [
@@ -49,7 +67,7 @@ export const QuestionnaireForm = () => {
 
   return (
     <Form {...form}>
-      <form onSubmit={onSubmit} className="relative">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="relative">
         <Card className={`transition-all duration-300 ${openSection ? 'fixed inset-0 z-50 m-0 rounded-none' : 'max-w-[95vw] mx-auto'}`}>
           <CardHeader>
             <SectionButtons 
@@ -78,8 +96,12 @@ export const QuestionnaireForm = () => {
             </div>
 
             <div className="flex justify-between mt-6">
-              <Button type="submit" className="transition-all duration-200 hover:scale-105">
-                Sauvegarder
+              <Button 
+                type="submit" 
+                disabled={isSubmitting}
+                className="transition-all duration-200 hover:scale-105"
+              >
+                {isSubmitting ? "Sauvegarde en cours..." : "Sauvegarder"}
               </Button>
             </div>
           </CardContent>

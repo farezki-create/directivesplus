@@ -1,6 +1,10 @@
 import { useForm } from "react-hook-form";
-import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+
+interface UseQuestionnaireOptions {
+  onSuccess?: () => void;
+  onError?: (error: Error) => void;
+}
 
 type QuestionnaireData = {
   medicalDirectives: {
@@ -12,7 +16,7 @@ type QuestionnaireData = {
   };
 };
 
-export const useQuestionnaire = () => {
+export const useQuestionnaire = (options?: UseQuestionnaireOptions) => {
   const form = useForm<QuestionnaireData>({
     defaultValues: {
       medicalDirectives: {
@@ -25,24 +29,19 @@ export const useQuestionnaire = () => {
     }
   });
   
-  const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const onSubmit = async (data: QuestionnaireData) => {
     try {
+      setIsSubmitting(true);
       console.log('Submitting form data:', data);
       
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
-        toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "Vous devez être connecté pour sauvegarder vos directives.",
-        });
-        return;
+        throw new Error("Vous devez être connecté pour sauvegarder vos directives.");
       }
 
-      // Initialize objects
       const formattedData = {
         user_id: session.user.id,
         general_opinion: Object.values(data.medicalDirectives.generalOpinion || {}).some(value => value === 'oui'),
@@ -63,22 +62,18 @@ export const useQuestionnaire = () => {
         throw error;
       }
       
-      toast({
-        title: "Succès",
-        description: "Vos directives ont été sauvegardées.",
-      });
+      options?.onSuccess?.();
     } catch (error) {
       console.error("Error saving form:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la sauvegarde.",
-      });
+      options?.onError?.(error instanceof Error ? error : new Error('Une erreur est survenue'));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return {
     form,
-    onSubmit: form.handleSubmit(onSubmit)
+    onSubmit: form.handleSubmit(onSubmit),
+    isSubmitting
   };
 };
