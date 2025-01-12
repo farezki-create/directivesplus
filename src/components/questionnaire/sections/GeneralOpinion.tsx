@@ -39,8 +39,6 @@ export const GeneralOpinion = ({ form }: GeneralOpinionProps) => {
     queryFn: fetchGeneralOpinionQuestions,
   });
 
-  console.log("Component state:", { questions, isLoading, error });
-
   const handleUpdateQuestions = async () => {
     try {
       const { error } = await supabase.functions.invoke('read-csv-questions');
@@ -84,7 +82,6 @@ export const GeneralOpinion = ({ form }: GeneralOpinionProps) => {
   }
 
   if (!questions || questions.length === 0) {
-    console.log("No questions found");
     return (
       <div className="space-y-4">
         <div className="text-muted-foreground">
@@ -129,18 +126,72 @@ export const GeneralOpinion = ({ form }: GeneralOpinionProps) => {
                     defaultValue={field.value}
                     className="flex flex-col space-y-1"
                   >
-                    <FormItem className="flex items-center space-x-3 space-y-0">
-                      <FormControl>
-                        <RadioGroupItem value="true" />
-                      </FormControl>
-                      <FormLabel className="font-normal">Oui</FormLabel>
-                    </FormItem>
-                    <FormItem className="flex items-center space-x-3 space-y-0">
-                      <FormControl>
-                        <RadioGroupItem value="false" />
-                      </FormControl>
-                      <FormLabel className="font-normal">Non</FormLabel>
-                    </FormItem>
+                    {question.indecision && (
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="indecision" />
+                        </FormControl>
+                        <FormLabel className="font-normal">Indécision</FormLabel>
+                      </FormItem>
+                    )}
+                    {question.plutot_oui && (
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="plutot_oui" />
+                        </FormControl>
+                        <FormLabel className="font-normal">Plutôt oui</FormLabel>
+                      </FormItem>
+                    )}
+                    {question.plutot_oui_duree_moderee && (
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="plutot_oui_duree_moderee" />
+                        </FormControl>
+                        <FormLabel className="font-normal">
+                          Plutôt oui, pour une durée modérée
+                        </FormLabel>
+                      </FormItem>
+                    )}
+                    {question.oui_si_equipe_medicale && (
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="oui_si_equipe_medicale" />
+                        </FormControl>
+                        <FormLabel className="font-normal">
+                          Oui, si l'équipe médicale le juge utile
+                        </FormLabel>
+                      </FormItem>
+                    )}
+                    {question.plutot_non_rapidement && (
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="plutot_non_rapidement" />
+                        </FormControl>
+                        <FormLabel className="font-normal">
+                          Plutôt non, rapidement
+                        </FormLabel>
+                      </FormItem>
+                    )}
+                    {question.non_sauf_equipe_medicale && (
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="non_sauf_equipe_medicale" />
+                        </FormControl>
+                        <FormLabel className="font-normal">
+                          Non, sauf si l'équipe médicale le juge utile
+                        </FormLabel>
+                      </FormItem>
+                    )}
+                    {question.plutot_non_non_souffrance && (
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="plutot_non_non_souffrance" />
+                        </FormControl>
+                        <FormLabel className="font-normal">
+                          Plutôt non, privilégier la non souffrance
+                        </FormLabel>
+                      </FormItem>
+                    )}
                   </RadioGroup>
                 </FormControl>
               </FormItem>

@@ -35,7 +35,16 @@ serve(async (req) => {
     const text = new TextDecoder().decode(await fileData.arrayBuffer())
     const rows = parse(text, {
       skipFirstRow: true,
-      columns: ['question']
+      columns: [
+        'question',
+        'indecision',
+        'plutot_oui',
+        'plutot_oui_duree_moderee',
+        'oui_si_equipe_medicale',
+        'plutot_non_rapidement',
+        'non_sauf_equipe_medicale',
+        'plutot_non_non_souffrance'
+      ]
     })
 
     console.log('Parsed rows:', rows)
@@ -51,13 +60,20 @@ serve(async (req) => {
       throw deleteError
     }
 
-    // Insérer les nouvelles questions
+    // Insérer les nouvelles questions avec les colonnes supplémentaires
     const { error: insertError } = await supabaseAdmin
       .from('questionnaire_questions')
       .insert(
         rows.map((row: any) => ({
           category: 'general_opinion',
-          question_text: row.question
+          question_text: row.question,
+          indecision: row.indecision === 'true',
+          plutot_oui: row.plutot_oui === 'true',
+          plutot_oui_duree_moderee: row.plutot_oui_duree_moderee === 'true',
+          oui_si_equipe_medicale: row.oui_si_equipe_medicale === 'true',
+          plutot_non_rapidement: row.plutot_non_rapidement === 'true',
+          non_sauf_equipe_medicale: row.non_sauf_equipe_medicale === 'true',
+          plutot_non_non_souffrance: row.plutot_non_non_souffrance === 'true'
         }))
       )
 

@@ -92,8 +92,15 @@ export type Database = {
           category: string
           created_at: string
           id: string
+          indecision: boolean | null
           non: boolean | null
+          non_sauf_equipe_medicale: boolean | null
           oui: boolean | null
+          oui_si_equipe_medicale: boolean | null
+          plutot_non_non_souffrance: boolean | null
+          plutot_non_rapidement: boolean | null
+          plutot_oui: boolean | null
+          plutot_oui_duree_moderee: boolean | null
           question: string | null
           question_text: string
           updated_at: string
@@ -102,8 +109,15 @@ export type Database = {
           category: string
           created_at?: string
           id?: string
+          indecision?: boolean | null
           non?: boolean | null
+          non_sauf_equipe_medicale?: boolean | null
           oui?: boolean | null
+          oui_si_equipe_medicale?: boolean | null
+          plutot_non_non_souffrance?: boolean | null
+          plutot_non_rapidement?: boolean | null
+          plutot_oui?: boolean | null
+          plutot_oui_duree_moderee?: boolean | null
           question?: string | null
           question_text: string
           updated_at?: string
@@ -112,8 +126,15 @@ export type Database = {
           category?: string
           created_at?: string
           id?: string
+          indecision?: boolean | null
           non?: boolean | null
+          non_sauf_equipe_medicale?: boolean | null
           oui?: boolean | null
+          oui_si_equipe_medicale?: boolean | null
+          plutot_non_non_souffrance?: boolean | null
+          plutot_non_rapidement?: boolean | null
+          plutot_oui?: boolean | null
+          plutot_oui_duree_moderee?: boolean | null
           question?: string | null
           question_text?: string
           updated_at?: string
