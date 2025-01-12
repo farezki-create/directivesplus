@@ -58,11 +58,18 @@ export const GeneralOpinion = ({ form }: GeneralOpinionProps) => {
     );
   }
 
+  if (!questions || questions.length === 0) {
+    console.log("No questions found");
+    return (
+      <div className="text-muted-foreground">
+        Aucune question n'a été trouvée pour cette section.
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="space-y-4">
-        <h3 className="text-lg font-medium">Mon avis d'une façon générale</h3>
-        
         {questions?.map((question) => (
           <FormField
             key={question.id}
