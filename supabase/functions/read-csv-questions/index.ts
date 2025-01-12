@@ -40,10 +40,10 @@ serve(async (req) => {
     try {
       // Define header mapping from French to database columns
       const headerMapping = {
-        " Question": "question_text",
+        "Question": "question_text",
         "Indécision": "indecision",
         "Plûtot Oui": "plutot_oui",
-        "Plûtot Oui, pour une durée modérée, dans un mais thérapeutique, mais la non soufrance est la priorité ": "plutot_oui_duree_moderee",
+        "Plûtot Oui, pour une durée modérée, dans un mais thérapeutique, mais la non soufrance est la priorité": "plutot_oui_duree_moderee",
         "Oui, si l'équipe médicale le juge utile après une procédure collégiale": "oui_si_equipe_medicale",
         "Plûtot Non, rapidement abandonner le thérapeutique au profit de la non souffrance": "plutot_non_rapidement",
         "Non, sauf si l'équipe médicale le juge utile par une procédure collégiale": "non_sauf_equipe_medicale",
@@ -52,11 +52,40 @@ serve(async (req) => {
 
       // Parse CSV with the French headers
       const rows = parse(text, {
-        skipFirstRow: true,
-        columns: Object.keys(headerMapping)
+        skipFirstRow: false, // We want to keep the headers to match them
+        separator: ";", // Use semicolon as separator
       })
 
-      console.log('Successfully parsed rows:', rows)
+      console.log('Raw parsed rows:', rows)
+
+      // Get headers from first row
+      const headers = rows[0]
+      console.log('CSV Headers:', headers)
+
+      // Process data rows (skip header row)
+      const dataRows = rows.slice(1).map(row => {
+        const formattedRow: any = {
+          category: 'general_opinion'
+        }
+
+        headers.forEach((header: string, index: number) => {
+          const dbColumn = headerMapping[header.trim()]
+          if (dbColumn) {
+            const value = row[index]
+            if (dbColumn === 'question_text') {
+              formattedRow[dbColumn] = value.trim()
+            } else {
+              formattedRow[dbColumn] = value?.toLowerCase() === 'true' || 
+                                     value === '1' || 
+                                     value?.toLowerCase() === 'oui'
+            }
+          }
+        })
+
+        return formattedRow
+      })
+
+      console.log('Formatted rows for insertion:', dataRows)
 
       // Delete existing questions for the category
       const { error: deleteError } = await supabaseAdmin
@@ -69,31 +98,9 @@ serve(async (req) => {
         throw deleteError
       }
 
-      // Transform the data to match database column names
-      const formattedRows = rows.map((row: any) => {
-        const formattedRow: any = {
-          category: 'general_opinion'
-        }
-
-        // Map each French header to its corresponding database column
-        for (const [frenchHeader, dbColumn] of Object.entries(headerMapping)) {
-          const value = row[frenchHeader]
-          formattedRow[dbColumn] = value?.toLowerCase() === 'true' || value === '1' || value === 'oui'
-          
-          // Special handling for question_text
-          if (dbColumn === 'question_text') {
-            formattedRow[dbColumn] = value
-          }
-        }
-
-        return formattedRow
-      })
-
-      console.log('Formatted rows for insertion:', formattedRows)
-
       const { error: insertError } = await supabaseAdmin
         .from('questionnaire_questions')
-        .insert(formattedRows)
+        .insert(dataRows)
 
       if (insertError) {
         console.error('Error inserting new questions:', insertError)
@@ -103,7 +110,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           success: true, 
-          questionsCount: formattedRows.length,
+          questionsCount: dataRows.length,
           message: 'Questions successfully updated'
         }),
         { 
