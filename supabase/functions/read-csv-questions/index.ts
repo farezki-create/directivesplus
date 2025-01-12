@@ -8,7 +8,6 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -16,13 +15,11 @@ serve(async (req) => {
   try {
     console.log("Starting CSV questions update process...")
     
-    // Initialize Supabase client
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // List files in the questionnaires bucket to verify CSV existence
     const { data: files, error: listError } = await supabaseClient
       .storage
       .from('questionnaires')
@@ -35,7 +32,6 @@ serve(async (req) => {
 
     console.log('Files in questionnaires bucket:', files)
 
-    // Check if mon_avis.csv exists
     const csvFile = files.find(file => file.name === 'mon_avis.csv')
     if (!csvFile) {
       console.error('mon_avis.csv not found in bucket')
@@ -53,12 +49,10 @@ serve(async (req) => {
       throw storageError
     }
 
-    // Convert the blob to text
     const text = await storageData.text()
     console.log('CSV content:', text)
     
     try {
-      // Parse CSV with explicit configuration
       const rows = parse(text, {
         skipFirstRow: true,
         separator: ";",
@@ -68,7 +62,6 @@ serve(async (req) => {
 
       console.log('Parsed rows:', rows)
 
-      // Define header mappings
       const headerMappings = {
         "Question": "question_text",
         "Indécision": "indecision",
@@ -80,20 +73,16 @@ serve(async (req) => {
         "Non privilégier seulement la non souffrance": "plutot_non_non_souffrance"
       };
 
-      // Get headers from first row
       const headers = rows[0].map(header => header.trim());
       console.log('CSV Headers:', headers);
 
-      // Process data rows
-      const dataRows = rows.slice(1)  // Skip header row
-        .filter(row => {
-          // Ensure row has content and first column is not empty
-          return row && row.length >= headers.length && row[0]?.trim()
-        })
+      const dataRows = rows.slice(1)
+        .filter(row => row && row.length >= headers.length && row[0]?.trim())
         .map(row => {
           const questionData = {
             category: 'general_opinion',
             question_text: '',
+            question_type: 'simple',
             indecision: false,
             oui: false,
             non: false,
@@ -105,7 +94,6 @@ serve(async (req) => {
             plutot_non_non_souffrance: false
           };
 
-          // Map each column value to the corresponding database field
           headers.forEach((header, index) => {
             const dbField = headerMappings[header];
             if (dbField) {
@@ -118,6 +106,14 @@ serve(async (req) => {
             }
           });
 
+          // Determine question type based on the presence of detailed options
+          questionData.question_type = (
+            questionData.plutot_oui_duree_moderee ||
+            questionData.oui_si_equipe_medicale ||
+            questionData.plutot_non_rapidement ||
+            questionData.plutot_non_non_souffrance
+          ) ? 'detailed' : 'simple';
+
           return questionData;
         });
 
@@ -128,7 +124,6 @@ serve(async (req) => {
 
       console.log('Formatted rows for insertion:', dataRows)
 
-      // First, delete existing general_opinion questions
       const { error: deleteError } = await supabaseClient
         .from('questionnaire_questions')
         .delete()
@@ -139,7 +134,6 @@ serve(async (req) => {
         throw deleteError
       }
 
-      // Insert the new questions
       const { error: insertError } = await supabaseClient
         .from('questionnaire_questions')
         .insert(dataRows)

@@ -103,6 +103,7 @@ export type Database = {
           plutot_oui_duree_moderee: boolean | null
           question: string | null
           question_text: string
+          question_type: Database["public"]["Enums"]["question_type"]
           updated_at: string
         }
         Insert: {
@@ -120,6 +121,7 @@ export type Database = {
           plutot_oui_duree_moderee?: boolean | null
           question?: string | null
           question_text: string
+          question_type?: Database["public"]["Enums"]["question_type"]
           updated_at?: string
         }
         Update: {
@@ -137,6 +139,7 @@ export type Database = {
           plutot_oui_duree_moderee?: boolean | null
           question?: string | null
           question_text?: string
+          question_type?: Database["public"]["Enums"]["question_type"]
           updated_at?: string
         }
         Relationships: []
@@ -155,6 +158,7 @@ export type Database = {
         | "life_support"
         | "pain_relief"
         | "let_die"
+      question_type: "simple" | "detailed"
     }
     CompositeTypes: {
       [_ in never]: never

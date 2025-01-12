@@ -10,6 +10,33 @@ interface QuestionOptionProps {
 }
 
 export const QuestionOptions = ({ question, field }: QuestionOptionProps) => {
+  if (question.question_type === 'simple') {
+    return (
+      <RadioGroup
+        onValueChange={field.onChange}
+        defaultValue={field.value}
+        className="flex flex-col space-y-1"
+      >
+        {question.oui && (
+          <FormItem className="flex items-center space-x-3 space-y-0">
+            <FormControl>
+              <RadioGroupItem value="oui" />
+            </FormControl>
+            <FormLabel className="font-normal">Oui</FormLabel>
+          </FormItem>
+        )}
+        {question.non && (
+          <FormItem className="flex items-center space-x-3 space-y-0">
+            <FormControl>
+              <RadioGroupItem value="non" />
+            </FormControl>
+            <FormLabel className="font-normal">Non</FormLabel>
+          </FormItem>
+        )}
+      </RadioGroup>
+    );
+  }
+
   return (
     <RadioGroup
       onValueChange={field.onChange}
