@@ -45,16 +45,19 @@ export const QuestionnaireForm = () => {
         return;
       }
 
+      // Format the data to match the database schema
+      const formattedData = {
+        user_id: session.user.id,
+        general_opinion: Object.values(data.medicalDirectives.generalOpinion).some(value => value),
+        other_directives: Object.values(data.medicalDirectives.otherDirectives).some(value => value),
+        life_support: JSON.stringify(data.medicalDirectives.lifeSupport),
+        pain_relief: JSON.stringify(data.medicalDirectives.painRelief),
+        let_die: JSON.stringify(data.medicalDirectives.letDie),
+      };
+
       const { error } = await supabase
         .from('advance_directives')
-        .upsert({
-          user_id: session.user.id,
-          general_opinion: data.medicalDirectives.generalOpinion,
-          other_directives: data.medicalDirectives.otherDirectives,
-          life_support: JSON.stringify(data.medicalDirectives.lifeSupport),
-          pain_relief: JSON.stringify(data.medicalDirectives.painRelief),
-          let_die: JSON.stringify(data.medicalDirectives.letDie),
-        });
+        .upsert(formattedData);
 
       if (error) throw error;
       
