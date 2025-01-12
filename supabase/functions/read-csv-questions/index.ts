@@ -22,6 +22,26 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
+    // List files in the questionnaires bucket to verify CSV existence
+    const { data: files, error: listError } = await supabaseClient
+      .storage
+      .from('questionnaires')
+      .list()
+
+    if (listError) {
+      console.error('Error listing files:', listError)
+      throw listError
+    }
+
+    console.log('Files in questionnaires bucket:', files)
+
+    // Check if mon_avis.csv exists
+    const csvFile = files.find(file => file.name === 'mon_avis.csv')
+    if (!csvFile) {
+      console.error('mon_avis.csv not found in bucket')
+      throw new Error('CSV file not found')
+    }
+
     console.log("Downloading CSV file from storage...")
     const { data: storageData, error: storageError } = await supabaseClient
       .storage
@@ -38,17 +58,22 @@ serve(async (req) => {
     console.log('CSV content:', text)
     
     try {
-      // Parse CSV
+      // Parse CSV with explicit configuration
       const rows = parse(text, {
         skipFirstRow: true,
         separator: ";",
+        trimLeadingSpace: true,
+        trimTrailingSpace: true
       })
 
       console.log('Parsed rows:', rows)
 
       // Process data rows
       const dataRows = rows
-        .filter(row => row[0]?.trim()) // Filter out empty rows
+        .filter(row => {
+          // Ensure row has content and first column is not empty
+          return row && row.length >= 2 && row[0]?.trim()
+        })
         .map(row => {
           const question_text = row[0]?.trim()
           const response = row[1]?.trim().toLowerCase()
@@ -67,6 +92,11 @@ serve(async (req) => {
             plutot_non_non_souffrance: false
           }
         })
+
+      if (dataRows.length === 0) {
+        console.error('No valid questions found in CSV')
+        throw new Error('No valid questions found in CSV')
+      }
 
       console.log('Formatted rows for insertion:', dataRows)
 
@@ -115,7 +145,10 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        details: error.toString()
+      }),
       { 
         status: 500,
         headers: { 
