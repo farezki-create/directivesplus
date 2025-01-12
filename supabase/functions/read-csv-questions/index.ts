@@ -68,30 +68,58 @@ serve(async (req) => {
 
       console.log('Parsed rows:', rows)
 
+      // Define header mappings
+      const headerMappings = {
+        "Question": "question_text",
+        "Indécision": "indecision",
+        "Oui": "oui",
+        "Non": "non",
+        "Oui pour une durée modérée dans un but thérapeutique mais la non soufrance est la priorité": "plutot_oui_duree_moderee",
+        "Oui si l'équipe médicale le juge utile après une procédure collégiale": "oui_si_equipe_medicale",
+        "Non rapidement abandonner le thérapeutique au profit de la non souffrance": "plutot_non_rapidement",
+        "Non privilégier seulement la non souffrance": "plutot_non_non_souffrance"
+      };
+
+      // Get headers from first row
+      const headers = rows[0].map(header => header.trim());
+      console.log('CSV Headers:', headers);
+
       // Process data rows
-      const dataRows = rows
+      const dataRows = rows.slice(1)  // Skip header row
         .filter(row => {
           // Ensure row has content and first column is not empty
-          return row && row.length >= 2 && row[0]?.trim()
+          return row && row.length >= headers.length && row[0]?.trim()
         })
         .map(row => {
-          const question_text = row[0]?.trim()
-          const response = row[1]?.trim().toLowerCase()
-          
-          return {
+          const questionData = {
             category: 'general_opinion',
-            question_text,
-            oui: response === 'oui',
-            non: response === 'non',
+            question_text: '',
             indecision: false,
+            oui: false,
+            non: false,
             plutot_oui: false,
             plutot_oui_duree_moderee: false,
             oui_si_equipe_medicale: false,
             plutot_non_rapidement: false,
             non_sauf_equipe_medicale: false,
             plutot_non_non_souffrance: false
-          }
-        })
+          };
+
+          // Map each column value to the corresponding database field
+          headers.forEach((header, index) => {
+            const dbField = headerMappings[header];
+            if (dbField) {
+              const value = row[index]?.trim().toLowerCase();
+              if (dbField === 'question_text') {
+                questionData[dbField] = row[index]?.trim() || '';
+              } else {
+                questionData[dbField] = value === 'oui' || value === '1' || value === 'true';
+              }
+            }
+          });
+
+          return questionData;
+        });
 
       if (dataRows.length === 0) {
         console.error('No valid questions found in CSV')
