@@ -38,6 +38,8 @@ export const GeneralOpinion = ({ form }: GeneralOpinionProps) => {
     queryFn: fetchGeneralOpinionQuestions,
   });
 
+  console.log("Component state:", { questions, isLoading, error });
+
   if (isLoading) {
     return (
       <div className="space-y-6">
