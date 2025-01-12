@@ -38,22 +38,10 @@ serve(async (req) => {
     console.log('CSV content:', text)
     
     try {
-      // Define header mapping from French to database columns
-      const headerMapping = {
-        "Question": "question_text",
-        "Indécision": "indecision",
-        "Plûtot Oui": "plutot_oui",
-        "Plûtot Oui, pour une durée modérée, dans un mais thérapeutique, mais la non soufrance est la priorité": "plutot_oui_duree_moderee",
-        "Oui, si l'équipe médicale le juge utile après une procédure collégiale": "oui_si_equipe_medicale",
-        "Plûtot Non, rapidement abandonner le thérapeutique au profit de la non souffrance": "plutot_non_rapidement",
-        "Non, sauf si l'équipe médicale le juge utile par une procédure collégiale": "non_sauf_equipe_medicale",
-        "Plutôt Non, privilégier seulement la non souffrance": "plutot_non_non_souffrance"
-      }
-
       // Parse CSV with the French headers
       const rows = parse(text, {
-        skipFirstRow: false, // We want to keep the headers to match them
-        separator: ";", // Use semicolon as separator
+        skipFirstRow: false,
+        separator: ";",
       })
 
       console.log('Raw parsed rows:', rows)
@@ -64,26 +52,25 @@ serve(async (req) => {
 
       // Process data rows (skip header row)
       const dataRows = rows.slice(1).map(row => {
-        const formattedRow: any = {
-          category: 'general_opinion'
+        const question_text = row[0]?.trim() // First column is the question text
+        
+        if (!question_text) {
+          console.log('Skipping empty row')
+          return null
         }
 
-        headers.forEach((header: string, index: number) => {
-          const dbColumn = headerMapping[header.trim()]
-          if (dbColumn) {
-            const value = row[index]
-            if (dbColumn === 'question_text') {
-              formattedRow[dbColumn] = value.trim()
-            } else {
-              formattedRow[dbColumn] = value?.toLowerCase() === 'true' || 
-                                     value === '1' || 
-                                     value?.toLowerCase() === 'oui'
-            }
-          }
-        })
-
-        return formattedRow
-      })
+        return {
+          category: 'general_opinion',
+          question_text,
+          indecision: true,
+          plutot_oui: true,
+          plutot_oui_duree_moderee: true,
+          oui_si_equipe_medicale: true,
+          plutot_non_rapidement: true,
+          non_sauf_equipe_medicale: true,
+          plutot_non_non_souffrance: true
+        }
+      }).filter(row => row !== null)
 
       console.log('Formatted rows for insertion:', dataRows)
 
