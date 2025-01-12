@@ -2,7 +2,7 @@ import { FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { UseFormReturn } from "react-hook-form";
 import { Skeleton } from "@/components/ui/skeleton";
 import { UpdateQuestionsButton } from "../components/UpdateQuestionsButton";
-import { QuestionOptions } from "../components/QuestionOptions";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useQuestionnaireQuestions } from "@/hooks/useQuestionnaireQuestions";
 
 interface GeneralOpinionProps {
@@ -63,7 +63,24 @@ export const GeneralOpinion = ({ form }: GeneralOpinionProps) => {
             render={({ field }) => (
               <FormItem className="space-y-3">
                 <FormLabel>{question.question_text}</FormLabel>
-                <QuestionOptions question={question} field={field} />
+                <RadioGroup
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                  className="flex flex-col space-y-1"
+                >
+                  {question.oui && (
+                    <FormItem className="flex items-center space-x-3 space-y-0">
+                      <RadioGroupItem value="oui" />
+                      <FormLabel className="font-normal">Oui</FormLabel>
+                    </FormItem>
+                  )}
+                  {question.non && (
+                    <FormItem className="flex items-center space-x-3 space-y-0">
+                      <RadioGroupItem value="non" />
+                      <FormLabel className="font-normal">Non</FormLabel>
+                    </FormItem>
+                  )}
+                </RadioGroup>
               </FormItem>
             )}
           />

@@ -15,7 +15,7 @@ import { SectionContent } from "./components/SectionContent";
 
 type QuestionnaireData = {
   medicalDirectives: {
-    generalOpinion: Record<string, boolean>;
+    generalOpinion: Record<string, string>;
     otherDirectives: Record<string, boolean>;
     lifeSupport: Record<string, boolean>;
     painRelief: Record<string, boolean>;
@@ -24,7 +24,17 @@ type QuestionnaireData = {
 };
 
 export const QuestionnaireForm = () => {
-  const form = useForm<QuestionnaireData>();
+  const form = useForm<QuestionnaireData>({
+    defaultValues: {
+      medicalDirectives: {
+        generalOpinion: {},
+        otherDirectives: {},
+        lifeSupport: {},
+        painRelief: {},
+        letDie: {}
+      }
+    }
+  });
   const { toast } = useToast();
   const [openSection, setOpenSection] = React.useState<string | null>(null);
 
@@ -78,7 +88,7 @@ export const QuestionnaireForm = () => {
       // Format the data to match the database schema
       const formattedData = {
         user_id: session.user.id,
-        general_opinion: Object.values(data.medicalDirectives.generalOpinion).some(value => value),
+        general_opinion: Object.values(data.medicalDirectives.generalOpinion).some(value => value === 'oui'),
         other_directives: Object.values(data.medicalDirectives.otherDirectives).some(value => value),
         life_support: JSON.stringify(data.medicalDirectives.lifeSupport),
         pain_relief: JSON.stringify(data.medicalDirectives.painRelief),
