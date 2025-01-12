@@ -38,6 +38,12 @@ export const Header = () => {
           >
             Accueil
           </Button>
+          <Button
+            variant="ghost"
+            onClick={() => navigate("/dashboard")}
+          >
+            En savoir plus
+          </Button>
           {user && (
             <Button
               variant="ghost"
