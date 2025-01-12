@@ -45,14 +45,14 @@ export const QuestionnaireForm = () => {
 
       const { error } = await supabase
         .from('advance_directives')
-        .upsert({
+        .upsert([{
           user_id: session.user.id,
           general_opinion: data.medicalDirectives.generalOpinion,
           other_directives: data.medicalDirectives.otherDirectives,
           life_support: JSON.stringify(data.medicalDirectives.lifeSupport),
           pain_relief: JSON.stringify(data.medicalDirectives.painRelief),
           let_die: JSON.stringify(data.medicalDirectives.letDie),
-        });
+        }]);
 
       if (error) throw error;
       
