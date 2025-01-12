@@ -90,16 +90,21 @@ export const QuestionnaireForm = () => {
         user_id: session.user.id,
         general_opinion: Object.values(data.medicalDirectives.generalOpinion).some(value => value === 'oui'),
         other_directives: Object.values(data.medicalDirectives.otherDirectives).some(value => value),
-        life_support: JSON.stringify(data.medicalDirectives.lifeSupport),
-        pain_relief: JSON.stringify(data.medicalDirectives.painRelief),
-        let_die: JSON.stringify(data.medicalDirectives.letDie),
+        life_support: JSON.stringify(data.medicalDirectives.lifeSupport || {}),
+        pain_relief: JSON.stringify(data.medicalDirectives.painRelief || {}),
+        let_die: JSON.stringify(data.medicalDirectives.letDie || {}),
       };
+
+      console.log('Formatted data for submission:', formattedData);
 
       const { error } = await supabase
         .from('advance_directives')
         .upsert(formattedData);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error saving form:", error);
+        throw error;
+      }
       
       toast({
         title: "Succès",
