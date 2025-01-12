@@ -1,9 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 const Index = () => {
   const navigate = useNavigate();
+  const [showSections, setShowSections] = useState(false);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -20,21 +22,54 @@ const Index = () => {
             en quelques étapes simples et sécurisées.
           </p>
 
-          <div className="grid gap-4 md:grid-cols-2 max-w-lg mx-auto">
-            <Button
-              size="lg"
-              onClick={() => navigate("/dashboard")}
-            >
-              Commencer
-            </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={() => navigate("/dashboard")}
-            >
-              En savoir plus
-            </Button>
-          </div>
+          {!showSections ? (
+            <div className="grid gap-4 md:grid-cols-2 max-w-lg mx-auto">
+              <Button
+                size="lg"
+                onClick={() => setShowSections(true)}
+              >
+                Commencer
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => navigate("/dashboard")}
+              >
+                En savoir plus
+              </Button>
+            </div>
+          ) : (
+            <div className="grid gap-4 max-w-lg mx-auto">
+              <Button
+                size="lg"
+                onClick={() => navigate("/dashboard")}
+                className="w-full"
+              >
+                Mon avis d'une façon générale
+              </Button>
+              <Button
+                size="lg"
+                onClick={() => navigate("/dashboard")}
+                className="w-full"
+              >
+                Maintien en vie
+              </Button>
+              <Button
+                size="lg"
+                onClick={() => navigate("/dashboard")}
+                className="w-full"
+              >
+                Allégement des souffrances
+              </Button>
+              <Button
+                size="lg"
+                onClick={() => navigate("/dashboard")}
+                className="w-full"
+              >
+                Privilégier le laisser mourir
+              </Button>
+            </div>
+          )}
 
           <div className="mt-12 grid gap-8 md:grid-cols-3">
             <div className="text-center">
