@@ -86,6 +86,17 @@ export const OtherDirectives = ({ form }: OtherDirectivesProps) => {
   if (isLoading) {
     return (
       <div className="space-y-6">
+        <div className="flex justify-end mb-4">
+          <Button
+            onClick={handleUpdateQuestions}
+            variant="outline"
+            size="sm"
+            disabled
+          >
+            <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+            Mise à jour...
+          </Button>
+        </div>
         <Skeleton className="h-4 w-3/4" />
         <Skeleton className="h-20" />
         <Skeleton className="h-20" />
@@ -94,37 +105,11 @@ export const OtherDirectives = ({ form }: OtherDirectivesProps) => {
     );
   }
 
-  if (error) {
-    console.error("Error in OtherDirectives component:", error);
-    return (
-      <div className="text-red-500">
-        Une erreur est survenue lors du chargement des questions.
-      </div>
-    );
-  }
-
-  if (!questions || questions.length === 0) {
-    return (
-      <div className="text-muted-foreground">
-        Aucune question n'a été trouvée pour cette section.
-        <Button
-          onClick={handleUpdateQuestions}
-          variant="outline"
-          size="sm"
-          className="ml-2"
-        >
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Mettre à jour les questions
-        </Button>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div className="text-sm text-muted-foreground">
-          {questions.length} question{questions.length > 1 ? 's' : ''}
+          {questions?.length || 0} question{(questions?.length || 0) > 1 ? 's' : ''}
         </div>
         <Button
           onClick={handleUpdateQuestions}
@@ -135,40 +120,51 @@ export const OtherDirectives = ({ form }: OtherDirectivesProps) => {
           Mettre à jour
         </Button>
       </div>
-      <div className="space-y-4">
-        {questions.map((question) => (
-          <FormField
-            key={question.id}
-            control={form.control}
-            name={`medicalDirectives.otherDirectives.${question.id}`}
-            render={({ field }) => (
-              <FormItem className="space-y-3">
-                <FormLabel>{question.question_text}</FormLabel>
-                <FormControl>
-                  <RadioGroup
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    className="flex flex-col space-y-1"
-                  >
-                    <FormItem className="flex items-center space-x-3 space-y-0">
-                      <FormControl>
-                        <RadioGroupItem value="true" />
-                      </FormControl>
-                      <FormLabel className="font-normal">Oui</FormLabel>
-                    </FormItem>
-                    <FormItem className="flex items-center space-x-3 space-y-0">
-                      <FormControl>
-                        <RadioGroupItem value="false" />
-                      </FormControl>
-                      <FormLabel className="font-normal">Non</FormLabel>
-                    </FormItem>
-                  </RadioGroup>
-                </FormControl>
-              </FormItem>
-            )}
-          />
-        ))}
-      </div>
+
+      {error ? (
+        <div className="text-red-500">
+          Une erreur est survenue lors du chargement des questions.
+        </div>
+      ) : !questions || questions.length === 0 ? (
+        <div className="text-muted-foreground">
+          Aucune question n'a été trouvée pour cette section.
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {questions.map((question) => (
+            <FormField
+              key={question.id}
+              control={form.control}
+              name={`medicalDirectives.otherDirectives.${question.id}`}
+              render={({ field }) => (
+                <FormItem className="space-y-3">
+                  <FormLabel>{question.question_text}</FormLabel>
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      className="flex flex-col space-y-1"
+                    >
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="true" />
+                        </FormControl>
+                        <FormLabel className="font-normal">Oui</FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="false" />
+                        </FormControl>
+                        <FormLabel className="font-normal">Non</FormLabel>
+                      </FormItem>
+                    </RadioGroup>
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };
