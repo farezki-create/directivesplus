@@ -28,8 +28,17 @@ const fetchOtherDirectivesQuestions = async () => {
     throw error;
   }
   
-  console.log("Fetched questions:", data);
-  return data as Question[];
+  // Remove duplicate questions based on question_text
+  const uniqueQuestions = data?.reduce((acc: Question[], current) => {
+    const exists = acc.find(item => item.question_text === current.question_text);
+    if (!exists) {
+      acc.push(current);
+    }
+    return acc;
+  }, []);
+  
+  console.log("Fetched unique questions:", uniqueQuestions);
+  return uniqueQuestions;
 };
 
 export const OtherDirectives = ({ form }: OtherDirectivesProps) => {
@@ -37,6 +46,8 @@ export const OtherDirectives = ({ form }: OtherDirectivesProps) => {
     queryKey: ['otherDirectivesQuestions'],
     queryFn: fetchOtherDirectivesQuestions,
   });
+
+  console.log("Component state:", { questions, isLoading, error });
 
   if (isLoading) {
     return (
@@ -58,12 +69,18 @@ export const OtherDirectives = ({ form }: OtherDirectivesProps) => {
     );
   }
 
+  if (!questions || questions.length === 0) {
+    return (
+      <div className="text-muted-foreground">
+        Aucune question n'a été trouvée pour cette section.
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="space-y-4">
-        <h3 className="text-lg font-medium">Autres directives</h3>
-        
-        {questions?.map((question) => (
+        {questions.map((question) => (
           <FormField
             key={question.id}
             control={form.control}
