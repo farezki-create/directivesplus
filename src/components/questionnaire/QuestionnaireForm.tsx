@@ -47,14 +47,14 @@ export const QuestionnaireForm = () => {
 
       const { error } = await supabase
         .from('advance_directives')
-        .upsert({
+        .upsert([{
           user_id: session.user.id,
           general_opinion: data.medicalDirectives.generalOpinion,
           other_directives: data.medicalDirectives.otherDirectives,
           life_support: JSON.stringify(data.medicalDirectives.lifeSupport),
           pain_relief: JSON.stringify(data.medicalDirectives.painRelief),
           let_die: JSON.stringify(data.medicalDirectives.letDie),
-        });
+        }]);
 
       if (error) throw error;
       
@@ -107,27 +107,33 @@ export const QuestionnaireForm = () => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="relative">
-        <Card className={`transition-all duration-300 ${openSection ? 'fixed inset-0 z-50 m-0 rounded-none overflow-auto' : 'max-w-[95vw] mx-auto'}`}>
-          <CardHeader className="flex flex-row items-center justify-between sticky top-0 bg-white z-50 border-b">
-            <CardTitle>Directives anticipées</CardTitle>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate("/")}
-              className="ml-auto"
-            >
-              <Home className="h-5 w-5" />
-            </Button>
+        <Card className={`w-full transition-all duration-300 ${
+          openSection 
+            ? 'fixed inset-0 z-50 rounded-none' 
+            : 'max-w-4xl mx-auto shadow-lg'
+        }`}>
+          <CardHeader className="sticky top-0 bg-white z-50 border-b px-6">
+            <div className="flex items-center justify-between">
+              <CardTitle>Directives anticipées</CardTitle>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate("/")}
+              >
+                <Home className="h-5 w-5" />
+              </Button>
+            </div>
           </CardHeader>
-          <CardContent className={openSection ? 'p-0' : ''}>
-            <div className={`space-y-4 ${openSection ? 'h-[calc(100vh-4rem)]' : ''}`}>
-              <p className="text-muted-foreground">
+          
+          <CardContent className={`${openSection ? 'p-0' : 'p-6'}`}>
+            {!openSection && (
+              <p className="text-muted-foreground mb-6">
                 Vos informations personnelles sont déjà enregistrées dans votre profil. 
                 Vous pouvez maintenant renseigner vos directives médicales.
               </p>
-            </div>
+            )}
 
-            <div className="grid grid-cols-1 gap-4 mt-6">
+            <div className="grid gap-4">
               {sections.map((section) => (
                 <Collapsible
                   key={section.id}
@@ -135,28 +141,29 @@ export const QuestionnaireForm = () => {
                   onOpenChange={() => handleSectionClick(section.id)}
                   className={`transition-all duration-300 ${
                     openSection === section.id 
-                      ? 'fixed inset-0 z-50 bg-white' 
-                      : 'relative border rounded-lg p-4 hover:border-primary/50 shadow-sm hover:shadow-md'
+                      ? 'fixed inset-0 z-50 bg-white overflow-auto pt-20' 
+                      : 'relative border rounded-lg hover:border-primary/50 shadow-sm hover:shadow-md'
                   }`}
                 >
-                  <CollapsibleTrigger className="w-full flex items-center justify-between font-semibold group">
-                    <span className="text-lg">{section.title}</span>
+                  <CollapsibleTrigger className={`w-full flex items-center justify-between p-4 ${
+                    openSection === section.id ? 'fixed top-20 left-0 right-0 bg-white z-50 border-b px-6' : ''
+                  }`}>
+                    <span className="text-lg font-semibold">{section.title}</span>
                     <ChevronDown className={`h-5 w-5 transition-transform duration-300 ease-in-out text-primary ${
                       openSection === section.id ? 'transform rotate-180' : ''
                     }`} />
                   </CollapsibleTrigger>
+                  
                   <CollapsibleContent className={`transition-all duration-300 ${
-                    openSection === section.id ? 'p-6 pt-4 h-[calc(100vh-8rem)] overflow-y-auto' : 'pt-4'
+                    openSection === section.id ? 'px-6 pb-6' : 'p-4'
                   }`}>
-                    <div className="border-t pt-4">
-                      {section.content}
-                    </div>
+                    {section.content}
                   </CollapsibleContent>
                 </Collapsible>
               ))}
             </div>
 
-            <div className="flex justify-between mt-6">
+            <div className="flex justify-end mt-6">
               <Button type="submit" className="transition-all duration-200 hover:scale-105">
                 Sauvegarder
               </Button>
