@@ -5,6 +5,9 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Database } from "@/integrations/supabase/types";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { RefreshCw } from "lucide-react";
 
 type Question = Database['public']['Tables']['questionnaire_questions']['Row'];
 
@@ -30,12 +33,35 @@ const fetchGeneralOpinionQuestions = async () => {
 };
 
 export const GeneralOpinion = ({ form }: GeneralOpinionProps) => {
-  const { data: questions, isLoading, error } = useQuery({
+  const { toast } = useToast();
+  const { data: questions, isLoading, error, refetch } = useQuery({
     queryKey: ['generalOpinionQuestions'],
     queryFn: fetchGeneralOpinionQuestions,
   });
 
   console.log("Component state:", { questions, isLoading, error });
+
+  const handleUpdateQuestions = async () => {
+    try {
+      const { error } = await supabase.functions.invoke('read-csv-questions');
+      
+      if (error) throw error;
+      
+      await refetch();
+      
+      toast({
+        title: "Succès",
+        description: "Les questions ont été mises à jour avec succès.",
+      });
+    } catch (error) {
+      console.error("Error updating questions:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la mise à jour des questions.",
+      });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -60,14 +86,34 @@ export const GeneralOpinion = ({ form }: GeneralOpinionProps) => {
   if (!questions || questions.length === 0) {
     console.log("No questions found");
     return (
-      <div className="text-muted-foreground">
-        Aucune question n'a été trouvée pour cette section.
+      <div className="space-y-4">
+        <div className="text-muted-foreground">
+          Aucune question n'a été trouvée pour cette section.
+        </div>
+        <Button 
+          onClick={handleUpdateQuestions}
+          className="flex items-center gap-2"
+        >
+          <RefreshCw className="h-4 w-4" />
+          Mettre à jour les questions
+        </Button>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <Button 
+          onClick={handleUpdateQuestions}
+          variant="outline"
+          className="flex items-center gap-2"
+        >
+          <RefreshCw className="h-4 w-4" />
+          Mettre à jour les questions
+        </Button>
+      </div>
+
       <div className="space-y-4">
         {questions?.map((question) => (
           <FormField
