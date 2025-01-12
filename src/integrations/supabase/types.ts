@@ -87,30 +87,6 @@ export type Database = {
         }
         Relationships: []
       }
-      questionnaire_questions: {
-        Row: {
-          category: Database["public"]["Enums"]["question_category"]
-          created_at: string
-          id: string
-          question_text: string
-          updated_at: string
-        }
-        Insert: {
-          category: Database["public"]["Enums"]["question_category"]
-          created_at?: string
-          id?: string
-          question_text: string
-          updated_at?: string
-        }
-        Update: {
-          category?: Database["public"]["Enums"]["question_category"]
-          created_at?: string
-          id?: string
-          question_text?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
