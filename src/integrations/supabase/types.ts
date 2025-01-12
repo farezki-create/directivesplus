@@ -45,6 +45,39 @@ export type Database = {
         }
         Relationships: []
       }
+      questions: {
+        Row: {
+          category: Database["public"]["Enums"]["question_category"]
+          created_at: string
+          id: string
+          no_count: number | null
+          question: string
+          type: Database["public"]["Enums"]["question_type"]
+          updated_at: string
+          yes_count: number | null
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["question_category"]
+          created_at?: string
+          id?: string
+          no_count?: number | null
+          question: string
+          type?: Database["public"]["Enums"]["question_type"]
+          updated_at?: string
+          yes_count?: number | null
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["question_category"]
+          created_at?: string
+          id?: string
+          no_count?: number | null
+          question?: string
+          type?: Database["public"]["Enums"]["question_type"]
+          updated_at?: string
+          yes_count?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
