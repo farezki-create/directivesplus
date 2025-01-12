@@ -46,7 +46,7 @@ export const DirectivesForm = () => {
 
   return (
     <Card className="p-6 max-w-2xl mx-auto">
-      <div className="flex justify-center gap-4 mb-6">
+      <div className="flex items-center justify-center gap-4 mb-6">
         <Button
           variant="outline"
           onClick={prevStep}
@@ -65,7 +65,7 @@ export const DirectivesForm = () => {
       </div>
 
       <Progress value={progress} className="mb-6" />
-      
+
       {step === 1 && (
         <div className="space-y-4">
           <h2 className="text-2xl font-bold">Informations personnelles</h2>
