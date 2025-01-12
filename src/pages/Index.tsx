@@ -1,11 +1,11 @@
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/home/Hero";
 import { Features } from "@/components/home/Features";
-import { useDownloadQuestionnaire } from "@/components/home/DownloadButton";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
-  const handleDownload = useDownloadQuestionnaire();
-  const handleStart = handleDownload;
+  const navigate = useNavigate();
+  const handleStart = () => navigate("/questionnaire");
 
   return (
     <div className="min-h-screen flex flex-col">
