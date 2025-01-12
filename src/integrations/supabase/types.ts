@@ -89,24 +89,24 @@ export type Database = {
       }
       questionnaire_questions: {
         Row: {
-          id: string
-          question_text: string
           category: string
           created_at: string
+          id: string
+          question_text: string
           updated_at: string
         }
         Insert: {
-          id?: string
-          question_text: string
           category: string
           created_at?: string
+          id?: string
+          question_text: string
           updated_at?: string
         }
         Update: {
-          id?: string
-          question_text?: string
           category?: string
           created_at?: string
+          id?: string
+          question_text?: string
           updated_at?: string
         }
         Relationships: []
@@ -132,6 +132,8 @@ export type Database = {
   }
 }
 
+type PublicSchema = Database[Extract<keyof Database, "public">]
+
 export type Tables<
   PublicTableNameOrOptions extends
     | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
@@ -156,8 +158,6 @@ export type Tables<
       ? R
       : never
     : never
-
-type PublicSchema = Database[Extract<keyof Database, "public">]
 
 export type TablesInsert<
   PublicTableNameOrOptions extends
