@@ -92,6 +92,9 @@ export type Database = {
           category: string
           created_at: string
           id: string
+          non: boolean | null
+          oui: boolean | null
+          question: string | null
           question_text: string
           updated_at: string
         }
@@ -99,6 +102,9 @@ export type Database = {
           category: string
           created_at?: string
           id?: string
+          non?: boolean | null
+          oui?: boolean | null
+          question?: string | null
           question_text: string
           updated_at?: string
         }
@@ -106,6 +112,9 @@ export type Database = {
           category?: string
           created_at?: string
           id?: string
+          non?: boolean | null
+          oui?: boolean | null
+          question?: string | null
           question_text?: string
           updated_at?: string
         }
