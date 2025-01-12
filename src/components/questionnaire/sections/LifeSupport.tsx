@@ -1,39 +1,21 @@
-import { FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { UseFormReturn } from "react-hook-form";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Database } from "@/integrations/supabase/types";
-
-type Question = Database['public']['Tables']['questionnaire_questions']['Row'];
+import { UpdateQuestionsButton } from "../components/UpdateQuestionsButton";
+import { QuestionOptions } from "../components/QuestionOptions";
+import { useQuestionnaireQuestions } from "@/hooks/useQuestionnaireQuestions";
 
 interface LifeSupportProps {
   form: UseFormReturn<any>;
 }
 
-const fetchLifeSupportQuestions = async () => {
-  console.log("Fetching life support questions...");
-  const { data, error } = await supabase
-    .from('questionnaire_questions')
-    .select('*')
-    .eq('category', 'life_support')
-    .order('created_at', { ascending: true });
-    
-  if (error) {
-    console.error("Error fetching life support questions:", error);
-    throw error;
-  }
-  
-  console.log("Fetched life support questions:", data);
-  return data as Question[];
-};
-
 export const LifeSupport = ({ form }: LifeSupportProps) => {
-  const { data: questions, isLoading, error } = useQuery({
-    queryKey: ['lifeSupportQuestions'],
-    queryFn: fetchLifeSupportQuestions,
-  });
+  const { 
+    data: questions, 
+    isLoading, 
+    error,
+    refetch 
+  } = useQuestionnaireQuestions('life_support');
 
   if (isLoading) {
     return (
@@ -54,12 +36,26 @@ export const LifeSupport = ({ form }: LifeSupportProps) => {
     );
   }
 
+  if (!questions || questions.length === 0) {
+    return (
+      <div className="space-y-4">
+        <div className="text-muted-foreground">
+          Aucune question n'a été trouvée pour cette section.
+        </div>
+        <UpdateQuestionsButton onUpdate={async () => { await refetch(); }} />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      <div className="space-y-4">
+      <div className="flex justify-between items-center">
         <h3 className="text-lg font-medium">Maintien de la vie</h3>
-        
-        {questions?.map((question) => (
+        <UpdateQuestionsButton onUpdate={async () => { await refetch(); }} />
+      </div>
+
+      <div className="space-y-4">
+        {questions.map((question) => (
           <FormField
             key={question.id}
             control={form.control}
@@ -67,26 +63,7 @@ export const LifeSupport = ({ form }: LifeSupportProps) => {
             render={({ field }) => (
               <FormItem className="space-y-3">
                 <FormLabel>{question.question_text}</FormLabel>
-                <FormControl>
-                  <RadioGroup
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    className="flex flex-col space-y-1"
-                  >
-                    <FormItem className="flex items-center space-x-3 space-y-0">
-                      <FormControl>
-                        <RadioGroupItem value="true" />
-                      </FormControl>
-                      <FormLabel className="font-normal">Oui</FormLabel>
-                    </FormItem>
-                    <FormItem className="flex items-center space-x-3 space-y-0">
-                      <FormControl>
-                        <RadioGroupItem value="false" />
-                      </FormControl>
-                      <FormLabel className="font-normal">Non</FormLabel>
-                    </FormItem>
-                  </RadioGroup>
-                </FormControl>
+                <QuestionOptions question={question} field={field} />
               </FormItem>
             )}
           />

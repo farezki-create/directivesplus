@@ -1,39 +1,21 @@
-import { FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { UseFormReturn } from "react-hook-form";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Database } from "@/integrations/supabase/types";
-
-type Question = Database['public']['Tables']['questionnaire_questions']['Row'];
+import { UpdateQuestionsButton } from "../components/UpdateQuestionsButton";
+import { QuestionOptions } from "../components/QuestionOptions";
+import { useQuestionnaireQuestions } from "@/hooks/useQuestionnaireQuestions";
 
 interface PainReliefProps {
   form: UseFormReturn<any>;
 }
 
-const fetchPainReliefQuestions = async () => {
-  console.log("Fetching pain relief questions...");
-  const { data, error } = await supabase
-    .from('questionnaire_questions')
-    .select('*')
-    .eq('category', 'pain_relief')
-    .order('created_at', { ascending: true });
-    
-  if (error) {
-    console.error("Error fetching pain relief questions:", error);
-    throw error;
-  }
-  
-  console.log("Fetched pain relief questions:", data);
-  return data as Question[];
-};
-
 export const PainRelief = ({ form }: PainReliefProps) => {
-  const { data: questions, isLoading, error } = useQuery({
-    queryKey: ['painReliefQuestions'],
-    queryFn: fetchPainReliefQuestions,
-  });
+  const { 
+    data: questions, 
+    isLoading, 
+    error,
+    refetch 
+  } = useQuestionnaireQuestions('pain_relief');
 
   if (isLoading) {
     return (
@@ -54,12 +36,26 @@ export const PainRelief = ({ form }: PainReliefProps) => {
     );
   }
 
+  if (!questions || questions.length === 0) {
+    return (
+      <div className="space-y-4">
+        <div className="text-muted-foreground">
+          Aucune question n'a été trouvée pour cette section.
+        </div>
+        <UpdateQuestionsButton onUpdate={async () => { await refetch(); }} />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      <div className="space-y-4">
+      <div className="flex justify-between items-center">
         <h3 className="text-lg font-medium">Allégement des souffrances</h3>
-        
-        {questions?.map((question) => (
+        <UpdateQuestionsButton onUpdate={async () => { await refetch(); }} />
+      </div>
+
+      <div className="space-y-4">
+        {questions.map((question) => (
           <FormField
             key={question.id}
             control={form.control}
@@ -67,26 +63,7 @@ export const PainRelief = ({ form }: PainReliefProps) => {
             render={({ field }) => (
               <FormItem className="space-y-3">
                 <FormLabel>{question.question_text}</FormLabel>
-                <FormControl>
-                  <RadioGroup
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    className="flex flex-col space-y-1"
-                  >
-                    <FormItem className="flex items-center space-x-3 space-y-0">
-                      <FormControl>
-                        <RadioGroupItem value="true" />
-                      </FormControl>
-                      <FormLabel className="font-normal">Oui</FormLabel>
-                    </FormItem>
-                    <FormItem className="flex items-center space-x-3 space-y-0">
-                      <FormControl>
-                        <RadioGroupItem value="false" />
-                      </FormControl>
-                      <FormLabel className="font-normal">Non</FormLabel>
-                    </FormItem>
-                  </RadioGroup>
-                </FormControl>
+                <QuestionOptions question={question} field={field} />
               </FormItem>
             )}
           />
