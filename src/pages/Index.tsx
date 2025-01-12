@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { UserPlus } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -67,6 +68,14 @@ const Index = () => {
                 className="w-full"
               >
                 Privilégier le laisser mourir
+              </Button>
+              <Button
+                size="lg"
+                onClick={() => navigate("/dashboard")}
+                className="w-full flex items-center justify-center gap-2"
+              >
+                <UserPlus className="w-5 h-5" />
+                Désignation d'une personne de confiance
               </Button>
             </div>
           )}
