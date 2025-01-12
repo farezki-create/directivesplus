@@ -45,14 +45,14 @@ export const QuestionnaireForm = () => {
 
       const { error } = await supabase
         .from('advance_directives')
-        .upsert([{
+        .upsert({
           user_id: session.user.id,
           general_opinion: data.medicalDirectives.generalOpinion,
           other_directives: data.medicalDirectives.otherDirectives,
           life_support: JSON.stringify(data.medicalDirectives.lifeSupport),
           pain_relief: JSON.stringify(data.medicalDirectives.painRelief),
           let_die: JSON.stringify(data.medicalDirectives.letDie),
-        }]);
+        });
 
       if (error) throw error;
       
@@ -112,7 +112,11 @@ export const QuestionnaireForm = () => {
         }`}>
           <QuestionnaireHeader />
           
-          <CardContent className={`${openSection ? 'p-0 h-[calc(100vh-4rem)] overflow-auto' : 'p-6'}`}>
+          <CardContent className={`${
+            openSection 
+              ? 'p-0 h-[calc(100vh-4rem)] overflow-auto bg-background' 
+              : 'p-6'
+          }`}>
             {!openSection && (
               <p className="text-muted-foreground mb-6">
                 Vos informations personnelles sont déjà enregistrées dans votre profil. 

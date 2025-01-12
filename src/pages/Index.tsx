@@ -3,7 +3,7 @@ import { Hero } from "@/components/home/Hero";
 import { Features } from "@/components/home/Features";
 import { QuestionnaireForm } from "@/components/questionnaire/QuestionnaireForm";
 import { useDownloadQuestionnaire } from "@/components/home/DownloadButton";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useState } from "react";
 
 const Index = () => {
@@ -23,7 +23,8 @@ const Index = () => {
         <Features />
 
         <Dialog open={showQuestionnaire} onOpenChange={setShowQuestionnaire}>
-          <DialogContent className="max-w-4xl">
+          <DialogContent className="max-w-4xl p-0">
+            <DialogTitle className="sr-only">Questionnaire des directives anticipées</DialogTitle>
             <QuestionnaireForm />
           </DialogContent>
         </Dialog>
