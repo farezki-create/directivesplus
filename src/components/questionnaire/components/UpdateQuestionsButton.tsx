@@ -2,9 +2,10 @@ import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { RefetchOptions, QueryObserverResult } from "@tanstack/react-query";
 
 interface UpdateQuestionsButtonProps {
-  onUpdate: () => Promise<void>;
+  onUpdate: (options?: RefetchOptions) => Promise<QueryObserverResult<any, Error>>;
   variant?: "default" | "outline";
 }
 

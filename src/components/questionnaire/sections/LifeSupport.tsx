@@ -42,7 +42,7 @@ export const LifeSupport = ({ form }: LifeSupportProps) => {
         <div className="text-muted-foreground">
           Aucune question n'a été trouvée pour cette section.
         </div>
-        <UpdateQuestionsButton onUpdate={async () => { await refetch(); }} />
+        <UpdateQuestionsButton onUpdate={refetch} />
       </div>
     );
   }
@@ -51,7 +51,7 @@ export const LifeSupport = ({ form }: LifeSupportProps) => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-medium">Maintien de la vie</h3>
-        <UpdateQuestionsButton onUpdate={async () => { await refetch(); }} />
+        <UpdateQuestionsButton onUpdate={refetch} />
       </div>
 
       <div className="space-y-4">
