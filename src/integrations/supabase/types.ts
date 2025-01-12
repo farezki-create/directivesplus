@@ -9,63 +9,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      questionnaire_questions: {
-        Row: {
-          id: number
-          NON: boolean | null
-          OUI: boolean | null
-          Question: string
-        }
-        Insert: {
-          id?: number
-          NON?: boolean | null
-          OUI?: boolean | null
-          Question: string
-        }
-        Update: {
-          id?: number
-          NON?: boolean | null
-          OUI?: boolean | null
-          Question?: string
-        }
-        Relationships: []
-      }
-      questionnaires: {
-        Row: {
-          content_type: string | null
-          file_name: string
-          file_path: string
-          file_size: number | null
-          id: string
-          is_active: boolean | null
-          updated_at: string
-          uploaded_at: string
-          uploaded_by: string | null
-        }
-        Insert: {
-          content_type?: string | null
-          file_name: string
-          file_path: string
-          file_size?: number | null
-          id?: string
-          is_active?: boolean | null
-          updated_at?: string
-          uploaded_at?: string
-          uploaded_by?: string | null
-        }
-        Update: {
-          content_type?: string | null
-          file_name?: string
-          file_path?: string
-          file_size?: number | null
-          id?: string
-          is_active?: boolean | null
-          updated_at?: string
-          uploaded_at?: string
-          uploaded_by?: string | null
-        }
-        Relationships: []
-      }
       questions: {
         Row: {
           category: Database["public"]["Enums"]["question_category"]
