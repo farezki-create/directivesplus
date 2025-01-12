@@ -47,16 +47,100 @@ export type Database = {
       }
       profiles: {
         Row: {
+          address: string | null
           avatar_url: string | null
+          birth_date: string | null
+          city: string | null
+          created_at: string
+          first_name: string | null
           id: string
+          last_name: string | null
+          phone_number: string | null
+          postal_code: string | null
+          updated_at: string
         }
         Insert: {
+          address?: string | null
           avatar_url?: string | null
+          birth_date?: string | null
+          city?: string | null
+          created_at?: string
+          first_name?: string | null
           id: string
+          last_name?: string | null
+          phone_number?: string | null
+          postal_code?: string | null
+          updated_at?: string
         }
         Update: {
+          address?: string | null
           avatar_url?: string | null
+          birth_date?: string | null
+          city?: string | null
+          created_at?: string
+          first_name?: string | null
           id?: string
+          last_name?: string | null
+          phone_number?: string | null
+          postal_code?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      questionnaire_questions: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          indecision: boolean | null
+          non: boolean | null
+          non_sauf_equipe_medicale: boolean | null
+          oui: boolean | null
+          oui_si_equipe_medicale: boolean | null
+          plutot_non_non_souffrance: boolean | null
+          plutot_non_rapidement: boolean | null
+          plutot_oui: boolean | null
+          plutot_oui_duree_moderee: boolean | null
+          question: string | null
+          question_text: string
+          question_type: Database["public"]["Enums"]["question_type"]
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          indecision?: boolean | null
+          non?: boolean | null
+          non_sauf_equipe_medicale?: boolean | null
+          oui?: boolean | null
+          oui_si_equipe_medicale?: boolean | null
+          plutot_non_non_souffrance?: boolean | null
+          plutot_non_rapidement?: boolean | null
+          plutot_oui?: boolean | null
+          plutot_oui_duree_moderee?: boolean | null
+          question?: string | null
+          question_text: string
+          question_type?: Database["public"]["Enums"]["question_type"]
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          indecision?: boolean | null
+          non?: boolean | null
+          non_sauf_equipe_medicale?: boolean | null
+          oui?: boolean | null
+          oui_si_equipe_medicale?: boolean | null
+          plutot_non_non_souffrance?: boolean | null
+          plutot_non_rapidement?: boolean | null
+          plutot_oui?: boolean | null
+          plutot_oui_duree_moderee?: boolean | null
+          question?: string | null
+          question_text?: string
+          question_type?: Database["public"]["Enums"]["question_type"]
+          updated_at?: string
         }
         Relationships: []
       }
@@ -68,7 +152,13 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      question_category:
+        | "general_opinion"
+        | "other_directives"
+        | "life_support"
+        | "pain_relief"
+        | "let_die"
+      question_type: "simple" | "detailed"
     }
     CompositeTypes: {
       [_ in never]: never
