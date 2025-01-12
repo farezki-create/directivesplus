@@ -38,12 +38,22 @@ serve(async (req) => {
     console.log('CSV content:', text)
     
     try {
-      // Parse CSV with specific configuration
+      // Define header mapping from French to database columns
+      const headerMapping = {
+        " Question": "question_text",
+        "Indécision": "indecision",
+        "Plûtot Oui": "plutot_oui",
+        "Plûtot Oui, pour une durée modérée, dans un mais thérapeutique, mais la non soufrance est la priorité ": "plutot_oui_duree_moderee",
+        "Oui, si l'équipe médicale le juge utile après une procédure collégiale": "oui_si_equipe_medicale",
+        "Plûtot Non, rapidement abandonner le thérapeutique au profit de la non souffrance": "plutot_non_rapidement",
+        "Non, sauf si l'équipe médicale le juge utile par une procédure collégiale": "non_sauf_equipe_medicale",
+        "Plutôt Non, privilégier seulement la non souffrance": "plutot_non_non_souffrance"
+      }
+
+      // Parse CSV with the French headers
       const rows = parse(text, {
         skipFirstRow: true,
-        columns: ['question', 'indecision', 'plutot_oui', 'plutot_oui_duree_moderee', 
-                 'oui_si_equipe_medicale', 'plutot_non_rapidement', 
-                 'non_sauf_equipe_medicale', 'plutot_non_non_souffrance']
+        columns: Object.keys(headerMapping)
       })
 
       console.log('Successfully parsed rows:', rows)
@@ -59,18 +69,25 @@ serve(async (req) => {
         throw deleteError
       }
 
-      // Transform and insert the new questions
-      const formattedRows = rows.map((row: any) => ({
-        category: 'general_opinion',
-        question_text: row.question,
-        indecision: row.indecision?.toLowerCase() === 'true' || row.indecision === '1',
-        plutot_oui: row.plutot_oui?.toLowerCase() === 'true' || row.plutot_oui === '1',
-        plutot_oui_duree_moderee: row.plutot_oui_duree_moderee?.toLowerCase() === 'true' || row.plutot_oui_duree_moderee === '1',
-        oui_si_equipe_medicale: row.oui_si_equipe_medicale?.toLowerCase() === 'true' || row.oui_si_equipe_medicale === '1',
-        plutot_non_rapidement: row.plutot_non_rapidement?.toLowerCase() === 'true' || row.plutot_non_rapidement === '1',
-        non_sauf_equipe_medicale: row.non_sauf_equipe_medicale?.toLowerCase() === 'true' || row.non_sauf_equipe_medicale === '1',
-        plutot_non_non_souffrance: row.plutot_non_non_souffrance?.toLowerCase() === 'true' || row.plutot_non_non_souffrance === '1'
-      }))
+      // Transform the data to match database column names
+      const formattedRows = rows.map((row: any) => {
+        const formattedRow: any = {
+          category: 'general_opinion'
+        }
+
+        // Map each French header to its corresponding database column
+        for (const [frenchHeader, dbColumn] of Object.entries(headerMapping)) {
+          const value = row[frenchHeader]
+          formattedRow[dbColumn] = value?.toLowerCase() === 'true' || value === '1' || value === 'oui'
+          
+          // Special handling for question_text
+          if (dbColumn === 'question_text') {
+            formattedRow[dbColumn] = value
+          }
+        }
+
+        return formattedRow
+      })
 
       console.log('Formatted rows for insertion:', formattedRows)
 
@@ -98,7 +115,17 @@ serve(async (req) => {
       )
     } catch (parseError) {
       console.error('CSV parsing error:', parseError)
-      throw new Error(`CSV parsing error: ${parseError.message}`)
+      return new Response(
+        JSON.stringify({ 
+          error: parseError.message,
+          details: parseError.stack,
+          type: 'csv_parse_error'
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400
+        }
+      )
     }
   } catch (error) {
     console.error('Error:', error)
