@@ -53,17 +53,18 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
 
   const handleSubmit = () => {
     console.log('Réponses soumises:', answers);
+    // TODO: Implement answer submission logic
     onOpenChange(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[800px] h-[90vh] max-h-[90vh] p-0 flex flex-col mx-4 w-[calc(100%-2rem)]">
-        <Header onNavigate={() => onOpenChange(false)} />
+      <DialogContent className="sm:max-w-[800px] h-[90vh] max-h-[90vh] p-0 flex flex-col">
+        <Header />
         
-        <div className="flex-1 overflow-hidden flex flex-col p-4 md:p-6">
+        <div className="flex-1 overflow-hidden flex flex-col p-6">
           <DialogHeader>
-            <DialogTitle className="text-xl md:text-2xl font-semibold text-center px-2">
+            <DialogTitle className="text-2xl font-semibold text-center">
               Mon avis d'une façon générale
             </DialogTitle>
           </DialogHeader>
@@ -74,13 +75,13 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
             </div>
           ) : questions.length > 0 ? (
             <ScrollArea className="flex-1 px-1">
-              <div className="space-y-4 md:space-y-6 py-4">
+              <div className="space-y-6 py-4">
                 {questions.map((question) => (
                   <div 
                     key={question.id} 
-                    className="p-4 md:p-6 bg-card rounded-lg border shadow-sm"
+                    className="p-6 bg-card rounded-lg border shadow-sm"
                   >
-                    <p className="text-base md:text-lg font-medium mb-4">{question.Question}</p>
+                    <p className="text-lg font-medium mb-4">{question.Question}</p>
                     <RadioGroup
                       value={answers[question.id]}
                       onValueChange={(value) => handleAnswerChange(question.id, value)}
@@ -88,13 +89,13 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
                     >
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="oui" id={`${question.id}-oui`} />
-                        <Label htmlFor={`${question.id}-oui`} className="text-sm md:text-base">
+                        <Label htmlFor={`${question.id}-oui`} className="text-base">
                           {question.OUI || "Oui"}
                         </Label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="non" id={`${question.id}-non`} />
-                        <Label htmlFor={`${question.id}-non`} className="text-sm md:text-base">
+                        <Label htmlFor={`${question.id}-non`} className="text-base">
                           {question.NON || "Non"}
                         </Label>
                       </div>
@@ -109,7 +110,7 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
             </div>
           )}
 
-          <DialogFooter className="mt-4 md:mt-6">
+          <DialogFooter className="mt-6">
             <Button
               onClick={handleSubmit}
               className="w-full sm:w-auto"

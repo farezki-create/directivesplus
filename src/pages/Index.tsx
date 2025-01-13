@@ -14,23 +14,22 @@ const Index = () => {
     <div className="min-h-screen flex flex-col">
       <Header />
       
-      <main className="flex-1 container mx-auto px-4 py-6 md:py-8">
+      <main className="flex-1 container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl md:text-4xl font-bold mb-4 md:mb-6 text-center px-2">
+          <h1 className="text-4xl font-bold mb-6 text-center">
             Vos directives anticipées en toute simplicité
           </h1>
           
-          <p className="text-lg md:text-xl text-muted-foreground mb-6 md:mb-8 text-center px-2">
+          <p className="text-xl text-muted-foreground mb-8 text-center">
             Rédigez vos directives anticipées et désignez vos personnes de confiance
             en quelques étapes simples et sécurisées.
           </p>
 
           {!showSections ? (
-            <div className="grid gap-3 md:gap-4 md:grid-cols-2 max-w-lg mx-auto px-4">
+            <div className="grid gap-4 md:grid-cols-2 max-w-lg mx-auto">
               <Button
                 size="lg"
                 onClick={() => setShowSections(true)}
-                className="w-full"
               >
                 Commencer
               </Button>
@@ -38,13 +37,12 @@ const Index = () => {
                 variant="outline"
                 size="lg"
                 onClick={() => navigate("/dashboard")}
-                className="w-full"
               >
                 En savoir plus
               </Button>
             </div>
           ) : (
-            <div className="grid gap-3 md:gap-4 max-w-lg mx-auto px-4">
+            <div className="grid gap-4 max-w-lg mx-auto">
               <Button
                 size="lg"
                 onClick={() => setDialogOpen(true)}
@@ -84,22 +82,22 @@ const Index = () => {
             </div>
           )}
 
-          <div className="mt-8 md:mt-12 grid gap-6 md:gap-8 md:grid-cols-3 px-4">
+          <div className="mt-12 grid gap-8 md:grid-cols-3">
             <div className="text-center">
               <h3 className="text-lg font-semibold mb-2">Simple et guidé</h3>
-              <p className="text-muted-foreground text-sm md:text-base">
+              <p className="text-muted-foreground">
                 Un processus pas à pas pour vous accompagner dans la rédaction.
               </p>
             </div>
             <div className="text-center">
               <h3 className="text-lg font-semibold mb-2">100% sécurisé</h3>
-              <p className="text-muted-foreground text-sm md:text-base">
+              <p className="text-muted-foreground">
                 Vos données sont protégées et confidentielles.
               </p>
             </div>
             <div className="text-center">
               <h3 className="text-lg font-semibold mb-2">Toujours accessible</h3>
-              <p className="text-muted-foreground text-sm md:text-base">
+              <p className="text-muted-foreground">
                 Consultez et modifiez vos directives à tout moment.
               </p>
             </div>
