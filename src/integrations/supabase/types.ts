@@ -11,34 +11,22 @@ export type Database = {
     Tables: {
       questions: {
         Row: {
-          category: Database["public"]["Enums"]["question_category"]
-          created_at: string
           id: string
-          NON: boolean | null
-          OUI: boolean | null
+          NON: string
+          OUI: string
           Question: string
-          type: Database["public"]["Enums"]["question_type"]
-          updated_at: string
         }
         Insert: {
-          category?: Database["public"]["Enums"]["question_category"]
-          created_at?: string
           id?: string
-          NON?: boolean | null
-          OUI?: boolean | null
+          NON: string
+          OUI: string
           Question: string
-          type?: Database["public"]["Enums"]["question_type"]
-          updated_at?: string
         }
         Update: {
-          category?: Database["public"]["Enums"]["question_category"]
-          created_at?: string
           id?: string
-          NON?: boolean | null
-          OUI?: boolean | null
+          NON?: string
+          OUI?: string
           Question?: string
-          type?: Database["public"]["Enums"]["question_type"]
-          updated_at?: string
         }
         Relationships: []
       }
