@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Header } from "@/components/Header";
 
 interface QuestionsDialogProps {
   open: boolean;
@@ -58,63 +59,67 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[80vh] flex flex-col">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-semibold text-center">
-            Mon avis d'une façon générale
-          </DialogTitle>
-        </DialogHeader>
+      <DialogContent className="sm:max-w-[800px] h-[90vh] max-h-[90vh] p-0 flex flex-col">
+        <Header />
         
-        {loading ? (
-          <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          </div>
-        ) : questions.length > 0 ? (
-          <ScrollArea className="flex-1 px-1">
-            <div className="space-y-6 py-4">
-              {questions.map((question) => (
-                <div 
-                  key={question.id} 
-                  className="p-6 bg-card rounded-lg border shadow-sm"
-                >
-                  <p className="text-lg font-medium mb-4">{question.Question}</p>
-                  <RadioGroup
-                    value={answers[question.id]}
-                    onValueChange={(value) => handleAnswerChange(question.id, value)}
-                    className="flex flex-col space-y-3"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="oui" id={`${question.id}-oui`} />
-                      <Label htmlFor={`${question.id}-oui`} className="text-base">
-                        {question.OUI || "Oui"}
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="non" id={`${question.id}-non`} />
-                      <Label htmlFor={`${question.id}-non`} className="text-base">
-                        {question.NON || "Non"}
-                      </Label>
-                    </div>
-                  </RadioGroup>
-                </div>
-              ))}
+        <div className="flex-1 overflow-hidden flex flex-col p-6">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-semibold text-center">
+              Mon avis d'une façon générale
+            </DialogTitle>
+          </DialogHeader>
+          
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
-          </ScrollArea>
-        ) : (
-          <div className="py-8 text-center text-muted-foreground">
-            Aucune question trouvée. Veuillez vérifier la table questions dans Supabase.
-          </div>
-        )}
+          ) : questions.length > 0 ? (
+            <ScrollArea className="flex-1 px-1">
+              <div className="space-y-6 py-4">
+                {questions.map((question) => (
+                  <div 
+                    key={question.id} 
+                    className="p-6 bg-card rounded-lg border shadow-sm"
+                  >
+                    <p className="text-lg font-medium mb-4">{question.Question}</p>
+                    <RadioGroup
+                      value={answers[question.id]}
+                      onValueChange={(value) => handleAnswerChange(question.id, value)}
+                      className="flex flex-col space-y-3"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="oui" id={`${question.id}-oui`} />
+                        <Label htmlFor={`${question.id}-oui`} className="text-base">
+                          {question.OUI || "Oui"}
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="non" id={`${question.id}-non`} />
+                        <Label htmlFor={`${question.id}-non`} className="text-base">
+                          {question.NON || "Non"}
+                        </Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          ) : (
+            <div className="py-8 text-center text-muted-foreground">
+              Aucune question trouvée. Veuillez vérifier la table questions dans Supabase.
+            </div>
+          )}
 
-        <DialogFooter className="mt-6">
-          <Button
-            onClick={handleSubmit}
-            className="w-full sm:w-auto"
-            disabled={loading || questions.length === 0}
-          >
-            Enregistrer mes réponses
-          </Button>
-        </DialogFooter>
+          <DialogFooter className="mt-6">
+            <Button
+              onClick={handleSubmit}
+              className="w-full sm:w-auto"
+              disabled={loading || questions.length === 0}
+            >
+              Enregistrer mes réponses
+            </Button>
+          </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );
