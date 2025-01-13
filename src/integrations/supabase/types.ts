@@ -45,6 +45,42 @@ export type Database = {
         }
         Relationships: []
       }
+      let_die_questions: {
+        Row: {
+          answer_indecision: string
+          answer_non_rapide: string
+          answer_non_souffrance: string
+          answer_oui: string
+          answer_oui_medical: string
+          answer_oui_modere: string
+          id: string
+          question: string
+          updated_at: string | null
+        }
+        Insert: {
+          answer_indecision?: string
+          answer_non_rapide?: string
+          answer_non_souffrance?: string
+          answer_oui?: string
+          answer_oui_medical?: string
+          answer_oui_modere?: string
+          id?: string
+          question: string
+          updated_at?: string | null
+        }
+        Update: {
+          answer_indecision?: string
+          answer_non_rapide?: string
+          answer_non_souffrance?: string
+          answer_oui?: string
+          answer_oui_medical?: string
+          answer_oui_modere?: string
+          id?: string
+          question?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       life_support_questions: {
         Row: {
           answer_indecision: string
@@ -91,7 +127,6 @@ export type Database = {
           answer_oui_modere: string
           id: string
           question: string
-          updated_at: string | null
         }
         Insert: {
           answer_indecision?: string
@@ -102,7 +137,6 @@ export type Database = {
           answer_oui_modere?: string
           id?: string
           question: string
-          updated_at?: string | null
         }
         Update: {
           answer_indecision?: string
@@ -113,7 +147,6 @@ export type Database = {
           answer_oui_modere?: string
           id?: string
           question?: string
-          updated_at?: string | null
         }
         Relationships: []
       }
