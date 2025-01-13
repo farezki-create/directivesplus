@@ -60,7 +60,7 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[800px] h-[90vh] max-h-[90vh] p-0 flex flex-col">
-        <Header />
+        <Header onNavigate={() => onOpenChange(false)} />
         
         <div className="flex-1 overflow-hidden flex flex-col p-6">
           <DialogHeader>

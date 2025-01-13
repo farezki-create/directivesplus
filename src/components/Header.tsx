@@ -4,7 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
 
-export const Header = () => {
+interface HeaderProps {
+  onNavigate?: () => void;
+}
+
+export const Header = ({ onNavigate }: HeaderProps) => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
 
@@ -25,6 +29,13 @@ export const Header = () => {
     navigate("/");
   };
 
+  const handleNavigation = (path: string) => {
+    if (onNavigate) {
+      onNavigate();
+    }
+    navigate(path);
+  };
+
   return (
     <header className="w-full border-b">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
@@ -34,20 +45,20 @@ export const Header = () => {
         <nav className="flex items-center space-x-4">
           <Button
             variant="ghost"
-            onClick={() => navigate("/")}
+            onClick={() => handleNavigation("/")}
           >
             Accueil
           </Button>
           <Button
             variant="ghost"
-            onClick={() => navigate("/dashboard")}
+            onClick={() => handleNavigation("/dashboard")}
           >
             En savoir plus
           </Button>
           {user && (
             <Button
               variant="ghost"
-              onClick={() => navigate("/dashboard")}
+              onClick={() => handleNavigation("/dashboard")}
             >
               Tableau de bord
             </Button>
@@ -57,7 +68,7 @@ export const Header = () => {
               Déconnexion
             </Button>
           ) : (
-            <Button variant="default" onClick={() => navigate("/auth")}>
+            <Button variant="default" onClick={() => handleNavigation("/auth")}>
               Connexion
             </Button>
           )}
