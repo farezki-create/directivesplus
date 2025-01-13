@@ -9,6 +9,42 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      detailed_questions: {
+        Row: {
+          answer_indecision: string
+          answer_non_rapide: string
+          answer_non_souffrance: string
+          answer_oui: string
+          answer_oui_medical: string
+          answer_oui_modere: string
+          id: string
+          question: string
+          updated_at: string | null
+        }
+        Insert: {
+          answer_indecision?: string
+          answer_non_rapide?: string
+          answer_non_souffrance?: string
+          answer_oui?: string
+          answer_oui_medical?: string
+          answer_oui_modere?: string
+          id?: string
+          question: string
+          updated_at?: string | null
+        }
+        Update: {
+          answer_indecision?: string
+          answer_non_rapide?: string
+          answer_non_souffrance?: string
+          answer_oui?: string
+          answer_oui_medical?: string
+          answer_oui_modere?: string
+          id?: string
+          question?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       questions: {
         Row: {
           category: Database["public"]["Enums"]["question_category"] | null
