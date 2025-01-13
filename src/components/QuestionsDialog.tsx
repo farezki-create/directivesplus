@@ -17,15 +17,14 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
         console.log("Fetching general opinion questions...");
         const { data, error } = await supabase
           .from('questions')
-          .select('*')
-          .eq('category', 'general_opinion');
+          .select('*');
         
         if (error) {
           console.error('Error fetching questions:', error);
           return;
         }
         
-        console.log('Questions fetched:', data);
+        console.log('Raw data from questions table:', data);
         setQuestions(data || []);
       } catch (error) {
         console.error('Error:', error);
@@ -76,7 +75,7 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
               </div>
             ))
           ) : (
-            <p>Aucune question trouvée.</p>
+            <p>Aucune question trouvée. Veuillez vérifier la table questions dans Supabase.</p>
           )}
         </div>
       </DialogContent>
