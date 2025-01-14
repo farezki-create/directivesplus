@@ -5,12 +5,16 @@ import { useState } from "react";
 import { UserPlus } from "lucide-react";
 import { QuestionsDialog } from "@/components/QuestionsDialog";
 import { ExplanationDialog } from "@/components/ExplanationDialog";
+import { LifeSupportExplanationDialog } from "@/components/LifeSupportExplanationDialog";
+import { LifeSupportQuestionsDialog } from "@/components/LifeSupportQuestionsDialog";
 
 const Index = () => {
   const navigate = useNavigate();
   const [showSections, setShowSections] = useState(false);
   const [explanationOpen, setExplanationOpen] = useState(false);
   const [questionsOpen, setQuestionsOpen] = useState(false);
+  const [lifeSupportExplanationOpen, setLifeSupportExplanationOpen] = useState(false);
+  const [lifeSupportQuestionsOpen, setLifeSupportQuestionsOpen] = useState(false);
 
   const handleGeneralOpinionClick = () => {
     setExplanationOpen(true);
@@ -19,6 +23,15 @@ const Index = () => {
   const handleExplanationContinue = () => {
     setExplanationOpen(false);
     setQuestionsOpen(true);
+  };
+
+  const handleLifeSupportClick = () => {
+    setLifeSupportExplanationOpen(true);
+  };
+
+  const handleLifeSupportExplanationContinue = () => {
+    setLifeSupportExplanationOpen(false);
+    setLifeSupportQuestionsOpen(true);
   };
 
   return (
@@ -63,7 +76,7 @@ const Index = () => {
               </Button>
               <Button
                 size="lg"
-                onClick={() => navigate("/dashboard")}
+                onClick={handleLifeSupportClick}
                 className="w-full"
               >
                 Maintien en vie
@@ -125,6 +138,17 @@ const Index = () => {
       <QuestionsDialog 
         open={questionsOpen}
         onOpenChange={setQuestionsOpen}
+      />
+
+      <LifeSupportExplanationDialog
+        open={lifeSupportExplanationOpen}
+        onOpenChange={setLifeSupportExplanationOpen}
+        onContinue={handleLifeSupportExplanationContinue}
+      />
+
+      <LifeSupportQuestionsDialog
+        open={lifeSupportQuestionsOpen}
+        onOpenChange={setLifeSupportQuestionsOpen}
       />
     </div>
   );
