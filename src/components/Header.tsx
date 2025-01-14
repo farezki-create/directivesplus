@@ -25,6 +25,11 @@ export const Header = () => {
     navigate("/");
   };
 
+  const handleHomeClick = () => {
+    // Force reload the page when going to home to reset all states
+    window.location.href = "/";
+  };
+
   return (
     <header className="w-full border-b">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
@@ -34,7 +39,7 @@ export const Header = () => {
         <nav className="flex items-center space-x-4">
           <Button
             variant="ghost"
-            onClick={() => navigate("/")}
+            onClick={handleHomeClick}
           >
             Accueil
           </Button>
