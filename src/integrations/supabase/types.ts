@@ -9,6 +9,39 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      life_support_questions: {
+        Row: {
+          id: string
+          Indécision: string
+          "La non souffrance est à privilégier": string
+          "Non rapidement abandonner le thérapeutique": string
+          Oui: string
+          "Oui pour une durée modérée": string
+          "Oui seulement si l'équipe médicale le juge utile": string
+          question: string
+        }
+        Insert: {
+          id?: string
+          Indécision: string
+          "La non souffrance est à privilégier": string
+          "Non rapidement abandonner le thérapeutique": string
+          Oui: string
+          "Oui pour une durée modérée": string
+          "Oui seulement si l'équipe médicale le juge utile": string
+          question: string
+        }
+        Update: {
+          id?: string
+          Indécision?: string
+          "La non souffrance est à privilégier"?: string
+          "Non rapidement abandonner le thérapeutique"?: string
+          Oui?: string
+          "Oui pour une durée modérée"?: string
+          "Oui seulement si l'équipe médicale le juge utile"?: string
+          question?: string
+        }
+        Relationships: []
+      }
       questions: {
         Row: {
           category: Database["public"]["Enums"]["question_category"] | null
