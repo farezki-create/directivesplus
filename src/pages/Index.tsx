@@ -4,11 +4,22 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { UserPlus } from "lucide-react";
 import { QuestionsDialog } from "@/components/QuestionsDialog";
+import { ExplanationDialog } from "@/components/ExplanationDialog";
 
 const Index = () => {
   const navigate = useNavigate();
   const [showSections, setShowSections] = useState(false);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [explanationOpen, setExplanationOpen] = useState(false);
+  const [questionsOpen, setQuestionsOpen] = useState(false);
+
+  const handleGeneralOpinionClick = () => {
+    setExplanationOpen(true);
+  };
+
+  const handleExplanationContinue = () => {
+    setExplanationOpen(false);
+    setQuestionsOpen(true);
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -45,7 +56,7 @@ const Index = () => {
             <div className="grid gap-4 max-w-lg mx-auto">
               <Button
                 size="lg"
-                onClick={() => setDialogOpen(true)}
+                onClick={handleGeneralOpinionClick}
                 className="w-full"
               >
                 Mon avis d'une façon générale
@@ -105,9 +116,15 @@ const Index = () => {
         </div>
       </main>
 
+      <ExplanationDialog 
+        open={explanationOpen}
+        onOpenChange={setExplanationOpen}
+        onContinue={handleExplanationContinue}
+      />
+
       <QuestionsDialog 
-        open={dialogOpen} 
-        onOpenChange={setDialogOpen}
+        open={questionsOpen}
+        onOpenChange={setQuestionsOpen}
       />
     </div>
   );

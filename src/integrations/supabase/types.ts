@@ -119,34 +119,37 @@ export type Database = {
       }
       pain_relief_questions: {
         Row: {
-          answer_indecision: string
-          answer_non_rapide: string
-          answer_non_souffrance: string
-          answer_oui: string
-          answer_oui_medical: string
-          answer_oui_modere: string
           id: string
-          question: string
+          Indécision: string
+          "La non souffrance est à privilégier": string
+          "Non rapidement abandonner le thérapeutique": string
+          Oui: string
+          "Oui pour une durée modérée": string
+          "Oui seulement si l'équipe médicale le juge utile": string
+          QUESTION: string
+          updated_at: string
         }
         Insert: {
-          answer_indecision?: string
-          answer_non_rapide?: string
-          answer_non_souffrance?: string
-          answer_oui?: string
-          answer_oui_medical?: string
-          answer_oui_modere?: string
           id?: string
-          question: string
+          Indécision?: string
+          "La non souffrance est à privilégier": string
+          "Non rapidement abandonner le thérapeutique": string
+          Oui?: string
+          "Oui pour une durée modérée": string
+          "Oui seulement si l'équipe médicale le juge utile": string
+          QUESTION: string
+          updated_at?: string
         }
         Update: {
-          answer_indecision?: string
-          answer_non_rapide?: string
-          answer_non_souffrance?: string
-          answer_oui?: string
-          answer_oui_medical?: string
-          answer_oui_modere?: string
           id?: string
-          question?: string
+          Indécision?: string
+          "La non souffrance est à privilégier"?: string
+          "Non rapidement abandonner le thérapeutique"?: string
+          Oui?: string
+          "Oui pour une durée modérée"?: string
+          "Oui seulement si l'équipe médicale le juge utile"?: string
+          QUESTION?: string
+          updated_at?: string
         }
         Relationships: []
       }
