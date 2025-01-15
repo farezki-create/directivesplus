@@ -4,6 +4,7 @@ import { AuthForm } from "@/components/AuthForm";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/utils/auth-errors";
+import { AuthError } from "@supabase/supabase-js";
 
 const Auth = () => {
   const supabase = useSupabaseClient();
@@ -26,7 +27,7 @@ const Auth = () => {
     return () => subscription.unsubscribe();
   }, [supabase, navigate]);
 
-  const handleError = (error: Error) => {
+  const handleError = (error: AuthError) => {
     console.error('Auth error:', error);
     const message = getErrorMessage(error);
     
@@ -43,7 +44,12 @@ const Auth = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 p-4">
       <div className="w-full max-w-md">
-        <AuthForm onError={handleError} />
+        <AuthForm 
+          isSignUp={false} 
+          onSubmit={() => {}} 
+          onToggleMode={() => {}}
+          onError={handleError}
+        />
       </div>
     </div>
   );

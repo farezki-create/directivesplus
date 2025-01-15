@@ -17,6 +17,22 @@ const Index = () => {
     }
   }, [setExplanationOpen]);
 
+  const handleGeneralOpinionClick = () => {
+    console.log("General opinion clicked");
+  };
+
+  const handleLifeSupportClick = () => {
+    console.log("Life support clicked");
+  };
+
+  const handleAdvancedIllnessClick = () => {
+    console.log("Advanced illness clicked");
+  };
+
+  const handlePreferencesClick = () => {
+    console.log("Preferences clicked");
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
       <main className="container mx-auto px-4 py-12">
@@ -29,7 +45,12 @@ const Index = () => {
             Rédigez vos directives anticipées et désignez vos personnes de confiance en quelques étapes simples et sécurisées.
           </p>
 
-          <MainButtons />
+          <MainButtons 
+            onGeneralOpinionClick={handleGeneralOpinionClick}
+            onLifeSupportClick={handleLifeSupportClick}
+            onAdvancedIllnessClick={handleAdvancedIllnessClick}
+            onPreferencesClick={handlePreferencesClick}
+          />
           <FeatureHighlights />
         </div>
       </main>

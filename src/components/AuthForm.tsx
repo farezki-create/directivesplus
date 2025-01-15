@@ -4,6 +4,7 @@ import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ForgotPassword } from "@/components/ForgotPassword";
+import { AuthError } from "@supabase/supabase-js";
 import {
   Form,
   FormControl,
@@ -67,9 +68,10 @@ type AuthFormProps = {
   isSignUp: boolean;
   onSubmit: (values: FormValues) => void;
   onToggleMode: () => void;
+  onError?: (error: AuthError) => boolean;
 };
 
-export const AuthForm = ({ isSignUp, onSubmit, onToggleMode }: AuthFormProps) => {
+export const AuthForm = ({ isSignUp, onSubmit, onToggleMode, onError }: AuthFormProps) => {
   const schema = isSignUp ? signUpSchema : loginSchema;
   
   const form = useForm<FormValues>({
