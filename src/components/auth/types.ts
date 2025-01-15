@@ -6,7 +6,8 @@ export const baseSchema = {
   password: z.string()
     .min(8, "Le mot de passe doit contenir au moins 8 caractères")
     .regex(/[A-Z]/, "Le mot de passe doit contenir au moins une majuscule")
-    .regex(/[0-9]/, "Le mot de passe doit contenir au moins un chiffre"),
+    .regex(/[0-9]/, "Le mot de passe doit contenir au moins un chiffre")
+    .regex(/[!@#$%^&*(),.?":{}|<>]/, "Le mot de passe doit contenir au moins un caractère spécial (!@#$%^&*(),.?\":{}|<>)"),
 };
 
 // Schéma pour la connexion (sans confirmation de mot de passe)
