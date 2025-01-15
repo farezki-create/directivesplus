@@ -4,7 +4,9 @@ import { useSession } from "@supabase/auth-helpers-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 
-export function useQuestionnaireSubmission(questionnaireType: string = 'general_opinion') {
+type QuestionnaireType = "general_opinion" | "life_support" | "advanced_illness" | "preferences";
+
+export function useQuestionnaireSubmission(questionnaireType: QuestionnaireType) {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const session = useSession();
   const { toast } = useToast();
@@ -80,7 +82,10 @@ export function useQuestionnaireSubmission(questionnaireType: string = 'general_
         onSuccess();
       }
 
-      navigate('/free-text');
+      // Ajout d'un délai avant la navigation pour s'assurer que toutes les opérations sont terminées
+      setTimeout(() => {
+        navigate('/free-text');
+      }, 500);
 
     } catch (error) {
       console.error('Erreur lors de la sauvegarde des réponses:', error);
