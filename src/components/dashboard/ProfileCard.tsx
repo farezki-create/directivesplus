@@ -15,19 +15,58 @@ export const ProfileCard = () => {
       }
       console.log('User found:', user.id);
 
-      const { data, error } = await supabase
+      // Récupérer le profil existant
+      const { data: existingProfile, error: fetchError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
         .maybeSingle();
 
-      if (error) {
-        console.error('Error fetching profile:', error);
-        throw error;
+      if (fetchError) {
+        console.error('Error fetching profile:', fetchError);
+        throw fetchError;
       }
-      
-      console.log('Profile data:', data);
-      return data;
+
+      // Si le profil existe mais que les champs sont vides, on les met à jour avec les métadonnées
+      if (existingProfile && !existingProfile.first_name && user.user_metadata) {
+        console.log('Updating profile with user metadata...');
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({
+            first_name: user.user_metadata.first_name,
+            last_name: user.user_metadata.last_name,
+            birth_date: user.user_metadata.birth_date,
+            address: user.user_metadata.address,
+            city: user.user_metadata.city,
+            postal_code: user.user_metadata.postal_code,
+            country: user.user_metadata.country,
+            phone_number: user.user_metadata.phone_number,
+          })
+          .eq('id', user.id);
+
+        if (updateError) {
+          console.error('Error updating profile:', updateError);
+          throw updateError;
+        }
+
+        // Récupérer le profil mis à jour
+        const { data: updatedProfile, error: refetchError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        if (refetchError) {
+          console.error('Error fetching updated profile:', refetchError);
+          throw refetchError;
+        }
+
+        console.log('Profile updated:', updatedProfile);
+        return updatedProfile;
+      }
+
+      console.log('Profile data:', existingProfile);
+      return existingProfile;
     },
   });
 
