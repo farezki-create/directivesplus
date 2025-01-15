@@ -5,8 +5,8 @@ import { QuestionnaireAnswer } from "@/types/questionnaire";
 type QuestionnaireType = "general_opinion" | "life_support" | "advanced_illness" | "preferences";
 
 interface QuestionTableMapping {
-  tableName: string;
-  junctionTableName: string;
+  tableName: "questions" | "life_support_questions" | "advanced_illness_questions" | "preferences_questions";
+  junctionTableName: "questionnaire_general_opinion_answers" | "questionnaire_life_support_answers" | "questionnaire_advanced_illness_answers" | "questionnaire_preferences_answers";
   questionField: string;
 }
 
@@ -59,10 +59,7 @@ export function useQuestionnaireAnswers(questionnaireType: QuestionnaireType) {
       // Get the questions through the junction table
       const { data: questionsData, error: questionsError } = await supabase
         .from(mapping.tableName)
-        .select(`
-          id,
-          ${mapping.questionField}
-        `);
+        .select(`id, ${mapping.questionField}`);
 
       if (questionsError) {
         console.error(`Error fetching ${questionnaireType} questions:`, questionsError);
@@ -71,13 +68,18 @@ export function useQuestionnaireAnswers(questionnaireType: QuestionnaireType) {
 
       // Create a map of questions for easy lookup
       const questionsMap = new Map(
-        questionsData.map(q => [q.id, q[mapping.questionField]])
+        questionsData.map(q => [q.id, q[mapping.questionField as keyof typeof q]])
       );
 
       // Get the junction table data to link answers with questions
+      type JunctionData = {
+        answer_id: string;
+        question_id: string;
+      };
+
       const { data: junctionData, error: junctionError } = await supabase
         .from(mapping.junctionTableName)
-        .select('*');
+        .select<'*', JunctionData>('*');
 
       if (junctionError) {
         console.error(`Error fetching junction data for ${questionnaireType}:`, junctionError);
@@ -86,7 +88,7 @@ export function useQuestionnaireAnswers(questionnaireType: QuestionnaireType) {
 
       // Create a map of answer_id to question_id
       const answerQuestionMap = new Map(
-        junctionData.map(j => [j.answer_id, j.question_id])
+        (junctionData || []).map(j => [j.answer_id, j.question_id])
       );
 
       // Map answers with their corresponding questions
