@@ -9,11 +9,15 @@ export const Header = () => {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
+    // Récupérer la session initiale
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("Session initiale récupérée:", session);
       setUser(session?.user ?? null);
     });
 
+    // Écouter les changements de session
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log("Changement d'état d'authentification:", _event, session?.user);
       setUser(session?.user ?? null);
     });
 
@@ -21,12 +25,12 @@ export const Header = () => {
   }, []);
 
   const handleSignOut = async () => {
+    console.log("Déconnexion demandée");
     await supabase.auth.signOut();
     navigate("/");
   };
 
   const handleHomeClick = () => {
-    // Force reload the page when going to home to reset all states
     window.location.href = "/";
   };
 
