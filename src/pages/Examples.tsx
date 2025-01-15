@@ -24,13 +24,13 @@ const Examples = () => {
           <div className="grid gap-6 md:grid-cols-2 max-w-3xl mx-auto">
             <Button 
               size="lg" 
-              className="h-auto py-6 text-lg font-medium hover:scale-105 transition-transform duration-200"
+              className="h-auto min-h-[5rem] py-4 px-6 text-lg font-medium hover:scale-105 transition-transform duration-200 whitespace-normal text-center"
             >
               Exemples de modèles de directives déjà remplis
             </Button>
             <Button 
               size="lg"
-              className="h-auto py-6 text-lg font-medium hover:scale-105 transition-transform duration-200"
+              className="h-auto min-h-[5rem] py-4 px-6 text-lg font-medium hover:scale-105 transition-transform duration-200 whitespace-normal text-center"
             >
               Télécharger des documents utiles pour les directives anticipées
             </Button>
