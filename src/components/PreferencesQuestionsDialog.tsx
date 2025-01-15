@@ -11,6 +11,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { QuestionCard } from "./questions/QuestionCard";
+import { QuestionsDialogLayout } from "./questions/QuestionsDialogLayout";
 
 interface PreferencesQuestionsDialogProps {
   open: boolean;
@@ -40,19 +41,11 @@ export function PreferencesQuestionsDialog({
     },
   });
 
-  const handleNext = () => {
-    if (questions && currentStep < questions.length - 1) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      onOpenChange(false);
-      setCurrentStep(0);
-    }
-  };
-
-  const handlePrevious = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-    }
+  const handleSubmit = () => {
+    console.log("Submitting answers:", answers);
+    onOpenChange(false);
+    setCurrentStep(0);
+    setAnswers({});
   };
 
   const handleAnswerChange = (questionId: string, value: string) => {
@@ -63,43 +56,27 @@ export function PreferencesQuestionsDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
-        <DialogHeader>
-          <DialogTitle>Mes goûts et mes peurs</DialogTitle>
-          <DialogDescription>
-            Répondez aux questions suivantes pour nous aider à mieux comprendre vos préférences.
-          </DialogDescription>
-        </DialogHeader>
-
-        {questions && questions[currentStep] && (
-          <QuestionCard
-            question={questions[currentStep].question}
-            value={answers[questions[currentStep].id] || ''}
-            onValueChange={(value) => handleAnswerChange(questions[currentStep].id, value)}
-            options={[
-              { label: "Oui", value: "oui" },
-              { label: "Non", value: "non" },
-              { label: "Je ne sais pas", value: "indecis" }
-            ]}
-          />
-        )}
-
-        <DialogFooter className="flex justify-between">
-          <Button
-            variant="outline"
-            onClick={handlePrevious}
-            disabled={currentStep === 0}
-          >
-            Précédent
-          </Button>
-          <Button onClick={handleNext}>
-            {questions && currentStep === questions.length - 1
-              ? "Terminer"
-              : "Suivant"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <QuestionsDialogLayout
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Mes goûts et mes peurs"
+      onSubmit={handleSubmit}
+      loading={isLoading}
+      questionsLength={questions?.length || 0}
+    >
+      {questions?.map((question) => (
+        <QuestionCard
+          key={question.id}
+          question={question}
+          value={answers[question.id] || ''}
+          onValueChange={(value) => handleAnswerChange(question.id, value)}
+          options={[
+            { label: "Oui", value: "oui" },
+            { label: "Non", value: "non" },
+            { label: "Je ne sais pas", value: "indecis" }
+          ]}
+        />
+      ))}
+    </QuestionsDialogLayout>
   );
 }
