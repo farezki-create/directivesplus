@@ -55,7 +55,8 @@ export function QuestionsDialogLayout({
     }
   };
 
-  const isButtonDisabled = loading || questionsLength === 0 || !session || isSaving;
+  // Modification des conditions d'activation du bouton
+  const isButtonDisabled = !session || questionsLength === 0 || isSaving;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
