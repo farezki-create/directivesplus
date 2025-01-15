@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Header } from "@/components/Header";
 import { useSession } from "@supabase/auth-helpers-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 
 interface QuestionsDialogLayoutProps {
@@ -28,6 +28,15 @@ export function QuestionsDialogLayout({
   const session = useSession();
   const [isSaving, setIsSaving] = useState(false);
 
+  useEffect(() => {
+    console.log("État actuel :", {
+      session: !!session,
+      loading,
+      questionsLength,
+      isSaving
+    });
+  }, [session, loading, questionsLength, isSaving]);
+
   const handleSubmit = async () => {
     if (!session) {
       console.log("Pas de session utilisateur, impossible de sauvegarder");
@@ -35,8 +44,12 @@ export function QuestionsDialogLayout({
     }
 
     try {
+      console.log("Début de la sauvegarde...");
       setIsSaving(true);
       await onSubmit();
+      console.log("Sauvegarde terminée avec succès");
+    } catch (error) {
+      console.error("Erreur lors de la sauvegarde :", error);
     } finally {
       setIsSaving(false);
     }
