@@ -45,6 +45,39 @@ export type Database = {
         }
         Relationships: []
       }
+      document_access: {
+        Row: {
+          access_code: string
+          created_at: string
+          document_id: string
+          email: string
+          expires_at: string
+          id: string
+          is_active: boolean | null
+          used_at: string | null
+        }
+        Insert: {
+          access_code: string
+          created_at?: string
+          document_id: string
+          email: string
+          expires_at: string
+          id?: string
+          is_active?: boolean | null
+          used_at?: string | null
+        }
+        Update: {
+          access_code?: string
+          created_at?: string
+          document_id?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          is_active?: boolean | null
+          used_at?: string | null
+        }
+        Relationships: []
+      }
       life_support_questions: {
         Row: {
           id: string
