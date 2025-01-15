@@ -42,7 +42,8 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
   }, [open]);
 
   const handleSubmitWrapper = () => {
-    handleSubmit(() => onOpenChange(false));
+    handleSubmit();
+    onOpenChange(false);
   };
 
   return (

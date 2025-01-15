@@ -69,7 +69,7 @@ export function useQuestionnaireSubmission() {
         description: "Vos réponses ont été sauvegardées avec succès."
       });
 
-      // Redirect to synthesis page
+      // Navigate to synthesis page
       navigate('/free-text');
 
       if (onSuccess) {
