@@ -53,7 +53,11 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
 
   const handleSubmit = async () => {
     if (!session?.user?.id) {
-      console.error('No user session found');
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Vous devez être connecté pour enregistrer vos réponses."
+      });
       return;
     }
 
@@ -64,7 +68,7 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
       for (const [questionId, answer] of Object.entries(answers)) {
         const { error } = await supabase
           .from('questionnaire_answers')
-          .insert({
+          .upsert({
             user_id: session.user.id,
             questionnaire_type: 'general_opinion',
             question_id: questionId,
