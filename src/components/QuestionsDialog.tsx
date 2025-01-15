@@ -14,7 +14,7 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
   const [questions, setQuestions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { data: existingAnswers, isLoading: loadingAnswers } = useQuestionnaireAnswers("general_opinion");
-  const { answers, handleAnswerChange, handleSubmit } = useQuestionnaireSubmission('general_opinion');
+  const { answers, isSubmitting, handleAnswerChange, handleSubmit } = useQuestionnaireSubmission('general_opinion');
 
   useEffect(() => {
     async function fetchQuestions() {
@@ -78,6 +78,7 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
       onSubmit={handleSubmitWrapper}
       loading={loading || loadingAnswers}
       questionsLength={questions.length}
+      isSubmitting={isSubmitting}
     >
       <QuestionsForm
         questions={questions}

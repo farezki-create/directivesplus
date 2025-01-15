@@ -3,8 +3,9 @@ import { useSession } from "@supabase/auth-helpers-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { QuestionnaireType } from "@/types/questionnaire";
 
-export function useQuestionnaireSubmission(questionnaireType: string) {
+export function useQuestionnaireSubmission(questionnaireType: QuestionnaireType) {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const session = useSession();
@@ -74,10 +75,8 @@ export function useQuestionnaireSubmission(questionnaireType: string) {
         description: "Vos réponses ont été sauvegardées avec succès."
       });
 
-      // Redirection vers la page de synthèse après un court délai
-      setTimeout(() => {
-        navigate('/free-text');
-      }, 1500);
+      // Redirection vers la page de synthèse
+      navigate('/free-text');
 
     } catch (error) {
       console.error('Erreur lors de la sauvegarde des réponses:', error);

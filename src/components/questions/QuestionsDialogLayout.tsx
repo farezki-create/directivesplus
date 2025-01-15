@@ -1,7 +1,6 @@
 import { Dialog, DialogContent as UIDialogContent, DialogFooter } from "@/components/ui/dialog";
 import { Header } from "@/components/Header";
 import { useSession } from "@supabase/auth-helpers-react";
-import { useState } from "react";
 import { DialogContent } from "./DialogContent";
 import { SubmitButton } from "./SubmitButton";
 import { useNavigate } from "react-router-dom";
@@ -15,6 +14,7 @@ interface QuestionsDialogLayoutProps {
   loading: boolean;
   questionsLength: number;
   children: React.ReactNode;
+  isSubmitting?: boolean;
 }
 
 export function QuestionsDialogLayout({
@@ -24,12 +24,12 @@ export function QuestionsDialogLayout({
   onSubmit,
   loading,
   questionsLength,
-  children
+  children,
+  isSubmitting = false
 }: QuestionsDialogLayoutProps) {
   const session = useSession();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [isSaving, setIsSaving] = useState(false);
 
   const handleSubmit = async () => {
     if (!session) {
@@ -46,7 +46,6 @@ export function QuestionsDialogLayout({
 
     try {
       console.log("Début de la sauvegarde des réponses...");
-      setIsSaving(true);
       await onSubmit();
       console.log("Sauvegarde réussie");
     } catch (error) {
@@ -56,8 +55,6 @@ export function QuestionsDialogLayout({
         title: "Erreur",
         description: "Une erreur est survenue lors de la sauvegarde de vos réponses."
       });
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -77,8 +74,8 @@ export function QuestionsDialogLayout({
 
           <DialogFooter className="mt-6">
             <SubmitButton
-              isDisabled={!session || isSaving}
-              isSaving={isSaving}
+              isDisabled={!session || isSubmitting}
+              isSaving={isSubmitting}
               onClick={handleSubmit}
             />
           </DialogFooter>
