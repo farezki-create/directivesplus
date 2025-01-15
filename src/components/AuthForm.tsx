@@ -30,6 +30,7 @@ export const AuthForm = ({ isSignUp, onSubmit, onToggleMode }: AuthFormProps) =>
       city: "",
       postalCode: "",
     },
+    mode: "onBlur",
   });
 
   console.log('Form mode:', isSignUp ? 'signup' : 'login');

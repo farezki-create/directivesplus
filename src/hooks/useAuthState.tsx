@@ -15,7 +15,7 @@ export const useAuthState = () => {
   const handleSignUp = async (values: FormValues) => {
     try {
       setIsLoading(true);
-      console.log('Attempting signup with email:', values.email);
+      console.log('Starting signup process with email:', values.email);
       
       const { error } = await supabase.auth.signUp({
         email: values.email,
@@ -46,12 +46,14 @@ export const useAuthState = () => {
         return;
       }
 
+      console.log('Signup successful, showing success toast');
       toast({
         title: "Inscription réussie",
         description: "Veuillez vérifier votre email pour confirmer votre compte.",
       });
+      
     } catch (error) {
-      console.error('Unexpected auth error:', error);
+      console.error('Unexpected signup error:', error);
       toast({
         variant: "destructive",
         title: "Erreur",
@@ -82,8 +84,10 @@ export const useAuthState = () => {
         });
         return;
       }
+
+      console.log('Login successful, user will be redirected');
     } catch (error) {
-      console.error('Unexpected auth error:', error);
+      console.error('Unexpected login error:', error);
       toast({
         variant: "destructive",
         title: "Erreur",
@@ -95,8 +99,12 @@ export const useAuthState = () => {
   };
 
   const handleSubmit = async (values: FormValues) => {
-    if (isLoading) return;
+    if (isLoading) {
+      console.log('Submission blocked - already loading');
+      return;
+    }
     
+    console.log('Form submitted with values:', values);
     if (values.confirmPassword) {
       await handleSignUp(values);
     } else {
