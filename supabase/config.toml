@@ -6,5 +6,5 @@ port = 54321
 schemas = ["public", "storage", "graphql_public"]
 
 [[functions]]
-name = "send-document-email"
+[functions.send-document-email]
 verify_jwt = false
