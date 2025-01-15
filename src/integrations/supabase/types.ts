@@ -138,6 +138,36 @@ export type Database = {
         }
         Relationships: []
       }
+      questionnaire_answers: {
+        Row: {
+          answer: string
+          created_at: string
+          id: string
+          question_id: string
+          questionnaire_type: Database["public"]["Enums"]["questionnaire_type"]
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          answer: string
+          created_at?: string
+          id?: string
+          question_id: string
+          questionnaire_type: Database["public"]["Enums"]["questionnaire_type"]
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          answer?: string
+          created_at?: string
+          id?: string
+          question_id?: string
+          questionnaire_type?: Database["public"]["Enums"]["questionnaire_type"]
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       questions: {
         Row: {
           category: Database["public"]["Enums"]["question_category"] | null
@@ -183,6 +213,11 @@ export type Database = {
         | "pain_relief"
         | "let_die"
       question_type: "simple" | "detailed"
+      questionnaire_type:
+        | "general_opinion"
+        | "life_support"
+        | "advanced_illness"
+        | "preferences"
     }
     CompositeTypes: {
       [_ in never]: never
