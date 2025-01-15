@@ -9,6 +9,39 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      advanced_illness_questions: {
+        Row: {
+          created_at: string
+          id: string
+          non: string
+          oui: string
+          "Oui si l'équipe médicale le juge utile": string
+          "Oui si ma personne de confiance le juge utile": string
+          question: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          non: string
+          oui: string
+          "Oui si l'équipe médicale le juge utile": string
+          "Oui si ma personne de confiance le juge utile": string
+          question: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          non?: string
+          oui?: string
+          "Oui si l'équipe médicale le juge utile"?: string
+          "Oui si ma personne de confiance le juge utile"?: string
+          question?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       life_support_questions: {
         Row: {
           id: string

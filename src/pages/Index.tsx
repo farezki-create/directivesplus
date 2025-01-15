@@ -7,6 +7,8 @@ import { QuestionsDialog } from "@/components/QuestionsDialog";
 import { ExplanationDialog } from "@/components/ExplanationDialog";
 import { LifeSupportExplanationDialog } from "@/components/LifeSupportExplanationDialog";
 import { LifeSupportQuestionsDialog } from "@/components/LifeSupportQuestionsDialog";
+import { AdvancedIllnessExplanationDialog } from "@/components/AdvancedIllnessExplanationDialog";
+import { AdvancedIllnessQuestionsDialog } from "@/components/AdvancedIllnessQuestionsDialog";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -15,6 +17,8 @@ const Index = () => {
   const [questionsOpen, setQuestionsOpen] = useState(false);
   const [lifeSupportExplanationOpen, setLifeSupportExplanationOpen] = useState(false);
   const [lifeSupportQuestionsOpen, setLifeSupportQuestionsOpen] = useState(false);
+  const [advancedIllnessExplanationOpen, setAdvancedIllnessExplanationOpen] = useState(false);
+  const [advancedIllnessQuestionsOpen, setAdvancedIllnessQuestionsOpen] = useState(false);
 
   const handleGeneralOpinionClick = () => {
     setExplanationOpen(true);
@@ -32,6 +36,15 @@ const Index = () => {
   const handleLifeSupportExplanationContinue = () => {
     setLifeSupportExplanationOpen(false);
     setLifeSupportQuestionsOpen(true);
+  };
+
+  const handleAdvancedIllnessClick = () => {
+    setAdvancedIllnessExplanationOpen(true);
+  };
+
+  const handleAdvancedIllnessExplanationContinue = () => {
+    setAdvancedIllnessExplanationOpen(false);
+    setAdvancedIllnessQuestionsOpen(true);
   };
 
   return (
@@ -83,17 +96,10 @@ const Index = () => {
               </Button>
               <Button
                 size="lg"
-                onClick={() => navigate("/dashboard")}
+                onClick={handleAdvancedIllnessClick}
                 className="w-full"
               >
                 Maladie avancée
-              </Button>
-              <Button
-                size="lg"
-                onClick={() => navigate("/dashboard")}
-                className="w-full"
-              >
-                maladie avancée
               </Button>
               <Button
                 size="lg"
@@ -149,6 +155,17 @@ const Index = () => {
       <LifeSupportQuestionsDialog
         open={lifeSupportQuestionsOpen}
         onOpenChange={setLifeSupportQuestionsOpen}
+      />
+
+      <AdvancedIllnessExplanationDialog
+        open={advancedIllnessExplanationOpen}
+        onOpenChange={setAdvancedIllnessExplanationOpen}
+        onContinue={handleAdvancedIllnessExplanationContinue}
+      />
+
+      <AdvancedIllnessQuestionsDialog
+        open={advancedIllnessQuestionsOpen}
+        onOpenChange={setAdvancedIllnessQuestionsOpen}
       />
     </div>
   );
