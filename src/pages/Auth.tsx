@@ -10,6 +10,7 @@ import { useAuthState } from "@/hooks/useAuthState";
 const Auth = () => {
   const navigate = useNavigate();
   const { handleSubmit, isLoading } = useAuthState();
+  const [isSignUp, setIsSignUp] = useState(false);
 
   useEffect(() => {
     console.log("Setting up auth state change listener");
@@ -43,17 +44,20 @@ const Auth = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">
-            Créer un compte
+            {isSignUp ? "Créer un compte" : "Se connecter"}
           </CardTitle>
           <CardDescription className="text-center text-muted-foreground">
-            Inscrivez-vous pour accéder à vos directives anticipées
+            {isSignUp 
+              ? "Inscrivez-vous pour accéder à vos directives anticipées"
+              : "Connectez-vous pour accéder à vos directives anticipées"
+            }
           </CardDescription>
         </CardHeader>
         <CardContent>
           <AuthForm
-            isSignUp={true}
+            isSignUp={isSignUp}
             onSubmit={handleSubmit}
-            onToggleMode={() => {}}
+            onToggleMode={() => setIsSignUp(!isSignUp)}
           />
         </CardContent>
       </Card>
