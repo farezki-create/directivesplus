@@ -21,8 +21,7 @@ const Auth = () => {
       console.log('Auth state changed:', event, session);
       
       if (event === "SIGNED_IN" && session) {
-        console.log('User signed in, redirecting to home page');
-        // Store a flag in sessionStorage to indicate that we should show the dialog
+        console.log('User signed in successfully, redirecting to home page');
         sessionStorage.setItem('showExplanationDialog', 'true');
         navigate("/");
       }
@@ -42,36 +41,36 @@ const Auth = () => {
           email: values.email,
           password: values.password,
           options: {
-            emailRedirectTo: `${window.location.origin}/auth/callback`
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
+            data: {
+              first_name: values.firstName,
+              last_name: values.lastName,
+              birth_date: values.birthDate,
+              country: values.country,
+              phone_number: values.phoneNumber,
+              address: values.address,
+              city: values.city,
+              postal_code: values.postalCode,
+            }
           }
         });
 
         if (error) {
-          console.log('Signup error:', error);
+          console.error('Signup error:', error);
           
-          // First, try to parse the error body if it exists
-          let errorBody;
-          try {
-            if (typeof error.message === 'string' && error.message.includes('{')) {
-              errorBody = JSON.parse(error.message.substring(error.message.indexOf('{')));
-              console.log('Parsed error body:', errorBody);
+          if (error instanceof AuthApiError) {
+            // Check for specific error codes
+            if (error.status === 400) {
+              if (error.message.includes("User already registered")) {
+                toast({
+                  title: "Compte existant",
+                  description: "Un compte existe déjà avec cet email. Veuillez vous connecter.",
+                  variant: "destructive",
+                });
+                setIsSignUp(false);
+                return;
+              }
             }
-          } catch (e) {
-            console.log('Error parsing error message:', e);
-          }
-
-          // Check for user_already_exists in both parsed body and direct message
-          if (
-            (errorBody && errorBody.code === "user_already_exists") ||
-            (error instanceof AuthApiError && error.message.includes("User already registered"))
-          ) {
-            console.log('User already exists, switching to login mode');
-            toast({
-              title: "Compte existant",
-              description: "Un compte existe déjà avec cet email. Connectez-vous.",
-            });
-            setIsSignUp(false);
-            return;
           }
           
           const message = getErrorMessage(error);
@@ -95,7 +94,20 @@ const Auth = () => {
         });
 
         if (error) {
-          console.log('Login error:', error);
+          console.error('Login error:', error);
+          
+          if (error instanceof AuthApiError) {
+            // Handle specific login error codes
+            if (error.status === 400 && error.message.includes("Invalid login credentials")) {
+              toast({
+                variant: "destructive",
+                title: "Erreur de connexion",
+                description: "Email ou mot de passe incorrect. Veuillez vérifier vos identifiants.",
+              });
+              return;
+            }
+          }
+          
           const message = getErrorMessage(error);
           toast({
             variant: "destructive",
@@ -106,7 +118,7 @@ const Auth = () => {
         }
       }
     } catch (error) {
-      console.error('Auth error:', error);
+      console.error('Unexpected auth error:', error);
       toast({
         variant: "destructive",
         title: "Erreur",
