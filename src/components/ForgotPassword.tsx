@@ -46,7 +46,38 @@ export const ForgotPassword = ({ email }: ForgotPasswordProps) => {
 
       if (error) {
         console.log('Password reset error:', error);
-        throw error;
+        
+        // Parse the error body if it exists
+        let errorBody;
+        try {
+          if (typeof error.message === 'string' && error.message.includes('{')) {
+            errorBody = JSON.parse(error.message.substring(error.message.indexOf('{')));
+            console.log('Parsed error body:', errorBody);
+          }
+        } catch (e) {
+          console.log('Error parsing error message:', e);
+        }
+
+        // Check specifically for rate limit error
+        if (
+          (errorBody?.code === "over_email_send_rate_limit") ||
+          (error.message && error.message.toLowerCase().includes('rate limit'))
+        ) {
+          toast({
+            variant: "destructive",
+            title: "Trop de tentatives",
+            description: "Pour des raisons de sécurité, veuillez patienter 60 secondes avant de réessayer.",
+          });
+          return;
+        }
+
+        const message = getErrorMessage(error);
+        toast({
+          variant: "destructive",
+          title: "Erreur de réinitialisation",
+          description: message,
+        });
+        return;
       }
 
       setLastResetRequest(now);
