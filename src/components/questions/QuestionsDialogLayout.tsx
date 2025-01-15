@@ -50,6 +50,10 @@ export function QuestionsDialogLayout({
       console.log("Début de la sauvegarde des réponses...");
       await onSubmit();
       console.log("Sauvegarde réussie");
+      toast({
+        title: "Succès",
+        description: "Vos réponses ont été enregistrées avec succès."
+      });
     } catch (error) {
       console.error("Erreur lors de la sauvegarde:", error);
       toast({
