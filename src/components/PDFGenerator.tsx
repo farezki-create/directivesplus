@@ -18,16 +18,24 @@ export const PDFGenerator = () => {
   const generatePDF = () => {
     // TODO: Implement PDF generation
     console.log("Generating PDF...");
+    // For now, return a mock UUID that would normally come from the generated document
+    return crypto.randomUUID();
   };
 
   const handleEmailSend = async () => {
     try {
+      console.log("Generating document and sending email...");
+      
+      // Generate the PDF and get its ID
+      const documentId = generatePDF();
+      
+      console.log("Document generated with ID:", documentId);
       console.log("Sending email via Edge Function...");
       
       const { data, error } = await supabase.functions.invoke('send-document-email', {
         body: {
           to: "user@example.com", // TODO: Get user's email
-          documentId: "123", // TODO: Get actual document ID
+          documentId: documentId,
         },
       });
 
