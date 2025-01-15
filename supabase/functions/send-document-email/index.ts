@@ -1,5 +1,5 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
@@ -16,14 +16,11 @@ interface EmailRequest {
   documentId: string;
 }
 
-const generateAccessCode = () => {
+function generateAccessCode(): string {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
-};
+}
 
 const handler = async (req: Request): Promise<Response> => {
-  console.log("Handling request in send-document-email function");
-
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -80,15 +77,13 @@ const handler = async (req: Request): Promise<Response> => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "Directives Anticipées <no-reply@resend.dev>",
+        from: "Directives Anticipées <no-reply@example.com>",
         to: [emailRequest.to],
         subject: "Accès à vos directives anticipées",
         html: `
           <h1>Accès à vos directives anticipées</h1>
           <p>Voici votre code d'accès pour consulter vos directives anticipées : <strong>${accessCode}</strong></p>
           <p>Ce code est valable pendant 7 jours.</p>
-          <p>Pour accéder à vos documents, utilisez le lien suivant :</p>
-          <p><a href="${SUPABASE_URL}/documents/${accessData.id}">Accéder à mes documents</a></p>
         `,
       }),
     });
@@ -102,16 +97,25 @@ const handler = async (req: Request): Promise<Response> => {
     const emailData = await emailResponse.json();
     console.log("Email sent successfully:", emailData);
 
-    return new Response(JSON.stringify({ success: true, accessCode }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 200,
-    });
+    return new Response(
+      JSON.stringify({ success: true, data: { accessCode, emailData } }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      }
+    );
   } catch (error: any) {
     console.error("Error in send-document-email function:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
-    });
+    return new Response(
+      JSON.stringify({ 
+        success: false, 
+        error: error.message || "An unknown error occurred" 
+      }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      }
+    );
   }
 };
 
