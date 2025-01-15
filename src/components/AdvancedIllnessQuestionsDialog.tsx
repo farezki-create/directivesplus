@@ -4,6 +4,7 @@ import { QuestionCard } from "./questions/QuestionCard";
 import { QuestionsDialogLayout } from "./questions/QuestionsDialogLayout";
 import { useSession } from "@supabase/auth-helpers-react";
 import { useToast } from "@/hooks/use-toast";
+import { useQuestionnaireAnswers } from "./questionnaire/useQuestionnaireAnswers";
 
 interface AdvancedIllnessQuestionsDialogProps {
   open: boolean;
@@ -17,6 +18,7 @@ export function AdvancedIllnessQuestionsDialog({
   const [questions, setQuestions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const { data: existingAnswers, isLoading: loadingAnswers } = useQuestionnaireAnswers("advanced_illness");
   const session = useSession();
   const { toast } = useToast();
 
@@ -48,6 +50,20 @@ export function AdvancedIllnessQuestionsDialog({
     }
   }, [open]);
 
+  // Pré-remplir les réponses existantes
+  useEffect(() => {
+    if (existingAnswers && existingAnswers.length > 0) {
+      console.log('Chargement des réponses existantes:', existingAnswers);
+      const answersMap: Record<string, string> = {};
+      existingAnswers.forEach(answer => {
+        if (answer.question_id) {
+          answersMap[answer.question_id] = answer.answer;
+        }
+      });
+      setAnswers(answersMap);
+    }
+  }, [existingAnswers]);
+
   const handleAnswerChange = (questionId: string, value: string) => {
     setAnswers(prev => ({
       ...prev,
@@ -68,11 +84,13 @@ export function AdvancedIllnessQuestionsDialog({
       for (const [questionId, answer] of Object.entries(answers)) {
         const { error } = await supabase
           .from('questionnaire_answers')
-          .insert({
+          .upsert({
             user_id: session.user.id,
             questionnaire_type: 'advanced_illness',
             question_id: questionId,
             answer: answer
+          }, {
+            onConflict: 'user_id, questionnaire_type, question_id'
           });
 
         if (error) {
@@ -131,7 +149,7 @@ export function AdvancedIllnessQuestionsDialog({
       onOpenChange={onOpenChange}
       title="Maladie avancée"
       onSubmit={handleSubmit}
-      loading={loading}
+      loading={loading || loadingAnswers}
       questionsLength={questions.length}
     >
       {questions.map((question) => (

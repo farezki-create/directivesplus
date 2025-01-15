@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { QuestionsDialogLayout } from "./questions/QuestionsDialogLayout";
 import { QuestionsForm } from "./questions/QuestionsForm";
 import { useQuestionnaireSubmission } from "@/hooks/useQuestionnaireSubmission";
+import { useQuestionnaireAnswers } from "./questionnaire/useQuestionnaireAnswers";
 
 interface QuestionsDialogProps {
   open: boolean;
@@ -12,6 +13,7 @@ interface QuestionsDialogProps {
 export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
   const [questions, setQuestions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { data: existingAnswers, isLoading: loadingAnswers } = useQuestionnaireAnswers("general_opinion");
   const { answers, handleAnswerChange, handleSubmit } = useQuestionnaireSubmission('general_opinion');
 
   useEffect(() => {
@@ -42,6 +44,22 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
     }
   }, [open]);
 
+  // Pré-remplir les réponses existantes
+  useEffect(() => {
+    if (existingAnswers && existingAnswers.length > 0) {
+      console.log('Chargement des réponses existantes:', existingAnswers);
+      const answersMap: Record<string, string> = {};
+      existingAnswers.forEach(answer => {
+        if (answer.question_id) {
+          answersMap[answer.question_id] = answer.answer;
+        }
+      });
+      Object.entries(answersMap).forEach(([questionId, value]) => {
+        handleAnswerChange(questionId, value);
+      });
+    }
+  }, [existingAnswers]);
+
   const handleSubmitWrapper = async () => {
     console.log('Début de la soumission des réponses');
     await handleSubmit(() => {
@@ -56,7 +74,7 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
       onOpenChange={onOpenChange}
       title="Mon avis d'une façon générale"
       onSubmit={handleSubmitWrapper}
-      loading={loading}
+      loading={loading || loadingAnswers}
       questionsLength={questions.length}
     >
       <QuestionsForm
