@@ -2,6 +2,7 @@ import { Header } from "@/components/Header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { QuestionnaireSection } from "@/components/questionnaire/QuestionnaireSection";
 import { FreeTextForm } from "@/components/questionnaire/FreeTextForm";
+import { ImportQuestionsForm } from "@/components/questionnaire/ImportQuestionsForm";
 import { useQuestionnaireAnswers } from "@/components/questionnaire/useQuestionnaireAnswers";
 
 const FreeText = () => {
@@ -37,6 +38,11 @@ const FreeText = () => {
                 <QuestionnaireSection title="Mes goûts et mes peurs" answers={preferencesAnswers} />
               </>
             )}
+          </div>
+
+          <div className="mb-8 p-4 bg-muted rounded-lg">
+            <h2 className="text-xl font-semibold mb-4">Import de questions</h2>
+            <ImportQuestionsForm />
           </div>
 
           <FreeTextForm />
