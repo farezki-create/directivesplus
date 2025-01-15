@@ -2,9 +2,7 @@ import { useState, useEffect } from "react";
 import { useSession } from "@supabase/auth-helpers-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { QuestionnaireAnswer } from "@/types/questionnaire";
-
-export type QuestionnaireType = "general_opinion" | "life_support" | "advanced_illness" | "preferences";
+import { QuestionnaireAnswer, QuestionnaireType, getTableName } from "@/types/questionnaire";
 
 export function useQuestionnaireState(questionnaireType: QuestionnaireType) {
   const [questions, setQuestions] = useState<any[]>([]);
@@ -38,6 +36,7 @@ export function useQuestionnaireState(questionnaireType: QuestionnaireType) {
   };
 
   const handleAnswerChange = (questionId: string, value: string) => {
+    console.log(`Updating answer for question ${questionId}:`, value);
     setAnswers(prev => ({
       ...prev,
       [questionId]: value
@@ -47,6 +46,11 @@ export function useQuestionnaireState(questionnaireType: QuestionnaireType) {
   const handleSubmit = async (onSuccess?: () => void) => {
     if (!session?.user?.id) {
       console.error('No user session found');
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Vous devez être connecté pour enregistrer vos réponses."
+      });
       return;
     }
 
@@ -127,17 +131,4 @@ export function useQuestionnaireState(questionnaireType: QuestionnaireType) {
     handleSubmit,
     loadExistingAnswers
   };
-}
-
-function getTableName(questionnaireType: QuestionnaireType): string {
-  switch (questionnaireType) {
-    case 'life_support':
-      return 'life_support_questions';
-    case 'advanced_illness':
-      return 'advanced_illness_questions';
-    case 'preferences':
-      return 'preferences_questions';
-    default:
-      return 'questions';
-  }
 }
