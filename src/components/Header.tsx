@@ -36,7 +36,7 @@ export const Header = () => {
         <div className="flex items-center space-x-4">
           <h1 
             className="text-2xl font-bold text-primary cursor-pointer" 
-            onClick={() => navigate(user ? "/" : "/login")}
+            onClick={() => navigate(user ? "/home" : "/login")}
           >
             DirectivesPlus
           </h1>
@@ -46,7 +46,7 @@ export const Header = () => {
             <>
               <Button
                 variant="ghost"
-                onClick={() => navigate("/")}
+                onClick={() => navigate("/home")}
               >
                 Accueil
               </Button>
