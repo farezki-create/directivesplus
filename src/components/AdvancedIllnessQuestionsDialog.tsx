@@ -56,15 +56,15 @@ export function AdvancedIllnessQuestionsDialog({
   };
 
   const getQuestionOptions = (question: any) => [
-    { 
-      value: 'oui_confiance', 
-      label: question["Oui si ma personne de confiance le juge utile"]
-    },
     { value: 'oui', label: question.oui },
     { value: 'non', label: question.non },
     { 
       value: 'oui_medical', 
       label: question["Oui si l'équipe médicale le juge utile"]
+    },
+    { 
+      value: 'oui_confiance', 
+      label: question["Oui si ma personne de confiance le juge utile"]
     }
   ];
 
