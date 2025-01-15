@@ -12,10 +12,9 @@ export function useQuestionnaireAnswers(questionnaireType: QuestionnaireType) {
     queryFn: async () => {
       console.log(`Fetching ${questionnaireType} answers...`);
       
-      // First get the answers
       const { data: answers, error: answersError } = await supabase
         .from('questionnaire_answers')
-        .select('id, answer, question_id')
+        .select('*')
         .eq('questionnaire_type', questionnaireType);
 
       if (answersError) {
@@ -27,7 +26,6 @@ export function useQuestionnaireAnswers(questionnaireType: QuestionnaireType) {
         return [];
       }
 
-      // Then get the questions based on questionnaire type
       let questionsTable: keyof TableNames;
       let questionField: string;
       
@@ -51,16 +49,17 @@ export function useQuestionnaireAnswers(questionnaireType: QuestionnaireType) {
 
       const { data: questions, error: questionsError } = await supabase
         .from(questionsTable)
-        .select('id, ' + questionField);
+        .select('*');
 
       if (questionsError) {
         console.error(`Error fetching ${questionnaireType} questions:`, questionsError);
         throw questionsError;
       }
 
-      // Map answers with their corresponding questions
-      const questionsMap = new Map(questions.map(q => [q.id, q[questionField as keyof typeof q]]));
-      
+      const questionsMap = new Map(
+        questions.map((q: any) => [q.id, q[questionField]])
+      );
+
       return answers.map(answer => ({
         id: answer.id,
         answer: answer.answer,

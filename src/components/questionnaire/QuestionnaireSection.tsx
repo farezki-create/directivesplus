@@ -11,11 +11,15 @@ export function QuestionnaireSection({ title, answers }: QuestionnaireSectionPro
   return (
     <div className="mb-6">
       <h3 className="text-lg font-semibold mb-3">{title}</h3>
-      <ul className="space-y-2">
+      <ul className="space-y-3">
         {answers.map((answer) => (
-          <li key={answer.id} className="border-b pb-2">
-            <p className="font-medium">{answer.question?.Question || answer.question?.question}</p>
-            <p className="text-muted-foreground">{answer.answer}</p>
+          <li key={answer.id} className="bg-muted/50 p-4 rounded-lg">
+            <p className="font-medium text-foreground mb-2">
+              {answer.question?.question}
+            </p>
+            <p className="text-muted-foreground">
+              Réponse : {answer.answer}
+            </p>
           </li>
         ))}
       </ul>
