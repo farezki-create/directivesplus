@@ -5,13 +5,13 @@ import { QUESTIONNAIRE_MAPPINGS, isValidQuestionsData, isValidJunctionData, hand
 import type { QuestionnaireAnswer, QuestionnaireType } from "@/types/questions";
 
 export function useQuestionnaireAnswers(questionnaireType: QuestionnaireType) {
-  const { session } = useAuthState();
+  const { user } = useAuthState();
   const mapping = QUESTIONNAIRE_MAPPINGS[questionnaireType];
 
   return useQuery({
-    queryKey: ['questionnaire-answers', questionnaireType, session?.user?.id],
+    queryKey: ['questionnaire-answers', questionnaireType, user?.id],
     queryFn: async () => {
-      if (!session?.user?.id || !mapping) {
+      if (!user?.id || !mapping) {
         return [];
       }
 
@@ -19,7 +19,7 @@ export function useQuestionnaireAnswers(questionnaireType: QuestionnaireType) {
       const { data: answersData, error: answersError } = await supabase
         .from('questionnaire_answers')
         .select('id, answer')
-        .eq('user_id', session.user.id)
+        .eq('user_id', user.id)
         .eq('questionnaire_type', questionnaireType);
 
       if (answersError) {
@@ -82,6 +82,6 @@ export function useQuestionnaireAnswers(questionnaireType: QuestionnaireType) {
         };
       });
     },
-    enabled: !!session?.user?.id
+    enabled: !!user?.id
   });
 }

@@ -1,3 +1,5 @@
+import { Database } from "@/integrations/supabase/types";
+
 export interface BaseQuestion {
   id: string;
   Question?: string;
