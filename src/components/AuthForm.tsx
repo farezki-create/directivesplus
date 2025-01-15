@@ -39,7 +39,10 @@ export const AuthForm = ({ isSignUp, onSubmit, onToggleMode }: AuthFormProps) =>
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         {isSignUp ? (
-          <SignUpFields form={form} />
+          <>
+            <LoginFields form={form} />
+            <SignUpFields form={form} />
+          </>
         ) : (
           <LoginFields form={form} />
         )}
