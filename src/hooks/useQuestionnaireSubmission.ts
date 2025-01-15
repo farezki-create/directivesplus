@@ -2,11 +2,13 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@supabase/auth-helpers-react";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 export function useQuestionnaireSubmission() {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const session = useSession();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleAnswerChange = (questionId: string, value: string) => {
     setAnswers(prev => ({
@@ -66,6 +68,9 @@ export function useQuestionnaireSubmission() {
         title: "Réponses enregistrées",
         description: "Vos réponses ont été sauvegardées avec succès."
       });
+
+      // Redirect to synthesis page
+      navigate('/free-text');
 
       if (onSuccess) {
         onSuccess();
