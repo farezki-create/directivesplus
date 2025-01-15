@@ -4,7 +4,7 @@ import { useAuthState } from "@/hooks/useAuthState";
 import { QUESTIONNAIRE_MAPPINGS, isValidQuestionsData, isValidJunctionData, handleSupabaseError } from "@/utils/questionnaireUtils";
 import type { QuestionnaireAnswer } from "@/types/questions";
 
-export function useQuestionnaireAnswers(questionnaireType: string) {
+export function useQuestionnaireAnswers(questionnaireType: keyof typeof QUESTIONNAIRE_MAPPINGS) {
   const { user } = useAuthState();
   const mapping = QUESTIONNAIRE_MAPPINGS[questionnaireType];
 
