@@ -83,6 +83,7 @@ export type Database = {
           category: Database["public"]["Enums"]["question_category"] | null
           id: string
           NON: string
+          order: number | null
           OUI: string
           Question: string
           updated_at: string | null
@@ -91,6 +92,7 @@ export type Database = {
           category?: Database["public"]["Enums"]["question_category"] | null
           id?: string
           NON: string
+          order?: number | null
           OUI: string
           Question: string
           updated_at?: string | null
@@ -99,6 +101,7 @@ export type Database = {
           category?: Database["public"]["Enums"]["question_category"] | null
           id?: string
           NON?: string
+          order?: number | null
           OUI?: string
           Question?: string
           updated_at?: string | null

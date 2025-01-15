@@ -103,6 +103,12 @@ const Index = () => {
               </Button>
               <Button
                 size="lg"
+                className="w-full"
+              >
+                Directives anticipées
+              </Button>
+              <Button
+                size="lg"
                 onClick={() => navigate("/dashboard")}
                 className="w-full flex items-center justify-center gap-2"
               >
