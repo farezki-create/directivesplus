@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom"; // Add this import
+import { useNavigate } from "react-router-dom";
 import { QuestionsDialog } from "@/components/QuestionsDialog";
 import { ExplanationDialog } from "@/components/ExplanationDialog";
 import { LifeSupportExplanationDialog } from "@/components/LifeSupportExplanationDialog";
@@ -15,7 +15,7 @@ import { FeatureHighlights } from "@/components/home/FeatureHighlights";
 import { useDialogState } from "@/hooks/useDialogState";
 
 const Index = () => {
-  const navigate = useNavigate(); // Add this line
+  const navigate = useNavigate();
   const [showSections, setShowSections] = useState(false);
   const dialogState = useDialogState();
 
@@ -88,10 +88,10 @@ const Index = () => {
             </div>
           ) : (
             <MainButtons 
-              onGeneralOpinionClick={dialogState.setExplanationOpen}
-              onLifeSupportClick={dialogState.setLifeSupportExplanationOpen}
-              onAdvancedIllnessClick={dialogState.setAdvancedIllnessExplanationOpen}
-              onPreferencesClick={dialogState.setPreferencesExplanationOpen}
+              onGeneralOpinionClick={handleGeneralOpinionClick}
+              onLifeSupportClick={handleLifeSupportClick}
+              onAdvancedIllnessClick={handleAdvancedIllnessClick}
+              onPreferencesClick={handlePreferencesClick}
             />
           )}
 
@@ -102,10 +102,7 @@ const Index = () => {
       <ExplanationDialog 
         open={dialogState.explanationOpen}
         onOpenChange={dialogState.setExplanationOpen}
-        onContinue={() => {
-          dialogState.setExplanationOpen(false);
-          dialogState.setQuestionsOpen(true);
-        }}
+        onContinue={handleExplanationContinue}
       />
 
       <QuestionsDialog 
@@ -116,10 +113,7 @@ const Index = () => {
       <LifeSupportExplanationDialog
         open={dialogState.lifeSupportExplanationOpen}
         onOpenChange={dialogState.setLifeSupportExplanationOpen}
-        onContinue={() => {
-          dialogState.setLifeSupportExplanationOpen(false);
-          dialogState.setLifeSupportQuestionsOpen(true);
-        }}
+        onContinue={handleLifeSupportExplanationContinue}
       />
 
       <LifeSupportQuestionsDialog
@@ -130,10 +124,7 @@ const Index = () => {
       <AdvancedIllnessExplanationDialog
         open={dialogState.advancedIllnessExplanationOpen}
         onOpenChange={dialogState.setAdvancedIllnessExplanationOpen}
-        onContinue={() => {
-          dialogState.setAdvancedIllnessExplanationOpen(false);
-          dialogState.setAdvancedIllnessQuestionsOpen(true);
-        }}
+        onContinue={handleAdvancedIllnessExplanationContinue}
       />
 
       <AdvancedIllnessQuestionsDialog
@@ -144,10 +135,7 @@ const Index = () => {
       <PreferencesExplanationDialog
         open={dialogState.preferencesExplanationOpen}
         onOpenChange={dialogState.setPreferencesExplanationOpen}
-        onContinue={() => {
-          dialogState.setPreferencesExplanationOpen(false);
-          dialogState.setPreferencesQuestionsOpen(true);
-        }}
+        onContinue={handlePreferencesExplanationContinue}
       />
 
       <PreferencesQuestionsDialog

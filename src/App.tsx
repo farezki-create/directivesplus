@@ -1,18 +1,21 @@
-import { BrowserRouter } from "react-router-dom";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import "./App.css";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
-
-// Create a client
-const queryClient = new QueryClient();
+import Auth from "./pages/Auth";
+import Dashboard from "./pages/Dashboard";
+import ResetPassword from "./pages/ResetPassword";
+import FreeText from "./pages/FreeText";
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <Index />
-      </BrowserRouter>
-    </QueryClientProvider>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/free-text" element={<FreeText />} />
+      </Routes>
+    </Router>
   );
 }
 
