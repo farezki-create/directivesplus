@@ -2,7 +2,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@supabase/auth-helpers-react";
 import { useToast } from "@/hooks/use-toast";
-import { QuestionnaireType } from "@/types/questionnaire";
+import { QuestionnaireType, getTableName } from "@/types/questionnaire";
 
 export function useQuestionnaireState(questionnaireType: QuestionnaireType) {
   const [questions, setQuestions] = useState<any[]>([]);

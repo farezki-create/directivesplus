@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useSession } from "@supabase/auth-helpers-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { QuestionnaireType } from "@/types/questionnaire";
+import { QuestionnaireType, getResponseTableName } from "@/types/questionnaire";
 
 export function useQuestionnaireSubmission(questionnaireType: QuestionnaireType) {
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -16,19 +16,6 @@ export function useQuestionnaireSubmission(questionnaireType: QuestionnaireType)
       ...prev,
       [questionId]: value
     }));
-  };
-
-  const getTableName = (type: QuestionnaireType): string => {
-    switch (type) {
-      case "life_support":
-        return "questionnaire_life_support_responses";
-      case "advanced_illness":
-        return "questionnaire_advanced_illness_responses";
-      case "preferences":
-        return "questionnaire_preferences_responses";
-      default:
-        return "questionnaire_general_responses";
-    }
   };
 
   const handleSubmit = async () => {
@@ -46,7 +33,7 @@ export function useQuestionnaireSubmission(questionnaireType: QuestionnaireType)
     console.log('Début de la sauvegarde des réponses');
 
     try {
-      const tableName = getTableName(questionnaireType);
+      const tableName = getResponseTableName(questionnaireType);
       console.log('Sauvegarde des réponses dans la table:', tableName);
       
       // Sauvegarder les réponses individuelles
