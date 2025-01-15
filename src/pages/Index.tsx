@@ -9,6 +9,8 @@ import { LifeSupportExplanationDialog } from "@/components/LifeSupportExplanatio
 import { LifeSupportQuestionsDialog } from "@/components/LifeSupportQuestionsDialog";
 import { AdvancedIllnessExplanationDialog } from "@/components/AdvancedIllnessExplanationDialog";
 import { AdvancedIllnessQuestionsDialog } from "@/components/AdvancedIllnessQuestionsDialog";
+import { PreferencesExplanationDialog } from "@/components/PreferencesExplanationDialog";
+import { PreferencesQuestionsDialog } from "@/components/PreferencesQuestionsDialog";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -19,6 +21,8 @@ const Index = () => {
   const [lifeSupportQuestionsOpen, setLifeSupportQuestionsOpen] = useState(false);
   const [advancedIllnessExplanationOpen, setAdvancedIllnessExplanationOpen] = useState(false);
   const [advancedIllnessQuestionsOpen, setAdvancedIllnessQuestionsOpen] = useState(false);
+  const [preferencesExplanationOpen, setPreferencesExplanationOpen] = useState(false);
+  const [preferencesQuestionsOpen, setPreferencesQuestionsOpen] = useState(false);
 
   const handleGeneralOpinionClick = () => {
     setExplanationOpen(true);
@@ -45,6 +49,15 @@ const Index = () => {
   const handleAdvancedIllnessExplanationContinue = () => {
     setAdvancedIllnessExplanationOpen(false);
     setAdvancedIllnessQuestionsOpen(true);
+  };
+
+  const handlePreferencesClick = () => {
+    setPreferencesExplanationOpen(true);
+  };
+
+  const handlePreferencesExplanationContinue = () => {
+    setPreferencesExplanationOpen(false);
+    setPreferencesQuestionsOpen(true);
   };
 
   return (
@@ -103,6 +116,7 @@ const Index = () => {
               </Button>
               <Button
                 size="lg"
+                onClick={handlePreferencesClick}
                 className="w-full"
               >
                 Mes goûts et mes peurs
@@ -172,6 +186,17 @@ const Index = () => {
       <AdvancedIllnessQuestionsDialog
         open={advancedIllnessQuestionsOpen}
         onOpenChange={setAdvancedIllnessQuestionsOpen}
+      />
+
+      <PreferencesExplanationDialog
+        open={preferencesExplanationOpen}
+        onOpenChange={setPreferencesExplanationOpen}
+        onContinue={handlePreferencesExplanationContinue}
+      />
+
+      <PreferencesQuestionsDialog
+        open={preferencesQuestionsOpen}
+        onOpenChange={setPreferencesQuestionsOpen}
       />
     </div>
   );
