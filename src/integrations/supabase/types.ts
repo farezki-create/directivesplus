@@ -45,33 +45,6 @@ export type Database = {
         }
         Relationships: []
       }
-      preferences_questions: {
-        Row: {
-          id: string
-          question: string
-          created_at: string
-          updated_at: string | null
-          display_order: number | null
-          category: Database["public"]["Enums"]["question_category"] | null
-        }
-        Insert: {
-          id?: string
-          question: string
-          created_at?: string
-          updated_at?: string | null
-          display_order?: number | null
-          category?: Database["public"]["Enums"]["question_category"] | null
-        }
-        Update: {
-          id?: string
-          question?: string
-          created_at?: string
-          updated_at?: string | null
-          display_order?: number | null
-          category?: Database["public"]["Enums"]["question_category"] | null
-        }
-        Relationships: []
-      }
       life_support_questions: {
         Row: {
           id: string
@@ -102,6 +75,33 @@ export type Database = {
           "Oui pour une durée modérée"?: string
           "Oui seulement si l'équipe médicale le juge utile"?: string
           question?: string
+        }
+        Relationships: []
+      }
+      preferences_questions: {
+        Row: {
+          category: Database["public"]["Enums"]["question_category"] | null
+          created_at: string
+          display_order: number | null
+          id: string
+          question: string
+          updated_at: string | null
+        }
+        Insert: {
+          category?: Database["public"]["Enums"]["question_category"] | null
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          question: string
+          updated_at?: string | null
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["question_category"] | null
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          question?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -178,10 +178,10 @@ export type Tables<
         PublicSchema["Views"])
     ? (PublicSchema["Tables"] &
         PublicSchema["Views"])[PublicTableNameOrOptions] extends {
-      Row: infer R
-    }
-    ? R
-    : never
+        Row: infer R
+      }
+      ? R
+      : never
     : never
 
 export type TablesInsert<

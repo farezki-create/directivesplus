@@ -1,8 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
-import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { UserPlus } from "lucide-react";
 import { QuestionsDialog } from "@/components/QuestionsDialog";
 import { ExplanationDialog } from "@/components/ExplanationDialog";
 import { LifeSupportExplanationDialog } from "@/components/LifeSupportExplanationDialog";
@@ -11,53 +9,48 @@ import { AdvancedIllnessExplanationDialog } from "@/components/AdvancedIllnessEx
 import { AdvancedIllnessQuestionsDialog } from "@/components/AdvancedIllnessQuestionsDialog";
 import { PreferencesExplanationDialog } from "@/components/PreferencesExplanationDialog";
 import { PreferencesQuestionsDialog } from "@/components/PreferencesQuestionsDialog";
+import { MainButtons } from "@/components/home/MainButtons";
+import { FeatureHighlights } from "@/components/home/FeatureHighlights";
+import { useDialogState } from "@/hooks/useDialogState";
 
 const Index = () => {
-  const navigate = useNavigate();
   const [showSections, setShowSections] = useState(false);
-  const [explanationOpen, setExplanationOpen] = useState(false);
-  const [questionsOpen, setQuestionsOpen] = useState(false);
-  const [lifeSupportExplanationOpen, setLifeSupportExplanationOpen] = useState(false);
-  const [lifeSupportQuestionsOpen, setLifeSupportQuestionsOpen] = useState(false);
-  const [advancedIllnessExplanationOpen, setAdvancedIllnessExplanationOpen] = useState(false);
-  const [advancedIllnessQuestionsOpen, setAdvancedIllnessQuestionsOpen] = useState(false);
-  const [preferencesExplanationOpen, setPreferencesExplanationOpen] = useState(false);
-  const [preferencesQuestionsOpen, setPreferencesQuestionsOpen] = useState(false);
+  const dialogState = useDialogState();
 
   const handleGeneralOpinionClick = () => {
-    setExplanationOpen(true);
+    dialogState.setExplanationOpen(true);
   };
 
   const handleExplanationContinue = () => {
-    setExplanationOpen(false);
-    setQuestionsOpen(true);
+    dialogState.setExplanationOpen(false);
+    dialogState.setQuestionsOpen(true);
   };
 
   const handleLifeSupportClick = () => {
-    setLifeSupportExplanationOpen(true);
+    dialogState.setLifeSupportExplanationOpen(true);
   };
 
   const handleLifeSupportExplanationContinue = () => {
-    setLifeSupportExplanationOpen(false);
-    setLifeSupportQuestionsOpen(true);
+    dialogState.setLifeSupportExplanationOpen(false);
+    dialogState.setLifeSupportQuestionsOpen(true);
   };
 
   const handleAdvancedIllnessClick = () => {
-    setAdvancedIllnessExplanationOpen(true);
+    dialogState.setAdvancedIllnessExplanationOpen(true);
   };
 
   const handleAdvancedIllnessExplanationContinue = () => {
-    setAdvancedIllnessExplanationOpen(false);
-    setAdvancedIllnessQuestionsOpen(true);
+    dialogState.setAdvancedIllnessExplanationOpen(false);
+    dialogState.setAdvancedIllnessQuestionsOpen(true);
   };
 
   const handlePreferencesClick = () => {
-    setPreferencesExplanationOpen(true);
+    dialogState.setPreferencesExplanationOpen(true);
   };
 
   const handlePreferencesExplanationContinue = () => {
-    setPreferencesExplanationOpen(false);
-    setPreferencesQuestionsOpen(true);
+    dialogState.setPreferencesExplanationOpen(false);
+    dialogState.setPreferencesQuestionsOpen(true);
   };
 
   return (
@@ -92,111 +85,60 @@ const Index = () => {
               </Button>
             </div>
           ) : (
-            <div className="grid gap-4 max-w-lg mx-auto">
-              <Button
-                size="lg"
-                onClick={handleGeneralOpinionClick}
-                className="w-full"
-              >
-                Mon avis d'une façon générale
-              </Button>
-              <Button
-                size="lg"
-                onClick={handleLifeSupportClick}
-                className="w-full"
-              >
-                Maintien en vie
-              </Button>
-              <Button
-                size="lg"
-                onClick={handleAdvancedIllnessClick}
-                className="w-full"
-              >
-                Maladie avancée
-              </Button>
-              <Button
-                size="lg"
-                onClick={handlePreferencesClick}
-                className="w-full"
-              >
-                Mes goûts et mes peurs
-              </Button>
-              <Button
-                size="lg"
-                onClick={() => navigate("/dashboard")}
-                className="w-full flex items-center justify-center gap-2"
-              >
-                <UserPlus className="w-5 h-5" />
-                Désignation d'une personne de confiance
-              </Button>
-            </div>
+            <MainButtons 
+              onGeneralOpinionClick={handleGeneralOpinionClick}
+              onLifeSupportClick={handleLifeSupportClick}
+              onAdvancedIllnessClick={handleAdvancedIllnessClick}
+              onPreferencesClick={handlePreferencesClick}
+            />
           )}
 
-          <div className="mt-12 grid gap-8 md:grid-cols-3">
-            <div className="text-center">
-              <h3 className="text-lg font-semibold mb-2">Simple et guidé</h3>
-              <p className="text-muted-foreground">
-                Un processus pas à pas pour vous accompagner dans la rédaction.
-              </p>
-            </div>
-            <div className="text-center">
-              <h3 className="text-lg font-semibold mb-2">100% sécurisé</h3>
-              <p className="text-muted-foreground">
-                Vos données sont protégées et confidentielles.
-              </p>
-            </div>
-            <div className="text-center">
-              <h3 className="text-lg font-semibold mb-2">Toujours accessible</h3>
-              <p className="text-muted-foreground">
-                Consultez et modifiez vos directives à tout moment.
-              </p>
-            </div>
-          </div>
+          <FeatureHighlights />
         </div>
       </main>
 
       <ExplanationDialog 
-        open={explanationOpen}
-        onOpenChange={setExplanationOpen}
+        open={dialogState.explanationOpen}
+        onOpenChange={dialogState.setExplanationOpen}
         onContinue={handleExplanationContinue}
       />
 
       <QuestionsDialog 
-        open={questionsOpen}
-        onOpenChange={setQuestionsOpen}
+        open={dialogState.questionsOpen}
+        onOpenChange={dialogState.setQuestionsOpen}
       />
 
       <LifeSupportExplanationDialog
-        open={lifeSupportExplanationOpen}
-        onOpenChange={setLifeSupportExplanationOpen}
+        open={dialogState.lifeSupportExplanationOpen}
+        onOpenChange={dialogState.setLifeSupportExplanationOpen}
         onContinue={handleLifeSupportExplanationContinue}
       />
 
       <LifeSupportQuestionsDialog
-        open={lifeSupportQuestionsOpen}
-        onOpenChange={setLifeSupportQuestionsOpen}
+        open={dialogState.lifeSupportQuestionsOpen}
+        onOpenChange={dialogState.setLifeSupportQuestionsOpen}
       />
 
       <AdvancedIllnessExplanationDialog
-        open={advancedIllnessExplanationOpen}
-        onOpenChange={setAdvancedIllnessExplanationOpen}
+        open={dialogState.advancedIllnessExplanationOpen}
+        onOpenChange={dialogState.setAdvancedIllnessExplanationOpen}
         onContinue={handleAdvancedIllnessExplanationContinue}
       />
 
       <AdvancedIllnessQuestionsDialog
-        open={advancedIllnessQuestionsOpen}
-        onOpenChange={setAdvancedIllnessQuestionsOpen}
+        open={dialogState.advancedIllnessQuestionsOpen}
+        onOpenChange={dialogState.setAdvancedIllnessQuestionsOpen}
       />
 
       <PreferencesExplanationDialog
-        open={preferencesExplanationOpen}
-        onOpenChange={setPreferencesExplanationOpen}
+        open={dialogState.preferencesExplanationOpen}
+        onOpenChange={dialogState.setPreferencesExplanationOpen}
         onContinue={handlePreferencesExplanationContinue}
       />
 
       <PreferencesQuestionsDialog
-        open={preferencesQuestionsOpen}
-        onOpenChange={setPreferencesQuestionsOpen}
+        open={dialogState.preferencesQuestionsOpen}
+        onOpenChange={dialogState.setPreferencesQuestionsOpen}
       />
     </div>
   );
