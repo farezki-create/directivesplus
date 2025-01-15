@@ -1,12 +1,17 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AuthForm } from "@/components/AuthForm";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import { useAuthState } from "@/hooks/useAuthState";
 import { Header } from "@/components/Header";
 
 const Login = () => {
   const navigate = useNavigate();
+  const { handleSubmit, isLoading } = useAuthState();
+  const [isSignUp, setIsSignUp] = useState(false);
 
   useEffect(() => {
     console.log("Setting up auth state change listener in Login page");
@@ -15,7 +20,7 @@ const Login = () => {
       
       if (event === "SIGNED_IN" && session) {
         console.log('User signed in successfully, redirecting to home page');
-        navigate("/");
+        navigate("/home");
       }
     });
 
@@ -36,14 +41,17 @@ const Login = () => {
               Bienvenue sur DirectivesPlus
             </CardTitle>
             <CardDescription className="text-center text-muted-foreground">
-              Connectez-vous pour accéder à vos directives anticipées
+              {isSignUp 
+                ? "Inscrivez-vous pour accéder à vos directives anticipées"
+                : "Connectez-vous pour accéder à vos directives anticipées"
+              }
             </CardDescription>
           </CardHeader>
           <CardContent>
             <AuthForm
-              isSignUp={false}
-              onSubmit={() => {}}
-              onToggleMode={() => {}}
+              isSignUp={isSignUp}
+              onSubmit={handleSubmit}
+              onToggleMode={() => setIsSignUp(!isSignUp)}
             />
           </CardContent>
         </Card>
