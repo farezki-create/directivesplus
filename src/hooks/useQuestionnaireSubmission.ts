@@ -20,6 +20,42 @@ export function useQuestionnaireSubmission(questionnaireType: QuestionnaireType)
     }));
   };
 
+  const saveToLinkingTable = async (answerId: string, questionId: string) => {
+    let tableName = '';
+    
+    switch (questionnaireType) {
+      case 'general_opinion':
+        tableName = 'questionnaire_general_opinion_answers';
+        break;
+      case 'life_support':
+        tableName = 'questionnaire_life_support_answers';
+        break;
+      case 'advanced_illness':
+        tableName = 'questionnaire_advanced_illness_answers';
+        break;
+      case 'preferences':
+        tableName = 'questionnaire_preferences_answers';
+        break;
+    }
+
+    if (!tableName) {
+      console.error('Type de questionnaire non reconnu:', questionnaireType);
+      return;
+    }
+
+    const { error } = await supabase
+      .from(tableName)
+      .insert({
+        answer_id: answerId,
+        question_id: questionId
+      });
+
+    if (error) {
+      console.error(`Erreur lors de l'enregistrement dans la table ${tableName}:`, error);
+      throw error;
+    }
+  };
+
   const handleSubmit = async (onSuccess?: () => void) => {
     if (!session?.user?.id) {
       console.error('Aucune session utilisateur trouvée');
@@ -35,25 +71,25 @@ export function useQuestionnaireSubmission(questionnaireType: QuestionnaireType)
       console.log('Début de la sauvegarde des réponses:', answers);
       
       // Sauvegarder les réponses individuelles
-      const answerPromises = Object.entries(answers).map(([questionId, answer]) => 
-        supabase
+      for (const [questionId, answer] of Object.entries(answers)) {
+        const { data, error } = await supabase
           .from('questionnaire_answers')
-          .upsert({
+          .insert({
             user_id: session.user.id,
             questionnaire_type: questionnaireType,
             question_id: questionId,
             answer: answer
-          }, {
-            onConflict: 'user_id,questionnaire_type,question_id'
           })
-      );
+          .select('id')
+          .single();
 
-      const results = await Promise.all(answerPromises);
-      const errors = results.filter(result => result.error);
+        if (error) {
+          console.error('Erreur lors de la sauvegarde de la réponse:', error);
+          throw error;
+        }
 
-      if (errors.length > 0) {
-        console.error('Erreurs lors de la sauvegarde des réponses:', errors);
-        throw new Error('Erreur lors de la sauvegarde des réponses');
+        // Sauvegarder dans la table de liaison correspondante
+        await saveToLinkingTable(data.id, questionId);
       }
 
       // Mettre à jour la synthèse
@@ -71,8 +107,6 @@ export function useQuestionnaireSubmission(questionnaireType: QuestionnaireType)
         throw synthesisError;
       }
 
-      console.log('Toutes les réponses ont été sauvegardées avec succès');
-
       toast({
         title: "Réponses enregistrées",
         description: "Vos réponses ont été sauvegardées avec succès."
@@ -82,7 +116,7 @@ export function useQuestionnaireSubmission(questionnaireType: QuestionnaireType)
         onSuccess();
       }
 
-      // Ajout d'un délai avant la navigation pour s'assurer que toutes les opérations sont terminées
+      // Ajout d'un délai avant la navigation
       setTimeout(() => {
         navigate('/free-text');
       }, 500);
