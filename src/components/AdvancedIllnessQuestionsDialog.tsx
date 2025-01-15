@@ -56,8 +56,8 @@ export function AdvancedIllnessQuestionsDialog({
   };
 
   const getQuestionOptions = (question: any) => [
-    { value: 'oui', label: question.Oui },
-    { value: 'non', label: question.Non },
+    { value: 'oui', label: question.oui },
+    { value: 'non', label: question.non },
     { 
       value: 'oui_medical', 
       label: question["Oui si l'équipe médicale le juge utile"]
