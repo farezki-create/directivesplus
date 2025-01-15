@@ -1,10 +1,25 @@
+import { useEffect } from "react";
 import { Header } from "@/components/Header";
 import { DirectivesForm } from "@/components/DirectivesForm";
 import { TrustedPersons } from "@/components/TrustedPersons";
 import { PDFGenerator } from "@/components/PDFGenerator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ExplanationDialog } from "@/components/ExplanationDialog";
+import { useDialogState } from "@/hooks/useDialogState";
 
 const Dashboard = () => {
+  const { explanationOpen, setExplanationOpen } = useDialogState();
+
+  useEffect(() => {
+    // Check if we should show the dialog (after login)
+    const shouldShowDialog = sessionStorage.getItem('showExplanationDialog') === 'true';
+    if (shouldShowDialog) {
+      setExplanationOpen(true);
+      // Remove the flag after showing the dialog
+      sessionStorage.removeItem('showExplanationDialog');
+    }
+  }, [setExplanationOpen]);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -34,6 +49,12 @@ const Dashboard = () => {
           </TabsContent>
         </Tabs>
       </main>
+
+      <ExplanationDialog 
+        open={explanationOpen}
+        onOpenChange={setExplanationOpen}
+        onContinue={() => setExplanationOpen(false)}
+      />
     </div>
   );
 };
