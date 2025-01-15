@@ -41,9 +41,11 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
     }
   }, [open]);
 
-  const handleSubmitWrapper = () => {
-    handleSubmit();
-    onOpenChange(false);
+  const handleSubmitWrapper = async () => {
+    await handleSubmit(() => {
+      console.log("Closing dialog after successful submission");
+      onOpenChange(false);
+    });
   };
 
   return (

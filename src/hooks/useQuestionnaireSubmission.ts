@@ -69,12 +69,13 @@ export function useQuestionnaireSubmission() {
         description: "Vos réponses ont été sauvegardées avec succès."
       });
 
-      // Navigate to synthesis page
-      navigate('/free-text');
-
       if (onSuccess) {
         onSuccess();
       }
+
+      // Navigate to synthesis page after everything is done
+      navigate('/free-text');
+
     } catch (error) {
       console.error('Error saving answers:', error);
       toast({
