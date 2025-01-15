@@ -54,7 +54,8 @@ export function QuestionsDialogLayout({
     }
   };
 
-  const isButtonDisabled = !session || questionsLength === 0 || isSaving;
+  // Le bouton est désactivé uniquement si l'utilisateur n'est pas connecté ou si une sauvegarde est en cours
+  const isButtonDisabled = !session || isSaving;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
