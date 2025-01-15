@@ -11,8 +11,13 @@ const Dashboard = () => {
   const { explanationOpen, setExplanationOpen } = useDialogState();
 
   useEffect(() => {
-    // Open the explanation dialog when the component mounts
-    setExplanationOpen(true);
+    // Check if we should show the dialog (after login)
+    const shouldShowDialog = sessionStorage.getItem('showExplanationDialog') === 'true';
+    if (shouldShowDialog) {
+      setExplanationOpen(true);
+      // Remove the flag after showing the dialog
+      sessionStorage.removeItem('showExplanationDialog');
+    }
   }, [setExplanationOpen]);
 
   return (
