@@ -1,1 +1,10 @@
 project_id = "zxytckmvmvtfcihnhlbj"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage", "graphql_public"]
+
+[[functions]]
+name = "send-document-email"
+verify_jwt = false
