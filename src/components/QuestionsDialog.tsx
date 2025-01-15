@@ -73,6 +73,8 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
             questionnaire_type: 'general_opinion',
             question_id: questionId,
             answer: answer
+          }, {
+            onConflict: 'user_id,questionnaire_type,question_id'
           });
 
         if (error) {
