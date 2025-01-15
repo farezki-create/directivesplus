@@ -12,25 +12,26 @@ interface QuestionsDialogProps {
 export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
   const [questions, setQuestions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const { answers, handleAnswerChange, handleSubmit } = useQuestionnaireSubmission();
+  const { answers, handleAnswerChange, handleSubmit } = useQuestionnaireSubmission('general_opinion');
 
   useEffect(() => {
     async function fetchQuestions() {
       try {
-        console.log("Fetching general opinion questions...");
+        console.log("Chargement des questions d'opinion générale...");
         const { data, error } = await supabase
           .from('questions')
-          .select('*');
+          .select('*')
+          .order('order', { ascending: true });
         
         if (error) {
-          console.error('Error fetching questions:', error);
+          console.error('Erreur lors du chargement des questions:', error);
           return;
         }
         
-        console.log('Raw data from questions table:', data);
+        console.log('Questions chargées:', data);
         setQuestions(data || []);
       } catch (error) {
-        console.error('Error:', error);
+        console.error('Erreur:', error);
       } finally {
         setLoading(false);
       }
@@ -43,14 +44,10 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
 
   const handleSubmitWrapper = async () => {
     console.log('Début de la soumission des réponses');
-    try {
-      await handleSubmit(() => {
-        console.log('Fermeture de la boîte de dialogue après soumission réussie');
-        onOpenChange(false);
-      });
-    } catch (error) {
-      console.error('Erreur lors de la soumission:', error);
-    }
+    await handleSubmit(() => {
+      console.log('Fermeture de la boîte de dialogue');
+      onOpenChange(false);
+    });
   };
 
   return (

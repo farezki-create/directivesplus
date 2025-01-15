@@ -14,11 +14,11 @@ export function useQuestionnaireAnswers(questionnaireType: QuestionnaireType) {
     queryKey: [`${questionnaireType}-answers`, session?.user?.id],
     queryFn: async () => {
       if (!session?.user?.id) {
-        console.log('No user session found');
+        console.log('Aucune session utilisateur trouvée');
         return [];
       }
 
-      console.log(`Fetching ${questionnaireType} answers for user ${session.user.id}...`);
+      console.log(`Chargement des réponses ${questionnaireType} pour l'utilisateur ${session.user.id}...`);
       
       const { data: answers, error: answersError } = await supabase
         .from('questionnaire_answers')
@@ -27,12 +27,12 @@ export function useQuestionnaireAnswers(questionnaireType: QuestionnaireType) {
         .eq('user_id', session.user.id);
 
       if (answersError) {
-        console.error(`Error fetching ${questionnaireType} answers:`, answersError);
+        console.error(`Erreur lors du chargement des réponses ${questionnaireType}:`, answersError);
         throw answersError;
       }
 
       if (!answers?.length) {
-        console.log(`No ${questionnaireType} answers found for user`);
+        console.log(`Aucune réponse ${questionnaireType} trouvée pour l'utilisateur`);
         return [];
       }
 
@@ -62,11 +62,11 @@ export function useQuestionnaireAnswers(questionnaireType: QuestionnaireType) {
         .select('*');
 
       if (questionsError) {
-        console.error(`Error fetching ${questionnaireType} questions:`, questionsError);
+        console.error(`Erreur lors du chargement des questions ${questionnaireType}:`, questionsError);
         throw questionsError;
       }
 
-      console.log(`Found ${answers.length} answers and ${questions.length} questions`);
+      console.log(`${answers.length} réponses et ${questions.length} questions trouvées`);
 
       const questionsMap = new Map(
         questions.map((q: any) => [q.id, q[questionField]])
