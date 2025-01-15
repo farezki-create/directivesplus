@@ -49,8 +49,9 @@ const Auth = () => {
           // First, try to parse the error body if it exists
           let errorBody;
           try {
-            if (error.message.includes('{')) {
+            if (typeof error.message === 'string' && error.message.includes('{')) {
               errorBody = JSON.parse(error.message.substring(error.message.indexOf('{')));
+              console.log('Parsed error body:', errorBody);
             }
           } catch (e) {
             console.log('Error parsing error message:', e);
