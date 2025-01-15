@@ -210,6 +210,41 @@ export type Database = {
           },
         ]
       }
+      questionnaire_advanced_illness_responses: {
+        Row: {
+          created_at: string
+          id: string
+          question_id: string
+          response: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          question_id: string
+          response: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          question_id?: string
+          response?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "questionnaire_advanced_illness_responses_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "advanced_illness_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       questionnaire_answers: {
         Row: {
           answer: string
@@ -270,6 +305,41 @@ export type Database = {
           },
         ]
       }
+      questionnaire_general_responses: {
+        Row: {
+          created_at: string
+          id: string
+          question_id: string
+          response: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          question_id: string
+          response: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          question_id?: string
+          response?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "questionnaire_general_responses_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       questionnaire_life_support_answers: {
         Row: {
           answer_id: string
@@ -300,6 +370,41 @@ export type Database = {
           },
         ]
       }
+      questionnaire_life_support_responses: {
+        Row: {
+          created_at: string
+          id: string
+          question_id: string
+          response: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          question_id: string
+          response: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          question_id?: string
+          response?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "questionnaire_life_support_responses_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "life_support_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       questionnaire_preferences_answers: {
         Row: {
           answer_id: string
@@ -323,6 +428,41 @@ export type Database = {
           },
           {
             foreignKeyName: "questionnaire_preferences_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "preferences_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      questionnaire_preferences_responses: {
+        Row: {
+          created_at: string
+          id: string
+          question_id: string
+          response: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          question_id: string
+          response: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          question_id?: string
+          response?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "questionnaire_preferences_responses_question_id_fkey"
             columns: ["question_id"]
             isOneToOne: false
             referencedRelation: "preferences_questions"
