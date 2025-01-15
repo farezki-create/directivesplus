@@ -12,6 +12,7 @@ type AuthFormProps = {
   onToggleMode: () => void;
 };
 
+export { type FormValues };
 export const AuthForm = ({ isSignUp, onSubmit, onToggleMode }: AuthFormProps) => {
   const schema = isSignUp ? signUpSchema : loginSchema;
   
