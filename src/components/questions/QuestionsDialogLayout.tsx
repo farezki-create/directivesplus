@@ -57,19 +57,6 @@ export function QuestionsDialogLayout({
       console.log("Début de la sauvegarde...");
       setIsSaving(true);
       await onSubmit();
-      console.log("Sauvegarde terminée avec succès");
-      
-      toast({
-        title: "Succès",
-        description: "Vos réponses ont été enregistrées avec succès."
-      });
-
-      // Fermer le dialogue et rediriger vers la page de synthèse
-      onOpenChange(false);
-      setTimeout(() => {
-        navigate("/free-text");
-      }, 500);
-
     } catch (error) {
       console.error("Erreur lors de la sauvegarde :", error);
       toast({

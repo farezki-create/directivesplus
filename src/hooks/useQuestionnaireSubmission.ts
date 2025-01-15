@@ -6,12 +6,6 @@ import { useNavigate } from "react-router-dom";
 
 type QuestionnaireType = "general_opinion" | "life_support" | "advanced_illness" | "preferences";
 
-type LinkingTableName = 
-  | "questionnaire_general_opinion_answers"
-  | "questionnaire_life_support_answers"
-  | "questionnaire_advanced_illness_answers"
-  | "questionnaire_preferences_answers";
-
 export function useQuestionnaireSubmission(questionnaireType: QuestionnaireType) {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const session = useSession();
@@ -26,41 +20,7 @@ export function useQuestionnaireSubmission(questionnaireType: QuestionnaireType)
     }));
   };
 
-  const saveToLinkingTable = async (answerId: string, questionId: string) => {
-    let tableName: LinkingTableName;
-    
-    switch (questionnaireType) {
-      case 'general_opinion':
-        tableName = 'questionnaire_general_opinion_answers';
-        break;
-      case 'life_support':
-        tableName = 'questionnaire_life_support_answers';
-        break;
-      case 'advanced_illness':
-        tableName = 'questionnaire_advanced_illness_answers';
-        break;
-      case 'preferences':
-        tableName = 'questionnaire_preferences_answers';
-        break;
-      default:
-        console.error('Type de questionnaire non reconnu:', questionnaireType);
-        throw new Error('Type de questionnaire non reconnu');
-    }
-
-    const { error } = await supabase
-      .from(tableName)
-      .insert({
-        answer_id: answerId,
-        question_id: questionId
-      });
-
-    if (error) {
-      console.error(`Erreur lors de l'enregistrement dans la table ${tableName}:`, error);
-      throw error;
-    }
-  };
-
-  const handleSubmit = async (onSuccess?: () => void) => {
+  const handleSubmit = async () => {
     if (!session?.user?.id) {
       console.error('Aucune session utilisateur trouvée');
       toast({
@@ -72,28 +32,25 @@ export function useQuestionnaireSubmission(questionnaireType: QuestionnaireType)
     }
 
     try {
-      console.log('Début de la sauvegarde des réponses:', answers);
+      console.log('Sauvegarde des réponses:', answers);
       
       // Sauvegarder les réponses individuelles
       for (const [questionId, answer] of Object.entries(answers)) {
-        const { data, error } = await supabase
+        const { error } = await supabase
           .from('questionnaire_answers')
-          .insert({
+          .upsert({
             user_id: session.user.id,
             questionnaire_type: questionnaireType,
             question_id: questionId,
             answer: answer
-          })
-          .select('id')
-          .single();
+          }, {
+            onConflict: 'user_id, questionnaire_type, question_id'
+          });
 
         if (error) {
           console.error('Erreur lors de la sauvegarde de la réponse:', error);
           throw error;
         }
-
-        // Sauvegarder dans la table de liaison correspondante
-        await saveToLinkingTable(data.id, questionId);
       }
 
       // Mettre à jour la synthèse
@@ -116,14 +73,8 @@ export function useQuestionnaireSubmission(questionnaireType: QuestionnaireType)
         description: "Vos réponses ont été sauvegardées avec succès."
       });
 
-      if (onSuccess) {
-        onSuccess();
-      }
-
-      // Ajout d'un délai avant la navigation
-      setTimeout(() => {
-        navigate('/free-text');
-      }, 500);
+      // Redirection vers la page de synthèse
+      navigate('/free-text');
 
     } catch (error) {
       console.error('Erreur lors de la sauvegarde des réponses:', error);
@@ -132,6 +83,7 @@ export function useQuestionnaireSubmission(questionnaireType: QuestionnaireType)
         title: "Erreur",
         description: "Une erreur est survenue lors de la sauvegarde de vos réponses."
       });
+      throw error;
     }
   };
 

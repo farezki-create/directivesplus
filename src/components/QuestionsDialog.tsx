@@ -44,7 +44,6 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
     }
   }, [open]);
 
-  // Pré-remplir les réponses existantes
   useEffect(() => {
     if (existingAnswers && existingAnswers.length > 0) {
       console.log('Chargement des réponses existantes:', existingAnswers);
@@ -62,10 +61,13 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
 
   const handleSubmitWrapper = async () => {
     console.log('Début de la soumission des réponses');
-    await handleSubmit(() => {
-      console.log('Fermeture de la boîte de dialogue');
+    try {
+      await handleSubmit();
+      console.log('Réponses soumises avec succès');
       onOpenChange(false);
-    });
+    } catch (error) {
+      console.error('Erreur lors de la soumission des réponses:', error);
+    }
   };
 
   return (
