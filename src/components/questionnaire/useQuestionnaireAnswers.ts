@@ -33,6 +33,11 @@ const questionTableMappings: Record<QuestionnaireType, QuestionTableMapping> = {
   }
 };
 
+interface BaseQuestion {
+  id: string;
+  [key: string]: any;
+}
+
 export function useQuestionnaireAnswers(questionnaireType: QuestionnaireType) {
   return useQuery({
     queryKey: [`${questionnaireType}-answers`],
@@ -56,11 +61,6 @@ export function useQuestionnaireAnswers(questionnaireType: QuestionnaireType) {
         return [];
       }
 
-      type QuestionData = {
-        id: string;
-        [key: string]: any;
-      }
-
       // Get the questions
       const { data: questionsData, error: questionsError } = await supabase
         .from(mapping.tableName)
@@ -73,7 +73,7 @@ export function useQuestionnaireAnswers(questionnaireType: QuestionnaireType) {
 
       // Create a map of questions for easy lookup
       const questionsMap = new Map(
-        (questionsData as QuestionData[]).map(q => [q.id, q[mapping.questionField]])
+        (questionsData as BaseQuestion[])?.map(q => [q.id, q[mapping.questionField]])
       );
 
       // Get the junction table data
