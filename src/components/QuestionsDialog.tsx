@@ -42,10 +42,15 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
   }, [open]);
 
   const handleSubmitWrapper = async () => {
-    await handleSubmit(() => {
-      console.log("Closing dialog after successful submission");
-      onOpenChange(false);
-    });
+    console.log('Début de la soumission des réponses');
+    try {
+      await handleSubmit(() => {
+        console.log('Fermeture de la boîte de dialogue après soumission réussie');
+        onOpenChange(false);
+      });
+    } catch (error) {
+      console.error('Erreur lors de la soumission:', error);
+    }
   };
 
   return (

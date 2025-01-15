@@ -28,9 +28,9 @@ export function useQuestionnaireSubmission() {
     }
 
     try {
-      console.log('Saving answers:', answers);
+      console.log('Début de la sauvegarde des réponses:', answers);
       
-      // Save individual answers
+      // Sauvegarder les réponses individuelles
       for (const [questionId, answer] of Object.entries(answers)) {
         const { error } = await supabase
           .from('questionnaire_answers')
@@ -44,12 +44,12 @@ export function useQuestionnaireSubmission() {
           });
 
         if (error) {
-          console.error('Error saving answer:', error);
+          console.error('Erreur lors de la sauvegarde de la réponse:', error);
           throw error;
         }
       }
 
-      // Update or create synthesis entry
+      // Mettre à jour ou créer l'entrée de synthèse
       const { error: synthesisError } = await supabase
         .from('questionnaire_synthesis')
         .upsert({
@@ -60,24 +60,30 @@ export function useQuestionnaireSubmission() {
         });
 
       if (synthesisError) {
-        console.error('Error updating synthesis:', synthesisError);
+        console.error('Erreur lors de la mise à jour de la synthèse:', synthesisError);
         throw synthesisError;
       }
+
+      console.log('Toutes les réponses ont été sauvegardées avec succès');
 
       toast({
         title: "Réponses enregistrées",
         description: "Vos réponses ont été sauvegardées avec succès."
       });
 
+      // Exécuter le callback de succès si fourni
       if (onSuccess) {
-        onSuccess();
+        await onSuccess();
       }
 
-      // Navigate to synthesis page after everything is done
-      navigate('/free-text');
+      // Attendre un court instant avant la navigation
+      setTimeout(() => {
+        console.log('Navigation vers la page de synthèse');
+        navigate('/free-text');
+      }, 500);
 
     } catch (error) {
-      console.error('Error saving answers:', error);
+      console.error('Erreur lors de la sauvegarde des réponses:', error);
       toast({
         variant: "destructive",
         title: "Erreur",
