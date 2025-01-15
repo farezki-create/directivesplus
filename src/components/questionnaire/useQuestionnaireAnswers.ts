@@ -2,20 +2,29 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { QuestionnaireAnswer } from "@/types/questionnaire";
 import { Database } from "@/integrations/supabase/types";
+import { useSession } from "@supabase/auth-helpers-react";
 
 type QuestionnaireType = "general_opinion" | "life_support" | "advanced_illness" | "preferences";
 type TableNames = Database["public"]["Tables"];
 
 export function useQuestionnaireAnswers(questionnaireType: QuestionnaireType) {
+  const session = useSession();
+
   return useQuery({
-    queryKey: [`${questionnaireType}-answers`],
+    queryKey: [`${questionnaireType}-answers`, session?.user?.id],
     queryFn: async () => {
-      console.log(`Fetching ${questionnaireType} answers...`);
+      if (!session?.user?.id) {
+        console.log('No user session found');
+        return [];
+      }
+
+      console.log(`Fetching ${questionnaireType} answers for user ${session.user.id}...`);
       
       const { data: answers, error: answersError } = await supabase
         .from('questionnaire_answers')
         .select('*')
-        .eq('questionnaire_type', questionnaireType);
+        .eq('questionnaire_type', questionnaireType)
+        .eq('user_id', session.user.id);
 
       if (answersError) {
         console.error(`Error fetching ${questionnaireType} answers:`, answersError);
@@ -23,6 +32,7 @@ export function useQuestionnaireAnswers(questionnaireType: QuestionnaireType) {
       }
 
       if (!answers?.length) {
+        console.log(`No ${questionnaireType} answers found for user`);
         return [];
       }
 
@@ -56,6 +66,8 @@ export function useQuestionnaireAnswers(questionnaireType: QuestionnaireType) {
         throw questionsError;
       }
 
+      console.log(`Found ${answers.length} answers and ${questions.length} questions`);
+
       const questionsMap = new Map(
         questions.map((q: any) => [q.id, q[questionField]])
       );
@@ -68,5 +80,6 @@ export function useQuestionnaireAnswers(questionnaireType: QuestionnaireType) {
         }
       })) as QuestionnaireAnswer[];
     },
+    enabled: !!session?.user?.id,
   });
 }

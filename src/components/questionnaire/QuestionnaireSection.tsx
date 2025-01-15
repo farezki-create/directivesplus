@@ -6,7 +6,14 @@ interface QuestionnaireSectionProps {
 }
 
 export function QuestionnaireSection({ title, answers }: QuestionnaireSectionProps) {
-  if (!answers?.length) return null;
+  if (!answers?.length) {
+    return (
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold mb-3">{title}</h3>
+        <p className="text-muted-foreground italic">Aucune réponse enregistrée</p>
+      </div>
+    );
+  }
 
   return (
     <div className="mb-6">
