@@ -1,13 +1,12 @@
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@supabase/auth-helpers-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 
-type QuestionnaireType = "general_opinion" | "life_support" | "advanced_illness" | "preferences";
-
-export function useQuestionnaireSubmission(questionnaireType: QuestionnaireType) {
+export function useQuestionnaireSubmission(questionnaireType: string) {
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const session = useSession();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -28,9 +27,11 @@ export function useQuestionnaireSubmission(questionnaireType: QuestionnaireType)
         title: "Erreur",
         description: "Vous devez être connecté pour enregistrer vos réponses."
       });
+      navigate("/auth");
       return;
     }
 
+    setIsSubmitting(true);
     try {
       console.log('Sauvegarde des réponses:', answers);
       
@@ -73,8 +74,10 @@ export function useQuestionnaireSubmission(questionnaireType: QuestionnaireType)
         description: "Vos réponses ont été sauvegardées avec succès."
       });
 
-      // Redirection vers la page de synthèse
-      navigate('/free-text');
+      // Redirection vers la page de synthèse après un court délai
+      setTimeout(() => {
+        navigate('/free-text');
+      }, 1500);
 
     } catch (error) {
       console.error('Erreur lors de la sauvegarde des réponses:', error);
@@ -83,12 +86,14 @@ export function useQuestionnaireSubmission(questionnaireType: QuestionnaireType)
         title: "Erreur",
         description: "Une erreur est survenue lors de la sauvegarde de vos réponses."
       });
-      throw error;
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return {
     answers,
+    isSubmitting,
     handleAnswerChange,
     handleSubmit
   };

@@ -20,7 +20,7 @@ export function SubmitButton({ isDisabled, isSaving, onClick }: SubmitButtonProp
       {isSaving ? (
         <>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Enregistrement...
+          Enregistrement en cours...
         </>
       ) : !session ? (
         'Connectez-vous pour enregistrer'

@@ -1,7 +1,7 @@
 import { Dialog, DialogContent as UIDialogContent, DialogFooter } from "@/components/ui/dialog";
 import { Header } from "@/components/Header";
 import { useSession } from "@supabase/auth-helpers-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { DialogContent } from "./DialogContent";
 import { SubmitButton } from "./SubmitButton";
 import { useNavigate } from "react-router-dom";
@@ -31,18 +31,9 @@ export function QuestionsDialogLayout({
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
 
-  useEffect(() => {
-    console.log("État actuel :", {
-      session: !!session,
-      loading,
-      questionsLength,
-      isSaving
-    });
-  }, [session, loading, questionsLength, isSaving]);
-
   const handleSubmit = async () => {
     if (!session) {
-      console.log("Pas de session utilisateur, redirection vers la page de connexion");
+      console.log("Redirection vers la page de connexion - utilisateur non connecté");
       toast({
         variant: "destructive",
         title: "Connexion requise",
@@ -54,11 +45,12 @@ export function QuestionsDialogLayout({
     }
 
     try {
-      console.log("Début de la sauvegarde...");
+      console.log("Début de la sauvegarde des réponses...");
       setIsSaving(true);
       await onSubmit();
+      console.log("Sauvegarde réussie");
     } catch (error) {
-      console.error("Erreur lors de la sauvegarde :", error);
+      console.error("Erreur lors de la sauvegarde:", error);
       toast({
         variant: "destructive",
         title: "Erreur",
@@ -68,8 +60,6 @@ export function QuestionsDialogLayout({
       setIsSaving(false);
     }
   };
-
-  const isButtonDisabled = isSaving || !session;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -87,7 +77,7 @@ export function QuestionsDialogLayout({
 
           <DialogFooter className="mt-6">
             <SubmitButton
-              isDisabled={isButtonDisabled}
+              isDisabled={!session || isSaving}
               isSaving={isSaving}
               onClick={handleSubmit}
             />
