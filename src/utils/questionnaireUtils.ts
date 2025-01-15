@@ -26,16 +26,20 @@ export const QUESTIONNAIRE_MAPPINGS: Record<string, QuestionnaireMapping> = {
 };
 
 export function isValidQuestionsData(data: unknown): data is BaseQuestion[] {
-  return Array.isArray(data) && data.every(q => 
+  if (!Array.isArray(data)) return false;
+  return data.every(q => 
     typeof q === 'object' && 
     q !== null && 
     'id' in q && 
-    typeof q.id === 'string'
+    typeof q.id === 'string' &&
+    (('Question' in q && typeof q.Question === 'string') || 
+     ('question' in q && typeof q.question === 'string'))
   );
 }
 
 export function isValidJunctionData(data: unknown): data is JunctionData[] {
-  return Array.isArray(data) && data.every(j => 
+  if (!Array.isArray(data)) return false;
+  return data.every(j => 
     typeof j === 'object' && 
     j !== null && 
     'answer_id' in j && 
