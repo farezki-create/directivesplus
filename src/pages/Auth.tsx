@@ -20,10 +20,10 @@ const Auth = () => {
       console.log('Auth state changed:', event, session);
       
       if (event === "SIGNED_IN" && session) {
-        console.log('User signed in, redirecting to dashboard');
+        console.log('User signed in, redirecting to home page');
         // Store a flag in sessionStorage to indicate that we should show the dialog
         sessionStorage.setItem('showExplanationDialog', 'true');
-        navigate("/dashboard");
+        navigate("/");
       }
     });
 
