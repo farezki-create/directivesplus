@@ -4,6 +4,8 @@ import { useSession } from "@supabase/auth-helpers-react";
 import { useState, useEffect } from "react";
 import { DialogContent } from "./DialogContent";
 import { SubmitButton } from "./SubmitButton";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 interface QuestionsDialogLayoutProps {
   open: boolean;
@@ -25,6 +27,8 @@ export function QuestionsDialogLayout({
   children
 }: QuestionsDialogLayoutProps) {
   const session = useSession();
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -38,7 +42,14 @@ export function QuestionsDialogLayout({
 
   const handleSubmit = async () => {
     if (!session) {
-      console.log("Pas de session utilisateur, impossible de sauvegarder");
+      console.log("Pas de session utilisateur, redirection vers la page de connexion");
+      toast({
+        variant: "destructive",
+        title: "Connexion requise",
+        description: "Vous devez être connecté pour enregistrer vos réponses."
+      });
+      onOpenChange(false);
+      navigate("/auth");
       return;
     }
 
@@ -47,15 +58,24 @@ export function QuestionsDialogLayout({
       setIsSaving(true);
       await onSubmit();
       console.log("Sauvegarde terminée avec succès");
+      toast({
+        title: "Succès",
+        description: "Vos réponses ont été enregistrées avec succès."
+      });
     } catch (error) {
       console.error("Erreur lors de la sauvegarde :", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la sauvegarde de vos réponses."
+      });
     } finally {
       setIsSaving(false);
     }
   };
 
-  // Le bouton est désactivé uniquement si une sauvegarde est en cours
-  const isButtonDisabled = isSaving;
+  // Le bouton est désactivé si une sauvegarde est en cours ou si l'utilisateur n'est pas connecté
+  const isButtonDisabled = isSaving || !session;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

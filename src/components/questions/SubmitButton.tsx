@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { useSession } from "@supabase/auth-helpers-react";
 
 interface SubmitButtonProps {
   isDisabled: boolean;
@@ -8,6 +9,8 @@ interface SubmitButtonProps {
 }
 
 export function SubmitButton({ isDisabled, isSaving, onClick }: SubmitButtonProps) {
+  const session = useSession();
+
   return (
     <Button
       onClick={onClick}
@@ -19,6 +22,8 @@ export function SubmitButton({ isDisabled, isSaving, onClick }: SubmitButtonProp
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           Enregistrement...
         </>
+      ) : !session ? (
+        'Connectez-vous pour enregistrer'
       ) : (
         'Enregistrer mes réponses'
       )}
