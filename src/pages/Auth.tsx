@@ -25,13 +25,29 @@ const Auth = () => {
         sessionStorage.setItem('showExplanationDialog', 'true');
         navigate("/");
       }
+
+      // Log any URL-related errors
+      if (event === "USER_DELETED" || event === "SIGNED_OUT") {
+        console.log('Auth event:', event);
+      }
     });
+
+    // Check for redirect error in URL
+    const hash = window.location.hash;
+    if (hash && hash.includes('error')) {
+      console.error('Redirect error detected:', hash);
+      toast({
+        variant: "destructive",
+        title: "Erreur d'authentification",
+        description: "Une erreur est survenue lors de la redirection. Veuillez réessayer.",
+      });
+    }
 
     return () => {
       console.log("Cleaning up auth state change listener");
       subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, [navigate, toast]);
 
   const handleSubmit = async (values: FormValues) => {
     try {
@@ -41,7 +57,6 @@ const Auth = () => {
           email: values.email,
           password: values.password,
           options: {
-            emailRedirectTo: `${window.location.origin}/auth/callback`,
             data: {
               first_name: values.firstName,
               last_name: values.lastName,
@@ -70,6 +85,17 @@ const Auth = () => {
                 setIsSignUp(false);
                 return;
               }
+            }
+
+            // Check for URL-related errors
+            if (error.message.includes("failed to call url") || error.message.includes("404")) {
+              console.error('URL configuration error:', error);
+              toast({
+                variant: "destructive",
+                title: "Erreur de configuration",
+                description: "Une erreur de configuration est survenue. Veuillez contacter le support.",
+              });
+              return;
             }
           }
           
@@ -103,6 +129,17 @@ const Auth = () => {
                 variant: "destructive",
                 title: "Erreur de connexion",
                 description: "Email ou mot de passe incorrect. Veuillez vérifier vos identifiants.",
+              });
+              return;
+            }
+
+            // Check for URL-related errors
+            if (error.message.includes("failed to call url") || error.message.includes("404")) {
+              console.error('URL configuration error:', error);
+              toast({
+                variant: "destructive",
+                title: "Erreur de configuration",
+                description: "Une erreur de configuration est survenue. Veuillez contacter le support.",
               });
               return;
             }
