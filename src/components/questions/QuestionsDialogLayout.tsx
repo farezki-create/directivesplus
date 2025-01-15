@@ -42,7 +42,7 @@ export function QuestionsDialogLayout({
         description: "Vous devez être connecté pour enregistrer vos réponses."
       });
       onOpenChange(false);
-      navigate("/auth", { state: { returnUrl: window.location.pathname } });
+      navigate("/login", { state: { returnUrl: window.location.pathname } });
       return;
     }
 
