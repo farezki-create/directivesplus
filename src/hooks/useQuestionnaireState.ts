@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@supabase/auth-helpers-react";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { QuestionnaireAnswer, QuestionnaireType, getTableName } from "@/types/questionnaire";
+import { QuestionnaireType } from "@/types/questionnaire";
 
 export function useQuestionnaireState(questionnaireType: QuestionnaireType) {
   const [questions, setQuestions] = useState<any[]>([]);
@@ -13,34 +13,51 @@ export function useQuestionnaireState(questionnaireType: QuestionnaireType) {
 
   const fetchQuestions = async () => {
     try {
-      console.log(`Fetching ${questionnaireType} questions...`);
+      console.log(`Chargement des questions ${questionnaireType}...`);
       const tableName = getTableName(questionnaireType);
-      
       const { data, error } = await supabase
         .from(tableName)
         .select('*')
         .order('order', { ascending: true });
-      
+
       if (error) {
-        console.error('Error fetching questions:', error);
-        return;
+        console.error(`Erreur lors du chargement des questions ${questionnaireType}:`, error);
+        throw error;
       }
-      
-      console.log(`Raw data from ${tableName} table:`, data);
+
+      console.log(`Questions ${questionnaireType} chargées:`, data);
       setQuestions(data || []);
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Erreur:', error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de charger les questions."
+      });
     } finally {
       setLoading(false);
     }
   };
 
   const handleAnswerChange = (questionId: string, value: string) => {
-    console.log(`Updating answer for question ${questionId}:`, value);
+    console.log(`Mise à jour de la réponse pour la question ${questionId}:`, value);
     setAnswers(prev => ({
       ...prev,
       [questionId]: value
     }));
+  };
+
+  const loadExistingAnswers = (existingAnswers: any[] | null) => {
+    if (existingAnswers && existingAnswers.length > 0) {
+      console.log('Chargement des réponses existantes:', existingAnswers);
+      const answersMap: Record<string, string> = {};
+      existingAnswers.forEach(answer => {
+        if (answer.question_id) {
+          answersMap[answer.question_id] = answer.answer;
+        }
+      });
+      setAnswers(answersMap);
+    }
   };
 
   const handleSubmit = async (onSuccess?: () => void) => {
@@ -109,16 +126,16 @@ export function useQuestionnaireState(questionnaireType: QuestionnaireType) {
     }
   };
 
-  const loadExistingAnswers = (existingAnswers: QuestionnaireAnswer[] | undefined) => {
-    if (existingAnswers && existingAnswers.length > 0) {
-      console.log('Loading existing answers:', existingAnswers);
-      const answersMap: Record<string, string> = {};
-      existingAnswers.forEach(answer => {
-        if (answer.question_id) {
-          answersMap[answer.question_id] = answer.answer;
-        }
-      });
-      setAnswers(answersMap);
+  const getTableName = (type: QuestionnaireType): string => {
+    switch (type) {
+      case "life_support":
+        return "life_support_questions";
+      case "advanced_illness":
+        return "advanced_illness_questions";
+      case "preferences":
+        return "preferences_questions";
+      default:
+        return "questions";
     }
   };
 
