@@ -22,7 +22,8 @@ export function AdvancedIllnessQuestionsDialog({
         console.log("Fetching advanced illness questions...");
         const { data, error } = await supabase
           .from('advanced_illness_questions')
-          .select('*');
+          .select('*')
+          .order('order', { ascending: true });
         
         if (error) {
           console.error('Error fetching questions:', error);

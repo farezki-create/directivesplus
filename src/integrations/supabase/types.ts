@@ -14,6 +14,7 @@ export type Database = {
           created_at: string
           id: string
           non: string
+          order: number | null
           oui: string
           "Oui si l'équipe médicale le juge utile": string
           "Oui si ma personne de confiance le juge utile": string
@@ -24,6 +25,7 @@ export type Database = {
           created_at?: string
           id?: string
           non: string
+          order?: number | null
           oui: string
           "Oui si l'équipe médicale le juge utile": string
           "Oui si ma personne de confiance le juge utile": string
@@ -34,6 +36,7 @@ export type Database = {
           created_at?: string
           id?: string
           non?: string
+          order?: number | null
           oui?: string
           "Oui si l'équipe médicale le juge utile"?: string
           "Oui si ma personne de confiance le juge utile"?: string
