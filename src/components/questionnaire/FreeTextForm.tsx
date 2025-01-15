@@ -11,7 +11,7 @@ export function FreeTextForm() {
     <div className="mb-8">
       <h2 className="text-xl font-semibold mb-4">Expression libre</h2>
       <p className="text-muted-foreground mb-4">
-        Utilisez cet espace pour exprimer librement vos souhaits, vos valeurs ou toute autre information que vous souhaitez partager avec l'équipe soignante.
+        Mon souhait en cas de maladie grave avec peu d'espoirs, c'est ne pas souffrir et mourir vite.
       </p>
 
       <Textarea
