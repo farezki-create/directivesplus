@@ -43,6 +43,13 @@ export function MainButtons({
       >
         Synthèse du questionnaire
       </Button>
+      <Button 
+        onClick={() => navigate("/examples")} 
+        size="lg"
+        className="md:col-span-2"
+      >
+        Exemples et documents utiles
+      </Button>
     </div>
   );
 }
