@@ -6,6 +6,12 @@ import { useNavigate } from "react-router-dom";
 
 type QuestionnaireType = "general_opinion" | "life_support" | "advanced_illness" | "preferences";
 
+type LinkingTableName = 
+  | "questionnaire_general_opinion_answers"
+  | "questionnaire_life_support_answers"
+  | "questionnaire_advanced_illness_answers"
+  | "questionnaire_preferences_answers";
+
 export function useQuestionnaireSubmission(questionnaireType: QuestionnaireType) {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const session = useSession();
@@ -21,7 +27,7 @@ export function useQuestionnaireSubmission(questionnaireType: QuestionnaireType)
   };
 
   const saveToLinkingTable = async (answerId: string, questionId: string) => {
-    let tableName = '';
+    let tableName: LinkingTableName;
     
     switch (questionnaireType) {
       case 'general_opinion':
@@ -36,11 +42,9 @@ export function useQuestionnaireSubmission(questionnaireType: QuestionnaireType)
       case 'preferences':
         tableName = 'questionnaire_preferences_answers';
         break;
-    }
-
-    if (!tableName) {
-      console.error('Type de questionnaire non reconnu:', questionnaireType);
-      return;
+      default:
+        console.error('Type de questionnaire non reconnu:', questionnaireType);
+        throw new Error('Type de questionnaire non reconnu');
     }
 
     const { error } = await supabase
