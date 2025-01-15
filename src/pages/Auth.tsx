@@ -1,151 +1,50 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthApiError } from "@supabase/supabase-js";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { AuthForm, FormValues } from "@/components/AuthForm";
+import { AuthForm } from "@/components/AuthForm";
+import { useSupabaseClient } from "@supabase/auth-helpers-react";
+import { toast } from "sonner";
 import { getErrorMessage } from "@/utils/auth-errors";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
 
 const Auth = () => {
+  const supabase = useSupabaseClient();
   const navigate = useNavigate();
-  const [isSignUp, setIsSignUp] = useState(false);
-  const { toast } = useToast();
 
   useEffect(() => {
-    console.log("Setting up auth state change listener");
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event, session);
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state changed:', event);
       
       if (event === "SIGNED_IN" && session) {
-        console.log('User signed in, redirecting to dashboard');
+        console.log('User signed in, redirecting to home page');
         // Store a flag in sessionStorage to indicate that we should show the dialog
         sessionStorage.setItem('showExplanationDialog', 'true');
-        navigate("/dashboard");
+        navigate("/");
       }
     });
 
-    return () => {
-      console.log("Cleaning up auth state change listener");
-      subscription.unsubscribe();
-    };
-  }, [navigate]);
+    return () => subscription.unsubscribe();
+  }, [supabase, navigate]);
 
-  const handleSubmit = async (values: FormValues) => {
-    try {
-      if (isSignUp) {
-        console.log('Attempting signup with email:', values.email);
-        const { error } = await supabase.auth.signUp({
-          email: values.email,
-          password: values.password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/auth/callback`
-          }
-        });
-
-        if (error) {
-          console.log('Signup error:', error);
-          
-          // First, try to parse the error body if it exists
-          let errorBody;
-          try {
-            if (typeof error.message === 'string' && error.message.includes('{')) {
-              errorBody = JSON.parse(error.message.substring(error.message.indexOf('{')));
-              console.log('Parsed error body:', errorBody);
-            }
-          } catch (e) {
-            console.log('Error parsing error message:', e);
-          }
-
-          // Check for user_already_exists in both parsed body and direct message
-          if (
-            (errorBody && errorBody.code === "user_already_exists") ||
-            (error instanceof AuthApiError && error.message.includes("User already registered"))
-          ) {
-            console.log('User already exists, switching to login mode');
-            toast({
-              title: "Compte existant",
-              description: "Un compte existe déjà avec cet email. Connectez-vous.",
-            });
-            setIsSignUp(false);
-            return;
-          }
-          
-          const message = getErrorMessage(error);
-          toast({
-            variant: "destructive",
-            title: "Erreur d'inscription",
-            description: message,
-          });
-          return;
-        }
-
-        toast({
-          title: "Inscription réussie",
-          description: "Veuillez vérifier votre email pour confirmer votre compte.",
-        });
-      } else {
-        console.log('Attempting login with email:', values.email);
-        const { error } = await supabase.auth.signInWithPassword({
-          email: values.email,
-          password: values.password,
-        });
-
-        if (error) {
-          console.log('Login error:', error);
-          const message = getErrorMessage(error);
-          toast({
-            variant: "destructive",
-            title: "Erreur de connexion",
-            description: message,
-          });
-          return;
-        }
-      }
-    } catch (error) {
-      console.error('Auth error:', error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Une erreur inattendue s'est produite. Veuillez réessayer.",
-      });
+  const handleError = (error: Error) => {
+    console.error('Auth error:', error);
+    const message = getErrorMessage(error);
+    
+    // Check if the error is about existing user
+    if (error.message.includes('user_already_exists')) {
+      toast.error("Un compte existe déjà avec cet email. Veuillez vous connecter.");
+      return true;
     }
+    
+    toast.error(message);
+    return false;
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4">
-      {isSignUp && (
-        <Button
-          variant="ghost"
-          className="absolute top-4 left-4 gap-2"
-          onClick={() => navigate("/")}
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Retour à l'accueil
-        </Button>
-      )}
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">
-            {isSignUp ? "Créer un compte" : "Se connecter"}
-          </CardTitle>
-          <CardDescription className="text-center text-muted-foreground">
-            {isSignUp 
-              ? "Inscrivez-vous pour accéder à vos directives anticipées"
-              : "Connectez-vous pour accéder à vos directives anticipées"
-            }
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <AuthForm
-            isSignUp={isSignUp}
-            onSubmit={handleSubmit}
-            onToggleMode={() => setIsSignUp(!isSignUp)}
-          />
-        </CardContent>
-      </Card>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 p-4">
+      <div className="w-full max-w-md">
+        <AuthForm onError={handleError} />
+      </div>
     </div>
   );
 };
