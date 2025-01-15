@@ -2,6 +2,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Header } from "@/components/Header";
+import { useSession } from "@supabase/auth-helpers-react";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
 
 interface QuestionsDialogLayoutProps {
   open: boolean;
@@ -22,6 +25,25 @@ export function QuestionsDialogLayout({
   questionsLength,
   children
 }: QuestionsDialogLayoutProps) {
+  const session = useSession();
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!session) {
+      console.log("Pas de session utilisateur, impossible de sauvegarder");
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      await onSubmit();
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const isButtonDisabled = loading || questionsLength === 0 || !session || isSaving;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[800px] h-[90vh] max-h-[90vh] p-0 flex flex-col">
@@ -52,11 +74,18 @@ export function QuestionsDialogLayout({
 
           <DialogFooter className="mt-6">
             <Button
-              onClick={onSubmit}
+              onClick={handleSubmit}
               className="w-full sm:w-auto"
-              disabled={loading || questionsLength === 0}
+              disabled={isButtonDisabled}
             >
-              Enregistrer mes réponses
+              {isSaving ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Enregistrement...
+                </>
+              ) : (
+                'Enregistrer mes réponses'
+              )}
             </Button>
           </DialogFooter>
         </div>
