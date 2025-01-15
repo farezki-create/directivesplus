@@ -71,9 +71,15 @@ export function useQuestionnaireAnswers(questionnaireType: QuestionnaireType) {
         throw questionsError;
       }
 
+      // Type guard to ensure questionsData is an array of BaseQuestion
+      if (!Array.isArray(questionsData) || !questionsData.every(q => 'id' in q)) {
+        console.error('Invalid questions data format');
+        return [];
+      }
+
       // Create a map of questions for easy lookup
       const questionsMap = new Map(
-        (questionsData as BaseQuestion[])?.map(q => [q.id, q[mapping.questionField]])
+        questionsData.map(q => [q.id, q[mapping.questionField]])
       );
 
       // Get the junction table data
@@ -91,9 +97,15 @@ export function useQuestionnaireAnswers(questionnaireType: QuestionnaireType) {
         throw junctionError;
       }
 
+      // Type guard for junction data
+      if (!Array.isArray(junctionData)) {
+        console.error('Invalid junction data format');
+        return [];
+      }
+
       // Create a map of answer_id to question_id
       const answerQuestionMap = new Map(
-        (junctionData as JunctionData[])?.map(j => [j.answer_id, j.question_id]) || []
+        (junctionData as JunctionData[]).map(j => [j.answer_id, j.question_id])
       );
 
       // Map answers with their corresponding questions
