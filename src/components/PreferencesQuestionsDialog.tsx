@@ -23,6 +23,7 @@ export function PreferencesQuestionsDialog({
   onOpenChange,
 }: PreferencesQuestionsDialogProps) {
   const [currentStep, setCurrentStep] = useState(0);
+  const [answers, setAnswers] = useState<Record<string, string>>({});
 
   const { data: questions, isLoading } = useQuery({
     queryKey: ["preferences-questions"],
@@ -32,7 +33,10 @@ export function PreferencesQuestionsDialog({
         .select("*")
         .order("display_order", { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching preferences questions:", error);
+        throw error;
+      }
       return data;
     },
   });
@@ -52,6 +56,13 @@ export function PreferencesQuestionsDialog({
     }
   };
 
+  const handleAnswerChange = (questionId: string, value: string) => {
+    setAnswers(prev => ({
+      ...prev,
+      [questionId]: value
+    }));
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
@@ -62,22 +73,18 @@ export function PreferencesQuestionsDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <QuestionsDialogLayout
-          currentStep={currentStep}
-          totalSteps={questions?.length || 0}
-          isLoading={isLoading}
-        >
-          {questions && questions[currentStep] && (
-            <QuestionCard
-              question={questions[currentStep].question}
-              options={[
-                { label: "Oui", value: "oui" },
-                { label: "Non", value: "non" },
-                { label: "Je ne sais pas", value: "indecis" }
-              ]}
-            />
-          )}
-        </QuestionsDialogLayout>
+        {questions && questions[currentStep] && (
+          <QuestionCard
+            question={questions[currentStep].question}
+            value={answers[questions[currentStep].id] || ''}
+            onValueChange={(value) => handleAnswerChange(questions[currentStep].id, value)}
+            options={[
+              { label: "Oui", value: "oui" },
+              { label: "Non", value: "non" },
+              { label: "Je ne sais pas", value: "indecis" }
+            ]}
+          />
+        )}
 
         <DialogFooter className="flex justify-between">
           <Button
