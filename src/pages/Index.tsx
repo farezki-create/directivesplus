@@ -86,7 +86,7 @@ const Index = () => {
                 onClick={() => navigate("/dashboard")}
                 className="w-full"
               >
-                Allégement des souffrances
+                Maladie avancée
               </Button>
               <Button
                 size="lg"
