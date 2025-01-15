@@ -77,7 +77,7 @@ const handler = async (req: Request): Promise<Response> => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "Directives Anticipées <no-reply@example.com>",
+        from: "onboarding@resend.dev", // Using Resend's default testing domain
         to: [emailRequest.to],
         subject: "Accès à vos directives anticipées",
         html: `
