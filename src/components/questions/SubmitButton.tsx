@@ -24,7 +24,7 @@ export function SubmitButton({ isDisabled, isSaving, onClick }: SubmitButtonProp
           Enregistrement en cours...
         </>
       ) : (
-        session ? 'Enregistrer mes réponses' : 'Se connecter pour enregistrer'
+        'Enregistrer mes réponses'
       )}
     </Button>
   );
