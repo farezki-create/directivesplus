@@ -75,18 +75,20 @@ export function useQuestionnaireSubmission(questionnaireType: QuestionnaireType)
         description: "Vos réponses ont été sauvegardées avec succès."
       });
 
-      // Redirection vers la page de synthèse
-      navigate('/free-text');
+      // Redirection vers la page de synthèse après un court délai
+      setTimeout(() => {
+        setIsSubmitting(false);
+        navigate('/free-text');
+      }, 1500);
 
     } catch (error) {
       console.error('Erreur lors de la sauvegarde des réponses:', error);
+      setIsSubmitting(false);
       toast({
         variant: "destructive",
         title: "Erreur",
         description: "Une erreur est survenue lors de la sauvegarde de vos réponses."
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
