@@ -11,7 +11,7 @@ interface QuestionsDialogLayoutProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title: string;
-  onSubmit: () => void;
+  onSubmit: () => Promise<void>;
   loading: boolean;
   questionsLength: number;
   children: React.ReactNode;
@@ -58,10 +58,18 @@ export function QuestionsDialogLayout({
       setIsSaving(true);
       await onSubmit();
       console.log("Sauvegarde terminée avec succès");
+      
       toast({
         title: "Succès",
         description: "Vos réponses ont été enregistrées avec succès."
       });
+
+      // Fermer le dialogue et rediriger vers la page de synthèse
+      onOpenChange(false);
+      setTimeout(() => {
+        navigate("/free-text");
+      }, 500);
+
     } catch (error) {
       console.error("Erreur lors de la sauvegarde :", error);
       toast({
@@ -74,7 +82,6 @@ export function QuestionsDialogLayout({
     }
   };
 
-  // Le bouton est désactivé si une sauvegarde est en cours ou si l'utilisateur n'est pas connecté
   const isButtonDisabled = isSaving || !session;
 
   return (
