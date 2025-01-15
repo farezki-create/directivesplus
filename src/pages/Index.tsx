@@ -93,7 +93,7 @@ const Index = () => {
                 onClick={() => navigate("/dashboard")}
                 className="w-full"
               >
-                Privilégier le laisser mourir
+                maladie avancée
               </Button>
               <Button
                 size="lg"
