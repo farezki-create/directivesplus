@@ -24,7 +24,7 @@ const Examples = () => {
               Exemples de modèles de directives déjà remplis
             </Button>
             <Button size="lg">
-              Documents utiles pour les directives anticipées
+              Télécharger des documents utiles pour les directives anticipées
             </Button>
           </div>
 
