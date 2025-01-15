@@ -7,8 +7,13 @@ export const ProfileCard = () => {
   const { data: profile, isLoading: isLoadingProfile } = useQuery({
     queryKey: ['profile'],
     queryFn: async () => {
+      console.log('Fetching user profile...');
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not found');
+      if (!user) {
+        console.error('No user found');
+        throw new Error('User not found');
+      }
+      console.log('User found:', user.id);
 
       const { data, error } = await supabase
         .from('profiles')
@@ -16,7 +21,12 @@ export const ProfileCard = () => {
         .eq('id', user.id)
         .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching profile:', error);
+        throw error;
+      }
+      
+      console.log('Profile data:', data);
       return data;
     },
   });
