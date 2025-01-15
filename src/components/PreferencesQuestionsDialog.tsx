@@ -1,13 +1,4 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { QuestionCard } from "./questions/QuestionCard";
@@ -22,7 +13,6 @@ export function PreferencesQuestionsDialog({
   open,
   onOpenChange,
 }: PreferencesQuestionsDialogProps) {
-  const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
 
   const { data: questions, isLoading } = useQuery({
@@ -44,7 +34,6 @@ export function PreferencesQuestionsDialog({
   const handleSubmit = () => {
     console.log("Submitting answers:", answers);
     onOpenChange(false);
-    setCurrentStep(0);
     setAnswers({});
   };
 

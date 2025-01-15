@@ -1,13 +1,5 @@
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { ExternalLink } from "lucide-react";
 
 interface PreferencesExplanationDialogProps {
   open: boolean;
@@ -22,27 +14,31 @@ export function PreferencesExplanationDialog({
 }: PreferencesExplanationDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>Mes goûts et mes peurs</DialogTitle>
-          <DialogDescription className="space-y-4">
-            <p>
-              Cette section vous permet d'exprimer vos préférences personnelles et vos appréhensions. 
-              Ces informations aideront l'équipe soignante à mieux vous accompagner et à respecter vos souhaits.
-            </p>
-            <a 
-              href="https://www.youtube.com/watch?v=example"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:underline inline-flex items-center gap-2"
-            >
-              <ExternalLink className="h-4 w-4" />
-              Regarder la vidéo explicative
-            </a>
-          </DialogDescription>
+          <DialogTitle className="text-2xl font-semibold text-center">
+            Avant de commencer
+          </DialogTitle>
         </DialogHeader>
+        
+        <div className="py-6">
+          <p className="text-lg text-center mb-6">
+            Cette section vous permet d'exprimer vos préférences personnelles et vos appréhensions. 
+            Ces informations aideront l'équipe soignante à mieux vous accompagner et à respecter vos souhaits.
+          </p>
+          
+          {/* Placeholder for YouTube video - you can add the embed code here */}
+          <div className="aspect-video bg-muted rounded-lg mb-6">
+            <p className="flex items-center justify-center h-full text-muted-foreground">
+              Vidéo explicative à venir
+            </p>
+          </div>
+        </div>
+
         <DialogFooter>
-          <Button onClick={onContinue}>Continuer</Button>
+          <Button onClick={onContinue} className="w-full sm:w-auto">
+            Continuer vers le questionnaire
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
