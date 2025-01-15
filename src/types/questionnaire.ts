@@ -16,6 +16,12 @@ export type ResponseTableName =
   | "questionnaire_advanced_illness_responses"
   | "questionnaire_preferences_responses";
 
+export type TableName = 
+  | "questions"
+  | "life_support_questions"
+  | "advanced_illness_questions"
+  | "preferences_questions";
+
 export const getResponseTableName = (type: QuestionnaireType): ResponseTableName => {
   switch (type) {
     case "life_support":
@@ -28,12 +34,6 @@ export const getResponseTableName = (type: QuestionnaireType): ResponseTableName
       return "questionnaire_general_responses";
   }
 };
-
-export type TableName = 
-  | "questions"
-  | "life_support_questions"
-  | "advanced_illness_questions"
-  | "preferences_questions";
 
 export const getTableName = (type: QuestionnaireType): TableName => {
   switch (type) {
