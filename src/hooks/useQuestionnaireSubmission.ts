@@ -33,6 +33,8 @@ export function useQuestionnaireSubmission(questionnaireType: QuestionnaireType)
     }
 
     setIsSubmitting(true);
+    console.log('Début de la sauvegarde des réponses');
+
     try {
       console.log('Sauvegarde des réponses:', answers);
       
@@ -70,6 +72,7 @@ export function useQuestionnaireSubmission(questionnaireType: QuestionnaireType)
         throw synthesisError;
       }
 
+      console.log('Sauvegarde réussie, affichage du toast de succès');
       toast({
         title: "Réponses enregistrées",
         description: "Vos réponses ont été sauvegardées avec succès."
@@ -77,18 +80,20 @@ export function useQuestionnaireSubmission(questionnaireType: QuestionnaireType)
 
       // Redirection vers la page de synthèse après un court délai
       setTimeout(() => {
-        setIsSubmitting(false);
+        console.log('Redirection vers la page de synthèse');
         navigate('/free-text');
       }, 1500);
 
     } catch (error) {
       console.error('Erreur lors de la sauvegarde des réponses:', error);
-      setIsSubmitting(false);
       toast({
         variant: "destructive",
         title: "Erreur",
         description: "Une erreur est survenue lors de la sauvegarde de vos réponses."
       });
+    } finally {
+      console.log('Réinitialisation de isSubmitting');
+      setIsSubmitting(false);
     }
   };
 
