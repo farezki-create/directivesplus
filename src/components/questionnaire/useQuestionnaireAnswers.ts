@@ -2,16 +2,16 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthState } from "@/hooks/useAuthState";
 import { QUESTIONNAIRE_MAPPINGS, isValidQuestionsData, isValidJunctionData, handleSupabaseError } from "@/utils/questionnaireUtils";
-import type { QuestionnaireAnswer } from "@/types/questions";
+import type { QuestionnaireAnswer, QuestionnaireType } from "@/types/questions";
 
-export function useQuestionnaireAnswers(questionnaireType: keyof typeof QUESTIONNAIRE_MAPPINGS) {
-  const { user } = useAuthState();
+export function useQuestionnaireAnswers(questionnaireType: QuestionnaireType) {
+  const { session } = useAuthState();
   const mapping = QUESTIONNAIRE_MAPPINGS[questionnaireType];
 
   return useQuery({
-    queryKey: ['questionnaire-answers', questionnaireType, user?.id],
+    queryKey: ['questionnaire-answers', questionnaireType, session?.user?.id],
     queryFn: async () => {
-      if (!user?.id || !mapping) {
+      if (!session?.user?.id || !mapping) {
         return [];
       }
 
@@ -19,7 +19,7 @@ export function useQuestionnaireAnswers(questionnaireType: keyof typeof QUESTION
       const { data: answersData, error: answersError } = await supabase
         .from('questionnaire_answers')
         .select('id, answer')
-        .eq('user_id', user.id)
+        .eq('user_id', session.user.id)
         .eq('questionnaire_type', questionnaireType);
 
       if (answersError) {
@@ -33,7 +33,7 @@ export function useQuestionnaireAnswers(questionnaireType: keyof typeof QUESTION
       // Get questions data
       const { data: questionsData, error: questionsError } = await supabase
         .from(mapping.questionsTable)
-        .select('id, ' + mapping.questionField);
+        .select(`id, ${mapping.questionField}`);
 
       if (questionsError) {
         handleSupabaseError(questionsError);
@@ -82,6 +82,6 @@ export function useQuestionnaireAnswers(questionnaireType: keyof typeof QUESTION
         };
       });
     },
-    enabled: !!user?.id
+    enabled: !!session?.user?.id
   });
 }

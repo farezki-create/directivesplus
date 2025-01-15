@@ -1,5 +1,6 @@
 import { BaseQuestion, JunctionData, QuestionnaireMapping } from "@/types/questions";
 import { PostgrestError } from "@supabase/supabase-js";
+import { Database } from "@/integrations/supabase/types";
 
 export const QUESTIONNAIRE_MAPPINGS: Record<string, QuestionnaireMapping> = {
   general_opinion: {
@@ -25,11 +26,23 @@ export const QUESTIONNAIRE_MAPPINGS: Record<string, QuestionnaireMapping> = {
 };
 
 export function isValidQuestionsData(data: unknown): data is BaseQuestion[] {
-  return Array.isArray(data) && data.every(q => 'id' in q);
+  return Array.isArray(data) && data.every(q => 
+    typeof q === 'object' && 
+    q !== null && 
+    'id' in q && 
+    typeof q.id === 'string'
+  );
 }
 
 export function isValidJunctionData(data: unknown): data is JunctionData[] {
-  return Array.isArray(data) && data.every(j => 'answer_id' in j && 'question_id' in j);
+  return Array.isArray(data) && data.every(j => 
+    typeof j === 'object' && 
+    j !== null && 
+    'answer_id' in j && 
+    'question_id' in j &&
+    typeof j.answer_id === 'string' &&
+    typeof j.question_id === 'string'
+  );
 }
 
 export function handleSupabaseError(error: PostgrestError): never {

@@ -10,8 +10,8 @@ export interface JunctionData {
 }
 
 export interface QuestionnaireMapping {
-  questionsTable: string;
-  junctionTable: string;
+  questionsTable: keyof Database['public']['Tables'];
+  junctionTable: keyof Database['public']['Tables'];
   questionField: "Question" | "question";
 }
 
@@ -23,3 +23,5 @@ export interface QuestionnaireAnswer {
   };
   answer: string;
 }
+
+export type QuestionnaireType = 'general_opinion' | 'life_support' | 'advanced_illness' | 'preferences';
