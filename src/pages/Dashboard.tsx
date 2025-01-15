@@ -1,10 +1,20 @@
+import { useEffect } from "react";
 import { Header } from "@/components/Header";
 import { DirectivesForm } from "@/components/DirectivesForm";
 import { TrustedPersons } from "@/components/TrustedPersons";
 import { PDFGenerator } from "@/components/PDFGenerator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ExplanationDialog } from "@/components/ExplanationDialog";
+import { useDialogState } from "@/hooks/useDialogState";
 
 const Dashboard = () => {
+  const { explanationOpen, setExplanationOpen } = useDialogState();
+
+  useEffect(() => {
+    // Open the explanation dialog when the component mounts
+    setExplanationOpen(true);
+  }, [setExplanationOpen]);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -34,6 +44,12 @@ const Dashboard = () => {
           </TabsContent>
         </Tabs>
       </main>
+
+      <ExplanationDialog 
+        open={explanationOpen}
+        onOpenChange={setExplanationOpen}
+        onContinue={() => setExplanationOpen(false)}
+      />
     </div>
   );
 };
