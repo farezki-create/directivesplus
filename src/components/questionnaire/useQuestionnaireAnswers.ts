@@ -15,6 +15,8 @@ export function useQuestionnaireAnswers(questionnaireType: QuestionnaireType) {
         return [];
       }
 
+      console.log('Fetching answers for questionnaire type:', questionnaireType);
+
       // Get answers for the current user
       const { data: answersData, error: answersError } = await supabase
         .from('questionnaire_answers')
@@ -30,6 +32,8 @@ export function useQuestionnaireAnswers(questionnaireType: QuestionnaireType) {
         return [];
       }
 
+      console.log('Found answers:', answersData);
+
       // Get questions data
       const { data: questionsData, error: questionsError } = await supabase
         .from(mapping.questionsTable)
@@ -39,7 +43,7 @@ export function useQuestionnaireAnswers(questionnaireType: QuestionnaireType) {
         handleSupabaseError(questionsError);
       }
 
-      if (!isValidQuestionsData(questionsData)) {
+      if (!questionsData || !isValidQuestionsData(questionsData)) {
         console.error('Invalid questions data format');
         return [];
       }
@@ -58,7 +62,7 @@ export function useQuestionnaireAnswers(questionnaireType: QuestionnaireType) {
         handleSupabaseError(junctionError);
       }
 
-      if (!isValidJunctionData(junctionData)) {
+      if (!junctionData || !isValidJunctionData(junctionData)) {
         console.error('Invalid junction data format');
         return [];
       }
