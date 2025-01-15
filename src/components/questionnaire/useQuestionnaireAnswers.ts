@@ -1,91 +1,109 @@
 import { useQuery } from "@tanstack/react-query";
-import { useSession } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
-import { QUESTIONNAIRE_MAPPINGS, isValidQuestionsData, isValidJunctionData, handleSupabaseError } from "@/utils/questionnaireUtils";
-import type { QuestionnaireAnswer, QuestionnaireType } from "@/types/questions";
+import { QuestionnaireAnswer } from "@/types/questionnaire";
+
+type QuestionnaireType = "general_opinion" | "life_support" | "advanced_illness" | "preferences";
+
+interface QuestionTableMapping {
+  tableName: "questions" | "life_support_questions" | "advanced_illness_questions" | "preferences_questions";
+  junctionTableName: "questionnaire_general_opinion_answers" | "questionnaire_life_support_answers" | "questionnaire_advanced_illness_answers" | "questionnaire_preferences_answers";
+  questionField: string;
+}
+
+const questionTableMappings: Record<QuestionnaireType, QuestionTableMapping> = {
+  general_opinion: {
+    tableName: "questions",
+    junctionTableName: "questionnaire_general_opinion_answers",
+    questionField: "Question"
+  },
+  life_support: {
+    tableName: "life_support_questions",
+    junctionTableName: "questionnaire_life_support_answers",
+    questionField: "question"
+  },
+  advanced_illness: {
+    tableName: "advanced_illness_questions",
+    junctionTableName: "questionnaire_advanced_illness_answers",
+    questionField: "question"
+  },
+  preferences: {
+    tableName: "preferences_questions",
+    junctionTableName: "questionnaire_preferences_answers",
+    questionField: "question"
+  }
+};
 
 export function useQuestionnaireAnswers(questionnaireType: QuestionnaireType) {
-  const session = useSession();
-  const mapping = QUESTIONNAIRE_MAPPINGS[questionnaireType];
-
   return useQuery({
-    queryKey: ['questionnaire-answers', questionnaireType, session?.user?.id],
+    queryKey: [`${questionnaireType}-answers`],
     queryFn: async () => {
-      if (!session?.user?.id || !mapping) {
-        return [];
-      }
-
-      console.log('Fetching answers for questionnaire type:', questionnaireType);
-
-      // Get answers for the current user
-      const { data: answersData, error: answersError } = await supabase
+      console.log(`Fetching ${questionnaireType} answers...`);
+      
+      const mapping = questionTableMappings[questionnaireType];
+      
+      // First get the answers
+      const { data: answers, error: answersError } = await supabase
         .from('questionnaire_answers')
         .select('id, answer')
-        .eq('user_id', session.user.id)
         .eq('questionnaire_type', questionnaireType);
 
       if (answersError) {
-        handleSupabaseError(answersError);
+        console.error(`Error fetching ${questionnaireType} answers:`, answersError);
+        throw answersError;
       }
 
-      if (!answersData?.length) {
+      if (!answers?.length) {
         return [];
       }
 
-      console.log('Found answers:', answersData);
+      type QuestionData = {
+        id: string;
+        [key: string]: any;
+      }
 
-      // Get questions data
+      // Get the questions
       const { data: questionsData, error: questionsError } = await supabase
-        .from(mapping.questionsTable)
-        .select(`id, ${mapping.questionField}`);
+        .from(mapping.tableName)
+        .select('id, ' + mapping.questionField);
 
       if (questionsError) {
-        handleSupabaseError(questionsError);
-      }
-
-      if (!questionsData || !isValidQuestionsData(questionsData)) {
-        console.error('Invalid questions data format');
-        return [];
+        console.error(`Error fetching ${questionnaireType} questions:`, questionsError);
+        throw questionsError;
       }
 
       // Create a map of questions for easy lookup
       const questionsMap = new Map(
-        questionsData.map(q => [q.id, q[mapping.questionField]])
+        (questionsData as QuestionData[]).map(q => [q.id, q[mapping.questionField]])
       );
 
       // Get the junction table data
+      interface JunctionData {
+        answer_id: string;
+        question_id: string;
+      }
+
       const { data: junctionData, error: junctionError } = await supabase
-        .from(mapping.junctionTable)
+        .from(mapping.junctionTableName)
         .select('answer_id, question_id');
 
       if (junctionError) {
-        handleSupabaseError(junctionError);
-      }
-
-      if (!junctionData || !isValidJunctionData(junctionData)) {
-        console.error('Invalid junction data format');
-        return [];
+        console.error(`Error fetching junction data for ${questionnaireType}:`, junctionError);
+        throw junctionError;
       }
 
       // Create a map of answer_id to question_id
       const answerQuestionMap = new Map(
-        junctionData.map(j => [j.answer_id, j.question_id])
+        (junctionData as JunctionData[])?.map(j => [j.answer_id, j.question_id]) || []
       );
 
       // Map answers with their corresponding questions
-      return answersData.map((answer): QuestionnaireAnswer => {
-        const questionId = answerQuestionMap.get(answer.id);
-        const questionText = questionId ? questionsMap.get(questionId) : undefined;
-
-        return {
-          id: answer.id,
-          question: {
-            [mapping.questionField]: questionText
-          },
-          answer: answer.answer
-        };
-      });
+      return answers.map(answer => ({
+        id: answer.id,
+        answer: answer.answer,
+        question: {
+          question: questionsMap.get(answerQuestionMap.get(answer.id))
+        }
+      })) as QuestionnaireAnswer[];
     },
-    enabled: !!session?.user?.id
   });
 }
