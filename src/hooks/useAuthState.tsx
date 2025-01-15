@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthError } from "@supabase/supabase-js";
+import { AuthError, AuthApiError } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { FormValues } from "@/components/auth/types";
@@ -68,14 +68,23 @@ export const useAuthState = () => {
     try {
       setIsLoading(true);
       console.log('Attempting login with email:', values.email);
-      
-      const { error } = await supabase.auth.signInWithPassword({
+
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: values.email,
         password: values.password,
       });
 
       if (error) {
         console.error('Login error:', error);
+        if (error instanceof AuthApiError && error.status === 400) {
+          toast({
+            variant: "destructive",
+            title: "Erreur de connexion",
+            description: "Email ou mot de passe incorrect",
+          });
+          return;
+        }
+        
         const message = getErrorMessage(error);
         toast({
           variant: "destructive",
@@ -85,7 +94,10 @@ export const useAuthState = () => {
         return;
       }
 
-      console.log('Login successful, user will be redirected');
+      if (data?.session) {
+        console.log('Login successful, user will be redirected');
+        // Session is handled by the auth state change listener in Header.tsx
+      }
     } catch (error) {
       console.error('Unexpected login error:', error);
       toast({
