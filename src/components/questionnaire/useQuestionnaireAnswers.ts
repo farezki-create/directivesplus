@@ -1,8 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { QuestionnaireAnswer } from "@/types/questionnaire";
+import { Database } from "@/integrations/supabase/types";
 
 type QuestionnaireType = "general_opinion" | "life_support" | "advanced_illness" | "preferences";
+type TableNames = Database["public"]["Tables"];
 
 export function useQuestionnaireAnswers(questionnaireType: QuestionnaireType) {
   return useQuery({
@@ -26,8 +28,8 @@ export function useQuestionnaireAnswers(questionnaireType: QuestionnaireType) {
       }
 
       // Then get the questions based on questionnaire type
-      let questionsTable = 'questions';
-      let questionField = 'Question';
+      let questionsTable: keyof TableNames;
+      let questionField: string;
       
       switch (questionnaireType) {
         case 'life_support':
@@ -57,7 +59,7 @@ export function useQuestionnaireAnswers(questionnaireType: QuestionnaireType) {
       }
 
       // Map answers with their corresponding questions
-      const questionsMap = new Map(questions.map(q => [q.id, q[questionField]]));
+      const questionsMap = new Map(questions.map(q => [q.id, q[questionField as keyof typeof q]]));
       
       return answers.map(answer => ({
         id: answer.id,
