@@ -105,7 +105,7 @@ const Index = () => {
                 size="lg"
                 className="w-full"
               >
-                Directives anticipées
+                Mes goûts et mes peurs
               </Button>
               <Button
                 size="lg"
