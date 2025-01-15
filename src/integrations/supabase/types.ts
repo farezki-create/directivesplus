@@ -42,45 +42,6 @@ export type Database = {
         }
         Relationships: []
       }
-      pain_relief_questions: {
-        Row: {
-          created_at: string
-          id: string
-          Indécision: string
-          "La non souffrance est à privilégier": string
-          "Non rapidement abandonner le thérapeutique": string
-          Oui: string
-          "Oui pour une durée modérée": string
-          "Oui seulement si l'équipe médicale le juge utile": string
-          question: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          Indécision: string
-          "La non souffrance est à privilégier": string
-          "Non rapidement abandonner le thérapeutique": string
-          Oui: string
-          "Oui pour une durée modérée": string
-          "Oui seulement si l'équipe médicale le juge utile": string
-          question: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          Indécision?: string
-          "La non souffrance est à privilégier"?: string
-          "Non rapidement abandonner le thérapeutique"?: string
-          Oui?: string
-          "Oui pour une durée modérée"?: string
-          "Oui seulement si l'équipe médicale le juge utile"?: string
-          question?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       questions: {
         Row: {
           category: Database["public"]["Enums"]["question_category"] | null
