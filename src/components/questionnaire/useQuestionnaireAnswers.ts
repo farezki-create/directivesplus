@@ -9,23 +9,63 @@ export function useQuestionnaireAnswers(questionnaireType: QuestionnaireType) {
     queryKey: [`${questionnaireType}-answers`],
     queryFn: async () => {
       console.log(`Fetching ${questionnaireType} answers...`);
-      const { data: answers, error } = await supabase
+      
+      // First get the answers
+      const { data: answers, error: answersError } = await supabase
         .from('questionnaire_answers')
-        .select(`
-          id,
-          answer,
-          question:question_id (
-            Question,
-            question
-          )
-        `)
+        .select('id, answer, question_id')
         .eq('questionnaire_type', questionnaireType);
 
-      if (error) {
-        console.error(`Error fetching ${questionnaireType} answers:`, error);
-        throw error;
+      if (answersError) {
+        console.error(`Error fetching ${questionnaireType} answers:`, answersError);
+        throw answersError;
       }
-      return answers as QuestionnaireAnswer[];
+
+      if (!answers?.length) {
+        return [];
+      }
+
+      // Then get the questions based on questionnaire type
+      let questionsTable = 'questions';
+      let questionField = 'Question';
+      
+      switch (questionnaireType) {
+        case 'life_support':
+          questionsTable = 'life_support_questions';
+          questionField = 'question';
+          break;
+        case 'advanced_illness':
+          questionsTable = 'advanced_illness_questions';
+          questionField = 'question';
+          break;
+        case 'preferences':
+          questionsTable = 'preferences_questions';
+          questionField = 'question';
+          break;
+        default:
+          questionsTable = 'questions';
+          questionField = 'Question';
+      }
+
+      const { data: questions, error: questionsError } = await supabase
+        .from(questionsTable)
+        .select('id, ' + questionField);
+
+      if (questionsError) {
+        console.error(`Error fetching ${questionnaireType} questions:`, questionsError);
+        throw questionsError;
+      }
+
+      // Map answers with their corresponding questions
+      const questionsMap = new Map(questions.map(q => [q.id, q[questionField]]));
+      
+      return answers.map(answer => ({
+        id: answer.id,
+        answer: answer.answer,
+        question: {
+          question: questionsMap.get(answer.question_id)
+        }
+      })) as QuestionnaireAnswer[];
     },
   });
 }
