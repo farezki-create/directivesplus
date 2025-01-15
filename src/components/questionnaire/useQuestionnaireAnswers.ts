@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
+import { useSession } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuthState } from "@/hooks/useAuthState";
 import { QUESTIONNAIRE_MAPPINGS, isValidQuestionsData, isValidJunctionData, handleSupabaseError } from "@/utils/questionnaireUtils";
 import type { QuestionnaireAnswer, QuestionnaireType } from "@/types/questions";
 
 export function useQuestionnaireAnswers(questionnaireType: QuestionnaireType) {
-  const { session } = useAuthState();
+  const session = useSession();
   const mapping = QUESTIONNAIRE_MAPPINGS[questionnaireType];
 
   return useQuery({
