@@ -56,10 +56,15 @@ export function useQuestionnaireAnswers(questionnaireType: QuestionnaireType) {
         return [];
       }
 
-      // Get the questions through the junction table
+      type QuestionData = {
+        id: string;
+        [key: string]: any;
+      }
+
+      // Get the questions
       const { data: questionsData, error: questionsError } = await supabase
         .from(mapping.tableName)
-        .select(`id, ${mapping.questionField}`);
+        .select('id, ' + mapping.questionField);
 
       if (questionsError) {
         console.error(`Error fetching ${questionnaireType} questions:`, questionsError);
@@ -68,18 +73,18 @@ export function useQuestionnaireAnswers(questionnaireType: QuestionnaireType) {
 
       // Create a map of questions for easy lookup
       const questionsMap = new Map(
-        questionsData.map(q => [q.id, q[mapping.questionField as keyof typeof q]])
+        (questionsData as QuestionData[]).map(q => [q.id, q[mapping.questionField]])
       );
 
-      // Get the junction table data to link answers with questions
-      type JunctionData = {
+      // Get the junction table data
+      interface JunctionData {
         answer_id: string;
         question_id: string;
-      };
+      }
 
       const { data: junctionData, error: junctionError } = await supabase
         .from(mapping.junctionTableName)
-        .select<'*', JunctionData>('*');
+        .select('answer_id, question_id');
 
       if (junctionError) {
         console.error(`Error fetching junction data for ${questionnaireType}:`, junctionError);
@@ -88,7 +93,7 @@ export function useQuestionnaireAnswers(questionnaireType: QuestionnaireType) {
 
       // Create a map of answer_id to question_id
       const answerQuestionMap = new Map(
-        (junctionData || []).map(j => [j.answer_id, j.question_id])
+        (junctionData as JunctionData[])?.map(j => [j.answer_id, j.question_id]) || []
       );
 
       // Map answers with their corresponding questions
