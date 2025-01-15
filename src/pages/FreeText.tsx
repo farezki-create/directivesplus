@@ -5,10 +5,10 @@ import { FreeTextForm } from "@/components/questionnaire/FreeTextForm";
 import { useQuestionnaireAnswers } from "@/components/questionnaire/useQuestionnaireAnswers";
 
 const FreeText = () => {
-  const { data: generalAnswers, isLoading: loadingGeneral } = useQuestionnaireAnswers('general_opinion');
-  const { data: lifeSupportAnswers, isLoading: loadingLifeSupport } = useQuestionnaireAnswers('life_support');
-  const { data: advancedIllnessAnswers, isLoading: loadingAdvancedIllness } = useQuestionnaireAnswers('advanced_illness');
-  const { data: preferencesAnswers, isLoading: loadingPreferences } = useQuestionnaireAnswers('preferences');
+  const { data: generalAnswers, isLoading: loadingGeneral } = useQuestionnaireAnswers("general_opinion");
+  const { data: lifeSupportAnswers, isLoading: loadingLifeSupport } = useQuestionnaireAnswers("life_support");
+  const { data: advancedIllnessAnswers, isLoading: loadingAdvancedIllness } = useQuestionnaireAnswers("advanced_illness");
+  const { data: preferencesAnswers, isLoading: loadingPreferences } = useQuestionnaireAnswers("preferences");
 
   const isLoading = loadingGeneral || loadingLifeSupport || loadingAdvancedIllness || loadingPreferences;
 
