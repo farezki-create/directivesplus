@@ -1,23 +1,59 @@
 import { Mail, Package } from "lucide-react";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
 
 export const PDFGenerator = () => {
+  const { toast } = useToast();
+
   const generatePDF = () => {
     // TODO: Implement PDF generation
     console.log("Generating PDF...");
   };
 
-  const handleEmailSend = () => {
-    console.log("Sending by email...");
-    // TODO: Implement email sending
+  const handleEmailSend = async () => {
+    try {
+      console.log("Sending email via Edge Function...");
+      
+      const { data, error } = await supabase.functions.invoke('send-document-email', {
+        body: {
+          to: "user@example.com", // TODO: Get user's email
+          documentId: "123", // TODO: Get actual document ID
+        },
+      });
+
+      if (error) {
+        console.error("Error sending email:", error);
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Une erreur est survenue lors de l'envoi de l'email.",
+        });
+        return;
+      }
+
+      console.log("Email sent successfully:", data);
+      toast({
+        title: "Email envoyé",
+        description: "Un email contenant le lien d'accès a été envoyé.",
+      });
+    } catch (error) {
+      console.error("Error in handleEmailSend:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'envoi de l'email.",
+      });
+    }
   };
 
   const handlePostalSend = () => {
@@ -40,6 +76,9 @@ export const PDFGenerator = () => {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Choisissez votre mode d'envoi</DialogTitle>
+            <DialogDescription>
+              Sélectionnez comment vous souhaitez recevoir vos documents.
+            </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <Button
