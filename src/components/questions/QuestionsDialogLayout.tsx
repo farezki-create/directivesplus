@@ -74,7 +74,7 @@ export function QuestionsDialogLayout({
 
           <DialogFooter className="mt-6">
             <SubmitButton
-              isDisabled={!session || isSubmitting}
+              isDisabled={loading}
               isSaving={isSubmitting}
               onClick={handleSubmit}
             />

@@ -15,7 +15,7 @@ export function SubmitButton({ isDisabled, isSaving, onClick }: SubmitButtonProp
     <Button
       onClick={onClick}
       className="w-full sm:w-auto"
-      disabled={isDisabled}
+      disabled={isDisabled || isSaving}
     >
       {isSaving ? (
         <>
