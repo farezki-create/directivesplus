@@ -3,35 +3,54 @@ import { AuthApiError } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthForm } from "@/components/AuthForm";
 import { ForgotPassword } from "@/components/ForgotPassword";
-import { getAuthErrorMessage } from "@/utils/auth-errors";
+import { getErrorMessage } from "@/utils/auth-errors";
 import { useAuthState } from "@/hooks/useAuthState";
+import { FormValues } from "@/components/auth/types";
 
 const Auth = () => {
-  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
   const { toast } = useAuthState();
 
-  const handleSignUp = async (email: string, password: string) => {
+  const handleSubmit = async (values: FormValues) => {
     try {
-      console.log('Attempting signup with email:', email);
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-      });
+      console.log('Attempting auth with values:', values);
+      
+      if (isSignUp) {
+        const { error } = await supabase.auth.signUp({
+          email: values.email,
+          password: values.password,
+        });
 
-      if (error) {
-        console.error('Signup error:', error);
-        throw error;
+        if (error) {
+          console.error('Signup error:', error);
+          throw error;
+        }
+
+        toast({
+          title: "Inscription réussie",
+          description: "Veuillez vérifier votre email pour confirmer votre compte.",
+        });
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: values.email,
+          password: values.password,
+        });
+
+        if (error) {
+          console.error('Signin error:', error);
+          throw error;
+        }
+
+        toast({
+          title: "Connexion réussie",
+          description: "Vous êtes maintenant connecté.",
+        });
       }
-
-      toast({
-        title: "Inscription réussie",
-        description: "Veuillez vérifier votre email pour confirmer votre compte.",
-      });
     } catch (error) {
-      console.error('Error in handleSignUp:', error);
+      console.error('Error in auth:', error);
       const message = error instanceof AuthApiError 
-        ? getAuthErrorMessage(error.message)
-        : "Une erreur est survenue lors de l'inscription.";
+        ? getErrorMessage(error)
+        : "Une erreur est survenue lors de l'authentification.";
       
       toast({
         variant: "destructive",
@@ -40,84 +59,18 @@ const Auth = () => {
       });
     }
   };
-
-  const handleSignIn = async (email: string, password: string) => {
-    try {
-      console.log('Attempting signin with email:', email);
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        console.error('Signin error:', error);
-        throw error;
-      }
-
-      toast({
-        title: "Connexion réussie",
-        description: "Vous êtes maintenant connecté.",
-      });
-    } catch (error) {
-      console.error('Error in handleSignIn:', error);
-      const message = error instanceof AuthApiError 
-        ? getAuthErrorMessage(error.message)
-        : "Une erreur est survenue lors de la connexion.";
-      
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: message,
-      });
-    }
-  };
-
-  const handleForgotPassword = async (email: string) => {
-    try {
-      console.log('Attempting password reset for email:', email);
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
-
-      if (error) {
-        console.error('Password reset error:', error);
-        throw error;
-      }
-
-      toast({
-        title: "Email envoyé",
-        description: "Veuillez vérifier votre email pour réinitialiser votre mot de passe.",
-      });
-      setShowForgotPassword(false);
-    } catch (error) {
-      console.error('Error in handleForgotPassword:', error);
-      const message = error instanceof AuthApiError 
-        ? getAuthErrorMessage(error.message)
-        : "Une erreur est survenue lors de la réinitialisation du mot de passe.";
-      
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: message,
-      });
-    }
-  };
-
-  if (showForgotPassword) {
-    return (
-      <ForgotPassword
-        onSubmit={handleForgotPassword}
-        onBack={() => setShowForgotPassword(false)}
-      />
-    );
-  }
 
   return (
-    <AuthForm
-      onSignUp={handleSignUp}
-      onSignIn={handleSignIn}
-      onForgotPassword={() => setShowForgotPassword(true)}
-    />
+    <div className="container mx-auto max-w-md p-4">
+      <AuthForm
+        isSignUp={isSignUp}
+        onSubmit={handleSubmit}
+        onToggleMode={() => setIsSignUp(!isSignUp)}
+      />
+      {!isSignUp && (
+        <ForgotPassword email="" />
+      )}
+    </div>
   );
 };
 
