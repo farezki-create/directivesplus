@@ -29,4 +29,5 @@ export const signUpSchema = z.object({
   path: ["confirmPassword"],
 });
 
+// Export the FormValues type
 export type FormValues = z.infer<typeof signUpSchema>;
