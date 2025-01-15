@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthApiError } from "@supabase/supabase-js";
+import { AuthApiError, AuthChangeEvent } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthForm } from "@/components/AuthForm";
@@ -17,7 +17,7 @@ const Auth = () => {
 
   useEffect(() => {
     console.log("Setting up auth state change listener");
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session) => {
       console.log('Auth state changed:', event, session);
       
       if (event === "SIGNED_IN" && session) {
@@ -27,7 +27,7 @@ const Auth = () => {
       }
 
       // Log any URL-related errors
-      if (event === "USER_DELETED" || event === "SIGNED_OUT") {
+      if (event === "SIGNED_OUT") {
         console.log('Auth event:', event);
       }
     });
