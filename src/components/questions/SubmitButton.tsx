@@ -10,6 +10,7 @@ interface SubmitButtonProps {
 
 export function SubmitButton({ isDisabled, isSaving, onClick }: SubmitButtonProps) {
   const session = useSession();
+  console.log("État de la session dans SubmitButton:", session);
 
   return (
     <Button
@@ -22,8 +23,6 @@ export function SubmitButton({ isDisabled, isSaving, onClick }: SubmitButtonProp
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           Enregistrement en cours...
         </>
-      ) : !session ? (
-        'Connectez-vous pour enregistrer'
       ) : (
         'Enregistrer mes réponses'
       )}

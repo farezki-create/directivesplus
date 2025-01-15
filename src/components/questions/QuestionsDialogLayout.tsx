@@ -32,6 +32,8 @@ export function QuestionsDialogLayout({
   const { toast } = useToast();
 
   const handleSubmit = async () => {
+    console.log("État de la session:", session);
+    
     if (!session) {
       console.log("Redirection vers la page de connexion - utilisateur non connecté");
       toast({
