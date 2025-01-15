@@ -41,7 +41,7 @@ export function MainButtons({
         onClick={() => navigate("/free-text")} 
         size="lg"
       >
-        Texte libre
+        Synthèse du questionnaire
       </Button>
     </div>
   );
