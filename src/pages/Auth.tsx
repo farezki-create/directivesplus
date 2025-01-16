@@ -3,16 +3,15 @@ import { useNavigate } from "react-router-dom";
 import { AuthApiError } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { AuthForm, FormValues } from "@/components/AuthForm";
 import { getErrorMessage } from "@/utils/auth-errors";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { AuthCard } from "@/components/auth/AuthCard";
-import type { FormValues } from "@/components/AuthForm";
 
 const Auth = () => {
   const navigate = useNavigate();
   const [isSignUp, setIsSignUp] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -32,38 +31,8 @@ const Auth = () => {
     };
   }, [navigate]);
 
-  const handleSocialLogin = async (provider: 'google' | 'apple' | 'facebook') => {
-    try {
-      console.log(`Attempting to sign in with ${provider}`);
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`
-        }
-      });
-
-      if (error) {
-        console.error(`${provider} login error:`, error);
-        toast({
-          variant: "destructive",
-          title: "Erreur de connexion",
-          description: getErrorMessage(error),
-        });
-      }
-    } catch (error) {
-      console.error(`${provider} login error:`, error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Une erreur inattendue s'est produite. Veuillez réessayer.",
-      });
-    }
-  };
-
   const handleSubmit = async (values: FormValues) => {
     try {
-      setIsLoading(true);
-      
       if (isSignUp) {
         console.log('Attempting signup with email:', values.email);
         const { error } = await supabase.auth.signUp({
@@ -135,8 +104,6 @@ const Auth = () => {
         title: "Erreur",
         description: "Une erreur inattendue s'est produite. Veuillez réessayer.",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -152,14 +119,26 @@ const Auth = () => {
           Retour à l'accueil
         </Button>
       )}
-      
-      <AuthCard
-        isSignUp={isSignUp}
-        isLoading={isLoading}
-        onSocialLogin={handleSocialLogin}
-        onSubmit={handleSubmit}
-        onToggleMode={() => setIsSignUp(!isSignUp)}
-      />
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl font-bold text-center">
+            {isSignUp ? "Créer un compte" : "Se connecter"}
+          </CardTitle>
+          <CardDescription className="text-center text-muted-foreground">
+            {isSignUp 
+              ? "Inscrivez-vous pour accéder à vos directives anticipées"
+              : "Connectez-vous pour accéder à vos directives anticipées"
+            }
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <AuthForm
+            isSignUp={isSignUp}
+            onSubmit={handleSubmit}
+            onToggleMode={() => setIsSignUp(!isSignUp)}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 };
