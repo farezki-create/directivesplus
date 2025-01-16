@@ -74,6 +74,7 @@ export function AdvancedIllnessQuestionsDialog({
       open={open}
       onOpenChange={onOpenChange}
       title="Maladie avancée"
+      description="Répondez aux questions suivantes concernant vos souhaits en cas de maladie avancée."
       onSubmit={handleSubmit}
       loading={loading}
       questionsLength={questions.length}

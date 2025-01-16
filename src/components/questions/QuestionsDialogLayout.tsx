@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Header } from "@/components/Header";
@@ -7,6 +7,7 @@ interface QuestionsDialogLayoutProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title: string;
+  description?: string;
   onSubmit: () => void;
   loading: boolean;
   questionsLength: number;
@@ -17,6 +18,7 @@ export function QuestionsDialogLayout({
   open,
   onOpenChange,
   title,
+  description,
   onSubmit,
   loading,
   questionsLength,
@@ -32,6 +34,11 @@ export function QuestionsDialogLayout({
             <DialogTitle className="text-2xl font-semibold text-center">
               {title}
             </DialogTitle>
+            {description && (
+              <DialogDescription className="text-center">
+                {description}
+              </DialogDescription>
+            )}
           </DialogHeader>
           
           {loading ? (
