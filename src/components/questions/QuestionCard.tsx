@@ -17,11 +17,11 @@ export function QuestionCard({ question, value, onValueChange, options }: Questi
 
   return (
     <div className="p-6 bg-card rounded-lg border shadow-sm">
-      <div className="flex items-start gap-4">
-        <div className="w-8 flex-shrink-0 text-center font-medium text-lg">
+      <div className="grid grid-cols-[48px_1fr] gap-4">
+        <div className="text-center font-medium text-lg text-muted-foreground border-r pr-4">
           {orderDisplay}
         </div>
-        <div className="flex-1">
+        <div>
           <p className="text-lg font-medium mb-4">
             {question.Question || question.question}
           </p>
