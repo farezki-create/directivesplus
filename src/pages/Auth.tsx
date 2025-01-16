@@ -3,12 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { AuthApiError } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { AuthForm } from "@/components/AuthForm";
 import { FormValues } from "@/components/auth/types";
 import { getErrorMessage } from "@/utils/auth-errors";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { AuthHeader } from "@/components/auth/AuthHeader";
+import { AuthLogo } from "@/components/auth/AuthLogo";
+import { AuthCard } from "@/components/auth/AuthCard";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -118,46 +117,15 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4">
-      {isSignUp && (
-        <Button
-          variant="ghost"
-          className="absolute top-4 left-4 gap-2"
-          onClick={() => navigate("/")}
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Retour à l'accueil
-        </Button>
-      )}
-
+      <AuthHeader isSignUp={isSignUp} />
+      
       <div className="w-full max-w-md space-y-8">
-        <div className="flex flex-col items-center">
-          <img
-            src="/og-image.png"
-            alt="DirectivesPlus Logo"
-            className="h-16 w-auto mb-4"
-          />
-        </div>
-
-        <Card className="w-full">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">
-              {isSignUp ? "Créer un compte" : "Se connecter"}
-            </CardTitle>
-            <CardDescription className="text-center text-muted-foreground">
-              {isSignUp 
-                ? "Inscrivez-vous pour accéder à vos directives anticipées"
-                : "Connectez-vous pour accéder à vos directives anticipées"
-              }
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <AuthForm
-              isSignUp={isSignUp}
-              onSubmit={handleSubmit}
-              onToggleMode={() => setIsSignUp(!isSignUp)}
-            />
-          </CardContent>
-        </Card>
+        <AuthLogo />
+        <AuthCard
+          isSignUp={isSignUp}
+          onSubmit={handleSubmit}
+          onToggleMode={() => setIsSignUp(!isSignUp)}
+        />
       </div>
     </div>
   );
