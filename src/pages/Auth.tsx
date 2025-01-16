@@ -21,8 +21,8 @@ const Auth = () => {
       console.log('Auth state changed:', event, session);
       
       if (event === "SIGNED_IN" && session) {
-        console.log('User signed in successfully, redirecting to dashboard');
-        navigate("/dashboard");
+        console.log('User signed in successfully, redirecting to home');
+        navigate("/");
       }
     });
 
@@ -94,6 +94,9 @@ const Auth = () => {
           title: "Inscription réussie",
           description: "Veuillez vérifier votre email pour confirmer votre compte.",
         });
+        
+        // Redirect to home page after successful signup
+        navigate("/");
       } else {
         console.log('Starting login process with email:', values.email);
         const { error } = await supabase.auth.signInWithPassword({
@@ -113,6 +116,7 @@ const Auth = () => {
         }
 
         console.log('Login successful');
+        // The redirect will be handled by the auth state change listener
       }
     } catch (error) {
       console.error('Unexpected auth error:', error);
