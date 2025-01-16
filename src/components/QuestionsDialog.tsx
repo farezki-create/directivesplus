@@ -4,6 +4,8 @@ import { QuestionsDialogLayout } from "./questions/QuestionsDialogLayout";
 import { QuestionsForm } from "./questions/QuestionsForm";
 import { useQuestionnaireSubmission } from "@/hooks/useQuestionnaireSubmission";
 import { useQuestionnaireAnswers } from "./questionnaire/useQuestionnaireAnswers";
+import { useSession } from "@supabase/auth-helpers-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface QuestionsDialogProps {
   open: boolean;
@@ -13,6 +15,8 @@ interface QuestionsDialogProps {
 export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
   const [questions, setQuestions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const session = useSession();
+  const { toast } = useToast();
   const { data: existingAnswers, isLoading: loadingAnswers } = useQuestionnaireAnswers("general_opinion");
   const { answers, isSubmitting, handleAnswerChange, handleSubmit } = useQuestionnaireSubmission('general_opinion');
 
@@ -60,13 +64,32 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
   }, [existingAnswers]);
 
   const handleSubmitWrapper = async () => {
+    if (!session?.user?.id) {
+      console.log("Tentative de sauvegarde sans session utilisateur");
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Vous devez être connecté pour enregistrer vos réponses."
+      });
+      return;
+    }
+
     console.log('Début de la soumission des réponses');
     try {
       await handleSubmit();
       console.log('Réponses soumises avec succès');
+      toast({
+        title: "Succès",
+        description: "Vos réponses ont été enregistrées avec succès."
+      });
       onOpenChange(false);
     } catch (error) {
       console.error('Erreur lors de la soumission des réponses:', error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la sauvegarde de vos réponses."
+      });
     }
   };
 
