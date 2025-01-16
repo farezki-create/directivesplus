@@ -3,10 +3,72 @@ import { Header } from "@/components/Header";
 import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
+import { useToast } from "@/hooks/use-toast";
+import { Download } from "lucide-react";
+import { useAuth } from "@supabase/auth-helpers-react";
 
 const FreeText = () => {
   const [text, setText] = useState("");
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const user = useAuth();
+  const { responses } = useQuestionnairesResponses(user?.id);
+
+  const handleExport = () => {
+    try {
+      // Créer un objet contenant toutes les réponses
+      const exportData = {
+        "Avis général": responses.general?.map(response => ({
+          question: response.questions.Question,
+          réponse: response.response
+        })),
+        "Maintien en vie": responses.lifeSupport?.map(response => ({
+          question: response.life_support_questions.question,
+          réponse: response.response
+        })),
+        "Maladie avancée": responses.advancedIllness?.map(response => ({
+          question: response.advanced_illness_questions.question,
+          réponse: response.response
+        })),
+        "Mes goûts et mes peurs": responses.preferences?.map(response => ({
+          question: response.preferences_questions.question,
+          réponse: response.response
+        })),
+        "Synthèse": responses.synthesis?.free_text
+      };
+
+      // Convertir en JSON et créer un blob
+      const jsonString = JSON.stringify(exportData, null, 2);
+      const blob = new Blob([jsonString], { type: "application/json" });
+      
+      // Créer un lien de téléchargement
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "synthese-directives.json";
+      
+      // Déclencher le téléchargement
+      document.body.appendChild(link);
+      link.click();
+      
+      // Nettoyer
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(link);
+
+      toast({
+        title: "Export réussi",
+        description: "Vos réponses ont été exportées avec succès.",
+      });
+    } catch (error) {
+      console.error("Erreur lors de l'export:", error);
+      toast({
+        title: "Erreur lors de l'export",
+        description: "Une erreur est survenue lors de l'export de vos réponses.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -14,7 +76,17 @@ const FreeText = () => {
       
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
-          <h1 className="text-3xl font-bold mb-6">Synthèse et expression libre</h1>
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-3xl font-bold">Synthèse et expression libre</h1>
+            <Button
+              onClick={handleExport}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <Download className="h-4 w-4" />
+              Exporter
+            </Button>
+          </div>
           
           <div className="mb-8 p-4 bg-muted rounded-lg">
             <h2 className="text-xl font-semibold mb-4">Synthèse de vos réponses</h2>
