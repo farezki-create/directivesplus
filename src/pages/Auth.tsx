@@ -8,7 +8,7 @@ import { FormValues } from "@/components/auth/types";
 import { getErrorMessage } from "@/utils/auth-errors";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, KeyRound, UserRound } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -117,7 +117,7 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-blue-50 to-white px-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4">
       {isSignUp && (
         <Button
           variant="ghost"
@@ -128,38 +128,22 @@ const Auth = () => {
           Retour à l'accueil
         </Button>
       )}
-      
+
       <div className="w-full max-w-md space-y-8">
-        <div className="flex flex-col items-center space-y-2">
+        <div className="flex flex-col items-center">
           <img
             src="/og-image.png"
             alt="DirectivesPlus Logo"
             className="h-16 w-auto mb-4"
           />
-          <h1 className="text-2xl font-bold text-gray-900">
-            {isSignUp ? "Bienvenue sur DirectivesPlus" : "Ravi de vous revoir"}
-          </h1>
-          <p className="text-gray-500">
-            {isSignUp 
-              ? "Créez votre compte pour commencer"
-              : "Connectez-vous pour accéder à vos directives"
-            }
-          </p>
         </div>
 
-        <Card className="border-0 shadow-lg">
+        <Card className="w-full">
           <CardHeader className="space-y-1">
-            <div className="flex items-center justify-center space-x-2">
-              {isSignUp ? (
-                <UserRound className="h-5 w-5 text-primary" />
-              ) : (
-                <KeyRound className="h-5 w-5 text-primary" />
-              )}
-              <CardTitle>
-                {isSignUp ? "Créer un compte" : "Se connecter"}
-              </CardTitle>
-            </div>
-            <CardDescription className="text-center">
+            <CardTitle className="text-2xl font-bold text-center">
+              {isSignUp ? "Créer un compte" : "Se connecter"}
+            </CardTitle>
+            <CardDescription className="text-center text-muted-foreground">
               {isSignUp 
                 ? "Inscrivez-vous pour accéder à vos directives anticipées"
                 : "Connectez-vous pour accéder à vos directives anticipées"
