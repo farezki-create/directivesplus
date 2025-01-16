@@ -32,34 +32,6 @@ const Auth = () => {
     };
   }, [navigate]);
 
-  const handleSocialLogin = async (provider: 'google' | 'apple' | 'facebook') => {
-    try {
-      console.log(`Attempting to sign in with ${provider}`);
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`
-        }
-      });
-
-      if (error) {
-        console.error(`${provider} login error:`, error);
-        toast({
-          variant: "destructive",
-          title: "Erreur de connexion",
-          description: getErrorMessage(error),
-        });
-      }
-    } catch (error) {
-      console.error(`${provider} login error:`, error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Une erreur inattendue s'est produite. Veuillez réessayer.",
-      });
-    }
-  };
-
   const handleSubmit = async (values: FormValues) => {
     try {
       setIsLoading(true);
@@ -156,7 +128,6 @@ const Auth = () => {
       <AuthCard
         isSignUp={isSignUp}
         isLoading={isLoading}
-        onSocialLogin={handleSocialLogin}
         onSubmit={handleSubmit}
         onToggleMode={() => setIsSignUp(!isSignUp)}
       />
