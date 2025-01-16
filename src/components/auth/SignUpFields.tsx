@@ -22,6 +22,7 @@ export const SignUpFields = ({ form }: SignUpFieldsProps) => {
               <Input 
                 type="password" 
                 placeholder="Retapez votre mot de passe" 
+                autoComplete="new-password"
                 {...field} 
               />
             </FormControl>
@@ -38,7 +39,11 @@ export const SignUpFields = ({ form }: SignUpFieldsProps) => {
             <FormItem>
               <FormLabel>Prénom</FormLabel>
               <FormControl>
-                <Input placeholder="Votre prénom" {...field} />
+                <Input 
+                  placeholder="Votre prénom" 
+                  autoComplete="given-name"
+                  {...field} 
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -52,7 +57,11 @@ export const SignUpFields = ({ form }: SignUpFieldsProps) => {
             <FormItem>
               <FormLabel>Nom</FormLabel>
               <FormControl>
-                <Input placeholder="Votre nom" {...field} />
+                <Input 
+                  placeholder="Votre nom" 
+                  autoComplete="family-name"
+                  {...field} 
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -67,7 +76,11 @@ export const SignUpFields = ({ form }: SignUpFieldsProps) => {
           <FormItem>
             <FormLabel>Date de naissance</FormLabel>
             <FormControl>
-              <Input type="date" {...field} />
+              <Input 
+                type="date" 
+                autoComplete="bday"
+                {...field} 
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -81,7 +94,11 @@ export const SignUpFields = ({ form }: SignUpFieldsProps) => {
           <FormItem>
             <FormLabel>Adresse</FormLabel>
             <FormControl>
-              <Input placeholder="Votre adresse" {...field} />
+              <Input 
+                placeholder="Votre adresse" 
+                autoComplete="street-address"
+                {...field} 
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -96,7 +113,11 @@ export const SignUpFields = ({ form }: SignUpFieldsProps) => {
             <FormItem>
               <FormLabel>Code postal</FormLabel>
               <FormControl>
-                <Input placeholder="Code postal" {...field} />
+                <Input 
+                  placeholder="Code postal" 
+                  autoComplete="postal-code"
+                  {...field} 
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -110,7 +131,11 @@ export const SignUpFields = ({ form }: SignUpFieldsProps) => {
             <FormItem>
               <FormLabel>Ville</FormLabel>
               <FormControl>
-                <Input placeholder="Ville" {...field} />
+                <Input 
+                  placeholder="Ville" 
+                  autoComplete="address-level2"
+                  {...field} 
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -172,6 +197,7 @@ export const SignUpFields = ({ form }: SignUpFieldsProps) => {
               <Input 
                 className="flex-1"
                 placeholder="Votre numéro de téléphone" 
+                autoComplete="tel"
                 {...field} 
               />
             </div>
