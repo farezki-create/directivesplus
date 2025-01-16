@@ -39,25 +39,28 @@ export const AuthForm = ({ isSignUp, onSubmit, onToggleMode }: AuthFormProps) =>
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <BaseAuthFields form={form} isSignUp={isSignUp} />
         
         {isSignUp && <SignUpFields form={form} />}
 
-        <Button type="submit" className="w-full">
+        <Button 
+          type="submit" 
+          className="w-full h-12 text-base font-semibold"
+        >
           {isSignUp ? "S'inscrire" : "Se connecter"}
         </Button>
 
         {!isSignUp && <ForgotPassword email={form.getValues("email")} />}
 
-        <p className="text-center text-sm text-muted-foreground mt-4">
+        <p className="text-center text-sm text-muted-foreground mt-6">
           {isSignUp ? (
             <>
               Vous avez déjà un compte ?{" "}
               <button
                 type="button"
                 onClick={onToggleMode}
-                className="text-primary hover:underline"
+                className="text-primary hover:underline font-semibold"
               >
                 Connectez-vous
               </button>
@@ -68,7 +71,7 @@ export const AuthForm = ({ isSignUp, onSubmit, onToggleMode }: AuthFormProps) =>
               <button
                 type="button"
                 onClick={onToggleMode}
-                className="text-primary hover:underline"
+                className="text-primary hover:underline font-semibold"
               >
                 Inscrivez-vous
               </button>

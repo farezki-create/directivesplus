@@ -16,12 +16,13 @@ export const BaseAuthFields = ({ form, isSignUp }: BaseAuthFieldsProps) => {
         name="email"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Email</FormLabel>
+            <FormLabel className="text-base font-medium">Email</FormLabel>
             <FormControl>
               <Input 
                 placeholder="Votre adresse email" 
                 type="email"
                 autoComplete="email"
+                className="h-12"
                 {...field} 
               />
             </FormControl>
@@ -35,7 +36,7 @@ export const BaseAuthFields = ({ form, isSignUp }: BaseAuthFieldsProps) => {
         name="password"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>
+            <FormLabel className="text-base font-medium">
               Mot de passe
               {isSignUp && " (8 caractères min., 1 majuscule, 1 chiffre)"}
             </FormLabel>
@@ -44,6 +45,7 @@ export const BaseAuthFields = ({ form, isSignUp }: BaseAuthFieldsProps) => {
                 type="password" 
                 placeholder={isSignUp ? "Choisissez un mot de passe fort" : "Votre mot de passe"} 
                 autoComplete={isSignUp ? "new-password" : "current-password"}
+                className="h-12"
                 {...field} 
               />
             </FormControl>
