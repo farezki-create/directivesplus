@@ -2,7 +2,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@supabase/auth-helpers-react";
 import { useToast } from "@/hooks/use-toast";
-import { QuestionnaireType, getTableName } from "@/types/questionnaire";
+import { QuestionnaireType } from "@/types/questionnaire";
 
 export function useQuestionnaireState(questionnaireType: QuestionnaireType) {
   const [questions, setQuestions] = useState<any[]>([]);
@@ -14,9 +14,8 @@ export function useQuestionnaireState(questionnaireType: QuestionnaireType) {
   const fetchQuestions = async () => {
     try {
       console.log(`Chargement des questions ${questionnaireType}...`);
-      const tableName = getTableName(questionnaireType);
       const { data, error } = await supabase
-        .from(tableName)
+        .from(questionnaireType === 'general_opinion' ? 'questions' : `${questionnaireType}_questions`)
         .select('*')
         .order('order', { ascending: true });
 
@@ -72,28 +71,29 @@ export function useQuestionnaireState(questionnaireType: QuestionnaireType) {
     }
 
     try {
-      console.log('Saving answers:', answers);
+      console.log('Enregistrement des réponses:', answers);
       
-      // Save answers directly to questionnaire_answers table
-      for (const [questionId, answer] of Object.entries(answers)) {
-        const { error } = await supabase
-          .from('questionnaire_answers')
-          .upsert({
-            user_id: session.user.id,
-            questionnaire_type: questionnaireType,
-            question_id: questionId,
-            answer: answer
-          }, {
-            onConflict: 'user_id, questionnaire_type, question_id'
-          });
+      // Préparer les données pour l'insertion
+      const answersToInsert = Object.entries(answers).map(([questionId, answer]) => ({
+        user_id: session.user.id,
+        questionnaire_type: questionnaireType,
+        question_id: questionId,
+        answer: answer
+      }));
 
-        if (error) {
-          console.error('Error saving answer:', error);
-          throw error;
-        }
+      // Insérer toutes les réponses en une seule opération
+      const { error } = await supabase
+        .from('questionnaire_answers')
+        .upsert(answersToInsert, {
+          onConflict: 'user_id, questionnaire_type, question_id'
+        });
+
+      if (error) {
+        console.error('Erreur lors de la sauvegarde des réponses:', error);
+        throw error;
       }
 
-      // Update synthesis timestamp
+      // Mettre à jour la synthèse
       const { error: synthesisError } = await supabase
         .from('questionnaire_synthesis')
         .upsert({
@@ -104,10 +104,11 @@ export function useQuestionnaireState(questionnaireType: QuestionnaireType) {
         });
 
       if (synthesisError) {
-        console.error('Error updating synthesis:', synthesisError);
+        console.error('Erreur lors de la mise à jour de la synthèse:', synthesisError);
         throw synthesisError;
       }
 
+      console.log('Réponses sauvegardées avec succès');
       toast({
         title: "Réponses enregistrées",
         description: "Vos réponses ont été sauvegardées avec succès."
@@ -117,7 +118,7 @@ export function useQuestionnaireState(questionnaireType: QuestionnaireType) {
         onSuccess();
       }
     } catch (error) {
-      console.error('Error saving answers:', error);
+      console.error('Erreur lors de la sauvegarde des réponses:', error);
       toast({
         variant: "destructive",
         title: "Erreur",
