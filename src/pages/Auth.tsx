@@ -98,7 +98,7 @@ const Auth = () => {
         navigate("/");
       } else {
         console.log('Starting login process with email:', values.email);
-        const { error, data } = await supabase.auth.signInWithPassword({
+        const { error } = await supabase.auth.signInWithPassword({
           email: values.email,
           password: values.password,
         });
@@ -119,12 +119,8 @@ const Auth = () => {
           title: "Connexion réussie",
           description: "Vous êtes maintenant connecté.",
         });
-        
-        // Force navigation after successful login
-        if (data.session) {
-          console.log('Redirecting to home after successful login');
-          navigate("/");
-        }
+
+        // La redirection sera gérée par le listener onAuthStateChange
       }
     } catch (error) {
       console.error('Unexpected auth error:', error);
