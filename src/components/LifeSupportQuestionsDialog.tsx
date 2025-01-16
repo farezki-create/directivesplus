@@ -22,7 +22,8 @@ export function LifeSupportQuestionsDialog({
         console.log("Fetching life support questions...");
         const { data, error } = await supabase
           .from('life_support_questions')
-          .select('*');
+          .select('*')
+          .order('display_order', { ascending: true });
         
         if (error) {
           console.error('Error fetching questions:', error);

@@ -80,6 +80,7 @@ export type Database = {
       }
       life_support_questions: {
         Row: {
+          display_order: number | null
           id: string
           Indécision: string
           "La non souffrance est à privilégier": string
@@ -88,8 +89,10 @@ export type Database = {
           "Oui pour une durée modérée": string
           "Oui seulement si l'équipe médicale le juge utile": string
           question: string
+          updated_at: string | null
         }
         Insert: {
+          display_order?: number | null
           id?: string
           Indécision: string
           "La non souffrance est à privilégier": string
@@ -98,8 +101,10 @@ export type Database = {
           "Oui pour une durée modérée": string
           "Oui seulement si l'équipe médicale le juge utile": string
           question: string
+          updated_at?: string | null
         }
         Update: {
+          display_order?: number | null
           id?: string
           Indécision?: string
           "La non souffrance est à privilégier"?: string
@@ -108,6 +113,7 @@ export type Database = {
           "Oui pour une durée modérée"?: string
           "Oui seulement si l'équipe médicale le juge utile"?: string
           question?: string
+          updated_at?: string | null
         }
         Relationships: []
       }

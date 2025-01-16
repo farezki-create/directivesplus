@@ -12,9 +12,14 @@ interface QuestionCardProps {
 }
 
 export function QuestionCard({ question, value, onValueChange, options }: QuestionCardProps) {
+  const displayOrder = question.order || question.display_order;
+  const orderDisplay = displayOrder ? `${displayOrder}. ` : '';
+
   return (
     <div className="p-6 bg-card rounded-lg border shadow-sm">
-      <p className="text-lg font-medium mb-4">{question.Question || question.question}</p>
+      <p className="text-lg font-medium mb-4">
+        {orderDisplay}{question.Question || question.question}
+      </p>
       <RadioGroup
         value={value}
         onValueChange={onValueChange}
