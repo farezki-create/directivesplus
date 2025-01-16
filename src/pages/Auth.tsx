@@ -35,7 +35,7 @@ const Auth = () => {
     try {
       if (isSignUp) {
         console.log('Attempting signup with email:', values.email);
-        const { error } = await supabase.auth.signUp({
+        const { error, data } = await supabase.auth.signUp({
           email: values.email,
           password: values.password,
           options: {
@@ -73,6 +73,28 @@ const Auth = () => {
             description: message,
           });
           return;
+        }
+
+        // Envoi de l'email de vérification personnalisé
+        try {
+          const confirmationUrl = data?.user?.confirmation_sent_at 
+            ? `${window.location.origin}/auth/verify?token=${data.user.confirmation_token}`
+            : null;
+
+          if (confirmationUrl) {
+            const response = await supabase.functions.invoke('send-verification-email', {
+              body: {
+                to: values.email,
+                confirmationUrl,
+              },
+            });
+
+            if (response.error) {
+              console.error('Erreur lors de l\'envoi de l\'email de vérification:', response.error);
+            }
+          }
+        } catch (emailError) {
+          console.error('Erreur lors de l\'envoi de l\'email de vérification:', emailError);
         }
 
         toast({
