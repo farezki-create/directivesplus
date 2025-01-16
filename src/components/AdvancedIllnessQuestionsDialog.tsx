@@ -31,7 +31,15 @@ export function AdvancedIllnessQuestionsDialog({
         }
         
         console.log('Raw data from advanced_illness_questions table:', data);
-        setQuestions(data || []);
+        // Sort questions by order if the data exists
+        const sortedQuestions = data?.sort((a, b) => {
+          // Handle null values in order column
+          if (a.order === null) return 1;
+          if (b.order === null) return -1;
+          return a.order - b.order;
+        }) || [];
+        
+        setQuestions(sortedQuestions);
       } catch (error) {
         console.error('Error:', error);
       } finally {
