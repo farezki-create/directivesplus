@@ -191,6 +191,7 @@ export type Database = {
           created_at: string
           id: string
           question_id: string
+          question_text: string | null
           response: string
           updated_at: string | null
           user_id: string
@@ -199,6 +200,7 @@ export type Database = {
           created_at?: string
           id?: string
           question_id: string
+          question_text?: string | null
           response: string
           updated_at?: string | null
           user_id: string
@@ -207,6 +209,7 @@ export type Database = {
           created_at?: string
           id?: string
           question_id?: string
+          question_text?: string | null
           response?: string
           updated_at?: string | null
           user_id?: string
@@ -226,6 +229,7 @@ export type Database = {
           created_at: string
           id: string
           question_id: string
+          question_text: string | null
           response: string
           updated_at: string | null
           user_id: string
@@ -234,6 +238,7 @@ export type Database = {
           created_at?: string
           id?: string
           question_id: string
+          question_text?: string | null
           response: string
           updated_at?: string | null
           user_id: string
@@ -242,6 +247,7 @@ export type Database = {
           created_at?: string
           id?: string
           question_id?: string
+          question_text?: string | null
           response?: string
           updated_at?: string | null
           user_id?: string
@@ -261,6 +267,7 @@ export type Database = {
           created_at: string
           id: string
           question_id: string
+          question_text: string | null
           response: string
           updated_at: string | null
           user_id: string
@@ -269,6 +276,7 @@ export type Database = {
           created_at?: string
           id?: string
           question_id: string
+          question_text?: string | null
           response: string
           updated_at?: string | null
           user_id: string
@@ -277,6 +285,7 @@ export type Database = {
           created_at?: string
           id?: string
           question_id?: string
+          question_text?: string | null
           response?: string
           updated_at?: string | null
           user_id?: string
@@ -296,6 +305,7 @@ export type Database = {
           created_at: string
           id: string
           question_id: string
+          question_text: string | null
           response: string
           updated_at: string | null
           user_id: string
@@ -304,6 +314,7 @@ export type Database = {
           created_at?: string
           id?: string
           question_id: string
+          question_text?: string | null
           response: string
           updated_at?: string | null
           user_id: string
@@ -312,6 +323,7 @@ export type Database = {
           created_at?: string
           id?: string
           question_id?: string
+          question_text?: string | null
           response?: string
           updated_at?: string | null
           user_id?: string

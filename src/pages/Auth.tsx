@@ -39,6 +39,16 @@ const Auth = () => {
           email: values.email,
           password: values.password,
           options: {
+            data: {
+              first_name: values.firstName,
+              last_name: values.lastName,
+              birth_date: values.birthDate,
+              address: values.address,
+              city: values.city,
+              postal_code: values.postalCode,
+              country: values.country,
+              phone_number: values.phoneNumber,
+            },
             emailRedirectTo: `${window.location.origin}/auth/callback`
           }
         });
@@ -46,21 +56,7 @@ const Auth = () => {
         if (error) {
           console.log('Signup error:', error);
           
-          // First, try to parse the error body if it exists
-          let errorBody;
-          try {
-            if (error.message.includes('{')) {
-              errorBody = JSON.parse(error.message.substring(error.message.indexOf('{')));
-            }
-          } catch (e) {
-            console.log('Error parsing error message:', e);
-          }
-
-          // Check for user_already_exists in both parsed body and direct message
-          if (
-            (errorBody && errorBody.code === "user_already_exists") ||
-            (error instanceof AuthApiError && error.message.includes("User already registered"))
-          ) {
+          if (error instanceof AuthApiError && error.message.includes("User already registered")) {
             console.log('User already exists, switching to login mode');
             toast({
               title: "Compte existant",
