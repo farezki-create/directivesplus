@@ -4,9 +4,9 @@ import { AuthApiError } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { getErrorMessage } from "@/utils/auth-errors";
+import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { AuthCard } from "@/components/auth/AuthCard";
-import { Button } from "@/components/ui/button";
 import type { FormValues } from "@/components/AuthForm";
 
 const Auth = () => {
@@ -21,7 +21,7 @@ const Auth = () => {
       console.log('Auth state changed:', event, session);
       
       if (event === "SIGNED_IN" && session) {
-        console.log('User signed in successfully, redirecting to dashboard');
+        console.log('User signed in, redirecting to dashboard');
         navigate("/dashboard");
       }
     });
@@ -37,18 +37,7 @@ const Auth = () => {
       setIsLoading(true);
       
       if (isSignUp) {
-        console.log('Starting signup process with values:', {
-          email: values.email,
-          firstName: values.firstName,
-          lastName: values.lastName,
-          birthDate: values.birthDate,
-          country: values.country,
-          phoneNumber: values.phoneNumber,
-          address: values.address,
-          city: values.city,
-          postalCode: values.postalCode
-        });
-
+        console.log('Attempting signup with email:', values.email);
         const { error } = await supabase.auth.signUp({
           email: values.email,
           password: values.password,
@@ -68,7 +57,7 @@ const Auth = () => {
         });
 
         if (error) {
-          console.error('Signup error:', error);
+          console.log('Signup error:', error);
           
           if (error instanceof AuthApiError && error.message.includes("User already registered")) {
             console.log('User already exists, switching to login mode');
@@ -89,20 +78,19 @@ const Auth = () => {
           return;
         }
 
-        console.log('Signup successful, showing confirmation toast');
         toast({
           title: "Inscription réussie",
           description: "Veuillez vérifier votre email pour confirmer votre compte.",
         });
       } else {
-        console.log('Starting login process with email:', values.email);
+        console.log('Attempting login with email:', values.email);
         const { error } = await supabase.auth.signInWithPassword({
           email: values.email,
           password: values.password,
         });
 
         if (error) {
-          console.error('Login error:', error);
+          console.log('Login error:', error);
           const message = getErrorMessage(error);
           toast({
             variant: "destructive",
@@ -111,11 +99,9 @@ const Auth = () => {
           });
           return;
         }
-
-        console.log('Login successful');
       }
     } catch (error) {
-      console.error('Unexpected auth error:', error);
+      console.error('Auth error:', error);
       toast({
         variant: "destructive",
         title: "Erreur",
@@ -127,37 +113,24 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="container mx-auto px-4">
-        <header className="py-8 text-center">
-          <h1 className="text-3xl font-bold text-primary mb-2">DirectivesPlus</h1>
-          <p className="text-muted-foreground">
-            Vos directives anticipées en toute sécurité
-          </p>
-        </header>
-        
-        <div className="flex justify-center items-start">
-          <div className="w-full max-w-md">
-            {isSignUp && (
-              <Button
-                variant="ghost"
-                className="mb-6 gap-2"
-                onClick={() => navigate("/")}
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Retour à l'accueil
-              </Button>
-            )}
-            
-            <AuthCard
-              isSignUp={isSignUp}
-              isLoading={isLoading}
-              onSubmit={handleSubmit}
-              onToggleMode={() => setIsSignUp(!isSignUp)}
-            />
-          </div>
-        </div>
-      </div>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4">
+      {isSignUp && (
+        <Button
+          variant="ghost"
+          className="absolute top-4 left-4 gap-2"
+          onClick={() => navigate("/")}
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Retour à l'accueil
+        </Button>
+      )}
+      
+      <AuthCard
+        isSignUp={isSignUp}
+        isLoading={isLoading}
+        onSubmit={handleSubmit}
+        onToggleMode={() => setIsSignUp(!isSignUp)}
+      />
     </div>
   );
 };

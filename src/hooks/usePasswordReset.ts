@@ -21,15 +21,6 @@ export const usePasswordReset = () => {
         return;
       }
 
-      if (!email.includes('@')) {
-        toast({
-          variant: "destructive",
-          title: "Email invalide",
-          description: "Veuillez saisir une adresse email valide.",
-        });
-        return;
-      }
-
       const now = Date.now();
       if (now - lastResetRequest < 60000) {
         console.log('Rate limit hit on client side');

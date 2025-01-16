@@ -10,37 +10,11 @@ import { getErrorMessage } from "@/utils/auth-errors";
 const ResetPassword = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const validatePassword = (password: string) => {
-    const requirements = [
-      { regex: /.{8,}/, message: "Au moins 8 caractères" },
-      { regex: /[A-Z]/, message: "Au moins une lettre majuscule" },
-      { regex: /[a-z]/, message: "Au moins une lettre minuscule" },
-      { regex: /[0-9]/, message: "Au moins un chiffre" },
-      { regex: /[^A-Za-z0-9]/, message: "Au moins un caractère spécial" },
-    ];
-
-    const failedRequirements = requirements.filter(req => !req.regex.test(password));
-    return failedRequirements.length ? failedRequirements[0].message : null;
-  };
-
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    
-    const passwordError = validatePassword(newPassword);
-    if (passwordError) {
-      toast({
-        variant: "destructive",
-        title: "Mot de passe invalide",
-        description: passwordError,
-      });
-      setIsLoading(false);
-      return;
-    }
     
     if (newPassword !== confirmPassword) {
       toast({
@@ -48,7 +22,15 @@ const ResetPassword = () => {
         title: "Erreur",
         description: "Les mots de passe ne correspondent pas",
       });
-      setIsLoading(false);
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Le mot de passe doit contenir au moins 8 caractères",
+      });
       return;
     }
 
@@ -83,8 +65,6 @@ const ResetPassword = () => {
         title: "Erreur",
         description: "Une erreur est survenue lors de la mise à jour du mot de passe",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -108,7 +88,6 @@ const ResetPassword = () => {
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 className="w-full"
-                disabled={isLoading}
               />
             </div>
             <div className="space-y-2">
@@ -118,18 +97,10 @@ const ResetPassword = () => {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className="w-full"
-                disabled={isLoading}
               />
             </div>
-            <ul className="text-sm text-muted-foreground space-y-1">
-              <li>• Au moins 8 caractères</li>
-              <li>• Au moins une lettre majuscule</li>
-              <li>• Au moins une lettre minuscule</li>
-              <li>• Au moins un chiffre</li>
-              <li>• Au moins un caractère spécial (!@#$%^&*)</li>
-            </ul>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Mise à jour..." : "Mettre à jour le mot de passe"}
+            <Button type="submit" className="w-full">
+              Mettre à jour le mot de passe
             </Button>
           </form>
         </CardContent>

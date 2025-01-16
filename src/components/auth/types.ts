@@ -5,17 +5,15 @@ const baseSchema = {
   email: z.string().email("Email invalide"),
   password: z.string()
     .min(8, "Le mot de passe doit contenir au moins 8 caractères")
-    .regex(/[A-Z]/, "Le mot de passe doit contenir au moins une lettre majuscule")
-    .regex(/[0-9]/, "Le mot de passe doit contenir au moins un chiffre")
-    .regex(/[a-z]/, "Le mot de passe doit contenir au moins une lettre minuscule")
-    .regex(/[^a-zA-Z0-9]/, "Le mot de passe doit contenir au moins un caractère spécial (!@#$%^&*)")
+    .regex(/[A-Z]/, "Le mot de passe doit contenir au moins une majuscule")
+    .regex(/[0-9]/, "Le mot de passe doit contenir au moins un chiffre"),
 };
 
 export const loginSchema = z.object(baseSchema);
 
 export const signUpSchema = z.object({
   ...baseSchema,
-  confirmPassword: z.string().min(1, "Veuillez confirmer votre mot de passe"),
+  confirmPassword: z.string(),
   firstName: z.string().min(2, "Le prénom doit contenir au moins 2 caractères"),
   lastName: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
   birthDate: z.string().min(1, "La date de naissance est requise"),
