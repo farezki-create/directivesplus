@@ -13,33 +13,40 @@ interface QuestionCardProps {
 
 export function QuestionCard({ question, value, onValueChange, options }: QuestionCardProps) {
   const displayOrder = question.order || question.display_order;
-  const orderDisplay = displayOrder ? `${displayOrder}. ` : '';
+  const orderDisplay = displayOrder ? `${displayOrder}` : '';
 
   return (
     <div className="p-6 bg-card rounded-lg border shadow-sm">
-      <p className="text-lg font-medium mb-4">
-        {orderDisplay}{question.Question || question.question}
-      </p>
-      <RadioGroup
-        value={value}
-        onValueChange={onValueChange}
-        className="flex flex-col space-y-3"
-      >
-        {options.map((option) => (
-          <div key={option.value} className="flex items-center space-x-2">
-            <RadioGroupItem 
-              value={option.value} 
-              id={`${question.id}-${option.value}`} 
-            />
-            <Label 
-              htmlFor={`${question.id}-${option.value}`} 
-              className="text-base"
-            >
-              {option.label}
-            </Label>
-          </div>
-        ))}
-      </RadioGroup>
+      <div className="flex items-start gap-4">
+        <div className="w-8 flex-shrink-0 text-center font-medium text-lg">
+          {orderDisplay}
+        </div>
+        <div className="flex-1">
+          <p className="text-lg font-medium mb-4">
+            {question.Question || question.question}
+          </p>
+          <RadioGroup
+            value={value}
+            onValueChange={onValueChange}
+            className="flex flex-col space-y-3"
+          >
+            {options.map((option) => (
+              <div key={option.value} className="flex items-center space-x-2">
+                <RadioGroupItem 
+                  value={option.value} 
+                  id={`${question.id}-${option.value}`} 
+                />
+                <Label 
+                  htmlFor={`${question.id}-${option.value}`} 
+                  className="text-base"
+                >
+                  {option.label}
+                </Label>
+              </div>
+            ))}
+          </RadioGroup>
+        </div>
+      </div>
     </div>
   );
 }
