@@ -85,7 +85,7 @@ export function LifeSupportQuestionsDialog({
       loading={loading}
       questionsLength={questions.length}
     >
-      <div className="mb-4 text-lg font-medium text-center">
+      <div className="mb-4 text-lg font-bold">
         Que pensez-vous de :
       </div>
       {questions.map((question) => (
