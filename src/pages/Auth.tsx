@@ -95,11 +95,10 @@ const Auth = () => {
           description: "Veuillez vérifier votre email pour confirmer votre compte.",
         });
         
-        // Redirect to home page after successful signup
         navigate("/");
       } else {
         console.log('Starting login process with email:', values.email);
-        const { error } = await supabase.auth.signInWithPassword({
+        const { error, data } = await supabase.auth.signInWithPassword({
           email: values.email,
           password: values.password,
         });
@@ -116,7 +115,16 @@ const Auth = () => {
         }
 
         console.log('Login successful');
-        // The redirect will be handled by the auth state change listener
+        toast({
+          title: "Connexion réussie",
+          description: "Vous êtes maintenant connecté.",
+        });
+        
+        // Force navigation after successful login
+        if (data.session) {
+          console.log('Redirecting to home after successful login');
+          navigate("/");
+        }
       }
     } catch (error) {
       console.error('Unexpected auth error:', error);
