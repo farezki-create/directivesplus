@@ -470,6 +470,66 @@ export type Database = {
           },
         ]
       }
+      questionnaire_questions: {
+        Row: {
+          id: number
+          indecision: boolean | null
+          non_sauf_equipe_medicale: boolean | null
+          oui_si_equipe_medicale: boolean | null
+          plutot_non_abandon_rapide: boolean | null
+          plutot_non_priorite_non_souffrance: boolean | null
+          plutot_oui: boolean | null
+          plutot_oui_duree_moderee: boolean | null
+          question: string
+        }
+        Insert: {
+          id?: number
+          indecision?: boolean | null
+          non_sauf_equipe_medicale?: boolean | null
+          oui_si_equipe_medicale?: boolean | null
+          plutot_non_abandon_rapide?: boolean | null
+          plutot_non_priorite_non_souffrance?: boolean | null
+          plutot_oui?: boolean | null
+          plutot_oui_duree_moderee?: boolean | null
+          question: string
+        }
+        Update: {
+          id?: number
+          indecision?: boolean | null
+          non_sauf_equipe_medicale?: boolean | null
+          oui_si_equipe_medicale?: boolean | null
+          plutot_non_abandon_rapide?: boolean | null
+          plutot_non_priorite_non_souffrance?: boolean | null
+          plutot_oui?: boolean | null
+          plutot_oui_duree_moderee?: boolean | null
+          question?: string
+        }
+        Relationships: []
+      }
+      questionnaire_responses: {
+        Row: {
+          created_at: string | null
+          id: number
+          question_1: string | null
+          question_2: string | null
+          question_3: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: number
+          question_1?: string | null
+          question_2?: string | null
+          question_3?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: number
+          question_1?: string | null
+          question_2?: string | null
+          question_3?: string | null
+        }
+        Relationships: []
+      }
       questionnaire_synthesis: {
         Row: {
           created_at: string
