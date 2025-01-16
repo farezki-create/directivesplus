@@ -14,7 +14,7 @@ export function LifeSupportQuestionsDialog({
 }: LifeSupportQuestionsDialogProps) {
   const [questions, setQuestions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [answers, setAnswers] = useState<Record<string, string[]>>({});
 
   useEffect(() => {
     async function fetchQuestions() {
@@ -47,7 +47,7 @@ export function LifeSupportQuestionsDialog({
   const handleAnswerChange = (questionId: string, value: string) => {
     setAnswers(prev => ({
       ...prev,
-      [questionId]: value
+      [questionId]: [value] // Wrap single value in array
     }));
   };
 
@@ -93,7 +93,7 @@ export function LifeSupportQuestionsDialog({
         <QuestionCard
           key={question.id}
           question={question}
-          value={answers[question.id] || ''}
+          value={answers[question.id] || []}
           onValueChange={(value) => handleAnswerChange(question.id, value)}
           options={getQuestionOptions(question)}
         />

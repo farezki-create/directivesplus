@@ -13,7 +13,7 @@ export function PreferencesQuestionsDialog({
   open,
   onOpenChange,
 }: PreferencesQuestionsDialogProps) {
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [answers, setAnswers] = useState<Record<string, string[]>>({});
 
   const { data: questions, isLoading } = useQuery({
     queryKey: ["preferences-questions"],
@@ -40,7 +40,7 @@ export function PreferencesQuestionsDialog({
   const handleAnswerChange = (questionId: string, value: string) => {
     setAnswers(prev => ({
       ...prev,
-      [questionId]: value
+      [questionId]: [value] // Wrap single value in array
     }));
   };
 
@@ -57,7 +57,7 @@ export function PreferencesQuestionsDialog({
         <QuestionCard
           key={question.id}
           question={question}
-          value={answers[question.id] || ''}
+          value={answers[question.id] || []}
           onValueChange={(value) => handleAnswerChange(question.id, value)}
           options={[
             { label: "Oui", value: "oui" },
