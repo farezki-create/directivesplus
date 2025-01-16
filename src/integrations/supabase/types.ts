@@ -180,36 +180,6 @@ export type Database = {
         }
         Relationships: []
       }
-      questionnaire_advanced_illness_answers: {
-        Row: {
-          answer_id: string
-          question_id: string
-        }
-        Insert: {
-          answer_id: string
-          question_id: string
-        }
-        Update: {
-          answer_id?: string
-          question_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "questionnaire_advanced_illness_answers_answer_id_fkey"
-            columns: ["answer_id"]
-            isOneToOne: false
-            referencedRelation: "questionnaire_answers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "questionnaire_advanced_illness_answers_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: false
-            referencedRelation: "advanced_illness_questions"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       questionnaire_advanced_illness_responses: {
         Row: {
           created_at: string
@@ -241,66 +211,6 @@ export type Database = {
             columns: ["question_id"]
             isOneToOne: false
             referencedRelation: "advanced_illness_questions"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      questionnaire_answers: {
-        Row: {
-          answer: string
-          created_at: string
-          id: string
-          question_id: string
-          questionnaire_type: Database["public"]["Enums"]["questionnaire_type"]
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          answer: string
-          created_at?: string
-          id?: string
-          question_id: string
-          questionnaire_type: Database["public"]["Enums"]["questionnaire_type"]
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          answer?: string
-          created_at?: string
-          id?: string
-          question_id?: string
-          questionnaire_type?: Database["public"]["Enums"]["questionnaire_type"]
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
-      questionnaire_general_opinion_answers: {
-        Row: {
-          answer_id: string
-          question_id: string
-        }
-        Insert: {
-          answer_id: string
-          question_id: string
-        }
-        Update: {
-          answer_id?: string
-          question_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "questionnaire_general_opinion_answers_answer_id_fkey"
-            columns: ["answer_id"]
-            isOneToOne: false
-            referencedRelation: "questionnaire_answers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "questionnaire_general_opinion_answers_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: false
-            referencedRelation: "questions"
             referencedColumns: ["id"]
           },
         ]
@@ -340,36 +250,6 @@ export type Database = {
           },
         ]
       }
-      questionnaire_life_support_answers: {
-        Row: {
-          answer_id: string
-          question_id: string
-        }
-        Insert: {
-          answer_id: string
-          question_id: string
-        }
-        Update: {
-          answer_id?: string
-          question_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "questionnaire_life_support_answers_answer_id_fkey"
-            columns: ["answer_id"]
-            isOneToOne: false
-            referencedRelation: "questionnaire_answers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "questionnaire_life_support_answers_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: false
-            referencedRelation: "life_support_questions"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       questionnaire_life_support_responses: {
         Row: {
           created_at: string
@@ -401,36 +281,6 @@ export type Database = {
             columns: ["question_id"]
             isOneToOne: false
             referencedRelation: "life_support_questions"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      questionnaire_preferences_answers: {
-        Row: {
-          answer_id: string
-          question_id: string
-        }
-        Insert: {
-          answer_id: string
-          question_id: string
-        }
-        Update: {
-          answer_id?: string
-          question_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "questionnaire_preferences_answers_answer_id_fkey"
-            columns: ["answer_id"]
-            isOneToOne: false
-            referencedRelation: "questionnaire_answers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "questionnaire_preferences_answers_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: false
-            referencedRelation: "preferences_questions"
             referencedColumns: ["id"]
           },
         ]
@@ -469,66 +319,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      questionnaire_questions: {
-        Row: {
-          id: number
-          indecision: boolean | null
-          non_sauf_equipe_medicale: boolean | null
-          oui_si_equipe_medicale: boolean | null
-          plutot_non_abandon_rapide: boolean | null
-          plutot_non_priorite_non_souffrance: boolean | null
-          plutot_oui: boolean | null
-          plutot_oui_duree_moderee: boolean | null
-          question: string
-        }
-        Insert: {
-          id?: number
-          indecision?: boolean | null
-          non_sauf_equipe_medicale?: boolean | null
-          oui_si_equipe_medicale?: boolean | null
-          plutot_non_abandon_rapide?: boolean | null
-          plutot_non_priorite_non_souffrance?: boolean | null
-          plutot_oui?: boolean | null
-          plutot_oui_duree_moderee?: boolean | null
-          question: string
-        }
-        Update: {
-          id?: number
-          indecision?: boolean | null
-          non_sauf_equipe_medicale?: boolean | null
-          oui_si_equipe_medicale?: boolean | null
-          plutot_non_abandon_rapide?: boolean | null
-          plutot_non_priorite_non_souffrance?: boolean | null
-          plutot_oui?: boolean | null
-          plutot_oui_duree_moderee?: boolean | null
-          question?: string
-        }
-        Relationships: []
-      }
-      questionnaire_responses: {
-        Row: {
-          created_at: string | null
-          id: number
-          question_1: string | null
-          question_2: string | null
-          question_3: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          id?: number
-          question_1?: string | null
-          question_2?: string | null
-          question_3?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: number
-          question_1?: string | null
-          question_2?: string | null
-          question_3?: string | null
-        }
-        Relationships: []
       }
       questionnaire_synthesis: {
         Row: {
