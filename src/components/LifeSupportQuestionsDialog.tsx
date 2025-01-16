@@ -85,6 +85,9 @@ export function LifeSupportQuestionsDialog({
       loading={loading}
       questionsLength={questions.length}
     >
+      <div className="mb-4 text-lg font-medium text-center">
+        Que pensez-vous de :
+      </div>
       {questions.map((question) => (
         <QuestionCard
           key={question.id}
