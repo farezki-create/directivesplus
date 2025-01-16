@@ -7,6 +7,8 @@ import { BaseAuthFields } from "./auth/BaseAuthFields";
 import { SignUpFields } from "./auth/SignUpFields";
 import { FormValues, loginSchema, signUpSchema } from "./auth/types";
 
+export type { FormValues };
+
 type AuthFormProps = {
   isSignUp: boolean;
   onSubmit: (values: FormValues) => void;
