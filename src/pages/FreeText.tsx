@@ -6,14 +6,29 @@ import { useNavigate } from "react-router-dom";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { useToast } from "@/hooks/use-toast";
 import { Download } from "lucide-react";
-import { useAuth } from "@supabase/auth-helpers-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
 
 const FreeText = () => {
   const [text, setText] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
-  const user = useAuth();
-  const { responses } = useQuestionnairesResponses(user?.id);
+  const [userId, setUserId] = useState<string | null>(null);
+  const { responses } = useQuestionnairesResponses(userId);
+
+  useEffect(() => {
+    // Get the current user's ID when the component mounts
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUserId(session?.user?.id ?? null);
+    });
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUserId(session?.user?.id ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleExport = () => {
     try {
