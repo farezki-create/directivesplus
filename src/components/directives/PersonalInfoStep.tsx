@@ -1,6 +1,5 @@
-import React from "react";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -10,26 +9,24 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const COUNTRY_PREFIXES = {
-  "France": "+33",
-  "Belgique": "+32",
-  "Suisse": "+41",
-  "Luxembourg": "+352",
-  "Canada": "+1",
-  "Monaco": "+377",
-} as const;
-
-type CountryKey = keyof typeof COUNTRY_PREFIXES;
-
 interface PersonalInfoStepProps {
-  selectedCountry: CountryKey;
-  onCountryChange: (value: CountryKey) => void;
+  selectedCountry: string;
+  onCountryChange: (value: string) => void;
 }
 
-export const PersonalInfoStep = ({
-  selectedCountry,
-  onCountryChange,
-}: PersonalInfoStepProps) => {
+export function PersonalInfoStep({ 
+  selectedCountry, 
+  onCountryChange 
+}: PersonalInfoStepProps) {
+  const COUNTRY_PREFIXES = {
+    "France": "+33",
+    "Belgique": "+32",
+    "Suisse": "+41",
+    "Luxembourg": "+352",
+    "Canada": "+1",
+    "Monaco": "+377",
+  } as const;
+
   return (
     <div className="space-y-4">
       <h2 className="text-2xl font-bold">Informations personnelles</h2>
@@ -95,7 +92,7 @@ export const PersonalInfoStep = ({
           <Label htmlFor="country">Pays</Label>
           <Select 
             value={selectedCountry}
-            onValueChange={(value) => onCountryChange(value as CountryKey)}
+            onValueChange={onCountryChange}
           >
             <SelectTrigger id="country">
               <SelectValue placeholder="Sélectionnez votre pays" />
@@ -114,13 +111,13 @@ export const PersonalInfoStep = ({
       <div className="space-y-2">
         <Label htmlFor="phone">Numéro de téléphone</Label>
         <div className="flex gap-2">
-          <Select defaultValue={COUNTRY_PREFIXES[selectedCountry]} disabled>
+          <Select defaultValue={COUNTRY_PREFIXES[selectedCountry as keyof typeof COUNTRY_PREFIXES]} disabled>
             <SelectTrigger className="w-[100px]">
-              <SelectValue>{COUNTRY_PREFIXES[selectedCountry]}</SelectValue>
+              <SelectValue>{COUNTRY_PREFIXES[selectedCountry as keyof typeof COUNTRY_PREFIXES]}</SelectValue>
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={COUNTRY_PREFIXES[selectedCountry]}>
-                {COUNTRY_PREFIXES[selectedCountry]}
+              <SelectItem value={COUNTRY_PREFIXES[selectedCountry as keyof typeof COUNTRY_PREFIXES]}>
+                {COUNTRY_PREFIXES[selectedCountry as keyof typeof COUNTRY_PREFIXES]}
               </SelectItem>
             </SelectContent>
           </Select>
@@ -135,4 +132,4 @@ export const PersonalInfoStep = ({
       </div>
     </div>
   );
-};
+}
