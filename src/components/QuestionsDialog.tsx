@@ -54,7 +54,8 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
 
   const getQuestionOptions = (question: any) => [
     { value: 'oui', label: question.OUI || "Oui" },
-    { value: 'non', label: question.NON || "Non" }
+    { value: 'non', label: question.NON || "Non" },
+    { value: 'je_ne_sais_pas', label: question.JE_NE_SAIS_PAS || "Je ne sais pas" }
   ];
 
   return (

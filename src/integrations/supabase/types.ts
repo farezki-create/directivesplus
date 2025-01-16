@@ -558,6 +558,7 @@ export type Database = {
         Row: {
           category: Database["public"]["Enums"]["question_category"] | null
           id: string
+          JE_NE_SAIS_PAS: string
           NON: string
           order: number | null
           OUI: string
@@ -567,6 +568,7 @@ export type Database = {
         Insert: {
           category?: Database["public"]["Enums"]["question_category"] | null
           id?: string
+          JE_NE_SAIS_PAS?: string
           NON: string
           order?: number | null
           OUI: string
@@ -576,6 +578,7 @@ export type Database = {
         Update: {
           category?: Database["public"]["Enums"]["question_category"] | null
           id?: string
+          JE_NE_SAIS_PAS?: string
           NON?: string
           order?: number | null
           OUI?: string
