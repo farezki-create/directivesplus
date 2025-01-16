@@ -38,7 +38,6 @@ export const BaseAuthFields = ({ form, isSignUp }: BaseAuthFieldsProps) => {
           <FormItem>
             <FormLabel className="text-base font-medium">
               Mot de passe
-              {isSignUp && " (8 caractères min., 1 majuscule, 1 chiffre)"}
             </FormLabel>
             <FormControl>
               <Input 
@@ -50,6 +49,15 @@ export const BaseAuthFields = ({ form, isSignUp }: BaseAuthFieldsProps) => {
               />
             </FormControl>
             <FormMessage />
+            {isSignUp && (
+              <ul className="text-sm text-muted-foreground mt-2 space-y-1">
+                <li>• Au moins 8 caractères</li>
+                <li>• Au moins une lettre majuscule</li>
+                <li>• Au moins une lettre minuscule</li>
+                <li>• Au moins un chiffre</li>
+                <li>• Au moins un caractère spécial (!@#$%^&*)</li>
+              </ul>
+            )}
           </FormItem>
         )}
       />
