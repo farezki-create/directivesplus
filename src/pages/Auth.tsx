@@ -20,8 +20,8 @@ const Auth = () => {
       console.log('Auth state changed:', event, session);
       
       if (event === "SIGNED_IN" && session) {
-        console.log('User signed in, redirecting to dashboard');
-        navigate("/dashboard");
+        console.log('User signed in, redirecting to home');
+        navigate("/");
       }
     });
 
@@ -81,7 +81,7 @@ const Auth = () => {
         });
       } else {
         console.log('Attempting login with email:', values.email);
-        const { error } = await supabase.auth.signInWithPassword({
+        const { error, data } = await supabase.auth.signInWithPassword({
           email: values.email,
           password: values.password,
         });
@@ -96,6 +96,15 @@ const Auth = () => {
           });
           return;
         }
+
+        console.log('Login successful:', data);
+        toast({
+          title: "Connexion réussie",
+          description: "Vous êtes maintenant connecté.",
+        });
+        
+        // Force navigation to home page after successful login
+        navigate("/");
       }
     } catch (error) {
       console.error('Auth error:', error);
