@@ -14,7 +14,7 @@ export function AdvancedIllnessQuestionsDialog({
 }: AdvancedIllnessQuestionsDialogProps) {
   const [questions, setQuestions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [answers, setAnswers] = useState<Record<string, string[]>>({});
 
   useEffect(() => {
     async function fetchQuestions() {
@@ -52,11 +52,21 @@ export function AdvancedIllnessQuestionsDialog({
     }
   }, [open]);
 
-  const handleAnswerChange = (questionId: string, value: string) => {
-    setAnswers(prev => ({
-      ...prev,
-      [questionId]: value
-    }));
+  const handleAnswerChange = (questionId: string, value: string, checked: boolean) => {
+    setAnswers(prev => {
+      const currentAnswers = prev[questionId] || [];
+      if (checked) {
+        return {
+          ...prev,
+          [questionId]: [...currentAnswers, value]
+        };
+      } else {
+        return {
+          ...prev,
+          [questionId]: currentAnswers.filter(v => v !== value)
+        };
+      }
+    });
   };
 
   const handleSubmit = () => {
@@ -91,9 +101,10 @@ export function AdvancedIllnessQuestionsDialog({
         <QuestionCard
           key={question.id}
           question={question}
-          value={answers[question.id] || ''}
-          onValueChange={(value) => handleAnswerChange(question.id, value)}
+          value={answers[question.id] || []}
+          onValueChange={(value, checked) => handleAnswerChange(question.id, value, checked)}
           options={getQuestionOptions(question)}
+          multiple={true}
         />
       ))}
     </QuestionsDialogLayout>

@@ -1,17 +1,24 @@
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 
 interface QuestionCardProps {
   question: any;
-  value: string;
-  onValueChange: (value: string) => void;
+  value: string[];
+  onValueChange: (value: string, checked: boolean) => void;
   options: Array<{
     value: string;
     label: string;
   }>;
+  multiple?: boolean;
 }
 
-export function QuestionCard({ question, value, onValueChange, options }: QuestionCardProps) {
+export function QuestionCard({ 
+  question, 
+  value, 
+  onValueChange, 
+  options,
+  multiple = false 
+}: QuestionCardProps) {
   const displayOrder = question.order || question.display_order;
   const orderDisplay = displayOrder ? `${displayOrder}` : '';
 
@@ -25,26 +32,25 @@ export function QuestionCard({ question, value, onValueChange, options }: Questi
           <p className="text-lg font-medium mb-4">
             {question.Question || question.question}
           </p>
-          <RadioGroup
-            value={value}
-            onValueChange={onValueChange}
-            className="flex flex-col space-y-3"
-          >
+          <div className="flex flex-col space-y-3">
             {options.map((option) => (
               <div key={option.value} className="flex items-center space-x-2">
-                <RadioGroupItem 
-                  value={option.value} 
-                  id={`${question.id}-${option.value}`} 
+                <Checkbox
+                  id={`${question.id}-${option.value}`}
+                  checked={value.includes(option.value)}
+                  onCheckedChange={(checked) => 
+                    onValueChange(option.value, checked as boolean)
+                  }
                 />
                 <Label 
-                  htmlFor={`${question.id}-${option.value}`} 
+                  htmlFor={`${question.id}-${option.value}`}
                   className="text-base"
                 >
                   {option.label}
                 </Label>
               </div>
             ))}
-          </RadioGroup>
+          </div>
         </div>
       </div>
     </div>
