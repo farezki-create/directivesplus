@@ -1,16 +1,18 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { AuthApiError } from "@supabase/supabase-js";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { AuthForm } from "@/components/AuthForm";
+import { AuthForm, FormValues } from "@/components/AuthForm";
+import { getErrorMessage } from "@/utils/auth-errors";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { useAuthState } from "@/hooks/useAuthState";
 
 const Auth = () => {
   const navigate = useNavigate();
-  const { handleSubmit, isLoading } = useAuthState();
   const [isSignUp, setIsSignUp] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     console.log("Setting up auth state change listener");
@@ -18,9 +20,8 @@ const Auth = () => {
       console.log('Auth state changed:', event, session);
       
       if (event === "SIGNED_IN" && session) {
-        console.log('User signed in successfully, redirecting to home page');
-        sessionStorage.setItem('showExplanationDialog', 'true');
-        navigate("/");
+        console.log('User signed in, redirecting to dashboard');
+        navigate("/dashboard");
       }
     });
 
@@ -30,17 +31,98 @@ const Auth = () => {
     };
   }, [navigate]);
 
+  const handleSubmit = async (values: FormValues) => {
+    try {
+      if (isSignUp) {
+        console.log('Attempting signup with email:', values.email);
+        const { error } = await supabase.auth.signUp({
+          email: values.email,
+          password: values.password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth/callback`
+          }
+        });
+
+        if (error) {
+          console.log('Signup error:', error);
+          
+          // First, try to parse the error body if it exists
+          let errorBody;
+          try {
+            if (error.message.includes('{')) {
+              errorBody = JSON.parse(error.message.substring(error.message.indexOf('{')));
+            }
+          } catch (e) {
+            console.log('Error parsing error message:', e);
+          }
+
+          // Check for user_already_exists in both parsed body and direct message
+          if (
+            (errorBody && errorBody.code === "user_already_exists") ||
+            (error instanceof AuthApiError && error.message.includes("User already registered"))
+          ) {
+            console.log('User already exists, switching to login mode');
+            toast({
+              title: "Compte existant",
+              description: "Un compte existe déjà avec cet email. Connectez-vous.",
+            });
+            setIsSignUp(false);
+            return;
+          }
+          
+          const message = getErrorMessage(error);
+          toast({
+            variant: "destructive",
+            title: "Erreur d'inscription",
+            description: message,
+          });
+          return;
+        }
+
+        toast({
+          title: "Inscription réussie",
+          description: "Veuillez vérifier votre email pour confirmer votre compte.",
+        });
+      } else {
+        console.log('Attempting login with email:', values.email);
+        const { error } = await supabase.auth.signInWithPassword({
+          email: values.email,
+          password: values.password,
+        });
+
+        if (error) {
+          console.log('Login error:', error);
+          const message = getErrorMessage(error);
+          toast({
+            variant: "destructive",
+            title: "Erreur de connexion",
+            description: message,
+          });
+          return;
+        }
+      }
+    } catch (error) {
+      console.error('Auth error:', error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur inattendue s'est produite. Veuillez réessayer.",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4">
-      <Button
-        variant="ghost"
-        className="absolute top-4 left-4 gap-2"
-        onClick={() => navigate("/")}
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Retour à l'accueil
-      </Button>
-      
+      {isSignUp && (
+        <Button
+          variant="ghost"
+          className="absolute top-4 left-4 gap-2"
+          onClick={() => navigate("/")}
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Retour à l'accueil
+        </Button>
+      )}
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">

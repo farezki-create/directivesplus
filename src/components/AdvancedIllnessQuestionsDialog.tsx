@@ -1,8 +1,7 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { QuestionCard } from "./questions/QuestionCard";
 import { QuestionsDialogLayout } from "./questions/QuestionsDialogLayout";
-import { useQuestionnaireAnswers } from "./questionnaire/useQuestionnaireAnswers";
-import { useQuestionnaireState } from "@/hooks/useQuestionnaireState";
 
 interface AdvancedIllnessQuestionsDialogProps {
   open: boolean;
@@ -13,26 +12,49 @@ export function AdvancedIllnessQuestionsDialog({
   open, 
   onOpenChange 
 }: AdvancedIllnessQuestionsDialogProps) {
-  const { data: existingAnswers, isLoading: loadingAnswers } = useQuestionnaireAnswers("advanced_illness");
-  const {
-    questions,
-    loading,
-    answers,
-    fetchQuestions,
-    handleAnswerChange,
-    handleSubmit,
-    loadExistingAnswers
-  } = useQuestionnaireState("advanced_illness");
+  const [questions, setQuestions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [answers, setAnswers] = useState<Record<string, string>>({});
 
   useEffect(() => {
+    async function fetchQuestions() {
+      try {
+        console.log("Fetching advanced illness questions...");
+        const { data, error } = await supabase
+          .from('advanced_illness_questions')
+          .select('*')
+          .order('order', { ascending: true });
+        
+        if (error) {
+          console.error('Error fetching questions:', error);
+          return;
+        }
+        
+        console.log('Raw data from advanced_illness_questions table:', data);
+        setQuestions(data || []);
+      } catch (error) {
+        console.error('Error:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
     if (open) {
       fetchQuestions();
     }
   }, [open]);
 
-  useEffect(() => {
-    loadExistingAnswers(existingAnswers);
-  }, [existingAnswers]);
+  const handleAnswerChange = (questionId: string, value: string) => {
+    setAnswers(prev => ({
+      ...prev,
+      [questionId]: value
+    }));
+  };
+
+  const handleSubmit = () => {
+    console.log('Réponses soumises:', answers);
+    onOpenChange(false);
+  };
 
   const getQuestionOptions = (question: any) => [
     { 
@@ -52,8 +74,8 @@ export function AdvancedIllnessQuestionsDialog({
       open={open}
       onOpenChange={onOpenChange}
       title="Maladie avancée"
-      onSubmit={() => handleSubmit(() => onOpenChange(false))}
-      loading={loading || loadingAnswers}
+      onSubmit={handleSubmit}
+      loading={loading}
       questionsLength={questions.length}
     >
       {questions.map((question) => (

@@ -1,17 +1,12 @@
+import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
-import { Skeleton } from "@/components/ui/skeleton";
-import { QuestionnaireSection } from "@/components/questionnaire/QuestionnaireSection";
-import { FreeTextForm } from "@/components/questionnaire/FreeTextForm";
-import { ImportQuestionsForm } from "@/components/questionnaire/ImportQuestionsForm";
-import { useQuestionnaireAnswers } from "@/components/questionnaire/useQuestionnaireAnswers";
+import { Textarea } from "@/components/ui/textarea";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const FreeText = () => {
-  const { data: generalAnswers, isLoading: loadingGeneral } = useQuestionnaireAnswers("general_opinion");
-  const { data: lifeSupportAnswers, isLoading: loadingLifeSupport } = useQuestionnaireAnswers("life_support");
-  const { data: advancedIllnessAnswers, isLoading: loadingAdvancedIllness } = useQuestionnaireAnswers("advanced_illness");
-  const { data: preferencesAnswers, isLoading: loadingPreferences } = useQuestionnaireAnswers("preferences");
-
-  const isLoading = loadingGeneral || loadingLifeSupport || loadingAdvancedIllness || loadingPreferences;
+  const [text, setText] = useState("");
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -23,29 +18,41 @@ const FreeText = () => {
           
           <div className="mb-8 p-4 bg-muted rounded-lg">
             <h2 className="text-xl font-semibold mb-4">Synthèse de vos réponses</h2>
-            
-            {isLoading ? (
-              <div className="space-y-4">
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-4 w-5/6" />
-              </div>
-            ) : (
-              <>
-                <QuestionnaireSection title="Mon avis général" answers={generalAnswers} />
-                <QuestionnaireSection title="Maintien de la vie" answers={lifeSupportAnswers} />
-                <QuestionnaireSection title="Maladie avancée" answers={advancedIllnessAnswers} />
-                <QuestionnaireSection title="Mes goûts et mes peurs" answers={preferencesAnswers} />
-              </>
-            )}
+            <p className="text-muted-foreground">
+              La synthèse de vos réponses aux différentes sections du questionnaire apparaîtra ici.
+            </p>
           </div>
 
-          <div className="mb-8 p-4 bg-muted rounded-lg">
-            <h2 className="text-xl font-semibold mb-4">Import de questions</h2>
-            <ImportQuestionsForm />
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold mb-4">Expression libre</h2>
+            <p className="text-muted-foreground mb-4">
+              Utilisez cet espace pour exprimer librement vos souhaits, vos valeurs ou toute autre information que vous souhaitez partager avec l'équipe soignante.
+            </p>
+
+            <Textarea
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder="Écrivez ici..."
+              className="min-h-[200px] mb-6"
+            />
           </div>
 
-          <FreeTextForm />
+          <div className="flex justify-between">
+            <Button
+              variant="outline"
+              onClick={() => navigate("/")}
+            >
+              Retour
+            </Button>
+            <Button
+              onClick={() => {
+                // TODO: Save the text
+                navigate("/");
+              }}
+            >
+              Enregistrer
+            </Button>
+          </div>
         </div>
       </main>
     </div>

@@ -1,11 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { QuestionCard } from "./questions/QuestionCard";
 import { QuestionsDialogLayout } from "./questions/QuestionsDialogLayout";
-import { QuestionsForm } from "./questions/QuestionsForm";
-import { useQuestionnaireSubmission } from "@/hooks/useQuestionnaireSubmission";
-import { useQuestionnaireAnswers } from "./questionnaire/useQuestionnaireAnswers";
-import { useSession } from "@supabase/auth-helpers-react";
-import { useToast } from "@/hooks/use-toast";
 
 interface QuestionsDialogProps {
   open: boolean;
@@ -15,29 +11,25 @@ interface QuestionsDialogProps {
 export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
   const [questions, setQuestions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const session = useSession();
-  const { toast } = useToast();
-  const { data: existingAnswers, isLoading: loadingAnswers } = useQuestionnaireAnswers("general_opinion");
-  const { answers, isSubmitting, handleAnswerChange, handleSubmit } = useQuestionnaireSubmission('general_opinion');
+  const [answers, setAnswers] = useState<Record<string, string>>({});
 
   useEffect(() => {
     async function fetchQuestions() {
       try {
-        console.log("Chargement des questions d'opinion générale...");
+        console.log("Fetching general opinion questions...");
         const { data, error } = await supabase
           .from('questions')
-          .select('*')
-          .order('order', { ascending: true });
+          .select('*');
         
         if (error) {
-          console.error('Erreur lors du chargement des questions:', error);
+          console.error('Error fetching questions:', error);
           return;
         }
         
-        console.log('Questions chargées:', data);
+        console.log('Raw data from questions table:', data);
         setQuestions(data || []);
       } catch (error) {
-        console.error('Erreur:', error);
+        console.error('Error:', error);
       } finally {
         setLoading(false);
       }
@@ -48,66 +40,41 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
     }
   }, [open]);
 
-  useEffect(() => {
-    if (existingAnswers && existingAnswers.length > 0) {
-      console.log('Chargement des réponses existantes:', existingAnswers);
-      const answersMap: Record<string, string> = {};
-      existingAnswers.forEach(answer => {
-        if (answer.question_id) {
-          answersMap[answer.question_id] = answer.answer;
-        }
-      });
-      Object.entries(answersMap).forEach(([questionId, value]) => {
-        handleAnswerChange(questionId, value);
-      });
-    }
-  }, [existingAnswers]);
-
-  const handleSubmitWrapper = async () => {
-    if (!session?.user?.id) {
-      console.log("Tentative de sauvegarde sans session utilisateur");
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Vous devez être connecté pour enregistrer vos réponses."
-      });
-      return;
-    }
-
-    console.log('Début de la soumission des réponses');
-    try {
-      await handleSubmit();
-      console.log('Réponses soumises avec succès');
-      toast({
-        title: "Succès",
-        description: "Vos réponses ont été enregistrées avec succès."
-      });
-      onOpenChange(false);
-    } catch (error) {
-      console.error('Erreur lors de la soumission des réponses:', error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la sauvegarde de vos réponses."
-      });
-    }
+  const handleAnswerChange = (questionId: string, value: string) => {
+    setAnswers(prev => ({
+      ...prev,
+      [questionId]: value
+    }));
   };
+
+  const handleSubmit = () => {
+    console.log('Réponses soumises:', answers);
+    onOpenChange(false);
+  };
+
+  const getQuestionOptions = (question: any) => [
+    { value: 'oui', label: question.OUI || "Oui" },
+    { value: 'non', label: question.NON || "Non" }
+  ];
 
   return (
     <QuestionsDialogLayout
       open={open}
       onOpenChange={onOpenChange}
       title="Mon avis d'une façon générale"
-      onSubmit={handleSubmitWrapper}
-      loading={loading || loadingAnswers}
+      onSubmit={handleSubmit}
+      loading={loading}
       questionsLength={questions.length}
-      isSubmitting={isSubmitting}
     >
-      <QuestionsForm
-        questions={questions}
-        answers={answers}
-        onAnswerChange={handleAnswerChange}
-      />
+      {questions.map((question) => (
+        <QuestionCard
+          key={question.id}
+          question={question}
+          value={answers[question.id] || ''}
+          onValueChange={(value) => handleAnswerChange(question.id, value)}
+          options={getQuestionOptions(question)}
+        />
+      ))}
     </QuestionsDialogLayout>
   );
 }

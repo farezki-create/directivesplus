@@ -5,7 +5,6 @@ export const getErrorMessage = (error: AuthError) => {
   
   if (error instanceof AuthApiError) {
     try {
-      // First try to parse the error message as JSON
       const errorBody = JSON.parse(error.message);
       console.log('Parsed error body:', errorBody);
       
@@ -23,24 +22,19 @@ export const getErrorMessage = (error: AuthError) => {
           return "Une erreur s'est produite. Veuillez réessayer.";
       }
     } catch (e) {
-      // If parsing fails, handle the error message directly
       console.log('Error message is not JSON, handling as string:', error.message);
       
-      if (error.message.includes("Invalid login credentials")) {
-        return "Email ou mot de passe incorrect";
+      switch (error.message) {
+        case "Invalid login credentials":
+          return "Email ou mot de passe incorrect";
+        case "Email not confirmed":
+          return "Veuillez vérifier votre email pour confirmer votre compte";
+        case "Password should be at least 6 characters":
+          return "Le mot de passe doit contenir au moins 6 caractères";
+        default:
+          console.log('Unhandled string error message:', error.message);
+          return "Une erreur s'est produite. Veuillez réessayer.";
       }
-      if (error.message.includes("Email not confirmed")) {
-        return "Veuillez vérifier votre email pour confirmer votre compte";
-      }
-      if (error.message.includes("Password should be at least")) {
-        return "Le mot de passe doit contenir au moins 6 caractères";
-      }
-      if (error.message.includes("User already registered")) {
-        return "Un compte existe déjà avec cet email";
-      }
-      
-      console.log('Unhandled string error message:', error.message);
-      return "Une erreur s'est produite. Veuillez réessayer.";
     }
   }
   

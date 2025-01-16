@@ -1,20 +1,16 @@
-import { Dialog, DialogContent as UIDialogContent, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Header } from "@/components/Header";
-import { useSession } from "@supabase/auth-helpers-react";
-import { DialogContent } from "./DialogContent";
-import { SubmitButton } from "./SubmitButton";
-import { useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
 
 interface QuestionsDialogLayoutProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title: string;
-  onSubmit: () => Promise<void>;
+  onSubmit: () => void;
   loading: boolean;
   questionsLength: number;
   children: React.ReactNode;
-  isSubmitting?: boolean;
 }
 
 export function QuestionsDialogLayout({
@@ -24,69 +20,47 @@ export function QuestionsDialogLayout({
   onSubmit,
   loading,
   questionsLength,
-  children,
-  isSubmitting = false
+  children
 }: QuestionsDialogLayoutProps) {
-  const session = useSession();
-  const navigate = useNavigate();
-  const { toast } = useToast();
-
-  const handleSubmit = async () => {
-    console.log("État de la session:", session);
-    
-    if (!session) {
-      console.log("Redirection vers la page de connexion - utilisateur non connecté");
-      toast({
-        variant: "destructive",
-        title: "Connexion requise",
-        description: "Vous devez être connecté pour enregistrer vos réponses."
-      });
-      onOpenChange(false);
-      navigate("/login", { state: { returnUrl: window.location.pathname } });
-      return;
-    }
-
-    try {
-      console.log("Début de la sauvegarde des réponses...");
-      await onSubmit();
-      console.log("Sauvegarde réussie");
-      toast({
-        title: "Succès",
-        description: "Vos réponses ont été enregistrées avec succès."
-      });
-    } catch (error) {
-      console.error("Erreur lors de la sauvegarde:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la sauvegarde de vos réponses."
-      });
-    }
-  };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <UIDialogContent className="sm:max-w-[800px] h-[90vh] max-h-[90vh] p-0 flex flex-col">
+      <DialogContent className="sm:max-w-[800px] h-[90vh] max-h-[90vh] p-0 flex flex-col">
         <Header />
         
         <div className="flex-1 overflow-hidden flex flex-col p-6">
-          <DialogContent
-            title={title}
-            loading={loading}
-            questionsLength={questionsLength}
-          >
-            {children}
-          </DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-semibold text-center">
+              {title}
+            </DialogTitle>
+          </DialogHeader>
+          
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : questionsLength > 0 ? (
+            <ScrollArea className="flex-1 px-1">
+              <div className="space-y-6 py-4">
+                {children}
+              </div>
+            </ScrollArea>
+          ) : (
+            <div className="py-8 text-center text-muted-foreground">
+              Aucune question trouvée.
+            </div>
+          )}
 
           <DialogFooter className="mt-6">
-            <SubmitButton
-              isDisabled={loading}
-              isSaving={isSubmitting}
-              onClick={handleSubmit}
-            />
+            <Button
+              onClick={onSubmit}
+              className="w-full sm:w-auto"
+              disabled={loading || questionsLength === 0}
+            >
+              Enregistrer mes réponses
+            </Button>
           </DialogFooter>
         </div>
-      </UIDialogContent>
+      </DialogContent>
     </Dialog>
   );
 }
