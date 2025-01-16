@@ -74,7 +74,7 @@ export function useQuestionnaireState(questionnaireType: QuestionnaireType) {
     try {
       console.log('Saving answers:', answers);
       
-      // Save individual answers
+      // Save answers directly to questionnaire_answers table
       for (const [questionId, answer] of Object.entries(answers)) {
         const { error } = await supabase
           .from('questionnaire_answers')
@@ -93,7 +93,7 @@ export function useQuestionnaireState(questionnaireType: QuestionnaireType) {
         }
       }
 
-      // Update synthesis
+      // Update synthesis timestamp
       const { error: synthesisError } = await supabase
         .from('questionnaire_synthesis')
         .upsert({
