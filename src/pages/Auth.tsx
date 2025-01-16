@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { AuthApiError } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { AuthForm } from "@/components/AuthForm";
+import { AuthForm, FormValues } from "@/components/AuthForm";
 import { getErrorMessage } from "@/utils/auth-errors";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
