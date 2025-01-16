@@ -21,7 +21,7 @@ const Auth = () => {
       console.log('Auth state changed:', event, session);
       
       if (event === "SIGNED_IN" && session) {
-        console.log('User signed in, redirecting to dashboard');
+        console.log('User signed in successfully, redirecting to dashboard');
         navigate("/dashboard");
       }
     });
@@ -37,7 +37,18 @@ const Auth = () => {
       setIsLoading(true);
       
       if (isSignUp) {
-        console.log('Attempting signup with email:', values.email);
+        console.log('Starting signup process with values:', {
+          email: values.email,
+          firstName: values.firstName,
+          lastName: values.lastName,
+          birthDate: values.birthDate,
+          country: values.country,
+          phoneNumber: values.phoneNumber,
+          address: values.address,
+          city: values.city,
+          postalCode: values.postalCode
+        });
+
         const { error } = await supabase.auth.signUp({
           email: values.email,
           password: values.password,
@@ -57,7 +68,7 @@ const Auth = () => {
         });
 
         if (error) {
-          console.log('Signup error:', error);
+          console.error('Signup error:', error);
           
           if (error instanceof AuthApiError && error.message.includes("User already registered")) {
             console.log('User already exists, switching to login mode');
@@ -78,19 +89,20 @@ const Auth = () => {
           return;
         }
 
+        console.log('Signup successful, showing confirmation toast');
         toast({
           title: "Inscription réussie",
           description: "Veuillez vérifier votre email pour confirmer votre compte.",
         });
       } else {
-        console.log('Attempting login with email:', values.email);
+        console.log('Starting login process with email:', values.email);
         const { error } = await supabase.auth.signInWithPassword({
           email: values.email,
           password: values.password,
         });
 
         if (error) {
-          console.log('Login error:', error);
+          console.error('Login error:', error);
           const message = getErrorMessage(error);
           toast({
             variant: "destructive",
@@ -99,9 +111,11 @@ const Auth = () => {
           });
           return;
         }
+
+        console.log('Login successful');
       }
     } catch (error) {
-      console.error('Auth error:', error);
+      console.error('Unexpected auth error:', error);
       toast({
         variant: "destructive",
         title: "Erreur",
