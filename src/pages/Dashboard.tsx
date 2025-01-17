@@ -9,6 +9,26 @@ import { useDialogState } from "@/hooks/useDialogState";
 const Dashboard = () => {
   const dialogState = useDialogState();
 
+  const handleGeneralOpinionClick = () => {
+    console.log("[Dashboard] Opening general opinion dialog");
+    dialogState.setExplanationOpen(true);
+  };
+
+  const handleLifeSupportClick = () => {
+    console.log("[Dashboard] Opening life support dialog");
+    dialogState.setLifeSupportExplanationOpen(true);
+  };
+
+  const handleAdvancedIllnessClick = () => {
+    console.log("[Dashboard] Opening advanced illness dialog");
+    dialogState.setAdvancedIllnessExplanationOpen(true);
+  };
+
+  const handlePreferencesClick = () => {
+    console.log("[Dashboard] Opening preferences dialog");
+    dialogState.setPreferencesExplanationOpen(true);
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -30,10 +50,10 @@ const Dashboard = () => {
           
           <TabsContent value="documents" className="mt-6">
             <MainButtons 
-              onGeneralOpinionClick={() => dialogState.setExplanationOpen(true)}
-              onLifeSupportClick={() => dialogState.setLifeSupportExplanationOpen(true)}
-              onAdvancedIllnessClick={() => dialogState.setAdvancedIllnessExplanationOpen(true)}
-              onPreferencesClick={() => dialogState.setPreferencesExplanationOpen(true)}
+              onGeneralOpinionClick={handleGeneralOpinionClick}
+              onLifeSupportClick={handleLifeSupportClick}
+              onAdvancedIllnessClick={handleAdvancedIllnessClick}
+              onPreferencesClick={handlePreferencesClick}
             />
             <PDFGenerator />
           </TabsContent>
