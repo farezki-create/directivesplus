@@ -22,6 +22,7 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
         const { data, error } = await supabase
           .from('questions')
           .select('*')
+          .eq('category', 'general_opinion')
           .order('order', { ascending: true });
         
         if (error) {
