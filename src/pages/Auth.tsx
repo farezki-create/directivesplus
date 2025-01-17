@@ -77,15 +77,11 @@ const Auth = () => {
 
         // Envoi de l'email de vérification personnalisé
         try {
-          const confirmationUrl = data?.user?.confirmation_sent_at 
-            ? `${window.location.origin}/auth/verify?token=${data.user.confirmation_token}`
-            : null;
-
-          if (confirmationUrl) {
+          if (data?.user?.email) {
             const response = await supabase.functions.invoke('send-verification-email', {
               body: {
                 to: values.email,
-                confirmationUrl,
+                confirmationUrl: `${window.location.origin}/auth/verify`,
               },
             });
 
