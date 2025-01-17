@@ -12,18 +12,22 @@ const Index = () => {
   const dialogState = useDialogState();
 
   const handleGeneralOpinionClick = () => {
+    console.log("[Index] Opening general opinion dialog");
     dialogState.setExplanationOpen(true);
   };
 
   const handleLifeSupportClick = () => {
+    console.log("[Index] Opening life support dialog");
     dialogState.setLifeSupportExplanationOpen(true);
   };
 
   const handleAdvancedIllnessClick = () => {
+    console.log("[Index] Opening advanced illness dialog");
     dialogState.setAdvancedIllnessExplanationOpen(true);
   };
 
   const handlePreferencesClick = () => {
+    console.log("[Index] Opening preferences dialog");
     dialogState.setPreferencesExplanationOpen(true);
   };
 
@@ -38,19 +42,20 @@ const Index = () => {
           {!showSections ? (
             <InitialButtons onStart={() => setShowSections(true)} />
           ) : (
-            <MainButtons 
-              onGeneralOpinionClick={handleGeneralOpinionClick}
-              onLifeSupportClick={handleLifeSupportClick}
-              onAdvancedIllnessClick={handleAdvancedIllnessClick}
-              onPreferencesClick={handlePreferencesClick}
-            />
+            <>
+              <MainButtons 
+                onGeneralOpinionClick={handleGeneralOpinionClick}
+                onLifeSupportClick={handleLifeSupportClick}
+                onAdvancedIllnessClick={handleAdvancedIllnessClick}
+                onPreferencesClick={handlePreferencesClick}
+              />
+              <DialogManager />
+            </>
           )}
 
           <FeatureHighlights />
         </div>
       </main>
-
-      <DialogManager />
     </div>
   );
 };
