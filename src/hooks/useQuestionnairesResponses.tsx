@@ -12,16 +12,17 @@ export function useQuestionnairesResponses(userId: string | undefined) {
   } = useQuery({
     queryKey: ["general-responses", userId],
     queryFn: async () => {
-      console.log("Fetching general responses for user:", userId);
+      console.log("[Responses] Fetching general responses for user:", userId);
       const { data, error } = await supabase
         .from("questionnaire_general_responses")
         .select("*, questions(*)")
         .eq("user_id", userId);
 
       if (error) {
-        console.error("Error fetching general responses:", error);
+        console.error("[Responses] Error fetching general responses:", error);
         throw error;
       }
+      console.log("[Responses] Retrieved general responses:", data?.length);
       return data;
     },
     enabled: !!userId,
@@ -34,16 +35,17 @@ export function useQuestionnairesResponses(userId: string | undefined) {
   } = useQuery({
     queryKey: ["life-support-responses", userId],
     queryFn: async () => {
-      console.log("Fetching life support responses for user:", userId);
+      console.log("[Responses] Fetching life support responses for user:", userId);
       const { data, error } = await supabase
         .from("questionnaire_life_support_responses")
         .select("*, life_support_questions(*)")
         .eq("user_id", userId);
 
       if (error) {
-        console.error("Error fetching life support responses:", error);
+        console.error("[Responses] Error fetching life support responses:", error);
         throw error;
       }
+      console.log("[Responses] Retrieved life support responses:", data?.length);
       return data;
     },
     enabled: !!userId,
@@ -56,16 +58,17 @@ export function useQuestionnairesResponses(userId: string | undefined) {
   } = useQuery({
     queryKey: ["advanced-illness-responses", userId],
     queryFn: async () => {
-      console.log("Fetching advanced illness responses for user:", userId);
+      console.log("[Responses] Fetching advanced illness responses for user:", userId);
       const { data, error } = await supabase
         .from("questionnaire_advanced_illness_responses")
         .select("*, advanced_illness_questions(*)")
         .eq("user_id", userId);
 
       if (error) {
-        console.error("Error fetching advanced illness responses:", error);
+        console.error("[Responses] Error fetching advanced illness responses:", error);
         throw error;
       }
+      console.log("[Responses] Retrieved advanced illness responses:", data?.length);
       return data;
     },
     enabled: !!userId,
@@ -78,16 +81,17 @@ export function useQuestionnairesResponses(userId: string | undefined) {
   } = useQuery({
     queryKey: ["preferences-responses", userId],
     queryFn: async () => {
-      console.log("Fetching preferences responses for user:", userId);
+      console.log("[Responses] Fetching preferences responses for user:", userId);
       const { data, error } = await supabase
         .from("questionnaire_preferences_responses")
         .select("*, preferences_questions(*)")
         .eq("user_id", userId);
 
       if (error) {
-        console.error("Error fetching preferences responses:", error);
+        console.error("[Responses] Error fetching preferences responses:", error);
         throw error;
       }
+      console.log("[Responses] Retrieved preferences responses:", data?.length);
       return data;
     },
     enabled: !!userId,
@@ -100,26 +104,28 @@ export function useQuestionnairesResponses(userId: string | undefined) {
   } = useQuery({
     queryKey: ["synthesis", userId],
     queryFn: async () => {
-      console.log("Fetching synthesis for user:", userId);
+      console.log("[Responses] Fetching synthesis for user:", userId);
       const { data, error } = await supabase
         .from("questionnaire_synthesis")
         .select("*")
         .eq("user_id", userId)
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== "PGRST116") { // PGRST116 is "no rows returned" error
-        console.error("Error fetching synthesis:", error);
+      if (error) {
+        console.error("[Responses] Error fetching synthesis:", error);
         throw error;
       }
+      console.log("[Responses] Retrieved synthesis:", data ? "yes" : "no");
       return data;
     },
     enabled: !!userId,
   });
 
-  // Handle any errors by showing a toast notification
+  // Gérer les erreurs en affichant une notification toast
   const errors = [generalError, lifeSupportError, advancedIllnessError, preferencesError, synthesisError];
   errors.forEach(error => {
     if (error) {
+      console.error("[Responses] Error in useQuestionnairesResponses:", error);
       toast({
         title: "Erreur lors de la récupération des réponses",
         description: "Une erreur est survenue lors de la récupération de vos réponses. Veuillez réessayer.",
@@ -130,10 +136,10 @@ export function useQuestionnairesResponses(userId: string | undefined) {
 
   return {
     responses: {
-      general: generalResponses,
-      lifeSupport: lifeSupportResponses,
-      advancedIllness: advancedIllnessResponses,
-      preferences: preferencesResponses,
+      general: generalResponses || [],
+      lifeSupport: lifeSupportResponses || [],
+      advancedIllness: advancedIllnessResponses || [],
+      preferences: preferencesResponses || [],
       synthesis: synthesis,
     },
     isLoading: 
