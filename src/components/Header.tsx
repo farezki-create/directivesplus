@@ -45,6 +45,12 @@ export const Header = () => {
           </Button>
           <Button
             variant="ghost"
+            onClick={() => navigate("/healthcare")}
+          >
+            Professionnel de santé
+          </Button>
+          <Button
+            variant="ghost"
             onClick={() => navigate("/dashboard")}
           >
             En savoir plus
