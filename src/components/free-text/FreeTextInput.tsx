@@ -24,7 +24,7 @@ export function FreeTextInput({ userId }: FreeTextInputProps) {
           .from('questionnaire_synthesis')
           .select('free_text')
           .eq('user_id', userId)
-          .single();
+          .maybeSingle();
 
         if (error) {
           console.error("[FreeTextInput] Error loading synthesis:", error);
@@ -34,6 +34,8 @@ export function FreeTextInput({ userId }: FreeTextInputProps) {
         if (data?.free_text) {
           console.log("[FreeTextInput] Loaded existing synthesis");
           setText(data.free_text);
+        } else {
+          console.log("[FreeTextInput] No existing synthesis found");
         }
       } catch (error) {
         console.error("[FreeTextInput] Error loading synthesis:", error);
