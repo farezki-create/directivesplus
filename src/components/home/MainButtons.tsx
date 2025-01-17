@@ -16,6 +16,10 @@ export function MainButtons({
 }: MainButtonsProps) {
   const navigate = useNavigate();
 
+  const navigateToTrustedPersons = () => {
+    navigate("/dashboard?tab=persons");
+  };
+
   return (
     <div className="grid gap-4 md:grid-cols-2 max-w-2xl mx-auto mb-8">
       <Button onClick={onGeneralOpinionClick} size="lg">
@@ -30,7 +34,7 @@ export function MainButtons({
       <Button onClick={onPreferencesClick} size="lg">
         Mes goûts et mes peurs
       </Button>
-      <Button onClick={() => navigate("/dashboard?tab=persons")} size="lg">
+      <Button onClick={navigateToTrustedPersons} size="lg">
         Désignation de la personne de confiance
       </Button>
       <Button 
