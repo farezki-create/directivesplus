@@ -8,6 +8,11 @@ interface ResponsesSummaryProps {
   userId: string;
 }
 
+interface FormattedResponse {
+  question: string;
+  responses: string[];
+}
+
 export function ResponsesSummary({ userId }: ResponsesSummaryProps) {
   const { responses, isLoading, hasErrors } = useQuestionnairesResponses(userId);
 
@@ -29,9 +34,9 @@ export function ResponsesSummary({ userId }: ResponsesSummaryProps) {
     );
   }
 
-  const formatResponses = (responseArray: any[]) => {
+  const formatResponses = (responseArray: any[]): FormattedResponse[] => {
     if (!responseArray || responseArray.length === 0) {
-      return "Aucune réponse";
+      return [];
     }
     
     // Group responses by question
@@ -51,10 +56,28 @@ export function ResponsesSummary({ userId }: ResponsesSummaryProps) {
       return acc;
     }, {});
 
-    return Object.values(groupedResponses).map((group: any) => ({
-      question: group.question,
-      responses: group.responses
-    }));
+    return Object.values(groupedResponses);
+  };
+
+  const renderResponsesList = (formattedResponses: FormattedResponse[]) => {
+    if (formattedResponses.length === 0) {
+      return <p className="text-muted-foreground">Aucune réponse</p>;
+    }
+
+    return (
+      <ul className="space-y-4">
+        {formattedResponses.map((item: FormattedResponse, index: number) => (
+          <li key={index} className="border-b pb-2">
+            <p className="font-medium">{item.question}</p>
+            <div className="text-muted-foreground">
+              {item.responses.map((response: string, idx: number) => (
+                <p key={idx}>{response}</p>
+              ))}
+            </div>
+          </li>
+        ))}
+      </ul>
+    );
   };
 
   return (
@@ -66,18 +89,7 @@ export function ResponsesSummary({ userId }: ResponsesSummaryProps) {
             <CardTitle>Mon avis d'une façon générale</CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="space-y-4">
-              {formatResponses(responses.general).map((item: any, index: number) => (
-                <li key={index} className="border-b pb-2">
-                  <p className="font-medium">{item.question}</p>
-                  <div className="text-muted-foreground">
-                    {item.responses.map((response: string, idx: number) => (
-                      <p key={idx}>{response}</p>
-                    ))}
-                  </div>
-                </li>
-              ))}
-            </ul>
+            {renderResponsesList(formatResponses(responses.general))}
           </CardContent>
         </Card>
 
@@ -87,18 +99,7 @@ export function ResponsesSummary({ userId }: ResponsesSummaryProps) {
             <CardTitle>Maintien en vie</CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="space-y-4">
-              {formatResponses(responses.lifeSupport).map((item: any, index: number) => (
-                <li key={index} className="border-b pb-2">
-                  <p className="font-medium">{item.question}</p>
-                  <div className="text-muted-foreground">
-                    {item.responses.map((response: string, idx: number) => (
-                      <p key={idx}>{response}</p>
-                    ))}
-                  </div>
-                </li>
-              ))}
-            </ul>
+            {renderResponsesList(formatResponses(responses.lifeSupport))}
           </CardContent>
         </Card>
 
@@ -108,18 +109,7 @@ export function ResponsesSummary({ userId }: ResponsesSummaryProps) {
             <CardTitle>Maladie avancée</CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="space-y-4">
-              {formatResponses(responses.advancedIllness).map((item: any, index: number) => (
-                <li key={index} className="border-b pb-2">
-                  <p className="font-medium">{item.question}</p>
-                  <div className="text-muted-foreground">
-                    {item.responses.map((response: string, idx: number) => (
-                      <p key={idx}>{response}</p>
-                    ))}
-                  </div>
-                </li>
-              ))}
-            </ul>
+            {renderResponsesList(formatResponses(responses.advancedIllness))}
           </CardContent>
         </Card>
 
@@ -129,18 +119,7 @@ export function ResponsesSummary({ userId }: ResponsesSummaryProps) {
             <CardTitle>Mes goûts et mes peurs</CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="space-y-4">
-              {formatResponses(responses.preferences).map((item: any, index: number) => (
-                <li key={index} className="border-b pb-2">
-                  <p className="font-medium">{item.question}</p>
-                  <div className="text-muted-foreground">
-                    {item.responses.map((response: string, idx: number) => (
-                      <p key={idx}>{response}</p>
-                    ))}
-                  </div>
-                </li>
-              ))}
-            </ul>
+            {renderResponsesList(formatResponses(responses.preferences))}
           </CardContent>
         </Card>
 
