@@ -56,6 +56,7 @@ const Index = () => {
           <FeatureHighlights />
         </div>
       </main>
+      <DialogManager />
     </div>
   );
 };
