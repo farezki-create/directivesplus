@@ -2,8 +2,13 @@ import { Header } from "@/components/Header";
 import { TrustedPersons } from "@/components/TrustedPersons";
 import { PDFGenerator } from "@/components/PDFGenerator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MainButtons } from "@/components/home/MainButtons";
+import { DialogManager } from "@/components/home/DialogManager";
+import { useDialogState } from "@/hooks/useDialogState";
 
 const Dashboard = () => {
+  const dialogState = useDialogState();
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -24,9 +29,17 @@ const Dashboard = () => {
           </TabsContent>
           
           <TabsContent value="documents" className="mt-6">
+            <MainButtons 
+              onGeneralOpinionClick={() => dialogState.setExplanationOpen(true)}
+              onLifeSupportClick={() => dialogState.setLifeSupportExplanationOpen(true)}
+              onAdvancedIllnessClick={() => dialogState.setAdvancedIllnessExplanationOpen(true)}
+              onPreferencesClick={() => dialogState.setPreferencesExplanationOpen(true)}
+            />
             <PDFGenerator />
           </TabsContent>
         </Tabs>
+
+        <DialogManager />
       </main>
     </div>
   );
