@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { QuestionCard } from "./questions/QuestionCard";
 import { QuestionsDialogLayout } from "./questions/QuestionsDialogLayout";
+import { useToast } from "@/hooks/use-toast";
 
 interface AdvancedIllnessQuestionsDialogProps {
   open: boolean;
@@ -15,25 +16,29 @@ export function AdvancedIllnessQuestionsDialog({
   const [questions, setQuestions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [answers, setAnswers] = useState<Record<string, string[]>>({});
+  const { toast } = useToast();
 
   useEffect(() => {
     async function fetchQuestions() {
       try {
-        console.log("Fetching advanced illness questions...");
+        console.log("[AdvancedIllness] Fetching questions...");
         const { data, error } = await supabase
           .from('advanced_illness_questions')
           .select('*')
           .order('order', { ascending: true });
         
         if (error) {
-          console.error('Error fetching questions:', error);
+          console.error('[AdvancedIllness] Error fetching questions:', error);
+          toast({
+            title: "Erreur",
+            description: "Impossible de charger les questions. Veuillez réessayer.",
+            variant: "destructive",
+          });
           return;
         }
         
-        console.log('Raw data from advanced_illness_questions table:', data);
-        // Sort questions by order if the data exists
+        console.log('[AdvancedIllness] Questions loaded:', data?.length, 'questions');
         const sortedQuestions = data?.sort((a, b) => {
-          // Handle null values in order column
           if (a.order === null) return 1;
           if (b.order === null) return -1;
           return a.order - b.order;
@@ -41,7 +46,12 @@ export function AdvancedIllnessQuestionsDialog({
         
         setQuestions(sortedQuestions);
       } catch (error) {
-        console.error('Error:', error);
+        console.error('[AdvancedIllness] Unexpected error:', error);
+        toast({
+          title: "Erreur",
+          description: "Une erreur inattendue s'est produite.",
+          variant: "destructive",
+        });
       } finally {
         setLoading(false);
       }
@@ -50,9 +60,10 @@ export function AdvancedIllnessQuestionsDialog({
     if (open) {
       fetchQuestions();
     }
-  }, [open]);
+  }, [open, toast]);
 
   const handleAnswerChange = (questionId: string, value: string, checked: boolean) => {
+    console.log('[AdvancedIllness] Answer change:', { questionId, value, checked });
     setAnswers(prev => {
       const currentAnswers = prev[questionId] || [];
       if (checked) {
@@ -69,9 +80,65 @@ export function AdvancedIllnessQuestionsDialog({
     });
   };
 
-  const handleSubmit = () => {
-    console.log('Réponses soumises:', answers);
-    onOpenChange(false);
+  const handleSubmit = async () => {
+    try {
+      console.log('[AdvancedIllness] Submitting answers:', answers);
+      const session = await supabase.auth.getSession();
+      const userId = session.data.session?.user.id;
+
+      if (!userId) {
+        console.error('[AdvancedIllness] No user ID found');
+        toast({
+          title: "Erreur",
+          description: "Vous devez être connecté pour enregistrer vos réponses.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Prepare all responses for insertion
+      const responses = Object.entries(answers).flatMap(([questionId, values]) => {
+        const question = questions.find(q => q.id === questionId);
+        return values.map(value => ({
+          user_id: userId,
+          question_id: questionId,
+          question_text: question?.question,
+          response: value
+        }));
+      });
+
+      console.log('[AdvancedIllness] Prepared responses for insertion:', responses);
+
+      const { error } = await supabase
+        .from('questionnaire_advanced_illness_responses')
+        .upsert(responses, {
+          onConflict: 'user_id,question_id,response'
+        });
+
+      if (error) {
+        console.error('[AdvancedIllness] Error saving responses:', error);
+        toast({
+          title: "Erreur",
+          description: "Impossible d'enregistrer vos réponses. Veuillez réessayer.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      console.log('[AdvancedIllness] Responses saved successfully');
+      toast({
+        title: "Succès",
+        description: "Vos réponses ont été enregistrées.",
+      });
+      onOpenChange(false);
+    } catch (error) {
+      console.error('[AdvancedIllness] Unexpected error during submission:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur inattendue s'est produite lors de l'enregistrement.",
+        variant: "destructive",
+      });
+    }
   };
 
   const getQuestionOptions = (question: any) => [

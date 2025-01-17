@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { QuestionCard } from "./questions/QuestionCard";
 import { QuestionsDialogLayout } from "./questions/QuestionsDialogLayout";
+import { useToast } from "@/hooks/use-toast";
 
 interface QuestionsDialogProps {
   open: boolean;
@@ -12,24 +13,36 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
   const [questions, setQuestions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [answers, setAnswers] = useState<Record<string, string[]>>({});
+  const { toast } = useToast();
 
   useEffect(() => {
     async function fetchQuestions() {
       try {
-        console.log("Fetching general opinion questions...");
+        console.log("[GeneralOpinion] Fetching questions...");
         const { data, error } = await supabase
           .from('questions')
-          .select('*');
+          .select('*')
+          .order('order', { ascending: true });
         
         if (error) {
-          console.error('Error fetching questions:', error);
+          console.error('[GeneralOpinion] Error fetching questions:', error);
+          toast({
+            title: "Erreur",
+            description: "Impossible de charger les questions. Veuillez réessayer.",
+            variant: "destructive",
+          });
           return;
         }
         
-        console.log('Raw data from questions table:', data);
+        console.log('[GeneralOpinion] Questions loaded:', data?.length, 'questions');
         setQuestions(data || []);
       } catch (error) {
-        console.error('Error:', error);
+        console.error('[GeneralOpinion] Unexpected error:', error);
+        toast({
+          title: "Erreur",
+          description: "Une erreur inattendue s'est produite.",
+          variant: "destructive",
+        });
       } finally {
         setLoading(false);
       }
@@ -38,18 +51,75 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
     if (open) {
       fetchQuestions();
     }
-  }, [open]);
+  }, [open, toast]);
 
   const handleAnswerChange = (questionId: string, value: string) => {
+    console.log('[GeneralOpinion] Answer change:', { questionId, value });
     setAnswers(prev => ({
       ...prev,
-      [questionId]: [value] // Wrap single value in array
+      [questionId]: [value]
     }));
   };
 
-  const handleSubmit = () => {
-    console.log('Réponses soumises:', answers);
-    onOpenChange(false);
+  const handleSubmit = async () => {
+    try {
+      console.log('[GeneralOpinion] Submitting answers:', answers);
+      const session = await supabase.auth.getSession();
+      const userId = session.data.session?.user.id;
+
+      if (!userId) {
+        console.error('[GeneralOpinion] No user ID found');
+        toast({
+          title: "Erreur",
+          description: "Vous devez être connecté pour enregistrer vos réponses.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Prepare all responses for insertion
+      const responses = Object.entries(answers).flatMap(([questionId, values]) => {
+        const question = questions.find(q => q.id === questionId);
+        return values.map(value => ({
+          user_id: userId,
+          question_id: questionId,
+          question_text: question?.Question,
+          response: value
+        }));
+      });
+
+      console.log('[GeneralOpinion] Prepared responses for insertion:', responses);
+
+      const { error } = await supabase
+        .from('questionnaire_general_responses')
+        .upsert(responses, {
+          onConflict: 'user_id,question_id'
+        });
+
+      if (error) {
+        console.error('[GeneralOpinion] Error saving responses:', error);
+        toast({
+          title: "Erreur",
+          description: "Impossible d'enregistrer vos réponses. Veuillez réessayer.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      console.log('[GeneralOpinion] Responses saved successfully');
+      toast({
+        title: "Succès",
+        description: "Vos réponses ont été enregistrées.",
+      });
+      onOpenChange(false);
+    } catch (error) {
+      console.error('[GeneralOpinion] Unexpected error during submission:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur inattendue s'est produite lors de l'enregistrement.",
+        variant: "destructive",
+      });
+    }
   };
 
   const getQuestionOptions = (question: any) => [
