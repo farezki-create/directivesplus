@@ -16,25 +16,45 @@ export function MainButtons({
 }: MainButtonsProps) {
   const navigate = useNavigate();
 
-  const navigateToTrustedPersons = () => {
-    navigate("/dashboard?tab=persons");
+  const handleGeneralOpinionClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    console.log("[MainButtons] Clicking general opinion button");
+    onGeneralOpinionClick();
+  };
+
+  const handleLifeSupportClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    console.log("[MainButtons] Clicking life support button");
+    onLifeSupportClick();
+  };
+
+  const handleAdvancedIllnessClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    console.log("[MainButtons] Clicking advanced illness button");
+    onAdvancedIllnessClick();
+  };
+
+  const handlePreferencesClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    console.log("[MainButtons] Clicking preferences button");
+    onPreferencesClick();
   };
 
   return (
     <div className="grid gap-4 md:grid-cols-2 max-w-2xl mx-auto mb-8">
-      <Button onClick={onGeneralOpinionClick} size="lg">
+      <Button onClick={handleGeneralOpinionClick} size="lg">
         Mon avis général
       </Button>
-      <Button onClick={onLifeSupportClick} size="lg">
+      <Button onClick={handleLifeSupportClick} size="lg">
         Maintien de la vie
       </Button>
-      <Button onClick={onAdvancedIllnessClick} size="lg">
+      <Button onClick={handleAdvancedIllnessClick} size="lg">
         Maladie avancée
       </Button>
-      <Button onClick={onPreferencesClick} size="lg">
+      <Button onClick={handlePreferencesClick} size="lg">
         Mes goûts et mes peurs
       </Button>
-      <Button onClick={navigateToTrustedPersons} size="lg">
+      <Button onClick={() => navigate("/dashboard?tab=persons")} size="lg">
         Désignation de la personne de confiance
       </Button>
       <Button 
