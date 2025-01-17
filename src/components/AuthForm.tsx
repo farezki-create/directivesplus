@@ -5,15 +5,22 @@ import { Form } from "@/components/ui/form";
 import { ForgotPassword } from "@/components/ForgotPassword";
 import { BaseAuthFields } from "./auth/BaseAuthFields";
 import { SignUpFields } from "./auth/SignUpFields";
+import { HealthcareProfessionalFields } from "./auth/HealthcareProfessionalFields";
 import { FormValues, loginSchema, signUpSchema } from "./auth/types";
 
 type AuthFormProps = {
   isSignUp: boolean;
   onSubmit: (values: FormValues) => void;
   onToggleMode: () => void;
+  isHealthcareProfessional?: boolean;
 };
 
-export const AuthForm = ({ isSignUp, onSubmit, onToggleMode }: AuthFormProps) => {
+export const AuthForm = ({ 
+  isSignUp, 
+  onSubmit, 
+  onToggleMode,
+  isHealthcareProfessional = false 
+}: AuthFormProps) => {
   const schema = isSignUp ? signUpSchema : loginSchema;
   
   const form = useForm<FormValues>({
@@ -30,17 +37,26 @@ export const AuthForm = ({ isSignUp, onSubmit, onToggleMode }: AuthFormProps) =>
       address: "",
       city: "",
       postalCode: "",
+      cpsNumber: "",
+      rppsNumber: "",
+      professionalType: "doctor",
+      specialty: "",
     },
   });
 
-  console.log('Form mode:', isSignUp ? 'signup' : 'login');
+  console.log('Form mode:', isSignUp ? 'signup' : 'login', 'isHealthcareProfessional:', isHealthcareProfessional);
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <BaseAuthFields form={form} isSignUp={isSignUp} />
         
-        {isSignUp && <SignUpFields form={form} />}
+        {isSignUp && (
+          <>
+            <SignUpFields form={form} />
+            {isHealthcareProfessional && <HealthcareProfessionalFields form={form} />}
+          </>
+        )}
 
         <Button type="submit" className="w-full">
           {isSignUp ? "S'inscrire" : "Se connecter"}

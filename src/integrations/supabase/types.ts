@@ -78,6 +78,42 @@ export type Database = {
         }
         Relationships: []
       }
+      healthcare_professionals: {
+        Row: {
+          cps_number: string
+          created_at: string
+          first_name: string
+          id: string
+          last_name: string
+          professional_type: Database["public"]["Enums"]["healthcare_professional_type"]
+          rpps_number: string | null
+          specialty: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          cps_number: string
+          created_at?: string
+          first_name: string
+          id: string
+          last_name: string
+          professional_type: Database["public"]["Enums"]["healthcare_professional_type"]
+          rpps_number?: string | null
+          specialty?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          cps_number?: string
+          created_at?: string
+          first_name?: string
+          id?: string
+          last_name?: string
+          professional_type?: Database["public"]["Enums"]["healthcare_professional_type"]
+          rpps_number?: string | null
+          specialty?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       life_support_questions: {
         Row: {
           display_order: number | null
@@ -403,6 +439,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      healthcare_professional_type: "doctor" | "nurse" | "pharmacist" | "other"
       question_category:
         | "general_opinion"
         | "other_directives"
