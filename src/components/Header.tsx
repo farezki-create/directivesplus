@@ -51,18 +51,10 @@ export const Header = () => {
           </Button>
           <Button
             variant="ghost"
-            onClick={() => navigate("/trusted-person")}
+            onClick={() => navigate("/dashboard")}
           >
             En savoir plus
           </Button>
-          {user && (
-            <Button
-              variant="ghost"
-              onClick={() => navigate("/trusted-person")}
-            >
-              Personne de confiance
-            </Button>
-          )}
           {user ? (
             <Button variant="default" onClick={handleSignOut}>
               Déconnexion

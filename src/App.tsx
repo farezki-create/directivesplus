@@ -1,7 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Index from "@/pages/Index";
 import Auth from "@/pages/Auth";
-import TrustedPerson from "@/pages/TrustedPerson";
 import Healthcare from "@/pages/Healthcare";
 import HealthcareDashboard from "@/pages/HealthcareDashboard";
 import HealthcareLanding from "@/pages/HealthcareLanding";
@@ -15,7 +14,6 @@ function App() {
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/auth" element={<Auth />} />
-        <Route path="/trusted-person" element={<TrustedPerson />} />
         <Route path="/healthcare" element={<Healthcare />} />
         <Route path="/healthcare-landing" element={<HealthcareLanding />} />
         <Route path="/healthcare-dashboard" element={<HealthcareDashboard />} />
