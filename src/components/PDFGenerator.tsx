@@ -1,10 +1,179 @@
+import { useState, useEffect } from "react";
+import { jsPDF } from "jspdf";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+
+interface UserProfile {
+  first_name: string | null;
+  last_name: string | null;
+  address: string | null;
+  city: string | null;
+  postal_code: string | null;
+  phone_number: string | null;
+  unique_identifier: string;
+}
+
+interface TrustedPerson {
+  name: string;
+  phone: string;
+  email: string;
+  relation: string;
+}
 
 export const PDFGenerator = () => {
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [responses, setResponses] = useState<any>(null);
+  const [trustedPersons, setTrustedPersons] = useState<TrustedPerson[]>([]);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user) return;
+
+        console.log("[PDFGenerator] Loading user profile");
+        const { data: profileData, error: profileError } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", session.user.id)
+          .single();
+
+        if (profileError) throw profileError;
+        setProfile(profileData);
+
+        // Load responses summary
+        console.log("[PDFGenerator] Loading responses");
+        const { data: responsesData, error: responsesError } = await supabase
+          .from("questionnaire_synthesis")
+          .select("free_text")
+          .eq("user_id", session.user.id)
+          .single();
+
+        if (responsesError) throw responsesError;
+        setResponses(responsesData);
+
+      } catch (error) {
+        console.error("[PDFGenerator] Error loading user data:", error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger vos données.",
+          variant: "destructive",
+        });
+      }
+    };
+
+    loadUserData();
+  }, [toast]);
+
   const generatePDF = () => {
-    // TODO: Implement PDF generation
-    console.log("Generating PDF...");
+    try {
+      console.log("[PDFGenerator] Generating PDF");
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.getWidth();
+      let yPosition = 20;
+
+      // Title
+      doc.setFontSize(20);
+      doc.text("Directives Anticipées", pageWidth / 2, yPosition, { align: "center" });
+      
+      // User information
+      yPosition += 20;
+      doc.setFontSize(12);
+      if (profile) {
+        doc.text(`${profile.first_name} ${profile.last_name}`, 20, yPosition);
+        yPosition += 10;
+        if (profile.address) {
+          doc.text(profile.address, 20, yPosition);
+          yPosition += 7;
+        }
+        if (profile.postal_code || profile.city) {
+          doc.text(`${profile.postal_code || ""} ${profile.city || ""}`, 20, yPosition);
+          yPosition += 7;
+        }
+        if (profile.phone_number) {
+          doc.text(`Tél: ${profile.phone_number}`, 20, yPosition);
+          yPosition += 7;
+        }
+      }
+
+      // Access code
+      yPosition += 10;
+      doc.setFontSize(14);
+      doc.text("Code d'accès pour les professionnels de santé:", 20, yPosition);
+      yPosition += 10;
+      doc.setFontSize(16);
+      if (profile?.unique_identifier) {
+        doc.text(profile.unique_identifier, 20, yPosition);
+      }
+
+      // Synthesis
+      yPosition += 20;
+      doc.setFontSize(14);
+      doc.text("Synthèse du questionnaire:", 20, yPosition);
+      yPosition += 10;
+      doc.setFontSize(12);
+      if (responses?.free_text) {
+        const lines = doc.splitTextToSize(responses.free_text, pageWidth - 40);
+        doc.text(lines, 20, yPosition);
+        yPosition += lines.length * 7;
+      }
+
+      // Free text space
+      yPosition += 20;
+      doc.setFontSize(14);
+      doc.text("Notes complémentaires:", 20, yPosition);
+      yPosition += 10;
+      // Draw 3 lines
+      for (let i = 0; i < 3; i++) {
+        doc.line(20, yPosition + (i * 10), pageWidth - 20, yPosition + (i * 10));
+      }
+
+      // Trusted persons
+      yPosition += 40;
+      doc.setFontSize(14);
+      doc.text("Personne(s) de confiance:", 20, yPosition);
+      yPosition += 10;
+      doc.setFontSize(12);
+      trustedPersons.forEach((person, index) => {
+        doc.text(`${index + 1}. ${person.name}`, 20, yPosition);
+        yPosition += 7;
+        doc.text(`   Tél: ${person.phone}`, 20, yPosition);
+        yPosition += 7;
+        doc.text(`   Email: ${person.email}`, 20, yPosition);
+        yPosition += 7;
+        doc.text(`   Relation: ${person.relation}`, 20, yPosition);
+        yPosition += 10;
+      });
+
+      // Date and signature
+      yPosition += 20;
+      const currentDate = format(new Date(), "d MMMM yyyy", { locale: fr });
+      doc.text(`Fait le ${currentDate} à `, 20, yPosition);
+      yPosition += 20;
+      doc.text("Signature:", 20, yPosition);
+
+      // Save the PDF
+      doc.save("directives-anticipees.pdf");
+      
+      console.log("[PDFGenerator] PDF generated successfully");
+      toast({
+        title: "Succès",
+        description: "Le PDF a été généré avec succès.",
+      });
+
+    } catch (error) {
+      console.error("[PDFGenerator] Error generating PDF:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de générer le PDF.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
