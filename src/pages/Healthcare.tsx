@@ -10,19 +10,19 @@ const Healthcare = () => {
     <div className="min-h-screen flex flex-col">
       <Header />
       
-      <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
+      <main className="flex-1 container mx-auto px-4 py-12">
+        <div className="max-w-4xl mx-auto mt-8">
           <h1 className="text-4xl font-bold mb-6 text-center">
             {isSignUp ? "Inscription Professionnel de Santé" : "Connexion Professionnel de Santé"}
           </h1>
           
-          <p className="text-xl text-muted-foreground mb-8 text-center">
+          <p className="text-xl text-muted-foreground mb-12 text-center max-w-2xl mx-auto">
             {isSignUp 
               ? "Créez votre compte professionnel de santé en quelques étapes simples"
               : "Accédez à votre espace professionnel de santé"}
           </p>
 
-          <div className="max-w-md mx-auto mb-12">
+          <div className="max-w-md mx-auto mb-16">
             <AuthForm
               isSignUp={isSignUp}
               onSubmit={handleSubmit}
