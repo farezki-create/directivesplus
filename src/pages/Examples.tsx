@@ -25,14 +25,16 @@ const Examples = () => {
             <Button 
               size="lg" 
               className="h-auto min-h-[5rem] py-4 px-6 text-lg font-medium hover:scale-105 transition-transform duration-200 whitespace-normal text-center"
+              onClick={() => navigate("/dashboard?tab=persons")}
             >
-              Exemples de modèles de directives déjà remplis
+              Personne de confiance
             </Button>
             <Button 
               size="lg"
               className="h-auto min-h-[5rem] py-4 px-6 text-lg font-medium hover:scale-105 transition-transform duration-200 whitespace-normal text-center"
+              onClick={() => navigate("/dashboard")}
             >
-              Télécharger des documents utiles pour les directives anticipées
+              Directives anticipées
             </Button>
           </div>
 
