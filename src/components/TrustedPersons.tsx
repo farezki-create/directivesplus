@@ -11,6 +11,9 @@ type TrustedPerson = {
   phone: string;
   email: string;
   relation: string;
+  address: string;
+  city: string;
+  postalCode: string;
 };
 
 export const TrustedPersons = () => {
@@ -20,12 +23,23 @@ export const TrustedPersons = () => {
     phone: "",
     email: "",
     relation: "",
+    address: "",
+    city: "",
+    postalCode: "",
   });
 
   const savePerson = () => {
     if (newPerson.name && newPerson.phone && newPerson.email) {
       setPersons([...persons, { ...newPerson, id: Date.now() }]);
-      setNewPerson({ name: "", phone: "", email: "", relation: "" });
+      setNewPerson({ 
+        name: "", 
+        phone: "", 
+        email: "", 
+        relation: "",
+        address: "",
+        city: "",
+        postalCode: "",
+      });
     }
   };
 
@@ -90,6 +104,33 @@ export const TrustedPersons = () => {
               placeholder="Lien avec la personne"
             />
           </div>
+          <div className="col-span-2 space-y-2">
+            <Label htmlFor="address">Adresse</Label>
+            <Input
+              id="address"
+              value={newPerson.address}
+              onChange={e => setNewPerson({ ...newPerson, address: e.target.value })}
+              placeholder="Adresse postale"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="city">Ville</Label>
+            <Input
+              id="city"
+              value={newPerson.city}
+              onChange={e => setNewPerson({ ...newPerson, city: e.target.value })}
+              placeholder="Ville"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="postalCode">Code postal</Label>
+            <Input
+              id="postalCode"
+              value={newPerson.postalCode}
+              onChange={e => setNewPerson({ ...newPerson, postalCode: e.target.value })}
+              placeholder="Code postal"
+            />
+          </div>
         </div>
         <Button onClick={savePerson} className="w-full">
           Enregistrer
@@ -108,6 +149,9 @@ export const TrustedPersons = () => {
                   {person.phone} - {person.email}
                 </p>
                 <p className="text-sm text-muted-foreground">{person.relation}</p>
+                <p className="text-sm text-muted-foreground">
+                  {person.address}, {person.city} {person.postalCode}
+                </p>
               </div>
               <div className="flex space-x-2">
                 <Button

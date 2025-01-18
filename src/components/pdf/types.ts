@@ -15,4 +15,7 @@ export interface TrustedPerson {
   phone: string;
   email: string;
   relation: string;
+  address: string;
+  city: string;
+  postalCode: string;
 }
