@@ -117,21 +117,23 @@ export class PDFDocumentGenerator {
     }
 
     // Trusted persons
-    yPosition += 15;
-    doc.setFontSize(14);
-    doc.text("Personne(s) de confiance:", 20, yPosition);
-    yPosition += 10;
-    doc.setFontSize(12);
-    trustedPersons.forEach((person, index) => {
-      doc.text(`${index + 1}. ${person.name}`, 20, yPosition);
-      yPosition += 7;
-      doc.text(`   Tél: ${person.phone}`, 20, yPosition);
-      yPosition += 7;
-      doc.text(`   Email: ${person.email}`, 20, yPosition);
-      yPosition += 7;
-      doc.text(`   Relation: ${person.relation}`, 20, yPosition);
+    if (trustedPersons.length > 0) {
+      yPosition += 15;
+      doc.setFontSize(14);
+      doc.text("Personne(s) de confiance:", 20, yPosition);
       yPosition += 10;
-    });
+      doc.setFontSize(12);
+      trustedPersons.forEach((person, index) => {
+        doc.text(`${index + 1}. ${person.name}`, 20, yPosition);
+        yPosition += 7;
+        doc.text(`   Tél: ${person.phone}`, 20, yPosition);
+        yPosition += 7;
+        doc.text(`   Email: ${person.email}`, 20, yPosition);
+        yPosition += 7;
+        doc.text(`   Relation: ${person.relation}`, 20, yPosition);
+        yPosition += 10;
+      });
+    }
 
     // Date and signature
     yPosition += 15;
