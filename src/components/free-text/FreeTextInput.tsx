@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { PDFDocumentGenerator } from "../pdf/PDFDocumentGenerator";
+import { PDFPreviewDialog } from "../pdf/PDFPreviewDialog";
 
 interface FreeTextInputProps {
   userId: string | null;
@@ -11,6 +13,8 @@ interface FreeTextInputProps {
 
 export function FreeTextInput({ userId }: FreeTextInputProps) {
   const [text, setText] = useState("");
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -50,6 +54,39 @@ export function FreeTextInput({ userId }: FreeTextInputProps) {
     loadSynthesis();
   }, [userId, toast]);
 
+  const generatePDF = async () => {
+    try {
+      console.log("[FreeTextInput] Generating PDF");
+      
+      // Fetch user profile
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (profileError) throw profileError;
+
+      // Generate PDF
+      const pdfDataUrl = PDFDocumentGenerator.generate(profile, { synthesis: { free_text: text } }, []);
+      setPdfUrl(pdfDataUrl);
+      setShowPreview(true);
+
+      console.log("[FreeTextInput] PDF generated successfully");
+      toast({
+        title: "Succès",
+        description: "Le PDF a été généré avec succès.",
+      });
+    } catch (error) {
+      console.error("[FreeTextInput] Error generating PDF:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de générer le PDF.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleSave = async () => {
     if (!userId) {
       console.log("[FreeTextInput] No user ID found, cannot save");
@@ -82,7 +119,9 @@ export function FreeTextInput({ userId }: FreeTextInputProps) {
         title: "Succès",
         description: "Votre synthèse a été enregistrée.",
       });
-      navigate("/");
+
+      // Generate PDF after successful save
+      await generatePDF();
     } catch (error) {
       console.error("[FreeTextInput] Error during save:", error);
       toast({
@@ -90,6 +129,28 @@ export function FreeTextInput({ userId }: FreeTextInputProps) {
         description: "Une erreur est survenue lors de l'enregistrement.",
         variant: "destructive",
       });
+    }
+  };
+
+  const handlePrint = () => {
+    if (pdfUrl) {
+      const printWindow = window.open(pdfUrl);
+      printWindow?.print();
+    }
+  };
+
+  const handleEmail = async () => {
+    // Email handling logic here
+  };
+
+  const handleDownload = () => {
+    if (pdfUrl) {
+      const link = document.createElement('a');
+      link.href = pdfUrl;
+      link.download = 'synthese-directives-anticipees.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
   };
 
@@ -118,6 +179,15 @@ export function FreeTextInput({ userId }: FreeTextInputProps) {
           Enregistrer
         </Button>
       </div>
+
+      <PDFPreviewDialog
+        open={showPreview}
+        onOpenChange={setShowPreview}
+        pdfUrl={pdfUrl}
+        onEmail={handleEmail}
+        onSave={handleDownload}
+        onPrint={handlePrint}
+      />
     </div>
   );
 }
