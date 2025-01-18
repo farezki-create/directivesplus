@@ -28,6 +28,15 @@ export function usePDFData() {
         // Add email from session
         setProfile({ ...profileData, email: session.user.email });
 
+        console.log("[PDFGenerator] Loading trusted persons");
+        const { data: trustedPersonsData, error: trustedPersonsError } = await supabase
+          .from("trusted_persons")
+          .select("*")
+          .eq("user_id", session.user.id);
+
+        if (trustedPersonsError) throw trustedPersonsError;
+        setTrustedPersons(trustedPersonsData || []);
+
         console.log("[PDFGenerator] Loading responses");
         const { data: responsesData, error: responsesError } = await supabase
           .from("questionnaire_synthesis")

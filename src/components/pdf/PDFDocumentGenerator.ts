@@ -44,9 +44,34 @@ export class PDFDocumentGenerator {
       doc.text(profile.unique_identifier, 20, yPosition);
     }
 
+    // Trusted Person Section
+    if (trustedPersons && trustedPersons.length > 0) {
+      yPosition += 20;
+      doc.setFontSize(14);
+      doc.text("Personne de confiance:", 20, yPosition);
+      yPosition += 10;
+      doc.setFontSize(12);
+      
+      const person = trustedPersons[0]; // We only show the first person
+      doc.text(`Nom: ${person.name}`, 20, yPosition);
+      yPosition += 7;
+      doc.text(`Téléphone: ${person.phone}`, 20, yPosition);
+      yPosition += 7;
+      doc.text(`Email: ${person.email}`, 20, yPosition);
+      yPosition += 7;
+      if (person.relation) {
+        doc.text(`Relation: ${person.relation}`, 20, yPosition);
+        yPosition += 7;
+      }
+      doc.text(`Adresse: ${person.address}`, 20, yPosition);
+      yPosition += 7;
+      doc.text(`${person.postalCode} ${person.city}`, 20, yPosition);
+      yPosition += 15;
+    }
+
     // General Responses
     if (responses?.general && responses.general.length > 0) {
-      yPosition += 20;
+      yPosition += 15;
       doc.setFontSize(14);
       doc.text("Mon avis d'une façon générale:", 20, yPosition);
       yPosition += 10;
@@ -117,29 +142,10 @@ export class PDFDocumentGenerator {
       yPosition += lines.length * 7;
     }
 
-    // Trusted persons
-    if (trustedPersons.length > 0) {
-      yPosition += 15;
-      doc.setFontSize(14);
-      doc.text("Personne(s) de confiance:", 20, yPosition);
-      yPosition += 10;
-      doc.setFontSize(12);
-      trustedPersons.forEach((person, index) => {
-        doc.text(`${index + 1}. ${person.name}`, 20, yPosition);
-        yPosition += 7;
-        doc.text(`   Tél: ${person.phone}`, 20, yPosition);
-        yPosition += 7;
-        doc.text(`   Email: ${person.email}`, 20, yPosition);
-        yPosition += 7;
-        doc.text(`   Relation: ${person.relation}`, 20, yPosition);
-        yPosition += 10;
-      });
-    }
-
     // Date and signature
     yPosition += 15;
     const currentDate = format(new Date(), "d MMMM yyyy", { locale: fr });
-    doc.text(`Fait le ${currentDate} à `, 20, yPosition);
+    doc.text(`Fait le ${currentDate}`, 20, yPosition);
     yPosition += 20;
     doc.text("Signature:", 20, yPosition);
 
