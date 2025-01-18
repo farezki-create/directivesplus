@@ -183,7 +183,7 @@ export const PDFGenerator = () => {
         Téléchargez vos directives anticipées et la liste des personnes de confiance au format PDF.
       </p>
       <Button onClick={generatePDF} className="w-full">
-        Générer le PDF
+        Générer Directives anticipées et personne de confiance
       </Button>
     </Card>
   );
