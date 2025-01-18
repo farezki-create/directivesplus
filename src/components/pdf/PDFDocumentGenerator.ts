@@ -5,7 +5,7 @@ import { UserProfile, TrustedPerson } from "./types";
 
 export class PDFDocumentGenerator {
   static generate(profile: UserProfile, responses: any, trustedPersons: TrustedPerson[]) {
-    console.log("[PDFGenerator] Generating PDF");
+    console.log("[PDFGenerator] Generating PDF with responses");
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
     let yPosition = 20;
@@ -44,29 +44,80 @@ export class PDFDocumentGenerator {
       doc.text(profile.unique_identifier, 20, yPosition);
     }
 
+    // General Responses
+    if (responses?.general && responses.general.length > 0) {
+      yPosition += 20;
+      doc.setFontSize(14);
+      doc.text("Mon avis d'une façon générale:", 20, yPosition);
+      yPosition += 10;
+      doc.setFontSize(12);
+      responses.general.forEach((response: any) => {
+        const text = `${response.question_text || response.questions?.Question}: ${response.response}`;
+        const lines = doc.splitTextToSize(text, pageWidth - 40);
+        doc.text(lines, 20, yPosition);
+        yPosition += lines.length * 7;
+      });
+    }
+
+    // Life Support Responses
+    if (responses?.lifeSupport && responses.lifeSupport.length > 0) {
+      yPosition += 15;
+      doc.setFontSize(14);
+      doc.text("Maintien en vie:", 20, yPosition);
+      yPosition += 10;
+      doc.setFontSize(12);
+      responses.lifeSupport.forEach((response: any) => {
+        const text = `${response.question_text || response.life_support_questions?.question}: ${response.response}`;
+        const lines = doc.splitTextToSize(text, pageWidth - 40);
+        doc.text(lines, 20, yPosition);
+        yPosition += lines.length * 7;
+      });
+    }
+
+    // Advanced Illness Responses
+    if (responses?.advancedIllness && responses.advancedIllness.length > 0) {
+      yPosition += 15;
+      doc.setFontSize(14);
+      doc.text("Maladie avancée:", 20, yPosition);
+      yPosition += 10;
+      doc.setFontSize(12);
+      responses.advancedIllness.forEach((response: any) => {
+        const text = `${response.question_text || response.advanced_illness_questions?.question}: ${response.response}`;
+        const lines = doc.splitTextToSize(text, pageWidth - 40);
+        doc.text(lines, 20, yPosition);
+        yPosition += lines.length * 7;
+      });
+    }
+
+    // Preferences Responses
+    if (responses?.preferences && responses.preferences.length > 0) {
+      yPosition += 15;
+      doc.setFontSize(14);
+      doc.text("Mes goûts et mes peurs:", 20, yPosition);
+      yPosition += 10;
+      doc.setFontSize(12);
+      responses.preferences.forEach((response: any) => {
+        const text = `${response.question_text || response.preferences_questions?.question}: ${response.response}`;
+        const lines = doc.splitTextToSize(text, pageWidth - 40);
+        doc.text(lines, 20, yPosition);
+        yPosition += lines.length * 7;
+      });
+    }
+
     // Synthesis
-    yPosition += 20;
-    doc.setFontSize(14);
-    doc.text("Synthèse du questionnaire:", 20, yPosition);
-    yPosition += 10;
-    doc.setFontSize(12);
-    if (responses?.free_text) {
-      const lines = doc.splitTextToSize(responses.free_text, pageWidth - 40);
+    if (responses?.synthesis?.free_text) {
+      yPosition += 15;
+      doc.setFontSize(14);
+      doc.text("Synthèse et expression libre:", 20, yPosition);
+      yPosition += 10;
+      doc.setFontSize(12);
+      const lines = doc.splitTextToSize(responses.synthesis.free_text, pageWidth - 40);
       doc.text(lines, 20, yPosition);
       yPosition += lines.length * 7;
     }
 
-    // Free text space
-    yPosition += 20;
-    doc.setFontSize(14);
-    doc.text("Notes complémentaires:", 20, yPosition);
-    yPosition += 10;
-    for (let i = 0; i < 3; i++) {
-      doc.line(20, yPosition + (i * 10), pageWidth - 20, yPosition + (i * 10));
-    }
-
     // Trusted persons
-    yPosition += 40;
+    yPosition += 15;
     doc.setFontSize(14);
     doc.text("Personne(s) de confiance:", 20, yPosition);
     yPosition += 10;
@@ -83,7 +134,7 @@ export class PDFDocumentGenerator {
     });
 
     // Date and signature
-    yPosition += 20;
+    yPosition += 15;
     const currentDate = format(new Date(), "d MMMM yyyy", { locale: fr });
     doc.text(`Fait le ${currentDate} à `, 20, yPosition);
     yPosition += 20;
