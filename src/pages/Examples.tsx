@@ -5,11 +5,11 @@ import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useAuth } from "@supabase/auth-helpers-react";
+import { useUser } from "@supabase/auth-helpers-react";
 
 const Examples = () => {
   const navigate = useNavigate();
-  const user = useAuth();
+  const user = useUser();
   const { responses, isLoading, hasErrors } = useQuestionnairesResponses(user?.id);
 
   const renderSynthesis = () => {
