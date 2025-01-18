@@ -64,6 +64,15 @@ export const TrustedPersons = () => {
 
   const savePerson = async (newPerson: NewTrustedPerson) => {
     try {
+      if (persons.length > 0) {
+        toast({
+          title: "Erreur",
+          description: "Vous ne pouvez désigner qu'une seule personne de confiance.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       console.log("[TrustedPersons] Saving new trusted person");
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
       
@@ -147,30 +156,19 @@ export const TrustedPersons = () => {
     }
   };
 
-  const movePerson = (id: string, direction: "up" | "down") => {
-    const index = persons.findIndex(person => person.id === id);
-    if (
-      (direction === "up" && index > 0) ||
-      (direction === "down" && index < persons.length - 1)
-    ) {
-      const newPersons = [...persons];
-      const temp = newPersons[index];
-      newPersons[index] = newPersons[index + (direction === "up" ? -1 : 1)];
-      newPersons[index + (direction === "up" ? -1 : 1)] = temp;
-      setPersons(newPersons);
-    }
-  };
-
   return (
     <Card className="p-6 max-w-2xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6">Personnes de confiance</h2>
-      <TrustedPersonForm onSave={savePerson} />
-      <Separator className="my-6" />
-      <TrustedPersonsList
-        persons={persons}
-        onMove={movePerson}
-        onRemove={removePerson}
-      />
+      <h2 className="text-2xl font-bold mb-6">Personne de confiance</h2>
+      {persons.length === 0 && <TrustedPersonForm onSave={savePerson} />}
+      {persons.length > 0 && (
+        <>
+          <Separator className="my-6" />
+          <TrustedPersonsList
+            persons={persons}
+            onRemove={removePerson}
+          />
+        </>
+      )}
     </Card>
   );
 };
