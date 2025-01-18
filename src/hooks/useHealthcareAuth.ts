@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { FormValues } from "@/components/auth/types";
 import { getErrorMessage } from "@/utils/auth-errors";
-import { AuthError } from "@supabase/supabase-js";
 import { useToast } from "@/components/ui/use-toast";
 
 export const useHealthcareAuth = () => {
@@ -73,15 +72,16 @@ export const useHealthcareAuth = () => {
       } else {
         console.log('Attempting healthcare professional login');
         
-        const { data, error } = await supabase.auth.signInWithPassword({
+        // First, try to sign in
+        const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
           email: values.email,
           password: values.password,
         });
 
-        if (error) {
-          console.error('Healthcare login error:', error);
+        if (signInError) {
+          console.error('Healthcare login error:', signInError);
           let errorMessage = "Email ou mot de passe incorrect";
-          if (error.message.includes("Email not confirmed")) {
+          if (signInError.message.includes("Email not confirmed")) {
             errorMessage = "Veuillez confirmer votre email avant de vous connecter";
           }
           
@@ -93,12 +93,12 @@ export const useHealthcareAuth = () => {
           return;
         }
 
-        if (data.user) {
+        if (authData.user) {
           // Verify if the user is a healthcare professional
           const { data: healthcareProfessional, error: fetchError } = await supabase
             .from('healthcare_professionals')
             .select('*')
-            .eq('id', data.user.id)
+            .eq('id', authData.user.id)
             .single();
 
           if (fetchError || !healthcareProfessional) {
@@ -127,7 +127,7 @@ export const useHealthcareAuth = () => {
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Une erreur est survenue lors de la connexion.",
+        description: "Une erreur est survenue. Veuillez réessayer.",
       });
     }
   };
