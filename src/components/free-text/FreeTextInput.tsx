@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { PDFDocumentGenerator } from "../pdf/PDFDocumentGenerator";
 import { PDFPreviewDialog } from "../pdf/PDFPreviewDialog";
+import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 
 interface FreeTextInputProps {
   userId: string | null;
@@ -17,6 +18,7 @@ export function FreeTextInput({ userId }: FreeTextInputProps) {
   const [showPreview, setShowPreview] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { responses } = useQuestionnairesResponses(userId || "");
 
   useEffect(() => {
     const loadSynthesis = async () => {
@@ -67,8 +69,15 @@ export function FreeTextInput({ userId }: FreeTextInputProps) {
 
       if (profileError) throw profileError;
 
-      // Generate PDF
-      const pdfDataUrl = PDFDocumentGenerator.generate(profile, { synthesis: { free_text: text } }, []);
+      // Generate PDF with all responses
+      const pdfDataUrl = PDFDocumentGenerator.generate(
+        profile,
+        {
+          ...responses,
+          synthesis: { free_text: text }
+        },
+        []
+      );
       setPdfUrl(pdfDataUrl);
       setShowPreview(true);
 

@@ -5,7 +5,7 @@ import { UserProfile, TrustedPerson } from "./types";
 
 export class PDFDocumentGenerator {
   static generate(profile: UserProfile, responses: any, trustedPersons: TrustedPerson[]) {
-    console.log("[PDFGenerator] Generating PDF with responses");
+    console.log("[PDFGenerator] Generating PDF with responses:", responses);
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
     let yPosition = 20;
@@ -111,7 +111,8 @@ export class PDFDocumentGenerator {
       doc.text("Synthèse et expression libre:", 20, yPosition);
       yPosition += 10;
       doc.setFontSize(12);
-      const lines = doc.splitTextToSize(responses.synthesis.free_text, pageWidth - 40);
+      const synthesisText = responses.synthesis.free_text;
+      const lines = doc.splitTextToSize(synthesisText, pageWidth - 40);
       doc.text(lines, 20, yPosition);
       yPosition += lines.length * 7;
     }
