@@ -1,34 +1,19 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { FormValues } from "@/components/auth/types";
 import { getErrorMessage } from "@/utils/auth-errors";
 import { AuthError } from "@supabase/supabase-js";
+import { useToast } from "@/components/ui/use-toast";
 
 export const useHealthcareAuth = () => {
   const navigate = useNavigate();
-  const [isSignUp, setIsSignUp] = useState(true);
   const { toast } = useToast();
-
-  useEffect(() => {
-    console.log("Setting up healthcare auth state change listener");
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Healthcare auth state changed:', event, session);
-      
-      if (event === "SIGNED_IN" && session) {
-        console.log('Healthcare professional signed in, redirecting to dashboard');
-        navigate("/dashboard");
-      }
-    });
-
-    return () => {
-      console.log("Cleaning up healthcare auth state change listener");
-      subscription.unsubscribe();
-    };
-  }, [navigate]);
+  const [isSignUp, setIsSignUp] = useState(false);
 
   const handleSubmit = async (values: FormValues) => {
+    console.log('Attempting healthcare login with email:', values.email);
+
     try {
       if (isSignUp) {
         console.log('Attempting healthcare professional signup with email:', values.email);
@@ -87,7 +72,6 @@ export const useHealthcareAuth = () => {
           description: "Veuillez vérifier votre email pour confirmer votre compte.",
         });
       } else {
-        console.log('Attempting healthcare login with email:', values.email);
         const { error } = await supabase.auth.signInWithPassword({
           email: values.email,
           password: values.password,
@@ -103,18 +87,19 @@ export const useHealthcareAuth = () => {
           return;
         }
 
-        console.log('Healthcare login successful');
         toast({
           title: "Connexion réussie",
           description: "Vous êtes maintenant connecté.",
         });
+        
+        navigate("/healthcare-dashboard");
       }
     } catch (error) {
       console.error('Healthcare auth error:', error);
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Une erreur inattendue s'est produite. Veuillez réessayer.",
+        description: "Une erreur est survenue lors de la connexion.",
       });
     }
   };
@@ -122,6 +107,6 @@ export const useHealthcareAuth = () => {
   return {
     isSignUp,
     setIsSignUp,
-    handleSubmit
+    handleSubmit,
   };
 };
