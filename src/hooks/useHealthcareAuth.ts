@@ -12,11 +12,11 @@ export const useHealthcareAuth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
 
   const handleSubmit = async (values: FormValues) => {
-    console.log('Attempting healthcare login with email:', values.email);
+    console.log('Attempting healthcare auth with email:', values.email);
 
     try {
       if (isSignUp) {
-        console.log('Attempting healthcare professional signup with email:', values.email);
+        console.log('Attempting healthcare professional signup');
         
         const { error: signUpError, data } = await supabase.auth.signUp({
           email: values.email,
@@ -31,12 +31,11 @@ export const useHealthcareAuth = () => {
         });
 
         if (signUpError) {
-          console.log('Healthcare signup error:', signUpError);
-          const message = getErrorMessage(signUpError);
+          console.error('Healthcare signup error:', signUpError);
           toast({
             variant: "destructive",
             title: "Erreur d'inscription",
-            description: message,
+            description: getErrorMessage(signUpError),
           });
           return;
         }
@@ -72,27 +71,56 @@ export const useHealthcareAuth = () => {
           description: "Veuillez vérifier votre email pour confirmer votre compte.",
         });
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
+        console.log('Attempting healthcare professional login');
+        
+        const { data, error } = await supabase.auth.signInWithPassword({
           email: values.email,
           password: values.password,
         });
 
         if (error) {
-          console.log('Healthcare login error:', error);
+          console.error('Healthcare login error:', error);
+          let errorMessage = "Email ou mot de passe incorrect";
+          if (error.message.includes("Email not confirmed")) {
+            errorMessage = "Veuillez confirmer votre email avant de vous connecter";
+          }
+          
           toast({
             variant: "destructive",
             title: "Erreur de connexion",
-            description: getErrorMessage(error as AuthError),
+            description: errorMessage,
           });
           return;
         }
 
-        toast({
-          title: "Connexion réussie",
-          description: "Vous êtes maintenant connecté.",
-        });
-        
-        navigate("/healthcare-dashboard");
+        if (data.user) {
+          // Verify if the user is a healthcare professional
+          const { data: healthcareProfessional, error: fetchError } = await supabase
+            .from('healthcare_professionals')
+            .select('*')
+            .eq('id', data.user.id)
+            .single();
+
+          if (fetchError || !healthcareProfessional) {
+            console.error('Not a healthcare professional:', fetchError);
+            toast({
+              variant: "destructive",
+              title: "Accès refusé",
+              description: "Ce compte n'est pas un compte professionnel de santé.",
+            });
+            // Sign out the user since they're not a healthcare professional
+            await supabase.auth.signOut();
+            return;
+          }
+
+          console.log('Healthcare professional login successful');
+          toast({
+            title: "Connexion réussie",
+            description: "Vous êtes maintenant connecté.",
+          });
+          
+          navigate("/healthcare-dashboard");
+        }
       }
     } catch (error) {
       console.error('Healthcare auth error:', error);
