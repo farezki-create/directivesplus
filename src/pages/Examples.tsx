@@ -17,7 +17,7 @@ const Examples = () => {
             </h1>
             
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Consultez des exemples de directives anticipées et des documents d'information
+              Consultez des directives anticipées et des documents d'information
             </p>
           </div>
 
