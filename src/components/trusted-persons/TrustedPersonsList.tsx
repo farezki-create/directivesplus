@@ -23,7 +23,7 @@ export const TrustedPersonsList = ({ persons, onRemove }: TrustedPersonsListProp
             </p>
             <p className="text-sm text-muted-foreground">{person.relation}</p>
             <p className="text-sm text-muted-foreground">
-              {person.address}, {person.city} {person.postalCode}
+              {person.address}, {person.city} {person.postal_code}
             </p>
           </div>
           <div>

@@ -11,11 +11,12 @@ export interface UserProfile {
 }
 
 export interface TrustedPerson {
+  id: string;
   name: string;
   phone: string;
   email: string;
   relation: string;
   address: string;
   city: string;
-  postalCode: string;
+  postal_code: string;
 }

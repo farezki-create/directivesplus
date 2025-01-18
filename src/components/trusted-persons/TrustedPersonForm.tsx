@@ -16,7 +16,7 @@ export const TrustedPersonForm = ({ onSave }: TrustedPersonFormProps) => {
     relation: "",
     address: "",
     city: "",
-    postalCode: "",
+    postal_code: "",
   });
 
   const handleSubmit = async () => {
@@ -29,7 +29,7 @@ export const TrustedPersonForm = ({ onSave }: TrustedPersonFormProps) => {
         relation: "",
         address: "",
         city: "",
-        postalCode: "",
+        postal_code: "",
       });
     }
   };
@@ -93,11 +93,11 @@ export const TrustedPersonForm = ({ onSave }: TrustedPersonFormProps) => {
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="postalCode">Code postal</Label>
+          <Label htmlFor="postal_code">Code postal</Label>
           <Input
-            id="postalCode"
-            value={newPerson.postalCode}
-            onChange={e => setNewPerson({ ...newPerson, postalCode: e.target.value })}
+            id="postal_code"
+            value={newPerson.postal_code}
+            onChange={e => setNewPerson({ ...newPerson, postal_code: e.target.value })}
             placeholder="Code postal"
           />
         </div>

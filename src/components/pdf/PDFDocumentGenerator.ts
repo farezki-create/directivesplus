@@ -65,7 +65,7 @@ export class PDFDocumentGenerator {
       }
       doc.text(`Adresse: ${person.address}`, 20, yPosition);
       yPosition += 7;
-      doc.text(`${person.postalCode} ${person.city}`, 20, yPosition);
+      doc.text(`${person.postal_code} ${person.city}`, 20, yPosition);
       yPosition += 15;
     }
 

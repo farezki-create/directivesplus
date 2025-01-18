@@ -6,7 +6,7 @@ export type TrustedPerson = {
   relation: string;
   address: string;
   city: string;
-  postalCode: string;
+  postal_code: string;
 };
 
 export type NewTrustedPerson = Omit<TrustedPerson, "id">;
