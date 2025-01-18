@@ -5,6 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { AuthForm } from "@/components/AuthForm";
 import { FormValues } from "@/components/auth/types";
 import { getErrorMessage } from "@/utils/auth-errors";
+import { Button } from "@/components/ui/button";
+import { Home } from "lucide-react";
 
 const Healthcare = () => {
   const navigate = useNavigate();
@@ -33,7 +35,6 @@ const Healthcare = () => {
       if (isSignUp) {
         console.log('Attempting healthcare professional signup with email:', values.email);
         
-        // First, create the auth user
         const { error: signUpError, data } = await supabase.auth.signUp({
           email: values.email,
           password: values.password,
@@ -57,7 +58,6 @@ const Healthcare = () => {
           return;
         }
 
-        // Then, create the healthcare professional profile
         if (data.user) {
           const { error: profileError } = await supabase
             .from('healthcare_professionals')
@@ -126,6 +126,17 @@ const Healthcare = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4">
+      <div className="absolute top-4 left-4">
+        <Button
+          variant="ghost"
+          onClick={() => navigate("/")}
+          className="flex items-center gap-2"
+        >
+          <Home className="h-4 w-4" />
+          Accueil
+        </Button>
+      </div>
+
       <div className="text-center mb-8">
         <h1 className="text-2xl font-bold mb-2">
           {isSignUp ? "Inscription Professionnel de Santé" : "Connexion Professionnel de Santé"}
