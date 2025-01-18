@@ -41,7 +41,7 @@ export const PDFGenerator = () => {
           .from("profiles")
           .select("*")
           .eq("id", session.user.id)
-          .single();
+          .maybeSingle();
 
         if (profileError) throw profileError;
         setProfile(profileData);
@@ -52,10 +52,10 @@ export const PDFGenerator = () => {
           .from("questionnaire_synthesis")
           .select("free_text")
           .eq("user_id", session.user.id)
-          .single();
+          .maybeSingle();
 
         if (responsesError) throw responsesError;
-        setResponses(responsesData);
+        setResponses(responsesData || { free_text: null });
 
       } catch (error) {
         console.error("[PDFGenerator] Error loading user data:", error);
