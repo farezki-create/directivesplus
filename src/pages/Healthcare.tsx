@@ -2,9 +2,12 @@ import { AuthForm } from "@/components/AuthForm";
 import { Header } from "@/components/Header";
 import { useHealthcareAuth } from "@/hooks/useHealthcareAuth";
 import { FeatureHighlights } from "@/components/home/FeatureHighlights";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 const Healthcare = () => {
   const { isSignUp, setIsSignUp, handleSubmit } = useHealthcareAuth();
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -23,6 +26,14 @@ const Healthcare = () => {
           </p>
 
           <div className="max-w-md mx-auto mb-16">
+            <Button
+              variant="outline"
+              onClick={() => navigate("/healthcare-landing")}
+              className="w-full mb-8"
+            >
+              Accéder à l'espace professionnel
+            </Button>
+
             <AuthForm
               isSignUp={isSignUp}
               onSubmit={handleSubmit}
