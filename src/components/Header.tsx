@@ -1,11 +1,12 @@
 import { Button } from "./ui/button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
 
 export const Header = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
@@ -29,6 +30,8 @@ export const Header = () => {
     // Force reload the page when going to home to reset all states
     window.location.href = "/";
   };
+
+  const isHomePage = location.pathname === "/";
 
   return (
     <header className="w-full border-b">
@@ -55,7 +58,7 @@ export const Header = () => {
           >
             En savoir plus
           </Button>
-          {user && (
+          {user && !isHomePage && (
             <Button
               variant="ghost"
               onClick={() => navigate("/dashboard")}
