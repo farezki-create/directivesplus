@@ -50,7 +50,7 @@ export const TrustedPersons = () => {
         relation: p.relation || "",
         address: p.address || "",
         city: p.city || "",
-        postalCode: p.postal_code || "",
+        postal_code: p.postal_code || "",
       })));
     } catch (error) {
       console.error("[TrustedPersons] Error:", error);
@@ -101,7 +101,7 @@ export const TrustedPersons = () => {
           relation: newPerson.relation,
           address: newPerson.address,
           city: newPerson.city,
-          postal_code: newPerson.postalCode,
+          postal_code: newPerson.postal_code,
         })
         .select()
         .single();
