@@ -32,6 +32,7 @@ export const useHealthcareAuth = () => {
       if (isSignUp) {
         console.log('Attempting healthcare professional signup with email:', values.email);
         
+        // For development: accept any valid email/password
         const { error: signUpError, data } = await supabase.auth.signUp({
           email: values.email,
           password: values.password,
@@ -61,7 +62,7 @@ export const useHealthcareAuth = () => {
             .insert([
               {
                 id: data.user.id,
-                cps_number: values.cpsNumber,
+                cps_number: values.cpsNumber || 'test123', // Default value for development
                 professional_type: values.professionalType || 'doctor',
                 first_name: values.firstName,
                 last_name: values.lastName,
@@ -87,6 +88,37 @@ export const useHealthcareAuth = () => {
         });
       } else {
         console.log('Attempting healthcare login with email:', values.email);
+        
+        // For development: special case for test@test/test credentials
+        if (values.email === 'test@test' && values.password === 'test') {
+          console.log('Using test credentials');
+          const { error } = await supabase.auth.signInWithPassword({
+            email: values.email,
+            password: values.password,
+          });
+
+          if (error) {
+            console.log('Healthcare login error:', error);
+            const message = getErrorMessage(error);
+            toast({
+              variant: "destructive",
+              title: "Erreur de connexion",
+              description: message,
+            });
+            return;
+          }
+
+          console.log('Healthcare login successful');
+          toast({
+            title: "Connexion réussie",
+            description: "Vous êtes maintenant connecté.",
+          });
+          
+          navigate("/dashboard");
+          return;
+        }
+
+        // Normal login flow for non-test credentials
         const { error } = await supabase.auth.signInWithPassword({
           email: values.email,
           password: values.password,
