@@ -1,10 +1,10 @@
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { ResponseCard } from "./responses/ResponseCard";
+import { ResponsesList } from "./responses/ResponsesList";
+import { UniqueIdentifier } from "./responses/UniqueIdentifier";
 
 interface ResponsesSummaryProps {
   userId: string;
@@ -17,36 +17,6 @@ interface FormattedResponse {
 
 export function ResponsesSummary({ userId }: ResponsesSummaryProps) {
   const { responses, isLoading, hasErrors } = useQuestionnairesResponses(userId);
-  const [uniqueIdentifier, setUniqueIdentifier] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchUniqueIdentifier = async () => {
-      try {
-        console.log("[ResponsesSummary] Fetching unique identifier for user:", userId);
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('unique_identifier')
-          .eq('id', userId)
-          .maybeSingle();
-
-        if (error) {
-          console.error("[ResponsesSummary] Error fetching unique identifier:", error);
-          return;
-        }
-
-        if (data) {
-          console.log("[ResponsesSummary] Found unique identifier:", data.unique_identifier);
-          setUniqueIdentifier(data.unique_identifier);
-        }
-      } catch (error) {
-        console.error("[ResponsesSummary] Error in fetchUniqueIdentifier:", error);
-      }
-    };
-
-    if (userId) {
-      fetchUniqueIdentifier();
-    }
-  }, [userId]);
 
   if (isLoading) {
     return (
@@ -71,7 +41,6 @@ export function ResponsesSummary({ userId }: ResponsesSummaryProps) {
       return [];
     }
     
-    // Group responses by question
     const groupedResponses = responseArray.reduce((acc, curr) => {
       const key = curr.question_id;
       if (!acc[key]) {
@@ -91,95 +60,34 @@ export function ResponsesSummary({ userId }: ResponsesSummaryProps) {
     return Object.values(groupedResponses);
   };
 
-  const renderResponsesList = (formattedResponses: FormattedResponse[]) => {
-    if (formattedResponses.length === 0) {
-      return <p className="text-muted-foreground">Aucune réponse</p>;
-    }
-
-    return (
-      <ul className="space-y-4">
-        {formattedResponses.map((item: FormattedResponse, index: number) => (
-          <li key={index} className="border-b pb-2">
-            <p className="font-medium">{item.question}</p>
-            <div className="text-muted-foreground">
-              {item.responses.map((response: string, idx: number) => (
-                <p key={idx}>{response}</p>
-              ))}
-            </div>
-          </li>
-        ))}
-      </ul>
-    );
-  };
-
   return (
     <ScrollArea className="h-[600px] rounded-md border p-4">
       <div className="space-y-8">
-        {/* Avis général */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Mon avis d'une façon générale</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {renderResponsesList(formatResponses(responses.general))}
-          </CardContent>
-        </Card>
+        <ResponseCard title="Mon avis d'une façon générale">
+          <ResponsesList formattedResponses={formatResponses(responses.general)} />
+        </ResponseCard>
 
-        {/* Maintien en vie */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Maintien en vie</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {renderResponsesList(formatResponses(responses.lifeSupport))}
-          </CardContent>
-        </Card>
+        <ResponseCard title="Maintien en vie">
+          <ResponsesList formattedResponses={formatResponses(responses.lifeSupport)} />
+        </ResponseCard>
 
-        {/* Maladie avancée */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Maladie avancée</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {renderResponsesList(formatResponses(responses.advancedIllness))}
-          </CardContent>
-        </Card>
+        <ResponseCard title="Maladie avancée">
+          <ResponsesList formattedResponses={formatResponses(responses.advancedIllness)} />
+        </ResponseCard>
 
-        {/* Préférences */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Mes goûts et mes peurs</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {renderResponsesList(formatResponses(responses.preferences))}
-          </CardContent>
-        </Card>
+        <ResponseCard title="Mes goûts et mes peurs">
+          <ResponsesList formattedResponses={formatResponses(responses.preferences)} />
+        </ResponseCard>
 
-        {/* Synthèse */}
         {responses.synthesis && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Synthèse et expression libre</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="whitespace-pre-wrap">
-                {responses.synthesis.free_text || "Aucune synthèse saisie"}
-              </p>
-            </CardContent>
-          </Card>
+          <ResponseCard title="Synthèse et expression libre">
+            <p className="whitespace-pre-wrap">
+              {responses.synthesis.free_text || "Aucune synthèse saisie"}
+            </p>
+          </ResponseCard>
         )}
 
-        {/* Identifiant unique */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Identifiant unique</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="font-mono text-lg">
-              {uniqueIdentifier || "Identifiant non disponible"}
-            </p>
-          </CardContent>
-        </Card>
+        <UniqueIdentifier userId={userId} />
       </div>
     </ScrollArea>
   );
