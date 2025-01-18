@@ -34,12 +34,6 @@ export const TrustedPersonCard = ({
             Email: {person.email}
           </p>
           <p className="text-sm text-muted-foreground">
-            Informé(e) des directives: {person.hasBeenInformed ? "Oui" : "Non"}
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Possède une copie: {person.hasDirectivesCopy ? "Oui" : "Non"}
-          </p>
-          <p className="text-sm text-muted-foreground">
             Fait le {format(new Date(person.date), "d MMMM yyyy", { locale: fr })} à {person.place}
           </p>
         </div>
