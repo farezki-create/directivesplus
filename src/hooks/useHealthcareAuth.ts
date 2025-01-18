@@ -4,6 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { FormValues } from "@/components/auth/types";
 import { getErrorMessage } from "@/utils/auth-errors";
+import { AuthError } from "@supabase/supabase-js";
 
 export const useHealthcareAuth = () => {
   const navigate = useNavigate();
@@ -94,11 +95,10 @@ export const useHealthcareAuth = () => {
 
         if (error) {
           console.log('Healthcare login error:', error);
-          const message = getErrorMessage(error);
           toast({
             variant: "destructive",
             title: "Erreur de connexion",
-            description: message,
+            description: getErrorMessage(error as AuthError),
           });
           return;
         }
@@ -108,8 +108,6 @@ export const useHealthcareAuth = () => {
           title: "Connexion réussie",
           description: "Vous êtes maintenant connecté.",
         });
-        
-        navigate("/dashboard");
       }
     } catch (error) {
       console.error('Healthcare auth error:', error);
