@@ -1,31 +1,40 @@
-import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
+import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useUser } from "@supabase/auth-helpers-react";
+import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
 
 const Examples = () => {
   const navigate = useNavigate();
-  const user = useUser();
-  const { responses, isLoading, hasErrors } = useQuestionnairesResponses(user?.id);
+  const [userId, setUserId] = useState<string | undefined>(undefined);
+  const { responses, isLoading, hasErrors } = useQuestionnairesResponses(userId);
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setUserId(session?.user?.id);
+    };
+    getUser();
+  }, []);
 
   const renderSynthesis = () => {
     if (isLoading) {
       return (
-        <div className="flex items-center justify-center p-8">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="flex justify-center items-center p-4">
+          <Loader2 className="h-6 w-6 animate-spin" />
         </div>
       );
     }
 
     if (hasErrors) {
       return (
-        <Alert variant="destructive" className="m-4">
+        <Alert variant="destructive">
           <AlertDescription>
-            Une erreur est survenue lors de la récupération de vos réponses.
+            Une erreur est survenue lors du chargement de la synthèse.
           </AlertDescription>
         </Alert>
       );
@@ -33,17 +42,17 @@ const Examples = () => {
 
     if (!responses.synthesis?.free_text) {
       return (
-        <p className="text-muted-foreground">
-          Aucune synthèse n'a été saisie.
-        </p>
+        <Alert>
+          <AlertDescription>
+            Aucune synthèse n'a été rédigée pour le moment.
+          </AlertDescription>
+        </Alert>
       );
     }
 
     return (
-      <ScrollArea className="h-[200px] rounded-md border p-4">
-        <p className="whitespace-pre-wrap">
-          {responses.synthesis.free_text}
-        </p>
+      <ScrollArea className="h-[200px] w-full rounded-md border p-4">
+        {responses.synthesis.free_text}
       </ScrollArea>
     );
   };
@@ -52,40 +61,39 @@ const Examples = () => {
     <div className="min-h-screen flex flex-col">
       <Header />
       
-      <main className="flex-1 container mx-auto px-4 py-12">
-        <div className="max-w-4xl mx-auto space-y-8">
-          <div className="text-center space-y-4">
-            <h1 className="text-4xl font-bold text-primary">
-              Documents
-            </h1>
-            
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Consultez des directives anticipées et des documents d'information
-            </p>
-          </div>
+      <main className="flex-1 container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold mb-8 text-center">
+          Documents
+        </h1>
 
-          <div className="grid gap-6 md:grid-cols-2 max-w-3xl mx-auto">
+        <div className="max-w-4xl mx-auto space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Button 
-              size="lg" 
-              className="h-auto min-h-[5rem] py-4 px-6 text-lg font-medium hover:scale-105 transition-transform duration-200 whitespace-normal text-center"
-              onClick={() => navigate("/dashboard?tab=persons")}
-            >
-              Personne de confiance
-            </Button>
-            <Button 
-              size="lg"
-              className="h-auto min-h-[5rem] py-4 px-6 text-lg font-medium hover:scale-105 transition-transform duration-200 whitespace-normal text-center"
+              variant="outline" 
+              className="p-8 h-auto flex flex-col gap-2"
               onClick={() => navigate("/dashboard")}
             >
-              Directives anticipées
+              <span className="text-lg font-semibold">Personne de confiance</span>
+              <span className="text-sm text-gray-500">
+                Désignation de la personne de confiance
+              </span>
+            </Button>
+
+            <Button 
+              variant="outline" 
+              className="p-8 h-auto flex flex-col gap-2"
+              onClick={() => navigate("/free-text")}
+            >
+              <span className="text-lg font-semibold">Directives anticipées</span>
+              <span className="text-sm text-gray-500">
+                Rédaction des directives anticipées
+              </span>
             </Button>
           </div>
 
-          {user && (
-            <div className="mt-8 space-y-4">
-              <h2 className="text-2xl font-semibold">
-                Synthèse de vos directives anticipées
-              </h2>
+          {userId && (
+            <div className="mt-8">
+              <h2 className="text-xl font-semibold mb-4">Mes directives anticipées</h2>
               {renderSynthesis()}
             </div>
           )}
