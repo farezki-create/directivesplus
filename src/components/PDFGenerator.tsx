@@ -2,10 +2,12 @@ import { useState, useEffect } from "react";
 import { jsPDF } from "jspdf";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { Mail, Download, Printer } from "lucide-react";
 
 interface UserProfile {
   first_name: string | null;
@@ -28,6 +30,8 @@ export const PDFGenerator = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [responses, setResponses] = useState<any>(null);
   const [trustedPersons, setTrustedPersons] = useState<TrustedPerson[]>([]);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -46,7 +50,6 @@ export const PDFGenerator = () => {
         if (profileError) throw profileError;
         setProfile(profileData);
 
-        // Load responses summary
         console.log("[PDFGenerator] Loading responses");
         const { data: responsesData, error: responsesError } = await supabase
           .from("questionnaire_synthesis")
@@ -157,8 +160,10 @@ export const PDFGenerator = () => {
       yPosition += 20;
       doc.text("Signature:", 20, yPosition);
 
-      // Save the PDF
-      doc.save("directives-anticipees.pdf");
+      // Instead of saving directly, create a data URL
+      const pdfDataUrl = doc.output('dataurlstring');
+      setPdfUrl(pdfDataUrl);
+      setShowPreview(true);
       
       console.log("[PDFGenerator] PDF generated successfully");
       toast({
@@ -176,6 +181,57 @@ export const PDFGenerator = () => {
     }
   };
 
+  const handleSave = () => {
+    const doc = new jsPDF();
+    doc.save("directives-anticipees.pdf");
+  };
+
+  const handlePrint = () => {
+    if (pdfUrl) {
+      const printWindow = window.open(pdfUrl);
+      printWindow?.print();
+    }
+  };
+
+  const handleEmail = async () => {
+    if (!profile?.email) {
+      toast({
+        title: "Erreur",
+        description: "Aucune adresse email associée à votre profil.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/send-pdf', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: profile.email,
+          pdfUrl: pdfUrl,
+        }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Succès",
+          description: "Le PDF a été envoyé par email.",
+        });
+      } else {
+        throw new Error("Erreur lors de l'envoi de l'email");
+      }
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible d'envoyer le PDF par email.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <Card className="p-6 max-w-2xl mx-auto">
       <h2 className="text-2xl font-bold mb-4">Générer vos documents</h2>
@@ -185,6 +241,39 @@ export const PDFGenerator = () => {
       <Button onClick={generatePDF} className="w-full">
         Générer Directives anticipées et personne de confiance
       </Button>
+
+      <Dialog open={showPreview} onOpenChange={setShowPreview}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Aperçu du document</DialogTitle>
+          </DialogHeader>
+          
+          {pdfUrl && (
+            <div className="space-y-4">
+              <iframe
+                src={pdfUrl}
+                className="w-full h-[600px] border rounded"
+                title="Aperçu PDF"
+              />
+              
+              <div className="flex justify-end gap-4">
+                <Button variant="outline" onClick={handleEmail}>
+                  <Mail className="mr-2 h-4 w-4" />
+                  Envoyer par email
+                </Button>
+                <Button variant="outline" onClick={handleSave}>
+                  <Download className="mr-2 h-4 w-4" />
+                  Enregistrer
+                </Button>
+                <Button variant="outline" onClick={handlePrint}>
+                  <Printer className="mr-2 h-4 w-4" />
+                  Imprimer
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 };
