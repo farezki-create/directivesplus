@@ -63,7 +63,7 @@ export const Header = () => {
               variant="ghost"
               onClick={() => navigate("/dashboard")}
             >
-              Tableau de bord
+              Désignation de la personne de confiance
             </Button>
           )}
           {user ? (
