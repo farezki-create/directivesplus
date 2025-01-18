@@ -55,14 +55,6 @@ export const Header = () => {
           >
             En savoir plus
           </Button>
-          {user && (
-            <Button
-              variant="ghost"
-              onClick={() => navigate("/dashboard")}
-            >
-              Tableau de bord
-            </Button>
-          )}
           {user ? (
             <Button variant="default" onClick={handleSignOut}>
               Déconnexion
