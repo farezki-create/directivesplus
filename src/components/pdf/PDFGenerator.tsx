@@ -43,12 +43,18 @@ export const PDFGenerator = () => {
         console.log("[PDFGenerator] Loading user profile");
         const { data: profileData, error: profileError } = await supabase
           .from("profiles")
-          .select("*")
+          .select("*, auth.users!inner(email)")
           .eq("id", session.user.id)
-          .maybeSingle();
+          .single();
 
         if (profileError) throw profileError;
-        setProfile(profileData);
+
+        // Combine profile data with email from auth.users
+        const userProfile: UserProfile = {
+          ...profileData,
+          email: session.user.email
+        };
+        setProfile(userProfile);
 
         console.log("[PDFGenerator] Loading responses");
         const { data: responsesData, error: responsesError } = await supabase
