@@ -22,7 +22,7 @@ export const TrustedPersons = () => {
     relation: "",
   });
 
-  const addPerson = () => {
+  const savePerson = () => {
     if (newPerson.name && newPerson.phone && newPerson.email) {
       setPersons([...persons, { ...newPerson, id: Date.now() }]);
       setNewPerson({ name: "", phone: "", email: "", relation: "" });
@@ -91,8 +91,8 @@ export const TrustedPersons = () => {
             />
           </div>
         </div>
-        <Button onClick={addPerson} className="w-full">
-          Ajouter une personne
+        <Button onClick={savePerson} className="w-full">
+          Enregistrer
         </Button>
       </div>
 
