@@ -92,33 +92,64 @@ export const useHealthcareAuth = () => {
         // For development: special case for test@test/test credentials
         if (values.email === 'test@test' && values.password === 'test') {
           console.log('Using test credentials');
-          const { error } = await supabase.auth.signInWithPassword({
-            email: values.email,
-            password: values.password,
-          });
+          // Create a new user if it doesn't exist
+          const { data: existingUser } = await supabase
+            .from('healthcare_professionals')
+            .select('id')
+            .single();
 
-          if (error) {
-            console.log('Healthcare login error:', error);
-            const message = getErrorMessage(error);
-            toast({
-              variant: "destructive",
-              title: "Erreur de connexion",
-              description: message,
+          if (!existingUser) {
+            console.log('Creating test healthcare professional account');
+            const { data: { user }, error: signUpError } = await supabase.auth.signUp({
+              email: 'test@test',
+              password: 'test',
+              options: {
+                data: {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  user_type: 'healthcare_professional'
+                }
+              }
             });
-            return;
-          }
 
-          console.log('Healthcare login successful');
-          toast({
-            title: "Connexion réussie",
-            description: "Vous êtes maintenant connecté.",
-          });
-          
-          navigate("/dashboard");
-          return;
+            if (signUpError) {
+              console.error('Error creating test account:', signUpError);
+              toast({
+                variant: "destructive",
+                title: "Erreur de création du compte test",
+                description: getErrorMessage(signUpError),
+              });
+              return;
+            }
+
+            if (user) {
+              const { error: profileError } = await supabase
+                .from('healthcare_professionals')
+                .insert([
+                  {
+                    id: user.id,
+                    cps_number: 'test123',
+                    professional_type: 'doctor',
+                    first_name: 'Test',
+                    last_name: 'User',
+                    specialty: 'Test Specialty'
+                  }
+                ]);
+
+              if (profileError) {
+                console.error('Error creating test profile:', profileError);
+                toast({
+                  variant: "destructive",
+                  title: "Erreur de profil",
+                  description: "Impossible de créer le profil test.",
+                });
+                return;
+              }
+            }
+          }
         }
 
-        // Normal login flow for non-test credentials
+        // Attempt to sign in
         const { error } = await supabase.auth.signInWithPassword({
           email: values.email,
           password: values.password,
