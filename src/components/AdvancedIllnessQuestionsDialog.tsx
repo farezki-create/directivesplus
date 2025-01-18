@@ -59,8 +59,45 @@ export function AdvancedIllnessQuestionsDialog({
 
     if (open) {
       fetchQuestions();
+      fetchExistingAnswers();
     }
   }, [open, toast]);
+
+  const fetchExistingAnswers = async () => {
+    try {
+      const session = await supabase.auth.getSession();
+      const userId = session.data.session?.user.id;
+      
+      if (!userId) {
+        console.log('[AdvancedIllness] No user ID found for fetching existing answers');
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('questionnaire_advanced_illness_responses')
+        .select('*')
+        .eq('user_id', userId);
+
+      if (error) {
+        console.error('[AdvancedIllness] Error fetching existing answers:', error);
+        return;
+      }
+
+      if (data) {
+        const groupedAnswers: Record<string, string[]> = {};
+        data.forEach(response => {
+          if (!groupedAnswers[response.question_id]) {
+            groupedAnswers[response.question_id] = [];
+          }
+          groupedAnswers[response.question_id].push(response.response);
+        });
+        console.log('[AdvancedIllness] Loaded existing answers:', groupedAnswers);
+        setAnswers(groupedAnswers);
+      }
+    } catch (error) {
+      console.error('[AdvancedIllness] Error in fetchExistingAnswers:', error);
+    }
+  };
 
   const handleAnswerChange = (questionId: string, value: string, checked: boolean) => {
     console.log('[AdvancedIllness] Answer change:', { questionId, value, checked });
@@ -96,6 +133,22 @@ export function AdvancedIllnessQuestionsDialog({
         return;
       }
 
+      // First, delete existing responses for this user
+      const { error: deleteError } = await supabase
+        .from('questionnaire_advanced_illness_responses')
+        .delete()
+        .eq('user_id', userId);
+
+      if (deleteError) {
+        console.error('[AdvancedIllness] Error deleting existing responses:', deleteError);
+        toast({
+          title: "Erreur",
+          description: "Impossible de mettre à jour vos réponses. Veuillez réessayer.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       // Prepare all responses for insertion
       const responses = Object.entries(answers).flatMap(([questionId, values]) => {
         const question = questions.find(q => q.id === questionId);
@@ -109,14 +162,22 @@ export function AdvancedIllnessQuestionsDialog({
 
       console.log('[AdvancedIllness] Prepared responses for insertion:', responses);
 
-      const { error } = await supabase
-        .from('questionnaire_advanced_illness_responses')
-        .upsert(responses, {
-          onConflict: 'user_id,question_id,response'
+      if (responses.length === 0) {
+        console.log('[AdvancedIllness] No responses to insert');
+        toast({
+          title: "Succès",
+          description: "Vos réponses ont été enregistrées.",
         });
+        onOpenChange(false);
+        return;
+      }
 
-      if (error) {
-        console.error('[AdvancedIllness] Error saving responses:', error);
+      const { error: insertError } = await supabase
+        .from('questionnaire_advanced_illness_responses')
+        .insert(responses);
+
+      if (insertError) {
+        console.error('[AdvancedIllness] Error saving responses:', insertError);
         toast({
           title: "Erreur",
           description: "Impossible d'enregistrer vos réponses. Veuillez réessayer.",
