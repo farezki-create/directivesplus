@@ -34,7 +34,7 @@ export const TrustedPersonForm = ({
 
       <p className="mb-4">désigne la personne de confiance suivante :</p>
 
-      <div className="space-y-4">
+      <div className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="name">Nom et prénoms</Label>
           <Input
@@ -55,24 +55,27 @@ export const TrustedPersonForm = ({
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="phonePersonal">Téléphone privé</Label>
-            <Input
-              id="phonePersonal"
-              value={newPerson.phonePersonal}
-              onChange={e => setNewPerson({ ...newPerson, phonePersonal: e.target.value })}
-              placeholder="Téléphone privé"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="phoneProfessional">Téléphone professionnel</Label>
-            <Input
-              id="phoneProfessional"
-              value={newPerson.phoneProfessional}
-              onChange={e => setNewPerson({ ...newPerson, phoneProfessional: e.target.value })}
-              placeholder="Téléphone professionnel"
-            />
+        <div className="space-y-2">
+          <h3 className="text-lg font-semibold mb-4">Coordonnées</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="phonePersonal">Téléphone privé</Label>
+              <Input
+                id="phonePersonal"
+                value={newPerson.phonePersonal}
+                onChange={e => setNewPerson({ ...newPerson, phonePersonal: e.target.value })}
+                placeholder="Téléphone privé"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="phoneProfessional">Téléphone professionnel</Label>
+              <Input
+                id="phoneProfessional"
+                value={newPerson.phoneProfessional}
+                onChange={e => setNewPerson({ ...newPerson, phoneProfessional: e.target.value })}
+                placeholder="Téléphone professionnel"
+              />
+            </div>
           </div>
         </div>
 
