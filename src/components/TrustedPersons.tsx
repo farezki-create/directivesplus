@@ -18,7 +18,13 @@ export const TrustedPersons = () => {
   const loadTrustedPersons = async () => {
     try {
       console.log("[TrustedPersons] Loading trusted persons");
-      const { data: sessionData } = await supabase.auth.getSession();
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.error("[TrustedPersons] Session error:", sessionError);
+        throw sessionError;
+      }
+
       if (!sessionData?.session?.user) {
         console.log("[TrustedPersons] No user session found");
         return;
@@ -27,6 +33,7 @@ export const TrustedPersons = () => {
       const { data, error } = await supabase
         .from("trusted_persons")
         .select("*")
+        .eq("user_id", sessionData.session.user.id)
         .order("created_at", { ascending: true });
 
       if (error) {
@@ -58,9 +65,20 @@ export const TrustedPersons = () => {
   const savePerson = async (newPerson: NewTrustedPerson) => {
     try {
       console.log("[TrustedPersons] Saving new trusted person");
-      const { data: sessionData } = await supabase.auth.getSession();
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.error("[TrustedPersons] Session error:", sessionError);
+        throw sessionError;
+      }
+
       if (!sessionData?.session?.user) {
         console.log("[TrustedPersons] No user session found");
+        toast({
+          title: "Erreur",
+          description: "Vous devez être connecté pour enregistrer une personne de confiance.",
+          variant: "destructive",
+        });
         return;
       }
 
