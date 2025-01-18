@@ -51,16 +51,16 @@ export const Header = () => {
           </Button>
           <Button
             variant="ghost"
-            onClick={() => navigate("/dashboard")}
+            onClick={() => navigate("/trusted-person")}
           >
             En savoir plus
           </Button>
           {user && (
             <Button
               variant="ghost"
-              onClick={() => navigate("/dashboard")}
+              onClick={() => navigate("/trusted-person")}
             >
-              Tableau de bord
+              Personne de confiance
             </Button>
           )}
           {user ? (
