@@ -9,6 +9,7 @@ import { fr } from "date-fns/locale";
 import { PDFPreviewDialog } from "./PDFPreviewDialog";
 
 interface UserProfile {
+  id: string;
   first_name: string | null;
   last_name: string | null;
   address: string | null;
@@ -16,20 +17,12 @@ interface UserProfile {
   postal_code: string | null;
   phone_number: string | null;
   unique_identifier: string;
-  email: string | null;
-}
-
-interface TrustedPerson {
-  name: string;
-  phone: string;
-  email: string;
-  relation: string;
 }
 
 export const PDFGenerator = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [responses, setResponses] = useState<any>(null);
-  const [trustedPersons, setTrustedPersons] = useState<TrustedPerson[]>([]);
+  const [trustedPersons, setTrustedPersons] = useState<any[]>([]);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const { toast } = useToast();
@@ -43,18 +36,12 @@ export const PDFGenerator = () => {
         console.log("[PDFGenerator] Loading user profile");
         const { data: profileData, error: profileError } = await supabase
           .from("profiles")
-          .select("*, auth.users!inner(email)")
+          .select("*")
           .eq("id", session.user.id)
           .single();
 
         if (profileError) throw profileError;
-
-        // Combine profile data with email from auth.users
-        const userProfile: UserProfile = {
-          ...profileData,
-          email: session.user.email
-        };
-        setProfile(userProfile);
+        setProfile(profileData);
 
         console.log("[PDFGenerator] Loading responses");
         const { data: responsesData, error: responsesError } = await supabase
@@ -199,15 +186,6 @@ export const PDFGenerator = () => {
   };
 
   const handleEmail = async () => {
-    if (!profile?.email) {
-      toast({
-        title: "Erreur",
-        description: "Aucune adresse email associée à votre profil.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     try {
       const response = await fetch('/api/send-pdf', {
         method: 'POST',
@@ -215,7 +193,7 @@ export const PDFGenerator = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email: profile.email,
+          email: profile?.email,
           pdfUrl: pdfUrl,
         }),
       });
