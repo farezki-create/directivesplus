@@ -13,8 +13,6 @@ export const TrustedPersons = () => {
     phonePersonal: "",
     phoneProfessional: "",
     email: "",
-    hasBeenInformed: false,
-    hasDirectivesCopy: false,
     date: format(new Date(), "yyyy-MM-dd"),
     place: "",
   });
@@ -28,8 +26,6 @@ export const TrustedPersons = () => {
         phonePersonal: "",
         phoneProfessional: "",
         email: "",
-        hasBeenInformed: false,
-        hasDirectivesCopy: false,
         date: format(new Date(), "yyyy-MM-dd"),
         place: "",
       });
