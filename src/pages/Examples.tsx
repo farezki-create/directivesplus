@@ -4,20 +4,34 @@ import { useNavigate } from "react-router-dom";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
-import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useSynthesis } from "@/hooks/useSynthesis";
 
 const Examples = () => {
   const navigate = useNavigate();
-  const [userId, setUserId] = useState<string | undefined>(undefined);
-  const { responses, isLoading, hasErrors } = useQuestionnairesResponses(userId);
+  const [userId, setUserId] = useState<string | null>(null);
+  const { text: synthesisText } = useSynthesis(userId);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const getUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUserId(session?.user?.id);
+      try {
+        console.log("[Examples] Fetching user session");
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          console.log("[Examples] User found:", session.user.id);
+          setUserId(session.user.id);
+        } else {
+          console.log("[Examples] No user session found");
+        }
+      } catch (error) {
+        console.error("[Examples] Error fetching user session:", error);
+      } finally {
+        setIsLoading(false);
+      }
     };
+
     getUser();
   }, []);
 
@@ -30,17 +44,17 @@ const Examples = () => {
       );
     }
 
-    if (hasErrors) {
+    if (!userId) {
       return (
-        <Alert variant="destructive">
+        <Alert>
           <AlertDescription>
-            Une erreur est survenue lors du chargement de la synthèse.
+            Veuillez vous connecter pour voir votre synthèse.
           </AlertDescription>
         </Alert>
       );
     }
 
-    if (!responses.synthesis?.free_text) {
+    if (!synthesisText) {
       return (
         <Alert>
           <AlertDescription>
@@ -52,7 +66,7 @@ const Examples = () => {
 
     return (
       <ScrollArea className="h-[200px] w-full rounded-md border p-4">
-        {responses.synthesis.free_text}
+        <div className="whitespace-pre-wrap">{synthesisText}</div>
       </ScrollArea>
     );
   };
