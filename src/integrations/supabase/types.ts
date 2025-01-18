@@ -192,6 +192,7 @@ export type Database = {
           last_name: string | null
           phone_number: string | null
           postal_code: string | null
+          unique_identifier: string
           updated_at: string | null
         }
         Insert: {
@@ -205,6 +206,7 @@ export type Database = {
           last_name?: string | null
           phone_number?: string | null
           postal_code?: string | null
+          unique_identifier: string
           updated_at?: string | null
         }
         Update: {
@@ -218,6 +220,7 @@ export type Database = {
           last_name?: string | null
           phone_number?: string | null
           postal_code?: string | null
+          unique_identifier?: string
           updated_at?: string | null
         }
         Relationships: []
