@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Separator } from "./ui/separator";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 type TrustedPerson = {
   id: number;
@@ -27,27 +29,138 @@ export const TrustedPersons = () => {
     city: "",
     postalCode: "",
   });
+  const { toast } = useToast();
 
-  const savePerson = () => {
-    if (newPerson.name && newPerson.phone && newPerson.email) {
-      setPersons([...persons, { ...newPerson, id: Date.now() }]);
-      setNewPerson({ 
-        name: "", 
-        phone: "", 
-        email: "", 
-        relation: "",
-        address: "",
-        city: "",
-        postalCode: "",
+  useEffect(() => {
+    loadTrustedPersons();
+  }, []);
+
+  const loadTrustedPersons = async () => {
+    try {
+      console.log("[TrustedPersons] Loading trusted persons");
+      const { data: session } = await supabase.auth.getSession();
+      if (!session?.user) {
+        console.log("[TrustedPersons] No user session found");
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("trusted_persons")
+        .select("*")
+        .order("created_at", { ascending: true });
+
+      if (error) {
+        console.error("[TrustedPersons] Error loading trusted persons:", error);
+        throw error;
+      }
+
+      console.log("[TrustedPersons] Loaded trusted persons:", data);
+      setPersons(data.map(p => ({
+        id: p.id,
+        name: p.name,
+        phone: p.phone,
+        email: p.email,
+        relation: p.relation || "",
+        address: p.address || "",
+        city: p.city || "",
+        postalCode: p.postal_code || "",
+      })));
+    } catch (error) {
+      console.error("[TrustedPersons] Error:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les personnes de confiance.",
+        variant: "destructive",
       });
     }
   };
 
-  const removePerson = (id: number) => {
-    setPersons(persons.filter(person => person.id !== id));
+  const savePerson = async () => {
+    if (newPerson.name && newPerson.phone && newPerson.email) {
+      try {
+        console.log("[TrustedPersons] Saving new trusted person");
+        const { data: session } = await supabase.auth.getSession();
+        if (!session?.user) {
+          console.log("[TrustedPersons] No user session found");
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from("trusted_persons")
+          .insert({
+            user_id: session.user.id,
+            name: newPerson.name,
+            phone: newPerson.phone,
+            email: newPerson.email,
+            relation: newPerson.relation,
+            address: newPerson.address,
+            city: newPerson.city,
+            postal_code: newPerson.postalCode,
+          })
+          .select()
+          .single();
+
+        if (error) {
+          console.error("[TrustedPersons] Error saving trusted person:", error);
+          throw error;
+        }
+
+        console.log("[TrustedPersons] Saved trusted person:", data);
+        await loadTrustedPersons();
+        setNewPerson({ 
+          name: "", 
+          phone: "", 
+          email: "", 
+          relation: "",
+          address: "",
+          city: "",
+          postalCode: "",
+        });
+        toast({
+          title: "Succès",
+          description: "La personne de confiance a été enregistrée.",
+        });
+      } catch (error) {
+        console.error("[TrustedPersons] Error:", error);
+        toast({
+          title: "Erreur",
+          description: "Impossible d'enregistrer la personne de confiance.",
+          variant: "destructive",
+        });
+      }
+    }
   };
 
-  const movePerson = (id: number, direction: "up" | "down") => {
+  const removePerson = async (id: number) => {
+    try {
+      console.log("[TrustedPersons] Removing trusted person:", id);
+      const { error } = await supabase
+        .from("trusted_persons")
+        .delete()
+        .eq("id", id);
+
+      if (error) {
+        console.error("[TrustedPersons] Error removing trusted person:", error);
+        throw error;
+      }
+
+      console.log("[TrustedPersons] Removed trusted person:", id);
+      await loadTrustedPersons();
+      toast({
+        title: "Succès",
+        description: "La personne de confiance a été supprimée.",
+      });
+    } catch (error) {
+      console.error("[TrustedPersons] Error:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer la personne de confiance.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const movePerson = async (id: number, direction: "up" | "down") => {
     const index = persons.findIndex(person => person.id === id);
     if (
       (direction === "up" && index > 0) ||

@@ -434,6 +434,48 @@ export type Database = {
         }
         Relationships: []
       }
+      trusted_persons: {
+        Row: {
+          address: string | null
+          city: string | null
+          created_at: string
+          email: string
+          id: string
+          name: string
+          phone: string
+          postal_code: string | null
+          relation: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          phone: string
+          postal_code?: string | null
+          relation?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          phone?: string
+          postal_code?: string | null
+          relation?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
