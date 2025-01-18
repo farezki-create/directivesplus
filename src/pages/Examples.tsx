@@ -37,17 +37,6 @@ const Examples = () => {
               Directives anticipées
             </Button>
           </div>
-
-          <div className="flex justify-center pt-8">
-            <Button 
-              variant="outline" 
-              size="lg"
-              onClick={() => navigate("/dashboard")}
-              className="w-full max-w-md text-lg font-medium hover:bg-primary/5 transition-colors duration-200"
-            >
-              Récupérer mes directives
-            </Button>
-          </div>
         </div>
       </main>
     </div>
