@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 export function useAdvancedIllnessResponses(open: boolean) {
   const [answers, setAnswers] = useState<Record<string, string[]>>({});
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -67,7 +68,13 @@ export function useAdvancedIllnessResponses(open: boolean) {
   };
 
   const handleSubmit = async (questions: any[], onOpenChange: (open: boolean) => void) => {
+    if (isSubmitting) {
+      console.log('[AdvancedIllness] Submission already in progress');
+      return;
+    }
+
     try {
+      setIsSubmitting(true);
       console.log('[AdvancedIllness] Submitting answers:', answers);
       const session = await supabase.auth.getSession();
       const userId = session.data.session?.user.id;
@@ -121,18 +128,21 @@ export function useAdvancedIllnessResponses(open: boolean) {
         return;
       }
 
-      const { error: insertError } = await supabase
-        .from('questionnaire_advanced_illness_responses')
-        .insert(responses);
+      // Insert new responses one by one to avoid conflicts
+      for (const response of responses) {
+        const { error: insertError } = await supabase
+          .from('questionnaire_advanced_illness_responses')
+          .insert([response]);
 
-      if (insertError) {
-        console.error('[AdvancedIllness] Error saving responses:', insertError);
-        toast({
-          title: "Erreur",
-          description: "Impossible d'enregistrer vos réponses. Veuillez réessayer.",
-          variant: "destructive",
-        });
-        return;
+        if (insertError) {
+          console.error('[AdvancedIllness] Error saving response:', insertError);
+          toast({
+            title: "Erreur",
+            description: "Impossible d'enregistrer certaines réponses. Veuillez réessayer.",
+            variant: "destructive",
+          });
+          return;
+        }
       }
 
       console.log('[AdvancedIllness] Responses saved successfully');
@@ -148,6 +158,8 @@ export function useAdvancedIllnessResponses(open: boolean) {
         description: "Une erreur inattendue s'est produite lors de l'enregistrement.",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
