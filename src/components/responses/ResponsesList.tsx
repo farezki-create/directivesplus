@@ -13,13 +13,15 @@ export function ResponsesList({ formattedResponses }: ResponsesListProps) {
   }
 
   return (
-    <ul className="space-y-4">
+    <ul className="space-y-6">
       {formattedResponses.map((item: FormattedResponse, index: number) => (
-        <li key={index} className="border-b pb-2">
-          <p className="font-medium">{item.question}</p>
-          <div className="text-muted-foreground">
+        <li key={index} className="border-b pb-4">
+          <p className="font-medium text-base mb-2">{item.question}</p>
+          <div className="pl-4">
             {item.responses.map((response: string, idx: number) => (
-              <p key={idx}>{response}</p>
+              <p key={idx} className="text-lg font-semibold text-primary">
+                {response}
+              </p>
             ))}
           </div>
         </li>
