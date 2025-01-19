@@ -14,7 +14,7 @@ export function ExamplesButtons({ onExamplesClick }: ExamplesButtonsProps) {
         className="flex items-center gap-2"
       >
         <BookOpen className="w-5 h-5" />
-        Exemples de Directives anticipées
+        Proposition de Directives Anticipées
       </Button>
     </div>
   );
