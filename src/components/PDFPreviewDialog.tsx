@@ -4,6 +4,7 @@ import { Download, Mail, Printer } from "lucide-react";
 import { SignaturePad } from "./SignaturePad";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { handlePDFDownload } from "./pdf/utils/PDFGenerationUtils";
 
 interface PDFPreviewDialogProps {
   open: boolean;
