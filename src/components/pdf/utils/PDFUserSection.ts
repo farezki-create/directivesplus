@@ -11,6 +11,12 @@ export class PDFUserSection {
     if (profile) {
       console.log("[PDFUserSection] Generating user section with profile:", profile);
 
+      // Title
+      doc.setFont("helvetica", "bold");
+      doc.text("Identité", 20, yPosition);
+      yPosition += 10;
+      doc.setFont("helvetica", "normal");
+
       // Full name
       const fullName = `${profile.last_name || ''} ${profile.first_name || ''}`.trim();
       if (fullName) {
@@ -68,7 +74,7 @@ export class PDFUserSection {
       // Access code
       yPosition += 5;
       doc.text(`Code d'accès pour les professionnels de santé : ${profile.unique_identifier}`, 20, yPosition);
-      yPosition += 10;
+      yPosition += 15;
     } else {
       console.warn("[PDFUserSection] No profile data provided");
       doc.text("Information d'identité non disponible", 20, yPosition);
