@@ -80,8 +80,8 @@ export class PDFDocumentGenerator {
     yPosition += 10;
     yPosition = PDFTrustedPersonSection.generate(doc, trustedPersons, yPosition);
 
-    // Add new page if needed
-    if (yPosition > doc.internal.pageSize.getHeight() - 40) {
+    // Ensure final section starts on a new page if there isn't enough space
+    if (yPosition > doc.internal.pageSize.getHeight() - 100) {
       doc.addPage();
       yPosition = 20;
     }
@@ -109,8 +109,25 @@ export class PDFDocumentGenerator {
       console.log("[PDFGenerator] Adding signature to PDF");
       doc.text("Signature :", 20, yPosition);
       yPosition += 10;
-      doc.addImage(signatureData, 'PNG', 20, yPosition, 50, 30);
-      yPosition += 40;
+      try {
+        // Calculate signature dimensions to maintain aspect ratio
+        const maxWidth = 100;
+        const maxHeight = 60;
+        const img = new Image();
+        img.src = signatureData;
+        let width = maxWidth;
+        let height = (img.height * maxWidth) / img.width;
+        
+        if (height > maxHeight) {
+          height = maxHeight;
+          width = (img.width * maxHeight) / img.height;
+        }
+        
+        doc.addImage(signatureData, 'PNG', 20, yPosition, width, height);
+      } catch (error) {
+        console.error("[PDFGenerator] Error adding signature:", error);
+        doc.text("(Erreur lors de l'ajout de la signature)", 20, yPosition);
+      }
     } else {
       console.log("[PDFGenerator] No signature found, adding placeholder");
       doc.text("Signature :", 20, yPosition);
