@@ -62,6 +62,44 @@ export const TrustedPersons = () => {
     }
   };
 
+  const updateSynthesis = async (userId: string, person: NewTrustedPerson) => {
+    try {
+      console.log("[TrustedPersons] Updating synthesis with trusted person info");
+      
+      // Get current synthesis
+      const { data: currentSynthesis, error: synthesisError } = await supabase
+        .from("questionnaire_synthesis")
+        .select("free_text")
+        .eq("user_id", userId)
+        .single();
+
+      if (synthesisError && synthesisError.code !== "PGRST116") {
+        console.error("[TrustedPersons] Error fetching synthesis:", synthesisError);
+        throw synthesisError;
+      }
+
+      const currentText = currentSynthesis?.free_text || "";
+      const trustedPersonText = `\n\nPersonne de confiance:\n${person.name}\nTéléphone: ${person.phone}\nEmail: ${person.email}${person.relation ? `\nRelation: ${person.relation}` : ""}${person.address ? `\nAdresse: ${person.address}` : ""}${person.city || person.postal_code ? `\n${person.postal_code} ${person.city}` : ""}`;
+
+      const { error: updateError } = await supabase
+        .from("questionnaire_synthesis")
+        .upsert({
+          user_id: userId,
+          free_text: currentText + trustedPersonText
+        });
+
+      if (updateError) {
+        console.error("[TrustedPersons] Error updating synthesis:", updateError);
+        throw updateError;
+      }
+
+      console.log("[TrustedPersons] Successfully updated synthesis with trusted person info");
+    } catch (error) {
+      console.error("[TrustedPersons] Error updating synthesis:", error);
+      throw error;
+    }
+  };
+
   const savePerson = async (newPerson: NewTrustedPerson) => {
     try {
       if (persons.length > 0) {
@@ -112,6 +150,10 @@ export const TrustedPersons = () => {
       }
 
       console.log("[TrustedPersons] Saved trusted person:", data);
+      
+      // Update synthesis with trusted person info
+      await updateSynthesis(sessionData.session.user.id, newPerson);
+      
       await loadTrustedPersons();
       toast({
         title: "Succès",
