@@ -7,7 +7,10 @@ const RESPONSE_MAPPING: Record<string, string> = {
 };
 
 export const formatResponseText = (response: string): string => {
-  return RESPONSE_MAPPING[response] || response;
+  console.log("[ResponseFormatter] Formatting response:", response);
+  const formattedResponse = RESPONSE_MAPPING[response] || response;
+  console.log("[ResponseFormatter] Formatted to:", formattedResponse);
+  return formattedResponse;
 };
 
 export const formatResponses = (responseArray: any[]) => {

@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react";
 import { ResponseCard } from "./responses/ResponseCard";
 import { ResponsesList } from "./responses/ResponsesList";
 import { UniqueIdentifier } from "./responses/UniqueIdentifier";
+import { formatResponseText } from "./free-text/ResponseFormatter";
 
 interface ResponsesSummaryProps {
   userId: string;
@@ -41,19 +42,6 @@ export function ResponsesSummary({ userId }: ResponsesSummaryProps) {
       return [];
     }
     
-    const formatResponseText = (response: string) => {
-      switch (response) {
-        case 'je_ne_sais_pas':
-          return 'je ne sais pas';
-        case 'oui_durée_modérée':
-          return 'oui pour une durée modérée';
-        case 'oui_médical':
-          return 'oui seulement si l\'équipe médicale le juge utile';
-        default:
-          return response;
-      }
-    };
-
     const groupedResponses = responseArray.reduce((acc, curr) => {
       const key = curr.question_id;
       if (!acc[key]) {
