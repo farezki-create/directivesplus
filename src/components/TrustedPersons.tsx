@@ -79,7 +79,10 @@ export const TrustedPersons = () => {
       }
 
       const currentText = currentSynthesis?.free_text || "";
-      const trustedPersonText = `\n\nPersonne de confiance:\n${person.name}\nTéléphone: ${person.phone}\nEmail: ${person.email}${person.relation ? `\nRelation: ${person.relation}` : ""}${person.address ? `\nAdresse: ${person.address}` : ""}${person.city || person.postal_code ? `\n${person.postal_code} ${person.city}` : ""}`;
+      
+      // Create a clear separation between synthesis and trusted person info
+      const separator = "\n\n-------------------------------------------\n";
+      const trustedPersonText = `${separator}PERSONNE DE CONFIANCE\n\nNom: ${person.name}\nTéléphone: ${person.phone}\nEmail: ${person.email}${person.relation ? `\nRelation: ${person.relation}` : ""}${person.address ? `\nAdresse: ${person.address}` : ""}${person.city || person.postal_code ? `\n${person.postal_code} ${person.city}` : ""}`;
 
       // Use update if synthesis exists, insert if it doesn't
       const operation = currentSynthesis ? 
