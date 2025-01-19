@@ -4,12 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { ResponsesSummary } from "@/components/ResponsesSummary";
 import { ExportButton } from "@/components/free-text/ExportButton";
 import { FreeTextInput } from "@/components/free-text/FreeTextInput";
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
 
 const FreeText = () => {
   const [userId, setUserId] = useState<string | null>(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -32,23 +29,6 @@ const FreeText = () => {
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl font-bold">Synthèse et expression libre</h1>
             <ExportButton userId={userId} />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-            <Button 
-              onClick={() => navigate("/dashboard?tab=persons")}
-              size="lg"
-              className="w-full"
-            >
-              Personne de confiance
-            </Button>
-            <Button 
-              onClick={() => navigate("/dashboard")}
-              size="lg"
-              className="w-full"
-            >
-              Directives anticipées
-            </Button>
           </div>
           
           <div className="mb-8">
