@@ -1,5 +1,6 @@
 import { toast } from "@/hooks/use-toast";
 import { UserProfile, TrustedPerson } from "../types";
+import { PDFDocumentGenerator } from "../PDFDocumentGenerator";
 
 export const handlePDFGeneration = (
   profile: UserProfile | null,
