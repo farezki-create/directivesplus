@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { PDFGenerator } from "../PDFGenerator";
 
 interface FreeTextInputProps {
   userId: string;
@@ -92,7 +93,10 @@ export const FreeTextInput = ({ userId }: FreeTextInputProps) => {
         className="min-h-[100px] border-dotted"
         placeholder="Écrivez votre texte libre ici..."
       />
-      <Button onClick={saveFreeText}>Enregistrer</Button>
+      <div className="flex gap-4">
+        <Button onClick={saveFreeText}>Enregistrer</Button>
+        <PDFGenerator userId={userId} />
+      </div>
     </div>
   );
 };
