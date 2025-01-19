@@ -6,14 +6,13 @@ import { Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
-import { ResponsesSummary } from "@/components/ResponsesSummary";
+import { useSynthesis } from "@/hooks/useSynthesis";
 
 const Examples = () => {
   const navigate = useNavigate();
   const [userId, setUserId] = useState<string | null>(null);
+  const { text: synthesisText } = useSynthesis(userId);
   const [isLoading, setIsLoading] = useState(true);
-  const { responses, isLoading: isLoadingResponses, hasErrors } = useQuestionnairesResponses(userId || "");
 
   useEffect(() => {
     const getUser = async () => {
@@ -36,11 +35,11 @@ const Examples = () => {
     getUser();
   }, []);
 
-  const renderResponses = () => {
-    if (isLoading || isLoadingResponses) {
+  const renderSynthesis = () => {
+    if (isLoading) {
       return (
-        <div className="flex items-center justify-center p-8">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="flex justify-center items-center p-4">
+          <Loader2 className="h-6 w-6 animate-spin" />
         </div>
       );
     }
@@ -49,23 +48,27 @@ const Examples = () => {
       return (
         <Alert>
           <AlertDescription>
-            Veuillez vous connecter pour voir vos réponses.
+            Veuillez vous connecter pour voir votre synthèse.
           </AlertDescription>
         </Alert>
       );
     }
 
-    if (hasErrors) {
+    if (!synthesisText) {
       return (
-        <Alert variant="destructive">
+        <Alert>
           <AlertDescription>
-            Une erreur est survenue lors du chargement de vos réponses.
+            Aucune synthèse n'a été rédigée pour le moment.
           </AlertDescription>
         </Alert>
       );
     }
 
-    return <ResponsesSummary userId={userId} />;
+    return (
+      <ScrollArea className="h-[200px] w-full rounded-md border p-4">
+        <div className="whitespace-pre-wrap">{synthesisText}</div>
+      </ScrollArea>
+    );
   };
 
   return (
@@ -73,32 +76,39 @@ const Examples = () => {
       <Header />
       
       <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold mb-8 text-center">
-            Documents
-          </h1>
+        <h1 className="text-3xl font-bold mb-8 text-center">
+          Documents
+        </h1>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        <div className="max-w-4xl mx-auto space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Button 
-              onClick={() => navigate("/dashboard?tab=persons")}
-              size="lg"
-              className="w-full"
-            >
-              Personne de confiance
-            </Button>
-            <Button 
+              variant="outline" 
+              className="p-8 h-auto flex flex-col gap-2"
               onClick={() => navigate("/dashboard")}
-              size="lg"
-              className="w-full"
             >
-              Directives anticipées
+              <span className="text-lg font-semibold">Personne de confiance</span>
+              <span className="text-sm text-gray-500">
+                Désignation de la personne de confiance
+              </span>
+            </Button>
+
+            <Button 
+              variant="outline" 
+              className="p-8 h-auto flex flex-col gap-2"
+              onClick={() => navigate("/free-text")}
+            >
+              <span className="text-lg font-semibold">Directives anticipées</span>
+              <span className="text-sm text-gray-500">
+                Rédaction des directives anticipées
+              </span>
             </Button>
           </div>
-          
+
           {userId && (
             <div className="mt-8">
               <h2 className="text-xl font-semibold mb-4">Mes directives anticipées</h2>
-              {renderResponses()}
+              {renderSynthesis()}
             </div>
           )}
         </div>
