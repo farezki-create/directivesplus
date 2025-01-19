@@ -1,53 +1,44 @@
-import { useEffect, useState } from "react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { PDFPreviewDialog } from "./PDFPreviewDialog";
+import { useState } from "react";
+import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "./usePDFData";
-import { 
-  handlePDFGeneration,
-  handlePDFSave,
-  handlePDFPrint,
-  handlePDFEmail
-} from "./utils/PDFGenerationUtils";
+import { handlePDFGeneration, handlePDFDownload, handlePDFPrint } from "./utils/PDFGenerationUtils";
+import { PDFPreviewDialog } from "./PDFPreviewDialog";
 
-export const PDFGenerator = () => {
+interface PDFGeneratorProps {
+  userId: string;
+}
+
+export function PDFGenerator({ userId }: PDFGeneratorProps) {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
-  const { profile, responses, trustedPersons, loading } = usePDFData();
+  const { responses } = useQuestionnairesResponses(userId);
+  const { profile, trustedPersons, loading } = usePDFData();
 
   const generatePDF = () => {
     handlePDFGeneration(profile, responses, trustedPersons, setPdfUrl, setShowPreview);
   };
 
-  useEffect(() => {
-    if (!loading && profile) {
-      console.log("[PDFGenerator] Auto-generating PDF on mount");
-      generatePDF();
-    }
-  }, [loading, profile]);
+  const handleEmail = async () => {
+    // Email handling logic here - to be implemented
+    console.log("[PDFGenerator] Email functionality not yet implemented");
+  };
 
   if (loading) {
-    return <div>Chargement...</div>;
+    return null;
   }
 
   return (
-    <Card className="p-6 max-w-2xl mx-auto">
-      <h2 className="text-2xl font-bold mb-4">Générer vos documents</h2>
-      <p className="text-muted-foreground mb-6">
-        Téléchargez vos directives anticipées et la liste des personnes de confiance au format PDF.
-      </p>
-      <Button onClick={generatePDF} className="w-full">
-        Générer Directives anticipées et personne de confiance
-      </Button>
-
+    <>
+      <button onClick={generatePDF}>Générer le PDF</button>
+      
       <PDFPreviewDialog
         open={showPreview}
         onOpenChange={setShowPreview}
         pdfUrl={pdfUrl}
-        onEmail={() => handlePDFEmail(profile?.email, pdfUrl)}
-        onSave={() => handlePDFSave(pdfUrl)}
+        onEmail={handleEmail}
+        onSave={() => handlePDFDownload(pdfUrl)}
         onPrint={() => handlePDFPrint(pdfUrl)}
       />
-    </Card>
+    </>
   );
-};
+}
