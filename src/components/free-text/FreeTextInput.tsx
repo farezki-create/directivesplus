@@ -71,7 +71,7 @@ export const FreeTextInput = ({ userId }: FreeTextInputProps) => {
       console.log("[FreeTextInput] Free text saved successfully");
       toast({
         title: "Succès",
-        description: "Votre texte libre a été enregistré.",
+        description: "Votre texte libre a été enregistré avec succès.",
       });
     } catch (error) {
       console.error("[FreeTextInput] Error saving free text:", error);
