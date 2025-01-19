@@ -66,8 +66,7 @@ export class PDFUserSection {
       }
 
       // Access code
-      yPosition += 5;
-      doc.text(`Code d'accès pour les professionnels de santé : ${profile.unique_identifier}`, 20, yPosition);
+      doc.text(`Code d'accès : ${profile.unique_identifier}`, 20, yPosition);
       yPosition += 15;
 
     } else {
