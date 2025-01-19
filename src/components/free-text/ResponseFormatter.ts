@@ -10,7 +10,15 @@ const RESPONSE_MAPPING: Record<string, string> = {
 
 export const formatResponseText = (response: string): string => {
   console.log("[ResponseFormatter] Formatting response:", response);
-  const formattedResponse = RESPONSE_MAPPING[response] || response;
+  // First, check if it's in the mapping
+  const mappedResponse = RESPONSE_MAPPING[response];
+  if (mappedResponse) {
+    console.log("[ResponseFormatter] Found in mapping, formatted to:", mappedResponse);
+    return mappedResponse;
+  }
+  
+  // If not in mapping, remove any quotation marks from the response
+  const formattedResponse = response.replace(/['"]/g, '');
   console.log("[ResponseFormatter] Formatted to:", formattedResponse);
   return formattedResponse;
 };
