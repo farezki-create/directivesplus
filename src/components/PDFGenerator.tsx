@@ -37,7 +37,7 @@ export function PDFGenerator({ userId }: PDFGeneratorProps) {
         className="flex items-center gap-2"
       >
         <FileText className="h-4 w-4" />
-        Générer mes directives anticipées
+        Générer mes Directives anticipées et ma Personne de confiance
       </Button>
       
       <PDFPreviewDialog
