@@ -18,16 +18,11 @@ export function SignaturePad({ onSave }: SignaturePadProps) {
     }
   };
 
-  const handleSave = () => {
-    console.log("[SignaturePad] Attempting to save signature");
+  const handleEndDrawing = () => {
+    console.log("[SignaturePad] End drawing, attempting to save signature");
     if (signaturePadRef.current) {
       if (signaturePadRef.current.isEmpty()) {
         console.log("[SignaturePad] Signature pad is empty");
-        toast({
-          title: "Erreur",
-          description: "Veuillez signer avant de sauvegarder",
-          variant: "destructive",
-        });
         return;
       }
 
@@ -50,14 +45,12 @@ export function SignaturePad({ onSave }: SignaturePadProps) {
           canvasProps={{
             className: "signature-canvas w-full h-[200px]",
           }}
+          onEnd={handleEndDrawing}
         />
       </div>
       <div className="flex gap-4">
         <Button variant="outline" onClick={handleClear}>
           Effacer
-        </Button>
-        <Button onClick={handleSave}>
-          Sauvegarder la signature
         </Button>
       </div>
     </div>
