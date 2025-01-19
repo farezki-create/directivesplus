@@ -2,21 +2,38 @@ import { Header } from "@/components/Header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { FileText, BookOpen } from "lucide-react";
+import { FileText, BookOpen, User } from "lucide-react";
 import { DirectivesSynthesis } from "@/components/directives/DirectivesSynthesis";
+import { TrustedPersons } from "@/components/TrustedPersons";
 
 const Examples = () => {
   const [showExamples, setShowExamples] = useState(false);
   const [showDocuments, setShowDocuments] = useState(false);
+  const [showDirectives, setShowDirectives] = useState(false);
+  const [showTrustedPerson, setShowTrustedPerson] = useState(false);
 
   const handleExamplesClick = () => {
     setShowExamples(true);
     setShowDocuments(false);
+    setShowDirectives(false);
+    setShowTrustedPerson(false);
   };
 
   const handleDocumentsClick = () => {
     setShowDocuments(true);
     setShowExamples(false);
+    setShowDirectives(false);
+    setShowTrustedPerson(false);
+  };
+
+  const handleDirectivesClick = () => {
+    setShowDirectives(true);
+    setShowDocuments(false);
+  };
+
+  const handleTrustedPersonClick = () => {
+    setShowTrustedPerson(true);
+    setShowDocuments(false);
   };
 
   return (
@@ -24,7 +41,7 @@ const Examples = () => {
       <Header />
       
       <main className="flex-1 container mx-auto px-4 py-8">
-        {!showExamples && !showDocuments && (
+        {!showExamples && !showDocuments && !showDirectives && !showTrustedPerson && (
           <div className="grid gap-4 md:grid-cols-2 max-w-2xl mx-auto">
             <Button 
               onClick={handleExamplesClick} 
@@ -83,7 +100,7 @@ const Examples = () => {
           </div>
         )}
 
-        {showDocuments && (
+        {showDocuments && !showDirectives && !showTrustedPerson && (
           <div className="space-y-6">
             <Button 
               onClick={() => setShowDocuments(false)} 
@@ -92,7 +109,56 @@ const Examples = () => {
             >
               Retour
             </Button>
+            <div className="grid gap-4 md:grid-cols-2 max-w-2xl mx-auto">
+              <Button 
+                onClick={handleDirectivesClick}
+                size="lg"
+                className="flex items-center gap-2"
+              >
+                <FileText className="w-5 h-5" />
+                Mes Directives Anticipées
+              </Button>
+              <Button 
+                onClick={handleTrustedPersonClick}
+                size="lg"
+                className="flex items-center gap-2"
+              >
+                <User className="w-5 h-5" />
+                Ma Personne de Confiance
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {showDirectives && (
+          <div className="space-y-6">
+            <Button 
+              onClick={() => {
+                setShowDirectives(false);
+                setShowDocuments(true);
+              }} 
+              variant="outline" 
+              className="mb-4"
+            >
+              Retour
+            </Button>
             <DirectivesSynthesis />
+          </div>
+        )}
+
+        {showTrustedPerson && (
+          <div className="space-y-6">
+            <Button 
+              onClick={() => {
+                setShowTrustedPerson(false);
+                setShowDocuments(true);
+              }} 
+              variant="outline" 
+              className="mb-4"
+            >
+              Retour
+            </Button>
+            <TrustedPersons />
           </div>
         )}
       </main>
