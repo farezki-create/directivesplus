@@ -9,6 +9,7 @@ export function useAdvancedIllnessResponses(open: boolean) {
 
   useEffect(() => {
     if (open) {
+      setAnswers({});  // Reset answers when dialog opens
       fetchExistingAnswers();
     }
   }, [open]);
