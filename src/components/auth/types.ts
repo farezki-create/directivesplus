@@ -24,8 +24,7 @@ export const signUpSchema = z.object({
   country: z.string().optional(),
   phoneNumber: z.string().optional(),
   // Healthcare professional fields
-  cpsNumber: z.string().optional(),
-  rppsNumber: z.string().optional(),
+  rppsNumber: z.string().min(1, "Le numéro RPPS est requis"),
   professionalType: z.enum(['doctor', 'nurse', 'pharmacist', 'other']).optional(),
   specialty: z.string().optional(),
 }).refine((data) => data.password === data.confirmPassword, {

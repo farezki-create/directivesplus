@@ -27,24 +27,10 @@ export const HealthcareProfessionalFields = ({
     <div className="space-y-4">
       <FormField
         control={form.control}
-        name="cpsNumber"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Numéro CPS</FormLabel>
-            <FormControl>
-              <Input placeholder="Entrez votre numéro CPS" {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={form.control}
         name="rppsNumber"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Numéro RPPS (optionnel)</FormLabel>
+            <FormLabel>Numéro RPPS</FormLabel>
             <FormControl>
               <Input placeholder="Entrez votre numéro RPPS" {...field} />
             </FormControl>

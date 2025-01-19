@@ -4,16 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { FormValues } from "@/components/auth/types";
 import { getErrorMessage } from "@/utils/auth-errors";
 import { useToast } from "@/components/ui/use-toast";
-import { AuthError } from "@supabase/supabase-js";
-
-// Types for our healthcare professional data
-type HealthcareProfessional = {
-  id: string;
-  cps_number: string;
-  professional_type: string;
-  first_name: string;
-  last_name: string;
-};
 
 export const useHealthcareAuth = () => {
   const navigate = useNavigate();
@@ -57,11 +47,10 @@ export const useHealthcareAuth = () => {
       .from('healthcare_professionals')
       .insert([{
         id: userId,
-        cps_number: values.cpsNumber,
+        rpps_number: values.rppsNumber,
         professional_type: values.professionalType || 'doctor',
         first_name: values.firstName,
         last_name: values.lastName,
-        rpps_number: values.rppsNumber,
         specialty: values.specialty
       }]);
 
