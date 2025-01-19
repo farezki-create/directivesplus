@@ -30,7 +30,7 @@ export class PDFResponsesSection {
                              response.advanced_illness_questions?.question ||
                              response.preferences_questions?.question;
 
-          const text = `${questionText}: ${response.response}`;
+          const text = `${questionText} : ${response.response}`;
           const lines = doc.splitTextToSize(text, pageWidth - 40);
           doc.text(lines, 20, yPosition);
           yPosition += lines.length * 7;
