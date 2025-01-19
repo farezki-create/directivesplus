@@ -1,10 +1,11 @@
 import { jsPDF } from "jspdf";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
 import { UserProfile, TrustedPerson } from "./types";
 import { PDFUserSection } from "./utils/PDFUserSection";
 import { PDFTrustedPersonSection } from "./utils/PDFTrustedPersonSection";
 import { PDFResponsesSection } from "./utils/PDFResponsesSection";
+import { PDFAccessSection } from "./utils/PDFAccessSection";
+import { PDFDateSection } from "./utils/PDFDateSection";
+import { PDFSignatureSection } from "./utils/PDFSignatureSection";
 
 export class PDFDocumentGenerator {
   static generate(profile: UserProfile, responses: any, trustedPersons: TrustedPerson[]) {
@@ -38,20 +39,7 @@ export class PDFDocumentGenerator {
     }
 
     // Section 2: Access Code and URL
-    yPosition += 20;
-    doc.setFontSize(16);
-    doc.text("2. Accès au document", 20, yPosition);
-    yPosition += 10;
-    doc.setFontSize(12);
-    doc.text(`Code d'accès : ${profile.unique_identifier}`, 20, yPosition);
-    yPosition += 10;
-    doc.text("URL de connexion : https://directives-anticipees.fr", 20, yPosition);
-
-    // Add new page if needed
-    if (yPosition > doc.internal.pageSize.getHeight() - 40) {
-      doc.addPage();
-      yPosition = 20;
-    }
+    yPosition = PDFAccessSection.generate(doc, profile, yPosition);
 
     // For trusted person document, skip directives anticipées section
     if (!isTrustedPersonDoc) {
@@ -61,12 +49,6 @@ export class PDFDocumentGenerator {
       doc.text("3. Synthèse de mes directives anticipées", 20, yPosition);
       yPosition += 10;
       yPosition = PDFResponsesSection.generate(doc, responses, yPosition);
-
-      // Add new page if needed
-      if (yPosition > doc.internal.pageSize.getHeight() - 40) {
-        doc.addPage();
-        yPosition = 20;
-      }
     }
 
     // Section for Trusted Person
@@ -96,43 +78,8 @@ export class PDFDocumentGenerator {
     );
     yPosition += 10;
     
-    const currentDate = format(new Date(), "d MMMM yyyy", { locale: fr });
-    doc.setFontSize(12);
-    doc.text(`Fait le ${currentDate}`, 20, yPosition);
-    yPosition += 20;
-    doc.text("À : _____________________", 20, yPosition);
-    yPosition += 20;
-
-    // Add signature if available
-    const signatureData = localStorage.getItem('userSignature');
-    if (signatureData) {
-      console.log("[PDFGenerator] Adding signature to PDF");
-      doc.text("Signature :", 20, yPosition);
-      yPosition += 10;
-      try {
-        // Calculate signature dimensions to maintain aspect ratio
-        const maxWidth = 100;
-        const maxHeight = 60;
-        const img = new Image();
-        img.src = signatureData;
-        let width = maxWidth;
-        let height = (img.height * maxWidth) / img.width;
-        
-        if (height > maxHeight) {
-          height = maxHeight;
-          width = (img.width * maxHeight) / img.height;
-        }
-        
-        doc.addImage(signatureData, 'PNG', 20, yPosition, width, height);
-      } catch (error) {
-        console.error("[PDFGenerator] Error adding signature:", error);
-        doc.text("(Erreur lors de l'ajout de la signature)", 20, yPosition);
-      }
-    } else {
-      console.log("[PDFGenerator] No signature found, adding placeholder");
-      doc.text("Signature :", 20, yPosition);
-      yPosition += 40;
-    }
+    yPosition = PDFDateSection.generate(doc, yPosition);
+    yPosition = PDFSignatureSection.generate(doc, yPosition);
 
     return doc.output('dataurlstring');
   }
