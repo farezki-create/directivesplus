@@ -29,7 +29,7 @@ export function PDFGenerator({ userId }: PDFGeneratorProps) {
 
   return (
     <>
-      <button onClick={generatePDF}>Générer le PDF</button>
+      <button onClick={generatePDF}>Générer Mes directives anticipées</button>
       
       <PDFPreviewDialog
         open={showPreview}
