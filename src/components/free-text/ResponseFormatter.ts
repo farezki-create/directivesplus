@@ -10,7 +10,7 @@ const RESPONSE_MAPPING: Record<string, string> = {
 
 export const formatResponseText = (response: string): string => {
   console.log("[ResponseFormatter] Formatting response:", response);
-  const formattedResponse = RESPONSE_MAPPING[response] || response;
+  const formattedResponse = RESPONSE_MAPPING[response] || response.replace(/[,"]/g, ' et ');
   console.log("[ResponseFormatter] Formatted to:", formattedResponse);
   return formattedResponse;
 };
