@@ -1,8 +1,8 @@
 const RESPONSE_MAPPING: Record<string, string> = {
   'je_ne_sais_pas': 'je ne sais pas',
   'oui_durée_modérée': 'oui pour une durée modérée',
-  'oui_duree_moderee': 'oui pour une durée modérée',
   'oui_duree_moderée': 'oui pour une durée modérée',
+  'oui_duree_moderee': 'oui pour une durée modérée',
   'oui_médical': 'oui seulement si l\'équipe médicale le juge utile',
 };
 
