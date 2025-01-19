@@ -5,7 +5,6 @@ import { UserProfile, TrustedPerson } from "./types";
 import { PDFUserSection } from "./utils/PDFUserSection";
 import { PDFTrustedPersonSection } from "./utils/PDFTrustedPersonSection";
 import { PDFResponsesSection } from "./utils/PDFResponsesSection";
-import { PDFSynthesisSection } from "./utils/PDFSynthesisSection";
 
 export class PDFDocumentGenerator {
   static generate(profile: UserProfile, responses: any, trustedPersons: TrustedPerson[]) {
@@ -57,25 +56,10 @@ export class PDFDocumentGenerator {
       yPosition = 20;
     }
 
-    // Section 4: Free Text
-    if (responses?.synthesis?.free_text) {
-      yPosition += 20;
-      doc.setFontSize(16);
-      doc.text("4. Texte libre", 20, yPosition);
-      yPosition += 10;
-      yPosition = PDFSynthesisSection.generate(doc, responses, yPosition);
-    }
-
-    // Add new page if needed
-    if (yPosition > doc.internal.pageSize.getHeight() - 40) {
-      doc.addPage();
-      yPosition = 20;
-    }
-
-    // Section 5: Trusted Person
+    // Section 4: Trusted Person
     yPosition += 20;
     doc.setFontSize(16);
-    doc.text("5. Personne de confiance", 20, yPosition);
+    doc.text("4. Personne de confiance", 20, yPosition);
     yPosition += 10;
     yPosition = PDFTrustedPersonSection.generate(doc, trustedPersons, yPosition);
 
@@ -85,10 +69,10 @@ export class PDFDocumentGenerator {
       yPosition = 20;
     }
 
-    // Section 6: Date, Place and Signature
+    // Section 5: Date, Place and Signature
     yPosition += 20;
     doc.setFontSize(16);
-    doc.text("6. Date, lieu et signature", 20, yPosition);
+    doc.text("5. Date, lieu et signature", 20, yPosition);
     yPosition += 10;
     
     const currentDate = format(new Date(), "d MMMM yyyy", { locale: fr });
