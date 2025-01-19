@@ -34,7 +34,7 @@ const Examples = () => {
               className="h-auto min-h-[5rem] py-4 px-6 text-lg font-medium hover:scale-105 transition-transform duration-200 whitespace-normal text-center"
               onClick={() => navigate("/dashboard")}
             >
-              Directives anticipées
+              Mes directives anticipées
             </Button>
           </div>
         </div>
