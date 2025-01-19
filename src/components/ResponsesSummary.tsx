@@ -41,6 +41,10 @@ export function ResponsesSummary({ userId }: ResponsesSummaryProps) {
       return [];
     }
     
+    const formatResponseText = (response: string) => {
+      return response === 'je_ne_sais_pas' ? 'je ne sais pas' : response;
+    };
+
     const groupedResponses = responseArray.reduce((acc, curr) => {
       const key = curr.question_id;
       if (!acc[key]) {
@@ -53,7 +57,7 @@ export function ResponsesSummary({ userId }: ResponsesSummaryProps) {
           responses: []
         };
       }
-      acc[key].responses.push(curr.response);
+      acc[key].responses.push(formatResponseText(curr.response));
       return acc;
     }, {});
 
