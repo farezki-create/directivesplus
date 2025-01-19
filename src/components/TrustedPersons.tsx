@@ -71,9 +71,9 @@ export const TrustedPersons = () => {
         .from("questionnaire_synthesis")
         .select("free_text")
         .eq("user_id", userId)
-        .single();
+        .maybeSingle();
 
-      if (synthesisError && synthesisError.code !== "PGRST116") {
+      if (synthesisError) {
         console.error("[TrustedPersons] Error fetching synthesis:", synthesisError);
         throw synthesisError;
       }
@@ -81,12 +81,17 @@ export const TrustedPersons = () => {
       const currentText = currentSynthesis?.free_text || "";
       const trustedPersonText = `\n\nPersonne de confiance:\n${person.name}\nTéléphone: ${person.phone}\nEmail: ${person.email}${person.relation ? `\nRelation: ${person.relation}` : ""}${person.address ? `\nAdresse: ${person.address}` : ""}${person.city || person.postal_code ? `\n${person.postal_code} ${person.city}` : ""}`;
 
-      const { error: updateError } = await supabase
-        .from("questionnaire_synthesis")
-        .upsert({
-          user_id: userId,
-          free_text: currentText + trustedPersonText
-        });
+      // Use update if synthesis exists, insert if it doesn't
+      const operation = currentSynthesis ? 
+        supabase
+          .from("questionnaire_synthesis")
+          .update({ free_text: currentText + trustedPersonText })
+          .eq("user_id", userId) :
+        supabase
+          .from("questionnaire_synthesis")
+          .insert({ user_id: userId, free_text: trustedPersonText });
+
+      const { error: updateError } = await operation;
 
       if (updateError) {
         console.error("[TrustedPersons] Error updating synthesis:", updateError);
