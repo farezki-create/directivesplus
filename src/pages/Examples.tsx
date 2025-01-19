@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
 import { useNavigate } from "react-router-dom";
+import { BookOpen } from "lucide-react";
 
 const Examples = () => {
   const navigate = useNavigate();
@@ -35,6 +36,15 @@ const Examples = () => {
               onClick={() => navigate("/dashboard")}
             >
               Mes directives anticipées
+            </Button>
+            <Button 
+              size="lg"
+              variant="secondary"
+              className="h-auto min-h-[5rem] py-4 px-6 text-lg font-medium hover:scale-105 transition-transform duration-200 whitespace-normal text-center col-span-2"
+              onClick={() => navigate("/examples")}
+            >
+              <BookOpen className="w-6 h-6" />
+              Exemples de directives anticipées
             </Button>
           </div>
         </div>
