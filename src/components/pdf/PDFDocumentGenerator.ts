@@ -100,7 +100,18 @@ export class PDFDocumentGenerator {
     yPosition += 20;
     doc.text("À : _____________________", 20, yPosition);
     yPosition += 20;
-    doc.text("Signature :", 20, yPosition);
+
+    // Add signature if available
+    const signatureData = localStorage.getItem('userSignature');
+    if (signatureData) {
+      doc.text("Signature :", 20, yPosition);
+      yPosition += 10;
+      doc.addImage(signatureData, 'PNG', 20, yPosition, 50, 30);
+      yPosition += 40;
+    } else {
+      doc.text("Signature :", 20, yPosition);
+      yPosition += 40;
+    }
 
     return doc.output('dataurlstring');
   }
