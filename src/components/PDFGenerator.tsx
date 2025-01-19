@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "./pdf/usePDFData";
 import { handlePDFGeneration, handlePDFDownload, handlePDFPrint } from "./pdf/utils/PDFGenerationUtils";
-import { PDFPreviewDialog } from "./pdf/PDFPreviewDialog";
+import { PDFPreviewDialog } from "./PDFPreviewDialog";
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
 
@@ -26,6 +26,11 @@ export function PDFGenerator({ userId }: PDFGeneratorProps) {
     console.log("[PDFGenerator] Email functionality not yet implemented");
   };
 
+  const handleSave = () => {
+    console.log("[PDFGenerator] Regenerating PDF before save");
+    generatePDF();
+  };
+
   if (loading) {
     return null;
   }
@@ -45,7 +50,7 @@ export function PDFGenerator({ userId }: PDFGeneratorProps) {
         onOpenChange={setShowPreview}
         pdfUrl={pdfUrl}
         onEmail={handleEmail}
-        onSave={() => handlePDFDownload(pdfUrl)}
+        onSave={handleSave}
         onPrint={() => handlePDFPrint(pdfUrl)}
       />
     </>
