@@ -1,5 +1,4 @@
 import { ResponsesSummary } from "@/components/ResponsesSummary";
-import { PDFGenerator } from "@/components/PDFGenerator";
 import { Card } from "@/components/ui/card";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,8 +30,6 @@ export function DirectivesSynthesis() {
         <h2 className="text-2xl font-bold mb-6">Synthèse de mes directives anticipées</h2>
         <ResponsesSummary userId={userId} />
       </Card>
-
-      <PDFGenerator />
     </div>
   );
 }
