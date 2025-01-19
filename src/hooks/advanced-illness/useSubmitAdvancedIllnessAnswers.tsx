@@ -35,32 +35,17 @@ export function useSubmitAdvancedIllnessAnswers() {
         return true;
       }
 
-      // Delete existing responses first
-      console.log("[AdvancedIllness] Deleting existing responses");
-      const { error: deleteError } = await supabase
-        .from("questionnaire_advanced_illness_responses")
-        .delete()
-        .eq("user_id", userId);
-
-      if (deleteError) {
-        console.error("[AdvancedIllness] Error deleting existing responses:", deleteError);
-        toast({
-          title: "Erreur",
-          description: "Impossible de mettre à jour vos réponses.",
-          variant: "destructive",
-        });
-        return false;
-      }
-
-      // Insert new responses
-      console.log("[AdvancedIllness] Inserting new responses:", responses.length);
+      console.log("[AdvancedIllness] Upserting responses:", responses.length);
       for (const response of responses) {
-        const { error: insertError } = await supabase
+        const { error: upsertError } = await supabase
           .from("questionnaire_advanced_illness_responses")
-          .insert(response);
+          .upsert(response, {
+            onConflict: 'user_id,question_id',
+            ignoreDuplicates: false
+          });
 
-        if (insertError) {
-          console.error("[AdvancedIllness] Error inserting response:", insertError);
+        if (upsertError) {
+          console.error("[AdvancedIllness] Error upserting response:", upsertError);
           toast({
             title: "Erreur",
             description: "Une erreur est survenue lors de l'enregistrement.",
