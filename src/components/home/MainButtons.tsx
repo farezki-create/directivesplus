@@ -48,7 +48,7 @@ export function MainButtons({
         size="lg"
         className="md:col-span-2"
       >
-        Exemples et documents utiles
+        Exemples et Mes documents
       </Button>
     </div>
   );
