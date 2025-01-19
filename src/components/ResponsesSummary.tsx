@@ -42,7 +42,14 @@ export function ResponsesSummary({ userId }: ResponsesSummaryProps) {
     }
     
     const formatResponseText = (response: string) => {
-      return response === 'je_ne_sais_pas' ? 'je ne sais pas' : response;
+      switch (response) {
+        case 'je_ne_sais_pas':
+          return 'je ne sais pas';
+        case 'oui_durée_modérée':
+          return 'oui pour une durée modérée';
+        default:
+          return response;
+      }
     };
 
     const groupedResponses = responseArray.reduce((acc, curr) => {
