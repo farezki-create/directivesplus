@@ -4,7 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 export function useSubmitAdvancedIllnessAnswers() {
   const { toast } = useToast();
 
-  const submitAnswers = async (answers: Record<string, string>, questions: any[]) => {
+  const submitAnswers = async (answers: Record<string, string[]>, questions: any[]) => {
     try {
       const session = await supabase.auth.getSession();
       const userId = session.data.session?.user.id;
@@ -25,7 +25,7 @@ export function useSubmitAdvancedIllnessAnswers() {
         return {
           user_id: userId,
           question_id: questionId,
-          response,
+          response: JSON.stringify(response),
           question_text: question?.question || "",
         };
       });
