@@ -23,6 +23,11 @@ export function SignaturePad({ onSave }: SignaturePadProps) {
     if (signaturePadRef.current) {
       if (signaturePadRef.current.isEmpty()) {
         console.log("[SignaturePad] Signature pad is empty");
+        toast({
+          title: "Attention",
+          description: "Veuillez signer avant de continuer",
+          variant: "destructive",
+        });
         return;
       }
 
@@ -48,9 +53,12 @@ export function SignaturePad({ onSave }: SignaturePadProps) {
           onEnd={handleEndDrawing}
         />
       </div>
-      <div className="flex gap-4">
+      <div className="flex justify-between">
         <Button variant="outline" onClick={handleClear}>
           Effacer
+        </Button>
+        <Button onClick={handleEndDrawing}>
+          Valider la signature
         </Button>
       </div>
     </div>

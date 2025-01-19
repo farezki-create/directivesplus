@@ -80,19 +80,22 @@ export function PDFPreviewDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl">
-        <DialogTitle>Prévisualisation du document</DialogTitle>
+        <DialogTitle>
+          {showSignaturePad ? "Signature du document" : "Prévisualisation du document"}
+        </DialogTitle>
         <div className="flex flex-col space-y-4">
-          <div className="flex justify-end space-x-2">
-            <Button variant="outline" onClick={() => setShowSignaturePad(true)}>
-              Signer le document
-            </Button>
-          </div>
+          {!showSignaturePad && (
+            <div className="flex justify-end">
+              <Button variant="outline" onClick={() => setShowSignaturePad(true)}>
+                Signer le document
+              </Button>
+            </div>
+          )}
           
           {showSignaturePad ? (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Signature électronique</h3>
               <p className="text-sm text-muted-foreground">
-                Veuillez signer dans la zone ci-dessous. Vous pouvez recommencer si nécessaire.
+                Veuillez signer dans la zone ci-dessous. La signature sera automatiquement sauvegardée.
               </p>
               <SignaturePad onSave={handleSignatureSave} />
             </div>
