@@ -23,10 +23,12 @@ export function FreeTextInput({ userId }: FreeTextInputProps) {
   } = usePDFGeneration(userId, text);
 
   const handleSave = async () => {
+    console.log("[FreeText] Attempting to save synthesis and generate PDF");
     const success = await saveSynthesis();
     if (success) {
+      console.log("[FreeText] Synthesis saved successfully, generating PDF");
       await generatePDF();
-      // After successful save and PDF generation, navigate to Documents page
+      console.log("[FreeText] PDF generated successfully, navigating to Documents");
       navigate("/examples");
     }
   };
