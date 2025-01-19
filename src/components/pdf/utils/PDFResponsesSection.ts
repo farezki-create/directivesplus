@@ -46,6 +46,21 @@ export class PDFResponsesSection {
     addSection("Maladie avancée", responses.advancedIllness || []);
     addSection("Mes goûts et mes peurs", responses.preferences || []);
 
+    // Add free text section if it exists
+    if (responses.synthesis?.free_text) {
+      if (yPosition > doc.internal.pageSize.getHeight() - 40) {
+        doc.addPage();
+        yPosition = 20;
+      }
+
+      doc.text("Texte libre", 20, yPosition);
+      yPosition += 7;
+
+      const lines = doc.splitTextToSize(responses.synthesis.free_text, pageWidth - 40);
+      doc.text(lines, 20, yPosition);
+      yPosition += lines.length * 7;
+    }
+
     return yPosition;
   }
 }

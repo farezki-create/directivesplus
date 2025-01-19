@@ -6,6 +6,11 @@ import { ResponseCard } from "./responses/ResponseCard";
 import { ResponsesList } from "./responses/ResponsesList";
 import { UniqueIdentifier } from "./responses/UniqueIdentifier";
 import { formatResponseText } from "./free-text/ResponseFormatter";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface ResponsesSummaryProps {
   userId: string;
@@ -18,6 +23,37 @@ interface FormattedResponse {
 
 export function ResponsesSummary({ userId }: ResponsesSummaryProps) {
   const { responses, isLoading, hasErrors } = useQuestionnairesResponses(userId);
+  const [freeText, setFreeText] = useState("");
+  const { toast } = useToast();
+
+  const saveFreeText = async () => {
+    try {
+      console.log("[ResponsesSummary] Saving free text");
+      const { error } = await supabase
+        .from('questionnaire_synthesis')
+        .upsert({
+          user_id: userId,
+          free_text: freeText
+        }, {
+          onConflict: 'user_id'
+        });
+
+      if (error) throw error;
+
+      console.log("[ResponsesSummary] Free text saved successfully");
+      toast({
+        title: "Succès",
+        description: "Votre texte libre a été enregistré.",
+      });
+    } catch (error) {
+      console.error("[ResponsesSummary] Error saving free text:", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'enregistrement.",
+        variant: "destructive",
+      });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -78,6 +114,23 @@ export function ResponsesSummary({ userId }: ResponsesSummaryProps) {
 
         <ResponseCard title="Mes goûts et mes peurs">
           <ResponsesList formattedResponses={formatResponses(responses.preferences)} />
+        </ResponseCard>
+
+        <ResponseCard title="Texte libre">
+          <div className="space-y-4">
+            <Textarea
+              value={freeText}
+              onChange={(e) => setFreeText(e.target.value)}
+              placeholder="............................................................................................................
+............................................................................................................
+............................................................................................................
+............................................................................................................"
+              className="min-h-[120px] resize-none font-mono"
+            />
+            <Button onClick={saveFreeText} className="w-full">
+              Enregistrer
+            </Button>
+          </div>
         </ResponseCard>
 
         <UniqueIdentifier userId={userId} />
