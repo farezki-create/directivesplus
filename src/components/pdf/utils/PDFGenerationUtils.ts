@@ -24,7 +24,11 @@ export const handlePDFGeneration = (
       throw new Error("PDF generation failed");
     }
 
-    setPdfUrl(pdfDataUrl);
+    // Ensure the URL is properly formatted
+    const cleanUrl = pdfDataUrl.replace(/(?<=\.com):\//, '/');
+    console.log("[PDFGeneration] Generated PDF URL:", cleanUrl);
+
+    setPdfUrl(cleanUrl);
     setShowPreview(true);
 
     console.log("[PDFGeneration] PDF generated successfully");
@@ -54,8 +58,10 @@ export const handlePDFDownload = (pdfUrl: string | null, fileName: string = 'syn
   }
 
   try {
+    // Clean the URL before downloading
+    const cleanUrl = pdfUrl.replace(/(?<=\.com):\//, '/');
     const link = document.createElement('a');
-    link.href = pdfUrl;
+    link.href = cleanUrl;
     link.download = fileName;
     document.body.appendChild(link);
     link.click();
@@ -83,7 +89,9 @@ export const handlePDFPrint = (pdfUrl: string | null) => {
   }
 
   try {
-    const printWindow = window.open(pdfUrl);
+    // Clean the URL before printing
+    const cleanUrl = pdfUrl.replace(/(?<=\.com):\//, '/');
+    const printWindow = window.open(cleanUrl);
     if (!printWindow) {
       throw new Error("Could not open print window");
     }
