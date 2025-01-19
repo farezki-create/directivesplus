@@ -41,10 +41,10 @@ export class PDFResponsesSection {
     };
 
     // Add each section
-    addSection("Mon avis d'une façon générale :", responses.general || []);
-    addSection("Maintien en vie :", responses.lifeSupport || []);
-    addSection("Maladie avancée :", responses.advancedIllness || []);
-    addSection("Mes goûts et mes peurs :", responses.preferences || []);
+    addSection("Mon avis d'une façon générale", responses.general || []);
+    addSection("Maintien en vie", responses.lifeSupport || []);
+    addSection("Maladie avancée", responses.advancedIllness || []);
+    addSection("Mes goûts et mes peurs", responses.preferences || []);
 
     return yPosition;
   }
