@@ -104,11 +104,13 @@ export class PDFDocumentGenerator {
     // Add signature if available
     const signatureData = localStorage.getItem('userSignature');
     if (signatureData) {
+      console.log("[PDFGenerator] Adding signature to PDF");
       doc.text("Signature :", 20, yPosition);
       yPosition += 10;
       doc.addImage(signatureData, 'PNG', 20, yPosition, 50, 30);
       yPosition += 40;
     } else {
+      console.log("[PDFGenerator] No signature found, adding placeholder");
       doc.text("Signature :", 20, yPosition);
       yPosition += 40;
     }

@@ -12,14 +12,17 @@ export function SignaturePad({ onSave }: SignaturePadProps) {
   const { toast } = useToast();
 
   const handleClear = () => {
+    console.log("[SignaturePad] Clearing signature");
     if (signaturePadRef.current) {
       signaturePadRef.current.clear();
     }
   };
 
   const handleSave = () => {
+    console.log("[SignaturePad] Attempting to save signature");
     if (signaturePadRef.current) {
       if (signaturePadRef.current.isEmpty()) {
+        console.log("[SignaturePad] Signature pad is empty");
         toast({
           title: "Erreur",
           description: "Veuillez signer avant de sauvegarder",
@@ -29,6 +32,7 @@ export function SignaturePad({ onSave }: SignaturePadProps) {
       }
 
       const signatureData = signaturePadRef.current.toDataURL();
+      console.log("[SignaturePad] Signature captured successfully");
       onSave(signatureData);
       
       toast({
