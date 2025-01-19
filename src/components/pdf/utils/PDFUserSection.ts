@@ -1,5 +1,7 @@
 import { jsPDF } from "jspdf";
 import { UserProfile } from "../types";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 
 export class PDFUserSection {
   static generate(doc: jsPDF, profile: UserProfile, startY: number): number {
@@ -13,7 +15,8 @@ export class PDFUserSection {
 
       // Birth date if available
       if (profile.birth_date) {
-        doc.text(`Date de naissance : ${profile.birth_date}`, 20, yPosition);
+        const formattedDate = format(new Date(profile.birth_date), "d MMMM yyyy", { locale: fr });
+        doc.text(`Date de naissance : ${formattedDate}`, 20, yPosition);
         yPosition += 10;
       }
 
