@@ -1,7 +1,8 @@
+import { Header } from "@/components/Header";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { ResponsesSummary } from "@/components/ResponsesSummary";
 import { Card } from "@/components/ui/card";
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 
 export function DirectivesSynthesis() {
   const [userId, setUserId] = useState<string | null>(null);
@@ -27,7 +28,7 @@ export function DirectivesSynthesis() {
   return (
     <div className="space-y-8">
       <Card className="p-6">
-        <h2 className="text-2xl font-bold mb-6">Synthèse de mes directives anticipées</h2>
+        <h2 className="text-2xl font-bold mb-6">Mes directives</h2>
         <ResponsesSummary userId={userId} />
       </Card>
     </div>
