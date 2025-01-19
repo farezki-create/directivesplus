@@ -80,14 +80,6 @@ export function ResponsesSummary({ userId }: ResponsesSummaryProps) {
           <ResponsesList formattedResponses={formatResponses(responses.preferences)} />
         </ResponseCard>
 
-        {responses.synthesis && (
-          <ResponseCard title="Synthèse et expression libre">
-            <p className="whitespace-pre-wrap">
-              {responses.synthesis.free_text || "Aucune synthèse saisie"}
-            </p>
-          </ResponseCard>
-        )}
-
         <UniqueIdentifier userId={userId} />
       </div>
     </ScrollArea>
