@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Download, Mail, Printer } from "lucide-react";
 import { SignaturePad } from "./SignaturePad";
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 interface PDFPreviewDialogProps {
   open: boolean;
@@ -22,6 +23,7 @@ export function PDFPreviewDialog({
   onPrint,
 }: PDFPreviewDialogProps) {
   const [showSignaturePad, setShowSignaturePad] = useState(false);
+  const { toast } = useToast();
 
   const handleSignatureSave = (signatureData: string) => {
     console.log("[PDFPreviewDialog] Saving signature");
@@ -31,6 +33,49 @@ export function PDFPreviewDialog({
     // Regenerate PDF with signature
     console.log("[PDFPreviewDialog] Regenerating PDF with signature");
     onSave();
+  };
+
+  const isValidPdfUrl = (url: string | null): boolean => {
+    if (!url) return false;
+    try {
+      new URL(url);
+      return true;
+    } catch (e) {
+      console.error("[PDFPreviewDialog] Invalid PDF URL:", url);
+      return false;
+    }
+  };
+
+  const renderPdfPreview = () => {
+    if (!pdfUrl) {
+      return (
+        <div className="flex items-center justify-center h-[600px] bg-gray-50 rounded border">
+          <p className="text-muted-foreground">Aucun document à afficher</p>
+        </div>
+      );
+    }
+
+    if (!isValidPdfUrl(pdfUrl)) {
+      console.error("[PDFPreviewDialog] Invalid PDF URL detected");
+      toast({
+        title: "Erreur",
+        description: "Impossible d'afficher le document PDF",
+        variant: "destructive",
+      });
+      return (
+        <div className="flex items-center justify-center h-[600px] bg-gray-50 rounded border">
+          <p className="text-muted-foreground">Erreur lors du chargement du document</p>
+        </div>
+      );
+    }
+
+    return (
+      <iframe
+        src={pdfUrl}
+        className="w-full h-[600px] border rounded"
+        title="PDF Preview"
+      />
+    );
   };
 
   return (
@@ -65,13 +110,7 @@ export function PDFPreviewDialog({
               <SignaturePad onSave={handleSignatureSave} />
             </div>
           ) : (
-            pdfUrl && (
-              <iframe
-                src={pdfUrl}
-                className="w-full h-[600px] border rounded"
-                title="PDF Preview"
-              />
-            )
+            renderPdfPreview()
           )}
         </div>
       </DialogContent>
