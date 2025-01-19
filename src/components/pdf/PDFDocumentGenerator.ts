@@ -37,13 +37,15 @@ export class PDFDocumentGenerator {
       yPosition = 20;
     }
 
-    // Section 2: Access Code
+    // Section 2: Access Code and URL
     yPosition += 20;
     doc.setFontSize(16);
-    doc.text("2. Code d'accès au document", 20, yPosition);
+    doc.text("2. Accès au document", 20, yPosition);
     yPosition += 10;
     doc.setFontSize(12);
     doc.text(`Code d'accès : ${profile.unique_identifier}`, 20, yPosition);
+    yPosition += 10;
+    doc.text("URL de connexion : https://directives-anticipees.fr", 20, yPosition);
 
     // Add new page if needed
     if (yPosition > doc.internal.pageSize.getHeight() - 40) {
