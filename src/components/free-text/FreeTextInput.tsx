@@ -30,6 +30,7 @@ export function FreeTextInput({ userId }: FreeTextInputProps) {
       case 'je_ne_sais_pas':
         return 'je ne sais pas';
       case 'oui_durée_modérée':
+      case 'oui_duree_moderee':
         return 'oui pour une durée modérée';
       case 'oui_médical':
         return 'oui seulement si l\'équipe médicale le juge utile';
