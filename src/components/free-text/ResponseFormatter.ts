@@ -5,7 +5,6 @@ const RESPONSE_MAPPING: Record<string, string> = {
   'oui_duree_moderee': 'oui pour une durée modérée',
   'oui_médical': 'oui seulement si l\'équipe médicale le juge utile',
   'oui_medical': 'oui seulement si l\'équipe médicale le juge utile',
-  'non': 'la non souffrance est à privilégier',
 };
 
 export const formatResponseText = (response: string): string => {
