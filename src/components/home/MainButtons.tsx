@@ -48,7 +48,7 @@ export function MainButtons({
         size="lg"
         className="md:col-span-2"
       >
-        Proposition de Directives Anticipées
+        Propositions de Directives Anticipées
       </Button>
     </div>
   );
