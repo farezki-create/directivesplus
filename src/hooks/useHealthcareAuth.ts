@@ -3,14 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { FormValues } from "@/components/auth/types";
 import { getErrorMessage } from "@/utils/auth-errors";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 export const useHealthcareAuth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isSignUp, setIsSignUp] = useState(false);
 
-  const handleSignUp = async (values: FormValues) => {
+  const handleSignUp = async (values: FormValues & { signature?: string }) => {
     console.log('Attempting healthcare professional signup');
     
     const { error: signUpError, data } = await supabase.auth.signUp({
@@ -20,7 +20,8 @@ export const useHealthcareAuth = () => {
         data: {
           first_name: values.firstName,
           last_name: values.lastName,
-          user_type: 'healthcare_professional'
+          user_type: 'healthcare_professional',
+          signature: values.signature
         }
       }
     });
@@ -42,7 +43,7 @@ export const useHealthcareAuth = () => {
     return true;
   };
 
-  const createHealthcareProfessionalProfile = async (userId: string, values: FormValues) => {
+  const createHealthcareProfessionalProfile = async (userId: string, values: FormValues & { signature?: string }) => {
     const { error: profileError } = await supabase
       .from('healthcare_professionals')
       .insert({
@@ -52,7 +53,7 @@ export const useHealthcareAuth = () => {
         first_name: values.firstName,
         last_name: values.lastName,
         specialty: values.specialty || null,
-        cps_number: null // Set to null since we're removing this field
+        signature: values.signature || null
       });
 
     if (profileError) {
@@ -129,7 +130,7 @@ export const useHealthcareAuth = () => {
     });
   };
 
-  const handleSubmit = async (values: FormValues) => {
+  const handleSubmit = async (values: FormValues & { signature?: string }) => {
     console.log('Attempting healthcare auth with email:', values.email);
 
     try {
