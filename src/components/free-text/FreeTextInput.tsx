@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { PDFPreviewDialog } from "../pdf/PDFPreviewDialog";
 import { useSynthesis } from "@/hooks/useSynthesis";
 import { usePDFGeneration } from "@/hooks/usePDFGeneration";
+import { PDFGenerator } from "../PDFGenerator";
 
 interface FreeTextInputProps {
   userId: string | null;
@@ -28,8 +29,7 @@ export function FreeTextInput({ userId }: FreeTextInputProps) {
     if (success) {
       console.log("[FreeText] Synthesis saved successfully, generating PDF");
       await generatePDF();
-      console.log("[FreeText] PDF generated successfully, navigating to Documents");
-      navigate("/examples");
+      console.log("[FreeText] PDF generated successfully");
     }
   };
 
@@ -47,16 +47,19 @@ export function FreeTextInput({ userId }: FreeTextInputProps) {
         className="min-h-[200px] mb-6"
       />
 
-      <div className="flex justify-between">
+      <div className="flex justify-between items-center">
         <Button
           variant="outline"
           onClick={() => navigate("/")}
         >
           Retour
         </Button>
-        <Button onClick={handleSave}>
-          Enregistrer
-        </Button>
+        <div className="flex gap-4">
+          <Button onClick={handleSave}>
+            Enregistrer
+          </Button>
+          {userId && <PDFGenerator userId={userId} />}
+        </div>
       </div>
 
       <PDFPreviewDialog
