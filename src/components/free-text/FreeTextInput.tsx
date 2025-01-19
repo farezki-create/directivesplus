@@ -53,10 +53,15 @@ export const FreeTextInput = ({ userId }: FreeTextInputProps) => {
       console.log("[FreeTextInput] Saving free text");
       const { error } = await supabase
         .from('questionnaire_synthesis')
-        .upsert({
-          user_id: userId,
-          free_text: freeText
-        });
+        .upsert(
+          {
+            user_id: userId,
+            free_text: freeText
+          },
+          {
+            onConflict: 'user_id'
+          }
+        );
 
       if (error) {
         console.error("[FreeTextInput] Error saving free text:", error);
