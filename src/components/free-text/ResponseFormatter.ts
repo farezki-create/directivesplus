@@ -18,7 +18,11 @@ export const formatResponseText = (response: string): string => {
   }
   
   // If not in mapping, remove any quotation marks, parentheses and square brackets from the response
-  const formattedResponse = response.replace(/['"\(\)\[\]]/g, '');
+  // and replace commas with "et"
+  const formattedResponse = response
+    .replace(/['"\(\)\[\]]/g, '')
+    .replace(/,/g, ' et ');
+  
   console.log("[ResponseFormatter] Formatted to:", formattedResponse);
   return formattedResponse;
 };
