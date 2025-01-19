@@ -1,16 +1,13 @@
+const RESPONSE_MAPPING: Record<string, string> = {
+  'je_ne_sais_pas': 'je ne sais pas',
+  'oui_durée_modérée': 'oui pour une durée modérée',
+  'oui_duree_moderee': 'oui pour une durée modérée',
+  'oui_duree_moderée': 'oui pour une durée modérée',
+  'oui_médical': 'oui seulement si l\'équipe médicale le juge utile',
+};
+
 export const formatResponseText = (response: string): string => {
-  switch (response) {
-    case 'je_ne_sais_pas':
-      return 'je ne sais pas';
-    case 'oui_durée_modérée':
-    case 'oui_duree_moderee':
-    case 'oui_duree_moderée':
-      return 'oui pour une durée modérée';
-    case 'oui_médical':
-      return 'oui seulement si l\'équipe médicale le juge utile';
-    default:
-      return response;
-  }
+  return RESPONSE_MAPPING[response] || response;
 };
 
 export const formatResponses = (responseArray: any[]) => {
