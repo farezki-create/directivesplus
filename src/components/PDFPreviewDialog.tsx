@@ -47,6 +47,11 @@ export function PDFPreviewDialog({
     }
   };
 
+  const handleDownload = () => {
+    console.log("[PDFPreviewDialog] Handling download");
+    handlePDFDownload(pdfUrl);
+  };
+
   const renderPdfPreview = () => {
     if (!pdfUrl) {
       return (
@@ -92,7 +97,7 @@ export function PDFPreviewDialog({
               <Mail className="mr-2 h-4 w-4" />
               Envoyer par email
             </Button>
-            <Button variant="outline" onClick={() => handlePDFDownload(pdfUrl)}>
+            <Button variant="outline" onClick={handleDownload}>
               <Download className="mr-2 h-4 w-4" />
               Télécharger
             </Button>
