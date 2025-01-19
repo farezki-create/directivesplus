@@ -36,6 +36,13 @@ export function PDFPreviewDialog({
     onSave();
   };
 
+  const handleDownload = () => {
+    console.log("[PDFPreviewDialog] Handling download");
+    if (pdfUrl) {
+      handlePDFDownload(pdfUrl);
+    }
+  };
+
   const isValidPdfUrl = (url: string | null): boolean => {
     if (!url) return false;
     try {
@@ -45,11 +52,6 @@ export function PDFPreviewDialog({
       console.error("[PDFPreviewDialog] Invalid PDF URL:", url);
       return false;
     }
-  };
-
-  const handleDownload = () => {
-    console.log("[PDFPreviewDialog] Handling download");
-    handlePDFDownload(pdfUrl);
   };
 
   const renderPdfPreview = () => {

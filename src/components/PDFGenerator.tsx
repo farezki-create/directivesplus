@@ -22,12 +22,11 @@ export function PDFGenerator({ userId }: PDFGeneratorProps) {
   };
 
   const handleEmail = async () => {
-    // Email handling logic here - to be implemented
     console.log("[PDFGenerator] Email functionality not yet implemented");
   };
 
   const handleSave = () => {
-    console.log("[PDFGenerator] Regenerating PDF before save");
+    console.log("[PDFGenerator] Regenerating PDF with signature");
     generatePDF();
   };
 
