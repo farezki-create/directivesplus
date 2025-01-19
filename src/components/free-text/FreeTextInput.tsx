@@ -1,8 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { useNavigate } from "react-router-dom";
 import { PDFPreviewDialog } from "../pdf/PDFPreviewDialog";
-import { useSynthesis } from "@/hooks/useSynthesis";
 import { usePDFGeneration } from "@/hooks/usePDFGeneration";
 import { PDFGenerator } from "../PDFGenerator";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
@@ -16,7 +14,6 @@ interface FreeTextInputProps {
 export function FreeTextInput({ userId }: FreeTextInputProps) {
   const navigate = useNavigate();
   const { responses } = useQuestionnairesResponses(userId || "");
-  const { text, setText, saveSynthesis } = useSynthesis(userId);
   const {
     pdfUrl,
     showPreview,
@@ -25,25 +22,10 @@ export function FreeTextInput({ userId }: FreeTextInputProps) {
     handlePrint,
     handleEmail,
     handleDownload
-  } = usePDFGeneration(userId, text);
-
-  const handleSave = async () => {
-    console.log("[FreeText] Attempting to save synthesis and generate PDF");
-    const success = await saveSynthesis();
-    if (success) {
-      console.log("[FreeText] Synthesis saved successfully, generating PDF");
-      await generatePDF();
-      console.log("[FreeText] PDF generated successfully");
-    }
-  };
+  } = usePDFGeneration(userId, "");
 
   return (
     <div className="mb-8">
-      <h2 className="text-xl font-semibold mb-4">Expression libre</h2>
-      <p className="text-muted-foreground mb-4">
-        Utilisez cet espace pour exprimer librement vos souhaits, vos valeurs ou toute autre information que vous souhaitez partager avec l'équipe soignante.
-      </p>
-
       <div className="mb-6 space-y-6">
         <ResponseSection 
           title="Mon avis d'une façon générale" 
@@ -63,13 +45,6 @@ export function FreeTextInput({ userId }: FreeTextInputProps) {
         />
       </div>
 
-      <Textarea
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        placeholder="Écrivez ici..."
-        className="min-h-[200px] mb-6"
-      />
-
       <div className="flex justify-between items-center">
         <Button
           variant="outline"
@@ -78,9 +53,6 @@ export function FreeTextInput({ userId }: FreeTextInputProps) {
           Retour
         </Button>
         <div className="flex gap-4">
-          <Button onClick={handleSave}>
-            Enregistrer
-          </Button>
           {userId && <PDFGenerator userId={userId} />}
         </div>
       </div>
