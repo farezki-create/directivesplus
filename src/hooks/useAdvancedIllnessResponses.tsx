@@ -8,10 +8,15 @@ export function useAdvancedIllnessResponses(open: boolean) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (open) {
-      setAnswers({});  // Reset answers when dialog opens
-      fetchExistingAnswers();
-    }
+    const initializeAnswers = async () => {
+      if (open) {
+        console.log('[AdvancedIllness] Dialog opened, resetting answers');
+        setAnswers({}); // Reset answers when dialog opens
+        await fetchExistingAnswers(); // Fetch after reset
+      }
+    };
+
+    initializeAnswers();
   }, [open]);
 
   const fetchExistingAnswers = async () => {
