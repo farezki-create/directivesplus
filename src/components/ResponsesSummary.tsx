@@ -8,7 +8,7 @@ import { UniqueIdentifier } from "./responses/UniqueIdentifier";
 import { formatResponseText } from "./free-text/ResponseFormatter";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -25,6 +25,42 @@ export function ResponsesSummary({ userId }: ResponsesSummaryProps) {
   const { responses, isLoading, hasErrors } = useQuestionnairesResponses(userId);
   const [freeText, setFreeText] = useState("");
   const { toast } = useToast();
+
+  useEffect(() => {
+    const loadFreeText = async () => {
+      try {
+        console.log("[ResponsesSummary] Loading existing free text");
+        const { data, error } = await supabase
+          .from('questionnaire_synthesis')
+          .select('free_text')
+          .eq('user_id', userId)
+          .maybeSingle();
+
+        if (error) {
+          console.error("[ResponsesSummary] Error loading free text:", error);
+          throw error;
+        }
+
+        if (data?.free_text) {
+          console.log("[ResponsesSummary] Loaded existing free text");
+          setFreeText(data.free_text);
+        } else {
+          console.log("[ResponsesSummary] No existing free text found");
+        }
+      } catch (error) {
+        console.error("[ResponsesSummary] Error loading free text:", error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger votre texte libre existant.",
+          variant: "destructive",
+        });
+      }
+    };
+
+    if (userId) {
+      loadFreeText();
+    }
+  }, [userId, toast]);
 
   const saveFreeText = async () => {
     try {
