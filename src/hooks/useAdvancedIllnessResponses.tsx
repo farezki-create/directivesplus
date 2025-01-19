@@ -10,11 +10,17 @@ export function useAdvancedIllnessResponses(open: boolean) {
   useEffect(() => {
     if (open) {
       fetchExistingAnswers();
+    } else {
+      // Reset answers when dialog closes
+      setAnswers({});
     }
   }, [open]);
 
   const fetchExistingAnswers = async () => {
     try {
+      // Reset answers before fetching to avoid showing stale data
+      setAnswers({});
+      
       const session = await supabase.auth.getSession();
       const userId = session.data.session?.user.id;
       
@@ -128,7 +134,7 @@ export function useAdvancedIllnessResponses(open: boolean) {
         return;
       }
 
-      // Insert new responses one by one to avoid conflicts
+      // Insert new responses
       for (const response of responses) {
         const { error: insertError } = await supabase
           .from('questionnaire_advanced_illness_responses')
