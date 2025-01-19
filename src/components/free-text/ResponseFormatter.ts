@@ -11,20 +11,25 @@ const RESPONSE_MAPPING: Record<string, string> = {
 export const formatResponseText = (response: string): string => {
   console.log("[ResponseFormatter] Formatting response:", response);
   
+  // Remove any array notation if present
+  const cleanResponse = response.replace(/[\[\]"']/g, '');
+  
   // Split the response by "et" or comma to handle multiple values
-  const parts = response.split(/[,\s]+et\s+|\s*,\s*/);
+  const parts = cleanResponse.split(/[,\s]+et\s+|\s*,\s*/);
   
   // Format each part individually
   const formattedParts = parts.map(part => {
+    const trimmedPart = part.trim();
+    
     // First, check if it's in the mapping
-    const mappedResponse = RESPONSE_MAPPING[part.trim()];
+    const mappedResponse = RESPONSE_MAPPING[trimmedPart];
     if (mappedResponse) {
       console.log("[ResponseFormatter] Found in mapping, formatted to:", mappedResponse);
       return mappedResponse;
     }
     
     // If not in mapping, remove any quotation marks, parentheses and square brackets
-    const formattedPart = part.trim().replace(/['"\(\)\[\]]/g, '');
+    const formattedPart = trimmedPart.replace(/['"\(\)\[\]]/g, '');
     console.log("[ResponseFormatter] Formatted part to:", formattedPart);
     return formattedPart;
   });
