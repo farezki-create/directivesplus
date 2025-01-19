@@ -71,8 +71,11 @@ export class PDFUserSection {
         yPosition += 10;
       }
 
-      // Add some spacing before the next section
+      // Access code
       yPosition += 5;
+      doc.text(`Code d'accès pour les professionnels de santé : ${profile.unique_identifier}`, 20, yPosition);
+      yPosition += 15;
+
     } else {
       console.warn("[PDFUserSection] No profile data provided");
       doc.text("Information d'identité non disponible", 20, yPosition);
