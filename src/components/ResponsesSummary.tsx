@@ -47,6 +47,8 @@ export function ResponsesSummary({ userId }: ResponsesSummaryProps) {
           return 'je ne sais pas';
         case 'oui_durée_modérée':
           return 'oui pour une durée modérée';
+        case 'oui_médical':
+          return 'oui seulement si l\'équipe médicale le juge utile';
         default:
           return response;
       }
