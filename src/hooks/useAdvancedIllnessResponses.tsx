@@ -128,21 +128,19 @@ export function useAdvancedIllnessResponses(open: boolean) {
         return;
       }
 
-      // Insert new responses one by one to avoid conflicts
-      for (const response of responses) {
-        const { error: insertError } = await supabase
-          .from('questionnaire_advanced_illness_responses')
-          .insert([response]);
+      // Insert new responses
+      const { error: insertError } = await supabase
+        .from('questionnaire_advanced_illness_responses')
+        .insert(responses);
 
-        if (insertError) {
-          console.error('[AdvancedIllness] Error saving response:', insertError);
-          toast({
-            title: "Erreur",
-            description: "Impossible d'enregistrer certaines réponses. Veuillez réessayer.",
-            variant: "destructive",
-          });
-          return;
-        }
+      if (insertError) {
+        console.error('[AdvancedIllness] Error saving responses:', insertError);
+        toast({
+          title: "Erreur",
+          description: "Impossible d'enregistrer vos réponses. Veuillez réessayer.",
+          variant: "destructive",
+        });
+        return;
       }
 
       console.log('[AdvancedIllness] Responses saved successfully');
