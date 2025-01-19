@@ -1,6 +1,5 @@
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Download, Mail, Printer } from "lucide-react";
 import { SignaturePad } from "./SignaturePad";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -34,13 +33,6 @@ export function PDFPreviewDialog({
     // Regenerate PDF with signature
     console.log("[PDFPreviewDialog] Regenerating PDF with signature");
     onSave();
-  };
-
-  const handleDownload = () => {
-    console.log("[PDFPreviewDialog] Handling download");
-    if (pdfUrl) {
-      handlePDFDownload(pdfUrl);
-    }
   };
 
   const isValidPdfUrl = (url: string | null): boolean => {
@@ -94,18 +86,6 @@ export function PDFPreviewDialog({
           <div className="flex justify-end space-x-2">
             <Button variant="outline" onClick={() => setShowSignaturePad(true)}>
               Signer le document
-            </Button>
-            <Button variant="outline" onClick={onEmail}>
-              <Mail className="mr-2 h-4 w-4" />
-              Envoyer par email
-            </Button>
-            <Button variant="outline" onClick={handleDownload}>
-              <Download className="mr-2 h-4 w-4" />
-              Télécharger
-            </Button>
-            <Button variant="outline" onClick={onPrint}>
-              <Printer className="mr-2 h-4 w-4" />
-              Imprimer
             </Button>
           </div>
           
