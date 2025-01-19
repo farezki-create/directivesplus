@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { ResponsesSummary } from "@/components/ResponsesSummary";
 import { ExportButton } from "@/components/free-text/ExportButton";
 import { FreeTextInput } from "@/components/free-text/FreeTextInput";
-import { TrustedPersons } from "@/components/TrustedPersons";
 
 const FreeText = () => {
   const [userId, setUserId] = useState<string | null>(null);
@@ -40,10 +39,6 @@ const FreeText = () => {
           </div>
 
           <FreeTextInput userId={userId} />
-
-          <div className="mt-12">
-            <TrustedPersons />
-          </div>
         </div>
       </main>
     </div>
