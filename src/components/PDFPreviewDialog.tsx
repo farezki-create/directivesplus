@@ -91,7 +91,7 @@ export function PDFPreviewDialog({
               <Mail className="mr-2 h-4 w-4" />
               Envoyer par email
             </Button>
-            <Button variant="outline" onClick={onSave}>
+            <Button variant="outline" onClick={() => handlePDFDownload(pdfUrl)}>
               <Download className="mr-2 h-4 w-4" />
               Télécharger
             </Button>
