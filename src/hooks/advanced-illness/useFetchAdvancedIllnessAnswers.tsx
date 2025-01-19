@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 export function useFetchAdvancedIllnessAnswers(open: boolean) {
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [answers, setAnswers] = useState<Record<string, string[]>>({});
   const { toast } = useToast();
 
   const fetchExistingAnswers = async () => {
@@ -36,9 +36,15 @@ export function useFetchAdvancedIllnessAnswers(open: boolean) {
       }
 
       console.log("[AdvancedIllness] Found existing answers:", existingAnswers?.length);
-      const answersMap: Record<string, string> = {};
+      const answersMap: Record<string, string[]> = {};
       existingAnswers?.forEach((answer) => {
-        answersMap[answer.question_id] = answer.response;
+        // Parse the response string into an array
+        try {
+          answersMap[answer.question_id] = JSON.parse(answer.response);
+        } catch (e) {
+          console.error("[AdvancedIllness] Error parsing response:", e);
+          answersMap[answer.question_id] = [];
+        }
       });
       setAnswers(answersMap);
     } catch (error) {
