@@ -3,14 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { FormValues } from "@/components/auth/types";
 import { getErrorMessage } from "@/utils/auth-errors";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 
 export const useHealthcareAuth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isSignUp, setIsSignUp] = useState(false);
 
-  const handleSignUp = async (values: FormValues & { signature?: string }) => {
+  const handleSignUp = async (values: FormValues) => {
     console.log('Attempting healthcare professional signup');
     
     const { error: signUpError, data } = await supabase.auth.signUp({
@@ -20,8 +20,7 @@ export const useHealthcareAuth = () => {
         data: {
           first_name: values.firstName,
           last_name: values.lastName,
-          user_type: 'healthcare_professional',
-          signature: values.signature
+          user_type: 'healthcare_professional'
         }
       }
     });
@@ -43,18 +42,17 @@ export const useHealthcareAuth = () => {
     return true;
   };
 
-  const createHealthcareProfessionalProfile = async (userId: string, values: FormValues & { signature?: string }) => {
+  const createHealthcareProfessionalProfile = async (userId: string, values: FormValues) => {
     const { error: profileError } = await supabase
       .from('healthcare_professionals')
-      .insert({
+      .insert([{
         id: userId,
         rpps_number: values.rppsNumber,
         professional_type: values.professionalType || 'doctor',
         first_name: values.firstName,
         last_name: values.lastName,
-        specialty: values.specialty || null,
-        signature: values.signature || null
-      });
+        specialty: values.specialty
+      }]);
 
     if (profileError) {
       console.error('Error creating healthcare professional profile:', profileError);
@@ -130,7 +128,7 @@ export const useHealthcareAuth = () => {
     });
   };
 
-  const handleSubmit = async (values: FormValues & { signature?: string }) => {
+  const handleSubmit = async (values: FormValues) => {
     console.log('Attempting healthcare auth with email:', values.email);
 
     try {

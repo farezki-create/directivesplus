@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "./pdf/usePDFData";
-import { handlePDFGeneration } from "./pdf/utils/PDFGenerationUtils";
-import { PDFPreviewDialog } from "./PDFPreviewDialog";
+import { handlePDFGeneration, handlePDFDownload, handlePDFPrint } from "./pdf/utils/PDFGenerationUtils";
+import { PDFPreviewDialog } from "./pdf/PDFPreviewDialog";
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
 
@@ -22,12 +22,8 @@ export function PDFGenerator({ userId }: PDFGeneratorProps) {
   };
 
   const handleEmail = async () => {
+    // Email handling logic here - to be implemented
     console.log("[PDFGenerator] Email functionality not yet implemented");
-  };
-
-  const handleSave = () => {
-    console.log("[PDFGenerator] Regenerating PDF with signature");
-    generatePDF();
   };
 
   if (loading) {
@@ -49,8 +45,8 @@ export function PDFGenerator({ userId }: PDFGeneratorProps) {
         onOpenChange={setShowPreview}
         pdfUrl={pdfUrl}
         onEmail={handleEmail}
-        onSave={handleSave}
-        onPrint={() => {}}
+        onSave={() => handlePDFDownload(pdfUrl)}
+        onPrint={() => handlePDFPrint(pdfUrl)}
       />
     </>
   );

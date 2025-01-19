@@ -4,34 +4,10 @@ import { useHealthcareAuth } from "@/hooks/useHealthcareAuth";
 import { FeatureHighlights } from "@/components/home/FeatureHighlights";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { SignaturePad } from "@/components/SignaturePad";
-import { useState } from "react";
 
 const Healthcare = () => {
   const { isSignUp, setIsSignUp, handleSubmit } = useHealthcareAuth();
   const navigate = useNavigate();
-  const [showSignature, setShowSignature] = useState(false);
-  const [formData, setFormData] = useState<any>(null);
-
-  const handleFormSubmit = async (values: any) => {
-    if (isSignUp) {
-      setFormData(values);
-      setShowSignature(true);
-    } else {
-      await handleSubmit(values);
-    }
-  };
-
-  const handleSignatureSave = async (signatureData: string) => {
-    if (formData) {
-      localStorage.setItem('healthcareProfessionalSignature', signatureData);
-      await handleSubmit({
-        ...formData,
-        signature: signatureData
-      });
-      setShowSignature(false);
-    }
-  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -50,34 +26,20 @@ const Healthcare = () => {
           </p>
 
           <div className="max-w-md mx-auto mb-16">
-            {showSignature ? (
-              <div className="space-y-4">
-                <h2 className="text-xl font-semibold text-center mb-4">
-                  Signature Électronique
-                </h2>
-                <p className="text-sm text-muted-foreground text-center mb-6">
-                  Veuillez signer ci-dessous pour confirmer votre inscription
-                </p>
-                <SignaturePad onSave={handleSignatureSave} />
-              </div>
-            ) : (
-              <>
-                <Button
-                  variant="outline"
-                  onClick={() => navigate("/healthcare-landing")}
-                  className="w-full mb-8"
-                >
-                  Accéder à l'espace professionnel
-                </Button>
+            <Button
+              variant="outline"
+              onClick={() => navigate("/healthcare-landing")}
+              className="w-full mb-8"
+            >
+              Accéder à l'espace professionnel
+            </Button>
 
-                <AuthForm
-                  isSignUp={isSignUp}
-                  onSubmit={handleFormSubmit}
-                  onToggleMode={() => setIsSignUp(!isSignUp)}
-                  isHealthcareProfessional={true}
-                />
-              </>
-            )}
+            <AuthForm
+              isSignUp={isSignUp}
+              onSubmit={handleSubmit}
+              onToggleMode={() => setIsSignUp(!isSignUp)}
+              isHealthcareProfessional={true}
+            />
           </div>
 
           <FeatureHighlights />

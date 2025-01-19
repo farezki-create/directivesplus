@@ -37,6 +37,7 @@ export const AuthForm = ({
       address: "",
       city: "",
       postalCode: "",
+      cpsNumber: "",
       rppsNumber: "",
       professionalType: "doctor",
       specialty: "",
