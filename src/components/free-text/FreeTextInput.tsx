@@ -26,6 +26,8 @@ export function FreeTextInput({ userId }: FreeTextInputProps) {
     const success = await saveSynthesis();
     if (success) {
       await generatePDF();
+      // After successful save and PDF generation, navigate to Documents page
+      navigate("/examples");
     }
   };
 
