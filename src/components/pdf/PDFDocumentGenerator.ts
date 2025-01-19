@@ -24,13 +24,32 @@ export class PDFDocumentGenerator {
     yPosition += 10;
     yPosition = PDFUserSection.generate(doc, profile, yPosition);
 
+    // Add new page if needed
+    if (yPosition > doc.internal.pageSize.getHeight() - 40) {
+      doc.addPage();
+      yPosition = 20;
+    }
+
     // Section 2: Questionnaire Synthesis
     yPosition += 20;
     doc.setFontSize(16);
     doc.text("2. Synthèse du questionnaire", 20, yPosition);
     yPosition += 10;
     yPosition = PDFResponsesSection.generate(doc, responses, yPosition);
+    
+    // Add new page if needed
+    if (yPosition > doc.internal.pageSize.getHeight() - 40) {
+      doc.addPage();
+      yPosition = 20;
+    }
+
     yPosition = PDFSynthesisSection.generate(doc, responses, yPosition);
+
+    // Add new page if needed
+    if (yPosition > doc.internal.pageSize.getHeight() - 40) {
+      doc.addPage();
+      yPosition = 20;
+    }
 
     // Section 3: Trusted Person
     yPosition += 20;
@@ -38,6 +57,12 @@ export class PDFDocumentGenerator {
     doc.text("3. Personne de confiance", 20, yPosition);
     yPosition += 10;
     yPosition = PDFTrustedPersonSection.generate(doc, trustedPersons, yPosition);
+
+    // Add new page if needed
+    if (yPosition > doc.internal.pageSize.getHeight() - 40) {
+      doc.addPage();
+      yPosition = 20;
+    }
 
     // Section 4: Date and Signature
     yPosition += 20;

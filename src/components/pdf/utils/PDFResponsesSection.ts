@@ -1,60 +1,50 @@
 import { jsPDF } from "jspdf";
 
 export class PDFResponsesSection {
-  static generate(doc: jsPDF, responses: any, yPosition: number): number {
+  static generate(doc: jsPDF, responses: any, startY: number): number {
+    let yPosition = startY;
     const pageWidth = doc.internal.pageSize.getWidth();
     doc.setFontSize(12);
 
-    // General Responses
-    if (responses?.general && responses.general.length > 0) {
-      doc.text("Mon avis d'une façon générale :", 20, yPosition);
-      yPosition += 7;
-      responses.general.forEach((response: any) => {
-        const text = `${response.question_text || response.questions?.Question}: ${response.response}`;
-        const lines = doc.splitTextToSize(text, pageWidth - 40);
-        doc.text(lines, 20, yPosition);
-        yPosition += lines.length * 7;
-      });
-    }
+    const addSection = (title: string, items: any[]) => {
+      if (items && items.length > 0) {
+        // Check if we need a new page
+        if (yPosition > doc.internal.pageSize.getHeight() - 40) {
+          doc.addPage();
+          yPosition = 20;
+        }
 
-    // Life Support Responses
-    if (responses?.lifeSupport && responses.lifeSupport.length > 0) {
-      yPosition += 7;
-      doc.text("Maintien en vie :", 20, yPosition);
-      yPosition += 7;
-      responses.lifeSupport.forEach((response: any) => {
-        const text = `${response.question_text || response.life_support_questions?.question}: ${response.response}`;
-        const lines = doc.splitTextToSize(text, pageWidth - 40);
-        doc.text(lines, 20, yPosition);
-        yPosition += lines.length * 7;
-      });
-    }
+        doc.text(title, 20, yPosition);
+        yPosition += 7;
 
-    // Advanced Illness Responses
-    if (responses?.advancedIllness && responses.advancedIllness.length > 0) {
-      yPosition += 7;
-      doc.text("Maladie avancée :", 20, yPosition);
-      yPosition += 7;
-      responses.advancedIllness.forEach((response: any) => {
-        const text = `${response.question_text || response.advanced_illness_questions?.question}: ${response.response}`;
-        const lines = doc.splitTextToSize(text, pageWidth - 40);
-        doc.text(lines, 20, yPosition);
-        yPosition += lines.length * 7;
-      });
-    }
+        items.forEach((response: any) => {
+          // Check if we need a new page before each response
+          if (yPosition > doc.internal.pageSize.getHeight() - 40) {
+            doc.addPage();
+            yPosition = 20;
+          }
 
-    // Preferences Responses
-    if (responses?.preferences && responses.preferences.length > 0) {
-      yPosition += 7;
-      doc.text("Mes goûts et mes peurs :", 20, yPosition);
-      yPosition += 7;
-      responses.preferences.forEach((response: any) => {
-        const text = `${response.question_text || response.preferences_questions?.question}: ${response.response}`;
-        const lines = doc.splitTextToSize(text, pageWidth - 40);
-        doc.text(lines, 20, yPosition);
-        yPosition += lines.length * 7;
-      });
-    }
+          const questionText = response.question_text || 
+                             response.questions?.Question || 
+                             response.life_support_questions?.question ||
+                             response.advanced_illness_questions?.question ||
+                             response.preferences_questions?.question;
+
+          const text = `${questionText}: ${response.response}`;
+          const lines = doc.splitTextToSize(text, pageWidth - 40);
+          doc.text(lines, 20, yPosition);
+          yPosition += lines.length * 7;
+        });
+
+        yPosition += 7;
+      }
+    };
+
+    // Add each section
+    addSection("Mon avis d'une façon générale :", responses.general || []);
+    addSection("Maintien en vie :", responses.lifeSupport || []);
+    addSection("Maladie avancée :", responses.advancedIllness || []);
+    addSection("Mes goûts et mes peurs :", responses.preferences || []);
 
     return yPosition;
   }
