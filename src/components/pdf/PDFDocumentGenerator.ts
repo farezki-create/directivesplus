@@ -12,9 +12,17 @@ export class PDFDocumentGenerator {
     const doc = new jsPDF();
     let yPosition = 20;
 
+    // Check if this is a trusted person document
+    const isTrustedPersonDoc = responses?.type === "trusted_person";
+
     // Title
     doc.setFontSize(20);
-    doc.text("Directives Anticipées", doc.internal.pageSize.getWidth() / 2, yPosition, { align: "center" });
+    doc.text(
+      isTrustedPersonDoc ? "Désignation de la personne de confiance" : "Directives Anticipées",
+      doc.internal.pageSize.getWidth() / 2,
+      yPosition,
+      { align: "center" }
+    );
     yPosition += 20;
 
     // Section 1: User Identity
@@ -43,23 +51,30 @@ export class PDFDocumentGenerator {
       yPosition = 20;
     }
 
-    // Section 3: Directives Anticipées Synthesis
-    yPosition += 20;
-    doc.setFontSize(16);
-    doc.text("3. Synthèse de mes directives anticipées", 20, yPosition);
-    yPosition += 10;
-    yPosition = PDFResponsesSection.generate(doc, responses, yPosition);
+    // For trusted person document, skip directives anticipées section
+    if (!isTrustedPersonDoc) {
+      // Section 3: Directives Anticipées Synthesis
+      yPosition += 20;
+      doc.setFontSize(16);
+      doc.text("3. Synthèse de mes directives anticipées", 20, yPosition);
+      yPosition += 10;
+      yPosition = PDFResponsesSection.generate(doc, responses, yPosition);
 
-    // Add new page if needed
-    if (yPosition > doc.internal.pageSize.getHeight() - 40) {
-      doc.addPage();
-      yPosition = 20;
+      // Add new page if needed
+      if (yPosition > doc.internal.pageSize.getHeight() - 40) {
+        doc.addPage();
+        yPosition = 20;
+      }
     }
 
-    // Section 4: Trusted Person
+    // Section for Trusted Person
     yPosition += 20;
     doc.setFontSize(16);
-    doc.text("4. Personne de confiance", 20, yPosition);
+    doc.text(
+      isTrustedPersonDoc ? "3. Personne de confiance" : "4. Personne de confiance",
+      20,
+      yPosition
+    );
     yPosition += 10;
     yPosition = PDFTrustedPersonSection.generate(doc, trustedPersons, yPosition);
 
@@ -69,10 +84,14 @@ export class PDFDocumentGenerator {
       yPosition = 20;
     }
 
-    // Section 5: Date, Place and Signature
+    // Final Section: Date, Place and Signature
     yPosition += 20;
     doc.setFontSize(16);
-    doc.text("5. Date, lieu et signature", 20, yPosition);
+    doc.text(
+      isTrustedPersonDoc ? "4. Date, lieu et signature" : "5. Date, lieu et signature",
+      20,
+      yPosition
+    );
     yPosition += 10;
     
     const currentDate = format(new Date(), "d MMMM yyyy", { locale: fr });
