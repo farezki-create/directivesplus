@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { jsPDF } from "jspdf";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -25,8 +24,9 @@ export const PDFGenerator = () => {
         return;
       }
 
+      console.log("[PDFGenerator] Generating PDF with data:", { profile, responses, trustedPersons });
       const pdfDataUrl = PDFDocumentGenerator.generate(profile, responses, trustedPersons);
-      console.log("[PDFGenerator] PDF generated successfully, setting URL");
+      console.log("[PDFGenerator] PDF generated successfully, setting URL:", pdfDataUrl.substring(0, 100) + "...");
       setPdfUrl(pdfDataUrl);
       setShowPreview(true);
       
@@ -46,7 +46,6 @@ export const PDFGenerator = () => {
   };
 
   useEffect(() => {
-    // Automatically generate and show PDF when component mounts
     if (!loading && profile) {
       console.log("[PDFGenerator] Auto-generating PDF on mount");
       generatePDF();
@@ -65,7 +64,7 @@ export const PDFGenerator = () => {
         return;
       }
 
-      // Create a link element and trigger download
+      console.log("[PDFGenerator] Saving PDF with URL:", pdfUrl.substring(0, 100) + "...");
       const link = document.createElement('a');
       link.href = pdfUrl;
       link.download = "directives-anticipees.pdf";
@@ -85,14 +84,24 @@ export const PDFGenerator = () => {
   };
 
   const handlePrint = () => {
-    if (pdfUrl) {
-      const printWindow = window.open(pdfUrl);
-      printWindow?.print();
-    } else {
+    if (!pdfUrl) {
       console.error("[PDFGenerator] No PDF URL available for printing");
       toast({
         title: "Erreur",
         description: "Aucun PDF n'a été généré pour l'impression.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const printWindow = window.open(pdfUrl);
+    if (printWindow) {
+      printWindow.print();
+    } else {
+      console.error("[PDFGenerator] Could not open print window");
+      toast({
+        title: "Erreur",
+        description: "Impossible d'ouvrir la fenêtre d'impression.",
         variant: "destructive",
       });
     }
@@ -108,7 +117,17 @@ export const PDFGenerator = () => {
       return;
     }
 
+    if (!pdfUrl) {
+      toast({
+        title: "Erreur",
+        description: "Aucun PDF n'a été généré.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
+      console.log("[PDFGenerator] Sending PDF by email to:", profile.email);
       const response = await fetch('/api/send-pdf', {
         method: 'POST',
         headers: {
@@ -121,6 +140,7 @@ export const PDFGenerator = () => {
       });
 
       if (response.ok) {
+        console.log("[PDFGenerator] PDF sent successfully by email");
         toast({
           title: "Succès",
           description: "Le PDF a été envoyé par email.",
