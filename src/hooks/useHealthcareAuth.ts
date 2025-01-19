@@ -45,14 +45,15 @@ export const useHealthcareAuth = () => {
   const createHealthcareProfessionalProfile = async (userId: string, values: FormValues) => {
     const { error: profileError } = await supabase
       .from('healthcare_professionals')
-      .insert([{
+      .insert({
         id: userId,
         rpps_number: values.rppsNumber,
         professional_type: values.professionalType || 'doctor',
         first_name: values.firstName,
         last_name: values.lastName,
-        specialty: values.specialty
-      }]);
+        specialty: values.specialty || null,
+        cps_number: null // Set to null since we're removing this field
+      });
 
     if (profileError) {
       console.error('Error creating healthcare professional profile:', profileError);
