@@ -1,70 +1,93 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
-import { PDFPreviewDialog } from "../pdf/PDFPreviewDialog";
-import { usePDFGeneration } from "@/hooks/usePDFGeneration";
-import { PDFGenerator } from "../PDFGenerator";
-import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
-import { ResponseSection } from "./ResponseSection";
-import { formatResponses } from "./ResponseFormatter";
+import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface FreeTextInputProps {
-  userId: string | null;
+  userId: string;
 }
 
-export function FreeTextInput({ userId }: FreeTextInputProps) {
-  const navigate = useNavigate();
-  const { responses } = useQuestionnairesResponses(userId || "");
-  const {
-    pdfUrl,
-    showPreview,
-    setShowPreview,
-    generatePDF,
-    handlePrint,
-    handleEmail,
-    handleDownload
-  } = usePDFGeneration(userId, "");
+export const FreeTextInput = ({ userId }: FreeTextInputProps) => {
+  const [freeText, setFreeText] = useState("");
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const loadFreeText = async () => {
+      try {
+        console.log("[FreeTextInput] Loading existing free text");
+        const { data, error } = await supabase
+          .from('questionnaire_synthesis')
+          .select('free_text')
+          .eq('user_id', userId)
+          .maybeSingle();
+
+        if (error) {
+          console.error("[FreeTextInput] Error loading free text:", error);
+          throw error;
+        }
+
+        if (data?.free_text) {
+          console.log("[FreeTextInput] Loaded existing free text");
+          setFreeText(data.free_text);
+        } else {
+          console.log("[FreeTextInput] No existing free text found");
+        }
+      } catch (error) {
+        console.error("[FreeTextInput] Error loading free text:", error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger votre texte libre existant.",
+          variant: "destructive",
+        });
+      }
+    };
+
+    if (userId) {
+      loadFreeText();
+    }
+  }, [userId, toast]);
+
+  const saveFreeText = async () => {
+    try {
+      console.log("[FreeTextInput] Saving free text");
+      const { error } = await supabase
+        .from('questionnaire_synthesis')
+        .upsert({
+          user_id: userId,
+          free_text: freeText
+        });
+
+      if (error) {
+        console.error("[FreeTextInput] Error saving free text:", error);
+        throw error;
+      }
+
+      console.log("[FreeTextInput] Free text saved successfully");
+      toast({
+        title: "Succès",
+        description: "Votre texte libre a été enregistré.",
+      });
+    } catch (error) {
+      console.error("[FreeTextInput] Error saving free text:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'enregistrer votre texte libre.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
-    <div className="mb-8">
-      <div className="mb-6 space-y-6">
-        <ResponseSection 
-          title="Mon avis d'une façon générale" 
-          items={formatResponses(responses.general)} 
-        />
-        <ResponseSection 
-          title="Maintien en vie" 
-          items={formatResponses(responses.lifeSupport)} 
-        />
-        <ResponseSection 
-          title="Maladie avancée" 
-          items={formatResponses(responses.advancedIllness)} 
-        />
-        <ResponseSection 
-          title="Mes goûts et mes peurs" 
-          items={formatResponses(responses.preferences)} 
-        />
-      </div>
-
-      <div className="flex justify-between items-center">
-        <Button
-          variant="outline"
-          onClick={() => navigate("/")}
-        >
-          Retour
-        </Button>
-        <div className="flex gap-4">
-          {userId && <PDFGenerator userId={userId} />}
-        </div>
-      </div>
-
-      <PDFPreviewDialog
-        open={showPreview}
-        onOpenChange={setShowPreview}
-        pdfUrl={pdfUrl}
-        onEmail={handleEmail}
-        onSave={handleDownload}
-        onPrint={handlePrint}
+    <div className="space-y-4">
+      <h3 className="text-lg font-semibold">Texte libre</h3>
+      <Textarea
+        value={freeText}
+        onChange={(e) => setFreeText(e.target.value)}
+        className="min-h-[100px] border-dotted"
+        placeholder="Écrivez votre texte libre ici..."
       />
+      <Button onClick={saveFreeText}>Enregistrer</Button>
     </div>
   );
-}
+};
