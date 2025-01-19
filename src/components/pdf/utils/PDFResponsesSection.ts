@@ -1,4 +1,5 @@
 import { jsPDF } from "jspdf";
+import { formatResponseText } from "../../free-text/ResponseFormatter";
 
 export class PDFResponsesSection {
   static generate(doc: jsPDF, responses: any, startY: number): number {
@@ -30,7 +31,8 @@ export class PDFResponsesSection {
                              response.advanced_illness_questions?.question ||
                              response.preferences_questions?.question;
 
-          const text = `${questionText} : ${response.response}`;
+          const formattedResponse = formatResponseText(response.response);
+          const text = `${questionText} : ${formattedResponse}`;
           const lines = doc.splitTextToSize(text, pageWidth - 40);
           doc.text(lines, 20, yPosition);
           yPosition += lines.length * 7;
