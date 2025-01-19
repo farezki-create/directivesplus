@@ -11,12 +11,6 @@ export class PDFUserSection {
     if (profile) {
       console.log("[PDFUserSection] Generating user section with profile:", profile);
 
-      // Title
-      doc.setFont("helvetica", "bold");
-      doc.text("Identité", 20, yPosition);
-      yPosition += 10;
-      doc.setFont("helvetica", "normal");
-
       // Full name
       const fullName = `${profile.last_name || ''} ${profile.first_name || ''}`.trim();
       if (fullName) {
@@ -24,7 +18,7 @@ export class PDFUserSection {
         yPosition += 10;
       }
 
-      // Birth date if available
+      // Birth date
       if (profile.birth_date) {
         try {
           const formattedDate = format(new Date(profile.birth_date), "d MMMM yyyy", { locale: fr });
@@ -35,7 +29,7 @@ export class PDFUserSection {
         }
       }
 
-      // Complete address
+      // Address section
       const hasAddress = profile.address || profile.postal_code || profile.city || profile.country;
       if (hasAddress) {
         doc.text("Adresse :", 20, yPosition);

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "./pdf/usePDFData";
 import { handlePDFGeneration, handlePDFDownload, handlePDFPrint } from "./pdf/utils/PDFGenerationUtils";
-import { PDFPreviewDialog } from "./pdf/PDFPreviewDialog";
+import { PDFPreviewDialog } from "./PDFPreviewDialog";
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
 
@@ -17,7 +17,7 @@ export function PDFGenerator({ userId }: PDFGeneratorProps) {
   const { profile, trustedPersons, loading } = usePDFData();
 
   const generatePDF = () => {
-    console.log("[PDFGenerator] Starting PDF generation");
+    console.log("[PDFGenerator] Starting PDF generation with profile:", profile);
     handlePDFGeneration(profile, responses, trustedPersons, setPdfUrl, setShowPreview);
   };
 
