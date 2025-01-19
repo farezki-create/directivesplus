@@ -16,6 +16,7 @@ export const PDFGenerator = () => {
   const generatePDF = () => {
     try {
       if (!profile) {
+        console.error("[PDFGenerator] No profile data available");
         toast({
           title: "Erreur",
           description: "Impossible de générer le PDF sans vos informations de profil.",
@@ -25,10 +26,10 @@ export const PDFGenerator = () => {
       }
 
       const pdfDataUrl = PDFDocumentGenerator.generate(profile, responses, trustedPersons);
+      console.log("[PDFGenerator] PDF generated successfully, setting URL");
       setPdfUrl(pdfDataUrl);
       setShowPreview(true);
       
-      console.log("[PDFGenerator] PDF generated successfully");
       toast({
         title: "Succès",
         description: "Le PDF a été généré avec succès.",
@@ -53,14 +54,47 @@ export const PDFGenerator = () => {
   }, [loading, profile]);
 
   const handleSave = () => {
-    const doc = new jsPDF();
-    doc.save("directives-anticipees.pdf");
+    try {
+      if (!pdfUrl) {
+        console.error("[PDFGenerator] No PDF URL available for saving");
+        toast({
+          title: "Erreur",
+          description: "Aucun PDF n'a été généré.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Create a link element and trigger download
+      const link = document.createElement('a');
+      link.href = pdfUrl;
+      link.download = "directives-anticipees.pdf";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      console.log("[PDFGenerator] PDF downloaded successfully");
+    } catch (error) {
+      console.error("[PDFGenerator] Error saving PDF:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de télécharger le PDF.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handlePrint = () => {
     if (pdfUrl) {
       const printWindow = window.open(pdfUrl);
       printWindow?.print();
+    } else {
+      console.error("[PDFGenerator] No PDF URL available for printing");
+      toast({
+        title: "Erreur",
+        description: "Aucun PDF n'a été généré pour l'impression.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -95,6 +129,7 @@ export const PDFGenerator = () => {
         throw new Error("Erreur lors de l'envoi de l'email");
       }
     } catch (error) {
+      console.error("[PDFGenerator] Error sending PDF by email:", error);
       toast({
         title: "Erreur",
         description: "Impossible d'envoyer le PDF par email.",
