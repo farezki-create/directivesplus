@@ -2,9 +2,11 @@ export interface UserProfile {
   id: string;
   first_name: string | null;
   last_name: string | null;
+  birth_date: string | null;
   address: string | null;
   city: string | null;
   postal_code: string | null;
+  country: string | null;
   phone_number: string | null;
   unique_identifier: string;
   email?: string;
