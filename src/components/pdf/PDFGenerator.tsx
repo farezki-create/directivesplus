@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { jsPDF } from "jspdf";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -43,6 +43,14 @@ export const PDFGenerator = () => {
       });
     }
   };
+
+  useEffect(() => {
+    // Automatically generate and show PDF when component mounts
+    if (!loading && profile) {
+      console.log("[PDFGenerator] Auto-generating PDF on mount");
+      generatePDF();
+    }
+  }, [loading, profile]);
 
   const handleSave = () => {
     const doc = new jsPDF();
