@@ -3,6 +3,13 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { FileText, User as UserIcon, CreditCard, Files } from "lucide-react";
 
 export const Header = () => {
   const navigate = useNavigate();
@@ -46,12 +53,43 @@ export const Header = () => {
           >
             Accueil
           </Button>
+
+          {user && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost">
+                  <Files className="mr-2 h-4 w-4" />
+                  Documents
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem onClick={() => navigate("/dashboard?tab=persons")}>
+                  <UserIcon className="mr-2 h-4 w-4" />
+                  Ma personne de confiance
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/dashboard?tab=directives")}>
+                  <FileText className="mr-2 h-4 w-4" />
+                  Mes Directives anticipées
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/dashboard?tab=card")}>
+                  <CreditCard className="mr-2 h-4 w-4" />
+                  Mes Directives anticipées en format carte
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/dashboard?tab=health")}>
+                  <Files className="mr-2 h-4 w-4" />
+                  Documents de santé utiles
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+
           <Button
             variant="ghost"
             onClick={() => navigate("/dashboard")}
           >
             En savoir plus
           </Button>
+          
           {user && !isHomePage && (
             <Button
               variant="ghost"
@@ -60,6 +98,7 @@ export const Header = () => {
               Désignation de la personne de confiance
             </Button>
           )}
+          
           {user ? (
             <Button variant="default" onClick={handleSignOut}>
               Déconnexion
