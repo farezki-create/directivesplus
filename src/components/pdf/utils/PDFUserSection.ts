@@ -66,8 +66,16 @@ export class PDFUserSection {
         }
       }
 
-      // Access code
-      doc.text(`Code d'accès : ${profile.unique_identifier}`, 20, yPosition);
+      // Access code section with connection link
+      doc.text("Code d'accès :", 20, yPosition);
+      yPosition += 7;
+      doc.text(`${profile.unique_identifier}`, 30, yPosition);
+      yPosition += 7;
+      doc.text("Lien de connexion :", 20, yPosition);
+      yPosition += 7;
+      doc.setTextColor(0, 0, 255); // Set text color to blue for the link
+      doc.text("https://directives-anticipees.lovable.dev", 30, yPosition);
+      doc.setTextColor(0, 0, 0); // Reset text color to black
       yPosition += 10;
 
     } else {
