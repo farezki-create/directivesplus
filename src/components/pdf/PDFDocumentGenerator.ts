@@ -84,16 +84,8 @@ export class PDFDocumentGenerator {
       yPosition = 20;
     }
 
-    // Final Section: Date and Place
+    // Final Section: Date and Place (without title)
     yPosition += 20;
-    doc.setFontSize(16);
-    doc.text(
-      isTrustedPersonDoc ? "4. Date et lieu" : "5. Date et lieu",
-      20,
-      yPosition
-    );
-    yPosition += 10;
-    
     doc.setFontSize(12);
     doc.text("Date : ..................", 20, yPosition);
     doc.text("Lieu : ..................", 120, yPosition);
