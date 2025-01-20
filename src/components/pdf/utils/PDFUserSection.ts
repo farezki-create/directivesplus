@@ -66,7 +66,7 @@ export class PDFUserSection {
         }
       }
 
-      // Access code section with connection link
+      // Access code and connection link section
       doc.text("Code d'accès :", 20, yPosition);
       yPosition += 7;
       doc.text(`${profile.unique_identifier}`, 30, yPosition);
