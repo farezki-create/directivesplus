@@ -150,7 +150,7 @@ export function LifeSupportQuestionsDialog({
     <QuestionsDialogLayout
       open={open}
       onOpenChange={onOpenChange}
-      title="Maintien en vie"
+      title="Maintien en vie, que pensez-vous:"
       onSubmit={handleSubmit}
       loading={loading}
       questionsLength={questions.length}
