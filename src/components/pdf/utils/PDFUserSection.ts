@@ -29,6 +29,18 @@ export class PDFUserSection {
         }
       }
 
+      // Email
+      if (profile.email) {
+        doc.text(`Email : ${profile.email}`, 20, yPosition);
+        yPosition += 10;
+      }
+
+      // Phone number
+      if (profile.phone_number) {
+        doc.text(`Téléphone : ${profile.phone_number}`, 20, yPosition);
+        yPosition += 10;
+      }
+
       // Address section
       const hasAddress = profile.address || profile.postal_code || profile.city || profile.country;
       if (hasAddress) {
@@ -53,22 +65,6 @@ export class PDFUserSection {
           yPosition += 10;
         }
       }
-
-      // Contact information
-      if (profile.phone_number) {
-        doc.text(`Téléphone : ${profile.phone_number}`, 20, yPosition);
-        yPosition += 10;
-      }
-
-      if (profile.email) {
-        doc.text(`Email : ${profile.email}`, 20, yPosition);
-        yPosition += 10;
-      }
-
-      // Access code
-      doc.text(`Code d'accès : ${profile.unique_identifier}`, 20, yPosition);
-      yPosition += 15;
-
     } else {
       console.warn("[PDFUserSection] No profile data provided");
       doc.text("Information d'identité non disponible", 20, yPosition);
