@@ -18,7 +18,16 @@ export function PDFGenerator({ userId }: PDFGeneratorProps) {
 
   const generatePDF = () => {
     console.log("[PDFGenerator] Starting PDF generation with profile:", profile);
-    handlePDFGeneration(profile, responses, trustedPersons, setPdfUrl, setShowPreview);
+    // Remove any trailing colons from the URL when setting it
+    handlePDFGeneration(profile, responses, trustedPersons, (url: string | null) => {
+      if (url) {
+        // Ensure the URL is properly formatted without extra colons
+        const cleanUrl = url.replace(/:\/\/([^/]+):/, '://$1');
+        setPdfUrl(cleanUrl);
+      } else {
+        setPdfUrl(null);
+      }
+    }, setShowPreview);
   };
 
   const handleEmail = async () => {
