@@ -18,20 +18,25 @@ export function PDFGenerator({ userId }: PDFGeneratorProps) {
 
   const generatePDF = () => {
     console.log("[PDFGenerator] Starting PDF generation with profile:", profile);
-    handlePDFGeneration(profile, responses, trustedPersons, (url: string | null) => {
-      if (url) {
-        // Clean the URL by removing any extra colons and ensuring proper formatting
-        const cleanUrl = url.replace(/([^:])\/\/+/g, '$1/').replace(/:\//g, '://');
-        console.log("[PDFGenerator] Cleaned URL:", cleanUrl);
-        setPdfUrl(cleanUrl);
-      } else {
-        setPdfUrl(null);
-      }
-    }, setShowPreview);
+    handlePDFGeneration(
+      profile,
+      responses,
+      trustedPersons,
+      null,
+      (url: string | null) => {
+        if (url) {
+          const cleanUrl = url.replace(/([^:])\/\/+/g, '$1/').replace(/:\//g, '://');
+          console.log("[PDFGenerator] Cleaned URL:", cleanUrl);
+          setPdfUrl(cleanUrl);
+        } else {
+          setPdfUrl(null);
+        }
+      },
+      setShowPreview
+    );
   };
 
   const handleEmail = async () => {
-    // Email handling logic here - to be implemented
     console.log("[PDFGenerator] Email functionality not yet implemented");
   };
 
