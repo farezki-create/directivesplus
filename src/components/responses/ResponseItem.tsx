@@ -5,9 +5,9 @@ interface ResponseItemProps {
 
 export const ResponseItem = ({ question, response }: ResponseItemProps) => {
   return (
-    <div className="space-y-1">
-      <p className="font-medium">{question}</p>
-      <p className="text-gray-600">{response}</p>
+    <div className="mb-8 p-4 rounded-lg bg-white shadow-sm hover:shadow-md transition-shadow duration-200">
+      <p className="text-sm font-medium text-muted-foreground mb-2">{question}</p>
+      <p className="text-2xl font-semibold text-primary leading-relaxed">{response}</p>
     </div>
   );
 };
