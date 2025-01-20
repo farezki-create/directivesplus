@@ -10,11 +10,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { FileText, User as UserIcon, CreditCard, Files } from "lucide-react";
+import { PDFGenerator } from "@/components/PDFGenerator";
 
 export const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [user, setUser] = useState<User | null>(null);
+  const [showPDFPreview, setShowPDFPreview] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -55,32 +57,40 @@ export const Header = () => {
           </Button>
 
           {user && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost">
-                  <Files className="mr-2 h-4 w-4" />
-                  Documents
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem onClick={() => navigate("/dashboard?tab=persons")}>
-                  <UserIcon className="mr-2 h-4 w-4" />
-                  Ma personne de confiance
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/dashboard?tab=directives")}>
-                  <FileText className="mr-2 h-4 w-4" />
-                  Mes Directives anticipées
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/dashboard?tab=card")}>
-                  <CreditCard className="mr-2 h-4 w-4" />
-                  Mes Directives anticipées en format carte
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/dashboard?tab=health")}>
-                  <Files className="mr-2 h-4 w-4" />
-                  Documents de santé utiles
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost">
+                    <Files className="mr-2 h-4 w-4" />
+                    Documents
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem onClick={() => navigate("/dashboard?tab=persons")}>
+                    <UserIcon className="mr-2 h-4 w-4" />
+                    Ma personne de confiance
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setShowPDFPreview(true)}>
+                    <FileText className="mr-2 h-4 w-4" />
+                    Mes Directives anticipées
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/dashboard?tab=card")}>
+                    <CreditCard className="mr-2 h-4 w-4" />
+                    Mes Directives anticipées en format carte
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/dashboard?tab=health")}>
+                    <Files className="mr-2 h-4 w-4" />
+                    Documents de santé utiles
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {showPDFPreview && user && (
+                <PDFGenerator 
+                  userId={user.id} 
+                />
+              )}
+            </>
           )}
 
           <Button
