@@ -7,12 +7,7 @@ import { PDFTrustedPersonSection } from "./utils/PDFTrustedPersonSection";
 import { PDFResponsesSection } from "./utils/PDFResponsesSection";
 
 export class PDFDocumentGenerator {
-  static generate(
-    profile: UserProfile, 
-    responses: any, 
-    trustedPersons: TrustedPerson[],
-    signatureData?: string
-  ) {
+  static generate(profile: UserProfile, responses: any, trustedPersons: TrustedPerson[]) {
     console.log("[PDFGenerator] Generating PDF with responses:", responses);
     const doc = new jsPDF();
     let yPosition = 20;
@@ -105,13 +100,7 @@ export class PDFDocumentGenerator {
     yPosition += 20;
     doc.text("À : _____________________", 20, yPosition);
     yPosition += 20;
-
-    // Add signature if provided
-    if (signatureData) {
-      doc.addImage(signatureData, 'PNG', 20, yPosition, 100, 50);
-    } else {
-      doc.text("Signature :", 20, yPosition);
-    }
+    doc.text("Signature :", 20, yPosition);
 
     return doc.output('dataurlstring');
   }
