@@ -24,7 +24,7 @@ export function ResponsesSummary({ userId }: ResponsesSummaryProps) {
         responses={responses?.general || []}
       />
       <ResponseSection
-        title="Maintien en vie"
+        title="Maintien en vie, que pensez-vous:"
         responses={responses?.lifeSupport || []}
       />
       <ResponseSection
