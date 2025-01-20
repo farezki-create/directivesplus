@@ -12,19 +12,28 @@ export function useHealthcareAuth() {
     professional_type: "doctor" | "nurse" | "pharmacist" | "other";
     first_name: string;
     last_name: string;
-    specialty: string;
+    specialty: string | null;
     cps_number: string;
   }) => {
     try {
       setLoading(true);
       console.log("[HealthcareAuth] Registering healthcare professional:", professionalData);
 
+      // Format the data to match the database schema
+      const formattedData = {
+        id: professionalData.id,
+        rpps_number: professionalData.rpps_number,
+        professional_type: professionalData.professional_type,
+        first_name: professionalData.first_name,
+        last_name: professionalData.last_name,
+        specialty: professionalData.specialty,
+        cps_number: professionalData.cps_number,
+        created_at: new Date().toISOString(),
+      };
+
       const { error } = await supabase
         .from("healthcare_professionals")
-        .upsert({
-          ...professionalData,
-          created_at: new Date().toISOString(),
-        });
+        .upsert(formattedData);
 
       if (error) {
         console.error("[HealthcareAuth] Error registering healthcare professional:", error);
