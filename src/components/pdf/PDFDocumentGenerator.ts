@@ -7,7 +7,7 @@ import { PDFTrustedPersonSection } from "./utils/PDFTrustedPersonSection";
 import { PDFResponsesSection } from "./utils/PDFResponsesSection";
 
 export class PDFDocumentGenerator {
-  static generate(profile: UserProfile, responses: any, trustedPersons: TrustedPerson[]) {
+  static generate(profile: UserProfile, responses: any, trustedPersons: TrustedPerson[], signatureData: string | null = null) {
     console.log("[PDFGenerator] Generating PDF with responses:", responses);
     const doc = new jsPDF();
     let yPosition = 20;
@@ -84,11 +84,11 @@ export class PDFDocumentGenerator {
       yPosition = 20;
     }
 
-    // Final Section: Date and Place
+    // Final Section: Date, Place and Signature
     yPosition += 20;
     doc.setFontSize(16);
     doc.text(
-      isTrustedPersonDoc ? "4. Date et lieu" : "5. Date et lieu",
+      isTrustedPersonDoc ? "4. Date, lieu et signature" : "5. Date, lieu et signature",
       20,
       yPosition
     );
@@ -99,6 +99,36 @@ export class PDFDocumentGenerator {
     doc.text(`Fait le ${currentDate}`, 20, yPosition);
     yPosition += 20;
     doc.text("À : _____________________", 20, yPosition);
+    yPosition += 20;
+
+    // Add signature if provided with adjusted dimensions
+    if (signatureData) {
+      // Calculate signature dimensions while maintaining aspect ratio
+      const maxWidth = 100; // Maximum width in PDF units
+      const maxHeight = 50; // Maximum height in PDF units
+      
+      // Create temporary image to get dimensions
+      const img = new Image();
+      img.src = signatureData;
+      
+      // Calculate aspect ratio
+      const aspectRatio = img.width / img.height;
+      
+      // Calculate final dimensions
+      let finalWidth = maxWidth;
+      let finalHeight = maxWidth / aspectRatio;
+      
+      // If height is too large, scale based on height instead
+      if (finalHeight > maxHeight) {
+        finalHeight = maxHeight;
+        finalWidth = maxHeight * aspectRatio;
+      }
+      
+      console.log("[PDFGenerator] Adding signature with dimensions:", { width: finalWidth, height: finalHeight });
+      doc.addImage(signatureData, 'PNG', 20, yPosition, finalWidth, finalHeight);
+    } else {
+      doc.text("Signature :", 20, yPosition);
+    }
 
     return doc.output('dataurlstring');
   }

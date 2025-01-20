@@ -3,6 +3,7 @@ import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "./usePDFData";
 import { handlePDFGeneration, handlePDFDownload, handlePDFPrint } from "./utils/PDFGenerationUtils";
 import { PDFPreviewDialog } from "./PDFPreviewDialog";
+import { SignatureDialog } from "./SignatureDialog";
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
 
@@ -13,6 +14,7 @@ interface PDFGeneratorProps {
 export function PDFGenerator({ userId }: PDFGeneratorProps) {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [showSignature, setShowSignature] = useState(false);
   const { responses } = useQuestionnairesResponses(userId);
   const { profile, trustedPersons, loading } = usePDFData();
 
@@ -30,6 +32,25 @@ export function PDFGenerator({ userId }: PDFGeneratorProps) {
           setPdfUrl(cleanUrl);
         } else {
           setPdfUrl(null);
+        }
+      },
+      setShowPreview
+    );
+  };
+
+  const handleSignature = (signatureData: string) => {
+    console.log("[PDFGenerator] Adding signature to PDF");
+    handlePDFGeneration(
+      profile,
+      responses,
+      trustedPersons,
+      signatureData,
+      (url: string | null) => {
+        if (url) {
+          const cleanUrl = url.replace(/([^:])\/\/+/g, '$1/').replace(/:\//g, '://');
+          console.log("[PDFGenerator] Cleaned URL with signature:", cleanUrl);
+          setPdfUrl(cleanUrl);
+          setShowSignature(false);
         }
       },
       setShowPreview
@@ -61,6 +82,13 @@ export function PDFGenerator({ userId }: PDFGeneratorProps) {
         onEmail={handleEmail}
         onSave={() => handlePDFDownload(pdfUrl)}
         onPrint={() => handlePDFPrint(pdfUrl)}
+        onSign={() => setShowSignature(true)}
+      />
+
+      <SignatureDialog
+        open={showSignature}
+        onOpenChange={setShowSignature}
+        onSign={handleSignature}
       />
     </>
   );
