@@ -4,7 +4,8 @@ import { usePDFData } from "./usePDFData";
 import { handlePDFGeneration, handlePDFDownload, handlePDFPrint } from "./utils/PDFGenerationUtils";
 import { PDFPreviewDialog } from "./PDFPreviewDialog";
 import { Button } from "@/components/ui/button";
-import { FileText } from "lucide-react";
+import { FileText, CreditCard } from "lucide-react";
+import { PDFCardGenerator } from "./utils/PDFCardGenerator";
 
 interface PDFGeneratorProps {
   userId: string;
@@ -35,6 +36,18 @@ export function PDFGenerator({ userId }: PDFGeneratorProps) {
     );
   };
 
+  const generateCardPDF = () => {
+    console.log("[PDFGenerator] Starting card PDF generation");
+    if (!profile) {
+      console.error("[PDFGenerator] No profile data available");
+      return;
+    }
+
+    const pdfDataUrl = PDFCardGenerator.generate(profile, trustedPersons);
+    setPdfUrl(pdfDataUrl);
+    setShowPreview(true);
+  };
+
   const handleEmail = async () => {
     console.log("[PDFGenerator] Email functionality not yet implemented");
   };
@@ -44,13 +57,22 @@ export function PDFGenerator({ userId }: PDFGeneratorProps) {
   }
 
   return (
-    <>
+    <div className="flex gap-4">
       <Button 
         onClick={generatePDF}
         className="flex items-center gap-2"
       >
         <FileText className="h-4 w-4" />
         Générer Mes directives anticipées
+      </Button>
+
+      <Button 
+        onClick={generateCardPDF}
+        variant="outline"
+        className="flex items-center gap-2"
+      >
+        <CreditCard className="h-4 w-4" />
+        Générer au format carte
       </Button>
       
       <PDFPreviewDialog
@@ -61,6 +83,6 @@ export function PDFGenerator({ userId }: PDFGeneratorProps) {
         onSave={() => handlePDFDownload(pdfUrl)}
         onPrint={() => handlePDFPrint(pdfUrl)}
       />
-    </>
+    </div>
   );
 }
