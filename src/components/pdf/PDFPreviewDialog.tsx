@@ -1,6 +1,6 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Download, Mail, Printer, PenTool } from "lucide-react";
+import { Download, Mail, Printer } from "lucide-react";
 
 interface PDFPreviewDialogProps {
   open: boolean;
@@ -9,7 +9,6 @@ interface PDFPreviewDialogProps {
   onEmail: () => void;
   onSave: () => void;
   onPrint: () => void;
-  onSign: () => void;
 }
 
 export function PDFPreviewDialog({
@@ -19,7 +18,6 @@ export function PDFPreviewDialog({
   onEmail,
   onSave,
   onPrint,
-  onSign,
 }: PDFPreviewDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -37,10 +35,6 @@ export function PDFPreviewDialog({
             <Button variant="outline" onClick={onPrint}>
               <Printer className="mr-2 h-4 w-4" />
               Imprimer
-            </Button>
-            <Button variant="default" onClick={onSign}>
-              <PenTool className="mr-2 h-4 w-4" />
-              Signer électroniquement
             </Button>
           </div>
           
