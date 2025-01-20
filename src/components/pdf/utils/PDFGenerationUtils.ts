@@ -18,7 +18,7 @@ export const handlePDFGeneration = (
     }
 
     // Generate PDF
-    const pdfDataUrl = PDFDocumentGenerator.generate(profile, responses, trustedPersons, signatureData);
+    const pdfDataUrl = PDFDocumentGenerator.generate(profile, responses, trustedPersons);
     
     if (!pdfDataUrl) {
       console.error("[PDFGeneration] PDF generation failed - no data URL returned");
