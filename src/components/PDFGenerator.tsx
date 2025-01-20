@@ -18,11 +18,11 @@ export function PDFGenerator({ userId }: PDFGeneratorProps) {
 
   const generatePDF = () => {
     console.log("[PDFGenerator] Starting PDF generation with profile:", profile);
-    // Remove any trailing colons from the URL when setting it
     handlePDFGeneration(profile, responses, trustedPersons, (url: string | null) => {
       if (url) {
-        // Ensure the URL is properly formatted without extra colons
-        const cleanUrl = url.replace(/:\/\/([^/]+):/, '://$1');
+        // Clean the URL by removing any extra colons and ensuring proper formatting
+        const cleanUrl = url.replace(/([^:])\/\/+/g, '$1/').replace(/:\//g, '://');
+        console.log("[PDFGenerator] Cleaned URL:", cleanUrl);
         setPdfUrl(cleanUrl);
       } else {
         setPdfUrl(null);
