@@ -1,13 +1,13 @@
 import { jsPDF } from "jspdf";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 import { UserProfile, TrustedPerson } from "./types";
 import { PDFUserSection } from "./utils/PDFUserSection";
 import { PDFTrustedPersonSection } from "./utils/PDFTrustedPersonSection";
 import { PDFResponsesSection } from "./utils/PDFResponsesSection";
-import { PDFDateSection } from "./utils/PDFDateSection";
-import { PDFSignatureSection } from "./utils/PDFSignatureSection";
 
 export class PDFDocumentGenerator {
-  static generate(profile: UserProfile, responses: any, trustedPersons: TrustedPerson[], signatureData: string | null = null) {
+  static generate(profile: UserProfile, responses: any, trustedPersons: TrustedPerson[]) {
     console.log("[PDFGenerator] Generating PDF with responses:", responses);
     const doc = new jsPDF();
     let yPosition = 20;
@@ -84,18 +84,21 @@ export class PDFDocumentGenerator {
       yPosition = 20;
     }
 
-    // Final Section: Date, Place and Signature
+    // Final Section: Date and Place
     yPosition += 20;
     doc.setFontSize(16);
     doc.text(
-      isTrustedPersonDoc ? "4. Date, lieu et signature" : "5. Date, lieu et signature",
+      isTrustedPersonDoc ? "4. Date et lieu" : "5. Date et lieu",
       20,
       yPosition
     );
     yPosition += 10;
     
-    yPosition = PDFDateSection.generate(doc, yPosition);
-    yPosition = PDFSignatureSection.generate(doc, signatureData, yPosition);
+    const currentDate = format(new Date(), "d MMMM yyyy", { locale: fr });
+    doc.setFontSize(12);
+    doc.text(`Fait le ${currentDate}`, 20, yPosition);
+    yPosition += 20;
+    doc.text("À : _____________________", 20, yPosition);
 
     return doc.output('dataurlstring');
   }

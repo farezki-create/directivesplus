@@ -19,33 +19,30 @@ export function PDFPreviewDialog({
   onSave,
   onPrint,
 }: PDFPreviewDialogProps) {
+  if (!pdfUrl) return null;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl">
-        <div className="flex flex-col space-y-4">
-          <div className="flex justify-end space-x-2">
-            <Button variant="outline" onClick={onEmail}>
-              <Mail className="mr-2 h-4 w-4" />
-              Envoyer par email
-            </Button>
-            <Button variant="outline" onClick={onSave}>
-              <Download className="mr-2 h-4 w-4" />
-              Télécharger
-            </Button>
-            <Button variant="outline" onClick={onPrint}>
-              <Printer className="mr-2 h-4 w-4" />
-              Imprimer
-            </Button>
-          </div>
-          
-          {pdfUrl && (
-            <iframe
-              src={pdfUrl}
-              className="w-full h-[600px] border rounded"
-              title="PDF Preview"
-            />
-          )}
+      <DialogContent className="max-w-4xl h-[80vh]">
+        <div className="flex justify-end gap-2 mb-4">
+          <Button onClick={onEmail} variant="outline" className="gap-2">
+            <Mail className="h-4 w-4" />
+            Email
+          </Button>
+          <Button onClick={onSave} variant="outline" className="gap-2">
+            <Download className="h-4 w-4" />
+            Télécharger
+          </Button>
+          <Button onClick={onPrint} variant="outline" className="gap-2">
+            <Printer className="h-4 w-4" />
+            Imprimer
+          </Button>
         </div>
+        <iframe
+          src={pdfUrl}
+          className="w-full h-full rounded-lg"
+          title="PDF Preview"
+        />
       </DialogContent>
     </Dialog>
   );

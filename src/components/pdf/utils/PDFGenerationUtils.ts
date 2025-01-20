@@ -6,6 +6,7 @@ export const handlePDFGeneration = (
   profile: UserProfile | null,
   responses: any,
   trustedPersons: TrustedPerson[],
+  signatureData: string | null,
   setPdfUrl: (url: string | null) => void,
   setShowPreview: (show: boolean) => void
 ) => {
