@@ -6,7 +6,6 @@ export const handlePDFGeneration = (
   profile: UserProfile | null,
   responses: any,
   trustedPersons: TrustedPerson[],
-  signatureData: string | null,
   setPdfUrl: (url: string | null) => void,
   setShowPreview: (show: boolean) => void
 ) => {
@@ -18,7 +17,7 @@ export const handlePDFGeneration = (
     }
 
     // Generate PDF
-    const pdfDataUrl = PDFDocumentGenerator.generate(profile, responses, trustedPersons, signatureData);
+    const pdfDataUrl = PDFDocumentGenerator.generate(profile, responses, trustedPersons);
     
     if (!pdfDataUrl) {
       console.error("[PDFGeneration] PDF generation failed - no data URL returned");
