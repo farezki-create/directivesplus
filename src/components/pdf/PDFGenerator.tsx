@@ -50,6 +50,7 @@ export function PDFGenerator({ userId }: PDFGeneratorProps) {
           const cleanUrl = url.replace(/([^:])\/\/+/g, '$1/').replace(/:\//g, '://');
           console.log("[PDFGenerator] Cleaned URL with signature:", cleanUrl);
           setPdfUrl(cleanUrl);
+          setShowSignature(false);
         }
       },
       setShowPreview

@@ -4,15 +4,50 @@ import { FileText } from "lucide-react";
 import { PDFPreviewDialog } from "../pdf/PDFPreviewDialog";
 import { usePDFData } from "../pdf/usePDFData";
 import { handlePDFGeneration, handlePDFDownload, handlePDFPrint } from "../pdf/utils/PDFGenerationUtils";
+import { SignatureDialog } from "../pdf/SignatureDialog";
 
 export function TrustedPersonPDFGenerator() {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [showSignature, setShowSignature] = useState(false);
   const { profile, trustedPersons, loading } = usePDFData();
 
   const generatePDF = () => {
     console.log("[TrustedPersonPDF] Starting PDF generation");
-    handlePDFGeneration(profile, { type: "trusted_person" }, trustedPersons, setPdfUrl, setShowPreview);
+    handlePDFGeneration(
+      profile,
+      { type: "trusted_person" },
+      trustedPersons,
+      null,
+      (url: string | null) => {
+        if (url) {
+          const cleanUrl = url.replace(/([^:])\/\/+/g, '$1/').replace(/:\//g, '://');
+          console.log("[TrustedPersonPDF] Cleaned URL:", cleanUrl);
+          setPdfUrl(cleanUrl);
+        } else {
+          setPdfUrl(null);
+        }
+      },
+      setShowPreview
+    );
+  };
+
+  const handleSignature = (signatureData: string) => {
+    console.log("[TrustedPersonPDF] Adding signature to PDF");
+    handlePDFGeneration(
+      profile,
+      { type: "trusted_person" },
+      trustedPersons,
+      signatureData,
+      (url: string | null) => {
+        if (url) {
+          const cleanUrl = url.replace(/([^:])\/\/+/g, '$1/').replace(/:\//g, '://');
+          console.log("[TrustedPersonPDF] Cleaned URL with signature:", cleanUrl);
+          setPdfUrl(cleanUrl);
+        }
+      },
+      setShowPreview
+    );
   };
 
   const handleEmail = async () => {
@@ -40,7 +75,13 @@ export function TrustedPersonPDFGenerator() {
         onEmail={handleEmail}
         onSave={() => handlePDFDownload(pdfUrl)}
         onPrint={() => handlePDFPrint(pdfUrl)}
-        onSign={() => console.log("Sign functionality to be implemented")}
+        onSign={() => setShowSignature(true)}
+      />
+
+      <SignatureDialog
+        open={showSignature}
+        onOpenChange={setShowSignature}
+        onSign={handleSignature}
       />
     </>
   );
