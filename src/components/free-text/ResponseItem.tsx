@@ -5,9 +5,9 @@ interface ResponseItemProps {
 
 export const ResponseItem = ({ question, response }: ResponseItemProps) => {
   return (
-    <div className="mb-4">
-      <p className="text-sm">{question}</p>
-      <p className="text-lg font-semibold text-primary">{response}</p>
+    <div className="mb-6">
+      <p className="text-sm text-muted-foreground mb-1">{question}</p>
+      <p className="text-xl font-semibold text-primary">{response}</p>
     </div>
   );
 };
