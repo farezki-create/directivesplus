@@ -44,6 +44,13 @@ export class PDFDocumentGenerator {
     yPosition += 10;
     doc.setFontSize(12);
     doc.text(`Code d'accès : ${profile.unique_identifier}`, 20, yPosition);
+    yPosition += 10;
+    doc.text("Lien de connexion :", 20, yPosition);
+    yPosition += 7;
+    doc.setTextColor(0, 0, 255); // Set text color to blue for the link
+    doc.text("https://directives-anticipees.lovable.dev", 30, yPosition);
+    doc.setTextColor(0, 0, 0); // Reset text color to black
+    yPosition += 10;
 
     // Add new page if needed
     if (yPosition > doc.internal.pageSize.getHeight() - 40) {
