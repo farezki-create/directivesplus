@@ -1,7 +1,7 @@
-import { useState, useRef } from "react";
-import SignatureCanvas from "react-signature-canvas";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import SignatureCanvas from "react-signature-canvas";
+import { useRef } from "react";
 
 interface SignatureDialogProps {
   open: boolean;
@@ -11,16 +11,17 @@ interface SignatureDialogProps {
 
 export function SignatureDialog({ open, onOpenChange, onSign }: SignatureDialogProps) {
   const signatureRef = useRef<SignatureCanvas>(null);
-  const [isEmpty, setIsEmpty] = useState(true);
 
   const handleClear = () => {
     signatureRef.current?.clear();
-    setIsEmpty(true);
   };
 
   const handleSave = () => {
-    if (signatureRef.current && !isEmpty) {
-      const signatureData = signatureRef.current.toDataURL();
+    if (signatureRef.current?.isEmpty()) {
+      return;
+    }
+    const signatureData = signatureRef.current?.toDataURL();
+    if (signatureData) {
       onSign(signatureData);
     }
   };
@@ -29,22 +30,21 @@ export function SignatureDialog({ open, onOpenChange, onSign }: SignatureDialogP
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Signature</DialogTitle>
+          <DialogTitle>Signez votre document</DialogTitle>
         </DialogHeader>
         <div className="border rounded-lg p-4">
           <SignatureCanvas
             ref={signatureRef}
             canvasProps={{
-              className: "w-full h-40 border border-gray-200 rounded-lg",
+              className: "signature-canvas w-full h-40 border rounded",
             }}
-            onBegin={() => setIsEmpty(false)}
           />
         </div>
-        <div className="flex justify-end gap-2">
+        <div className="flex justify-end gap-2 mt-4">
           <Button variant="outline" onClick={handleClear}>
             Effacer
           </Button>
-          <Button onClick={handleSave} disabled={isEmpty}>
+          <Button onClick={handleSave}>
             Valider
           </Button>
         </div>

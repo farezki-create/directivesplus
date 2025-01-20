@@ -2,8 +2,8 @@ import { useState } from "react";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "./usePDFData";
 import { handlePDFGeneration, handlePDFDownload, handlePDFPrint } from "./utils/PDFGenerationUtils";
-import { PDFPreviewDialog } from "./PDFPreviewDialog";
-import { SignatureDialog } from "./SignatureDialog";
+import { PDFPreviewDialog } from "@/components/pdf/PDFPreviewDialog";
+import { SignatureDialog } from "@/components/pdf/SignatureDialog";
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
 
