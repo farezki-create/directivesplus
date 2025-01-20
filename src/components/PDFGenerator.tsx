@@ -5,12 +5,14 @@ import { handlePDFGeneration, handlePDFDownload, handlePDFPrint } from "./pdf/ut
 import { PDFPreviewDialog } from "./pdf/PDFPreviewDialog";
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
+import { PDFCardGenerator } from "./pdf/utils/PDFCardGenerator";
 
 interface PDFGeneratorProps {
   userId: string;
+  isCardFormat?: boolean;
 }
 
-export function PDFGenerator({ userId }: PDFGeneratorProps) {
+export function PDFGenerator({ userId, isCardFormat = false }: PDFGeneratorProps) {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const { responses } = useQuestionnairesResponses(userId);
@@ -20,6 +22,14 @@ export function PDFGenerator({ userId }: PDFGeneratorProps) {
     console.log("[PDFGenerator] Starting PDF generation with profile:", profile);
     if (!profile) {
       console.error("[PDFGenerator] No profile data available");
+      return;
+    }
+
+    if (isCardFormat) {
+      console.log("[PDFGenerator] Generating card format PDF");
+      const pdfDataUrl = PDFCardGenerator.generate(profile, trustedPersons);
+      setPdfUrl(pdfDataUrl);
+      setShowPreview(true);
       return;
     }
 
@@ -47,7 +57,7 @@ export function PDFGenerator({ userId }: PDFGeneratorProps) {
         className="flex items-center gap-2"
       >
         <FileText className="h-4 w-4" />
-        Générer Mes directives anticipées
+        {isCardFormat ? "Générer au format carte" : "Générer Mes directives anticipées"}
       </Button>
       
       <PDFPreviewDialog

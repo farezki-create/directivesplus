@@ -17,6 +17,7 @@ export const Header = () => {
   const location = useLocation();
   const [user, setUser] = useState<User | null>(null);
   const [showPDFPreview, setShowPDFPreview] = useState(false);
+  const [isCardFormat, setIsCardFormat] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -38,6 +39,11 @@ export const Header = () => {
   const handleHomeClick = () => {
     // Force reload the page when going to home to reset all states
     window.location.href = "/";
+  };
+
+  const handlePDFGeneration = (isCard: boolean) => {
+    setIsCardFormat(isCard);
+    setShowPDFPreview(true);
   };
 
   const isHomePage = location.pathname === "/";
@@ -70,11 +76,11 @@ export const Header = () => {
                     <UserIcon className="mr-2 h-4 w-4" />
                     Ma personne de confiance
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setShowPDFPreview(true)}>
+                  <DropdownMenuItem onClick={() => handlePDFGeneration(false)}>
                     <FileText className="mr-2 h-4 w-4" />
                     Mes Directives anticipées
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/dashboard?tab=card")}>
+                  <DropdownMenuItem onClick={() => handlePDFGeneration(true)}>
                     <CreditCard className="mr-2 h-4 w-4" />
                     Mes Directives anticipées en format carte
                   </DropdownMenuItem>
@@ -87,7 +93,8 @@ export const Header = () => {
 
               {showPDFPreview && user && (
                 <PDFGenerator 
-                  userId={user.id} 
+                  userId={user.id}
+                  isCardFormat={isCardFormat}
                 />
               )}
             </>
