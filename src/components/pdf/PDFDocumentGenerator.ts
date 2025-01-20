@@ -1,10 +1,10 @@
 import { jsPDF } from "jspdf";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
 import { UserProfile, TrustedPerson } from "./types";
 import { PDFUserSection } from "./utils/PDFUserSection";
 import { PDFTrustedPersonSection } from "./utils/PDFTrustedPersonSection";
 import { PDFResponsesSection } from "./utils/PDFResponsesSection";
+import { PDFDateSection } from "./utils/PDFDateSection";
+import { PDFSignatureSection } from "./utils/PDFSignatureSection";
 
 export class PDFDocumentGenerator {
   static generate(profile: UserProfile, responses: any, trustedPersons: TrustedPerson[], signatureData: string | null = null) {
@@ -94,48 +94,8 @@ export class PDFDocumentGenerator {
     );
     yPosition += 10;
     
-    const currentDate = format(new Date(), "d MMMM yyyy", { locale: fr });
-    doc.setFontSize(12);
-    doc.text(`Fait le ${currentDate}`, 20, yPosition);
-    yPosition += 10;
-    doc.text("À : _____________________", 20, yPosition);
-    yPosition += 20;
-
-    // Add signature if provided
-    if (signatureData) {
-      try {
-        // Create a temporary image to get dimensions
-        const img = new Image();
-        img.src = signatureData;
-        
-        // Set maximum dimensions for the signature
-        const maxWidth = 80;  // Reduced from 100
-        const maxHeight = 40; // Reduced from 50
-        
-        // Calculate aspect ratio
-        const aspectRatio = img.width / img.height;
-        
-        // Calculate dimensions while maintaining aspect ratio
-        let width = maxWidth;
-        let height = width / aspectRatio;
-        
-        // If height exceeds maxHeight, scale based on height
-        if (height > maxHeight) {
-          height = maxHeight;
-          width = height * aspectRatio;
-        }
-        
-        console.log("[PDFGenerator] Adding signature with dimensions:", { width, height });
-        
-        // Add signature image with calculated dimensions
-        doc.addImage(signatureData, 'PNG', 20, yPosition, width, height);
-      } catch (error) {
-        console.error("[PDFGenerator] Error adding signature:", error);
-        doc.text("Signature :", 20, yPosition);
-      }
-    } else {
-      doc.text("Signature :", 20, yPosition);
-    }
+    yPosition = PDFDateSection.generate(doc, yPosition);
+    yPosition = PDFSignatureSection.generate(doc, signatureData, yPosition);
 
     return doc.output('dataurlstring');
   }
