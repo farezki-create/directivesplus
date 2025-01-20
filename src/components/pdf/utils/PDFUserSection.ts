@@ -65,6 +65,11 @@ export class PDFUserSection {
           yPosition += 10;
         }
       }
+
+      // Access code
+      doc.text(`Code d'accès : ${profile.unique_identifier}`, 20, yPosition);
+      yPosition += 10;
+
     } else {
       console.warn("[PDFUserSection] No profile data provided");
       doc.text("Information d'identité non disponible", 20, yPosition);
