@@ -12,41 +12,50 @@ interface SignatureDialogProps {
 export function SignatureDialog({ open, onOpenChange, onSign }: SignatureDialogProps) {
   const signatureRef = useRef<SignatureCanvas>(null);
 
-  const handleClear = () => {
-    signatureRef.current?.clear();
+  const handleSign = () => {
+    if (signatureRef.current) {
+      if (signatureRef.current.isEmpty()) {
+        console.log("[SignatureDialog] Signature is empty");
+        return;
+      }
+      const signatureData = signatureRef.current.toDataURL();
+      console.log("[SignatureDialog] Signature captured");
+      onSign(signatureData);
+    }
   };
 
-  const handleSave = () => {
-    if (signatureRef.current?.isEmpty()) {
-      return;
-    }
-    const signatureData = signatureRef.current?.toDataURL();
-    if (signatureData) {
-      onSign(signatureData);
+  const handleClear = () => {
+    if (signatureRef.current) {
+      signatureRef.current.clear();
+      console.log("[SignatureDialog] Signature cleared");
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Signez votre document</DialogTitle>
+          <DialogTitle>Signer le document</DialogTitle>
         </DialogHeader>
-        <div className="border rounded-lg p-4">
-          <SignatureCanvas
-            ref={signatureRef}
-            canvasProps={{
-              className: "signature-canvas w-full h-40 border rounded",
-            }}
-          />
-        </div>
-        <div className="flex justify-end gap-2 mt-4">
-          <Button variant="outline" onClick={handleClear}>
-            Effacer
-          </Button>
-          <Button onClick={handleSave}>
-            Valider
-          </Button>
+        <div className="flex flex-col space-y-4">
+          <div className="border rounded p-2 bg-white">
+            <SignatureCanvas
+              ref={signatureRef}
+              canvasProps={{
+                className: "signature-canvas",
+                width: 500,
+                height: 200,
+              }}
+            />
+          </div>
+          <div className="flex justify-between">
+            <Button variant="outline" onClick={handleClear}>
+              Effacer
+            </Button>
+            <Button onClick={handleSign}>
+              Signer le document
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

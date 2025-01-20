@@ -43,7 +43,7 @@ export const handlePDFGeneration = (
   }
 };
 
-export const handlePDFDownload = (pdfUrl: string | null) => {
+export const handlePDFDownload = (pdfUrl: string | null, fileName: string = 'synthese-directives-anticipees.pdf') => {
   if (!pdfUrl) {
     console.error("[PDFGeneration] No PDF URL available for download");
     toast({
@@ -57,7 +57,7 @@ export const handlePDFDownload = (pdfUrl: string | null) => {
   try {
     const link = document.createElement('a');
     link.href = pdfUrl;
-    link.download = 'directives-anticipees.pdf';
+    link.download = fileName;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

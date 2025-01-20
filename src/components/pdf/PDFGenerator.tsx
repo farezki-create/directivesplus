@@ -2,8 +2,8 @@ import { useState } from "react";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "./usePDFData";
 import { handlePDFGeneration, handlePDFDownload, handlePDFPrint } from "./utils/PDFGenerationUtils";
-import { PDFPreviewDialog } from "@/components/pdf/PDFPreviewDialog";
-import { SignatureDialog } from "@/components/pdf/SignatureDialog";
+import { PDFPreviewDialog } from "./PDFPreviewDialog";
+import { SignatureDialog } from "./SignatureDialog";
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
 
@@ -18,26 +18,18 @@ export function PDFGenerator({ userId }: PDFGeneratorProps) {
   const { responses } = useQuestionnairesResponses(userId);
   const { profile, trustedPersons, loading } = usePDFData();
 
-  const generatePDF = (signatureData: string | null = null) => {
+  const generatePDF = () => {
     console.log("[PDFGenerator] Starting PDF generation with profile:", profile);
-    if (!profile) {
-      console.error("[PDFGenerator] No profile data available");
-      return;
-    }
-
     handlePDFGeneration(
       profile,
       responses,
       trustedPersons,
-      signatureData,
+      null,
       (url: string | null) => {
         if (url) {
           const cleanUrl = url.replace(/([^:])\/\/+/g, '$1/').replace(/:\//g, '://');
           console.log("[PDFGenerator] Cleaned URL:", cleanUrl);
           setPdfUrl(cleanUrl);
-          if (signatureData) {
-            setShowSignature(false);
-          }
         } else {
           setPdfUrl(null);
         }
@@ -48,7 +40,21 @@ export function PDFGenerator({ userId }: PDFGeneratorProps) {
 
   const handleSignature = (signatureData: string) => {
     console.log("[PDFGenerator] Adding signature to PDF");
-    generatePDF(signatureData);
+    handlePDFGeneration(
+      profile,
+      responses,
+      trustedPersons,
+      signatureData,
+      (url: string | null) => {
+        if (url) {
+          const cleanUrl = url.replace(/([^:])\/\/+/g, '$1/').replace(/:\//g, '://');
+          console.log("[PDFGenerator] Cleaned URL with signature:", cleanUrl);
+          setPdfUrl(cleanUrl);
+          setShowSignature(false);
+        }
+      },
+      setShowPreview
+    );
   };
 
   const handleEmail = async () => {
@@ -62,7 +68,7 @@ export function PDFGenerator({ userId }: PDFGeneratorProps) {
   return (
     <>
       <Button 
-        onClick={() => generatePDF()}
+        onClick={generatePDF}
         className="flex items-center gap-2"
       >
         <FileText className="h-4 w-4" />
