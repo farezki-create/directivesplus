@@ -1,6 +1,6 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Download, Mail, Printer } from "lucide-react";
+import { Download, Mail, Printer, PenTool } from "lucide-react";
 
 interface PDFPreviewDialogProps {
   open: boolean;
@@ -9,6 +9,7 @@ interface PDFPreviewDialogProps {
   onEmail: () => void;
   onSave: () => void;
   onPrint: () => void;
+  onSign: () => void;
 }
 
 export function PDFPreviewDialog({
@@ -18,6 +19,7 @@ export function PDFPreviewDialog({
   onEmail,
   onSave,
   onPrint,
+  onSign,
 }: PDFPreviewDialogProps) {
   if (!pdfUrl) return null;
 
@@ -36,6 +38,10 @@ export function PDFPreviewDialog({
           <Button onClick={onPrint} variant="outline" className="gap-2">
             <Printer className="h-4 w-4" />
             Imprimer
+          </Button>
+          <Button onClick={onSign} variant="outline" className="gap-2">
+            <PenTool className="h-4 w-4" />
+            Signer
           </Button>
         </div>
         <iframe
