@@ -40,7 +40,7 @@ export function PDFPreviewDialog({
             </Button>
             <Button variant="default" onClick={onSign}>
               <PenTool className="mr-2 h-4 w-4" />
-              Signer
+              Signer électroniquement
             </Button>
           </div>
           

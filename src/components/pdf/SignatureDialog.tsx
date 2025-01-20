@@ -19,7 +19,7 @@ export function SignatureDialog({ open, onOpenChange, onSign }: SignatureDialogP
         return;
       }
       const signatureData = signatureRef.current.toDataURL();
-      console.log("[SignatureDialog] Signature captured");
+      console.log("[SignatureDialog] Electronic signature captured");
       onSign(signatureData);
     }
   };
@@ -35,9 +35,12 @@ export function SignatureDialog({ open, onOpenChange, onSign }: SignatureDialogP
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Signer le document</DialogTitle>
+          <DialogTitle>Signature électronique</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col space-y-4">
+          <p className="text-sm text-gray-600">
+            Veuillez signer dans l'espace ci-dessous avec votre souris ou votre doigt
+          </p>
           <div className="border rounded p-2 bg-white">
             <SignatureCanvas
               ref={signatureRef}
@@ -45,6 +48,7 @@ export function SignatureDialog({ open, onOpenChange, onSign }: SignatureDialogP
                 className: "signature-canvas",
                 width: 500,
                 height: 200,
+                style: { width: '100%', height: '200px' }
               }}
             />
           </div>
@@ -53,7 +57,7 @@ export function SignatureDialog({ open, onOpenChange, onSign }: SignatureDialogP
               Effacer
             </Button>
             <Button onClick={handleSign}>
-              Signer le document
+              Valider la signature
             </Button>
           </div>
         </div>
