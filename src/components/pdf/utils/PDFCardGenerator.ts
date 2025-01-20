@@ -13,7 +13,8 @@ export class PDFCardGenerator {
     
     const doc = new jsPDF({
       unit: 'mm',
-      format: [cardWidth, cardHeight]
+      format: [cardHeight, cardWidth], // Swap dimensions for landscape
+      orientation: 'landscape'
     });
 
     // Set small font size for compact layout
