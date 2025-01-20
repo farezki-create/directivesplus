@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { FileText, User as UserIcon, CreditCard, Files } from "lucide-react";
 import { PDFGenerator } from "@/components/PDFGenerator";
+import { DocumentScanner } from "@/components/DocumentScanner";
 
 export const Header = () => {
   const navigate = useNavigate();
@@ -18,6 +19,7 @@ export const Header = () => {
   const [user, setUser] = useState<User | null>(null);
   const [showPDFPreview, setShowPDFPreview] = useState(false);
   const [isCardFormat, setIsCardFormat] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -84,7 +86,7 @@ export const Header = () => {
                     <CreditCard className="mr-2 h-4 w-4" />
                     Mes Directives anticipées en format carte
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/dashboard?tab=health")}>
+                  <DropdownMenuItem onClick={() => setShowScanner(true)}>
                     <Files className="mr-2 h-4 w-4" />
                     Documents de santé utiles
                   </DropdownMenuItem>
@@ -97,6 +99,11 @@ export const Header = () => {
                   isCardFormat={isCardFormat}
                 />
               )}
+
+              <DocumentScanner 
+                open={showScanner} 
+                onClose={() => setShowScanner(false)} 
+              />
             </>
           )}
 
