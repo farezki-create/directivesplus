@@ -56,6 +56,7 @@ export function PDFGenerator({ userId }: PDFGeneratorProps) {
         onEmail={handleEmail}
         onSave={() => handlePDFDownload(pdfUrl)}
         onPrint={() => handlePDFPrint(pdfUrl)}
+        onSign={() => console.log("Sign functionality to be implemented")}
       />
     </>
   );

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
 import { PDFPreviewDialog } from "../pdf/PDFPreviewDialog";
@@ -14,13 +14,6 @@ export function TrustedPersonPDFGenerator() {
     console.log("[TrustedPersonPDF] Starting PDF generation");
     handlePDFGeneration(profile, { type: "trusted_person" }, trustedPersons, setPdfUrl, setShowPreview);
   };
-
-  useEffect(() => {
-    if (!loading && profile && trustedPersons.length > 0) {
-      console.log("[TrustedPersonPDF] Auto-generating PDF");
-      generatePDF();
-    }
-  }, [loading, profile, trustedPersons]);
 
   const handleEmail = async () => {
     console.log("[TrustedPersonPDF] Email functionality not yet implemented");
@@ -47,6 +40,7 @@ export function TrustedPersonPDFGenerator() {
         onEmail={handleEmail}
         onSave={() => handlePDFDownload(pdfUrl)}
         onPrint={() => handlePDFPrint(pdfUrl)}
+        onSign={() => console.log("Sign functionality to be implemented")}
       />
     </>
   );
