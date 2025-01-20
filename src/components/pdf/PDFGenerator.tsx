@@ -20,26 +20,40 @@ export function PDFGenerator({ userId }: PDFGeneratorProps) {
 
   const generatePDF = () => {
     console.log("[PDFGenerator] Starting PDF generation with profile:", profile);
-    handlePDFGeneration(profile, responses, trustedPersons, null, (url: string | null) => {
-      if (url) {
-        const cleanUrl = url.replace(/([^:])\/\/+/g, '$1/').replace(/:\//g, '://');
-        console.log("[PDFGenerator] Cleaned URL:", cleanUrl);
-        setPdfUrl(cleanUrl);
-      } else {
-        setPdfUrl(null);
-      }
-    }, setShowPreview);
+    handlePDFGeneration(
+      profile,
+      responses,
+      trustedPersons,
+      null,
+      (url: string | null) => {
+        if (url) {
+          const cleanUrl = url.replace(/([^:])\/\/+/g, '$1/').replace(/:\//g, '://');
+          console.log("[PDFGenerator] Cleaned URL:", cleanUrl);
+          setPdfUrl(cleanUrl);
+        } else {
+          setPdfUrl(null);
+        }
+      },
+      setShowPreview
+    );
   };
 
   const handleSignature = (signatureData: string) => {
     console.log("[PDFGenerator] Adding signature to PDF");
-    handlePDFGeneration(profile, responses, trustedPersons, signatureData, (url: string | null) => {
-      if (url) {
-        const cleanUrl = url.replace(/([^:])\/\/+/g, '$1/').replace(/:\//g, '://');
-        console.log("[PDFGenerator] Cleaned URL with signature:", cleanUrl);
-        setPdfUrl(cleanUrl);
-      }
-    }, setShowPreview);
+    handlePDFGeneration(
+      profile,
+      responses,
+      trustedPersons,
+      signatureData,
+      (url: string | null) => {
+        if (url) {
+          const cleanUrl = url.replace(/([^:])\/\/+/g, '$1/').replace(/:\//g, '://');
+          console.log("[PDFGenerator] Cleaned URL with signature:", cleanUrl);
+          setPdfUrl(cleanUrl);
+        }
+      },
+      setShowPreview
+    );
   };
 
   const handleEmail = async () => {

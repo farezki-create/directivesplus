@@ -4,10 +4,16 @@ import { useHealthcareAuth } from "@/hooks/useHealthcareAuth";
 import { FeatureHighlights } from "@/components/home/FeatureHighlights";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
 const Healthcare = () => {
-  const { isSignUp, setIsSignUp, handleSubmit } = useHealthcareAuth();
+  const [isSignUp, setIsSignUp] = useState(false);
+  const { loading, registerHealthcareProfessional } = useHealthcareAuth();
   const navigate = useNavigate();
+
+  const handleSubmit = async (data: any) => {
+    await registerHealthcareProfessional(data);
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
