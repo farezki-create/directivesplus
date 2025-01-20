@@ -97,35 +97,42 @@ export class PDFDocumentGenerator {
     const currentDate = format(new Date(), "d MMMM yyyy", { locale: fr });
     doc.setFontSize(12);
     doc.text(`Fait le ${currentDate}`, 20, yPosition);
-    yPosition += 20;
+    yPosition += 10;
     doc.text("À : _____________________", 20, yPosition);
     yPosition += 20;
 
-    // Add signature if provided with adjusted dimensions
+    // Add signature if provided
     if (signatureData) {
-      // Calculate signature dimensions while maintaining aspect ratio
-      const maxWidth = 100; // Maximum width in PDF units
-      const maxHeight = 50; // Maximum height in PDF units
-      
-      // Create temporary image to get dimensions
-      const img = new Image();
-      img.src = signatureData;
-      
-      // Calculate aspect ratio
-      const aspectRatio = img.width / img.height;
-      
-      // Calculate final dimensions
-      let finalWidth = maxWidth;
-      let finalHeight = maxWidth / aspectRatio;
-      
-      // If height is too large, scale based on height instead
-      if (finalHeight > maxHeight) {
-        finalHeight = maxHeight;
-        finalWidth = maxHeight * aspectRatio;
+      try {
+        // Create a temporary image to get dimensions
+        const img = new Image();
+        img.src = signatureData;
+        
+        // Set maximum dimensions for the signature
+        const maxWidth = 80;  // Reduced from 100
+        const maxHeight = 40; // Reduced from 50
+        
+        // Calculate aspect ratio
+        const aspectRatio = img.width / img.height;
+        
+        // Calculate dimensions while maintaining aspect ratio
+        let width = maxWidth;
+        let height = width / aspectRatio;
+        
+        // If height exceeds maxHeight, scale based on height
+        if (height > maxHeight) {
+          height = maxHeight;
+          width = height * aspectRatio;
+        }
+        
+        console.log("[PDFGenerator] Adding signature with dimensions:", { width, height });
+        
+        // Add signature image with calculated dimensions
+        doc.addImage(signatureData, 'PNG', 20, yPosition, width, height);
+      } catch (error) {
+        console.error("[PDFGenerator] Error adding signature:", error);
+        doc.text("Signature :", 20, yPosition);
       }
-      
-      console.log("[PDFGenerator] Adding signature with dimensions:", { width: finalWidth, height: finalHeight });
-      doc.addImage(signatureData, 'PNG', 20, yPosition, finalWidth, finalHeight);
     } else {
       doc.text("Signature :", 20, yPosition);
     }
