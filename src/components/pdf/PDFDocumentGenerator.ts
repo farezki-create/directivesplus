@@ -101,9 +101,31 @@ export class PDFDocumentGenerator {
     doc.text("À : _____________________", 20, yPosition);
     yPosition += 20;
 
-    // Add signature if provided
+    // Add signature if provided with adjusted dimensions
     if (signatureData) {
-      doc.addImage(signatureData, 'PNG', 20, yPosition, 50, 30);
+      // Calculate signature dimensions while maintaining aspect ratio
+      const maxWidth = 100; // Maximum width in PDF units
+      const maxHeight = 50; // Maximum height in PDF units
+      
+      // Create temporary image to get dimensions
+      const img = new Image();
+      img.src = signatureData;
+      
+      // Calculate aspect ratio
+      const aspectRatio = img.width / img.height;
+      
+      // Calculate final dimensions
+      let finalWidth = maxWidth;
+      let finalHeight = maxWidth / aspectRatio;
+      
+      // If height is too large, scale based on height instead
+      if (finalHeight > maxHeight) {
+        finalHeight = maxHeight;
+        finalWidth = maxHeight * aspectRatio;
+      }
+      
+      console.log("[PDFGenerator] Adding signature with dimensions:", { width: finalWidth, height: finalHeight });
+      doc.addImage(signatureData, 'PNG', 20, yPosition, finalWidth, finalHeight);
     } else {
       doc.text("Signature :", 20, yPosition);
     }
