@@ -5,6 +5,8 @@ import { handlePDFGeneration, handlePDFDownload, handlePDFPrint } from "./pdf/ut
 import { PDFPreviewDialog } from "./pdf/PDFPreviewDialog";
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
+import { SignatureCanvas } from "./pdf/SignatureCanvas";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface PDFGeneratorProps {
   userId: string;
@@ -13,14 +15,15 @@ interface PDFGeneratorProps {
 export function PDFGenerator({ userId }: PDFGeneratorProps) {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [showSignature, setShowSignature] = useState(false);
+  const [signatureData, setSignatureData] = useState<string | null>(null);
   const { responses } = useQuestionnairesResponses(userId);
   const { profile, trustedPersons, loading } = usePDFData();
 
   const generatePDF = () => {
     console.log("[PDFGenerator] Starting PDF generation with profile:", profile);
-    handlePDFGeneration(profile, responses, trustedPersons, (url: string | null) => {
+    handlePDFGeneration(profile, responses, trustedPersons, signatureData, (url: string | null) => {
       if (url) {
-        // Clean the URL by removing any extra colons and ensuring proper formatting
         const cleanUrl = url.replace(/([^:])\/\/+/g, '$1/').replace(/:\//g, '://');
         console.log("[PDFGenerator] Cleaned URL:", cleanUrl);
         setPdfUrl(cleanUrl);
@@ -31,8 +34,13 @@ export function PDFGenerator({ userId }: PDFGeneratorProps) {
   };
 
   const handleEmail = async () => {
-    // Email handling logic here - to be implemented
     console.log("[PDFGenerator] Email functionality not yet implemented");
+  };
+
+  const handleSignature = (signature: string) => {
+    setSignatureData(signature);
+    setShowSignature(false);
+    generatePDF();
   };
 
   if (loading) {
@@ -42,13 +50,19 @@ export function PDFGenerator({ userId }: PDFGeneratorProps) {
   return (
     <>
       <Button 
-        onClick={generatePDF}
+        onClick={() => setShowSignature(true)}
         className="flex items-center gap-2"
       >
         <FileText className="h-4 w-4" />
-        Générer Mes directives anticipées
+        Signer et générer mes directives anticipées
       </Button>
       
+      <Dialog open={showSignature} onOpenChange={setShowSignature}>
+        <DialogContent>
+          <SignatureCanvas onSave={handleSignature} />
+        </DialogContent>
+      </Dialog>
+
       <PDFPreviewDialog
         open={showPreview}
         onOpenChange={setShowPreview}
