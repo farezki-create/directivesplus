@@ -90,6 +90,11 @@ export class PDFDocumentGenerator {
     doc.text("Date : ..................", 20, yPosition);
     doc.text("Lieu : ..................", 120, yPosition);
     doc.text("Signature : ..................", 220, yPosition);
+    
+    // Add "SIGNATURE" text below
+    yPosition += 20;
+    doc.setFontSize(14);
+    doc.text("SIGNATURE", doc.internal.pageSize.getWidth() / 2, yPosition, { align: "center" });
 
     return doc.output('dataurlstring');
   }
