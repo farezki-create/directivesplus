@@ -95,13 +95,9 @@ export class PDFDocumentGenerator {
     yPosition += 10;
     
     doc.setFontSize(12);
-    doc.text("Date : .............................", 20, yPosition);
-    yPosition += 10;
-    doc.text("Lieu : .............................", 20, yPosition);
-    yPosition += 10;
-    doc.text("Signature : ", 20, yPosition);
-    yPosition += 5;
-    doc.text(".............................", 20, yPosition);
+    doc.text("Date : ..................", 20, yPosition);
+    doc.text("Lieu : ..................", 120, yPosition);
+    doc.text("Signature : ..................", 220, yPosition);
 
     return doc.output('dataurlstring');
   }
