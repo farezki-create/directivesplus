@@ -18,7 +18,7 @@ export const handlePDFGeneration = (
     }
 
     // Generate PDF
-    const pdfDataUrl = PDFDocumentGenerator.generate(profile, responses, trustedPersons);
+    const pdfDataUrl = PDFDocumentGenerator.generate(profile, responses, trustedPersons, signatureData);
     
     if (!pdfDataUrl) {
       console.error("[PDFGeneration] PDF generation failed - no data URL returned");
@@ -43,7 +43,7 @@ export const handlePDFGeneration = (
   }
 };
 
-export const handlePDFDownload = (pdfUrl: string | null, fileName: string = 'synthese-directives-anticipees.pdf') => {
+export const handlePDFDownload = (pdfUrl: string | null) => {
   if (!pdfUrl) {
     console.error("[PDFGeneration] No PDF URL available for download");
     toast({
@@ -57,7 +57,7 @@ export const handlePDFDownload = (pdfUrl: string | null, fileName: string = 'syn
   try {
     const link = document.createElement('a');
     link.href = pdfUrl;
-    link.download = fileName;
+    link.download = 'directives-anticipees.pdf';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

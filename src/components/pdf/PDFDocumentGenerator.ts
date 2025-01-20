@@ -100,11 +100,15 @@ export class PDFDocumentGenerator {
     yPosition += 20;
     doc.text("À : _____________________", 20, yPosition);
 
-    // Add signature if provided
-    if (signatureData) {
-      yPosition += 40;
-      doc.text("Signature :", 20, yPosition);
-      yPosition += 10;
+    // Add signature space
+    yPosition += 40;
+    doc.text("Signature :", 20, yPosition);
+    yPosition += 10;
+    
+    // Draw signature box if no signature data
+    if (!signatureData) {
+      doc.rect(20, yPosition, 50, 30);
+    } else {
       doc.addImage(signatureData, 'PNG', 20, yPosition, 50, 30);
     }
 
