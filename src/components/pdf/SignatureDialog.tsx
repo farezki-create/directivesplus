@@ -14,15 +14,20 @@ export function SignatureDialog({ open, onOpenChange, onSign }: SignatureDialogP
 
   const handleSign = () => {
     if (signatureRef.current) {
+      if (signatureRef.current.isEmpty()) {
+        console.log("[SignatureDialog] Signature is empty");
+        return;
+      }
       const signatureData = signatureRef.current.toDataURL();
+      console.log("[SignatureDialog] Signature captured");
       onSign(signatureData);
-      onOpenChange(false);
     }
   };
 
   const handleClear = () => {
     if (signatureRef.current) {
       signatureRef.current.clear();
+      console.log("[SignatureDialog] Signature cleared");
     }
   };
 
