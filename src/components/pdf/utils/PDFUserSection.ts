@@ -66,18 +66,6 @@ export class PDFUserSection {
         }
       }
 
-      // Access code and connection link section
-      doc.text("Code d'accès :", 20, yPosition);
-      yPosition += 7;
-      doc.text(`${profile.unique_identifier}`, 30, yPosition);
-      yPosition += 7;
-      doc.text("Lien de connexion :", 20, yPosition);
-      yPosition += 7;
-      doc.setTextColor(0, 0, 255); // Set text color to blue for the link
-      doc.text("https://directives-anticipees.lovable.dev", 30, yPosition);
-      doc.setTextColor(0, 0, 0); // Reset text color to black
-      yPosition += 10;
-
     } else {
       console.warn("[PDFUserSection] No profile data provided");
       doc.text("Information d'identité non disponible", 20, yPosition);
