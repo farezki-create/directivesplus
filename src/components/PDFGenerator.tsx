@@ -28,7 +28,9 @@ export function PDFGenerator({ userId, isCardFormat = false }: PDFGeneratorProps
     if (isCardFormat) {
       console.log("[PDFGenerator] Generating card format PDF");
       const pdfDataUrl = PDFCardGenerator.generate(profile, trustedPersons);
-      setPdfUrl(pdfDataUrl);
+      // Clean the URL before setting it
+      const cleanUrl = pdfDataUrl.replace(/([^:])\/\/+/g, '$1/').replace(/:\//g, '://');
+      setPdfUrl(cleanUrl);
       setShowPreview(true);
       return;
     }
@@ -37,7 +39,16 @@ export function PDFGenerator({ userId, isCardFormat = false }: PDFGeneratorProps
       profile,
       responses,
       trustedPersons,
-      setPdfUrl,
+      (url: string | null) => {
+        if (url) {
+          // Clean the URL before setting it
+          const cleanUrl = url.replace(/([^:])\/\/+/g, '$1/').replace(/:\//g, '://');
+          console.log("[PDFGenerator] Setting cleaned URL:", cleanUrl);
+          setPdfUrl(cleanUrl);
+        } else {
+          setPdfUrl(null);
+        }
+      },
       setShowPreview
     );
   };
