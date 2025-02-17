@@ -2,12 +2,12 @@
 import { AuthError, AuthApiError } from "@supabase/supabase-js";
 
 export const getErrorMessage = (error: AuthError) => {
-  console.log('Processing error:', error);
+  console.log('Traitement erreur:', error);
   
   if (error instanceof AuthApiError) {
     try {
       const errorBody = JSON.parse(error.message);
-      console.log('Parsed error body:', errorBody);
+      console.log('Corps erreur JSON:', errorBody);
       
       switch (errorBody.code) {
         case "invalid_credentials":
@@ -16,27 +16,32 @@ export const getErrorMessage = (error: AuthError) => {
           return "Un compte existe déjà avec cet email";
         case "email_not_confirmed":
           return "Veuillez vérifier votre email pour confirmer votre compte";
+        case "password_too_short":
+          return "Le mot de passe doit contenir au moins 6 caractères";
+        case "weak_password":
+          return "Le mot de passe est trop faible. Utilisez au moins une majuscule, une minuscule et un chiffre.";
         default:
-          console.log('Unhandled API error code:', errorBody.code);
+          console.log('Code erreur non géré:', errorBody.code);
           return "Une erreur s'est produite. Veuillez réessayer.";
       }
     } catch (e) {
-      console.log('Error message is not JSON, handling as string:', error.message);
+      console.log('Message erreur non JSON:', error.message);
       
-      switch (error.message) {
-        case "Invalid login credentials":
-          return "Email ou mot de passe incorrect. Si vous venez de créer votre compte, vérifiez que vous avez validé votre email.";
-        case "Email not confirmed":
-          return "Veuillez vérifier votre email pour confirmer votre compte";
-        case "Password should be at least 6 characters":
-          return "Le mot de passe doit contenir au moins 6 caractères";
-        default:
-          console.log('Unhandled string error message:', error.message);
-          return "Une erreur s'est produite. Veuillez réessayer.";
+      if (error.message.includes("Invalid login credentials")) {
+        return "Email ou mot de passe incorrect. Si vous venez de créer votre compte, vérifiez que vous avez validé votre email.";
       }
+      if (error.message.includes("Email not confirmed")) {
+        return "Veuillez vérifier votre email pour confirmer votre compte";
+      }
+      if (error.message.includes("Password should be at least 6 characters")) {
+        return "Le mot de passe doit contenir au moins 6 caractères";
+      }
+      
+      console.log('Message erreur non géré:', error.message);
+      return "Une erreur s'est produite. Veuillez réessayer.";
     }
   }
   
-  console.log('Non-AuthApiError:', error);
+  console.log('Erreur non-AuthApi:', error);
   return "Une erreur inattendue s'est produite. Veuillez réessayer.";
 };
