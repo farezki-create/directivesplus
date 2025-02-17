@@ -107,22 +107,33 @@ const Auth = () => {
           return;
         }
 
-        // Envoi de l'email de vérification personnalisé
-        try {
-          if (data?.user?.email) {
+        // Send custom verification email
+        if (data?.user?.email) {
+          try {
+            console.log('Sending verification email to:', data.user.email);
             const response = await supabase.functions.invoke('send-verification-email', {
               body: {
-                to: values.email,
+                to: data.user.email,
                 confirmationUrl: `${window.location.origin}/auth/verify`,
               },
             });
 
             if (response.error) {
-              console.error('Erreur lors de l\'envoi de l\'email de vérification:', response.error);
+              console.error('Error sending verification email:', response.error);
+              toast({
+                variant: "destructive",
+                title: "Erreur d'envoi de l'email",
+                description: "L'email de vérification n'a pas pu être envoyé. Veuillez réessayer.",
+              });
             }
+          } catch (emailError) {
+            console.error('Error invoking send-verification-email function:', emailError);
+            toast({
+              variant: "destructive",
+              title: "Erreur d'envoi de l'email",
+              description: "L'email de vérification n'a pas pu être envoyé. Veuillez réessayer.",
+            });
           }
-        } catch (emailError) {
-          console.error('Erreur lors de l\'envoi de l\'email de vérification:', emailError);
         }
 
         toast({
