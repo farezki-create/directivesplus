@@ -7,6 +7,7 @@ const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
 interface EmailRequest {
@@ -15,17 +16,51 @@ interface EmailRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
-  console.log("Fonction send-verification-email appelée");
+  console.log("Function send-verification-email called");
 
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { 
+      headers: corsHeaders,
+      status: 204
+    });
+  }
+
+  if (req.method !== "POST") {
+    return new Response(
+      JSON.stringify({ error: "Method not allowed" }), 
+      { 
+        status: 405,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      }
+    );
+  }
+
+  if (!RESEND_API_KEY) {
+    console.error("RESEND_API_KEY is not set");
+    return new Response(
+      JSON.stringify({ error: "Server configuration error" }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
   }
 
   try {
     const { to, confirmationUrl }: EmailRequest = await req.json();
-    console.log("Envoi d'email à:", to);
-    console.log("URL de confirmation:", confirmationUrl);
+    console.log("Sending email to:", to);
+    console.log("Confirmation URL:", confirmationUrl);
+
+    if (!to || !confirmationUrl) {
+      return new Response(
+        JSON.stringify({ error: "Missing required fields" }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
 
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -55,19 +90,19 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (!res.ok) {
       const error = await res.text();
-      console.error("Erreur Resend:", error);
-      throw new Error(`Erreur lors de l'envoi de l'email: ${error}`);
+      console.error("Resend API Error:", error);
+      throw new Error(`Failed to send email: ${error}`);
     }
 
     const data = await res.json();
-    console.log("Email envoyé avec succès:", data);
+    console.log("Email sent successfully:", data);
 
     return new Response(JSON.stringify(data), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("Erreur dans la fonction send-verification-email:", error);
+    console.error("Error in send-verification-email function:", error);
     return new Response(
       JSON.stringify({ error: error.message }),
       {
