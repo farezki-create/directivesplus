@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -18,24 +19,26 @@ export const AccessCode = () => {
     console.log("[AccessCode] Validating access code:", accessCode);
 
     try {
-      const { data, error } = await supabase
+      const { data: profiles, error } = await supabase
         .from("profiles")
         .select("id")
         .eq("unique_identifier", accessCode)
+        .limit(1)
         .single();
 
-      if (error || !data) {
+      if (error || !profiles) {
         console.error("[AccessCode] Invalid access code:", error);
         toast({
           title: "Code d'accès invalide",
           description: "Veuillez vérifier votre code d'accès et réessayer.",
           variant: "destructive",
         });
+        setLoading(false);
         return;
       }
 
       console.log("[AccessCode] Valid access code, navigating to documents");
-      navigate(`/documents/${data.id}`);
+      navigate(`/documents/${profiles.id}`);
     } catch (error) {
       console.error("[AccessCode] Error validating access code:", error);
       toast({
