@@ -1,3 +1,4 @@
+
 import { AuthError, AuthApiError } from "@supabase/supabase-js";
 
 export const getErrorMessage = (error: AuthError) => {
@@ -10,7 +11,7 @@ export const getErrorMessage = (error: AuthError) => {
       
       switch (errorBody.code) {
         case "invalid_credentials":
-          return "Email ou mot de passe incorrect";
+          return "Email ou mot de passe incorrect. Si vous venez de créer votre compte, vérifiez que vous avez validé votre email.";
         case "user_already_exists":
           return "Un compte existe déjà avec cet email";
         case "email_not_confirmed":
@@ -24,7 +25,7 @@ export const getErrorMessage = (error: AuthError) => {
       
       switch (error.message) {
         case "Invalid login credentials":
-          return "Email ou mot de passe incorrect";
+          return "Email ou mot de passe incorrect. Si vous venez de créer votre compte, vérifiez que vous avez validé votre email.";
         case "Email not confirmed":
           return "Veuillez vérifier votre email pour confirmer votre compte";
         case "Password should be at least 6 characters":

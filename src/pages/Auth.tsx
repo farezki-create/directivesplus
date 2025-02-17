@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthApiError } from "@supabase/supabase-js";
@@ -137,6 +138,17 @@ const Auth = () => {
 
         if (error) {
           console.log('Login error:', error);
+          
+          // Check specifically for email verification
+          if (error.message.includes("Email not confirmed")) {
+            toast({
+              variant: "destructive",
+              title: "Email non vérifié",
+              description: "Veuillez vérifier votre email pour activer votre compte. Vérifiez vos spams si nécessaire.",
+            });
+            return;
+          }
+          
           const message = getErrorMessage(error);
           toast({
             variant: "destructive",
