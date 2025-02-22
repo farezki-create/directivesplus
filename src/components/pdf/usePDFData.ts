@@ -6,7 +6,6 @@ import { useToast } from "@/hooks/use-toast";
 
 export function usePDFData() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [responses, setResponses] = useState<any>(null);
   const [trustedPersons, setTrustedPersons] = useState<TrustedPerson[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
@@ -15,16 +14,23 @@ export function usePDFData() {
     const loadUserData = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        if (!session?.user) return;
+        if (!session?.user) {
+          console.error("[PDFGenerator] No user session");
+          setLoading(false);
+          return;
+        }
 
-        console.log("[PDFGenerator] Loading user profile");
+        console.log("[PDFGenerator] Loading user profile for:", session.user.id);
         const { data: profileData, error: profileError } = await supabase
           .from("profiles")
           .select("*")
           .eq("id", session.user.id)
           .single();
 
-        if (profileError) throw profileError;
+        if (profileError) {
+          console.error("[PDFGenerator] Error loading profile:", profileError);
+          throw profileError;
+        }
         
         // Add email and unique_identifier from session
         setProfile({ 
@@ -39,18 +45,11 @@ export function usePDFData() {
           .select("*")
           .eq("user_id", session.user.id);
 
-        if (trustedPersonsError) throw trustedPersonsError;
+        if (trustedPersonsError) {
+          console.error("[PDFGenerator] Error loading trusted persons:", trustedPersonsError);
+          throw trustedPersonsError;
+        }
         setTrustedPersons(trustedPersonsData || []);
-
-        console.log("[PDFGenerator] Loading responses");
-        const { data: responsesData, error: responsesError } = await supabase
-          .from("questionnaire_synthesis")
-          .select("free_text")
-          .eq("user_id", session.user.id)
-          .maybeSingle();
-
-        if (responsesError) throw responsesError;
-        setResponses(responsesData || { free_text: null });
 
       } catch (error) {
         console.error("[PDFGenerator] Error loading user data:", error);
@@ -67,5 +66,5 @@ export function usePDFData() {
     loadUserData();
   }, [toast]);
 
-  return { profile, responses, trustedPersons, setTrustedPersons, loading };
+  return { profile, trustedPersons, loading };
 }

@@ -1,3 +1,4 @@
+
 import { toast } from "@/hooks/use-toast";
 import { UserProfile, TrustedPerson } from "../types";
 import { PDFDocumentGenerator } from "../PDFDocumentGenerator";
@@ -13,15 +14,18 @@ export const handlePDFGeneration = (
     console.log("[PDFGeneration] Starting PDF generation");
     if (!profile) {
       console.error("[PDFGeneration] No profile data available");
-      throw new Error("Profile data is required");
+      throw new Error("Les données du profil sont requises");
     }
+
+    console.log("[PDFGeneration] Profile data:", profile);
+    console.log("[PDFGeneration] Responses data:", responses);
 
     // Generate PDF
     const pdfDataUrl = PDFDocumentGenerator.generate(profile, responses, trustedPersons);
     
     if (!pdfDataUrl) {
       console.error("[PDFGeneration] PDF generation failed - no data URL returned");
-      throw new Error("PDF generation failed");
+      throw new Error("La génération du PDF a échoué");
     }
 
     setPdfUrl(pdfDataUrl);
@@ -36,13 +40,13 @@ export const handlePDFGeneration = (
     console.error("[PDFGeneration] Error generating PDF:", error);
     toast({
       title: "Erreur",
-      description: "Impossible de générer le PDF.",
+      description: "Impossible de générer le PDF. Veuillez vérifier que toutes vos informations sont remplies.",
       variant: "destructive",
     });
   }
 };
 
-export const handlePDFDownload = (pdfUrl: string | null, fileName: string = 'synthese-directives-anticipees.pdf') => {
+export const handlePDFDownload = (pdfUrl: string | null) => {
   if (!pdfUrl) {
     console.error("[PDFGeneration] No PDF URL available for download");
     toast({
@@ -56,7 +60,7 @@ export const handlePDFDownload = (pdfUrl: string | null, fileName: string = 'syn
   try {
     const link = document.createElement('a');
     link.href = pdfUrl;
-    link.download = fileName;
+    link.download = 'directives-anticipees.pdf';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -85,7 +89,7 @@ export const handlePDFPrint = (pdfUrl: string | null) => {
   try {
     const printWindow = window.open(pdfUrl);
     if (!printWindow) {
-      throw new Error("Could not open print window");
+      throw new Error("Impossible d'ouvrir la fenêtre d'impression");
     }
     printWindow.print();
     console.log("[PDFGeneration] Print window opened successfully");
