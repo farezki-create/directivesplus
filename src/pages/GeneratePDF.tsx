@@ -64,8 +64,12 @@ export default function GeneratePDF() {
         </div>
 
         <div className="flex gap-4 flex-wrap">
-          <PDFGenerator userId={userId} onPdfGenerated={setPdfUrl} />
-          <PDFGenerator userId={userId} isCardFormat={true} />
+          {!loading && (
+            <>
+              <PDFGenerator userId={userId} onPdfGenerated={setPdfUrl} />
+              <PDFGenerator userId={userId} isCardFormat={true} />
+            </>
+          )}
         </div>
       </div>
     </div>
