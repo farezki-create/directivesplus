@@ -13,6 +13,9 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
+import { loadStripe } from "@stripe/stripe-js";
+
+const stripePromise = loadStripe('pk_test_51OvZy8KJHojJ27FpoHYRFw3pYJB93qZFLbOieT47naK9trTRqUUfWVM4kugAGoN7V6lDaUxydQ6k9Kk4FvFa2gvX00RzW8wPxX');
 
 const orderFormSchema = z.object({
   firstName: z.string().min(2, "Le prénom doit contenir au moins 2 caractères"),
@@ -74,9 +77,67 @@ export const Header = () => {
   const onSubmitOrder = async (values: OrderFormValues) => {
     setIsOrdering(true);
     try {
-      // Simulation d'un délai de traitement
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      const stripe = await stripePromise;
+      if (!stripe) throw new Error("Stripe n'est pas initialisé");
+
+      // Créer l'intention de paiement
+      const response = await fetch(
+        'https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/create-payment',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            amount: 19.90,
+            email: values.email,
+          }),
+        }
+      );
+
+      const { clientSecret } = await response.json();
+      if (!clientSecret) throw new Error("Erreur lors de la création du paiement");
+
+      // Confirmer le paiement avec Stripe
+      const { error: stripeError } = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: {
+          card: {
+            number: values.cardNumber,
+            exp_month: parseInt(values.expiryDate.split('/')[0]),
+            exp_year: parseInt(values.expiryDate.split('/')[1]),
+            cvc: values.cvv,
+          },
+          billing_details: {
+            name: `${values.firstName} ${values.lastName}`,
+            email: values.email,
+            address: {
+              line1: values.address,
+              city: values.city,
+              postal_code: values.postalCode,
+            },
+          },
+        },
+      });
+
+      if (stripeError) {
+        throw new Error(stripeError.message);
+      }
+
+      // Enregistrer la commande dans Supabase
+      const { error: dbError } = await supabase.from('orders').insert({
+        user_id: user?.id,
+        amount: 19.90,
+        status: 'completed',
+        first_name: values.firstName,
+        last_name: values.lastName,
+        email: values.email,
+        address: values.address,
+        city: values.city,
+        postal_code: values.postalCode,
+      });
+
+      if (dbError) throw dbError;
+
       toast({
         title: "Commande confirmée",
         description: "Votre commande a été enregistrée avec succès. Vous recevrez un email de confirmation.",
@@ -87,7 +148,7 @@ export const Header = () => {
     } catch (error) {
       toast({
         title: "Erreur",
-        description: "Une erreur est survenue lors du traitement de votre commande.",
+        description: error.message || "Une erreur est survenue lors du traitement de votre commande.",
         variant: "destructive",
       });
     } finally {

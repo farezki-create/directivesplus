@@ -147,6 +147,51 @@ export type Database = {
         }
         Relationships: []
       }
+      orders: {
+        Row: {
+          address: string
+          amount: number
+          city: string
+          created_at: string
+          email: string
+          first_name: string
+          id: string
+          last_name: string
+          postal_code: string
+          status: string | null
+          stripe_payment_intent_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          address: string
+          amount: number
+          city: string
+          created_at?: string
+          email: string
+          first_name: string
+          id?: string
+          last_name: string
+          postal_code: string
+          status?: string | null
+          stripe_payment_intent_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          address?: string
+          amount?: number
+          city?: string
+          created_at?: string
+          email?: string
+          first_name?: string
+          id?: string
+          last_name?: string
+          postal_code?: string
+          status?: string | null
+          stripe_payment_intent_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       preferences_questions: {
         Row: {
           created_at: string | null
