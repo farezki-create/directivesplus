@@ -27,13 +27,6 @@ export class PDFDocumentGenerator {
     );
     yPosition += 25;
 
-    // Mon identité section
-    doc.setFontSize(16);
-    doc.setFont(undefined, 'bold');
-    doc.text("Mon identité", 20, yPosition);
-    doc.setFont(undefined, 'normal');
-    yPosition += 10;
-
     // Utilisation du profil pour l'identité
     if (profile) {
       yPosition = PDFUserSection.generate(doc, profile, yPosition);
@@ -52,13 +45,7 @@ export class PDFDocumentGenerator {
 
     // For trusted person document, skip directives anticipées section
     if (responses?.type !== "trusted_person") {
-      // Directives Anticipées Synthesis section
       yPosition += 25;
-      doc.setFontSize(16);
-      doc.setFont(undefined, 'bold');
-      doc.text("Synthèse de mes directives anticipées", 20, yPosition);
-      doc.setFont(undefined, 'normal');
-      yPosition += 10;
       yPosition = PDFResponsesSection.generate(doc, responses, yPosition);
 
       // Add new page if needed
