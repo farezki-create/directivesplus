@@ -11,172 +11,133 @@ export type Database = {
     Tables: {
       advanced_illness_questions: {
         Row: {
-          created_at: string
+          created_at: string | null
+          display_order: number | null
           id: string
-          non: string
-          order: number | null
-          oui: string
-          "Oui si l'équipe médicale le juge utile": string
-          "Oui si ma personne de confiance le juge utile": string
+          non: string | null
+          oui: string | null
+          "Oui si l'équipe médicale le juge utile": string | null
+          "Oui si ma personne de confiance le juge utile": string | null
           question: string
-          updated_at: string | null
         }
         Insert: {
-          created_at?: string
+          created_at?: string | null
+          display_order?: number | null
           id?: string
-          non: string
-          order?: number | null
-          oui: string
-          "Oui si l'équipe médicale le juge utile": string
-          "Oui si ma personne de confiance le juge utile": string
+          non?: string | null
+          oui?: string | null
+          "Oui si l'équipe médicale le juge utile"?: string | null
+          "Oui si ma personne de confiance le juge utile"?: string | null
           question: string
-          updated_at?: string | null
         }
         Update: {
-          created_at?: string
+          created_at?: string | null
+          display_order?: number | null
           id?: string
-          non?: string
-          order?: number | null
-          oui?: string
-          "Oui si l'équipe médicale le juge utile"?: string
-          "Oui si ma personne de confiance le juge utile"?: string
+          non?: string | null
+          oui?: string | null
+          "Oui si l'équipe médicale le juge utile"?: string | null
+          "Oui si ma personne de confiance le juge utile"?: string | null
           question?: string
-          updated_at?: string | null
         }
         Relationships: []
       }
-      document_access: {
+      articles: {
         Row: {
-          access_code: string
-          created_at: string
-          document_id: string
-          email: string
-          expires_at: string
+          category: string
+          content: string
+          created_at: string | null
+          date: string
           id: string
-          is_active: boolean | null
-          used_at: string | null
+          language: string
+          source: string
+          title: string
+          url: string
+          user_id: string | null
         }
         Insert: {
-          access_code: string
-          created_at?: string
-          document_id: string
-          email: string
-          expires_at: string
+          category: string
+          content: string
+          created_at?: string | null
+          date: string
           id?: string
-          is_active?: boolean | null
-          used_at?: string | null
+          language: string
+          source: string
+          title: string
+          url: string
+          user_id?: string | null
         }
         Update: {
-          access_code?: string
-          created_at?: string
-          document_id?: string
-          email?: string
-          expires_at?: string
+          category?: string
+          content?: string
+          created_at?: string | null
+          date?: string
           id?: string
-          is_active?: boolean | null
-          used_at?: string | null
-        }
-        Relationships: []
-      }
-      healthcare_professionals: {
-        Row: {
-          cps_number: string
-          created_at: string
-          first_name: string
-          id: string
-          last_name: string
-          professional_type: Database["public"]["Enums"]["healthcare_professional_type"]
-          rpps_number: string | null
-          specialty: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          cps_number: string
-          created_at?: string
-          first_name: string
-          id: string
-          last_name: string
-          professional_type: Database["public"]["Enums"]["healthcare_professional_type"]
-          rpps_number?: string | null
-          specialty?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          cps_number?: string
-          created_at?: string
-          first_name?: string
-          id?: string
-          last_name?: string
-          professional_type?: Database["public"]["Enums"]["healthcare_professional_type"]
-          rpps_number?: string | null
-          specialty?: string | null
-          updated_at?: string | null
+          language?: string
+          source?: string
+          title?: string
+          url?: string
+          user_id?: string | null
         }
         Relationships: []
       }
       life_support_questions: {
         Row: {
+          created_at: string | null
           display_order: number | null
           id: string
-          Indécision: string
-          "La non souffrance est à privilégier": string
-          "Non rapidement abandonner le thérapeutique": string
-          Oui: string
-          "Oui pour une durée modérée": string
-          "Oui seulement si l'équipe médicale le juge utile": string
+          Indécision: string | null
+          "La non souffrance est à privilégier": string | null
+          "Non rapidement abandonner le thérapeutique": string | null
+          Oui: string | null
+          "Oui pour une durée modérée": string | null
+          "Oui seulement si l'équipe médicale le juge utile": string | null
           question: string
-          updated_at: string | null
         }
         Insert: {
+          created_at?: string | null
           display_order?: number | null
           id?: string
-          Indécision: string
-          "La non souffrance est à privilégier": string
-          "Non rapidement abandonner le thérapeutique": string
-          Oui: string
-          "Oui pour une durée modérée": string
-          "Oui seulement si l'équipe médicale le juge utile": string
+          Indécision?: string | null
+          "La non souffrance est à privilégier"?: string | null
+          "Non rapidement abandonner le thérapeutique"?: string | null
+          Oui?: string | null
+          "Oui pour une durée modérée"?: string | null
+          "Oui seulement si l'équipe médicale le juge utile"?: string | null
           question: string
-          updated_at?: string | null
         }
         Update: {
+          created_at?: string | null
           display_order?: number | null
           id?: string
-          Indécision?: string
-          "La non souffrance est à privilégier"?: string
-          "Non rapidement abandonner le thérapeutique"?: string
-          Oui?: string
-          "Oui pour une durée modérée"?: string
-          "Oui seulement si l'équipe médicale le juge utile"?: string
+          Indécision?: string | null
+          "La non souffrance est à privilégier"?: string | null
+          "Non rapidement abandonner le thérapeutique"?: string | null
+          Oui?: string | null
+          "Oui pour une durée modérée"?: string | null
+          "Oui seulement si l'équipe médicale le juge utile"?: string | null
           question?: string
-          updated_at?: string | null
         }
         Relationships: []
       }
       preferences_questions: {
         Row: {
-          category: Database["public"]["Enums"]["question_category"] | null
-          created_at: string
+          created_at: string | null
           display_order: number | null
           id: string
           question: string
-          updated_at: string | null
         }
         Insert: {
-          category?: Database["public"]["Enums"]["question_category"] | null
-          created_at?: string
+          created_at?: string | null
           display_order?: number | null
           id?: string
           question: string
-          updated_at?: string | null
         }
         Update: {
-          category?: Database["public"]["Enums"]["question_category"] | null
-          created_at?: string
+          created_at?: string | null
           display_order?: number | null
           id?: string
           question?: string
-          updated_at?: string | null
         }
         Relationships: []
       }
@@ -186,72 +147,63 @@ export type Database = {
           birth_date: string | null
           city: string | null
           country: string | null
-          created_at: string
+          created_at: string | null
           first_name: string | null
           id: string
           last_name: string | null
           phone_number: string | null
           postal_code: string | null
-          unique_identifier: string
-          updated_at: string | null
         }
         Insert: {
           address?: string | null
           birth_date?: string | null
           city?: string | null
           country?: string | null
-          created_at?: string
+          created_at?: string | null
           first_name?: string | null
           id: string
           last_name?: string | null
           phone_number?: string | null
           postal_code?: string | null
-          unique_identifier: string
-          updated_at?: string | null
         }
         Update: {
           address?: string | null
           birth_date?: string | null
           city?: string | null
           country?: string | null
-          created_at?: string
+          created_at?: string | null
           first_name?: string | null
           id?: string
           last_name?: string | null
           phone_number?: string | null
           postal_code?: string | null
-          unique_identifier?: string
-          updated_at?: string | null
         }
         Relationships: []
       }
       questionnaire_advanced_illness_responses: {
         Row: {
-          created_at: string
+          created_at: string | null
           id: string
-          question_id: string
+          question_id: string | null
           question_text: string | null
-          response: string
-          updated_at: string | null
-          user_id: string
+          response: string | null
+          user_id: string | null
         }
         Insert: {
-          created_at?: string
+          created_at?: string | null
           id?: string
-          question_id: string
+          question_id?: string | null
           question_text?: string | null
-          response: string
-          updated_at?: string | null
-          user_id: string
+          response?: string | null
+          user_id?: string | null
         }
         Update: {
-          created_at?: string
+          created_at?: string | null
           id?: string
-          question_id?: string
+          question_id?: string | null
           question_text?: string | null
-          response?: string
-          updated_at?: string | null
-          user_id?: string
+          response?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -265,31 +217,28 @@ export type Database = {
       }
       questionnaire_general_responses: {
         Row: {
-          created_at: string
+          created_at: string | null
           id: string
-          question_id: string
+          question_id: string | null
           question_text: string | null
-          response: string
-          updated_at: string | null
-          user_id: string
+          response: string | null
+          user_id: string | null
         }
         Insert: {
-          created_at?: string
+          created_at?: string | null
           id?: string
-          question_id: string
+          question_id?: string | null
           question_text?: string | null
-          response: string
-          updated_at?: string | null
-          user_id: string
+          response?: string | null
+          user_id?: string | null
         }
         Update: {
-          created_at?: string
+          created_at?: string | null
           id?: string
-          question_id?: string
+          question_id?: string | null
           question_text?: string | null
-          response?: string
-          updated_at?: string | null
-          user_id?: string
+          response?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -303,31 +252,28 @@ export type Database = {
       }
       questionnaire_life_support_responses: {
         Row: {
-          created_at: string
+          created_at: string | null
           id: string
-          question_id: string
+          question_id: string | null
           question_text: string | null
-          response: string
-          updated_at: string | null
-          user_id: string
+          response: string | null
+          user_id: string | null
         }
         Insert: {
-          created_at?: string
+          created_at?: string | null
           id?: string
-          question_id: string
+          question_id?: string | null
           question_text?: string | null
-          response: string
-          updated_at?: string | null
-          user_id: string
+          response?: string | null
+          user_id?: string | null
         }
         Update: {
-          created_at?: string
+          created_at?: string | null
           id?: string
-          question_id?: string
+          question_id?: string | null
           question_text?: string | null
-          response?: string
-          updated_at?: string | null
-          user_id?: string
+          response?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -341,31 +287,28 @@ export type Database = {
       }
       questionnaire_preferences_responses: {
         Row: {
-          created_at: string
+          created_at: string | null
           id: string
-          question_id: string
+          question_id: string | null
           question_text: string | null
-          response: string
-          updated_at: string | null
-          user_id: string
+          response: string | null
+          user_id: string | null
         }
         Insert: {
-          created_at?: string
+          created_at?: string | null
           id?: string
-          question_id: string
+          question_id?: string | null
           question_text?: string | null
-          response: string
-          updated_at?: string | null
-          user_id: string
+          response?: string | null
+          user_id?: string | null
         }
         Update: {
-          created_at?: string
+          created_at?: string | null
           id?: string
-          question_id?: string
+          question_id?: string | null
           question_text?: string | null
-          response?: string
-          updated_at?: string | null
-          user_id?: string
+          response?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -379,58 +322,55 @@ export type Database = {
       }
       questionnaire_synthesis: {
         Row: {
-          created_at: string
+          created_at: string | null
           free_text: string | null
           id: string
-          updated_at: string | null
-          user_id: string
+          user_id: string | null
         }
         Insert: {
-          created_at?: string
+          created_at?: string | null
           free_text?: string | null
           id?: string
-          updated_at?: string | null
-          user_id: string
+          user_id?: string | null
         }
         Update: {
-          created_at?: string
+          created_at?: string | null
           free_text?: string | null
           id?: string
-          updated_at?: string | null
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
       questions: {
         Row: {
-          category: Database["public"]["Enums"]["question_category"] | null
+          category: string | null
+          created_at: string | null
+          display_order: number | null
           id: string
-          JE_NE_SAIS_PAS: string
-          NON: string
-          order: number | null
-          OUI: string
+          JE_NE_SAIS_PAS: string | null
+          NON: string | null
+          OUI: string | null
           Question: string
-          updated_at: string | null
         }
         Insert: {
-          category?: Database["public"]["Enums"]["question_category"] | null
+          category?: string | null
+          created_at?: string | null
+          display_order?: number | null
           id?: string
-          JE_NE_SAIS_PAS?: string
-          NON: string
-          order?: number | null
-          OUI: string
+          JE_NE_SAIS_PAS?: string | null
+          NON?: string | null
+          OUI?: string | null
           Question: string
-          updated_at?: string | null
         }
         Update: {
-          category?: Database["public"]["Enums"]["question_category"] | null
+          category?: string | null
+          created_at?: string | null
+          display_order?: number | null
           id?: string
-          JE_NE_SAIS_PAS?: string
-          NON?: string
-          order?: number | null
-          OUI?: string
+          JE_NE_SAIS_PAS?: string | null
+          NON?: string | null
+          OUI?: string | null
           Question?: string
-          updated_at?: string | null
         }
         Relationships: []
       }
@@ -438,41 +378,38 @@ export type Database = {
         Row: {
           address: string | null
           city: string | null
-          created_at: string
-          email: string
+          created_at: string | null
+          email: string | null
           id: string
           name: string
-          phone: string
+          phone: string | null
           postal_code: string | null
           relation: string | null
-          updated_at: string | null
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           address?: string | null
           city?: string | null
-          created_at?: string
-          email: string
+          created_at?: string | null
+          email?: string | null
           id?: string
           name: string
-          phone: string
+          phone?: string | null
           postal_code?: string | null
           relation?: string | null
-          updated_at?: string | null
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           address?: string | null
           city?: string | null
-          created_at?: string
-          email?: string
+          created_at?: string | null
+          email?: string | null
           id?: string
           name?: string
-          phone?: string
+          phone?: string | null
           postal_code?: string | null
           relation?: string | null
-          updated_at?: string | null
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -484,19 +421,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      healthcare_professional_type: "doctor" | "nurse" | "pharmacist" | "other"
-      question_category:
-        | "general_opinion"
-        | "other_directives"
-        | "life_support"
-        | "pain_relief"
-        | "let_die"
-      question_type: "simple" | "detailed"
-      questionnaire_type:
-        | "general_opinion"
-        | "life_support"
-        | "advanced_illness"
-        | "preferences"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
