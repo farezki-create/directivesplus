@@ -26,26 +26,46 @@ export function usePDFData() {
           .from("profiles")
           .select("*")
           .eq("id", session.user.id)
-          .single();
+          .maybeSingle();
 
         if (profileError) {
           console.error("[PDFData] Error loading profile:", profileError);
           toast({
-            title: "Erreur",
-            description: "Impossible de charger votre profil. Veuillez vérifier que vous avez complété vos informations personnelles.",
+            title: "Information manquante",
+            description: "Veuillez d'abord compléter votre profil dans les paramètres avant de générer vos directives.",
             variant: "destructive",
           });
           setLoading(false);
           return;
         }
-        
-        // Add email from session
-        setProfile({ 
-          ...profileData, 
-          email: session.user.email,
-          unique_identifier: session.user.id
-        });
 
+        if (!profileData) {
+          console.log("[PDFData] No profile found, creating one");
+          const { data: newProfile, error: insertError } = await supabase
+            .from("profiles")
+            .insert([{ id: session.user.id }])
+            .select()
+            .maybeSingle();
+
+          if (insertError) {
+            console.error("[PDFData] Error creating profile:", insertError);
+            throw insertError;
+          }
+
+          setProfile({
+            ...newProfile,
+            email: session.user.email,
+            unique_identifier: session.user.id
+          });
+        } else {
+          // Add email from session
+          setProfile({ 
+            ...profileData, 
+            email: session.user.email,
+            unique_identifier: session.user.id
+          });
+        }
+        
         console.log("[PDFData] Loading trusted persons");
         const { data: trustedPersonsData, error: trustedPersonsError } = await supabase
           .from("trusted_persons")
