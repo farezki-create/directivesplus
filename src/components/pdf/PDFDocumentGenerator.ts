@@ -9,7 +9,7 @@ import { PDFResponsesSection } from "./utils/PDFResponsesSection";
 
 export class PDFDocumentGenerator {
   static generate(profile: UserProfile, responses: any, trustedPersons: TrustedPerson[]) {
-    console.log("[PDFGenerator] Generating PDF with responses:", responses);
+    console.log("[PDFGenerator] Generating PDF with profile:", profile);
     const doc = new jsPDF();
     let yPosition = 20;
 
@@ -31,7 +31,16 @@ export class PDFDocumentGenerator {
     doc.setFontSize(16);
     doc.text("1. Mon identité", 20, yPosition);
     yPosition += 10;
-    yPosition = PDFUserSection.generate(doc, profile, yPosition);
+
+    // Utilisation du profil pour l'identité
+    if (profile) {
+      yPosition = PDFUserSection.generate(doc, profile, yPosition);
+    } else {
+      console.warn("[PDFGenerator] No profile data available");
+      doc.setFontSize(12);
+      doc.text("Information d'identité non disponible", 20, yPosition);
+      yPosition += 10;
+    }
 
     // Add new page if needed
     if (yPosition > doc.internal.pageSize.getHeight() - 40) {
@@ -76,16 +85,18 @@ export class PDFDocumentGenerator {
     yPosition += 20;
     doc.setFontSize(12);
     
-    // Je soussigné(e) section
+    // Je soussigné(e) section avec le nom prérempli
     doc.text("Je soussigné(e)", 20, yPosition);
     yPosition += 10;
     
-    // Name line
-    doc.text("Nom et prénoms : ................................................", 20, yPosition);
+    // Name line with pre-filled name if available
+    const fullName = profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : '';
+    doc.text(`Nom et prénoms : ${fullName}`, 20, yPosition);
     yPosition += 15;
     
     // Date and place line spanning the width
-    doc.text("Fait le ........................... à .................................", 20, yPosition);
+    const today = format(new Date(), "d MMMM yyyy", { locale: fr });
+    doc.text(`Fait le ${today} à ${profile?.city || '................................'}`, 20, yPosition);
     yPosition += 20;
     
     // Signature
