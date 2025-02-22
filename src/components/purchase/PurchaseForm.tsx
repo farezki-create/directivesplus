@@ -10,7 +10,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { loadStripe, Stripe } from "@stripe/stripe-js";
+import { loadStripe, Stripe, StripeElements, StripeElement } from "@stripe/stripe-js";
 import { User } from "@supabase/supabase-js";
 
 const stripePromise = loadStripe('pk_test_51OvZy8KJHojJ27FpoHYRFw3pYJB93qZFLbOieT47naK9trTRqUUfWVM4kugAGoN7V6lDaUxydQ6k9Kk4FvFa2gvX00RzW8wPxX');
@@ -22,7 +22,6 @@ const orderFormSchema = z.object({
   address: z.string().min(5, "L'adresse doit contenir au moins 5 caractères"),
   city: z.string().min(2, "La ville doit contenir au moins 2 caractères"),
   postalCode: z.string().regex(/^[0-9]{5}$/, "Code postal invalide"),
-  cardToken: z.string(),
 });
 
 type OrderFormValues = z.infer<typeof orderFormSchema>;
@@ -36,13 +35,46 @@ export const PurchaseForm = ({ onClose, user }: PurchaseFormProps) => {
   const { toast } = useToast();
   const [isOrdering, setIsOrdering] = React.useState(false);
   const [stripe, setStripe] = React.useState<Stripe | null>(null);
+  const [elements, setElements] = React.useState<StripeElements | null>(null);
+  const [card, setCard] = React.useState<StripeElement | null>(null);
+  const cardElementRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     const initStripe = async () => {
       const stripeInstance = await stripePromise;
-      setStripe(stripeInstance);
+      if (stripeInstance) {
+        setStripe(stripeInstance);
+        const elements = stripeInstance.elements();
+        setElements(elements);
+        const cardElement = elements.create('card', {
+          style: {
+            base: {
+              fontSize: '16px',
+              color: '#424770',
+              '::placeholder': {
+                color: '#aab7c4',
+              },
+            },
+            invalid: {
+              color: '#9e2146',
+            },
+          },
+        });
+        
+        if (cardElementRef.current) {
+          cardElement.mount(cardElementRef.current);
+          setCard(cardElement);
+        }
+      }
     };
+
     initStripe();
+
+    return () => {
+      if (card) {
+        card.destroy();
+      }
+    };
   }, []);
 
   const form = useForm<OrderFormValues>({
@@ -50,19 +82,25 @@ export const PurchaseForm = ({ onClose, user }: PurchaseFormProps) => {
     defaultValues: {
       firstName: "",
       lastName: "",
-      email: "",
+      email: user?.email || "",
       address: "",
       city: "",
       postalCode: "",
-      cardToken: "",
     },
   });
 
   const onSubmit = async (values: OrderFormValues) => {
+    if (!stripe || !elements || !card) {
+      toast({
+        title: "Erreur",
+        description: "Le système de paiement n'est pas prêt",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsOrdering(true);
     try {
-      if (!stripe) throw new Error("Stripe n'est pas initialisé");
-
       const response = await fetch(
         'https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/create-payment',
         {
@@ -80,10 +118,9 @@ export const PurchaseForm = ({ onClose, user }: PurchaseFormProps) => {
       const { clientSecret } = await response.json();
       if (!clientSecret) throw new Error("Erreur lors de la création du paiement");
 
-      // Créer un PaymentMethod avec Stripe
       const { paymentMethod, error: paymentMethodError } = await stripe.createPaymentMethod({
         type: 'card',
-        card: { token: values.cardToken },
+        card: card as any,
         billing_details: {
           name: `${values.firstName} ${values.lastName}`,
           email: values.email,
@@ -129,7 +166,7 @@ export const PurchaseForm = ({ onClose, user }: PurchaseFormProps) => {
       
       onClose();
       form.reset();
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Erreur",
         description: error.message || "Une erreur est survenue lors du traitement de votre commande.",
@@ -244,19 +281,9 @@ export const PurchaseForm = ({ onClose, user }: PurchaseFormProps) => {
             Paiement
           </h3>
 
-          <FormField
-            control={form.control}
-            name="cardToken"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Carte bancaire</FormLabel>
-                <FormControl>
-                  <div id="card-element" className="p-3 border rounded-md" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="p-3 border rounded-md">
+            <div ref={cardElementRef} id="card-element" />
+          </div>
         </div>
 
         <DialogFooter>
