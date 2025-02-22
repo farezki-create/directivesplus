@@ -7,12 +7,15 @@ import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "@/components/pdf/usePDFData";
 import { Button } from "@/components/ui/button";
 import { FileText, Type } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { ResponseSection } from "@/components/responses/ResponseSection";
 
 export default function GeneratePDF() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [userId, setUserId] = useState<string | null>(null);
-  const { responses } = useQuestionnairesResponses(userId || "");
-  const { profile, trustedPersons } = usePDFData();
+  const { responses, isLoading: responsesLoading } = useQuestionnairesResponses(userId || "");
+  const { profile, trustedPersons, loading: profileLoading } = usePDFData();
   const [showTextVersion, setShowTextVersion] = useState(false);
 
   useEffect(() => {
@@ -28,7 +31,23 @@ export default function GeneratePDF() {
   }, [navigate]);
 
   const renderTextVersion = () => {
-    if (!responses || !profile || !trustedPersons) return null;
+    if (responsesLoading || profileLoading) {
+      return (
+        <div className="flex items-center justify-center p-8">
+          <p className="text-gray-500">Chargement de vos directives...</p>
+        </div>
+      );
+    }
+
+    if (!profile) {
+      return (
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <p className="text-red-500">
+            Veuillez d'abord compléter votre profil pour pouvoir générer vos directives.
+          </p>
+        </div>
+      );
+    }
 
     return (
       <div className="bg-white p-6 rounded-lg shadow-md space-y-6">
@@ -37,76 +56,33 @@ export default function GeneratePDF() {
         {/* Informations personnelles */}
         <div className="space-y-2">
           <h4 className="font-medium">Informations personnelles</h4>
-          <p>Nom : {profile.last_name}</p>
-          <p>Prénom : {profile.first_name}</p>
-          <p>Date de naissance : {new Date(profile.birth_date).toLocaleDateString()}</p>
-          <p>Adresse : {profile.address}</p>
-          <p>{profile.postal_code} {profile.city}</p>
+          <p>Nom : {profile.last_name || 'Non renseigné'}</p>
+          <p>Prénom : {profile.first_name || 'Non renseigné'}</p>
+          <p>Date de naissance : {profile.birth_date ? new Date(profile.birth_date).toLocaleDateString() : 'Non renseignée'}</p>
+          <p>Adresse : {profile.address || 'Non renseignée'}</p>
+          <p>{profile.postal_code || ''} {profile.city || ''}</p>
         </div>
 
         {/* Personnes de confiance */}
-        {trustedPersons.length > 0 && (
+        {trustedPersons && trustedPersons.length > 0 && (
           <div className="space-y-2">
             <h4 className="font-medium">Personnes de confiance</h4>
             {trustedPersons.map((person, index) => (
-              <div key={person.id} className="ml-4">
+              <div key={person.id} className="ml-4 p-2 bg-gray-50 rounded">
                 <p>Personne {index + 1} :</p>
                 <p>Nom : {person.name}</p>
-                <p>Relation : {person.relation}</p>
-                <p>Contact : {person.phone || person.email}</p>
+                <p>Relation : {person.relation || 'Non renseignée'}</p>
+                <p>Contact : {person.phone || person.email || 'Non renseigné'}</p>
               </div>
             ))}
           </div>
         )}
 
         {/* Réponses au questionnaire */}
-        {responses.general && responses.general.length > 0 && (
-          <div className="space-y-2">
-            <h4 className="font-medium">Mon avis d'une façon générale</h4>
-            {responses.general.map((item, index) => (
-              <div key={index} className="ml-4">
-                <p className="font-medium">{item.question_text}</p>
-                <p>{item.response}</p>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {responses.lifeSupport && responses.lifeSupport.length > 0 && (
-          <div className="space-y-2">
-            <h4 className="font-medium">Maintien en vie</h4>
-            {responses.lifeSupport.map((item, index) => (
-              <div key={index} className="ml-4">
-                <p className="font-medium">{item.question_text}</p>
-                <p>{item.response}</p>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {responses.advancedIllness && responses.advancedIllness.length > 0 && (
-          <div className="space-y-2">
-            <h4 className="font-medium">Maladie avancée</h4>
-            {responses.advancedIllness.map((item, index) => (
-              <div key={index} className="ml-4">
-                <p className="font-medium">{item.question_text}</p>
-                <p>{item.response}</p>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {responses.preferences && responses.preferences.length > 0 && (
-          <div className="space-y-2">
-            <h4 className="font-medium">Mes goûts et mes peurs</h4>
-            {responses.preferences.map((item, index) => (
-              <div key={index} className="ml-4">
-                <p className="font-medium">{item.question_text}</p>
-                <p>{item.response}</p>
-              </div>
-            ))}
-          </div>
-        )}
+        <ResponseSection title="Mon avis d'une façon générale" responses={responses?.general || []} />
+        <ResponseSection title="Maintien en vie" responses={responses?.lifeSupport || []} />
+        <ResponseSection title="Maladie avancée" responses={responses?.advancedIllness || []} />
+        <ResponseSection title="Mes goûts et mes peurs" responses={responses?.preferences || []} />
       </div>
     );
   };
