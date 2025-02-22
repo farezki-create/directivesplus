@@ -32,10 +32,6 @@ export const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [user, setUser] = useState<User | null>(null);
-  const [showPDFPreview, setShowPDFPreview] = useState(false);
-  const [isCardFormat, setIsCardFormat] = useState(false);
-  const [showScanner, setShowScanner] = useState(false);
-  const [showPurchaseDialog, setShowPurchaseDialog] = useState(false);
   const [isOrdering, setIsOrdering] = useState(false);
   const { toast } = useToast();
 
@@ -100,6 +96,7 @@ export const Header = () => {
   };
 
   const isHomePage = location.pathname === "/";
+  const [showPurchaseDialog, setShowPurchaseDialog] = useState(false);
 
   return (
     <>
