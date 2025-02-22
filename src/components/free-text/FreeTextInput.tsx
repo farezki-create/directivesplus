@@ -19,36 +19,37 @@ export const FreeTextInput = ({ userId }: FreeTextInputProps) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Vérifier si la reconnaissance vocale est disponible
-    if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      const recognitionInstance = new SpeechRecognition();
-      recognitionInstance.continuous = true;
-      recognitionInstance.interimResults = true;
-      recognitionInstance.lang = 'fr-FR';
+    if (typeof window !== 'undefined') {
+      const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (SpeechRecognitionAPI) {
+        const recognitionInstance = new SpeechRecognitionAPI();
+        recognitionInstance.continuous = true;
+        recognitionInstance.interimResults = true;
+        recognitionInstance.lang = 'fr-FR';
 
-      recognitionInstance.onresult = (event) => {
-        const transcript = Array.from(event.results)
-          .map(result => result[0].transcript)
-          .join(' ');
-        setFreeText(prev => prev + ' ' + transcript);
-      };
+        recognitionInstance.onresult = (event: SpeechRecognitionEvent) => {
+          const transcript = Array.from(event.results)
+            .map(result => result[0].transcript)
+            .join(' ');
+          setFreeText(prev => prev + ' ' + transcript);
+        };
 
-      recognitionInstance.onerror = (event) => {
-        console.error('[FreeTextInput] Speech recognition error:', event.error);
-        stopListening(recognitionInstance);
-        toast({
-          title: "Erreur",
-          description: "Une erreur est survenue avec la reconnaissance vocale.",
-          variant: "destructive",
-        });
-      };
+        recognitionInstance.onerror = (event: SpeechRecognitionEvent) => {
+          console.error('[FreeTextInput] Speech recognition error:', event.error);
+          stopListening(recognitionInstance);
+          toast({
+            title: "Erreur",
+            description: "Une erreur est survenue avec la reconnaissance vocale.",
+            variant: "destructive",
+          });
+        };
 
-      recognitionInstance.onend = () => {
-        setIsListening(false);
-      };
+        recognitionInstance.onend = () => {
+          setIsListening(false);
+        };
 
-      setRecognition(recognitionInstance);
+        setRecognition(recognitionInstance);
+      }
     }
   }, [toast]);
 
