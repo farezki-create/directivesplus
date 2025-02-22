@@ -1,3 +1,4 @@
+
 import { jsPDF } from "jspdf";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -12,13 +13,14 @@ export class PDFDocumentGenerator {
     const doc = new jsPDF();
     let yPosition = 20;
 
-    // Check if this is a trusted person document
-    const isTrustedPersonDoc = responses?.type === "trusted_person";
-
+    // Add logo
+    // Note: you'll need to add your logo image here
+    // doc.addImage("logo.png", "PNG", 20, 10, 50, 20);
+    
     // Title
     doc.setFontSize(20);
     doc.text(
-      isTrustedPersonDoc ? "Désignation de la personne de confiance" : "Directives Anticipées",
+      "Directives Anticipées",
       doc.internal.pageSize.getWidth() / 2,
       yPosition,
       { align: "center" }
@@ -37,33 +39,12 @@ export class PDFDocumentGenerator {
       yPosition = 20;
     }
 
-    // Section 2: Access Code
-    yPosition += 20;
-    doc.setFontSize(16);
-    doc.text("2. Code d'accès au document", 20, yPosition);
-    yPosition += 10;
-    doc.setFontSize(12);
-    doc.text(`Code d'accès : ${profile.unique_identifier}`, 20, yPosition);
-    yPosition += 10;
-    doc.text("Lien de connexion :", 20, yPosition);
-    yPosition += 7;
-    doc.setTextColor(0, 0, 255); // Set text color to blue for the link
-    doc.text("https://directives-anticipees.lovable.dev", 30, yPosition);
-    doc.setTextColor(0, 0, 0); // Reset text color to black
-    yPosition += 10;
-
-    // Add new page if needed
-    if (yPosition > doc.internal.pageSize.getHeight() - 40) {
-      doc.addPage();
-      yPosition = 20;
-    }
-
     // For trusted person document, skip directives anticipées section
-    if (!isTrustedPersonDoc) {
-      // Section 3: Directives Anticipées Synthesis
+    if (!responses?.type === "trusted_person") {
+      // Section 2: Directives Anticipées Synthesis
       yPosition += 20;
       doc.setFontSize(16);
-      doc.text("3. Synthèse de mes directives anticipées", 20, yPosition);
+      doc.text("2. Synthèse de mes directives anticipées", 20, yPosition);
       yPosition += 10;
       yPosition = PDFResponsesSection.generate(doc, responses, yPosition);
 
@@ -78,7 +59,7 @@ export class PDFDocumentGenerator {
     yPosition += 20;
     doc.setFontSize(16);
     doc.text(
-      isTrustedPersonDoc ? "3. Personne de confiance" : "4. Personne de confiance",
+      responses?.type === "trusted_person" ? "2. Personne de confiance" : "3. Personne de confiance",
       20,
       yPosition
     );
@@ -91,17 +72,25 @@ export class PDFDocumentGenerator {
       yPosition = 20;
     }
 
-    // Final Section: Date and Place (without title)
+    // Final Section: Signature
     yPosition += 20;
     doc.setFontSize(12);
-    doc.text("Date : ..................", 20, yPosition);
-    doc.text("Lieu : ..................", 120, yPosition);
-    doc.text("Signature : ..................", 220, yPosition);
     
-    // Add "SIGNATURE" text below
+    // Je soussigné(e) section
+    doc.text("Je soussigné(e)", 20, yPosition);
+    yPosition += 10;
+    
+    // Name line
+    doc.text("Nom et prénoms : ................................................", 20, yPosition);
+    yPosition += 15;
+    
+    // Date and place line spanning the width
+    doc.text("Fait le ........................... à .................................", 20, yPosition);
     yPosition += 20;
-    doc.setFontSize(14);
-    doc.text("SIGNATURE", doc.internal.pageSize.getWidth() / 2, yPosition, { align: "center" });
+    
+    // Signature
+    doc.setFontSize(12);
+    doc.text("Signature :", 20, yPosition);
 
     return doc.output('dataurlstring');
   }

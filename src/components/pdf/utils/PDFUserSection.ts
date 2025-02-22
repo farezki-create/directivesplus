@@ -1,3 +1,4 @@
+
 import { jsPDF } from "jspdf";
 import { UserProfile } from "../types";
 import { format } from "date-fns";
@@ -12,9 +13,14 @@ export class PDFUserSection {
       console.log("[PDFUserSection] Generating user section with profile:", profile);
 
       // Full name
-      const fullName = `${profile.last_name || ''} ${profile.first_name || ''}`.trim();
-      if (fullName) {
-        doc.text(`Nom et prénom : ${fullName}`, 20, yPosition);
+      const lastName = profile.last_name?.toUpperCase() || '';
+      const firstName = profile.first_name || '';
+      const fullName = `${lastName} ${firstName}`.trim();
+      
+      if (lastName || firstName) {
+        doc.text(`Nom : ${lastName}`, 20, yPosition);
+        yPosition += 10;
+        doc.text(`Prénom : ${firstName}`, 20, yPosition);
         yPosition += 10;
       }
 
@@ -27,18 +33,6 @@ export class PDFUserSection {
         } catch (error) {
           console.error("[PDFUserSection] Error formatting birth date:", error);
         }
-      }
-
-      // Email
-      if (profile.email) {
-        doc.text(`Email : ${profile.email}`, 20, yPosition);
-        yPosition += 10;
-      }
-
-      // Phone number
-      if (profile.phone_number) {
-        doc.text(`Téléphone : ${profile.phone_number}`, 20, yPosition);
-        yPosition += 10;
       }
 
       // Address section
