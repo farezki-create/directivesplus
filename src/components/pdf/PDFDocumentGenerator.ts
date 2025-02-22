@@ -21,8 +21,8 @@ export class PDFDocumentGenerator {
     const margin = {
       top: 30,
       bottom: 30,
-      left: 20,
-      right: 20
+      left: 25,
+      right: 25
     };
 
     // Configuration initiale du document
@@ -36,6 +36,7 @@ export class PDFDocumentGenerator {
 
     let yPosition = margin.top;
 
+    // === PAGE 1 ===
     // En-tête avec titre principal
     doc.setFontSize(24);
     doc.setFont("helvetica", "bold");
@@ -45,10 +46,10 @@ export class PDFDocumentGenerator {
       yPosition,
       { align: "center" }
     );
-    yPosition += 30;
+    yPosition += 25;
 
     // Sous-titre avec la date
-    doc.setFontSize(12);
+    doc.setFontSize(14);
     doc.setFont("helvetica", "normal");
     const dateStr = format(new Date(), "d MMMM yyyy", { locale: fr });
     doc.text(
@@ -57,7 +58,7 @@ export class PDFDocumentGenerator {
       yPosition,
       { align: "center" }
     );
-    yPosition += 20;
+    yPosition += 30;
 
     // Informations d'identité
     if (profile) {
@@ -66,65 +67,91 @@ export class PDFDocumentGenerator {
       console.warn("[PDFGenerator] No profile data available");
       doc.setFontSize(12);
       doc.text("Information d'identité non disponible", margin.left, yPosition);
-      yPosition += 10;
-    }
-
-    // Nouvelle page pour les directives
-    if (yPosition > doc.internal.pageSize.getHeight() - 40) {
-      doc.addPage();
-      yPosition = margin.top;
+      yPosition += 20;
     }
 
     // Section des directives
     if (responses?.type !== "trusted_person") {
-      yPosition += 20;
+      yPosition += 25;
+      doc.setFontSize(16);
+      doc.setFont("helvetica", "bold");
+      doc.text("Mes directives anticipées", margin.left, yPosition);
+      doc.setFont("helvetica", "normal");
+      yPosition += 15;
       yPosition = PDFResponsesSection.generate(doc, responses, yPosition);
-
-      // Nouvelle page si nécessaire
-      if (yPosition > doc.internal.pageSize.getHeight() - 40) {
-        doc.addPage();
-        yPosition = margin.top;
-      }
     }
+
+    // === PAGE 2 ===
+    doc.addPage();
+    yPosition = margin.top;
 
     // Section Personne de confiance
-    yPosition += 20;
     doc.setFontSize(16);
     doc.setFont("helvetica", "bold");
-    doc.text("Personne de confiance", margin.left, yPosition);
+    doc.text(
+      "Personne de confiance",
+      doc.internal.pageSize.getWidth() / 2,
+      yPosition,
+      { align: "center" }
+    );
     doc.setFont("helvetica", "normal");
-    yPosition += 10;
+    yPosition += 20;
     yPosition = PDFTrustedPersonSection.generate(doc, trustedPersons, yPosition);
 
-    // Nouvelle page si nécessaire pour la signature
-    if (yPosition > doc.internal.pageSize.getHeight() - 100) {
-      doc.addPage();
-      yPosition = margin.top;
-    }
-
-    // Section signature
-    yPosition += 30;
-    doc.setFontSize(12);
+    // Section signature avec espacement augmenté
+    yPosition += 40;
+    doc.setFontSize(14);
     
-    // Section "Je soussigné(e)"
-    doc.text("Je soussigné(e)", margin.left, yPosition);
-    yPosition += 10;
+    // Section "Je soussigné(e)" centrée
+    doc.text(
+      "Je soussigné(e)",
+      doc.internal.pageSize.getWidth() / 2,
+      yPosition,
+      { align: "center" }
+    );
+    yPosition += 15;
     
-    // Nom complet
+    // Nom complet centré
     const fullName = profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : '';
-    doc.text(`Nom et prénoms : ${fullName}`, margin.left, yPosition);
+    doc.text(
+      fullName,
+      doc.internal.pageSize.getWidth() / 2,
+      yPosition,
+      { align: "center" }
+    );
     yPosition += 20;
     
-    // Date et lieu
+    // Date et lieu centrés
     const today = format(new Date(), "d MMMM yyyy", { locale: fr });
-    doc.text(`Fait le ${today} à ${profile?.city || '................................'}`, margin.left, yPosition);
+    doc.text(
+      `Fait le ${today} à ${profile?.city || '................................'}`,
+      doc.internal.pageSize.getWidth() / 2,
+      yPosition,
+      { align: "center" }
+    );
     yPosition += 25;
     
-    // Zone de signature
+    // Zone de signature centrée et plus grande
     doc.setDrawColor(0);
     doc.setFillColor(255, 255, 255);
-    doc.rect(margin.left, yPosition, 80, 40, 'D');
-    doc.text("Signature :", margin.left, yPosition - 5);
+    const signatureWidth = 100;
+    const signatureX = (doc.internal.pageSize.getWidth() - signatureWidth) / 2;
+    doc.rect(signatureX, yPosition, signatureWidth, 50, 'D');
+    doc.text("Signature :", signatureX, yPosition - 5);
+
+    // Numérotation des pages
+    const totalPages = doc.internal.pages.length - 1;
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      doc.setFontSize(10);
+      doc.setTextColor(128, 128, 128);
+      doc.text(
+        `Page ${i}/${totalPages}`,
+        doc.internal.pageSize.getWidth() / 2,
+        doc.internal.pageSize.getHeight() - 10,
+        { align: "center" }
+      );
+    }
 
     return doc.output('dataurlstring');
   }
