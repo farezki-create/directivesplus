@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "./pdf/usePDFData";
 import { handlePDFGeneration, handlePDFDownload, handlePDFPrint } from "./pdf/utils/PDFGenerationUtils";
@@ -15,13 +15,36 @@ interface PDFGeneratorProps {
   onPdfGenerated?: (url: string | null) => void;
 }
 
+const waitingMessages = [
+  "Préparation de votre document avec soin... 📝",
+  "Mise en page de vos directives... 📄",
+  "Ajout d'une touche de professionnalisme... ✨",
+  "Finalisation des derniers détails... 🎯",
+  "Vérification de la mise en forme... 🔍",
+  "Assemblage de vos informations... 📋",
+  "Plus que quelques secondes... ⏳",
+  "Votre document est presque prêt... 🌟",
+];
+
 export function PDFGenerator({ userId, isCardFormat = false, onPdfGenerated }: PDFGeneratorProps) {
   console.log("[PDFGenerator] Initializing with userId:", userId, "isCardFormat:", isCardFormat);
   
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
+  const [isGenerating, setIsGenerating] = useState(false);
   const { responses } = useQuestionnairesResponses(userId);
   const { profile, trustedPersons, loading } = usePDFData();
+
+  useEffect(() => {
+    if (isGenerating) {
+      const interval = setInterval(() => {
+        setCurrentMessageIndex((prev) => (prev + 1) % waitingMessages.length);
+      }, 2000);
+
+      return () => clearInterval(interval);
+    }
+  }, [isGenerating]);
 
   console.log("[PDFGenerator] Current state:", {
     hasProfile: !!profile,
@@ -32,6 +55,7 @@ export function PDFGenerator({ userId, isCardFormat = false, onPdfGenerated }: P
 
   const generatePDF = () => {
     console.log("[PDFGenerator] Button clicked - Starting PDF generation");
+    setIsGenerating(true);
     
     if (!profile) {
       console.error("[PDFGenerator] No profile data available");
@@ -40,6 +64,7 @@ export function PDFGenerator({ userId, isCardFormat = false, onPdfGenerated }: P
         description: "Données de profil non disponibles. Veuillez compléter votre profil.",
         variant: "destructive",
       });
+      setIsGenerating(false);
       return;
     }
 
@@ -65,6 +90,7 @@ export function PDFGenerator({ userId, isCardFormat = false, onPdfGenerated }: P
             if (onPdfGenerated) {
               onPdfGenerated(url);
             }
+            setIsGenerating(false);
           },
           setShowPreview
         );
@@ -76,6 +102,7 @@ export function PDFGenerator({ userId, isCardFormat = false, onPdfGenerated }: P
         description: "Une erreur est survenue lors de la génération du PDF.",
         variant: "destructive",
       });
+      setIsGenerating(false);
     }
   };
 
@@ -94,10 +121,22 @@ export function PDFGenerator({ userId, isCardFormat = false, onPdfGenerated }: P
   console.log("[PDFGenerator] Rendering buttons");
   return (
     <>
+      {isGenerating && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="max-w-sm p-6 text-center space-y-4 animate-fade-in">
+            <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+            <p className="text-lg font-medium text-foreground animate-pulse">
+              {waitingMessages[currentMessageIndex]}
+            </p>
+          </div>
+        </div>
+      )}
+      
       <Button 
         onClick={generatePDF}
         className="flex items-center gap-2"
         variant={isCardFormat ? "outline" : "default"}
+        disabled={isGenerating}
       >
         <FileText className="h-4 w-4" />
         {isCardFormat ? "Générer au format carte" : "Générer Mes directives anticipées"}
