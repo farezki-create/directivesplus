@@ -95,7 +95,40 @@ export function PDFPreviewDialog({
       return;
     }
 
-    const printWindow = window.open(pdfUrl, '_blank');
+    // Créer un fichier HTML temporaire pour l'impression
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Impression</title>
+          <script>
+            function checkPDFLoaded() {
+              var embed = document.querySelector('embed');
+              if (embed) {
+                setTimeout(function() {
+                  window.print();
+                  setTimeout(function() {
+                    window.close();
+                  }, 1000);
+                }, 2000);
+              }
+            }
+            window.onload = checkPDFLoaded;
+          </script>
+        </head>
+        <body style="margin:0;padding:0;width:100vw;height:100vh;">
+          <embed 
+            src="${pdfUrl}" 
+            type="application/pdf" 
+            width="100%" 
+            height="100%"
+            style="border:none;"
+          />
+        </body>
+      </html>
+    `;
+
+    const printWindow = window.open('', '_blank');
     if (!printWindow) {
       toast({
         title: "Erreur",
@@ -105,27 +138,7 @@ export function PDFPreviewDialog({
       return;
     }
 
-    // Créer un script qui sera exécuté dans la nouvelle fenêtre
-    const printScript = `
-      window.onload = function() {
-        setTimeout(function() {
-          window.print();
-          window.close();
-        }, 1000);
-      };
-    `;
-
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>Impression</title>
-          <script>${printScript}</script>
-        </head>
-        <body style="margin:0;">
-          <embed width="100%" height="100%" src="${pdfUrl}" type="application/pdf">
-        </body>
-      </html>
-    `);
+    printWindow.document.write(printContent);
     printWindow.document.close();
     
     onOpenChange(false);
