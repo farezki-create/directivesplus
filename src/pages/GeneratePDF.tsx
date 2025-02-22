@@ -6,9 +6,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "@/components/pdf/usePDFData";
 import { Button } from "@/components/ui/button";
-import { FileText, Type } from "lucide-react";
+import { FileText, Type, UserCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ResponseSection } from "@/components/responses/ResponseSection";
+import { Card } from "@/components/ui/card";
 
 export default function GeneratePDF() {
   const navigate = useNavigate();
@@ -39,13 +40,25 @@ export default function GeneratePDF() {
       );
     }
 
-    if (!profile) {
+    if (!profile || !profile.first_name || !profile.last_name) {
       return (
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <p className="text-red-500">
-            Veuillez d'abord compléter votre profil pour pouvoir générer vos directives.
-          </p>
-        </div>
+        <Card className="p-6 space-y-4">
+          <div className="flex flex-col items-center text-center space-y-4">
+            <UserCircle className="h-12 w-12 text-gray-400" />
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">Profil incomplet</h3>
+              <p className="text-gray-500 mt-1">
+                Pour générer vos directives anticipées, veuillez d'abord compléter votre profil avec vos informations personnelles.
+              </p>
+            </div>
+            <Button
+              onClick={() => navigate("/dashboard")}
+              className="mt-4"
+            >
+              Compléter mon profil
+            </Button>
+          </div>
+        </Card>
       );
     }
 
@@ -56,8 +69,8 @@ export default function GeneratePDF() {
         {/* Informations personnelles */}
         <div className="space-y-2">
           <h4 className="font-medium">Informations personnelles</h4>
-          <p>Nom : {profile.last_name || 'Non renseigné'}</p>
-          <p>Prénom : {profile.first_name || 'Non renseigné'}</p>
+          <p>Nom : {profile.last_name}</p>
+          <p>Prénom : {profile.first_name}</p>
           <p>Date de naissance : {profile.birth_date ? new Date(profile.birth_date).toLocaleDateString() : 'Non renseignée'}</p>
           <p>Adresse : {profile.address || 'Non renseignée'}</p>
           <p>{profile.postal_code || ''} {profile.city || ''}</p>
