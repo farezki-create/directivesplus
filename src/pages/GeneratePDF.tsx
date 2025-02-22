@@ -46,16 +46,16 @@ export default function GeneratePDF() {
           <div className="flex flex-col items-center text-center space-y-4">
             <UserCircle className="h-12 w-12 text-gray-400" />
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">Profil non trouvé</h3>
+              <h3 className="text-lg font-semibold text-gray-900">Aucune réponse trouvée</h3>
               <p className="text-gray-500 mt-1">
-                Pour générer vos directives anticipées, veuillez d'abord créer votre profil.
+                Vous devez d'abord répondre aux questions pour pouvoir générer vos directives anticipées.
               </p>
             </div>
             <Button
-              onClick={() => navigate("/dashboard")}
+              onClick={() => navigate("/free-text")}
               className="mt-4"
             >
-              Créer mon profil
+              Répondre aux questions
             </Button>
           </div>
         </Card>
