@@ -3,17 +3,19 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
+interface DirectiveContent {
+  general: any[];
+  lifeSupport: any[];
+  advancedIllness: any[];
+  preferences: any[];
+  profile: any;
+  trustedPersons: any[];
+}
+
 interface Directive {
   id: string;
   user_id: string;
-  content: {
-    general: any[];
-    lifeSupport: any[];
-    advancedIllness: any[];
-    preferences: any[];
-    profile: any;
-    trustedPersons: any[];
-  };
+  content: DirectiveContent;
   created_at: string;
   updated_at: string;
   is_active: boolean;
@@ -33,10 +35,10 @@ export function useDirectives(userId: string) {
       console.log("[Directives] Fetching active directive for user:", userId);
       const { data, error } = await supabase
         .from("directives")
-        .select("*")
+        .select()
         .eq("user_id", userId)
         .eq("is_active", true)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error("[Directives] Error fetching directive:", error);
@@ -44,13 +46,13 @@ export function useDirectives(userId: string) {
       }
       
       console.log("[Directives] Retrieved directive:", data);
-      return data as Directive;
+      return data as Directive | null;
     },
     enabled: !!userId,
   });
 
   const saveDirective = useMutation({
-    mutationFn: async (content: Directive["content"]) => {
+    mutationFn: async (content: DirectiveContent) => {
       // D'abord, désactiver toutes les directives existantes
       const { error: updateError } = await supabase
         .from("directives")
@@ -73,7 +75,7 @@ export function useDirectives(userId: string) {
           },
         ])
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error("[Directives] Error saving directive:", error);
