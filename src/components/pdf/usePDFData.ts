@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { UserProfile, TrustedPerson } from "./types";
@@ -26,13 +25,8 @@ export function usePDFData() {
 
         if (profileError) throw profileError;
         
-        // Add email from session and create a valid UserProfile object
-        if (profileData) {
-          setProfile({
-            ...profileData,
-            email: session.user.email || undefined
-          });
-        }
+        // Add email from session
+        setProfile({ ...profileData, email: session.user.email });
 
         console.log("[PDFGenerator] Loading trusted persons");
         const { data: trustedPersonsData, error: trustedPersonsError } = await supabase

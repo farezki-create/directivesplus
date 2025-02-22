@@ -16,43 +16,12 @@ const Auth = () => {
 
   useEffect(() => {
     console.log("Setting up auth state change listener");
-    
-    // Check initial session
-    const checkSession = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error) {
-        console.error('Session check error:', error);
-        if (error.message.includes('refresh_token_not_found')) {
-          await supabase.auth.signOut();
-          toast({
-            variant: "destructive",
-            title: "Session expirée",
-            description: "Veuillez vous reconnecter.",
-          });
-        }
-      } else if (session) {
-        console.log('Valid session found, redirecting to home');
-        navigate("/");
-      }
-    };
-
-    checkSession();
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', event, session);
       
-      if (event === 'TOKEN_REFRESHED') {
-        console.log('Token refreshed successfully');
-      }
-      
-      if (event === 'SIGNED_IN' && session) {
+      if (event === "SIGNED_IN" && session) {
         console.log('User signed in, redirecting to home');
         navigate("/");
-      }
-
-      if (event === 'SIGNED_OUT') {
-        console.log('User signed out');
-        navigate("/auth");
       }
     });
 
@@ -60,7 +29,7 @@ const Auth = () => {
       console.log("Cleaning up auth state change listener");
       subscription.unsubscribe();
     };
-  }, [navigate, toast]);
+  }, [navigate]);
 
   const handleSubmit = async (values: FormValues) => {
     try {
@@ -130,7 +99,7 @@ const Auth = () => {
         });
       } else {
         console.log('Attempting login with email:', values.email);
-        const { error } = await supabase.auth.signInWithPassword({
+        const { error, data } = await supabase.auth.signInWithPassword({
           email: values.email,
           password: values.password,
         });
@@ -146,11 +115,13 @@ const Auth = () => {
           return;
         }
 
-        console.log('Login successful');
+        console.log('Login successful:', data);
         toast({
           title: "Connexion réussie",
           description: "Vous êtes maintenant connecté.",
         });
+        
+        navigate("/");
       }
     } catch (error) {
       console.error('Auth error:', error);

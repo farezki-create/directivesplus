@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -15,7 +14,7 @@ export function useAdvancedIllnessQuestions(open: boolean) {
         const { data, error } = await supabase
           .from('advanced_illness_questions')
           .select('*')
-          .order('display_order', { ascending: true });
+          .order('order', { ascending: true });
         
         if (error) {
           console.error('[AdvancedIllness] Error fetching questions:', error);
@@ -29,9 +28,9 @@ export function useAdvancedIllnessQuestions(open: boolean) {
         
         console.log('[AdvancedIllness] Questions loaded:', data?.length, 'questions');
         const sortedQuestions = data?.sort((a, b) => {
-          if (a.display_order === null) return 1;
-          if (b.display_order === null) return -1;
-          return a.display_order - b.display_order;
+          if (a.order === null) return 1;
+          if (b.order === null) return -1;
+          return a.order - b.order;
         }) || [];
         
         setQuestions(sortedQuestions);

@@ -1,4 +1,3 @@
-
 export interface UserProfile {
   id: string;
   first_name: string | null;
@@ -9,8 +8,8 @@ export interface UserProfile {
   postal_code: string | null;
   country: string | null;
   phone_number: string | null;
+  unique_identifier: string;
   email?: string;
-  created_at?: string | null;
 }
 
 export interface TrustedPerson {

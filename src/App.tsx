@@ -2,10 +2,9 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Index from "@/pages/Index";
 import Auth from "@/pages/Auth";
 import Dashboard from "@/pages/Dashboard";
-import AccessCode from "@/pages/AccessCode";
-import Documents from "@/pages/Documents";
-import { Toaster } from "@/components/ui/toaster";
-import "./App.css";
+import Examples from "@/pages/Examples";
+import FreeText from "@/pages/FreeText";
+import ResetPassword from "@/pages/ResetPassword";
 
 function App() {
   return (
@@ -14,10 +13,10 @@ function App() {
         <Route path="/" element={<Index />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/access" element={<AccessCode />} />
-        <Route path="/documents/:userId" element={<Documents />} />
+        <Route path="/examples" element={<Examples />} />
+        <Route path="/free-text" element={<FreeText />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
       </Routes>
-      <Toaster />
     </Router>
   );
 }

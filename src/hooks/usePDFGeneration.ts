@@ -1,10 +1,8 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { PDFDocumentGenerator } from "@/components/pdf/PDFDocumentGenerator";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
-import { UserProfile } from "@/components/pdf/types";
 
 export function usePDFGeneration(userId: string | null, text: string) {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
@@ -33,20 +31,9 @@ export function usePDFGeneration(userId: string | null, text: string) {
         throw profileError;
       }
 
-      if (!profile) {
-        throw new Error("Profile not found");
-      }
-
-      // Get the user's email
-      const { data: { session } } = await supabase.auth.getSession();
-      const userProfile: UserProfile = {
-        ...profile,
-        email: session?.user?.email
-      };
-
       // Generate PDF with all responses
       const pdfDataUrl = PDFDocumentGenerator.generate(
-        userProfile,
+        profile,
         {
           ...responses,
           synthesis: { free_text: text }
