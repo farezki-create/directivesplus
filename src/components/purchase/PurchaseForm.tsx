@@ -1,3 +1,4 @@
+
 import * as React from "react";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -9,7 +10,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { loadStripe } from "@stripe/stripe-js";
+import { loadStripe, Stripe } from "@stripe/stripe-js";
 import { User } from "@supabase/supabase-js";
 
 const stripePromise = loadStripe('pk_test_51OvZy8KJHojJ27FpoHYRFw3pYJB93qZFLbOieT47naK9trTRqUUfWVM4kugAGoN7V6lDaUxydQ6k9Kk4FvFa2gvX00RzW8wPxX');
@@ -21,9 +22,7 @@ const orderFormSchema = z.object({
   address: z.string().min(5, "L'adresse doit contenir au moins 5 caractères"),
   city: z.string().min(2, "La ville doit contenir au moins 2 caractères"),
   postalCode: z.string().regex(/^[0-9]{5}$/, "Code postal invalide"),
-  cardNumber: z.string().regex(/^[0-9]{16}$/, "Numéro de carte invalide"),
-  expiryDate: z.string().regex(/^(0[1-9]|1[0-2])\/([0-9]{2})$/, "Date d'expiration invalide (MM/YY)"),
-  cvv: z.string().regex(/^[0-9]{3}$/, "CVV invalide"),
+  cardToken: z.string(),
 });
 
 type OrderFormValues = z.infer<typeof orderFormSchema>;
@@ -36,6 +35,15 @@ interface PurchaseFormProps {
 export const PurchaseForm = ({ onClose, user }: PurchaseFormProps) => {
   const { toast } = useToast();
   const [isOrdering, setIsOrdering] = React.useState(false);
+  const [stripe, setStripe] = React.useState<Stripe | null>(null);
+
+  React.useEffect(() => {
+    const initStripe = async () => {
+      const stripeInstance = await stripePromise;
+      setStripe(stripeInstance);
+    };
+    initStripe();
+  }, []);
 
   const form = useForm<OrderFormValues>({
     resolver: zodResolver(orderFormSchema),
@@ -46,16 +54,13 @@ export const PurchaseForm = ({ onClose, user }: PurchaseFormProps) => {
       address: "",
       city: "",
       postalCode: "",
-      cardNumber: "",
-      expiryDate: "",
-      cvv: "",
+      cardToken: "",
     },
   });
 
   const onSubmit = async (values: OrderFormValues) => {
     setIsOrdering(true);
     try {
-      const stripe = await stripePromise;
       if (!stripe) throw new Error("Stripe n'est pas initialisé");
 
       const response = await fetch(
@@ -75,30 +80,32 @@ export const PurchaseForm = ({ onClose, user }: PurchaseFormProps) => {
       const { clientSecret } = await response.json();
       if (!clientSecret) throw new Error("Erreur lors de la création du paiement");
 
-      const { error: stripeError } = await stripe.confirmCardPayment(clientSecret, {
-        payment_method: {
-          type: 'card',
-          card: {
-            number: values.cardNumber,
-            exp_month: parseInt(values.expiryDate.split('/')[0]),
-            exp_year: parseInt('20' + values.expiryDate.split('/')[1]),
-            cvc: values.cvv,
-          },
-          billing_details: {
-            name: `${values.firstName} ${values.lastName}`,
-            email: values.email,
-            address: {
-              line1: values.address,
-              city: values.city,
-              postal_code: values.postalCode,
-              country: 'FR',
-            },
+      // Créer un PaymentMethod avec Stripe
+      const { paymentMethod, error: paymentMethodError } = await stripe.createPaymentMethod({
+        type: 'card',
+        card: { token: values.cardToken },
+        billing_details: {
+          name: `${values.firstName} ${values.lastName}`,
+          email: values.email,
+          address: {
+            line1: values.address,
+            city: values.city,
+            postal_code: values.postalCode,
+            country: 'FR',
           },
         },
       });
 
-      if (stripeError) {
-        throw new Error(stripeError.message);
+      if (paymentMethodError) {
+        throw new Error(paymentMethodError.message);
+      }
+
+      const { error: confirmError } = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: paymentMethod.id,
+      });
+
+      if (confirmError) {
+        throw new Error(confirmError.message);
       }
 
       const { error: dbError } = await supabase.from('orders').insert({
@@ -239,71 +246,17 @@ export const PurchaseForm = ({ onClose, user }: PurchaseFormProps) => {
 
           <FormField
             control={form.control}
-            name="cardNumber"
+            name="cardToken"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Numéro de carte</FormLabel>
+                <FormLabel>Carte bancaire</FormLabel>
                 <FormControl>
-                  <Input 
-                    placeholder="1234 5678 9012 3456" 
-                    {...field}
-                    onChange={(e) => {
-                      const value = e.target.value.replace(/\D/g, '').slice(0, 16);
-                      field.onChange(value);
-                    }}
-                  />
+                  <div id="card-element" className="p-3 border rounded-md" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-
-          <div className="grid grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="expiryDate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Date d'expiration</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder="MM/YY" 
-                      {...field}
-                      onChange={(e) => {
-                        let value = e.target.value.replace(/\D/g, '');
-                        if (value.length >= 2) {
-                          value = value.slice(0, 2) + '/' + value.slice(2, 4);
-                        }
-                        field.onChange(value);
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="cvv"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>CVV</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder="123" 
-                      {...field}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(/\D/g, '').slice(0, 3);
-                        field.onChange(value);
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
         </div>
 
         <DialogFooter>
