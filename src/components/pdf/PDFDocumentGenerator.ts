@@ -25,11 +25,13 @@ export class PDFDocumentGenerator {
       yPosition,
       { align: "center" }
     );
-    yPosition += 20;
+    yPosition += 25;
 
-    // Section 1: User Identity
+    // Mon identité section
     doc.setFontSize(16);
-    doc.text("1. Mon identité", 20, yPosition);
+    doc.setFont(undefined, 'bold');
+    doc.text("Mon identité", 20, yPosition);
+    doc.setFont(undefined, 'normal');
     yPosition += 10;
 
     // Utilisation du profil pour l'identité
@@ -50,10 +52,12 @@ export class PDFDocumentGenerator {
 
     // For trusted person document, skip directives anticipées section
     if (responses?.type !== "trusted_person") {
-      // Section 2: Directives Anticipées Synthesis
-      yPosition += 20;
+      // Directives Anticipées Synthesis section
+      yPosition += 25;
       doc.setFontSize(16);
-      doc.text("2. Synthèse de mes directives anticipées", 20, yPosition);
+      doc.setFont(undefined, 'bold');
+      doc.text("Synthèse de mes directives anticipées", 20, yPosition);
+      doc.setFont(undefined, 'normal');
       yPosition += 10;
       yPosition = PDFResponsesSection.generate(doc, responses, yPosition);
 
@@ -65,13 +69,11 @@ export class PDFDocumentGenerator {
     }
 
     // Section for Trusted Person
-    yPosition += 20;
+    yPosition += 25;
     doc.setFontSize(16);
-    doc.text(
-      responses?.type === "trusted_person" ? "2. Personne de confiance" : "3. Personne de confiance",
-      20,
-      yPosition
-    );
+    doc.setFont(undefined, 'bold');
+    doc.text("Personne de confiance", 20, yPosition);
+    doc.setFont(undefined, 'normal');
     yPosition += 10;
     yPosition = PDFTrustedPersonSection.generate(doc, trustedPersons, yPosition);
 
@@ -82,7 +84,7 @@ export class PDFDocumentGenerator {
     }
 
     // Final Section: Signature
-    yPosition += 20;
+    yPosition += 25;
     doc.setFontSize(12);
     
     // Je soussigné(e) section avec le nom prérempli
