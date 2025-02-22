@@ -1,4 +1,4 @@
-
+import * as React from "react";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -35,7 +35,7 @@ interface PurchaseFormProps {
 
 export const PurchaseForm = ({ onClose, user }: PurchaseFormProps) => {
   const { toast } = useToast();
-  const [isOrdering, setIsOrdering] = useState(false);
+  const [isOrdering, setIsOrdering] = React.useState(false);
 
   const form = useForm<OrderFormValues>({
     resolver: zodResolver(orderFormSchema),
@@ -75,26 +75,26 @@ export const PurchaseForm = ({ onClose, user }: PurchaseFormProps) => {
       const { clientSecret } = await response.json();
       if (!clientSecret) throw new Error("Erreur lors de la création du paiement");
 
-      const cardDetails = {
-        card: {
-          number: values.cardNumber,
-          exp_month: parseInt(values.expiryDate.split('/')[0]),
-          exp_year: parseInt('20' + values.expiryDate.split('/')[1]),
-          cvc: values.cvv,
-        },
-        billing_details: {
-          name: `${values.firstName} ${values.lastName}`,
-          email: values.email,
-          address: {
-            line1: values.address,
-            city: values.city,
-            postal_code: values.postalCode,
+      const { error: stripeError } = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: {
+          type: 'card',
+          card: {
+            number: values.cardNumber,
+            exp_month: parseInt(values.expiryDate.split('/')[0]),
+            exp_year: parseInt('20' + values.expiryDate.split('/')[1]),
+            cvc: values.cvv,
+          },
+          billing_details: {
+            name: `${values.firstName} ${values.lastName}`,
+            email: values.email,
+            address: {
+              line1: values.address,
+              city: values.city,
+              postal_code: values.postalCode,
+              country: 'FR',
+            },
           },
         },
-      };
-
-      const { error: stripeError } = await stripe.confirmCardPayment(clientSecret, {
-        payment_method: cardDetails,
       });
 
       if (stripeError) {
