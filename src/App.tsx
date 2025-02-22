@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Index from "@/pages/Index";
 import Auth from "@/pages/Auth";
@@ -5,6 +6,7 @@ import Dashboard from "@/pages/Dashboard";
 import Examples from "@/pages/Examples";
 import FreeText from "@/pages/FreeText";
 import ResetPassword from "@/pages/ResetPassword";
+import GeneratePDF from "@/pages/GeneratePDF";
 
 function App() {
   return (
@@ -16,6 +18,7 @@ function App() {
         <Route path="/examples" element={<Examples />} />
         <Route path="/free-text" element={<FreeText />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/generate-pdf" element={<GeneratePDF />} />
       </Routes>
     </Router>
   );

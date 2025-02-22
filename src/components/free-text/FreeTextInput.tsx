@@ -1,10 +1,10 @@
 
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { PDFGenerator } from "@/components/PDFGenerator";
 
 interface FreeTextInputProps {
   userId: string;
@@ -13,6 +13,7 @@ interface FreeTextInputProps {
 export const FreeTextInput = ({ userId }: FreeTextInputProps) => {
   const [freeText, setFreeText] = useState("");
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const loadFreeText = async () => {
@@ -75,6 +76,9 @@ export const FreeTextInput = ({ userId }: FreeTextInputProps) => {
         title: "Succès",
         description: "Votre texte libre a été enregistré avec succès.",
       });
+      
+      // Redirection vers la page de génération de PDF
+      navigate("/generate-pdf");
     } catch (error) {
       console.error("[FreeTextInput] Error saving free text:", error);
       toast({
@@ -85,8 +89,6 @@ export const FreeTextInput = ({ userId }: FreeTextInputProps) => {
     }
   };
 
-  console.log("[FreeTextInput] Rendering with userId:", userId);
-
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Texte libre</h3>
@@ -96,17 +98,8 @@ export const FreeTextInput = ({ userId }: FreeTextInputProps) => {
         className="min-h-[100px] border-dotted"
         placeholder="Écrivez votre texte libre ici..."
       />
-      <div className="flex gap-4">
+      <div>
         <Button onClick={saveFreeText}>Enregistrer</Button>
-        <PDFGenerator 
-          userId={userId} 
-          key={userId} // Force re-render when userId changes
-        />
-        <PDFGenerator 
-          userId={userId} 
-          isCardFormat={true}
-          key={`${userId}-card`} // Unique key for card format
-        />
       </div>
     </div>
   );
