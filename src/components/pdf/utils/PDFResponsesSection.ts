@@ -7,60 +7,47 @@ export class PDFResponsesSection {
     let yPosition = startY;
     const pageWidth = doc.internal.pageSize.getWidth();
     
-    // Styles
     const sectionTitleStyle = () => {
-      doc.setFontSize(14);
+      doc.setFontSize(11);
       doc.setFont("helvetica", "bold");
     };
 
     const questionStyle = () => {
-      doc.setFontSize(12);
+      doc.setFontSize(10);
       doc.setFont("helvetica", "bold");
     };
 
     const responseStyle = () => {
-      doc.setFontSize(11);
+      doc.setFontSize(9);
       doc.setFont("helvetica", "normal");
     };
 
     const addSection = (title: string, items: any[]) => {
       if (items && items.length > 0) {
-        // Nouvelle page si nécessaire
-        if (yPosition > doc.internal.pageSize.getHeight() - 40) {
-          doc.addPage();
-          yPosition = 30;
-        }
-
         sectionTitleStyle();
         doc.text(title, 20, yPosition);
-        yPosition += 10;
+        yPosition += 5;
 
         items.forEach((response: any) => {
-          // Nouvelle page si nécessaire
-          if (yPosition > doc.internal.pageSize.getHeight() - 40) {
-            doc.addPage();
-            yPosition = 30;
-          }
-
           const questionText = response.question_text || 
-                             response.questions?.Question || 
-                             response.life_support_questions?.question ||
-                             response.advanced_illness_questions?.question ||
-                             response.preferences_questions?.question;
+                           response.questions?.Question || 
+                           response.life_support_questions?.question ||
+                           response.advanced_illness_questions?.question ||
+                           response.preferences_questions?.question;
 
           questionStyle();
           const lines = doc.splitTextToSize(questionText, pageWidth - 40);
           doc.text(lines, 20, yPosition);
-          yPosition += lines.length * 7;
+          yPosition += lines.length * 4;
 
           responseStyle();
           const formattedResponse = formatResponseText(response.response);
           const responseLines = doc.splitTextToSize(formattedResponse, pageWidth - 45);
           doc.text(responseLines, 25, yPosition);
-          yPosition += responseLines.length * 6 + 5;
+          yPosition += responseLines.length * 3 + 2;
         });
 
-        yPosition += 10;
+        yPosition += 3;
       }
     };
 
@@ -72,19 +59,14 @@ export class PDFResponsesSection {
 
     // Section texte libre
     if (responses.synthesis?.free_text) {
-      if (yPosition > doc.internal.pageSize.getHeight() - 40) {
-        doc.addPage();
-        yPosition = 30;
-      }
-
       sectionTitleStyle();
       doc.text("Texte libre", 20, yPosition);
-      yPosition += 10;
+      yPosition += 5;
 
       responseStyle();
       const lines = doc.splitTextToSize(responses.synthesis.free_text, pageWidth - 40);
       doc.text(lines, 20, yPosition);
-      yPosition += lines.length * 6;
+      yPosition += lines.length * 3;
     }
 
     return yPosition;
