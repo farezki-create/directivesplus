@@ -165,7 +165,7 @@ export const Header = () => {
 
           <div className="grid gap-6 py-4">
             <div className="grid md:grid-cols-2 gap-6">
-              <div className="aspect-video bg-white relative rounded-lg overflow-hidden">
+              <div className="h-[300px] bg-white relative rounded-lg overflow-hidden">
                 <img 
                   src="/lovable-uploads/6bb21b02-63a3-4da2-8feb-a4ec9237c2bf.png"
                   alt="Carte mémoire USB Directives Anticipées"
