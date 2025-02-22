@@ -86,7 +86,11 @@ export function PDFPreviewDialog({
   };
 
   const handlePrint = () => {
-    onPrint();
+    const iframe = document.querySelector('iframe');
+    if (iframe) {
+      iframe.contentWindow?.focus();
+      iframe.contentWindow?.print();
+    }
     onOpenChange(false);
     navigate("/generate-pdf");
   };
