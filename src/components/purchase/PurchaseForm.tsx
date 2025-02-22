@@ -48,22 +48,17 @@ export const PurchaseForm = ({ onClose, user }: PurchaseFormProps) => {
 
     setIsOrdering(true);
     try {
-      const response = await fetch(
-        'https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/create-payment',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            amount: 19.90,
-            email: values.email,
-          }),
-        }
-      );
+      // Utiliser le client Supabase pour appeler l'Edge Function
+      const { data: intentData, error: intentError } = await supabase.functions.invoke('create-payment', {
+        body: {
+          amount: 19.90,
+          email: values.email,
+        },
+      });
 
-      const { clientSecret } = await response.json();
-      if (!clientSecret) throw new Error("Erreur lors de la création du paiement");
+      if (intentError || !intentData.clientSecret) {
+        throw new Error(intentError?.message || "Erreur lors de la création du paiement");
+      }
 
       const { paymentMethod, error: paymentMethodError } = await stripe.createPaymentMethod({
         type: 'card',
@@ -84,7 +79,7 @@ export const PurchaseForm = ({ onClose, user }: PurchaseFormProps) => {
         throw new Error(paymentMethodError.message);
       }
 
-      const { error: confirmError } = await stripe.confirmCardPayment(clientSecret, {
+      const { error: confirmError } = await stripe.confirmCardPayment(intentData.clientSecret, {
         payment_method: paymentMethod.id,
       });
 
@@ -114,6 +109,7 @@ export const PurchaseForm = ({ onClose, user }: PurchaseFormProps) => {
       onClose();
       form.reset();
     } catch (error: any) {
+      console.error('Payment error:', error);
       toast({
         title: "Erreur",
         description: error.message || "Une erreur est survenue lors du traitement de votre commande.",
