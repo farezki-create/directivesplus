@@ -11,11 +11,13 @@ import { FileText, UserCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ResponseSection } from "@/components/responses/ResponseSection";
 import { Card } from "@/components/ui/card";
+import { DMPUploader } from "@/components/dmp/DMPUploader";
 
 export default function GeneratePDF() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [userId, setUserId] = useState<string | null>(null);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const { responses, isLoading: responsesLoading } = useQuestionnairesResponses(userId || "");
   const { profile, trustedPersons, loading: profileLoading } = usePDFData();
   const { directive, isLoading: directiveLoading, saveDirective } = useDirectives(userId || "");
@@ -32,7 +34,6 @@ export default function GeneratePDF() {
     checkAuth();
   }, [navigate]);
 
-  // Sauvegarder les directives lorsque les réponses ou le profil sont mis à jour
   useEffect(() => {
     if (userId && responses && profile && !responsesLoading && !profileLoading) {
       console.log("[GeneratePDF] Saving directives");
@@ -64,9 +65,10 @@ export default function GeneratePDF() {
           </button>
         </div>
 
-        <div className="flex gap-4">
-          <PDFGenerator userId={userId} />
+        <div className="flex gap-4 flex-wrap">
+          <PDFGenerator userId={userId} onPdfGenerated={setPdfUrl} />
           <PDFGenerator userId={userId} isCardFormat={true} />
+          <DMPUploader pdfUrl={pdfUrl} />
         </div>
       </div>
     </div>

@@ -3,18 +3,19 @@ import { useState } from "react";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "./pdf/usePDFData";
 import { handlePDFGeneration, handlePDFDownload, handlePDFPrint } from "./pdf/utils/PDFGenerationUtils";
-import { PDFPreviewDialog } from "./pdf/PDFPreviewDialog";
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
+import { PDFPreviewDialog } from "./pdf/PDFPreviewDialog";
 import { PDFCardGenerator } from "./pdf/utils/PDFCardGenerator";
 import { toast } from "@/hooks/use-toast";
 
 interface PDFGeneratorProps {
   userId: string;
   isCardFormat?: boolean;
+  onPdfGenerated?: (url: string | null) => void;
 }
 
-export function PDFGenerator({ userId, isCardFormat = false }: PDFGeneratorProps) {
+export function PDFGenerator({ userId, isCardFormat = false, onPdfGenerated }: PDFGeneratorProps) {
   console.log("[PDFGenerator] Initializing with userId:", userId, "isCardFormat:", isCardFormat);
   
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
@@ -48,6 +49,9 @@ export function PDFGenerator({ userId, isCardFormat = false }: PDFGeneratorProps
         const pdfDataUrl = PDFCardGenerator.generate(profile, trustedPersons);
         console.log("[PDFGenerator] Card PDF generated, setting URL and opening preview");
         setPdfUrl(pdfDataUrl);
+        if (onPdfGenerated) {
+          onPdfGenerated(pdfDataUrl);
+        }
         setShowPreview(true);
       } else {
         console.log("[PDFGenerator] Generating full PDF");
@@ -58,7 +62,9 @@ export function PDFGenerator({ userId, isCardFormat = false }: PDFGeneratorProps
           (url) => {
             console.log("[PDFGenerator] PDF generated, setting URL:", url ? "success" : "failed");
             setPdfUrl(url);
-            setShowPreview(true);
+            if (onPdfGenerated) {
+              onPdfGenerated(url);
+            }
           },
           setShowPreview
         );
