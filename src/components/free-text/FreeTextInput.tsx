@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Mic, MicOff, Loader2 } from "lucide-react";
+import { Mic, MicOff, Loader2, FileText } from "lucide-react";
+import { PDFGenerator } from "@/components/PDFGenerator";
 
 interface FreeTextInputProps {
   userId: string;
@@ -15,6 +16,7 @@ export const FreeTextInput = ({ userId }: FreeTextInputProps) => {
   const [freeText, setFreeText] = useState("");
   const [isListening, setIsListening] = useState(false);
   const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
+  const [showPdfGenerator, setShowPdfGenerator] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -152,7 +154,7 @@ export const FreeTextInput = ({ userId }: FreeTextInputProps) => {
         description: "Votre texte libre a été enregistré avec succès.",
       });
       
-      navigate("/generate-pdf");
+      setShowPdfGenerator(true);
     } catch (error) {
       console.error("[FreeTextInput] Error saving free text:", error);
       toast({
@@ -193,6 +195,11 @@ export const FreeTextInput = ({ userId }: FreeTextInputProps) => {
           <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
         )}
       </div>
+      {showPdfGenerator && (
+        <div className="mt-4">
+          <PDFGenerator userId={userId} />
+        </div>
+      )}
     </div>
   );
 };
