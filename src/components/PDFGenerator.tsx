@@ -7,7 +7,7 @@ import { PDFPreviewDialog } from "./pdf/PDFPreviewDialog";
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
 import { PDFCardGenerator } from "./pdf/utils/PDFCardGenerator";
-import { toast } from "./ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 
 interface PDFGeneratorProps {
   userId: string;
@@ -21,33 +21,47 @@ export function PDFGenerator({ userId, isCardFormat = false }: PDFGeneratorProps
   const { profile, trustedPersons, loading } = usePDFData();
 
   const generatePDF = () => {
-    console.log("[PDFGenerator] Starting PDF generation");
+    console.log("[PDFGenerator] Starting PDF generation with userId:", userId);
     
     if (!profile) {
       console.error("[PDFGenerator] No profile data available");
       toast({
         title: "Erreur",
-        description: "Données de profil non disponibles",
+        description: "Données de profil non disponibles. Veuillez compléter votre profil.",
         variant: "destructive",
       });
       return;
     }
 
-    if (isCardFormat) {
-      console.log("[PDFGenerator] Generating card format PDF");
-      const pdfDataUrl = PDFCardGenerator.generate(profile, trustedPersons);
-      setPdfUrl(pdfDataUrl);
-      setShowPreview(true);
-      return;
+    try {
+      if (isCardFormat) {
+        console.log("[PDFGenerator] Generating card format PDF");
+        const pdfDataUrl = PDFCardGenerator.generate(profile, trustedPersons);
+        console.log("[PDFGenerator] Card PDF generated, setting URL and opening preview");
+        setPdfUrl(pdfDataUrl);
+        setShowPreview(true);
+      } else {
+        console.log("[PDFGenerator] Generating full PDF");
+        handlePDFGeneration(
+          profile,
+          responses,
+          trustedPersons,
+          (url) => {
+            console.log("[PDFGenerator] PDF generated, setting URL:", url ? "success" : "failed");
+            setPdfUrl(url);
+            setShowPreview(true);
+          },
+          setShowPreview
+        );
+      }
+    } catch (error) {
+      console.error("[PDFGenerator] Error during PDF generation:", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la génération du PDF.",
+        variant: "destructive",
+      });
     }
-
-    handlePDFGeneration(
-      profile,
-      responses,
-      trustedPersons,
-      setPdfUrl,
-      setShowPreview
-    );
   };
 
   const handleEmail = async () => {
@@ -66,19 +80,24 @@ export function PDFGenerator({ userId, isCardFormat = false }: PDFGeneratorProps
       <Button 
         onClick={generatePDF}
         className="flex items-center gap-2"
+        variant={isCardFormat ? "outline" : "default"}
       >
         <FileText className="h-4 w-4" />
         {isCardFormat ? "Générer au format carte" : "Générer Mes directives anticipées"}
       </Button>
       
-      <PDFPreviewDialog
-        open={showPreview}
-        onOpenChange={setShowPreview}
-        pdfUrl={pdfUrl}
-        onEmail={handleEmail}
-        onSave={() => handlePDFDownload(pdfUrl)}
-        onPrint={() => handlePDFPrint(pdfUrl)}
-      />
+      {/* Force a new instance of PDFPreviewDialog when pdfUrl changes */}
+      {showPreview && (
+        <PDFPreviewDialog
+          key={pdfUrl}
+          open={showPreview}
+          onOpenChange={setShowPreview}
+          pdfUrl={pdfUrl}
+          onEmail={handleEmail}
+          onSave={() => handlePDFDownload(pdfUrl)}
+          onPrint={() => handlePDFPrint(pdfUrl)}
+        />
+      )}
     </>
   );
 }

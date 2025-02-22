@@ -1,4 +1,5 @@
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Download, Mail, Printer } from "lucide-react";
 
@@ -21,8 +22,12 @@ export function PDFPreviewDialog({
 }: PDFPreviewDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl">
-        <div className="flex flex-col space-y-4">
+      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
+        <DialogTitle className="text-lg font-semibold mb-4">
+          Prévisualisation du document
+        </DialogTitle>
+        
+        <div className="flex flex-col space-y-4 h-full">
           <div className="flex justify-end space-x-2">
             <Button variant="outline" onClick={onEmail}>
               <Mail className="mr-2 h-4 w-4" />
@@ -38,12 +43,18 @@ export function PDFPreviewDialog({
             </Button>
           </div>
           
-          {pdfUrl && (
-            <iframe
-              src={pdfUrl}
-              className="w-full h-[600px] border rounded"
-              title="PDF Preview"
-            />
+          {pdfUrl ? (
+            <div className="flex-1 min-h-[500px] border rounded">
+              <iframe
+                src={pdfUrl}
+                className="w-full h-full border-0"
+                title="PDF Preview"
+              />
+            </div>
+          ) : (
+            <div className="flex-1 flex items-center justify-center text-gray-500">
+              Aucun document à afficher
+            </div>
           )}
         </div>
       </DialogContent>
