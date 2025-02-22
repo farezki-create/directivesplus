@@ -8,14 +8,20 @@ export const useStripePayment = (cardElementRef: React.RefObject<HTMLDivElement>
   const [stripe, setStripe] = React.useState<Stripe | null>(null);
   const [elements, setElements] = React.useState<StripeElements | null>(null);
   const [card, setCard] = React.useState<StripeElement | null>(null);
+  const [error, setError] = React.useState<string>("");
 
   React.useEffect(() => {
     const initStripe = async () => {
-      const stripeInstance = await stripePromise;
-      if (stripeInstance) {
+      try {
+        const stripeInstance = await stripePromise;
+        if (!stripeInstance) {
+          throw new Error("Impossible d'initialiser Stripe");
+        }
+
         setStripe(stripeInstance);
         const elements = stripeInstance.elements();
         setElements(elements);
+        
         const cardElement = elements.create('card', {
           style: {
             base: {
@@ -30,11 +36,22 @@ export const useStripePayment = (cardElementRef: React.RefObject<HTMLDivElement>
             },
           },
         });
-        
+
         if (cardElementRef.current) {
           cardElement.mount(cardElementRef.current);
+          cardElement.on('change', (event) => {
+            if (event.error) {
+              setError(event.error.message);
+            } else {
+              setError("");
+            }
+          });
           setCard(cardElement);
+        } else {
+          throw new Error("L'élément de carte n'a pas pu être monté");
         }
+      } catch (err: any) {
+        setError(err.message || "Erreur lors de l'initialisation du paiement");
       }
     };
 
@@ -47,5 +64,5 @@ export const useStripePayment = (cardElementRef: React.RefObject<HTMLDivElement>
     };
   }, []);
 
-  return { stripe, elements, card };
+  return { stripe, elements, card, error };
 };

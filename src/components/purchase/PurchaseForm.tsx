@@ -21,8 +21,19 @@ interface PurchaseFormProps {
 export const PurchaseForm = ({ onClose, user }: PurchaseFormProps) => {
   const { toast } = useToast();
   const [isOrdering, setIsOrdering] = React.useState(false);
+  const [paymentStatus, setPaymentStatus] = React.useState<string>("");
   const cardElementRef = React.useRef<HTMLDivElement>(null);
-  const { stripe, card } = useStripePayment(cardElementRef);
+  const { stripe, card, error: stripeError } = useStripePayment(cardElementRef);
+
+  React.useEffect(() => {
+    if (stripeError) {
+      toast({
+        title: "Erreur de paiement",
+        description: "Le système de paiement n'a pas pu être initialisé.",
+        variant: "destructive",
+      });
+    }
+  }, [stripeError, toast]);
 
   const form = useForm<OrderFormValues>({
     resolver: zodResolver(orderFormSchema),
@@ -47,8 +58,10 @@ export const PurchaseForm = ({ onClose, user }: PurchaseFormProps) => {
     }
 
     setIsOrdering(true);
+    setPaymentStatus("Initialisation du paiement...");
+
     try {
-      console.log('Creating payment intent...');
+      setPaymentStatus("Création de l'intention de paiement...");
       const { data: intentData, error: intentError } = await supabase.functions.invoke('create-payment', {
         body: {
           amount: 19.90,
@@ -56,13 +69,11 @@ export const PurchaseForm = ({ onClose, user }: PurchaseFormProps) => {
         },
       });
 
-      console.log('Payment intent response:', { intentData, intentError });
-
       if (intentError || !intentData?.clientSecret) {
         throw new Error(intentError?.message || "Erreur lors de la création du paiement");
       }
 
-      console.log('Creating payment method...');
+      setPaymentStatus("Configuration du moyen de paiement...");
       const { paymentMethod, error: paymentMethodError } = await stripe.createPaymentMethod({
         type: 'card',
         card: card as any,
@@ -79,25 +90,31 @@ export const PurchaseForm = ({ onClose, user }: PurchaseFormProps) => {
       });
 
       if (paymentMethodError) {
-        console.error('Payment method error:', paymentMethodError);
-        throw new Error(paymentMethodError.message);
+        throw new Error(paymentMethodError.message || "Erreur lors de la création du moyen de paiement");
       }
 
-      console.log('Confirming card payment...');
-      const { error: confirmError } = await stripe.confirmCardPayment(intentData.clientSecret, {
-        payment_method: paymentMethod.id,
-      });
+      setPaymentStatus("Confirmation du paiement...");
+      const { paymentIntent, error: confirmError } = await stripe.confirmCardPayment(
+        intentData.clientSecret,
+        {
+          payment_method: paymentMethod.id,
+        }
+      );
 
       if (confirmError) {
-        console.error('Confirm payment error:', confirmError);
         throw new Error(confirmError.message);
       }
 
-      console.log('Saving order to database...');
+      if (paymentIntent.status !== 'succeeded') {
+        throw new Error("Le paiement n'a pas été confirmé");
+      }
+
+      setPaymentStatus("Enregistrement de la commande...");
       const { error: dbError } = await supabase.from('orders').insert({
         user_id: user?.id,
         amount: 19.90,
         status: 'completed',
+        payment_intent_id: paymentIntent.id,
         first_name: values.firstName,
         last_name: values.lastName,
         email: values.email,
@@ -107,13 +124,11 @@ export const PurchaseForm = ({ onClose, user }: PurchaseFormProps) => {
       });
 
       if (dbError) {
-        console.error('Database error:', dbError);
         throw dbError;
       }
 
-      console.log('Order completed successfully');
       toast({
-        title: "Commande confirmée",
+        title: "Paiement réussi",
         description: "Votre commande a été enregistrée avec succès. Vous recevrez un email de confirmation.",
       });
       
@@ -122,12 +137,13 @@ export const PurchaseForm = ({ onClose, user }: PurchaseFormProps) => {
     } catch (error: any) {
       console.error('Payment error:', error);
       toast({
-        title: "Erreur",
+        title: "Erreur de paiement",
         description: error.message || "Une erreur est survenue lors du traitement de votre commande.",
         variant: "destructive",
       });
     } finally {
       setIsOrdering(false);
+      setPaymentStatus("");
     }
   };
 
@@ -135,14 +151,20 @@ export const PurchaseForm = ({ onClose, user }: PurchaseFormProps) => {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <ShippingForm form={form} />
-        <PaymentForm cardElementRef={cardElementRef} />
+        <PaymentForm cardElementRef={cardElementRef} error={stripeError} />
+
+        {paymentStatus && (
+          <div className="text-sm text-gray-600 animate-pulse">
+            {paymentStatus}
+          </div>
+        )}
 
         <DialogFooter>
           <Button type="button" variant="outline" onClick={onClose}>
             Annuler
           </Button>
           <Button type="submit" disabled={isOrdering}>
-            {isOrdering ? "Traitement en cours..." : "Commander - 19,90 €"}
+            {isOrdering ? "Paiement en cours..." : "Commander - 19,90 €"}
           </Button>
         </DialogFooter>
       </form>

@@ -1,13 +1,13 @@
 
 import * as React from "react";
 import { CreditCard } from "lucide-react";
-import { StripeElement, Stripe, StripeElements } from "@stripe/stripe-js";
 
 interface PaymentFormProps {
   cardElementRef: React.RefObject<HTMLDivElement>;
+  error?: string;
 }
 
-export const PaymentForm = ({ cardElementRef }: PaymentFormProps) => {
+export const PaymentForm = ({ cardElementRef, error }: PaymentFormProps) => {
   return (
     <div className="space-y-4">
       <h3 className="font-semibold flex items-center gap-2">
@@ -18,6 +18,10 @@ export const PaymentForm = ({ cardElementRef }: PaymentFormProps) => {
       <div className="p-3 border rounded-md">
         <div ref={cardElementRef} id="card-element" />
       </div>
+      
+      {error && (
+        <p className="text-sm text-red-500">{error}</p>
+      )}
     </div>
   );
 };
