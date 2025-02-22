@@ -2,6 +2,11 @@
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Download, Mail, Printer } from "lucide-react";
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PDFPreviewDialogProps {
   open: boolean;
@@ -16,10 +21,60 @@ export function PDFPreviewDialog({
   open,
   onOpenChange,
   pdfUrl,
-  onEmail,
   onSave,
   onPrint,
 }: PDFPreviewDialogProps) {
+  const [emailAddress, setEmailAddress] = useState("");
+  const [isSending, setIsSending] = useState(false);
+  const { toast } = useToast();
+
+  const handleEmailSend = async () => {
+    if (!pdfUrl) {
+      toast({
+        title: "Erreur",
+        description: "Aucun PDF à envoyer",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!emailAddress) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez entrer une adresse email",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSending(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-pdf-email', {
+        body: {
+          pdfUrl,
+          recipientEmail: emailAddress,
+        },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Succès",
+        description: "Le PDF a été envoyé par email",
+      });
+      setEmailAddress("");
+    } catch (error) {
+      console.error("Error sending email:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'envoyer le PDF par email",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSending(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
@@ -29,10 +84,25 @@ export function PDFPreviewDialog({
         
         <div className="flex flex-col space-y-4 h-full">
           <div className="flex justify-end space-x-2">
-            <Button variant="outline" onClick={onEmail}>
-              <Mail className="mr-2 h-4 w-4" />
-              Envoyer par email
-            </Button>
+            <div className="flex items-center space-x-2 mr-auto">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="example@email.com"
+                value={emailAddress}
+                onChange={(e) => setEmailAddress(e.target.value)}
+                className="w-64"
+              />
+              <Button 
+                variant="outline" 
+                onClick={handleEmailSend}
+                disabled={isSending}
+              >
+                <Mail className="mr-2 h-4 w-4" />
+                {isSending ? "Envoi..." : "Envoyer par email"}
+              </Button>
+            </div>
             <Button variant="outline" onClick={onSave}>
               <Download className="mr-2 h-4 w-4" />
               Télécharger
