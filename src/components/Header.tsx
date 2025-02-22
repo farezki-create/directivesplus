@@ -1,4 +1,3 @@
-
 import { Button } from "./ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -186,7 +185,7 @@ export const Header = () => {
 
                 <div>
                   <p className="text-2xl font-bold">
-                    Prix : 29,90 €
+                    Prix : 19,90 €
                   </p>
                   <p className="text-sm text-muted-foreground">
                     Frais de port inclus
@@ -372,7 +371,7 @@ export const Header = () => {
                     Annuler
                   </Button>
                   <Button type="submit" disabled={isOrdering}>
-                    {isOrdering ? "Traitement en cours..." : "Commander - 29,90 €"}
+                    {isOrdering ? "Traitement en cours..." : "Commander - 19,90 €"}
                   </Button>
                 </DialogFooter>
               </form>
