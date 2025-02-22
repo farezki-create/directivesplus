@@ -1,3 +1,4 @@
+
 import { Button } from "./ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -178,6 +179,7 @@ export const Header = () => {
                   <ul className="list-disc pl-5 text-sm text-muted-foreground space-y-1">
                     <li>Format carte de crédit - Se range facilement dans votre portefeuille</li>
                     <li>Connecteur USB intégré</li>
+                    <li>Capacité de stockage de 2 Go</li>
                     <li>Stockage sécurisé de vos directives anticipées</li>
                     <li>Compatibilité universelle</li>
                   </ul>
