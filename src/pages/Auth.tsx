@@ -14,9 +14,12 @@ const Auth = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [isSignUp, setIsSignUp] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const returnTo = searchParams.get("returnTo") || "/";
+  const next = searchParams.get("next");
 
+  // Check session on mount and handle auth state changes
   useEffect(() => {
     const checkSession = async () => {
       const { data: { session }, error } = await supabase.auth.getSession();
@@ -35,8 +38,9 @@ const Auth = () => {
       }
 
       if (session) {
-        console.log('Session active, redirection vers:', returnTo);
-        navigate(returnTo);
+        const redirectPath = next || returnTo;
+        console.log('Session active, redirection vers:', redirectPath);
+        navigate(redirectPath);
       }
     };
 
@@ -46,8 +50,9 @@ const Auth = () => {
       console.log('Changement état auth:', event, session);
       
       if (event === 'SIGNED_IN' && session) {
-        console.log('Utilisateur connecté, redirection vers:', returnTo);
-        navigate(returnTo);
+        const redirectPath = next || returnTo;
+        console.log('Utilisateur connecté, redirection vers:', redirectPath);
+        navigate(redirectPath);
       }
 
       if (event === 'SIGNED_OUT') {
@@ -57,20 +62,13 @@ const Auth = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate, returnTo, toast]);
+  }, [navigate, returnTo, next, toast]);
 
   const handleSubmit = async (values: FormValues) => {
     try {
-      if (isSignUp) {
-        if (!values.firstName || !values.lastName) {
-          toast({
-            variant: "destructive",
-            title: "Champs requis",
-            description: "Le prénom et le nom sont requis.",
-          });
-          return;
-        }
+      setIsLoading(true);
 
+      if (isSignUp) {
         console.log('Tentative inscription avec:', values.email);
         const { error, data } = await supabase.auth.signUp({
           email: values.email,
@@ -86,7 +84,7 @@ const Auth = () => {
               country: values.country || "France",
               phone_number: values.phoneNumber || null,
             },
-            emailRedirectTo: `${window.location.origin}/auth/callback`
+            emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next || returnTo)}`
           }
         });
 
@@ -117,7 +115,7 @@ const Auth = () => {
             const response = await supabase.functions.invoke('send-verification-email', {
               body: {
                 to: data.user.email,
-                confirmationUrl: `${window.location.origin}/auth/verify?next=${encodeURIComponent(returnTo)}`,
+                confirmationUrl: `${window.location.origin}/auth/verify?next=${encodeURIComponent(next || returnTo)}`,
               },
             });
 
@@ -178,6 +176,8 @@ const Auth = () => {
         title: "Erreur",
         description: "Une erreur inattendue s'est produite. Veuillez réessayer.",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -190,6 +190,7 @@ const Auth = () => {
           isSignUp={isSignUp}
           onSubmit={handleSubmit}
           onToggleMode={() => setIsSignUp(!isSignUp)}
+          isLoading={isLoading}
         />
       </div>
     </div>

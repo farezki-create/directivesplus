@@ -6,6 +6,7 @@ export const getErrorMessage = (error: AuthError) => {
   
   if (error instanceof AuthApiError) {
     try {
+      // Certaines erreurs sont renvoyées sous forme de JSON
       const errorBody = JSON.parse(error.message);
       console.log('Corps erreur JSON:', errorBody);
       
@@ -20,11 +21,20 @@ export const getErrorMessage = (error: AuthError) => {
           return "Le mot de passe doit contenir au moins 6 caractères";
         case "weak_password":
           return "Le mot de passe est trop faible. Utilisez au moins une majuscule, une minuscule et un chiffre.";
+        case "email_signup_not_allowed":
+          return "L'inscription par email n'est pas activée. Contactez l'administrateur.";
+        case "phone_number_already_exists":
+          return "Ce numéro de téléphone est déjà utilisé par un autre compte";
+        case "user_not_found":
+          return "Aucun compte trouvé avec cet email";
+        case "too_many_attempts":
+          return "Trop de tentatives. Veuillez réessayer dans quelques minutes.";
         default:
           console.log('Code erreur non géré:', errorBody.code);
           return "Une erreur s'est produite. Veuillez réessayer.";
       }
     } catch (e) {
+      // Les erreurs qui ne sont pas au format JSON
       console.log('Message erreur non JSON:', error.message);
       
       if (error.message.includes("Invalid login credentials")) {
@@ -35,6 +45,9 @@ export const getErrorMessage = (error: AuthError) => {
       }
       if (error.message.includes("Password should be at least 6 characters")) {
         return "Le mot de passe doit contenir au moins 6 caractères";
+      }
+      if (error.message.includes("Rate limit exceeded")) {
+        return "Trop de tentatives. Veuillez réessayer dans quelques minutes.";
       }
       
       console.log('Message erreur non géré:', error.message);
