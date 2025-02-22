@@ -15,6 +15,16 @@ import { Separator } from "@/components/ui/separator";
 import { Star, ThumbsUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
+interface Review {
+  id: string;
+  created_at: string;
+  title: string;
+  content: string;
+  rating: number;
+  user_id: string;
+  helpful_count: number;
+}
+
 const reviewSchema = z.object({
   title: z.string().min(3, "Le titre doit contenir au moins 3 caractères"),
   content: z.string().min(10, "L'avis doit contenir au moins 10 caractères"),
@@ -25,7 +35,7 @@ type ReviewFormValues = z.infer<typeof reviewSchema>;
 
 const Reviews = () => {
   const { toast } = useToast();
-  const [reviews, setReviews] = React.useState<any[]>([]);
+  const [reviews, setReviews] = React.useState<Review[]>([]);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
 
@@ -63,13 +73,23 @@ const Reviews = () => {
   const onSubmit = async (values: ReviewFormValues) => {
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.from('reviews').insert([
-        {
-          title: values.title,
-          content: values.content,
-          rating: values.rating,
-        },
-      ]);
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast({
+          title: "Erreur",
+          description: "Vous devez être connecté pour publier un avis",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { error } = await supabase.from('reviews').insert([{
+        title: values.title,
+        content: values.content,
+        rating: values.rating,
+        user_id: user.id
+      }]);
 
       if (error) throw error;
 
