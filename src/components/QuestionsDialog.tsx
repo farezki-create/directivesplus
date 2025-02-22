@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { QuestionCard } from "./questions/QuestionCard";
@@ -23,7 +24,7 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
           .from('questions')
           .select('*')
           .eq('category', 'general_opinion')
-          .order('order', { ascending: true });
+          .order('display_order', { ascending: true });
         
         if (error) {
           console.error('[GeneralOpinion] Error fetching questions:', error);
@@ -36,7 +37,13 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
         }
         
         console.log('[GeneralOpinion] Questions loaded:', data?.length, 'questions');
-        setQuestions(data || []);
+        const sortedQuestions = data?.sort((a, b) => {
+          if (a.display_order === null) return 1;
+          if (b.display_order === null) return -1;
+          return a.display_order - b.display_order;
+        }) || [];
+
+        setQuestions(sortedQuestions);
       } catch (error) {
         console.error('[GeneralOpinion] Unexpected error:', error);
         toast({
@@ -134,6 +141,7 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
       open={open}
       onOpenChange={onOpenChange}
       title="Mon avis d'une façon générale"
+      description="Répondez aux questions suivantes concernant votre avis général sur vos directives anticipées."
       onSubmit={handleSubmit}
       loading={loading}
       questionsLength={questions.length}
