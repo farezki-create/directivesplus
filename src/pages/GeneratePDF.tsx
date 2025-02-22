@@ -1,24 +1,24 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PDFGenerator } from "@/components/PDFGenerator";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function GeneratePDF() {
   const navigate = useNavigate();
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) {
         navigate("/auth");
+        return;
       }
+      setUserId(session.user.id);
     };
     checkAuth();
   }, [navigate]);
-
-  const { data: { session } } = await supabase.auth.getSession();
-  const userId = session?.user?.id;
 
   if (!userId) {
     return null;
