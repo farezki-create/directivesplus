@@ -6,12 +6,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "@/components/pdf/usePDFData";
 import { useDirectives } from "@/hooks/useDirectives";
-import { Button } from "@/components/ui/button";
 import { FileText, UserCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ResponseSection } from "@/components/responses/ResponseSection";
 import { Card } from "@/components/ui/card";
-import { DMPUploader } from "@/components/dmp/DMPUploader";
 
 export default function GeneratePDF() {
   const navigate = useNavigate();
@@ -68,7 +66,6 @@ export default function GeneratePDF() {
         <div className="flex gap-4 flex-wrap">
           <PDFGenerator userId={userId} onPdfGenerated={setPdfUrl} />
           <PDFGenerator userId={userId} isCardFormat={true} />
-          <DMPUploader pdfUrl={pdfUrl} />
         </div>
       </div>
     </div>

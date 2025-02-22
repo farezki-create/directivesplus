@@ -1,16 +1,9 @@
+
 import { Button } from "./ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { FileText, User as UserIcon, CreditCard, Files } from "lucide-react";
-import { PDFGenerator } from "@/components/PDFGenerator";
 import { DocumentScanner } from "@/components/DocumentScanner";
 
 export const Header = () => {
@@ -39,13 +32,7 @@ export const Header = () => {
   };
 
   const handleHomeClick = () => {
-    // Force reload the page when going to home to reset all states
     window.location.href = "/";
-  };
-
-  const handlePDFGeneration = (isCard: boolean) => {
-    setIsCardFormat(isCard);
-    setShowPDFPreview(true);
   };
 
   const isHomePage = location.pathname === "/";
@@ -63,49 +50,6 @@ export const Header = () => {
           >
             Accueil
           </Button>
-
-          {user && (
-            <>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost">
-                    <Files className="mr-2 h-4 w-4" />
-                    Documents
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem onClick={() => navigate("/dashboard?tab=persons")}>
-                    <UserIcon className="mr-2 h-4 w-4" />
-                    Ma personne de confiance
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handlePDFGeneration(false)}>
-                    <FileText className="mr-2 h-4 w-4" />
-                    Mes Directives anticipées
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handlePDFGeneration(true)}>
-                    <CreditCard className="mr-2 h-4 w-4" />
-                    Mes Directives anticipées en format carte
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setShowScanner(true)}>
-                    <Files className="mr-2 h-4 w-4" />
-                    Documents de santé utiles
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              {showPDFPreview && user && (
-                <PDFGenerator 
-                  userId={user.id}
-                  isCardFormat={isCardFormat}
-                />
-              )}
-
-              <DocumentScanner 
-                open={showScanner} 
-                onClose={() => setShowScanner(false)} 
-              />
-            </>
-          )}
 
           <Button
             variant="ghost"
