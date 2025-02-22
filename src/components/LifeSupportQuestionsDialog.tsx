@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { QuestionCard } from "./questions/QuestionCard";
@@ -39,13 +38,7 @@ export function LifeSupportQuestionsDialog({
         }
         
         console.log('[LifeSupport] Questions loaded:', data?.length, 'questions');
-        const sortedQuestions = data?.sort((a, b) => {
-          if (a.display_order === null) return 1;
-          if (b.display_order === null) return -1;
-          return a.display_order - b.display_order;
-        }) || [];
-        
-        setQuestions(sortedQuestions);
+        setQuestions(data || []);
       } catch (error) {
         console.error('[LifeSupport] Unexpected error:', error);
         toast({
@@ -60,9 +53,6 @@ export function LifeSupportQuestionsDialog({
 
     if (open) {
       fetchQuestions();
-    } else {
-      setLoading(true);
-      setQuestions([]);
     }
   }, [open, toast]);
 

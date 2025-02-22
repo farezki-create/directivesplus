@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
@@ -7,7 +6,6 @@ const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
 interface EmailRequest {
@@ -16,51 +14,16 @@ interface EmailRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
-  console.log("Function send-verification-email called");
+  console.log("Fonction send-verification-email appelée");
 
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
-    return new Response(null, { 
-      headers: corsHeaders,
-      status: 204
-    });
-  }
-
-  if (req.method !== "POST") {
-    return new Response(
-      JSON.stringify({ error: "Method not allowed" }), 
-      { 
-        status: 405,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      }
-    );
-  }
-
-  if (!RESEND_API_KEY) {
-    console.error("RESEND_API_KEY is not set");
-    return new Response(
-      JSON.stringify({ error: "Server configuration error" }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const { to, confirmationUrl }: EmailRequest = await req.json();
-    console.log("Sending email to:", to);
-    console.log("Confirmation URL:", confirmationUrl);
-
-    if (!to || !confirmationUrl) {
-      return new Response(
-        JSON.stringify({ error: "Missing required fields" }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
+    console.log("Envoi d'email à:", to);
+    console.log("URL de confirmation:", confirmationUrl);
 
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -90,19 +53,19 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (!res.ok) {
       const error = await res.text();
-      console.error("Resend API Error:", error);
-      throw new Error(`Failed to send email: ${error}`);
+      console.error("Erreur Resend:", error);
+      throw new Error(`Erreur lors de l'envoi de l'email: ${error}`);
     }
 
     const data = await res.json();
-    console.log("Email sent successfully:", data);
+    console.log("Email envoyé avec succès:", data);
 
     return new Response(JSON.stringify(data), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("Error in send-verification-email function:", error);
+    console.error("Erreur dans la fonction send-verification-email:", error);
     return new Response(
       JSON.stringify({ error: error.message }),
       {

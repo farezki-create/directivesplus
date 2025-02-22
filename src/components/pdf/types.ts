@@ -11,7 +11,6 @@ export interface UserProfile {
   phone_number: string | null;
   email?: string;
   created_at?: string | null;
-  unique_identifier?: string;
 }
 
 export interface TrustedPerson {

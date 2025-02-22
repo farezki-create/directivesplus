@@ -49,9 +49,6 @@ export function useAdvancedIllnessQuestions(open: boolean) {
 
     if (open) {
       fetchQuestions();
-    } else {
-      setLoading(true);
-      setQuestions([]);
     }
   }, [open, toast]);
 

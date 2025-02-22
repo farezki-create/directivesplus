@@ -1,6 +1,5 @@
-
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { AuthApiError } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,18 +11,15 @@ import { AuthCard } from "@/components/auth/AuthCard";
 
 const Auth = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const [isSignUp, setIsSignUp] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const returnTo = searchParams.get("returnTo") || "/";
-  const next = searchParams.get("next");
 
-  // Check session on mount and handle auth state changes
   useEffect(() => {
+    console.log("Setting up auth state change listener");
+    
+    // Check initial session
     const checkSession = async () => {
       const { data: { session }, error } = await supabase.auth.getSession();
-      
       if (error) {
         console.error('Session check error:', error);
         if (error.message.includes('refresh_token_not_found')) {
@@ -34,42 +30,42 @@ const Auth = () => {
             description: "Veuillez vous reconnecter.",
           });
         }
-        return;
-      }
-
-      if (session) {
-        const redirectPath = next || returnTo;
-        console.log('Session active, redirection vers:', redirectPath);
-        navigate(redirectPath);
+      } else if (session) {
+        console.log('Valid session found, redirecting to home');
+        navigate("/");
       }
     };
 
     checkSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('Changement état auth:', event, session);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event, session);
+      
+      if (event === 'TOKEN_REFRESHED') {
+        console.log('Token refreshed successfully');
+      }
       
       if (event === 'SIGNED_IN' && session) {
-        const redirectPath = next || returnTo;
-        console.log('Utilisateur connecté, redirection vers:', redirectPath);
-        navigate(redirectPath);
+        console.log('User signed in, redirecting to home');
+        navigate("/");
       }
 
       if (event === 'SIGNED_OUT') {
-        console.log('Utilisateur déconnecté');
+        console.log('User signed out');
         navigate("/auth");
       }
     });
 
-    return () => subscription.unsubscribe();
-  }, [navigate, returnTo, next, toast]);
+    return () => {
+      console.log("Cleaning up auth state change listener");
+      subscription.unsubscribe();
+    };
+  }, [navigate, toast]);
 
   const handleSubmit = async (values: FormValues) => {
     try {
-      setIsLoading(true);
-
       if (isSignUp) {
-        console.log('Tentative inscription avec:', values.email);
+        console.log('Attempting signup with email:', values.email);
         const { error, data } = await supabase.auth.signUp({
           email: values.email,
           password: values.password,
@@ -77,22 +73,22 @@ const Auth = () => {
             data: {
               first_name: values.firstName,
               last_name: values.lastName,
-              birth_date: values.birthDate || null,
-              address: values.address || null,
-              city: values.city || null,
-              postal_code: values.postalCode || null,
-              country: values.country || "France",
-              phone_number: values.phoneNumber || null,
+              birth_date: values.birthDate,
+              address: values.address,
+              city: values.city,
+              postal_code: values.postalCode,
+              country: values.country,
+              phone_number: values.phoneNumber,
             },
-            emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next || returnTo)}`
+            emailRedirectTo: `${window.location.origin}/auth/callback`
           }
         });
 
         if (error) {
-          console.error('Erreur inscription:', error);
+          console.log('Signup error:', error);
           
-          if (error.message.includes("User already registered")) {
-            console.log('Utilisateur déjà existant');
+          if (error instanceof AuthApiError && error.message.includes("User already registered")) {
+            console.log('User already exists, switching to login mode');
             toast({
               title: "Compte existant",
               description: "Un compte existe déjà avec cet email. Connectez-vous.",
@@ -101,35 +97,31 @@ const Auth = () => {
             return;
           }
           
+          const message = getErrorMessage(error);
           toast({
             variant: "destructive",
             title: "Erreur d'inscription",
-            description: getErrorMessage(error),
+            description: message,
           });
           return;
         }
 
-        if (data?.user?.email) {
-          try {
-            console.log('Envoi email de vérification à:', data.user.email);
+        // Envoi de l'email de vérification personnalisé
+        try {
+          if (data?.user?.email) {
             const response = await supabase.functions.invoke('send-verification-email', {
               body: {
-                to: data.user.email,
-                confirmationUrl: `${window.location.origin}/auth/verify?next=${encodeURIComponent(next || returnTo)}`,
+                to: values.email,
+                confirmationUrl: `${window.location.origin}/auth/verify`,
               },
             });
 
             if (response.error) {
-              console.error('Erreur envoi email:', response.error);
-              toast({
-                variant: "destructive",
-                title: "Email non envoyé",
-                description: "L'email de vérification n'a pas pu être envoyé, mais votre compte a bien été créé. Vous recevrez un email de vérification par défaut.",
-              });
+              console.error('Erreur lors de l\'envoi de l\'email de vérification:', response.error);
             }
-          } catch (emailError) {
-            console.error('Erreur fonction email:', emailError);
           }
+        } catch (emailError) {
+          console.error('Erreur lors de l\'envoi de l\'email de vérification:', emailError);
         }
 
         toast({
@@ -137,60 +129,49 @@ const Auth = () => {
           description: "Veuillez vérifier votre email pour confirmer votre compte.",
         });
       } else {
-        console.log('Tentative connexion avec:', values.email);
+        console.log('Attempting login with email:', values.email);
         const { error } = await supabase.auth.signInWithPassword({
           email: values.email,
           password: values.password,
         });
 
         if (error) {
-          console.error('Erreur connexion:', error);
-          
-          if (error.message.includes("Email not confirmed")) {
-            toast({
-              variant: "destructive",
-              title: "Email non vérifié",
-              description: "Veuillez vérifier votre email pour activer votre compte. Vérifiez vos spams si nécessaire.",
-            });
-            return;
-          }
-          
+          console.log('Login error:', error);
+          const message = getErrorMessage(error);
           toast({
             variant: "destructive",
             title: "Erreur de connexion",
-            description: getErrorMessage(error),
+            description: message,
           });
           return;
         }
 
-        console.log('Connexion réussie');
+        console.log('Login successful');
         toast({
           title: "Connexion réussie",
           description: "Vous êtes maintenant connecté.",
         });
       }
     } catch (error) {
-      console.error('Erreur auth:', error);
+      console.error('Auth error:', error);
       toast({
         variant: "destructive",
         title: "Erreur",
         description: "Une erreur inattendue s'est produite. Veuillez réessayer.",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4">
       <AuthHeader isSignUp={isSignUp} />
+      
       <div className="w-full max-w-md space-y-8">
         <AuthLogo />
         <AuthCard
           isSignUp={isSignUp}
           onSubmit={handleSubmit}
           onToggleMode={() => setIsSignUp(!isSignUp)}
-          isLoading={isLoading}
         />
       </div>
     </div>

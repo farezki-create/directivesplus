@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,7 +27,7 @@ export const ForgotPassword = ({ email }: ForgotPasswordProps) => {
       }
 
       const now = Date.now();
-      if (now - lastResetRequest < 60000) { // 60 secondes entre chaque demande
+      if (now - lastResetRequest < 60000) {
         console.log('Rate limit hit on client side');
         toast({
           variant: "destructive",

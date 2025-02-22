@@ -1,4 +1,3 @@
-
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -12,14 +11,12 @@ type AuthFormProps = {
   isSignUp: boolean;
   onSubmit: (values: FormValues) => void;
   onToggleMode: () => void;
-  isLoading?: boolean;
 };
 
 export const AuthForm = ({ 
   isSignUp, 
   onSubmit, 
   onToggleMode,
-  isLoading = false,
 }: AuthFormProps) => {
   const schema = isSignUp ? signUpSchema : loginSchema;
   
@@ -49,8 +46,8 @@ export const AuthForm = ({
         
         {isSignUp && <SignUpFields form={form} />}
 
-        <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? "Chargement..." : (isSignUp ? "S'inscrire" : "Se connecter")}
+        <Button type="submit" className="w-full">
+          {isSignUp ? "S'inscrire" : "Se connecter"}
         </Button>
 
         {!isSignUp && <ForgotPassword email={form.getValues("email")} />}
@@ -63,7 +60,6 @@ export const AuthForm = ({
                 type="button"
                 onClick={onToggleMode}
                 className="text-primary hover:underline"
-                disabled={isLoading}
               >
                 Connectez-vous
               </button>
@@ -75,7 +71,6 @@ export const AuthForm = ({
                 type="button"
                 onClick={onToggleMode}
                 className="text-primary hover:underline"
-                disabled={isLoading}
               >
                 Inscrivez-vous
               </button>
