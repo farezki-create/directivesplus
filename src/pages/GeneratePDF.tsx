@@ -40,22 +40,22 @@ export default function GeneratePDF() {
       );
     }
 
-    if (!profile || !profile.first_name || !profile.last_name) {
+    if (!profile) {
       return (
         <Card className="p-6 space-y-4">
           <div className="flex flex-col items-center text-center space-y-4">
             <UserCircle className="h-12 w-12 text-gray-400" />
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">Profil incomplet</h3>
+              <h3 className="text-lg font-semibold text-gray-900">Profil non trouvé</h3>
               <p className="text-gray-500 mt-1">
-                Pour générer vos directives anticipées, veuillez d'abord compléter votre profil avec vos informations personnelles.
+                Pour générer vos directives anticipées, veuillez d'abord créer votre profil.
               </p>
             </div>
             <Button
               onClick={() => navigate("/dashboard")}
               className="mt-4"
             >
-              Compléter mon profil
+              Créer mon profil
             </Button>
           </div>
         </Card>
@@ -69,14 +69,14 @@ export default function GeneratePDF() {
         {/* Informations personnelles */}
         <div className="space-y-2">
           <h4 className="font-medium">Informations personnelles</h4>
-          <p>Nom : {profile.last_name}</p>
-          <p>Prénom : {profile.first_name}</p>
+          <p>Nom : {profile.last_name || 'Non renseigné'}</p>
+          <p>Prénom : {profile.first_name || 'Non renseigné'}</p>
           <p>Date de naissance : {profile.birth_date ? new Date(profile.birth_date).toLocaleDateString() : 'Non renseignée'}</p>
           <p>Adresse : {profile.address || 'Non renseignée'}</p>
           <p>{profile.postal_code || ''} {profile.city || ''}</p>
         </div>
 
-        {/* Personnes de confiance */}
+        {/* Personnes de confiance (optionnel) */}
         {trustedPersons && trustedPersons.length > 0 && (
           <div className="space-y-2">
             <h4 className="font-medium">Personnes de confiance</h4>
