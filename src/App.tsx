@@ -7,6 +7,7 @@ import Examples from "@/pages/Examples";
 import FreeText from "@/pages/FreeText";
 import ResetPassword from "@/pages/ResetPassword";
 import GeneratePDF from "@/pages/GeneratePDF";
+import Reviews from "@/pages/Reviews";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="/free-text" element={<FreeText />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/generate-pdf" element={<GeneratePDF />} />
+        <Route path="/reviews" element={<Reviews />} />
       </Routes>
     </Router>
   );
