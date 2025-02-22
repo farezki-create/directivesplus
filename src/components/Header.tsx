@@ -103,10 +103,12 @@ export const Header = () => {
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
-            <div className="aspect-video bg-muted relative rounded-lg overflow-hidden">
-              <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
-                Image à venir
-              </div>
+            <div className="aspect-video bg-white relative rounded-lg overflow-hidden">
+              <img 
+                src="/lovable-uploads/6bb21b02-63a3-4da2-8feb-a4ec9237c2bf.png"
+                alt="Carte mémoire USB Directives Anticipées"
+                className="object-contain w-full h-full"
+              />
             </div>
 
             <div className="space-y-2">
