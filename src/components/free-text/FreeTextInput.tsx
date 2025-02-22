@@ -17,7 +17,7 @@ export const FreeTextInput = ({ userId }: FreeTextInputProps) => {
   useEffect(() => {
     const loadFreeText = async () => {
       try {
-        console.log("[FreeTextInput] Loading existing free text");
+        console.log("[FreeTextInput] Loading existing free text for userId:", userId);
         const { data, error } = await supabase
           .from('questionnaire_synthesis')
           .select('free_text')
@@ -85,6 +85,8 @@ export const FreeTextInput = ({ userId }: FreeTextInputProps) => {
     }
   };
 
+  console.log("[FreeTextInput] Rendering with userId:", userId);
+
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Texte libre</h3>
@@ -96,8 +98,15 @@ export const FreeTextInput = ({ userId }: FreeTextInputProps) => {
       />
       <div className="flex gap-4">
         <Button onClick={saveFreeText}>Enregistrer</Button>
-        <PDFGenerator userId={userId} />
-        <PDFGenerator userId={userId} isCardFormat={true} />
+        <PDFGenerator 
+          userId={userId} 
+          key={userId} // Force re-render when userId changes
+        />
+        <PDFGenerator 
+          userId={userId} 
+          isCardFormat={true}
+          key={`${userId}-card`} // Unique key for card format
+        />
       </div>
     </div>
   );

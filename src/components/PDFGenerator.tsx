@@ -15,13 +15,22 @@ interface PDFGeneratorProps {
 }
 
 export function PDFGenerator({ userId, isCardFormat = false }: PDFGeneratorProps) {
+  console.log("[PDFGenerator] Initializing with userId:", userId, "isCardFormat:", isCardFormat);
+  
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const { responses } = useQuestionnairesResponses(userId);
   const { profile, trustedPersons, loading } = usePDFData();
 
+  console.log("[PDFGenerator] Current state:", {
+    hasProfile: !!profile,
+    hasTrustedPersons: trustedPersons.length,
+    hasResponses: !!responses,
+    isLoading: loading
+  });
+
   const generatePDF = () => {
-    console.log("[PDFGenerator] Starting PDF generation with userId:", userId);
+    console.log("[PDFGenerator] Button clicked - Starting PDF generation");
     
     if (!profile) {
       console.error("[PDFGenerator] No profile data available");
@@ -72,9 +81,11 @@ export function PDFGenerator({ userId, isCardFormat = false }: PDFGeneratorProps
   };
 
   if (loading) {
+    console.log("[PDFGenerator] Still loading data...");
     return null;
   }
 
+  console.log("[PDFGenerator] Rendering buttons");
   return (
     <>
       <Button 
@@ -86,12 +97,14 @@ export function PDFGenerator({ userId, isCardFormat = false }: PDFGeneratorProps
         {isCardFormat ? "Générer au format carte" : "Générer Mes directives anticipées"}
       </Button>
       
-      {/* Force a new instance of PDFPreviewDialog when pdfUrl changes */}
       {showPreview && (
         <PDFPreviewDialog
           key={pdfUrl}
           open={showPreview}
-          onOpenChange={setShowPreview}
+          onOpenChange={(open) => {
+            console.log("[PDFGenerator] Dialog state changing to:", open);
+            setShowPreview(open);
+          }}
           pdfUrl={pdfUrl}
           onEmail={handleEmail}
           onSave={() => handlePDFDownload(pdfUrl)}
