@@ -48,7 +48,7 @@ export const PurchaseForm = ({ onClose, user }: PurchaseFormProps) => {
 
     setIsOrdering(true);
     try {
-      // Utiliser le client Supabase pour appeler l'Edge Function
+      console.log('Creating payment intent...');
       const { data: intentData, error: intentError } = await supabase.functions.invoke('create-payment', {
         body: {
           amount: 19.90,
@@ -56,10 +56,13 @@ export const PurchaseForm = ({ onClose, user }: PurchaseFormProps) => {
         },
       });
 
-      if (intentError || !intentData.clientSecret) {
+      console.log('Payment intent response:', { intentData, intentError });
+
+      if (intentError || !intentData?.clientSecret) {
         throw new Error(intentError?.message || "Erreur lors de la création du paiement");
       }
 
+      console.log('Creating payment method...');
       const { paymentMethod, error: paymentMethodError } = await stripe.createPaymentMethod({
         type: 'card',
         card: card as any,
@@ -76,17 +79,21 @@ export const PurchaseForm = ({ onClose, user }: PurchaseFormProps) => {
       });
 
       if (paymentMethodError) {
+        console.error('Payment method error:', paymentMethodError);
         throw new Error(paymentMethodError.message);
       }
 
+      console.log('Confirming card payment...');
       const { error: confirmError } = await stripe.confirmCardPayment(intentData.clientSecret, {
         payment_method: paymentMethod.id,
       });
 
       if (confirmError) {
+        console.error('Confirm payment error:', confirmError);
         throw new Error(confirmError.message);
       }
 
+      console.log('Saving order to database...');
       const { error: dbError } = await supabase.from('orders').insert({
         user_id: user?.id,
         amount: 19.90,
@@ -99,8 +106,12 @@ export const PurchaseForm = ({ onClose, user }: PurchaseFormProps) => {
         postal_code: values.postalCode,
       });
 
-      if (dbError) throw dbError;
+      if (dbError) {
+        console.error('Database error:', dbError);
+        throw dbError;
+      }
 
+      console.log('Order completed successfully');
       toast({
         title: "Commande confirmée",
         description: "Votre commande a été enregistrée avec succès. Vous recevrez un email de confirmation.",

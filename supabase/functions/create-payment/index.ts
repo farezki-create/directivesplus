@@ -1,10 +1,5 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import Stripe from "https://esm.sh/stripe@13.6.0?target=deno"
-
-const stripeClient = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
-  apiVersion: '2023-10-16',
-});
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -18,11 +13,17 @@ serve(async (req) => {
   }
 
   try {
+    // Import Stripe dynamically to avoid issues with Deno
+    const { default: Stripe } = await import("https://esm.sh/stripe@13.6.0?target=deno");
+    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
+      apiVersion: '2023-10-16',
+    });
+
     const { amount, email } = await req.json();
 
     console.log('Creating payment intent:', { amount, email });
 
-    const paymentIntent = await stripeClient.paymentIntents.create({
+    const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(amount * 100), // Stripe expects amounts in cents
       currency: 'eur',
       payment_method_types: ['card'],
