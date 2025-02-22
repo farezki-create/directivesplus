@@ -1,42 +1,71 @@
+
 import { jsPDF } from "jspdf";
 import { TrustedPerson } from "../types";
 
 export class PDFTrustedPersonSection {
   static generate(doc: jsPDF, trustedPersons: TrustedPerson[], startY: number): number {
     let yPosition = startY;
-    doc.setFontSize(12);
+    
+    // Styles
+    const labelStyle = () => {
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+    };
+
+    const valueStyle = () => {
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "normal");
+    };
     
     if (trustedPersons && trustedPersons.length > 0) {
       const person = trustedPersons[0]; // We only show the first person
 
-      // Check if we need a new page
+      // Nouvelle page si nécessaire
       if (yPosition > doc.internal.pageSize.getHeight() - 100) {
         doc.addPage();
-        yPosition = 20;
+        yPosition = 30;
       }
 
-      doc.text(`Nom : ${person.name}`, 20, yPosition);
-      yPosition += 7;
+      // Informations de la personne de confiance
+      labelStyle();
+      doc.text("Nom :", 20, yPosition);
+      valueStyle();
+      doc.text(person.name, 60, yPosition);
+      yPosition += 10;
       
       if (person.relation) {
-        doc.text(`Relation : ${person.relation}`, 20, yPosition);
-        yPosition += 7;
+        labelStyle();
+        doc.text("Relation :", 20, yPosition);
+        valueStyle();
+        doc.text(person.relation, 60, yPosition);
+        yPosition += 10;
       }
 
-      doc.text(`Téléphone : ${person.phone}`, 20, yPosition);
-      yPosition += 7;
+      labelStyle();
+      doc.text("Téléphone :", 20, yPosition);
+      valueStyle();
+      doc.text(person.phone, 60, yPosition);
+      yPosition += 10;
       
-      doc.text(`Email : ${person.email}`, 20, yPosition);
-      yPosition += 7;
+      labelStyle();
+      doc.text("Email :", 20, yPosition);
+      valueStyle();
+      doc.text(person.email, 60, yPosition);
+      yPosition += 10;
       
-      doc.text(`Adresse : ${person.address}`, 20, yPosition);
-      yPosition += 7;
+      labelStyle();
+      doc.text("Adresse :", 20, yPosition);
+      valueStyle();
+      doc.text(person.address, 60, yPosition);
+      yPosition += 10;
       
-      doc.text(`${person.postal_code} ${person.city}`, 20, yPosition);
-      yPosition += 7;
+      const cityLine = `${person.postal_code} ${person.city}`;
+      doc.text(cityLine, 60, yPosition);
+      yPosition += 10;
     } else {
+      valueStyle();
       doc.text("Aucune personne de confiance désignée", 20, yPosition);
-      yPosition += 7;
+      yPosition += 10;
     }
 
     return yPosition;

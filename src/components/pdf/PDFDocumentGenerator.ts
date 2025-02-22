@@ -10,24 +10,54 @@ import { PDFResponsesSection } from "./utils/PDFResponsesSection";
 export class PDFDocumentGenerator {
   static generate(profile: UserProfile, responses: any, trustedPersons: TrustedPerson[]) {
     console.log("[PDFGenerator] Generating PDF with profile:", profile);
-    const doc = new jsPDF();
-    let yPosition = 20;
+    // Créer le document avec des marges plus grandes
+    const doc = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4",
+      margins: {
+        top: 30,
+        bottom: 30,
+        left: 20,
+        right: 20
+      }
+    });
 
-    // Add logo
-    // Note: you'll need to add your logo image here
-    // doc.addImage("logo.png", "PNG", 20, 10, 50, 20);
-    
-    // Title
-    doc.setFontSize(20);
+    // Configuration initiale du document
+    doc.setProperties({
+      title: "Directives Anticipées",
+      subject: "Directives Anticipées",
+      author: profile ? `${profile.first_name} ${profile.last_name}` : "Non spécifié",
+      keywords: "directives anticipées, santé",
+      creator: "Application Directives Anticipées"
+    });
+
+    let yPosition = 30;
+
+    // En-tête avec titre principal
+    doc.setFontSize(24);
+    doc.setFont("helvetica", "bold");
     doc.text(
       "Directives Anticipées",
       doc.internal.pageSize.getWidth() / 2,
       yPosition,
       { align: "center" }
     );
-    yPosition += 25;
+    yPosition += 30;
 
-    // Utilisation du profil pour l'identité
+    // Sous-titre avec la date
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "normal");
+    const dateStr = format(new Date(), "d MMMM yyyy", { locale: fr });
+    doc.text(
+      `Document établi le ${dateStr}`,
+      doc.internal.pageSize.getWidth() / 2,
+      yPosition,
+      { align: "center" }
+    );
+    yPosition += 20;
+
+    // Informations d'identité
     if (profile) {
       yPosition = PDFUserSection.generate(doc, profile, yPosition);
     } else {
@@ -37,60 +67,62 @@ export class PDFDocumentGenerator {
       yPosition += 10;
     }
 
-    // Add new page if needed
+    // Nouvelle page pour les directives
     if (yPosition > doc.internal.pageSize.getHeight() - 40) {
       doc.addPage();
-      yPosition = 20;
+      yPosition = 30;
     }
 
-    // For trusted person document, skip directives anticipées section
+    // Section des directives
     if (responses?.type !== "trusted_person") {
-      yPosition += 25;
+      yPosition += 20;
       yPosition = PDFResponsesSection.generate(doc, responses, yPosition);
 
-      // Add new page if needed
+      // Nouvelle page si nécessaire
       if (yPosition > doc.internal.pageSize.getHeight() - 40) {
         doc.addPage();
-        yPosition = 20;
+        yPosition = 30;
       }
     }
 
-    // Section for Trusted Person
-    yPosition += 25;
+    // Section Personne de confiance
+    yPosition += 20;
     doc.setFontSize(16);
-    doc.setFont(undefined, 'bold');
+    doc.setFont("helvetica", "bold");
     doc.text("Personne de confiance", 20, yPosition);
-    doc.setFont(undefined, 'normal');
+    doc.setFont("helvetica", "normal");
     yPosition += 10;
     yPosition = PDFTrustedPersonSection.generate(doc, trustedPersons, yPosition);
 
-    // Add new page if needed
-    if (yPosition > doc.internal.pageSize.getHeight() - 40) {
+    // Nouvelle page si nécessaire pour la signature
+    if (yPosition > doc.internal.pageSize.getHeight() - 100) {
       doc.addPage();
-      yPosition = 20;
+      yPosition = 30;
     }
 
-    // Final Section: Signature
-    yPosition += 25;
+    // Section signature
+    yPosition += 30;
     doc.setFontSize(12);
     
-    // Je soussigné(e) section avec le nom prérempli
+    // Section "Je soussigné(e)"
     doc.text("Je soussigné(e)", 20, yPosition);
     yPosition += 10;
     
-    // Name line with pre-filled name if available
+    // Nom complet
     const fullName = profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : '';
     doc.text(`Nom et prénoms : ${fullName}`, 20, yPosition);
-    yPosition += 15;
-    
-    // Date and place line spanning the width
-    const today = format(new Date(), "d MMMM yyyy", { locale: fr });
-    doc.text(`Fait le ${today} à ${profile?.city || '................................'}`, 20, yPosition);
     yPosition += 20;
     
-    // Signature
-    doc.setFontSize(12);
-    doc.text("Signature :", 20, yPosition);
+    // Date et lieu
+    const today = format(new Date(), "d MMMM yyyy", { locale: fr });
+    doc.text(`Fait le ${today} à ${profile?.city || '................................'}`, 20, yPosition);
+    yPosition += 25;
+    
+    // Zone de signature
+    doc.setDrawColor(0);
+    doc.setFillColor(255, 255, 255);
+    doc.rect(20, yPosition, 80, 40, 'D');
+    doc.text("Signature :", 20, yPosition - 5);
 
     return doc.output('dataurlstring');
   }
