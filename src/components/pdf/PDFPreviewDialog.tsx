@@ -1,6 +1,7 @@
+
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Download, Mail, Printer, FileText } from "lucide-react";
+import { Download, Mail, Printer } from "lucide-react";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,7 +27,6 @@ export function PDFPreviewDialog({
 }: PDFPreviewDialogProps) {
   const [emailAddress, setEmailAddress] = useState("");
   const [isSending, setIsSending] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -95,6 +95,7 @@ export function PDFPreviewDialog({
       return;
     }
 
+    // Créer un fichier HTML temporaire pour l'impression
     const printContent = `
       <!DOCTYPE html>
       <html>
@@ -173,31 +174,6 @@ export function PDFPreviewDialog({
     navigate("/generate-pdf");
   };
 
-  const LoadingAnimation = () => (
-    <div className="flex flex-col items-center justify-center p-8 space-y-4">
-      <div className="relative">
-        <FileText 
-          className="w-16 h-16 text-primary animate-bounce" 
-          style={{ animationDuration: '2s' }}
-        />
-        <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
-          <div className="w-8 h-1 bg-gray-200 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-primary animate-[loading_2s_ease-in-out_infinite]"
-              style={{
-                width: '100%',
-                animation: 'loading 2s ease-in-out infinite',
-              }}
-            />
-          </div>
-        </div>
-      </div>
-      <p className="text-sm text-gray-500 animate-pulse">
-        Préparation de votre document...
-      </p>
-    </div>
-  );
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
@@ -205,16 +181,6 @@ export function PDFPreviewDialog({
           Prévisualisation du document
         </DialogTitle>
         
-        <style>
-          {`
-            @keyframes loading {
-              0% { transform: translateX(-100%); }
-              50% { transform: translateX(0); }
-              100% { transform: translateX(100%); }
-            }
-          `}
-        </style>
-
         <div className="flex flex-col space-y-4 h-full">
           <div className="flex justify-end space-x-2">
             <div className="flex items-center space-x-2 mr-auto">
@@ -246,18 +212,19 @@ export function PDFPreviewDialog({
             </Button>
           </div>
           
-          <div className="flex-1 min-h-[500px] border rounded">
-            {!pdfUrl ? (
-              <LoadingAnimation />
-            ) : (
+          {pdfUrl ? (
+            <div className="flex-1 min-h-[500px] border rounded">
               <iframe
                 src={pdfUrl}
                 className="w-full h-full border-0"
                 title="PDF Preview"
-                onLoad={() => setIsLoading(false)}
               />
-            )}
-          </div>
+            </div>
+          ) : (
+            <div className="flex-1 flex items-center justify-center text-gray-500">
+              Aucun document à afficher
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
