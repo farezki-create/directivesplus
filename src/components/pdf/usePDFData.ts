@@ -13,14 +13,15 @@ export function usePDFData() {
   useEffect(() => {
     const loadUserData = async () => {
       try {
+        setLoading(true);
         const { data: { session } } = await supabase.auth.getSession();
         if (!session?.user) {
-          console.error("[PDFGenerator] No user session");
+          console.error("[PDFData] No user session");
           setLoading(false);
           return;
         }
 
-        console.log("[PDFGenerator] Loading user profile for:", session.user.id);
+        console.log("[PDFData] Loading user profile for:", session.user.id);
         const { data: profileData, error: profileError } = await supabase
           .from("profiles")
           .select("*")
@@ -28,34 +29,45 @@ export function usePDFData() {
           .single();
 
         if (profileError) {
-          console.error("[PDFGenerator] Error loading profile:", profileError);
-          throw profileError;
+          console.error("[PDFData] Error loading profile:", profileError);
+          toast({
+            title: "Erreur",
+            description: "Impossible de charger votre profil. Veuillez vérifier que vous avez complété vos informations personnelles.",
+            variant: "destructive",
+          });
+          setLoading(false);
+          return;
         }
         
-        // Add email and unique_identifier from session
+        // Add email from session
         setProfile({ 
           ...profileData, 
           email: session.user.email,
-          unique_identifier: session.user.id // Using user id as unique identifier
+          unique_identifier: session.user.id
         });
 
-        console.log("[PDFGenerator] Loading trusted persons");
+        console.log("[PDFData] Loading trusted persons");
         const { data: trustedPersonsData, error: trustedPersonsError } = await supabase
           .from("trusted_persons")
           .select("*")
           .eq("user_id", session.user.id);
 
         if (trustedPersonsError) {
-          console.error("[PDFGenerator] Error loading trusted persons:", trustedPersonsError);
-          throw trustedPersonsError;
+          console.error("[PDFData] Error loading trusted persons:", trustedPersonsError);
+          toast({
+            title: "Attention",
+            description: "Impossible de charger vos personnes de confiance.",
+            variant: "destructive",
+          });
+        } else {
+          setTrustedPersons(trustedPersonsData || []);
         }
-        setTrustedPersons(trustedPersonsData || []);
 
       } catch (error) {
-        console.error("[PDFGenerator] Error loading user data:", error);
+        console.error("[PDFData] Error loading user data:", error);
         toast({
           title: "Erreur",
-          description: "Impossible de charger vos données.",
+          description: "Une erreur est survenue lors du chargement de vos données.",
           variant: "destructive",
         });
       } finally {
