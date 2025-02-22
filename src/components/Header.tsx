@@ -155,7 +155,7 @@ export const Header = () => {
       </header>
 
       <Dialog open={showPurchaseDialog} onOpenChange={setShowPurchaseDialog}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Carte mémoire USB format carte de crédit</DialogTitle>
             <DialogDescription>
