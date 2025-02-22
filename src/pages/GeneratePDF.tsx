@@ -20,6 +20,9 @@ export default function GeneratePDF() {
   const { profile, trustedPersons, loading: profileLoading } = usePDFData();
   const { directive, isLoading: directiveLoading, saveDirective } = useDirectives(userId || "");
 
+  // Combine all loading states
+  const isLoading = responsesLoading || profileLoading || directiveLoading;
+
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -64,7 +67,7 @@ export default function GeneratePDF() {
         </div>
 
         <div className="flex gap-4 flex-wrap">
-          {!loading && (
+          {!isLoading && (
             <>
               <PDFGenerator userId={userId} onPdfGenerated={setPdfUrl} />
               <PDFGenerator userId={userId} isCardFormat={true} />
