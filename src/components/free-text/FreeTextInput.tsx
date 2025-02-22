@@ -1,9 +1,10 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { PDFGenerator } from "@/components/pdf/PDFGenerator";
+import { PDFGenerator } from "@/components/PDFGenerator";
 
 interface FreeTextInputProps {
   userId: string;
@@ -96,6 +97,7 @@ export const FreeTextInput = ({ userId }: FreeTextInputProps) => {
       <div className="flex gap-4">
         <Button onClick={saveFreeText}>Enregistrer</Button>
         <PDFGenerator userId={userId} />
+        <PDFGenerator userId={userId} isCardFormat={true} />
       </div>
     </div>
   );

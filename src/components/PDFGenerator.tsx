@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "./pdf/usePDFData";
@@ -6,6 +7,7 @@ import { PDFPreviewDialog } from "./pdf/PDFPreviewDialog";
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
 import { PDFCardGenerator } from "./pdf/utils/PDFCardGenerator";
+import { toast } from "./ui/use-toast";
 
 interface PDFGeneratorProps {
   userId: string;
@@ -19,9 +21,15 @@ export function PDFGenerator({ userId, isCardFormat = false }: PDFGeneratorProps
   const { profile, trustedPersons, loading } = usePDFData();
 
   const generatePDF = () => {
-    console.log("[PDFGenerator] Starting PDF generation with profile:", profile);
+    console.log("[PDFGenerator] Starting PDF generation");
+    
     if (!profile) {
       console.error("[PDFGenerator] No profile data available");
+      toast({
+        title: "Erreur",
+        description: "Données de profil non disponibles",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -43,7 +51,10 @@ export function PDFGenerator({ userId, isCardFormat = false }: PDFGeneratorProps
   };
 
   const handleEmail = async () => {
-    console.log("[PDFGenerator] Email functionality not yet implemented");
+    toast({
+      title: "Information",
+      description: "L'envoi par email sera bientôt disponible",
+    });
   };
 
   if (loading) {
