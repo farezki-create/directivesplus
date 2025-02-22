@@ -40,7 +40,7 @@ export class PDFDocumentGenerator {
     }
 
     // For trusted person document, skip directives anticipées section
-    if (!responses?.type === "trusted_person") {
+    if (responses?.type !== "trusted_person") {
       // Section 2: Directives Anticipées Synthesis
       yPosition += 20;
       doc.setFontSize(16);
