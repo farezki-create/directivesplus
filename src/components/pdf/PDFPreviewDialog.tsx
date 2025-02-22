@@ -86,10 +86,26 @@ export function PDFPreviewDialog({
   };
 
   const handlePrint = () => {
-    const iframe = document.querySelector('iframe');
-    if (iframe) {
-      iframe.contentWindow?.focus();
-      iframe.contentWindow?.print();
+    if (!pdfUrl) {
+      toast({
+        title: "Erreur",
+        description: "Aucun PDF à imprimer",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const printWindow = window.open(pdfUrl, '_blank');
+    if (printWindow) {
+      printWindow.addEventListener('load', () => {
+        printWindow.print();
+      });
+    } else {
+      toast({
+        title: "Erreur",
+        description: "Impossible d'ouvrir la fenêtre d'impression. Vérifiez que les popups ne sont pas bloqués.",
+        variant: "destructive",
+      });
     }
     onOpenChange(false);
     navigate("/generate-pdf");
