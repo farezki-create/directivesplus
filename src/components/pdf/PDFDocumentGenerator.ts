@@ -10,18 +10,20 @@ import { PDFResponsesSection } from "./utils/PDFResponsesSection";
 export class PDFDocumentGenerator {
   static generate(profile: UserProfile, responses: any, trustedPersons: TrustedPerson[]) {
     console.log("[PDFGenerator] Generating PDF with profile:", profile);
-    // Créer le document avec des marges plus grandes
+    // Créer le document PDF
     const doc = new jsPDF({
       orientation: "portrait",
       unit: "mm",
-      format: "a4",
-      margins: {
-        top: 30,
-        bottom: 30,
-        left: 20,
-        right: 20
-      }
+      format: "a4"
     });
+
+    // Définir les marges
+    const margin = {
+      top: 30,
+      bottom: 30,
+      left: 20,
+      right: 20
+    };
 
     // Configuration initiale du document
     doc.setProperties({
@@ -32,7 +34,7 @@ export class PDFDocumentGenerator {
       creator: "Application Directives Anticipées"
     });
 
-    let yPosition = 30;
+    let yPosition = margin.top;
 
     // En-tête avec titre principal
     doc.setFontSize(24);
@@ -63,14 +65,14 @@ export class PDFDocumentGenerator {
     } else {
       console.warn("[PDFGenerator] No profile data available");
       doc.setFontSize(12);
-      doc.text("Information d'identité non disponible", 20, yPosition);
+      doc.text("Information d'identité non disponible", margin.left, yPosition);
       yPosition += 10;
     }
 
     // Nouvelle page pour les directives
     if (yPosition > doc.internal.pageSize.getHeight() - 40) {
       doc.addPage();
-      yPosition = 30;
+      yPosition = margin.top;
     }
 
     // Section des directives
@@ -81,7 +83,7 @@ export class PDFDocumentGenerator {
       // Nouvelle page si nécessaire
       if (yPosition > doc.internal.pageSize.getHeight() - 40) {
         doc.addPage();
-        yPosition = 30;
+        yPosition = margin.top;
       }
     }
 
@@ -89,7 +91,7 @@ export class PDFDocumentGenerator {
     yPosition += 20;
     doc.setFontSize(16);
     doc.setFont("helvetica", "bold");
-    doc.text("Personne de confiance", 20, yPosition);
+    doc.text("Personne de confiance", margin.left, yPosition);
     doc.setFont("helvetica", "normal");
     yPosition += 10;
     yPosition = PDFTrustedPersonSection.generate(doc, trustedPersons, yPosition);
@@ -97,7 +99,7 @@ export class PDFDocumentGenerator {
     // Nouvelle page si nécessaire pour la signature
     if (yPosition > doc.internal.pageSize.getHeight() - 100) {
       doc.addPage();
-      yPosition = 30;
+      yPosition = margin.top;
     }
 
     // Section signature
@@ -105,24 +107,24 @@ export class PDFDocumentGenerator {
     doc.setFontSize(12);
     
     // Section "Je soussigné(e)"
-    doc.text("Je soussigné(e)", 20, yPosition);
+    doc.text("Je soussigné(e)", margin.left, yPosition);
     yPosition += 10;
     
     // Nom complet
     const fullName = profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : '';
-    doc.text(`Nom et prénoms : ${fullName}`, 20, yPosition);
+    doc.text(`Nom et prénoms : ${fullName}`, margin.left, yPosition);
     yPosition += 20;
     
     // Date et lieu
     const today = format(new Date(), "d MMMM yyyy", { locale: fr });
-    doc.text(`Fait le ${today} à ${profile?.city || '................................'}`, 20, yPosition);
+    doc.text(`Fait le ${today} à ${profile?.city || '................................'}`, margin.left, yPosition);
     yPosition += 25;
     
     // Zone de signature
     doc.setDrawColor(0);
     doc.setFillColor(255, 255, 255);
-    doc.rect(20, yPosition, 80, 40, 'D');
-    doc.text("Signature :", 20, yPosition - 5);
+    doc.rect(margin.left, yPosition, 80, 40, 'D');
+    doc.text("Signature :", margin.left, yPosition - 5);
 
     return doc.output('dataurlstring');
   }
