@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 interface PDFPreviewDialogProps {
   open: boolean;
@@ -27,6 +28,7 @@ export function PDFPreviewDialog({
   const [emailAddress, setEmailAddress] = useState("");
   const [isSending, setIsSending] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleEmailSend = async () => {
     if (!pdfUrl) {
@@ -63,6 +65,8 @@ export function PDFPreviewDialog({
         description: "Le PDF a été envoyé par email",
       });
       setEmailAddress("");
+      onOpenChange(false);
+      navigate("/generate-pdf");
     } catch (error) {
       console.error("Error sending email:", error);
       toast({
@@ -73,6 +77,18 @@ export function PDFPreviewDialog({
     } finally {
       setIsSending(false);
     }
+  };
+
+  const handleDownload = () => {
+    onSave();
+    onOpenChange(false);
+    navigate("/generate-pdf");
+  };
+
+  const handlePrint = () => {
+    onPrint();
+    onOpenChange(false);
+    navigate("/generate-pdf");
   };
 
   return (
@@ -103,11 +119,11 @@ export function PDFPreviewDialog({
                 {isSending ? "Envoi..." : "Envoyer par email"}
               </Button>
             </div>
-            <Button variant="outline" onClick={onSave}>
+            <Button variant="outline" onClick={handleDownload}>
               <Download className="mr-2 h-4 w-4" />
               Télécharger
             </Button>
-            <Button variant="outline" onClick={onPrint}>
+            <Button variant="outline" onClick={handlePrint}>
               <Printer className="mr-2 h-4 w-4" />
               Imprimer
             </Button>
