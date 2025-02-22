@@ -66,9 +66,6 @@ const Reviews = () => {
               <Button>Donner mon avis</Button>
             </DialogTrigger>
             <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Partagez votre expérience</DialogTitle>
-              </DialogHeader>
               <ReviewForm
                 onSuccess={fetchReviews}
                 onSubmitting={setIsSubmitting}
