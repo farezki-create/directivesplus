@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
-import { CreditCard } from "lucide-react";
+import { CreditCard, MessageSquare } from "lucide-react";
 import { PurchaseDialog } from "./purchase/PurchaseDialog";
 
 export const Header = () => {
@@ -40,9 +40,7 @@ export const Header = () => {
     <>
       <header className="w-full border-b">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center space
-
--x-4">
+          <div className="flex items-center space-x-4">
             <h1 className="text-2xl font-bold text-primary">DirectivesPlus</h1>
           </div>
           <nav className="flex items-center space-x-4">
@@ -51,6 +49,15 @@ export const Header = () => {
               onClick={handleHomeClick}
             >
               Accueil
+            </Button>
+
+            <Button
+              variant="outline"
+              onClick={() => navigate("/reviews")}
+              className="flex items-center gap-2"
+            >
+              <MessageSquare className="w-4 h-4" />
+              Avis
             </Button>
 
             <Button
