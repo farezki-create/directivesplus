@@ -46,7 +46,7 @@ export function useDirectives(userId: string) {
       }
       
       console.log("[Directives] Retrieved directive:", data);
-      return data as Directive | null;
+      return data as unknown as Directive | null;
     },
     enabled: !!userId,
   });
@@ -56,7 +56,7 @@ export function useDirectives(userId: string) {
       // D'abord, désactiver toutes les directives existantes
       const { error: updateError } = await supabase
         .from("directives")
-        .update({ is_active: false })
+        .update({ is_active: false } as any)
         .eq("user_id", userId);
 
       if (updateError) {
@@ -70,7 +70,7 @@ export function useDirectives(userId: string) {
         .insert([
           {
             user_id: userId,
-            content,
+            content: content as any,
             is_active: true,
           },
         ])
@@ -82,7 +82,7 @@ export function useDirectives(userId: string) {
         throw error;
       }
 
-      return data;
+      return data as unknown as Directive;
     },
     onSuccess: () => {
       toast({
