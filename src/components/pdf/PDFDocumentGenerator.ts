@@ -107,7 +107,7 @@ export class PDFDocumentGenerator {
     doc.text("Signature :", margin.left, yPosition - 5);
 
     // Numérotation des pages
-    const totalPages = doc.internal.getNumberOfPages();
+    const totalPages = doc.internal.pages.length - 1; // -1 car l'index commence à 1
     for (let i = 1; i <= totalPages; i++) {
       doc.setPage(i);
       doc.setFontSize(10);
