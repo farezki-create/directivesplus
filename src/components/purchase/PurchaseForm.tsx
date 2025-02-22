@@ -1,30 +1,17 @@
 
 import * as React from "react";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-import { CreditCard, Package } from "lucide-react";
 import { DialogFooter } from "@/components/ui/dialog";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { loadStripe, Stripe, StripeElements, StripeElement } from "@stripe/stripe-js";
 import { User } from "@supabase/supabase-js";
-
-const stripePromise = loadStripe('pk_test_51OvZy8KJHojJ27FpoHYRFw3pYJB93qZFLbOieT47naK9trTRqUUfWVM4kugAGoN7V6lDaUxydQ6k9Kk4FvFa2gvX00RzW8wPxX');
-
-const orderFormSchema = z.object({
-  firstName: z.string().min(2, "Le prénom doit contenir au moins 2 caractères"),
-  lastName: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
-  email: z.string().email("Email invalide"),
-  address: z.string().min(5, "L'adresse doit contenir au moins 5 caractères"),
-  city: z.string().min(2, "La ville doit contenir au moins 2 caractères"),
-  postalCode: z.string().regex(/^[0-9]{5}$/, "Code postal invalide"),
-});
-
-type OrderFormValues = z.infer<typeof orderFormSchema>;
+import { OrderFormValues, orderFormSchema } from "./types";
+import { ShippingForm } from "./ShippingForm";
+import { PaymentForm } from "./PaymentForm";
+import { useStripePayment } from "./useStripePayment";
 
 interface PurchaseFormProps {
   onClose: () => void;
@@ -34,48 +21,8 @@ interface PurchaseFormProps {
 export const PurchaseForm = ({ onClose, user }: PurchaseFormProps) => {
   const { toast } = useToast();
   const [isOrdering, setIsOrdering] = React.useState(false);
-  const [stripe, setStripe] = React.useState<Stripe | null>(null);
-  const [elements, setElements] = React.useState<StripeElements | null>(null);
-  const [card, setCard] = React.useState<StripeElement | null>(null);
   const cardElementRef = React.useRef<HTMLDivElement>(null);
-
-  React.useEffect(() => {
-    const initStripe = async () => {
-      const stripeInstance = await stripePromise;
-      if (stripeInstance) {
-        setStripe(stripeInstance);
-        const elements = stripeInstance.elements();
-        setElements(elements);
-        const cardElement = elements.create('card', {
-          style: {
-            base: {
-              fontSize: '16px',
-              color: '#424770',
-              '::placeholder': {
-                color: '#aab7c4',
-              },
-            },
-            invalid: {
-              color: '#9e2146',
-            },
-          },
-        });
-        
-        if (cardElementRef.current) {
-          cardElement.mount(cardElementRef.current);
-          setCard(cardElement);
-        }
-      }
-    };
-
-    initStripe();
-
-    return () => {
-      if (card) {
-        card.destroy();
-      }
-    };
-  }, []);
+  const { stripe, card } = useStripePayment(cardElementRef);
 
   const form = useForm<OrderFormValues>({
     resolver: zodResolver(orderFormSchema),
@@ -90,7 +37,7 @@ export const PurchaseForm = ({ onClose, user }: PurchaseFormProps) => {
   });
 
   const onSubmit = async (values: OrderFormValues) => {
-    if (!stripe || !elements || !card) {
+    if (!stripe || !card) {
       toast({
         title: "Erreur",
         description: "Le système de paiement n'est pas prêt",
@@ -180,111 +127,8 @@ export const PurchaseForm = ({ onClose, user }: PurchaseFormProps) => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <div className="space-y-4">
-          <h3 className="font-semibold flex items-center gap-2">
-            <Package className="w-4 h-4" />
-            Adresse de livraison
-          </h3>
-          
-          <div className="grid grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="firstName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Prénom</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Jean" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="lastName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nom</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Dupont" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input type="email" placeholder="jean.dupont@example.com" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="address"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Adresse</FormLabel>
-                <FormControl>
-                  <Input placeholder="123 rue des Lilas" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <div className="grid grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="city"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Ville</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Paris" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="postalCode"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Code postal</FormLabel>
-                  <FormControl>
-                    <Input placeholder="75001" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <h3 className="font-semibold flex items-center gap-2">
-            <CreditCard className="w-4 h-4" />
-            Paiement
-          </h3>
-
-          <div className="p-3 border rounded-md">
-            <div ref={cardElementRef} id="card-element" />
-          </div>
-        </div>
+        <ShippingForm form={form} />
+        <PaymentForm cardElementRef={cardElementRef} />
 
         <DialogFooter>
           <Button type="button" variant="outline" onClick={onClose}>
