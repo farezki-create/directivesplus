@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,9 +32,19 @@ export function usePDFGeneration(userId: string | null, text: string) {
         throw profileError;
       }
 
+      // Get user email from auth session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        throw new Error("No authenticated user");
+      }
+
       // Generate PDF with all responses
       const pdfDataUrl = PDFDocumentGenerator.generate(
-        profile,
+        {
+          ...profile,
+          unique_identifier: userId, // Add unique_identifier
+          email: session.user.email // Add email from session
+        },
         {
           ...responses,
           synthesis: { free_text: text }
