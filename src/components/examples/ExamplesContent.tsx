@@ -32,19 +32,20 @@ export function ExamplesContent({ onBack }: ExamplesContentProps) {
         return;
       }
 
-      // Récupérer la synthèse existante
+      // Vérifier d'abord si une synthèse existe déjà pour cet utilisateur
       const { data: existingSynthesis, error: fetchError } = await supabase
         .from('questionnaire_synthesis')
         .select('free_text')
         .eq('user_id', session.user.id)
         .maybeSingle();
 
-      if (fetchError) throw fetchError;
+      if (fetchError) {
+        throw fetchError;
+      }
 
-      // Préparer le nouveau texte
-      const currentText = existingSynthesis?.free_text || '';
-      
-      // Si la phrase est déjà présente, ne pas l'ajouter à nouveau
+      let currentText = existingSynthesis?.free_text || '';
+
+      // Éviter les doublons
       if (currentText.includes(phrase)) {
         toast({
           title: "Information",
@@ -53,19 +54,26 @@ export function ExamplesContent({ onBack }: ExamplesContentProps) {
         return;
       }
 
-      const updatedText = currentText + (currentText ? '\n\n' : '') + phrase;
+      // Construire le nouveau texte
+      const newText = currentText ? `${currentText}\n\n${phrase}` : phrase;
 
-      // Insérer ou mettre à jour en fonction de l'existence d'une synthèse
+      // Utiliser upsert avec précision sur la colonne de conflit
       const { error: upsertError } = await supabase
         .from('questionnaire_synthesis')
-        .upsert({
-          user_id: session.user.id,
-          free_text: updatedText
-        }, {
-          onConflict: 'user_id'
-        });
+        .upsert(
+          {
+            user_id: session.user.id,
+            free_text: newText,
+          },
+          {
+            onConflict: 'user_id',
+            returning: 'minimal'
+          }
+        );
 
-      if (upsertError) throw upsertError;
+      if (upsertError) {
+        throw upsertError;
+      }
 
       toast({
         title: "Succès",
@@ -120,6 +128,8 @@ export function ExamplesContent({ onBack }: ExamplesContentProps) {
         .upsert({
           user_id: session.user.id,
           free_text: updatedText
+        }, {
+          onConflict: 'user_id'
         });
 
       if (error) throw error;
