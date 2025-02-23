@@ -33,25 +33,39 @@ export function ExamplesContent({ onBack }: ExamplesContentProps) {
       }
 
       // Récupérer la synthèse existante
-      const { data: existingSynthesis } = await supabase
+      const { data: existingSynthesis, error: fetchError } = await supabase
         .from('questionnaire_synthesis')
         .select('free_text')
         .eq('user_id', session.user.id)
-        .single();
+        .maybeSingle();
+
+      if (fetchError) throw fetchError;
 
       // Préparer le nouveau texte
       const currentText = existingSynthesis?.free_text || '';
+      
+      // Si la phrase est déjà présente, ne pas l'ajouter à nouveau
+      if (currentText.includes(phrase)) {
+        toast({
+          title: "Information",
+          description: "Cette phrase est déjà présente dans votre synthèse",
+        });
+        return;
+      }
+
       const updatedText = currentText + (currentText ? '\n\n' : '') + phrase;
 
-      // Mettre à jour la synthèse
-      const { error } = await supabase
+      // Insérer ou mettre à jour en fonction de l'existence d'une synthèse
+      const { error: upsertError } = await supabase
         .from('questionnaire_synthesis')
         .upsert({
           user_id: session.user.id,
           free_text: updatedText
+        }, {
+          onConflict: 'user_id'
         });
 
-      if (error) throw error;
+      if (upsertError) throw upsertError;
 
       toast({
         title: "Succès",
