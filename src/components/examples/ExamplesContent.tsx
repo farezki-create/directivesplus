@@ -3,6 +3,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface ExamplesContentProps {
   onBack: () => void;
@@ -11,6 +19,11 @@ interface ExamplesContentProps {
 export function ExamplesContent({ onBack }: ExamplesContentProps) {
   const [showTemplates, setShowTemplates] = useState(false);
   const [showPhrases, setShowPhrases] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    type: 'add' | 'remove';
+    phrase: string;
+  }>({ isOpen: false, type: 'add', phrase: '' });
   const { toast } = useToast();
 
   const examplePhrases = [
@@ -143,6 +156,15 @@ export function ExamplesContent({ onBack }: ExamplesContentProps) {
     }
   };
 
+  const handleConfirm = async () => {
+    if (confirmDialog.type === 'add') {
+      await handleAddToSynthesis(confirmDialog.phrase);
+    } else {
+      await handleRemoveFromSynthesis(confirmDialog.phrase);
+    }
+    setConfirmDialog({ isOpen: false, type: 'add', phrase: '' });
+  };
+
   if (showPhrases) {
     return (
       <div className="space-y-6">
@@ -162,14 +184,22 @@ export function ExamplesContent({ onBack }: ExamplesContentProps) {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleAddToSynthesis(phrase.text)}
+                    onClick={() => setConfirmDialog({
+                      isOpen: true,
+                      type: 'add',
+                      phrase: phrase.text
+                    })}
                   >
                     Ajouter à ma synthèse
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleRemoveFromSynthesis(phrase.text)}
+                    onClick={() => setConfirmDialog({
+                      isOpen: true,
+                      type: 'remove',
+                      phrase: phrase.text
+                    })}
                   >
                     Supprimer de ma synthèse
                   </Button>
@@ -178,6 +208,38 @@ export function ExamplesContent({ onBack }: ExamplesContentProps) {
             </Card>
           ))}
         </div>
+
+        <Dialog open={confirmDialog.isOpen} onOpenChange={(isOpen) => 
+          setConfirmDialog(prev => ({ ...prev, isOpen }))
+        }>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                {confirmDialog.type === 'add' ? 'Ajouter à la synthèse' : 'Supprimer de la synthèse'}
+              </DialogTitle>
+              <DialogDescription>
+                {confirmDialog.type === 'add' 
+                  ? 'Voulez-vous vraiment ajouter cette phrase à votre synthèse ?'
+                  : 'Voulez-vous vraiment supprimer cette phrase de votre synthèse ?'
+                }
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="sm:justify-start gap-3">
+              <Button
+                variant="default"
+                onClick={handleConfirm}
+              >
+                Confirmer
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setConfirmDialog({ isOpen: false, type: 'add', phrase: '' })}
+              >
+                Annuler
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
