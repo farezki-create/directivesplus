@@ -57,24 +57,18 @@ export function ExamplesContent({ onBack }: ExamplesContentProps) {
         <div className="grid gap-6 md:grid-cols-2">
           <Button
             size="lg"
-            className="h-auto py-8 text-left flex flex-col items-start"
+            className="h-auto py-4 text-left"
             onClick={() => setShowTemplates(true)}
           >
-            <h3 className="text-lg font-semibold mb-2">Propositions de modèles pré-remplis</h3>
-            <p className="text-sm opacity-90">
-              Consultez des exemples de directives anticipées selon différentes préférences
-            </p>
+            <h3 className="text-lg font-semibold">Propositions de modèles pré-remplis</h3>
           </Button>
 
           <Button
             size="lg"
-            className="h-auto py-8 text-left flex flex-col items-start"
+            className="h-auto py-4 text-left"
             onClick={() => setShowPhrases(true)}
           >
-            <h3 className="text-lg font-semibold mb-2">Exemples de phrases à utiliser</h3>
-            <p className="text-sm opacity-90">
-              Consultez des exemples de phrases pour vos directives anticipées
-            </p>
+            <h3 className="text-lg font-semibold">Exemples de phrases à utiliser</h3>
           </Button>
         </div>
       </div>
