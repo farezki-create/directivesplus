@@ -59,13 +59,9 @@ export function ExamplesContent({ onBack }: ExamplesContentProps) {
       let currentText = existingSynthesis?.free_text || '';
 
       // Diviser le texte existant en sections
-      const trustedPersonSection = currentText.includes("PERSONNE DE CONFIANCE") 
-        ? currentText.split("PERSONNE DE CONFIANCE").pop()
-        : "";
-      
-      const mainText = currentText.includes("PERSONNE DE CONFIANCE")
-        ? currentText.split("PERSONNE DE CONFIANCE")[0]
-        : currentText;
+      const sections = currentText.split("PERSONNE DE CONFIANCE");
+      const mainText = sections[0] || '';
+      const trustedPersonSection = sections.length > 1 ? sections[1] : '';
 
       // Éviter les doublons
       if (mainText.includes(phrase)) {
@@ -138,22 +134,18 @@ export function ExamplesContent({ onBack }: ExamplesContentProps) {
       }
 
       // Séparer le texte en sections
-      const trustedPersonSection = existingSynthesis.free_text.includes("PERSONNE DE CONFIANCE")
-        ? existingSynthesis.free_text.split("PERSONNE DE CONFIANCE").pop()
-        : "";
-      
-      const mainText = existingSynthesis.free_text.includes("PERSONNE DE CONFIANCE")
-        ? existingSynthesis.free_text.split("PERSONNE DE CONFIANCE")[0]
-        : existingSynthesis.free_text;
+      const sections = existingSynthesis.free_text.split("PERSONNE DE CONFIANCE");
+      const mainText = sections[0] || '';
+      const trustedPersonSection = sections.length > 1 ? sections[1] : '';
 
-      // Retirer la phrase de la section principale
+      // Retirer la phrase de la section principale uniquement
       const updatedMainText = mainText
         .replace(phrase, '')
         .replace(/\n\n\n/g, '\n\n')
         .trim();
 
       // Reconstruire le texte complet
-      const updatedText = trustedPersonSection
+      const updatedText = trustedPersonSection 
         ? `${updatedMainText}\n\nPERSONNE DE CONFIANCE${trustedPersonSection}`
         : updatedMainText;
 
@@ -340,3 +332,4 @@ export function ExamplesContent({ onBack }: ExamplesContentProps) {
     </div>
   );
 }
+
