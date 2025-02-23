@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useState } from "react";
@@ -60,16 +59,12 @@ export function ExamplesContent({ onBack }: ExamplesContentProps) {
       // Utiliser upsert avec précision sur la colonne de conflit
       const { error: upsertError } = await supabase
         .from('questionnaire_synthesis')
-        .upsert(
-          {
-            user_id: session.user.id,
-            free_text: newText,
-          },
-          {
-            onConflict: 'user_id',
-            returning: 'minimal'
-          }
-        );
+        .upsert({
+          user_id: session.user.id,
+          free_text: newText
+        }, {
+          onConflict: 'user_id'
+        });
 
       if (upsertError) {
         throw upsertError;
@@ -106,7 +101,7 @@ export function ExamplesContent({ onBack }: ExamplesContentProps) {
         .from('questionnaire_synthesis')
         .select('free_text')
         .eq('user_id', session.user.id)
-        .single();
+        .maybeSingle();
 
       if (!existingSynthesis?.free_text) {
         toast({
