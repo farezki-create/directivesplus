@@ -1,15 +1,65 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useState } from "react";
 
 interface ExamplesContentProps {
   onBack: () => void;
 }
 
 export function ExamplesContent({ onBack }: ExamplesContentProps) {
+  const [showTemplates, setShowTemplates] = useState(false);
+
+  const commonPhrases = [
+    "Je souhaite que l'on privilégie mon confort et que l'on soulage mes douleurs",
+    "Je ne souhaite pas d'acharnement thérapeutique",
+    "Je souhaite être accompagné(e) par mes proches dans mes derniers moments",
+    "Je souhaite bénéficier d'une sédation profonde si nécessaire",
+    "Je souhaite que mes organes puissent être donnés après mon décès",
+  ];
+
+  if (!showTemplates) {
+    return (
+      <div className="space-y-6">
+        <Button 
+          onClick={onBack} 
+          variant="outline" 
+          className="mb-4"
+        >
+          Retour
+        </Button>
+        <div className="grid gap-6 md:grid-cols-2">
+          <Button
+            size="lg"
+            className="h-auto py-8 text-left flex flex-col items-start"
+            onClick={() => setShowTemplates(true)}
+          >
+            <h3 className="text-lg font-semibold mb-2">Propositions de modèles pré-remplis</h3>
+            <p className="text-sm opacity-90">
+              Consultez des exemples de directives anticipées selon différentes préférences
+            </p>
+          </Button>
+
+          <Card className="p-6">
+            <h3 className="text-lg font-semibold mb-4">Exemples de phrases à utiliser</h3>
+            <ul className="space-y-3">
+              {commonPhrases.map((phrase, index) => (
+                <li key={index} className="text-sm text-gray-600 flex items-start gap-2">
+                  <span className="text-primary">•</span>
+                  {phrase}
+                </li>
+              ))}
+            </ul>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <Button 
-        onClick={onBack} 
+        onClick={() => setShowTemplates(false)} 
         variant="outline" 
         className="mb-4"
       >
