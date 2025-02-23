@@ -9,6 +9,7 @@ interface ExamplesContentProps {
 
 export function ExamplesContent({ onBack }: ExamplesContentProps) {
   const [showTemplates, setShowTemplates] = useState(false);
+  const [showPhrases, setShowPhrases] = useState(false);
 
   const commonPhrases = [
     "Je souhaite que l'on privilégie mon confort et que l'on soulage mes douleurs",
@@ -17,6 +18,31 @@ export function ExamplesContent({ onBack }: ExamplesContentProps) {
     "Je souhaite bénéficier d'une sédation profonde si nécessaire",
     "Je souhaite que mes organes puissent être donnés après mon décès",
   ];
+
+  if (showPhrases) {
+    return (
+      <div className="space-y-6">
+        <Button 
+          onClick={() => setShowPhrases(false)} 
+          variant="outline" 
+          className="mb-4"
+        >
+          Retour
+        </Button>
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold mb-4">Exemples de phrases à utiliser</h3>
+          <ul className="space-y-3">
+            {commonPhrases.map((phrase, index) => (
+              <li key={index} className="text-sm text-gray-600 flex items-start gap-2">
+                <span className="text-primary">•</span>
+                {phrase}
+              </li>
+            ))}
+          </ul>
+        </Card>
+      </div>
+    );
+  }
 
   if (!showTemplates) {
     return (
@@ -40,17 +66,16 @@ export function ExamplesContent({ onBack }: ExamplesContentProps) {
             </p>
           </Button>
 
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Exemples de phrases à utiliser</h3>
-            <ul className="space-y-3">
-              {commonPhrases.map((phrase, index) => (
-                <li key={index} className="text-sm text-gray-600 flex items-start gap-2">
-                  <span className="text-primary">•</span>
-                  {phrase}
-                </li>
-              ))}
-            </ul>
-          </Card>
+          <Button
+            size="lg"
+            className="h-auto py-8 text-left flex flex-col items-start"
+            onClick={() => setShowPhrases(true)}
+          >
+            <h3 className="text-lg font-semibold mb-2">Exemples de phrases à utiliser</h3>
+            <p className="text-sm opacity-90">
+              Consultez des exemples de phrases pour vos directives anticipées
+            </p>
+          </Button>
         </div>
       </div>
     );
