@@ -3,7 +3,7 @@ import { toast } from "@/hooks/use-toast";
 import { UserProfile, TrustedPerson } from "../types";
 import { PDFDocumentGenerator } from "../PDFDocumentGenerator";
 
-export const handlePDFGeneration = (
+export const handlePDFGeneration = async (
   profile: UserProfile | null,
   responses: any,
   trustedPersons: TrustedPerson[],
@@ -21,7 +21,7 @@ export const handlePDFGeneration = (
     console.log("[PDFGeneration] Responses data:", responses);
 
     // Generate PDF
-    const pdfDataUrl = PDFDocumentGenerator.generate(profile, responses, trustedPersons);
+    const pdfDataUrl = await PDFDocumentGenerator.generate(profile, responses, trustedPersons);
     
     if (!pdfDataUrl) {
       console.error("[PDFGeneration] PDF generation failed - no data URL returned");

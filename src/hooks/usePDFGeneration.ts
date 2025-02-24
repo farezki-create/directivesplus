@@ -39,11 +39,11 @@ export function usePDFGeneration(userId: string | null, text: string) {
       }
 
       // Generate PDF with all responses
-      const pdfDataUrl = PDFDocumentGenerator.generate(
+      const pdfDataUrl = await PDFDocumentGenerator.generate(
         {
           ...profile,
-          unique_identifier: userId, // Add unique_identifier
-          email: session.user.email // Add email from session
+          unique_identifier: userId,
+          email: session.user.email
         },
         {
           ...responses,
