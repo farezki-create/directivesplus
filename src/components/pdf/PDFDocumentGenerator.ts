@@ -6,9 +6,10 @@ import { UserProfile, TrustedPerson } from "./types";
 import { PDFUserSection } from "./utils/PDFUserSection";
 import { PDFTrustedPersonSection } from "./utils/PDFTrustedPersonSection";
 import { PDFResponsesSection } from "./utils/PDFResponsesSection";
+import { supabase } from "@/integrations/supabase/client";
 
 export class PDFDocumentGenerator {
-  static generate(profile: UserProfile, responses: any, trustedPersons: TrustedPerson[]) {
+  static async generate(profile: UserProfile, responses: any, trustedPersons: TrustedPerson[]) {
     console.log("[PDFGenerator] Generating PDF with profile:", profile);
     const doc = new jsPDF({
       orientation: "portrait",
@@ -97,7 +98,7 @@ export class PDFDocumentGenerator {
     yPosition += 15;
     yPosition = PDFTrustedPersonSection.generate(doc, trustedPersons, yPosition);
 
-    // Section signature (simplifiée, sans cadre)
+    // Section signature
     yPosition += 30;
     doc.setFontSize(12);
     
@@ -129,17 +130,48 @@ export class PDFDocumentGenerator {
       { align: "center" }
     );
     yPosition += 15;
-    
-    // Signature (texte simple sans cadre)
-    doc.text(
-      "Signature :",
-      doc.internal.pageSize.getWidth() / 2,
-      yPosition,
-      { align: "center" }
-    );
+
+    // Récupérer la signature depuis la base de données
+    console.log("[PDFGenerator] Fetching signature for user:", profile.id);
+    const { data: signatureData } = await supabase
+      .from('user_signatures')
+      .select('signature_data')
+      .eq('user_id', profile.id)
+      .maybeSingle();
+
+    if (signatureData?.signature_data) {
+      // Ajouter la signature à chaque page
+      const totalPages = doc.internal.pages.length;
+      for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        
+        // Ajouter la signature en bas de page
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const signatureHeight = 20; // hauteur en mm pour la signature
+        
+        // Ajouter la signature
+        doc.addImage(
+          signatureData.signature_data,
+          'PNG',
+          margin.left,
+          pageHeight - margin.bottom - signatureHeight,
+          30, // largeur de la signature en mm
+          signatureHeight
+        );
+
+        // Ajouter le texte à côté de la signature
+        doc.setFontSize(8);
+        doc.setTextColor(100, 100, 100);
+        doc.text(
+          `Signé par ${fullName} le ${today}`,
+          margin.left + 35,
+          pageHeight - margin.bottom - signatureHeight / 2
+        );
+      }
+    }
 
     // Numérotation des pages
-    const totalPages = doc.internal.pages.length - 1;
+    const totalPages = doc.internal.pages.length;
     for (let i = 1; i <= totalPages; i++) {
       doc.setPage(i);
       doc.setFontSize(10);
