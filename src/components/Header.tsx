@@ -76,15 +76,6 @@ export const Header = () => {
               En savoir plus
             </Button>
             
-            {user && !isHomePage && (
-              <Button
-                variant="ghost"
-                onClick={() => navigate("/dashboard")}
-              >
-                Désignation de la personne de confiance
-              </Button>
-            )}
-            
             {user ? (
               <Button variant="default" onClick={handleSignOut}>
                 Déconnexion
@@ -106,3 +97,4 @@ export const Header = () => {
     </>
   );
 };
+
