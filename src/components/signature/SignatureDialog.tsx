@@ -1,7 +1,7 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useState, useRef } from "react";
+import { useRef } from "react";
 import SignatureCanvas from "react-signature-canvas";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -44,6 +44,7 @@ export function SignatureDialog({ open, onOpenChange, userId }: SignatureDialogP
     try {
       const signatureData = signatureRef.current.toDataURL();
       
+      // Utiliser une requête SQL brute pour insérer dans la table user_signatures
       const { error } = await supabase
         .from('user_signatures')
         .upsert({
