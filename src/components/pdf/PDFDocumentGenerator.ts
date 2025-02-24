@@ -1,4 +1,3 @@
-
 import { jsPDF } from "jspdf";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -11,6 +10,11 @@ import { supabase } from "@/integrations/supabase/client";
 export class PDFDocumentGenerator {
   static async generate(profile: UserProfile, responses: any, trustedPersons: TrustedPerson[]) {
     console.log("[PDFGenerator] Generating PDF with profile:", profile);
+    console.log("[PDFGenerator] Profile name details:", {
+      firstName: profile.first_name,
+      lastName: profile.last_name
+    });
+
     const doc = new jsPDF({
       orientation: "portrait",
       unit: "mm",
@@ -111,14 +115,13 @@ export class PDFDocumentGenerator {
     );
     yPosition += 10;
     
-    // Nom complet centré
-    const fullName = profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : '';
-    doc.text(
-      fullName,
-      doc.internal.pageSize.getWidth() / 2,
-      yPosition,
-      { align: "center" }
-    );
+    // Mise à jour du nom complet avec vérification
+    const fullName = profile ? 
+      `${profile.first_name || 'Non renseigné'} ${profile.last_name || 'Non renseigné'}`.trim() : 
+      'Non renseigné';
+    
+    console.log("[PDFGenerator] Generated full name:", fullName);
+
     yPosition += 15;
     
     // Date et lieu centrés
@@ -159,11 +162,11 @@ export class PDFDocumentGenerator {
           signatureHeight
         );
 
-        // Ajouter le texte à côté de la signature
-        doc.setFontSize(8);
-        doc.setTextColor(100, 100, 100);
+        // Ajouter le texte à côté de la signature avec plus de visibilité
+        doc.setFontSize(9); // Augmentation légère de la taille
+        doc.setTextColor(60, 60, 60); // Gris plus foncé pour meilleure lisibilité
         doc.text(
-          `Signé par ${fullName} le ${today}`,
+          `Signé par ${fullName} le ${format(new Date(), "d MMMM yyyy", { locale: fr })}`,
           margin.left + 35,
           pageHeight - margin.bottom - signatureHeight / 2
         );
