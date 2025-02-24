@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Mic, MicOff, Loader2, FileText } from "lucide-react";
+import { Mic, MicOff, Loader2, FileText, PenTool } from "lucide-react";
 import { PDFGenerator } from "@/components/PDFGenerator";
+import { SignatureDialog } from "@/components/signature/SignatureDialog";
 
 interface FreeTextInputProps {
   userId: string;
@@ -17,6 +18,7 @@ export const FreeTextInput = ({ userId }: FreeTextInputProps) => {
   const [isListening, setIsListening] = useState(false);
   const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
   const [showPdfGenerator, setShowPdfGenerator] = useState(false);
+  const [showSignatureDialog, setShowSignatureDialog] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -196,10 +198,23 @@ export const FreeTextInput = ({ userId }: FreeTextInputProps) => {
         )}
       </div>
       {showPdfGenerator && (
-        <div className="mt-4">
+        <div className="mt-4 space-y-4">
+          <Button 
+            onClick={() => setShowSignatureDialog(true)}
+            className="flex items-center gap-2"
+          >
+            <PenTool className="h-4 w-4" />
+            Signer le document
+          </Button>
           <PDFGenerator userId={userId} />
         </div>
       )}
+
+      <SignatureDialog
+        open={showSignatureDialog}
+        onOpenChange={setShowSignatureDialog}
+        userId={userId}
+      />
     </div>
   );
 };
