@@ -116,9 +116,9 @@ export class PDFDocumentGenerator {
     );
     yPosition += 10;
     
-    // Mise à jour du nom complet avec vérification
+    // Mise à jour du nom complet en utilisant les données du profil
     const fullName = profile ? 
-      `${profile.first_name || 'Non renseigné'} ${profile.last_name || 'Non renseigné'}`.trim() : 
+      `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Non renseigné' : 
       'Non renseigné';
     
     doc.text(
@@ -132,10 +132,11 @@ export class PDFDocumentGenerator {
 
     yPosition += 15;
     
-    // Date et lieu centrés
+    // Date et lieu centrés (correction du texte)
     const today = format(new Date(), "d MMMM yyyy", { locale: fr });
+    const location = profile?.city ? `à ${profile.city}` : '';
     doc.text(
-      `Fait le ${today} à ${profile?.city || '................................'}`,
+      `Fait le ${today} ${location}`,
       doc.internal.pageSize.getWidth() / 2,
       yPosition,
       { align: "center" }
@@ -169,7 +170,7 @@ export class PDFDocumentGenerator {
           signatureHeight
         );
 
-        // Ajouter le texte à côté de la signature avec plus de visibilité
+        // Ajouter le texte à côté de la signature
         doc.setFontSize(9);
         doc.setTextColor(60, 60, 60);
         doc.text(
