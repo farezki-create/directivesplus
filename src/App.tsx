@@ -1,14 +1,14 @@
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
-import { Index } from "./pages/Index";
-import { Auth } from "./pages/Auth";
-import { Dashboard } from "./pages/Dashboard";
-import { FreeText } from "./pages/FreeText";
-import { Examples } from "./pages/Examples";
-import { GeneratePDF } from "./pages/GeneratePDF";
-import { Reviews } from "./pages/Reviews";
-import { ResetPassword } from "./pages/ResetPassword";
+import Index from "./pages/Index";
+import Auth from "./pages/Auth";
+import Dashboard from "./pages/Dashboard";
+import FreeText from "./pages/FreeText";
+import Examples from "./pages/Examples";
+import GeneratePDF from "./pages/GeneratePDF";
+import Reviews from "./pages/Reviews";
+import ResetPassword from "./pages/ResetPassword";
 import { LanguageProvider } from "@/hooks/useLanguage";
 
 function App() {
