@@ -14,6 +14,7 @@ export function usePDFData() {
     const loadUserData = async () => {
       try {
         setLoading(true);
+        // Récupérer la session et les métadonnées de l'utilisateur
         const { data: { session } } = await supabase.auth.getSession();
         if (!session?.user) {
           console.error("[PDFData] No user session");
@@ -21,7 +22,11 @@ export function usePDFData() {
           return;
         }
 
-        console.log("[PDFData] Loading user profile for:", session.user.id);
+        const { data: user } = await supabase.auth.getUser();
+        const userData = user?.user?.user_metadata;
+        console.log("[PDFData] User metadata:", userData);
+
+        // Charger le profil existant ou en créer un nouveau
         const { data: profileData, error: profileError } = await supabase
           .from("profiles")
           .select("*")
@@ -39,13 +44,20 @@ export function usePDFData() {
           return;
         }
 
+        // Si le profil n'existe pas, on le crée avec les métadonnées de l'utilisateur
         if (!profileData) {
-          console.log("[PDFData] No profile found, creating one");
-          const { data: newProfile, error: insertError } = await supabase
+          console.log("[PDFData] Creating new profile with user metadata:", userData);
+          const newProfile = {
+            id: session.user.id,
+            first_name: userData?.first_name || null,
+            last_name: userData?.last_name || null
+          };
+
+          const { data: insertedProfile, error: insertError } = await supabase
             .from("profiles")
-            .insert([{ id: session.user.id }])
+            .insert([newProfile])
             .select()
-            .maybeSingle();
+            .single();
 
           if (insertError) {
             console.error("[PDFData] Error creating profile:", insertError);
@@ -53,20 +65,25 @@ export function usePDFData() {
           }
 
           setProfile({
-            ...newProfile,
+            ...insertedProfile,
             email: session.user.email,
             unique_identifier: session.user.id
           });
         } else {
-          // Add email from session
-          setProfile({ 
-            ...profileData, 
+          // Utiliser les données du profil existant ou les métadonnées de l'utilisateur
+          const updatedProfile = {
+            ...profileData,
+            first_name: profileData.first_name || userData?.first_name || null,
+            last_name: profileData.last_name || userData?.last_name || null,
             email: session.user.email,
             unique_identifier: session.user.id
-          });
+          };
+
+          console.log("[PDFData] Using profile data:", updatedProfile);
+          setProfile(updatedProfile);
         }
         
-        console.log("[PDFData] Loading trusted persons");
+        // Charger les personnes de confiance
         const { data: trustedPersonsData, error: trustedPersonsError } = await supabase
           .from("trusted_persons")
           .select("*")
