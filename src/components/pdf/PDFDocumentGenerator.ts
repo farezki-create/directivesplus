@@ -1,3 +1,4 @@
+
 import { jsPDF } from "jspdf";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -41,8 +42,8 @@ export class PDFDocumentGenerator {
     let yPosition = margin.top;
 
     // === PAGE 1 ===
-    // En-tête avec titre principal (taille réduite)
-    doc.setFontSize(20); // Réduction de la taille du titre
+    // En-tête avec titre principal
+    doc.setFontSize(20);
     doc.setFont("helvetica", "bold");
     doc.text(
       "Directives Anticipées",
@@ -50,7 +51,7 @@ export class PDFDocumentGenerator {
       yPosition,
       { align: "center" }
     );
-    yPosition += 15; // Réduction de l'espacement
+    yPosition += 15;
 
     // Sous-titre avec la date
     doc.setFontSize(12);
@@ -120,6 +121,13 @@ export class PDFDocumentGenerator {
       `${profile.first_name || 'Non renseigné'} ${profile.last_name || 'Non renseigné'}`.trim() : 
       'Non renseigné';
     
+    doc.text(
+      fullName,
+      doc.internal.pageSize.getWidth() / 2,
+      yPosition,
+      { align: "center" }
+    );
+    
     console.log("[PDFGenerator] Generated full name:", fullName);
 
     yPosition += 15;
@@ -150,21 +158,20 @@ export class PDFDocumentGenerator {
         
         // Ajouter la signature en bas de page
         const pageHeight = doc.internal.pageSize.getHeight();
-        const signatureHeight = 20; // hauteur en mm pour la signature
+        const signatureHeight = 20;
         
-        // Ajouter la signature
         doc.addImage(
           signatureData.signature_data,
           'PNG',
           margin.left,
           pageHeight - margin.bottom - signatureHeight,
-          30, // largeur de la signature en mm
+          30,
           signatureHeight
         );
 
         // Ajouter le texte à côté de la signature avec plus de visibilité
-        doc.setFontSize(9); // Augmentation légère de la taille
-        doc.setTextColor(60, 60, 60); // Gris plus foncé pour meilleure lisibilité
+        doc.setFontSize(9);
+        doc.setTextColor(60, 60, 60);
         doc.text(
           `Signé par ${fullName} le ${format(new Date(), "d MMMM yyyy", { locale: fr })}`,
           margin.left + 35,
