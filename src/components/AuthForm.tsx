@@ -1,3 +1,4 @@
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -6,6 +7,7 @@ import { ForgotPassword } from "@/components/ForgotPassword";
 import { BaseAuthFields } from "./auth/BaseAuthFields";
 import { SignUpFields } from "./auth/SignUpFields";
 import { FormValues, loginSchema, signUpSchema } from "./auth/types";
+import { useLanguage } from "@/hooks/useLanguage";
 
 type AuthFormProps = {
   isSignUp: boolean;
@@ -19,6 +21,7 @@ export const AuthForm = ({
   onToggleMode,
 }: AuthFormProps) => {
   const schema = isSignUp ? signUpSchema : loginSchema;
+  const { t } = useLanguage();
   
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -47,7 +50,7 @@ export const AuthForm = ({
         {isSignUp && <SignUpFields form={form} />}
 
         <Button type="submit" className="w-full">
-          {isSignUp ? "S'inscrire" : "Se connecter"}
+          {isSignUp ? t('register') : t('signIn')}
         </Button>
 
         {!isSignUp && <ForgotPassword email={form.getValues("email")} />}
@@ -55,24 +58,24 @@ export const AuthForm = ({
         <p className="text-center text-sm text-muted-foreground mt-4">
           {isSignUp ? (
             <>
-              Vous avez déjà un compte ?{" "}
+              {t('alreadyHaveAccount')}{" "}
               <button
                 type="button"
                 onClick={onToggleMode}
                 className="text-primary hover:underline"
               >
-                Connectez-vous
+                {t('signIn')}
               </button>
             </>
           ) : (
             <>
-              Vous n'avez pas de compte ?{" "}
+              {t('dontHaveAccount')}{" "}
               <button
                 type="button"
                 onClick={onToggleMode}
                 className="text-primary hover:underline"
               >
-                Inscrivez-vous
+                {t('register')}
               </button>
             </>
           )}

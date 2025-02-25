@@ -1,5 +1,7 @@
+
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface MainButtonsProps {
   onGeneralOpinionClick: () => void;
@@ -15,6 +17,7 @@ export function MainButtons({
   onPreferencesClick,
 }: MainButtonsProps) {
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const navigateToTrustedPersons = () => {
     navigate("/dashboard?tab=persons");
@@ -23,32 +26,32 @@ export function MainButtons({
   return (
     <div className="grid gap-4 md:grid-cols-2 max-w-2xl mx-auto mb-8">
       <Button onClick={onGeneralOpinionClick} size="lg">
-        Mon avis général
+        {t('generalOpinion')}
       </Button>
       <Button onClick={onLifeSupportClick} size="lg">
-        Maintien de la vie
+        {t('lifeSupport')}
       </Button>
       <Button onClick={onAdvancedIllnessClick} size="lg">
-        Maladie avancée
+        {t('advancedIllness')}
       </Button>
       <Button onClick={onPreferencesClick} size="lg">
-        Mes goûts et mes peurs
+        {t('preferences')}
       </Button>
       <Button onClick={navigateToTrustedPersons} size="lg">
-        Désignation de la personne de confiance
+        {t('trustedPerson')}
       </Button>
       <Button 
         onClick={() => navigate("/free-text")} 
         size="lg"
       >
-        Synthèse du questionnaire
+        {t('summary')}
       </Button>
       <Button 
         onClick={() => navigate("/examples")} 
         size="lg"
         className="md:col-span-2"
       >
-        Propositions de Directives Anticipées
+        {t('examples')}
       </Button>
     </div>
   );

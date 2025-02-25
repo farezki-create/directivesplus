@@ -1,6 +1,8 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AuthForm } from "@/components/AuthForm";
 import { FormValues } from "@/components/auth/types";
+import { useLanguage } from "@/hooks/useLanguage";
 
 type AuthCardProps = {
   isSignUp: boolean;
@@ -9,17 +11,16 @@ type AuthCardProps = {
 };
 
 export const AuthCard = ({ isSignUp, onSubmit, onToggleMode }: AuthCardProps) => {
+  const { t } = useLanguage();
+  
   return (
     <Card className="w-full">
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl font-bold text-center">
-          {isSignUp ? "Créer un compte" : "Se connecter"}
+          {isSignUp ? t('createAccount') : t('signIn')}
         </CardTitle>
         <CardDescription className="text-center text-muted-foreground">
-          {isSignUp 
-            ? "Inscrivez-vous pour accéder à vos directives anticipées"
-            : "Connectez-vous pour accéder à vos directives anticipées"
-          }
+          {isSignUp ? t('signUpDesc') : t('loginDesc')}
         </CardDescription>
       </CardHeader>
       <CardContent>

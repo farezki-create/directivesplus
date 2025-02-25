@@ -6,12 +6,15 @@ import { useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
 import { CreditCard, MessageSquare } from "lucide-react";
 import { PurchaseDialog } from "./purchase/PurchaseDialog";
+import { LanguageSelector } from "./LanguageSelector";
+import { useLanguage } from "@/hooks/useLanguage";
 
 export const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [user, setUser] = useState<User | null>(null);
   const [showPurchaseDialog, setShowPurchaseDialog] = useState(false);
+  const { t } = useLanguage();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -48,7 +51,7 @@ export const Header = () => {
               variant="ghost"
               onClick={handleHomeClick}
             >
-              Accueil
+              {t('home')}
             </Button>
 
             <Button
@@ -57,7 +60,7 @@ export const Header = () => {
               className="flex items-center gap-2"
             >
               <MessageSquare className="w-4 h-4" />
-              Avis
+              {t('reviews')}
             </Button>
 
             <Button
@@ -66,23 +69,25 @@ export const Header = () => {
               className="flex items-center gap-2"
             >
               <CreditCard className="w-4 h-4" />
-              Achat carte
+              {t('buyCard')}
             </Button>
 
             <Button
               variant="ghost"
               onClick={() => navigate("/dashboard")}
             >
-              En savoir plus
+              {t('learnMore')}
             </Button>
+            
+            <LanguageSelector />
             
             {user ? (
               <Button variant="default" onClick={handleSignOut}>
-                Déconnexion
+                {t('logout')}
               </Button>
             ) : (
               <Button variant="default" onClick={() => navigate("/auth")}>
-                Connexion
+                {t('login')}
               </Button>
             )}
           </nav>
@@ -97,4 +102,3 @@ export const Header = () => {
     </>
   );
 };
-
