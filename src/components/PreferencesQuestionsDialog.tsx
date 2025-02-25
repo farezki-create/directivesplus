@@ -1,9 +1,11 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { QuestionCard } from "./questions/QuestionCard";
 import { QuestionsDialogLayout } from "./questions/QuestionsDialogLayout";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface PreferencesQuestionsDialogProps {
   open: boolean;
@@ -16,6 +18,7 @@ export function PreferencesQuestionsDialog({
 }: PreferencesQuestionsDialogProps) {
   const [answers, setAnswers] = useState<Record<string, string[]>>({});
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const { data: questions, isLoading } = useQuery({
     queryKey: ["preferences-questions"],
@@ -109,7 +112,7 @@ export function PreferencesQuestionsDialog({
     <QuestionsDialogLayout
       open={open}
       onOpenChange={onOpenChange}
-      title="Mes goûts et mes peurs"
+      title={t('preferences')}
       onSubmit={handleSubmit}
       loading={isLoading}
       questionsLength={questions?.length || 0}
@@ -121,9 +124,9 @@ export function PreferencesQuestionsDialog({
           value={answers[question.id] || []}
           onValueChange={(value) => handleAnswerChange(question.id, value)}
           options={[
-            { label: "Oui", value: "oui" },
-            { label: "Non", value: "non" },
-            { label: "Je ne sais pas", value: "indecis" }
+            { label: t('yes'), value: "oui" },
+            { label: t('no'), value: "non" },
+            { label: t('dontKnow'), value: "indecis" }
           ]}
         />
       ))}

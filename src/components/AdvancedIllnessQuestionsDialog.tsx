@@ -1,7 +1,9 @@
+
 import { QuestionCard } from "./questions/QuestionCard";
 import { QuestionsDialogLayout } from "./questions/QuestionsDialogLayout";
 import { useAdvancedIllnessQuestions } from "@/hooks/useAdvancedIllnessQuestions";
 import { useAdvancedIllnessResponses } from "@/hooks/useAdvancedIllnessResponses";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface AdvancedIllnessQuestionsDialogProps {
   open: boolean;
@@ -14,17 +16,18 @@ export function AdvancedIllnessQuestionsDialog({
 }: AdvancedIllnessQuestionsDialogProps) {
   const { questions, loading } = useAdvancedIllnessQuestions(open);
   const { answers, handleAnswerChange, handleSubmit } = useAdvancedIllnessResponses(open);
+  const { t } = useLanguage();
 
   const getQuestionOptions = (question: any) => [
-    { value: 'oui', label: question.oui },
-    { value: 'non', label: question.non },
+    { value: 'oui', label: t('yes') },
+    { value: 'non', label: t('no') },
     { 
       value: 'oui_medical', 
-      label: question["Oui si l'équipe médicale le juge utile"]
+      label: t('yesMedicalTeam')
     },
     { 
       value: 'oui_confiance', 
-      label: question["Oui si ma personne de confiance le juge utile"]
+      label: t('yesTrustedPerson')
     }
   ];
 
@@ -32,8 +35,8 @@ export function AdvancedIllnessQuestionsDialog({
     <QuestionsDialogLayout
       open={open}
       onOpenChange={onOpenChange}
-      title="Maladie avancée"
-      description="Répondez aux questions suivantes concernant vos souhaits en cas de maladie avancée."
+      title={t('advancedIllnessTitle')}
+      description={t('advancedIllnessDesc')}
       onSubmit={() => handleSubmit(questions, onOpenChange)}
       loading={loading}
       questionsLength={questions.length}

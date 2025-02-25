@@ -3,6 +3,7 @@ import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { ResponseSection } from "./responses/ResponseSection";
 import { FreeTextInput } from "./free-text/FreeTextInput";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface ResponsesSummaryProps {
   userId: string;
@@ -11,6 +12,7 @@ interface ResponsesSummaryProps {
 export function ResponsesSummary({ userId }: ResponsesSummaryProps) {
   const { responses, isLoading, hasErrors } = useQuestionnairesResponses(userId);
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   console.log("[ResponsesSummary] User ID:", userId);
   console.log("[ResponsesSummary] Responses:", responses);
@@ -36,19 +38,19 @@ export function ResponsesSummary({ userId }: ResponsesSummaryProps) {
   return (
     <div className="space-y-8">
       <ResponseSection
-        title="Mon avis d'une façon générale"
+        title={t('generalOpinion')}
         responses={responses?.general || []}
       />
       <ResponseSection
-        title="Maintien en vie, que pensez-vous:"
+        title={t('lifeSupport')}
         responses={responses?.lifeSupport || []}
       />
       <ResponseSection
-        title="Maladie avancée"
+        title={t('advancedIllnessTitle')}
         responses={responses?.advancedIllness || []}
       />
       <ResponseSection
-        title="Mes goûts et mes peurs"
+        title={t('preferences')}
         responses={responses?.preferences || []}
       />
       <FreeTextInput userId={userId} />
