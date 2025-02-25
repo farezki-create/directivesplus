@@ -1,7 +1,9 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Header } from "@/components/Header";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface QuestionsDialogLayoutProps {
   open: boolean;
@@ -24,6 +26,8 @@ export function QuestionsDialogLayout({
   questionsLength,
   children
 }: QuestionsDialogLayoutProps) {
+  const { t } = useLanguage();
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[800px] h-[90vh] max-h-[90vh] p-0 flex flex-col">
@@ -53,7 +57,7 @@ export function QuestionsDialogLayout({
             </ScrollArea>
           ) : (
             <div className="py-8 text-center text-muted-foreground">
-              Aucune question trouvée.
+              {t('noQuestionFound')}
             </div>
           )}
 
@@ -63,7 +67,7 @@ export function QuestionsDialogLayout({
               className="w-full sm:w-auto"
               disabled={loading || questionsLength === 0}
             >
-              Enregistrer mes réponses
+              {t('saveMyAnswers')}
             </Button>
           </DialogFooter>
         </div>

@@ -1,8 +1,10 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { QuestionCard } from "./questions/QuestionCard";
 import { QuestionsDialogLayout } from "./questions/QuestionsDialogLayout";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface LifeSupportQuestionsDialogProps {
   open: boolean;
@@ -17,6 +19,7 @@ export function LifeSupportQuestionsDialog({
   const [loading, setLoading] = useState(true);
   const [answers, setAnswers] = useState<Record<string, string[]>>({});
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   useEffect(() => {
     async function fetchQuestions() {
@@ -94,79 +97,4 @@ export function LifeSupportQuestionsDialog({
       console.log('[LifeSupport] Prepared responses for insertion:', responses);
 
       const { error } = await supabase
-        .from('questionnaire_life_support_responses')
-        .upsert(responses, {
-          onConflict: 'user_id,question_id'
-        });
-
-      if (error) {
-        console.error('[LifeSupport] Error saving responses:', error);
-        toast({
-          title: "Erreur",
-          description: "Impossible d'enregistrer vos réponses. Veuillez réessayer.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      console.log('[LifeSupport] Responses saved successfully');
-      toast({
-        title: "Succès",
-        description: "Vos réponses ont été enregistrées.",
-      });
-      onOpenChange(false);
-    } catch (error) {
-      console.error('[LifeSupport] Unexpected error during submission:', error);
-      toast({
-        title: "Erreur",
-        description: "Une erreur inattendue s'est produite lors de l'enregistrement.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const getQuestionOptions = (question: any) => [
-    { value: 'indecision', label: question.Indécision },
-    { value: 'oui', label: question.Oui },
-    { 
-      value: 'oui_duree_moderee', 
-      label: question["Oui pour une durée modérée"]
-    },
-    { 
-      value: 'oui_medical', 
-      label: question["Oui seulement si l'équipe médicale le juge utile"]
-    },
-    { 
-      value: 'non_abandonner', 
-      label: question["Non rapidement abandonner le thérapeutique"]
-    },
-    { 
-      value: 'non_souffrance', 
-      label: question["La non souffrance est à privilégier"]
-    }
-  ];
-
-  return (
-    <QuestionsDialogLayout
-      open={open}
-      onOpenChange={onOpenChange}
-      title="Maintien en vie, que pensez-vous:"
-      onSubmit={handleSubmit}
-      loading={loading}
-      questionsLength={questions.length}
-    >
-      <div className="mb-4 text-lg font-bold">
-        Que pensez-vous de :
-      </div>
-      {questions.map((question) => (
-        <QuestionCard
-          key={question.id}
-          question={question}
-          value={answers[question.id] || []}
-          onValueChange={(value) => handleAnswerChange(question.id, value)}
-          options={getQuestionOptions(question)}
-        />
-      ))}
-    </QuestionsDialogLayout>
-  );
-}
+        .from('

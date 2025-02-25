@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { QuestionCard } from "./questions/QuestionCard";
 import { QuestionsDialogLayout } from "./questions/QuestionsDialogLayout";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface QuestionsDialogProps {
   open: boolean;
@@ -15,6 +16,7 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
   const [loading, setLoading] = useState(true);
   const [answers, setAnswers] = useState<Record<string, string[]>>({});
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   useEffect(() => {
     async function fetchQuestions() {
@@ -131,17 +133,17 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
   };
 
   const getQuestionOptions = (question: any) => [
-    { value: 'oui', label: question.OUI || "Oui" },
-    { value: 'non', label: question.NON || "Non" },
-    { value: 'je_ne_sais_pas', label: question.JE_NE_SAIS_PAS || "Je ne sais pas" }
+    { value: 'oui', label: t('yes') },
+    { value: 'non', label: t('no') },
+    { value: 'je_ne_sais_pas', label: t('dontKnow') }
   ];
 
   return (
     <QuestionsDialogLayout
       open={open}
       onOpenChange={onOpenChange}
-      title="Mon avis d'une façon générale"
-      description="Répondez aux questions suivantes concernant votre avis général sur vos directives anticipées."
+      title={t('generalOpinion')}
+      description={t('generalOpinionDesc')}
       onSubmit={handleSubmit}
       loading={loading}
       questionsLength={questions.length}

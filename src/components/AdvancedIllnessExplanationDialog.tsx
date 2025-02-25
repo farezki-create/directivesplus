@@ -1,5 +1,7 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface AdvancedIllnessExplanationDialogProps {
   open: boolean;
@@ -12,30 +14,32 @@ export function AdvancedIllnessExplanationDialog({
   onOpenChange, 
   onContinue 
 }: AdvancedIllnessExplanationDialogProps) {
+  const { t } = useLanguage();
+  
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle className="text-2xl font-semibold text-center">
-            Maladie avancée
+            {t('advancedIllnessTitle')}
           </DialogTitle>
         </DialogHeader>
         
         <div className="py-6">
           <p className="text-lg text-center mb-6">
-            Cette section concerne vos souhaits concernant les traitements en cas de maladie avancée.
+            {t('advancedIllnessDesc')}
           </p>
           
           <div className="aspect-video bg-muted rounded-lg mb-6">
             <p className="flex items-center justify-center h-full text-muted-foreground">
-              Vidéo explicative à venir
+              {t('explanatoryVideo')}
             </p>
           </div>
         </div>
 
         <DialogFooter>
           <Button onClick={onContinue} className="w-full sm:w-auto">
-            Continuer vers le questionnaire
+            {t('continueToQuestionnaire')}
           </Button>
         </DialogFooter>
       </DialogContent>
