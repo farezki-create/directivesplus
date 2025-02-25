@@ -97,4 +97,67 @@ export function LifeSupportQuestionsDialog({
       console.log('[LifeSupport] Prepared responses for insertion:', responses);
 
       const { error } = await supabase
-        .from('
+        .from('questionnaire_life_support_responses')
+        .upsert(responses, {
+          onConflict: 'user_id,question_id'
+        });
+
+      if (error) {
+        console.error('[LifeSupport] Error saving responses:', error);
+        toast({
+          title: "Erreur",
+          description: "Impossible d'enregistrer vos réponses. Veuillez réessayer.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      console.log('[LifeSupport] Responses saved successfully');
+      toast({
+        title: "Succès",
+        description: "Vos réponses ont été enregistrées.",
+      });
+      onOpenChange(false);
+    } catch (error) {
+      console.error('[LifeSupport] Unexpected error during submission:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur inattendue s'est produite lors de l'enregistrement.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Options de réponse traduites
+  const getQuestionOptions = (question: any) => [
+    { value: 'Oui', label: t('yes') },
+    { value: 'Oui pour une durée modérée', label: t('yesModerateTime') },
+    { value: 'Oui seulement si l\'équipe médicale le juge utile', label: t('yesMedicalTeam') },
+    { value: 'Non rapidement abandonner le thérapeutique', label: t('noQuicklyAbandon') },
+    { value: 'La non souffrance est à privilégier', label: t('prioritizeNoSuffering') },
+    { value: 'Indécision', label: t('indecision') }
+  ];
+
+  return (
+    <QuestionsDialogLayout
+      open={open}
+      onOpenChange={onOpenChange}
+      title={t('lifeSupport')}
+      description={t('advancedIllnessDesc')}
+      onSubmit={handleSubmit}
+      loading={loading}
+      questionsLength={questions.length}
+    >
+      {questions.map((question) => (
+        <QuestionCard
+          key={question.id}
+          question={question}
+          questionLabel={t('whatDoYouThink')}
+          value={answers[question.id] || []}
+          onValueChange={(value) => handleAnswerChange(question.id, value)}
+          options={getQuestionOptions(question)}
+        />
+      ))}
+    </QuestionsDialogLayout>
+  );
+}
