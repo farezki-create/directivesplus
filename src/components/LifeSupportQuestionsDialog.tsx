@@ -59,12 +59,23 @@ export function LifeSupportQuestionsDialog({
     }
   }, [open, toast]);
 
-  const handleAnswerChange = (questionId: string, value: string) => {
-    console.log('[LifeSupport] Answer change:', { questionId, value });
-    setAnswers(prev => ({
-      ...prev,
-      [questionId]: [value]
-    }));
+  const handleAnswerChange = (questionId: string, value: string, checked: boolean) => {
+    console.log('[LifeSupport] Answer change:', { questionId, value, checked });
+    
+    if (checked) {
+      setAnswers(prev => ({
+        ...prev,
+        [questionId]: [value]
+      }));
+    } else {
+      setAnswers(prev => {
+        const newValues = prev[questionId]?.filter(v => v !== value) || [];
+        return {
+          ...prev,
+          [questionId]: newValues
+        };
+      });
+    }
   };
 
   const handleSubmit = async () => {
@@ -152,9 +163,8 @@ export function LifeSupportQuestionsDialog({
         <QuestionCard
           key={question.id}
           question={question}
-          questionLabel={t('whatDoYouThink')}
           value={answers[question.id] || []}
-          onValueChange={(value) => handleAnswerChange(question.id, value)}
+          onValueChange={(value, checked) => handleAnswerChange(question.id, value, checked)}
           options={getQuestionOptions(question)}
         />
       ))}
