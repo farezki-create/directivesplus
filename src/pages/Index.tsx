@@ -59,8 +59,8 @@ const Index = () => {
   };
 
   const handleMoreInfoClick = () => {
-    // Ouvrir le document PDF local
-    window.open('/assets/documents/directives_anticipees.pdf', '_blank');
+    // Rediriger vers la page d'informations
+    navigate("/more-info");
   };
 
   return (
