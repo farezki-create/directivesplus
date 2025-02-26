@@ -59,8 +59,8 @@ const Index = () => {
   };
 
   const handleMoreInfoClick = () => {
-    // Ouvrir le document PDF de la HAS dans un nouvel onglet
-    window.open('https://www.has-sante.fr/upload/docs/application/pdf/2016-03/directives_anticipees_concernant_les_situations_de_fin_de_vie_v16.pdf', '_blank');
+    // Ouvrir le document PDF local
+    window.open('/assets/documents/directives_anticipees.pdf', '_blank');
   };
 
   return (
