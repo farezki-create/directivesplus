@@ -58,11 +58,6 @@ const Index = () => {
     dialogState.setPreferencesQuestionsOpen(true);
   };
 
-  const handleMoreInfoClick = () => {
-    // Rediriger vers la page d'informations
-    navigate("/more-info");
-  };
-
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -79,19 +74,12 @@ const Index = () => {
           </p>
 
           {!showSections ? (
-            <div className="grid gap-4 md:grid-cols-2 max-w-lg mx-auto">
+            <div className="text-center">
               <Button
                 size="lg"
                 onClick={() => setShowSections(true)}
               >
                 Commencer
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={handleMoreInfoClick}
-              >
-                En savoir plus
               </Button>
             </div>
           ) : (

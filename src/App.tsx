@@ -9,7 +9,6 @@ import Examples from "./pages/Examples";
 import GeneratePDF from "./pages/GeneratePDF";
 import Reviews from "./pages/Reviews";
 import ResetPassword from "./pages/ResetPassword";
-import MoreInfo from "./pages/MoreInfo";
 import { LanguageProvider } from "@/hooks/useLanguage";
 
 function App() {
@@ -25,7 +24,6 @@ function App() {
           <Route path="/pdf" element={<GeneratePDF />} />
           <Route path="/reviews" element={<Reviews />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/more-info" element={<MoreInfo />} />
         </Routes>
         <Toaster />
       </Router>

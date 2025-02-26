@@ -71,13 +71,6 @@ export const Header = () => {
               <CreditCard className="w-4 h-4" />
               {t('buyCard')}
             </Button>
-
-            <Button
-              variant="ghost"
-              onClick={() => navigate("/dashboard")}
-            >
-              {t('learnMore')}
-            </Button>
             
             <LanguageSelector />
             
