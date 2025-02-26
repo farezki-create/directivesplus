@@ -58,8 +58,11 @@ const Index = () => {
     dialogState.setPreferencesQuestionsOpen(true);
   };
 
-  const handleLearnMore = () => {
-    // Ouvrir la page d'information ou une modal avec plus d'informations
+  const navigateToGuideInfo = () => {
+    navigate("/more-info");
+  };
+
+  const navigateToAppInfo = () => {
     navigate("/dashboard");
   };
 
@@ -79,20 +82,31 @@ const Index = () => {
           </p>
 
           {!showSections ? (
-            <div className="grid gap-4 md:grid-cols-2 max-w-lg mx-auto">
+            <div className="flex flex-col space-y-4 max-w-lg mx-auto">
               <Button
                 size="lg"
                 onClick={() => setShowSections(true)}
               >
                 Commencer
               </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={handleLearnMore}
-              >
-                En savoir plus
-              </Button>
+              <div className="grid gap-4 md:grid-cols-2">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={navigateToGuideInfo}
+                  className="text-sm md:text-base text-center h-auto py-2"
+                >
+                  Pourquoi et comment rédiger mes directives anticipées ?
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={navigateToAppInfo}
+                  className="text-sm md:text-base h-auto py-2"
+                >
+                  Informations sur l'application DirectivesPlus
+                </Button>
+              </div>
             </div>
           ) : (
             <MainButtons 
