@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
 import { useState } from "react";
@@ -71,28 +70,23 @@ const Index = () => {
     try {
       setIsLoading(true);
       
-      console.log("Recherche du document 'En savoir plus HAS.pdf'...");
+      console.log("Tentative de récupération du document depuis le stockage...");
       
-      // Récupérer le PDF depuis Supabase
       const { data, error } = await supabase
+        .storage
         .from('pdf_documents')
-        .select('*')
-        .eq('file_name', 'En savoir plus HAS.pdf');
+        .getPublicUrl('En savoir plus HAS.pdf');
 
       if (error) {
-        console.error("Erreur Supabase:", error);
+        console.error("Erreur lors de l'accès au stockage:", error);
         throw error;
       }
 
-      console.log("Résultat de la requête:", data);
-      
-      if (data && data.length > 0 && data[0].file_path) {
-        // Ouvrir le PDF dans un nouvel onglet
-        const url = data[0].file_path;
-        console.log("Ouverture du PDF à l'URL:", url);
-        window.open(url, '_blank');
+      if (data?.publicUrl) {
+        console.log("URL publique obtenue:", data.publicUrl);
+        window.open(data.publicUrl, '_blank');
       } else {
-        console.error("Document non trouvé dans la réponse:", data);
+        console.error("URL publique non trouvée dans la réponse:", data);
         toast({
           title: "Document introuvable",
           description: "Le guide sur les directives anticipées n'a pas été trouvé.",
@@ -119,7 +113,6 @@ const Index = () => {
     setShowMoreInfo(false);
   };
 
-  // Si nous affichons la page d'informations supplémentaires
   if (showMoreInfo) {
     return (
       <div className="min-h-screen flex flex-col">
