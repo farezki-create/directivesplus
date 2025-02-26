@@ -58,6 +58,11 @@ const Index = () => {
     dialogState.setPreferencesQuestionsOpen(true);
   };
 
+  const handleLearnMore = () => {
+    // Ouvrir la page d'information ou une modal avec plus d'informations
+    navigate("/dashboard");
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -74,12 +79,19 @@ const Index = () => {
           </p>
 
           {!showSections ? (
-            <div className="text-center">
+            <div className="grid gap-4 md:grid-cols-2 max-w-lg mx-auto">
               <Button
                 size="lg"
                 onClick={() => setShowSections(true)}
               >
                 Commencer
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={handleLearnMore}
+              >
+                En savoir plus
               </Button>
             </div>
           ) : (
