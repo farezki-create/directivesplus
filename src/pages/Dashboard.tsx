@@ -1,8 +1,9 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TrustedPersonsList } from "@/components/trusted-persons/TrustedPersonsList";
 import { TrustedPersonForm } from "@/components/trusted-persons/TrustedPersonForm";
@@ -19,18 +20,27 @@ export default function Dashboard() {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user) {
+          navigate("/auth");
+          return;
+        }
+        setUserId(session.user.id);
+      } catch (error) {
+        console.error("Error checking auth:", error);
         navigate("/auth");
-        return;
       }
-      setUserId(session.user.id);
     };
     checkAuth();
   }, [navigate]);
 
   if (!userId) {
-    return null;
+    return (
+      <div className="container mx-auto py-8">
+        <p>Chargement...</p>
+      </div>
+    );
   }
 
   return (
@@ -61,37 +71,44 @@ export default function Dashboard() {
         <Tabs defaultValue="directives">
           <TabsList>
             <TabsTrigger value="directives">Mes directives</TabsTrigger>
-            <TabsTrigger value="trusted-persons">Mes personnes de confiance</TabsTrigger>
+            <TabsTrigger value="trusted-persons">Personnes de confiance</TabsTrigger>
           </TabsList>
+          
           <TabsContent value="directives" className="space-y-4">
             <Card>
               <CardHeader>
                 <CardTitle>Mes directives anticipées</CardTitle>
                 <CardDescription>
-                  Générez et visualisez vos directives anticipées.
+                  Générez vos directives anticipées au format PDF
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  <PDFGenerator userId={userId} onPdfGenerated={setPdfUrl} />
-                </div>
+                {userId && (
+                  <div className="flex flex-col gap-4">
+                    <PDFGenerator userId={userId} onPdfGenerated={setPdfUrl} />
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
+          
           <TabsContent value="trusted-persons" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Mes personnes de confiance</CardTitle>
+                <CardTitle>Personnes de confiance</CardTitle>
                 <CardDescription>
-                  Ajoutez et gérez vos personnes de confiance.
+                  Désignez vos personnes de confiance
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <TrustedPersonForm userId={userId} />
-                <TrustedPersonsList userId={userId} />
+              <CardContent className="space-y-8">
+                <TrustedPersonForm />
+                <TrustedPersonsList />
               </CardContent>
-              <CardFooter>
-                <TrustedPersonPDFGenerator />
+              <CardFooter className="justify-between border-t pt-4">
+                <p className="text-sm text-muted-foreground">
+                  Vous pouvez désigner jusqu'à 5 personnes de confiance.
+                </p>
+                {userId && <TrustedPersonPDFGenerator userId={userId} />}
               </CardFooter>
             </Card>
           </TabsContent>
