@@ -1,8 +1,7 @@
-
 import { useCallback, useState, useEffect, createContext, useContext, ReactNode } from 'react';
 
 // Définir les langues supportées
-export type SupportedLanguage = 'fr' | 'en' | 'es';
+export type SupportedLanguage = 'fr' | 'en';
 
 // Définir les traductions
 const translations: Record<string, Record<string, string>> = {
@@ -52,7 +51,6 @@ const translations: Record<string, Record<string, string>> = {
     language: 'Language',
     french: 'French',
     english: 'English',
-    spanish: 'Spanish',
   },
   fr: {
     welcomeMessage: 'Bienvenue sur notre application',
@@ -100,7 +98,6 @@ const translations: Record<string, Record<string, string>> = {
     language: 'Langue',
     french: 'Français',
     english: 'Anglais',
-    spanish: 'Espagnol',
   }
 };
 

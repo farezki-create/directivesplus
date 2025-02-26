@@ -15,7 +15,6 @@ export const LanguageSelector = () => {
   const languages: { code: SupportedLanguage; label: string }[] = [
     { code: 'fr', label: t('french') },
     { code: 'en', label: t('english') },
-    { code: 'es', label: t('spanish') },
   ];
 
   return (
