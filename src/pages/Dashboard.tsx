@@ -1,8 +1,9 @@
+
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TrustedPersonsList } from "@/components/trusted-persons/TrustedPersonsList";
 import { TrustedPersonForm } from "@/components/trusted-persons/TrustedPersonForm";
@@ -13,9 +14,14 @@ import { FileText, PenTool, FileUp } from "lucide-react";
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [userId, setUserId] = useState<string | null>(null);
   const [showSignatureDialog, setShowSignatureDialog] = useState(false);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  
+  // Determine which tab should be active based on URL query params
+  const searchParams = new URLSearchParams(location.search);
+  const defaultTab = searchParams.get('tab') === 'persons' ? 'trusted-persons' : 'directives';
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -28,6 +34,16 @@ export default function Dashboard() {
     };
     checkAuth();
   }, [navigate]);
+
+  const handleSaveTrustedPerson = async () => {
+    console.log("Personne de confiance enregistrée");
+    return Promise.resolve();
+  };
+
+  const handleRemoveTrustedPerson = async (id: string) => {
+    console.log("Personne de confiance supprimée");
+    return Promise.resolve();
+  };
 
   if (!userId) {
     return null;
@@ -58,7 +74,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <Tabs defaultValue="directives">
+        <Tabs defaultValue={defaultTab}>
           <TabsList>
             <TabsTrigger value="directives">Mes directives</TabsTrigger>
             <TabsTrigger value="trusted-persons">Mes personnes de confiance</TabsTrigger>
@@ -87,8 +103,11 @@ export default function Dashboard() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <TrustedPersonForm userId={userId} />
-                <TrustedPersonsList userId={userId} />
+                <TrustedPersonForm onSave={handleSaveTrustedPerson} />
+                <TrustedPersonsList 
+                  persons={[]} 
+                  onRemove={handleRemoveTrustedPerson} 
+                />
               </CardContent>
               <CardFooter>
                 <TrustedPersonPDFGenerator />
