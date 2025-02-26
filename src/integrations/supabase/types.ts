@@ -264,42 +264,6 @@ export type Database = {
         }
         Relationships: []
       }
-      pdf_documents: {
-        Row: {
-          content_type: string | null
-          created_at: string | null
-          description: string | null
-          file_name: string
-          file_path: string
-          file_size: number | null
-          id: string
-          updated_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          content_type?: string | null
-          created_at?: string | null
-          description?: string | null
-          file_name: string
-          file_path: string
-          file_size?: number | null
-          id?: string
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          content_type?: string | null
-          created_at?: string | null
-          description?: string | null
-          file_name?: string
-          file_path?: string
-          file_size?: number | null
-          id?: string
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
       preferences_questions: {
         Row: {
           created_at: string | null

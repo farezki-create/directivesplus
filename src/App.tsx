@@ -9,7 +9,6 @@ import Examples from "./pages/Examples";
 import GeneratePDF from "./pages/GeneratePDF";
 import Reviews from "./pages/Reviews";
 import ResetPassword from "./pages/ResetPassword";
-import PDFManagement from "./pages/PDFManagement";
 import { LanguageProvider } from "@/hooks/useLanguage";
 
 function App() {
@@ -23,7 +22,6 @@ function App() {
           <Route path="/free-text" element={<FreeText />} />
           <Route path="/examples" element={<Examples />} />
           <Route path="/pdf" element={<GeneratePDF />} />
-          <Route path="/pdf-management" element={<PDFManagement />} />
           <Route path="/reviews" element={<Reviews />} />
           <Route path="/reset-password" element={<ResetPassword />} />
         </Routes>
