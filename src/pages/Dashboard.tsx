@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -14,9 +14,14 @@ import { FileText, PenTool, FileUp } from "lucide-react";
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [userId, setUserId] = useState<string | null>(null);
   const [showSignatureDialog, setShowSignatureDialog] = useState(false);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  
+  // Determine which tab should be active based on URL query params
+  const searchParams = new URLSearchParams(location.search);
+  const defaultTab = searchParams.get('tab') === 'persons' ? 'trusted-persons' : 'directives';
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -59,7 +64,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <Tabs defaultValue="directives">
+        <Tabs defaultValue={defaultTab}>
           <TabsList>
             <TabsTrigger value="directives">Mes directives</TabsTrigger>
             <TabsTrigger value="trusted-persons">Mes personnes de confiance</TabsTrigger>
@@ -88,8 +93,11 @@ export default function Dashboard() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <TrustedPersonForm />
-                <TrustedPersonsList />
+                <TrustedPersonForm onSave={() => console.log("Personne de confiance enregistrée")} />
+                <TrustedPersonsList 
+                  persons={[]} 
+                  onRemove={() => console.log("Personne de confiance supprimée")} 
+                />
               </CardContent>
               <CardFooter>
                 <TrustedPersonPDFGenerator />
