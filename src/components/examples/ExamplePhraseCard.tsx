@@ -1,6 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface ExamplePhraseCardProps {
   text: string;
@@ -13,6 +14,8 @@ export function ExamplePhraseCard({
   onAddToSynthesis, 
   onRemoveFromSynthesis 
 }: ExamplePhraseCardProps) {
+  const { t } = useLanguage();
+  
   return (
     <Card className="p-6">
       <div className="space-y-4">
@@ -23,14 +26,14 @@ export function ExamplePhraseCard({
             size="sm"
             onClick={() => onAddToSynthesis(text)}
           >
-            Ajouter à ma synthèse
+            {t('addToSynthesis')}
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={() => onRemoveFromSynthesis(text)}
           >
-            Supprimer de ma synthèse
+            {t('removeFromSynthesis')}
           </Button>
         </div>
       </div>

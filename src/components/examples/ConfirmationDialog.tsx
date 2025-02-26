@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/hooks/useLanguage";
 
 export interface ConfirmDialogState {
   isOpen: boolean;
@@ -28,20 +29,18 @@ export function ConfirmationDialog({
   onConfirm,
   onCancel
 }: ConfirmationDialogProps) {
-  const { isOpen, type, phrase } = dialogState;
+  const { isOpen, type } = dialogState;
+  const { t } = useLanguage();
   
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {type === 'add' ? 'Ajouter à la synthèse' : 'Supprimer de la synthèse'}
+            {type === 'add' ? t('confirmAdd') : t('confirmRemove')}
           </DialogTitle>
           <DialogDescription>
-            {type === 'add' 
-              ? 'Voulez-vous vraiment ajouter cette phrase à votre synthèse ?'
-              : 'Voulez-vous vraiment supprimer cette phrase de votre synthèse ?'
-            }
+            {type === 'add' ? t('confirmAddDesc') : t('confirmRemoveDesc')}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="sm:justify-start gap-3">
@@ -49,13 +48,13 @@ export function ConfirmationDialog({
             variant="default"
             onClick={onConfirm}
           >
-            Confirmer
+            {t('confirm')}
           </Button>
           <Button
             variant="outline"
             onClick={onCancel}
           >
-            Annuler
+            {t('cancel')}
           </Button>
         </DialogFooter>
       </DialogContent>

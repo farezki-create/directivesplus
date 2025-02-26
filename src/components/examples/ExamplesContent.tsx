@@ -7,6 +7,7 @@ import { TemplatesList } from "./TemplatesList";
 import { ExamplePhrasesList } from "./ExamplePhrasesList";
 import { examplePhrases } from "./data/examplePhrases";
 import { addPhraseToSynthesis, removePhraseFromSynthesis } from "./utils/synthesisUtils";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface ExamplesContentProps {
   onBack: () => void;
@@ -16,14 +17,15 @@ export function ExamplesContent({ onBack }: ExamplesContentProps) {
   const [showTemplates, setShowTemplates] = useState(false);
   const [showPhrases, setShowPhrases] = useState(false);
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const handleAddToSynthesis = async (phrase: string) => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) {
         toast({
-          title: "Erreur",
-          description: "Vous devez être connecté pour ajouter une phrase à votre synthèse",
+          title: t('error'),
+          description: t('mustBeLoggedIn'),
           variant: "destructive",
         });
         return;
@@ -33,23 +35,23 @@ export function ExamplesContent({ onBack }: ExamplesContentProps) {
       
       if (result.isDuplicate) {
         toast({
-          title: "Information",
-          description: "Cette phrase est déjà présente dans votre synthèse",
+          title: t('information'),
+          description: t('phraseAlreadyExists'),
         });
         return;
       }
 
       if (result.success) {
         toast({
-          title: "Succès",
-          description: "La phrase a été ajoutée à votre synthèse",
+          title: t('success'),
+          description: t('phraseAdded'),
         });
       }
     } catch (error) {
       console.error("Erreur lors de l'ajout de la phrase:", error);
       toast({
-        title: "Erreur",
-        description: "Impossible d'ajouter la phrase à votre synthèse",
+        title: t('error'),
+        description: t('errorAddingPhrase'),
         variant: "destructive",
       });
     }
@@ -60,8 +62,8 @@ export function ExamplesContent({ onBack }: ExamplesContentProps) {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) {
         toast({
-          title: "Erreur",
-          description: "Vous devez être connecté pour modifier votre synthèse",
+          title: t('error'),
+          description: t('mustBeLoggedIn'),
           variant: "destructive",
         });
         return;
@@ -71,23 +73,23 @@ export function ExamplesContent({ onBack }: ExamplesContentProps) {
       
       if (result.notFound) {
         toast({
-          title: "Information",
-          description: "Cette phrase n'est pas présente dans votre synthèse",
+          title: t('information'),
+          description: t('phraseNotFound'),
         });
         return;
       }
 
       if (result.success) {
         toast({
-          title: "Succès",
-          description: "La phrase a été retirée de votre synthèse",
+          title: t('success'),
+          description: t('phraseRemoved'),
         });
       }
     } catch (error) {
       console.error("Erreur lors de la suppression de la phrase:", error);
       toast({
-        title: "Erreur",
-        description: "Impossible de retirer la phrase de votre synthèse",
+        title: t('error'),
+        description: t('errorRemovingPhrase'),
         variant: "destructive",
       });
     }
@@ -112,7 +114,7 @@ export function ExamplesContent({ onBack }: ExamplesContentProps) {
           variant="outline" 
           className="mb-4"
         >
-          Retour
+          {t('back')}
         </Button>
         <div className="grid gap-6 md:grid-cols-2">
           <Button
@@ -120,7 +122,7 @@ export function ExamplesContent({ onBack }: ExamplesContentProps) {
             className="h-auto py-4 text-left"
             onClick={() => setShowTemplates(true)}
           >
-            <h3 className="text-lg font-semibold">Propositions de modèles pré-remplis</h3>
+            <h3 className="text-lg font-semibold">{t('templatesTitle')}</h3>
           </Button>
 
           <Button
@@ -128,7 +130,7 @@ export function ExamplesContent({ onBack }: ExamplesContentProps) {
             className="h-auto py-4 text-left"
             onClick={() => setShowPhrases(true)}
           >
-            <h3 className="text-lg font-semibold">Exemples de phrases à utiliser</h3>
+            <h3 className="text-lg font-semibold">{t('phrasesTitle')}</h3>
           </Button>
         </div>
       </div>
@@ -142,7 +144,7 @@ export function ExamplesContent({ onBack }: ExamplesContentProps) {
         variant="outline" 
         className="mb-4"
       >
-        Retour
+        {t('back')}
       </Button>
       <TemplatesList />
     </div>
