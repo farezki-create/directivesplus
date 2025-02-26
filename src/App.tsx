@@ -1,15 +1,17 @@
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { Toaster } from "@/components/ui/toaster";
 import Index from "./pages/Index";
-import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
+import Auth from "./pages/Auth";
+import { LanguageProvider } from "./hooks/useLanguage";
+import { Toaster } from "./components/ui/toaster";
+import { Toaster as Sonner } from "sonner";
+import ResetPassword from "./pages/ResetPassword";
 import FreeText from "./pages/FreeText";
 import Examples from "./pages/Examples";
 import GeneratePDF from "./pages/GeneratePDF";
 import Reviews from "./pages/Reviews";
-import ResetPassword from "./pages/ResetPassword";
-import { LanguageProvider } from "@/hooks/useLanguage";
+import FAQ from "./pages/FAQ";
 
 function App() {
   return (
@@ -17,16 +19,18 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/auth" element={<Auth />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/free-text" element={<FreeText />} />
           <Route path="/examples" element={<Examples />} />
-          <Route path="/pdf" element={<GeneratePDF />} />
+          <Route path="/generate-pdf" element={<GeneratePDF />} />
           <Route path="/reviews" element={<Reviews />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/faq" element={<FAQ />} />
         </Routes>
-        <Toaster />
       </Router>
+      <Toaster />
+      <Sonner position="top-center" />
     </LanguageProvider>
   );
 }
