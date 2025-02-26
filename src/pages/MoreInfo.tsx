@@ -35,11 +35,11 @@ const MoreInfo = () => {
         <div className="max-w-4xl mx-auto">
           <Button 
             variant="ghost" 
-            onClick={() => navigate(-1)}
+            onClick={() => navigate("/")}
             className="mb-6"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Retour
+            Retour à l'accueil
           </Button>
           
           <h1 className="text-3xl font-bold mb-6">
@@ -52,11 +52,12 @@ const MoreInfo = () => {
               <h3 className="text-lg font-medium text-amber-800 mb-2">Document non disponible</h3>
               <p className="text-amber-700">
                 Le document PDF des directives anticipées n'est pas disponible pour le moment.
+                Assurez-vous que le fichier est bien placé dans le dossier public/assets/documents/.
               </p>
               <Button 
                 variant="outline"
                 className="mt-4"
-                onClick={() => navigate(-1)}
+                onClick={() => navigate("/")}
               >
                 Retourner à l'accueil
               </Button>
