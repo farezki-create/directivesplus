@@ -1,8 +1,9 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TrustedPersonsList } from "@/components/trusted-persons/TrustedPersonsList";
 import { TrustedPersonForm } from "@/components/trusted-persons/TrustedPersonForm";
@@ -87,8 +88,8 @@ export default function Dashboard() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <TrustedPersonForm userId={userId} />
-                <TrustedPersonsList userId={userId} />
+                <TrustedPersonForm />
+                <TrustedPersonsList />
               </CardContent>
               <CardFooter>
                 <TrustedPersonPDFGenerator />

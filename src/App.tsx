@@ -1,9 +1,10 @@
+
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { ThemeProvider } from "@/components/ThemeProvider";
-import Layout from "@/components/Layout";
+import { ThemeProvider } from "@/components/ui/theme-provider";
+import Layout from "@/components/layout";
 import Index from "@/pages/Index";
 import Auth from "@/pages/Auth";
 import Dashboard from "@/pages/Dashboard";
@@ -30,7 +31,7 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <BrowserRouter>
-      <ThemeProvider>
+      <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
         <QueryClientProvider client={queryClient}>
           <Routes>
             <Route path="/" element={<Layout isIndex />}>
