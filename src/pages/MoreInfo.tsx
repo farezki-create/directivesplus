@@ -1,11 +1,31 @@
 
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 const MoreInfo = () => {
   const navigate = useNavigate();
+  const [pdfError, setPdfError] = useState(false);
+
+  useEffect(() => {
+    // Vérifier si le PDF est accessible
+    const checkPdfExists = async () => {
+      try {
+        const response = await fetch('/assets/documents/directives_anticipees.pdf');
+        if (!response.ok) {
+          setPdfError(true);
+          console.error("PDF not found:", response.status);
+        }
+      } catch (error) {
+        setPdfError(true);
+        console.error("Error checking PDF:", error);
+      }
+    };
+    
+    checkPdfExists();
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -26,13 +46,31 @@ const MoreInfo = () => {
             Les directives anticipées
           </h1>
           
-          <div className="border rounded-lg overflow-hidden shadow-md">
-            <iframe 
-              src="/assets/documents/directives_anticipees.pdf" 
-              className="w-full h-[800px]"
-              title="Directives anticipées"
-            />
-          </div>
+          {pdfError ? (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 text-center">
+              <FileText className="mx-auto h-12 w-12 text-amber-400 mb-4" />
+              <h3 className="text-lg font-medium text-amber-800 mb-2">Document non disponible</h3>
+              <p className="text-amber-700">
+                Le document PDF des directives anticipées n'est pas disponible pour le moment.
+              </p>
+              <Button 
+                variant="outline"
+                className="mt-4"
+                onClick={() => navigate(-1)}
+              >
+                Retourner à l'accueil
+              </Button>
+            </div>
+          ) : (
+            <div className="border rounded-lg overflow-hidden shadow-md">
+              <iframe 
+                src="/assets/documents/directives_anticipees.pdf" 
+                className="w-full h-[800px]"
+                title="Directives anticipées"
+                onError={() => setPdfError(true)}
+              />
+            </div>
+          )}
         </div>
       </main>
     </div>
