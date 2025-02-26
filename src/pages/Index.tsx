@@ -105,6 +105,10 @@ const Index = () => {
   const navigateToAppInfo = () => {
     navigate("/dashboard");
   };
+  
+  const navigateToFAQ = () => {
+    navigate("/faq");
+  };
 
   const handleBackToHome = () => {
     setShowMoreInfo(false);
@@ -130,6 +134,15 @@ const Index = () => {
                 disabled={isLoading}
               >
                 {isLoading ? 'Chargement...' : 'Pourquoi et comment rédiger mes directives anticipées ?'}
+              </Button>
+              
+              <Button
+                variant="default"
+                size="lg"
+                onClick={navigateToFAQ}
+                className="w-full max-w-2xl py-6 text-lg bg-blue-600 hover:bg-blue-700"
+              >
+                Questions/Réponses
               </Button>
               
               <Button
