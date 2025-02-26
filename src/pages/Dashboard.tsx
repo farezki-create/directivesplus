@@ -35,6 +35,16 @@ export default function Dashboard() {
     checkAuth();
   }, [navigate]);
 
+  const handleSaveTrustedPerson = async () => {
+    console.log("Personne de confiance enregistrée");
+    return Promise.resolve();
+  };
+
+  const handleRemoveTrustedPerson = async () => {
+    console.log("Personne de confiance supprimée");
+    return Promise.resolve();
+  };
+
   if (!userId) {
     return null;
   }
@@ -93,10 +103,10 @@ export default function Dashboard() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <TrustedPersonForm onSave={() => console.log("Personne de confiance enregistrée")} />
+                <TrustedPersonForm onSave={handleSaveTrustedPerson} />
                 <TrustedPersonsList 
                   persons={[]} 
-                  onRemove={() => console.log("Personne de confiance supprimée")} 
+                  onRemove={handleRemoveTrustedPerson} 
                 />
               </CardContent>
               <CardFooter>
