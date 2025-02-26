@@ -42,6 +42,39 @@ export type Database = {
         }
         Relationships: []
       }
+      advanced_illness_questions_en: {
+        Row: {
+          created_at: string | null
+          display_order: number | null
+          id: string
+          no: string | null
+          question: string
+          yes: string | null
+          yes_medical: string | null
+          yes_trusted: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          no?: string | null
+          question: string
+          yes?: string | null
+          yes_medical?: string | null
+          yes_trusted?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          no?: string | null
+          question?: string
+          yes?: string | null
+          yes_medical?: string | null
+          yes_trusted?: string | null
+        }
+        Relationships: []
+      }
       articles: {
         Row: {
           category: string
@@ -147,6 +180,45 @@ export type Database = {
         }
         Relationships: []
       }
+      life_support_questions_en: {
+        Row: {
+          created_at: string | null
+          display_order: number | null
+          id: string
+          "No quickly abandon therapeutic": string | null
+          "Non-suffering is to be prioritized": string | null
+          question: string
+          Undecided: string | null
+          Yes: string | null
+          "Yes for a moderate period": string | null
+          "Yes only if the medical team deems it useful": string | null
+        }
+        Insert: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          "No quickly abandon therapeutic"?: string | null
+          "Non-suffering is to be prioritized"?: string | null
+          question: string
+          Undecided?: string | null
+          Yes?: string | null
+          "Yes for a moderate period"?: string | null
+          "Yes only if the medical team deems it useful"?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          "No quickly abandon therapeutic"?: string | null
+          "Non-suffering is to be prioritized"?: string | null
+          question?: string
+          Undecided?: string | null
+          Yes?: string | null
+          "Yes for a moderate period"?: string | null
+          "Yes only if the medical team deems it useful"?: string | null
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           address: string
@@ -193,6 +265,27 @@ export type Database = {
         Relationships: []
       }
       preferences_questions: {
+        Row: {
+          created_at: string | null
+          display_order: number | null
+          id: string
+          question: string
+        }
+        Insert: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          question: string
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          question?: string
+        }
+        Relationships: []
+      }
+      preferences_questions_en: {
         Row: {
           created_at: string | null
           display_order: number | null
@@ -443,6 +536,39 @@ export type Database = {
           NON?: string | null
           OUI?: string | null
           Question?: string
+        }
+        Relationships: []
+      }
+      questions_en: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          display_order: number | null
+          i_dont_know: string | null
+          id: string
+          no: string | null
+          question: string
+          yes: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          display_order?: number | null
+          i_dont_know?: string | null
+          id?: string
+          no?: string | null
+          question: string
+          yes?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          display_order?: number | null
+          i_dont_know?: string | null
+          id?: string
+          no?: string | null
+          question?: string
+          yes?: string | null
         }
         Relationships: []
       }

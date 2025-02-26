@@ -23,41 +23,53 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
       try {
         console.log(`[GeneralOpinion] Fetching questions in ${currentLanguage}...`);
         
-        // Déterminer la table à interroger en fonction de la langue
-        const tableName = currentLanguage === 'en' ? 'questions_en' : 'questions';
-        const questionField = currentLanguage === 'en' ? 'question' : 'Question';
-        
-        const { data, error } = await supabase
-          .from(tableName)
-          .select('*')
-          .eq('category', 'general_opinion')
-          .order('display_order', { ascending: true });
-        
-        if (error) {
-          console.error('[GeneralOpinion] Error fetching questions:', error);
-          toast({
-            title: "Erreur",
-            description: "Impossible de charger les questions. Veuillez réessayer.",
-            variant: "destructive",
-          });
-          return;
+        if (currentLanguage === 'en') {
+          // Fetch English questions
+          const { data, error } = await supabase
+            .from('questions_en')
+            .select('*')
+            .eq('category', 'general_opinion')
+            .order('display_order', { ascending: true });
+          
+          if (error) {
+            console.error('[GeneralOpinion] Error fetching questions:', error);
+            toast({
+              title: "Error",
+              description: "Unable to load questions. Please try again.",
+              variant: "destructive",
+            });
+            return;
+          }
+          
+          console.log('[GeneralOpinion] Questions loaded:', data?.length, 'questions');
+          setQuestions(data || []);
+        } else {
+          // Fetch French questions
+          const { data, error } = await supabase
+            .from('questions')
+            .select('*')
+            .eq('category', 'general_opinion')
+            .order('display_order', { ascending: true });
+          
+          if (error) {
+            console.error('[GeneralOpinion] Error fetching questions:', error);
+            toast({
+              title: "Erreur",
+              description: "Impossible de charger les questions. Veuillez réessayer.",
+              variant: "destructive",
+            });
+            return;
+          }
+          
+          // Normaliser les noms de champs pour une utilisation cohérente
+          const normalizedQuestions = data?.map(q => ({
+            ...q,
+            question: q.Question, // Assure que tous les objets ont une propriété question
+          })) || [];
+          
+          console.log('[GeneralOpinion] Questions loaded:', normalizedQuestions.length, 'questions');
+          setQuestions(normalizedQuestions);
         }
-        
-        console.log('[GeneralOpinion] Questions loaded:', data?.length, 'questions');
-        const sortedQuestions = data?.sort((a, b) => {
-          if (a.display_order === null) return 1;
-          if (b.display_order === null) return -1;
-          return a.display_order - b.display_order;
-        }) || [];
-
-        // Normaliser les noms de champs pour une utilisation cohérente
-        const normalizedQuestions = sortedQuestions.map(q => ({
-          ...q,
-          Question: q[questionField], // Assure que tous les objets ont une propriété Question
-          question: q[questionField],  // Assure que tous les objets ont une propriété question
-        }));
-
-        setQuestions(normalizedQuestions);
       } catch (error) {
         console.error('[GeneralOpinion] Unexpected error:', error);
         toast({
@@ -102,10 +114,12 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
       // Prepare all responses for insertion
       const responses = Object.entries(answers).flatMap(([questionId, values]) => {
         const question = questions.find(q => q.id === questionId);
+        const questionText = currentLanguage === 'en' ? question?.question : question?.Question || question?.question;
+        
         return values.map(value => ({
           user_id: userId,
           question_id: questionId,
-          question_text: question?.Question || question?.question,
+          question_text: questionText,
           response: value
         }));
       });

@@ -40,7 +40,7 @@ export function PreferencesQuestionsDialog({
         throw error;
       }
       console.log('[Preferences] Questions loaded:', data?.length, 'questions');
-      return data;
+      return data || [];
     },
   });
 

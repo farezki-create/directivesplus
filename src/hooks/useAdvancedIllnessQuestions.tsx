@@ -15,34 +15,45 @@ export function useAdvancedIllnessQuestions(open: boolean) {
       try {
         console.log(`[AdvancedIllness] Fetching questions in ${currentLanguage}...`);
         
-        // Déterminer la table à interroger en fonction de la langue
-        const tableName = currentLanguage === 'en' 
-          ? 'advanced_illness_questions_en' 
-          : 'advanced_illness_questions';
-        
-        const { data, error } = await supabase
-          .from(tableName)
-          .select('*')
-          .order('display_order', { ascending: true });
-        
-        if (error) {
-          console.error('[AdvancedIllness] Error fetching questions:', error);
-          toast({
-            title: "Erreur",
-            description: "Impossible de charger les questions. Veuillez réessayer.",
-            variant: "destructive",
-          });
-          return;
+        if (currentLanguage === 'en') {
+          // Fetch English questions
+          const { data, error } = await supabase
+            .from('advanced_illness_questions_en')
+            .select('*')
+            .order('display_order', { ascending: true });
+          
+          if (error) {
+            console.error('[AdvancedIllness] Error fetching questions:', error);
+            toast({
+              title: "Error",
+              description: "Unable to load questions. Please try again.",
+              variant: "destructive",
+            });
+            return;
+          }
+          
+          console.log('[AdvancedIllness] Questions loaded:', data?.length, 'questions');
+          setQuestions(data || []);
+        } else {
+          // Fetch French questions
+          const { data, error } = await supabase
+            .from('advanced_illness_questions')
+            .select('*')
+            .order('display_order', { ascending: true });
+          
+          if (error) {
+            console.error('[AdvancedIllness] Error fetching questions:', error);
+            toast({
+              title: "Erreur",
+              description: "Impossible de charger les questions. Veuillez réessayer.",
+              variant: "destructive",
+            });
+            return;
+          }
+          
+          console.log('[AdvancedIllness] Questions loaded:', data?.length, 'questions');
+          setQuestions(data || []);
         }
-        
-        console.log('[AdvancedIllness] Questions loaded:', data?.length, 'questions');
-        const sortedQuestions = data?.sort((a, b) => {
-          if (a.display_order === null) return 1;
-          if (b.display_order === null) return -1;
-          return a.display_order - b.display_order;
-        }) || [];
-        
-        setQuestions(sortedQuestions);
       } catch (error) {
         console.error('[AdvancedIllness] Unexpected error:', error);
         toast({
