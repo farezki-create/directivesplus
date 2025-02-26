@@ -1,55 +1,60 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { PDFPreviewDialog } from "../pdf/PDFPreviewDialog";
+import { usePDFData } from "../pdf/usePDFData";
+import { handlePDFGeneration, handlePDFDownload, handlePDFPrint } from "../pdf/utils/PDFGenerationUtils";
 
 export function TrustedPersonPDFGenerator() {
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
-  
-  const generatePDF = async () => {
-    try {
-      setIsLoading(true);
-      
-      // Cette fonction est un placeholder pour le moment
-      // À implémenter quand on aura la logique de génération de PDF
-      
-      toast({
-        title: "Fonctionnalité à venir",
-        description: "La génération du PDF des personnes de confiance sera disponible prochainement.",
-      });
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de générer le PDF des personnes de confiance.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
+  const { profile, trustedPersons, loading } = usePDFData();
+
+  const generatePDF = () => {
+    console.log("[TrustedPersonPDF] Starting PDF generation");
+    handlePDFGeneration(
+      profile,
+      { type: "trusted_person" },
+      trustedPersons,
+      (url: string | null) => {
+        if (url) {
+          const cleanUrl = url.replace(/([^:])\/\/+/g, '$1/').replace(/:\//g, '://');
+          console.log("[TrustedPersonPDF] Cleaned URL:", cleanUrl);
+          setPdfUrl(cleanUrl);
+        } else {
+          setPdfUrl(null);
+        }
+      },
+      setShowPreview
+    );
   };
 
+  const handleEmail = async () => {
+    console.log("[TrustedPersonPDF] Email functionality not yet implemented");
+  };
+
+  if (loading) {
+    return null;
+  }
+
   return (
-    <Button
-      variant="outline" 
-      onClick={generatePDF}
-      disabled={isLoading}
-      className="flex items-center gap-2"
-    >
-      {isLoading ? (
-        <>
-          <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-          Génération...
-        </>
-      ) : (
-        <>
-          <FileText className="h-4 w-4" />
-          Télécharger PDF
-        </>
-      )}
-    </Button>
+    <>
+      <Button 
+        onClick={generatePDF}
+        className="flex items-center gap-2"
+      >
+        <FileText className="h-4 w-4" />
+        Générer le document de désignation
+      </Button>
+      
+      <PDFPreviewDialog
+        open={showPreview}
+        onOpenChange={setShowPreview}
+        pdfUrl={pdfUrl}
+        onEmail={handleEmail}
+        onSave={() => handlePDFDownload(pdfUrl)}
+        onPrint={() => handlePDFPrint(pdfUrl)}
+      />
+    </>
   );
 }
