@@ -1,19 +1,67 @@
-import { createRoot } from 'react-dom/client'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import App from './App.tsx'
+import Dashboard from './pages/Dashboard.tsx'
+import Auth from './pages/Auth.tsx'
+import ResetPassword from './pages/ResetPassword.tsx'
+import FreeText from './pages/FreeText.tsx'
+import GeneratePDF from './pages/GeneratePDF.tsx'
+import MoreInfo from './pages/MoreInfo.tsx'
+import Examples from './pages/Examples.tsx'
+import FAQ from './pages/FAQ.tsx'
+import Reviews from './pages/Reviews.tsx'
+import { LanguageProvider } from './hooks/useLanguage.tsx'
 import './index.css'
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      retry: 1,
-    },
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <App />,
   },
-});
+  {
+    path: '/dashboard',
+    element: <Dashboard />,
+  },
+  {
+    path: '/auth',
+    element: <Auth />,
+  },
+  {
+    path: '/reset-password',
+    element: <ResetPassword />,
+  },
+  {
+    path: '/free-text',
+    element: <FreeText />,
+  },
+  {
+    path: '/generate-pdf',
+    element: <GeneratePDF />,
+  },
+  {
+    path: '/more-info',
+    element: <MoreInfo />,
+  },
+  {
+    path: '/examples',
+    element: <Examples />,
+  },
+  {
+    path: '/faq',
+    element: <FAQ />,
+  },
+  {
+    path: '/reviews',
+    element: <Reviews />,
+  }
+]);
 
-createRoot(document.getElementById("root")!).render(
-  <QueryClientProvider client={queryClient}>
-    <App />
-  </QueryClientProvider>
-);
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <LanguageProvider>
+      <RouterProvider router={router} />
+    </LanguageProvider>
+  </React.StrictMode>,
+)
