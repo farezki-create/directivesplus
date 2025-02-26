@@ -232,7 +232,8 @@ export default function Dashboard() {
                 <p className="text-sm text-muted-foreground">
                   Vous pouvez désigner jusqu'à 5 personnes de confiance.
                 </p>
-                <TrustedPersonPDFGenerator userId={userId} />
+                {/* TrustedPersonPDFGenerator est utilisé sans props */}
+                <TrustedPersonPDFGenerator />
               </CardFooter>
             </Card>
           </TabsContent>
