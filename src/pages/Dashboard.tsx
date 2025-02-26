@@ -11,12 +11,16 @@ import { TrustedPersonPDFGenerator } from "@/components/trusted-persons/TrustedP
 import { PDFGenerator } from "@/components/PDFGenerator";
 import { SignatureDialog } from "@/components/signature/SignatureDialog";
 import { FileText, PenTool, FileUp } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { NewTrustedPerson, TrustedPerson } from "@/types/trusted-person";
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const [userId, setUserId] = useState<string | null>(null);
   const [showSignatureDialog, setShowSignatureDialog] = useState(false);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [trustedPersons, setTrustedPersons] = useState<TrustedPerson[]>([]);
+  const { toast } = useToast();
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -34,6 +38,121 @@ export default function Dashboard() {
     };
     checkAuth();
   }, [navigate]);
+
+  useEffect(() => {
+    if (userId) {
+      fetchTrustedPersons();
+    }
+  }, [userId]);
+
+  const fetchTrustedPersons = async () => {
+    if (!userId) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("trusted_persons")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: true });
+
+      if (error) {
+        throw error;
+      }
+
+      setTrustedPersons(data.map(p => ({
+        id: p.id,
+        name: p.name,
+        phone: p.phone,
+        email: p.email,
+        relation: p.relation || "",
+        address: p.address || "",
+        city: p.city || "",
+        postal_code: p.postal_code || "",
+      })));
+    } catch (error) {
+      console.error("Error loading trusted persons:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les personnes de confiance.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSaveTrustedPerson = async (person: NewTrustedPerson) => {
+    if (!userId) return;
+
+    try {
+      if (trustedPersons.length > 0) {
+        toast({
+          title: "Erreur",
+          description: "Vous ne pouvez désigner qu'une seule personne de confiance.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("trusted_persons")
+        .insert({
+          user_id: userId,
+          name: person.name,
+          phone: person.phone,
+          email: person.email,
+          relation: person.relation,
+          address: person.address,
+          city: person.city,
+          postal_code: person.postal_code,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      await fetchTrustedPersons();
+      toast({
+        title: "Succès",
+        description: "La personne de confiance a été enregistrée.",
+      });
+    } catch (error) {
+      console.error("Error saving trusted person:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'enregistrer la personne de confiance.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleRemoveTrustedPerson = async (id: string) => {
+    if (!userId) return;
+
+    try {
+      const { error } = await supabase
+        .from("trusted_persons")
+        .delete()
+        .eq("id", id);
+
+      if (error) {
+        throw error;
+      }
+
+      await fetchTrustedPersons();
+      toast({
+        title: "Succès",
+        description: "La personne de confiance a été supprimée.",
+      });
+    } catch (error) {
+      console.error("Error removing trusted person:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer la personne de confiance.",
+        variant: "destructive",
+      });
+    }
+  };
 
   if (!userId) {
     return (
@@ -101,14 +220,19 @@ export default function Dashboard() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-8">
-                <TrustedPersonForm />
-                <TrustedPersonsList />
+                {trustedPersons.length === 0 && (
+                  <TrustedPersonForm onSave={handleSaveTrustedPerson} />
+                )}
+                <TrustedPersonsList 
+                  persons={trustedPersons} 
+                  onRemove={handleRemoveTrustedPerson} 
+                />
               </CardContent>
               <CardFooter className="justify-between border-t pt-4">
                 <p className="text-sm text-muted-foreground">
                   Vous pouvez désigner jusqu'à 5 personnes de confiance.
                 </p>
-                {userId && <TrustedPersonPDFGenerator userId={userId} />}
+                <TrustedPersonPDFGenerator userId={userId} />
               </CardFooter>
             </Card>
           </TabsContent>
