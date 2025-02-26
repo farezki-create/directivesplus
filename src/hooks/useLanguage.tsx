@@ -1,6 +1,9 @@
 
 import { useCallback, useState, useEffect, createContext, useContext, ReactNode } from 'react';
 
+// Définir les langues supportées
+export type SupportedLanguage = 'fr' | 'en' | 'es';
+
 // Définir les traductions
 const translations: Record<string, Record<string, string>> = {
   en: {
@@ -95,8 +98,8 @@ const translations: Record<string, Record<string, string>> = {
 
 // Créer le contexte
 interface LanguageContextType {
-  currentLanguage: string;
-  setLanguage: (language: string) => void;
+  currentLanguage: SupportedLanguage;
+  setLanguage: (language: SupportedLanguage) => void;
   t: (key: string) => string;
 }
 
@@ -112,17 +115,17 @@ interface LanguageProviderProps {
 }
 
 export const LanguageProvider = ({ children }: LanguageProviderProps) => {
-  const [currentLanguage, setCurrentLanguage] = useState('fr');
+  const [currentLanguage, setCurrentLanguage] = useState<SupportedLanguage>('fr');
 
   // Utiliser le stockage local pour garder la préférence de langue
   useEffect(() => {
-    const savedLanguage = localStorage.getItem('language');
+    const savedLanguage = localStorage.getItem('language') as SupportedLanguage;
     if (savedLanguage && (savedLanguage === 'fr' || savedLanguage === 'en')) {
       setCurrentLanguage(savedLanguage);
     }
   }, []);
 
-  const setLanguage = useCallback((language: string) => {
+  const setLanguage = useCallback((language: SupportedLanguage) => {
     setCurrentLanguage(language);
     localStorage.setItem('language', language);
   }, []);

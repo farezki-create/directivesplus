@@ -10,7 +10,7 @@ import { Globe } from "lucide-react";
 import { useLanguage, SupportedLanguage } from "@/hooks/useLanguage";
 
 export const LanguageSelector = () => {
-  const { language, setLanguage, t } = useLanguage();
+  const { currentLanguage, setLanguage, t } = useLanguage();
 
   const languages: { code: SupportedLanguage; label: string }[] = [
     { code: 'fr', label: t('french') },
@@ -31,7 +31,7 @@ export const LanguageSelector = () => {
           <DropdownMenuItem
             key={lang.code}
             onClick={() => setLanguage(lang.code)}
-            className={language === lang.code ? "bg-muted" : ""}
+            className={currentLanguage === lang.code ? "bg-muted" : ""}
           >
             {lang.label}
           </DropdownMenuItem>
