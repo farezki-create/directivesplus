@@ -101,7 +101,7 @@ const FAQ = () => {
 
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-xl font-semibold text-blue-600 mb-3">
-                {currentLanguage === 'fr' ? 'Un médecin peut-il refuser d\'appliquer mes directives ?' : 'Can a doctor refuse to apply my directives?'}
+                {currentLanguage === 'fr' ? "Un médecin peut-il refuser d'appliquer mes directives ?" : 'Can a doctor refuse to apply my directives?'}
               </h2>
               <p className="text-gray-700">
                 {currentLanguage === 'fr' 
@@ -129,7 +129,7 @@ const FAQ = () => {
 
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-xl font-semibold text-blue-600 mb-3">
-                {currentLanguage === 'fr' ? 'Où trouver de l\'aide pour rédiger ?' : 'Where to find help for writing?'}
+                {currentLanguage === 'fr' ? "Où trouver de l'aide pour rédiger ?" : 'Where to find help for writing?'}
               </h2>
               <p className="text-gray-700">
                 {currentLanguage === 'fr' 
