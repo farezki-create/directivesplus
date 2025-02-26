@@ -15,13 +15,17 @@ import { MainButtons } from "@/components/home/MainButtons";
 import { FeatureHighlights } from "@/components/home/FeatureHighlights";
 import { useDialogState } from "@/hooks/useDialogState";
 import { useLanguage } from "@/hooks/useLanguage";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 const Index = () => {
   const navigate = useNavigate();
   const [showSections, setShowSections] = useState(false);
   const [showMoreInfo, setShowMoreInfo] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const dialogState = useDialogState();
   const { t } = useLanguage();
+  const { toast } = useToast();
 
   const handleGeneralOpinionClick = () => {
     dialogState.setExplanationOpen(true);
@@ -63,8 +67,41 @@ const Index = () => {
     setShowMoreInfo(true);
   };
 
-  const navigateToGuideInfo = () => {
-    navigate("/more-info");
+  const navigateToGuideInfo = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Récupérer le PDF depuis Supabase
+      const { data, error } = await supabase
+        .from('pdf_documents')
+        .select('document_url')
+        .eq('name', 'directives_anticipees_guide')
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      if (data && data.document_url) {
+        // Ouvrir le PDF dans un nouvel onglet
+        window.open(data.document_url, '_blank');
+      } else {
+        toast({
+          title: "Document introuvable",
+          description: "Le guide sur les directives anticipées n'a pas été trouvé.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Erreur lors de l'accès au document:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'accéder au document pour le moment.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const navigateToAppInfo = () => {
@@ -93,8 +130,9 @@ const Index = () => {
                 size="lg"
                 onClick={navigateToGuideInfo}
                 className="w-full max-w-2xl py-6 text-lg bg-blue-600 hover:bg-blue-700"
+                disabled={isLoading}
               >
-                Pourquoi et comment rédiger mes directives anticipées ?
+                {isLoading ? 'Chargement...' : 'Pourquoi et comment rédiger mes directives anticipées ?'}
               </Button>
               
               <Button
