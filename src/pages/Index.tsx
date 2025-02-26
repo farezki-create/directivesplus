@@ -71,27 +71,33 @@ const Index = () => {
     try {
       setIsLoading(true);
       
+      console.log("Recherche du document 'En savoir plus HAS.pdf'...");
+      
       // Récupérer le PDF depuis Supabase
       const { data, error } = await supabase
         .from('pdf_documents')
-        .select('file_path')
-        .eq('file_name', 'En savoir plus HAS.pdf')
-        .maybeSingle();
+        .select('*')
+        .eq('file_name', 'En savoir plus HAS.pdf');
 
       if (error) {
+        console.error("Erreur Supabase:", error);
         throw error;
       }
 
-      if (data && data.file_path) {
+      console.log("Résultat de la requête:", data);
+      
+      if (data && data.length > 0 && data[0].file_path) {
         // Ouvrir le PDF dans un nouvel onglet
-        window.open(data.file_path, '_blank');
+        const url = data[0].file_path;
+        console.log("Ouverture du PDF à l'URL:", url);
+        window.open(url, '_blank');
       } else {
+        console.error("Document non trouvé dans la réponse:", data);
         toast({
           title: "Document introuvable",
           description: "Le guide sur les directives anticipées n'a pas été trouvé.",
           variant: "destructive",
         });
-        console.log("Document non trouvé: 'En savoir plus HAS.pdf'");
       }
     } catch (error) {
       console.error("Erreur lors de l'accès au document:", error);
