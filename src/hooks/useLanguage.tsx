@@ -49,6 +49,10 @@ const translations: Record<string, Record<string, string>> = {
     loginSignup: 'Login / Sign up',
     whatDoYouThink: 'What do you think?',
     trustedPersons: 'Trusted Persons',
+    language: 'Language',
+    french: 'French',
+    english: 'English',
+    spanish: 'Spanish',
   },
   fr: {
     welcomeMessage: 'Bienvenue sur notre application',
@@ -93,6 +97,10 @@ const translations: Record<string, Record<string, string>> = {
     loginSignup: 'Connexion / Inscription',
     whatDoYouThink: 'Qu\'en pensez-vous ?',
     trustedPersons: 'Personnes de confiance',
+    language: 'Langue',
+    french: 'Français',
+    english: 'Anglais',
+    spanish: 'Espagnol',
   }
 };
 
