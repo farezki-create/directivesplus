@@ -84,8 +84,6 @@ const translations: Record<string, Record<string, string>> = {
     buyCard: 'Buy Card',
     login: 'Login',
     logout: 'Logout',
-    faq: 'FAQ',
-    information: 'Information',
   },
   fr: {
     welcomeMessage: 'Bienvenue sur notre application',
@@ -165,8 +163,6 @@ const translations: Record<string, Record<string, string>> = {
     buyCard: 'Acheter la carte',
     login: 'Connexion',
     logout: 'Déconnexion',
-    faq: 'Questions/Réponses',
-    information: 'Information',
   }
 };
 
