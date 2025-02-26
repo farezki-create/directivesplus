@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
 import { useState } from "react";
@@ -13,11 +14,13 @@ import { PreferencesQuestionsDialog } from "@/components/PreferencesQuestionsDia
 import { MainButtons } from "@/components/home/MainButtons";
 import { FeatureHighlights } from "@/components/home/FeatureHighlights";
 import { useDialogState } from "@/hooks/useDialogState";
+import { useLanguage } from "@/hooks/useLanguage";
 
 const Index = () => {
   const navigate = useNavigate();
   const [showSections, setShowSections] = useState(false);
   const dialogState = useDialogState();
+  const { t } = useLanguage();
 
   const handleGeneralOpinionClick = () => {
     dialogState.setExplanationOpen(true);
@@ -55,6 +58,11 @@ const Index = () => {
     dialogState.setPreferencesQuestionsOpen(true);
   };
 
+  const handleMoreInfoClick = () => {
+    // Ouvrir le document PDF de la HAS dans un nouvel onglet
+    window.open('https://www.has-sante.fr/upload/docs/application/pdf/2016-03/directives_anticipees_concernant_les_situations_de_fin_de_vie_v16.pdf', '_blank');
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -81,7 +89,7 @@ const Index = () => {
               <Button
                 variant="outline"
                 size="lg"
-                onClick={() => navigate("/dashboard")}
+                onClick={handleMoreInfoClick}
               >
                 En savoir plus
               </Button>
