@@ -49,15 +49,9 @@ export function MainButtons({
       <Button 
         onClick={() => navigate("/examples")} 
         size="lg"
-      >
-        {t('examples')}
-      </Button>
-      <Button 
-        onClick={() => navigate("/more-info")} 
-        size="lg"
         className="md:col-span-2"
       >
-        {t('moreInfo')}
+        {t('examples')}
       </Button>
     </div>
   );
