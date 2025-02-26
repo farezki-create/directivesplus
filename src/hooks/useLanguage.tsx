@@ -84,6 +84,21 @@ const translations: Record<string, Record<string, string>> = {
     buyCard: 'Buy Card',
     login: 'Login',
     logout: 'Logout',
+    faq: 'FAQ',
+    information: 'Information',
+    summary: 'Summary',
+    learnMore: 'Learn more',
+    start: 'Start',
+    loading: 'Loading...',
+    additionalInformation: 'Additional Information',
+    whyAndHowToWrite: 'Why and how to write my advance directives?',
+    appInformation: 'Information about DirectivesPlus application',
+    backToHome: 'Back to home',
+    advanceDirectivesSimplicity: 'Your advance directives with simplicity',
+    writeDirectivesSecurely: 'Write your advance directives and designate your trusted persons in a few simple and secure steps.',
+    documentNotFound: 'Document not found',
+    directivesGuideNotFound: 'The guide on advance directives was not found.',
+    unableToAccessDocument: 'Unable to access the document at this time.'
   },
   fr: {
     welcomeMessage: 'Bienvenue sur notre application',
@@ -163,6 +178,21 @@ const translations: Record<string, Record<string, string>> = {
     buyCard: 'Acheter la carte',
     login: 'Connexion',
     logout: 'Déconnexion',
+    faq: 'Questions/Réponses',
+    information: 'Information',
+    summary: 'Synthèse',
+    learnMore: 'En savoir plus',
+    start: 'Commencer',
+    loading: 'Chargement...',
+    additionalInformation: 'Informations supplémentaires',
+    whyAndHowToWrite: 'Pourquoi et comment rédiger mes directives anticipées ?',
+    appInformation: 'Informations sur l\'application DirectivesPlus',
+    backToHome: 'Retour à l\'accueil',
+    advanceDirectivesSimplicity: 'Vos directives anticipées en toute simplicité',
+    writeDirectivesSecurely: 'Rédigez vos directives anticipées et désignez vos personnes de confiance en quelques étapes simples et sécurisées.',
+    documentNotFound: 'Document introuvable',
+    directivesGuideNotFound: 'Le guide sur les directives anticipées n\'a pas été trouvé.',
+    unableToAccessDocument: 'Impossible d\'accéder au document pour le moment.'
   }
 };
 

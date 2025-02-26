@@ -24,7 +24,7 @@ const Index = () => {
   const [showMoreInfo, setShowMoreInfo] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const dialogState = useDialogState();
-  const { t } = useLanguage();
+  const { t, currentLanguage } = useLanguage();
   const { toast } = useToast();
 
   const handleGeneralOpinionClick = () => {
@@ -85,16 +85,20 @@ const Index = () => {
       } else {
         console.error("URL publique non trouvée dans la réponse:", data);
         toast({
-          title: "Document introuvable",
-          description: "Le guide sur les directives anticipées n'a pas été trouvé.",
+          title: currentLanguage === 'fr' ? "Document introuvable" : "Document not found",
+          description: currentLanguage === 'fr' 
+            ? "Le guide sur les directives anticipées n'a pas été trouvé." 
+            : "The guide on advance directives was not found.",
           variant: "destructive",
         });
       }
     } catch (error) {
       console.error("Erreur lors de l'accès au document:", error);
       toast({
-        title: "Erreur",
-        description: "Impossible d'accéder au document pour le moment.",
+        title: currentLanguage === 'fr' ? "Erreur" : "Error",
+        description: currentLanguage === 'fr' 
+          ? "Impossible d'accéder au document pour le moment." 
+          : "Unable to access the document at this time.",
         variant: "destructive",
       });
     } finally {
@@ -122,7 +126,7 @@ const Index = () => {
         <main className="flex-1 container mx-auto px-4 py-8">
           <div className="max-w-4xl mx-auto">
             <h1 className="text-3xl font-bold mb-6 text-center">
-              Informations supplémentaires
+              {currentLanguage === 'fr' ? 'Informations supplémentaires' : 'Additional Information'}
             </h1>
             
             <div className="flex flex-col space-y-6 items-center">
@@ -133,7 +137,11 @@ const Index = () => {
                 className="w-full max-w-2xl py-6 text-lg bg-blue-600 hover:bg-blue-700"
                 disabled={isLoading}
               >
-                {isLoading ? 'Chargement...' : 'Pourquoi et comment rédiger mes directives anticipées ?'}
+                {isLoading 
+                  ? (currentLanguage === 'fr' ? 'Chargement...' : 'Loading...') 
+                  : (currentLanguage === 'fr' 
+                    ? 'Pourquoi et comment rédiger mes directives anticipées ?' 
+                    : 'Why and how to write my advance directives?')}
               </Button>
               
               <Button
@@ -142,7 +150,7 @@ const Index = () => {
                 onClick={navigateToFAQ}
                 className="w-full max-w-2xl py-6 text-lg bg-blue-600 hover:bg-blue-700"
               >
-                Questions/Réponses
+                {currentLanguage === 'fr' ? 'Questions/Réponses' : 'FAQ'}
               </Button>
               
               <Button
@@ -151,7 +159,9 @@ const Index = () => {
                 onClick={navigateToAppInfo}
                 className="w-full max-w-2xl py-6 text-lg bg-blue-600 hover:bg-blue-700"
               >
-                Informations sur l'application DirectivesPlus
+                {currentLanguage === 'fr' 
+                  ? 'Informations sur l\'application DirectivesPlus' 
+                  : 'Information about DirectivesPlus application'}
               </Button>
               
               <Button
@@ -159,7 +169,7 @@ const Index = () => {
                 onClick={handleBackToHome}
                 className="mt-8"
               >
-                Retour à l'accueil
+                {currentLanguage === 'fr' ? 'Retour à l\'accueil' : 'Back to home'}
               </Button>
             </div>
           </div>
@@ -175,12 +185,15 @@ const Index = () => {
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl font-bold mb-6 text-center">
-            Vos directives anticipées en toute simplicité
+            {currentLanguage === 'fr' 
+              ? 'Vos directives anticipées en toute simplicité' 
+              : 'Your advance directives with simplicity'}
           </h1>
           
           <p className="text-xl text-muted-foreground mb-8 text-center">
-            Rédigez vos directives anticipées et désignez vos personnes de confiance
-            en quelques étapes simples et sécurisées.
+            {currentLanguage === 'fr' 
+              ? 'Rédigez vos directives anticipées et désignez vos personnes de confiance en quelques étapes simples et sécurisées.' 
+              : 'Write your advance directives and designate your trusted persons in a few simple and secure steps.'}
           </p>
 
           {!showSections ? (
@@ -189,7 +202,7 @@ const Index = () => {
                 size="lg"
                 onClick={() => setShowSections(true)}
               >
-                Commencer
+                {currentLanguage === 'fr' ? 'Commencer' : 'Start'}
               </Button>
               
               <Button
@@ -197,7 +210,7 @@ const Index = () => {
                 size="lg"
                 onClick={handleLearnMore}
               >
-                En savoir plus
+                {currentLanguage === 'fr' ? 'En savoir plus' : 'Learn more'}
               </Button>
             </div>
           ) : (
