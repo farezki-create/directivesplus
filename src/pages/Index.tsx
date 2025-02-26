@@ -74,17 +74,17 @@ const Index = () => {
       // Récupérer le PDF depuis Supabase
       const { data, error } = await supabase
         .from('pdf_documents')
-        .select('document_url')
-        .eq('name', 'directives_anticipees_guide')
-        .single();
+        .select('file_path')
+        .eq('file_name', 'directives_anticipees_guide.pdf')
+        .maybeSingle();
 
       if (error) {
         throw error;
       }
 
-      if (data && data.document_url) {
+      if (data && data.file_path) {
         // Ouvrir le PDF dans un nouvel onglet
-        window.open(data.document_url, '_blank');
+        window.open(data.file_path, '_blank');
       } else {
         toast({
           title: "Document introuvable",
