@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
 import { ArrowLeft, FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 const MoreInfo = () => {
@@ -25,7 +24,7 @@ const MoreInfo = () => {
           </Button>
           
           <h1 className="text-3xl font-bold mb-6">
-            Les directives anticipées
+            POURQUOI ET COMMENT RÉDIGER MES DIRECTIVES ANTICIPÉES ?
           </h1>
           
           <Card>
