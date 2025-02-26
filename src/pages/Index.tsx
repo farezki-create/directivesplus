@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
 import { useState } from "react";
@@ -72,15 +73,11 @@ const Index = () => {
       
       console.log("Tentative de récupération du document depuis le stockage...");
       
-      const { data, error } = await supabase
+      // getPublicUrl ne retourne pas d'erreur, seulement un objet data
+      const { data } = await supabase
         .storage
         .from('pdf_documents')
         .getPublicUrl('En savoir plus HAS.pdf');
-
-      if (error) {
-        console.error("Erreur lors de l'accès au stockage:", error);
-        throw error;
-      }
 
       if (data?.publicUrl) {
         console.log("URL publique obtenue:", data.publicUrl);
