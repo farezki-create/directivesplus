@@ -32,7 +32,7 @@ export function MainButtons({
         {t('lifeSupport')}
       </Button>
       <Button onClick={onAdvancedIllnessClick} size="lg">
-        {t('advancedIllness')}
+        {t('advancedIllnessTitle')}
       </Button>
       <Button onClick={onPreferencesClick} size="lg">
         {t('preferences')}
