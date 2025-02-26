@@ -19,7 +19,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 const Index = () => {
   const navigate = useNavigate();
   const [showSections, setShowSections] = useState(false);
-  const [showMoreInfoButtons, setShowMoreInfoButtons] = useState(false);
+  const [showMoreInfo, setShowMoreInfo] = useState(false);
   const dialogState = useDialogState();
   const { t } = useLanguage();
 
@@ -60,7 +60,7 @@ const Index = () => {
   };
 
   const handleLearnMore = () => {
-    setShowMoreInfoButtons(true);
+    setShowMoreInfo(true);
   };
 
   const navigateToGuideInfo = () => {
@@ -70,6 +70,55 @@ const Index = () => {
   const navigateToAppInfo = () => {
     navigate("/dashboard");
   };
+
+  const handleBackToHome = () => {
+    setShowMoreInfo(false);
+  };
+
+  // Si nous affichons la page d'informations supplémentaires
+  if (showMoreInfo) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        
+        <main className="flex-1 container mx-auto px-4 py-8">
+          <div className="max-w-4xl mx-auto">
+            <h1 className="text-3xl font-bold mb-6 text-center">
+              Informations supplémentaires
+            </h1>
+            
+            <div className="flex flex-col space-y-6 items-center">
+              <Button
+                variant="default"
+                size="lg"
+                onClick={navigateToGuideInfo}
+                className="w-full max-w-2xl py-6 text-lg bg-blue-600 hover:bg-blue-700"
+              >
+                Pourquoi et comment rédiger mes directives anticipées ?
+              </Button>
+              
+              <Button
+                variant="default"
+                size="lg"
+                onClick={navigateToAppInfo}
+                className="w-full max-w-2xl py-6 text-lg bg-blue-600 hover:bg-blue-700"
+              >
+                Informations sur l'application DirectivesPlus
+              </Button>
+              
+              <Button
+                variant="outline"
+                onClick={handleBackToHome}
+                className="mt-8"
+              >
+                Retour à l'accueil
+              </Button>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -95,34 +144,13 @@ const Index = () => {
                 Commencer
               </Button>
               
-              {!showMoreInfoButtons ? (
-                <Button
-                  variant="outline"
-                  size="lg"
-                  onClick={handleLearnMore}
-                >
-                  En savoir plus
-                </Button>
-              ) : (
-                <div className="grid gap-4 md:grid-cols-2">
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    onClick={navigateToGuideInfo}
-                    className="text-sm md:text-base text-center h-auto py-2"
-                  >
-                    Pourquoi et comment rédiger mes directives anticipées ?
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    onClick={navigateToAppInfo}
-                    className="text-sm md:text-base h-auto py-2"
-                  >
-                    Informations sur l'application DirectivesPlus
-                  </Button>
-                </div>
-              )}
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={handleLearnMore}
+              >
+                En savoir plus
+              </Button>
             </div>
           ) : (
             <MainButtons 
