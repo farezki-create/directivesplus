@@ -19,6 +19,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 const Index = () => {
   const navigate = useNavigate();
   const [showSections, setShowSections] = useState(false);
+  const [showMoreInfoButtons, setShowMoreInfoButtons] = useState(false);
   const dialogState = useDialogState();
   const { t } = useLanguage();
 
@@ -58,6 +59,10 @@ const Index = () => {
     dialogState.setPreferencesQuestionsOpen(true);
   };
 
+  const handleLearnMore = () => {
+    setShowMoreInfoButtons(true);
+  };
+
   const navigateToGuideInfo = () => {
     navigate("/more-info");
   };
@@ -89,24 +94,35 @@ const Index = () => {
               >
                 Commencer
               </Button>
-              <div className="grid gap-4 md:grid-cols-2">
+              
+              {!showMoreInfoButtons ? (
                 <Button
                   variant="outline"
                   size="lg"
-                  onClick={navigateToGuideInfo}
-                  className="text-sm md:text-base text-center h-auto py-2"
+                  onClick={handleLearnMore}
                 >
-                  Pourquoi et comment rédiger mes directives anticipées ?
+                  En savoir plus
                 </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  onClick={navigateToAppInfo}
-                  className="text-sm md:text-base h-auto py-2"
-                >
-                  Informations sur l'application DirectivesPlus
-                </Button>
-              </div>
+              ) : (
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    onClick={navigateToGuideInfo}
+                    className="text-sm md:text-base text-center h-auto py-2"
+                  >
+                    Pourquoi et comment rédiger mes directives anticipées ?
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    onClick={navigateToAppInfo}
+                    className="text-sm md:text-base h-auto py-2"
+                  >
+                    Informations sur l'application DirectivesPlus
+                  </Button>
+                </div>
+              )}
             </div>
           ) : (
             <MainButtons 
