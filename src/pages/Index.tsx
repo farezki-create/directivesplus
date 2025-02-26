@@ -75,7 +75,7 @@ const Index = () => {
       const { data, error } = await supabase
         .from('pdf_documents')
         .select('file_path')
-        .eq('file_name', 'directives_anticipees_guide.pdf')
+        .eq('file_name', 'En savoir plus HAS.pdf')
         .maybeSingle();
 
       if (error) {
@@ -91,6 +91,7 @@ const Index = () => {
           description: "Le guide sur les directives anticipées n'a pas été trouvé.",
           variant: "destructive",
         });
+        console.log("Document non trouvé: 'En savoir plus HAS.pdf'");
       }
     } catch (error) {
       console.error("Erreur lors de l'accès au document:", error);
