@@ -18,14 +18,20 @@ export function PreferencesQuestionsDialog({
 }: PreferencesQuestionsDialogProps) {
   const [answers, setAnswers] = useState<Record<string, string[]>>({});
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, currentLanguage } = useLanguage();
 
   const { data: questions, isLoading } = useQuery({
-    queryKey: ["preferences-questions"],
+    queryKey: ["preferences-questions", currentLanguage],
     queryFn: async () => {
-      console.log("[Preferences] Fetching questions...");
+      console.log(`[Preferences] Fetching questions in ${currentLanguage}...`);
+      
+      // Déterminer la table à interroger en fonction de la langue
+      const tableName = currentLanguage === 'en' 
+        ? 'preferences_questions_en' 
+        : 'preferences_questions';
+      
       const { data, error } = await supabase
-        .from("preferences_questions")
+        .from(tableName)
         .select("*")
         .order("display_order", { ascending: true });
 
@@ -108,6 +114,23 @@ export function PreferencesQuestionsDialog({
     }));
   };
 
+  // Options de réponse selon la langue
+  const getAnswerOptions = () => {
+    if (currentLanguage === 'en') {
+      return [
+        { label: 'Yes', value: "yes" },
+        { label: 'No', value: "no" },
+        { label: 'I don\'t know', value: "undecided" }
+      ];
+    } else {
+      return [
+        { label: t('yes'), value: "oui" },
+        { label: t('no'), value: "non" },
+        { label: t('dontKnow'), value: "indecis" }
+      ];
+    }
+  };
+
   return (
     <QuestionsDialogLayout
       open={open}
@@ -123,11 +146,7 @@ export function PreferencesQuestionsDialog({
           question={question}
           value={answers[question.id] || []}
           onValueChange={(value) => handleAnswerChange(question.id, value)}
-          options={[
-            { label: t('yes'), value: "oui" },
-            { label: t('no'), value: "non" },
-            { label: t('dontKnow'), value: "indecis" }
-          ]}
+          options={getAnswerOptions()}
         />
       ))}
     </QuestionsDialogLayout>

@@ -19,14 +19,20 @@ export function LifeSupportQuestionsDialog({
   const [loading, setLoading] = useState(true);
   const [answers, setAnswers] = useState<Record<string, string[]>>({});
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, currentLanguage } = useLanguage();
 
   useEffect(() => {
     async function fetchQuestions() {
       try {
-        console.log("[LifeSupport] Fetching questions...");
+        console.log(`[LifeSupport] Fetching questions in ${currentLanguage}...`);
+        
+        // Déterminer la table à interroger en fonction de la langue
+        const tableName = currentLanguage === 'en' 
+          ? 'life_support_questions_en' 
+          : 'life_support_questions';
+        
         const { data, error } = await supabase
-          .from('life_support_questions')
+          .from(tableName)
           .select('*')
           .order('display_order', { ascending: true });
         
@@ -57,7 +63,7 @@ export function LifeSupportQuestionsDialog({
     if (open) {
       fetchQuestions();
     }
-  }, [open, toast]);
+  }, [open, toast, currentLanguage]);
 
   const handleAnswerChange = (questionId: string, value: string, checked: boolean) => {
     console.log('[LifeSupport] Answer change:', { questionId, value, checked });
@@ -139,15 +145,28 @@ export function LifeSupportQuestionsDialog({
     }
   };
 
-  // Options de réponse traduites
-  const getQuestionOptions = (question: any) => [
-    { value: 'Oui', label: t('yes') },
-    { value: 'Oui pour une durée modérée', label: t('yesModerateTime') },
-    { value: 'Oui seulement si l\'équipe médicale le juge utile', label: t('yesMedicalTeam') },
-    { value: 'Non rapidement abandonner le thérapeutique', label: t('noQuicklyAbandon') },
-    { value: 'La non souffrance est à privilégier', label: t('prioritizeNoSuffering') },
-    { value: 'Indécision', label: t('indecision') }
-  ];
+  // Options de réponse selon la langue
+  const getQuestionOptions = (question: any) => {
+    if (currentLanguage === 'en') {
+      return [
+        { value: 'Yes', label: 'Yes' },
+        { value: 'Yes for a moderate period', label: 'Yes for a moderate period' },
+        { value: 'Yes only if the medical team deems it useful', label: 'Yes only if the medical team deems it useful' },
+        { value: 'No quickly abandon therapeutic', label: 'No, quickly abandon therapeutic' },
+        { value: 'Non-suffering is to be prioritized', label: 'Non-suffering is to be prioritized' },
+        { value: 'Undecided', label: 'Undecided' }
+      ];
+    } else {
+      return [
+        { value: 'Oui', label: t('yes') },
+        { value: 'Oui pour une durée modérée', label: t('yesModerateTime') },
+        { value: 'Oui seulement si l\'équipe médicale le juge utile', label: t('yesMedicalTeam') },
+        { value: 'Non rapidement abandonner le thérapeutique', label: t('noQuicklyAbandon') },
+        { value: 'La non souffrance est à privilégier', label: t('prioritizeNoSuffering') },
+        { value: 'Indécision', label: t('indecision') }
+      ];
+    }
+  };
 
   return (
     <QuestionsDialogLayout

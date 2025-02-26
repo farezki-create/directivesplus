@@ -2,18 +2,26 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/hooks/useLanguage";
 
 export function useAdvancedIllnessQuestions(open: boolean) {
   const [questions, setQuestions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { currentLanguage } = useLanguage();
 
   useEffect(() => {
     async function fetchQuestions() {
       try {
-        console.log("[AdvancedIllness] Fetching questions...");
+        console.log(`[AdvancedIllness] Fetching questions in ${currentLanguage}...`);
+        
+        // Déterminer la table à interroger en fonction de la langue
+        const tableName = currentLanguage === 'en' 
+          ? 'advanced_illness_questions_en' 
+          : 'advanced_illness_questions';
+        
         const { data, error } = await supabase
-          .from('advanced_illness_questions')
+          .from(tableName)
           .select('*')
           .order('display_order', { ascending: true });
         
@@ -50,7 +58,7 @@ export function useAdvancedIllnessQuestions(open: boolean) {
     if (open) {
       fetchQuestions();
     }
-  }, [open, toast]);
+  }, [open, toast, currentLanguage]);
 
   return { questions, loading };
 }

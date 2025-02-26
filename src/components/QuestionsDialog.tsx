@@ -16,14 +16,19 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
   const [loading, setLoading] = useState(true);
   const [answers, setAnswers] = useState<Record<string, string[]>>({});
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, currentLanguage } = useLanguage();
 
   useEffect(() => {
     async function fetchQuestions() {
       try {
-        console.log("[GeneralOpinion] Fetching questions...");
+        console.log(`[GeneralOpinion] Fetching questions in ${currentLanguage}...`);
+        
+        // Déterminer la table à interroger en fonction de la langue
+        const tableName = currentLanguage === 'en' ? 'questions_en' : 'questions';
+        const questionField = currentLanguage === 'en' ? 'question' : 'Question';
+        
         const { data, error } = await supabase
-          .from('questions')
+          .from(tableName)
           .select('*')
           .eq('category', 'general_opinion')
           .order('display_order', { ascending: true });
@@ -45,7 +50,14 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
           return a.display_order - b.display_order;
         }) || [];
 
-        setQuestions(sortedQuestions);
+        // Normaliser les noms de champs pour une utilisation cohérente
+        const normalizedQuestions = sortedQuestions.map(q => ({
+          ...q,
+          Question: q[questionField], // Assure que tous les objets ont une propriété Question
+          question: q[questionField],  // Assure que tous les objets ont une propriété question
+        }));
+
+        setQuestions(normalizedQuestions);
       } catch (error) {
         console.error('[GeneralOpinion] Unexpected error:', error);
         toast({
@@ -61,7 +73,7 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
     if (open) {
       fetchQuestions();
     }
-  }, [open, toast]);
+  }, [open, toast, currentLanguage]);
 
   const handleAnswerChange = (questionId: string, value: string) => {
     console.log('[GeneralOpinion] Answer change:', { questionId, value });
@@ -93,7 +105,7 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
         return values.map(value => ({
           user_id: userId,
           question_id: questionId,
-          question_text: question?.Question,
+          question_text: question?.Question || question?.question,
           response: value
         }));
       });
@@ -132,11 +144,21 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
     }
   };
 
-  const getQuestionOptions = (question: any) => [
-    { value: 'oui', label: t('yes') },
-    { value: 'non', label: t('no') },
-    { value: 'je_ne_sais_pas', label: t('dontKnow') }
-  ];
+  const getQuestionOptions = (question: any) => {
+    if (currentLanguage === 'en') {
+      return [
+        { value: 'yes', label: 'Yes' },
+        { value: 'no', label: 'No' },
+        { value: 'i_dont_know', label: 'I don\'t know' }
+      ];
+    } else {
+      return [
+        { value: 'oui', label: t('yes') },
+        { value: 'non', label: t('no') },
+        { value: 'je_ne_sais_pas', label: t('dontKnow') }
+      ];
+    }
+  };
 
   return (
     <QuestionsDialogLayout
