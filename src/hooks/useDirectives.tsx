@@ -53,36 +53,59 @@ export function useDirectives(userId: string) {
 
   const saveDirective = useMutation({
     mutationFn: async (content: DirectiveContent) => {
-      // D'abord, désactiver toutes les directives existantes
-      const { error: updateError } = await supabase
-        .from("directives")
-        .update({ is_active: false } as any)
-        .eq("user_id", userId);
+      try {
+        console.log("[Directives] Saving directive for user:", userId);
+        
+        // First, check if there are existing directives for this user
+        const { data: existingDirectives, error: checkError } = await supabase
+          .from("directives")
+          .select("id")
+          .eq("user_id", userId);
+        
+        if (checkError) {
+          console.error("[Directives] Error checking existing directives:", checkError);
+          throw checkError;
+        }
 
-      if (updateError) {
-        console.error("[Directives] Error deactivating old directives:", updateError);
-        throw updateError;
-      }
+        // If there are existing directives, update them all to inactive
+        if (existingDirectives && existingDirectives.length > 0) {
+          console.log("[Directives] Deactivating existing directives");
+          const { error: updateError } = await supabase
+            .from("directives")
+            .update({ is_active: false })
+            .eq("user_id", userId);
 
-      // Ensuite, insérer la nouvelle directive
-      const { data, error } = await supabase
-        .from("directives")
-        .insert([
-          {
-            user_id: userId,
-            content: content as any,
-            is_active: true,
-          },
-        ])
-        .select()
-        .maybeSingle();
+          if (updateError) {
+            console.error("[Directives] Error deactivating old directives:", updateError);
+            throw updateError;
+          }
+        }
 
-      if (error) {
-        console.error("[Directives] Error saving directive:", error);
+        // Then, insert the new directive
+        console.log("[Directives] Inserting new directive");
+        const { data, error } = await supabase
+          .from("directives")
+          .insert([
+            {
+              user_id: userId,
+              content: content as any,
+              is_active: true,
+            },
+          ])
+          .select()
+          .maybeSingle();
+
+        if (error) {
+          console.error("[Directives] Error saving directive:", error);
+          throw error;
+        }
+
+        console.log("[Directives] Successfully saved directive:", data);
+        return data as unknown as Directive;
+      } catch (error) {
+        console.error("[Directives] Error in saveDirective mutation:", error);
         throw error;
       }
-
-      return data as unknown as Directive;
     },
     onSuccess: () => {
       toast({
@@ -91,7 +114,8 @@ export function useDirectives(userId: string) {
       });
       queryClient.invalidateQueries({ queryKey: ["directives", userId] });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error("[Directives] Mutation error:", error);
       toast({
         title: "Erreur",
         description: "Une erreur est survenue lors de l'enregistrement de vos directives.",
