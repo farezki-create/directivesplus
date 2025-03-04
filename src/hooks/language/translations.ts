@@ -209,6 +209,60 @@ export const translations: Translations = {
     french: "Français",
     english: "Anglais",
     dontKnow: "Je ne sais pas",
+    
+    // Navigation related
+    home: "Accueil",
+    reviews: "Avis",
+    buyCard: "Acheter la carte",
+    login: "Connexion",
+    logout: "Déconnexion",
+    
+    // Example pages
+    examples: "Exemples",
+    examplesDesc: "Découvrez des exemples de directives anticipées pour vous aider dans votre rédaction.",
+    templatesTitle: "Modèles de directives",
+    phrasesTitle: "Phrases types",
+    phraseAdded: "Phrase ajoutée à votre synthèse",
+    phraseRemoved: "Phrase retirée de votre synthèse",
+    phraseAlreadyExists: "Cette phrase existe déjà dans votre synthèse",
+    phraseNotFound: "Cette phrase n'existe pas dans votre synthèse",
+    errorAddingPhrase: "Erreur lors de l'ajout de la phrase",
+    errorRemovingPhrase: "Erreur lors de la suppression de la phrase",
+    confirmAdd: "Confirmer l'ajout",
+    confirmAddDesc: "Voulez-vous ajouter cette phrase à votre synthèse ?",
+    confirmRemove: "Confirmer la suppression",
+    confirmRemoveDesc: "Voulez-vous retirer cette phrase de votre synthèse ?",
+    confirm: "Confirmer",
+    mustBeLoggedIn: "Vous devez être connecté pour effectuer cette action",
+    
+    // Auth related
+    backToHome: "Retour à l'accueil",
+    createAccount: "Créer un compte",
+    signIn: "Se connecter",
+    signUpDesc: "Créez un compte pour accéder à vos directives anticipées",
+    loginDesc: "Connectez-vous pour accéder à vos directives anticipées",
+    choosePassword: "Choisissez un mot de passe",
+    yourPassword: "Votre mot de passe",
+    register: "S'inscrire",
+    alreadyHaveAccount: "Vous avez déjà un compte ?",
+    dontHaveAccount: "Vous n'avez pas de compte ?",
+    passwordHint: " (8 caractères minimum)",
+    
+    // Trusted person
+    trustedPersonDesignation: "Désignation de la personne de confiance",
+    trustedPersons: "Personnes de confiance",
+    trustedPersonsDesc: "Personnes à contacter",
+    
+    // Summary
+    summary: "Résumé",
+    
+    // Error/success messages
+    error: "Erreur",
+    success: "Succès",
+    information: "Information",
+    
+    // Yes, No responses for all languages
+    yesTrustedPerson: "Oui seulement si ma personne de confiance le juge utile",
   },
   en: {
     appName: "Advance Directives",
@@ -402,5 +456,59 @@ export const translations: Translations = {
     french: "French",
     english: "English",
     dontKnow: "I don't know",
+    
+    // Navigation related
+    home: "Home",
+    reviews: "Reviews",
+    buyCard: "Buy Card",
+    login: "Login",
+    logout: "Logout",
+    
+    // Example pages
+    examples: "Examples",
+    examplesDesc: "Discover examples of advance directives to help you with your writing.",
+    templatesTitle: "Directive Templates",
+    phrasesTitle: "Common Phrases",
+    phraseAdded: "Phrase added to your synthesis",
+    phraseRemoved: "Phrase removed from your synthesis",
+    phraseAlreadyExists: "This phrase already exists in your synthesis",
+    phraseNotFound: "This phrase doesn't exist in your synthesis",
+    errorAddingPhrase: "Error adding the phrase",
+    errorRemovingPhrase: "Error removing the phrase",
+    confirmAdd: "Confirm Addition",
+    confirmAddDesc: "Do you want to add this phrase to your synthesis?",
+    confirmRemove: "Confirm Removal",
+    confirmRemoveDesc: "Do you want to remove this phrase from your synthesis?",
+    confirm: "Confirm",
+    mustBeLoggedIn: "You must be logged in to perform this action",
+    
+    // Auth related
+    backToHome: "Back to home",
+    createAccount: "Create Account",
+    signIn: "Sign In",
+    signUpDesc: "Create an account to access your advance directives",
+    loginDesc: "Sign in to access your advance directives",
+    choosePassword: "Choose a password",
+    yourPassword: "Your password",
+    register: "Register",
+    alreadyHaveAccount: "Already have an account?",
+    dontHaveAccount: "Don't have an account?",
+    passwordHint: " (8 characters minimum)",
+    
+    // Trusted person
+    trustedPersonDesignation: "Designation of Trusted Person",
+    trustedPersons: "Trusted Persons",
+    trustedPersonsDesc: "People to contact",
+    
+    // Summary
+    summary: "Summary",
+    
+    // Error/success messages
+    error: "Error",
+    success: "Success",
+    information: "Information",
+    
+    // Yes, No responses for all languages
+    yesTrustedPerson: "Yes only if my trusted person deems it useful",
   }
 };
