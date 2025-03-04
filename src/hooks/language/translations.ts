@@ -1,14 +1,14 @@
-import { getDictionary } from "./dictionaries";
+
+export type SupportedLanguage = 'fr' | 'en';
 
 export const i18n = {
   defaultLocale: "fr",
   locales: ["fr", "en"],
+  // This will be implemented in dictionaries.ts
   async getTranslation(locale: string) {
-    return getDictionary(locale);
+    return locale === 'en' ? translations.en : translations.fr;
   },
 };
-
-export type SupportedLanguage = 'fr' | 'en';
 
 export const translations = {
   fr: {
