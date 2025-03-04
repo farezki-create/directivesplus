@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
-import { CreditCard, MessageSquare } from "lucide-react";
+import { CreditCard, MessageSquare, FileEdit } from "lucide-react";
 import { PurchaseDialog } from "./purchase/PurchaseDialog";
 import { LanguageSelector } from "./LanguageSelector";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -52,6 +52,15 @@ export const Header = () => {
               onClick={handleHomeClick}
             >
               {t('home')}
+            </Button>
+            
+            <Button
+              variant="ghost"
+              onClick={() => navigate("/modify-directives")}
+              className="flex items-center gap-2"
+            >
+              <FileEdit className="w-4 h-4" />
+              {t('modifyDirectives')}
             </Button>
 
             <Button

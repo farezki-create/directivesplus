@@ -1,4 +1,5 @@
 
+
 export type SupportedLanguage = 'fr' | 'en';
 
 export const i18n = {
@@ -44,6 +45,8 @@ export const translations = {
     questionnaires: "Questionnaires",
     profile: "Profil",
     myDirectives: "Mes Directives",
+    modifyDirectives: "Modifier mes Directives Anticipées",
+    modifyDirectivesPage: "Modification de Directives Anticipées",
     simpleAndGuided: "Simple et Guidé",
     stepByStepProcess:
       "Un processus pas à pas pour vous aider à exprimer vos volontés.",
@@ -104,6 +107,13 @@ export const translations = {
     "onlyPDFAllowed": "Seuls les fichiers PDF sont acceptés",
     "success": "Succès",
     "error": "Erreur",
+    "trustedPerson": "Personne de confiance",
+    "summary": "Synthèse",
+    "examples": "Exemples",
+    "logout": "Se déconnecter",
+    "login": "Se connecter",
+    "buyCard": "Acheter une carte",
+    "reviews": "Avis",
   },
   en: {
     title: "Advance Directives",
@@ -138,6 +148,8 @@ export const translations = {
     questionnaires: "Questionnaires",
     profile: "Profile",
     myDirectives: "My Directives",
+    modifyDirectives: "Modify my Advance Directives",
+    modifyDirectivesPage: "Modify Advance Directives",
     simpleAndGuided: "Simple and Guided",
     stepByStepProcess:
       "A step-by-step process to help you express your wishes.",
@@ -198,5 +210,12 @@ export const translations = {
     onlyPDFAllowed: "Only PDF files are allowed",
     success: "Success",
     error: "Error",
+    trustedPerson: "Trusted Person",
+    summary: "Summary",
+    examples: "Examples",
+    logout: "Logout",
+    login: "Login",
+    buyCard: "Buy Card",
+    reviews: "Reviews",
   }
 };
