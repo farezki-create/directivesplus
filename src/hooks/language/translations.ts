@@ -1,3 +1,4 @@
+
 import { fr as frCA } from "date-fns/locale";
 import { enUS } from "date-fns/locale";
 
@@ -215,7 +216,6 @@ export const translations: Translations = {
     reviews: "Avis",
     buyCard: "Acheter la carte",
     login: "Connexion",
-    logout: "Déconnexion",
     
     // Example pages
     examples: "Exemples",
@@ -250,8 +250,6 @@ export const translations: Translations = {
     
     // Trusted person
     trustedPersonDesignation: "Désignation de la personne de confiance",
-    trustedPersons: "Personnes de confiance",
-    trustedPersonsDesc: "Personnes à contacter",
     
     // Summary
     summary: "Résumé",
@@ -261,8 +259,23 @@ export const translations: Translations = {
     success: "Succès",
     information: "Information",
     
-    // Yes, No responses for all languages
+    // Yes responses for trusted person
     yesTrustedPerson: "Oui seulement si ma personne de confiance le juge utile",
+    
+    // Additional translations that might be missing
+    password: "Mot de passe",
+    addToSynthesis: "Ajouter à ma synthèse",
+    removeFromSynthesis: "Retirer de ma synthèse",
+    morePainReliefDesc: "Modèle axé sur le soulagement de la douleur et minimisant les interventions.",
+    morePainRelief: "Soulagement de la douleur",
+    moreTherapeuticCare: "Soins thérapeutiques",
+    moreTherapeuticCareDesc: "Modèle favorisant les interventions médicales jusqu'à la fin.",
+    intermediate: "Approche intermédiaire",
+    intermediateDesc: "Modèle équilibré entre interventions médicales et confort.",
+    explanatoryVideo: "Vidéo explicative",
+    continueToQuestionnaire: "Continuer vers le questionnaire",
+    beforeStarting: "Avant de commencer",
+    freeTextInstructions: "Précisez ici vos souhaits et préférences dans vos propres mots.",
   },
   en: {
     appName: "Advance Directives",
@@ -462,7 +475,6 @@ export const translations: Translations = {
     reviews: "Reviews",
     buyCard: "Buy Card",
     login: "Login",
-    logout: "Logout",
     
     // Example pages
     examples: "Examples",
@@ -497,8 +509,6 @@ export const translations: Translations = {
     
     // Trusted person
     trustedPersonDesignation: "Designation of Trusted Person",
-    trustedPersons: "Trusted Persons",
-    trustedPersonsDesc: "People to contact",
     
     // Summary
     summary: "Summary",
@@ -508,7 +518,23 @@ export const translations: Translations = {
     success: "Success",
     information: "Information",
     
-    // Yes, No responses for all languages
+    // Yes responses for trusted person
     yesTrustedPerson: "Yes only if my trusted person deems it useful",
+    
+    // Additional translations that might be missing
+    password: "Password",
+    addToSynthesis: "Add to my synthesis",
+    removeFromSynthesis: "Remove from my synthesis",
+    morePainReliefDesc: "Model focused on pain relief and minimizing interventions.",
+    morePainRelief: "Pain Relief",
+    moreTherapeuticCare: "Therapeutic Care",
+    moreTherapeuticCareDesc: "Model favoring medical interventions until the end.",
+    intermediate: "Intermediate Approach",
+    intermediateDesc: "Balanced model between medical interventions and comfort.",
+    explanatoryVideo: "Explanatory Video",
+    continueToQuestionnaire: "Continue to questionnaire",
+    beforeStarting: "Before starting",
+    freeTextInstructions: "Specify your wishes and preferences in your own words here.",
   }
 };
+
