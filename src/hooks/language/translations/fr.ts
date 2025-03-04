@@ -41,7 +41,7 @@ export const frenchTranslations: TranslationDictionary = {
     "Un processus pas à pas pour vous aider à exprimer vos volontés.",
   "100Secure": "100% Sécurisé",
   dataSecurelyStored:
-    "Vos données sont stockées en toute sécurité et confidentialité.",
+    "Vos directives anticipées ne sont pas sauvegardées, Elles sont supprimées à la déconnexion.",
   generalOpinion: "Opinion Générale",
   lifeSupport: "Maintien de la Vie",
   advancedIllnessTitle: "Maladie Avancée",
