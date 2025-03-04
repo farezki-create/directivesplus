@@ -42,4 +42,5 @@ export const translations: Translations = mergeTranslations(
 );
 
 // Re-export types and date-fns locales
-export { SupportedLanguage, dateFnsLocales };
+export { dateFnsLocales };
+export type { SupportedLanguage };
