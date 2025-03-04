@@ -1,5 +1,4 @@
-
-import { useState, useCallback } from "react";
+import { useState } from "react";
 
 export function useDialogState() {
   const [explanationOpen, setExplanationOpen] = useState(false);
@@ -11,63 +10,22 @@ export function useDialogState() {
   const [preferencesExplanationOpen, setPreferencesExplanationOpen] = useState(false);
   const [preferencesQuestionsOpen, setPreferencesQuestionsOpen] = useState(false);
 
-  // Wrapped setters in useCallback to ensure consistent references
-  const setExplanationOpenCallback = useCallback((open: boolean) => {
-    console.log(`[DialogState] Setting explanation dialog: ${open}`);
-    setExplanationOpen(open);
-  }, []);
-
-  const setQuestionsOpenCallback = useCallback((open: boolean) => {
-    console.log(`[DialogState] Setting questions dialog: ${open}`);
-    setQuestionsOpen(open);
-  }, []);
-
-  const setLifeSupportExplanationOpenCallback = useCallback((open: boolean) => {
-    console.log(`[DialogState] Setting life support explanation dialog: ${open}`);
-    setLifeSupportExplanationOpen(open);
-  }, []);
-
-  const setLifeSupportQuestionsOpenCallback = useCallback((open: boolean) => {
-    console.log(`[DialogState] Setting life support questions dialog: ${open}`);
-    setLifeSupportQuestionsOpen(open);
-  }, []);
-
-  const setAdvancedIllnessExplanationOpenCallback = useCallback((open: boolean) => {
-    console.log(`[DialogState] Setting advanced illness explanation dialog: ${open}`);
-    setAdvancedIllnessExplanationOpen(open);
-  }, []);
-
-  const setAdvancedIllnessQuestionsOpenCallback = useCallback((open: boolean) => {
-    console.log(`[DialogState] Setting advanced illness questions dialog: ${open}`);
-    setAdvancedIllnessQuestionsOpen(open);
-  }, []);
-
-  const setPreferencesExplanationOpenCallback = useCallback((open: boolean) => {
-    console.log(`[DialogState] Setting preferences explanation dialog: ${open}`);
-    setPreferencesExplanationOpen(open);
-  }, []);
-
-  const setPreferencesQuestionsOpenCallback = useCallback((open: boolean) => {
-    console.log(`[DialogState] Setting preferences questions dialog: ${open}`);
-    setPreferencesQuestionsOpen(open);
-  }, []);
-
   return {
     explanationOpen,
-    setExplanationOpen: setExplanationOpenCallback,
+    setExplanationOpen,
     questionsOpen,
-    setQuestionsOpen: setQuestionsOpenCallback,
+    setQuestionsOpen,
     lifeSupportExplanationOpen,
-    setLifeSupportExplanationOpen: setLifeSupportExplanationOpenCallback,
+    setLifeSupportExplanationOpen,
     lifeSupportQuestionsOpen,
-    setLifeSupportQuestionsOpen: setLifeSupportQuestionsOpenCallback,
+    setLifeSupportQuestionsOpen,
     advancedIllnessExplanationOpen,
-    setAdvancedIllnessExplanationOpen: setAdvancedIllnessExplanationOpenCallback,
+    setAdvancedIllnessExplanationOpen,
     advancedIllnessQuestionsOpen,
-    setAdvancedIllnessQuestionsOpen: setAdvancedIllnessQuestionsOpenCallback,
+    setAdvancedIllnessQuestionsOpen,
     preferencesExplanationOpen,
-    setPreferencesExplanationOpen: setPreferencesExplanationOpenCallback,
+    setPreferencesExplanationOpen,
     preferencesQuestionsOpen,
-    setPreferencesQuestionsOpen: setPreferencesQuestionsOpenCallback,
+    setPreferencesQuestionsOpen,
   };
 }

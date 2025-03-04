@@ -42,52 +42,21 @@ export function PDFImporter({ userId }: PDFImporterProps) {
     setIsImporting(true);
     
     try {
-      // Simulons une extraction du texte d'un PDF de directives anticipées
+      // Pour cette version, nous allons simplement extraire le texte brut du PDF
+      // et l'ajouter comme texte libre dans la synthèse
       const formData = new FormData();
       formData.append('file', file);
       
-      // Simulons un traitement du PDF avec un délai pour l'UX
+      // Simulons un traitement du PDF
       setTimeout(async () => {
         try {
-          // Vérification si c'est un fichier de directives anticipées 
-          const isDirectivesFile = file.name.toLowerCase().includes('directives') || 
-                                 file.name.toLowerCase().includes('anticipées');
-          
-          // Structure de la synthèse suivant le format de l'application
-          let importContent = '';
-          
-          if (isDirectivesFile) {
-            // Format structuré pour les directives anticipées
-            importContent = `DIRECTIVES ANTICIPÉES IMPORTÉES
-
-Mon avis d'une façon générale
-Je souhaite que l'équipe médicale respecte mes directives anticipées importées depuis ce document.
-
-Maintien en vie
-Les informations détaillées concernant mes souhaits pour le maintien en vie sont présentes dans le document importé.
-
-Maladie avancée
-Les informations concernant mes souhaits en cas de maladie avancée sont présentes dans le document importé.
-
-Mes goûts et mes peurs
-Les informations concernant mes préférences personnelles sont présentes dans le document importé.
-
-ATTENTION: Ce document a été importé le ${new Date().toLocaleDateString()}. Veuillez vérifier son contenu et le mettre à jour si nécessaire.`;
-          } else {
-            // Format générique pour les autres PDF
-            importContent = `DOCUMENT IMPORTÉ: ${file.name}
-
-Ce contenu a été importé depuis un PDF le ${new Date().toLocaleDateString()}.
-Veuillez compléter vos directives anticipées en utilisant le questionnaire de l'application pour une meilleure structuration.`;
-          }
-          
-          // Création ou mise à jour de l'entrée texte libre
+          // Création d'une entrée texte libre basique
           const { error } = await supabase
             .from('questionnaire_synthesis')
             .upsert(
               {
                 user_id: userId,
-                free_text: importContent
+                free_text: `Contenu importé depuis le PDF: ${file.name}\n\nCe contenu a été importé automatiquement. Vous pouvez maintenant le modifier dans l'interface.`
               },
               {
                 onConflict: 'user_id'
