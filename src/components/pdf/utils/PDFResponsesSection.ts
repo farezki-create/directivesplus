@@ -23,6 +23,11 @@ export class PDFResponsesSection {
       doc.setFont("helvetica", "normal");
     };
 
+    const importedContentStyle = () => {
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "italic");
+    };
+
     const addSection = (title: string, items: any[]) => {
       if (items && items.length > 0) {
         // Nouvelle page si nécessaire
@@ -77,11 +82,26 @@ export class PDFResponsesSection {
         yPosition = 30;
       }
 
+      // Vérifier si c'est un contenu importé
+      const isImportedContent = responses.synthesis.free_text.includes('DIRECTIVES ANTICIPÉES IMPORTÉES') ||
+                               responses.synthesis.free_text.includes('DOCUMENT IMPORTÉ');
+
       sectionTitleStyle();
-      doc.text("Texte libre", 20, yPosition);
+      
+      if (isImportedContent) {
+        doc.text("Contenu importé", 20, yPosition);
+      } else {
+        doc.text("Texte libre", 20, yPosition);
+      }
+      
       yPosition += 10;
 
-      responseStyle();
+      if (isImportedContent) {
+        importedContentStyle();
+      } else {
+        responseStyle();
+      }
+      
       const lines = doc.splitTextToSize(responses.synthesis.free_text, pageWidth - 40);
       doc.text(lines, 20, yPosition);
       yPosition += lines.length * 6;
