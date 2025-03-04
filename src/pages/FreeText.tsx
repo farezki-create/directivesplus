@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ResponsesSummary } from "@/components/ResponsesSummary";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { BackButton } from "@/components/ui/back-button";
 
 const FreeText = () => {
   const [userId, setUserId] = useState<string | null>(null);
@@ -63,6 +64,8 @@ const FreeText = () => {
       
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto space-y-8">
+          <BackButton />
+          
           <div className="mb-6">
             <h1 className="text-3xl font-bold">Synthèse de vos réponses</h1>
           </div>

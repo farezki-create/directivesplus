@@ -1,9 +1,8 @@
-
 import { ExamplePhraseCard } from "./ExamplePhraseCard";
 import { ConfirmationDialog, ConfirmDialogState } from "./ConfirmationDialog";
-import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useLanguage } from "@/hooks/useLanguage";
+import { BackButton } from "@/components/ui/back-button";
 
 export interface ExamplePhrase {
   text: string;
@@ -65,13 +64,7 @@ export function ExamplePhrasesList({
 
   return (
     <div className="space-y-6">
-      <Button 
-        onClick={onBack} 
-        variant="outline" 
-        className="mb-4"
-      >
-        {t('back')}
-      </Button>
+      <BackButton onClick={onBack} />
       <div className="space-y-4">
         {phrases.map((phrase, index) => (
           <ExamplePhraseCard
