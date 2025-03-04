@@ -108,3 +108,24 @@ export async function removePhraseFromSynthesis(phrase: string, userId: string) 
     notFound: false
   };
 }
+
+export async function deleteSynthesisOnLogout() {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (user) {
+      const { error } = await supabase
+        .from('questionnaire_synthesis')
+        .delete()
+        .eq('user_id', user.id);
+      
+      if (error) {
+        console.error("Error deleting synthesis on logout:", error);
+      } else {
+        console.log("Successfully deleted user's synthesis on logout");
+      }
+    }
+  } catch (error) {
+    console.error("Error in deleteSynthesisOnLogout:", error);
+  }
+}
