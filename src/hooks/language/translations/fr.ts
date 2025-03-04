@@ -1,4 +1,3 @@
-
 import { TranslationDictionary } from '../types';
 
 export const frenchTranslations: TranslationDictionary = {
@@ -108,18 +107,29 @@ export const frenchTranslations: TranslationDictionary = {
   "yesMedicalTeam": "Oui si l'équipe médicale le juge utile",
   "yesTrustedPerson": "Oui si ma personne de confiance le juge utile",
   "examplesDesc": "Exemples de directives anticipées",
-  // Missing translations for the Examples section
-  "back": "Retour",
-  "addToSynthesis": "Ajouter à la synthèse",
-  "removeFromSynthesis": "Retirer de la synthèse",
-  "templatesTitle": "Modèles de directives",
-  "phrasesTitle": "Phrases exemples",
-  "mustBeLoggedIn": "Vous devez être connecté pour effectuer cette action",
-  "phraseAlreadyExists": "Cette phrase existe déjà dans votre synthèse",
-  "phraseAdded": "Phrase ajoutée à votre synthèse avec succès",
-  "errorAddingPhrase": "Erreur lors de l'ajout de la phrase",
-  "phraseNotFound": "Cette phrase n'a pas été trouvée dans votre synthèse",
-  "phraseRemoved": "Phrase retirée de votre synthèse avec succès",
-  "errorRemovingPhrase": "Erreur lors de la suppression de la phrase",
-  "information": "Information"
+  back: "Retour",
+  addToSynthesis: "Ajouter à la synthèse",
+  removeFromSynthesis: "Retirer de la synthèse",
+  templatesTitle: "Modèles de directives",
+  phrasesTitle: "Phrases exemples",
+  mustBeLoggedIn: "Vous devez être connecté pour effectuer cette action",
+  phraseAlreadyExists: "Cette phrase existe déjà dans votre synthèse",
+  phraseAdded: "Phrase ajoutée à votre synthèse avec succès",
+  errorAddingPhrase: "Erreur lors de l'ajout de la phrase",
+  phraseNotFound: "Cette phrase n'a pas été trouvée dans votre synthèse",
+  phraseRemoved: "Phrase retirée de votre synthèse avec succès",
+  errorRemovingPhrase: "Erreur lors de la suppression de la phrase",
+  information: "Information",
+  confirm: "Confirmer",
+  cancel: "Annuler",
+  confirmAdd: "Confirmer l'ajout",
+  confirmRemove: "Confirmer la suppression",
+  confirmAddDesc: "Êtes-vous sûr de vouloir ajouter cette phrase à votre synthèse ?",
+  confirmRemoveDesc: "Êtes-vous sûr de vouloir retirer cette phrase de votre synthèse ?",
+  moreTherapeuticCare: "Plus de soins thérapeutiques",
+  moreTherapeuticCareDesc: "Priorité aux interventions médicales et aux traitements de maintien de la vie.",
+  morePainRelief: "Plus de soulagement de la douleur",
+  morePainReliefDesc: "Accent sur le confort et la qualité de vie plutôt que sur les traitements prolongés.",
+  intermediate: "Approche équilibrée",
+  intermediateDesc: "Recherche d'un équilibre entre les traitements et les mesures de confort."
 };

@@ -103,4 +103,32 @@ export interface TranslationDictionary {
   yesMedicalTeam?: string;
   yesTrustedPerson?: string;
   examplesDesc?: string;
+  // Adding new keys for Examples section
+  back: string;
+  addToSynthesis: string;
+  removeFromSynthesis: string;
+  templatesTitle: string;
+  phrasesTitle: string;
+  mustBeLoggedIn: string;
+  phraseAlreadyExists: string;
+  phraseAdded: string;
+  errorAddingPhrase: string;
+  phraseNotFound: string;
+  phraseRemoved: string;
+  errorRemovingPhrase: string;
+  information: string;
+  // Add keys for confirmation dialog
+  confirm: string;
+  cancel: string;
+  confirmAdd: string;
+  confirmRemove: string;
+  confirmAddDesc: string;
+  confirmRemoveDesc: string;
+  // Add keys for templates
+  moreTherapeuticCare: string;
+  moreTherapeuticCareDesc: string;
+  morePainRelief: string;
+  morePainReliefDesc: string;
+  intermediate: string;
+  intermediateDesc: string;
 }

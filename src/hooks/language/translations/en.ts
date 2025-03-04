@@ -1,4 +1,3 @@
-
 import { TranslationDictionary } from '../types';
 
 export const englishTranslations: TranslationDictionary = {
@@ -108,18 +107,29 @@ export const englishTranslations: TranslationDictionary = {
   yesMedicalTeam: "Yes if the medical team deems it useful",
   yesTrustedPerson: "Yes if my trusted person deems it useful",
   examplesDesc: "Examples of advance directives",
-  // Missing translations for the Examples section
-  "back": "Back",
-  "addToSynthesis": "Add to synthesis",
-  "removeFromSynthesis": "Remove from synthesis",
-  "templatesTitle": "Directive Templates",
-  "phrasesTitle": "Example Phrases",
-  "mustBeLoggedIn": "You must be logged in to perform this action",
-  "phraseAlreadyExists": "This phrase already exists in your synthesis",
-  "phraseAdded": "Phrase successfully added to your synthesis",
-  "errorAddingPhrase": "Error adding phrase",
-  "phraseNotFound": "This phrase was not found in your synthesis",
-  "phraseRemoved": "Phrase successfully removed from your synthesis",
-  "errorRemovingPhrase": "Error removing phrase",
-  "information": "Information"
+  back: "Back",
+  addToSynthesis: "Add to synthesis",
+  removeFromSynthesis: "Remove from synthesis",
+  templatesTitle: "Directive Templates",
+  phrasesTitle: "Example Phrases",
+  mustBeLoggedIn: "You must be logged in to perform this action",
+  phraseAlreadyExists: "This phrase already exists in your synthesis",
+  phraseAdded: "Phrase successfully added to your synthesis",
+  errorAddingPhrase: "Error adding phrase",
+  phraseNotFound: "This phrase was not found in your synthesis",
+  phraseRemoved: "Phrase successfully removed from your synthesis",
+  errorRemovingPhrase: "Error removing phrase",
+  information: "Information",
+  confirm: "Confirm",
+  cancel: "Cancel",
+  confirmAdd: "Confirm Addition",
+  confirmRemove: "Confirm Removal",
+  confirmAddDesc: "Are you sure you want to add this phrase to your synthesis?",
+  confirmRemoveDesc: "Are you sure you want to remove this phrase from your synthesis?",
+  moreTherapeuticCare: "More Therapeutic Care",
+  moreTherapeuticCareDesc: "Prioritizing medical interventions and life-sustaining treatments.",
+  morePainRelief: "More Pain Relief",
+  morePainReliefDesc: "Focusing on comfort and quality of life over extended treatments.",
+  intermediate: "Balanced Approach",
+  intermediateDesc: "Seeking a middle ground between treatments and comfort measures."
 };
