@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { QuestionCard } from "./questions/QuestionCard";
@@ -20,9 +20,16 @@ export function PreferencesQuestionsDialog({
   const { toast } = useToast();
   const { t, currentLanguage } = useLanguage();
 
+  // Reset answers when language changes to avoid mixed language responses
+  useEffect(() => {
+    setAnswers({});
+  }, [currentLanguage]);
+
   const { data: questions, isLoading } = useQuery({
-    queryKey: ["preferences-questions", currentLanguage],
+    queryKey: ["preferences-questions", currentLanguage, open],
     queryFn: async () => {
+      if (!open) return [];
+      
       console.log(`[Preferences] Fetching questions in ${currentLanguage}...`);
       
       // Déterminer la table à interroger en fonction de la langue
@@ -42,6 +49,7 @@ export function PreferencesQuestionsDialog({
       console.log('[Preferences] Questions loaded:', data?.length, 'questions');
       return data || [];
     },
+    enabled: open, // Only fetch when dialog is open
   });
 
   const handleSubmit = async () => {
@@ -126,7 +134,7 @@ export function PreferencesQuestionsDialog({
       return [
         { label: t('yes'), value: "oui" },
         { label: t('no'), value: "non" },
-        { label: t('dontKnow'), value: "indecis" }
+        { label: t('iDontKnow'), value: "indecis" }
       ];
     }
   };

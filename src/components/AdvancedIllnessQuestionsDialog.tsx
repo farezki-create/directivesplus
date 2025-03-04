@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { QuestionCard } from "./questions/QuestionCard";
 import { QuestionsDialogLayout } from "./questions/QuestionsDialogLayout";
@@ -22,7 +21,14 @@ export function AdvancedIllnessQuestionsDialog({
   const { t, currentLanguage } = useLanguage();
 
   useEffect(() => {
+    setAnswers({});
+  }, [currentLanguage]);
+
+  useEffect(() => {
     async function fetchQuestions() {
+      if (!open) return;
+      
+      setLoading(true);
       try {
         console.log(`[AdvancedIllness] Fetching questions in ${currentLanguage}...`);
         
@@ -77,9 +83,7 @@ export function AdvancedIllnessQuestionsDialog({
       }
     }
 
-    if (open) {
-      fetchQuestions();
-    }
+    fetchQuestions();
   }, [open, toast, currentLanguage]);
 
   const handleAnswerChange = (questionId: string, value: string, checked: boolean) => {
