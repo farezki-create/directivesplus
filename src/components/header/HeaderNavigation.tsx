@@ -2,7 +2,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Home, FileEdit, MessageSquare, CreditCard } from "lucide-react";
+import { Home, FileEdit, MessageSquare, CreditCard, BookOpen } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
 
 interface HeaderNavigationProps {
@@ -37,6 +37,16 @@ export const HeaderNavigation = ({ setShowPurchaseDialog }: HeaderNavigationProp
       >
         <FileEdit className="w-4 h-4" />
         {t('modifyDirectives')}
+      </Button>
+
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => navigate("/examples")}
+        className="flex items-center gap-2"
+      >
+        <BookOpen className="w-4 h-4" />
+        {t('examples')}
       </Button>
 
       <Button
