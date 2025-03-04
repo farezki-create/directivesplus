@@ -1,6 +1,7 @@
-
 import { fr as frCA } from "date-fns/locale";
 import { enUS } from "date-fns/locale";
+
+export type SupportedLanguage = 'fr' | 'en';
 
 export interface Translations {
   [key: string]: Translation;
@@ -47,7 +48,7 @@ export const translations: Translations = {
     additionalWishesTitle: "Souhaits additionnels et directives particulières",
     additionalWishesDescription: "Ajoutez toute autre volonté ou directive spécifique non couverte par les sections précédentes.",
     advancedIllnessDesc: "Précisez vos directives pour le cas où vous seriez atteint d'une maladie grave ou incurable.",
-    yes: "Oui",
+    yesOption: "Oui",
     yesModerateTime: "Oui pour une durée modérée",
     yesMedicalTeam: "Oui seulement si l'équipe médicale le juge utile",
     noQuicklyAbandon: "Non rapidement abandonner le thérapeutique",
@@ -206,6 +207,10 @@ export const translations: Translations = {
     dataSecurelyStored: "Vos directives anticipées ne sont pas sauvegardées, Elles sont supprimées à la déconnexion.",
     alwaysAccessible: "Toujours accessible",
     accessAnytime: "Consultez et modifiez vos directives à tout moment, même après déconnexion.",
+    language: "Langue",
+    french: "Français",
+    english: "Anglais",
+    dontKnow: "Je ne sais pas",
   },
   en: {
     appName: "Advance Directives",
@@ -238,7 +243,7 @@ export const translations: Translations = {
     additionalWishesTitle: "Additional wishes and specific directives",
     additionalWishesDescription: "Add any other wishes or specific directives not covered by the previous sections.",
     advancedIllnessDesc: "Specify your directives in case you have a serious or incurable illness.",
-    yes: "Yes",
+    yesOption: "Yes",
     yesModerateTime: "Yes for a moderate period",
     yesMedicalTeam: "Yes only if the medical team deems it useful",
     noQuicklyAbandon: "No, quickly abandon therapeutic",
@@ -397,5 +402,9 @@ export const translations: Translations = {
     dataSecurelyStored: "Your advance directives are not saved. They are deleted upon disconnection.",
     alwaysAccessible: "Always accessible",
     accessAnytime: "View and modify your directives at any time, even after logging out.",
+    language: "Language",
+    french: "French",
+    english: "English",
+    dontKnow: "I don't know",
   }
 };
