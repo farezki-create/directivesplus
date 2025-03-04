@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
-import { CreditCard, MessageSquare, FileEdit } from "lucide-react";
+import { CreditCard, MessageSquare, FileEdit, Home } from "lucide-react";
 import { PurchaseDialog } from "./purchase/PurchaseDialog";
 import { LanguageSelector } from "./LanguageSelector";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -42,57 +42,72 @@ export const Header = () => {
   return (
     <>
       <header className="w-full border-b">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center space-x-4">
-            <h1 className="text-2xl font-bold text-primary">DirectivesPlus</h1>
+        <div className="container mx-auto px-4">
+          {/* Top level - Logo and User Authentication */}
+          <div className="py-3 flex justify-between items-center border-b">
+            <div className="flex items-center space-x-4">
+              <h1 className="text-2xl font-bold text-primary">DirectivesPlus</h1>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <LanguageSelector />
+              
+              {user ? (
+                <Button variant="default" onClick={handleSignOut}>
+                  {t('logout')}
+                </Button>
+              ) : (
+                <Button variant="default" onClick={() => navigate("/auth")}>
+                  {t('login')}
+                </Button>
+              )}
+            </div>
           </div>
-          <nav className="flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              onClick={handleHomeClick}
-            >
-              {t('home')}
-            </Button>
-            
-            <Button
-              variant="ghost"
-              onClick={() => navigate("/modify-directives")}
-              className="flex items-center gap-2"
-            >
-              <FileEdit className="w-4 h-4" />
-              {t('modifyDirectives')}
-            </Button>
-
-            <Button
-              variant="outline"
-              onClick={() => navigate("/reviews")}
-              className="flex items-center gap-2"
-            >
-              <MessageSquare className="w-4 h-4" />
-              {t('reviews')}
-            </Button>
-
-            <Button
-              variant="outline"
-              onClick={() => setShowPurchaseDialog(true)}
-              className="flex items-center gap-2"
-            >
-              <CreditCard className="w-4 h-4" />
-              {t('buyCard')}
-            </Button>
-            
-            <LanguageSelector />
-            
-            {user ? (
-              <Button variant="default" onClick={handleSignOut}>
-                {t('logout')}
+          
+          {/* Second level - Navigation */}
+          <div className="py-2">
+            <nav className="flex items-center space-x-2 overflow-x-auto md:justify-center">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleHomeClick}
+                className="flex items-center gap-2"
+              >
+                <Home className="w-4 h-4" />
+                {t('home')}
               </Button>
-            ) : (
-              <Button variant="default" onClick={() => navigate("/auth")}>
-                {t('login')}
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/modify-directives")}
+                className="flex items-center gap-2"
+              >
+                <FileEdit className="w-4 h-4" />
+                {t('modifyDirectives')}
               </Button>
-            )}
-          </nav>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate("/reviews")}
+                className="flex items-center gap-2"
+              >
+                <MessageSquare className="w-4 h-4" />
+                {t('reviews')}
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowPurchaseDialog(true)}
+                className="flex items-center gap-2"
+              >
+                <CreditCard className="w-4 h-4" />
+                {t('buyCard')}
+              </Button>
+            </nav>
+          </div>
         </div>
       </header>
 
