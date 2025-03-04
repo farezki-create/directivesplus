@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Auth from "./pages/Auth";
-import { LanguageProvider } from "./hooks/useLanguage";
+import { LanguageProvider } from "./hooks/language/LanguageProvider";
 import { Toaster } from "./components/ui/toaster";
 import { Toaster as Sonner } from "sonner";
 import ResetPassword from "./pages/ResetPassword";
