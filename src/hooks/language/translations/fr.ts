@@ -108,4 +108,18 @@ export const frenchTranslations: TranslationDictionary = {
   "yesMedicalTeam": "Oui si l'équipe médicale le juge utile",
   "yesTrustedPerson": "Oui si ma personne de confiance le juge utile",
   "examplesDesc": "Exemples de directives anticipées",
+  // Missing translations for the Examples section
+  "back": "Retour",
+  "addToSynthesis": "Ajouter à la synthèse",
+  "removeFromSynthesis": "Retirer de la synthèse",
+  "templatesTitle": "Modèles de directives",
+  "phrasesTitle": "Phrases exemples",
+  "mustBeLoggedIn": "Vous devez être connecté pour effectuer cette action",
+  "phraseAlreadyExists": "Cette phrase existe déjà dans votre synthèse",
+  "phraseAdded": "Phrase ajoutée à votre synthèse avec succès",
+  "errorAddingPhrase": "Erreur lors de l'ajout de la phrase",
+  "phraseNotFound": "Cette phrase n'a pas été trouvée dans votre synthèse",
+  "phraseRemoved": "Phrase retirée de votre synthèse avec succès",
+  "errorRemovingPhrase": "Erreur lors de la suppression de la phrase",
+  "information": "Information"
 };

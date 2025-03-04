@@ -108,4 +108,18 @@ export const englishTranslations: TranslationDictionary = {
   yesMedicalTeam: "Yes if the medical team deems it useful",
   yesTrustedPerson: "Yes if my trusted person deems it useful",
   examplesDesc: "Examples of advance directives",
+  // Missing translations for the Examples section
+  "back": "Back",
+  "addToSynthesis": "Add to synthesis",
+  "removeFromSynthesis": "Remove from synthesis",
+  "templatesTitle": "Directive Templates",
+  "phrasesTitle": "Example Phrases",
+  "mustBeLoggedIn": "You must be logged in to perform this action",
+  "phraseAlreadyExists": "This phrase already exists in your synthesis",
+  "phraseAdded": "Phrase successfully added to your synthesis",
+  "errorAddingPhrase": "Error adding phrase",
+  "phraseNotFound": "This phrase was not found in your synthesis",
+  "phraseRemoved": "Phrase successfully removed from your synthesis",
+  "errorRemovingPhrase": "Error removing phrase",
+  "information": "Information"
 };
