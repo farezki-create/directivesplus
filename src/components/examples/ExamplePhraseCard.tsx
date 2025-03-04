@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useLanguage } from "@/hooks/language";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface ExamplePhraseCardProps {
   text: string;
