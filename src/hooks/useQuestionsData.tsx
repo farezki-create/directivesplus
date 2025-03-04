@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -99,18 +98,10 @@ export function useQuestionsData(open: boolean, category: string = 'general_opin
     fetchQuestions();
   }, [open, toast, currentLanguage, category]);
 
-  const handleAnswerChange = (questionId: string, value: string) => {
-    console.log('[GeneralOpinion] Answer change:', { questionId, value });
-    setAnswers(prev => ({
-      ...prev,
-      [questionId]: [value]
-    }));
-  };
-
   return {
     questions,
     loading,
     answers,
-    handleAnswerChange
+    setAnswers
   };
 }
