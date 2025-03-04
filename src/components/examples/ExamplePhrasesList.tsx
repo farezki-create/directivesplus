@@ -3,7 +3,7 @@ import { ExamplePhraseCard } from "./ExamplePhraseCard";
 import { ConfirmationDialog, ConfirmDialogState } from "./ConfirmationDialog";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { useLanguage } from "@/hooks/useLanguage";
+import { useLanguage } from "@/hooks/language";
 
 export interface ExamplePhrase {
   text: string;
