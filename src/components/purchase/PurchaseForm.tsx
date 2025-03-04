@@ -12,6 +12,7 @@ import { OrderFormValues, orderFormSchema } from "./types";
 import { ShippingForm } from "./ShippingForm";
 import { PaymentForm } from "./PaymentForm";
 import { useStripePayment } from "./useStripePayment";
+import { Loader2, AlertCircle, CheckCircle } from "lucide-react";
 
 interface PurchaseFormProps {
   onClose: () => void;
@@ -22,8 +23,9 @@ export const PurchaseForm = ({ onClose, user }: PurchaseFormProps) => {
   const { toast } = useToast();
   const [isOrdering, setIsOrdering] = React.useState(false);
   const [paymentStatus, setPaymentStatus] = React.useState<string>("");
+  const [paymentCompleted, setPaymentCompleted] = React.useState(false);
   const cardElementRef = React.useRef<HTMLDivElement>(null);
-  const { stripe, card, error: stripeError } = useStripePayment(cardElementRef);
+  const { stripe, card, error: stripeError, isComplete } = useStripePayment(cardElementRef);
 
   React.useEffect(() => {
     if (stripeError) {
@@ -52,6 +54,15 @@ export const PurchaseForm = ({ onClose, user }: PurchaseFormProps) => {
       toast({
         title: "Erreur",
         description: "Le système de paiement n'est pas prêt",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!isComplete) {
+      toast({
+        title: "Informations incomplètes",
+        description: "Veuillez compléter les informations de votre carte",
         variant: "destructive",
       });
       return;
@@ -127,23 +138,31 @@ export const PurchaseForm = ({ onClose, user }: PurchaseFormProps) => {
         throw dbError;
       }
 
+      setPaymentCompleted(true);
+      setPaymentStatus("Paiement réussi");
+      
       toast({
         title: "Paiement réussi",
         description: "Votre commande a été enregistrée avec succès. Vous recevrez un email de confirmation.",
       });
       
-      onClose();
-      form.reset();
+      // Laisser un délai pour voir le message de succès avant de fermer
+      setTimeout(() => {
+        onClose();
+        form.reset();
+      }, 2000);
     } catch (error: any) {
       console.error('Payment error:', error);
+      setPaymentStatus("");
       toast({
         title: "Erreur de paiement",
         description: error.message || "Une erreur est survenue lors du traitement de votre commande.",
         variant: "destructive",
       });
     } finally {
-      setIsOrdering(false);
-      setPaymentStatus("");
+      if (!paymentCompleted) {
+        setIsOrdering(false);
+      }
     }
   };
 
@@ -151,20 +170,48 @@ export const PurchaseForm = ({ onClose, user }: PurchaseFormProps) => {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <ShippingForm form={form} />
-        <PaymentForm cardElementRef={cardElementRef} error={stripeError} />
+        <PaymentForm 
+          cardElementRef={cardElementRef} 
+          error={stripeError} 
+          isProcessing={isOrdering}
+          isComplete={isComplete}
+        />
 
         {paymentStatus && (
-          <div className="text-sm text-gray-600 animate-pulse">
+          <div className={`text-sm p-3 rounded-md flex items-center gap-2 ${
+            paymentCompleted 
+              ? "bg-green-50 text-green-600" 
+              : "bg-blue-50 text-blue-600 animate-pulse"
+          }`}>
+            {paymentCompleted ? (
+              <CheckCircle className="h-4 w-4" />
+            ) : (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            )}
             {paymentStatus}
           </div>
         )}
 
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={onClose}>
-            Annuler
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={onClose}
+            disabled={isOrdering && !paymentCompleted}
+          >
+            {paymentCompleted ? "Fermer" : "Annuler"}
           </Button>
-          <Button type="submit" disabled={isOrdering}>
-            {isOrdering ? "Paiement en cours..." : "Commander - 19,90 €"}
+          <Button 
+            type="submit" 
+            disabled={isOrdering || paymentCompleted}
+            className={paymentCompleted ? "bg-green-600 hover:bg-green-700" : ""}
+          >
+            {isOrdering 
+              ? "Paiement en cours..." 
+              : paymentCompleted 
+                ? "Payé" 
+                : "Commander - 19,90 €"
+            }
           </Button>
         </DialogFooter>
       </form>
