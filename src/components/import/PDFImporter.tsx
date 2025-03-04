@@ -58,7 +58,8 @@ export function PDFImporter({ userId }: PDFImporterProps) {
           
           if (isDirectivesFile) {
             // Format structuré pour les directives anticipées
-            importContent = `DIRECTIVES ANTICIPÉES IMPORTÉES\n\n
+            importContent = `DIRECTIVES ANTICIPÉES IMPORTÉES
+
 Mon avis d'une façon générale
 Je souhaite que l'équipe médicale respecte mes directives anticipées importées depuis ce document.
 
@@ -74,7 +75,8 @@ Les informations concernant mes préférences personnelles sont présentes dans 
 ATTENTION: Ce document a été importé le ${new Date().toLocaleDateString()}. Veuillez vérifier son contenu et le mettre à jour si nécessaire.`;
           } else {
             // Format générique pour les autres PDF
-            importContent = `DOCUMENT IMPORTÉ: ${file.name}\n\n
+            importContent = `DOCUMENT IMPORTÉ: ${file.name}
+
 Ce contenu a été importé depuis un PDF le ${new Date().toLocaleDateString()}.
 Veuillez compléter vos directives anticipées en utilisant le questionnaire de l'application pour une meilleure structuration.`;
           }
