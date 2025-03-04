@@ -36,7 +36,7 @@ export const generalTranslations: Translations = {
     buyCard: "Acheter la carte",
     login: "Connexion",
     trustedPersonDesignation: "Désignation de la personne de confiance",
-    summary: "Résumé",
+    summary: "Synthèse",
     error: "Erreur",
     success: "Succès",
     information: "Information",
