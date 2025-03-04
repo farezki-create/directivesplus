@@ -1,7 +1,8 @@
 
-import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/hooks/useLanguage";
+import { ButtonItem } from "./ButtonItem";
+import { ButtonCategory } from "./ButtonCategory";
 
 interface MainButtonsProps {
   onGeneralOpinionClick: () => void;
@@ -24,35 +25,38 @@ export function MainButtons({
   };
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 max-w-2xl mx-auto mb-8">
-      <Button onClick={onGeneralOpinionClick} size="lg">
-        {t('generalOpinion')}
-      </Button>
-      <Button onClick={onLifeSupportClick} size="lg">
-        {t('lifeSupport')}
-      </Button>
-      <Button onClick={onAdvancedIllnessClick} size="lg">
-        {t('advancedIllnessTitle')}
-      </Button>
-      <Button onClick={onPreferencesClick} size="lg">
-        {t('preferences')}
-      </Button>
-      <Button onClick={navigateToTrustedPersons} size="lg">
-        {t('trustedPerson')}
-      </Button>
-      <Button 
-        onClick={() => navigate("/free-text")} 
-        size="lg"
-      >
-        {t('summary')}
-      </Button>
-      <Button 
-        onClick={() => navigate("/examples")} 
-        size="lg"
-        className="md:col-span-2"
-      >
-        {t('examples')}
-      </Button>
+    <div className="max-w-2xl mx-auto mb-8">
+      <ButtonCategory>
+        <ButtonItem 
+          onClick={onGeneralOpinionClick} 
+          label={t('generalOpinion')} 
+        />
+        <ButtonItem 
+          onClick={onLifeSupportClick} 
+          label={t('lifeSupport')} 
+        />
+        <ButtonItem 
+          onClick={onAdvancedIllnessClick} 
+          label={t('advancedIllnessTitle')} 
+        />
+        <ButtonItem 
+          onClick={onPreferencesClick} 
+          label={t('preferences')} 
+        />
+        <ButtonItem 
+          onClick={navigateToTrustedPersons} 
+          label={t('trustedPerson')} 
+        />
+        <ButtonItem 
+          onClick={() => navigate("/free-text")} 
+          label={t('summary')} 
+        />
+        <ButtonItem 
+          onClick={() => navigate("/examples")} 
+          label={t('examples')} 
+          className="md:col-span-2"
+        />
+      </ButtonCategory>
     </div>
   );
 }
