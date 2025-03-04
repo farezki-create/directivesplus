@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthApiError } from "@supabase/supabase-js";
@@ -21,10 +22,6 @@ const Auth = () => {
       
       if (event === "SIGNED_IN" && session) {
         console.log('User signed in, redirecting to home');
-        toast({
-          title: "Connexion réussie",
-          description: "Vos directives précédentes ont été supprimées pour votre sécurité.",
-        });
         navigate("/");
       }
     });
@@ -33,7 +30,7 @@ const Auth = () => {
       console.log("Cleaning up auth state change listener");
       subscription.unsubscribe();
     };
-  }, [navigate, toast]);
+  }, [navigate]);
 
   const handleSubmit = async (values: FormValues) => {
     try {

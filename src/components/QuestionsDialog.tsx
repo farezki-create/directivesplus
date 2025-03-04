@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { QuestionCard } from "./questions/QuestionCard";
@@ -18,14 +19,7 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
   const { t, currentLanguage } = useLanguage();
 
   useEffect(() => {
-    setAnswers({});
-  }, [currentLanguage]);
-
-  useEffect(() => {
     async function fetchQuestions() {
-      if (!open) return;
-      
-      setLoading(true);
       try {
         console.log(`[GeneralOpinion] Fetching questions in ${currentLanguage}...`);
         
@@ -88,7 +82,9 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
       }
     }
 
-    fetchQuestions();
+    if (open) {
+      fetchQuestions();
+    }
   }, [open, toast, currentLanguage]);
 
   const handleAnswerChange = (questionId: string, value: string) => {
@@ -167,13 +163,13 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
       return [
         { value: 'yes', label: 'Yes' },
         { value: 'no', label: 'No' },
-        { value: 'i_dont_know', label: "I don't know" }
+        { value: 'i_dont_know', label: 'I don\'t know' }
       ];
     } else {
       return [
         { value: 'oui', label: t('yes') },
         { value: 'non', label: t('no') },
-        { value: 'je_ne_sais_pas', label: t('iDontKnow') }
+        { value: 'je_ne_sais_pas', label: t('dontKnow') }
       ];
     }
   };

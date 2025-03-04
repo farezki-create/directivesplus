@@ -1,3 +1,4 @@
+
 import * as React from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -6,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ReviewForm } from "@/components/reviews/ReviewForm";
 import { ReviewList } from "@/components/reviews/ReviewList";
 import { useNavigate } from "react-router-dom";
-import { BackButton } from "@/components/ui/back-button";
+import { ArrowLeft } from "lucide-react";
 
 interface Review {
   id: string;
@@ -50,7 +51,14 @@ const Reviews = () => {
   return (
     <div className="container mx-auto py-8">
       <div className="mb-8">
-        <BackButton to="/" />
+        <Button
+          variant="ghost"
+          onClick={() => navigate("/")}
+          className="mb-4 flex items-center gap-2"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Retour à l'accueil
+        </Button>
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">Avis des utilisateurs</h1>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

@@ -1,7 +1,6 @@
 
 import { Header } from "@/components/Header";
 import { TrustedPersons } from "@/components/TrustedPersons";
-import { BackButton } from "@/components/ui/back-button";
 
 const Dashboard = () => {
   return (
@@ -9,8 +8,6 @@ const Dashboard = () => {
       <Header />
       
       <main className="flex-1 container mx-auto px-4 py-8">
-        <BackButton to="/" />
-        
         <h1 className="text-3xl font-bold mb-8 text-center">
           Désignation de la personne de confiance
         </h1>
