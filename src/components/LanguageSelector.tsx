@@ -21,7 +21,11 @@ export const LanguageSelector = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="flex items-center gap-2">
+        <Button 
+          variant="outline" 
+          size="sm"
+          className="flex items-center gap-2 text-slate-600 hover:text-slate-900"
+        >
           <Globe className="h-4 w-4" />
           <span className="hidden md:inline">{t('language')}</span>
         </Button>
