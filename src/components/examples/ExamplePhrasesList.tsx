@@ -3,9 +3,11 @@ import { ExamplePhraseCard } from "./ExamplePhraseCard";
 import { ConfirmationDialog, ConfirmDialogState } from "./ConfirmationDialog";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useLanguage } from "@/hooks/useLanguage";
 
 export interface ExamplePhrase {
   text: string;
+  text_en?: string;
 }
 
 interface ExamplePhrasesListProps {
@@ -26,6 +28,7 @@ export function ExamplePhrasesList({
     type: 'add', 
     phrase: '' 
   });
+  const { t } = useLanguage();
 
   const handleAddToSynthesis = (phrase: string) => {
     setConfirmDialog({
@@ -67,13 +70,14 @@ export function ExamplePhrasesList({
         variant="outline" 
         className="mb-4"
       >
-        Retour
+        {t('back')}
       </Button>
       <div className="space-y-4">
         {phrases.map((phrase, index) => (
           <ExamplePhraseCard
             key={index}
             text={phrase.text}
+            text_en={phrase.text_en}
             onAddToSynthesis={handleAddToSynthesis}
             onRemoveFromSynthesis={handleRemoveFromSynthesis}
           />
