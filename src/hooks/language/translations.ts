@@ -1,4 +1,6 @@
-import { en as enUS, fr as frCA } from "date-fns/locale";
+
+import { fr as frCA } from "date-fns/locale";
+import { enUS } from "date-fns/locale";
 
 export interface Translations {
   [key: string]: Translation;
@@ -201,7 +203,7 @@ export const translations: Translations = {
     simpleAndGuided: "Simple et guidé",
     stepByStepProcess: "Un processus pas à pas pour vous accompagner dans la rédaction.",
     "100Secure": "100% sécurisé",
-    dataSecurelyStored: "Vos données sont protégées et sauvegardées de façon sécurisée.",
+    dataSecurelyStored: "Vos directives anticipées ne sont pas sauvegardées, Elles sont supprimées à la déconnexion.",
     alwaysAccessible: "Toujours accessible",
     accessAnytime: "Consultez et modifiez vos directives à tout moment, même après déconnexion.",
   },
@@ -392,7 +394,7 @@ export const translations: Translations = {
     simpleAndGuided: "Simple and guided",
     stepByStepProcess: "A step-by-step process to help you write your directives.",
     "100Secure": "100% secure",
-    dataSecurelyStored: "Your data is protected and securely saved.",
+    dataSecurelyStored: "Your advance directives are not saved. They are deleted upon disconnection.",
     alwaysAccessible: "Always accessible",
     accessAnytime: "View and modify your directives at any time, even after logging out.",
   }
