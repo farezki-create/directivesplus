@@ -2,7 +2,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AuthForm } from "@/components/AuthForm";
 import { FormValues } from "@/components/auth/types";
-import { useLanguage } from "@/hooks/useLanguage";
+import { useLanguage } from "@/hooks/language/useLanguage";
 
 type AuthCardProps = {
   isSignUp: boolean;

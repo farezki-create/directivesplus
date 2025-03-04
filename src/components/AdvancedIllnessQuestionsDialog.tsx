@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { QuestionCard } from "./questions/QuestionCard";
 import { QuestionsDialogLayout } from "./questions/QuestionsDialogLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useLanguage } from "@/hooks/useLanguage";
+import { useLanguage } from "@/hooks/language/useLanguage";
 
 interface AdvancedIllnessQuestionsDialogProps {
   open: boolean;

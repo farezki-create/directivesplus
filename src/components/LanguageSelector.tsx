@@ -7,7 +7,7 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { Globe } from "lucide-react";
-import { useLanguage } from "@/hooks/useLanguage";
+import { useLanguage } from "@/hooks/language/useLanguage";
 import { SupportedLanguage } from "@/hooks/language/translations";
 
 export const LanguageSelector = () => {

@@ -1,6 +1,6 @@
 
 import { QuestionsDialogLayout } from "./questions/QuestionsDialogLayout";
-import { useLanguage } from "@/hooks/useLanguage";
+import { useLanguage } from "@/hooks/language/useLanguage";
 import { useLifeSupportQuestions } from "@/hooks/life-support/useLifeSupportQuestions";
 import { useLifeSupportAnswers } from "@/hooks/life-support/useLifeSupportAnswers";
 import { LifeSupportQuestionsList } from "./life-support/LifeSupportQuestionsList";

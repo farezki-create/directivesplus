@@ -23,19 +23,35 @@ export const LanguageProvider = ({ children }: LanguageProviderProps) => {
   // Save language preference to local storage whenever it changes
   useEffect(() => {
     localStorage.setItem('language', currentLanguage);
+    // Update html lang attribute for accessibility
+    document.documentElement.lang = currentLanguage;
   }, [currentLanguage]);
 
   const setLanguage = useCallback((language: SupportedLanguage) => {
+    console.log(`[LanguageProvider] Setting language to: ${language}`);
     setCurrentLanguage(language);
     localStorage.setItem('language', language);
+    document.documentElement.lang = language;
   }, []);
 
   // Translation function with fallback
   const t = useCallback(
     (key: string) => {
-      return translations[currentLanguage]?.[key] || 
-             translations['en']?.[key] || // Fallback to English if key not found in current language
-             key; // Return the key itself as last resort
+      const translation = translations[currentLanguage]?.[key];
+      
+      if (translation) return translation;
+      
+      // Fallback to English if key not found in current language
+      const fallback = translations['en']?.[key];
+      
+      if (fallback) {
+        console.warn(`[Translation] Missing '${key}' for language '${currentLanguage}', using English fallback`);
+        return fallback;
+      }
+      
+      // Return the key itself as last resort
+      console.warn(`[Translation] Missing '${key}' for both languages`);
+      return key;
     },
     [currentLanguage]
   );

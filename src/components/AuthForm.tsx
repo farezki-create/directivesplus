@@ -7,7 +7,7 @@ import { ForgotPassword } from "@/components/ForgotPassword";
 import { BaseAuthFields } from "./auth/BaseAuthFields";
 import { SignUpFields } from "./auth/SignUpFields";
 import { FormValues, loginSchema, signUpSchema } from "./auth/types";
-import { useLanguage } from "@/hooks/useLanguage";
+import { useLanguage } from "@/hooks/language/useLanguage";
 
 type AuthFormProps = {
   isSignUp: boolean;

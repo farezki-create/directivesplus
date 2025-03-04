@@ -14,7 +14,7 @@ import { PreferencesQuestionsDialog } from "@/components/PreferencesQuestionsDia
 import { MainButtons } from "@/components/home/MainButtons";
 import { FeatureHighlights } from "@/components/home/FeatureHighlights";
 import { useDialogState } from "@/hooks/useDialogState";
-import { useLanguage } from "@/hooks/useLanguage";
+import { useLanguage } from "@/hooks/language/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 

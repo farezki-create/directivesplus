@@ -5,7 +5,7 @@ import { TrustedPersonForm } from "./trusted-persons/TrustedPersonForm";
 import { TrustedPersonsList } from "./trusted-persons/TrustedPersonsList";
 import { useTrustedPersons } from "@/hooks/useTrustedPersons";
 import { TrustedPersonPDFGenerator } from "./trusted-persons/TrustedPersonPDFGenerator";
-import { useLanguage } from "@/hooks/useLanguage";
+import { useLanguage } from "@/hooks/language/useLanguage";
 
 export const TrustedPersons = () => {
   const { persons, savePerson, removePerson } = useTrustedPersons();

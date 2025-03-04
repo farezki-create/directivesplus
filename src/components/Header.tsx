@@ -7,7 +7,7 @@ import { User } from "@supabase/supabase-js";
 import { CreditCard, MessageSquare } from "lucide-react";
 import { PurchaseDialog } from "./purchase/PurchaseDialog";
 import { LanguageSelector } from "./LanguageSelector";
-import { useLanguage } from "@/hooks/useLanguage";
+import { useLanguage } from "@/hooks/language/useLanguage";
 
 export const Header = () => {
   const navigate = useNavigate();

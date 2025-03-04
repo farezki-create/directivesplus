@@ -1,7 +1,7 @@
 
 import { Header } from "@/components/Header";
 import { ExamplesContent } from "@/components/examples/ExamplesContent";
-import { useLanguage } from "@/hooks/useLanguage";
+import { useLanguage } from "@/hooks/language/useLanguage";
 
 const Examples = () => {
   const { t } = useLanguage();

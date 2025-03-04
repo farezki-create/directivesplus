@@ -1,5 +1,5 @@
 
-import { useLanguage } from "@/hooks/useLanguage";
+import { useLanguage } from "@/hooks/language/useLanguage";
 
 export function useQuestionOptions() {
   const { t, currentLanguage } = useLanguage();

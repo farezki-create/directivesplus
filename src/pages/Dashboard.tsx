@@ -1,7 +1,7 @@
 
 import { Header } from "@/components/Header";
 import { TrustedPersons } from "@/components/TrustedPersons";
-import { useLanguage } from "@/hooks/useLanguage";
+import { useLanguage } from "@/hooks/language/useLanguage";
 
 const Dashboard = () => {
   const { t } = useLanguage();
