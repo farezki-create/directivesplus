@@ -12,7 +12,6 @@ import Examples from "./pages/Examples";
 import GeneratePDF from "./pages/GeneratePDF";
 import Reviews from "./pages/Reviews";
 import FAQ from "./pages/FAQ";
-import ModifyDirectives from "./pages/ModifyDirectives";
 
 function App() {
   return (
@@ -28,7 +27,6 @@ function App() {
           <Route path="/generate-pdf" element={<GeneratePDF />} />
           <Route path="/reviews" element={<Reviews />} />
           <Route path="/faq" element={<FAQ />} />
-          <Route path="/modify-directives" element={<ModifyDirectives />} />
         </Routes>
       </Router>
       <Toaster />
