@@ -75,10 +75,10 @@ export function useQuestionsData(open: boolean, category: string = 'general_opin
             return;
           }
           
-          // Normaliser les noms de champs pour une utilisation cohérente
+          // Normalize field names for consistent usage
           const normalizedQuestions = data?.map(q => ({
             ...q,
-            question: q.Question, // Assure que tous les objets ont une propriété question
+            question: q.Question, // Ensure all objects have a question property
           })) || [];
           
           console.log('[GeneralOpinion] Questions loaded:', normalizedQuestions.length, 'questions');
@@ -87,8 +87,10 @@ export function useQuestionsData(open: boolean, category: string = 'general_opin
       } catch (error) {
         console.error('[GeneralOpinion] Unexpected error:', error);
         toast({
-          title: "Erreur",
-          description: "Une erreur inattendue s'est produite.",
+          title: currentLanguage === 'en' ? "Error" : "Erreur",
+          description: currentLanguage === 'en' 
+            ? "An unexpected error occurred." 
+            : "Une erreur inattendue s'est produite.",
           variant: "destructive",
         });
       } finally {
@@ -99,10 +101,37 @@ export function useQuestionsData(open: boolean, category: string = 'general_opin
     fetchQuestions();
   }, [open, toast, currentLanguage, category]);
 
+  const handleAnswerChange = (questionId: string, value: string, checked: boolean) => {
+    console.log(`[useQuestionsData] Answer change for question ${questionId}: ${value}, checked: ${checked}`);
+    
+    setAnswers(prev => {
+      const currentAnswers = prev[questionId] || [];
+      
+      if (checked) {
+        // Add the value if it's not already in the array
+        if (!currentAnswers.includes(value)) {
+          return {
+            ...prev,
+            [questionId]: [...currentAnswers, value]
+          };
+        }
+      } else {
+        // Remove the value if checked is false
+        return {
+          ...prev,
+          [questionId]: currentAnswers.filter(v => v !== value)
+        };
+      }
+      
+      return prev;
+    });
+  };
+
   return {
     questions,
     loading,
     answers,
-    setAnswers
+    setAnswers,
+    handleAnswerChange
   };
 }

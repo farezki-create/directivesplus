@@ -14,35 +14,11 @@ interface QuestionsDialogProps {
 
 export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
   const { t, currentLanguage } = useLanguage();
-  const { questions, loading, answers, setAnswers } = useQuestionsData(open);
+  const { questions, loading, answers, handleAnswerChange } = useQuestionsData(open);
   const handleSubmit = useQuestionSubmit(questions, currentLanguage);
   const { getQuestionOptions } = useQuestionOptions();
 
-  const handleAnswerChange = (questionId: string, value: string, checked: boolean) => {
-    console.log(`[QuestionsDialog] Answer change for question ${questionId}: ${value}, checked: ${checked}`);
-    
-    setAnswers(prev => {
-      const currentAnswers = prev[questionId] || [];
-      
-      if (checked) {
-        // Add the value if it's not already in the array
-        if (!currentAnswers.includes(value)) {
-          return {
-            ...prev,
-            [questionId]: [...currentAnswers, value]
-          };
-        }
-      } else {
-        // Remove the value if checked is false
-        return {
-          ...prev,
-          [questionId]: currentAnswers.filter(v => v !== value)
-        };
-      }
-      
-      return prev;
-    });
-  };
+  console.log("[QuestionsDialog] Rendered with", questions.length, "questions and open =", open);
 
   const onSubmit = () => {
     console.log('[QuestionsDialog] Submitting answers:', answers);

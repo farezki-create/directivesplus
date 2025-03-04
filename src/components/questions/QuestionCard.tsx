@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Question, QuestionOption } from "@/hooks/useQuestionsData";
 
 interface QuestionCardProps {
-  question: any;
+  question: Question;
   value: string[];
   onValueChange: (value: string, checked: boolean) => void;
   options: QuestionOption[];
