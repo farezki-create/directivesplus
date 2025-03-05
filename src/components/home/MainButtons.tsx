@@ -41,17 +41,17 @@ export function MainButtons({
         {t('trustedPerson')}
       </Button>
       <Button 
-        onClick={() => navigate("/free-text")} 
+        onClick={() => navigate("/examples")} 
         size="lg"
       >
-        {t('summary')}
+        {t('examples')}
       </Button>
       <Button 
-        onClick={() => navigate("/examples")} 
+        onClick={() => navigate("/free-text")} 
         size="lg"
         className="md:col-span-2"
       >
-        {t('examples')}
+        {t('summary')}
       </Button>
     </div>
   );
