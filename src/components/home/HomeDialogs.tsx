@@ -8,8 +8,9 @@ import { AdvancedIllnessQuestionsDialog } from "@/components/AdvancedIllnessQues
 import { PreferencesExplanationDialog } from "@/components/PreferencesExplanationDialog";
 import { PreferencesQuestionsDialog } from "@/components/PreferencesQuestionsDialog";
 import { useHomeDialogs } from "@/hooks/useHomeDialogs";
+import { FC } from "react";
 
-export function HomeDialogs() {
+export const HomeDialogs: FC = () => {
   const { dialogState, handlers } = useHomeDialogs();
 
   return (
@@ -59,4 +60,4 @@ export function HomeDialogs() {
       />
     </>
   );
-}
+};

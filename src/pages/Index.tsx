@@ -1,28 +1,57 @@
 
+import { FC, useState } from "react";
 import { Header } from "@/components/Header";
-import { useState } from "react";
 import { MainButtons } from "@/components/home/MainButtons";
 import { FeatureHighlights } from "@/components/home/FeatureHighlights";
 import { HomeHero } from "@/components/home/HomeHero";
 import { AdditionalInfo } from "@/components/home/AdditionalInfo";
 import { HomeDialogs } from "@/components/home/HomeDialogs";
 import { useHomeDialogs } from "@/hooks/useHomeDialogs";
+import { useToast } from "@/hooks/use-toast";
 
-const Index = () => {
+const Index: FC = () => {
   const [showSections, setShowSections] = useState(false);
   const [showMoreInfo, setShowMoreInfo] = useState(false);
   const { handlers } = useHomeDialogs();
+  const { toast } = useToast();
 
   const handleStartClick = () => {
-    setShowSections(true);
+    try {
+      setShowSections(true);
+    } catch (error) {
+      console.error("Error showing sections:", error);
+      toast({
+        title: "Error",
+        description: "An error occurred while loading the sections.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleLearnMore = () => {
-    setShowMoreInfo(true);
+    try {
+      setShowMoreInfo(true);
+    } catch (error) {
+      console.error("Error showing more info:", error);
+      toast({
+        title: "Error",
+        description: "An error occurred while loading additional information.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleBackToHome = () => {
-    setShowMoreInfo(false);
+    try {
+      setShowMoreInfo(false);
+    } catch (error) {
+      console.error("Error returning to home:", error);
+      toast({
+        title: "Error",
+        description: "An error occurred while returning to the home page.",
+        variant: "destructive",
+      });
+    }
   };
 
   if (showMoreInfo) {

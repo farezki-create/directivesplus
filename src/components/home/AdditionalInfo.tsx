@@ -5,24 +5,34 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/hooks/language/useLanguage";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 
-export function AdditionalInfo({ onBackToHome }: { onBackToHome: () => void }) {
+interface AdditionalInfoProps {
+  onBackToHome: () => void;
+}
+
+export function AdditionalInfo({ onBackToHome }: AdditionalInfoProps) {
   const navigate = useNavigate();
-  const { currentLanguage } = useLanguage();
+  const { currentLanguage, t } = useLanguage();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [isGuideLoading, setIsGuideLoading] = useState(false);
 
   const navigateToGuideInfo = async () => {
     try {
-      setIsLoading(true);
+      setIsGuideLoading(true);
       
       console.log("Tentative de récupération du document depuis le stockage...");
       
-      const { data } = await supabase
+      const { data, error } = await supabase
         .storage
         .from('pdf_documents')
         .getPublicUrl('En savoir plus HAS.pdf');
+
+      if (error) {
+        throw error;
+      }
 
       if (data?.publicUrl) {
         console.log("URL publique obtenue:", data.publicUrl);
@@ -47,16 +57,44 @@ export function AdditionalInfo({ onBackToHome }: { onBackToHome: () => void }) {
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setIsGuideLoading(false);
     }
   };
 
   const navigateToAppInfo = () => {
-    navigate("/dashboard");
+    setIsLoading(true);
+    try {
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Navigation error:", error);
+      toast({
+        title: currentLanguage === 'fr' ? "Erreur" : "Error",
+        description: currentLanguage === 'fr'
+          ? "Une erreur est survenue lors de la navigation."
+          : "An error occurred during navigation.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
   
   const navigateToFAQ = () => {
-    navigate("/faq");
+    setIsLoading(true);
+    try {
+      navigate("/faq");
+    } catch (error) {
+      console.error("Navigation error:", error);
+      toast({
+        title: currentLanguage === 'fr' ? "Erreur" : "Error",
+        description: currentLanguage === 'fr'
+          ? "Une erreur est survenue lors de la navigation."
+          : "An error occurred during navigation.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -75,13 +113,18 @@ export function AdditionalInfo({ onBackToHome }: { onBackToHome: () => void }) {
               size="lg"
               onClick={navigateToGuideInfo}
               className="w-full max-w-2xl py-6 text-lg bg-blue-600 hover:bg-blue-700"
-              disabled={isLoading}
+              disabled={isGuideLoading}
             >
-              {isLoading 
-                ? (currentLanguage === 'fr' ? 'Chargement...' : 'Loading...') 
-                : (currentLanguage === 'fr' 
+              {isGuideLoading ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {currentLanguage === 'fr' ? 'Chargement...' : 'Loading...'}
+                </span>
+              ) : (
+                currentLanguage === 'fr' 
                   ? 'Pourquoi et comment rédiger mes directives anticipées ?' 
-                  : 'Why and how to write my advance directives?')}
+                  : 'Why and how to write my advance directives?'
+              )}
             </Button>
             
             <Button
@@ -89,6 +132,7 @@ export function AdditionalInfo({ onBackToHome }: { onBackToHome: () => void }) {
               size="lg"
               onClick={navigateToFAQ}
               className="w-full max-w-2xl py-6 text-lg bg-blue-600 hover:bg-blue-700"
+              disabled={isLoading}
             >
               {currentLanguage === 'fr' ? 'Questions/Réponses' : 'FAQ'}
             </Button>
@@ -98,6 +142,7 @@ export function AdditionalInfo({ onBackToHome }: { onBackToHome: () => void }) {
               size="lg"
               onClick={navigateToAppInfo}
               className="w-full max-w-2xl py-6 text-lg bg-blue-600 hover:bg-blue-700"
+              disabled={isLoading}
             >
               {currentLanguage === 'fr' 
                 ? 'Informations sur l\'application DirectivesPlus' 
@@ -108,6 +153,7 @@ export function AdditionalInfo({ onBackToHome }: { onBackToHome: () => void }) {
               variant="outline"
               onClick={onBackToHome}
               className="mt-8"
+              disabled={isLoading}
             >
               {currentLanguage === 'fr' ? 'Retour à l\'accueil' : 'Back to home'}
             </Button>
