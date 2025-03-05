@@ -286,3 +286,4 @@ export const generalTranslations = {
   fr: fr_general,
   en: en_general
 };
+
