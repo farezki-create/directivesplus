@@ -97,7 +97,48 @@ export const fr_general: Translation = {
   "saveYourDirectives": "Enregistrer vos directives",
   "saveDirectives": "Enregistrer",
   "saving": "Enregistrement...",
-  "directivesSavedSecurely": "Vos directives sont enregistrées de manière sécurisée et peuvent être modifiées à tout moment."
+  "directivesSavedSecurely": "Vos directives sont enregistrées de manière sécurisée et peuvent être modifiées à tout moment.",
+
+  // Additional translations from general.ts
+  "appName": "Directives Anticipées",
+  "homePageTitle": "Rédigez vos directives anticipées en toute simplicité",
+  "homePageSubtitle": "Un outil simple et sécurisé pour exprimer vos volontés et vous assurer qu'elles soient respectées.",
+  "getStarted": "Commencer",
+  "myDirectives": "Mes Directives",
+  "freeText": "Notes complémentaires et directives spécifiques",
+  "trustedPerson": "Personnes de confiance",
+  "generatePDF": "Générer le PDF",
+  "profileDesc": "Informations personnelles",
+  "trustedPersonsDesc": "Personnes à contacter",
+  "general": "Général",
+  "advancedIllnessDetails": "Si je suis atteint(e) d'une maladie grave ou incurable, je souhaite que les décisions suivantes soient prises :",
+  "language": "Langue",
+  "dontKnow": "Je ne sais pas",
+  "reviews": "Avis",
+  "buyCard": "Acheter la carte",
+  "trustedPersonDesignation": "Désignation de la personne de confiance",
+  "summary": "Synthèse",
+  "information": "Information",
+  "usbMemoryCard": "Carte mémoire USB format carte de crédit",
+  "usbMemoryCardDescription": "Stockez vos directives anticipées sur une carte mémoire USB au format carte de crédit (non encore disponible).",
+  "usbMemoryCardAlt": "Carte mémoire USB Directives Anticipées",
+  "features": "Caractéristiques",
+  "creditCardFormat": "Format carte de crédit - Se range facilement dans votre portefeuille",
+  "usbConnector": "Connecteur USB intégré",
+  "storageCapacity": "Capacité de stockage de 2 Go",
+  "secureStorage": "Stockage sécurisé de vos directives anticipées",
+  "universalCompatibility": "Compatibilité universelle",
+  "usbMemoryCardNotAvailable": "Carte mémoire USB format carte de crédit (non encore disponible)",
+  "productSoonAvailable": "Produit bientôt disponible",
+  "productNotAvailableYet": "Ce produit n'est pas encore disponible à l'achat. Vous pouvez demander à être notifié lorsqu'il sera disponible.",
+  "notificationRegistered": "Notification enregistrée",
+  "notifyWhenAvailable": "Nous vous informerons dès que la carte sera disponible.",
+  "notifyMe": "Me notifier quand disponible",
+  "simpleAndGuided": "Simple et guidé",
+  "stepByStepProcess": "Un processus pas à pas pour vous aider à rédiger vos directives anticipées de manière claire et complète.",
+  "fullSecure": "100% Sécurisé", // Changed from 100Secure to fullSecure to avoid syntax error
+  "dataSecurelyStored": "Vos données sont stockées de manière sécurisée et ne sont accessibles qu'à vous et aux personnes que vous autorisez.",
+  "examples": "Exemples",
 };
 
 export const en_general: Translation = {
@@ -196,5 +237,52 @@ export const en_general: Translation = {
   "saveYourDirectives": "Save your directives",
   "saveDirectives": "Save directives",
   "saving": "Saving...",
-  "directivesSavedSecurely": "Your directives are securely saved and can be modified at any time."
+  "directivesSavedSecurely": "Your directives are securely saved and can be modified at any time.",
+
+  // Additional translations from general.ts
+  "appName": "Advance Directives",
+  "homePageTitle": "Write your advance directives with ease",
+  "homePageSubtitle": "A simple and secure tool to express your wishes and ensure they are respected.",
+  "getStarted": "Get Started",
+  "myDirectives": "My Directives",
+  "freeText": "Additional notes and specific directives",
+  "trustedPerson": "Trusted persons",
+  "generatePDF": "Generate PDF",
+  "profileDesc": "Personal information",
+  "trustedPersonsDesc": "People to contact",
+  "general": "General",
+  "advancedIllnessDetails": "If I have a serious or incurable illness, I want the following decisions to be made:",
+  "language": "Language",
+  "dontKnow": "I don't know",
+  "reviews": "Reviews",
+  "buyCard": "Buy Card",
+  "trustedPersonDesignation": "Designation of Trusted Person",
+  "summary": "Summary",
+  "information": "Information",
+  "usbMemoryCard": "Credit card format USB memory card",
+  "usbMemoryCardDescription": "Store your advance directives on a credit card format USB memory card (not yet available).",
+  "usbMemoryCardAlt": "Advance Directives USB Memory Card",
+  "features": "Features",
+  "creditCardFormat": "Credit card format - Fits easily in your wallet",
+  "usbConnector": "Built-in USB connector",
+  "storageCapacity": "2 GB storage capacity",
+  "secureStorage": "Secure storage of your advance directives",
+  "universalCompatibility": "Universal compatibility",
+  "usbMemoryCardNotAvailable": "Credit card format USB memory card (not yet available)",
+  "productSoonAvailable": "Product coming soon",
+  "productNotAvailableYet": "This product is not yet available for purchase. You can request to be notified when it becomes available.",
+  "notificationRegistered": "Notification registered",
+  "notifyWhenAvailable": "We will notify you as soon as the card is available.",
+  "notifyMe": "Notify me when available",
+  "simpleAndGuided": "Simple and guided",
+  "stepByStepProcess": "A step-by-step process to help you write your advance directives in a clear and complete way.",
+  "fullSecure": "100% Secure", // Changed from 100Secure to fullSecure to avoid syntax error
+  "dataSecurelyStored": "Your data is securely stored and only accessible to you and the people you authorize.",
+  "examples": "Examples"
+};
+
+// Create an object that contains all translations
+export const generalTranslations = {
+  fr: fr_general,
+  en: en_general
 };
