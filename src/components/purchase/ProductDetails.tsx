@@ -22,12 +22,9 @@ export const ProductDetails = () => {
           </ul>
         </div>
 
-        <div>
-          <p className="text-2xl font-bold">
-            Prix : 19,90 €
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Frais de port inclus
+        <div className="p-3 bg-amber-50 text-amber-800 rounded-md border border-amber-200">
+          <p className="font-medium">
+            Carte mémoire USB format carte de crédit (non encore disponible)
           </p>
         </div>
       </div>

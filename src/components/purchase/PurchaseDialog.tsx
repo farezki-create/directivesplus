@@ -17,7 +17,7 @@ export const PurchaseDialog = ({ open, onOpenChange, user }: PurchaseDialogProps
         <DialogHeader>
           <DialogTitle>Carte mémoire USB format carte de crédit</DialogTitle>
           <DialogDescription>
-            Stockez vos directives anticipées sur une carte mémoire USB au format carte de crédit.
+            Stockez vos directives anticipées sur une carte mémoire USB au format carte de crédit (non encore disponible).
           </DialogDescription>
         </DialogHeader>
 
