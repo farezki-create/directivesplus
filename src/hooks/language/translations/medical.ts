@@ -67,6 +67,7 @@ export const medicalTranslations: Translations = {
     continueToQuestionnaire: "Continue to questionnaire",
     beforeStarting: "Before starting",
     freeTextInstructions: "Specify your wishes and preferences in your own words here.",
+    // Adding general directives explanations without duplicate keys
     generalDirectivesExplanation: "This document helps you express your wishes regarding your medical care in critical situations where you may not be able to express yourself. Each question is important and reflects personal decisions that can guide caregivers and your loved ones. Take time to reflect.",
     noResuscitationTitle: "1. I wish that my will not to be resuscitated be respected",
     noResuscitationDesc: "This means that if your heart stops or you stop breathing, doctors will not attempt to resuscitate you (cardiac massage, defibrillator, intubation...).",
@@ -93,8 +94,7 @@ export const medicalTranslations: Translations = {
     bloodTransfusionYes: "You accept being transfused if necessary.",
     bloodTransfusionNo: "You refuse any transfusion, even in case of vital necessity.",
     bloodTransfusionUnsure: "You have not yet decided and would like more information.",
-    organDonationTitle: "6. Do you accept donating your organs after your death?",
-    organDonationDesc: "Organ donation can save lives. In France, everyone is considered a donor by default, but you can express your refusal.",
+    // Remove duplicate organDonationTitle and related keys as they already exist above
     organDonationYes: "You accept that your organs may be harvested after your death to help other people.",
     organDonationNo: "You refuse any organ harvesting after your death.",
     organDonationUnsure: "You are hesitant and wish to take time to reflect."
