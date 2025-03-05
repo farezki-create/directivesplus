@@ -9,6 +9,13 @@ import { commonTranslations } from "./common";
 import { assertionTranslations } from "./assertions";
 import { authTranslations } from "./auth";
 import { examplesTranslations } from "./examples";
+import { featureTranslations } from "./features";
+import { purchaseTranslations } from "./purchase";
+import { homeTranslations } from "./home";
+import { questionnaireTranslations } from "./questionnaire";
+import { documentsTranslations } from "./documents";
+import { trustedPersonsTranslations } from "./trusted-persons";
+import { profileTranslations } from "./profile";
 
 // Helper function to merge translation objects
 const mergeTranslations = (...translationObjects: Translations[]): Translations => {
@@ -38,7 +45,14 @@ export const translations: Translations = mergeTranslations(
   commonTranslations, 
   assertionTranslations,
   authTranslations,
-  examplesTranslations
+  examplesTranslations,
+  featureTranslations,
+  purchaseTranslations,
+  homeTranslations,
+  questionnaireTranslations,
+  documentsTranslations,
+  trustedPersonsTranslations,
+  profileTranslations
 );
 
 // Re-export types and date-fns locales

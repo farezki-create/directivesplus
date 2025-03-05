@@ -27,7 +27,6 @@ export const fr_general: Translation = {
 
   // General sections
   "home": "Accueil",
-  "profile": "Profil",
   "settings": "Paramètres",
   "help": "Aide",
   "about": "À propos",
@@ -47,98 +46,12 @@ export const fr_general: Translation = {
   "permissions": "Permissions",
   "notifications": "Notifications",
   "messages": "Messages",
-
-  // Main buttons
-  "generalOpinion": "Mon avis général",
-  "lifeSupport": "Maintien en vie",
-  "advancedIllness": "Maladie grave",
-  "preferences": "Préférences",
-
-  // Feature highlights
-  "featureHighlightsTitle": "Pourquoi utiliser DirectivesPlus",
-  "feature1Title": "Simple et rapide",
-  "feature1Desc": "Rédigez vos directives en quelques minutes, sans paperasse complexe.",
-  "feature2Title": "Accessible partout",
-  "feature2Desc": "Accédez à vos directives depuis n'importe quel appareil, à tout moment.",
-  "feature3Title": "Conforme à la loi",
-  "feature3Desc": "Vos directives sont conformes à la législation française en vigueur.",
-  "feature4Title": "Sécurisé",
-  "feature4Desc": "Vos données sont protégées et confidentielles.",
-
-  // Questionnaire related
-  "questionnaireTitle": "Questionnaire",
-  "questionnaireDesc": "Répondez aux questions suivantes pour définir vos directives anticipées.",
-  "questionnaireSubmit": "Soumettre",
-  "questionnaireCancel": "Annuler",
-  "questionnaireRequired": "Veuillez répondre à toutes les questions obligatoires.",
-  "questionnaireSaved": "Vos réponses ont été enregistrées.",
-  "questionnaireSaving": "Enregistrement en cours...",
-  "questionnaireError": "Une erreur est survenue lors de l'enregistrement de vos réponses.",
-  
-  // Dialog titles and descriptions
-  "generalOpinionTitle": "Mon avis général",
-  "generalOpinionDesc": "Exprimez votre opinion générale concernant vos soins et traitements médicaux.",
-  "lifeSupportTitle": "Maintien en vie",
-  "lifeSupportDesc": "Indiquez vos préférences concernant les traitements de maintien en vie.",
-  "advancedIllnessTitle": "Maladie grave",
-  "advancedIllnessDesc": "Précisez vos volontés en cas de maladie grave ou terminale.",
-  "preferencesTitle": "Préférences",
-  "preferencesDesc": "Définissez vos préférences personnelles pour vos soins.",
-
-  // Home hero
-  "homeHeroTitle": "Vos directives anticipées en toute simplicité",
-  "homeHeroDesc": "Rédigez vos directives anticipées et désignez vos personnes de confiance en quelques étapes simples et sécurisées.",
-  "startButton": "Commencer",
-  "learnMoreButton": "En savoir plus",
-
-  // PDF generation
-  "generateAdvanceDirectives": "Générer mes directives anticipées",
-  "backToInput": "Revenir à la saisie",
-  "saveYourDirectives": "Enregistrer vos directives",
-  "saveDirectives": "Enregistrer",
-  "saving": "Enregistrement...",
-  "directivesSavedSecurely": "Vos directives sont enregistrées de manière sécurisée et peuvent être modifiées à tout moment.",
-
-  // Additional translations from general.ts
-  "appName": "Directives Anticipées",
-  "homePageTitle": "Rédigez vos directives anticipées en toute simplicité",
-  "homePageSubtitle": "Un outil simple et sécurisé pour exprimer vos volontés et vous assurer qu'elles soient respectées.",
-  "getStarted": "Commencer",
-  "myDirectives": "Mes Directives",
-  "freeText": "Notes complémentaires et directives spécifiques",
-  "trustedPerson": "Personnes de confiance",
-  "generatePDF": "Générer le PDF",
-  "profileDesc": "Informations personnelles",
-  "trustedPersonsDesc": "Personnes à contacter",
-  "general": "Général",
-  "advancedIllnessDetails": "Si je suis atteint(e) d'une maladie grave ou incurable, je souhaite que les décisions suivantes soient prises :",
   "language": "Langue",
+  "french": "Français",
+  "english": "Anglais",
   "dontKnow": "Je ne sais pas",
+  "general": "Général",
   "reviews": "Avis",
-  "buyCard": "Acheter la carte",
-  "trustedPersonDesignation": "Désignation de la personne de confiance",
-  "summary": "Synthèse",
-  "information": "Information",
-  "usbMemoryCard": "Carte mémoire USB format carte de crédit",
-  "usbMemoryCardDescription": "Stockez vos directives anticipées sur une carte mémoire USB au format carte de crédit (non encore disponible).",
-  "usbMemoryCardAlt": "Carte mémoire USB Directives Anticipées",
-  "features": "Caractéristiques",
-  "creditCardFormat": "Format carte de crédit - Se range facilement dans votre portefeuille",
-  "usbConnector": "Connecteur USB intégré",
-  "storageCapacity": "Capacité de stockage de 2 Go",
-  "secureStorage": "Stockage sécurisé de vos directives anticipées",
-  "universalCompatibility": "Compatibilité universelle",
-  "usbMemoryCardNotAvailable": "Carte mémoire USB format carte de crédit (non encore disponible)",
-  "productSoonAvailable": "Produit bientôt disponible",
-  "productNotAvailableYet": "Ce produit n'est pas encore disponible à l'achat. Vous pouvez demander à être notifié lorsqu'il sera disponible.",
-  "notificationRegistered": "Notification enregistrée",
-  "notifyWhenAvailable": "Nous vous informerons dès que la carte sera disponible.",
-  "notifyMe": "Me notifier quand disponible",
-  "simpleAndGuided": "Simple et guidé",
-  "stepByStepProcess": "Un processus pas à pas pour vous aider à rédiger vos directives anticipées de manière claire et complète.",
-  "fullSecure": "100% Sécurisé", // Changed from 100Secure to fullSecure to avoid syntax error
-  "dataSecurelyStored": "Vos données sont stockées de manière sécurisée et ne sont accessibles qu'à vous et aux personnes que vous autorisez.",
-  "examples": "Exemples",
 };
 
 export const en_general: Translation = {
@@ -167,7 +80,6 @@ export const en_general: Translation = {
 
   // General sections
   "home": "Home",
-  "profile": "Profile",
   "settings": "Settings",
   "help": "Help",
   "about": "About",
@@ -187,98 +99,12 @@ export const en_general: Translation = {
   "permissions": "Permissions",
   "notifications": "Notifications",
   "messages": "Messages",
-
-  // Main buttons
-  "generalOpinion": "My General Opinion",
-  "lifeSupport": "Life Support",
-  "advancedIllness": "Advanced Illness",
-  "preferences": "Preferences",
-
-  // Feature highlights
-  "featureHighlightsTitle": "Why Use DirectivesPlus",
-  "feature1Title": "Simple and Quick",
-  "feature1Desc": "Write your directives in minutes, without complex paperwork.",
-  "feature2Title": "Accessible Anywhere",
-  "feature2Desc": "Access your directives from any device, anytime.",
-  "feature3Title": "Legally Compliant",
-  "feature3Desc": "Your directives comply with current French legislation.",
-  "feature4Title": "Secure",
-  "feature4Desc": "Your data is protected and confidential.",
-
-  // Questionnaire related
-  "questionnaireTitle": "Questionnaire",
-  "questionnaireDesc": "Answer the following questions to define your advance directives.",
-  "questionnaireSubmit": "Submit",
-  "questionnaireCancel": "Cancel",
-  "questionnaireRequired": "Please answer all required questions.",
-  "questionnaireSaved": "Your answers have been saved.",
-  "questionnaireSaving": "Saving...",
-  "questionnaireError": "An error occurred while saving your answers.",
-  
-  // Dialog titles and descriptions
-  "generalOpinionTitle": "My General Opinion",
-  "generalOpinionDesc": "Express your general opinion regarding your medical care and treatments.",
-  "lifeSupportTitle": "Life Support",
-  "lifeSupportDesc": "Indicate your preferences regarding life support treatments.",
-  "advancedIllnessTitle": "Advanced Illness",
-  "advancedIllnessDesc": "Specify your wishes in case of serious or terminal illness.",
-  "preferencesTitle": "Preferences",
-  "preferencesDesc": "Define your personal preferences for your care.",
-
-  // Home hero
-  "homeHeroTitle": "Your advance directives with simplicity",
-  "homeHeroDesc": "Write your advance directives and designate your trusted persons in a few simple and secure steps.",
-  "startButton": "Start",
-  "learnMoreButton": "Learn more",
-
-  // PDF generation
-  "generateAdvanceDirectives": "Generate my advance directives",
-  "backToInput": "Back to input",
-  "saveYourDirectives": "Save your directives",
-  "saveDirectives": "Save directives",
-  "saving": "Saving...",
-  "directivesSavedSecurely": "Your directives are securely saved and can be modified at any time.",
-
-  // Additional translations from general.ts
-  "appName": "Advance Directives",
-  "homePageTitle": "Write your advance directives with ease",
-  "homePageSubtitle": "A simple and secure tool to express your wishes and ensure they are respected.",
-  "getStarted": "Get Started",
-  "myDirectives": "My Directives",
-  "freeText": "Additional notes and specific directives",
-  "trustedPerson": "Trusted persons",
-  "generatePDF": "Generate PDF",
-  "profileDesc": "Personal information",
-  "trustedPersonsDesc": "People to contact",
-  "general": "General",
-  "advancedIllnessDetails": "If I have a serious or incurable illness, I want the following decisions to be made:",
   "language": "Language",
+  "french": "French",
+  "english": "English",
   "dontKnow": "I don't know",
+  "general": "General",
   "reviews": "Reviews",
-  "buyCard": "Buy Card",
-  "trustedPersonDesignation": "Designation of Trusted Person",
-  "summary": "Summary",
-  "information": "Information",
-  "usbMemoryCard": "Credit card format USB memory card",
-  "usbMemoryCardDescription": "Store your advance directives on a credit card format USB memory card (not yet available).",
-  "usbMemoryCardAlt": "Advance Directives USB Memory Card",
-  "features": "Features",
-  "creditCardFormat": "Credit card format - Fits easily in your wallet",
-  "usbConnector": "Built-in USB connector",
-  "storageCapacity": "2 GB storage capacity",
-  "secureStorage": "Secure storage of your advance directives",
-  "universalCompatibility": "Universal compatibility",
-  "usbMemoryCardNotAvailable": "Credit card format USB memory card (not yet available)",
-  "productSoonAvailable": "Product coming soon",
-  "productNotAvailableYet": "This product is not yet available for purchase. You can request to be notified when it becomes available.",
-  "notificationRegistered": "Notification registered",
-  "notifyWhenAvailable": "We will notify you as soon as the card is available.",
-  "notifyMe": "Notify me when available",
-  "simpleAndGuided": "Simple and guided",
-  "stepByStepProcess": "A step-by-step process to help you write your advance directives in a clear and complete way.",
-  "fullSecure": "100% Secure", // Changed from 100Secure to fullSecure to avoid syntax error
-  "dataSecurelyStored": "Your data is securely stored and only accessible to you and the people you authorize.",
-  "examples": "Examples"
 };
 
 // Create an object that contains all translations
@@ -286,4 +112,3 @@ export const generalTranslations = {
   fr: fr_general,
   en: en_general
 };
-
