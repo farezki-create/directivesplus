@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { ProductDetails } from "./ProductDetails";
 import { PurchaseForm } from "./PurchaseForm";
 import { User } from "@supabase/supabase-js";
+import { useLanguage } from "@/hooks/language/useLanguage";
 
 interface PurchaseDialogProps {
   open: boolean;
@@ -11,13 +12,15 @@ interface PurchaseDialogProps {
 }
 
 export const PurchaseDialog = ({ open, onOpenChange, user }: PurchaseDialogProps) => {
+  const { t } = useLanguage();
+  
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Carte mémoire USB format carte de crédit</DialogTitle>
+          <DialogTitle>{t('usbMemoryCard')}</DialogTitle>
           <DialogDescription>
-            Stockez vos directives anticipées sur une carte mémoire USB au format carte de crédit (non encore disponible).
+            {t('usbMemoryCardDescription')}
           </DialogDescription>
         </DialogHeader>
 

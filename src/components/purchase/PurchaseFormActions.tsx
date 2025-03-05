@@ -3,6 +3,7 @@ import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/hooks/language/useLanguage";
 
 interface PurchaseFormActionsProps {
   onClose: () => void;
@@ -10,11 +11,12 @@ interface PurchaseFormActionsProps {
 
 export const PurchaseFormActions = ({ onClose }: PurchaseFormActionsProps) => {
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const handleNotifyClick = () => {
     toast({
-      title: "Notification enregistrée",
-      description: "Nous vous informerons dès que la carte sera disponible.",
+      title: t('notificationRegistered'),
+      description: t('notifyWhenAvailable'),
     });
     onClose();
   };
@@ -26,13 +28,13 @@ export const PurchaseFormActions = ({ onClose }: PurchaseFormActionsProps) => {
         variant="outline" 
         onClick={onClose}
       >
-        Fermer
+        {t('close')}
       </Button>
       <Button 
         type="button"
         onClick={handleNotifyClick}
       >
-        Me notifier quand disponible
+        {t('notifyMe')}
       </Button>
     </DialogFooter>
   );
