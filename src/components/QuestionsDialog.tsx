@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { QuestionCard } from "./questions/QuestionCard";
@@ -20,55 +21,59 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
   useEffect(() => {
     async function fetchQuestions() {
       try {
-        console.log(`[GeneralOpinion] Fetching questions in ${currentLanguage}...`);
+        console.log(`[GeneralOpinion] Loading custom general opinion questions...`);
         
-        if (currentLanguage === 'en') {
-          // Fetch English questions
-          const { data, error } = await supabase
-            .from('questions_en')
-            .select('*')
-            .eq('category', 'general_opinion')
-            .order('display_order', { ascending: true });
-          
-          if (error) {
-            console.error('[GeneralOpinion] Error fetching questions:', error);
-            toast({
-              title: "Error",
-              description: "Unable to load questions. Please try again.",
-              variant: "destructive",
-            });
-            return;
+        // These are the custom questions based on user requirements
+        const customQuestions = [
+          {
+            id: 'q1',
+            question: "Je voudrais m'accrocher jusqu'au bout tant qu'il y'a de la vie il y'a de l'espoir",
+            display_order: 1
+          },
+          {
+            id: 'q2',
+            question: "Pour l'instant je souhaite ne pas me déterminer sur les points évoqués je ne peux pas me projeter",
+            display_order: 2
+          },
+          {
+            id: 'q3',
+            question: "Ma priorité est le soulagement efficace de mes souffrances même si cela devrait abréger ma vie",
+            display_order: 3
+          },
+          {
+            id: 'q4',
+            question: "Je laisse l'équipe médicale décider des soins et traitements appropriés en évitant toute obstination déraisonnable et en se conformant à la loi en vigueur",
+            display_order: 4
+          },
+          {
+            id: 'q5',
+            question: "Je voudrais qu'on me laisse mourir c'est mon souhait le plus cher mourir vite ne me laissez pas souffrir",
+            display_order: 5
+          },
+          {
+            id: 'q6',
+            question: "Je voudrais mourir à la maison",
+            display_order: 6
+          },
+          {
+            id: 'q7',
+            question: "Je souhaite pouvoir faire un don d'organes après ma mort si cela est possible",
+            display_order: 7
+          },
+          {
+            id: 'q8',
+            question: "Il est important pour moi d'avoir mes proches et mes amis à mes côtés",
+            display_order: 8
+          },
+          {
+            id: 'q9',
+            question: "La foi la religion ou la spiritualité sont importantes pour moi",
+            display_order: 9
           }
-          
-          console.log('[GeneralOpinion] Questions loaded:', data?.length, 'questions');
-          setQuestions(data || []);
-        } else {
-          // Fetch French questions
-          const { data, error } = await supabase
-            .from('questions')
-            .select('*')
-            .eq('category', 'general_opinion')
-            .order('display_order', { ascending: true });
-          
-          if (error) {
-            console.error('[GeneralOpinion] Error fetching questions:', error);
-            toast({
-              title: "Erreur",
-              description: "Impossible de charger les questions. Veuillez réessayer.",
-              variant: "destructive",
-            });
-            return;
-          }
-          
-          // Normaliser les noms de champs pour une utilisation cohérente
-          const normalizedQuestions = data?.map(q => ({
-            ...q,
-            question: q.Question, // Assure que tous les objets ont une propriété question
-          })) || [];
-          
-          console.log('[GeneralOpinion] Questions loaded:', normalizedQuestions.length, 'questions');
-          setQuestions(normalizedQuestions);
-        }
+        ];
+        
+        setQuestions(customQuestions);
+        setLoading(false);
       } catch (error) {
         console.error('[GeneralOpinion] Unexpected error:', error);
         toast({
@@ -76,7 +81,6 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
           description: "Une erreur inattendue s'est produite.",
           variant: "destructive",
         });
-      } finally {
         setLoading(false);
       }
     }
@@ -113,12 +117,11 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
       // Prepare all responses for insertion
       const responses = Object.entries(answers).flatMap(([questionId, values]) => {
         const question = questions.find(q => q.id === questionId);
-        const questionText = currentLanguage === 'en' ? question?.question : question?.Question || question?.question;
         
         return values.map(value => ({
           user_id: userId,
           question_id: questionId,
-          question_text: questionText,
+          question_text: question?.question,
           response: value
         }));
       });
@@ -157,18 +160,16 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
     }
   };
 
-  const getQuestionOptions = (question: any) => {
+  const getQuestionOptions = () => {
     if (currentLanguage === 'en') {
       return [
         { value: 'yes', label: 'Yes' },
-        { value: 'no', label: 'No' },
-        { value: 'i_dont_know', label: 'I don\'t know' }
+        { value: 'no', label: 'No' }
       ];
     } else {
       return [
-        { value: 'oui', label: t('yes') },
-        { value: 'non', label: t('no') },
-        { value: 'je_ne_sais_pas', label: t('dontKnow') }
+        { value: 'oui', label: 'OUI' },
+        { value: 'non', label: 'NON' }
       ];
     }
   };
@@ -189,7 +190,7 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
           question={question}
           value={answers[question.id] || []}
           onValueChange={(value) => handleAnswerChange(question.id, value)}
-          options={getQuestionOptions(question)}
+          options={getQuestionOptions()}
         />
       ))}
     </QuestionsDialogLayout>

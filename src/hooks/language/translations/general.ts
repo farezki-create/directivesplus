@@ -1,4 +1,3 @@
-
 import { Translations } from "./types";
 
 export const generalTranslations: Translations = {
@@ -10,7 +9,7 @@ export const generalTranslations: Translations = {
     myDirectives: "Mes Directives",
     settings: "Paramètres",
     logout: "Déconnexion",
-    generalOpinion: "Consentement aux soins et directives générales",
+    generalOpinion: "Mon avis général",
     lifeSupport: "Directives relatives au maintien en vie",
     advancedIllnessTitle: "Directives spécifiques à une maladie grave",
     preferences: "Préférences et souhaits personnels",
@@ -18,7 +17,7 @@ export const generalTranslations: Translations = {
     trustedPerson: "Personnes de confiance",
     generatePDF: "Générer le PDF",
     advancedIllnessDesc: "Précisez vos directives pour le cas où vous seriez atteint d'une maladie grave ou incurable.",
-    generalOpinionDesc: "Décrivez votre opinion générale sur les traitements médicaux.",
+    generalOpinionDesc: "Exprimez votre avis général sur les traitements médicaux et vos souhaits personnels.",
     advancedIllness: "Maladie avancée",
     preferencesDesc: "Préférences",
     profile: "Profil",
@@ -66,7 +65,7 @@ export const generalTranslations: Translations = {
     myDirectives: "My Directives",
     settings: "Settings",
     logout: "Logout",
-    generalOpinion: "Consent to care and general directives",
+    generalOpinion: "My general opinion",
     lifeSupport: "Life support directives",
     advancedIllnessTitle: "Specific directives for serious illness",
     preferences: "Personal preferences and wishes",
@@ -74,7 +73,7 @@ export const generalTranslations: Translations = {
     trustedPerson: "Trusted persons",
     generatePDF: "Generate PDF",
     advancedIllnessDesc: "Specify your directives in case you have a serious or incurable illness.",
-    generalOpinionDesc: "Describe your general opinion on medical treatments.",
+    generalOpinionDesc: "Express your general opinion on medical treatments and your personal wishes.",
     advancedIllness: "Advanced Illness",
     preferencesDesc: "Preferences",
     profile: "Profile",
