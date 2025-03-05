@@ -18,15 +18,11 @@ export function AdditionalInfo({ onBackToHome }: AdditionalInfoProps) {
     try {
       setIsLoading(true);
       
-      // Properly handle the error property
-      const { data, error } = await supabase
+      // The error is properly handled by the catch block
+      const { data } = await supabase
         .storage
         .from('public')
         .getPublicUrl('additional-info.jpg');
-      
-      if (error) {
-        throw error;
-      }
       
       return data.publicUrl;
     } catch (error) {

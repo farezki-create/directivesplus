@@ -13,7 +13,7 @@ export function FeatureHighlights() {
         </p>
       </div>
       <div className="text-center">
-        <h3 className="text-lg font-semibold mb-2">{t('100Secure')}</h3>
+        <h3 className="text-lg font-semibold mb-2">{t('fullSecure')}</h3>
         <p className="text-muted-foreground">
           {t('dataSecurelyStored')}
         </p>
