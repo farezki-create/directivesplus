@@ -34,6 +34,21 @@ export const medicalTranslations: Translations = {
     continueToQuestionnaire: "Continuer vers le questionnaire",
     beforeStarting: "Avant de commencer",
     freeTextInstructions: "Précisez ici vos souhaits et préférences dans vos propres mots.",
+    // Life Support Explanations
+    lifeSupportExplanationTitle: "Directives relatives au maintien en vie",
+    lifeSupportExplanationDesc: "Ce document vous permet d'exprimer vos volontés quant à la poursuite ou l'arrêt de certains traitements en cas de maladie grave ou de situation critique.",
+    respiratorTitle: "1. Le maintien sous respirateur artificiel",
+    respiratorDesc: "Le respirateur (ventilation mécanique) est un appareil qui aide à respirer lorsqu'on ne peut plus le faire seul.",
+    artificialNutritionTitle: "2. L'alimentation artificielle",
+    artificialNutritionDesc: "Si vous ne pouvez plus vous alimenter normalement, une sonde ou une perfusion peut être utilisée pour vous nourrir.",
+    artificialHydrationTitle: "3. L'hydratation artificielle",
+    artificialHydrationDesc: "L'hydratation par perfusion ou sonde permet d'éviter la déshydratation en cas d'incapacité à boire.",
+    cprTitle: "4. La réanimation cardio-pulmonaire",
+    cprDesc: "En cas d'arrêt cardiaque, des gestes de réanimation peuvent être pratiqués (massage cardiaque, défibrillateur, intubation…).",
+    dialysisTitle: "5. La dialyse",
+    dialysisDesc: "La dialyse remplace le fonctionnement des reins quand ils ne peuvent plus éliminer les toxines du sang.",
+    antibioticsTitle: "6. Les antibiotiques en cas d'infection grave",
+    antibioticsDesc: "Les infections graves peuvent être fatales, surtout en cas d'état de santé très fragile.",
   },
   en: {
     generalConsentTitle: "General consent to care",
@@ -67,7 +82,22 @@ export const medicalTranslations: Translations = {
     continueToQuestionnaire: "Continue to questionnaire",
     beforeStarting: "Before starting",
     freeTextInstructions: "Specify your wishes and preferences in your own words here.",
-    // Adding general directives explanations without duplicate keys
+    // Life Support Explanations
+    lifeSupportExplanationTitle: "Life Support Directives",
+    lifeSupportExplanationDesc: "This document allows you to express your wishes regarding the continuation or cessation of certain treatments in case of serious illness or a critical situation where you could no longer express yourself.",
+    respiratorTitle: "1. Mechanical Ventilation",
+    respiratorDesc: "A ventilator is a machine that helps you breathe when you can't do it on your own. It can be temporary or prolonged.",
+    artificialNutritionTitle: "2. Artificial Nutrition",
+    artificialNutritionDesc: "If you can no longer eat normally, a tube or IV can be used to feed you.",
+    artificialHydrationTitle: "3. Artificial Hydration",
+    artificialHydrationDesc: "Hydration by IV or tube prevents dehydration when you're unable to drink.",
+    cprTitle: "4. Cardiopulmonary Resuscitation",
+    cprDesc: "In case of cardiac arrest, resuscitation measures can be performed (chest compressions, defibrillator, intubation...).",
+    dialysisTitle: "5. Dialysis",
+    dialysisDesc: "Dialysis replaces kidney function when they can no longer remove toxins from the blood.",
+    antibioticsTitle: "6. Antibiotics for Serious Infections",
+    antibioticsDesc: "Serious infections can be fatal, especially when health is already fragile.",
+    // General directives explanations
     generalDirectivesExplanation: "This document helps you express your wishes regarding your medical care in critical situations where you may not be able to express yourself. Each question is important and reflects personal decisions that can guide caregivers and your loved ones. Take time to reflect.",
     noResuscitationTitle: "1. I wish that my will not to be resuscitated be respected",
     noResuscitationDesc: "This means that if your heart stops or you stop breathing, doctors will not attempt to resuscitate you (cardiac massage, defibrillator, intubation...).",
@@ -94,7 +124,6 @@ export const medicalTranslations: Translations = {
     bloodTransfusionYes: "You accept being transfused if necessary.",
     bloodTransfusionNo: "You refuse any transfusion, even in case of vital necessity.",
     bloodTransfusionUnsure: "You have not yet decided and would like more information.",
-    // Remove duplicate organDonationTitle and related keys as they already exist above
     organDonationYes: "You accept that your organs may be harvested after your death to help other people.",
     organDonationNo: "You refuse any organ harvesting after your death.",
     organDonationUnsure: "You are hesitant and wish to take time to reflect."
