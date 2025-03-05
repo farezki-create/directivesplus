@@ -56,6 +56,11 @@ export const generalTranslations: Translations = {
     notifyWhenAvailable: "Nous vous informerons dès que la carte sera disponible.",
     notifyMe: "Me notifier quand disponible",
     close: "Fermer",
+    simpleAndGuided: "Simple et guidé",
+    stepByStepProcess: "Un processus pas à pas pour vous aider à rédiger vos directives anticipées de manière claire et complète.",
+    100Secure: "100% Sécurisé",
+    dataSecurelyStored: "Vos données sont stockées de manière sécurisée et ne sont accessibles qu'à vous et aux personnes que vous autorisez.",
+    examples: "Exemples",
   },
   en: {
     appName: "Advance Directives",
@@ -112,5 +117,10 @@ export const generalTranslations: Translations = {
     notifyWhenAvailable: "We will notify you as soon as the card is available.",
     notifyMe: "Notify me when available",
     close: "Close",
+    simpleAndGuided: "Simple and guided",
+    stepByStepProcess: "A step-by-step process to help you write your advance directives in a clear and complete way.",
+    100Secure: "100% Secure",
+    dataSecurelyStored: "Your data is securely stored and only accessible to you and the people you authorize.",
+    examples: "Examples",
   }
 };
