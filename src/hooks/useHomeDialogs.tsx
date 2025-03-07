@@ -1,9 +1,6 @@
 
 import { useDialogState } from "@/hooks/useDialogState";
-import { useGeneralOpinionDialogs } from "./dialogs/useGeneralOpinionDialogs";
-import { useLifeSupportDialogs } from "./dialogs/useLifeSupportDialogs";
-import { useAdvancedIllnessDialogs } from "./dialogs/useAdvancedIllnessDialogs";
-import { usePreferencesDialogs } from "./dialogs/usePreferencesDialogs";
+import { useToast } from "@/hooks/use-toast";
 
 interface DialogHandlers {
   handleGeneralOpinionClick: () => void;
@@ -23,23 +20,127 @@ interface UseHomeDialogsReturn {
 
 export function useHomeDialogs(): UseHomeDialogsReturn {
   const dialogState = useDialogState();
+  const { toast } = useToast();
   
-  const generalOpinionHandlers = useGeneralOpinionDialogs(dialogState);
-  const lifeSupportHandlers = useLifeSupportDialogs(dialogState);
-  const advancedIllnessHandlers = useAdvancedIllnessDialogs(dialogState);
-  const preferencesHandlers = usePreferencesDialogs(dialogState);
+  const handleGeneralOpinionClick = () => {
+    try {
+      dialogState.setExplanationOpen(true);
+    } catch (error) {
+      console.error("Error opening general opinion dialog:", error);
+      toast({
+        title: "Error",
+        description: "An error occurred while opening the dialog.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleExplanationContinue = () => {
+    try {
+      dialogState.setExplanationOpen(false);
+      dialogState.setQuestionsOpen(true);
+    } catch (error) {
+      console.error("Error continuing from explanation:", error);
+      toast({
+        title: "Error",
+        description: "An error occurred while proceeding to the next step.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleLifeSupportClick = () => {
+    try {
+      dialogState.setLifeSupportExplanationOpen(true);
+    } catch (error) {
+      console.error("Error opening life support dialog:", error);
+      toast({
+        title: "Error",
+        description: "An error occurred while opening the dialog.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleLifeSupportExplanationContinue = () => {
+    try {
+      dialogState.setLifeSupportExplanationOpen(false);
+      dialogState.setLifeSupportQuestionsOpen(true);
+    } catch (error) {
+      console.error("Error continuing from life support explanation:", error);
+      toast({
+        title: "Error",
+        description: "An error occurred while proceeding to the next step.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleAdvancedIllnessClick = () => {
+    try {
+      dialogState.setAdvancedIllnessExplanationOpen(true);
+    } catch (error) {
+      console.error("Error opening advanced illness dialog:", error);
+      toast({
+        title: "Error",
+        description: "An error occurred while opening the dialog.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleAdvancedIllnessExplanationContinue = () => {
+    try {
+      dialogState.setAdvancedIllnessExplanationOpen(false);
+      dialogState.setAdvancedIllnessQuestionsOpen(true);
+    } catch (error) {
+      console.error("Error continuing from advanced illness explanation:", error);
+      toast({
+        title: "Error",
+        description: "An error occurred while proceeding to the next step.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handlePreferencesClick = () => {
+    try {
+      dialogState.setPreferencesExplanationOpen(true);
+    } catch (error) {
+      console.error("Error opening preferences dialog:", error);
+      toast({
+        title: "Error",
+        description: "An error occurred while opening the dialog.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handlePreferencesExplanationContinue = () => {
+    try {
+      dialogState.setPreferencesExplanationOpen(false);
+      dialogState.setPreferencesQuestionsOpen(true);
+    } catch (error) {
+      console.error("Error continuing from preferences explanation:", error);
+      toast({
+        title: "Error",
+        description: "An error occurred while proceeding to the next step.",
+        variant: "destructive",
+      });
+    }
+  };
   
   return {
     dialogState,
     handlers: {
-      handleGeneralOpinionClick: generalOpinionHandlers.handleGeneralOpinionClick,
-      handleExplanationContinue: generalOpinionHandlers.handleExplanationContinue,
-      handleLifeSupportClick: lifeSupportHandlers.handleLifeSupportClick,
-      handleLifeSupportExplanationContinue: lifeSupportHandlers.handleLifeSupportExplanationContinue,
-      handleAdvancedIllnessClick: advancedIllnessHandlers.handleAdvancedIllnessClick,
-      handleAdvancedIllnessExplanationContinue: advancedIllnessHandlers.handleAdvancedIllnessExplanationContinue,
-      handlePreferencesClick: preferencesHandlers.handlePreferencesClick,
-      handlePreferencesExplanationContinue: preferencesHandlers.handlePreferencesExplanationContinue
+      handleGeneralOpinionClick,
+      handleExplanationContinue,
+      handleLifeSupportClick,
+      handleLifeSupportExplanationContinue,
+      handleAdvancedIllnessClick,
+      handleAdvancedIllnessExplanationContinue,
+      handlePreferencesClick,
+      handlePreferencesExplanationContinue
     }
   };
 }

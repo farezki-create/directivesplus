@@ -5,8 +5,6 @@ import { QuestionCard } from "./questions/QuestionCard";
 import { QuestionsDialogLayout } from "./questions/QuestionsDialogLayout";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/language/useLanguage";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
 
 interface PreferencesQuestionsDialogProps {
   open: boolean;
@@ -21,7 +19,7 @@ export function PreferencesQuestionsDialog({
   const { toast } = useToast();
   const { t, currentLanguage } = useLanguage();
 
-  const { data: questions, isLoading, error } = useQuery({
+  const { data: questions, isLoading } = useQuery({
     queryKey: ["preferences-questions", currentLanguage],
     queryFn: async () => {
       console.log(`[Preferences] Fetching questions in ${currentLanguage}...`);
@@ -40,15 +38,9 @@ export function PreferencesQuestionsDialog({
         console.error("[Preferences] Error fetching questions:", error);
         throw error;
       }
-      
       console.log('[Preferences] Questions loaded:', data?.length, 'questions');
-      if (data?.length === 0) {
-        console.log('[Preferences] No questions found in database');
-      }
-      
       return data || [];
     },
-    enabled: open,
   });
 
   const handleSubmit = async () => {
@@ -121,6 +113,7 @@ export function PreferencesQuestionsDialog({
     }));
   };
 
+  // Options de réponse selon la langue
   const getAnswerOptions = () => {
     if (currentLanguage === 'en') {
       return [
@@ -137,14 +130,6 @@ export function PreferencesQuestionsDialog({
     }
   };
 
-  const errorMessage = error 
-    ? (error as Error).message 
-    : questions?.length === 0 
-      ? (currentLanguage === 'fr' 
-          ? "Aucune question n'a été trouvée dans la base de données." 
-          : "No questions were found in the database.")
-      : null;
-
   return (
     <QuestionsDialogLayout
       open={open}
@@ -154,23 +139,15 @@ export function PreferencesQuestionsDialog({
       loading={isLoading}
       questionsLength={questions?.length || 0}
     >
-      {errorMessage ? (
-        <Alert variant="destructive" className="mt-4">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>{currentLanguage === 'fr' ? "Erreur" : "Error"}</AlertTitle>
-          <AlertDescription>{errorMessage}</AlertDescription>
-        </Alert>
-      ) : (
-        questions?.map((question) => (
-          <QuestionCard
-            key={question.id}
-            question={question}
-            value={answers[question.id] || []}
-            onValueChange={(value) => handleAnswerChange(question.id, value)}
-            options={getAnswerOptions()}
-          />
-        ))
-      )}
+      {questions?.map((question) => (
+        <QuestionCard
+          key={question.id}
+          question={question}
+          value={answers[question.id] || []}
+          onValueChange={(value) => handleAnswerChange(question.id, value)}
+          options={getAnswerOptions()}
+        />
+      ))}
     </QuestionsDialogLayout>
   );
 }

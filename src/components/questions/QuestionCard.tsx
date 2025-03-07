@@ -1,12 +1,10 @@
-
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { useLanguage } from "@/hooks/language/useLanguage";
 
 interface QuestionCardProps {
   question: any;
   value: string[];
-  onValueChange: (value: string, checked?: boolean) => void;
+  onValueChange: (value: string, checked: boolean) => void;
   options: Array<{
     value: string;
     label: string;
@@ -21,14 +19,8 @@ export function QuestionCard({
   options,
   multiple = false 
 }: QuestionCardProps) {
-  const { currentLanguage } = useLanguage();
   const displayOrder = question.order || question.display_order;
   const orderDisplay = displayOrder ? `${displayOrder}` : '';
-  
-  // Handle different field names between French and English tables
-  const questionText = currentLanguage === 'en' 
-    ? question.question 
-    : question.Question;
 
   return (
     <div className="p-6 bg-card rounded-lg border shadow-sm">
@@ -38,7 +30,7 @@ export function QuestionCard({
         </div>
         <div>
           <p className="text-lg font-medium mb-4">
-            {questionText}
+            {question.Question || question.question}
           </p>
           <div className="flex flex-col space-y-3">
             {options.map((option) => (
@@ -46,9 +38,9 @@ export function QuestionCard({
                 <Checkbox
                   id={`${question.id}-${option.value}`}
                   checked={value.includes(option.value)}
-                  onCheckedChange={(checked) => {
-                    onValueChange(option.value, checked as boolean);
-                  }}
+                  onCheckedChange={(checked) => 
+                    onValueChange(option.value, checked as boolean)
+                  }
                 />
                 <Label 
                   htmlFor={`${question.id}-${option.value}`}
