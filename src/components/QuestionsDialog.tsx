@@ -50,6 +50,11 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
     }
   }, [questions, currentLanguage]);
 
+  // Débogage pour vérifier l'état du dialogue
+  useEffect(() => {
+    console.log(`[QuestionsDialog] Dialog open state changed: ${open}`);
+  }, [open]);
+
   return (
     <QuestionsDialogLayout
       open={open}

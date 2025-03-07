@@ -28,6 +28,7 @@ export function MainButtons({
     console.log("[MainButtons] General Opinion button clicked");
     // S'assurer que le gestionnaire d'événements est correctement appelé
     if (typeof onGeneralOpinionClick === 'function') {
+      console.log("[MainButtons] Calling onGeneralOpinionClick function");
       onGeneralOpinionClick();
     } else {
       console.error("[MainButtons] onGeneralOpinionClick is not a function");
@@ -40,24 +41,45 @@ export function MainButtons({
 
   return (
     <div className="grid gap-4 md:grid-cols-2 max-w-2xl mx-auto mb-8">
-      <Button onClick={handleGeneralOpinionClick} size="lg">
+      <Button 
+        onClick={handleGeneralOpinionClick} 
+        size="lg"
+        type="button"
+      >
         {t('generalOpinion')}
       </Button>
-      <Button onClick={onLifeSupportClick} size="lg">
+      <Button 
+        onClick={onLifeSupportClick} 
+        size="lg"
+        type="button"
+      >
         {t('lifeSupport')}
       </Button>
-      <Button onClick={onAdvancedIllnessClick} size="lg">
+      <Button 
+        onClick={onAdvancedIllnessClick} 
+        size="lg"
+        type="button"
+      >
         {t('advancedIllnessTitle')}
       </Button>
-      <Button onClick={onPreferencesClick} size="lg">
+      <Button 
+        onClick={onPreferencesClick} 
+        size="lg"
+        type="button"
+      >
         {t('preferences')}
       </Button>
-      <Button onClick={navigateToTrustedPersons} size="lg">
+      <Button 
+        onClick={navigateToTrustedPersons} 
+        size="lg"
+        type="button"
+      >
         {t('trustedPerson')}
       </Button>
       <Button 
         onClick={() => navigate("/examples")} 
         size="lg"
+        type="button"
       >
         {t('examples')}
       </Button>
@@ -65,6 +87,7 @@ export function MainButtons({
         onClick={() => navigate("/free-text")} 
         size="lg"
         className="md:col-span-2"
+        type="button"
       >
         {t('summary')}
       </Button>

@@ -25,9 +25,12 @@ export function useQuestionnaireQuestions(
     async function fetchQuestions() {
       try {
         console.log(`[Questionnaire] Fetching ${type} questions in ${currentLanguage}...`);
+        setLoading(true);
         
         // Determine table name based on type and language
         const tableName = `questionnaire_${type}_${currentLanguage}` as const;
+        
+        console.log(`[Questionnaire] Querying table: ${tableName}`);
         
         const { data, error } = await supabase
           .from(tableName)
@@ -47,6 +50,7 @@ export function useQuestionnaireQuestions(
         }
         
         console.log(`[Questionnaire] ${type} questions loaded:`, data?.length, 'questions');
+        console.log(`[Questionnaire] Sample data:`, data?.slice(0, 1));
         
         // Safely cast the data to the expected type
         const typedQuestions: QuestionnaireQuestion[] = data?.map(item => ({

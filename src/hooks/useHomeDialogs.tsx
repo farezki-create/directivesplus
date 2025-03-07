@@ -1,4 +1,3 @@
-
 import { useDialogState } from "@/hooks/useDialogState";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
@@ -49,7 +48,9 @@ export function useHomeDialogs(): UseHomeDialogsReturn {
       dialogState.setPreferencesExplanationOpen(false);
       dialogState.setPreferencesQuestionsOpen(false);
       
-      dialogState.setExplanationOpen(true);
+      setTimeout(() => {
+        dialogState.setExplanationOpen(true);
+      }, 100);
     } catch (error) {
       console.error("Error opening general opinion dialog:", error);
       toast({
@@ -65,11 +66,10 @@ export function useHomeDialogs(): UseHomeDialogsReturn {
       console.log("[useHomeDialogs] Moving from explanation to questions dialog");
       dialogState.setExplanationOpen(false);
       
-      // Utilisation de setTimeout pour s'assurer que le dialogue d'explication est bien fermé avant d'ouvrir le questionnaire
       setTimeout(() => {
         console.log("[useHomeDialogs] Opening questions dialog after delay");
         dialogState.setQuestionsOpen(true);
-      }, 300);
+      }, 500);
     } catch (error) {
       console.error("Error continuing from explanation:", error);
       toast({
