@@ -3,7 +3,7 @@ import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { ResponseSection } from "./responses/ResponseSection";
 import { FreeTextInput } from "./free-text/FreeTextInput";
 import { useToast } from "@/hooks/use-toast";
-import { useLanguage } from "@/hooks/language/useLanguage";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface ResponsesSummaryProps {
   userId: string;
@@ -12,28 +12,22 @@ interface ResponsesSummaryProps {
 export function ResponsesSummary({ userId }: ResponsesSummaryProps) {
   const { responses, isLoading, hasErrors } = useQuestionnairesResponses(userId);
   const { toast } = useToast();
-  const { t, currentLanguage } = useLanguage();
+  const { t } = useLanguage();
 
   console.log("[ResponsesSummary] User ID:", userId);
   console.log("[ResponsesSummary] Responses:", responses);
 
   if (isLoading) {
-    return <div className="p-4 text-center">{currentLanguage === 'fr' ? 'Chargement de vos réponses...' : 'Loading your responses...'}</div>;
+    return <div className="p-4 text-center">Chargement de vos réponses...</div>;
   }
 
   if (hasErrors) {
     toast({
-      title: currentLanguage === 'fr' ? "Erreur" : "Error",
-      description: currentLanguage === 'fr' 
-        ? "Une erreur est survenue lors du chargement des réponses." 
-        : "An error occurred while loading responses.",
+      title: "Erreur",
+      description: "Une erreur est survenue lors du chargement des réponses.",
       variant: "destructive",
     });
-    return <div className="p-4 text-center text-red-500">
-      {currentLanguage === 'fr' 
-        ? "Une erreur est survenue lors du chargement des réponses." 
-        : "An error occurred while loading responses."}
-    </div>;
+    return <div className="p-4 text-center text-red-500">Une erreur est survenue lors du chargement des réponses.</div>;
   }
 
   if (!userId) {

@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useLanguage } from "@/hooks/language/useLanguage";
+import { useLanguage } from "@/hooks/useLanguage";
 
 export interface ConfirmDialogState {
   isOpen: boolean;

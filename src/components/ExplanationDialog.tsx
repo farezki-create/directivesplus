@@ -1,69 +1,41 @@
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useLanguage } from "@/hooks/language/useLanguage";
-import { useEffect } from "react";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface ExplanationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onContinue: () => void;
-  title: string;
-  description: string;
-  content: string;
 }
 
-export function ExplanationDialog({ 
-  open, 
-  onOpenChange, 
-  onContinue,
-  title,
-  description,
-  content
-}: ExplanationDialogProps) {
-  const { t, currentLanguage } = useLanguage();
-  
-  useEffect(() => {
-    if (open) {
-      console.log("[ExplanationDialog] Dialog opened with language:", currentLanguage);
-    }
-  }, [open, currentLanguage]);
-  
-  const handleContinueClick = () => {
-    console.log("[ExplanationDialog] Continue button clicked");
-    onOpenChange(false);
-    
-    // Wait for the dialog to close before continuing to the next step
-    setTimeout(() => {
-      console.log("[ExplanationDialog] Calling onContinue function after delay");
-      onContinue();
-    }, 500);
-  };
+export function ExplanationDialog({ open, onOpenChange, onContinue }: ExplanationDialogProps) {
+  const { t } = useLanguage();
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle className="text-2xl font-semibold text-center">
-            {title}
+            {t('beforeStarting')}
           </DialogTitle>
-          <DialogDescription className="text-center pt-2">
-            {description}
-          </DialogDescription>
         </DialogHeader>
         
         <div className="py-6">
-          <div className="prose prose-sm max-w-none">
-            <p className="text-lg mb-4">{content}</p>
+          <p className="text-lg text-center mb-6">
+            {t('generalOpinionDesc')}
+          </p>
+          
+          {/* Placeholder for YouTube video - you can add the embed code here */}
+          <div className="aspect-video bg-muted rounded-lg mb-6">
+            <p className="flex items-center justify-center h-full text-muted-foreground">
+              {t('explanatoryVideo')}
+            </p>
           </div>
         </div>
 
         <DialogFooter>
-          <Button 
-            onClick={handleContinueClick} 
-            className="w-full sm:w-auto"
-            type="button"
-          >
+          <Button onClick={onContinue} className="w-full sm:w-auto">
             {t('continueToQuestionnaire')}
           </Button>
         </DialogFooter>

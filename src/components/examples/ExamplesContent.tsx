@@ -7,7 +7,7 @@ import { TemplatesList } from "./TemplatesList";
 import { ExamplePhrasesList } from "./ExamplePhrasesList";
 import { examplePhrases } from "./data/examplePhrases";
 import { addPhraseToSynthesis, removePhraseFromSynthesis } from "./utils/synthesisUtils";
-import { useLanguage } from "@/hooks/language/useLanguage";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface ExamplesContentProps {
   onBack: () => void;

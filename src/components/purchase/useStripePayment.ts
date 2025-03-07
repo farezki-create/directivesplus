@@ -9,7 +9,6 @@ export const useStripePayment = (cardElementRef: React.RefObject<HTMLDivElement>
   const [elements, setElements] = React.useState<StripeElements | null>(null);
   const [card, setCard] = React.useState<StripeElement | null>(null);
   const [error, setError] = React.useState<string>("");
-  const [isComplete, setIsComplete] = React.useState<boolean>(false);
 
   React.useEffect(() => {
     const initStripe = async () => {
@@ -43,10 +42,8 @@ export const useStripePayment = (cardElementRef: React.RefObject<HTMLDivElement>
           cardElement.on('change', (event) => {
             if (event.error) {
               setError(event.error.message);
-              setIsComplete(false);
             } else {
               setError("");
-              setIsComplete(event.complete || false);
             }
           });
           setCard(cardElement);
@@ -67,5 +64,5 @@ export const useStripePayment = (cardElementRef: React.RefObject<HTMLDivElement>
     };
   }, []);
 
-  return { stripe, elements, card, error, isComplete };
+  return { stripe, elements, card, error };
 };

@@ -3,7 +3,7 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/comp
 import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
 import { FormValues } from "./types";
-import { useLanguage } from "@/hooks/language/useLanguage";
+import { useLanguage } from "@/hooks/useLanguage";
 
 type BaseAuthFieldsProps = {
   form: UseFormReturn<FormValues>;

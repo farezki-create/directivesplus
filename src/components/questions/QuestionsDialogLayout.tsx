@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Header } from "@/components/Header";
-import { useLanguage } from "@/hooks/language/useLanguage";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface QuestionsDialogLayoutProps {
   open: boolean;
@@ -26,11 +26,7 @@ export function QuestionsDialogLayout({
   questionsLength,
   children
 }: QuestionsDialogLayoutProps) {
-  const { t, currentLanguage } = useLanguage();
-  
-  const saveButtonText = currentLanguage === 'fr' ? 
-    "Enregistrer mes réponses" : 
-    "Save my answers";
+  const { t } = useLanguage();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -71,7 +67,7 @@ export function QuestionsDialogLayout({
               className="w-full sm:w-auto"
               disabled={loading || questionsLength === 0}
             >
-              {saveButtonText}
+              {t('saveMyAnswers')}
             </Button>
           </DialogFooter>
         </div>

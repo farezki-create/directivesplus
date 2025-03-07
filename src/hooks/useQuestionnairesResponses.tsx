@@ -2,44 +2,102 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useLanguage } from "@/hooks/language/useLanguage";
 
 export function useQuestionnairesResponses(userId: string | undefined) {
   const { toast } = useToast();
-  const { currentLanguage } = useLanguage();
 
   const {
-    data: responses,
-    isLoading,
-    error
+    data: generalResponses,
+    isLoading: isLoadingGeneral,
+    error: generalError
   } = useQuery({
-    queryKey: ["questionnaire-responses", userId],
+    queryKey: ["general-responses", userId],
     queryFn: async () => {
-      console.log("[Responses] Fetching all questionnaire responses for user:", userId);
+      console.log("[Responses] Fetching general responses for user:", userId);
       const { data, error } = await supabase
-        .from("questionnaire_responses")
-        .select("*")
+        .from("questionnaire_general_responses")
+        .select("*, questions(*)")
         .eq("user_id", userId);
 
       if (error) {
-        console.error("[Responses] Error fetching questionnaire responses:", error);
+        console.error("[Responses] Error fetching general responses:", error);
         throw error;
       }
-      console.log("[Responses] Retrieved responses:", data?.length);
+      console.log("[Responses] Retrieved general responses:", data?.length);
       return data;
     },
     enabled: !!userId,
   });
 
-  // Process responses into categories
-  const processedResponses = {
-    general: responses?.filter(r => r.questionnaire_type === 'general') || [],
-    lifeSupport: responses?.filter(r => r.questionnaire_type === 'life_support') || [],
-    advancedIllness: responses?.filter(r => r.questionnaire_type === 'advanced_illness') || [],
-    preferences: responses?.filter(r => r.questionnaire_type === 'preferences') || [],
-  };
+  const {
+    data: lifeSupportResponses,
+    isLoading: isLoadingLifeSupport,
+    error: lifeSupportError
+  } = useQuery({
+    queryKey: ["life-support-responses", userId],
+    queryFn: async () => {
+      console.log("[Responses] Fetching life support responses for user:", userId);
+      const { data, error } = await supabase
+        .from("questionnaire_life_support_responses")
+        .select("*, life_support_questions(*)")
+        .eq("user_id", userId);
 
-  // Fetch synthesis separately (not part of the unified table)
+      if (error) {
+        console.error("[Responses] Error fetching life support responses:", error);
+        throw error;
+      }
+      console.log("[Responses] Retrieved life support responses:", data?.length);
+      return data;
+    },
+    enabled: !!userId,
+  });
+
+  const {
+    data: advancedIllnessResponses,
+    isLoading: isLoadingAdvancedIllness,
+    error: advancedIllnessError
+  } = useQuery({
+    queryKey: ["advanced-illness-responses", userId],
+    queryFn: async () => {
+      console.log("[Responses] Fetching advanced illness responses for user:", userId);
+      const { data, error } = await supabase
+        .from("questionnaire_advanced_illness_responses")
+        .select("*, advanced_illness_questions(*)")
+        .eq("user_id", userId);
+
+      if (error) {
+        console.error("[Responses] Error fetching advanced illness responses:", error);
+        throw error;
+      }
+      console.log("[Responses] Retrieved advanced illness responses:", data?.length);
+      return data;
+    },
+    enabled: !!userId,
+  });
+
+  const {
+    data: preferencesResponses,
+    isLoading: isLoadingPreferences,
+    error: preferencesError
+  } = useQuery({
+    queryKey: ["preferences-responses", userId],
+    queryFn: async () => {
+      console.log("[Responses] Fetching preferences responses for user:", userId);
+      const { data, error } = await supabase
+        .from("questionnaire_preferences_responses")
+        .select("*, preferences_questions(*)")
+        .eq("user_id", userId);
+
+      if (error) {
+        console.error("[Responses] Error fetching preferences responses:", error);
+        throw error;
+      }
+      console.log("[Responses] Retrieved preferences responses:", data?.length);
+      return data;
+    },
+    enabled: !!userId,
+  });
+
   const {
     data: synthesis,
     isLoading: isLoadingSynthesis,
@@ -64,24 +122,33 @@ export function useQuestionnairesResponses(userId: string | undefined) {
     enabled: !!userId,
   });
 
-  // Handle errors with toast notification
-  if (error || synthesisError) {
-    console.error("[Responses] Error in useQuestionnairesResponses:", error || synthesisError);
-    toast({
-      title: currentLanguage === 'en' ? "Error retrieving responses" : "Erreur lors de la récupération des réponses",
-      description: currentLanguage === 'en' 
-        ? "An error occurred while retrieving your responses. Please try again." 
-        : "Une erreur est survenue lors de la récupération de vos réponses. Veuillez réessayer.",
-      variant: "destructive",
-    });
-  }
+  // Gérer les erreurs en affichant une notification toast
+  const errors = [generalError, lifeSupportError, advancedIllnessError, preferencesError, synthesisError];
+  errors.forEach(error => {
+    if (error) {
+      console.error("[Responses] Error in useQuestionnairesResponses:", error);
+      toast({
+        title: "Erreur lors de la récupération des réponses",
+        description: "Une erreur est survenue lors de la récupération de vos réponses. Veuillez réessayer.",
+        variant: "destructive",
+      });
+    }
+  });
 
   return {
     responses: {
-      ...processedResponses,
+      general: generalResponses || [],
+      lifeSupport: lifeSupportResponses || [],
+      advancedIllness: advancedIllnessResponses || [],
+      preferences: preferencesResponses || [],
       synthesis: synthesis,
     },
-    isLoading: isLoading || isLoadingSynthesis,
-    hasErrors: !!error || !!synthesisError,
+    isLoading: 
+      isLoadingGeneral || 
+      isLoadingLifeSupport || 
+      isLoadingAdvancedIllness || 
+      isLoadingPreferences || 
+      isLoadingSynthesis,
+    hasErrors: errors.some(error => error !== null),
   };
 }

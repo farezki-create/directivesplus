@@ -1,21 +1,22 @@
-
-import { useLanguage } from "@/hooks/language/useLanguage";
-
 export function FeatureHighlights() {
-  const { t } = useLanguage();
-  
   return (
-    <div className="mt-12 grid gap-8 md:grid-cols-2">
+    <div className="mt-12 grid gap-8 md:grid-cols-3">
       <div className="text-center">
-        <h3 className="text-lg font-semibold mb-2">{t('simpleAndGuided')}</h3>
+        <h3 className="text-lg font-semibold mb-2">Simple et guidé</h3>
         <p className="text-muted-foreground">
-          {t('stepByStepProcess')}
+          Un processus pas à pas pour vous accompagner dans la rédaction.
         </p>
       </div>
       <div className="text-center">
-        <h3 className="text-lg font-semibold mb-2">{t('fullSecure')}</h3>
+        <h3 className="text-lg font-semibold mb-2">100% sécurisé</h3>
         <p className="text-muted-foreground">
-          {t('dataSecurelyStored')}
+          Vos données sont protégées et confidentielles.
+        </p>
+      </div>
+      <div className="text-center">
+        <h3 className="text-lg font-semibold mb-2">Toujours accessible</h3>
+        <p className="text-muted-foreground">
+          Consultez et modifiez vos directives à tout moment.
         </p>
       </div>
     </div>

@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { useLanguage } from "@/hooks/language/useLanguage";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface MainButtonsProps {
   onGeneralOpinionClick: () => void;
@@ -19,57 +19,39 @@ export function MainButtons({
   const navigate = useNavigate();
   const { t } = useLanguage();
 
+  const navigateToTrustedPersons = () => {
+    navigate("/dashboard?tab=persons");
+  };
+
   return (
     <div className="grid gap-4 md:grid-cols-2 max-w-2xl mx-auto mb-8">
-      <Button 
-        onClick={onGeneralOpinionClick} 
-        size="lg"
-        type="button"
-      >
+      <Button onClick={onGeneralOpinionClick} size="lg">
         {t('generalOpinion')}
       </Button>
-      <Button 
-        onClick={onLifeSupportClick} 
-        size="lg"
-        type="button"
-      >
+      <Button onClick={onLifeSupportClick} size="lg">
         {t('lifeSupport')}
       </Button>
-      <Button 
-        onClick={onAdvancedIllnessClick} 
-        size="lg"
-        type="button"
-      >
+      <Button onClick={onAdvancedIllnessClick} size="lg">
         {t('advancedIllnessTitle')}
       </Button>
-      <Button 
-        onClick={onPreferencesClick} 
-        size="lg"
-        type="button"
-      >
+      <Button onClick={onPreferencesClick} size="lg">
         {t('preferences')}
       </Button>
-      <Button 
-        onClick={() => navigate("/dashboard?tab=persons")} 
-        size="lg"
-        type="button"
-      >
+      <Button onClick={navigateToTrustedPersons} size="lg">
         {t('trustedPerson')}
-      </Button>
-      <Button 
-        onClick={() => navigate("/examples")} 
-        size="lg"
-        type="button"
-      >
-        {t('examples')}
       </Button>
       <Button 
         onClick={() => navigate("/free-text")} 
         size="lg"
-        className="md:col-span-2"
-        type="button"
       >
         {t('summary')}
+      </Button>
+      <Button 
+        onClick={() => navigate("/examples")} 
+        size="lg"
+        className="md:col-span-2"
+      >
+        {t('examples')}
       </Button>
     </div>
   );

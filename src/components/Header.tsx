@@ -7,8 +7,7 @@ import { User } from "@supabase/supabase-js";
 import { CreditCard, MessageSquare } from "lucide-react";
 import { PurchaseDialog } from "./purchase/PurchaseDialog";
 import { LanguageSelector } from "./LanguageSelector";
-import { useLanguage } from "@/hooks/language/useLanguage";
-import { deleteSynthesisOnLogout } from "./examples/utils/synthesisUtils";
+import { useLanguage } from "@/hooks/useLanguage";
 
 export const Header = () => {
   const navigate = useNavigate();
@@ -30,9 +29,6 @@ export const Header = () => {
   }, []);
 
   const handleSignOut = async () => {
-    // Delete user's synthesis data before signing out
-    await deleteSynthesisOnLogout();
-    // Then sign out
     await supabase.auth.signOut();
     navigate("/");
   };

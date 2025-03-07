@@ -7,9 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ReviewForm } from "@/components/reviews/ReviewForm";
 import { ReviewList } from "@/components/reviews/ReviewList";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Stethoscope, Users } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useLanguage } from "@/hooks/language/useLanguage";
+import { ArrowLeft } from "lucide-react";
 
 interface Review {
   id: string;
@@ -19,17 +17,14 @@ interface Review {
   rating: number;
   user_id: string;
   helpful_count: number;
-  profession?: string;
 }
 
 const Reviews = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { t, currentLanguage } = useLanguage();
   const [reviews, setReviews] = React.useState<Review[]>([]);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
-  const [activeTab, setActiveTab] = React.useState<string>("all");
 
   React.useEffect(() => {
     fetchReviews();
@@ -43,27 +38,14 @@ const Reviews = () => {
 
     if (error) {
       toast({
-        title: currentLanguage === 'fr' ? "Erreur" : "Error",
-        description: currentLanguage === 'fr' 
-          ? "Impossible de charger les avis" 
-          : "Unable to load reviews",
+        title: "Erreur",
+        description: "Impossible de charger les avis",
         variant: "destructive",
       });
       return;
     }
 
     setReviews(data || []);
-  };
-
-  const getFilteredReviews = () => {
-    if (activeTab === "all") {
-      return reviews;
-    } else if (activeTab === "professionals") {
-      return reviews.filter(review => review.profession && review.profession !== "");
-    } else if (activeTab === "users") {
-      return reviews.filter(review => !review.profession || review.profession === "");
-    }
-    return reviews;
   };
 
   return (
@@ -75,22 +57,15 @@ const Reviews = () => {
           className="mb-4 flex items-center gap-2"
         >
           <ArrowLeft className="w-4 h-4" />
-          {currentLanguage === 'fr' ? "Retour à l'accueil" : "Back to home"}
+          Retour à l'accueil
         </Button>
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold">
-            {currentLanguage === 'fr' ? "Avis des utilisateurs" : "User reviews"}
-          </h1>
+          <h1 className="text-3xl font-bold">Avis des utilisateurs</h1>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button>{currentLanguage === 'fr' ? "Donner mon avis" : "Give my review"}</Button>
+              <Button>Donner mon avis</Button>
             </DialogTrigger>
             <DialogContent>
-              <DialogHeader>
-                <DialogTitle>
-                  {currentLanguage === 'fr' ? "Partagez votre expérience" : "Share your experience"}
-                </DialogTitle>
-              </DialogHeader>
               <ReviewForm
                 onSuccess={fetchReviews}
                 onSubmitting={setIsSubmitting}
@@ -101,30 +76,7 @@ const Reviews = () => {
         </div>
       </div>
 
-      <Tabs defaultValue="all" className="w-full mb-6" onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="all">
-            {currentLanguage === 'fr' ? "Tous les avis" : "All reviews"}
-          </TabsTrigger>
-          <TabsTrigger value="professionals" className="flex items-center gap-2">
-            <Stethoscope className="w-4 h-4" />
-            {currentLanguage === 'fr' ? "Professionnels de santé" : "Healthcare professionals"}
-          </TabsTrigger>
-          <TabsTrigger value="users" className="flex items-center gap-2">
-            <Users className="w-4 h-4" />
-            {currentLanguage === 'fr' ? "Utilisateurs" : "Users"}
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value="all">
-          <ReviewList reviews={getFilteredReviews()} />
-        </TabsContent>
-        <TabsContent value="professionals">
-          <ReviewList reviews={getFilteredReviews()} />
-        </TabsContent>
-        <TabsContent value="users">
-          <ReviewList reviews={getFilteredReviews()} />
-        </TabsContent>
-      </Tabs>
+      <ReviewList reviews={reviews} />
     </div>
   );
 };
