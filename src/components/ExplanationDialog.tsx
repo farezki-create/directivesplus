@@ -8,9 +8,19 @@ interface ExplanationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onContinue: () => void;
+  title: string;
+  description: string;
+  content: string;
 }
 
-export function ExplanationDialog({ open, onOpenChange, onContinue }: ExplanationDialogProps) {
+export function ExplanationDialog({ 
+  open, 
+  onOpenChange, 
+  onContinue,
+  title,
+  description,
+  content
+}: ExplanationDialogProps) {
   const { t, currentLanguage } = useLanguage();
   
   useEffect(() => {
@@ -21,18 +31,13 @@ export function ExplanationDialog({ open, onOpenChange, onContinue }: Explanatio
   
   const handleContinueClick = () => {
     console.log("[ExplanationDialog] Continue button clicked");
-    // First close the dialog
     onOpenChange(false);
     
     // Wait for the dialog to close before continuing to the next step
     setTimeout(() => {
-      if (typeof onContinue === 'function') {
-        console.log("[ExplanationDialog] Calling onContinue function");
-        onContinue();
-      } else {
-        console.error("[ExplanationDialog] onContinue is not a function");
-      }
-    }, 300);
+      console.log("[ExplanationDialog] Calling onContinue function after delay");
+      onContinue();
+    }, 500);
   };
   
   return (
@@ -40,29 +45,17 @@ export function ExplanationDialog({ open, onOpenChange, onContinue }: Explanatio
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-semibold text-center">
-            {t('generalOpinion')}
+            {title}
           </DialogTitle>
           <DialogDescription className="text-center pt-2">
-            {t('generalOpinionDesc')}
+            {description}
           </DialogDescription>
         </DialogHeader>
         
         <div className="py-6">
-          <p className="text-lg mb-4">
-            {currentLanguage === 'fr' ? (
-              "Cette section vous permet d'exprimer vos souhaits généraux concernant vos soins médicaux. Pour chaque question, vous pouvez répondre par OUI ou NON."
-            ) : (
-              "This section allows you to express your general wishes regarding your medical care. For each question, you can answer YES or NO."
-            )}
-          </p>
-          
-          <p className="mb-4">
-            {currentLanguage === 'fr' ? (
-              "Vos réponses aideront les médecins et vos proches à comprendre vos souhaits et à prendre des décisions conformes à vos valeurs si vous ne pouvez plus vous exprimer."
-            ) : (
-              "Your answers will help doctors and your loved ones understand your wishes and make decisions in accordance with your values if you can no longer express yourself."
-            )}
-          </p>
+          <div className="prose prose-sm max-w-none">
+            <p className="text-lg mb-4">{content}</p>
+          </div>
         </div>
 
         <DialogFooter>

@@ -2,7 +2,6 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/hooks/language/useLanguage";
-import { useEffect } from "react";
 
 interface MainButtonsProps {
   onGeneralOpinionClick: () => void;
@@ -20,30 +19,10 @@ export function MainButtons({
   const navigate = useNavigate();
   const { t } = useLanguage();
 
-  useEffect(() => {
-    console.log("[MainButtons] Component mounted with handlers ready");
-  }, []);
-
-  const handleGeneralOpinionClick = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent any default form submission
-    console.log("[MainButtons] General Opinion button clicked");
-    
-    if (typeof onGeneralOpinionClick === 'function') {
-      console.log("[MainButtons] Calling onGeneralOpinionClick function");
-      onGeneralOpinionClick();
-    } else {
-      console.error("[MainButtons] onGeneralOpinionClick is not a function");
-    }
-  };
-
-  const navigateToTrustedPersons = () => {
-    navigate("/dashboard?tab=persons");
-  };
-
   return (
     <div className="grid gap-4 md:grid-cols-2 max-w-2xl mx-auto mb-8">
       <Button 
-        onClick={handleGeneralOpinionClick} 
+        onClick={onGeneralOpinionClick} 
         size="lg"
         type="button"
       >
@@ -71,7 +50,7 @@ export function MainButtons({
         {t('preferences')}
       </Button>
       <Button 
-        onClick={navigateToTrustedPersons} 
+        onClick={() => navigate("/dashboard?tab=persons")} 
         size="lg"
         type="button"
       >
