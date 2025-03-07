@@ -21,58 +21,46 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
   useEffect(() => {
     async function fetchQuestions() {
       try {
-        console.log(`[GeneralOpinion] Loading custom general opinion questions...`);
+        console.log(`[GeneralOpinion] Loading general opinion questions from database in ${currentLanguage}...`);
         
-        // These are the custom questions based on user requirements
-        const customQuestions = [
-          {
-            id: 'q1',
-            question: "Je voudrais m'accrocher jusqu'au bout tant qu'il y'a de la vie il y'a de l'espoir",
-            display_order: 1
-          },
-          {
-            id: 'q2',
-            question: "Pour l'instant je souhaite ne pas me déterminer sur les points évoqués je ne peux pas me projeter",
-            display_order: 2
-          },
-          {
-            id: 'q3',
-            question: "Ma priorité est le soulagement efficace de mes souffrances même si cela devrait abréger ma vie",
-            display_order: 3
-          },
-          {
-            id: 'q4',
-            question: "Je laisse l'équipe médicale décider des soins et traitements appropriés en évitant toute obstination déraisonnable et en se conformant à la loi en vigueur",
-            display_order: 4
-          },
-          {
-            id: 'q5',
-            question: "Je voudrais qu'on me laisse mourir c'est mon souhait le plus cher mourir vite ne me laissez pas souffrir",
-            display_order: 5
-          },
-          {
-            id: 'q6',
-            question: "Je voudrais mourir à la maison",
-            display_order: 6
-          },
-          {
-            id: 'q7',
-            question: "Je souhaite pouvoir faire un don d'organes après ma mort si cela est possible",
-            display_order: 7
-          },
-          {
-            id: 'q8',
-            question: "Il est important pour moi d'avoir mes proches et mes amis à mes côtés",
-            display_order: 8
-          },
-          {
-            id: 'q9',
-            question: "La foi la religion ou la spiritualité sont importantes pour moi",
-            display_order: 9
-          }
-        ];
+        let data, error;
         
-        setQuestions(customQuestions);
+        if (currentLanguage === 'en') {
+          // Fetch English questions
+          const result = await supabase
+            .from('questions_en')
+            .select('*')
+            .eq('category', 'general_opinion')
+            .order('display_order', { ascending: true });
+          
+          data = result.data;
+          error = result.error;
+        } else {
+          // Fetch French questions
+          const result = await supabase
+            .from('questions')
+            .select('*')
+            .eq('category', 'general_opinion')
+            .order('display_order', { ascending: true });
+          
+          data = result.data;
+          error = result.error;
+        }
+        
+        if (error) {
+          console.error('[GeneralOpinion] Error fetching questions:', error);
+          toast({
+            title: currentLanguage === 'fr' ? "Erreur" : "Error",
+            description: currentLanguage === 'fr' 
+              ? "Impossible de charger les questions. Veuillez réessayer." 
+              : "Unable to load questions. Please try again.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        console.log('[GeneralOpinion] Questions loaded:', data?.length, 'questions');
+        setQuestions(data || []);
         setLoading(false);
       } catch (error) {
         console.error('[GeneralOpinion] Unexpected error:', error);
@@ -117,11 +105,14 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
       // Prepare all responses for insertion
       const responses = Object.entries(answers).flatMap(([questionId, values]) => {
         const question = questions.find(q => q.id === questionId);
+        const questionText = currentLanguage === 'en' 
+          ? question?.question 
+          : question?.Question;
         
         return values.map(value => ({
           user_id: userId,
           question_id: questionId,
-          question_text: question?.question,
+          question_text: questionText,
           response: value
         }));
       });
@@ -189,7 +180,7 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
           key={question.id}
           question={question}
           value={answers[question.id] || []}
-          onValueChange={(value) => handleAnswerChange(question.id, value)}
+          onValueChange={(value, checked) => handleAnswerChange(question.id, value)}
           options={getQuestionOptions()}
         />
       ))}

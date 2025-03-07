@@ -1,5 +1,7 @@
+
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { useLanguage } from "@/hooks/language/useLanguage";
 
 interface QuestionCardProps {
   question: any;
@@ -19,8 +21,14 @@ export function QuestionCard({
   options,
   multiple = false 
 }: QuestionCardProps) {
+  const { currentLanguage } = useLanguage();
   const displayOrder = question.order || question.display_order;
   const orderDisplay = displayOrder ? `${displayOrder}` : '';
+  
+  // Handle different field names between French and English tables
+  const questionText = currentLanguage === 'en' 
+    ? question.question 
+    : question.Question;
 
   return (
     <div className="p-6 bg-card rounded-lg border shadow-sm">
@@ -30,7 +38,7 @@ export function QuestionCard({
         </div>
         <div>
           <p className="text-lg font-medium mb-4">
-            {question.Question || question.question}
+            {questionText}
           </p>
           <div className="flex flex-col space-y-3">
             {options.map((option) => (
