@@ -21,6 +21,7 @@ export function ExplanationDialog({ open, onOpenChange, onContinue }: Explanatio
   
   const handleContinueClick = () => {
     console.log("[ExplanationDialog] Continue button clicked");
+    // Assurer que la fonction onContinue soit appelée
     onContinue();
   };
   

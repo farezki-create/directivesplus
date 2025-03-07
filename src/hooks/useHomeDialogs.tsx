@@ -1,3 +1,4 @@
+
 import { useDialogState } from "@/hooks/useDialogState";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
@@ -64,6 +65,7 @@ export function useHomeDialogs(): UseHomeDialogsReturn {
       console.log("[useHomeDialogs] Moving from explanation to questions dialog");
       dialogState.setExplanationOpen(false);
       
+      // Utilisation de setTimeout pour s'assurer que le dialogue d'explication est bien fermé avant d'ouvrir le questionnaire
       setTimeout(() => {
         console.log("[useHomeDialogs] Opening questions dialog after delay");
         dialogState.setQuestionsOpen(true);

@@ -26,7 +26,12 @@ export function MainButtons({
 
   const handleGeneralOpinionClick = () => {
     console.log("[MainButtons] General Opinion button clicked");
-    onGeneralOpinionClick();
+    // S'assurer que le gestionnaire d'événements est correctement appelé
+    if (typeof onGeneralOpinionClick === 'function') {
+      onGeneralOpinionClick();
+    } else {
+      console.error("[MainButtons] onGeneralOpinionClick is not a function");
+    }
   };
 
   const navigateToTrustedPersons = () => {
