@@ -1,11 +1,11 @@
 
 import React from "react";
 import { QuestionCard } from "../questions/QuestionCard";
-import { LifeSupportQuestion } from "@/hooks/life-support/useLifeSupportQuestions";
 import { useQuestionOptions } from "./useQuestionOptions";
+import { QuestionnaireQuestion } from "@/hooks/questionnaire/useQuestionnaireQuestions";
 
 interface LifeSupportQuestionsListProps {
-  questions: LifeSupportQuestion[];
+  questions: QuestionnaireQuestion[];
   answers: Record<string, string[]>;
   onValueChange: (questionId: string, value: string, checked: boolean) => void;
 }

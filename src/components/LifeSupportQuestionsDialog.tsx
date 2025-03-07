@@ -1,9 +1,9 @@
 
 import { QuestionsDialogLayout } from "./questions/QuestionsDialogLayout";
 import { useLanguage } from "@/hooks/language/useLanguage";
-import { useLifeSupportQuestions } from "@/hooks/life-support/useLifeSupportQuestions";
-import { useLifeSupportAnswers } from "@/hooks/life-support/useLifeSupportAnswers";
 import { LifeSupportQuestionsList } from "./life-support/LifeSupportQuestionsList";
+import { useQuestionnaireQuestions } from "@/hooks/questionnaire/useQuestionnaireQuestions";
+import { useQuestionnaireAnswers } from "@/hooks/questionnaire/useQuestionnaireAnswers";
 
 interface LifeSupportQuestionsDialogProps {
   open: boolean;
@@ -15,8 +15,9 @@ export function LifeSupportQuestionsDialog({
   onOpenChange 
 }: LifeSupportQuestionsDialogProps) {
   const { t } = useLanguage();
-  const { questions, loading } = useLifeSupportQuestions(open);
-  const { answers, handleAnswerChange, handleSubmit } = useLifeSupportAnswers(
+  const { questions, loading } = useQuestionnaireQuestions('life_support', open);
+  const { answers, handleAnswerChange, handleSubmit } = useQuestionnaireAnswers(
+    'life_support',
     questions, 
     () => onOpenChange(false)
   );
