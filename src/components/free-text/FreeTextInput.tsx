@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Mic, MicOff, Loader2, FileText, PenTool } from "lucide-react";
+import { Mic, MicOff, Loader2, FileText, PenTool, Cloud, Database } from "lucide-react";
 import { PDFGenerator } from "@/components/PDFGenerator";
 import { SignatureDialog } from "@/components/signature/SignatureDialog";
+import { saveToHDSCloud } from "@/components/examples/utils/synthesisUtils";
 
 interface FreeTextInputProps {
   userId: string;
@@ -19,6 +20,8 @@ export const FreeTextInput = ({ userId }: FreeTextInputProps) => {
   const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
   const [showPdfGenerator, setShowPdfGenerator] = useState(false);
   const [showSignatureDialog, setShowSignatureDialog] = useState(false);
+  const [isSavingToHDS, setIsSavingToHDS] = useState(false);
+  const [hdsReferenceId, setHdsReferenceId] = useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -167,6 +170,38 @@ export const FreeTextInput = ({ userId }: FreeTextInputProps) => {
     }
   };
 
+  const saveToHDS = async () => {
+    try {
+      setIsSavingToHDS(true);
+      console.log("[FreeTextInput] Saving free text to HDS cloud");
+      
+      // Sauvegarder d'abord localement sur Supabase
+      await saveFreeText();
+      
+      // Puis envoyer au service HDS
+      const result = await saveToHDSCloud(freeText, userId);
+      
+      if (result.success) {
+        setHdsReferenceId(result.details.referenceId);
+        toast({
+          title: "Succès",
+          description: "Votre texte a été sauvegardé dans un service cloud HDS conforme.",
+        });
+      } else {
+        throw new Error(result.error || "Erreur lors de la sauvegarde HDS");
+      }
+    } catch (error) {
+      console.error("[FreeTextInput] Error saving to HDS cloud:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de sauvegarder vos données dans le cloud HDS.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingToHDS(false);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Texte libre</h3>
@@ -191,12 +226,45 @@ export const FreeTextInput = ({ userId }: FreeTextInputProps) => {
           )}
         </Button>
       </div>
-      <div className="flex gap-2 items-center">
-        <Button onClick={saveFreeText}>Enregistrer</Button>
+      <div className="flex gap-2 items-center flex-wrap">
+        <Button 
+          onClick={saveFreeText} 
+          className="flex items-center gap-2"
+        >
+          <Database className="h-4 w-4" />
+          Enregistrer sur Supabase
+        </Button>
+        
+        <Button 
+          onClick={saveToHDS} 
+          variant="secondary" 
+          className="flex items-center gap-2"
+          disabled={isSavingToHDS || !freeText}
+        >
+          {isSavingToHDS ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Cloud className="h-4 w-4" />
+          )}
+          Sauvegarder au format HDS
+        </Button>
+        
         {isListening && (
           <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
         )}
       </div>
+
+      {hdsReferenceId && (
+        <div className="p-4 bg-green-50 text-green-800 rounded-md border border-green-200">
+          <p className="text-sm font-medium">
+            Document sauvegardé dans un service cloud conforme HDS
+          </p>
+          <p className="text-xs mt-1">
+            Référence: {hdsReferenceId}
+          </p>
+        </div>
+      )}
+      
       {showPdfGenerator && (
         <div className="mt-4 space-y-4">
           <Button 
