@@ -1,4 +1,5 @@
 
+import { useEffect } from "react";
 import { QuestionCard } from "./questions/QuestionCard";
 import { QuestionsDialogLayout } from "./questions/QuestionsDialogLayout";
 import { useLanguage } from "@/hooks/language/useLanguage";
@@ -12,7 +13,12 @@ interface QuestionsDialogProps {
 
 export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
   const { t, currentLanguage } = useLanguage();
-  console.log(`[QuestionsDialog] Opening dialog with language: ${currentLanguage}`);
+  
+  useEffect(() => {
+    if (open) {
+      console.log(`[QuestionsDialog] Dialog opened with language: ${currentLanguage}`);
+    }
+  }, [open, currentLanguage]);
   
   const { questions, loading } = useQuestionnaireQuestions('general', open);
   const { answers, handleAnswerChange, handleSubmit } = useQuestionnaireAnswers(
@@ -35,7 +41,11 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
     }
   };
 
-  console.log(`[QuestionsDialog] Questions loaded: ${questions.length}`);
+  useEffect(() => {
+    if (questions.length > 0) {
+      console.log(`[QuestionsDialog] ${questions.length} questions loaded`);
+    }
+  }, [questions]);
 
   return (
     <QuestionsDialogLayout

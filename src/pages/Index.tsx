@@ -1,5 +1,5 @@
 
-import { FC, useState } from "react";
+import { FC, useState, useEffect } from "react";
 import { Header } from "@/components/Header";
 import { MainButtons } from "@/components/home/MainButtons";
 import { FeatureHighlights } from "@/components/home/FeatureHighlights";
@@ -15,8 +15,13 @@ const Index: FC = () => {
   const { handlers } = useHomeDialogs();
   const { toast } = useToast();
 
+  useEffect(() => {
+    console.log("[Index] Component mounted, setting up main page");
+  }, []);
+
   const handleStartClick = () => {
     try {
+      console.log("[Index] Start button clicked");
       setShowSections(true);
     } catch (error) {
       console.error("Error showing sections:", error);
@@ -54,6 +59,11 @@ const Index: FC = () => {
     }
   };
 
+  const handleGeneralOpinionClick = () => {
+    console.log("[Index] General Opinion button clicked");
+    handlers.handleGeneralOpinionClick();
+  };
+
   if (showMoreInfo) {
     return <AdditionalInfo onBackToHome={handleBackToHome} />;
   }
@@ -70,7 +80,7 @@ const Index: FC = () => {
           />
         ) : (
           <MainButtons 
-            onGeneralOpinionClick={handlers.handleGeneralOpinionClick}
+            onGeneralOpinionClick={handleGeneralOpinionClick}
             onLifeSupportClick={handlers.handleLifeSupportClick}
             onAdvancedIllnessClick={handlers.handleAdvancedIllnessClick}
             onPreferencesClick={handlers.handlePreferencesClick}

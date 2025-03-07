@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useCallback } from "react";
 
 export function useDialogState() {
   const [explanationOpen, setExplanationOpen] = useState(false);
@@ -10,11 +11,22 @@ export function useDialogState() {
   const [preferencesExplanationOpen, setPreferencesExplanationOpen] = useState(false);
   const [preferencesQuestionsOpen, setPreferencesQuestionsOpen] = useState(false);
 
+  // Create wrapped setters with console logging for debugging
+  const setExplanationOpenWithLog = useCallback((value: boolean) => {
+    console.log(`[useDialogState] Setting explanationOpen to: ${value}`);
+    setExplanationOpen(value);
+  }, []);
+
+  const setQuestionsOpenWithLog = useCallback((value: boolean) => {
+    console.log(`[useDialogState] Setting questionsOpen to: ${value}`);
+    setQuestionsOpen(value);
+  }, []);
+
   return {
     explanationOpen,
-    setExplanationOpen,
+    setExplanationOpen: setExplanationOpenWithLog,
     questionsOpen,
-    setQuestionsOpen,
+    setQuestionsOpen: setQuestionsOpenWithLog,
     lifeSupportExplanationOpen,
     setLifeSupportExplanationOpen,
     lifeSupportQuestionsOpen,

@@ -23,7 +23,17 @@ export function useHomeDialogs(): UseHomeDialogsReturn {
   
   const handleGeneralOpinionClick = () => {
     try {
-      console.log("[HomeDialogs] Opening general opinion explanation dialog");
+      console.log("[useHomeDialogs] Opening general opinion explanation dialog");
+      // Close any other dialogs that might be open
+      dialogState.setQuestionsOpen(false);
+      dialogState.setLifeSupportExplanationOpen(false);
+      dialogState.setLifeSupportQuestionsOpen(false);
+      dialogState.setAdvancedIllnessExplanationOpen(false);
+      dialogState.setAdvancedIllnessQuestionsOpen(false);
+      dialogState.setPreferencesExplanationOpen(false);
+      dialogState.setPreferencesQuestionsOpen(false);
+      
+      // Open the explanation dialog
       dialogState.setExplanationOpen(true);
     } catch (error) {
       console.error("Error opening general opinion dialog:", error);
@@ -37,9 +47,12 @@ export function useHomeDialogs(): UseHomeDialogsReturn {
 
   const handleExplanationContinue = () => {
     try {
-      console.log("[HomeDialogs] Moving from explanation to questions dialog");
+      console.log("[useHomeDialogs] Moving from explanation to questions dialog");
       dialogState.setExplanationOpen(false);
-      dialogState.setQuestionsOpen(true);
+      // Ensure we set questions open to true
+      setTimeout(() => {
+        dialogState.setQuestionsOpen(true);
+      }, 100);
     } catch (error) {
       console.error("Error continuing from explanation:", error);
       toast({

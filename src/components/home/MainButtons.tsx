@@ -19,13 +19,18 @@ export function MainButtons({
   const navigate = useNavigate();
   const { t } = useLanguage();
 
+  const handleGeneralOpinionClick = () => {
+    console.log("[MainButtons] General Opinion button clicked");
+    onGeneralOpinionClick();
+  };
+
   const navigateToTrustedPersons = () => {
     navigate("/dashboard?tab=persons");
   };
 
   return (
     <div className="grid gap-4 md:grid-cols-2 max-w-2xl mx-auto mb-8">
-      <Button onClick={onGeneralOpinionClick} size="lg">
+      <Button onClick={handleGeneralOpinionClick} size="lg">
         {t('generalOpinion')}
       </Button>
       <Button onClick={onLifeSupportClick} size="lg">

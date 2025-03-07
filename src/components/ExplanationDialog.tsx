@@ -2,6 +2,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/hooks/language/useLanguage";
+import { useEffect } from "react";
 
 interface ExplanationDialogProps {
   open: boolean;
@@ -11,6 +12,12 @@ interface ExplanationDialogProps {
 
 export function ExplanationDialog({ open, onOpenChange, onContinue }: ExplanationDialogProps) {
   const { t, currentLanguage } = useLanguage();
+  
+  useEffect(() => {
+    if (open) {
+      console.log("[ExplanationDialog] Dialog opened");
+    }
+  }, [open]);
   
   const handleContinueClick = () => {
     console.log("[ExplanationDialog] Continue button clicked");
