@@ -6,10 +6,34 @@ import { AdvancedIllnessQuestionsDialog } from "@/components/AdvancedIllnessQues
 import { PreferencesQuestionsDialog } from "@/components/PreferencesQuestionsDialog";
 import { useHomeDialogs } from "@/hooks/useHomeDialogs";
 import { useLanguage } from "@/hooks/language/useLanguage";
+import { useEffect } from "react";
 
 export function HomeDialogs() {
   const { dialogState, handlers } = useHomeDialogs();
   const { t, currentLanguage } = useLanguage();
+  
+  // Add an effect to log dialog state changes
+  useEffect(() => {
+    console.log("[HomeDialogs] Dialog states:", {
+      explanation: dialogState.explanationOpen,
+      questions: dialogState.questionsOpen,
+      lifeSupportExplanation: dialogState.lifeSupportExplanationOpen,
+      lifeSupportQuestions: dialogState.lifeSupportQuestionsOpen,
+      advancedIllnessExplanation: dialogState.advancedIllnessExplanationOpen,
+      advancedIllnessQuestions: dialogState.advancedIllnessQuestionsOpen,
+      preferencesExplanation: dialogState.preferencesExplanationOpen,
+      preferencesQuestions: dialogState.preferencesQuestionsOpen
+    });
+  }, [
+    dialogState.explanationOpen,
+    dialogState.questionsOpen,
+    dialogState.lifeSupportExplanationOpen,
+    dialogState.lifeSupportQuestionsOpen,
+    dialogState.advancedIllnessExplanationOpen,
+    dialogState.advancedIllnessQuestionsOpen,
+    dialogState.preferencesExplanationOpen,
+    dialogState.preferencesQuestionsOpen
+  ]);
   
   // Content for the general opinion explanation
   const generalOpinionContent = currentLanguage === 'fr' 

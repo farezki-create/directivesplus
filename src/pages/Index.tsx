@@ -59,11 +59,6 @@ const Index: FC = () => {
     }
   };
 
-  const handleGeneralOpinionClick = () => {
-    console.log("[Index] General Opinion button clicked");
-    handlers.handleGeneralOpinionClick();
-  };
-
   if (showMoreInfo) {
     return <AdditionalInfo onBackToHome={handleBackToHome} />;
   }
@@ -80,7 +75,7 @@ const Index: FC = () => {
           />
         ) : (
           <MainButtons 
-            onGeneralOpinionClick={handleGeneralOpinionClick}
+            onGeneralOpinionClick={handlers.handleGeneralOpinionClick}
             onLifeSupportClick={handlers.handleLifeSupportClick}
             onAdvancedIllnessClick={handlers.handleAdvancedIllnessClick}
             onPreferencesClick={handlers.handlePreferencesClick}

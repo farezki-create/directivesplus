@@ -19,13 +19,12 @@ export const createHandleButtonClick = (
 ) => {
   return () => {
     console.log(`[useDialogUtils] ${logPrefix} button clicked`);
+    // First close all dialogs
     closeAllDialogs(dialogState);
     
-    // Use setTimeout to ensure state updates have propagated
-    setTimeout(() => {
-      console.log(`[useDialogUtils] Opening ${logPrefix.toLowerCase()} explanation dialog`);
-      setExplanationDialogOpen(true);
-    }, 100);
+    // Then immediately open the new dialog - removed timeout which might cause issues
+    console.log(`[useDialogUtils] Opening ${logPrefix.toLowerCase()} explanation dialog`);
+    setExplanationDialogOpen(true);
   };
 };
 
@@ -37,9 +36,8 @@ export const createHandleExplanationContinue = (
   return () => {
     console.log(`[useDialogUtils] Continuing from ${logPrefix.toLowerCase()} explanation to questions`);
     
-    setTimeout(() => {
-      console.log(`[useDialogUtils] Opening ${logPrefix.toLowerCase()} questions dialog`);
-      setQuestionsDialogOpen(true);
-    }, 600);
+    // Open the questions dialog immediately - removed timeout
+    console.log(`[useDialogUtils] Opening ${logPrefix.toLowerCase()} questions dialog`);
+    setQuestionsDialogOpen(true);
   };
 };
