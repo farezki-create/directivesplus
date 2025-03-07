@@ -5,6 +5,8 @@ import { useQuestionOptions } from "@/hooks/questions/useQuestionOptions";
 import { QuestionCard } from "./questions/QuestionCard";
 import { QuestionsDialogLayout } from "./questions/QuestionsDialogLayout";
 import { useLanguage } from "@/hooks/language/useLanguage";
+import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface QuestionsDialogProps {
   open: boolean;
@@ -13,7 +15,7 @@ interface QuestionsDialogProps {
 
 export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
   const { t } = useLanguage();
-  const { questions, loading } = useGeneralQuestions(open);
+  const { questions, loading, error } = useGeneralQuestions(open);
   const { answers, handleAnswerChange, handleSubmit } = useGeneralAnswers(questions);
   const { getQuestionOptions } = useQuestionOptions();
 
@@ -27,15 +29,23 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
       loading={loading}
       questionsLength={questions.length}
     >
-      {questions.map((question) => (
-        <QuestionCard
-          key={question.id}
-          question={question}
-          value={answers[question.id] || []}
-          onValueChange={(value, checked) => handleAnswerChange(question.id, value, checked as boolean)}
-          options={getQuestionOptions()}
-        />
-      ))}
+      {error ? (
+        <Alert variant="destructive" className="mt-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Erreur</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      ) : (
+        questions.map((question) => (
+          <QuestionCard
+            key={question.id}
+            question={question}
+            value={answers[question.id] || []}
+            onValueChange={(value, checked) => handleAnswerChange(question.id, value, checked as boolean)}
+            options={getQuestionOptions()}
+          />
+        ))
+      )}
     </QuestionsDialogLayout>
   );
 }

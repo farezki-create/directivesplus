@@ -1,9 +1,12 @@
+
 import { useState, useEffect } from "react";
 import { QuestionCard } from "./questions/QuestionCard";
 import { QuestionsDialogLayout } from "./questions/QuestionsDialogLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/language/useLanguage";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 interface AdvancedIllnessQuestionsDialogProps {
   open: boolean;
@@ -16,6 +19,7 @@ export function AdvancedIllnessQuestionsDialog({
 }: AdvancedIllnessQuestionsDialogProps) {
   const [questions, setQuestions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [answers, setAnswers] = useState<Record<string, string[]>>({});
   const { toast } = useToast();
   const { t, currentLanguage } = useLanguage();
@@ -24,6 +28,7 @@ export function AdvancedIllnessQuestionsDialog({
     async function fetchQuestions() {
       try {
         console.log(`[AdvancedIllness] Fetching questions in ${currentLanguage}...`);
+        setError(null);
         
         if (currentLanguage === 'en') {
           // Fetch English questions
@@ -34,6 +39,7 @@ export function AdvancedIllnessQuestionsDialog({
           
           if (error) {
             console.error('[AdvancedIllness] Error fetching questions:', error);
+            setError(error.message);
             toast({
               title: "Error",
               description: "Unable to load questions. Please try again.",
@@ -43,6 +49,12 @@ export function AdvancedIllnessQuestionsDialog({
           }
           
           console.log('[AdvancedIllness] Questions loaded:', data?.length, 'questions');
+          if (data?.length === 0) {
+            console.log('[AdvancedIllness] No questions found in database');
+            setError(currentLanguage === 'fr' 
+              ? "Aucune question n'a été trouvée dans la base de données." 
+              : "No questions were found in the database.");
+          }
           setQuestions(data || []);
         } else {
           // Fetch French questions
@@ -53,6 +65,7 @@ export function AdvancedIllnessQuestionsDialog({
           
           if (error) {
             console.error('[AdvancedIllness] Error fetching questions:', error);
+            setError(error.message);
             toast({
               title: "Erreur",
               description: "Impossible de charger les questions. Veuillez réessayer.",
@@ -62,10 +75,17 @@ export function AdvancedIllnessQuestionsDialog({
           }
           
           console.log('[AdvancedIllness] Questions loaded:', data?.length, 'questions');
+          if (data?.length === 0) {
+            console.log('[AdvancedIllness] No questions found in database');
+            setError(currentLanguage === 'fr' 
+              ? "Aucune question n'a été trouvée dans la base de données." 
+              : "No questions were found in the database.");
+          }
           setQuestions(data || []);
         }
       } catch (error) {
         console.error('[AdvancedIllness] Unexpected error:', error);
+        setError((error as Error).message);
         toast({
           title: "Erreur",
           description: "Une erreur inattendue s'est produite.",
@@ -197,16 +217,24 @@ export function AdvancedIllnessQuestionsDialog({
       loading={loading}
       questionsLength={questions.length}
     >
-      {questions.map((question) => (
-        <QuestionCard
-          key={question.id}
-          question={question}
-          value={answers[question.id] || []}
-          onValueChange={(value, checked) => handleAnswerChange(question.id, value, checked)}
-          options={getQuestionOptions(question)}
-          multiple={true}
-        />
-      ))}
+      {error ? (
+        <Alert variant="destructive" className="mt-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Erreur</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      ) : (
+        questions.map((question) => (
+          <QuestionCard
+            key={question.id}
+            question={question}
+            value={answers[question.id] || []}
+            onValueChange={(value, checked) => handleAnswerChange(question.id, value, checked)}
+            options={getQuestionOptions(question)}
+            multiple={true}
+          />
+        ))
+      )}
     </QuestionsDialogLayout>
   );
 }
