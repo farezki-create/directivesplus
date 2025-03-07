@@ -20,6 +20,9 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
 
   useEffect(() => {
     async function fetchQuestions() {
+      if (!open) return; // Only fetch when dialog is open
+      
+      setLoading(true);
       try {
         console.log(`[GeneralOpinion] Loading general opinion questions from database in ${currentLanguage}...`);
         
@@ -61,21 +64,21 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
         
         console.log('[GeneralOpinion] Questions loaded:', data?.length, 'questions');
         setQuestions(data || []);
-        setLoading(false);
       } catch (error) {
         console.error('[GeneralOpinion] Unexpected error:', error);
         toast({
-          title: "Erreur",
-          description: "Une erreur inattendue s'est produite.",
+          title: currentLanguage === 'fr' ? "Erreur" : "Error",
+          description: currentLanguage === 'fr'
+            ? "Une erreur inattendue s'est produite."
+            : "An unexpected error occurred.",
           variant: "destructive",
         });
+      } finally {
         setLoading(false);
       }
     }
 
-    if (open) {
-      fetchQuestions();
-    }
+    fetchQuestions();
   }, [open, toast, currentLanguage]);
 
   const handleAnswerChange = (questionId: string, value: string) => {
@@ -95,8 +98,10 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
       if (!userId) {
         console.error('[GeneralOpinion] No user ID found');
         toast({
-          title: "Erreur",
-          description: "Vous devez être connecté pour enregistrer vos réponses.",
+          title: currentLanguage === 'fr' ? "Erreur" : "Error",
+          description: currentLanguage === 'fr'
+            ? "Vous devez être connecté pour enregistrer vos réponses."
+            : "You must be logged in to save your answers.",
           variant: "destructive",
         });
         return;
@@ -128,8 +133,10 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
       if (error) {
         console.error('[GeneralOpinion] Error saving responses:', error);
         toast({
-          title: "Erreur",
-          description: "Impossible d'enregistrer vos réponses. Veuillez réessayer.",
+          title: currentLanguage === 'fr' ? "Erreur" : "Error",
+          description: currentLanguage === 'fr'
+            ? "Impossible d'enregistrer vos réponses. Veuillez réessayer."
+            : "Unable to save your answers. Please try again.",
           variant: "destructive",
         });
         return;
@@ -137,15 +144,19 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
 
       console.log('[GeneralOpinion] Responses saved successfully');
       toast({
-        title: "Succès",
-        description: "Vos réponses ont été enregistrées.",
+        title: currentLanguage === 'fr' ? "Succès" : "Success",
+        description: currentLanguage === 'fr'
+          ? "Vos réponses ont été enregistrées."
+          : "Your answers have been saved.",
       });
       onOpenChange(false);
     } catch (error) {
       console.error('[GeneralOpinion] Unexpected error during submission:', error);
       toast({
-        title: "Erreur",
-        description: "Une erreur inattendue s'est produite lors de l'enregistrement.",
+        title: currentLanguage === 'fr' ? "Erreur" : "Error",
+        description: currentLanguage === 'fr'
+          ? "Une erreur inattendue s'est produite lors de l'enregistrement."
+          : "An unexpected error occurred while saving.",
         variant: "destructive",
       });
     }
@@ -180,7 +191,7 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
           key={question.id}
           question={question}
           value={answers[question.id] || []}
-          onValueChange={(value, checked) => handleAnswerChange(question.id, value)}
+          onValueChange={(value) => handleAnswerChange(question.id, value)}
           options={getQuestionOptions()}
         />
       ))}

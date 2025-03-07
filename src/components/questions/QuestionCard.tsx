@@ -6,7 +6,7 @@ import { useLanguage } from "@/hooks/language/useLanguage";
 interface QuestionCardProps {
   question: any;
   value: string[];
-  onValueChange: (value: string, checked: boolean) => void;
+  onValueChange: (value: string, checked?: boolean) => void;
   options: Array<{
     value: string;
     label: string;
