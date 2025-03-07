@@ -1,10 +1,11 @@
+
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 
 interface QuestionCardProps {
   question: any;
   value: string[];
-  onValueChange: (value: string, checked: boolean) => void;
+  onValueChange: (value: string) => void;
   options: Array<{
     value: string;
     label: string;
@@ -19,8 +20,9 @@ export function QuestionCard({
   options,
   multiple = false 
 }: QuestionCardProps) {
-  const displayOrder = question.order || question.display_order;
+  const displayOrder = question.display_order;
   const orderDisplay = displayOrder ? `${displayOrder}` : '';
+  const questionText = question.question || '';
 
   return (
     <div className="p-6 bg-card rounded-lg border shadow-sm">
@@ -30,7 +32,7 @@ export function QuestionCard({
         </div>
         <div>
           <p className="text-lg font-medium mb-4">
-            {question.Question || question.question}
+            {questionText}
           </p>
           <div className="flex flex-col space-y-3">
             {options.map((option) => (
@@ -38,9 +40,11 @@ export function QuestionCard({
                 <Checkbox
                   id={`${question.id}-${option.value}`}
                   checked={value.includes(option.value)}
-                  onCheckedChange={(checked) => 
-                    onValueChange(option.value, checked as boolean)
-                  }
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      onValueChange(option.value);
+                    }
+                  }}
                 />
                 <Label 
                   htmlFor={`${question.id}-${option.value}`}

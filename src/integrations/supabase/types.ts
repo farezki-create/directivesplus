@@ -9,72 +9,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      advanced_illness_questions: {
-        Row: {
-          created_at: string | null
-          display_order: number | null
-          id: string
-          non: string | null
-          oui: string | null
-          "Oui si l'équipe médicale le juge utile": string | null
-          "Oui si ma personne de confiance le juge utile": string | null
-          question: string
-        }
-        Insert: {
-          created_at?: string | null
-          display_order?: number | null
-          id?: string
-          non?: string | null
-          oui?: string | null
-          "Oui si l'équipe médicale le juge utile"?: string | null
-          "Oui si ma personne de confiance le juge utile"?: string | null
-          question: string
-        }
-        Update: {
-          created_at?: string | null
-          display_order?: number | null
-          id?: string
-          non?: string | null
-          oui?: string | null
-          "Oui si l'équipe médicale le juge utile"?: string | null
-          "Oui si ma personne de confiance le juge utile"?: string | null
-          question?: string
-        }
-        Relationships: []
-      }
-      advanced_illness_questions_en: {
-        Row: {
-          created_at: string | null
-          display_order: number | null
-          id: string
-          no: string | null
-          question: string
-          yes: string | null
-          yes_medical: string | null
-          yes_trusted: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          display_order?: number | null
-          id?: string
-          no?: string | null
-          question: string
-          yes?: string | null
-          yes_medical?: string | null
-          yes_trusted?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          display_order?: number | null
-          id?: string
-          no?: string | null
-          question?: string
-          yes?: string | null
-          yes_medical?: string | null
-          yes_trusted?: string | null
-        }
-        Relationships: []
-      }
       articles: {
         Row: {
           category: string
@@ -138,84 +72,6 @@ export type Database = {
           is_active?: boolean | null
           updated_at?: string | null
           user_id?: string
-        }
-        Relationships: []
-      }
-      life_support_questions: {
-        Row: {
-          created_at: string | null
-          display_order: number | null
-          id: string
-          Indécision: string | null
-          "La non souffrance est à privilégier": string | null
-          "Non rapidement abandonner le thérapeutique": string | null
-          Oui: string | null
-          "Oui pour une durée modérée": string | null
-          "Oui seulement si l'équipe médicale le juge utile": string | null
-          question: string
-        }
-        Insert: {
-          created_at?: string | null
-          display_order?: number | null
-          id?: string
-          Indécision?: string | null
-          "La non souffrance est à privilégier"?: string | null
-          "Non rapidement abandonner le thérapeutique"?: string | null
-          Oui?: string | null
-          "Oui pour une durée modérée"?: string | null
-          "Oui seulement si l'équipe médicale le juge utile"?: string | null
-          question: string
-        }
-        Update: {
-          created_at?: string | null
-          display_order?: number | null
-          id?: string
-          Indécision?: string | null
-          "La non souffrance est à privilégier"?: string | null
-          "Non rapidement abandonner le thérapeutique"?: string | null
-          Oui?: string | null
-          "Oui pour une durée modérée"?: string | null
-          "Oui seulement si l'équipe médicale le juge utile"?: string | null
-          question?: string
-        }
-        Relationships: []
-      }
-      life_support_questions_en: {
-        Row: {
-          created_at: string | null
-          display_order: number | null
-          id: string
-          "No quickly abandon therapeutic": string | null
-          "Non-suffering is to be prioritized": string | null
-          question: string
-          Undecided: string | null
-          Yes: string | null
-          "Yes for a moderate period": string | null
-          "Yes only if the medical team deems it useful": string | null
-        }
-        Insert: {
-          created_at?: string | null
-          display_order?: number | null
-          id?: string
-          "No quickly abandon therapeutic"?: string | null
-          "Non-suffering is to be prioritized"?: string | null
-          question: string
-          Undecided?: string | null
-          Yes?: string | null
-          "Yes for a moderate period"?: string | null
-          "Yes only if the medical team deems it useful"?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          display_order?: number | null
-          id?: string
-          "No quickly abandon therapeutic"?: string | null
-          "Non-suffering is to be prioritized"?: string | null
-          question?: string
-          Undecided?: string | null
-          Yes?: string | null
-          "Yes for a moderate period"?: string | null
-          "Yes only if the medical team deems it useful"?: string | null
         }
         Relationships: []
       }
@@ -300,48 +156,6 @@ export type Database = {
         }
         Relationships: []
       }
-      preferences_questions: {
-        Row: {
-          created_at: string | null
-          display_order: number | null
-          id: string
-          question: string
-        }
-        Insert: {
-          created_at?: string | null
-          display_order?: number | null
-          id?: string
-          question: string
-        }
-        Update: {
-          created_at?: string | null
-          display_order?: number | null
-          id?: string
-          question?: string
-        }
-        Relationships: []
-      }
-      preferences_questions_en: {
-        Row: {
-          created_at: string | null
-          display_order: number | null
-          id: string
-          question: string
-        }
-        Insert: {
-          created_at?: string | null
-          display_order?: number | null
-          id?: string
-          question: string
-        }
-        Update: {
-          created_at?: string | null
-          display_order?: number | null
-          id?: string
-          question?: string
-        }
-        Relationships: []
-      }
       profiles: {
         Row: {
           address: string | null
@@ -381,145 +195,203 @@ export type Database = {
         }
         Relationships: []
       }
-      questionnaire_advanced_illness_responses: {
+      questionnaire_advanced_illness_en: {
         Row: {
           created_at: string | null
+          display_order: number | null
           id: string
-          question_id: string | null
-          question_text: string | null
-          response: string | null
-          user_id: string | null
+          question: string
         }
         Insert: {
           created_at?: string | null
+          display_order?: number | null
           id?: string
-          question_id?: string | null
-          question_text?: string | null
-          response?: string | null
-          user_id?: string | null
+          question: string
         }
         Update: {
           created_at?: string | null
+          display_order?: number | null
           id?: string
-          question_id?: string | null
-          question_text?: string | null
-          response?: string | null
-          user_id?: string | null
+          question?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "questionnaire_advanced_illness_responses_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: false
-            referencedRelation: "advanced_illness_questions"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
-      questionnaire_general_responses: {
+      questionnaire_advanced_illness_fr: {
         Row: {
           created_at: string | null
+          display_order: number | null
           id: string
-          question_id: string | null
-          question_text: string | null
-          response: string | null
-          user_id: string | null
+          question: string
         }
         Insert: {
           created_at?: string | null
+          display_order?: number | null
           id?: string
-          question_id?: string | null
-          question_text?: string | null
-          response?: string | null
-          user_id?: string | null
+          question: string
         }
         Update: {
           created_at?: string | null
+          display_order?: number | null
           id?: string
-          question_id?: string | null
-          question_text?: string | null
-          response?: string | null
-          user_id?: string | null
+          question?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "questionnaire_general_responses_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: false
-            referencedRelation: "questions"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
-      questionnaire_life_support_responses: {
+      questionnaire_general_en: {
         Row: {
           created_at: string | null
+          display_order: number | null
           id: string
-          question_id: string | null
-          question_text: string | null
-          response: string | null
-          user_id: string | null
+          question: string
         }
         Insert: {
           created_at?: string | null
+          display_order?: number | null
           id?: string
-          question_id?: string | null
-          question_text?: string | null
-          response?: string | null
-          user_id?: string | null
+          question: string
         }
         Update: {
           created_at?: string | null
+          display_order?: number | null
           id?: string
-          question_id?: string | null
-          question_text?: string | null
-          response?: string | null
-          user_id?: string | null
+          question?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "questionnaire_life_support_responses_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: false
-            referencedRelation: "life_support_questions"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
-      questionnaire_preferences_responses: {
+      questionnaire_general_fr: {
+        Row: {
+          created_at: string | null
+          display_order: number | null
+          id: string
+          question: string
+        }
+        Insert: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          question: string
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          question?: string
+        }
+        Relationships: []
+      }
+      questionnaire_life_support_en: {
+        Row: {
+          created_at: string | null
+          display_order: number | null
+          id: string
+          question: string
+        }
+        Insert: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          question: string
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          question?: string
+        }
+        Relationships: []
+      }
+      questionnaire_life_support_fr: {
+        Row: {
+          created_at: string | null
+          display_order: number | null
+          id: string
+          question: string
+        }
+        Insert: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          question: string
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          question?: string
+        }
+        Relationships: []
+      }
+      questionnaire_preferences_en: {
+        Row: {
+          created_at: string | null
+          display_order: number | null
+          id: string
+          question: string
+        }
+        Insert: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          question: string
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          question?: string
+        }
+        Relationships: []
+      }
+      questionnaire_preferences_fr: {
+        Row: {
+          created_at: string | null
+          display_order: number | null
+          id: string
+          question: string
+        }
+        Insert: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          question: string
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          question?: string
+        }
+        Relationships: []
+      }
+      questionnaire_responses: {
         Row: {
           created_at: string | null
           id: string
-          question_id: string | null
+          question_id: string
           question_text: string | null
+          questionnaire_type: string
           response: string | null
           user_id: string | null
         }
         Insert: {
           created_at?: string | null
           id?: string
-          question_id?: string | null
+          question_id: string
           question_text?: string | null
+          questionnaire_type: string
           response?: string | null
           user_id?: string | null
         }
         Update: {
           created_at?: string | null
           id?: string
-          question_id?: string | null
+          question_id?: string
           question_text?: string | null
+          questionnaire_type?: string
           response?: string | null
           user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "questionnaire_preferences_responses_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: false
-            referencedRelation: "preferences_questions"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       questionnaire_synthesis: {
         Row: {
@@ -539,72 +411,6 @@ export type Database = {
           free_text?: string | null
           id?: string
           user_id?: string | null
-        }
-        Relationships: []
-      }
-      questions: {
-        Row: {
-          category: string | null
-          created_at: string | null
-          display_order: number | null
-          id: string
-          JE_NE_SAIS_PAS: string | null
-          NON: string | null
-          OUI: string | null
-          Question: string
-        }
-        Insert: {
-          category?: string | null
-          created_at?: string | null
-          display_order?: number | null
-          id?: string
-          JE_NE_SAIS_PAS?: string | null
-          NON?: string | null
-          OUI?: string | null
-          Question: string
-        }
-        Update: {
-          category?: string | null
-          created_at?: string | null
-          display_order?: number | null
-          id?: string
-          JE_NE_SAIS_PAS?: string | null
-          NON?: string | null
-          OUI?: string | null
-          Question?: string
-        }
-        Relationships: []
-      }
-      questions_en: {
-        Row: {
-          category: string | null
-          created_at: string | null
-          display_order: number | null
-          i_dont_know: string | null
-          id: string
-          no: string | null
-          question: string
-          yes: string | null
-        }
-        Insert: {
-          category?: string | null
-          created_at?: string | null
-          display_order?: number | null
-          i_dont_know?: string | null
-          id?: string
-          no?: string | null
-          question: string
-          yes?: string | null
-        }
-        Update: {
-          category?: string | null
-          created_at?: string | null
-          display_order?: number | null
-          i_dont_know?: string | null
-          id?: string
-          no?: string | null
-          question?: string
-          yes?: string | null
         }
         Relationships: []
       }

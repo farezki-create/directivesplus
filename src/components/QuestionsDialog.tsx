@@ -23,58 +23,38 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
       try {
         console.log(`[GeneralOpinion] Fetching questions in ${currentLanguage}...`);
         
-        if (currentLanguage === 'en') {
-          // Fetch English questions
-          const { data, error } = await supabase
-            .from('questions_en')
-            .select('*')
-            .eq('category', 'general_opinion')
-            .order('display_order', { ascending: true });
-          
-          if (error) {
-            console.error('[GeneralOpinion] Error fetching questions:', error);
-            toast({
-              title: "Error",
-              description: "Unable to load questions. Please try again.",
-              variant: "destructive",
-            });
-            return;
-          }
-          
-          console.log('[GeneralOpinion] Questions loaded:', data?.length, 'questions');
-          setQuestions(data || []);
-        } else {
-          // Fetch French questions
-          const { data, error } = await supabase
-            .from('questions')
-            .select('*')
-            .eq('category', 'general_opinion')
-            .order('display_order', { ascending: true });
-          
-          if (error) {
-            console.error('[GeneralOpinion] Error fetching questions:', error);
-            toast({
-              title: "Erreur",
-              description: "Impossible de charger les questions. Veuillez réessayer.",
-              variant: "destructive",
-            });
-            return;
-          }
-          
-          // Normaliser les noms de champs pour une utilisation cohérente
-          const normalizedQuestions = data?.map(q => ({
-            ...q,
-            question: q.Question, // Assure que tous les objets ont une propriété question
-          })) || [];
-          
-          console.log('[GeneralOpinion] Questions loaded:', normalizedQuestions.length, 'questions');
-          setQuestions(normalizedQuestions);
+        const tableName = currentLanguage === 'en' 
+          ? 'questionnaire_general_en' 
+          : 'questionnaire_general_fr';
+        
+        console.log(`[GeneralOpinion] Using table: ${tableName}`);
+        
+        const { data, error } = await supabase
+          .from(tableName)
+          .select('*')
+          .order('display_order', { ascending: true });
+        
+        if (error) {
+          console.error('[GeneralOpinion] Error fetching questions:', error);
+          toast({
+            title: currentLanguage === 'en' ? "Error" : "Erreur",
+            description: currentLanguage === 'en' 
+              ? "Unable to load questions. Please try again." 
+              : "Impossible de charger les questions. Veuillez réessayer.",
+            variant: "destructive",
+          });
+          return;
         }
+        
+        console.log('[GeneralOpinion] Questions loaded:', data?.length, 'questions');
+        setQuestions(data || []);
       } catch (error) {
         console.error('[GeneralOpinion] Unexpected error:', error);
         toast({
-          title: "Erreur",
-          description: "Une erreur inattendue s'est produite.",
+          title: currentLanguage === 'en' ? "Error" : "Erreur",
+          description: currentLanguage === 'en' 
+            ? "An unexpected error occurred." 
+            : "Une erreur inattendue s'est produite.",
           variant: "destructive",
         });
       } finally {
@@ -104,8 +84,10 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
       if (!userId) {
         console.error('[GeneralOpinion] No user ID found');
         toast({
-          title: "Erreur",
-          description: "Vous devez être connecté pour enregistrer vos réponses.",
+          title: currentLanguage === 'en' ? "Error" : "Erreur",
+          description: currentLanguage === 'en' 
+            ? "You must be logged in to save your answers." 
+            : "Vous devez être connecté pour enregistrer vos réponses.",
           variant: "destructive",
         });
         return;
@@ -114,29 +96,31 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
       // Prepare all responses for insertion
       const responses = Object.entries(answers).flatMap(([questionId, values]) => {
         const question = questions.find(q => q.id === questionId);
-        const questionText = currentLanguage === 'en' ? question?.question : question?.Question || question?.question;
         
         return values.map(value => ({
           user_id: userId,
           question_id: questionId,
-          question_text: questionText,
-          response: value
+          question_text: question?.question,
+          response: value,
+          questionnaire_type: 'general_opinion'
         }));
       });
 
       console.log('[GeneralOpinion] Prepared responses for insertion:', responses);
 
       const { error } = await supabase
-        .from('questionnaire_general_responses')
+        .from('questionnaire_responses')
         .upsert(responses, {
-          onConflict: 'user_id,question_id'
+          onConflict: 'user_id,question_id,questionnaire_type'
         });
 
       if (error) {
         console.error('[GeneralOpinion] Error saving responses:', error);
         toast({
-          title: "Erreur",
-          description: "Impossible d'enregistrer vos réponses. Veuillez réessayer.",
+          title: currentLanguage === 'en' ? "Error" : "Erreur",
+          description: currentLanguage === 'en' 
+            ? "Unable to save your answers. Please try again." 
+            : "Impossible d'enregistrer vos réponses. Veuillez réessayer.",
           variant: "destructive",
         });
         return;
@@ -144,15 +128,19 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
 
       console.log('[GeneralOpinion] Responses saved successfully');
       toast({
-        title: "Succès",
-        description: "Vos réponses ont été enregistrées.",
+        title: currentLanguage === 'en' ? "Success" : "Succès",
+        description: currentLanguage === 'en' 
+          ? "Your answers have been saved." 
+          : "Vos réponses ont été enregistrées.",
       });
       onOpenChange(false);
     } catch (error) {
       console.error('[GeneralOpinion] Unexpected error during submission:', error);
       toast({
-        title: "Erreur",
-        description: "Une erreur inattendue s'est produite lors de l'enregistrement.",
+        title: currentLanguage === 'en' ? "Error" : "Erreur",
+        description: currentLanguage === 'en' 
+          ? "An unexpected error occurred while saving." 
+          : "Une erreur inattendue s'est produite lors de l'enregistrement.",
         variant: "destructive",
       });
     }
@@ -163,7 +151,7 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
       return [
         { value: 'yes', label: 'Yes' },
         { value: 'no', label: 'No' },
-        { value: 'i_dont_know', label: 'I don\'t know' }
+        { value: 'i_dont_know', label: "I don't know" }
       ];
     } else {
       return [
