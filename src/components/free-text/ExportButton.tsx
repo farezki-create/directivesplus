@@ -1,77 +1,67 @@
+
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
+import { useLanguage } from "@/hooks/language/useLanguage";
 
 interface ExportButtonProps {
-  userId: string | null;
+  content: string;
+  responses: {
+    general: any[];
+    lifeSupport: any[];
+    advancedIllness: any[];
+    preferences: any[];
+    synthesis?: any;
+  }
 }
 
-export function ExportButton({ userId }: ExportButtonProps) {
-  const { toast } = useToast();
-  const { responses } = useQuestionnairesResponses(userId || "");
+export const ExportButton = ({ content, responses }: ExportButtonProps) => {
+  const { t } = useLanguage();
 
   const handleExport = () => {
-    try {
-      console.log("[ExportButton] Starting export of responses");
-      const exportData = {
-        "Avis général": responses.general?.map(response => ({
-          question: response.question_text || response.questions?.Question,
-          réponse: response.response
-        })),
-        "Maintien en vie": responses.lifeSupport?.map(response => ({
-          question: response.question_text || response.life_support_questions?.question,
-          réponse: response.response
-        })),
-        "Maladie avancée": responses.advancedIllness?.map(response => ({
-          question: response.question_text || response.advanced_illness_questions?.question,
-          réponse: response.response
-        })),
-        "Mes goûts et mes peurs": responses.preferences?.map(response => ({
-          question: response.question_text || response.preferences_questions?.question,
-          réponse: response.response
-        })),
-        "Synthèse": responses.synthesis?.free_text
-      };
-
-      console.log("[ExportButton] Prepared export data:", exportData);
-
-      const jsonString = JSON.stringify(exportData, null, 2);
-      const blob = new Blob([jsonString], { type: "application/json" });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = "directives-anticipees.json";
+    // Format the responses data
+    const generalSection = responses.general?.length 
+      ? `\n\n# ${t('generalOpinion')}\n${responses.general.map(r => `- ${r.question_text || ''}: ${r.response || ''}`).join('\n')}` 
+      : '';
       
-      document.body.appendChild(link);
-      link.click();
+    const lifeSupportSection = responses.lifeSupport?.length
+      ? `\n\n# ${t('lifeSupport')}\n${responses.lifeSupport.map(r => `- ${r.question_text || ''}: ${r.response || ''}`).join('\n')}`
+      : '';
       
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(link);
+    const advancedIllnessSection = responses.advancedIllness?.length
+      ? `\n\n# ${t('advancedIllnessTitle')}\n${responses.advancedIllness.map(r => `- ${r.question_text || ''}: ${r.response || ''}`).join('\n')}`
+      : '';
+      
+    const preferencesSection = responses.preferences?.length
+      ? `\n\n# ${t('preferences')}\n${responses.preferences.map(r => `- ${r.question_text || ''}: ${r.response || ''}`).join('\n')}`
+      : '';
 
-      console.log("[ExportButton] Export completed successfully");
-      toast({
-        title: "Export réussi",
-        description: "Vos réponses ont été exportées avec succès.",
-      });
-    } catch (error) {
-      console.error("[ExportButton] Error during export:", error);
-      toast({
-        title: "Erreur lors de l'export",
-        description: "Une erreur est survenue lors de l'export de vos réponses.",
-        variant: "destructive",
-      });
-    }
+    // Get the free text synthesis
+    const synthesisSection = responses.synthesis?.free_text 
+      ? `\n\n# ${t('synthesis')}\n${responses.synthesis.free_text}`
+      : '';
+
+    // Create the content
+    const fullText = 
+      `# ${t('directivesTitle')}\n${t('generatedAt')}: ${new Date().toLocaleString()}${generalSection}${lifeSupportSection}${advancedIllnessSection}${preferencesSection}${synthesisSection}\n\n# ${t('freeTextOpinion')}\n${content}`;
+
+    // Create and download the file
+    const element = document.createElement('a');
+    const file = new Blob([fullText], {type: 'text/plain'});
+    element.href = URL.createObjectURL(file);
+    element.download = `${t('directives')}_${new Date().toISOString().slice(0, 10)}.txt`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
   };
 
   return (
-    <Button
-      onClick={handleExport}
-      variant="outline"
+    <Button 
+      onClick={handleExport} 
+      variant="outline" 
       className="flex items-center gap-2"
     >
-      <Download className="h-4 w-4" />
-      Exporter
+      <Download className="w-4 h-4" />
+      {t('exportText')}
     </Button>
   );
-}
+};
