@@ -27,7 +27,7 @@ export function useQuestionnaireQuestions(
         console.log(`[Questionnaire] Fetching ${type} questions in ${currentLanguage}...`);
         
         // Determine table name based on type and language
-        const tableName = `questionnaire_${type}_${currentLanguage}`;
+        const tableName = `questionnaire_${type}_${currentLanguage}` as const;
         
         const { data, error } = await supabase
           .from(tableName)
@@ -47,7 +47,15 @@ export function useQuestionnaireQuestions(
         }
         
         console.log(`[Questionnaire] ${type} questions loaded:`, data?.length, 'questions');
-        setQuestions(data || []);
+        
+        // Safely cast the data to the expected type
+        const typedQuestions: QuestionnaireQuestion[] = data?.map(item => ({
+          id: item.id,
+          question: item.question,
+          display_order: item.display_order || 0
+        })) || [];
+        
+        setQuestions(typedQuestions);
       } catch (error) {
         console.error(`[Questionnaire] Unexpected error:`, error);
         toast({
