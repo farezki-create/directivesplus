@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/language/useLanguage";
+import { SupportedLanguage } from "@/hooks/language/translations/types";
 
 export interface LifeSupportQuestion {
   id: string;
@@ -23,7 +24,7 @@ export function useLifeSupportQuestions(open: boolean) {
         console.log(`[LifeSupport] Fetching questions in ${currentLanguage}...`);
         setError(null);
         
-        if (currentLanguage === 'en') {
+        if (currentLanguage === 'en' as SupportedLanguage) {
           // Fetch English questions
           const { data, error } = await supabase
             .from('life_support_questions_en')
@@ -44,7 +45,7 @@ export function useLifeSupportQuestions(open: boolean) {
           console.log('[LifeSupport] Questions loaded:', data?.length, 'questions');
           if (data?.length === 0) {
             console.log('[LifeSupport] No questions found in database');
-            setError(currentLanguage === 'fr' 
+            setError(currentLanguage === 'fr' as SupportedLanguage 
               ? "Aucune question n'a été trouvée dans la base de données." 
               : "No questions were found in the database.");
           }
@@ -70,7 +71,7 @@ export function useLifeSupportQuestions(open: boolean) {
           console.log('[LifeSupport] Questions loaded:', data?.length, 'questions');
           if (data?.length === 0) {
             console.log('[LifeSupport] No questions found in database');
-            setError(currentLanguage === 'fr' 
+            setError(currentLanguage === 'fr' as SupportedLanguage 
               ? "Aucune question n'a été trouvée dans la base de données." 
               : "No questions were found in the database.");
           }

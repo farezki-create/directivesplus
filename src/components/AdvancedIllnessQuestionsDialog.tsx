@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/language/useLanguage";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { SupportedLanguage } from "@/hooks/language/translations/types";
 
 interface AdvancedIllnessQuestionsDialogProps {
   open: boolean;
@@ -30,7 +31,7 @@ export function AdvancedIllnessQuestionsDialog({
         console.log(`[AdvancedIllness] Fetching questions in ${currentLanguage}...`);
         setError(null);
         
-        if (currentLanguage === 'en') {
+        if (currentLanguage === 'en' as SupportedLanguage) {
           // Fetch English questions
           const { data, error } = await supabase
             .from('advanced_illness_questions_en')
@@ -51,7 +52,7 @@ export function AdvancedIllnessQuestionsDialog({
           console.log('[AdvancedIllness] Questions loaded:', data?.length, 'questions');
           if (data?.length === 0) {
             console.log('[AdvancedIllness] No questions found in database');
-            setError(currentLanguage === 'fr' 
+            setError(currentLanguage === 'fr' as SupportedLanguage 
               ? "Aucune question n'a été trouvée dans la base de données." 
               : "No questions were found in the database.");
           }
@@ -77,7 +78,7 @@ export function AdvancedIllnessQuestionsDialog({
           console.log('[AdvancedIllness] Questions loaded:', data?.length, 'questions');
           if (data?.length === 0) {
             console.log('[AdvancedIllness] No questions found in database');
-            setError(currentLanguage === 'fr' 
+            setError(currentLanguage === 'fr' as SupportedLanguage 
               ? "Aucune question n'a été trouvée dans la base de données." 
               : "No questions were found in the database.");
           }
