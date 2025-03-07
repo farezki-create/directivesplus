@@ -3,8 +3,17 @@ import { jsPDF } from "jspdf";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
+/**
+ * Responsible for generating the PDF document header section
+ */
 export class PDFHeaderGenerator {
-  static async generate(doc: jsPDF, startY: number): Promise<number> {
+  /**
+   * Generates the header section of the PDF document
+   * @param doc - The jsPDF document instance
+   * @param startY - The starting Y position for the header
+   * @returns The new Y position after adding the header
+   */
+  static generate(doc: jsPDF, startY: number): number {
     let yPosition = startY;
     
     // En-tête avec titre principal

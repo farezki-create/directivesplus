@@ -5,8 +5,22 @@ import { fr } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { UserProfile } from "../types";
 
+/**
+ * Responsible for generating the signature section and retrieving signature data
+ */
 export class PDFSignatureGenerator {
-  static async generateSignatureSection(doc: jsPDF, profile: UserProfile, startY: number): Promise<number> {
+  /**
+   * Generates the signature section of the PDF document
+   * @param doc - The jsPDF document instance
+   * @param profile - The user profile containing personal information
+   * @param startY - The starting Y position for the signature section
+   * @returns The new Y position after adding the signature section
+   */
+  static async generateSignatureSection(
+    doc: jsPDF, 
+    profile: UserProfile, 
+    startY: number
+  ): Promise<number> {
     let yPosition = startY;
     
     // Section signature
@@ -51,6 +65,11 @@ export class PDFSignatureGenerator {
     return yPosition + 15;
   }
 
+  /**
+   * Fetches the user's signature data from the database
+   * @param profileId - The ID of the user profile
+   * @returns The signature data as a base64 string, or null if not found
+   */
   static async fetchSignature(profileId: string): Promise<string | null> {
     console.log("[PDFGenerator] Fetching signature for user:", profileId);
     const { data: signatureData } = await supabase
