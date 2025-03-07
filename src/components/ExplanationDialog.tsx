@@ -12,6 +12,11 @@ interface ExplanationDialogProps {
 export function ExplanationDialog({ open, onOpenChange, onContinue }: ExplanationDialogProps) {
   const { t, currentLanguage } = useLanguage();
   
+  const handleContinueClick = () => {
+    console.log("[ExplanationDialog] Continue button clicked");
+    onContinue();
+  };
+  
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
@@ -43,7 +48,7 @@ export function ExplanationDialog({ open, onOpenChange, onContinue }: Explanatio
         </div>
 
         <DialogFooter>
-          <Button onClick={onContinue} className="w-full sm:w-auto">
+          <Button onClick={handleContinueClick} className="w-full sm:w-auto">
             {t('continueToQuestionnaire')}
           </Button>
         </DialogFooter>

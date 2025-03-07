@@ -12,6 +12,8 @@ interface QuestionsDialogProps {
 
 export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
   const { t, currentLanguage } = useLanguage();
+  console.log(`[QuestionsDialog] Opening dialog with language: ${currentLanguage}`);
+  
   const { questions, loading } = useQuestionnaireQuestions('general', open);
   const { answers, handleAnswerChange, handleSubmit } = useQuestionnaireAnswers(
     'general',
@@ -32,6 +34,8 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
       ];
     }
   };
+
+  console.log(`[QuestionsDialog] Questions loaded: ${questions.length}`);
 
   return (
     <QuestionsDialogLayout

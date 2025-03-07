@@ -12,6 +12,17 @@ import { FC } from "react";
 
 export const HomeDialogs: FC = () => {
   const { dialogState, handlers } = useHomeDialogs();
+  
+  console.log("[HomeDialogs] Current dialog states:", {
+    explanationOpen: dialogState.explanationOpen,
+    questionsOpen: dialogState.questionsOpen,
+    lifeSupportExplanationOpen: dialogState.lifeSupportExplanationOpen,
+    lifeSupportQuestionsOpen: dialogState.lifeSupportQuestionsOpen,
+    advancedIllnessExplanationOpen: dialogState.advancedIllnessExplanationOpen,
+    advancedIllnessQuestionsOpen: dialogState.advancedIllnessQuestionsOpen,
+    preferencesExplanationOpen: dialogState.preferencesExplanationOpen,
+    preferencesQuestionsOpen: dialogState.preferencesQuestionsOpen
+  });
 
   return (
     <>
