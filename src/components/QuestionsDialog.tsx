@@ -14,7 +14,10 @@ interface QuestionsDialogProps {
 export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
   const { t, currentLanguage } = useLanguage();
   
+  // Enhanced logging for dialog open state
   useEffect(() => {
+    console.log(`[QuestionsDialog] Dialog open state: ${open}`);
+    
     if (open) {
       console.log(`[QuestionsDialog] Dialog opened with language: ${currentLanguage}`);
     }
@@ -49,11 +52,6 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
       console.log(`[QuestionsDialog] ${questions.length} questions loaded with language: ${currentLanguage}`);
     }
   }, [questions, currentLanguage]);
-
-  // Débogage pour vérifier l'état du dialogue
-  useEffect(() => {
-    console.log(`[QuestionsDialog] Dialog open state changed: ${open}`);
-  }, [open]);
 
   return (
     <QuestionsDialogLayout

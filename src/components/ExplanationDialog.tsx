@@ -21,13 +21,18 @@ export function ExplanationDialog({ open, onOpenChange, onContinue }: Explanatio
   
   const handleContinueClick = () => {
     console.log("[ExplanationDialog] Continue button clicked");
-    // S'assurer que la fonction onContinue est correctement appelée
-    if (typeof onContinue === 'function') {
-      console.log("[ExplanationDialog] Calling onContinue function");
-      onContinue();
-    } else {
-      console.error("[ExplanationDialog] onContinue is not a function");
-    }
+    // First close the dialog
+    onOpenChange(false);
+    
+    // Wait for the dialog to close before continuing to the next step
+    setTimeout(() => {
+      if (typeof onContinue === 'function') {
+        console.log("[ExplanationDialog] Calling onContinue function");
+        onContinue();
+      } else {
+        console.error("[ExplanationDialog] onContinue is not a function");
+      }
+    }, 300);
   };
   
   return (
@@ -61,7 +66,11 @@ export function ExplanationDialog({ open, onOpenChange, onContinue }: Explanatio
         </div>
 
         <DialogFooter>
-          <Button onClick={handleContinueClick} className="w-full sm:w-auto">
+          <Button 
+            onClick={handleContinueClick} 
+            className="w-full sm:w-auto"
+            type="button"
+          >
             {t('continueToQuestionnaire')}
           </Button>
         </DialogFooter>

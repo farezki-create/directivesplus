@@ -1,3 +1,4 @@
+
 import { useDialogState } from "@/hooks/useDialogState";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
@@ -37,17 +38,25 @@ export function useHomeDialogs(): UseHomeDialogsReturn {
     };
   }, []);
   
+  // Close all other dialogs before opening a new one
+  const closeAllDialogs = () => {
+    console.log("[useHomeDialogs] Closing all dialogs");
+    dialogState.setExplanationOpen(false);
+    dialogState.setQuestionsOpen(false);
+    dialogState.setLifeSupportExplanationOpen(false);
+    dialogState.setLifeSupportQuestionsOpen(false);
+    dialogState.setAdvancedIllnessExplanationOpen(false);
+    dialogState.setAdvancedIllnessQuestionsOpen(false);
+    dialogState.setPreferencesExplanationOpen(false);
+    dialogState.setPreferencesQuestionsOpen(false);
+  };
+  
   const handleGeneralOpinionClick = () => {
     try {
       console.log("[useHomeDialogs] Opening general opinion explanation dialog");
-      dialogState.setQuestionsOpen(false);
-      dialogState.setLifeSupportExplanationOpen(false);
-      dialogState.setLifeSupportQuestionsOpen(false);
-      dialogState.setAdvancedIllnessExplanationOpen(false);
-      dialogState.setAdvancedIllnessQuestionsOpen(false);
-      dialogState.setPreferencesExplanationOpen(false);
-      dialogState.setPreferencesQuestionsOpen(false);
+      closeAllDialogs();
       
+      // Use a small timeout to ensure state updates have propagated
       setTimeout(() => {
         dialogState.setExplanationOpen(true);
       }, 100);
@@ -66,6 +75,7 @@ export function useHomeDialogs(): UseHomeDialogsReturn {
       console.log("[useHomeDialogs] Moving from explanation to questions dialog");
       dialogState.setExplanationOpen(false);
       
+      // Increase timeout to ensure explanation dialog is fully closed
       setTimeout(() => {
         console.log("[useHomeDialogs] Opening questions dialog after delay");
         dialogState.setQuestionsOpen(true);
@@ -82,7 +92,10 @@ export function useHomeDialogs(): UseHomeDialogsReturn {
 
   const handleLifeSupportClick = () => {
     try {
-      dialogState.setLifeSupportExplanationOpen(true);
+      closeAllDialogs();
+      setTimeout(() => {
+        dialogState.setLifeSupportExplanationOpen(true);
+      }, 100);
     } catch (error) {
       console.error("Error opening life support dialog:", error);
       toast({
@@ -99,7 +112,7 @@ export function useHomeDialogs(): UseHomeDialogsReturn {
       
       setTimeout(() => {
         dialogState.setLifeSupportQuestionsOpen(true);
-      }, 300);
+      }, 500);
     } catch (error) {
       console.error("Error continuing from life support explanation:", error);
       toast({
@@ -112,7 +125,10 @@ export function useHomeDialogs(): UseHomeDialogsReturn {
 
   const handleAdvancedIllnessClick = () => {
     try {
-      dialogState.setAdvancedIllnessExplanationOpen(true);
+      closeAllDialogs();
+      setTimeout(() => {
+        dialogState.setAdvancedIllnessExplanationOpen(true);
+      }, 100);
     } catch (error) {
       console.error("Error opening advanced illness dialog:", error);
       toast({
@@ -129,7 +145,7 @@ export function useHomeDialogs(): UseHomeDialogsReturn {
       
       setTimeout(() => {
         dialogState.setAdvancedIllnessQuestionsOpen(true);
-      }, 300);
+      }, 500);
     } catch (error) {
       console.error("Error continuing from advanced illness explanation:", error);
       toast({
@@ -142,7 +158,10 @@ export function useHomeDialogs(): UseHomeDialogsReturn {
 
   const handlePreferencesClick = () => {
     try {
-      dialogState.setPreferencesExplanationOpen(true);
+      closeAllDialogs();
+      setTimeout(() => {
+        dialogState.setPreferencesExplanationOpen(true);
+      }, 100);
     } catch (error) {
       console.error("Error opening preferences dialog:", error);
       toast({
@@ -159,7 +178,7 @@ export function useHomeDialogs(): UseHomeDialogsReturn {
       
       setTimeout(() => {
         dialogState.setPreferencesQuestionsOpen(true);
-      }, 300);
+      }, 500);
     } catch (error) {
       console.error("Error continuing from preferences explanation:", error);
       toast({

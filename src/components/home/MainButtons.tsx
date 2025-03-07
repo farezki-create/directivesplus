@@ -24,9 +24,10 @@ export function MainButtons({
     console.log("[MainButtons] Component mounted with handlers ready");
   }, []);
 
-  const handleGeneralOpinionClick = () => {
+  const handleGeneralOpinionClick = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent any default form submission
     console.log("[MainButtons] General Opinion button clicked");
-    // S'assurer que le gestionnaire d'événements est correctement appelé
+    
     if (typeof onGeneralOpinionClick === 'function') {
       console.log("[MainButtons] Calling onGeneralOpinionClick function");
       onGeneralOpinionClick();
