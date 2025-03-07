@@ -71,6 +71,7 @@ const FAQ = () => {
                 .split('\n').map((line, i) => (
                   <span key={i} className="block mb-2">{line}</span>
                 ))
+              }
               </p>
             </div>
 
@@ -85,6 +86,7 @@ const FAQ = () => {
                 .split('\n').map((line, i) => (
                   <span key={i} className="block mb-2">{line}</span>
                 ))
+              }
               </p>
             </div>
 
@@ -110,6 +112,7 @@ const FAQ = () => {
                 .split('\n').map((line, i) => (
                   <span key={i} className="block mb-2">{line}</span>
                 ))
+              }
               </p>
             </div>
 
@@ -124,6 +127,7 @@ const FAQ = () => {
                 .split('\n').map((line, i) => (
                   <span key={i} className="block mb-2">{line}</span>
                 ))
+              }
               </p>
             </div>
 
@@ -138,6 +142,7 @@ const FAQ = () => {
                 .split('\n').map((line, i) => (
                   <span key={i} className="block mb-2">{line}</span>
                 ))
+              }
               </p>
             </div>
           </div>
