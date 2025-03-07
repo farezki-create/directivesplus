@@ -1,5 +1,6 @@
 import { useDialogState } from "@/hooks/useDialogState";
 import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
 
 interface DialogHandlers {
   handleGeneralOpinionClick: () => void;
@@ -21,10 +22,24 @@ export function useHomeDialogs(): UseHomeDialogsReturn {
   const dialogState = useDialogState();
   const { toast } = useToast();
   
+  useEffect(() => {
+    console.log("[useHomeDialogs] Initializing dialog handlers");
+    return () => {
+      console.log("[useHomeDialogs] Cleaning up dialog handlers");
+      dialogState.setExplanationOpen(false);
+      dialogState.setQuestionsOpen(false);
+      dialogState.setLifeSupportExplanationOpen(false);
+      dialogState.setLifeSupportQuestionsOpen(false);
+      dialogState.setAdvancedIllnessExplanationOpen(false);
+      dialogState.setAdvancedIllnessQuestionsOpen(false);
+      dialogState.setPreferencesExplanationOpen(false);
+      dialogState.setPreferencesQuestionsOpen(false);
+    };
+  }, []);
+  
   const handleGeneralOpinionClick = () => {
     try {
       console.log("[useHomeDialogs] Opening general opinion explanation dialog");
-      // Close any other dialogs that might be open
       dialogState.setQuestionsOpen(false);
       dialogState.setLifeSupportExplanationOpen(false);
       dialogState.setLifeSupportQuestionsOpen(false);
@@ -33,7 +48,6 @@ export function useHomeDialogs(): UseHomeDialogsReturn {
       dialogState.setPreferencesExplanationOpen(false);
       dialogState.setPreferencesQuestionsOpen(false);
       
-      // Open the explanation dialog
       dialogState.setExplanationOpen(true);
     } catch (error) {
       console.error("Error opening general opinion dialog:", error);
@@ -49,10 +63,11 @@ export function useHomeDialogs(): UseHomeDialogsReturn {
     try {
       console.log("[useHomeDialogs] Moving from explanation to questions dialog");
       dialogState.setExplanationOpen(false);
-      // Ensure we set questions open to true
+      
       setTimeout(() => {
+        console.log("[useHomeDialogs] Opening questions dialog after delay");
         dialogState.setQuestionsOpen(true);
-      }, 100);
+      }, 300);
     } catch (error) {
       console.error("Error continuing from explanation:", error);
       toast({
@@ -79,7 +94,10 @@ export function useHomeDialogs(): UseHomeDialogsReturn {
   const handleLifeSupportExplanationContinue = () => {
     try {
       dialogState.setLifeSupportExplanationOpen(false);
-      dialogState.setLifeSupportQuestionsOpen(true);
+      
+      setTimeout(() => {
+        dialogState.setLifeSupportQuestionsOpen(true);
+      }, 300);
     } catch (error) {
       console.error("Error continuing from life support explanation:", error);
       toast({
@@ -106,7 +124,10 @@ export function useHomeDialogs(): UseHomeDialogsReturn {
   const handleAdvancedIllnessExplanationContinue = () => {
     try {
       dialogState.setAdvancedIllnessExplanationOpen(false);
-      dialogState.setAdvancedIllnessQuestionsOpen(true);
+      
+      setTimeout(() => {
+        dialogState.setAdvancedIllnessQuestionsOpen(true);
+      }, 300);
     } catch (error) {
       console.error("Error continuing from advanced illness explanation:", error);
       toast({
@@ -133,7 +154,10 @@ export function useHomeDialogs(): UseHomeDialogsReturn {
   const handlePreferencesExplanationContinue = () => {
     try {
       dialogState.setPreferencesExplanationOpen(false);
-      dialogState.setPreferencesQuestionsOpen(true);
+      
+      setTimeout(() => {
+        dialogState.setPreferencesQuestionsOpen(true);
+      }, 300);
     } catch (error) {
       console.error("Error continuing from preferences explanation:", error);
       toast({

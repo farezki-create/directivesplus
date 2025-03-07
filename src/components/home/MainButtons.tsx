@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/hooks/language/useLanguage";
+import { useEffect } from "react";
 
 interface MainButtonsProps {
   onGeneralOpinionClick: () => void;
@@ -18,6 +19,10 @@ export function MainButtons({
 }: MainButtonsProps) {
   const navigate = useNavigate();
   const { t } = useLanguage();
+
+  useEffect(() => {
+    console.log("[MainButtons] Component mounted with handlers ready");
+  }, []);
 
   const handleGeneralOpinionClick = () => {
     console.log("[MainButtons] General Opinion button clicked");

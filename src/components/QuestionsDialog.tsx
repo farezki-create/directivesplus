@@ -24,7 +24,10 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
   const { answers, handleAnswerChange, handleSubmit } = useQuestionnaireAnswers(
     'general',
     questions,
-    () => onOpenChange(false)
+    () => {
+      console.log('[QuestionsDialog] Questions submitted, closing dialog');
+      onOpenChange(false);
+    }
   );
 
   const getQuestionOptions = () => {
@@ -43,9 +46,9 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
 
   useEffect(() => {
     if (questions.length > 0) {
-      console.log(`[QuestionsDialog] ${questions.length} questions loaded`);
+      console.log(`[QuestionsDialog] ${questions.length} questions loaded with language: ${currentLanguage}`);
     }
-  }, [questions]);
+  }, [questions, currentLanguage]);
 
   return (
     <QuestionsDialogLayout

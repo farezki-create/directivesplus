@@ -15,9 +15,9 @@ export function ExplanationDialog({ open, onOpenChange, onContinue }: Explanatio
   
   useEffect(() => {
     if (open) {
-      console.log("[ExplanationDialog] Dialog opened");
+      console.log("[ExplanationDialog] Dialog opened with language:", currentLanguage);
     }
-  }, [open]);
+  }, [open, currentLanguage]);
   
   const handleContinueClick = () => {
     console.log("[ExplanationDialog] Continue button clicked");

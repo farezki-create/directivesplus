@@ -22,22 +22,52 @@ export function useDialogState() {
     setQuestionsOpen(value);
   }, []);
 
+  const setLifeSupportExplanationOpenWithLog = useCallback((value: boolean) => {
+    console.log(`[useDialogState] Setting lifeSupportExplanationOpen to: ${value}`);
+    setLifeSupportExplanationOpen(value);
+  }, []);
+
+  const setLifeSupportQuestionsOpenWithLog = useCallback((value: boolean) => {
+    console.log(`[useDialogState] Setting lifeSupportQuestionsOpen to: ${value}`);
+    setLifeSupportQuestionsOpen(value);
+  }, []);
+
+  const setAdvancedIllnessExplanationOpenWithLog = useCallback((value: boolean) => {
+    console.log(`[useDialogState] Setting advancedIllnessExplanationOpen to: ${value}`);
+    setAdvancedIllnessExplanationOpen(value);
+  }, []);
+
+  const setAdvancedIllnessQuestionsOpenWithLog = useCallback((value: boolean) => {
+    console.log(`[useDialogState] Setting advancedIllnessQuestionsOpen to: ${value}`);
+    setAdvancedIllnessQuestionsOpen(value);
+  }, []);
+
+  const setPreferencesExplanationOpenWithLog = useCallback((value: boolean) => {
+    console.log(`[useDialogState] Setting preferencesExplanationOpen to: ${value}`);
+    setPreferencesExplanationOpen(value);
+  }, []);
+
+  const setPreferencesQuestionsOpenWithLog = useCallback((value: boolean) => {
+    console.log(`[useDialogState] Setting preferencesQuestionsOpen to: ${value}`);
+    setPreferencesQuestionsOpen(value);
+  }, []);
+
   return {
     explanationOpen,
     setExplanationOpen: setExplanationOpenWithLog,
     questionsOpen,
     setQuestionsOpen: setQuestionsOpenWithLog,
     lifeSupportExplanationOpen,
-    setLifeSupportExplanationOpen,
+    setLifeSupportExplanationOpen: setLifeSupportExplanationOpenWithLog,
     lifeSupportQuestionsOpen,
-    setLifeSupportQuestionsOpen,
+    setLifeSupportQuestionsOpen: setLifeSupportQuestionsOpenWithLog,
     advancedIllnessExplanationOpen,
-    setAdvancedIllnessExplanationOpen,
+    setAdvancedIllnessExplanationOpen: setAdvancedIllnessExplanationOpenWithLog,
     advancedIllnessQuestionsOpen,
-    setAdvancedIllnessQuestionsOpen,
+    setAdvancedIllnessQuestionsOpen: setAdvancedIllnessQuestionsOpenWithLog,
     preferencesExplanationOpen,
-    setPreferencesExplanationOpen,
+    setPreferencesExplanationOpen: setPreferencesExplanationOpenWithLog,
     preferencesQuestionsOpen,
-    setPreferencesQuestionsOpen,
+    setPreferencesQuestionsOpen: setPreferencesQuestionsOpenWithLog,
   };
 }
