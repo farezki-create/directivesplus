@@ -1,4 +1,3 @@
-
 import { useDialogState } from "@/hooks/useDialogState";
 import { useToast } from "@/hooks/use-toast";
 
@@ -23,6 +22,7 @@ export function useHomeDialogs(): UseHomeDialogsReturn {
   const { toast } = useToast();
   
   const handleGeneralOpinionClick = () => {
+    console.log("[HomeDialogs] General Opinion clicked");
     try {
       dialogState.setExplanationOpen(true);
     } catch (error) {
@@ -36,6 +36,7 @@ export function useHomeDialogs(): UseHomeDialogsReturn {
   };
 
   const handleExplanationContinue = () => {
+    console.log("[HomeDialogs] Explanation continue clicked");
     try {
       dialogState.setExplanationOpen(false);
       dialogState.setQuestionsOpen(true);

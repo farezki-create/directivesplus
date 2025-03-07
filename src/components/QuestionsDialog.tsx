@@ -81,12 +81,25 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
     fetchQuestions();
   }, [open, toast, currentLanguage]);
 
-  const handleAnswerChange = (questionId: string, value: string) => {
-    console.log('[GeneralOpinion] Answer change:', { questionId, value });
-    setAnswers(prev => ({
-      ...prev,
-      [questionId]: [value]
-    }));
+  const handleAnswerChange = (questionId: string, value: string, checked: boolean) => {
+    console.log('[GeneralOpinion] Answer change:', { questionId, value, checked });
+    
+    setAnswers(prev => {
+      // For checkbox behavior, we need to handle the checked state differently
+      if (checked) {
+        // If checked, add the value to the array if not already present
+        return {
+          ...prev,
+          [questionId]: [value]
+        };
+      } else {
+        // If unchecked, remove the value from the array
+        return {
+          ...prev,
+          [questionId]: prev[questionId]?.filter(v => v !== value) || []
+        };
+      }
+    });
   };
 
   const handleSubmit = async () => {
@@ -123,6 +136,17 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
       });
 
       console.log('[GeneralOpinion] Prepared responses for insertion:', responses);
+
+      if (responses.length === 0) {
+        toast({
+          title: currentLanguage === 'fr' ? "Attention" : "Warning",
+          description: currentLanguage === 'fr'
+            ? "Veuillez sélectionner au moins une réponse."
+            : "Please select at least one answer.",
+          variant: "destructive",
+        });
+        return;
+      }
 
       const { error } = await supabase
         .from('questionnaire_general_responses')
@@ -191,7 +215,7 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
           key={question.id}
           question={question}
           value={answers[question.id] || []}
-          onValueChange={(value) => handleAnswerChange(question.id, value)}
+          onValueChange={(value, checked) => handleAnswerChange(question.id, value, checked as boolean)}
           options={getQuestionOptions()}
         />
       ))}

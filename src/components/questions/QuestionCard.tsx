@@ -46,9 +46,9 @@ export function QuestionCard({
                 <Checkbox
                   id={`${question.id}-${option.value}`}
                   checked={value.includes(option.value)}
-                  onCheckedChange={(checked) => 
-                    onValueChange(option.value, checked as boolean)
-                  }
+                  onCheckedChange={(checked) => {
+                    onValueChange(option.value, checked as boolean);
+                  }}
                 />
                 <Label 
                   htmlFor={`${question.id}-${option.value}`}
