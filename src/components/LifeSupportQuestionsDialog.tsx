@@ -29,7 +29,7 @@ export function LifeSupportQuestionsDialog({
         if (currentLanguage === 'en') {
           // Fetch English questions
           const { data, error } = await supabase
-            .from('life_support_questions_en')
+            .from('questionnaire_life_support_en')
             .select('*')
             .order('display_order', { ascending: true });
           
@@ -44,13 +44,14 @@ export function LifeSupportQuestionsDialog({
           }
           
           console.log('[LifeSupport] Questions loaded:', data?.length, 'questions');
+          console.log('[LifeSupport] Questions order:', data?.map(q => q.display_order));
           setQuestions(data || []);
         } else {
-          // Fetch French questions
+          // Fetch French questions - updated to match the structure in Supabase
           const { data, error } = await supabase
-            .from('life_support_questions')
+            .from('questionnaire_life_support_fr')
             .select('*')
-            .order('display_order', { ascending: true });
+            .order('question_order', { ascending: true });
           
           if (error) {
             console.error('[LifeSupport] Error fetching questions:', error);
@@ -62,8 +63,16 @@ export function LifeSupportQuestionsDialog({
             return;
           }
           
-          console.log('[LifeSupport] Questions loaded:', data?.length, 'questions');
-          setQuestions(data || []);
+          // Transform the French data to match the expected format
+          const formattedData = data?.map(item => ({
+            id: item.id,
+            question: item.question_text,
+            display_order: item.question_order
+          })) || [];
+          
+          console.log('[LifeSupport] Questions loaded:', formattedData.length, 'questions');
+          console.log('[LifeSupport] Questions order:', formattedData.map(q => q.display_order));
+          setQuestions(formattedData);
         }
       } catch (error) {
         console.error('[LifeSupport] Unexpected error:', error);
@@ -119,21 +128,22 @@ export function LifeSupportQuestionsDialog({
 
       // Prepare all responses for insertion
       const responses = Object.entries(answers).flatMap(([questionId, values]) => {
-        const question = questions.find(q => q.id === questionId);
+        const question = questions.find(q => q.id.toString() === questionId);
         return values.map(value => ({
           user_id: userId,
           question_id: questionId,
           question_text: question?.question,
-          response: value
+          response: value,
+          questionnaire_type: 'life_support'
         }));
       });
 
       console.log('[LifeSupport] Prepared responses for insertion:', responses);
 
       const { error } = await supabase
-        .from('questionnaire_life_support_responses')
+        .from('questionnaire_responses')
         .upsert(responses, {
-          onConflict: 'user_id,question_id'
+          onConflict: 'user_id,question_id,questionnaire_type'
         });
 
       if (error) {
@@ -174,6 +184,22 @@ export function LifeSupportQuestionsDialog({
         { value: 'Undecided', label: 'Undecided' }
       ];
     } else {
+      // For French, use the options directly from the database structure
+      const currentQuestion = typeof question.id === 'number' 
+        ? question 
+        : questions.find(q => q.id === question.id);
+        
+      if (currentQuestion) {
+        return [
+          { value: 'Oui', label: currentQuestion.option_yes || t('yes') },
+          { value: 'Oui pour une durée modérée', label: t('yesModerateTime') },
+          { value: 'Oui seulement si l\'équipe médicale le juge utile', label: t('yesMedicalTeam') },
+          { value: 'Non rapidement abandonner le thérapeutique', label: t('noQuicklyAbandon') },
+          { value: 'La non souffrance est à privilégier', label: t('prioritizeNoSuffering') },
+          { value: 'Indécision', label: currentQuestion.option_unsure || t('indecision') }
+        ];
+      }
+      
       return [
         { value: 'Oui', label: t('yes') },
         { value: 'Oui pour une durée modérée', label: t('yesModerateTime') },

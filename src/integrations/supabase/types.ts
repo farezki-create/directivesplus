@@ -264,18 +264,21 @@ export type Database = {
           display_order: number
           id: string
           question: string
+          question_order: number | null
         }
         Insert: {
           created_at?: string | null
           display_order: number
           id?: string
           question: string
+          question_order?: number | null
         }
         Update: {
           created_at?: string | null
           display_order?: number
           id?: string
           question?: string
+          question_order?: number | null
         }
         Relationships: []
       }
@@ -302,22 +305,28 @@ export type Database = {
       }
       questionnaire_life_support_fr: {
         Row: {
-          created_at: string | null
-          display_order: number | null
-          id: string
-          question: string
+          id: number
+          option_no: string
+          option_unsure: string
+          option_yes: string
+          question_order: number
+          question_text: string
         }
         Insert: {
-          created_at?: string | null
-          display_order?: number | null
-          id?: string
-          question: string
+          id?: number
+          option_no: string
+          option_unsure: string
+          option_yes: string
+          question_order: number
+          question_text: string
         }
         Update: {
-          created_at?: string | null
-          display_order?: number | null
-          id?: string
-          question?: string
+          id?: number
+          option_no?: string
+          option_unsure?: string
+          option_yes?: string
+          question_order?: number
+          question_text?: string
         }
         Relationships: []
       }
