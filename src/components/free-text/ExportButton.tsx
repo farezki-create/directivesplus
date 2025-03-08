@@ -1,8 +1,9 @@
 
 import { Button } from "@/components/ui/button";
-import { PDFDownloadLink } from "@react-pdf/renderer";
-import { PDFDocument } from "@/components/pdf/PDFDocumentGenerator";
+import { handlePDFGeneration, handlePDFDownload } from "@/components/pdf/utils/PDFGenerationUtils";
 import { useLanguage } from "@/hooks/useLanguage";
+import { usePDFData } from "@/components/pdf/usePDFData";
+import { useState } from "react";
 
 interface ExportButtonProps {
   data: {
@@ -21,33 +22,50 @@ interface ExportButtonProps {
 
 export function ExportButton({ data }: ExportButtonProps) {
   const { t } = useLanguage();
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const { profile, trustedPersons } = usePDFData();
   
   if (!data) return null;
 
-  // Extract the necessary data for PDF generation
-  const pdfData = {
-    userId: data.userId,
-    generalResponses: data.responses.general,
-    lifeSupportResponses: data.responses.lifeSupport,
-    advancedIllnessResponses: data.responses.advancedIllness,
-    preferencesResponses: data.responses.preferences,
-    synthesis: data.synthesis?.free_text || '',
+  const handleExport = async () => {
+    setIsGenerating(true);
+    
+    if (!profile) {
+      console.error("[ExportButton] No profile data available");
+      setIsGenerating(false);
+      return;
+    }
+    
+    try {
+      await handlePDFGeneration(
+        profile,
+        data.responses,
+        trustedPersons,
+        (url) => {
+          setPdfUrl(url);
+          if (url) {
+            handlePDFDownload(url);
+          }
+          setIsGenerating(false);
+        },
+        () => {}
+      );
+    } catch (error) {
+      console.error("[ExportButton] Error generating PDF:", error);
+      setIsGenerating(false);
+    }
   };
-  
-  // Create a unique filename with timestamp
-  const filename = `directives-anticipees-${new Date().toISOString().slice(0, 10)}.pdf`;
 
   return (
-    <PDFDownloadLink
-      document={<PDFDocument data={pdfData} />}
-      fileName={filename}
-      className="mt-4 block"
+    <Button 
+      variant="outline" 
+      size="default" 
+      className="w-full mt-4" 
+      disabled={isGenerating}
+      onClick={handleExport}
     >
-      {({ loading }) => (
-        <Button variant="outline" size="default" className="w-full" disabled={loading}>
-          {loading ? t('generatingPDF') : t('exportPDF')}
-        </Button>
-      )}
-    </PDFDownloadLink>
+      {isGenerating ? t('generatingPDF') : t('exportPDF')}
+    </Button>
   );
 }
