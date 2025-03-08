@@ -172,41 +172,20 @@ export function LifeSupportQuestionsDialog({
     }
   };
 
-  // Options de réponse selon la langue
-  const getQuestionOptions = (question: any) => {
+  // Options de réponse selon la langue - SIMPLIFIED as requested
+  const getQuestionOptions = () => {
     if (currentLanguage === 'en') {
       return [
         { value: 'Yes', label: 'Yes' },
-        { value: 'Yes for a moderate period', label: 'Yes for a moderate period' },
-        { value: 'Yes only if the medical team deems it useful', label: 'Yes only if the medical team deems it useful' },
-        { value: 'No quickly abandon therapeutic', label: 'No, quickly abandon therapeutic' },
-        { value: 'Non-suffering is to be prioritized', label: 'Non-suffering is to be prioritized' },
-        { value: 'Undecided', label: 'Undecided' }
+        { value: 'No', label: 'No' },
+        { value: 'I dont know', label: "I don't know" }
       ];
     } else {
-      // For French, use the options directly from the database structure
-      const currentQuestion = typeof question.id === 'number' 
-        ? question 
-        : questions.find(q => q.id === question.id);
-        
-      if (currentQuestion) {
-        return [
-          { value: 'Oui', label: currentQuestion.option_yes || t('yes') },
-          { value: 'Oui pour une durée modérée', label: t('yesModerateTime') },
-          { value: 'Oui seulement si l\'équipe médicale le juge utile', label: t('yesMedicalTeam') },
-          { value: 'Non rapidement abandonner le thérapeutique', label: t('noQuicklyAbandon') },
-          { value: 'La non souffrance est à privilégier', label: t('prioritizeNoSuffering') },
-          { value: 'Indécision', label: currentQuestion.option_unsure || t('indecision') }
-        ];
-      }
-      
+      // Simplified French options as requested
       return [
-        { value: 'Oui', label: t('yes') },
-        { value: 'Oui pour une durée modérée', label: t('yesModerateTime') },
-        { value: 'Oui seulement si l\'équipe médicale le juge utile', label: t('yesMedicalTeam') },
-        { value: 'Non rapidement abandonner le thérapeutique', label: t('noQuicklyAbandon') },
-        { value: 'La non souffrance est à privilégier', label: t('prioritizeNoSuffering') },
-        { value: 'Indécision', label: t('indecision') }
+        { value: 'Oui', label: 'Oui' },
+        { value: 'Non', label: 'Non' },
+        { value: 'Je ne sais pas', label: 'Je ne sais pas' }
       ];
     }
   };
@@ -227,7 +206,7 @@ export function LifeSupportQuestionsDialog({
           question={question}
           value={answers[question.id] || []}
           onValueChange={(value, checked) => handleAnswerChange(question.id, value, checked)}
-          options={getQuestionOptions(question)}
+          options={getQuestionOptions()}
         />
       ))}
     </QuestionsDialogLayout>
