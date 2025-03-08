@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { QuestionCard } from "./questions/QuestionCard";
@@ -27,7 +26,6 @@ export function LifeSupportQuestionsDialog({
         console.log(`[LifeSupport] Fetching questions in ${currentLanguage}...`);
         
         if (currentLanguage === 'en') {
-          // Fetch English questions
           const { data, error } = await supabase
             .from('questionnaire_life_support_en')
             .select('*')
@@ -47,7 +45,6 @@ export function LifeSupportQuestionsDialog({
           console.log('[LifeSupport] Questions order:', data?.map(q => q.display_order));
           setQuestions(data || []);
         } else {
-          // Fetch French questions - updated to match the structure in Supabase
           const { data, error } = await supabase
             .from('questionnaire_life_support_fr')
             .select('*')
@@ -63,7 +60,6 @@ export function LifeSupportQuestionsDialog({
             return;
           }
           
-          // Transform the French data to match the expected format
           const formattedData = data?.map(item => ({
             id: item.id,
             question: item.question_text,
@@ -94,20 +90,21 @@ export function LifeSupportQuestionsDialog({
   const handleAnswerChange = (questionId: string, value: string, checked: boolean) => {
     console.log('[LifeSupport] Answer change:', { questionId, value, checked });
     
-    if (checked) {
-      setAnswers(prev => ({
-        ...prev,
-        [questionId]: [value]
-      }));
-    } else {
-      setAnswers(prev => {
+    setAnswers(prev => {
+      if (checked) {
+        return {
+          ...prev,
+          [questionId]: [value]
+        };
+      } 
+      else {
         const newValues = prev[questionId]?.filter(v => v !== value) || [];
         return {
           ...prev,
           [questionId]: newValues
         };
-      });
-    }
+      }
+    });
   };
 
   const handleSubmit = async () => {
@@ -126,7 +123,6 @@ export function LifeSupportQuestionsDialog({
         return;
       }
 
-      // Prepare all responses for insertion
       const responses = Object.entries(answers).flatMap(([questionId, values]) => {
         const question = questions.find(q => q.id.toString() === questionId);
         return values.map(value => ({
@@ -172,7 +168,6 @@ export function LifeSupportQuestionsDialog({
     }
   };
 
-  // Options de réponse selon la langue - SIMPLIFIED as requested
   const getQuestionOptions = () => {
     if (currentLanguage === 'en') {
       return [
@@ -181,7 +176,6 @@ export function LifeSupportQuestionsDialog({
         { value: 'I dont know', label: "I don't know" }
       ];
     } else {
-      // Simplified French options as requested
       return [
         { value: 'Oui', label: 'Oui' },
         { value: 'Non', label: 'Non' },

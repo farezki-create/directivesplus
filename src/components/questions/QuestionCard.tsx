@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 interface QuestionCardProps {
   question: any;
   value: string[];
-  onValueChange: (value: string) => void;
+  onValueChange: (value: string, checked?: boolean) => void;
   options: Array<{
     value: string;
     label: string;
@@ -41,9 +41,8 @@ export function QuestionCard({
                   id={`${question.id}-${option.value}`}
                   checked={value.includes(option.value)}
                   onCheckedChange={(checked) => {
-                    if (checked) {
-                      onValueChange(option.value);
-                    }
+                    // Pass the boolean state of the checkbox to the handler
+                    onValueChange(option.value, checked as boolean);
                   }}
                 />
                 <Label 
