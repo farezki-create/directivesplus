@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -21,9 +22,10 @@ export function useFetchAdvancedIllnessAnswers(open: boolean) {
 
       console.log("[AdvancedIllness] Fetching existing answers for user:", userId);
       const { data: existingAnswers, error } = await supabase
-        .from("questionnaire_advanced_illness_responses")
+        .from("questionnaire_responses")
         .select("question_id, response")
-        .eq("user_id", userId);
+        .eq("user_id", userId)
+        .eq("questionnaire_type", "advanced_illness");
 
       if (error) {
         console.error("[AdvancedIllness] Error fetching existing answers:", error);
@@ -38,12 +40,13 @@ export function useFetchAdvancedIllnessAnswers(open: boolean) {
       console.log("[AdvancedIllness] Found existing answers:", existingAnswers?.length);
       const answersMap: Record<string, string[]> = {};
       existingAnswers?.forEach((answer) => {
-        // Parse the response string into an array
-        try {
-          answersMap[answer.question_id] = JSON.parse(answer.response);
-        } catch (e) {
-          console.error("[AdvancedIllness] Error parsing response:", e);
-          answersMap[answer.question_id] = [];
+        if (answer.question_id) {
+          if (!answersMap[answer.question_id]) {
+            answersMap[answer.question_id] = [];
+          }
+          if (answer.response) {
+            answersMap[answer.question_id].push(answer.response);
+          }
         }
       });
       setAnswers(answersMap);

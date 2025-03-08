@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -20,14 +21,15 @@ export function useSubmitAdvancedIllnessAnswers() {
       }
 
       console.log("[AdvancedIllness] Preparing responses for submission");
-      const responses = Object.entries(answers).map(([questionId, response]) => {
+      const responses = Object.entries(answers).flatMap(([questionId, responseValues]) => {
         const question = questions.find((q) => q.id === questionId);
-        return {
+        return responseValues.map(value => ({
           user_id: userId,
           question_id: questionId,
-          response: JSON.stringify(response),
           question_text: question?.question || "",
-        };
+          response: value,
+          questionnaire_type: 'advanced_illness'
+        }));
       });
 
       if (responses.length === 0) {
@@ -35,17 +37,32 @@ export function useSubmitAdvancedIllnessAnswers() {
         return true;
       }
 
-      console.log("[AdvancedIllness] Upserting responses:", responses.length);
-      for (const response of responses) {
-        const { error: upsertError } = await supabase
-          .from("questionnaire_advanced_illness_responses")
-          .upsert(response, {
-            onConflict: 'user_id,question_id',
-            ignoreDuplicates: false
-          });
+      // Delete existing responses first
+      const { error: deleteError } = await supabase
+        .from("questionnaire_responses")
+        .delete()
+        .eq("user_id", userId)
+        .eq("questionnaire_type", "advanced_illness");
 
-        if (upsertError) {
-          console.error("[AdvancedIllness] Error upserting response:", upsertError);
+      if (deleteError) {
+        console.error("[AdvancedIllness] Error deleting existing responses:", deleteError);
+        toast({
+          title: "Erreur",
+          description: "Une erreur est survenue lors de la suppression des réponses existantes.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      // Insert new responses
+      console.log("[AdvancedIllness] Inserting responses:", responses.length);
+      for (const response of responses) {
+        const { error: insertError } = await supabase
+          .from("questionnaire_responses")
+          .insert(response);
+
+        if (insertError) {
+          console.error("[AdvancedIllness] Error inserting response:", insertError);
           toast({
             title: "Erreur",
             description: "Une erreur est survenue lors de l'enregistrement.",

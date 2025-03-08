@@ -237,6 +237,33 @@ export type Database = {
         }
         Relationships: []
       }
+      questionnaire_advanced_illness_responses: {
+        Row: {
+          created_at: string | null
+          id: string
+          question_id: string
+          question_text: string | null
+          response: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          question_id: string
+          question_text?: string | null
+          response?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          question_id?: string
+          question_text?: string | null
+          response?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       questionnaire_general_en: {
         Row: {
           created_at: string | null
@@ -369,6 +396,33 @@ export type Database = {
           display_order?: number | null
           id?: string
           question?: string
+        }
+        Relationships: []
+      }
+      questionnaire_preferences_responses: {
+        Row: {
+          created_at: string | null
+          id: string
+          question_id: string
+          question_text: string | null
+          response: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          question_id: string
+          question_text?: string | null
+          response?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          question_id?: string
+          question_text?: string | null
+          response?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }

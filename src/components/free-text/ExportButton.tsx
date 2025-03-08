@@ -1,77 +1,53 @@
+
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
+import { PDFDownloadLink } from "@react-pdf/renderer";
+import { PDFDocument } from "@/components/pdf/PDFDocumentGenerator";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface ExportButtonProps {
-  userId: string | null;
+  data: {
+    responses: {
+      general: any[];
+      lifeSupport: any[];
+      advancedIllness: any[];
+      preferences: any[];
+    };
+    synthesis?: {
+      free_text: string;
+    } | null;
+    userId: string;
+  };
 }
 
-export function ExportButton({ userId }: ExportButtonProps) {
-  const { toast } = useToast();
-  const { responses } = useQuestionnairesResponses(userId || "");
+export function ExportButton({ data }: ExportButtonProps) {
+  const { t } = useLanguage();
+  
+  if (!data) return null;
 
-  const handleExport = () => {
-    try {
-      console.log("[ExportButton] Starting export of responses");
-      const exportData = {
-        "Avis général": responses.general?.map(response => ({
-          question: response.question_text || response.questions?.Question,
-          réponse: response.response
-        })),
-        "Maintien en vie": responses.lifeSupport?.map(response => ({
-          question: response.question_text || response.life_support_questions?.question,
-          réponse: response.response
-        })),
-        "Maladie avancée": responses.advancedIllness?.map(response => ({
-          question: response.question_text || response.advanced_illness_questions?.question,
-          réponse: response.response
-        })),
-        "Mes goûts et mes peurs": responses.preferences?.map(response => ({
-          question: response.question_text || response.preferences_questions?.question,
-          réponse: response.response
-        })),
-        "Synthèse": responses.synthesis?.free_text
-      };
-
-      console.log("[ExportButton] Prepared export data:", exportData);
-
-      const jsonString = JSON.stringify(exportData, null, 2);
-      const blob = new Blob([jsonString], { type: "application/json" });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = "directives-anticipees.json";
-      
-      document.body.appendChild(link);
-      link.click();
-      
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(link);
-
-      console.log("[ExportButton] Export completed successfully");
-      toast({
-        title: "Export réussi",
-        description: "Vos réponses ont été exportées avec succès.",
-      });
-    } catch (error) {
-      console.error("[ExportButton] Error during export:", error);
-      toast({
-        title: "Erreur lors de l'export",
-        description: "Une erreur est survenue lors de l'export de vos réponses.",
-        variant: "destructive",
-      });
-    }
+  // Extract the necessary data for PDF generation
+  const pdfData = {
+    userId: data.userId,
+    generalResponses: data.responses.general,
+    lifeSupportResponses: data.responses.lifeSupport,
+    advancedIllnessResponses: data.responses.advancedIllness,
+    preferencesResponses: data.responses.preferences,
+    synthesis: data.synthesis?.free_text || '',
   };
+  
+  // Create a unique filename with timestamp
+  const filename = `directives-anticipees-${new Date().toISOString().slice(0, 10)}.pdf`;
 
   return (
-    <Button
-      onClick={handleExport}
-      variant="outline"
-      className="flex items-center gap-2"
+    <PDFDownloadLink
+      document={<PDFDocument data={pdfData} />}
+      fileName={filename}
+      className="mt-4 block"
     >
-      <Download className="h-4 w-4" />
-      Exporter
-    </Button>
+      {({ loading }) => (
+        <Button variant="outline" size="default" className="w-full" disabled={loading}>
+          {loading ? t('generatingPDF') : t('exportPDF')}
+        </Button>
+      )}
+    </PDFDownloadLink>
   );
 }

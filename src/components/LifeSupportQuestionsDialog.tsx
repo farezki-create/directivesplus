@@ -18,7 +18,7 @@ export function LifeSupportQuestionsDialog({
   const { t } = useLanguage();
   const { questions, loading } = useLifeSupportQuestions(open);
   const { answers, handleAnswerChange, handleSubmit } = useLifeSupportAnswers(questions);
-  const { getQuestionOptions } = useQuestionOptions();
+  const { getLifeSupportOptions } = useQuestionOptions();
 
   const onSubmit = async () => {
     const success = await handleSubmit();
@@ -43,7 +43,7 @@ export function LifeSupportQuestionsDialog({
           question={question}
           value={answers[question.id] || []}
           onValueChange={(value, checked) => handleAnswerChange(question.id, value, checked)}
-          options={getQuestionOptions()}
+          options={getLifeSupportOptions()}
         />
       ))}
     </QuestionsDialogLayout>

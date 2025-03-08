@@ -6,6 +6,7 @@ import { QuestionCard } from "./questions/QuestionCard";
 import { QuestionsDialogLayout } from "./questions/QuestionsDialogLayout";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useQuestionOptions } from "./questions/QuestionOptions";
 
 interface PreferencesQuestionsDialogProps {
   open: boolean;
@@ -19,16 +20,17 @@ export function PreferencesQuestionsDialog({
   const [answers, setAnswers] = useState<Record<string, string[]>>({});
   const { toast } = useToast();
   const { t, currentLanguage } = useLanguage();
+  const { getPreferencesOptions } = useQuestionOptions();
 
   const { data: questions, isLoading } = useQuery({
     queryKey: ["preferences-questions", currentLanguage],
     queryFn: async () => {
       console.log(`[Preferences] Fetching questions in ${currentLanguage}...`);
       
-      // Déterminer la table à interroger en fonction de la langue
+      // Determine which table to query based on language
       const tableName = currentLanguage === 'en' 
-        ? 'preferences_questions_en' 
-        : 'preferences_questions';
+        ? 'questionnaire_preferences_en' 
+        : 'questionnaire_preferences_fr';
       
       const { data, error } = await supabase
         .from(tableName)
@@ -67,26 +69,35 @@ export function PreferencesQuestionsDialog({
           user_id: userId,
           question_id: questionId,
           question_text: question?.question,
-          response: value
+          response: value,
+          questionnaire_type: 'preferences'
         }));
       });
 
       console.log('[Preferences] Prepared responses for insertion:', responses);
 
-      const { error } = await supabase
-        .from('questionnaire_preferences_responses')
-        .upsert(responses, {
-          onConflict: 'user_id,question_id'
-        });
+      // Delete existing responses before inserting new ones
+      await supabase
+        .from('questionnaire_responses')
+        .delete()
+        .eq('user_id', userId)
+        .eq('questionnaire_type', 'preferences');
 
-      if (error) {
-        console.error('[Preferences] Error saving responses:', error);
-        toast({
-          title: "Erreur",
-          description: "Impossible d'enregistrer vos réponses. Veuillez réessayer.",
-          variant: "destructive",
-        });
-        return;
+      // Insert new responses
+      for (const response of responses) {
+        const { error } = await supabase
+          .from('questionnaire_responses')
+          .insert(response);
+
+        if (error) {
+          console.error('[Preferences] Error saving response:', error);
+          toast({
+            title: "Erreur",
+            description: "Impossible d'enregistrer vos réponses. Veuillez réessayer.",
+            variant: "destructive",
+          });
+          return;
+        }
       }
 
       console.log('[Preferences] Responses saved successfully');
@@ -114,23 +125,6 @@ export function PreferencesQuestionsDialog({
     }));
   };
 
-  // Options de réponse selon la langue
-  const getAnswerOptions = () => {
-    if (currentLanguage === 'en') {
-      return [
-        { label: 'Yes', value: "yes" },
-        { label: 'No', value: "no" },
-        { label: 'I don\'t know', value: "undecided" }
-      ];
-    } else {
-      return [
-        { label: t('yes'), value: "oui" },
-        { label: t('no'), value: "non" },
-        { label: t('dontKnow'), value: "indecis" }
-      ];
-    }
-  };
-
   return (
     <QuestionsDialogLayout
       open={open}
@@ -146,7 +140,7 @@ export function PreferencesQuestionsDialog({
           question={question}
           value={answers[question.id] || []}
           onValueChange={(value) => handleAnswerChange(question.id, value)}
-          options={getAnswerOptions()}
+          options={getPreferencesOptions()}
         />
       ))}
     </QuestionsDialogLayout>

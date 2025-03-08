@@ -18,7 +18,7 @@ export function useAdvancedIllnessQuestions(open: boolean) {
         if (currentLanguage === 'en') {
           // Fetch English questions
           const { data, error } = await supabase
-            .from('advanced_illness_questions_en')
+            .from('questionnaire_advanced_illness_en')
             .select('*')
             .order('display_order', { ascending: true });
           
@@ -37,7 +37,7 @@ export function useAdvancedIllnessQuestions(open: boolean) {
         } else {
           // Fetch French questions
           const { data, error } = await supabase
-            .from('advanced_illness_questions')
+            .from('questionnaire_advanced_illness_fr')
             .select('*')
             .order('display_order', { ascending: true });
           

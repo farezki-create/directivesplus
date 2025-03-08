@@ -5,6 +5,7 @@ import { QuestionsDialogLayout } from "./questions/QuestionsDialogLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useQuestionOptions } from "./questions/QuestionOptions";
 
 interface AdvancedIllnessQuestionsDialogProps {
   open: boolean;
@@ -20,6 +21,7 @@ export function AdvancedIllnessQuestionsDialog({
   const [answers, setAnswers] = useState<Record<string, string[]>>({});
   const { toast } = useToast();
   const { t, currentLanguage } = useLanguage();
+  const { getAdvancedIllnessOptions } = useQuestionOptions();
 
   useEffect(() => {
     async function fetchQuestions() {
@@ -29,7 +31,7 @@ export function AdvancedIllnessQuestionsDialog({
         if (currentLanguage === 'en') {
           // Fetch English questions
           const { data, error } = await supabase
-            .from('advanced_illness_questions_en')
+            .from('questionnaire_advanced_illness_en')
             .select('*')
             .order('display_order', { ascending: true });
           
@@ -48,7 +50,7 @@ export function AdvancedIllnessQuestionsDialog({
         } else {
           // Fetch French questions
           const { data, error } = await supabase
-            .from('advanced_illness_questions')
+            .from('questionnaire_advanced_illness_fr')
             .select('*')
             .order('display_order', { ascending: true });
           
@@ -138,20 +140,31 @@ export function AdvancedIllnessQuestionsDialog({
 
       console.log('[AdvancedIllness] Prepared responses for insertion:', responses);
 
-      const { error } = await supabase
-        .from('questionnaire_advanced_illness_responses')
-        .upsert(responses, {
-          onConflict: 'user_id,question_id,response'
-        });
+      // Delete existing responses before inserting new ones
+      await supabase
+        .from('questionnaire_responses')
+        .delete()
+        .eq('user_id', userId)
+        .eq('questionnaire_type', 'advanced_illness');
 
-      if (error) {
-        console.error('[AdvancedIllness] Error saving responses:', error);
-        toast({
-          title: "Erreur",
-          description: "Impossible d'enregistrer vos réponses. Veuillez réessayer.",
-          variant: "destructive",
-        });
-        return;
+      // Insert new responses
+      for (const response of responses) {
+        const { error } = await supabase
+          .from('questionnaire_responses')
+          .insert({
+            ...response,
+            questionnaire_type: 'advanced_illness'
+          });
+
+        if (error) {
+          console.error('[AdvancedIllness] Error saving response:', error);
+          toast({
+            title: "Erreur",
+            description: "Impossible d'enregistrer vos réponses. Veuillez réessayer.",
+            variant: "destructive",
+          });
+          return;
+        }
       }
 
       console.log('[AdvancedIllness] Responses saved successfully');
@@ -167,24 +180,6 @@ export function AdvancedIllnessQuestionsDialog({
         description: "Une erreur inattendue s'est produite lors de l'enregistrement.",
         variant: "destructive",
       });
-    }
-  };
-
-  const getQuestionOptions = (question: any) => {
-    if (currentLanguage === 'en') {
-      return [
-        { value: 'yes', label: 'Yes' },
-        { value: 'no', label: 'No' },
-        { value: 'yes_medical', label: 'Yes if the medical team deems it useful' },
-        { value: 'yes_trusted', label: 'Yes if my trusted person deems it useful' }
-      ];
-    } else {
-      return [
-        { value: 'oui', label: t('yes') },
-        { value: 'non', label: t('no') },
-        { value: 'oui_medical', label: t('yesMedicalTeam') },
-        { value: 'oui_confiance', label: t('yesTrustedPerson') }
-      ];
     }
   };
 
@@ -204,7 +199,7 @@ export function AdvancedIllnessQuestionsDialog({
           question={question}
           value={answers[question.id] || []}
           onValueChange={(value, checked) => handleAnswerChange(question.id, value, checked)}
-          options={getQuestionOptions(question)}
+          options={getAdvancedIllnessOptions()}
           multiple={true}
         />
       ))}
