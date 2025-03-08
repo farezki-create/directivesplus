@@ -1,3 +1,4 @@
+
 import { Header } from "@/components/Header";
 import { useState } from "react";
 import { useDialogState } from "@/hooks/useDialogState";
@@ -48,7 +49,8 @@ const Index = () => {
       </main>
 
       <DialogsContainer>
-        {/* Dialogs will be rendered here */}
+        {/* This empty fragment satisfies the children prop requirement */}
+        <></>
       </DialogsContainer>
     </div>
   );
