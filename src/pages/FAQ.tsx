@@ -67,7 +67,8 @@ const FAQ = () => {
               <p className="text-gray-700">
                 {currentLanguage === 'fr' 
                   ? 'Les directives doivent préciser :\n• Le refus ou l\'acceptation de traitements spécifiques (réanimation, nutrition artificielle, etc.)\n• Les souhaits concernant la sédation palliative\n• Les préférences relatives au lieu de fin de vie\n• Toute considération éthique ou religieuse influençant les choix thérapeutiques.\nLa Haute Autorité de Santé recommande d\'intégrer des réflexions personnelles sur sa conception de la qualité de vie ("Qu\'est-ce qui me rend heureux ?", "Suis-je prêt à accepter une perte d\'autonomie pour prolonger ma vie ?").'
-                  : 'The directives must specify:\n• Refusal or acceptance of specific treatments (resuscitation, artificial nutrition, etc.)\n• Wishes regarding palliative sedation\n• Preferences regarding the place of end of life\n• Any ethical or religious considerations influencing therapeutic choices.\nThe High Authority for Health recommends incorporating personal reflections on one\'s conception of quality of life ("What makes me happy?", "Am I ready to accept a loss of autonomy to prolong my life?").'}
+                  : 'The directives must specify:\n• Refusal or acceptance of specific treatments (resuscitation, artificial nutrition, etc.)\n• Wishes regarding palliative sedation\n• Preferences regarding the place of end of life\n• Any ethical or religious considerations influencing therapeutic choices.\nThe High Authority for Health recommends incorporating personal reflections on one\'s conception of quality of life ("What makes me happy?", "Am I ready to accept a loss of autonomy to prolong my life?").'
+                }
                 .split('\n').map((line, i) => (
                   <span key={i} className="block mb-2">{line}</span>
                 ))
@@ -82,7 +83,8 @@ const FAQ = () => {
               <p className="text-gray-700">
                 {currentLanguage === 'fr' 
                   ? 'Trois lieux de conservation principaux sont préconisés :\n1. Chez son médecin traitant (obligation légale d\'information mutuelle)\n2. Dans le Dossier Médical Partagé (DMP)\n3. Au domicile, avec indication claire aux proches.\nLe registre national numérique, en cours de déploiement, centralisera progressivement toutes les directives. Une carte portable à glisser dans son portefeuille est également proposée par certains organismes.'
-                  : 'Three main storage locations are recommended:\n1. With your primary care physician (legal obligation of mutual information)\n2. In the Shared Medical Record (DMP)\n3. At home, with clear indication to loved ones.\nThe national digital registry, currently being deployed, will gradually centralize all directives. A portable card to slip into your wallet is also offered by some organizations.'}
+                  : 'Three main storage locations are recommended:\n1. With your primary care physician (legal obligation of mutual information)\n2. In the Shared Medical Record (DMP)\n3. At home, with clear indication to loved ones.\nThe national digital registry, currently being deployed, will gradually centralize all directives. A portable card to slip into your wallet is also offered by some organizations.'
+                }
                 .split('\n').map((line, i) => (
                   <span key={i} className="block mb-2">{line}</span>
                 ))
@@ -108,7 +110,8 @@ const FAQ = () => {
               <p className="text-gray-700">
                 {currentLanguage === 'fr' 
                   ? 'Oui dans deux cas précis :\n1. Urgence vitale nécessitant un délai d\'évaluation (ex : coma traumatique nécessitant une réanimation transitoire)\n2. Inadéquation manifeste avec la situation médicale (ex : refus de transfusion pour un traitement devenu peu invasif).\nDans ce second cas, le médecin doit obligatoirement :\n• Consulter un confrère indépendant\n• Recueillir l\'avis de la personne de confiance ou des proches\n• Motiver par écrit sa décision au dossier médical.'
-                  : 'Yes in two specific cases:\n1. Vital emergency requiring an evaluation delay (e.g., traumatic coma requiring transitory resuscitation)\n2. Manifest inadequacy with the medical situation (e.g., refusal of transfusion for a treatment that has become minimally invasive).\nIn this second case, the doctor must:\n• Consult an independent colleague\n• Gather the opinion of the trusted person or relatives\n• Motivate his decision in writing in the medical file.'}
+                  : 'Yes in two specific cases:\n1. Vital emergency requiring an evaluation delay (e.g., traumatic coma requiring transitory resuscitation)\n2. Manifest inadequacy with the medical situation (e.g., refusal of transfusion for a treatment that has become minimally invasive).\nIn this second case, the doctor must:\n• Consult an independent colleague\n• Gather the opinion of the trusted person or relatives\n• Motivate his decision in writing in the medical file.'
+                }
                 .split('\n').map((line, i) => (
                   <span key={i} className="block mb-2">{line}</span>
                 ))
@@ -123,7 +126,8 @@ const FAQ = () => {
               <p className="text-gray-700">
                 {currentLanguage === 'fr' 
                   ? 'Non, mais cette désignation est fortement recommandée. La personne de confiance :\n• Intervient en complément (non en remplacement) des directives\n• Peut aider à interpréter vos volontés dans des situations imprévues\n• Doit être consultée avant toute décision de non-application des directives.'
-                  : 'No, but this designation is strongly recommended. The trusted person:\n• Intervenes as a complement (not a replacement) to the directives\n• Can help interpret your wishes in unforeseen situations\n• Must be consulted before any decision not to apply the directives.'}
+                  : 'No, but this designation is strongly recommended. The trusted person:\n• Intervenes as a complement (not a replacement) to the directives\n• Can help interpret your wishes in unforeseen situations\n• Must be consulted before any decision not to apply the directives.'
+                }
                 .split('\n').map((line, i) => (
                   <span key={i} className="block mb-2">{line}</span>
                 ))
@@ -138,7 +142,8 @@ const FAQ = () => {
               <p className="text-gray-700">
                 {currentLanguage === 'fr' 
                   ? '• L\'application DirectivesPlus\n• Aide du médecin traitant : 67% des généralistes formés spécifiquement depuis 2022\n• Plateforme SOS Fin de Vie : écoute téléphonique et modèles personnalisables\n• Unités de soins palliatifs : entretiens d\'1 à 3 heures avec un médecin spécialisé'
-                  : '• The DirectivesPlus application\n• Help from your primary care physician: 67% of general practitioners specifically trained since 2022\n• SOS End of Life platform: telephone listening and customizable models\n• Palliative care units: interviews of 1 to 3 hours with a specialized doctor'}
+                  : '• The DirectivesPlus application\n• Help from your primary care physician: 67% of general practitioners specifically trained since 2022\n• SOS End of Life platform: telephone listening and customizable models\n• Palliative care units: interviews of 1 to 3 hours with a specialized doctor'
+                }
                 .split('\n').map((line, i) => (
                   <span key={i} className="block mb-2">{line}</span>
                 ))
