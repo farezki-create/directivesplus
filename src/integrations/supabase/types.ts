@@ -261,19 +261,19 @@ export type Database = {
       questionnaire_general_fr: {
         Row: {
           created_at: string | null
-          display_order: number | null
+          display_order: number
           id: string
           question: string
         }
         Insert: {
           created_at?: string | null
-          display_order?: number | null
+          display_order: number
           id?: string
           question: string
         }
         Update: {
           created_at?: string | null
-          display_order?: number | null
+          display_order?: number
           id?: string
           question?: string
         }

@@ -47,6 +47,7 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
         }
         
         console.log('[GeneralOpinion] Questions loaded:', data?.length, 'questions');
+        console.log('[GeneralOpinion] Questions order:', data?.map(q => q.display_order));
         setQuestions(data || []);
       } catch (error) {
         console.error('[GeneralOpinion] Unexpected error:', error);
