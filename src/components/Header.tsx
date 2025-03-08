@@ -29,6 +29,32 @@ export const Header = () => {
   }, []);
 
   const handleSignOut = async () => {
+    // Supprimer les PDFs stockés localement
+    const pdfUrls = Object.keys(localStorage).filter(key => 
+      key.startsWith('pdf_') || key.includes('dataurlstring')
+    );
+    
+    pdfUrls.forEach(key => {
+      localStorage.removeItem(key);
+    });
+    
+    // Nettoyage des URLs de données en mémoire
+    if (window.URL && window.URL.revokeObjectURL) {
+      pdfUrls.forEach(key => {
+        try {
+          const value = localStorage.getItem(key);
+          if (value && value.startsWith('blob:')) {
+            window.URL.revokeObjectURL(value);
+          }
+        } catch (e) {
+          console.error('Erreur lors de la révocation de l\'URL:', e);
+        }
+      });
+    }
+    
+    console.log('Documents PDFs supprimés lors de la déconnexion');
+    
+    // Déconnexion de l'utilisateur
     await supabase.auth.signOut();
     navigate("/");
   };

@@ -1,3 +1,4 @@
+
 export function FeatureHighlights() {
   return (
     <div className="mt-12 grid gap-8 md:grid-cols-3">
@@ -10,13 +11,13 @@ export function FeatureHighlights() {
       <div className="text-center">
         <h3 className="text-lg font-semibold mb-2">100% sécurisé</h3>
         <p className="text-muted-foreground">
-          Vos données sont protégées et confidentielles.
+          Vos données sont protégées, confidentielles et supprimées à la déconnexion.
         </p>
       </div>
       <div className="text-center">
-        <h3 className="text-lg font-semibold mb-2">Toujours accessible</h3>
+        <h3 className="text-lg font-semibold mb-2">Facilement partageable</h3>
         <p className="text-muted-foreground">
-          Consultez et modifiez vos directives à tout moment.
+          Téléchargez vos directives pour les partager avec vos proches.
         </p>
       </div>
     </div>
