@@ -14,6 +14,11 @@ import Reviews from "./pages/Reviews";
 import FAQ from "./pages/FAQ";
 import { DialogStateProvider } from "./hooks/useDialogState";
 
+// Import dev tools in development mode
+if (process.env.NODE_ENV === "development") {
+  import("./utils/devTools");
+}
+
 function App() {
   return (
     <LanguageProvider>
