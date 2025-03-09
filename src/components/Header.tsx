@@ -65,6 +65,8 @@ export const Header = () => {
 
   const isHomePage = location.pathname === "/";
 
+  const navButtonClass = "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl transform hover:-translate-y-1 text-white";
+
   return (
     <>
       <header className="w-full border-b">
@@ -72,34 +74,7 @@ export const Header = () => {
           <div className="flex items-center space-x-4">
             <h1 className="text-2xl font-bold text-primary">DirectivesPlus</h1>
           </div>
-          <nav className="flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              onClick={handleHomeClick}
-            >
-              {t('home')}
-            </Button>
-
-            <Button
-              variant="outline"
-              onClick={() => navigate("/reviews")}
-              className="flex items-center gap-2"
-            >
-              <MessageSquare className="w-4 h-4" />
-              {t('reviews')}
-            </Button>
-
-            <Button
-              variant="outline"
-              onClick={() => setShowPurchaseDialog(true)}
-              className="flex items-center gap-2"
-            >
-              <CreditCard className="w-4 h-4" />
-              {t('buyCard')}
-            </Button>
-            
-            <LanguageSelector />
-            
+          <div>
             {user ? (
               <Button variant="default" onClick={handleSignOut}>
                 {t('logout')}
@@ -109,7 +84,37 @@ export const Header = () => {
                 {t('login')}
               </Button>
             )}
-          </nav>
+          </div>
+        </div>
+        
+        {/* Secondary navigation band */}
+        <div className="w-full bg-gray-50 py-2 shadow-sm">
+          <div className="container mx-auto px-4 flex items-center justify-center gap-4 flex-wrap">
+            <Button
+              className={navButtonClass}
+              onClick={handleHomeClick}
+            >
+              {t('home')}
+            </Button>
+
+            <Button
+              className={navButtonClass}
+              onClick={() => navigate("/reviews")}
+            >
+              <MessageSquare className="w-4 h-4" />
+              <span>{t('reviews')}</span>
+            </Button>
+
+            <Button
+              className={navButtonClass}
+              onClick={() => setShowPurchaseDialog(true)}
+            >
+              <CreditCard className="w-4 h-4" />
+              <span>{t('buyCard')}</span>
+            </Button>
+            
+            <LanguageSelector />
+          </div>
         </div>
       </header>
 
