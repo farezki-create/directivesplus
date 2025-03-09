@@ -65,10 +65,12 @@ export function PreferencesQuestionsDialog({
       // Prepare all responses for insertion
       const responses = Object.entries(answers).flatMap(([questionId, values]) => {
         const question = questions?.find(q => q.id === questionId);
+        const questionText = question?.question || question?.question_text || '';
+        
         return values.map(value => ({
           user_id: userId,
           question_id: questionId,
-          question_text: question?.question,
+          question_text: questionText,
           response: value,
           questionnaire_type: 'preferences'
         }));

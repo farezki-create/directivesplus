@@ -20,15 +20,15 @@ export function QuestionCard({
   options,
   multiple = false 
 }: QuestionCardProps) {
-  const displayOrder = question.display_order;
-  const orderDisplay = displayOrder ? `${displayOrder}` : '';
-  const questionText = question.question || '';
+  // Handle different question object structures from different tables
+  const displayOrder = question.display_order || question.question_order || '';
+  const questionText = question.question || question.question_text || '';
 
   return (
     <div className="p-6 bg-card rounded-lg border shadow-sm">
       <div className="grid grid-cols-[48px_1fr] gap-4">
         <div className="text-center font-medium text-lg text-muted-foreground border-r pr-4">
-          {orderDisplay}
+          {displayOrder}
         </div>
         <div>
           <p className="text-lg font-medium mb-4">
