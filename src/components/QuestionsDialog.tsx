@@ -5,6 +5,7 @@ import { QuestionCard } from "./questions/QuestionCard";
 import { QuestionsDialogLayout } from "./questions/QuestionsDialogLayout";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useQuestionOptions } from "./questions/QuestionOptions";
 
 interface QuestionsDialogProps {
   open: boolean;
@@ -17,6 +18,7 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
   const [answers, setAnswers] = useState<Record<string, string[]>>({});
   const { toast } = useToast();
   const { t, currentLanguage } = useLanguage();
+  const { getQuestionOptions } = useQuestionOptions();
 
   useEffect(() => {
     async function fetchQuestions() {
@@ -70,12 +72,33 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
     }
   }, [open, toast, currentLanguage]);
 
-  const handleAnswerChange = (questionId: string, value: string) => {
-    console.log('[GeneralOpinion] Answer change:', { questionId, value });
-    setAnswers(prev => ({
-      ...prev,
-      [questionId]: [value]
-    }));
+  const handleAnswerChange = (questionId: string, value: string, checked?: boolean) => {
+    console.log('[GeneralOpinion] Answer change:', { questionId, value, checked });
+    
+    setAnswers(prev => {
+      // Create a copy of the current answers for this question or initialize an empty array
+      const currentAnswers = [...(prev[questionId] || [])];
+      
+      if (checked) {
+        // Add the value if it's not already in the array
+        if (!currentAnswers.includes(value)) {
+          currentAnswers.push(value);
+        }
+      } else {
+        // Remove the value if unchecked
+        const index = currentAnswers.indexOf(value);
+        if (index !== -1) {
+          currentAnswers.splice(index, 1);
+        }
+      }
+      
+      console.log(`[GeneralOpinion] Updated answers for question ${questionId}:`, currentAnswers);
+      
+      return {
+        ...prev,
+        [questionId]: currentAnswers
+      };
+    });
   };
 
   const handleSubmit = async () => {
@@ -98,6 +121,8 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
 
       // Prepare all responses for insertion
       const responses = Object.entries(answers).flatMap(([questionId, values]) => {
+        if (values.length === 0) return [];
+        
         const question = questions.find(q => q.id === questionId);
         
         return values.map(value => ({
@@ -125,7 +150,7 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
       const { error } = await supabase
         .from('questionnaire_responses')
         .upsert(responses, {
-          onConflict: 'user_id,question_id,questionnaire_type'
+          onConflict: 'user_id,question_id,questionnaire_type,response'
         });
 
       if (error) {
@@ -160,22 +185,6 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
     }
   };
 
-  const getQuestionOptions = (question: any) => {
-    if (currentLanguage === 'en') {
-      return [
-        { value: 'yes', label: 'Yes' },
-        { value: 'no', label: 'No' },
-        { value: 'i_dont_know', label: "I don't know" }
-      ];
-    } else {
-      return [
-        { value: 'oui', label: t('yes') },
-        { value: 'non', label: t('no') },
-        { value: 'je_ne_sais_pas', label: t('dontKnow') }
-      ];
-    }
-  };
-
   return (
     <QuestionsDialogLayout
       open={open}
@@ -191,8 +200,9 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
           key={question.id}
           question={question}
           value={answers[question.id] || []}
-          onValueChange={(value) => handleAnswerChange(question.id, value)}
-          options={getQuestionOptions(question)}
+          onValueChange={(value, checked) => handleAnswerChange(question.id, value, checked)}
+          options={getQuestionOptions()}
+          multiple={true} // Enable multiple selection for general opinion questions
         />
       ))}
     </QuestionsDialogLayout>

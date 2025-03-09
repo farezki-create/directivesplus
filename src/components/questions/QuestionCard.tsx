@@ -41,8 +41,10 @@ export function QuestionCard({
                   id={`${question.id}-${option.value}`}
                   checked={value.includes(option.value)}
                   onCheckedChange={(checked) => {
-                    // Handle multiple selection if enabled, otherwise just set the value
+                    console.log(`[QuestionCard] Option ${option.value} checked: ${checked}, multiple: ${multiple}`);
+                    
                     if (multiple) {
+                      // For multiple selection, add or remove from array
                       if (checked) {
                         onValueChange(option.value, true);
                       } else {
