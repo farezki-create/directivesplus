@@ -39,7 +39,7 @@ export function QuestionsDialogLayout({
               {title}
             </DialogTitle>
             {description && (
-              <DialogDescription className="text-center">
+              <DialogDescription className="text-center text-base font-medium">
                 {description}
               </DialogDescription>
             )}
