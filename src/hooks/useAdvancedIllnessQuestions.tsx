@@ -15,50 +15,38 @@ export function useAdvancedIllnessQuestions(open: boolean) {
       try {
         console.log(`[AdvancedIllness] Fetching questions in ${currentLanguage}...`);
         
-        if (currentLanguage === 'en') {
-          // Fetch English questions
-          const { data, error } = await supabase
-            .from('questionnaire_advanced_illness_en')
-            .select('*')
-            .order('display_order', { ascending: true });
-          
-          if (error) {
-            console.error('[AdvancedIllness] Error fetching questions:', error);
-            toast({
-              title: "Error",
-              description: "Unable to load questions. Please try again.",
-              variant: "destructive",
-            });
-            return;
-          }
-          
-          console.log('[AdvancedIllness] Questions loaded:', data?.length, 'questions');
-          setQuestions(data || []);
-        } else {
-          // Fetch French questions
-          const { data, error } = await supabase
-            .from('questionnaire_advanced_illness_fr')
-            .select('*')
-            .order('display_order', { ascending: true });
-          
-          if (error) {
-            console.error('[AdvancedIllness] Error fetching questions:', error);
-            toast({
-              title: "Erreur",
-              description: "Impossible de charger les questions. Veuillez réessayer.",
-              variant: "destructive",
-            });
-            return;
-          }
-          
-          console.log('[AdvancedIllness] Questions loaded:', data?.length, 'questions');
-          setQuestions(data || []);
+        const tableName = currentLanguage === 'en' 
+          ? 'questionnaire_advanced_illness_en' 
+          : 'questionnaire_advanced_illness_fr';
+        
+        console.log(`[AdvancedIllness] Using table: ${tableName}`);
+        
+        const { data, error } = await supabase
+          .from(tableName)
+          .select('*')
+          .order('display_order', { ascending: true });
+        
+        if (error) {
+          console.error('[AdvancedIllness] Error fetching questions:', error);
+          toast({
+            title: currentLanguage === 'en' ? "Error" : "Erreur",
+            description: currentLanguage === 'en' 
+              ? "Unable to load questions. Please try again." 
+              : "Impossible de charger les questions. Veuillez réessayer.",
+            variant: "destructive",
+          });
+          return;
         }
+        
+        console.log('[AdvancedIllness] Questions loaded:', data?.length, 'questions');
+        setQuestions(data || []);
       } catch (error) {
         console.error('[AdvancedIllness] Unexpected error:', error);
         toast({
-          title: "Erreur",
-          description: "Une erreur inattendue s'est produite.",
+          title: currentLanguage === 'en' ? "Error" : "Erreur",
+          description: currentLanguage === 'en' 
+            ? "An unexpected error occurred." 
+            : "Une erreur inattendue s'est produite.",
           variant: "destructive",
         });
       } finally {
@@ -68,6 +56,7 @@ export function useAdvancedIllnessQuestions(open: boolean) {
 
     if (open) {
       fetchQuestions();
+      setLoading(true);
     }
   }, [open, toast, currentLanguage]);
 
