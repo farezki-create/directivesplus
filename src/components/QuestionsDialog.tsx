@@ -5,6 +5,7 @@ import { QuestionCard } from "./questions/QuestionCard";
 import { QuestionsDialogLayout } from "./questions/QuestionsDialogLayout";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useQuestionOptions } from "./questions/QuestionOptions";
 
 interface QuestionsDialogProps {
   open: boolean;
@@ -17,6 +18,7 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
   const [answers, setAnswers] = useState<Record<string, string[]>>({});
   const { toast } = useToast();
   const { t, currentLanguage } = useLanguage();
+  const { getGeneralOpinionOptions } = useQuestionOptions();
 
   useEffect(() => {
     async function fetchQuestions() {
@@ -65,6 +67,7 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
 
     if (open) {
       fetchQuestions();
+      setLoading(true);
     }
   }, [open, toast, currentLanguage]);
 
@@ -109,22 +112,30 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
 
       console.log('[GeneralOpinion] Prepared responses for insertion:', responses);
 
-      const { error } = await supabase
+      // Delete existing responses before inserting new ones
+      await supabase
         .from('questionnaire_responses')
-        .upsert(responses, {
-          onConflict: 'user_id,question_id,questionnaire_type'
-        });
+        .delete()
+        .eq('user_id', userId)
+        .eq('questionnaire_type', 'general_opinion');
 
-      if (error) {
-        console.error('[GeneralOpinion] Error saving responses:', error);
-        toast({
-          title: currentLanguage === 'en' ? "Error" : "Erreur",
-          description: currentLanguage === 'en' 
-            ? "Unable to save your answers. Please try again." 
-            : "Impossible d'enregistrer vos réponses. Veuillez réessayer.",
-          variant: "destructive",
-        });
-        return;
+      // Insert new responses
+      for (const response of responses) {
+        const { error } = await supabase
+          .from('questionnaire_responses')
+          .insert(response);
+
+        if (error) {
+          console.error('[GeneralOpinion] Error saving response:', error);
+          toast({
+            title: currentLanguage === 'en' ? "Error" : "Erreur",
+            description: currentLanguage === 'en' 
+              ? "Unable to save your answers. Please try again." 
+              : "Impossible d'enregistrer vos réponses. Veuillez réessayer.",
+            variant: "destructive",
+          });
+          return;
+        }
       }
 
       console.log('[GeneralOpinion] Responses saved successfully');
@@ -147,22 +158,6 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
     }
   };
 
-  const getQuestionOptions = (question: any) => {
-    if (currentLanguage === 'en') {
-      return [
-        { value: 'yes', label: 'Yes' },
-        { value: 'no', label: 'No' },
-        { value: 'i_dont_know', label: "I don't know" }
-      ];
-    } else {
-      return [
-        { value: 'oui', label: t('yes') },
-        { value: 'non', label: t('no') },
-        { value: 'je_ne_sais_pas', label: t('dontKnow') }
-      ];
-    }
-  };
-
   return (
     <QuestionsDialogLayout
       open={open}
@@ -179,7 +174,7 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
           question={question}
           value={answers[question.id] || []}
           onValueChange={(value) => handleAnswerChange(question.id, value)}
-          options={getQuestionOptions(question)}
+          options={getGeneralOpinionOptions()}
         />
       ))}
     </QuestionsDialogLayout>

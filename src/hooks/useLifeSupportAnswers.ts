@@ -60,22 +60,30 @@ export function useLifeSupportAnswers(questions: any[]) {
 
       console.log('[LifeSupport] Prepared responses for insertion:', responses);
 
-      const { error } = await supabase
+      // Delete existing responses before inserting new ones
+      await supabase
         .from('questionnaire_responses')
-        .upsert(responses, {
-          onConflict: 'user_id,question_id,questionnaire_type'
-        });
+        .delete()
+        .eq('user_id', userId)
+        .eq('questionnaire_type', 'life_support');
 
-      if (error) {
-        console.error('[LifeSupport] Error saving responses:', error);
-        toast({
-          title: currentLanguage === 'en' ? "Error" : "Erreur",
-          description: currentLanguage === 'en'
-            ? "Unable to save your answers. Please try again."
-            : "Impossible d'enregistrer vos réponses. Veuillez réessayer.",
-          variant: "destructive",
-        });
-        return false;
+      // Insert new responses
+      for (const response of responses) {
+        const { error } = await supabase
+          .from('questionnaire_responses')
+          .insert(response);
+
+        if (error) {
+          console.error('[LifeSupport] Error saving response:', error);
+          toast({
+            title: currentLanguage === 'en' ? "Error" : "Erreur",
+            description: currentLanguage === 'en'
+              ? "Unable to save your answers. Please try again."
+              : "Impossible d'enregistrer vos réponses. Veuillez réessayer.",
+            variant: "destructive",
+          });
+          return false;
+        }
       }
 
       console.log('[LifeSupport] Responses saved successfully');

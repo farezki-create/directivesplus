@@ -51,9 +51,14 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
           }
           
           const formattedData = data?.map(item => ({
-            id: item.id,
+            id: item.id.toString(), // Convert id to string to match other tables
             question: item.question_text,
-            display_order: item.question_order
+            display_order: item.question_order,
+            options: {
+              yes: item.option_yes,
+              no: item.option_no,
+              unsure: item.option_unsure
+            }
           })) || [];
           
           console.log('[LifeSupport] Questions loaded:', formattedData.length, 'questions');
@@ -76,6 +81,7 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
 
     if (isDialogOpen) {
       fetchQuestions();
+      setLoading(true);
     }
   }, [isDialogOpen, toast, currentLanguage]);
 
