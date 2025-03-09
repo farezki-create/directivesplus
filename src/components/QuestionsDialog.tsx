@@ -65,6 +65,8 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
 
     if (open) {
       fetchQuestions();
+      // Reset answers when dialog reopens
+      setAnswers({});
     }
   }, [open, toast, currentLanguage]);
 
@@ -108,6 +110,17 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
       });
 
       console.log('[GeneralOpinion] Prepared responses for insertion:', responses);
+
+      if (responses.length === 0) {
+        toast({
+          title: currentLanguage === 'en' ? "Warning" : "Attention",
+          description: currentLanguage === 'en' 
+            ? "Please answer at least one question before saving." 
+            : "Veuillez répondre à au moins une question avant d'enregistrer.",
+          variant: "destructive",
+        });
+        return;
+      }
 
       const { error } = await supabase
         .from('questionnaire_responses')

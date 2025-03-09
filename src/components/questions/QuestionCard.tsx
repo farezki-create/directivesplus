@@ -41,8 +41,17 @@ export function QuestionCard({
                   id={`${question.id}-${option.value}`}
                   checked={value.includes(option.value)}
                   onCheckedChange={(checked) => {
-                    // Pass the boolean state of the checkbox to the handler
-                    onValueChange(option.value, checked as boolean);
+                    // Handle multiple selection if enabled, otherwise just set the value
+                    if (multiple) {
+                      if (checked) {
+                        onValueChange(option.value, true);
+                      } else {
+                        onValueChange(option.value, false);
+                      }
+                    } else {
+                      // For single selection, always set the new value (replace the old one)
+                      onValueChange(option.value, checked as boolean);
+                    }
                   }}
                 />
                 <Label 
