@@ -49,7 +49,7 @@ export function MainButtons({
       <Button 
         onClick={() => navigate("/free-text")} 
         size="lg"
-        className="md:col-span-2"
+        className="md:col-span-2 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl transform hover:-translate-y-1"
       >
         {t('summary')}
       </Button>
