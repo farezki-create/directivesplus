@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/hooks/useLanguage";
+import { ArrowLeft } from "lucide-react";
 
 export function LearnMoreSection() {
   const navigate = useNavigate();
@@ -59,17 +60,22 @@ export function LearnMoreSection() {
     navigate("/faq");
   };
 
-  const handleBackToHome = () => {
-    // This function is meant to be passed back to the parent component
-    // to handle going back to the main view
-    return;
-  };
-
   return (
     <div className="max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6 text-center">
-        {currentLanguage === 'fr' ? 'Informations supplémentaires' : 'Additional Information'}
-      </h1>
+      <div className="mb-6 flex items-center">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => window.history.back()}
+          className="mr-2"
+          aria-label="Retour"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+        <h1 className="text-3xl font-bold text-center">
+          {currentLanguage === 'fr' ? 'Informations supplémentaires' : 'Additional Information'}
+        </h1>
+      </div>
       
       <div className="flex flex-col space-y-6 items-center">
         <Button

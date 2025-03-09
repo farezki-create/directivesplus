@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
-import { CreditCard, MessageSquare } from "lucide-react";
+import { CreditCard, MessageSquare, ArrowLeft } from "lucide-react";
 import { PurchaseDialog } from "./purchase/PurchaseDialog";
 import { LanguageSelector } from "./LanguageSelector";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -63,6 +63,10 @@ export const Header = () => {
     window.location.href = "/";
   };
 
+  const handleBack = () => {
+    navigate(-1);
+  };
+
   const isHomePage = location.pathname === "/";
 
   const navButtonClass = "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl transform hover:-translate-y-1 text-white";
@@ -72,6 +76,17 @@ export const Header = () => {
       <header className="w-full border-b">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center space-x-4">
+            {!isHomePage && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleBack}
+                className="mr-2"
+                aria-label="Retour"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+            )}
             <h1 className="text-2xl font-bold text-primary">DirectivesPlus</h1>
           </div>
           <div>

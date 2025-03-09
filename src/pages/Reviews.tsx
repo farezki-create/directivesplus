@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ReviewForm } from "@/components/reviews/ReviewForm";
 import { ReviewList } from "@/components/reviews/ReviewList";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { Header } from "@/components/Header";
 
 interface Review {
   id: string;
@@ -49,34 +49,30 @@ const Reviews = () => {
   };
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="mb-8">
-        <Button
-          variant="ghost"
-          onClick={() => navigate("/")}
-          className="mb-4 flex items-center gap-2"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Retour à l'accueil
-        </Button>
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold">Avis des utilisateurs</h1>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>Donner mon avis</Button>
-            </DialogTrigger>
-            <DialogContent>
-              <ReviewForm
-                onSuccess={fetchReviews}
-                onSubmitting={setIsSubmitting}
-                onClose={() => setIsDialogOpen(false)}
-              />
-            </DialogContent>
-          </Dialog>
+    <div className="min-h-screen flex flex-col">
+      <Header />
+      
+      <main className="flex-1 container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <div className="flex justify-between items-center">
+            <h1 className="text-3xl font-bold">Avis des utilisateurs</h1>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button>Donner mon avis</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <ReviewForm
+                  onSuccess={fetchReviews}
+                  onSubmitting={setIsSubmitting}
+                  onClose={() => setIsDialogOpen(false)}
+                />
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
-      </div>
 
-      <ReviewList reviews={reviews} />
+        <ReviewList reviews={reviews} />
+      </main>
     </div>
   );
 };
