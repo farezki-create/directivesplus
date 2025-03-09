@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { TemplatesList } from "./TemplatesList";
 import { ExamplePhrasesList } from "./ExamplePhrasesList";
 import { examplePhrases } from "./data/examplePhrases";
 import { examplePhrasesEn } from "./data/examplePhrasesEn";
@@ -15,7 +14,6 @@ interface ExamplesContentProps {
 }
 
 export function ExamplesContent({ onBack }: ExamplesContentProps) {
-  const [showTemplates, setShowTemplates] = useState(false);
   const [showPhrases, setShowPhrases] = useState(false);
   const { toast } = useToast();
   const { t, currentLanguage } = useLanguage();
@@ -110,47 +108,24 @@ export function ExamplesContent({ onBack }: ExamplesContentProps) {
     );
   }
 
-  if (!showTemplates) {
-    return (
-      <div className="space-y-6">
-        <Button 
-          onClick={onBack} 
-          variant="outline" 
-          className="mb-4"
-        >
-          {t('back')}
-        </Button>
-        <div className="grid gap-6 md:grid-cols-2">
-          <Button
-            size="lg"
-            className="h-auto py-4 text-left"
-            onClick={() => setShowTemplates(true)}
-          >
-            <h3 className="text-lg font-semibold">{t('templatesTitle')}</h3>
-          </Button>
-
-          <Button
-            size="lg"
-            className="h-auto py-4 text-left"
-            onClick={() => setShowPhrases(true)}
-          >
-            <h3 className="text-lg font-semibold">{t('phrasesTitle')}</h3>
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       <Button 
-        onClick={() => setShowTemplates(false)} 
+        onClick={onBack} 
         variant="outline" 
         className="mb-4"
       >
         {t('back')}
       </Button>
-      <TemplatesList />
+      <div className="grid gap-6">
+        <Button
+          size="lg"
+          className="h-auto py-4 text-left"
+          onClick={() => setShowPhrases(true)}
+        >
+          <h3 className="text-lg font-semibold">{t('phrasesTitle')}</h3>
+        </Button>
+      </div>
     </div>
   );
 }
