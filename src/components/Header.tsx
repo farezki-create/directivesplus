@@ -60,7 +60,7 @@ export const Header = () => {
   };
 
   const handleHomeClick = () => {
-    window.location.href = "/";
+    navigate("/");
   };
 
   const handleBack = () => {

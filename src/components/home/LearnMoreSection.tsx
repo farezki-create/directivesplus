@@ -66,7 +66,7 @@ export function LearnMoreSection() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => window.history.back()}
+          onClick={() => navigate(-1)}
           className="mr-2"
           aria-label="Retour"
         >
