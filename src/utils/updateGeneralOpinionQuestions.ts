@@ -54,16 +54,20 @@ const newGeneralOpinionQuestions = [
 
 export async function updateGeneralOpinionQuestions() {
   try {
+    console.log("Starting to update general opinion questions...");
+    
     // First, clear existing questions
     const { error: deleteError } = await supabase
       .from('questionnaire_general_fr')
       .delete()
-      .neq('id', '0'); // Safety measure to avoid deleting everything if conditions are wrong
+      .not('id', 'is', null); // Safer way to delete all records
     
     if (deleteError) {
       console.error("Error deleting existing questions:", deleteError);
       throw deleteError;
     }
+    
+    console.log("Successfully deleted existing questions, now inserting new ones...");
     
     // Insert new questions
     const { data, error } = await supabase
@@ -84,4 +88,7 @@ export async function updateGeneralOpinionQuestions() {
   }
 }
 
-// This function can be called from a component or admin page
+// Add this line to make the function run once when the file is imported
+// This is useful for development to automatically update the questions
+// Remove this line in production
+// updateGeneralOpinionQuestions().catch(console.error);
