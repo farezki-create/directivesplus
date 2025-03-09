@@ -66,8 +66,8 @@ export function PreferencesQuestionsDialog({
       const responses = Object.entries(answers).flatMap(([questionId, values]) => {
         const question = questions?.find(q => q.id === questionId);
         
-        // Safely access question text regardless of the property name
-        const questionText = question?.question || question?.question_text || '';
+        // Safely access question text - get 'question' property which is the standard field name in our tables
+        const questionText = question?.question || '';
         
         return values.map(value => ({
           user_id: userId,

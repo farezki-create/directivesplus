@@ -2,6 +2,9 @@
 import { useCallback, useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { translations, SupportedLanguage } from '@/i18n/translations';
 
+// Re-export the SupportedLanguage type so it can be used by importers
+export type { SupportedLanguage };
+
 // Create the context
 interface LanguageContextType {
   currentLanguage: SupportedLanguage;
