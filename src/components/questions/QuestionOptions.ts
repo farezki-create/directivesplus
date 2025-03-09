@@ -46,15 +46,13 @@ export function useQuestionOptions() {
       return [
         { value: 'yes', label: 'Yes' },
         { value: 'no', label: 'No' },
-        { value: 'yes_medical', label: 'Yes if the medical team deems it useful' },
-        { value: 'yes_trusted', label: 'Yes if my trusted person deems it useful' }
+        { value: 'undecided', label: "I don't know" }
       ];
     } else {
       return [
         { value: 'oui', label: 'Oui' },
         { value: 'non', label: 'Non' },
-        { value: 'oui_medical', label: 'Oui si l\'équipe médicale le juge utile' },
-        { value: 'oui_confiance', label: 'Oui si ma personne de confiance le juge utile' }
+        { value: 'je_ne_sais_pas', label: 'Je ne sais pas' }
       ];
     }
   };

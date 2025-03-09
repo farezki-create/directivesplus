@@ -84,31 +84,12 @@ export function AdvancedIllnessQuestionsDialog({
     }
   }, [open, toast, currentLanguage]);
 
-  const handleAnswerChange = (questionId: string, value: string, checked: boolean) => {
-    console.log('[AdvancedIllness] Answer change:', { questionId, value, checked });
-    
-    if (checked) {
-      setAnswers(prev => {
-        // When adding an option
-        const updatedValues = [...(prev[questionId] || [])];
-        if (!updatedValues.includes(value)) {
-          updatedValues.push(value);
-        }
-        return {
-          ...prev,
-          [questionId]: updatedValues
-        };
-      });
-    } else {
-      setAnswers(prev => {
-        // When removing an option
-        const newValues = prev[questionId]?.filter(v => v !== value) || [];
-        return {
-          ...prev,
-          [questionId]: newValues
-        };
-      });
-    }
+  const handleAnswerChange = (questionId: string, value: string) => {
+    console.log('[AdvancedIllness] Answer change:', { questionId, value });
+    setAnswers(prev => ({
+      ...prev,
+      [questionId]: [value]
+    }));
   };
 
   const handleSubmit = async () => {
@@ -198,9 +179,9 @@ export function AdvancedIllnessQuestionsDialog({
           key={question.id}
           question={question}
           value={answers[question.id] || []}
-          onValueChange={(value, checked) => handleAnswerChange(question.id, value, checked)}
+          onValueChange={(value) => handleAnswerChange(question.id, value)}
           options={getAdvancedIllnessOptions()}
-          multiple={true}
+          multiple={false}
         />
       ))}
     </QuestionsDialogLayout>
