@@ -38,7 +38,7 @@ export const frTranslations = {
   noQuicklyAbandon: 'Non, rapidement abandonner le thérapeutique',
   prioritizeNoSuffering: 'La non souffrance est à privilégier',
   indecision: 'Indécision',
-  preferences: 'Préférences',
+  preferences: 'Mes goûts et mes peurs',
   loginSignup: 'Connexion / Inscription',
   whatDoYouThink: 'Qu\'en pensez-vous ?',
   trustedPersons: 'Personnes de confiance',
