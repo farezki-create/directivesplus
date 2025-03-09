@@ -12,32 +12,15 @@ import { useDialogState } from "@/hooks/useDialogState";
 export function DialogsContainer() {
   const dialogState = useDialogState();
 
-  const handleExplanationContinue = () => {
-    dialogState.setExplanationOpen(false);
-    dialogState.setQuestionsOpen(true);
-  };
-
-  const handleLifeSupportExplanationContinue = () => {
-    dialogState.setLifeSupportExplanationOpen(false);
-    dialogState.setLifeSupportQuestionsOpen(true);
-  };
-
-  const handleAdvancedIllnessExplanationContinue = () => {
-    dialogState.setAdvancedIllnessExplanationOpen(false);
-    dialogState.setAdvancedIllnessQuestionsOpen(true);
-  };
-
-  const handlePreferencesExplanationContinue = () => {
-    dialogState.setPreferencesExplanationOpen(false);
-    dialogState.setPreferencesQuestionsOpen(true);
-  };
-
   return (
     <>
       <ExplanationDialog 
         open={dialogState.explanationOpen}
         onOpenChange={dialogState.setExplanationOpen}
-        onContinue={handleExplanationContinue}
+        onContinue={() => {
+          dialogState.setExplanationOpen(false);
+          dialogState.setQuestionsOpen(true);
+        }}
       />
 
       <QuestionsDialog 
@@ -48,7 +31,10 @@ export function DialogsContainer() {
       <LifeSupportExplanationDialog
         open={dialogState.lifeSupportExplanationOpen}
         onOpenChange={dialogState.setLifeSupportExplanationOpen}
-        onContinue={handleLifeSupportExplanationContinue}
+        onContinue={() => {
+          dialogState.setLifeSupportExplanationOpen(false);
+          dialogState.setLifeSupportQuestionsOpen(true);
+        }}
       />
 
       <LifeSupportQuestionsDialog
@@ -59,7 +45,10 @@ export function DialogsContainer() {
       <AdvancedIllnessExplanationDialog
         open={dialogState.advancedIllnessExplanationOpen}
         onOpenChange={dialogState.setAdvancedIllnessExplanationOpen}
-        onContinue={handleAdvancedIllnessExplanationContinue}
+        onContinue={() => {
+          dialogState.setAdvancedIllnessExplanationOpen(false);
+          dialogState.setAdvancedIllnessQuestionsOpen(true);
+        }}
       />
 
       <AdvancedIllnessQuestionsDialog
@@ -70,7 +59,10 @@ export function DialogsContainer() {
       <PreferencesExplanationDialog
         open={dialogState.preferencesExplanationOpen}
         onOpenChange={dialogState.setPreferencesExplanationOpen}
-        onContinue={handlePreferencesExplanationContinue}
+        onContinue={() => {
+          dialogState.setPreferencesExplanationOpen(false);
+          dialogState.setPreferencesQuestionsOpen(true);
+        }}
       />
 
       <PreferencesQuestionsDialog

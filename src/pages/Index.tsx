@@ -13,19 +13,19 @@ const Index = () => {
   const dialogState = useDialogState();
 
   const handleGeneralOpinionClick = () => {
-    dialogState.setExplanationOpen(true);
+    dialogState.setQuestionsOpen(true);
   };
 
   const handleLifeSupportClick = () => {
-    dialogState.setLifeSupportExplanationOpen(true);
+    dialogState.setLifeSupportQuestionsOpen(true);
   };
 
   const handleAdvancedIllnessClick = () => {
-    dialogState.setAdvancedIllnessExplanationOpen(true);
+    dialogState.setAdvancedIllnessQuestionsOpen(true);
   };
 
   const handlePreferencesClick = () => {
-    dialogState.setPreferencesExplanationOpen(true);
+    dialogState.setPreferencesQuestionsOpen(true);
   };
 
   const handleShowMoreInfo = () => {
