@@ -1,8 +1,11 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
+export type SupportedLanguage = 'en' | 'fr';
+
 interface LanguageContextType {
-  currentLanguage: string;
-  setLanguage: (lang: string) => void;
+  currentLanguage: SupportedLanguage;
+  setLanguage: (lang: SupportedLanguage) => void;
   t: (key: string) => string;
 }
 
@@ -27,6 +30,9 @@ const translations: Translations = {
     generalOpinionDesc: "Please answer the following questions regarding your general opinion.",
     advancedIllnessDesc: "Please answer the following questions regarding advanced illness.",
     explanatoryVideo: "This is an explanatory video.",
+    noQuestionFound: "No questions found",
+    saveMyAnswers: "Save My Answers",
+    continueToQuestionnaire: "Continue to Questionnaire",
   },
   fr: {
     allQuestionnaires: "Tous les Questionnaires",
@@ -40,11 +46,14 @@ const translations: Translations = {
     generalOpinionDesc: "Veuillez répondre aux questions suivantes concernant votre opinion générale.",
     advancedIllnessDesc: "Veuillez répondre aux questions suivantes concernant la maladie avancée.",
     explanatoryVideo: "Ceci est une vidéo explicative.",
+    noQuestionFound: "Aucune question trouvée",
+    saveMyAnswers: "Enregistrer mes réponses",
+    continueToQuestionnaire: "Continuer vers le questionnaire",
   }
 };
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
-  const [currentLanguage, setCurrentLanguage] = useState<string>('en');
+  const [currentLanguage, setCurrentLanguage] = useState<SupportedLanguage>('en');
 
   const t = (key: string) => {
     return translations[currentLanguage][key] || key;
@@ -52,7 +61,7 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const savedLanguage = localStorage.getItem('language');
-    if (savedLanguage) {
+    if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'fr')) {
       setCurrentLanguage(savedLanguage);
     }
   }, []);
@@ -62,7 +71,11 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   }, [currentLanguage]);
 
   return (
-    <LanguageContext.Provider value={{ currentLanguage, setLanguage: setCurrentLanguage, t }}>
+    <LanguageContext.Provider value={{ 
+      currentLanguage, 
+      setLanguage: setCurrentLanguage as (lang: SupportedLanguage) => void, 
+      t 
+    }}>
       {children}
     </LanguageContext.Provider>
   );

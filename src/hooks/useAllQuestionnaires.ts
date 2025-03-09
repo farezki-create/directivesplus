@@ -51,39 +51,27 @@ export function useAllQuestionnaires(isOpen: boolean) {
         setGeneralQuestions(generalData || []);
         
         // Fetch life support questions
-        let lifeSupportData;
-        if (currentLanguage === 'en') {
-          const { data, error } = await supabase
-            .from(lifeSupportTable)
-            .select('*')
-            .order('display_order', { ascending: true });
+        const { data: lifeSupportData, error: lifeSupportError } = await supabase
+          .from(lifeSupportTable)
+          .select('*')
+          .order(currentLanguage === 'en' ? 'display_order' : 'question_order', { ascending: true });
             
-          if (error) {
-            console.error('[AllQuestionnaires] Error fetching life support questions:', error);
-            throw error;
-          }
-          
-          lifeSupportData = data;
-        } else {
-          const { data, error } = await supabase
-            .from(lifeSupportTable)
-            .select('*')
-            .order('question_order', { ascending: true });
-            
-          if (error) {
-            console.error('[AllQuestionnaires] Error fetching life support questions:', error);
-            throw error;
-          }
-          
-          lifeSupportData = data?.map(item => ({
-            id: item.id,
-            question: item.question_text,
-            display_order: item.question_order
-          }));
+        if (lifeSupportError) {
+          console.error('[AllQuestionnaires] Error fetching life support questions:', lifeSupportError);
+          throw lifeSupportError;
         }
         
-        console.log('[AllQuestionnaires] Life support questions loaded:', lifeSupportData?.length);
-        setLifeSupportQuestions(lifeSupportData || []);
+        // Process life support questions based on the table structure
+        const processedLifeSupportData = currentLanguage === 'en' 
+          ? lifeSupportData 
+          : lifeSupportData?.map(item => ({
+              id: item.id,
+              question: item.question_text || item.question,
+              display_order: item.question_order || item.display_order
+            }));
+        
+        console.log('[AllQuestionnaires] Life support questions loaded:', processedLifeSupportData?.length);
+        setLifeSupportQuestions(processedLifeSupportData || []);
         
         // Fetch advanced illness questions
         const { data: advancedData, error: advancedError } = await supabase
