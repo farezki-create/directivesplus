@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -14,7 +13,6 @@ interface ExamplesContentProps {
 }
 
 export function ExamplesContent({ onBack }: ExamplesContentProps) {
-  const [showPhrases, setShowPhrases] = useState(false);
   const { toast } = useToast();
   const { t, currentLanguage } = useLanguage();
 
@@ -97,35 +95,12 @@ export function ExamplesContent({ onBack }: ExamplesContentProps) {
   // Use language-appropriate example phrases
   const phrases = currentLanguage === 'en' ? examplePhrasesEn : examplePhrases;
 
-  if (showPhrases) {
-    return (
-      <ExamplePhrasesList
-        phrases={phrases}
-        onBack={() => setShowPhrases(false)}
-        onAddToSynthesis={handleAddToSynthesis}
-        onRemoveFromSynthesis={handleRemoveFromSynthesis}
-      />
-    );
-  }
-
   return (
-    <div className="space-y-6">
-      <Button 
-        onClick={onBack} 
-        variant="outline" 
-        className="mb-4"
-      >
-        {t('back')}
-      </Button>
-      <div className="grid gap-6">
-        <Button
-          size="lg"
-          className="h-auto py-4 text-left"
-          onClick={() => setShowPhrases(true)}
-        >
-          <h3 className="text-lg font-semibold">{t('phrasesTitle')}</h3>
-        </Button>
-      </div>
-    </div>
+    <ExamplePhrasesList
+      phrases={phrases}
+      onBack={onBack}
+      onAddToSynthesis={handleAddToSynthesis}
+      onRemoveFromSynthesis={handleRemoveFromSynthesis}
+    />
   );
 }
