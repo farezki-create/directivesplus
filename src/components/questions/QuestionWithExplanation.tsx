@@ -33,7 +33,7 @@ export function QuestionWithExplanation({
         options={options}
       />
       {displayOrder && (
-        <div className="mt-3 text-sm text-muted-foreground bg-muted p-4 rounded-md">
+        <div className="mt-3 text-base text-muted-foreground bg-muted p-4 rounded-md">
           {getQuestionExplanation(displayOrder, language)}
         </div>
       )}
