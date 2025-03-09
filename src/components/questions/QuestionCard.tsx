@@ -21,8 +21,8 @@ export function QuestionCard({
   multiple = false 
 }: QuestionCardProps) {
   // Handle different question object structures from different tables
-  const displayOrder = question.display_order || question.question_order || '';
-  const questionText = question.question || question.question_text || '';
+  const displayOrder = question.displayOrder || question.display_order || question.question_order || '';
+  const questionText = question.questionText || question.question || question.question_text || '';
 
   return (
     <div className="p-6 bg-card rounded-lg border shadow-sm">

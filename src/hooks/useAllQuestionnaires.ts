@@ -1,147 +1,114 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useLanguage, type SupportedLanguage } from '@/hooks/useLanguage';
+import { SupportedLanguage } from '@/i18n/translations';
 
-// Define types for the question structures from different tables
-interface StandardQuestion {
+// Define a standard question interface to normalize data from different tables
+export interface StandardQuestion {
   id: string | number;
-  question?: string;
-  question_text?: string;
-  display_order?: number;
-  question_order?: number;
-  created_at?: string;
-  option_yes?: string;
-  option_no?: string;
-  option_unsure?: string;
+  questionText: string;
+  displayOrder: number;
+  options?: any;
 }
 
-export interface NormalizedQuestion {
-  id: string | number;
-  question: string;
-  displayOrder: number | null;
-  type: 'general' | 'life_support' | 'advanced_illness' | 'preferences';
-  options?: {
-    yes: string;
-    no: string;
-    unsure: string;
-  };
+export interface QuestionnaireData {
+  general: StandardQuestion[];
+  lifeSupport: StandardQuestion[];
+  advancedIllness: StandardQuestion[];
+  preferences: StandardQuestion[];
 }
 
-export const useAllQuestionnaires = () => {
-  const { currentLanguage } = useLanguage();
-  const [activeTab, setActiveTab] = useState<'general' | 'life_support' | 'advanced_illness' | 'preferences'>('general');
+export const useAllQuestionnaires = (language: SupportedLanguage) => {
+  const [questionnaires, setQuestionnaires] = useState<QuestionnaireData>({
+    general: [],
+    lifeSupport: [],
+    advancedIllness: [],
+    preferences: [],
+  });
 
-  // Normalize a question to a standard format
-  const normalizeQuestion = (question: StandardQuestion, type: NormalizedQuestion['type']): NormalizedQuestion => {
+  // Helper function to normalize question data
+  const normalizeQuestion = (q: any): StandardQuestion => {
     return {
-      id: question.id,
-      question: question.question || question.question_text || '',
-      displayOrder: question.display_order || question.question_order || null,
-      type,
-      ...(question.option_yes && question.option_no && question.option_unsure ? {
-        options: {
-          yes: question.option_yes,
-          no: question.option_no,
-          unsure: question.option_unsure
-        }
-      } : {})
+      id: q.id,
+      questionText: q.question || q.question_text || '',
+      displayOrder: q.display_order || q.question_order || 0,
+      options: q.options || null
     };
   };
 
-  // Function to fetch questions from a specific questionnaire table
-  const fetchQuestions = async (type: NormalizedQuestion['type'], lang: SupportedLanguage) => {
-    console.log(`Fetching ${type} questions in ${lang}...`);
-    
-    // Determine which table to query based on language and type
-    const tableName = `questionnaire_${type}_${lang}`;
-    
-    const { data, error } = await supabase
-      .from(tableName)
-      .select("*")
-      .order(type === 'life_support' && lang === 'fr' ? 'question_order' : 'display_order', { ascending: true });
+  const { data: generalQuestions, isLoading: isLoadingGeneral } = useQuery({
+    queryKey: ['general-questions', language],
+    queryFn: async () => {
+      const tableName = language === 'en' ? 'questionnaire_general_en' : 'questionnaire_general_fr';
+      const { data, error } = await supabase
+        .from(tableName)
+        .select('*')
+        .order('display_order', { ascending: true });
 
-    if (error) {
-      console.error(`Error fetching ${type} questions:`, error);
-      throw error;
+      if (error) throw error;
+      return data?.map(normalizeQuestion) || [];
+    },
+  });
+
+  const { data: lifeSupportQuestions, isLoading: isLoadingLifeSupport } = useQuery({
+    queryKey: ['life-support-questions', language],
+    queryFn: async () => {
+      const tableName = language === 'en' ? 'questionnaire_life_support_en' : 'questionnaire_life_support_fr';
+      const { data, error } = await supabase
+        .from(tableName)
+        .select('*')
+        .order('question_order', { ascending: true });
+
+      if (error) throw error;
+      return data?.map(normalizeQuestion) || [];
+    },
+  });
+
+  const { data: advancedIllnessQuestions, isLoading: isLoadingAdvancedIllness } = useQuery({
+    queryKey: ['advanced-illness-questions', language],
+    queryFn: async () => {
+      const tableName = language === 'en' ? 'questionnaire_advanced_illness_en' : 'questionnaire_advanced_illness_fr';
+      const { data, error } = await supabase
+        .from(tableName)
+        .select('*')
+        .order('question_order', { ascending: true });
+
+      if (error) throw error;
+      return data?.map(normalizeQuestion) || [];
+    },
+  });
+
+  const { data: preferencesQuestions, isLoading: isLoadingPreferences } = useQuery({
+    queryKey: ['preferences-questions', language],
+    queryFn: async () => {
+      const tableName = language === 'en' ? 'questionnaire_preferences_en' : 'questionnaire_preferences_fr';
+      const { data, error } = await supabase
+        .from(tableName)
+        .select('*')
+        .order('display_order', { ascending: true });
+
+      if (error) throw error;
+      return data?.map(normalizeQuestion) || [];
+    },
+  });
+
+  useEffect(() => {
+    if (generalQuestions) {
+      setQuestionnaires(prev => ({ ...prev, general: generalQuestions }));
     }
-    
-    console.log(`${type} questions loaded:`, data?.length, 'questions');
-    
-    // Normalize the data
-    return (data || []).map(question => normalizeQuestion(question, type));
-  };
-
-  // Fetch general questions
-  const { data: generalQuestions, isLoading: generalLoading } = useQuery({
-    queryKey: ["general-questions", currentLanguage],
-    queryFn: () => fetchQuestions('general', currentLanguage),
-  });
-
-  // Fetch life support questions
-  const { data: lifeSupportQuestions, isLoading: lifeSupportLoading } = useQuery({
-    queryKey: ["life-support-questions", currentLanguage],
-    queryFn: () => fetchQuestions('life_support', currentLanguage),
-  });
-
-  // Fetch advanced illness questions
-  const { data: advancedIllnessQuestions, isLoading: advancedIllnessLoading } = useQuery({
-    queryKey: ["advanced-illness-questions", currentLanguage],
-    queryFn: () => fetchQuestions('advanced_illness', currentLanguage),
-  });
-
-  // Fetch preferences questions
-  const { data: preferencesQuestions, isLoading: preferencesLoading } = useQuery({
-    queryKey: ["preferences-questions", currentLanguage],
-    queryFn: () => fetchQuestions('preferences', currentLanguage),
-  });
-
-  // Get active questions based on the selected tab
-  const getActiveQuestions = () => {
-    switch (activeTab) {
-      case 'general':
-        return generalQuestions || [];
-      case 'life_support':
-        return lifeSupportQuestions || [];
-      case 'advanced_illness':
-        return advancedIllnessQuestions || [];
-      case 'preferences':
-        return preferencesQuestions || [];
-      default:
-        return [];
+    if (lifeSupportQuestions) {
+      setQuestionnaires(prev => ({ ...prev, lifeSupport: lifeSupportQuestions }));
     }
-  };
-
-  // Loading state for active tab
-  const isActiveTabLoading = () => {
-    switch (activeTab) {
-      case 'general':
-        return generalLoading;
-      case 'life_support':
-        return lifeSupportLoading;
-      case 'advanced_illness':
-        return advancedIllnessLoading;
-      case 'preferences':
-        return preferencesLoading;
-      default:
-        return false;
+    if (advancedIllnessQuestions) {
+      setQuestionnaires(prev => ({ ...prev, advancedIllness: advancedIllnessQuestions }));
     }
-  };
+    if (preferencesQuestions) {
+      setQuestionnaires(prev => ({ ...prev, preferences: preferencesQuestions }));
+    }
+  }, [generalQuestions, lifeSupportQuestions, advancedIllnessQuestions, preferencesQuestions]);
 
-  return {
-    activeTab,
-    setActiveTab,
-    generalQuestions,
-    lifeSupportQuestions,
-    advancedIllnessQuestions,
-    preferencesQuestions,
-    getActiveQuestions,
-    isLoading: isActiveTabLoading(),
-    allQuestionsLoaded: 
-      !generalLoading && 
-      !lifeSupportLoading && 
-      !advancedIllnessLoading && 
-      !preferencesLoading
-  };
+  const isLoading = isLoadingGeneral || isLoadingLifeSupport || isLoadingAdvancedIllness || isLoadingPreferences;
+
+  return { questionnaires, isLoading };
 };

@@ -65,6 +65,8 @@ export function PreferencesQuestionsDialog({
       // Prepare all responses for insertion
       const responses = Object.entries(answers).flatMap(([questionId, values]) => {
         const question = questions?.find(q => q.id === questionId);
+        
+        // Safely access question text regardless of the property name
         const questionText = question?.question || question?.question_text || '';
         
         return values.map(value => ({
