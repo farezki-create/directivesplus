@@ -1,4 +1,3 @@
-
 import { useLanguage } from "@/hooks/useLanguage";
 
 export function useQuestionOptions() {
@@ -55,13 +54,15 @@ export function useQuestionOptions() {
   const getPreferencesOptions = () => {
     if (currentLanguage === 'en') {
       return [
-        { value: 'important', label: 'Important to me' },
-        { value: 'not_important', label: 'Not important to me' }
+        { value: 'yes', label: 'Yes' },
+        { value: 'no', label: 'No' },
+        { value: 'i_dont_know', label: "I don't know" }
       ];
     } else {
       return [
-        { value: 'important', label: t('importantToMe') },
-        { value: 'pas_important', label: t('notImportantToMe') }
+        { value: 'oui', label: t('yes') },
+        { value: 'non', label: t('no') },
+        { value: 'je_ne_sais_pas', label: t('dontKnow') }
       ];
     }
   };
