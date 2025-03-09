@@ -24,6 +24,21 @@ export function QuestionCard({
   const displayOrder = question.displayOrder || question.display_order || question.question_order || '';
   const questionText = question.questionText || question.question || question.question_text || '';
 
+  const handleValueChange = (optionValue: string, checked: boolean) => {
+    if (multiple) {
+      if (checked) {
+        onValueChange(optionValue, checked);
+      } else {
+        onValueChange(optionValue, checked);
+      }
+    } else {
+      // For radio-button-like behavior
+      if (checked) {
+        onValueChange(optionValue);
+      }
+    }
+  };
+
   return (
     <div className="p-6 bg-card rounded-lg border shadow-sm">
       <div className="grid grid-cols-[48px_1fr] gap-4">
@@ -41,8 +56,7 @@ export function QuestionCard({
                   id={`${question.id}-${option.value}`}
                   checked={value.includes(option.value)}
                   onCheckedChange={(checked) => {
-                    // Pass the boolean state of the checkbox to the handler
-                    onValueChange(option.value, checked as boolean);
+                    handleValueChange(option.value, checked as boolean);
                   }}
                 />
                 <Label 
