@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { TemplatesList } from "./TemplatesList";
 import { ExamplePhrasesList } from "./ExamplePhrasesList";
 import { examplePhrases } from "./data/examplePhrases";
+import { examplePhrasesEn } from "./data/examplePhrasesEn";
 import { addPhraseToSynthesis, removePhraseFromSynthesis } from "./utils/synthesisUtils";
 import { useLanguage } from "@/hooks/useLanguage";
 
@@ -17,7 +18,7 @@ export function ExamplesContent({ onBack }: ExamplesContentProps) {
   const [showTemplates, setShowTemplates] = useState(false);
   const [showPhrases, setShowPhrases] = useState(false);
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, currentLanguage } = useLanguage();
 
   const handleAddToSynthesis = async (phrase: string) => {
     try {
@@ -95,10 +96,13 @@ export function ExamplesContent({ onBack }: ExamplesContentProps) {
     }
   };
 
+  // Use language-appropriate example phrases
+  const phrases = currentLanguage === 'en' ? examplePhrasesEn : examplePhrases;
+
   if (showPhrases) {
     return (
       <ExamplePhrasesList
-        phrases={examplePhrases}
+        phrases={phrases}
         onBack={() => setShowPhrases(false)}
         onAddToSynthesis={handleAddToSynthesis}
         onRemoveFromSynthesis={handleRemoveFromSynthesis}
