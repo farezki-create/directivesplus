@@ -162,7 +162,7 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
         }
         
         console.log('[GeneralOpinion] Questions loaded:', data?.length, 'questions');
-        console.log('[GeneralOpinion] Questions order:', data?.map(q => q.display_order));
+        console.log('[GeneralOpinion] Questions data:', data);
         setQuestions(data || []);
       } catch (error) {
         console.error('[GeneralOpinion] Unexpected error:', error);
@@ -281,21 +281,25 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
       loading={loading}
       questionsLength={questions.length}
     >
-      {questions.map((question) => (
-        <div key={question.id} className="mb-8">
-          <QuestionCard
-            question={question}
-            value={answers[question.id] || []}
-            onValueChange={(value) => handleAnswerChange(question.id, value)}
-            options={getGeneralOpinionOptions()}
-          />
-          {getQuestionExplanation(question.display_order) && (
-            <div className="mt-3 text-sm text-muted-foreground bg-muted p-4 rounded-md">
-              {getQuestionExplanation(question.display_order)}
-            </div>
-          )}
-        </div>
-      ))}
+      {questions.map((question) => {
+        // Log question to see its structure
+        console.log('[GeneralOpinion] Question data:', question);
+        return (
+          <div key={question.id} className="mb-8">
+            <QuestionCard
+              question={question}
+              value={answers[question.id] || []}
+              onValueChange={(value) => handleAnswerChange(question.id, value)}
+              options={getGeneralOpinionOptions()}
+            />
+            {question.display_order && (
+              <div className="mt-3 text-sm text-muted-foreground bg-muted p-4 rounded-md">
+                {getQuestionExplanation(question.display_order.toString())}
+              </div>
+            )}
+          </div>
+        );
+      })}
     </QuestionsDialogLayout>
   );
 }
