@@ -12,25 +12,28 @@ import Examples from "./pages/Examples";
 import GeneratePDF from "./pages/GeneratePDF";
 import Reviews from "./pages/Reviews";
 import FAQ from "./pages/FAQ";
+import { DialogStateProvider } from "./hooks/useDialogState";
 
 function App() {
   return (
     <LanguageProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/free-text" element={<FreeText />} />
-          <Route path="/examples" element={<Examples />} />
-          <Route path="/generate-pdf" element={<GeneratePDF />} />
-          <Route path="/reviews" element={<Reviews />} />
-          <Route path="/faq" element={<FAQ />} />
-        </Routes>
-      </Router>
-      <Toaster />
-      <Sonner position="top-center" />
+      <DialogStateProvider>
+        <Router>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/free-text" element={<FreeText />} />
+            <Route path="/examples" element={<Examples />} />
+            <Route path="/generate-pdf" element={<GeneratePDF />} />
+            <Route path="/reviews" element={<Reviews />} />
+            <Route path="/faq" element={<FAQ />} />
+          </Routes>
+        </Router>
+        <Toaster />
+        <Sonner position="top-center" />
+      </DialogStateProvider>
     </LanguageProvider>
   );
 }
