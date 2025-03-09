@@ -23,38 +23,18 @@ export function MainButtons({
     navigate("/dashboard?tab=persons");
   };
 
-  const handleGeneralOpinionClick = () => {
-    console.log("General opinion button clicked");
-    if (onGeneralOpinionClick) onGeneralOpinionClick();
-  };
-
-  const handleLifeSupportClick = () => {
-    console.log("Life support button clicked");
-    if (onLifeSupportClick) onLifeSupportClick();
-  };
-
-  const handleAdvancedIllnessClick = () => {
-    console.log("Advanced illness button clicked");
-    if (onAdvancedIllnessClick) onAdvancedIllnessClick();
-  };
-
-  const handlePreferencesClick = () => {
-    console.log("Preferences button clicked");
-    if (onPreferencesClick) onPreferencesClick();
-  };
-
   return (
     <div className="grid gap-4 md:grid-cols-2 max-w-2xl mx-auto mb-8">
-      <Button onClick={handleGeneralOpinionClick} size="lg">
+      <Button onClick={onGeneralOpinionClick} size="lg">
         {t('generalOpinion')}
       </Button>
-      <Button onClick={handleLifeSupportClick} size="lg">
+      <Button onClick={onLifeSupportClick} size="lg">
         {t('lifeSupport')}
       </Button>
-      <Button onClick={handleAdvancedIllnessClick} size="lg">
+      <Button onClick={onAdvancedIllnessClick} size="lg">
         {t('advancedIllnessTitle')}
       </Button>
-      <Button onClick={handlePreferencesClick} size="lg">
+      <Button onClick={onPreferencesClick} size="lg">
         {t('preferences')}
       </Button>
       <Button onClick={navigateToTrustedPersons} size="lg">

@@ -15,15 +15,7 @@ interface DialogsContainerProps {
 }
 
 export function DialogsContainer({ children }: DialogsContainerProps) {
-  // Get the shared dialog state from context instead of creating a new instance
   const dialogState = useDialogState();
-
-  console.log("Current dialog state:", {
-    explanationOpen: dialogState.explanationOpen,
-    lifeSupportExplanationOpen: dialogState.lifeSupportExplanationOpen,
-    advancedIllnessExplanationOpen: dialogState.advancedIllnessExplanationOpen,
-    preferencesExplanationOpen: dialogState.preferencesExplanationOpen
-  });
 
   const handleExplanationContinue = () => {
     dialogState.setExplanationOpen(false);

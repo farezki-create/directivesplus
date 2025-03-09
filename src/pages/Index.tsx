@@ -11,22 +11,18 @@ const Index = () => {
   const dialogState = useDialogState();
 
   const handleGeneralOpinionClick = () => {
-    console.log("Opening general opinion dialog");
     dialogState.setExplanationOpen(true);
   };
 
   const handleLifeSupportClick = () => {
-    console.log("Opening life support dialog");
     dialogState.setLifeSupportExplanationOpen(true);
   };
 
   const handleAdvancedIllnessClick = () => {
-    console.log("Opening advanced illness dialog");
     dialogState.setAdvancedIllnessExplanationOpen(true);
   };
 
   const handlePreferencesClick = () => {
-    console.log("Opening preferences dialog");
     dialogState.setPreferencesExplanationOpen(true);
   };
 
@@ -53,7 +49,7 @@ const Index = () => {
       </main>
 
       <DialogsContainer>
-        {/* Empty fragment to satisfy the children prop requirement */}
+        {/* This empty fragment satisfies the children prop requirement */}
         <></>
       </DialogsContainer>
     </div>
