@@ -17,7 +17,7 @@ export function FeatureHighlights() {
       <div className="text-center">
         <h3 className="text-lg font-semibold mb-2">Facilement partageable</h3>
         <p className="text-muted-foreground">
-          Téléchargez vos directives pour les partager avec vos proches.
+          Imprimer, télécharger et partager
         </p>
       </div>
     </div>
