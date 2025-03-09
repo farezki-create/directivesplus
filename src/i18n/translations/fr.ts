@@ -1,4 +1,3 @@
-
 export const frTranslations = {
   welcomeMessage: 'Bienvenue sur notre application',
   next: 'Suivant',
@@ -91,5 +90,17 @@ export const frTranslations = {
   writeDirectivesSecurely: 'Rédigez vos directives anticipées et désignez vos personnes de confiance en quelques étapes simples et sécurisées.',
   documentNotFound: 'Document introuvable',
   directivesGuideNotFound: 'Le guide sur les directives anticipées n\'a pas été trouvé.',
-  unableToAccessDocument: 'Impossible d\'accéder au document pour le moment.'
+  unableToAccessDocument: 'Impossible d\'accéder au document pour le moment.',
+  saveMyAnswers: 'Enregistrer mes réponses',
+  saving: 'Enregistrement...',
+  saveChanges: 'Enregistrer les modifications',
+  synthesisTitle: 'Ma synthèse',
+  synthesisDescription: 'Exprimez vos préférences dans vos propres mots',
+  writeSynthesis: 'Écrivez votre synthèse ici...',
+  noQuestionFound: 'Aucune question trouvée',
+  agree: 'Je suis d\'accord',
+  disagree: 'Je ne suis pas d\'accord',
+  notSure: 'Je ne suis pas sûr(e)',
+  importantToMe: 'Important pour moi',
+  notImportantToMe: 'Pas important pour moi'
 };
