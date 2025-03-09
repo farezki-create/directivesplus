@@ -14,9 +14,6 @@ import Reviews from "./pages/Reviews";
 import FAQ from "./pages/FAQ";
 import { DialogStateProvider } from "./hooks/useDialogState";
 
-// Import dev tools directly (not conditionally)
-import "./utils/devTools";
-
 function App() {
   return (
     <LanguageProvider>
