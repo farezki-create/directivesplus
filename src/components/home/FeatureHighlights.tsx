@@ -1,5 +1,9 @@
 
+import { useLanguage } from "@/hooks/useLanguage";
+
 export function FeatureHighlights() {
+  const { t, currentLanguage } = useLanguage();
+
   return (
     <div className="mt-12 grid gap-8 md:grid-cols-3">
       <div className="text-center">

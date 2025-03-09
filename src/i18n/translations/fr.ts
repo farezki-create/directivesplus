@@ -1,3 +1,4 @@
+
 export const frTranslations = {
   welcomeMessage: 'Bienvenue sur notre application',
   next: 'Suivant',
