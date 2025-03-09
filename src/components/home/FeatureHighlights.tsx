@@ -11,7 +11,7 @@ export function FeatureHighlights() {
       <div className="text-center">
         <h3 className="text-lg font-semibold mb-2">100% sécurisé</h3>
         <p className="text-muted-foreground">
-          Vos données sont protégées et confidentielles. Vos directives anticipées ne sont jamais sauvegardées et sont supprimées dès que vous vous déconnectez.
+          Vos données sont protégées, confidentielles et supprimées à la déconnexion. Vos directives anticipées ne sont jamais stockées et sont automatiquement supprimées dès que vous vous déconnectez.
         </p>
       </div>
       <div className="text-center">
