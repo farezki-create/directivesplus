@@ -45,9 +45,9 @@ export function useQuestionOptions() {
       ];
     } else {
       return [
-        { value: 'accord', label: t('agree') },
-        { value: 'pas_accord', label: t('disagree') },
-        { value: 'incertain', label: t('notSure') }
+        { value: 'oui', label: t('yes') },
+        { value: 'non', label: t('no') },
+        { value: 'je_ne_sais_pas', label: t('dontKnow') }
       ];
     }
   };
