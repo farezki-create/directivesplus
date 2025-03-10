@@ -28,11 +28,7 @@ export const handlePDFGeneration = async (
       throw new Error("La génération du PDF a échoué");
     }
 
-    // Ensure we have a clean URL
-    const cleanUrl = pdfDataUrl.replace(/([^:])\/\/+/g, '$1/').replace(/:\//g, '://');
-    console.log("[PDFGeneration] Generated PDF URL (cleaned)");
-    
-    setPdfUrl(cleanUrl);
+    setPdfUrl(pdfDataUrl);
     setShowPreview(true);
 
     console.log("[PDFGeneration] PDF generated successfully");
@@ -62,7 +58,6 @@ export const handlePDFDownload = (pdfUrl: string | null) => {
   }
 
   try {
-    console.log("[PDFGeneration] Starting PDF download");
     const link = document.createElement('a');
     link.href = pdfUrl;
     link.download = 'directives-anticipees.pdf';
@@ -70,11 +65,6 @@ export const handlePDFDownload = (pdfUrl: string | null) => {
     link.click();
     document.body.removeChild(link);
     console.log("[PDFGeneration] PDF downloaded successfully");
-    
-    toast({
-      title: "Succès",
-      description: "Le PDF a été téléchargé.",
-    });
   } catch (error) {
     console.error("[PDFGeneration] Error downloading PDF:", error);
     toast({
@@ -97,21 +87,18 @@ export const handlePDFPrint = (pdfUrl: string | null) => {
   }
 
   try {
-    console.log("[PDFGeneration] Opening print window");
-    const printWindow = createPrintWindow(pdfUrl);
+    const printWindow = window.open(pdfUrl);
     if (!printWindow) {
       throw new Error("Impossible d'ouvrir la fenêtre d'impression");
     }
+    printWindow.print();
     console.log("[PDFGeneration] Print window opened successfully");
   } catch (error) {
     console.error("[PDFGeneration] Error opening print window:", error);
     toast({
       title: "Erreur",
-      description: "Impossible d'imprimer le PDF. Vérifiez que les popups ne sont pas bloqués.",
+      description: "Impossible d'imprimer le PDF.",
       variant: "destructive",
     });
   }
 };
-
-// Import this from PrintUtils.ts to avoid circular dependencies
-import { createPrintWindow } from "./PrintUtils";

@@ -31,7 +31,8 @@ export function PDFPreviewDialog({
   const handleDownload = () => {
     if (onSave) {
       onSave();
-      // Don't close the dialog or navigate away
+      onOpenChange(false);
+      navigate("/generate-pdf");
     }
   };
 
@@ -49,12 +50,9 @@ export function PDFPreviewDialog({
       onPrint();
     } else {
       const printWindow = createPrintWindow(pdfUrl);
-      if (!printWindow) {
-        toast({
-          title: "Erreur",
-          description: "Impossible d'ouvrir la fenêtre d'impression",
-          variant: "destructive",
-        });
+      if (printWindow) {
+        onOpenChange(false);
+        navigate("/generate-pdf");
       }
     }
   };
@@ -68,16 +66,16 @@ export function PDFPreviewDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl h-[80vh] flex flex-col overflow-hidden">
-        <DialogTitle className="text-lg font-semibold">
+      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
+        <DialogTitle className="text-lg font-semibold mb-4">
           Prévisualisation du document
         </DialogTitle>
         
-        <div className="flex flex-col space-y-4 flex-1 overflow-hidden">
+        <div className="flex flex-col space-y-4 h-full">
           <div className="flex flex-wrap justify-between gap-2">
             <EmailForm 
               pdfUrl={pdfUrl} 
-              onClose={() => {}} // Don't close the dialog
+              onClose={() => onOpenChange(false)} 
             />
             <div className="flex flex-wrap gap-2">
               <Button 
@@ -95,9 +93,7 @@ export function PDFPreviewDialog({
             </div>
           </div>
           
-          <div className="flex-1 overflow-auto">
-            <PDFViewer pdfUrl={pdfUrl} />
-          </div>
+          <PDFViewer pdfUrl={pdfUrl} />
         </div>
       </DialogContent>
     </Dialog>
