@@ -4,6 +4,9 @@ import { UserProfile, TrustedPerson } from "../types";
 import { PDFDocumentGenerator } from "../PDFDocumentGenerator";
 import { revokePdfUrl } from "./PrintUtils";
 
+// Declare a variable to store the most recent PDF URL (for cleanup)
+let currentPdfUrl: string | null = null;
+
 export const handlePDFGeneration = async (
   profile: UserProfile | null,
   responses: any,
@@ -29,8 +32,8 @@ export const handlePDFGeneration = async (
     console.log("[PDFGeneration] Responses data:", responses);
 
     // Révoquer l'ancien URL si nécessaire
-    if (pdfUrl && pdfUrl.startsWith('blob:')) {
-      revokePdfUrl(pdfUrl);
+    if (currentPdfUrl && currentPdfUrl.startsWith('blob:')) {
+      revokePdfUrl(currentPdfUrl);
     }
 
     // Generate PDF
@@ -42,6 +45,9 @@ export const handlePDFGeneration = async (
     }
 
     console.log("[PDFGeneration] Generated PDF URL:", pdfUrl.substring(0, 30) + "...");
+    
+    // Mettre à jour la référence pour le nettoyage futur
+    currentPdfUrl = pdfUrl;
     
     setPdfUrl(pdfUrl);
     setShowPreview(true);
@@ -135,6 +141,3 @@ export const cleanupPDFResources = (pdfUrl: string | null) => {
 
 // Import depuis PrintUtils.ts
 import { createPrintWindow } from "./PrintUtils";
-
-// Variable pour stocker l'URL actuel du PDF (pour nettoyage)
-let pdfUrl: string | null = null;
