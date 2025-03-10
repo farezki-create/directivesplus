@@ -1,5 +1,5 @@
 
-import { QuestionCard } from "./questions/QuestionCard";
+import { QuestionWithExplanation } from "./questions/QuestionWithExplanation";
 import { QuestionsDialogLayout } from "./questions/QuestionsDialogLayout";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useLifeSupportQuestions } from "@/hooks/useLifeSupportQuestions";
@@ -15,7 +15,7 @@ export function LifeSupportQuestionsDialog({
   open, 
   onOpenChange 
 }: LifeSupportQuestionsDialogProps) {
-  const { t } = useLanguage();
+  const { t, currentLanguage } = useLanguage();
   const { questions, loading } = useLifeSupportQuestions(open);
   const { answers, handleAnswerChange, handleSubmit } = useLifeSupportAnswers(questions);
   const { getLifeSupportOptions } = useQuestionOptions();
@@ -38,12 +38,13 @@ export function LifeSupportQuestionsDialog({
       questionsLength={questions.length}
     >
       {questions.map((question) => (
-        <QuestionCard
+        <QuestionWithExplanation
           key={question.id}
           question={question}
           value={answers[question.id] || []}
-          onValueChange={(value, checked) => handleAnswerChange(question.id, value, checked)}
+          onValueChange={(value) => handleAnswerChange(question.id, value, true)}
           options={getLifeSupportOptions()}
+          language={currentLanguage}
         />
       ))}
     </QuestionsDialogLayout>
