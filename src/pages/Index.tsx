@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
 import { FeatureHighlights } from "@/components/home/FeatureHighlights";
@@ -7,10 +7,21 @@ import { useDialogState } from "@/hooks/useDialogState";
 import { WelcomeSection } from "@/components/home/WelcomeSection";
 import { LearnMoreSection } from "@/components/home/LearnMoreSection";
 import { DialogsContainer } from "@/components/home/DialogsContainer";
+import { useLocation } from "react-router-dom";
 
 const Index = () => {
   const [showMoreInfo, setShowMoreInfo] = useState(false);
+  const [showWritingSection, setShowWritingSection] = useState(false);
   const dialogState = useDialogState();
+  const location = useLocation();
+
+  useEffect(() => {
+    // Check for the writing parameter in the URL
+    const params = new URLSearchParams(location.search);
+    if (params.get('writing') === 'true') {
+      setShowWritingSection(true);
+    }
+  }, [location]);
 
   const handleGeneralOpinionClick = () => {
     dialogState.setQuestionsOpen(true);
@@ -60,6 +71,7 @@ const Index = () => {
               onLifeSupportClick={handleLifeSupportClick}
               onAdvancedIllnessClick={handleAdvancedIllnessClick}
               onPreferencesClick={handlePreferencesClick}
+              showWritingSection={showWritingSection}
             />
             <FeatureHighlights />
           </>

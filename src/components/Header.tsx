@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
-import { CreditCard, MessageSquare, ArrowLeft, FileText } from "lucide-react";
+import { CreditCard, MessageSquare, ArrowLeft, FileText, PenLine } from "lucide-react";
 import { PurchaseDialog } from "./purchase/PurchaseDialog";
 import { LanguageSelector } from "./LanguageSelector";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -67,6 +67,10 @@ export const Header = () => {
     navigate(-1);
   };
 
+  const handleWriteClick = () => {
+    navigate("/?writing=true");
+  };
+
   const isHomePage = location.pathname === "/";
 
   const navButtonClass = "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl transform hover:-translate-y-1 text-white";
@@ -110,6 +114,14 @@ export const Header = () => {
               onClick={handleHomeClick}
             >
               {t('home')}
+            </Button>
+
+            <Button
+              className={navButtonClass}
+              onClick={handleWriteClick}
+            >
+              <PenLine className="w-4 h-4 mr-1" />
+              <span>Je rédige</span>
             </Button>
 
             {user && (

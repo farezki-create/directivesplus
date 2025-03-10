@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/hooks/useLanguage";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MainButtons } from "./MainButtons";
 
 interface WelcomeSectionProps {
@@ -10,6 +10,7 @@ interface WelcomeSectionProps {
   onLifeSupportClick: () => void;
   onAdvancedIllnessClick: () => void;
   onPreferencesClick: () => void;
+  showWritingSection?: boolean;
 }
 
 export function WelcomeSection({
@@ -17,10 +18,18 @@ export function WelcomeSection({
   onGeneralOpinionClick,
   onLifeSupportClick,
   onAdvancedIllnessClick,
-  onPreferencesClick
+  onPreferencesClick,
+  showWritingSection = false
 }: WelcomeSectionProps) {
   const { currentLanguage } = useLanguage();
   const [showSections, setShowSections] = useState(false);
+
+  // Set showSections to true if showWritingSection prop is true
+  useEffect(() => {
+    if (showWritingSection) {
+      setShowSections(true);
+    }
+  }, [showWritingSection]);
 
   return (
     <div className="max-w-4xl mx-auto">
