@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -21,7 +21,7 @@ export function FreeTextInput({ userId }: FreeTextInputProps) {
   const [signature, setSignature] = useState<string | null>(null);
   const { toast } = useToast();
   const { t } = useLanguage();
-  const sigCanvas = React.useRef<SignatureCanvas>(null);
+  const sigCanvas = useRef<SignatureCanvas>(null);
 
   // Fetch existing free text when component mounts
   useEffect(() => {

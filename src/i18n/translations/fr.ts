@@ -109,5 +109,12 @@ export const frTranslations = {
   existingSignature: 'Signature existante',
   signBelow: 'Veuillez signer ci-dessous',
   clearSignature: 'Effacer',
-  confirmSignature: 'Confirmer'
+  confirmSignature: 'Confirmer',
+  // PDF Preview Dialog translations
+  documentPreview: 'Prévisualisation du document',
+  sendEmail: 'Envoyer par email',
+  sending: 'Envoi...',
+  download: 'Télécharger',
+  print: 'Imprimer',
+  noDocument: 'Aucun document à afficher'
 };
