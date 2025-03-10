@@ -23,10 +23,10 @@ export function QuestionWithExplanation({
   options,
   language
 }: QuestionWithExplanationProps) {
-  const [showExplanation, setShowExplanation] = useState(true); // Default to showing explanation
+  const [showExplanation, setShowExplanation] = useState(true);
   
   // Get the display order to use as the explanation ID
-  const displayOrder = question.display_order?.toString() || '';
+  const displayOrder = question.display_order?.toString() || question.id?.toString() || '';
   
   // Only render the explanation if we have a valid displayOrder
   const explanation = displayOrder ? getQuestionExplanation(displayOrder, language) : '';
