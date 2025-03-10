@@ -59,7 +59,7 @@ export const lifeSupportExplanationsFR = [
   },
   {
     id: "22",
-    explanation: "Cette question demande si vous voulez être admis en réanimation et recevoir tous les traitements possibles si vous êtes gravement malade. Réfléchissez au niveau d'intervention que vous souhaiteriez dans une situation médicale critique."
+    explanation: "Cette question concerne votre volonté d'être traité en réanimation, si votre état de santé le nécessite. La réanimation offre des traitements intensifs pour les patients gravement malades, souvent avec des procédures invasives."
   },
   {
     id: "23",

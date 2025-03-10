@@ -23,7 +23,7 @@ export function QuestionWithExplanation({
   options,
   language
 }: QuestionWithExplanationProps) {
-  const [showExplanation, setShowExplanation] = useState(false);
+  const [showExplanation, setShowExplanation] = useState(true); // Default to showing explanation
   
   // Get the display order to use as the explanation ID
   const displayOrder = question.display_order?.toString() || '';
@@ -33,8 +33,15 @@ export function QuestionWithExplanation({
   
   return (
     <div className="mb-8">
-      <div className="flex items-center justify-between mb-2">
-        {explanation && (
+      <QuestionCard
+        question={question}
+        value={value}
+        onValueChange={onValueChange}
+        options={options}
+      />
+      
+      {explanation && (
+        <div className="flex items-center mt-2">
           <Button 
             variant="ghost" 
             size="sm" 
@@ -44,18 +51,11 @@ export function QuestionWithExplanation({
             <MessageCircleQuestion className="h-4 w-4 mr-1" />
             {language === 'en' ? 'Explanation' : 'Explication'}
           </Button>
-        )}
-      </div>
-      
-      <QuestionCard
-        question={question}
-        value={value}
-        onValueChange={onValueChange}
-        options={options}
-      />
+        </div>
+      )}
       
       {explanation && showExplanation && (
-        <div className="mt-3 text-base text-muted-foreground bg-muted p-4 rounded-md">
+        <div className="mt-1 text-sm text-muted-foreground bg-muted p-4 rounded-md">
           {explanation}
         </div>
       )}

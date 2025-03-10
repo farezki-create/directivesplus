@@ -44,7 +44,7 @@ export function LifeSupportQuestionsDialog({
           value={answers[question.id] || []}
           onValueChange={(value) => handleAnswerChange(question.id, value, true)}
           options={getLifeSupportOptions()}
-          language={currentLanguage}
+          language={currentLanguage as 'en' | 'fr'}
         />
       ))}
     </QuestionsDialogLayout>
