@@ -11,52 +11,24 @@ export const createPrintWindow = (pdfUrl: string | null) => {
     return null;
   }
 
-  // Create a temporary HTML file for printing
+  // Create a dedicated print window with the PDF embedded directly
   const printContent = `
     <!DOCTYPE html>
     <html>
       <head>
         <title>Impression</title>
-        <script>
-          function waitForPDFLoad() {
-            var iframe = document.getElementById('pdf-iframe');
-            var maxAttempts = 50; // 10 seconds maximum (50 * 200ms)
-            var attempts = 0;
-
-            function checkPDF() {
-              attempts++;
-              if (attempts >= maxAttempts) {
-                console.log('Timeout waiting for PDF');
-                return;
-              }
-
-              try {
-                if (iframe && iframe.contentWindow.document.readyState === 'complete') {
-                  console.log('PDF loaded, preparing to print...');
-                  setTimeout(function() {
-                    window.print();
-                    window.focus();
-                  }, 1000);
-                } else {
-                  setTimeout(checkPDF, 200);
-                }
-              } catch (e) {
-                console.error('Error checking PDF:', e);
-                setTimeout(checkPDF, 200);
-              }
-            }
-
-            checkPDF();
-          }
-          window.onload = waitForPDFLoad;
-        </script>
         <style>
           body {
             margin: 0;
             padding: 0;
-            width: 100vw;
             height: 100vh;
-            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          .pdf-container {
+            width: 100%;
+            height: 100%;
           }
           iframe {
             width: 100%;
@@ -64,28 +36,42 @@ export const createPrintWindow = (pdfUrl: string | null) => {
             border: none;
           }
           @media print {
-            body, html, iframe {
-              width: 100%;
-              height: 100%;
+            @page {
+              size: auto;
+              margin: 0;
+            }
+            body {
               margin: 0;
               padding: 0;
             }
-            @page {
-              size: auto;
-              margin: 0mm;
+            .pdf-container {
+              width: 100%;
+              height: auto;
             }
           }
         </style>
       </head>
       <body>
-        <iframe 
-          id="pdf-iframe"
-          src="${pdfUrl}" 
-          type="application/pdf"
-          width="100%"
-          height="100%"
-          frameborder="0"
-        ></iframe>
+        <div class="pdf-container">
+          <iframe 
+            src="${pdfUrl}" 
+            width="100%" 
+            height="100%" 
+            frameborder="0"
+            onload="setTimeout(function() { window.print(); }, 1000);"
+          ></iframe>
+        </div>
+        <script>
+          // Fallback in case onload doesn't trigger
+          window.addEventListener('load', function() {
+            setTimeout(function() {
+              if (!window.printed) {
+                window.printed = true;
+                window.print();
+              }
+            }, 2000);
+          });
+        </script>
       </body>
     </html>
   `;
