@@ -32,18 +32,35 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Verify PDF data format
-    if (!pdfUrl.startsWith('data:application/pdf;base64,')) {
-      console.error("Invalid PDF format:", pdfUrl.substring(0, 50) + "...");
-      throw new Error("Invalid PDF data format. Expected data:application/pdf;base64,");
+    let base64Data: string;
+    
+    if (pdfUrl.startsWith('data:application/pdf;base64,')) {
+      // Extract base64 content from data URL
+      base64Data = pdfUrl.split(',')[1];
+      console.log("Base64 data extracted from data URL, length:", base64Data?.length || 0);
+    } else {
+      // Try to use raw base64 string
+      base64Data = pdfUrl;
+      console.log("Using raw base64 string, length:", base64Data?.length || 0);
     }
 
-    // Extract base64 content from data URL
-    const base64Data = pdfUrl.split(',')[1];
     if (!base64Data) {
+      console.error("No base64 data found");
       throw new Error("Invalid PDF data format - no base64 content found");
     }
 
-    console.log("Base64 data extracted, length:", base64Data.length);
+    // Validate the base64 string
+    try {
+      // Simple validation for base64 format
+      if (!/^[A-Za-z0-9+/=]+$/.test(base64Data)) {
+        throw new Error("Invalid base64 format");
+      }
+    } catch (error) {
+      console.error("Base64 validation error:", error);
+      throw new Error("Invalid PDF data format - not valid base64");
+    }
+
+    console.log("Base64 data valid, sending email with attachment");
 
     const emailResponse = await resend.emails.send({
       from: "DirectivesPlus <notification@directivesplus.fr>",

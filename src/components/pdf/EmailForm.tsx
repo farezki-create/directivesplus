@@ -59,15 +59,24 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
       });
 
       console.log("Sending PDF to email:", emailAddress);
+      console.log("PDF URL type:", typeof pdfUrl);
+      console.log("PDF URL starts with:", pdfUrl.substring(0, 30) + "...");
       
-      // Verify the PDF data is in the correct format (data URL)
+      // Fix the PDF URL format if needed
+      let formattedPdfUrl = pdfUrl;
       if (!pdfUrl.startsWith('data:application/pdf;base64,')) {
-        throw new Error("Format de PDF invalide pour l'envoi par email");
+        // If we have a PDF with a different format, we need to inform the user
+        if (pdfUrl.includes('blob:') || pdfUrl.includes('http')) {
+          throw new Error("Format de PDF non supporté pour l'envoi par email. Veuillez régénérer le PDF.");
+        }
+        // Try to fix the format if it's missing the prefix but contains base64 data
+        formattedPdfUrl = 'data:application/pdf;base64,' + pdfUrl;
+        console.log("Reformatted PDF URL with correct prefix");
       }
       
       const { data, error } = await supabase.functions.invoke('send-pdf-email', {
         body: {
-          pdfUrl,
+          pdfUrl: formattedPdfUrl,
           recipientEmail: emailAddress,
         },
       });
