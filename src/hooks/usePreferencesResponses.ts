@@ -37,11 +37,18 @@ export function usePreferencesResponses(questions: any[]) {
 
       // Prepare all responses for insertion
       const responses = Object.entries(answers).flatMap(([questionId, values]) => {
-        const question = questions.find(q => q.id === questionId);
+        // Find the full question object to get correct ID format
+        const question = questions.find(q => q.id.toString() === questionId);
+        
+        if (!question) {
+          console.error(`[Preferences] Question with ID ${questionId} not found`);
+          return [];
+        }
+        
         return values.map(value => ({
           user_id: userId,
-          question_id: questionId,
-          question_text: question?.question,
+          question_id: question.id, // Use the actual UUID from the question object
+          question_text: question.question,
           response: value,
           questionnaire_type: 'preferences'
         }));
