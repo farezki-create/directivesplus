@@ -47,9 +47,19 @@ export function useLifeSupportAnswers(questions: any[]) {
         return false;
       }
 
+      // Convert string IDs to UUIDs or handle both formats
       const responses = Object.entries(answers).flatMap(([questionId, values]) => {
-        // Find the full question object to get correct ID format
-        const question = questions.find(q => q.id.toString() === questionId);
+        // Find the actual question object to get its proper UUID
+        let question;
+        
+        // Handle different question ID formats (integer or UUID)
+        if (currentLanguage === 'fr' && questions[0]?.id?.toString().match(/^\d+$/)) {
+          // For French questions that use integers as IDs
+          question = questions.find(q => q.id.toString() === questionId);
+        } else {
+          // For questions using UUIDs
+          question = questions.find(q => q.id.toString() === questionId);
+        }
         
         if (!question) {
           console.error(`[LifeSupport] Question with ID ${questionId} not found`);
@@ -58,14 +68,25 @@ export function useLifeSupportAnswers(questions: any[]) {
         
         return values.map(value => ({
           user_id: userId,
-          question_id: question.id, // Use the actual UUID from the question object
-          question_text: question.question,
+          question_id: question.id, // Use the question's ID directly
+          question_text: question.question || question.question_text, // Handle both formats
           response: value,
           questionnaire_type: 'life_support'
         }));
       });
 
       console.log('[LifeSupport] Prepared responses for insertion:', responses);
+
+      if (responses.length === 0) {
+        toast({
+          title: currentLanguage === 'en' ? "Error" : "Erreur",
+          description: currentLanguage === 'en'
+            ? "No valid answers to save."
+            : "Aucune réponse valide à enregistrer.",
+          variant: "destructive",
+        });
+        return false;
+      }
 
       // Delete existing responses before inserting new ones
       await supabase
