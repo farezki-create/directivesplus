@@ -11,12 +11,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 interface PDFPreviewDialogProps {
-  pdfUrl: string | null;
   isOpen: boolean;
-  onClose: () => void;
+  onOpenChange: (open: boolean) => void;
+  pdfUrl: string | null;
 }
 
-export function PDFPreviewDialog({ pdfUrl, isOpen, onClose }: PDFPreviewDialogProps) {
+export function PDFPreviewDialog({ isOpen, onOpenChange, pdfUrl }: PDFPreviewDialogProps) {
   const [sendingEmail, setSendingEmail] = useState(false);
   const { toast } = useToast();
 
@@ -62,14 +62,14 @@ export function PDFPreviewDialog({ pdfUrl, isOpen, onClose }: PDFPreviewDialogPr
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={() => onClose()}>
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
         <DialogHeader className="flex flex-row items-center justify-between">
           <DialogTitle>Prévisualisation du PDF</DialogTitle>
           <Button
             variant="ghost"
             size="icon"
-            onClick={onClose}
+            onClick={() => onOpenChange(false)}
             className="rounded-full h-6 w-6 p-0"
           >
             <X className="h-4 w-4" />

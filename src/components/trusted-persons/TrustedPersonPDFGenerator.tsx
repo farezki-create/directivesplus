@@ -30,10 +30,6 @@ export function TrustedPersonPDFGenerator() {
     );
   };
 
-  const handleEmail = async () => {
-    console.log("[TrustedPersonPDF] Email functionality not yet implemented");
-  };
-
   if (loading) {
     return null;
   }
@@ -48,14 +44,13 @@ export function TrustedPersonPDFGenerator() {
         Générer le document de désignation
       </Button>
       
-      <PDFPreviewDialog
-        open={showPreview}
-        onOpenChange={setShowPreview}
-        pdfUrl={pdfUrl}
-        onEmail={handleEmail}
-        onSave={() => handlePDFDownload(pdfUrl)}
-        onPrint={() => handlePDFPrint(pdfUrl)}
-      />
+      {showPreview && (
+        <PDFPreviewDialog
+          isOpen={showPreview}
+          onOpenChange={setShowPreview}
+          pdfUrl={pdfUrl}
+        />
+      )}
     </>
   );
 }
