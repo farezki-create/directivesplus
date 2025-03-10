@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { EmailForm } from "./EmailForm";
 import { PDFActionButtons } from "./PDFActionButtons";
 import { PDFViewer } from "./PDFViewer";
-import { createPrintWindow } from "./utils/PrintUtils";
+import { printPDF } from "./utils/PrintUtils";
 import { Button } from "@/components/ui/button";
 import { Database } from "lucide-react";
 
@@ -49,8 +49,8 @@ export function PDFPreviewDialog({
     if (onPrint) {
       onPrint();
     } else {
-      const printWindow = createPrintWindow(pdfUrl);
-      if (printWindow) {
+      const success = printPDF(pdfUrl);
+      if (success) {
         onOpenChange(false);
         navigate("/generate-pdf");
       }

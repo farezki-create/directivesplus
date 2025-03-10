@@ -35,6 +35,7 @@ export const createPrintWindow = (pdfUrl: string | null) => {
                   console.log('PDF loaded, preparing to print...');
                   setTimeout(function() {
                     window.print();
+                    window.focus();
                   }, 1000);
                 } else {
                   setTimeout(checkPDF, 200);
@@ -62,6 +63,14 @@ export const createPrintWindow = (pdfUrl: string | null) => {
             height: 100%;
             border: none;
           }
+          @media print {
+            body, html, embed {
+              width: 100%;
+              height: 100%;
+              margin: 0;
+              padding: 0;
+            }
+          }
         </style>
       </head>
       <body>
@@ -87,4 +96,34 @@ export const createPrintWindow = (pdfUrl: string | null) => {
   printWindow.document.close();
   
   return printWindow;
+};
+
+export const printPDF = (pdfUrl: string | null) => {
+  if (!pdfUrl) {
+    toast({
+      title: "Erreur",
+      description: "Aucun PDF à imprimer",
+      variant: "destructive",
+    });
+    return false;
+  }
+
+  try {
+    const printWindow = createPrintWindow(pdfUrl);
+    if (!printWindow) {
+      return false;
+    }
+    
+    // Focus on the new window to bring print dialog to front
+    printWindow.focus();
+    return true;
+  } catch (error) {
+    console.error("[PrintUtils] Error printing PDF:", error);
+    toast({
+      title: "Erreur",
+      description: "Une erreur est survenue lors de l'impression",
+      variant: "destructive",
+    });
+    return false;
+  }
 };
