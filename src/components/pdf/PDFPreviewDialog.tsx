@@ -14,9 +14,12 @@ interface PDFPreviewDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   pdfUrl: string | null;
+  onEmail?: () => Promise<void>;
+  onSave?: () => void;
+  onPrint?: () => void;
 }
 
-export function PDFPreviewDialog({ isOpen, onOpenChange, pdfUrl }: PDFPreviewDialogProps) {
+export function PDFPreviewDialog({ isOpen, onOpenChange, pdfUrl, onEmail, onSave, onPrint }: PDFPreviewDialogProps) {
   const [sendingEmail, setSendingEmail] = useState(false);
   const { toast } = useToast();
 
@@ -79,8 +82,8 @@ export function PDFPreviewDialog({ isOpen, onOpenChange, pdfUrl }: PDFPreviewDia
         <div className="flex flex-col space-y-4 flex-1 overflow-hidden">
           <div className="flex justify-between items-center">
             <PDFActionButtons 
-              onDownload={() => handlePDFDownload(pdfUrl)} 
-              onPrint={() => handlePDFPrint(pdfUrl)} 
+              onDownload={onSave || (() => handlePDFDownload(pdfUrl))} 
+              onPrint={onPrint || (() => handlePDFPrint(pdfUrl))} 
             />
           </div>
           
