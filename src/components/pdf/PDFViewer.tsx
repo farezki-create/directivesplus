@@ -18,6 +18,7 @@ export function PDFViewer({ pdfUrl }: PDFViewerProps) {
         src={pdfUrl}
         className="w-full h-full border-0"
         title="PDF Preview"
+        id="pdf-viewer-iframe"
       />
     </div>
   );
