@@ -40,8 +40,26 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
       return;
     }
 
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailAddress)) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez entrer une adresse email valide",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSending(true);
     try {
+      toast({
+        title: "Envoi en cours",
+        description: "Préparation de l'envoi du document...",
+      });
+
+      console.log("Sending PDF to email:", emailAddress);
+      
       const { data, error } = await supabase.functions.invoke('send-pdf-email', {
         body: {
           pdfUrl,
@@ -49,20 +67,28 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase function error:", error);
+        throw new Error(`Erreur lors de l'appel à la fonction: ${error.message}`);
+      }
+
+      if (!data) {
+        throw new Error("Aucune réponse reçue du serveur");
+      }
 
       toast({
         title: "Succès",
-        description: "Le PDF a été envoyé par email",
+        description: "Le PDF a été envoyé par email. Vérifiez votre boîte de réception (et dossier spam).",
       });
+      
       setEmailAddress("");
       onClose();
       navigate("/generate-pdf");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error sending email:", error);
       toast({
         title: "Erreur",
-        description: "Impossible d'envoyer le PDF par email",
+        description: `Impossible d'envoyer le PDF par email: ${error.message}`,
         variant: "destructive",
       });
     } finally {

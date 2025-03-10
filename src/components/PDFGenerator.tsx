@@ -73,7 +73,18 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
         responses,
         trustedPersons,
         (url) => {
-          console.log("[PDFGenerator] PDF generated, setting URL:", url ? "success" : "failed");
+          console.log("[PDFGenerator] PDF generated, URL status:", url ? "success" : "failed");
+          
+          // Store the PDF URL in localStorage as a backup
+          if (url) {
+            try {
+              localStorage.setItem(`pdf_${userId}`, url);
+              console.log("[PDFGenerator] PDF URL saved to localStorage");
+            } catch (e) {
+              console.warn("[PDFGenerator] Could not save PDF to localStorage:", e);
+            }
+          }
+          
           setPdfUrl(url);
           if (onPdfGenerated) {
             onPdfGenerated(url);

@@ -16,6 +16,8 @@ interface EmailRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  console.log("Email function called");
+  
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -23,20 +25,37 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const { pdfUrl, recipientEmail }: EmailRequest = await req.json();
+    console.log("Sending email to:", recipientEmail);
+
+    if (!pdfUrl || !recipientEmail) {
+      throw new Error("Missing required parameters: pdfUrl or recipientEmail");
+    }
+
+    // Extract base64 content from data URL
+    const base64Data = pdfUrl.split(',')[1];
+    if (!base64Data) {
+      throw new Error("Invalid PDF data format");
+    }
 
     const emailResponse = await resend.emails.send({
-      from: "Directives Anticipées <onboarding@resend.dev>",
+      from: "DirectivesPlus <notification@directivesplus.fr>",
       to: [recipientEmail],
       subject: "Vos directives anticipées",
       html: `
-        <h1>Vos directives anticipées</h1>
-        <p>Vous trouverez en pièce jointe vos directives anticipées au format PDF.</p>
-        <p>Ce document est personnel et confidentiel.</p>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h1 style="color: #0f172a; margin-bottom: 20px;">Vos directives anticipées</h1>
+          <p>Bonjour,</p>
+          <p>Vous trouverez en pièce jointe vos directives anticipées au format PDF.</p>
+          <p>Ce document est personnel et confidentiel. Nous vous recommandons de le partager avec votre personne de confiance et votre médecin traitant.</p>
+          <p>Merci d'utiliser DirectivesPlus pour préserver vos souhaits concernant vos soins de fin de vie.</p>
+          <p style="margin-top: 30px;">Cordialement,</p>
+          <p style="margin: 0;">L'équipe DirectivesPlus</p>
+        </div>
       `,
       attachments: [
         {
           filename: "directives-anticipees.pdf",
-          content: pdfUrl.split(",")[1],
+          content: base64Data,
         },
       ],
     });
