@@ -26,14 +26,14 @@ export const SecondaryNavigation = ({ user, navButtonClass }: SecondaryNavigatio
     <div className="w-full bg-gray-50 py-2 shadow-sm">
       <div className="container mx-auto px-4 flex items-center justify-center gap-4 flex-wrap">
         <Button
-          variant="outline"
+          className={navButtonClass}
           onClick={handleHomeClick}
         >
           {t('home')}
         </Button>
 
         <Button
-          variant="outline"
+          className={navButtonClass}
           onClick={handleWriteClick}
         >
           <PenLine className="w-4 h-4 mr-1" />
@@ -42,7 +42,7 @@ export const SecondaryNavigation = ({ user, navButtonClass }: SecondaryNavigatio
 
         {user && (
           <Button
-            variant="outline"
+            className={navButtonClass}
             onClick={() => navigate("/generate-pdf")}
           >
             <FileText className="w-4 h-4 mr-1" />

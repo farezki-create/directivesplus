@@ -21,10 +21,9 @@ export const LanguageSelector = () => {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button 
-          variant="outline"
-          size="sm"
+          className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl transform hover:-translate-y-1 text-white flex items-center gap-2"
         >
-          <Globe className="h-4 w-4 mr-2" />
+          <Globe className="h-4 w-4" />
           <span>{t('language')}</span>
         </Button>
       </DropdownMenuTrigger>
@@ -33,7 +32,7 @@ export const LanguageSelector = () => {
           <DropdownMenuItem
             key={lang.code}
             onClick={() => setLanguage(lang.code)}
-            className={currentLanguage === lang.code ? "bg-purple-50 text-purple-800 font-medium" : ""}
+            className={currentLanguage === lang.code ? "bg-muted" : ""}
           >
             {lang.label}
           </DropdownMenuItem>
