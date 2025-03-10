@@ -1,7 +1,9 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { QuestionCard } from "./QuestionCard";
 import { getQuestionExplanation } from "@/utils/explanations";
+import { MessageCircleQuestion } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface QuestionWithExplanationProps {
   question: any;
@@ -21,6 +23,8 @@ export function QuestionWithExplanation({
   options,
   language
 }: QuestionWithExplanationProps) {
+  const [showExplanation, setShowExplanation] = useState(false);
+  
   // Get the display order to use as the explanation ID
   const displayOrder = question.display_order?.toString() || '';
   
@@ -29,13 +33,28 @@ export function QuestionWithExplanation({
   
   return (
     <div className="mb-8">
+      <div className="flex items-center justify-between mb-2">
+        {explanation && (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-muted-foreground" 
+            onClick={() => setShowExplanation(!showExplanation)}
+          >
+            <MessageCircleQuestion className="h-4 w-4 mr-1" />
+            {language === 'en' ? 'Explanation' : 'Explication'}
+          </Button>
+        )}
+      </div>
+      
       <QuestionCard
         question={question}
         value={value}
         onValueChange={onValueChange}
         options={options}
       />
-      {explanation && (
+      
+      {explanation && showExplanation && (
         <div className="mt-3 text-base text-muted-foreground bg-muted p-4 rounded-md">
           {explanation}
         </div>
