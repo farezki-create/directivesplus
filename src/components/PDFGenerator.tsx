@@ -6,12 +6,10 @@ import { handlePDFGeneration, handlePDFDownload, handlePDFPrint } from "./pdf/ut
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
 import { PDFPreviewDialog } from "./pdf/PDFPreviewDialog";
-import { PDFCardGenerator } from "./pdf/utils/PDFCardGenerator";
 import { toast } from "@/hooks/use-toast";
 
 interface PDFGeneratorProps {
   userId: string;
-  isCardFormat?: boolean;
   onPdfGenerated?: (url: string | null) => void;
 }
 
@@ -26,8 +24,8 @@ const waitingMessages = [
   "Votre document est presque prêt... 🌟",
 ];
 
-export function PDFGenerator({ userId, isCardFormat = false, onPdfGenerated }: PDFGeneratorProps) {
-  console.log("[PDFGenerator] Initializing with userId:", userId, "isCardFormat:", isCardFormat);
+export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
+  console.log("[PDFGenerator] Initializing with userId:", userId);
   
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
@@ -69,32 +67,21 @@ export function PDFGenerator({ userId, isCardFormat = false, onPdfGenerated }: P
     }
 
     try {
-      if (isCardFormat) {
-        console.log("[PDFGenerator] Generating card format PDF");
-        const pdfDataUrl = PDFCardGenerator.generate(profile, trustedPersons);
-        console.log("[PDFGenerator] Card PDF generated, setting URL and opening preview");
-        setPdfUrl(pdfDataUrl);
-        if (onPdfGenerated) {
-          onPdfGenerated(pdfDataUrl);
-        }
-        setShowPreview(true);
-      } else {
-        console.log("[PDFGenerator] Generating full PDF");
-        handlePDFGeneration(
-          profile,
-          responses,
-          trustedPersons,
-          (url) => {
-            console.log("[PDFGenerator] PDF generated, setting URL:", url ? "success" : "failed");
-            setPdfUrl(url);
-            if (onPdfGenerated) {
-              onPdfGenerated(url);
-            }
-            setIsGenerating(false);
-          },
-          setShowPreview
-        );
-      }
+      console.log("[PDFGenerator] Generating full PDF");
+      handlePDFGeneration(
+        profile,
+        responses,
+        trustedPersons,
+        (url) => {
+          console.log("[PDFGenerator] PDF generated, setting URL:", url ? "success" : "failed");
+          setPdfUrl(url);
+          if (onPdfGenerated) {
+            onPdfGenerated(url);
+          }
+          setIsGenerating(false);
+        },
+        setShowPreview
+      );
     } catch (error) {
       console.error("[PDFGenerator] Error during PDF generation:", error);
       toast({
@@ -104,13 +91,6 @@ export function PDFGenerator({ userId, isCardFormat = false, onPdfGenerated }: P
       });
       setIsGenerating(false);
     }
-  };
-
-  const handleEmail = async () => {
-    toast({
-      title: "Information",
-      description: "L'envoi par email sera bientôt disponible",
-    });
   };
 
   if (loading) {
@@ -135,11 +115,10 @@ export function PDFGenerator({ userId, isCardFormat = false, onPdfGenerated }: P
       <Button 
         onClick={generatePDF}
         className="flex items-center gap-2"
-        variant={isCardFormat ? "outline" : "default"}
         disabled={isGenerating}
       >
         <FileText className="h-4 w-4" />
-        {isCardFormat ? "Générer au format carte" : "Générer Mes directives anticipées"}
+        Générer Mes directives anticipées
       </Button>
       
       {showPreview && (
