@@ -1,4 +1,3 @@
-
 import { Button } from "./ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -34,8 +33,7 @@ export const Header = () => {
   };
 
   const isHomePage = location.pathname === "/";
-
-  const navButtonClass = "rounded-xl shadow-md hover:shadow-lg transition-all duration-200 bg-gradient-to-r from-purple-600 to-indigo-700 hover:from-purple-700 hover:to-indigo-800 border border-purple-400/20 text-white";
+  const navButtonClass = "";
 
   return (
     <>

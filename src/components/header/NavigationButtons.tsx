@@ -16,7 +16,7 @@ export const NavigationButtons = ({ navButtonClass, onShowPurchase }: Navigation
   return (
     <>
       <Button
-        className={navButtonClass}
+        variant="outline"
         onClick={() => navigate("/reviews")}
       >
         <MessageSquare className="w-4 h-4 mr-1" />
@@ -24,7 +24,7 @@ export const NavigationButtons = ({ navButtonClass, onShowPurchase }: Navigation
       </Button>
 
       <Button
-        className={navButtonClass}
+        variant="outline"
         onClick={onShowPurchase}
       >
         <CreditCard className="w-4 h-4 mr-1" />

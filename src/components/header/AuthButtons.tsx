@@ -1,4 +1,3 @@
-
 import { Button } from "../ui/button";
 import { useNavigate } from "react-router-dom";
 import { User } from "@supabase/supabase-js";
@@ -81,14 +80,12 @@ export const AuthButtons = ({ user }: AuthButtonsProps) => {
     navigate("/");
   };
 
-  const navButtonClass = "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl transform hover:-translate-y-1 text-white";
-
   return user ? (
-    <Button variant="default" onClick={handleSignOut} className={navButtonClass}>
+    <Button variant="default" onClick={handleSignOut}>
       {t('logout')}
     </Button>
   ) : (
-    <Button variant="default" onClick={() => navigate("/auth")} className={navButtonClass}>
+    <Button variant="default" onClick={() => navigate("/auth")}>
       {t('login')}
     </Button>
   );
