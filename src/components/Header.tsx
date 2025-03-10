@@ -68,7 +68,8 @@ export const Header = () => {
   };
 
   const handleWriteClick = () => {
-    navigate("/?writing=true");
+    // Force a page reload to ensure the writing section is properly displayed
+    window.location.href = "/?writing=true";
   };
 
   const isHomePage = location.pathname === "/";

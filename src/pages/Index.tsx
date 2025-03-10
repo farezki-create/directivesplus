@@ -16,10 +16,14 @@ const Index = () => {
   const location = useLocation();
 
   useEffect(() => {
-    // Check for the writing parameter in the URL
+    // Check for the writing parameter in the URL and show writing section if present
     const params = new URLSearchParams(location.search);
     if (params.get('writing') === 'true') {
       setShowWritingSection(true);
+      // Scroll to the buttons section for better visibility
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 100);
     }
   }, [location]);
 
