@@ -91,5 +91,17 @@ export const enTranslations = {
   writeDirectivesSecurely: 'Write your advance directives and designate your trusted persons in a few simple and secure steps.',
   documentNotFound: 'Document not found',
   directivesGuideNotFound: 'The guide on advance directives was not found.',
-  unableToAccessDocument: 'Unable to access the document at this time.'
+  unableToAccessDocument: 'Unable to access the document at this time.',
+  saveMyAnswers: 'Save my answers',
+  saving: 'Saving...',
+  saveChanges: 'Save changes',
+  synthesisTitle: 'My synthesis',
+  synthesisDescription: 'Express your preferences in your own words',
+  writeSynthesis: 'Write your synthesis here...',
+  noQuestionFound: 'No question found',
+  agree: 'I agree',
+  disagree: 'I disagree',
+  notSure: 'I\'m not sure',
+  importantToMe: 'Important to me',
+  notImportantToMe: 'Not important to me'
 };
