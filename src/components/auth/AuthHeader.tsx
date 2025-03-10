@@ -17,7 +17,7 @@ export const AuthHeader = ({ isSignUp }: AuthHeaderProps) => {
   return (
     <Button
       variant="ghost"
-      className="absolute top-4 left-4 gap-2"
+      className="absolute top-4 left-4 gap-2 hover:bg-purple-50 hover:text-purple-700 transition-colors"
       onClick={() => navigate("/")}
     >
       <ArrowLeft className="h-4 w-4" />
