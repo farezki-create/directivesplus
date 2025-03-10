@@ -38,8 +38,17 @@ export function useAdvancedIllnessQuestions(open: boolean) {
           return;
         }
         
-        console.log('[AdvancedIllness] Questions loaded:', data?.length, 'questions');
-        setQuestions(data || []);
+        // Log the data for debugging
+        console.log('[AdvancedIllness] Questions loaded:', data);
+        
+        // Add display_order as string to each question if needed
+        const processedData = data?.map(q => ({
+          ...q,
+          display_order_str: q.display_order?.toString() || ''
+        })) || [];
+        
+        console.log('[AdvancedIllness] Processed questions:', processedData);
+        setQuestions(processedData);
       } catch (error) {
         console.error('[AdvancedIllness] Unexpected error:', error);
         toast({

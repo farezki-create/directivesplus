@@ -20,6 +20,10 @@ export function AdvancedIllnessQuestionsDialog({
   const { answers, handleAnswerChange, handleSubmit } = useAdvancedIllnessResponses(questions);
   const { getAdvancedIllnessOptions } = useQuestionOptions();
 
+  // For debugging
+  console.log("AdvancedIllnessQuestionsDialog - questions:", questions);
+  console.log("AdvancedIllnessQuestionsDialog - language:", currentLanguage);
+
   const onSubmit = async () => {
     const success = await handleSubmit();
     if (success) {
@@ -37,16 +41,21 @@ export function AdvancedIllnessQuestionsDialog({
       loading={loading}
       questionsLength={questions.length}
     >
-      {questions.map((question) => (
-        <QuestionWithExplanation
-          key={question.id}
-          question={question}
-          value={answers[question.id] || []}
-          onValueChange={(value) => handleAnswerChange(question.id, value)}
-          options={getAdvancedIllnessOptions()}
-          language={currentLanguage as 'en' | 'fr'}
-        />
-      ))}
+      {questions.map((question) => {
+        // For debugging each question
+        console.log(`Question ${question.display_order}: ID=${question.id}`);
+        
+        return (
+          <QuestionWithExplanation
+            key={question.id}
+            question={question}
+            value={answers[question.id] || []}
+            onValueChange={(value) => handleAnswerChange(question.id, value)}
+            options={getAdvancedIllnessOptions()}
+            language={currentLanguage as 'en' | 'fr'}
+          />
+        );
+      })}
     </QuestionsDialogLayout>
   );
 }

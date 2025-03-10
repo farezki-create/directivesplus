@@ -25,11 +25,17 @@ export function QuestionWithExplanation({
 }: QuestionWithExplanationProps) {
   const [showExplanation, setShowExplanation] = useState(true);
   
-  // Get the display order to use as the explanation ID
-  const displayOrder = question.display_order?.toString() || question.id?.toString() || '';
+  // Get the ID to use for finding the explanation
+  // For advanced illness, we need to use display_order directly without converting to string
+  const explanationId = question.display_order || question.id || '';
   
-  // Only render the explanation if we have a valid displayOrder
-  const explanation = displayOrder ? getQuestionExplanation(displayOrder, language) : '';
+  // Get the explanation using the extracted ID
+  const explanation = getQuestionExplanation(explanationId.toString(), language);
+  
+  // For debugging
+  console.log("Question:", question);
+  console.log("Explanation ID:", explanationId);
+  console.log("Explanation:", explanation);
   
   return (
     <div className="mb-8">

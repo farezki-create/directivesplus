@@ -20,8 +20,15 @@ const questionExplanationsFR = [
  * Gets the explanation for a question with the given ID in the specified language
  */
 export const getQuestionExplanation = (questionId: string, language: 'en' | 'fr'): string => {
+  // Log for debugging
+  console.log(`Getting explanation for question ID: ${questionId} in language: ${language}`);
+  
   const explanations = language === 'en' ? questionExplanationsEN : questionExplanationsFR;
   const explanation = explanations.find(exp => exp.id === questionId);
+  
+  // Log the result
+  console.log(`Found explanation:`, explanation);
+  
   return explanation ? explanation.explanation : '';
 };
 
