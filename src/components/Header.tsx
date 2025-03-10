@@ -74,7 +74,8 @@ export const Header = () => {
 
   const isHomePage = location.pathname === "/";
 
-  const navButtonClass = "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl transform hover:-translate-y-1 text-white";
+  // Updated button styles to use blue like the logout button
+  const navButtonClass = "bg-primary text-primary-foreground hover:bg-primary/90";
 
   return (
     <>
@@ -96,12 +97,12 @@ export const Header = () => {
           </div>
           
           {/* Right side navigation with Reviews, Buy Card, Language and Login/Logout */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 justify-center">
             <Button
               className={navButtonClass}
               onClick={() => navigate("/reviews")}
             >
-              <MessageSquare className="w-4 h-4" />
+              <MessageSquare className="w-4 h-4 mr-1" />
               <span>{t('reviews')}</span>
             </Button>
 
@@ -109,7 +110,7 @@ export const Header = () => {
               className={navButtonClass}
               onClick={() => setShowPurchaseDialog(true)}
             >
-              <CreditCard className="w-4 h-4" />
+              <CreditCard className="w-4 h-4 mr-1" />
               <span>{t('buyCard')}</span>
             </Button>
             
