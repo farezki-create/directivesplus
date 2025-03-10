@@ -2,12 +2,14 @@
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import { EmailForm } from "./EmailForm";
 import { PDFActionButtons } from "./PDFActionButtons";
 import { PDFViewer } from "./PDFViewer";
 import { createPrintWindow } from "./utils/PrintUtils";
 import { Button } from "@/components/ui/button";
 import { Database } from "lucide-react";
+import { cleanupPDFResources } from "./utils/PDFGenerationUtils";
 
 interface PDFPreviewDialogProps {
   open: boolean;
@@ -27,8 +29,29 @@ export function PDFPreviewDialog({
 }: PDFPreviewDialogProps) {
   const { toast } = useToast();
   const navigate = useNavigate();
+  
+  // Nettoyer les ressources lorsque le dialog se ferme
+  useEffect(() => {
+    if (!open && pdfUrl && pdfUrl.startsWith('blob:')) {
+      // Attendre un moment pour s'assurer que le PDF n'est plus utilisé
+      const timer = setTimeout(() => {
+        cleanupPDFResources(pdfUrl);
+      }, 500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [open, pdfUrl]);
 
   const handleDownload = () => {
+    if (!pdfUrl) {
+      toast({
+        title: "Erreur",
+        description: "Aucun PDF à télécharger",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     if (onSave) {
       onSave();
       // Don't close the dialog or navigate away

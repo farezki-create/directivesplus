@@ -2,6 +2,7 @@
 import { toast } from "@/hooks/use-toast";
 import { UserProfile, TrustedPerson } from "../types";
 import { PDFDocumentGenerator } from "../PDFDocumentGenerator";
+import { revokePdfUrl } from "./PrintUtils";
 
 export const handlePDFGeneration = async (
   profile: UserProfile | null,
@@ -12,6 +13,13 @@ export const handlePDFGeneration = async (
 ) => {
   try {
     console.log("[PDFGeneration] Starting PDF generation");
+    
+    // Afficher un message de chargement
+    toast({
+      title: "Génération en cours",
+      description: "Création de votre document PDF...",
+    });
+
     if (!profile) {
       console.error("[PDFGeneration] No profile data available");
       throw new Error("Les données du profil sont requises");
@@ -20,19 +28,22 @@ export const handlePDFGeneration = async (
     console.log("[PDFGeneration] Profile data:", profile);
     console.log("[PDFGeneration] Responses data:", responses);
 
+    // Révoquer l'ancien URL si nécessaire
+    if (pdfUrl && pdfUrl.startsWith('blob:')) {
+      revokePdfUrl(pdfUrl);
+    }
+
     // Generate PDF
-    const pdfDataUrl = await PDFDocumentGenerator.generate(profile, responses, trustedPersons);
+    const pdfUrl = await PDFDocumentGenerator.generate(profile, responses, trustedPersons);
     
-    if (!pdfDataUrl) {
-      console.error("[PDFGeneration] PDF generation failed - no data URL returned");
+    if (!pdfUrl) {
+      console.error("[PDFGeneration] PDF generation failed - no URL returned");
       throw new Error("La génération du PDF a échoué");
     }
 
-    // Ensure we have a clean URL
-    const cleanUrl = pdfDataUrl.replace(/([^:])\/\/+/g, '$1/').replace(/:\//g, '://');
-    console.log("[PDFGeneration] Generated PDF URL (cleaned)");
+    console.log("[PDFGeneration] Generated PDF URL:", pdfUrl.substring(0, 30) + "...");
     
-    setPdfUrl(cleanUrl);
+    setPdfUrl(pdfUrl);
     setShowPreview(true);
 
     console.log("[PDFGeneration] PDF generated successfully");
@@ -63,6 +74,8 @@ export const handlePDFDownload = (pdfUrl: string | null) => {
 
   try {
     console.log("[PDFGeneration] Starting PDF download");
+    
+    // Créer un élément a temporaire pour le téléchargement
     const link = document.createElement('a');
     link.href = pdfUrl;
     link.download = 'directives-anticipees.pdf';
@@ -113,5 +126,15 @@ export const handlePDFPrint = (pdfUrl: string | null) => {
   }
 };
 
-// Import this from PrintUtils.ts to avoid circular dependencies
+// Fonction pour nettoyer les ressources lors de la fermeture
+export const cleanupPDFResources = (pdfUrl: string | null) => {
+  if (pdfUrl && pdfUrl.startsWith('blob:')) {
+    revokePdfUrl(pdfUrl);
+  }
+};
+
+// Import depuis PrintUtils.ts
 import { createPrintWindow } from "./PrintUtils";
+
+// Variable pour stocker l'URL actuel du PDF (pour nettoyage)
+let pdfUrl: string | null = null;

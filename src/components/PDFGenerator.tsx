@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "./pdf/usePDFData";
-import { handlePDFGeneration, handlePDFDownload, handlePDFPrint } from "./pdf/utils/PDFGenerationUtils";
+import { handlePDFGeneration, handlePDFDownload, handlePDFPrint, cleanupPDFResources } from "./pdf/utils/PDFGenerationUtils";
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
 import { PDFPreviewDialog } from "./pdf/PDFPreviewDialog";
@@ -44,6 +44,15 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
     }
   }, [isGenerating]);
 
+  // Nettoyer les ressources lorsque le composant est démonté
+  useEffect(() => {
+    return () => {
+      if (pdfUrl && pdfUrl.startsWith('blob:')) {
+        cleanupPDFResources(pdfUrl);
+      }
+    };
+  }, []);
+
   console.log("[PDFGenerator] Current state:", {
     hasProfile: !!profile,
     hasTrustedPersons: trustedPersons.length,
@@ -75,16 +84,7 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
         (url) => {
           console.log("[PDFGenerator] PDF generated, URL status:", url ? "success" : "failed");
           
-          // Store the PDF URL in localStorage as a backup
-          if (url) {
-            try {
-              localStorage.setItem(`pdf_${userId}`, url);
-              console.log("[PDFGenerator] PDF URL saved to localStorage");
-            } catch (e) {
-              console.warn("[PDFGenerator] Could not save PDF to localStorage:", e);
-            }
-          }
-          
+          // Stocker l'URL du PDF dans le state
           setPdfUrl(url);
           if (onPdfGenerated) {
             onPdfGenerated(url);

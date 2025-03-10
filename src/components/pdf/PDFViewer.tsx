@@ -12,6 +12,18 @@ export function PDFViewer({ pdfUrl }: PDFViewerProps) {
     );
   }
 
+  // Vérifier que l'URL est valide (blob: ou data:)
+  const isValidPdfUrl = pdfUrl.startsWith("blob:") || pdfUrl.startsWith("data:");
+  
+  if (!isValidPdfUrl) {
+    console.error("[PDFViewer] Invalid PDF URL format:", pdfUrl);
+    return (
+      <div className="flex-1 flex items-center justify-center text-red-500">
+        Format de document non valide
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 min-h-[500px] border rounded">
       <iframe
@@ -19,6 +31,7 @@ export function PDFViewer({ pdfUrl }: PDFViewerProps) {
         className="w-full h-full min-h-[500px]"
         title="PDF Preview"
         style={{ border: 'none' }}
+        sandbox="allow-same-origin allow-scripts"
       />
     </div>
   );
