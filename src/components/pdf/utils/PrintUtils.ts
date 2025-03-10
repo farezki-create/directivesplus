@@ -12,7 +12,7 @@ export const printPDF = (pdfUrl: string | null) => {
   }
 
   try {
-    // Créer un élément d'ancrage pour télécharger le PDF
+    // Télécharger le PDF au lieu de l'imprimer
     const link = document.createElement('a');
     link.href = pdfUrl;
     link.download = 'directives-anticipees.pdf';
@@ -22,7 +22,7 @@ export const printPDF = (pdfUrl: string | null) => {
     
     toast({
       title: "Information",
-      description: "Le PDF a été téléchargé. Utilisez votre visionneuse PDF pour l'imprimer.",
+      description: "Le PDF a été téléchargé",
     });
     
     return true;

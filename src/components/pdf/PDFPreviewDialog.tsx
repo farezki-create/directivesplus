@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import { EmailForm } from "./EmailForm";
 import { PDFActionButtons } from "./PDFActionButtons";
 import { PDFViewer } from "./PDFViewer";
-import { printPDF } from "./utils/PrintUtils";
 import { Button } from "@/components/ui/button";
 import { Database } from "lucide-react";
 
@@ -15,7 +14,6 @@ interface PDFPreviewDialogProps {
   pdfUrl: string | null;
   onEmail?: () => void;
   onSave?: () => void;
-  onPrint?: () => void;
 }
 
 export function PDFPreviewDialog({
@@ -23,7 +21,6 @@ export function PDFPreviewDialog({
   onOpenChange,
   pdfUrl,
   onSave,
-  onPrint,
 }: PDFPreviewDialogProps) {
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -33,24 +30,6 @@ export function PDFPreviewDialog({
       onSave();
       onOpenChange(false);
       navigate("/generate-pdf");
-    }
-  };
-
-  const handlePrint = () => {
-    if (!pdfUrl) {
-      toast({
-        title: "Erreur",
-        description: "Aucun PDF à imprimer",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (onPrint) {
-      onPrint();
-    } else {
-      // Au lieu d'ouvrir dans un nouvel onglet, télécharge directement
-      printPDF(pdfUrl);
     }
   };
 
@@ -85,7 +64,6 @@ export function PDFPreviewDialog({
               </Button>
               <PDFActionButtons 
                 onDownload={handleDownload} 
-                onPrint={handlePrint} 
               />
             </div>
           </div>

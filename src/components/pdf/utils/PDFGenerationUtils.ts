@@ -1,7 +1,7 @@
+
 import { toast } from "@/hooks/use-toast";
 import { UserProfile, TrustedPerson } from "../types";
 import { PDFDocumentGenerator } from "../PDFDocumentGenerator";
-import { printPDF } from "./PrintUtils";
 
 export const handlePDFGeneration = async (
   profile: UserProfile | null,
@@ -70,30 +70,6 @@ export const handlePDFDownload = (pdfUrl: string | null) => {
     toast({
       title: "Erreur",
       description: "Impossible de télécharger le PDF.",
-      variant: "destructive",
-    });
-  }
-};
-
-export const handlePDFPrint = (pdfUrl: string | null) => {
-  if (!pdfUrl) {
-    console.error("[PDFGeneration] No PDF URL available for printing");
-    toast({
-      title: "Erreur",
-      description: "Impossible d'imprimer le PDF.",
-      variant: "destructive",
-    });
-    return;
-  }
-
-  try {
-    printPDF(pdfUrl);
-    console.log("[PDFGeneration] PDF downloaded for printing");
-  } catch (error) {
-    console.error("[PDFGeneration] Error downloading PDF for print:", error);
-    toast({
-      title: "Erreur",
-      description: "Impossible de télécharger le PDF pour impression.",
       variant: "destructive",
     });
   }
