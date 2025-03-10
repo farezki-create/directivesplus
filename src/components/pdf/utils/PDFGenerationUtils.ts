@@ -2,6 +2,7 @@
 import { toast } from "@/hooks/use-toast";
 import { UserProfile, TrustedPerson } from "../types";
 import { PDFDocumentGenerator } from "../PDFDocumentGenerator";
+import { createPrintWindow } from "./PrintUtils";
 
 export const handlePDFGeneration = async (
   profile: UserProfile | null,
@@ -87,11 +88,11 @@ export const handlePDFPrint = (pdfUrl: string | null) => {
   }
 
   try {
-    const printWindow = window.open(pdfUrl);
+    // Use the improved PrintUtils to create a print window
+    const printWindow = createPrintWindow(pdfUrl);
     if (!printWindow) {
       throw new Error("Impossible d'ouvrir la fenêtre d'impression");
     }
-    printWindow.print();
     console.log("[PDFGeneration] Print window opened successfully");
   } catch (error) {
     console.error("[PDFGeneration] Error opening print window:", error);

@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -49,11 +48,7 @@ export function PDFPreviewDialog({
     if (onPrint) {
       onPrint();
     } else {
-      const printWindow = createPrintWindow(pdfUrl);
-      if (printWindow) {
-        onOpenChange(false);
-        navigate("/generate-pdf");
-      }
+      createPrintWindow(pdfUrl);
     }
   };
 
@@ -66,12 +61,12 @@ export function PDFPreviewDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
+      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
         <DialogTitle className="text-lg font-semibold mb-4">
           Prévisualisation du document
         </DialogTitle>
         
-        <div className="flex flex-col space-y-4 h-full">
+        <div className="flex flex-col space-y-4 h-full overflow-hidden">
           <div className="flex flex-wrap justify-between gap-2">
             <EmailForm 
               pdfUrl={pdfUrl} 
@@ -93,7 +88,9 @@ export function PDFPreviewDialog({
             </div>
           </div>
           
-          <PDFViewer pdfUrl={pdfUrl} />
+          <div className="flex-1 overflow-hidden">
+            <PDFViewer pdfUrl={pdfUrl} />
+          </div>
         </div>
       </DialogContent>
     </Dialog>

@@ -17,38 +17,6 @@ export const createPrintWindow = (pdfUrl: string | null) => {
     <html>
       <head>
         <title>Impression</title>
-        <script>
-          function waitForPDFLoad() {
-            var embed = document.querySelector('embed');
-            var maxAttempts = 50; // 10 seconds maximum (50 * 200ms)
-            var attempts = 0;
-
-            function checkPDF() {
-              attempts++;
-              if (attempts >= maxAttempts) {
-                console.log('Timeout waiting for PDF');
-                return;
-              }
-
-              try {
-                if (embed && embed.clientHeight > 0) {
-                  console.log('PDF loaded, preparing to print...');
-                  setTimeout(function() {
-                    window.print();
-                  }, 1000);
-                } else {
-                  setTimeout(checkPDF, 200);
-                }
-              } catch (e) {
-                console.error('Error checking PDF:', e);
-                setTimeout(checkPDF, 200);
-              }
-            }
-
-            checkPDF();
-          }
-          window.onload = waitForPDFLoad;
-        </script>
         <style>
           body {
             margin: 0;
@@ -57,18 +25,34 @@ export const createPrintWindow = (pdfUrl: string | null) => {
             height: 100vh;
             overflow: hidden;
           }
-          embed {
+          iframe {
             width: 100%;
             height: 100%;
             border: none;
           }
         </style>
+        <script>
+          function printPDF() {
+            try {
+              console.log("Preparing to print...");
+              // Give the iframe time to fully load
+              setTimeout(() => {
+                window.print();
+                console.log("Print dialog opened");
+              }, 1000);
+            } catch (e) {
+              console.error("Error during print:", e);
+            }
+          }
+          window.onload = printPDF;
+        </script>
       </head>
       <body>
-        <embed 
+        <iframe 
           src="${pdfUrl}" 
           type="application/pdf"
-        />
+          onload="printPDF()"
+        ></iframe>
       </body>
     </html>
   `;

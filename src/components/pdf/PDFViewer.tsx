@@ -13,11 +13,12 @@ export function PDFViewer({ pdfUrl }: PDFViewerProps) {
   }
 
   return (
-    <div className="flex-1 min-h-[500px] border rounded">
+    <div className="flex-1 min-h-[500px] border rounded overflow-hidden">
       <iframe
         src={pdfUrl}
-        className="w-full h-full border-0"
+        className="w-full h-full min-h-[500px] border-0"
         title="PDF Preview"
+        sandbox="allow-same-origin allow-scripts allow-forms"
       />
     </div>
   );
