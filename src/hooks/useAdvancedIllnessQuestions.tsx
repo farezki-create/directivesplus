@@ -38,13 +38,12 @@ export function useAdvancedIllnessQuestions(open: boolean) {
           return;
         }
         
-        // Log the data for debugging
-        console.log('[AdvancedIllness] Questions loaded:', data);
-        
-        // Add display_order as string to each question if needed
-        const processedData = data?.map(q => ({
+        // Add position index (1-based) as display_order_str to each question
+        // This will help match questions with explanations when display_order is null
+        const processedData = data?.map((q, index) => ({
           ...q,
-          display_order_str: q.display_order?.toString() || ''
+          // Use existing display_order if available, otherwise use 1-based index
+          display_order_str: q.display_order ? q.display_order.toString() : (index + 1).toString()
         })) || [];
         
         console.log('[AdvancedIllness] Processed questions:', processedData);

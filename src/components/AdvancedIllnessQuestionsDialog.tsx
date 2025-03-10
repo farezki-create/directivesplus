@@ -21,7 +21,7 @@ export function AdvancedIllnessQuestionsDialog({
   const { getAdvancedIllnessOptions } = useQuestionOptions();
 
   // For debugging
-  console.log("AdvancedIllnessQuestionsDialog - questions:", questions);
+  console.log("AdvancedIllnessQuestionsDialog - questions count:", questions.length);
   console.log("AdvancedIllnessQuestionsDialog - language:", currentLanguage);
 
   const onSubmit = async () => {
@@ -41,9 +41,9 @@ export function AdvancedIllnessQuestionsDialog({
       loading={loading}
       questionsLength={questions.length}
     >
-      {questions.map((question) => {
+      {questions.map((question, index) => {
         // For debugging each question
-        console.log(`Question ${question.display_order}: ID=${question.id}`);
+        console.log(`Question ${index + 1}: ID=${question.id}, display_order=${question.display_order}, display_order_str=${question.display_order_str}`);
         
         return (
           <QuestionWithExplanation

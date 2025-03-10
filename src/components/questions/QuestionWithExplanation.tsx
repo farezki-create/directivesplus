@@ -25,17 +25,28 @@ export function QuestionWithExplanation({
 }: QuestionWithExplanationProps) {
   const [showExplanation, setShowExplanation] = useState(true);
   
-  // Get the ID to use for finding the explanation
-  // For advanced illness, we need to use display_order directly without converting to string
-  const explanationId = question.display_order || question.id || '';
+  // Extract numeric display order for advanced illness questions
+  // This will be used as the key to match with the explanations
+  let explanationId = '';
+  
+  if (question.display_order) {
+    // If display_order exists, use it as a string
+    explanationId = question.display_order.toString();
+  } else if (question.display_order_str) {
+    // Use the display_order_str if available
+    explanationId = question.display_order_str;
+  } else if (question.id) {
+    // Fallback to id
+    explanationId = question.id.toString();
+  }
   
   // Get the explanation using the extracted ID
-  const explanation = getQuestionExplanation(explanationId.toString(), language);
+  const explanation = getQuestionExplanation(explanationId, language);
   
   // For debugging
   console.log("Question:", question);
-  console.log("Explanation ID:", explanationId);
-  console.log("Explanation:", explanation);
+  console.log("Using explanation ID:", explanationId);
+  console.log("Found explanation:", explanation);
   
   return (
     <div className="mb-8">
