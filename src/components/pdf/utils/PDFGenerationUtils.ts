@@ -28,10 +28,17 @@ export const handlePDFGeneration = async (
       throw new Error("La génération du PDF a échoué");
     }
 
+    console.log("[PDFGeneration] PDF generated successfully, data URL length:", pdfDataUrl.length);
+    
+    // Ensure the PDF data URL starts with the correct prefix
+    if (!pdfDataUrl.startsWith('data:application/pdf;base64,')) {
+      console.error("[PDFGeneration] Invalid PDF data URL format");
+      throw new Error("Format de PDF invalide");
+    }
+    
     setPdfUrl(pdfDataUrl);
     setShowPreview(true);
 
-    console.log("[PDFGeneration] PDF generated successfully");
     toast({
       title: "Succès",
       description: "Le PDF a été généré avec succès.",
@@ -87,11 +94,42 @@ export const handlePDFPrint = (pdfUrl: string | null) => {
   }
 
   try {
-    const printWindow = window.open(pdfUrl);
+    const printWindow = window.open('', '_blank');
     if (!printWindow) {
       throw new Error("Impossible d'ouvrir la fenêtre d'impression");
     }
-    printWindow.print();
+    
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Impression des directives anticipées</title>
+          <style>
+            body, html {
+              margin: 0;
+              padding: 0;
+              height: 100%;
+            }
+            iframe {
+              width: 100%;
+              height: 100%;
+              border: none;
+            }
+          </style>
+          <script>
+            window.onload = function() {
+              setTimeout(function() {
+                window.print();
+              }, 1000);
+            }
+          </script>
+        </head>
+        <body>
+          <iframe src="${pdfUrl}" width="100%" height="100%"></iframe>
+        </body>
+      </html>
+    `);
+    
+    printWindow.document.close();
     console.log("[PDFGeneration] Print window opened successfully");
   } catch (error) {
     console.error("[PDFGeneration] Error opening print window:", error);
