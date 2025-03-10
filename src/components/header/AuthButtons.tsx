@@ -17,68 +17,167 @@ export const AuthButtons = ({ user }: AuthButtonsProps) => {
   const handleSignOut = async () => {
     if (user) {
       try {
-        // Delete directives from Supabase
-        const { error: directivesError } = await supabase
-          .from("directives")
+        console.log("Starting logout cleanup for user:", user.id);
+        
+        // Step 1: Delete user signatures
+        const { error: signatureError } = await supabase
+          .from("user_signatures")
           .delete()
           .eq("user_id", user.id);
           
-        if (directivesError) {
-          console.error("Erreur lors de la suppression des directives:", directivesError);
+        if (signatureError) {
+          console.error("Error deleting signatures:", signatureError);
         } else {
-          console.log("Directives supprimées avec succès");
+          console.log("User signatures deleted successfully");
         }
         
-        // Delete synthesis from Supabase
+        // Step 2: Delete questionnaire synthesis
         const { error: synthesisError } = await supabase
           .from("questionnaire_synthesis")
           .delete()
           .eq("user_id", user.id);
           
         if (synthesisError) {
-          console.error("Erreur lors de la suppression de la synthèse:", synthesisError);
+          console.error("Error deleting synthesis:", synthesisError);
         } else {
-          console.log("Synthèse supprimée avec succès");
+          console.log("Questionnaire synthesis deleted successfully");
         }
         
-        // Notify user of directive deletion
+        // Step 3: Delete questionnaire responses
+        const { error: responsesError } = await supabase
+          .from("questionnaire_responses")
+          .delete()
+          .eq("user_id", user.id);
+          
+        if (responsesError) {
+          console.error("Error deleting questionnaire responses:", responsesError);
+        } else {
+          console.log("Questionnaire responses deleted successfully");
+        }
+        
+        // Step 4: Delete preferences responses
+        const { error: preferencesError } = await supabase
+          .from("questionnaire_preferences_responses")
+          .delete()
+          .eq("user_id", user.id);
+          
+        if (preferencesError) {
+          console.error("Error deleting preferences responses:", preferencesError);
+        } else {
+          console.log("Preferences responses deleted successfully");
+        }
+        
+        // Step 5: Delete trusted persons
+        const { error: trustedPersonsError } = await supabase
+          .from("trusted_persons")
+          .delete()
+          .eq("user_id", user.id);
+          
+        if (trustedPersonsError) {
+          console.error("Error deleting trusted persons:", trustedPersonsError);
+        } else {
+          console.log("Trusted persons deleted successfully");
+        }
+        
+        // Step 6: Delete directives (ensure it runs last to maintain referential integrity)
+        const { error: directivesError } = await supabase
+          .from("directives")
+          .delete()
+          .eq("user_id", user.id);
+          
+        if (directivesError) {
+          console.error("Error deleting directives:", directivesError);
+        } else {
+          console.log("Directives deleted successfully");
+        }
+        
+        // Step 7: Delete any PDF documents
+        const { error: pdfError } = await supabase
+          .from("pdf_documents")
+          .delete()
+          .eq("user_id", user.id);
+          
+        if (pdfError) {
+          console.error("Error deleting PDF documents:", pdfError);
+        } else {
+          console.log("PDF documents deleted successfully");
+        }
+        
+        // Notify user of data deletion
         toast({
           title: "Suppression des données",
-          description: "Vos directives anticipées ont été supprimées avec succès.",
+          description: "Vos données ont été supprimées avec succès.",
         });
       } catch (error) {
-        console.error("Erreur lors du nettoyage des données:", error);
+        console.error("Error during data cleanup:", error);
+        toast({
+          title: "Erreur",
+          description: "Une erreur est survenue lors de la suppression de vos données.",
+          variant: "destructive",
+        });
       }
     }
     
-    // Delete locally stored PDFs
-    const pdfUrls = Object.keys(localStorage).filter(key => 
-      key.startsWith('pdf_') || key.includes('dataurlstring')
-    );
-    
-    pdfUrls.forEach(key => {
-      localStorage.removeItem(key);
-    });
-    
-    // Revoke object URLs
-    if (window.URL && window.URL.revokeObjectURL) {
+    // Delete locally stored PDFs and other data
+    try {
+      console.log("Clearing local storage data");
+      
+      // Clear PDF data
+      const pdfUrls = Object.keys(localStorage).filter(key => 
+        key.startsWith('pdf_') || key.includes('dataurlstring')
+      );
+      
       pdfUrls.forEach(key => {
-        try {
-          const value = localStorage.getItem(key);
-          if (value && value.startsWith('blob:')) {
-            window.URL.revokeObjectURL(value);
-          }
-        } catch (e) {
-          console.error('Erreur lors de la révocation de l\'URL:', e);
-        }
+        localStorage.removeItem(key);
+        console.log(`Removed localStorage item: ${key}`);
       });
+      
+      // Revoke object URLs
+      if (window.URL && window.URL.revokeObjectURL) {
+        pdfUrls.forEach(key => {
+          try {
+            const value = localStorage.getItem(key);
+            if (value && value.startsWith('blob:')) {
+              window.URL.revokeObjectURL(value);
+              console.log(`Revoked object URL for: ${key}`);
+            }
+          } catch (e) {
+            console.error('Error revoking object URL:', e);
+          }
+        });
+      }
+      
+      // Clear any response data cached in localStorage
+      const cacheKeys = Object.keys(localStorage).filter(key => 
+        key.includes('response') || 
+        key.includes('directive') || 
+        key.includes('synthesis') ||
+        key.includes('profile')
+      );
+      
+      cacheKeys.forEach(key => {
+        localStorage.removeItem(key);
+        console.log(`Removed cached data: ${key}`);
+      });
+      
+      console.log('Local storage cleanup completed');
+    } catch (e) {
+      console.error('Error during local storage cleanup:', e);
     }
     
-    console.log('Documents PDFs supprimés lors de la déconnexion');
-    
-    // Log out user
-    await supabase.auth.signOut();
-    navigate("/");
+    // Log out user and redirect
+    try {
+      await supabase.auth.signOut();
+      console.log("User signed out successfully");
+      navigate("/");
+    } catch (signOutError) {
+      console.error("Error during sign out:", signOutError);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la déconnexion.",
+        variant: "destructive",
+      });
+    }
   };
 
   const navButtonClass = "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl transform hover:-translate-y-1 text-white";
