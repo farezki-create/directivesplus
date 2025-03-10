@@ -139,4 +139,3 @@ export const frTranslations = {
   signUpDesc: 'Créez un compte pour sauvegarder vos directives anticipées',
   loginDesc: 'Connectez-vous pour accéder à vos directives anticipées'
 };
-
