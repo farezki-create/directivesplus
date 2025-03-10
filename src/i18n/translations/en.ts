@@ -1,3 +1,4 @@
+
 export const enTranslations = {
   welcomeMessage: 'Welcome to our application',
   next: 'Next',
@@ -116,5 +117,32 @@ export const enTranslations = {
   reduceHydration: 'In case of suffering that is difficult to relieve and worsening of your illness, do you accept a significant reduction or cessation of hydration?',
   stayHome: 'Do you wish to stay at home if palliative care can be provided there?',
   dieAtHome: 'Do you wish to die at home, surrounded by your loved ones, in calm and serenity?',
-  diePeacefully: 'Is it your wish to pass away peacefully, without excessive suffering?'
+  diePeacefully: 'Is it your wish to pass away peacefully, without excessive suffering?',
+  // Auth translations
+  password: 'Password',
+  confirmPassword: 'Confirm Password',
+  firstName: 'First Name',
+  lastName: 'Last Name',
+  birthDate: 'Birth Date',
+  country: 'Country',
+  phoneNumber: 'Phone Number',
+  passwordHint: ' (minimum 8 characters)',
+  choosePassword: 'Choose a password',
+  yourPassword: 'Your password',
+  retypePassword: 'Retype your password',
+  yourFirstName: 'Your first name',
+  yourLastName: 'Your last name',
+  yourAddress: 'Your address',
+  yourCity: 'Your city',
+  yourPostalCode: 'Your postal code',
+  selectCountry: 'Select a country',
+  yourPhoneNumber: 'Your phone number',
+  signIn: 'Sign In',
+  register: 'Register',
+  dontHaveAccount: 'Don\'t have an account?',
+  alreadyHaveAccount: 'Already have an account?',
+  createAccount: 'Create Account',
+  signUpDesc: 'Create an account to save your advance directives',
+  loginDesc: 'Sign in to access your advance directives'
 };
+
