@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthApiError } from "@supabase/supabase-js";
@@ -9,13 +8,17 @@ import { getErrorMessage } from "@/utils/auth-errors";
 import { AuthHeader } from "@/components/auth/AuthHeader";
 import { AuthLogo } from "@/components/auth/AuthLogo";
 import { AuthCard } from "@/components/auth/AuthCard";
+import { useLanguage } from "@/hooks/useLanguage";
 
 const Auth = () => {
   const navigate = useNavigate();
   const [isSignUp, setIsSignUp] = useState(false);
   const { toast } = useToast();
+  const { setLanguage } = useLanguage();
 
   useEffect(() => {
+    setLanguage('fr');
+    
     console.log("Setting up auth state change listener");
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', event, session);
@@ -30,7 +33,7 @@ const Auth = () => {
       console.log("Cleaning up auth state change listener");
       subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, [navigate, setLanguage]);
 
   const handleSubmit = async (values: FormValues) => {
     try {
