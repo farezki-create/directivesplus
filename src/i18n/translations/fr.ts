@@ -20,7 +20,7 @@ export const frTranslations = {
   edit: 'Modifier',
   delete: 'Supprimer',
   generate: 'Générer',
-  download: 'Télécharger',
+  downloadPdf: 'Télécharger',
   email: 'E-mail',
   name: 'Nom',
   phone: 'Téléphone',

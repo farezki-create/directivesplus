@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/hooks/useLanguage";
 import { Save } from "lucide-react";
 import { SignatureComponent } from "./SignatureComponent";
+import { TextEditor } from "./TextEditor";
 
 interface FreeTextInputProps {
   userId: string;
@@ -26,6 +27,8 @@ export function FreeTextInput({ userId, onSaveComplete, onSignComplete }: FreeTe
   // Fetch existing free text when component mounts
   useEffect(() => {
     const fetchFreeText = async () => {
+      if (!userId) return;
+      
       try {
         setLoading(true);
         
@@ -55,10 +58,12 @@ export function FreeTextInput({ userId, onSaveComplete, onSignComplete }: FreeTe
       }
     };
 
-    if (userId) {
-      fetchFreeText();
-    }
+    fetchFreeText();
   }, [userId]);
+
+  const handleTextChange = (newText: string) => {
+    setFreeText(newText);
+  };
 
   const handleSubmit = async () => {
     try {
@@ -155,11 +160,10 @@ export function FreeTextInput({ userId, onSaveComplete, onSignComplete }: FreeTe
         </p>
       </div>
       
-      <Textarea
-        value={freeText}
-        onChange={(e) => setFreeText(e.target.value)}
+      <TextEditor 
+        value={freeText} 
+        onChange={handleTextChange} 
         placeholder={t('writeSynthesis')}
-        className="min-h-[200px]"
       />
       
       {/* Step 1: Save Content */}
