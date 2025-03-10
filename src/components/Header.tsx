@@ -8,6 +8,7 @@ import { CreditCard, MessageSquare, ArrowLeft, FileText, PenLine } from "lucide-
 import { PurchaseDialog } from "./purchase/PurchaseDialog";
 import { LanguageSelector } from "./LanguageSelector";
 import { useLanguage } from "@/hooks/useLanguage";
+import { toast } from "@/hooks/use-toast";
 
 export const Header = () => {
   const navigate = useNavigate();
@@ -29,7 +30,43 @@ export const Header = () => {
   }, []);
 
   const handleSignOut = async () => {
-    // Supprimer les PDFs stockés localement
+    if (user) {
+      try {
+        // Delete directives from Supabase
+        const { error: directivesError } = await supabase
+          .from("directives")
+          .delete()
+          .eq("user_id", user.id);
+          
+        if (directivesError) {
+          console.error("Erreur lors de la suppression des directives:", directivesError);
+        } else {
+          console.log("Directives supprimées avec succès");
+        }
+        
+        // Delete synthesis from Supabase
+        const { error: synthesisError } = await supabase
+          .from("questionnaire_synthesis")
+          .delete()
+          .eq("user_id", user.id);
+          
+        if (synthesisError) {
+          console.error("Erreur lors de la suppression de la synthèse:", synthesisError);
+        } else {
+          console.log("Synthèse supprimée avec succès");
+        }
+        
+        // Notify user of directive deletion
+        toast({
+          title: "Suppression des données",
+          description: "Vos directives anticipées ont été supprimées avec succès.",
+        });
+      } catch (error) {
+        console.error("Erreur lors du nettoyage des données:", error);
+      }
+    }
+    
+    // Delete locally stored PDFs
     const pdfUrls = Object.keys(localStorage).filter(key => 
       key.startsWith('pdf_') || key.includes('dataurlstring')
     );
@@ -38,7 +75,7 @@ export const Header = () => {
       localStorage.removeItem(key);
     });
     
-    // Nettoyage des URLs de données en mémoire
+    // Revoke object URLs
     if (window.URL && window.URL.revokeObjectURL) {
       pdfUrls.forEach(key => {
         try {
@@ -54,7 +91,7 @@ export const Header = () => {
     
     console.log('Documents PDFs supprimés lors de la déconnexion');
     
-    // Déconnexion de l'utilisateur
+    // Log out user
     await supabase.auth.signOut();
     navigate("/");
   };
@@ -94,13 +131,31 @@ export const Header = () => {
             )}
             <h1 className="text-2xl font-bold text-primary">DirectivesPlus</h1>
           </div>
-          <div>
+          <div className="flex items-center space-x-2">
+            <Button
+              className={navButtonClass}
+              onClick={() => navigate("/reviews")}
+            >
+              <MessageSquare className="w-4 h-4 mr-1" />
+              <span>{t('reviews')}</span>
+            </Button>
+
+            <Button
+              className={navButtonClass}
+              onClick={() => setShowPurchaseDialog(true)}
+            >
+              <CreditCard className="w-4 h-4 mr-1" />
+              <span>{t('buyCard')}</span>
+            </Button>
+            
+            <LanguageSelector />
+            
             {user ? (
-              <Button variant="default" onClick={handleSignOut}>
+              <Button variant="default" onClick={handleSignOut} className={navButtonClass}>
                 {t('logout')}
               </Button>
             ) : (
-              <Button variant="default" onClick={() => navigate("/auth")}>
+              <Button variant="default" onClick={() => navigate("/auth")} className={navButtonClass}>
                 {t('login')}
               </Button>
             )}
@@ -134,24 +189,6 @@ export const Header = () => {
                 <span>Mes directives générées</span>
               </Button>
             )}
-
-            <Button
-              className={navButtonClass}
-              onClick={() => navigate("/reviews")}
-            >
-              <MessageSquare className="w-4 h-4" />
-              <span>{t('reviews')}</span>
-            </Button>
-
-            <Button
-              className={navButtonClass}
-              onClick={() => setShowPurchaseDialog(true)}
-            >
-              <CreditCard className="w-4 h-4" />
-              <span>{t('buyCard')}</span>
-            </Button>
-            
-            <LanguageSelector />
           </div>
         </div>
       </header>
