@@ -19,7 +19,7 @@ export const createPrintWindow = (pdfUrl: string | null) => {
         <title>Impression</title>
         <script>
           function waitForPDFLoad() {
-            var iframe = document.querySelector('iframe');
+            var embed = document.querySelector('embed');
             var maxAttempts = 50; // 10 seconds maximum (50 * 200ms)
             var attempts = 0;
 
@@ -27,14 +27,12 @@ export const createPrintWindow = (pdfUrl: string | null) => {
               attempts++;
               if (attempts >= maxAttempts) {
                 console.log('Timeout waiting for PDF');
-                window.print();
                 return;
               }
 
               try {
-                // For iframe-based PDF viewer
-                if (iframe && iframe.contentDocument && iframe.contentDocument.readyState === 'complete') {
-                  console.log('PDF loaded in iframe, preparing to print...');
+                if (embed && embed.clientHeight > 0) {
+                  console.log('PDF loaded, preparing to print...');
                   setTimeout(function() {
                     window.print();
                   }, 1000);
@@ -59,7 +57,7 @@ export const createPrintWindow = (pdfUrl: string | null) => {
             height: 100vh;
             overflow: hidden;
           }
-          iframe {
+          embed {
             width: 100%;
             height: 100%;
             border: none;
@@ -67,10 +65,10 @@ export const createPrintWindow = (pdfUrl: string | null) => {
         </style>
       </head>
       <body>
-        <iframe 
+        <embed 
           src="${pdfUrl}" 
-          style="width:100%; height:100%; border:none;"
-        ></iframe>
+          type="application/pdf"
+        />
       </body>
     </html>
   `;
