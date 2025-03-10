@@ -1,7 +1,7 @@
 
 import React from "react";
 import { QuestionCard } from "./QuestionCard";
-import { getQuestionExplanation } from "@/utils/questionExplanations";
+import { getQuestionExplanation } from "@/utils/explanations";
 
 interface QuestionWithExplanationProps {
   question: any;
