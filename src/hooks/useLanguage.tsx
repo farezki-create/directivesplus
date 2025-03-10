@@ -24,13 +24,18 @@ interface LanguageProviderProps {
 }
 
 export const LanguageProvider = ({ children }: LanguageProviderProps) => {
+  // Set default language to French
   const [currentLanguage, setCurrentLanguage] = useState<SupportedLanguage>('fr');
 
-  // Use local storage to store language preference
+  // Use local storage to store language preference, but default to French
   useEffect(() => {
     const savedLanguage = localStorage.getItem('language') as SupportedLanguage;
     if (savedLanguage && (savedLanguage === 'fr' || savedLanguage === 'en')) {
       setCurrentLanguage(savedLanguage);
+    } else {
+      // If no language is stored or it's invalid, default to French
+      setCurrentLanguage('fr');
+      localStorage.setItem('language', 'fr');
     }
   }, []);
 

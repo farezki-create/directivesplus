@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthApiError } from "@supabase/supabase-js";
@@ -17,6 +18,7 @@ const Auth = () => {
   const { setLanguage } = useLanguage();
 
   useEffect(() => {
+    // Explicitly set language to French for the auth page
     setLanguage('fr');
     
     console.log("Setting up auth state change listener");
