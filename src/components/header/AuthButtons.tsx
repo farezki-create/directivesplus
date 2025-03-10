@@ -79,7 +79,51 @@ export const AuthButtons = ({ user }: AuthButtonsProps) => {
           console.log("Trusted persons deleted successfully");
         }
         
-        // Step 6: Delete directives (ensure it runs last to maintain referential integrity)
+        // Step 6: Delete any PDF documents from database
+        const { error: pdfError } = await supabase
+          .from("pdf_documents")
+          .delete()
+          .eq("user_id", user.id);
+          
+        if (pdfError) {
+          console.error("Error deleting PDF documents from database:", pdfError);
+        } else {
+          console.log("PDF documents deleted from database successfully");
+        }
+
+        // Step 7: Delete any PDF files from storage
+        try {
+          // First, list all files in the user's folder
+          const { data: storedFiles, error: listError } = await supabase
+            .storage
+            .from('directives_pdfs')
+            .list(`${user.id}`);
+
+          if (listError) {
+            console.error("Error listing PDF files in storage:", listError);
+          } else if (storedFiles && storedFiles.length > 0) {
+            console.log(`Found ${storedFiles.length} PDF files to delete:`, storedFiles);
+            
+            // Delete each file
+            const fileNames = storedFiles.map(file => `${user.id}/${file.name}`);
+            const { data: removedData, error: removeError } = await supabase
+              .storage
+              .from('directives_pdfs')
+              .remove(fileNames);
+              
+            if (removeError) {
+              console.error("Error deleting PDF files from storage:", removeError);
+            } else {
+              console.log("PDF files removed from storage successfully:", removedData);
+            }
+          } else {
+            console.log("No PDF files found in storage for this user");
+          }
+        } catch (storageError) {
+          console.error("Error during storage cleanup:", storageError);
+        }
+        
+        // Step 8: Delete directives (ensure it runs last to maintain referential integrity)
         const { error: directivesError } = await supabase
           .from("directives")
           .delete()
@@ -89,18 +133,6 @@ export const AuthButtons = ({ user }: AuthButtonsProps) => {
           console.error("Error deleting directives:", directivesError);
         } else {
           console.log("Directives deleted successfully");
-        }
-        
-        // Step 7: Delete any PDF documents
-        const { error: pdfError } = await supabase
-          .from("pdf_documents")
-          .delete()
-          .eq("user_id", user.id);
-          
-        if (pdfError) {
-          console.error("Error deleting PDF documents:", pdfError);
-        } else {
-          console.log("PDF documents deleted successfully");
         }
         
         // Notify user of data deletion
