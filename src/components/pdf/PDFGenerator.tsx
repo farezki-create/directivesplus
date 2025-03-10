@@ -1,7 +1,8 @@
+
 import { useState } from "react";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "./usePDFData";
-import { handlePDFGeneration, handlePDFDownload, handlePDFPrint } from "./utils/PDFGenerationUtils";
+import { handlePDFGeneration, handlePDFDownload } from "./utils/PDFGenerationUtils";
 import { PDFPreviewDialog } from "./PDFPreviewDialog";
 import { Button } from "@/components/ui/button";
 import { FileText, CreditCard } from "lucide-react";
@@ -81,7 +82,6 @@ export function PDFGenerator({ userId }: PDFGeneratorProps) {
         pdfUrl={pdfUrl}
         onEmail={handleEmail}
         onSave={() => handlePDFDownload(pdfUrl)}
-        onPrint={() => handlePDFPrint(pdfUrl)}
       />
     </div>
   );
