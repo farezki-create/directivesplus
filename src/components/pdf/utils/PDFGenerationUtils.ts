@@ -1,7 +1,7 @@
-
 import { toast } from "@/hooks/use-toast";
 import { UserProfile, TrustedPerson } from "../types";
 import { PDFDocumentGenerator } from "../PDFDocumentGenerator";
+import { printPDF } from "./PrintUtils";
 
 export const handlePDFGeneration = async (
   profile: UserProfile | null,
@@ -87,17 +87,14 @@ export const handlePDFPrint = (pdfUrl: string | null) => {
   }
 
   try {
-    const printWindow = window.open(pdfUrl);
-    if (!printWindow) {
-      throw new Error("Impossible d'ouvrir la fenêtre d'impression");
-    }
-    printWindow.print();
-    console.log("[PDFGeneration] Print window opened successfully");
+    // Utiliser la fonction printPDF qui ouvre simplement le PDF dans un nouvel onglet
+    printPDF(pdfUrl);
+    console.log("[PDFGeneration] PDF opened in new tab for printing");
   } catch (error) {
-    console.error("[PDFGeneration] Error opening print window:", error);
+    console.error("[PDFGeneration] Error opening PDF for print:", error);
     toast({
       title: "Erreur",
-      description: "Impossible d'imprimer le PDF.",
+      description: "Impossible d'ouvrir le PDF pour impression.",
       variant: "destructive",
     });
   }

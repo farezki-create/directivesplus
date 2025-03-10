@@ -12,43 +12,34 @@ export const printPDF = (pdfUrl: string | null) => {
   }
 
   try {
-    // Open PDF directly in a new window
-    const printWindow = window.open(pdfUrl, '_blank');
-    if (!printWindow) {
+    // Ouvrir le PDF dans un nouvel onglet et laisser l'utilisateur imprimer manuellement
+    const newWindow = window.open(pdfUrl, '_blank');
+    
+    if (!newWindow) {
       toast({
         title: "Erreur",
-        description: "Impossible d'ouvrir la fenêtre d'impression. Vérifiez que les popups ne sont pas bloqués.",
+        description: "Impossible d'ouvrir le document. Vérifiez que les popups ne sont pas bloqués.",
         variant: "destructive",
       });
       return false;
     }
-
-    // Focus on the new window
-    printWindow.focus();
-
-    // Print after a short delay to ensure the PDF is loaded
-    setTimeout(() => {
-      try {
-        printWindow.print();
-      } catch (error) {
-        console.error("[PrintUtils] Error during print:", error);
-        toast({
-          title: "Erreur",
-          description: "Une erreur est survenue lors de l'impression",
-          variant: "destructive",
-        });
-      }
-    }, 1000);
-
+    
+    // Mettre le focus sur la nouvelle fenêtre
+    newWindow.focus();
+    
+    toast({
+      title: "Information",
+      description: "Utilisez l'onglet 'Imprimer' du navigateur pour imprimer le document",
+    });
+    
     return true;
   } catch (error) {
-    console.error("[PrintUtils] Error printing PDF:", error);
+    console.error("[PrintUtils] Error opening PDF:", error);
     toast({
       title: "Erreur",
-      description: "Une erreur est survenue lors de l'impression",
+      description: "Une erreur est survenue lors de l'ouverture du document",
       variant: "destructive",
     });
     return false;
   }
 };
-

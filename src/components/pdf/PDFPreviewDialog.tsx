@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -49,11 +48,7 @@ export function PDFPreviewDialog({
     if (onPrint) {
       onPrint();
     } else {
-      const success = printPDF(pdfUrl);
-      if (success) {
-        onOpenChange(false);
-        navigate("/generate-pdf");
-      }
+      printPDF(pdfUrl);
     }
   };
 
