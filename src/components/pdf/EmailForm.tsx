@@ -59,6 +59,8 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
       });
 
       console.log("Sending PDF to email:", emailAddress);
+      console.log("PDF URL length:", pdfUrl?.length || 0);
+      console.log("PDF URL prefix:", pdfUrl?.substring(0, 50));
       
       // Nettoyage du format PDF
       let cleanPdfUrl = pdfUrl;
@@ -66,6 +68,7 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
       // 1. Vérifier un contenu dupliqué
       if (cleanPdfUrl.includes("data:application/pdf;base64,data:application/pdf;base64,")) {
         cleanPdfUrl = cleanPdfUrl.replace("data:application/pdf;base64,data:application/pdf;base64,", "data:application/pdf;base64,");
+        console.log("Fixed duplicate prefix");
       }
       
       // 2. Si le format contient "filename", extraire correctement la partie base64
@@ -73,15 +76,17 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
         const parts = cleanPdfUrl.split(';base64,');
         if (parts.length > 1) {
           cleanPdfUrl = "data:application/pdf;base64," + parts[parts.length - 1];
+          console.log("Extracted base64 from filename format");
         }
       }
       
       // 3. Si le préfixe est manquant, l'ajouter
       if (!cleanPdfUrl.startsWith('data:application/pdf;base64,')) {
         cleanPdfUrl = 'data:application/pdf;base64,' + cleanPdfUrl;
+        console.log("Added missing prefix");
       }
       
-      console.log("PDF format prepared for sending");
+      console.log("PDF format prepared for sending, final prefix:", cleanPdfUrl.substring(0, 50));
       
       const { data, error } = await supabase.functions.invoke('send-pdf-email', {
         body: {

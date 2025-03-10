@@ -1,5 +1,4 @@
 
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
 import { Resend } from "npm:resend@2.0.0"
 
@@ -27,6 +26,8 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { pdfUrl, recipientEmail }: EmailRequest = await req.json();
     console.log("Sending email to:", recipientEmail);
+    console.log("PDF URL length:", pdfUrl?.length || 0);
+    console.log("PDF URL starts with:", pdfUrl?.substring(0, 50));
 
     if (!pdfUrl || !recipientEmail) {
       throw new Error("Missing required parameters: pdfUrl or recipientEmail");
@@ -64,6 +65,12 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("Invalid PDF data format - no base64 content found");
     }
 
+    // Basic check to see if we have something that resembles binary data encoded as base64
+    if (base64Data.length < 100) {
+      console.error("Base64 data too short to be a valid PDF, length:", base64Data.length);
+      throw new Error("Invalid PDF data - too short to be a valid document");
+    }
+
     // Validate the base64 string - more lenient validation to handle possible whitespace
     try {
       base64Data = base64Data.trim();
@@ -79,38 +86,49 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Base64 data valid, sending email with attachment");
 
-    const emailResponse = await resend.emails.send({
-      from: "DirectivesPlus <notification@directivesplus.fr>",
-      to: [recipientEmail],
-      subject: "Vos directives anticipées",
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h1 style="color: #0f172a; margin-bottom: 20px;">Vos directives anticipées</h1>
-          <p>Bonjour,</p>
-          <p>Vous trouverez en pièce jointe vos directives anticipées au format PDF.</p>
-          <p>Ce document est personnel et confidentiel. Nous vous recommandons de le partager avec votre personne de confiance et votre médecin traitant.</p>
-          <p>Merci d'utiliser DirectivesPlus pour préserver vos souhaits concernant vos soins de fin de vie.</p>
-          <p style="margin-top: 30px;">Cordialement,</p>
-          <p style="margin: 0;">L'équipe DirectivesPlus</p>
-        </div>
-      `,
-      attachments: [
-        {
-          filename: "directives-anticipees.pdf",
-          content: base64Data,
+    try {
+      const emailResponse = await resend.emails.send({
+        from: "DirectivesPlus <notification@directivesplus.fr>",
+        to: [recipientEmail],
+        subject: "Vos directives anticipées",
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h1 style="color: #0f172a; margin-bottom: 20px;">Vos directives anticipées</h1>
+            <p>Bonjour,</p>
+            <p>Vous trouverez en pièce jointe vos directives anticipées au format PDF.</p>
+            <p>Ce document est personnel et confidentiel. Nous vous recommandons de le partager avec votre personne de confiance et votre médecin traitant.</p>
+            <p>Merci d'utiliser DirectivesPlus pour préserver vos souhaits concernant vos soins de fin de vie.</p>
+            <p style="margin-top: 30px;">Cordialement,</p>
+            <p style="margin: 0;">L'équipe DirectivesPlus</p>
+          </div>
+        `,
+        attachments: [
+          {
+            filename: "directives-anticipees.pdf",
+            content: base64Data,
+          },
+        ],
+      });
+
+      console.log("Email sent successfully:", emailResponse);
+
+      return new Response(JSON.stringify(emailResponse), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          ...corsHeaders,
         },
-      ],
-    });
-
-    console.log("Email sent successfully:", emailResponse);
-
-    return new Response(JSON.stringify(emailResponse), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        ...corsHeaders,
-      },
-    });
+      });
+    } catch (emailError: any) {
+      console.error("Resend API error:", emailError);
+      return new Response(
+        JSON.stringify({ error: `Erreur d'envoi email: ${emailError.message}` }),
+        {
+          status: 500, 
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
   } catch (error: any) {
     console.error("Error sending email:", error);
     return new Response(
@@ -124,4 +142,3 @@ const handler = async (req: Request): Promise<Response> => {
 };
 
 serve(handler);
-
