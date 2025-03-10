@@ -103,5 +103,19 @@ export const enTranslations = {
   disagree: 'I disagree',
   notSure: 'I\'m not sure',
   importantToMe: 'Important to me',
-  notImportantToMe: 'Not important to me'
+  notImportantToMe: 'Not important to me',
+  // Advanced Illness specific options
+  intensiveCareAdmission: 'Do you agree to be admitted to intensive care if your health condition requires it?',
+  avoidIntubation: 'Do you wish to avoid intubation (ventilator) due to your existing health problems?',
+  medicationsWithLucidity: 'Do you agree to receive medications, including sedatives, while maintaining your lucidity and ability to communicate?',
+  sedativesAcceptance: 'Do you accept the use of sedatives intermittently or continuously to relieve your suffering, even if this could impact your health?',
+  deepSedation: 'At the end of life, do you wish to benefit from deep and continuous sedation?',
+  stopDiagnosticTests: 'Do you want diagnostic tests and treatments to be stopped to focus solely on your comfort?',
+  stopVegetativeState: 'Do you want treatments that would keep you in a vegetative or similar state to be stopped?',
+  stopUnnecessaryMeds: 'If your health condition worsens, do you want unnecessary medications and tests to be stopped?',
+  stopTreatmentsDependence: 'If you become totally and permanently dependent, do you want all treatments to be stopped, including hydration?',
+  reduceHydration: 'In case of suffering that is difficult to relieve and worsening of your illness, do you accept a significant reduction or cessation of hydration?',
+  stayHome: 'Do you wish to stay at home if palliative care can be provided there?',
+  dieAtHome: 'Do you wish to die at home, surrounded by your loved ones, in calm and serenity?',
+  diePeacefully: 'Is it your wish to pass away peacefully, without excessive suffering?'
 };
