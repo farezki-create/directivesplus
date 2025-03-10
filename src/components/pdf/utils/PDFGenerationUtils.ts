@@ -28,17 +28,14 @@ export const handlePDFGeneration = async (
       throw new Error("La génération du PDF a échoué");
     }
 
-    console.log("[PDFGeneration] PDF generated successfully, data URL length:", pdfDataUrl.length);
+    // Ensure we have a clean URL
+    const cleanUrl = pdfDataUrl.replace(/([^:])\/\/+/g, '$1/').replace(/:\//g, '://');
+    console.log("[PDFGeneration] Generated PDF URL (cleaned)");
     
-    // Ensure the PDF data URL starts with the correct prefix
-    if (!pdfDataUrl.startsWith('data:application/pdf;base64,')) {
-      console.error("[PDFGeneration] Invalid PDF data URL format");
-      throw new Error("Format de PDF invalide");
-    }
-    
-    setPdfUrl(pdfDataUrl);
+    setPdfUrl(cleanUrl);
     setShowPreview(true);
 
+    console.log("[PDFGeneration] PDF generated successfully");
     toast({
       title: "Succès",
       description: "Le PDF a été généré avec succès.",
@@ -65,6 +62,7 @@ export const handlePDFDownload = (pdfUrl: string | null) => {
   }
 
   try {
+    console.log("[PDFGeneration] Starting PDF download");
     const link = document.createElement('a');
     link.href = pdfUrl;
     link.download = 'directives-anticipees.pdf';
@@ -72,6 +70,11 @@ export const handlePDFDownload = (pdfUrl: string | null) => {
     link.click();
     document.body.removeChild(link);
     console.log("[PDFGeneration] PDF downloaded successfully");
+    
+    toast({
+      title: "Succès",
+      description: "Le PDF a été téléchargé.",
+    });
   } catch (error) {
     console.error("[PDFGeneration] Error downloading PDF:", error);
     toast({
@@ -94,49 +97,21 @@ export const handlePDFPrint = (pdfUrl: string | null) => {
   }
 
   try {
-    const printWindow = window.open('', '_blank');
+    console.log("[PDFGeneration] Opening print window");
+    const printWindow = createPrintWindow(pdfUrl);
     if (!printWindow) {
       throw new Error("Impossible d'ouvrir la fenêtre d'impression");
     }
-    
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>Impression des directives anticipées</title>
-          <style>
-            body, html {
-              margin: 0;
-              padding: 0;
-              height: 100%;
-            }
-            iframe {
-              width: 100%;
-              height: 100%;
-              border: none;
-            }
-          </style>
-          <script>
-            window.onload = function() {
-              setTimeout(function() {
-                window.print();
-              }, 1000);
-            }
-          </script>
-        </head>
-        <body>
-          <iframe src="${pdfUrl}" width="100%" height="100%"></iframe>
-        </body>
-      </html>
-    `);
-    
-    printWindow.document.close();
     console.log("[PDFGeneration] Print window opened successfully");
   } catch (error) {
     console.error("[PDFGeneration] Error opening print window:", error);
     toast({
       title: "Erreur",
-      description: "Impossible d'imprimer le PDF.",
+      description: "Impossible d'imprimer le PDF. Vérifiez que les popups ne sont pas bloqués.",
       variant: "destructive",
     });
   }
 };
+
+// Import this from PrintUtils.ts to avoid circular dependencies
+import { createPrintWindow } from "./PrintUtils";
