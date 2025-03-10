@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -7,6 +8,7 @@ import { PDFViewer } from "./PDFViewer";
 import { createPrintWindow } from "./utils/PrintUtils";
 import { Button } from "@/components/ui/button";
 import { Database } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface PDFPreviewDialogProps {
   open: boolean;
@@ -26,6 +28,16 @@ export function PDFPreviewDialog({
 }: PDFPreviewDialogProps) {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+    
+    // Log l'URL du PDF pour débogage
+    console.log("[PDFPreviewDialog] PDF URL:", pdfUrl);
+    
+    return () => setIsMounted(false);
+  }, [pdfUrl]);
 
   const handleDownload = () => {
     if (onSave) {
@@ -59,6 +71,13 @@ export function PDFPreviewDialog({
     });
   };
 
+  // Vérification de sécurité pour l'URL du PDF
+  const isValidPdfUrl = pdfUrl && (
+    pdfUrl.startsWith('data:application/pdf') || 
+    pdfUrl.startsWith('blob:') ||
+    pdfUrl.startsWith('http')
+  );
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
@@ -89,7 +108,13 @@ export function PDFPreviewDialog({
           </div>
           
           <div className="flex-1 overflow-hidden">
-            <PDFViewer pdfUrl={pdfUrl} />
+            {!isValidPdfUrl && isMounted ? (
+              <div className="flex-1 flex items-center justify-center text-red-500">
+                Le document PDF n'est pas disponible ou son format n'est pas valide
+              </div>
+            ) : (
+              <PDFViewer pdfUrl={pdfUrl} />
+            )}
           </div>
         </div>
       </DialogContent>

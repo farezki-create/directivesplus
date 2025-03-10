@@ -21,15 +21,15 @@ export const handlePDFGeneration = async (
     console.log("[PDFGeneration] Profile data:", profile);
     console.log("[PDFGeneration] Responses data:", responses);
 
-    // Generate PDF
-    const pdfDataUrl = await PDFDocumentGenerator.generate(profile, responses, trustedPersons);
+    // Generate PDF with blob URL instead of data URL
+    const pdfBlobUrl = await PDFDocumentGenerator.generate(profile, responses, trustedPersons);
     
-    if (!pdfDataUrl) {
-      console.error("[PDFGeneration] PDF generation failed - no data URL returned");
+    if (!pdfBlobUrl) {
+      console.error("[PDFGeneration] PDF generation failed - no blob URL returned");
       throw new Error("La génération du PDF a échoué");
     }
 
-    setPdfUrl(pdfDataUrl);
+    setPdfUrl(pdfBlobUrl);
     setShowPreview(true);
 
     console.log("[PDFGeneration] PDF generated successfully");
@@ -59,13 +59,14 @@ export const handlePDFDownload = (pdfUrl: string | null) => {
   }
 
   try {
+    // Créer un élément a temporaire pour le téléchargement
     const link = document.createElement('a');
     link.href = pdfUrl;
     link.download = 'directives-anticipees.pdf';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    console.log("[PDFGeneration] PDF downloaded successfully");
+    console.log("[PDFGeneration] PDF download initiated");
   } catch (error) {
     console.error("[PDFGeneration] Error downloading PDF:", error);
     toast({
