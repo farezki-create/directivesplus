@@ -26,29 +26,15 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { pdfUrl, recipientEmail }: EmailRequest = await req.json();
     console.log("Sending email to:", recipientEmail);
-    console.log("PDF URL length:", pdfUrl?.length || 0);
 
     if (!pdfUrl || !recipientEmail) {
       throw new Error("Missing required parameters: pdfUrl or recipientEmail");
     }
 
-    // Validate email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(recipientEmail)) {
-      throw new Error("Invalid email format");
-    }
-
     // Extract base64 content from data URL
-    const base64Match = pdfUrl.match(/^data:.+;base64,(.*)$/);
-    if (!base64Match) {
-      throw new Error("Invalid PDF data format - not a valid data URL");
-    }
-    
-    const base64Data = base64Match[1];
-    console.log("Base64 data extracted, length:", base64Data.length);
-
-    if (!base64Data || base64Data.length === 0) {
-      throw new Error("Invalid PDF data - no content");
+    const base64Data = pdfUrl.split(',')[1];
+    if (!base64Data) {
+      throw new Error("Invalid PDF data format");
     }
 
     const emailResponse = await resend.emails.send({
