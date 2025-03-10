@@ -1,4 +1,4 @@
-export const enTranslations = {
+export const en = {
   welcomeMessage: 'Welcome to our application',
   next: 'Next',
   previous: 'Previous',
@@ -103,7 +103,6 @@ export const enTranslations = {
   notSure: 'I\'m not sure',
   importantToMe: 'Important to me',
   notImportantToMe: 'Not important to me',
-  // Advanced Illness specific options
   intensiveCareAdmission: 'Do you agree to be admitted to intensive care if your health condition requires it?',
   avoidIntubation: 'Do you wish to avoid intubation (ventilator) due to your existing health problems?',
   medicationsWithLucidity: 'Do you agree to receive medications, including sedatives, while maintaining your lucidity and ability to communicate?',

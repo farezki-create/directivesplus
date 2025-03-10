@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "./pdf/usePDFData";
@@ -144,8 +143,7 @@ export function PDFGenerator({ userId, isCardFormat = false, onPdfGenerated }: P
       
       {showPreview && (
         <PDFPreviewDialog
-          key={pdfUrl}
-          open={showPreview}
+          isOpen={showPreview}
           onOpenChange={(open) => {
             console.log("[PDFGenerator] Dialog state changing to:", open);
             setShowPreview(open);
