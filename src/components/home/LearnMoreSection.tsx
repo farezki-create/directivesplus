@@ -1,60 +1,15 @@
 
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/hooks/useLanguage";
 import { ArrowLeft } from "lucide-react";
+import { AdvanceDirectivesGuide } from "./AdvanceDirectivesGuide";
+import { useState } from "react";
 
 export function LearnMoreSection() {
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
   const { currentLanguage } = useLanguage();
-
-  const navigateToGuideInfo = async () => {
-    try {
-      setIsLoading(true);
-      
-      // Get the appropriate document based on the current language
-      const filename = currentLanguage === 'fr' 
-        ? 'directives-anticipees-guide-fr.pdf' 
-        : 'advance-directives-guide-en.pdf';
-      
-      console.log(`Attempting to retrieve ${filename} from storage...`);
-      
-      const { data } = await supabase
-        .storage
-        .from('pdf_documents')
-        .getPublicUrl(filename);
-
-      if (data?.publicUrl) {
-        console.log("Public URL obtained:", data.publicUrl);
-        window.open(data.publicUrl, '_blank');
-      } else {
-        console.error("Public URL not found in response:", data);
-        toast({
-          title: currentLanguage === 'fr' ? "Document introuvable" : "Document not found",
-          description: currentLanguage === 'fr' 
-            ? "Le guide sur les directives anticipées n'a pas été trouvé." 
-            : "The guide on advance directives was not found.",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error("Error accessing document:", error);
-      toast({
-        title: currentLanguage === 'fr' ? "Erreur" : "Error",
-        description: currentLanguage === 'fr' 
-          ? "Impossible d'accéder au document pour le moment." 
-          : "Unable to access the document at this time.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const [showGuide, setShowGuide] = useState(false);
 
   const navigateToAppInfo = () => {
     navigate("/dashboard");
@@ -85,16 +40,15 @@ export function LearnMoreSection() {
         <Button
           variant="default"
           size="lg"
-          onClick={navigateToGuideInfo}
+          onClick={() => setShowGuide(!showGuide)}
           className="w-full max-w-2xl py-6 text-lg bg-blue-600 hover:bg-blue-700"
-          disabled={isLoading}
         >
-          {isLoading 
-            ? (currentLanguage === 'fr' ? 'Chargement...' : 'Loading...') 
-            : (currentLanguage === 'fr' 
-              ? 'Pourquoi et comment rédiger mes directives anticipées ?' 
-              : 'Why and how to write my advance directives?')}
+          {currentLanguage === 'fr' 
+            ? 'Pourquoi et comment rédiger mes directives anticipées ?' 
+            : 'Why and how to write my advance directives?'}
         </Button>
+        
+        {showGuide && <AdvanceDirectivesGuide />}
         
         <Button
           variant="default"
