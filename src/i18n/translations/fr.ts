@@ -1,3 +1,4 @@
+
 export const frTranslations = {
   welcomeMessage: 'Bienvenue sur notre application',
   next: 'Suivant',
@@ -94,6 +95,7 @@ export const frTranslations = {
   saveMyAnswers: 'Enregistrer mes réponses',
   saving: 'Enregistrement...',
   saveChanges: 'Enregistrer les modifications',
+  saveDirectives: 'Enregistrer mes directives anticipées',
   synthesisTitle: 'Ma synthèse',
   synthesisDescription: 'Exprimez vos préférences dans vos propres mots',
   writeSynthesis: 'Écrivez votre synthèse ici...',
@@ -102,5 +104,10 @@ export const frTranslations = {
   disagree: 'Je ne suis pas d\'accord',
   notSure: 'Je ne suis pas sûr(e)',
   importantToMe: 'Important pour moi',
-  notImportantToMe: 'Pas important pour moi'
+  notImportantToMe: 'Pas important pour moi',
+  addSignature: 'Ajouter ma signature',
+  existingSignature: 'Signature existante',
+  signBelow: 'Veuillez signer ci-dessous',
+  clearSignature: 'Effacer',
+  confirmSignature: 'Confirmer'
 };
