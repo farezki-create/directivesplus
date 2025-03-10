@@ -102,7 +102,7 @@ export class PDFDocumentGenerator {
       // Add page numbers
       PageManager.addPageNumbers(doc);
 
-      // Generate PDF as Blob URL for better browser compatibility
+      // Always use blob URL for better browser compatibility
       console.log("[PDFGenerator] Converting PDF to blob URL...");
       const pdfBlob = doc.output('blob');
       const blobUrl = URL.createObjectURL(pdfBlob);

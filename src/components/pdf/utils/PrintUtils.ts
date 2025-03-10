@@ -32,7 +32,7 @@ export const createPrintWindow = (pdfUrl: string | null) => {
         <script>
           function waitForPDFLoad() {
             var iframe = document.querySelector('iframe');
-            var maxAttempts = 100; // Increase maximum attempts
+            var maxAttempts = 200; // Increase maximum attempts
             var attempts = 0;
             var printInitiated = false;
 
@@ -42,7 +42,7 @@ export const createPrintWindow = (pdfUrl: string | null) => {
                 console.log('Timeout waiting for PDF, trying to print anyway...');
                 if (!printInitiated) {
                   printInitiated = true;
-                  setTimeout(function() { window.print(); }, 500);
+                  setTimeout(function() { window.print(); }, 1000);
                 }
                 return;
               }
@@ -52,14 +52,14 @@ export const createPrintWindow = (pdfUrl: string | null) => {
                   console.log('PDF loaded in iframe, preparing to print...');
                   if (!printInitiated) {
                     printInitiated = true;
-                    setTimeout(function() { window.print(); }, 1500); // Longer delay for PDF rendering
+                    setTimeout(function() { window.print(); }, 2000); // Longer delay for PDF rendering
                   }
                 } else {
-                  setTimeout(checkPDF, 200);
+                  setTimeout(checkPDF, 100);
                 }
               } catch (e) {
                 console.error('Error checking PDF:', e);
-                setTimeout(checkPDF, 200);
+                setTimeout(checkPDF, 100);
               }
             }
 
@@ -98,7 +98,7 @@ export const createPrintWindow = (pdfUrl: string | null) => {
         <iframe 
           src="${pdfUrl}" 
           style="width:100%; height:100%; border:none;"
-          sandbox="allow-same-origin allow-scripts"
+          sandbox="allow-same-origin allow-scripts allow-forms"
           referrerpolicy="no-referrer"
           type="application/pdf"
         ></iframe>
@@ -106,21 +106,31 @@ export const createPrintWindow = (pdfUrl: string | null) => {
     </html>
   `;
 
-  // Use _blank for a new window to avoid security restrictions
-  const printWindow = window.open('', '_blank', 'width=800,height=600');
-  if (!printWindow) {
+  try {
+    // Use _blank for a new window to avoid security restrictions
+    const printWindow = window.open('', '_blank', 'width=800,height=600');
+    if (!printWindow) {
+      toast({
+        title: "Erreur",
+        description: "Impossible d'ouvrir la fenêtre d'impression. Vérifiez que les popups ne sont pas bloqués.",
+        variant: "destructive",
+      });
+      return null;
+    }
+
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    
+    return printWindow;
+  } catch (error) {
+    console.error("[PrintUtils] Error creating print window:", error);
     toast({
       title: "Erreur",
-      description: "Impossible d'ouvrir la fenêtre d'impression. Vérifiez que les popups ne sont pas bloqués.",
+      description: "Une erreur est survenue lors de l'ouverture de la fenêtre d'impression.",
       variant: "destructive",
     });
     return null;
   }
-
-  printWindow.document.write(printContent);
-  printWindow.document.close();
-  
-  return printWindow;
 };
 
 export const revokePdfUrl = (pdfUrl: string | null) => {

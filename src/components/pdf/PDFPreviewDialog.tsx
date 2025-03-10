@@ -2,7 +2,7 @@
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { EmailForm } from "./EmailForm";
 import { PDFActionButtons } from "./PDFActionButtons";
 import { PDFViewer } from "./PDFViewer";
@@ -29,6 +29,24 @@ export function PDFPreviewDialog({
 }: PDFPreviewDialogProps) {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [isValid, setIsValid] = useState(true);
+  
+  // Validate PDF URL
+  useEffect(() => {
+    if (pdfUrl) {
+      const isValidPdfUrl = pdfUrl.startsWith("blob:") || pdfUrl.startsWith("data:");
+      setIsValid(isValidPdfUrl);
+      
+      if (!isValidPdfUrl) {
+        console.error("[PDFPreviewDialog] Invalid PDF URL format:", pdfUrl);
+        toast({
+          title: "Erreur",
+          description: "Format de document non valide",
+          variant: "destructive",
+        });
+      }
+    }
+  }, [pdfUrl, toast]);
   
   // Nettoyer les ressources lorsque le dialog se ferme
   useEffect(() => {
@@ -108,7 +126,7 @@ export function PDFPreviewDialog({
         <div className="flex flex-col space-y-4 flex-1 overflow-hidden">
           <div className="flex flex-wrap justify-between gap-2">
             <EmailForm 
-              pdfUrl={pdfUrl} 
+              pdfUrl={isValid ? pdfUrl : null} 
               onClose={() => {}} // Don't close the dialog
             />
             <div className="flex flex-wrap gap-2">

@@ -1,9 +1,27 @@
 
+import { useEffect, useState } from "react";
+
 interface PDFViewerProps {
   pdfUrl: string | null;
 }
 
 export function PDFViewer({ pdfUrl }: PDFViewerProps) {
+  const [error, setError] = useState<string | null>(null);
+  
+  useEffect(() => {
+    if (pdfUrl) {
+      // Reset error when a new URL is provided
+      setError(null);
+      
+      // Validate URL format
+      const isValidPdfUrl = pdfUrl.startsWith("blob:") || pdfUrl.startsWith("data:");
+      if (!isValidPdfUrl) {
+        console.error("[PDFViewer] Invalid PDF URL format:", pdfUrl);
+        setError("Format de document non valide");
+      }
+    }
+  }, [pdfUrl]);
+  
   if (!pdfUrl) {
     return (
       <div className="flex-1 flex items-center justify-center text-gray-500">
@@ -12,14 +30,10 @@ export function PDFViewer({ pdfUrl }: PDFViewerProps) {
     );
   }
 
-  // Vérifier que l'URL est valide (blob: ou data:)
-  const isValidPdfUrl = pdfUrl.startsWith("blob:") || pdfUrl.startsWith("data:");
-  
-  if (!isValidPdfUrl) {
-    console.error("[PDFViewer] Invalid PDF URL format:", pdfUrl);
+  if (error) {
     return (
       <div className="flex-1 flex items-center justify-center text-red-500">
-        Format de document non valide
+        {error}
       </div>
     );
   }

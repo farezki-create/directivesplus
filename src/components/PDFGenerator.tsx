@@ -51,7 +51,7 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
         cleanupPDFResources(pdfUrl);
       }
     };
-  }, []);
+  }, [pdfUrl]);
 
   console.log("[PDFGenerator] Current state:", {
     hasProfile: !!profile,
