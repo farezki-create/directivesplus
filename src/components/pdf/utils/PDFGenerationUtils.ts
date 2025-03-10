@@ -58,7 +58,7 @@ export const handlePDFGeneration = async (
   }
 };
 
-// New function to save PDF to storage
+// Fixed function to save PDF to storage
 export const savePDFToStorage = async (pdfDataUrl: string, userId: string) => {
   try {
     // Convert data URL to Blob
@@ -88,14 +88,18 @@ export const savePDFToStorage = async (pdfDataUrl: string, userId: string) => {
     
     console.log("[PDFStorage] PDF uploaded successfully:", data);
     
-    // Also save reference in the database
+    // Fix: Convert Date to ISO string for database compatibility
+    const currentDate = new Date().toISOString();
+    
+    // Also save reference in the database - Fixed type issues
     const { error: dbError } = await supabase
       .from('pdf_documents')
       .insert({
         user_id: userId,
         storage_path: filepath,
-        filename: filename,
-        created_at: new Date()
+        file_name: filename,
+        created_at: currentDate,
+        file_path: filepath
       });
       
     if (dbError) {
