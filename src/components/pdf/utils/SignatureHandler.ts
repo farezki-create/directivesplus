@@ -36,8 +36,10 @@ export class SignatureHandler {
     };
 
     // Add large signature at the end of the document (on the current page)
-    const yPosition = doc.internal.getCurrentPageInfo().pageNumber === doc.internal.pages.length ? 
-      doc.lastAutoTable?.finalY || pageHeight - 80 : 
+    const currentPage = doc.internal.getNumberOfPages();
+    const totalPages = doc.internal.getNumberOfPages();
+    const yPosition = currentPage === totalPages ? 
+      pageHeight - 80 : 
       pageHeight - 80;
     
     const largeSignatureWidth = 80;
@@ -63,7 +65,6 @@ export class SignatureHandler {
     // Add small signature at bottom of each page
     const signatureHeight = 15;
     const signatureWidth = 30;
-    const totalPages = doc.internal.pages.length;
     
     for (let i = 1; i <= totalPages; i++) {
       doc.setPage(i);
