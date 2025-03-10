@@ -24,7 +24,6 @@ export const createPrintWindow = (pdfUrl: string | null) => {
 
   console.log("[PrintUtils] Opening print window with PDF URL:", pdfUrl.substring(0, 30) + "...");
 
-  // Create a temporary HTML file for printing
   const printContent = `
     <!DOCTYPE html>
     <html>
@@ -33,7 +32,7 @@ export const createPrintWindow = (pdfUrl: string | null) => {
         <script>
           function waitForPDFLoad() {
             var iframe = document.querySelector('iframe');
-            var maxAttempts = 50; // 10 seconds maximum (50 * 200ms)
+            var maxAttempts = 50;
             var attempts = 0;
 
             function checkPDF() {
@@ -45,7 +44,6 @@ export const createPrintWindow = (pdfUrl: string | null) => {
               }
 
               try {
-                // For iframe-based PDF viewer
                 if (iframe && iframe.contentDocument && iframe.contentDocument.readyState === 'complete') {
                   console.log('PDF loaded in iframe, preparing to print...');
                   setTimeout(function() {
@@ -97,7 +95,6 @@ export const createPrintWindow = (pdfUrl: string | null) => {
     </html>
   `;
 
-  // Ouvrir une nouvelle fenêtre avec le contenu
   const printWindow = window.open('', '_blank');
   if (!printWindow) {
     toast({
@@ -108,14 +105,12 @@ export const createPrintWindow = (pdfUrl: string | null) => {
     return null;
   }
 
-  // Écrire le contenu et fermer le document
   printWindow.document.write(printContent);
   printWindow.document.close();
   
   return printWindow;
 };
 
-// Fonction pour libérer les ressources des Blob URLs
 export const revokePdfUrl = (pdfUrl: string | null) => {
   if (pdfUrl && pdfUrl.startsWith('blob:')) {
     try {
