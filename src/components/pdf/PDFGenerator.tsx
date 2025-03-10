@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "./usePDFData";
@@ -76,7 +77,7 @@ export function PDFGenerator({ userId }: PDFGeneratorProps) {
       </Button>
       
       <PDFPreviewDialog
-        open={showPreview}
+        isOpen={showPreview}
         onOpenChange={setShowPreview}
         pdfUrl={pdfUrl}
         onEmail={handleEmail}
