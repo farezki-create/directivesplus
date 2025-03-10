@@ -6,7 +6,7 @@ import { EmailForm } from "./EmailForm";
 import { PDFActionButtons } from "./PDFActionButtons";
 import { PDFViewer } from "./PDFViewer";
 import { Button } from "@/components/ui/button";
-import { Database } from "lucide-react";
+import { Construction, Database } from "lucide-react";
 
 interface PDFPreviewDialogProps {
   open: boolean;
@@ -35,8 +35,8 @@ export function PDFPreviewDialog({
 
   const handleSendToDMP = () => {
     toast({
-      title: "Information",
-      description: "L'envoi vers le DMP sera bientôt disponible",
+      title: "En construction",
+      description: "Cette fonctionnalité est en cours de développement",
     });
   };
 
@@ -60,7 +60,8 @@ export function PDFPreviewDialog({
                 className="flex items-center"
               >
                 <Database className="mr-2 h-4 w-4" />
-                Envoyer au DMP
+                <Construction className="mr-2 h-4 w-4" />
+                Envoyer à votre DMP
               </Button>
               <PDFActionButtons 
                 onDownload={handleDownload} 
