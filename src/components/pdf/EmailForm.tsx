@@ -59,31 +59,40 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
       });
 
       console.log("Sending PDF to email:", emailAddress);
-      console.log("PDF URL type:", typeof pdfUrl);
-      console.log("PDF URL starts with:", pdfUrl.substring(0, 30) + "...");
       
-      // Fix the PDF URL format if needed
-      let formattedPdfUrl = pdfUrl;
-      if (!pdfUrl.startsWith('data:application/pdf;base64,')) {
-        // If we have a PDF with a different format, we need to inform the user
-        if (pdfUrl.includes('blob:') || pdfUrl.includes('http')) {
-          throw new Error("Format de PDF non supporté pour l'envoi par email. Veuillez régénérer le PDF.");
-        }
-        // Try to fix the format if it's missing the prefix but contains base64 data
-        formattedPdfUrl = 'data:application/pdf;base64,' + pdfUrl;
-        console.log("Reformatted PDF URL with correct prefix");
+      // Nettoyage du format PDF
+      let cleanPdfUrl = pdfUrl;
+      
+      // 1. Vérifier un contenu dupliqué
+      if (cleanPdfUrl.includes("data:application/pdf;base64,data:application/pdf;base64,")) {
+        cleanPdfUrl = cleanPdfUrl.replace("data:application/pdf;base64,data:application/pdf;base64,", "data:application/pdf;base64,");
       }
+      
+      // 2. Si le format contient "filename", extraire correctement la partie base64
+      if (cleanPdfUrl.includes("data:application/pdf;filename=")) {
+        const parts = cleanPdfUrl.split(';base64,');
+        if (parts.length > 1) {
+          cleanPdfUrl = "data:application/pdf;base64," + parts[parts.length - 1];
+        }
+      }
+      
+      // 3. Si le préfixe est manquant, l'ajouter
+      if (!cleanPdfUrl.startsWith('data:application/pdf;base64,')) {
+        cleanPdfUrl = 'data:application/pdf;base64,' + cleanPdfUrl;
+      }
+      
+      console.log("PDF format prepared for sending");
       
       const { data, error } = await supabase.functions.invoke('send-pdf-email', {
         body: {
-          pdfUrl: formattedPdfUrl,
+          pdfUrl: cleanPdfUrl,
           recipientEmail: emailAddress,
         },
       });
 
       if (error) {
         console.error("Supabase function error:", error);
-        throw new Error(`Erreur lors de l'appel à la fonction: ${error.message}`);
+        throw new Error(`Erreur lors de l'envoi: ${error.message}`);
       }
 
       if (!data) {

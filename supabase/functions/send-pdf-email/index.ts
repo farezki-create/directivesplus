@@ -1,4 +1,5 @@
 
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
 import { Resend } from "npm:resend@2.0.0"
 
@@ -31,16 +32,30 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("Missing required parameters: pdfUrl or recipientEmail");
     }
 
-    // Verify PDF data format
+    // Normalize the input - sometimes we get double prefixes due to client-side transformations
+    let normalizedPdfUrl = pdfUrl;
+    if (pdfUrl.includes("data:application/pdf;base64,data:application/pdf;base64,")) {
+      normalizedPdfUrl = pdfUrl.replace("data:application/pdf;base64,data:application/pdf;base64,", "data:application/pdf;base64,");
+      console.log("Fixed double prefix in PDF URL");
+    }
+    
+    if (pdfUrl.includes("data:application/pdf;filename=")) {
+      // Handle filename format - extract the base64 data
+      const parts = normalizedPdfUrl.split(';base64,');
+      if (parts.length > 1) {
+        normalizedPdfUrl = "data:application/pdf;base64," + parts[parts.length - 1];
+        console.log("Extracted base64 data from filename format");
+      }
+    }
+
+    // Extract base64 content
     let base64Data: string;
     
-    if (pdfUrl.startsWith('data:application/pdf;base64,')) {
-      // Extract base64 content from data URL
-      base64Data = pdfUrl.split(',')[1];
+    if (normalizedPdfUrl.startsWith('data:application/pdf;base64,')) {
+      base64Data = normalizedPdfUrl.split(',')[1];
       console.log("Base64 data extracted from data URL, length:", base64Data?.length || 0);
     } else {
-      // Try to use raw base64 string
-      base64Data = pdfUrl;
+      base64Data = normalizedPdfUrl;
       console.log("Using raw base64 string, length:", base64Data?.length || 0);
     }
 
@@ -49,10 +64,12 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("Invalid PDF data format - no base64 content found");
     }
 
-    // Validate the base64 string
+    // Validate the base64 string - more lenient validation to handle possible whitespace
     try {
-      // Simple validation for base64 format
-      if (!/^[A-Za-z0-9+/=]+$/.test(base64Data)) {
+      base64Data = base64Data.trim();
+      // Check if string roughly looks like base64 (allow for some wiggle room)
+      if (!/^[A-Za-z0-9+/=\s]+$/.test(base64Data)) {
+        console.error("Base64 validation failed, first 50 chars:", base64Data.substring(0, 50));
         throw new Error("Invalid base64 format");
       }
     } catch (error) {
@@ -107,3 +124,4 @@ const handler = async (req: Request): Promise<Response> => {
 };
 
 serve(handler);
+
