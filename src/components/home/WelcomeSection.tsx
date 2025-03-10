@@ -33,11 +33,13 @@ export function WelcomeSection({
 
   return (
     <div className="max-w-4xl mx-auto">
-      <h1 className="text-4xl font-bold mb-6 text-center">
-        {currentLanguage === 'fr' 
-          ? 'Vos directives anticipées en toute simplicité' 
-          : 'Your advance directives with simplicity'}
-      </h1>
+      <div className="text-blue-600 mb-6">
+        <h1 className="text-4xl font-bold mb-6 text-center">
+          {currentLanguage === 'fr' 
+            ? 'Vos directives anticipées en toute simplicité' 
+            : 'Your advance directives with simplicity'}
+        </h1>
+      </div>
       
       <p className="text-xl text-muted-foreground mb-8 text-center">
         {currentLanguage === 'fr' 
