@@ -1,4 +1,3 @@
-
 export const enTranslations = {
   welcomeMessage: 'Welcome to our application',
   next: 'Next',

@@ -17,19 +17,23 @@ export function LearnMoreSection() {
     try {
       setIsLoading(true);
       
-      console.log("Tentative de récupération du document depuis le stockage...");
+      // Get the appropriate document based on the current language
+      const filename = currentLanguage === 'fr' 
+        ? 'directives-anticipees-guide-fr.pdf' 
+        : 'advance-directives-guide-en.pdf';
       
-      // getPublicUrl ne retourne pas d'erreur, seulement un objet data
+      console.log(`Attempting to retrieve ${filename} from storage...`);
+      
       const { data } = await supabase
         .storage
         .from('pdf_documents')
-        .getPublicUrl('En savoir plus HAS.pdf');
+        .getPublicUrl(filename);
 
       if (data?.publicUrl) {
-        console.log("URL publique obtenue:", data.publicUrl);
+        console.log("Public URL obtained:", data.publicUrl);
         window.open(data.publicUrl, '_blank');
       } else {
-        console.error("URL publique non trouvée dans la réponse:", data);
+        console.error("Public URL not found in response:", data);
         toast({
           title: currentLanguage === 'fr' ? "Document introuvable" : "Document not found",
           description: currentLanguage === 'fr' 
@@ -39,7 +43,7 @@ export function LearnMoreSection() {
         });
       }
     } catch (error) {
-      console.error("Erreur lors de l'accès au document:", error);
+      console.error("Error accessing document:", error);
       toast({
         title: currentLanguage === 'fr' ? "Erreur" : "Error",
         description: currentLanguage === 'fr' 
