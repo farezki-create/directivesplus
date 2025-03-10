@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
 import { PDFPreviewDialog } from "../pdf/PDFPreviewDialog";
 import { usePDFData } from "../pdf/usePDFData";
-import { handlePDFGeneration, handlePDFDownload } from "../pdf/utils/PDFGenerationUtils";
+import { handlePDFGeneration, handlePDFDownload, savePDFToStorage } from "../pdf/utils/PDFGenerationUtils";
 
 export function TrustedPersonPDFGenerator() {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);

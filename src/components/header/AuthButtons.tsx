@@ -119,6 +119,18 @@ export const AuthButtons = ({ user }: AuthButtonsProps) => {
           } else {
             console.log("No PDF files found in storage for this user");
           }
+          
+          // Also try to empty the user's folder itself
+          const { error: folderError } = await supabase
+            .storage
+            .from('directives_pdfs')
+            .remove([`${user.id}`]);
+            
+          if (folderError && !folderError.message.includes("not found")) {
+            console.error("Error removing user folder:", folderError);
+          } else {
+            console.log("User folder removed or was already empty");
+          }
         } catch (storageError) {
           console.error("Error during storage cleanup:", storageError);
         }
@@ -190,6 +202,26 @@ export const AuthButtons = ({ user }: AuthButtonsProps) => {
       cacheKeys.forEach(key => {
         localStorage.removeItem(key);
         console.log(`Removed cached data: ${key}`);
+      });
+      
+      // Additional cleanup for any blob URLs or PDF data
+      const allKeys = Object.keys(localStorage);
+      allKeys.forEach(key => {
+        try {
+          const value = localStorage.getItem(key);
+          // Check if this item contains PDF-related data
+          if (value && (
+            value.includes('data:application/pdf') || 
+            value.includes('JVBERi0') || // PDF header in base64
+            key.includes('pdf') ||
+            key.includes('PDF')
+          )) {
+            localStorage.removeItem(key);
+            console.log(`Removed PDF-related data: ${key}`);
+          }
+        } catch (e) {
+          console.error(`Error processing localStorage item ${key}:`, e);
+        }
       });
       
       console.log('Local storage cleanup completed');

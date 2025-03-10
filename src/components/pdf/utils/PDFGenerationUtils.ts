@@ -2,6 +2,7 @@
 import { toast } from "@/hooks/use-toast";
 import { UserProfile, TrustedPerson } from "../types";
 import { PDFDocumentGenerator } from "../PDFDocumentGenerator";
+import { supabase } from "@/integrations/supabase/client";
 
 export const handlePDFGeneration = async (
   profile: UserProfile | null,
@@ -28,6 +29,17 @@ export const handlePDFGeneration = async (
       throw new Error("La génération du PDF a échoué");
     }
 
+    // Save PDF to storage if user is logged in
+    if (profile.unique_identifier) {
+      try {
+        console.log("[PDFGeneration] Saving PDF to storage for user:", profile.unique_identifier);
+        await savePDFToStorage(pdfDataUrl, profile.unique_identifier);
+      } catch (storageError) {
+        console.error("[PDFGeneration] Error saving PDF to storage:", storageError);
+        // Continue with preview even if storage fails
+      }
+    }
+
     setPdfUrl(pdfDataUrl);
     setShowPreview(true);
 
@@ -43,6 +55,57 @@ export const handlePDFGeneration = async (
       description: "Impossible de générer le PDF. Veuillez vérifier que toutes vos informations sont remplies.",
       variant: "destructive",
     });
+  }
+};
+
+// New function to save PDF to storage
+export const savePDFToStorage = async (pdfDataUrl: string, userId: string) => {
+  try {
+    // Convert data URL to Blob
+    const response = await fetch(pdfDataUrl);
+    const blob = await response.blob();
+    
+    // Generate a unique filename with timestamp
+    const timestamp = new Date().getTime();
+    const filename = `directives_${timestamp}.pdf`;
+    const filepath = `${userId}/${filename}`;
+    
+    console.log("[PDFStorage] Uploading PDF to storage path:", filepath);
+    
+    // Upload to storage
+    const { data, error } = await supabase
+      .storage
+      .from('directives_pdfs')
+      .upload(filepath, blob, {
+        contentType: 'application/pdf',
+        upsert: false
+      });
+      
+    if (error) {
+      console.error("[PDFStorage] Error uploading PDF:", error);
+      throw error;
+    }
+    
+    console.log("[PDFStorage] PDF uploaded successfully:", data);
+    
+    // Also save reference in the database
+    const { error: dbError } = await supabase
+      .from('pdf_documents')
+      .insert({
+        user_id: userId,
+        storage_path: filepath,
+        filename: filename,
+        created_at: new Date()
+      });
+      
+    if (dbError) {
+      console.error("[PDFStorage] Error saving PDF reference to database:", dbError);
+    }
+    
+    return true;
+  } catch (error) {
+    console.error("[PDFStorage] Error in savePDFToStorage:", error);
+    return false;
   }
 };
 
