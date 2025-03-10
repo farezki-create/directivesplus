@@ -60,6 +60,11 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
 
       console.log("Sending PDF to email:", emailAddress);
       
+      // Verify the PDF data is in the correct format (data URL)
+      if (!pdfUrl.startsWith('data:application/pdf;base64,')) {
+        throw new Error("Format de PDF invalide pour l'envoi par email");
+      }
+      
       const { data, error } = await supabase.functions.invoke('send-pdf-email', {
         body: {
           pdfUrl,

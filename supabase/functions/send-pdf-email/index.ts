@@ -31,11 +31,19 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("Missing required parameters: pdfUrl or recipientEmail");
     }
 
+    // Verify PDF data format
+    if (!pdfUrl.startsWith('data:application/pdf;base64,')) {
+      console.error("Invalid PDF format:", pdfUrl.substring(0, 50) + "...");
+      throw new Error("Invalid PDF data format. Expected data:application/pdf;base64,");
+    }
+
     // Extract base64 content from data URL
     const base64Data = pdfUrl.split(',')[1];
     if (!base64Data) {
-      throw new Error("Invalid PDF data format");
+      throw new Error("Invalid PDF data format - no base64 content found");
     }
+
+    console.log("Base64 data extracted, length:", base64Data.length);
 
     const emailResponse = await resend.emails.send({
       from: "DirectivesPlus <notification@directivesplus.fr>",
