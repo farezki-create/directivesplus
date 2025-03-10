@@ -6,14 +6,16 @@ import { EmailForm } from "./EmailForm";
 import { PDFActionButtons } from "./PDFActionButtons";
 import { PDFViewer } from "./PDFViewer";
 import { createPrintWindow } from "./utils/PrintUtils";
+import { Button } from "@/components/ui/button";
+import { Database } from "lucide-react";
 
 interface PDFPreviewDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   pdfUrl: string | null;
-  onEmail: () => void;
-  onSave: () => void;
-  onPrint: () => void;
+  onEmail?: () => void;
+  onSave?: () => void;
+  onPrint?: () => void;
 }
 
 export function PDFPreviewDialog({
@@ -27,9 +29,11 @@ export function PDFPreviewDialog({
   const navigate = useNavigate();
 
   const handleDownload = () => {
-    onSave();
-    onOpenChange(false);
-    navigate("/generate-pdf");
+    if (onSave) {
+      onSave();
+      onOpenChange(false);
+      navigate("/generate-pdf");
+    }
   };
 
   const handlePrint = () => {
@@ -42,11 +46,22 @@ export function PDFPreviewDialog({
       return;
     }
 
-    const printWindow = createPrintWindow(pdfUrl);
-    if (printWindow) {
-      onOpenChange(false);
-      navigate("/generate-pdf");
+    if (onPrint) {
+      onPrint();
+    } else {
+      const printWindow = createPrintWindow(pdfUrl);
+      if (printWindow) {
+        onOpenChange(false);
+        navigate("/generate-pdf");
+      }
     }
+  };
+
+  const handleSendToDMP = () => {
+    toast({
+      title: "Information",
+      description: "L'envoi vers le DMP sera bientôt disponible",
+    });
   };
 
   return (
@@ -57,15 +72,25 @@ export function PDFPreviewDialog({
         </DialogTitle>
         
         <div className="flex flex-col space-y-4 h-full">
-          <div className="flex justify-end space-x-2">
+          <div className="flex flex-wrap justify-between gap-2">
             <EmailForm 
               pdfUrl={pdfUrl} 
               onClose={() => onOpenChange(false)} 
             />
-            <PDFActionButtons 
-              onDownload={handleDownload} 
-              onPrint={handlePrint} 
-            />
+            <div className="flex flex-wrap gap-2">
+              <Button 
+                variant="outline" 
+                onClick={handleSendToDMP}
+                className="flex items-center"
+              >
+                <Database className="mr-2 h-4 w-4" />
+                Envoyer au DMP
+              </Button>
+              <PDFActionButtons 
+                onDownload={handleDownload} 
+                onPrint={handlePrint} 
+              />
+            </div>
           </div>
           
           <PDFViewer pdfUrl={pdfUrl} />

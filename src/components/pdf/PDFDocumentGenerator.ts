@@ -25,7 +25,7 @@ export class PDFDocumentGenerator {
     // Définir les marges
     const margin = {
       top: 20,
-      bottom: 20,
+      bottom: 30, // Increased bottom margin to make room for signature
       left: 20,
       right: 20
     };
@@ -154,29 +154,56 @@ export class PDFDocumentGenerator {
     if (signatureData?.signature_data) {
       // Ajouter la signature à chaque page
       const totalPages = doc.internal.pages.length;
+      
+      // Ajouter une grande signature à la fin du document
+      yPosition += 10;
+      const largeSignatureWidth = 80;
+      const largeSignatureHeight = 40;
+      
+      doc.addImage(
+        signatureData.signature_data,
+        'PNG',
+        (pageWidth - largeSignatureWidth) / 2,
+        yPosition,
+        largeSignatureWidth,
+        largeSignatureHeight
+      );
+      
+      yPosition += largeSignatureHeight + 10;
+      doc.setFontSize(10);
+      doc.text(
+        `Signature de ${fullName}`,
+        doc.internal.pageSize.getWidth() / 2,
+        yPosition,
+        { align: "center" }
+      );
+      
+      // Ajouter la signature en bas de chaque page
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const signatureHeight = 15;
+      const signatureWidth = 30;
+      
       for (let i = 1; i <= totalPages; i++) {
         doc.setPage(i);
         
         // Ajouter la signature en bas de page
-        const pageHeight = doc.internal.pageSize.getHeight();
-        const signatureHeight = 20;
-        
         doc.addImage(
           signatureData.signature_data,
           'PNG',
           margin.left,
-          pageHeight - margin.bottom - signatureHeight,
-          30,
+          pageHeight - margin.bottom,
+          signatureWidth,
           signatureHeight
         );
 
         // Ajouter le texte à côté de la signature
-        doc.setFontSize(9);
+        doc.setFontSize(8);
         doc.setTextColor(60, 60, 60);
         doc.text(
           `Signé par ${fullName} le ${format(new Date(), "d MMMM yyyy", { locale: fr })}`,
-          margin.left + 35,
-          pageHeight - margin.bottom - signatureHeight / 2
+          margin.left + signatureWidth + 5,
+          pageHeight - margin.bottom + signatureHeight/2
         );
       }
     }

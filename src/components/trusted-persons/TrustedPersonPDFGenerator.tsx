@@ -52,7 +52,6 @@ export function TrustedPersonPDFGenerator() {
         open={showPreview}
         onOpenChange={setShowPreview}
         pdfUrl={pdfUrl}
-        onEmail={handleEmail}
         onSave={() => handlePDFDownload(pdfUrl)}
         onPrint={() => handlePDFPrint(pdfUrl)}
       />

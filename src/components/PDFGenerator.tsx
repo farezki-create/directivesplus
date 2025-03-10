@@ -151,7 +151,6 @@ export function PDFGenerator({ userId, isCardFormat = false, onPdfGenerated }: P
             setShowPreview(open);
           }}
           pdfUrl={pdfUrl}
-          onEmail={handleEmail}
           onSave={() => handlePDFDownload(pdfUrl)}
           onPrint={() => handlePDFPrint(pdfUrl)}
         />
