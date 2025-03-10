@@ -1,4 +1,3 @@
-
 import { toast } from "@/hooks/use-toast";
 import { UserProfile, TrustedPerson } from "../types";
 import { PDFDocumentGenerator } from "../PDFDocumentGenerator";
@@ -58,7 +57,6 @@ export const handlePDFGeneration = async (
   }
 };
 
-// Fixed function to save PDF to storage
 export const savePDFToStorage = async (pdfDataUrl: string, userId: string) => {
   try {
     // Convert data URL to Blob
@@ -88,10 +86,10 @@ export const savePDFToStorage = async (pdfDataUrl: string, userId: string) => {
     
     console.log("[PDFStorage] PDF uploaded successfully:", data);
     
-    // Fix: Convert Date to ISO string for database compatibility
+    // Convert Date to ISO string for database compatibility
     const currentDate = new Date().toISOString();
     
-    // Also save reference in the database - Fixed type issues
+    // Also save reference in the database
     const { error: dbError } = await supabase
       .from('pdf_documents')
       .insert({
