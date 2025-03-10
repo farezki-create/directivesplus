@@ -94,7 +94,27 @@ export const Header = () => {
             )}
             <h1 className="text-2xl font-bold text-primary">DirectivesPlus</h1>
           </div>
-          <div>
+          
+          {/* Right side navigation with Reviews, Buy Card, Language and Login/Logout */}
+          <div className="flex items-center gap-3">
+            <Button
+              className={navButtonClass}
+              onClick={() => navigate("/reviews")}
+            >
+              <MessageSquare className="w-4 h-4" />
+              <span>{t('reviews')}</span>
+            </Button>
+
+            <Button
+              className={navButtonClass}
+              onClick={() => setShowPurchaseDialog(true)}
+            >
+              <CreditCard className="w-4 h-4" />
+              <span>{t('buyCard')}</span>
+            </Button>
+            
+            <LanguageSelector />
+            
             {user ? (
               <Button variant="default" onClick={handleSignOut}>
                 {t('logout')}
@@ -107,7 +127,7 @@ export const Header = () => {
           </div>
         </div>
         
-        {/* Secondary navigation band */}
+        {/* Secondary navigation band - now with fewer buttons */}
         <div className="w-full bg-gray-50 py-2 shadow-sm">
           <div className="container mx-auto px-4 flex items-center justify-center gap-4 flex-wrap">
             <Button
@@ -134,24 +154,6 @@ export const Header = () => {
                 <span>Mes directives générées</span>
               </Button>
             )}
-
-            <Button
-              className={navButtonClass}
-              onClick={() => navigate("/reviews")}
-            >
-              <MessageSquare className="w-4 h-4" />
-              <span>{t('reviews')}</span>
-            </Button>
-
-            <Button
-              className={navButtonClass}
-              onClick={() => setShowPurchaseDialog(true)}
-            >
-              <CreditCard className="w-4 h-4" />
-              <span>{t('buyCard')}</span>
-            </Button>
-            
-            <LanguageSelector />
           </div>
         </div>
       </header>
