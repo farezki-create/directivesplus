@@ -12,32 +12,25 @@ export const printPDF = (pdfUrl: string | null) => {
   }
 
   try {
-    // Ouvrir le PDF dans un nouvel onglet et laisser l'utilisateur imprimer manuellement
-    const newWindow = window.open(pdfUrl, '_blank');
-    
-    if (!newWindow) {
-      toast({
-        title: "Erreur",
-        description: "Impossible d'ouvrir le document. Vérifiez que les popups ne sont pas bloqués.",
-        variant: "destructive",
-      });
-      return false;
-    }
-    
-    // Mettre le focus sur la nouvelle fenêtre
-    newWindow.focus();
+    // Créer un élément d'ancrage pour télécharger le PDF
+    const link = document.createElement('a');
+    link.href = pdfUrl;
+    link.download = 'directives-anticipees.pdf';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
     
     toast({
       title: "Information",
-      description: "Utilisez l'onglet 'Imprimer' du navigateur pour imprimer le document",
+      description: "Le PDF a été téléchargé. Utilisez votre visionneuse PDF pour l'imprimer.",
     });
     
     return true;
   } catch (error) {
-    console.error("[PrintUtils] Error opening PDF:", error);
+    console.error("[PrintUtils] Error downloading PDF:", error);
     toast({
       title: "Erreur",
-      description: "Une erreur est survenue lors de l'ouverture du document",
+      description: "Une erreur est survenue lors du téléchargement du document",
       variant: "destructive",
     });
     return false;

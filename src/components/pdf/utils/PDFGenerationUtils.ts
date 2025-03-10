@@ -87,14 +87,13 @@ export const handlePDFPrint = (pdfUrl: string | null) => {
   }
 
   try {
-    // Utiliser la fonction printPDF qui ouvre simplement le PDF dans un nouvel onglet
     printPDF(pdfUrl);
-    console.log("[PDFGeneration] PDF opened in new tab for printing");
+    console.log("[PDFGeneration] PDF downloaded for printing");
   } catch (error) {
-    console.error("[PDFGeneration] Error opening PDF for print:", error);
+    console.error("[PDFGeneration] Error downloading PDF for print:", error);
     toast({
       title: "Erreur",
-      description: "Impossible d'ouvrir le PDF pour impression.",
+      description: "Impossible de télécharger le PDF pour impression.",
       variant: "destructive",
     });
   }
