@@ -31,19 +31,8 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("Missing required parameters: pdfUrl or recipientEmail");
     }
 
-    // Extraire le contenu base64 de l'URL
-    let base64Data: string;
-    
-    if (pdfUrl.startsWith('data:application/pdf;base64,')) {
-      // Cas d'un data URL
-      base64Data = pdfUrl.split(',')[1];
-    } else if (pdfUrl.startsWith('blob:')) {
-      // Pour les blob URLs, il faut que le client ait converti le blob en base64 avant envoi
-      throw new Error("Blob URLs cannot be processed directly by the server. Please convert to base64 before sending.");
-    } else {
-      throw new Error("Invalid PDF URL format");
-    }
-    
+    // Extract base64 content from data URL
+    const base64Data = pdfUrl.split(',')[1];
     if (!base64Data) {
       throw new Error("Invalid PDF data format");
     }

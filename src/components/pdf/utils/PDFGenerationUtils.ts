@@ -2,10 +2,6 @@
 import { toast } from "@/hooks/use-toast";
 import { UserProfile, TrustedPerson } from "../types";
 import { PDFDocumentGenerator } from "../PDFDocumentGenerator";
-import { revokePdfUrl, createPrintWindow } from "./PrintUtils";
-
-// Declare a variable to store the most recent PDF URL (for cleanup)
-let currentPdfUrl: string | null = null;
 
 export const handlePDFGeneration = async (
   profile: UserProfile | null,
@@ -16,13 +12,6 @@ export const handlePDFGeneration = async (
 ) => {
   try {
     console.log("[PDFGeneration] Starting PDF generation");
-    
-    // Afficher un message de chargement
-    toast({
-      title: "Génération en cours",
-      description: "Création de votre document PDF...",
-    });
-
     if (!profile) {
       console.error("[PDFGeneration] No profile data available");
       throw new Error("Les données du profil sont requises");
@@ -31,25 +20,15 @@ export const handlePDFGeneration = async (
     console.log("[PDFGeneration] Profile data:", profile);
     console.log("[PDFGeneration] Responses data:", responses);
 
-    // Révoquer l'ancien URL si nécessaire
-    if (currentPdfUrl && currentPdfUrl.startsWith('blob:')) {
-      revokePdfUrl(currentPdfUrl);
-    }
-
     // Generate PDF
-    const newPdfUrl = await PDFDocumentGenerator.generate(profile, responses, trustedPersons);
+    const pdfDataUrl = await PDFDocumentGenerator.generate(profile, responses, trustedPersons);
     
-    if (!newPdfUrl) {
-      console.error("[PDFGeneration] PDF generation failed - no URL returned");
+    if (!pdfDataUrl) {
+      console.error("[PDFGeneration] PDF generation failed - no data URL returned");
       throw new Error("La génération du PDF a échoué");
     }
 
-    console.log("[PDFGeneration] Generated PDF URL:", newPdfUrl.substring(0, 30) + "...");
-    
-    // Mettre à jour la référence pour le nettoyage futur
-    currentPdfUrl = newPdfUrl;
-    
-    setPdfUrl(newPdfUrl);
+    setPdfUrl(pdfDataUrl);
     setShowPreview(true);
 
     console.log("[PDFGeneration] PDF generated successfully");
@@ -79,9 +58,6 @@ export const handlePDFDownload = (pdfUrl: string | null) => {
   }
 
   try {
-    console.log("[PDFGeneration] Starting PDF download");
-    
-    // Créer un élément a temporaire pour le téléchargement
     const link = document.createElement('a');
     link.href = pdfUrl;
     link.download = 'directives-anticipees.pdf';
@@ -89,11 +65,6 @@ export const handlePDFDownload = (pdfUrl: string | null) => {
     link.click();
     document.body.removeChild(link);
     console.log("[PDFGeneration] PDF downloaded successfully");
-    
-    toast({
-      title: "Succès",
-      description: "Le PDF a été téléchargé.",
-    });
   } catch (error) {
     console.error("[PDFGeneration] Error downloading PDF:", error);
     toast({
@@ -116,25 +87,18 @@ export const handlePDFPrint = (pdfUrl: string | null) => {
   }
 
   try {
-    console.log("[PDFGeneration] Opening print window");
-    const printWindow = createPrintWindow(pdfUrl);
+    const printWindow = window.open(pdfUrl);
     if (!printWindow) {
       throw new Error("Impossible d'ouvrir la fenêtre d'impression");
     }
+    printWindow.print();
     console.log("[PDFGeneration] Print window opened successfully");
   } catch (error) {
     console.error("[PDFGeneration] Error opening print window:", error);
     toast({
       title: "Erreur",
-      description: "Impossible d'imprimer le PDF. Vérifiez que les popups ne sont pas bloqués.",
+      description: "Impossible d'imprimer le PDF.",
       variant: "destructive",
     });
-  }
-};
-
-// Fonction pour nettoyer les ressources lors de la fermeture
-export const cleanupPDFResources = (pdfUrl: string | null) => {
-  if (pdfUrl && pdfUrl.startsWith('blob:')) {
-    revokePdfUrl(pdfUrl);
   }
 };

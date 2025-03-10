@@ -2,14 +2,12 @@
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
 import { EmailForm } from "./EmailForm";
 import { PDFActionButtons } from "./PDFActionButtons";
 import { PDFViewer } from "./PDFViewer";
 import { createPrintWindow } from "./utils/PrintUtils";
 import { Button } from "@/components/ui/button";
 import { Database } from "lucide-react";
-import { cleanupPDFResources } from "./utils/PDFGenerationUtils";
 
 interface PDFPreviewDialogProps {
   open: boolean;
@@ -29,58 +27,12 @@ export function PDFPreviewDialog({
 }: PDFPreviewDialogProps) {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [isValid, setIsValid] = useState(true);
-  
-  // Validate PDF URL
-  useEffect(() => {
-    if (pdfUrl) {
-      const isValidPdfUrl = pdfUrl.startsWith("blob:") || pdfUrl.startsWith("data:");
-      setIsValid(isValidPdfUrl);
-      
-      if (!isValidPdfUrl) {
-        console.error("[PDFPreviewDialog] Invalid PDF URL format:", pdfUrl);
-        toast({
-          title: "Erreur",
-          description: "Format de document non valide",
-          variant: "destructive",
-        });
-      }
-    }
-  }, [pdfUrl, toast]);
-  
-  // Nettoyer les ressources lorsque le dialog se ferme
-  useEffect(() => {
-    if (!open && pdfUrl && pdfUrl.startsWith('blob:')) {
-      // Attendre un moment pour s'assurer que le PDF n'est plus utilisé
-      const timer = setTimeout(() => {
-        cleanupPDFResources(pdfUrl);
-      }, 500);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [open, pdfUrl]);
-
-  // Add logging to help debug PDF generation issues
-  useEffect(() => {
-    if (open && pdfUrl) {
-      console.log("[PDFPreviewDialog] Preview opened with PDF URL:", pdfUrl.substring(0, 30) + "...");
-    }
-  }, [open, pdfUrl]);
 
   const handleDownload = () => {
-    if (!pdfUrl) {
-      toast({
-        title: "Erreur",
-        description: "Aucun PDF à télécharger",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    console.log("[PDFPreviewDialog] Download requested");
     if (onSave) {
       onSave();
-      // Don't close the dialog or navigate away
+      onOpenChange(false);
+      navigate("/generate-pdf");
     }
   };
 
@@ -94,17 +46,13 @@ export function PDFPreviewDialog({
       return;
     }
 
-    console.log("[PDFPreviewDialog] Print requested");
     if (onPrint) {
       onPrint();
     } else {
       const printWindow = createPrintWindow(pdfUrl);
-      if (!printWindow) {
-        toast({
-          title: "Erreur",
-          description: "Impossible d'ouvrir la fenêtre d'impression",
-          variant: "destructive",
-        });
+      if (printWindow) {
+        onOpenChange(false);
+        navigate("/generate-pdf");
       }
     }
   };
@@ -118,16 +66,16 @@ export function PDFPreviewDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl h-[80vh] flex flex-col overflow-hidden">
-        <DialogTitle className="text-lg font-semibold">
+      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
+        <DialogTitle className="text-lg font-semibold mb-4">
           Prévisualisation du document
         </DialogTitle>
         
-        <div className="flex flex-col space-y-4 flex-1 overflow-hidden">
+        <div className="flex flex-col space-y-4 h-full">
           <div className="flex flex-wrap justify-between gap-2">
             <EmailForm 
-              pdfUrl={isValid ? pdfUrl : null} 
-              onClose={() => {}} // Don't close the dialog
+              pdfUrl={pdfUrl} 
+              onClose={() => onOpenChange(false)} 
             />
             <div className="flex flex-wrap gap-2">
               <Button 
@@ -145,9 +93,7 @@ export function PDFPreviewDialog({
             </div>
           </div>
           
-          <div className="flex-1 overflow-auto">
-            <PDFViewer pdfUrl={pdfUrl} />
-          </div>
+          <PDFViewer pdfUrl={pdfUrl} />
         </div>
       </DialogContent>
     </Dialog>
