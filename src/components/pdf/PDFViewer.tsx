@@ -16,8 +16,9 @@ export function PDFViewer({ pdfUrl }: PDFViewerProps) {
     <div className="flex-1 min-h-[500px] border rounded">
       <iframe
         src={pdfUrl}
-        className="w-full h-full border-0"
+        className="w-full h-full min-h-[500px]"
         title="PDF Preview"
+        style={{ border: 'none' }}
       />
     </div>
   );
