@@ -47,29 +47,36 @@ export function useLifeSupportAnswers(questions: any[]) {
         return false;
       }
 
-      // Convert string IDs to UUIDs or handle both formats
+      if (Object.keys(answers).length === 0) {
+        console.log('[LifeSupport] No answers to save');
+        toast({
+          title: currentLanguage === 'en' ? "Error" : "Erreur",
+          description: currentLanguage === 'en'
+            ? "Please answer at least one question before saving."
+            : "Veuillez répondre à au moins une question avant d'enregistrer.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      // Convert answers to the correct format for saving
       const responses = Object.entries(answers).flatMap(([questionId, values]) => {
-        // Find the actual question object to get its proper UUID
-        let question;
-        
-        // Handle different question ID formats (integer or UUID)
-        if (currentLanguage === 'fr' && questions[0]?.id?.toString().match(/^\d+$/)) {
-          // For French questions that use integers as IDs
-          question = questions.find(q => q.id.toString() === questionId);
-        } else {
-          // For questions using UUIDs
-          question = questions.find(q => q.id.toString() === questionId);
-        }
+        const question = questions.find(q => q.id.toString() === questionId);
         
         if (!question) {
           console.error(`[LifeSupport] Question with ID ${questionId} not found`);
           return [];
         }
+
+        // Generate a UUID for the question if it's using integer IDs
+        const finalQuestionId = question.id.toString().match(/^\d+$/)
+          ? crypto.randomUUID()
+          : question.id;
         
         return values.map(value => ({
           user_id: userId,
-          question_id: question.id, // Use the question's ID directly
-          question_text: question.question || question.question_text, // Handle both formats
+          question_id: finalQuestionId,
+          question_text: question.question_text || question.question,
           response: value,
           questionnaire_type: 'life_support'
         }));
@@ -77,23 +84,17 @@ export function useLifeSupportAnswers(questions: any[]) {
 
       console.log('[LifeSupport] Prepared responses for insertion:', responses);
 
-      if (responses.length === 0) {
-        toast({
-          title: currentLanguage === 'en' ? "Error" : "Erreur",
-          description: currentLanguage === 'en'
-            ? "No valid answers to save."
-            : "Aucune réponse valide à enregistrer.",
-          variant: "destructive",
-        });
-        return false;
-      }
-
       // Delete existing responses before inserting new ones
-      await supabase
+      const { error: deleteError } = await supabase
         .from('questionnaire_responses')
         .delete()
         .eq('user_id', userId)
         .eq('questionnaire_type', 'life_support');
+
+      if (deleteError) {
+        console.error('[LifeSupport] Error deleting old responses:', deleteError);
+        throw deleteError;
+      }
 
       // Insert new responses
       for (const response of responses) {
@@ -103,18 +104,11 @@ export function useLifeSupportAnswers(questions: any[]) {
 
         if (error) {
           console.error('[LifeSupport] Error saving response:', error);
-          toast({
-            title: currentLanguage === 'en' ? "Error" : "Erreur",
-            description: currentLanguage === 'en'
-              ? "Unable to save your answers. Please try again."
-              : "Impossible d'enregistrer vos réponses. Veuillez réessayer.",
-            variant: "destructive",
-          });
-          return false;
+          throw error;
         }
       }
 
-      console.log('[LifeSupport] Responses saved successfully');
+      console.log('[LifeSupport] All responses saved successfully');
       toast({
         title: currentLanguage === 'en' ? "Success" : "Succès",
         description: currentLanguage === 'en'
@@ -127,7 +121,7 @@ export function useLifeSupportAnswers(questions: any[]) {
       toast({
         title: currentLanguage === 'en' ? "Error" : "Erreur",
         description: currentLanguage === 'en'
-          ? "An unexpected error occurred during submission."
+          ? "An unexpected error occurred while saving."
           : "Une erreur inattendue s'est produite lors de l'enregistrement.",
         variant: "destructive",
       });
