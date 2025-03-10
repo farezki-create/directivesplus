@@ -25,9 +25,6 @@ export const examplePhrases = [
     text: "En cas de rejet aigu irréversible malgré un second traitement immunosuppresseur, je refuse toute retransplantation ou assistance ventriculaire prolongée. Je souhaite une limitation thérapeutique axée sur le contrôle symptomatique, incluant si nécessaire une sédation profonde continue selon l'article R. 4127-37 du Code de Santé Public.",
   },
   {
-    text: "En cas de coma acidocétosique résistant à 72h de réanimation, complété d'un état végétatif persistant, je refuse toute nutrition parentérale au profit de soins palliatifs. Cette directive s'applique uniquement si deux neurologues indépendants confirment l'absence de potentiel de récupération.",
-  },
-  {
     text: "Lors d'une crise myasthénique avec insuffisance respiratoire aiguë, j'accepte une intubation de courte durée (<7 jours) mais refuse toute trachéotomie définitive. Au-delà de 15 jours de ventilation mécanique sans amélioration, je demande l'orientation vers une unité de soins palliatifs.",
   },
   {

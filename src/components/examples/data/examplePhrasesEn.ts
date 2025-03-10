@@ -25,9 +25,6 @@ export const examplePhrasesEn = [
     text: "In case of irreversible acute rejection despite a second immunosuppressive treatment, I refuse any retransplantation or prolonged ventricular assistance. I wish for therapeutic limitation focused on symptom control, including if necessary continuous deep sedation according to Article R. 4127-37 of the Public Health Code.",
   },
   {
-    text: "In case of diabetic ketoacidosis resistant to 72 hours of intensive care, followed by a persistent vegetative state, I refuse any parenteral nutrition in favor of palliative care. This directive applies only if two independent neurologists confirm the absence of recovery potential.",
-  },
-  {
     text: "During a myasthenic crisis with acute respiratory failure, I accept short-term intubation (<7 days) but refuse any definitive tracheostomy. Beyond 15 days of mechanical ventilation without improvement, I request transfer to a palliative care unit.",
   },
   {
