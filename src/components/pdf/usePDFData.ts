@@ -1,24 +1,39 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { UserProfile, TrustedPerson } from "./types";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/hooks/useLanguage";
 
 export function usePDFData() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [trustedPersons, setTrustedPersons] = useState<TrustedPerson[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  const { currentLanguage } = useLanguage();
 
   useEffect(() => {
     const loadUserData = async () => {
       try {
         setLoading(true);
+        setError(null);
+        
         // Récupérer la session et les métadonnées de l'utilisateur
         const { data: { session } } = await supabase.auth.getSession();
         if (!session?.user) {
           console.error("[PDFData] No user session");
           setLoading(false);
+          
+          const errorMessage = currentLanguage === 'en' 
+            ? "You need to be logged in to generate a PDF."
+            : "Vous devez être connecté pour générer un PDF.";
+            
+          setError(errorMessage);
+          toast({
+            title: currentLanguage === 'en' ? "Authentication required" : "Authentification requise",
+            description: errorMessage,
+            variant: "destructive",
+          });
           return;
         }
 
@@ -102,9 +117,14 @@ export function usePDFData() {
 
       } catch (error) {
         console.error("[PDFData] Error loading user data:", error);
+        const errorMessage = currentLanguage === 'en' 
+          ? "An error occurred while loading your data."
+          : "Une erreur est survenue lors du chargement de vos données.";
+        
+        setError(errorMessage);
         toast({
-          title: "Erreur",
-          description: "Une erreur est survenue lors du chargement de vos données.",
+          title: currentLanguage === 'en' ? "Error" : "Erreur",
+          description: errorMessage,
           variant: "destructive",
         });
       } finally {
@@ -113,7 +133,7 @@ export function usePDFData() {
     };
 
     loadUserData();
-  }, [toast]);
+  }, [toast, currentLanguage]);
 
-  return { profile, trustedPersons, loading };
+  return { profile, trustedPersons, loading, error };
 }

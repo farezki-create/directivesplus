@@ -24,6 +24,9 @@ export function QuestionWithExplanation({
   // Get the display order to use as the explanation ID
   const displayOrder = question.display_order?.toString() || '';
   
+  // Only render the explanation if we have a valid displayOrder
+  const explanation = displayOrder ? getQuestionExplanation(displayOrder, language) : '';
+  
   return (
     <div className="mb-8">
       <QuestionCard
@@ -32,9 +35,9 @@ export function QuestionWithExplanation({
         onValueChange={onValueChange}
         options={options}
       />
-      {displayOrder && (
+      {explanation && (
         <div className="mt-3 text-base text-muted-foreground bg-muted p-4 rounded-md">
-          {getQuestionExplanation(displayOrder, language)}
+          {explanation}
         </div>
       )}
     </div>
