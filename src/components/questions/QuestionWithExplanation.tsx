@@ -1,9 +1,7 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { QuestionCard } from "./QuestionCard";
 import { getQuestionExplanation } from "@/utils/explanations";
-import { MessageCircleQuestion } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 interface QuestionWithExplanationProps {
   question: any;
@@ -23,8 +21,6 @@ export function QuestionWithExplanation({
   options,
   language
 }: QuestionWithExplanationProps) {
-  const [showExplanation, setShowExplanation] = useState(true);
-  
   // Extract numeric display order for advanced illness questions
   // This will be used as the key to match with the explanations
   let explanationId = '';
@@ -58,21 +54,7 @@ export function QuestionWithExplanation({
       />
       
       {explanation && (
-        <div className="flex items-center mt-2">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="text-muted-foreground" 
-            onClick={() => setShowExplanation(!showExplanation)}
-          >
-            <MessageCircleQuestion className="h-4 w-4 mr-1" />
-            {language === 'en' ? 'Explanation' : 'Explication'}
-          </Button>
-        </div>
-      )}
-      
-      {explanation && showExplanation && (
-        <div className="mt-1 text-sm text-muted-foreground bg-muted p-4 rounded-md">
+        <div className="mt-4 text-base text-foreground bg-muted/60 p-5 rounded-md border border-muted shadow-sm">
           {explanation}
         </div>
       )}
