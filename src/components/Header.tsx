@@ -40,7 +40,7 @@ export const Header = () => {
       <header className="w-full border-b">
         <div className="container mx-auto px-4 py-4">
           <div className="flex flex-col items-center mb-4">
-            <h1 className="text-2xl font-bold text-primary">DirectivesPlus</h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-primary">DirectivesPlus</h1>
           </div>
           
           <div className="flex items-center justify-center space-x-4 flex-wrap">
