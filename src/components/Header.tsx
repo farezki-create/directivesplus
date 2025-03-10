@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
-import { CreditCard, MessageSquare, ArrowLeft } from "lucide-react";
+import { CreditCard, MessageSquare, ArrowLeft, FileText } from "lucide-react";
 import { PurchaseDialog } from "./purchase/PurchaseDialog";
 import { LanguageSelector } from "./LanguageSelector";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -111,6 +111,16 @@ export const Header = () => {
             >
               {t('home')}
             </Button>
+
+            {user && (
+              <Button
+                className={navButtonClass}
+                onClick={() => navigate("/generate-pdf")}
+              >
+                <FileText className="w-4 h-4 mr-1" />
+                <span>Mes directives générées</span>
+              </Button>
+            )}
 
             <Button
               className={navButtonClass}
