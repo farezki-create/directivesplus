@@ -32,23 +32,28 @@ export const createPrintWindow = (pdfUrl: string | null) => {
         <script>
           function waitForPDFLoad() {
             var iframe = document.querySelector('iframe');
-            var maxAttempts = 50;
+            var maxAttempts = 100; // Increase maximum attempts
             var attempts = 0;
+            var printInitiated = false;
 
             function checkPDF() {
               attempts++;
               if (attempts >= maxAttempts) {
-                console.log('Timeout waiting for PDF');
-                window.print();
+                console.log('Timeout waiting for PDF, trying to print anyway...');
+                if (!printInitiated) {
+                  printInitiated = true;
+                  setTimeout(function() { window.print(); }, 500);
+                }
                 return;
               }
 
               try {
                 if (iframe && iframe.contentDocument && iframe.contentDocument.readyState === 'complete') {
                   console.log('PDF loaded in iframe, preparing to print...');
-                  setTimeout(function() {
-                    window.print();
-                  }, 1000);
+                  if (!printInitiated) {
+                    printInitiated = true;
+                    setTimeout(function() { window.print(); }, 1500); // Longer delay for PDF rendering
+                  }
                 } else {
                   setTimeout(checkPDF, 200);
                 }
@@ -58,8 +63,12 @@ export const createPrintWindow = (pdfUrl: string | null) => {
               }
             }
 
-            checkPDF();
+            window.addEventListener('load', function() {
+              setTimeout(checkPDF, 500); // Initial delay before checking
+            });
           }
+          
+          // Start the PDF load check when window loads
           window.onload = waitForPDFLoad;
         </script>
         <style>
@@ -90,12 +99,15 @@ export const createPrintWindow = (pdfUrl: string | null) => {
           src="${pdfUrl}" 
           style="width:100%; height:100%; border:none;"
           sandbox="allow-same-origin allow-scripts"
+          referrerpolicy="no-referrer"
+          type="application/pdf"
         ></iframe>
       </body>
     </html>
   `;
 
-  const printWindow = window.open('', '_blank');
+  // Use _blank for a new window to avoid security restrictions
+  const printWindow = window.open('', '_blank', 'width=800,height=600');
   if (!printWindow) {
     toast({
       title: "Erreur",

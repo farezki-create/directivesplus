@@ -42,6 +42,13 @@ export function PDFPreviewDialog({
     }
   }, [open, pdfUrl]);
 
+  // Add logging to help debug PDF generation issues
+  useEffect(() => {
+    if (open && pdfUrl) {
+      console.log("[PDFPreviewDialog] Preview opened with PDF URL:", pdfUrl.substring(0, 30) + "...");
+    }
+  }, [open, pdfUrl]);
+
   const handleDownload = () => {
     if (!pdfUrl) {
       toast({
@@ -52,6 +59,7 @@ export function PDFPreviewDialog({
       return;
     }
     
+    console.log("[PDFPreviewDialog] Download requested");
     if (onSave) {
       onSave();
       // Don't close the dialog or navigate away
@@ -68,6 +76,7 @@ export function PDFPreviewDialog({
       return;
     }
 
+    console.log("[PDFPreviewDialog] Print requested");
     if (onPrint) {
       onPrint();
     } else {

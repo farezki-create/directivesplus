@@ -24,6 +24,7 @@ export function PDFViewer({ pdfUrl }: PDFViewerProps) {
     );
   }
 
+  // Add additional security attributes to the iframe
   return (
     <div className="flex-1 min-h-[500px] border rounded">
       <iframe
@@ -32,6 +33,7 @@ export function PDFViewer({ pdfUrl }: PDFViewerProps) {
         title="PDF Preview"
         style={{ border: 'none' }}
         sandbox="allow-same-origin allow-scripts"
+        referrerPolicy="no-referrer"
       />
     </div>
   );

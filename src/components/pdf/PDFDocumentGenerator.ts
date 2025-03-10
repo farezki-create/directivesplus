@@ -1,3 +1,4 @@
+
 import { jsPDF } from "jspdf";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -101,11 +102,12 @@ export class PDFDocumentGenerator {
       // Add page numbers
       PageManager.addPageNumbers(doc);
 
-      // Générer le PDF comme Blob URL plutôt que dataURL pour une meilleure performance et sécurité
+      // Generate PDF as Blob URL for better browser compatibility
+      console.log("[PDFGenerator] Converting PDF to blob URL...");
       const pdfBlob = doc.output('blob');
       const blobUrl = URL.createObjectURL(pdfBlob);
       
-      console.log("[PDFGenerator] PDF generated successfully as blob URL");
+      console.log("[PDFGenerator] PDF generated successfully as blob URL:", blobUrl.substring(0, 30) + "...");
       return blobUrl;
     } catch (error) {
       console.error("[PDFGenerator] Error generating PDF:", error);

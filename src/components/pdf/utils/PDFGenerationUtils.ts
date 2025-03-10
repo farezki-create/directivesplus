@@ -2,7 +2,7 @@
 import { toast } from "@/hooks/use-toast";
 import { UserProfile, TrustedPerson } from "../types";
 import { PDFDocumentGenerator } from "../PDFDocumentGenerator";
-import { revokePdfUrl } from "./PrintUtils";
+import { revokePdfUrl, createPrintWindow } from "./PrintUtils";
 
 // Declare a variable to store the most recent PDF URL (for cleanup)
 let currentPdfUrl: string | null = null;
@@ -37,19 +37,19 @@ export const handlePDFGeneration = async (
     }
 
     // Generate PDF
-    const pdfUrl = await PDFDocumentGenerator.generate(profile, responses, trustedPersons);
+    const newPdfUrl = await PDFDocumentGenerator.generate(profile, responses, trustedPersons);
     
-    if (!pdfUrl) {
+    if (!newPdfUrl) {
       console.error("[PDFGeneration] PDF generation failed - no URL returned");
       throw new Error("La génération du PDF a échoué");
     }
 
-    console.log("[PDFGeneration] Generated PDF URL:", pdfUrl.substring(0, 30) + "...");
+    console.log("[PDFGeneration] Generated PDF URL:", newPdfUrl.substring(0, 30) + "...");
     
     // Mettre à jour la référence pour le nettoyage futur
-    currentPdfUrl = pdfUrl;
+    currentPdfUrl = newPdfUrl;
     
-    setPdfUrl(pdfUrl);
+    setPdfUrl(newPdfUrl);
     setShowPreview(true);
 
     console.log("[PDFGeneration] PDF generated successfully");
@@ -138,6 +138,3 @@ export const cleanupPDFResources = (pdfUrl: string | null) => {
     revokePdfUrl(pdfUrl);
   }
 };
-
-// Import depuis PrintUtils.ts
-import { createPrintWindow } from "./PrintUtils";
