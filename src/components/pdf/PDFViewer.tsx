@@ -12,24 +12,13 @@ export function PDFViewer({ pdfUrl }: PDFViewerProps) {
     );
   }
 
-  // Pour éviter les erreurs de sécurité avec les blob URLs
-  const isSafeUrl = pdfUrl.startsWith('data:') || pdfUrl.startsWith('blob:') || pdfUrl.startsWith('http');
-  
-  if (!isSafeUrl) {
-    return (
-      <div className="flex-1 flex items-center justify-center text-red-500">
-        URL de document non valide
-      </div>
-    );
-  }
-
   return (
     <div className="flex-1 min-h-[500px] border rounded overflow-hidden">
       <iframe
         src={pdfUrl}
-        className="w-full h-full min-h-[500px] border-0"
+        className="w-full h-full border-0"
         title="PDF Preview"
-        sandbox="allow-same-origin allow-scripts allow-forms"
+        style={{ height: "70vh" }}
       />
     </div>
   );

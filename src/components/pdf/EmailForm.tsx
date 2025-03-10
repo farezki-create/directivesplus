@@ -59,6 +59,12 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
       });
 
       console.log("Sending PDF to email:", emailAddress);
+      console.log("PDF URL length:", pdfUrl?.length || 0);
+      
+      // Ensure the PDF URL is valid
+      if (!pdfUrl.startsWith('data:application/pdf;base64,')) {
+        throw new Error("Format du PDF invalide. Le PDF doit être au format data URL.");
+      }
       
       const { data, error } = await supabase.functions.invoke('send-pdf-email', {
         body: {
@@ -71,6 +77,8 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
         console.error("Supabase function error:", error);
         throw new Error(`Erreur lors de l'appel à la fonction: ${error.message}`);
       }
+
+      console.log("Email function response:", data);
 
       if (!data) {
         throw new Error("Aucune réponse reçue du serveur");

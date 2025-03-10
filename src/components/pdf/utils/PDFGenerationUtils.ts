@@ -2,7 +2,6 @@
 import { toast } from "@/hooks/use-toast";
 import { UserProfile, TrustedPerson } from "../types";
 import { PDFDocumentGenerator } from "../PDFDocumentGenerator";
-import { createPrintWindow } from "./PrintUtils";
 
 export const handlePDFGeneration = async (
   profile: UserProfile | null,
@@ -21,18 +20,25 @@ export const handlePDFGeneration = async (
     console.log("[PDFGeneration] Profile data:", profile);
     console.log("[PDFGeneration] Responses data:", responses);
 
-    // Generate PDF with blob URL instead of data URL
-    const pdfBlobUrl = await PDFDocumentGenerator.generate(profile, responses, trustedPersons);
+    // Generate PDF
+    const pdfDataUrl = await PDFDocumentGenerator.generate(profile, responses, trustedPersons);
     
-    if (!pdfBlobUrl) {
-      console.error("[PDFGeneration] PDF generation failed - no blob URL returned");
+    if (!pdfDataUrl) {
+      console.error("[PDFGeneration] PDF generation failed - no data URL returned");
       throw new Error("La génération du PDF a échoué");
     }
 
-    setPdfUrl(pdfBlobUrl);
+    console.log("[PDFGeneration] PDF generated successfully, data URL length:", pdfDataUrl.length);
+    
+    // Ensure the PDF data URL starts with the correct prefix
+    if (!pdfDataUrl.startsWith('data:application/pdf;base64,')) {
+      console.error("[PDFGeneration] Invalid PDF data URL format");
+      throw new Error("Format de PDF invalide");
+    }
+    
+    setPdfUrl(pdfDataUrl);
     setShowPreview(true);
 
-    console.log("[PDFGeneration] PDF generated successfully");
     toast({
       title: "Succès",
       description: "Le PDF a été généré avec succès.",
@@ -59,14 +65,13 @@ export const handlePDFDownload = (pdfUrl: string | null) => {
   }
 
   try {
-    // Créer un élément a temporaire pour le téléchargement
     const link = document.createElement('a');
     link.href = pdfUrl;
     link.download = 'directives-anticipees.pdf';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    console.log("[PDFGeneration] PDF download initiated");
+    console.log("[PDFGeneration] PDF downloaded successfully");
   } catch (error) {
     console.error("[PDFGeneration] Error downloading PDF:", error);
     toast({
@@ -89,11 +94,42 @@ export const handlePDFPrint = (pdfUrl: string | null) => {
   }
 
   try {
-    // Use the improved PrintUtils to create a print window
-    const printWindow = createPrintWindow(pdfUrl);
+    const printWindow = window.open('', '_blank');
     if (!printWindow) {
       throw new Error("Impossible d'ouvrir la fenêtre d'impression");
     }
+    
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Impression des directives anticipées</title>
+          <style>
+            body, html {
+              margin: 0;
+              padding: 0;
+              height: 100%;
+            }
+            iframe {
+              width: 100%;
+              height: 100%;
+              border: none;
+            }
+          </style>
+          <script>
+            window.onload = function() {
+              setTimeout(function() {
+                window.print();
+              }, 1000);
+            }
+          </script>
+        </head>
+        <body>
+          <iframe src="${pdfUrl}" width="100%" height="100%"></iframe>
+        </body>
+      </html>
+    `);
+    
+    printWindow.document.close();
     console.log("[PDFGeneration] Print window opened successfully");
   } catch (error) {
     console.error("[PDFGeneration] Error opening print window:", error);
