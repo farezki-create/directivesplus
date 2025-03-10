@@ -3,11 +3,12 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Mail, AlertCircle } from "lucide-react";
+import { Mail, AlertCircle, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/hooks/useLanguage";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface EmailFormProps {
   pdfUrl: string | null;
@@ -17,6 +18,7 @@ interface EmailFormProps {
 export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
   const [emailAddress, setEmailAddress] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
   const { t } = useLanguage();
@@ -51,6 +53,7 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
       return;
     }
 
+    setApiError(null);
     setIsSending(true);
     try {
       toast({
@@ -97,7 +100,8 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
 
       if (error) {
         console.error("Supabase function error:", error);
-        throw new Error(`Erreur lors de l'envoi: ${error.message}`);
+        setApiError("Configuration de l'envoi d'email incorrecte. Veuillez contacter l'administrateur.");
+        throw new Error(`Erreur lors de l'appel à la fonction: ${error.message}`);
       }
 
       if (!data) {
@@ -105,6 +109,13 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
       }
 
       if (!data.success) {
+        if (data.error && data.error.includes("RESEND_API_KEY")) {
+          setApiError("La clé d'API pour l'envoi d'emails n'est pas configurée. Veuillez contacter l'administrateur.");
+        } else if (data.error && data.error.includes("API key is invalid")) {
+          setApiError("La clé d'API pour l'envoi d'emails est invalide. Veuillez contacter l'administrateur.");
+        } else {
+          setApiError(data.error || "Erreur inconnue lors de l'envoi du PDF");
+        }
         throw new Error(data.error || "Erreur inconnue lors de l'envoi du PDF");
       }
 
@@ -129,7 +140,14 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
   };
 
   return (
-    <div className="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-2 mr-auto">
+    <div className="flex flex-col space-y-4 mr-auto">
+      {apiError && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{apiError}</AlertDescription>
+        </Alert>
+      )}
+      
       <div className="flex flex-col space-y-2">
         <Label htmlFor="email">{t('email')}</Label>
         <div className="flex items-center space-x-2">
@@ -150,10 +168,16 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
             {isSending ? "Envoi..." : "Envoyer"}
           </Button>
         </div>
-        <p className="text-xs text-muted-foreground flex items-center mt-1">
-          <AlertCircle className="h-3 w-3 mr-1" />
-          Vérifiez également votre dossier spam après l'envoi
-        </p>
+        <div className="flex flex-col space-y-2 text-xs text-muted-foreground mt-1">
+          <p className="flex items-center">
+            <AlertCircle className="h-3 w-3 mr-1" />
+            Vérifiez également votre dossier spam après l'envoi
+          </p>
+          <p className="flex items-center">
+            <Info className="h-3 w-3 mr-1" />
+            L'email sera envoyé depuis no-reply@directivesplus.fr
+          </p>
+        </div>
       </div>
     </div>
   );

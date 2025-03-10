@@ -29,6 +29,10 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    if (!RESEND_API_KEY || RESEND_API_KEY === "undefined") {
+      throw new Error("RESEND_API_KEY is not configured properly");
+    }
+    
     const { pdfUrl, recipientEmail }: EmailRequest = await req.json();
     console.log("Sending email to:", recipientEmail);
     console.log("PDF URL length:", pdfUrl?.length || 0);
@@ -99,11 +103,11 @@ const handler = async (req: Request): Promise<Response> => {
         ],
       });
 
-      if (!emailResponse || !emailResponse.id) {
-        throw new Error("Failed to send email - no response ID received from Resend");
-      }
+      console.log("Email API response:", JSON.stringify(emailResponse));
 
-      console.log("Email sent successfully with ID:", emailResponse.id);
+      if (emailResponse.error) {
+        throw new Error(`Resend API error: ${JSON.stringify(emailResponse.error)}`);
+      }
 
       return new Response(JSON.stringify({ 
         success: true,
