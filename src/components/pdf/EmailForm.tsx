@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Mail } from "lucide-react";
+import { Mail, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -60,7 +60,6 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
 
       console.log("Sending PDF to email:", emailAddress);
       console.log("PDF URL length:", pdfUrl?.length || 0);
-      console.log("PDF URL prefix:", pdfUrl?.substring(0, 50));
       
       // Nettoyage du format PDF
       let cleanPdfUrl = pdfUrl;
@@ -86,7 +85,8 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
         console.log("Added missing prefix");
       }
       
-      console.log("PDF format prepared for sending, final prefix:", cleanPdfUrl.substring(0, 50));
+      console.log("PDF format prepared for sending, prefix:", cleanPdfUrl.substring(0, 50));
+      console.log("Total PDF length after cleaning:", cleanPdfUrl.length);
       
       const { data, error } = await supabase.functions.invoke('send-pdf-email', {
         body: {
@@ -102,6 +102,10 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
 
       if (!data) {
         throw new Error("Aucune réponse reçue du serveur");
+      }
+
+      if (!data.success) {
+        throw new Error(data.error || "Erreur inconnue lors de l'envoi du PDF");
       }
 
       toast({
@@ -125,24 +129,32 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
   };
 
   return (
-    <div className="flex items-center space-x-2 mr-auto">
-      <Label htmlFor="email">{t('email')}</Label>
-      <Input
-        id="email"
-        type="email"
-        placeholder="example@email.com"
-        value={emailAddress}
-        onChange={(e) => setEmailAddress(e.target.value)}
-        className="w-64"
-      />
-      <Button 
-        variant="outline" 
-        onClick={handleEmailSend}
-        disabled={isSending}
-      >
-        <Mail className="mr-2 h-4 w-4" />
-        {isSending ? "Envoi..." : "Envoyer par email"}
-      </Button>
+    <div className="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-2 mr-auto">
+      <div className="flex flex-col space-y-2">
+        <Label htmlFor="email">{t('email')}</Label>
+        <div className="flex items-center space-x-2">
+          <Input
+            id="email"
+            type="email"
+            placeholder="example@email.com"
+            value={emailAddress}
+            onChange={(e) => setEmailAddress(e.target.value)}
+            className="w-full sm:w-64"
+          />
+          <Button 
+            variant="outline" 
+            onClick={handleEmailSend}
+            disabled={isSending}
+          >
+            <Mail className="mr-2 h-4 w-4" />
+            {isSending ? "Envoi..." : "Envoyer"}
+          </Button>
+        </div>
+        <p className="text-xs text-muted-foreground flex items-center mt-1">
+          <AlertCircle className="h-3 w-3 mr-1" />
+          Vérifiez également votre dossier spam après l'envoi
+        </p>
+      </div>
     </div>
   );
 }

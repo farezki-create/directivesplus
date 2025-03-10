@@ -2,7 +2,12 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
 import { Resend } from "npm:resend@2.0.0"
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"))
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+if (!RESEND_API_KEY) {
+  console.error("RESEND_API_KEY is not set in environment variables");
+}
+
+const resend = new Resend(RESEND_API_KEY);
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -27,68 +32,52 @@ const handler = async (req: Request): Promise<Response> => {
     const { pdfUrl, recipientEmail }: EmailRequest = await req.json();
     console.log("Sending email to:", recipientEmail);
     console.log("PDF URL length:", pdfUrl?.length || 0);
-    console.log("PDF URL starts with:", pdfUrl?.substring(0, 50));
-
+    
     if (!pdfUrl || !recipientEmail) {
       throw new Error("Missing required parameters: pdfUrl or recipientEmail");
     }
 
-    // Normalize the input - sometimes we get double prefixes due to client-side transformations
-    let normalizedPdfUrl = pdfUrl;
-    if (pdfUrl.includes("data:application/pdf;base64,data:application/pdf;base64,")) {
-      normalizedPdfUrl = pdfUrl.replace("data:application/pdf;base64,data:application/pdf;base64,", "data:application/pdf;base64,");
-      console.log("Fixed double prefix in PDF URL");
-    }
-    
-    if (pdfUrl.includes("data:application/pdf;filename=")) {
-      // Handle filename format - extract the base64 data
-      const parts = normalizedPdfUrl.split(';base64,');
-      if (parts.length > 1) {
-        normalizedPdfUrl = "data:application/pdf;base64," + parts[parts.length - 1];
-        console.log("Extracted base64 data from filename format");
-      }
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(recipientEmail)) {
+      throw new Error("Invalid email format");
     }
 
-    // Extract base64 content
+    // Normalize the input - clean up any formatting issues
     let base64Data: string;
     
-    if (normalizedPdfUrl.startsWith('data:application/pdf;base64,')) {
-      base64Data = normalizedPdfUrl.split(',')[1];
-      console.log("Base64 data extracted from data URL, length:", base64Data?.length || 0);
+    if (pdfUrl.startsWith('data:application/pdf;base64,')) {
+      base64Data = pdfUrl.substring('data:application/pdf;base64,'.length);
+      console.log("Extracted base64 data from standard data URL format");
+    } else if (pdfUrl.includes('data:application/pdf;filename=')) {
+      // Handle filename format - extract the base64 data
+      const parts = pdfUrl.split(';base64,');
+      if (parts.length > 1) {
+        base64Data = parts[parts.length - 1];
+        console.log("Extracted base64 data from filename format");
+      } else {
+        throw new Error("Unable to extract base64 content from PDF URL with filename");
+      }
     } else {
-      base64Data = normalizedPdfUrl;
-      console.log("Using raw base64 string, length:", base64Data?.length || 0);
+      // Assume it's already a base64 string
+      base64Data = pdfUrl;
+      console.log("Using raw base64 string");
     }
 
-    if (!base64Data) {
-      console.error("No base64 data found");
-      throw new Error("Invalid PDF data format - no base64 content found");
-    }
+    // Remove any whitespace from the base64 string
+    base64Data = base64Data.replace(/\s/g, '');
+    console.log("Base64 data length after cleaning:", base64Data.length);
 
-    // Basic check to see if we have something that resembles binary data encoded as base64
     if (base64Data.length < 100) {
-      console.error("Base64 data too short to be a valid PDF, length:", base64Data.length);
+      console.error("Base64 data too short to be a valid PDF:", base64Data.length);
       throw new Error("Invalid PDF data - too short to be a valid document");
     }
 
-    // Validate the base64 string - more lenient validation to handle possible whitespace
-    try {
-      base64Data = base64Data.trim();
-      // Check if string roughly looks like base64 (allow for some wiggle room)
-      if (!/^[A-Za-z0-9+/=\s]+$/.test(base64Data)) {
-        console.error("Base64 validation failed, first 50 chars:", base64Data.substring(0, 50));
-        throw new Error("Invalid base64 format");
-      }
-    } catch (error) {
-      console.error("Base64 validation error:", error);
-      throw new Error("Invalid PDF data format - not valid base64");
-    }
-
-    console.log("Base64 data valid, sending email with attachment");
-
+    console.log("Sending email via Resend API...");
+    
     try {
       const emailResponse = await resend.emails.send({
-        from: "DirectivesPlus <notification@directivesplus.fr>",
+        from: "DirectivesPlus <no-reply@directivesplus.fr>",
         to: [recipientEmail],
         subject: "Vos directives anticipées",
         html: `
@@ -110,29 +99,42 @@ const handler = async (req: Request): Promise<Response> => {
         ],
       });
 
-      console.log("Email sent successfully:", emailResponse);
+      if (!emailResponse || !emailResponse.id) {
+        throw new Error("Failed to send email - no response ID received from Resend");
+      }
 
-      return new Response(JSON.stringify(emailResponse), {
+      console.log("Email sent successfully with ID:", emailResponse.id);
+
+      return new Response(JSON.stringify({ 
+        success: true,
+        message: "Email sent successfully",
+        id: emailResponse.id 
+      }), {
         status: 200,
         headers: {
           "Content-Type": "application/json",
           ...corsHeaders,
         },
       });
-    } catch (emailError: any) {
-      console.error("Resend API error:", emailError);
-      return new Response(
-        JSON.stringify({ error: `Erreur d'envoi email: ${emailError.message}` }),
-        {
-          status: 500, 
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        }
-      );
+    } catch (resendError: any) {
+      console.error("Resend API error details:", resendError);
+      let errorMessage = resendError.message || "Unknown error sending email";
+      
+      // Check if it's a Resend error with more details
+      if (resendError.error) {
+        errorMessage = `${errorMessage}: ${JSON.stringify(resendError.error)}`;
+      }
+      
+      throw new Error(`Email service error: ${errorMessage}`);
     }
   } catch (error: any) {
     console.error("Error sending email:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        success: false,
+        error: error.message || "Unknown error occurred",
+        stack: error.stack
+      }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },
