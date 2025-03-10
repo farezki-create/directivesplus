@@ -1,98 +1,74 @@
 
-import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 import { EmailForm } from "./EmailForm";
 import { PDFActionButtons } from "./PDFActionButtons";
 import { PDFViewer } from "./PDFViewer";
-import { handlePDFDownload, handlePDFPrint } from "./utils/PDFGenerationUtils";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { createPrintWindow } from "./utils/PrintUtils";
 
 interface PDFPreviewDialogProps {
-  isOpen: boolean;
+  open: boolean;
   onOpenChange: (open: boolean) => void;
   pdfUrl: string | null;
-  onEmail?: () => Promise<void>;
-  onSave?: () => void;
-  onPrint?: () => void;
+  onEmail: () => void;
+  onSave: () => void;
+  onPrint: () => void;
 }
 
-export function PDFPreviewDialog({ isOpen, onOpenChange, pdfUrl, onEmail, onSave, onPrint }: PDFPreviewDialogProps) {
-  const [sendingEmail, setSendingEmail] = useState(false);
+export function PDFPreviewDialog({
+  open,
+  onOpenChange,
+  pdfUrl,
+  onSave,
+  onPrint,
+}: PDFPreviewDialogProps) {
   const { toast } = useToast();
+  const navigate = useNavigate();
 
-  if (!isOpen) return null;
+  const handleDownload = () => {
+    onSave();
+    onOpenChange(false);
+    navigate("/generate-pdf");
+  };
 
-  const handleEmailSend = async (email: string) => {
-    try {
-      setSendingEmail(true);
-      console.log("[PDFPreview] Sending PDF to email:", email);
-      
-      if (!pdfUrl) {
-        console.error("[PDFPreview] No PDF URL available for email");
-        throw new Error("Le PDF n'est pas disponible");
-      }
-
-      const { error } = await supabase.functions.invoke('send-pdf-email', {
-        body: { 
-          email,
-          pdfUrl
-        }
-      });
-      
-      if (error) {
-        console.error("[PDFPreview] Error invoking send-pdf-email function:", error);
-        throw error;
-      }
-
-      toast({
-        title: "Succès",
-        description: "Le PDF a été envoyé à votre adresse email.",
-      });
-      
-    } catch (error) {
-      console.error("[PDFPreview] Error sending email:", error);
+  const handlePrint = () => {
+    if (!pdfUrl) {
       toast({
         title: "Erreur",
-        description: "Impossible d'envoyer le PDF par email.",
+        description: "Aucun PDF à imprimer",
         variant: "destructive",
       });
-    } finally {
-      setSendingEmail(false);
+      return;
+    }
+
+    const printWindow = createPrintWindow(pdfUrl);
+    if (printWindow) {
+      onOpenChange(false);
+      navigate("/generate-pdf");
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
-        <DialogHeader className="flex flex-row items-center justify-between">
-          <DialogTitle>Prévisualisation du PDF</DialogTitle>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => onOpenChange(false)}
-            className="rounded-full h-6 w-6 p-0"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </DialogHeader>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
+        <DialogTitle className="text-lg font-semibold mb-4">
+          Prévisualisation du document
+        </DialogTitle>
         
-        <div className="flex flex-col space-y-4 flex-1 overflow-hidden">
-          <div className="flex justify-between items-center">
+        <div className="flex flex-col space-y-4 h-full">
+          <div className="flex justify-end space-x-2">
+            <EmailForm 
+              pdfUrl={pdfUrl} 
+              onClose={() => onOpenChange(false)} 
+            />
             <PDFActionButtons 
-              onDownload={onSave || (() => handlePDFDownload(pdfUrl))} 
-              onPrint={onPrint || (() => handlePDFPrint(pdfUrl))} 
+              onDownload={handleDownload} 
+              onPrint={handlePrint} 
             />
           </div>
           
           <PDFViewer pdfUrl={pdfUrl} />
-          
-          <div className="border-t pt-4">
-            <h3 className="font-medium mb-2">Recevoir par email</h3>
-            <EmailForm onSubmit={handleEmailSend} isLoading={sendingEmail} />
-          </div>
         </div>
       </DialogContent>
     </Dialog>

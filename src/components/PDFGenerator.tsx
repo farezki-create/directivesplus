@@ -144,7 +144,8 @@ export function PDFGenerator({ userId, isCardFormat = false, onPdfGenerated }: P
       
       {showPreview && (
         <PDFPreviewDialog
-          isOpen={showPreview}
+          key={pdfUrl}
+          open={showPreview}
           onOpenChange={(open) => {
             console.log("[PDFGenerator] Dialog state changing to:", open);
             setShowPreview(open);

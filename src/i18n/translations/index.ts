@@ -1,10 +1,10 @@
 
-import { en } from './en';
-import { fr } from './fr';
+import { enTranslations } from './en';
+import { frTranslations } from './fr';
 
 export type SupportedLanguage = 'fr' | 'en';
 
 export const translations: Record<SupportedLanguage, Record<string, string>> = {
-  en,
-  fr
+  en: enTranslations,
+  fr: frTranslations
 };
