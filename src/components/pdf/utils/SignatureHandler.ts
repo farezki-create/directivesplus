@@ -36,8 +36,9 @@ export class SignatureHandler {
     };
 
     // Add large signature at the end of the document (on the current page)
-    const currentPage = doc.internal.getCurrentPageInfo().pageNumber;
-    const totalPages = doc.internal.getNumberOfPages();
+    // Use the current page index instead of getCurrentPageInfo()
+    const currentPage = doc.getCurrentPageInfo().pageNumber;
+    const totalPages = doc.getNumberOfPages();
     const yPosition = currentPage === totalPages ? 
       pageHeight - 80 : 
       pageHeight - 80;
