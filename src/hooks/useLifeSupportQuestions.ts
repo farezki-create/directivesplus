@@ -31,8 +31,8 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
             return;
           }
           
-          console.log('[LifeSupport] Questions loaded:', data?.length, 'questions');
-          console.log('[LifeSupport] Questions order:', data?.map(q => q.display_order));
+          console.log('[LifeSupport] Questions loaded:', data?.length || 0, 'questions');
+          console.log('[LifeSupport] First question:', data?.[0] || 'No questions found');
           setQuestions(data || []);
         } else {
           const { data, error } = await supabase
@@ -62,7 +62,7 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
           })) || [];
           
           console.log('[LifeSupport] Questions loaded:', formattedData.length, 'questions');
-          console.log('[LifeSupport] Questions order:', formattedData.map(q => q.display_order));
+          console.log('[LifeSupport] First question:', formattedData[0] || 'No questions found');
           setQuestions(formattedData);
         }
       } catch (error) {
