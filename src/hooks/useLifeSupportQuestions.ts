@@ -19,7 +19,7 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
         console.log(`[LifeSupport] Fetching questions in language: ${currentLanguage}`);
         
         if (currentLanguage === 'en') {
-          // Fetch English questions
+          // Fetch English questions - using simple select with no RLS constraints
           console.log(`[LifeSupport] Fetching from table: questionnaire_life_support_en`);
           const { data, error } = await supabase
             .from('questionnaire_life_support_en')
@@ -38,7 +38,7 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
           }
           
           console.log('[LifeSupport] English questions loaded:', data?.length || 0);
-          console.log('[LifeSupport] Raw English data:', JSON.stringify(data, null, 2));
+          console.log('[LifeSupport] Raw English data sample:', data?.[0] || 'No data');
           
           if (!data || data.length === 0) {
             console.warn('[LifeSupport] No English questions found in the database.');
@@ -60,10 +60,10 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
             }
           }));
           
-          console.log('[LifeSupport] Formatted English questions:', JSON.stringify(formattedData, null, 2));
+          console.log('[LifeSupport] Formatted English questions count:', formattedData.length);
           setQuestions(formattedData);
         } else {
-          // Fetch French questions
+          // Fetch French questions - using simple select with no RLS constraints
           console.log(`[LifeSupport] Fetching from table: questionnaire_life_support_fr`);
           const { data, error } = await supabase
             .from('questionnaire_life_support_fr')
@@ -81,7 +81,8 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
             return;
           }
           
-          console.log('[LifeSupport] Raw French data:', JSON.stringify(data, null, 2));
+          console.log('[LifeSupport] Raw French data sample:', data?.[0] || 'No data');
+          console.log('[LifeSupport] French questions count:', data?.length || 0);
           
           if (!data || data.length === 0) {
             console.warn('[LifeSupport] No French questions found in the database.');
@@ -104,7 +105,7 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
             }
           }));
           
-          console.log('[LifeSupport] Formatted French questions:', JSON.stringify(formattedData, null, 2));
+          console.log('[LifeSupport] Formatted French questions count:', formattedData.length);
           setQuestions(formattedData);
         }
       } catch (error) {
