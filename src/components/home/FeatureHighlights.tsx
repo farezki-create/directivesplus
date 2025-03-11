@@ -33,7 +33,7 @@ export function FeatureHighlights() {
         <p className="text-muted-foreground">
           {currentLanguage === 'en'
             ? 'Print, download and share'
-            : 'Télécharger, partager, imprimer'}
+            : 'Imprimer, télécharger et partager'}
         </p>
       </div>
     </div>

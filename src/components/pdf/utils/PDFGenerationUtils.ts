@@ -1,4 +1,3 @@
-
 import { toast } from "@/hooks/use-toast";
 import { UserProfile, TrustedPerson } from "../types";
 import { PDFDocumentGenerator } from "../PDFDocumentGenerator";
@@ -97,7 +96,7 @@ export const savePDFToStorage = async (pdfDataUrl: string, userId: string) => {
         user_id: userId,
         storage_path: filepath,
         file_name: filename,
-        created_at: currentDate, // Now using string format (ISO)
+        created_at: currentDate,
         file_path: filepath
       });
       
