@@ -16,6 +16,7 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
         console.log(`[LifeSupport] Fetching questions in ${currentLanguage}...`);
         
         if (currentLanguage === 'en') {
+          // For English, fetch from the English table
           const { data, error } = await supabase
             .from('questionnaire_life_support_en')
             .select('*')
@@ -32,9 +33,15 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
           }
           
           console.log('[LifeSupport] Questions loaded:', data?.length || 0, 'questions');
-          console.log('[LifeSupport] First question:', data?.[0] || 'No questions found');
+          if (data?.length > 0) {
+            console.log('[LifeSupport] First question:', data[0]);
+          } else {
+            console.log('[LifeSupport] No questions found in questionnaire_life_support_en');
+          }
+          
           setQuestions(data || []);
         } else {
+          // For French, fetch from the French table which has a different structure
           const { data, error } = await supabase
             .from('questionnaire_life_support_fr')
             .select('*')
@@ -50,6 +57,14 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
             return;
           }
           
+          if (data?.length > 0) {
+            console.log('[LifeSupport] Raw French questions loaded:', data.length, 'questions');
+            console.log('[LifeSupport] Sample question:', data[0]);
+          } else {
+            console.log('[LifeSupport] No questions found in questionnaire_life_support_fr');
+          }
+          
+          // Transform the French questions to match the expected format in the components
           const formattedData = data?.map(item => ({
             id: item.id.toString(), // Convert id to string to match other tables
             question: item.question_text,
@@ -61,8 +76,11 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
             }
           })) || [];
           
-          console.log('[LifeSupport] Questions loaded:', formattedData.length, 'questions');
-          console.log('[LifeSupport] First question:', formattedData[0] || 'No questions found');
+          console.log('[LifeSupport] Formatted French questions:', formattedData.length, 'questions');
+          if (formattedData.length > 0) {
+            console.log('[LifeSupport] First formatted question:', formattedData[0]);
+          }
+          
           setQuestions(formattedData);
         }
       } catch (error) {
@@ -80,8 +98,8 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
     }
 
     if (isDialogOpen) {
-      fetchQuestions();
       setLoading(true);
+      fetchQuestions();
     }
   }, [isDialogOpen, toast, currentLanguage]);
 
