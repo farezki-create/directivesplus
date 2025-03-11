@@ -21,10 +21,15 @@ export function QuestionCard({
   multiple = false 
 }: QuestionCardProps) {
   // Handle different question object structures from different tables
-  const displayOrder = question.displayOrder || question.display_order || question.question_order || '';
-  const questionText = question.questionText || question.question || question.question_text || '';
+  const displayOrder = question.display_order || question.question_order || '';
+  const questionText = question.question || question.question_text || '';
+
+  console.log(`Rendering question card: "${questionText}" with value:`, value);
+  console.log(`Display order: ${displayOrder}`);
+  console.log(`Available options:`, options);
 
   const handleValueChange = (optionValue: string, checked: boolean) => {
+    console.log(`Option ${optionValue} changed to ${checked}`);
     if (multiple) {
       if (checked) {
         onValueChange(optionValue, checked);

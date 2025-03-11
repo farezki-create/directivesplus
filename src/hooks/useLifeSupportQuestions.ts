@@ -14,12 +14,11 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
     async function fetchQuestions() {
       try {
         setLoading(true);
-        console.log(`[LifeSupport] Tentative de connexion à Supabase...`);
-        console.log(`[LifeSupport] Langue actuelle: ${currentLanguage}`);
+        console.log(`[LifeSupport] Fetching questions in language: ${currentLanguage}`);
         
         if (currentLanguage === 'en') {
           // Fetch English questions
-          console.log(`[LifeSupport] Fetching English questions...`);
+          console.log(`[LifeSupport] Fetching from table: questionnaire_life_support_en`);
           const { data, error } = await supabase
             .from('questionnaire_life_support_en')
             .select('*')
@@ -37,17 +36,32 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
           }
           
           console.log('[LifeSupport] English questions loaded:', data?.length || 0);
-          setQuestions(data || []);
+          console.log('[LifeSupport] Raw English data:', data);
+          
+          // Ensure options are properly formatted
+          const formattedData = data?.map(item => ({
+            id: item.id,
+            question: item.question,
+            display_order: item.display_order,
+            options: {
+              yes: "Yes",
+              no: "No",
+              unsure: "I'm not sure"
+            }
+          })) || [];
+          
+          console.log('[LifeSupport] Formatted English questions:', formattedData);
+          setQuestions(formattedData);
         } else {
           // Fetch French questions
-          console.log(`[LifeSupport] Récupération des questions françaises...`);
+          console.log(`[LifeSupport] Fetching from table: questionnaire_life_support_fr`);
           const { data, error } = await supabase
             .from('questionnaire_life_support_fr')
             .select('*')
             .order('question_order', { ascending: true });
           
           if (error) {
-            console.error('[LifeSupport] Erreur lors de la récupération des questions françaises:', error);
+            console.error('[LifeSupport] Error fetching French questions:', error);
             toast({
               title: "Erreur",
               description: "Impossible de charger les questions. Veuillez réessayer.",
@@ -57,7 +71,7 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
             return;
           }
           
-          console.log('[LifeSupport] Données brutes des questions françaises:', data);
+          console.log('[LifeSupport] Raw French data:', data);
           
           // Transform French questions to match expected format
           const formattedData = data?.map(item => ({
@@ -71,11 +85,11 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
             }
           })) || [];
           
-          console.log('[LifeSupport] Questions françaises formatées:', formattedData);
+          console.log('[LifeSupport] Formatted French questions:', formattedData);
           setQuestions(formattedData);
         }
       } catch (error) {
-        console.error('[LifeSupport] Erreur inattendue:', error);
+        console.error('[LifeSupport] Unexpected error:', error);
         toast({
           title: currentLanguage === 'en' ? "Error" : "Erreur",
           description: currentLanguage === 'en' 

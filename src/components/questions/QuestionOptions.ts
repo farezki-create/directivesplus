@@ -20,6 +20,7 @@ export function useQuestionOptions() {
   };
 
   const getLifeSupportOptions = () => {
+    console.log(`Getting life support options for language: ${currentLanguage}`);
     if (currentLanguage === 'en') {
       return [
         { value: 'yes', label: 'Yes' },
@@ -27,11 +28,13 @@ export function useQuestionOptions() {
         { value: 'unsure', label: "I'm not sure" }
       ];
     } else {
-      return [
+      const options = [
         { value: 'oui', label: t('yes') },
         { value: 'non', label: t('no') },
         { value: 'incertain', label: t('notSure') }
       ];
+      console.log('French life support options:', options);
+      return options;
     }
   };
 

@@ -27,18 +27,18 @@ export function QuestionWithExplanation({
     return null;
   }
   
-  console.log("Rendering question:", JSON.stringify(question));
+  console.log("Processing question:", question);
   
-  // Extract numeric display order for advanced illness questions
+  // Extract numeric display order for life support questions
   // This will be used as the key to match with the explanations
   let explanationId = '';
   
   if (question.display_order) {
     // If display_order exists, use it as a string
     explanationId = question.display_order.toString();
-  } else if (question.display_order_str) {
-    // Use the display_order_str if available
-    explanationId = question.display_order_str;
+  } else if (question.question_order) {
+    // Use question_order if available (for French questions)
+    explanationId = question.question_order.toString();
   } else if (question.id) {
     // Fallback to id
     explanationId = question.id.toString();
@@ -48,9 +48,8 @@ export function QuestionWithExplanation({
   const explanation = getQuestionExplanation(explanationId, language);
   
   // For debugging
-  console.log("Question:", JSON.stringify(question, null, 2));
-  console.log("Using explanation ID:", explanationId);
-  console.log("Found explanation:", explanation);
+  console.log(`Question ID: ${question.id}, Explanation ID: ${explanationId}`);
+  console.log("Found explanation:", explanation ? "Yes" : "No");
   
   return (
     <div className="mb-8">
