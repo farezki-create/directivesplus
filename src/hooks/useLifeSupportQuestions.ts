@@ -21,8 +21,8 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
         const tableName = currentLanguage === 'en' ? 'questionnaire_life_support_en' : 'questionnaire_life_support_fr';
         console.log(`[LifeSupport] Utilisation de la table: ${tableName}`);
         
-        // Log de l'URL Supabase pour vérifier la connexion
-        console.log(`[LifeSupport] URL Supabase: ${supabase.supabaseUrl}`);
+        // Remove the problematic supabaseUrl log and add more detailed connection info
+        console.log(`[LifeSupport] Tentative de récupération des questions depuis la table ${tableName}...`);
         
         if (currentLanguage === 'en') {
           // Pour l'anglais, récupérer depuis la table anglaise
@@ -54,7 +54,8 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
           // Pour le français, récupérer depuis la table française
           const { data, error } = await supabase
             .from('questionnaire_life_support_fr')
-            .select('*');
+            .select('*')
+            .order('question_order', { ascending: true });
           
           if (error) {
             console.error('[LifeSupport] Erreur lors de la récupération des questions françaises:', error);
