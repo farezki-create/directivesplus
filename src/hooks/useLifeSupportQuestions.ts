@@ -89,30 +89,46 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
         let formattedData: any[] = [];
         
         if (currentLanguage === 'en') {
-          formattedData = data.map((item: EnQuestion) => ({
-            id: item.id || `en-${item.display_order}`,
-            question: item.question || '',
-            question_text: item.question || '', // Ensure both fields exist
-            display_order: item.display_order,
-            options: {
-              yes: "Yes",
-              no: "No",
-              unsure: "I'm not sure"
+          formattedData = data.map((item: any) => {
+            // Ensure it has the structure we expect for English questions
+            if (typeof item.display_order !== 'undefined' && typeof item.question !== 'undefined') {
+              return {
+                id: item.id || `en-${item.display_order}`,
+                question: item.question || '',
+                question_text: item.question || '', // Ensure both fields exist
+                display_order: item.display_order,
+                options: {
+                  yes: "Yes",
+                  no: "No",
+                  unsure: "I'm not sure"
+                }
+              };
             }
-          }));
+            // Unexpected format, log and return a default structure
+            console.error('[LifeSupport] Unexpected English question format:', item);
+            return null;
+          }).filter(Boolean); // Filter out any null items
         } else {
-          formattedData = data.map((item: FrQuestion) => ({
-            id: item.id?.toString() || `fr-${item.question_order}`,
-            question_text: item.question_text || '',
-            question: item.question_text || '', // Ensure both fields exist
-            display_order: item.question_order || 0,
-            question_order: item.question_order || 0,
-            options: {
-              yes: item.option_yes || "Oui",
-              no: item.option_no || "Non",
-              unsure: item.option_unsure || "Je ne suis pas sûr(e)"
+          formattedData = data.map((item: any) => {
+            // Ensure it has the structure we expect for French questions
+            if (typeof item.question_order !== 'undefined' && typeof item.question_text !== 'undefined') {
+              return {
+                id: item.id?.toString() || `fr-${item.question_order}`,
+                question_text: item.question_text || '',
+                question: item.question_text || '', // Ensure both fields exist
+                display_order: item.question_order || 0,
+                question_order: item.question_order || 0,
+                options: {
+                  yes: item.option_yes || "Oui",
+                  no: item.option_no || "Non",
+                  unsure: item.option_unsure || "Je ne suis pas sûr(e)"
+                }
+              };
             }
-          }));
+            // Unexpected format, log and return a default structure
+            console.error('[LifeSupport] Unexpected French question format:', item);
+            return null;
+          }).filter(Boolean); // Filter out any null items
         }
         
         console.log(`[LifeSupport] Formatted questions count: ${formattedData.length}`);
