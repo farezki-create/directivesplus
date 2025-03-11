@@ -4,6 +4,36 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/useLanguage";
 
+// Define precise types for our question structures
+interface EnQuestion {
+  id: string;
+  display_order: number;
+  created_at?: string;
+  question: string;
+}
+
+interface FrQuestion {
+  id: number;
+  question_order: number;
+  question_text: string;
+  option_yes: string;
+  option_no: string;
+  option_unsure: string;
+}
+
+// Union type for all possible question formats
+type Question = EnQuestion | FrQuestion;
+
+// Type guard to check if a question is in English format
+function isEnglishQuestion(question: Question): question is EnQuestion {
+  return typeof (question as EnQuestion).display_order !== 'undefined';
+}
+
+// Type guard to check if a question is in French format
+function isFrenchQuestion(question: Question): question is FrQuestion {
+  return typeof (question as FrQuestion).question_order !== 'undefined';
+}
+
 export function useLifeSupportQuestions(isDialogOpen: boolean) {
   const [questions, setQuestions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -59,7 +89,7 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
         let formattedData: any[] = [];
         
         if (currentLanguage === 'en') {
-          formattedData = data.map(item => ({
+          formattedData = data.map((item: EnQuestion) => ({
             id: item.id || `en-${item.display_order}`,
             question: item.question || '',
             question_text: item.question || '', // Ensure both fields exist
@@ -71,7 +101,7 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
             }
           }));
         } else {
-          formattedData = data.map(item => ({
+          formattedData = data.map((item: FrQuestion) => ({
             id: item.id?.toString() || `fr-${item.question_order}`,
             question_text: item.question_text || '',
             question: item.question_text || '', // Ensure both fields exist
