@@ -9,11 +9,12 @@ interface ResponseSectionProps {
 
 export const ResponseSection = ({ title, responses }: ResponseSectionProps) => {
   if (!responses || responses.length === 0) {
-    console.log(`No responses found for section: ${title}`);
+    console.log(`Aucune réponse trouvée pour la section: ${title}`);
     return null;
   }
 
-  console.log(`Rendering ${responses.length} responses for section: ${title}`);
+  console.log(`Rendu de ${responses.length} réponses pour la section: ${title}`);
+  console.log("Réponses brutes:", JSON.stringify(responses));
   
   return (
     <div className="space-y-4">
@@ -24,7 +25,7 @@ export const ResponseSection = ({ title, responses }: ResponseSectionProps) => {
           const question = response.question_text || response.question || response.questions?.Question || 'Question non disponible';
           const responseText = formatResponseText(response.response);
           
-          console.log(`Response ${index + 1}:`, { question, responseText });
+          console.log(`Réponse ${index + 1}:`, { question, responseText });
           
           return (
             <ResponseItem

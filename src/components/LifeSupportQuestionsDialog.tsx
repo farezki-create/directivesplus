@@ -20,14 +20,12 @@ export function LifeSupportQuestionsDialog({
   const { answers, handleAnswerChange, handleSubmit } = useLifeSupportAnswers(questions);
   const { getLifeSupportOptions } = useQuestionOptions();
 
-  // Ajout de logs pour déboguer
-  console.log("[LifeSupportDialog] Rendering with:", {
-    open,
-    questionsCount: questions.length,
-    loading,
-    language: currentLanguage,
-    questionsData: JSON.stringify(questions)
-  });
+  // Ajout de logs détaillés pour le débogage
+  console.log("[LifeSupportDialog] État du dialogue:", open);
+  console.log("[LifeSupportDialog] Nombre de questions:", questions.length);
+  console.log("[LifeSupportDialog] Questions chargées:", JSON.stringify(questions));
+  console.log("[LifeSupportDialog] État de chargement:", loading);
+  console.log("[LifeSupportDialog] Langue actuelle:", currentLanguage);
 
   const onSubmit = async () => {
     const success = await handleSubmit();
@@ -47,16 +45,19 @@ export function LifeSupportQuestionsDialog({
       questionsLength={questions.length}
     >
       {questions.length > 0 ? (
-        questions.map((question) => (
-          <QuestionWithExplanation
-            key={question.id}
-            question={question}
-            value={answers[question.id] || []}
-            onValueChange={(value) => handleAnswerChange(question.id, value, true)}
-            options={getLifeSupportOptions()}
-            language={currentLanguage as 'en' | 'fr'}
-          />
-        ))
+        questions.map((question) => {
+          console.log("Rendu de la question:", question);
+          return (
+            <QuestionWithExplanation
+              key={question.id}
+              question={question}
+              value={answers[question.id] || []}
+              onValueChange={(value) => handleAnswerChange(question.id, value, true)}
+              options={getLifeSupportOptions()}
+              language={currentLanguage as 'en' | 'fr'}
+            />
+          );
+        })
       ) : !loading && (
         <div className="text-center py-4 text-muted-foreground">
           {currentLanguage === 'en' 
