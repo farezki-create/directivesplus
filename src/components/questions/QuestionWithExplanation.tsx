@@ -21,6 +21,12 @@ export function QuestionWithExplanation({
   options,
   language
 }: QuestionWithExplanationProps) {
+  // Validate question object
+  if (!question) {
+    console.error("Question object is null or undefined");
+    return null;
+  }
+  
   // Extract numeric display order for advanced illness questions
   // This will be used as the key to match with the explanations
   let explanationId = '';
@@ -40,7 +46,7 @@ export function QuestionWithExplanation({
   const explanation = getQuestionExplanation(explanationId, language);
   
   // For debugging
-  console.log("Question:", question);
+  console.log("Question:", JSON.stringify(question, null, 2));
   console.log("Using explanation ID:", explanationId);
   console.log("Found explanation:", explanation);
   

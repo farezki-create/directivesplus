@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -37,6 +38,11 @@ export function QuestionsDialogLayout({
             <DialogTitle className="text-2xl font-semibold text-center">
               {title}
             </DialogTitle>
+            {description && (
+              <DialogDescription className="text-center">
+                {description}
+              </DialogDescription>
+            )}
           </DialogHeader>
           
           {loading ? (
@@ -51,7 +57,8 @@ export function QuestionsDialogLayout({
             </ScrollArea>
           ) : (
             <div className="py-8 text-center text-muted-foreground">
-              {t('noQuestionFound')}
+              <p className="mb-2">{t('noQuestionFound')}</p>
+              <p className="text-sm text-gray-500">Vérifiez la connexion à la base de données ou contactez l'administrateur.</p>
             </div>
           )}
 
