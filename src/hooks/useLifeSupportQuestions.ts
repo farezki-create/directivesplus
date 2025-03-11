@@ -12,6 +12,8 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
 
   useEffect(() => {
     async function fetchQuestions() {
+      if (!isDialogOpen) return;
+      
       try {
         setLoading(true);
         console.log(`[LifeSupport] Fetching questions in language: ${currentLanguage}`);
@@ -36,7 +38,7 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
           }
           
           console.log('[LifeSupport] English questions loaded:', data?.length || 0);
-          console.log('[LifeSupport] Raw English data:', data);
+          console.log('[LifeSupport] Raw English data:', JSON.stringify(data, null, 2));
           
           if (!data || data.length === 0) {
             console.warn('[LifeSupport] No English questions found in the database.');
@@ -47,10 +49,10 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
           
           // Ensure options are properly formatted
           const formattedData = data.map(item => ({
-            id: item.id,
-            question: item.question,
+            id: item.id || `en-${item.display_order}`,
+            question: item.question || '',
+            question_text: item.question || '', // Ensure both fields exist
             display_order: item.display_order,
-            question_text: item.question, // Ensure consistency with French structure
             options: {
               yes: "Yes",
               no: "No",
@@ -58,7 +60,7 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
             }
           }));
           
-          console.log('[LifeSupport] Formatted English questions:', formattedData);
+          console.log('[LifeSupport] Formatted English questions:', JSON.stringify(formattedData, null, 2));
           setQuestions(formattedData);
         } else {
           // Fetch French questions
@@ -79,7 +81,7 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
             return;
           }
           
-          console.log('[LifeSupport] Raw French data:', data);
+          console.log('[LifeSupport] Raw French data:', JSON.stringify(data, null, 2));
           
           if (!data || data.length === 0) {
             console.warn('[LifeSupport] No French questions found in the database.');
@@ -90,9 +92,9 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
           
           // Transform French questions to match expected format
           const formattedData = data.map(item => ({
-            id: item.id.toString(),
-            question_text: item.question_text,
-            question: item.question_text, // Ensure both question and question_text exist
+            id: item.id?.toString() || `fr-${item.question_order}`,
+            question_text: item.question_text || '',
+            question: item.question_text || '', // Ensure both fields exist
             question_order: item.question_order,
             display_order: item.question_order, // Add display_order for consistency
             options: {
@@ -102,7 +104,7 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
             }
           }));
           
-          console.log('[LifeSupport] Formatted French questions:', formattedData);
+          console.log('[LifeSupport] Formatted French questions:', JSON.stringify(formattedData, null, 2));
           setQuestions(formattedData);
         }
       } catch (error) {
@@ -114,6 +116,7 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
             : "Une erreur inattendue s'est produite.",
           variant: "destructive",
         });
+        setQuestions([]);
       } finally {
         setLoading(false);
       }
@@ -124,6 +127,7 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
     } else {
       // Reset questions when dialog is closed
       setQuestions([]);
+      setLoading(true);
     }
   }, [isDialogOpen, toast, currentLanguage, t]);
 

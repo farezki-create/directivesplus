@@ -61,13 +61,22 @@ export function QuestionWithExplanation({
   console.log(`Question ID: ${question.id}, Explanation ID: ${explanationId}`);
   console.log("Found explanation:", explanation ? "Yes" : "No");
   
+  // Get the question text, with fallbacks to ensure it exists
   const questionText = question.question || question.question_text || '';
   console.log(`Question text: "${questionText}"`);
+  
+  if (!questionText) {
+    console.error("Question text is missing", question);
+    return null;
+  }
   
   return (
     <div className="mb-8">
       <QuestionCard
-        question={question}
+        question={{
+          ...question,
+          question: questionText // Ensure the question text is properly passed
+        }}
         value={value}
         onValueChange={onValueChange}
         options={options}

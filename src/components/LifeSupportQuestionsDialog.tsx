@@ -22,10 +22,15 @@ export function LifeSupportQuestionsDialog({
 
   // Detailed logging for debugging
   console.log("[LifeSupportDialog] Dialog state:", open);
-  console.log("[LifeSupportDialog] Questions count:", questions.length);
+  console.log("[LifeSupportDialog] Questions count:", questions?.length || 0);
   console.log("[LifeSupportDialog] Current language:", currentLanguage);
   console.log("[LifeSupportDialog] Loading state:", loading);
-  console.log("[LifeSupportDialog] Questions:", JSON.stringify(questions, null, 2));
+  
+  if (questions?.length > 0) {
+    console.log("[LifeSupportDialog] First question sample:", JSON.stringify(questions[0], null, 2));
+  } else {
+    console.log("[LifeSupportDialog] No questions available");
+  }
   
   // Get appropriate options for the current language
   const options = getLifeSupportOptions();
@@ -46,11 +51,15 @@ export function LifeSupportQuestionsDialog({
       description={t('advancedIllnessDesc')}
       onSubmit={onSubmit}
       loading={loading}
-      questionsLength={questions.length}
+      questionsLength={questions?.length || 0}
     >
-      {questions.length > 0 ? (
+      {questions && questions.length > 0 ? (
         questions.map((question) => {
           console.log(`Rendering question:`, question);
+          if (!question || !question.id) {
+            console.error("Invalid question object:", question);
+            return null;
+          }
           return (
             <QuestionWithExplanation
               key={question.id}
@@ -62,13 +71,13 @@ export function LifeSupportQuestionsDialog({
             />
           );
         })
-      ) : !loading && (
+      ) : !loading ? (
         <div className="text-center py-4 text-muted-foreground">
           {currentLanguage === 'en' 
             ? "No questions available. Please try again later." 
             : "Aucune question disponible. Veuillez réessayer plus tard."}
         </div>
-      )}
+      ) : null}
     </QuestionsDialogLayout>
   );
 }
