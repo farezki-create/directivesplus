@@ -25,7 +25,7 @@ export function LifeSupportQuestionsDialog({
   console.log("[LifeSupportDialog] Questions count:", questions.length);
   console.log("[LifeSupportDialog] Current language:", currentLanguage);
   console.log("[LifeSupportDialog] Loading state:", loading);
-  console.log("[LifeSupportDialog] Questions:", questions);
+  console.log("[LifeSupportDialog] Questions:", JSON.stringify(questions, null, 2));
   
   // Get appropriate options for the current language
   const options = getLifeSupportOptions();

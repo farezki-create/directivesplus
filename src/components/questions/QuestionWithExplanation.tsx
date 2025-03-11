@@ -30,26 +30,24 @@ export function QuestionWithExplanation({
   console.log("Processing question:", question);
   
   // Extract numeric display order for life support questions
-  // This will be used as the key to match with the explanations
   let explanationId = '';
   
-  // For French questions from questionnaire_life_support_fr that use integer IDs
+  // Prioritize question_order for French or display_order for English
   if (question.question_order) {
     explanationId = question.question_order.toString();
     console.log(`Using question_order as explanationId: ${explanationId}`);
   } 
-  // For English questions that use display_order
   else if (question.display_order) {
     explanationId = question.display_order.toString();
     console.log(`Using display_order as explanationId: ${explanationId}`);
   } 
-  // Fallback to ID (but convert to number if it's a UUID to avoid issues)
+  // Fallback to ID
   else if (question.id) {
     // If it's a numeric ID (likely from French tables)
     if (!isNaN(parseInt(question.id))) {
       explanationId = question.id.toString();
     } 
-    // If it's a UUID, we'll just use that as a last resort
+    // If it's a UUID
     else {
       explanationId = question.id.toString();
     }

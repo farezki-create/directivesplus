@@ -50,6 +50,7 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
             id: item.id,
             question: item.question,
             display_order: item.display_order,
+            question_text: item.question, // Ensure consistency with French structure
             options: {
               yes: "Yes",
               no: "No",
@@ -91,13 +92,13 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
           const formattedData = data.map(item => ({
             id: item.id.toString(),
             question_text: item.question_text,
+            question: item.question_text, // Ensure both question and question_text exist
             question_order: item.question_order,
-            // Ensure question field exists for consistency
-            question: item.question_text,
+            display_order: item.question_order, // Add display_order for consistency
             options: {
-              yes: item.option_yes,
-              no: item.option_no,
-              unsure: item.option_unsure
+              yes: item.option_yes || "Oui",
+              no: item.option_no || "Non",
+              unsure: item.option_unsure || "Je ne suis pas sûr(e)"
             }
           }));
           
