@@ -13,9 +13,11 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
   useEffect(() => {
     async function fetchQuestions() {
       try {
+        setLoading(true);
         console.log(`[LifeSupport] Fetching questions in ${currentLanguage}...`);
         
         if (currentLanguage === 'en') {
+          // Pour l'anglais, récupérer depuis la table anglaise
           const { data, error } = await supabase
             .from('questionnaire_life_support_en')
             .select('*')
@@ -28,30 +30,41 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
               description: "Unable to load questions. Please try again.",
               variant: "destructive",
             });
+            setLoading(false);
             return;
           }
           
-          console.log('[LifeSupport] Questions loaded:', data?.length, 'questions');
-          console.log('[LifeSupport] Questions order:', data?.map(q => q.display_order));
+          console.log('[LifeSupport] English questions loaded:', data?.length || 0, 'questions');
+          if (data?.length > 0) {
+            console.log('[LifeSupport] First English question:', data[0]);
+          } else {
+            console.log('[LifeSupport] No English questions found');
+          }
+          
           setQuestions(data || []);
         } else {
+          // Pour le français, récupérer depuis la table française - Utilisation de is et non eq
           const { data, error } = await supabase
             .from('questionnaire_life_support_fr')
             .select('*')
             .order('question_order', { ascending: true });
           
           if (error) {
-            console.error('[LifeSupport] Error fetching questions:', error);
+            console.error('[LifeSupport] Error fetching French questions:', error);
             toast({
               title: "Erreur",
               description: "Impossible de charger les questions. Veuillez réessayer.",
               variant: "destructive",
             });
+            setLoading(false);
             return;
           }
           
+          console.log('[LifeSupport] Raw French questions loaded:', JSON.stringify(data));
+          
+          // Transformer les questions françaises pour correspondre au format attendu dans les composants
           const formattedData = data?.map(item => ({
-            id: item.id.toString(), // Convert id to string to match other tables
+            id: item.id.toString(), 
             question: item.question_text,
             display_order: item.question_order,
             options: {
@@ -61,8 +74,8 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
             }
           })) || [];
           
-          console.log('[LifeSupport] Questions loaded:', formattedData.length, 'questions');
-          console.log('[LifeSupport] Questions order:', formattedData.map(q => q.display_order));
+          console.log('[LifeSupport] Formatted French questions:', JSON.stringify(formattedData));
+          
           setQuestions(formattedData);
         }
       } catch (error) {
@@ -81,9 +94,11 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
 
     if (isDialogOpen) {
       fetchQuestions();
-      setLoading(true);
+    } else {
+      // Réinitialiser les questions lorsque le dialogue est fermé
+      setQuestions([]);
     }
-  }, [isDialogOpen, toast, currentLanguage]);
+  }, [isDialogOpen, toast, currentLanguage, t]);
 
   return { questions, loading };
 }

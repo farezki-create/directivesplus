@@ -4,17 +4,15 @@ import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/hooks/useLanguage";
 import { ArrowLeft } from "lucide-react";
 import { AdvanceDirectivesGuide } from "./AdvanceDirectivesGuide";
+import { AppInfoSection } from "./AppInfoSection";
 import { useState } from "react";
 
 export function LearnMoreSection() {
   const navigate = useNavigate();
   const { currentLanguage } = useLanguage();
   const [showGuide, setShowGuide] = useState(false);
+  const [showAppInfo, setShowAppInfo] = useState(false);
 
-  const navigateToAppInfo = () => {
-    navigate("/dashboard");
-  };
-  
   const navigateToFAQ = () => {
     navigate("/faq");
   };
@@ -62,13 +60,15 @@ export function LearnMoreSection() {
         <Button
           variant="default"
           size="lg"
-          onClick={navigateToAppInfo}
+          onClick={() => setShowAppInfo(!showAppInfo)}
           className="w-full max-w-2xl py-6 text-lg bg-blue-600 hover:bg-blue-700"
         >
           {currentLanguage === 'fr' 
             ? 'Informations sur l\'application DirectivesPlus' 
             : 'Information about DirectivesPlus application'}
         </Button>
+        
+        {showAppInfo && <AppInfoSection />}
       </div>
     </div>
   );

@@ -20,6 +20,15 @@ export function LifeSupportQuestionsDialog({
   const { answers, handleAnswerChange, handleSubmit } = useLifeSupportAnswers(questions);
   const { getLifeSupportOptions } = useQuestionOptions();
 
+  // Ajout de logs pour déboguer
+  console.log("[LifeSupportDialog] Rendering with:", {
+    open,
+    questionsCount: questions.length,
+    loading,
+    language: currentLanguage,
+    questionsData: JSON.stringify(questions)
+  });
+
   const onSubmit = async () => {
     const success = await handleSubmit();
     if (success) {
@@ -37,16 +46,24 @@ export function LifeSupportQuestionsDialog({
       loading={loading}
       questionsLength={questions.length}
     >
-      {questions.map((question) => (
-        <QuestionWithExplanation
-          key={question.id}
-          question={question}
-          value={answers[question.id] || []}
-          onValueChange={(value) => handleAnswerChange(question.id, value, true)}
-          options={getLifeSupportOptions()}
-          language={currentLanguage as 'en' | 'fr'}
-        />
-      ))}
+      {questions.length > 0 ? (
+        questions.map((question) => (
+          <QuestionWithExplanation
+            key={question.id}
+            question={question}
+            value={answers[question.id] || []}
+            onValueChange={(value) => handleAnswerChange(question.id, value, true)}
+            options={getLifeSupportOptions()}
+            language={currentLanguage as 'en' | 'fr'}
+          />
+        ))
+      ) : !loading && (
+        <div className="text-center py-4 text-muted-foreground">
+          {currentLanguage === 'en' 
+            ? "No questions available. Please try again later." 
+            : "Aucune question disponible. Veuillez réessayer plus tard."}
+        </div>
+      )}
     </QuestionsDialogLayout>
   );
 }
