@@ -20,12 +20,12 @@ export function LifeSupportQuestionsDialog({
   const { answers, handleAnswerChange, handleSubmit } = useLifeSupportAnswers(questions);
   const { getLifeSupportOptions } = useQuestionOptions();
 
-  // Ajout de logs détaillés pour le débogage
-  console.log("[LifeSupportDialog] État du dialogue:", open);
-  console.log("[LifeSupportDialog] Nombre de questions:", questions.length);
-  console.log("[LifeSupportDialog] Questions chargées:", JSON.stringify(questions));
-  console.log("[LifeSupportDialog] État de chargement:", loading);
-  console.log("[LifeSupportDialog] Langue actuelle:", currentLanguage);
+  // Detailed logging for debugging
+  console.log("[LifeSupportDialog] Dialog state:", open);
+  console.log("[LifeSupportDialog] Questions count:", questions.length);
+  console.log("[LifeSupportDialog] Questions:", questions);
+  console.log("[LifeSupportDialog] Loading state:", loading);
+  console.log("[LifeSupportDialog] Current language:", currentLanguage);
 
   const onSubmit = async () => {
     const success = await handleSubmit();
@@ -46,7 +46,7 @@ export function LifeSupportQuestionsDialog({
     >
       {questions.length > 0 ? (
         questions.map((question) => {
-          console.log("Rendu de la question:", question);
+          console.log("Rendering question:", question);
           return (
             <QuestionWithExplanation
               key={question.id}
