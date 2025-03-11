@@ -13,6 +13,7 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
   useEffect(() => {
     async function fetchQuestions() {
       try {
+        setLoading(true);
         console.log(`[LifeSupport] Fetching questions in ${currentLanguage}...`);
         
         if (currentLanguage === 'en') {
@@ -42,7 +43,7 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
           
           setQuestions(data || []);
         } else {
-          // Pour le français, récupérer depuis la table française qui a une structure différente
+          // Pour le français, récupérer depuis la table française - Utilisation de is et non eq
           const { data, error } = await supabase
             .from('questionnaire_life_support_fr')
             .select('*')
@@ -59,12 +60,7 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
             return;
           }
           
-          console.log('[LifeSupport] Raw French questions loaded:', data?.length || 0, 'questions');
-          if (data?.length > 0) {
-            console.log('[LifeSupport] Sample French question:', data[0]);
-          } else {
-            console.log('[LifeSupport] No French questions found');
-          }
+          console.log('[LifeSupport] Raw French questions loaded:', JSON.stringify(data));
           
           // Transformer les questions françaises pour correspondre au format attendu dans les composants
           const formattedData = data?.map(item => ({
@@ -78,15 +74,10 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
             }
           })) || [];
           
-          console.log('[LifeSupport] Formatted French questions:', formattedData.length, 'questions');
-          if (formattedData.length > 0) {
-            console.log('[LifeSupport] First formatted French question:', formattedData[0]);
-          }
+          console.log('[LifeSupport] Formatted French questions:', JSON.stringify(formattedData));
           
           setQuestions(formattedData);
         }
-        
-        setLoading(false);
       } catch (error) {
         console.error('[LifeSupport] Unexpected error:', error);
         toast({
@@ -96,12 +87,12 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
             : "Une erreur inattendue s'est produite.",
           variant: "destructive",
         });
+      } finally {
         setLoading(false);
       }
     }
 
     if (isDialogOpen) {
-      setLoading(true);
       fetchQuestions();
     } else {
       // Réinitialiser les questions lorsque le dialogue est fermé

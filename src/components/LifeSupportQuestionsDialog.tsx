@@ -25,7 +25,8 @@ export function LifeSupportQuestionsDialog({
     open,
     questionsCount: questions.length,
     loading,
-    language: currentLanguage
+    language: currentLanguage,
+    questionsData: JSON.stringify(questions)
   });
 
   const onSubmit = async () => {

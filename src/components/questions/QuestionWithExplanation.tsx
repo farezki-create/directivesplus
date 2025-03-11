@@ -27,6 +27,8 @@ export function QuestionWithExplanation({
     return null;
   }
   
+  console.log("Rendering question:", JSON.stringify(question));
+  
   // Extract numeric display order for advanced illness questions
   // This will be used as the key to match with the explanations
   let explanationId = '';
