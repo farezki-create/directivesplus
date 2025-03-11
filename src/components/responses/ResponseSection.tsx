@@ -20,7 +20,8 @@ export const ResponseSection = ({ title, responses }: ResponseSectionProps) => {
       <h3 className="text-lg font-semibold">{title}</h3>
       <div className="space-y-2">
         {responses.map((response, index) => {
-          const question = response.question_text || response.questions?.Question || 'Question non disponible';
+          // Gestion flexible des différentes structures de données possibles
+          const question = response.question_text || response.question || response.questions?.Question || 'Question non disponible';
           const responseText = formatResponseText(response.response);
           
           console.log(`Response ${index + 1}:`, { question, responseText });
@@ -36,4 +37,4 @@ export const ResponseSection = ({ title, responses }: ResponseSectionProps) => {
       </div>
     </div>
   );
-};
+}
