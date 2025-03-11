@@ -38,8 +38,15 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
           console.log('[LifeSupport] English questions loaded:', data?.length || 0);
           console.log('[LifeSupport] Raw English data:', data);
           
+          if (!data || data.length === 0) {
+            console.warn('[LifeSupport] No English questions found in the database.');
+            setQuestions([]);
+            setLoading(false);
+            return;
+          }
+          
           // Ensure options are properly formatted
-          const formattedData = data?.map(item => ({
+          const formattedData = data.map(item => ({
             id: item.id,
             question: item.question,
             display_order: item.display_order,
@@ -48,7 +55,7 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
               no: "No",
               unsure: "I'm not sure"
             }
-          })) || [];
+          }));
           
           console.log('[LifeSupport] Formatted English questions:', formattedData);
           setQuestions(formattedData);
@@ -73,17 +80,26 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
           
           console.log('[LifeSupport] Raw French data:', data);
           
+          if (!data || data.length === 0) {
+            console.warn('[LifeSupport] No French questions found in the database.');
+            setQuestions([]);
+            setLoading(false);
+            return;
+          }
+          
           // Transform French questions to match expected format
-          const formattedData = data?.map(item => ({
+          const formattedData = data.map(item => ({
             id: item.id.toString(),
+            question_text: item.question_text,
+            question_order: item.question_order,
+            // Ensure question field exists for consistency
             question: item.question_text,
-            display_order: item.question_order,
             options: {
               yes: item.option_yes,
               no: item.option_no,
               unsure: item.option_unsure
             }
-          })) || [];
+          }));
           
           console.log('[LifeSupport] Formatted French questions:', formattedData);
           setQuestions(formattedData);

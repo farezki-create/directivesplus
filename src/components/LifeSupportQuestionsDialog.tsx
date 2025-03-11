@@ -25,11 +25,11 @@ export function LifeSupportQuestionsDialog({
   console.log("[LifeSupportDialog] Questions count:", questions.length);
   console.log("[LifeSupportDialog] Current language:", currentLanguage);
   console.log("[LifeSupportDialog] Loading state:", loading);
+  console.log("[LifeSupportDialog] Questions:", questions);
   
-  // Log each question individually for better visibility
-  questions.forEach((q, index) => {
-    console.log(`[LifeSupportDialog] Question ${index + 1}:`, q);
-  });
+  // Get appropriate options for the current language
+  const options = getLifeSupportOptions();
+  console.log("[LifeSupportDialog] Options:", options);
 
   const onSubmit = async () => {
     const success = await handleSubmit();
@@ -49,16 +49,19 @@ export function LifeSupportQuestionsDialog({
       questionsLength={questions.length}
     >
       {questions.length > 0 ? (
-        questions.map((question) => (
-          <QuestionWithExplanation
-            key={question.id}
-            question={question}
-            value={answers[question.id] || []}
-            onValueChange={(value) => handleAnswerChange(question.id, value, true)}
-            options={getLifeSupportOptions()}
-            language={currentLanguage as 'en' | 'fr'}
-          />
-        ))
+        questions.map((question) => {
+          console.log(`Rendering question:`, question);
+          return (
+            <QuestionWithExplanation
+              key={question.id}
+              question={question}
+              value={answers[question.id] || []}
+              onValueChange={(value) => handleAnswerChange(question.id, value, true)}
+              options={options}
+              language={currentLanguage as 'en' | 'fr'}
+            />
+          );
+        })
       ) : !loading && (
         <div className="text-center py-4 text-muted-foreground">
           {currentLanguage === 'en' 

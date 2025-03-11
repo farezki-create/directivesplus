@@ -33,15 +33,27 @@ export function QuestionWithExplanation({
   // This will be used as the key to match with the explanations
   let explanationId = '';
   
-  if (question.display_order) {
-    // If display_order exists, use it as a string
-    explanationId = question.display_order.toString();
-  } else if (question.question_order) {
-    // Use question_order if available (for French questions)
+  // For French questions from questionnaire_life_support_fr that use integer IDs
+  if (question.question_order) {
     explanationId = question.question_order.toString();
-  } else if (question.id) {
-    // Fallback to id
-    explanationId = question.id.toString();
+    console.log(`Using question_order as explanationId: ${explanationId}`);
+  } 
+  // For English questions that use display_order
+  else if (question.display_order) {
+    explanationId = question.display_order.toString();
+    console.log(`Using display_order as explanationId: ${explanationId}`);
+  } 
+  // Fallback to ID (but convert to number if it's a UUID to avoid issues)
+  else if (question.id) {
+    // If it's a numeric ID (likely from French tables)
+    if (!isNaN(parseInt(question.id))) {
+      explanationId = question.id.toString();
+    } 
+    // If it's a UUID, we'll just use that as a last resort
+    else {
+      explanationId = question.id.toString();
+    }
+    console.log(`Using id as explanationId: ${explanationId}`);
   }
   
   // Get the explanation using the extracted ID
@@ -50,6 +62,9 @@ export function QuestionWithExplanation({
   // For debugging
   console.log(`Question ID: ${question.id}, Explanation ID: ${explanationId}`);
   console.log("Found explanation:", explanation ? "Yes" : "No");
+  
+  const questionText = question.question || question.question_text || '';
+  console.log(`Question text: "${questionText}"`);
   
   return (
     <div className="mb-8">
