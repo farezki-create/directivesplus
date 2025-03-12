@@ -31,7 +31,7 @@ export const Header = () => {
   };
 
   const isHomePage = location.pathname === "/";
-  const navButtonClass = "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl transform hover:-translate-y-1 text-white";
+  const navButtonClass = "text-sm px-3 py-1.5 rounded-md bg-white border border-purple-300 text-purple-700 hover:bg-purple-50 transition-all duration-200 shadow-sm";
 
   return (
     <header className="w-full border-b">
@@ -40,15 +40,16 @@ export const Header = () => {
           <h1 className="text-3xl md:text-4xl font-bold text-primary">DirectivesPlus</h1>
         </div>
         
-        <div className="flex items-center justify-center space-x-4 flex-wrap">
+        <div className="flex items-center justify-center space-x-3 flex-wrap">
           {!isHomePage && (
             <Button
               variant="ghost"
               size="icon"
               onClick={handleBack}
               aria-label="Retour"
+              className="h-8 w-8"
             >
-              <ArrowLeft className="h-5 w-5" />
+              <ArrowLeft className="h-4 w-4" />
             </Button>
           )}
           
@@ -71,7 +72,7 @@ export const Header = () => {
               className={navButtonClass}
               onClick={() => navigate("/generate-pdf")}
             >
-              Mes directives générées
+              Mes directives
             </Button>
           )}
           

@@ -17,7 +17,7 @@ export const NavigationButtons = ({ navButtonClass }: NavigationButtonsProps) =>
       className={navButtonClass}
       onClick={() => navigate("/reviews")}
     >
-      <MessageSquare className="w-4 h-4 mr-1" />
+      <MessageSquare className="w-3 h-3 mr-1" />
       <span>{t('reviews')}</span>
     </Button>
   );
