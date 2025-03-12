@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useState, useEffect } from "react";
 import { MainButtons } from "./MainButtons";
+import { useNavigate } from "react-router-dom";
 
 interface WelcomeSectionProps {
   onShowMoreInfo: () => void;
@@ -11,6 +12,7 @@ interface WelcomeSectionProps {
   onAdvancedIllnessClick: () => void;
   onPreferencesClick: () => void;
   showWritingSection?: boolean;
+  isAuthenticated?: boolean;
 }
 
 export function WelcomeSection({
@@ -19,10 +21,12 @@ export function WelcomeSection({
   onLifeSupportClick,
   onAdvancedIllnessClick,
   onPreferencesClick,
-  showWritingSection = false
+  showWritingSection = false,
+  isAuthenticated = false
 }: WelcomeSectionProps) {
   const { currentLanguage } = useLanguage();
   const [showSections, setShowSections] = useState(false);
+  const navigate = useNavigate();
 
   // Set showSections to true if showWritingSection prop is true
   useEffect(() => {
@@ -30,6 +34,14 @@ export function WelcomeSection({
       setShowSections(true);
     }
   }, [showWritingSection]);
+
+  const handleStartClick = () => {
+    if (!isAuthenticated) {
+      navigate("/auth");
+    } else {
+      setShowSections(true);
+    }
+  };
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -51,7 +63,7 @@ export function WelcomeSection({
         <div className="flex flex-col space-y-4 max-w-lg mx-auto">
           <Button
             size="lg"
-            onClick={() => setShowSections(true)}
+            onClick={handleStartClick}
           >
             {currentLanguage === 'fr' ? 'Commencer' : 'Start'}
           </Button>

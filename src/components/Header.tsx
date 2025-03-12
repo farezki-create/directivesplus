@@ -30,6 +30,14 @@ export const Header = () => {
     navigate(-1);
   };
 
+  const handleWritingClick = () => {
+    if (user) {
+      window.location.href = "/?writing=true";
+    } else {
+      navigate("/auth");
+    }
+  };
+
   const isHomePage = location.pathname === "/";
   const navButtonClass = "text-sm px-3 py-1.5 rounded-md bg-white border border-purple-300 text-purple-700 hover:bg-purple-50 transition-all duration-200 shadow-sm";
 
@@ -62,7 +70,7 @@ export const Header = () => {
           
           <Button
             className={navButtonClass}
-            onClick={() => window.location.href = "/?writing=true"}
+            onClick={handleWritingClick}
           >
             Je rédige
           </Button>
