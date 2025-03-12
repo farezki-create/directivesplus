@@ -1,4 +1,3 @@
-
 export const enTranslations = {
   welcomeMessage: 'Welcome to our application',
   next: 'Next',
@@ -81,7 +80,7 @@ export const enTranslations = {
   information: 'Information',
   summary: 'Summary',
   learnMore: 'Learn more',
-  start: 'Start',
+  start: 'Commencer',
   loading: 'Loading...',
   additionalInformation: 'Additional Information',
   whyAndHowToWrite: 'Why and how to write my advance directives?',
@@ -145,4 +144,3 @@ export const enTranslations = {
   signUpDesc: 'Create an account to save your advance directives',
   loginDesc: 'Sign in to access your advance directives'
 };
-
