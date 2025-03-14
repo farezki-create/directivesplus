@@ -100,7 +100,7 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
 
       if (error) {
         console.error("Supabase function error:", error);
-        setApiError("Configuration de l'envoi d'email incorrecte. Veuillez contacter l'administrateur.");
+        setApiError("Erreur lors de l'appel à la fonction. Veuillez réessayer plus tard ou contacter l'administrateur.");
         throw new Error(`Erreur lors de l'appel à la fonction: ${error.message}`);
       }
 
@@ -109,10 +109,13 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
       }
 
       if (!data.success) {
+        console.error("Function returned error:", data.error);
         if (data.error && data.error.includes("RESEND_API_KEY")) {
-          setApiError("La clé d'API pour l'envoi d'emails n'est pas configurée. Veuillez contacter l'administrateur.");
+          setApiError("La clé d'API pour l'envoi d'emails n'est pas configurée. Veuillez contacter l'administrateur du site.");
         } else if (data.error && data.error.includes("API key is invalid")) {
-          setApiError("La clé d'API pour l'envoi d'emails est invalide. Veuillez contacter l'administrateur.");
+          setApiError("La clé d'API pour l'envoi d'emails est invalide. Veuillez contacter l'administrateur du site.");
+        } else if (data.error && data.error.includes("domain has not been verified")) {
+          setApiError("Le domaine d'envoi d'email n'a pas été vérifié. Veuillez contacter l'administrateur du site.");
         } else {
           setApiError(data.error || "Erreur inconnue lors de l'envoi du PDF");
         }
@@ -144,7 +147,7 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
       {apiError && (
         <Alert variant="destructive" className="mb-4">
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{apiError}</AlertDescription>
+          <AlertDescription className="text-sm">{apiError}</AlertDescription>
         </Alert>
       )}
       
