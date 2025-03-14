@@ -20,11 +20,8 @@ export function QuestionCard({
   options,
   multiple = false 
 }: QuestionCardProps) {
-  // Get the appropriate order field - prioritize question_order for French
-  const displayOrder = question.question_order !== undefined 
-    ? question.question_order 
-    : (question.display_order !== undefined ? question.display_order : '');
-    
+  // Always use display_order for English and question_order for French to ensure consistent numbering
+  const displayOrder = question.question_order || question.display_order || '';
   const questionText = question.question || question.question_text || '';
 
   console.log(`Rendering question card: "${questionText}" with value:`, value);
