@@ -1,13 +1,13 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { type ToastProps } from "@/components/ui/toast";
+import { toast as showToast } from "@/hooks/use-toast";
 
 interface SaveResponsesOptions {
   userId: string | undefined;
   answers: Record<string, string[]>;
   questions: any[];
   questionnaireType: 'general_opinion' | 'life_support' | 'advanced_illness' | 'preferences';
-  toast: (props: ToastProps) => void;
+  toast: typeof showToast;
   language: 'en' | 'fr';
 }
 
