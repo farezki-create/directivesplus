@@ -1,13 +1,61 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/useLanguage";
+import { saveResponses } from "@/utils/questionnaire/saveResponses";
 
 export function useAdvancedIllnessResponses(questions: any[]) {
   const [answers, setAnswers] = useState<Record<string, string[]>>({});
   const { toast } = useToast();
   const { currentLanguage } = useLanguage();
+
+  // Charger les réponses existantes lorsque les questions changent
+  useEffect(() => {
+    const fetchExistingAnswers = async () => {
+      try {
+        const session = await supabase.auth.getSession();
+        const userId = session.data.session?.user.id;
+        
+        if (!userId || questions.length === 0) {
+          return;
+        }
+
+        const { data: existingAnswers, error } = await supabase
+          .from('questionnaire_responses')
+          .select('question_id, response')
+          .eq('user_id', userId)
+          .eq('questionnaire_type', 'advanced_illness');
+
+        if (error) {
+          console.error('[AdvancedIllness] Error fetching existing answers:', error);
+          return;
+        }
+
+        if (existingAnswers && existingAnswers.length > 0) {
+          const answersMap: Record<string, string[]> = {};
+          
+          existingAnswers.forEach(answer => {
+            if (!answersMap[answer.question_id]) {
+              answersMap[answer.question_id] = [];
+            }
+            if (answer.response) {
+              answersMap[answer.question_id].push(answer.response);
+            }
+          });
+          
+          console.log('[AdvancedIllness] Loaded existing answers:', answersMap);
+          setAnswers(answersMap);
+        }
+      } catch (error) {
+        console.error('[AdvancedIllness] Error fetching existing answers:', error);
+      }
+    };
+
+    if (questions.length > 0) {
+      fetchExistingAnswers();
+    }
+  }, [questions]);
 
   const handleAnswerChange = (questionId: string, value: string) => {
     console.log('[AdvancedIllness] Answer change:', { questionId, value });
@@ -19,86 +67,20 @@ export function useAdvancedIllnessResponses(questions: any[]) {
 
   const handleSubmit = async () => {
     try {
-      console.log('[AdvancedIllness] Submitting answers:', answers);
-      const session = await supabase.auth.getSession();
-      const userId = session.data.session?.user.id;
-
-      if (!userId) {
-        console.error('[AdvancedIllness] No user ID found');
-        toast({
-          title: currentLanguage === 'en' ? "Error" : "Erreur",
-          description: currentLanguage === 'en' 
-            ? "You must be logged in to save your answers." 
-            : "Vous devez être connecté pour enregistrer vos réponses.",
-          variant: "destructive",
-        });
-        return false;
-      }
-
-      // Prepare all responses for insertion
-      const responses = Object.entries(answers).flatMap(([questionId, values]) => {
-        // Find the full question object to get correct ID format
-        const question = questions.find(q => q.id.toString() === questionId);
-        
-        if (!question) {
-          console.error(`[AdvancedIllness] Question with ID ${questionId} not found`);
-          return [];
-        }
-        
-        return values.map(value => ({
-          user_id: userId,
-          question_id: question.id, // Use the actual UUID from the question object
-          question_text: question.question,
-          response: value,
-          questionnaire_type: 'advanced_illness'
-        }));
+      const userId = (await supabase.auth.getSession()).data.session?.user.id;
+      
+      const success = await saveResponses({
+        userId,
+        answers,
+        questions,
+        questionnaireType: 'advanced_illness',
+        toast,
+        language: currentLanguage as 'en' | 'fr'
       });
-
-      console.log('[AdvancedIllness] Prepared responses for insertion:', responses);
-
-      // Delete existing responses before inserting new ones
-      await supabase
-        .from('questionnaire_responses')
-        .delete()
-        .eq('user_id', userId)
-        .eq('questionnaire_type', 'advanced_illness');
-
-      // Insert new responses
-      for (const response of responses) {
-        const { error } = await supabase
-          .from('questionnaire_responses')
-          .insert(response);
-
-        if (error) {
-          console.error('[AdvancedIllness] Error saving response:', error);
-          toast({
-            title: currentLanguage === 'en' ? "Error" : "Erreur",
-            description: currentLanguage === 'en' 
-              ? "Unable to save your answers. Please try again." 
-              : "Impossible d'enregistrer vos réponses. Veuillez réessayer.",
-            variant: "destructive",
-          });
-          return false;
-        }
-      }
-
-      console.log('[AdvancedIllness] Responses saved successfully');
-      toast({
-        title: currentLanguage === 'en' ? "Success" : "Succès",
-        description: currentLanguage === 'en' 
-          ? "Your answers have been saved." 
-          : "Vos réponses ont été enregistrées.",
-      });
-      return true;
+      
+      return success;
     } catch (error) {
-      console.error('[AdvancedIllness] Unexpected error during submission:', error);
-      toast({
-        title: currentLanguage === 'en' ? "Error" : "Erreur",
-        description: currentLanguage === 'en' 
-          ? "An unexpected error occurred while saving." 
-          : "Une erreur inattendue s'est produite lors de l'enregistrement.",
-        variant: "destructive",
-      });
+      console.error('[AdvancedIllness] Error during submission:', error);
       return false;
     }
   };

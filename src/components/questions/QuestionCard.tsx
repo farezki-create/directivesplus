@@ -27,15 +27,16 @@ export function QuestionCard({
 
   const handleValueChange = (optionValue: string, checked: boolean) => {
     console.log(`Option ${optionValue} changed to ${checked}`);
+    
+    // Pour une meilleure fiabilité, nous nous assurons que les valeurs booléennes sont traitées correctement
+    const isChecked = checked === true;
+    
     if (multiple) {
-      if (checked) {
-        onValueChange(optionValue, checked);
-      } else {
-        onValueChange(optionValue, checked);
-      }
+      // Comportement de cases à cocher multiples
+      onValueChange(optionValue, isChecked);
     } else {
-      // For radio-button-like behavior
-      if (checked) {
+      // Comportement de boutons radio - une seule sélection possible
+      if (isChecked) {
         onValueChange(optionValue);
       }
     }
