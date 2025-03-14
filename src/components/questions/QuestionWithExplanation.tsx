@@ -33,12 +33,12 @@ export function QuestionWithExplanation({
   let explanationId = '';
   
   // Always prioritize question_order if available (French tables often use this)
-  if (question.question_order) {
+  if (question.question_order !== undefined) {
     explanationId = question.question_order.toString();
     console.log(`Using question_order as explanationId: ${explanationId}`);
   } 
   // Fall back to display_order if question_order is not available
-  else if (question.display_order) {
+  else if (question.display_order !== undefined) {
     explanationId = question.display_order.toString();
     console.log(`Using display_order as explanationId: ${explanationId}`);
   } 
