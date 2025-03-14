@@ -6,7 +6,7 @@ import { EmailForm } from "./EmailForm";
 import { PDFActionButtons } from "./PDFActionButtons";
 import { PDFViewer } from "./PDFViewer";
 import { Button } from "@/components/ui/button";
-import { Construction, Database } from "lucide-react";
+import { Construction, Database, Printer } from "lucide-react";
 
 interface PDFPreviewDialogProps {
   open: boolean;
@@ -40,6 +40,24 @@ export function PDFPreviewDialog({
     });
   };
 
+  const handlePrint = () => {
+    if (pdfUrl) {
+      // Open the PDF in a new window and trigger print
+      const printWindow = window.open(pdfUrl);
+      if (printWindow) {
+        printWindow.addEventListener('load', () => {
+          printWindow.print();
+        });
+      } else {
+        toast({
+          title: "Erreur d'impression",
+          description: "Impossible d'ouvrir la fenêtre d'impression. Vérifiez que les popups sont autorisés.",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
@@ -62,6 +80,14 @@ export function PDFPreviewDialog({
                 <Database className="mr-2 h-4 w-4" />
                 <Construction className="mr-2 h-4 w-4" />
                 Envoyer à votre DMP
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handlePrint}
+                className="flex items-center"
+              >
+                <Printer className="mr-2 h-4 w-4" />
+                Imprimer
               </Button>
               <PDFActionButtons 
                 onDownload={handleDownload} 
