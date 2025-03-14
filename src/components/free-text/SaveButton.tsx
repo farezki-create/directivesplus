@@ -108,7 +108,7 @@ export function SaveButton({
   return (
     <Button
       onClick={handleSubmit}
-      disabled={loading || !hasChanges}
+      disabled={loading || (hasChanges === false && freeText.trim().length === 0)}
       className="w-full"
     >
       <Save className="mr-2 h-4 w-4" />

@@ -74,6 +74,7 @@ export function FreeTextInput({ userId, onSaveComplete, onSignComplete }: FreeTe
     }
   };
 
+  // Determine if there are changes that need to be saved
   const hasChanges = freeText !== initialText;
   
   console.log("[FreeTextInput] Button state:", {
@@ -81,7 +82,7 @@ export function FreeTextInput({ userId, onSaveComplete, onSignComplete }: FreeTe
     hasChanges,
     freeTextLength: freeText.length,
     initialTextLength: initialText.length,
-    isDisabled: loading || !hasChanges
+    isDisabled: loading || (!hasChanges && freeText.length === 0)
   });
 
   return (
@@ -95,7 +96,7 @@ export function FreeTextInput({ userId, onSaveComplete, onSignComplete }: FreeTe
         <SaveButton
           userId={userId}
           freeText={freeText}
-          hasChanges={hasChanges}
+          hasChanges={hasChanges || freeText.trim().length > 0}
           loading={loading}
           onSaveComplete={onSaveComplete}
           setLoading={setLoading}
