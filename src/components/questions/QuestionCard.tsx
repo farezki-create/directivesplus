@@ -20,12 +20,9 @@ export function QuestionCard({
   options,
   multiple = false 
 }: QuestionCardProps) {
-  // Always use display_order for English and question_order for French to ensure consistent numbering
-  const displayOrder = question.question_order || question.display_order || '';
   const questionText = question.question || question.question_text || '';
 
   console.log(`Rendering question card: "${questionText}" with value:`, value);
-  console.log(`Display order: ${displayOrder}`);
   console.log(`Available options:`, options);
 
   const handleValueChange = (optionValue: string, checked: boolean) => {
@@ -46,33 +43,28 @@ export function QuestionCard({
 
   return (
     <div className="p-6 bg-card rounded-lg border shadow-sm">
-      <div className="grid grid-cols-[48px_1fr] gap-4">
-        <div className="text-center font-medium text-lg text-muted-foreground border-r pr-4">
-          {displayOrder}
-        </div>
-        <div>
-          <p className="text-lg font-medium mb-4">
-            {questionText}
-          </p>
-          <div className="flex flex-col space-y-3">
-            {options.map((option) => (
-              <div key={option.value} className="flex items-center space-x-2">
-                <Checkbox
-                  id={`${question.id}-${option.value}`}
-                  checked={value.includes(option.value)}
-                  onCheckedChange={(checked) => {
-                    handleValueChange(option.value, checked as boolean);
-                  }}
-                />
-                <Label 
-                  htmlFor={`${question.id}-${option.value}`}
-                  className="text-base"
-                >
-                  {option.label}
-                </Label>
-              </div>
-            ))}
-          </div>
+      <div>
+        <p className="text-lg font-medium mb-4">
+          {questionText}
+        </p>
+        <div className="flex flex-col space-y-3">
+          {options.map((option) => (
+            <div key={option.value} className="flex items-center space-x-2">
+              <Checkbox
+                id={`${question.id}-${option.value}`}
+                checked={value.includes(option.value)}
+                onCheckedChange={(checked) => {
+                  handleValueChange(option.value, checked as boolean);
+                }}
+              />
+              <Label 
+                htmlFor={`${question.id}-${option.value}`}
+                className="text-base"
+              >
+                {option.label}
+              </Label>
+            </div>
+          ))}
         </div>
       </div>
     </div>
