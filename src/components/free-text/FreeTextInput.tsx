@@ -31,6 +31,7 @@ export function FreeTextInput({ userId, onSaveComplete, onSignComplete }: FreeTe
       
       try {
         setLoading(true);
+        console.log("[FreeTextInput] Fetching existing text for user:", userId);
         
         const { data, error } = await supabase
           .from("questionnaire_synthesis")
@@ -39,20 +40,23 @@ export function FreeTextInput({ userId, onSaveComplete, onSignComplete }: FreeTe
           .maybeSingle();
 
         if (error) {
-          console.error("Error fetching free text:", error);
+          console.error("[FreeTextInput] Error fetching free text:", error);
           return;
         }
 
         if (data) {
+          console.log("[FreeTextInput] Found existing text:", data.free_text ? "Yes (length: " + data.free_text.length + ")" : "No");
           setFreeText(data.free_text || "");
           setInitialText(data.free_text || "");
           if (data.signature) {
             setSignature(data.signature);
             setIsSaved(true);
           }
+        } else {
+          console.log("[FreeTextInput] No existing text found");
         }
       } catch (error) {
-        console.error("Unexpected error:", error);
+        console.error("[FreeTextInput] Unexpected error:", error);
       } finally {
         setLoading(false);
       }
@@ -62,12 +66,14 @@ export function FreeTextInput({ userId, onSaveComplete, onSignComplete }: FreeTe
   }, [userId]);
 
   const handleTextChange = (newText: string) => {
+    console.log("[FreeTextInput] Text changed, new length:", newText.length);
     setFreeText(newText);
   };
 
   const handleSubmit = async () => {
     try {
       setLoading(true);
+      console.log("[FreeTextInput] Saving text, length:", freeText.length);
       
       // Check if a record already exists
       const { data, error: fetchError } = await supabase
@@ -77,7 +83,7 @@ export function FreeTextInput({ userId, onSaveComplete, onSignComplete }: FreeTe
         .maybeSingle();
 
       if (fetchError) {
-        console.error("Error checking for existing synthesis:", fetchError);
+        console.error("[FreeTextInput] Error checking for existing synthesis:", fetchError);
         toast({
           title: "Erreur",
           description: "Une erreur est survenue lors de la vérification des données existantes.",
@@ -90,6 +96,7 @@ export function FreeTextInput({ userId, onSaveComplete, onSignComplete }: FreeTe
       
       if (data) {
         // Update existing record
+        console.log("[FreeTextInput] Updating existing record:", data.id);
         const { error: updateError } = await supabase
           .from("questionnaire_synthesis")
           .update({
@@ -100,6 +107,7 @@ export function FreeTextInput({ userId, onSaveComplete, onSignComplete }: FreeTe
         error = updateError;
       } else {
         // Insert new record
+        console.log("[FreeTextInput] Creating new record for user:", userId);
         const { error: insertError } = await supabase
           .from("questionnaire_synthesis")
           .insert({
@@ -111,7 +119,7 @@ export function FreeTextInput({ userId, onSaveComplete, onSignComplete }: FreeTe
       }
 
       if (error) {
-        console.error("Error saving free text:", error);
+        console.error("[FreeTextInput] Error saving free text:", error);
         toast({
           title: "Erreur",
           description: "Impossible d'enregistrer votre texte. Veuillez réessayer.",
@@ -131,7 +139,7 @@ export function FreeTextInput({ userId, onSaveComplete, onSignComplete }: FreeTe
         onSaveComplete();
       }
     } catch (error) {
-      console.error("Unexpected error:", error);
+      console.error("[FreeTextInput] Unexpected error:", error);
       toast({
         title: "Erreur",
         description: "Une erreur inattendue s'est produite.",
@@ -149,7 +157,16 @@ export function FreeTextInput({ userId, onSaveComplete, onSignComplete }: FreeTe
     }
   };
 
+  // Check if there are any changes to enable/disable the save button
   const hasChanges = freeText !== initialText;
+  
+  console.log("[FreeTextInput] Button state:", {
+    loading,
+    hasChanges,
+    freeTextLength: freeText.length,
+    initialTextLength: initialText.length,
+    isDisabled: loading || !hasChanges
+  });
 
   return (
     <div className="space-y-6">
