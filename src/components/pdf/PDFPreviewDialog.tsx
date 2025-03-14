@@ -6,8 +6,7 @@ import { EmailForm } from "./EmailForm";
 import { PDFActionButtons } from "./PDFActionButtons";
 import { PDFViewer } from "./PDFViewer";
 import { Button } from "@/components/ui/button";
-import { Construction, Database, Printer } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { Construction, Database } from "lucide-react";
 
 interface PDFPreviewDialogProps {
   open: boolean;
@@ -25,7 +24,6 @@ export function PDFPreviewDialog({
 }: PDFPreviewDialogProps) {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const printFrameRef = useRef<HTMLIFrameElement | null>(null);
 
   const handleDownload = () => {
     if (onSave) {
@@ -41,49 +39,6 @@ export function PDFPreviewDialog({
       description: "Cette fonctionnalité est en cours de développement",
     });
   };
-
-  const handlePrint = () => {
-    if (!pdfUrl) {
-      toast({
-        title: "Erreur d'impression",
-        description: "Aucun document à imprimer.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      // Instead of using iframe, download the PDF and open it in a new tab
-      const link = document.createElement('a');
-      link.href = pdfUrl;
-      link.target = '_blank'; // Open in new tab instead of downloading
-      link.rel = 'noopener noreferrer'; // Security best practice
-      link.click();
-      
-      // Show a message to guide the user
-      toast({
-        title: "PDF ouvert dans un nouvel onglet",
-        description: "Utilisez la fonction d'impression du navigateur (Ctrl+P / Cmd+P) pour imprimer le document.",
-      });
-    } catch (error) {
-      console.error("Error opening PDF for print:", error);
-      toast({
-        title: "Erreur d'impression",
-        description: "Problème lors de l'ouverture du PDF. Essayez de télécharger le document et de l'imprimer manuellement.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  // Clean up function no longer needed since we're not using iframes
-  useEffect(() => {
-    return () => {
-      if (printFrameRef.current) {
-        document.body.removeChild(printFrameRef.current);
-        printFrameRef.current = null;
-      }
-    };
-  }, []);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -107,14 +62,6 @@ export function PDFPreviewDialog({
                 <Database className="mr-2 h-4 w-4" />
                 <Construction className="mr-2 h-4 w-4" />
                 Envoyer à votre DMP
-              </Button>
-              <Button
-                variant="outline"
-                onClick={handlePrint}
-                className="flex items-center"
-              >
-                <Printer className="mr-2 h-4 w-4" />
-                Imprimer
               </Button>
               <PDFActionButtons 
                 onDownload={handleDownload} 
