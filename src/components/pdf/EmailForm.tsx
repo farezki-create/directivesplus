@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Mail, AlertCircle, Info } from "lucide-react";
+import { Mail, AlertCircle, Info, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -19,6 +19,7 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
   const [emailAddress, setEmailAddress] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   const { t } = useLanguage();
@@ -54,6 +55,7 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
     }
 
     setApiError(null);
+    setSuccess(false);
     setIsSending(true);
     try {
       toast({
@@ -100,7 +102,7 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
 
       if (error) {
         console.error("Supabase function error:", error);
-        setApiError("Erreur lors de l'appel à la fonction. Veuillez réessayer plus tard ou contacter l'administrateur.");
+        setApiError(`Erreur lors de l'appel à la fonction: ${error.message}`);
         throw new Error(`Erreur lors de l'appel à la fonction: ${error.message}`);
       }
 
@@ -122,14 +124,13 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
         throw new Error(data.error || "Erreur inconnue lors de l'envoi du PDF");
       }
 
+      setSuccess(true);
       toast({
         title: "Succès",
         description: "Le PDF a été envoyé par email. Vérifiez votre boîte de réception (et dossier spam).",
       });
       
       setEmailAddress("");
-      onClose();
-      navigate("/generate-pdf");
     } catch (error: any) {
       console.error("Error sending email:", error);
       toast({
@@ -151,6 +152,13 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
         </Alert>
       )}
       
+      {success && (
+        <Alert className="mb-4 bg-green-50 border-green-200">
+          <CheckCircle className="h-4 w-4 text-green-500" />
+          <AlertDescription className="text-sm">Email envoyé avec succès! Vérifiez votre boîte de réception (et dossier spam).</AlertDescription>
+        </Alert>
+      )}
+      
       <div className="flex flex-col space-y-2">
         <Label htmlFor="email">{t('email')}</Label>
         <div className="flex items-center space-x-2">
@@ -163,12 +171,13 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
             className="w-full sm:w-64"
           />
           <Button 
-            variant="outline" 
+            variant={success ? "outline" : "default"} 
             onClick={handleEmailSend}
             disabled={isSending}
+            className={success ? "bg-green-50 border-green-200 text-green-700 hover:bg-green-100" : ""}
           >
             <Mail className="mr-2 h-4 w-4" />
-            {isSending ? "Envoi..." : "Envoyer"}
+            {isSending ? "Envoi..." : success ? "Renvoi" : "Envoyer"}
           </Button>
         </div>
         <div className="flex flex-col space-y-2 text-xs text-muted-foreground mt-1">
