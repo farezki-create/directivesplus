@@ -4,8 +4,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/useLanguage";
 
+// Define a type for our question objects
+type QuestionObject = {
+  id: string;
+  question?: string;
+  question_text?: string;
+  display_order?: number;
+  question_order?: number;
+  created_at?: string;
+};
+
 export function useGeneralOpinion(dialogOpen: boolean) {
-  const [questions, setQuestions] = useState<any[]>([]);
+  const [questions, setQuestions] = useState<QuestionObject[]>([]);
   const [loading, setLoading] = useState(true);
   const [answers, setAnswers] = useState<Record<string, string[]>>({});
   const { toast } = useToast();
@@ -41,13 +51,13 @@ export function useGeneralOpinion(dialogOpen: boolean) {
         }
         
         // Ensure the questions are sorted by their display order
-        const sortedData = data?.sort((a, b) => {
+        const sortedData = data?.sort((a: QuestionObject, b: QuestionObject) => {
           // First try to sort by question_order (for French)
-          if (a.question_order && b.question_order) {
+          if (a.question_order !== undefined && b.question_order !== undefined) {
             return a.question_order - b.question_order;
           }
           // Then try to sort by display_order (for English)
-          if (a.display_order && b.display_order) {
+          if (a.display_order !== undefined && b.display_order !== undefined) {
             return a.display_order - b.display_order;
           }
           return 0;
