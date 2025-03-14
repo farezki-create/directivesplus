@@ -20,8 +20,8 @@ export function QuestionCard({
   options,
   multiple = false 
 }: QuestionCardProps) {
-  // Handle different question object structures from different tables
-  const displayOrder = question.display_order || question.question_order || '';
+  // Always use display_order for English and question_order for French to ensure consistent numbering
+  const displayOrder = question.question_order || question.display_order || '';
   const questionText = question.question || question.question_text || '';
 
   console.log(`Rendering question card: "${questionText}" with value:`, value);

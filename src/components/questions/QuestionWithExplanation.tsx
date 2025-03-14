@@ -29,19 +29,20 @@ export function QuestionWithExplanation({
   
   console.log("Processing question:", question);
   
-  // Extract numeric display order for life support questions
+  // Extract display order - prioritize question_order for consistency
   let explanationId = '';
   
-  // Prioritize question_order for French or display_order for English
+  // Always prioritize question_order if available (French tables often use this)
   if (question.question_order) {
     explanationId = question.question_order.toString();
     console.log(`Using question_order as explanationId: ${explanationId}`);
   } 
+  // Fall back to display_order if question_order is not available
   else if (question.display_order) {
     explanationId = question.display_order.toString();
     console.log(`Using display_order as explanationId: ${explanationId}`);
   } 
-  // Fallback to ID
+  // Last resort fallback to ID
   else if (question.id) {
     // If it's a numeric ID (likely from French tables)
     if (!isNaN(parseInt(question.id))) {

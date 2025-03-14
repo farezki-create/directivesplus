@@ -26,7 +26,7 @@ export function useGeneralOpinion(dialogOpen: boolean) {
         const { data, error } = await supabase
           .from(tableName)
           .select('*')
-          .order('display_order', { ascending: true });
+          .order(currentLanguage === 'en' ? 'display_order' : 'question_order', { ascending: true });
         
         if (error) {
           console.error('[GeneralOpinion] Error fetching questions:', error);
@@ -40,9 +40,22 @@ export function useGeneralOpinion(dialogOpen: boolean) {
           return;
         }
         
-        console.log('[GeneralOpinion] Questions loaded:', data?.length, 'questions');
-        console.log('[GeneralOpinion] Questions data:', data);
-        setQuestions(data || []);
+        // Ensure the questions are sorted by their display order
+        const sortedData = data?.sort((a, b) => {
+          // First try to sort by question_order (for French)
+          if (a.question_order && b.question_order) {
+            return a.question_order - b.question_order;
+          }
+          // Then try to sort by display_order (for English)
+          if (a.display_order && b.display_order) {
+            return a.display_order - b.display_order;
+          }
+          return 0;
+        });
+        
+        console.log('[GeneralOpinion] Questions loaded:', sortedData?.length, 'questions');
+        console.log('[GeneralOpinion] Questions data:', sortedData);
+        setQuestions(sortedData || []);
       } catch (error) {
         console.error('[GeneralOpinion] Unexpected error:', error);
         toast({
