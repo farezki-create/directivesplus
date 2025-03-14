@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Toast } from "@/components/ui/use-toast";
+import { type Toast } from "@/hooks/use-toast";
 
 interface SaveResponsesOptions {
   userId: string | undefined;
