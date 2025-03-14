@@ -7,20 +7,12 @@ import { useNavigate } from "react-router-dom";
 
 interface WelcomeSectionProps {
   onShowMoreInfo: () => void;
-  onGeneralOpinionClick: () => void;
-  onLifeSupportClick: () => void;
-  onAdvancedIllnessClick: () => void;
-  onPreferencesClick: () => void;
   showWritingSection?: boolean;
   isAuthenticated?: boolean;
 }
 
 export function WelcomeSection({
   onShowMoreInfo,
-  onGeneralOpinionClick,
-  onLifeSupportClick,
-  onAdvancedIllnessClick,
-  onPreferencesClick,
   showWritingSection = false,
   isAuthenticated = false
 }: WelcomeSectionProps) {
@@ -77,12 +69,7 @@ export function WelcomeSection({
           </Button>
         </div>
       ) : (
-        <MainButtons 
-          onGeneralOpinionClick={onGeneralOpinionClick}
-          onLifeSupportClick={onLifeSupportClick}
-          onAdvancedIllnessClick={onAdvancedIllnessClick}
-          onPreferencesClick={onPreferencesClick}
-        />
+        <MainButtons />
       )}
     </div>
   );

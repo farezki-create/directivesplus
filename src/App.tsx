@@ -12,6 +12,10 @@ import Examples from "./pages/Examples";
 import GeneratePDF from "./pages/GeneratePDF";
 import Reviews from "./pages/Reviews";
 import FAQ from "./pages/FAQ";
+import GeneralOpinion from "./pages/GeneralOpinion";
+import LifeSupport from "./pages/LifeSupport";
+import AdvancedIllness from "./pages/AdvancedIllness";
+import Preferences from "./pages/Preferences";
 import { DialogStateProvider } from "./hooks/useDialogState";
 
 function App() {
@@ -29,6 +33,10 @@ function App() {
             <Route path="/generate-pdf" element={<GeneratePDF />} />
             <Route path="/reviews" element={<Reviews />} />
             <Route path="/faq" element={<FAQ />} />
+            <Route path="/general-opinion" element={<GeneralOpinion />} />
+            <Route path="/life-support" element={<LifeSupport />} />
+            <Route path="/advanced-illness" element={<AdvancedIllness />} />
+            <Route path="/preferences" element={<Preferences />} />
           </Routes>
         </Router>
         <Toaster />

@@ -1,21 +1,18 @@
 
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
 import { FeatureHighlights } from "@/components/home/FeatureHighlights";
-import { useDialogState } from "@/hooks/useDialogState";
 import { WelcomeSection } from "@/components/home/WelcomeSection";
 import { LearnMoreSection } from "@/components/home/LearnMoreSection";
-import { DialogsContainer } from "@/components/home/DialogsContainer";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 const Index = () => {
   const [showMoreInfo, setShowMoreInfo] = useState(false);
   const [showWritingSection, setShowWritingSection] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const dialogState = useDialogState();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -45,42 +42,6 @@ const Index = () => {
     checkAuth();
   }, [location, navigate]);
 
-  const handleGeneralOpinionClick = () => {
-    if (!isAuthenticated) {
-      toast.error("Vous devez être connecté pour accéder à cette fonctionnalité");
-      navigate("/auth");
-      return;
-    }
-    dialogState.setQuestionsOpen(true);
-  };
-
-  const handleLifeSupportClick = () => {
-    if (!isAuthenticated) {
-      toast.error("Vous devez être connecté pour accéder à cette fonctionnalité");
-      navigate("/auth");
-      return;
-    }
-    dialogState.setLifeSupportQuestionsOpen(true);
-  };
-
-  const handleAdvancedIllnessClick = () => {
-    if (!isAuthenticated) {
-      toast.error("Vous devez être connecté pour accéder à cette fonctionnalité");
-      navigate("/auth");
-      return;
-    }
-    dialogState.setAdvancedIllnessQuestionsOpen(true);
-  };
-
-  const handlePreferencesClick = () => {
-    if (!isAuthenticated) {
-      toast.error("Vous devez être connecté pour accéder à cette fonctionnalité");
-      navigate("/auth");
-      return;
-    }
-    dialogState.setPreferencesQuestionsOpen(true);
-  };
-
   const handleShowMoreInfo = () => {
     setShowMoreInfo(true);
   };
@@ -109,10 +70,6 @@ const Index = () => {
           <>
             <WelcomeSection 
               onShowMoreInfo={handleShowMoreInfo}
-              onGeneralOpinionClick={handleGeneralOpinionClick}
-              onLifeSupportClick={handleLifeSupportClick}
-              onAdvancedIllnessClick={handleAdvancedIllnessClick}
-              onPreferencesClick={handlePreferencesClick}
               showWritingSection={showWritingSection}
               isAuthenticated={isAuthenticated}
             />
@@ -120,8 +77,6 @@ const Index = () => {
           </>
         )}
       </main>
-
-      <DialogsContainer />
     </div>
   );
 };
