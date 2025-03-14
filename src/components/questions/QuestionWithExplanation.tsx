@@ -29,29 +29,27 @@ export function QuestionWithExplanation({
   
   console.log("Processing question:", question);
   
-  // Extract display order - prioritize question_order for consistency
+  // Extract display order - prioritize display_order or question_order for explanation lookup
   let explanationId = '';
   
-  // Always prioritize question_order if available (French tables often use this)
-  if (question.question_order) {
-    explanationId = question.question_order.toString();
-    console.log(`Using question_order as explanationId: ${explanationId}`);
-  } 
-  // Fall back to display_order if question_order is not available
-  else if (question.display_order) {
+  // First try using display_order (numerical field)
+  if (question.display_order !== undefined && question.display_order !== null) {
     explanationId = question.display_order.toString();
     console.log(`Using display_order as explanationId: ${explanationId}`);
   } 
-  // Last resort fallback to ID
-  else if (question.id) {
-    // If it's a numeric ID (likely from French tables)
-    if (!isNaN(parseInt(question.id))) {
-      explanationId = question.id.toString();
-    } 
-    // If it's a UUID
-    else {
-      explanationId = question.id.toString();
-    }
+  // Then try display_order_str (string representation)
+  else if (question.display_order_str) {
+    explanationId = question.display_order_str;
+    console.log(`Using display_order_str as explanationId: ${explanationId}`);
+  }
+  // Fall back to question_order
+  else if (question.question_order) {
+    explanationId = question.question_order.toString();
+    console.log(`Using question_order as explanationId: ${explanationId}`);
+  }
+  // Last resort fallback to numeric ID
+  else if (question.id && !isNaN(parseInt(question.id))) {
+    explanationId = question.id.toString();
     console.log(`Using id as explanationId: ${explanationId}`);
   }
   

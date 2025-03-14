@@ -42,13 +42,20 @@ export function AdvancedIllnessQuestionsDialog({
       questionsLength={questions.length}
     >
       {questions.map((question, index) => {
+        // Ensure display_order is available for explanation lookup
+        const questionWithOrder = {
+          ...question,
+          display_order: question.display_order || index + 1,
+          display_order_str: question.display_order_str || (index + 1).toString()
+        };
+        
         // For debugging each question
-        console.log(`Question ${index + 1}: ID=${question.id}, display_order=${question.display_order}, display_order_str=${question.display_order_str}`);
+        console.log(`Question ${index + 1}: ID=${question.id}, display_order=${questionWithOrder.display_order}, display_order_str=${questionWithOrder.display_order_str}`);
         
         return (
           <QuestionWithExplanation
             key={question.id}
-            question={question}
+            question={questionWithOrder}
             value={answers[question.id] || []}
             onValueChange={(value) => handleAnswerChange(question.id, value)}
             options={getAdvancedIllnessOptions()}
