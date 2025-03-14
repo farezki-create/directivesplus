@@ -44,6 +44,21 @@ export async function saveResponses({
       return false;
     }
 
+    // Get the current auth session to ensure we have the latest token
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      console.error(`[${questionnaireType}] No active session found`);
+      toast({
+        title: language === 'en' ? "Error" : "Erreur",
+        description: language === 'en' 
+          ? "Your session has expired. Please log in again." 
+          : "Votre session a expiré. Veuillez vous reconnecter.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
     // Prepare all responses for insertion
     const responses = Object.entries(answers).flatMap(([questionId, values]) => {
       // Find the full question object to get correct ID format
@@ -81,14 +96,14 @@ export async function saveResponses({
       throw deleteError;
     }
 
-    // Insert new responses
+    // Insert new responses one by one to better pinpoint any issues
     for (const response of responses) {
       const { error } = await supabase
         .from('questionnaire_responses')
         .insert(response);
 
       if (error) {
-        console.error(`[${questionnaireType}] Error saving response:`, error);
+        console.error(`[${questionnaireType}] Error saving response:`, error, 'Response data:', response);
         throw error;
       }
     }
@@ -106,8 +121,8 @@ export async function saveResponses({
     toast({
       title: language === 'en' ? "Error" : "Erreur",
       description: language === 'en'
-        ? "An unexpected error occurred while saving."
-        : "Une erreur inattendue s'est produite lors de l'enregistrement.",
+        ? "An unexpected error occurred while saving. Please try again later."
+        : "Une erreur inattendue s'est produite lors de l'enregistrement. Veuillez réessayer plus tard.",
       variant: "destructive",
     });
     return false;
