@@ -1,11 +1,13 @@
 
 import { useState, useRef } from "react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import SignatureCanvas from 'react-signature-canvas';
-import { Check, X, FileSignature } from "lucide-react";
+import SignatureCanvasLib from 'react-signature-canvas';
+import { FileSignature } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { SignatureCanvas } from "./SignatureCanvas";
+import { SignatureDisplay } from "./SignatureDisplay";
+import { SignatureActions } from "./SignatureActions";
 
 interface SignatureComponentProps {
   userId: string;
@@ -17,7 +19,7 @@ export function SignatureComponent({ userId, existingSignature, onSignatureSaved
   const [showSignature, setShowSignature] = useState(false);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const sigCanvas = useRef<SignatureCanvas>(null);
+  const sigCanvas = useRef<SignatureCanvasLib>(null);
 
   const handleSaveSignature = async () => {
     try {
@@ -119,10 +121,8 @@ export function SignatureComponent({ userId, existingSignature, onSignatureSaved
     }
   };
 
-  const clearSignature = () => {
-    if (sigCanvas.current) {
-      sigCanvas.current.clear();
-    }
+  const showSignatureEditor = () => {
+    setShowSignature(true);
   };
 
   return (
@@ -134,7 +134,7 @@ export function SignatureComponent({ userId, existingSignature, onSignatureSaved
       
       {!showSignature && !existingSignature && (
         <Button
-          onClick={() => setShowSignature(true)}
+          onClick={showSignatureEditor}
           className="w-full"
         >
           <FileSignature className="mr-2 h-4 w-4" />
@@ -143,52 +143,22 @@ export function SignatureComponent({ userId, existingSignature, onSignatureSaved
       )}
 
       {existingSignature && !showSignature && (
-        <div className="space-y-2">
-          <p className="text-sm font-medium">Signature existante:</p>
-          <Card className="p-4 flex justify-center">
-            <img src={existingSignature} alt="Signature" className="max-h-[150px]" />
-          </Card>
-          <Button
-            onClick={() => setShowSignature(true)}
-            variant="outline"
-            className="w-full"
-          >
-            <FileSignature className="mr-2 h-4 w-4" />
-            Modifier ma signature
-          </Button>
-        </div>
+        <SignatureDisplay 
+          signatureData={existingSignature}
+          onEdit={showSignatureEditor}
+        />
       )}
       
       {showSignature && (
         <div className="space-y-4">
-          <p className="text-sm font-medium">Veuillez signer ci-dessous:</p>
-          <Card className="p-2 border-2 border-gray-300">
-            <SignatureCanvas 
-              ref={sigCanvas}
-              canvasProps={{
-                className: 'w-full h-[250px]'
-              }}
-            />
-          </Card>
-          <div className="flex gap-2">
-            <Button 
-              onClick={clearSignature} 
-              variant="outline"
-              className="flex-1"
-              disabled={loading}
-            >
-              <X className="mr-2 h-4 w-4" />
-              Effacer
-            </Button>
-            <Button 
-              onClick={handleSaveSignature} 
-              className="flex-1"
-              disabled={loading}
-            >
-              <Check className="mr-2 h-4 w-4" />
-              Confirmer ma signature
-            </Button>
-          </div>
+          <SignatureCanvas 
+            signatureRef={sigCanvas}
+            disabled={loading}
+          />
+          <SignatureActions 
+            onSaveSignature={handleSaveSignature}
+            loading={loading}
+          />
         </div>
       )}
     </div>
