@@ -1,12 +1,11 @@
+
 import { useState, useEffect } from "react";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useLanguage } from "@/hooks/useLanguage";
-import { Save, FileSignature } from "lucide-react";
+import { FreeTextSection } from "./FreeTextSection";
+import { SaveButton } from "./SaveButton";
+import { SignButton } from "./SignButton";
 import { SignatureComponent } from "./SignatureComponent";
-import { TextEditor } from "./TextEditor";
 
 interface FreeTextInputProps {
   userId: string;
@@ -22,7 +21,6 @@ export function FreeTextInput({ userId, onSaveComplete, onSignComplete }: FreeTe
   const [signature, setSignature] = useState<string | null>(null);
   const [showSignatureSection, setShowSignatureSection] = useState(false);
   const { toast } = useToast();
-  const { t } = useLanguage();
 
   useEffect(() => {
     const fetchFreeText = async () => {
@@ -69,83 +67,6 @@ export function FreeTextInput({ userId, onSaveComplete, onSignComplete }: FreeTe
     setFreeText(newText);
   };
 
-  const handleSubmit = async () => {
-    try {
-      setLoading(true);
-      console.log("[FreeTextInput] Saving text, length:", freeText.length);
-      
-      const { data, error: fetchError } = await supabase
-        .from("questionnaire_synthesis")
-        .select("id")
-        .eq("user_id", userId)
-        .maybeSingle();
-
-      if (fetchError) {
-        console.error("[FreeTextInput] Error checking for existing synthesis:", fetchError);
-        toast({
-          title: "Erreur",
-          description: "Une erreur est survenue lors de la vérification des données existantes.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      let error;
-      
-      if (data) {
-        console.log("[FreeTextInput] Updating existing record:", data.id);
-        const { error: updateError } = await supabase
-          .from("questionnaire_synthesis")
-          .update({
-            free_text: freeText,
-          })
-          .eq("id", data.id);
-          
-        error = updateError;
-      } else {
-        console.log("[FreeTextInput] Creating new record for user:", userId);
-        const { error: insertError } = await supabase
-          .from("questionnaire_synthesis")
-          .insert({
-            user_id: userId,
-            free_text: freeText,
-          });
-          
-        error = insertError;
-      }
-
-      if (error) {
-        console.error("[FreeTextInput] Error saving free text:", error);
-        toast({
-          title: "Erreur",
-          description: "Impossible d'enregistrer votre texte. Veuillez réessayer.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      setInitialText(freeText);
-      setIsSaved(true);
-      toast({
-        title: "Succès",
-        description: "Vos directives anticipées ont été enregistrées.",
-      });
-      
-      if (onSaveComplete) {
-        onSaveComplete();
-      }
-    } catch (error) {
-      console.error("[FreeTextInput] Unexpected error:", error);
-      toast({
-        title: "Erreur",
-        description: "Une erreur inattendue s'est produite.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleSignatureSaved = (signatureData: string) => {
     setSignature(signatureData);
     if (onSignComplete) {
@@ -165,39 +86,27 @@ export function FreeTextInput({ userId, onSaveComplete, onSignComplete }: FreeTe
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-semibold mb-2">{t('synthesisTitle')}</h2>
-        <p className="text-sm text-gray-500 mb-4">
-          {t('synthesisDescription')}
-        </p>
-      </div>
-      
-      <TextEditor 
-        value={freeText} 
-        onChange={handleTextChange} 
-        placeholder={t('writeSynthesis')}
+      <FreeTextSection 
+        freeText={freeText}
+        onTextChange={handleTextChange}
       />
       
       <div className="space-y-4">
-        <Button
-          onClick={handleSubmit}
-          disabled={loading || !hasChanges}
-          className="w-full"
-        >
-          <Save className="mr-2 h-4 w-4" />
-          Enregistrer mes directives anticipées
-        </Button>
+        <SaveButton
+          userId={userId}
+          freeText={freeText}
+          hasChanges={hasChanges}
+          loading={loading}
+          onSaveComplete={onSaveComplete}
+          setLoading={setLoading}
+          setInitialText={setInitialText}
+          setIsSaved={setIsSaved}
+        />
         
-        {isSaved && (
-          <Button
-            onClick={() => setShowSignatureSection(true)}
-            className="w-full"
-            variant="outline"
-          >
-            <FileSignature className="mr-2 h-4 w-4" />
-            Signer mes directives
-          </Button>
-        )}
+        <SignButton 
+          isSaved={isSaved} 
+          onShowSignature={() => setShowSignatureSection(true)} 
+        />
       </div>
       
       {isSaved && showSignatureSection && (
