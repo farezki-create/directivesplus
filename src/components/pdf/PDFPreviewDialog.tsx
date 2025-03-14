@@ -7,6 +7,7 @@ import { PDFActionButtons } from "./PDFActionButtons";
 import { PDFViewer } from "./PDFViewer";
 import { Button } from "@/components/ui/button";
 import { Construction, Database, Printer } from "lucide-react";
+import { useEffect, useRef } from "react";
 
 interface PDFPreviewDialogProps {
   open: boolean;
@@ -24,6 +25,7 @@ export function PDFPreviewDialog({
 }: PDFPreviewDialogProps) {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const printFrameRef = useRef<HTMLIFrameElement | null>(null);
 
   const handleDownload = () => {
     if (onSave) {
@@ -41,22 +43,76 @@ export function PDFPreviewDialog({
   };
 
   const handlePrint = () => {
-    if (pdfUrl) {
-      // Open the PDF in a new window and trigger print
-      const printWindow = window.open(pdfUrl);
-      if (printWindow) {
-        printWindow.addEventListener('load', () => {
-          printWindow.print();
-        });
+    if (!pdfUrl) {
+      toast({
+        title: "Erreur d'impression",
+        description: "Aucun document à imprimer.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Create a hidden iframe for printing
+      if (!printFrameRef.current) {
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = pdfUrl;
+        iframe.onload = () => {
+          setTimeout(() => {
+            try {
+              iframe.contentWindow?.focus();
+              iframe.contentWindow?.print();
+            } catch (err) {
+              console.error("Error in print function:", err);
+              toast({
+                title: "Erreur d'impression",
+                description: "Problème lors de l'impression. Essayez de télécharger le document et de l'imprimer manuellement.",
+                variant: "destructive",
+              });
+            }
+          }, 1000); // Small delay to ensure content is fully loaded
+        };
+        document.body.appendChild(iframe);
+        printFrameRef.current = iframe;
       } else {
-        toast({
-          title: "Erreur d'impression",
-          description: "Impossible d'ouvrir la fenêtre d'impression. Vérifiez que les popups sont autorisés.",
-          variant: "destructive",
-        });
+        // Reuse existing iframe
+        printFrameRef.current.src = pdfUrl;
+        printFrameRef.current.onload = () => {
+          setTimeout(() => {
+            try {
+              printFrameRef.current?.contentWindow?.focus();
+              printFrameRef.current?.contentWindow?.print();
+            } catch (err) {
+              console.error("Error in print function:", err);
+              toast({
+                title: "Erreur d'impression",
+                description: "Problème lors de l'impression. Essayez de télécharger le document et de l'imprimer manuellement.",
+                variant: "destructive",
+              });
+            }
+          }, 1000);
+        };
       }
+    } catch (error) {
+      console.error("Error setting up print iframe:", error);
+      toast({
+        title: "Erreur d'impression",
+        description: "Problème lors de la préparation de l'impression. Essayez de télécharger le document et de l'imprimer manuellement.",
+        variant: "destructive",
+      });
     }
   };
+
+  // Clean up the iframe when the dialog closes
+  useEffect(() => {
+    return () => {
+      if (printFrameRef.current) {
+        document.body.removeChild(printFrameRef.current);
+        printFrameRef.current = null;
+      }
+    };
+  }, []);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
