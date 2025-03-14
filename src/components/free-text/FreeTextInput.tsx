@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/hooks/useLanguage";
-import { Save } from "lucide-react";
+import { Save, FileSignature } from "lucide-react";
 import { SignatureComponent } from "./SignatureComponent";
 import { TextEditor } from "./TextEditor";
 
@@ -21,10 +20,10 @@ export function FreeTextInput({ userId, onSaveComplete, onSignComplete }: FreeTe
   const [initialText, setInitialText] = useState("");
   const [isSaved, setIsSaved] = useState(false);
   const [signature, setSignature] = useState<string | null>(null);
+  const [showSignatureSection, setShowSignatureSection] = useState(false);
   const { toast } = useToast();
   const { t } = useLanguage();
 
-  // Fetch existing free text when component mounts
   useEffect(() => {
     const fetchFreeText = async () => {
       if (!userId) return;
@@ -75,7 +74,6 @@ export function FreeTextInput({ userId, onSaveComplete, onSignComplete }: FreeTe
       setLoading(true);
       console.log("[FreeTextInput] Saving text, length:", freeText.length);
       
-      // Check if a record already exists
       const { data, error: fetchError } = await supabase
         .from("questionnaire_synthesis")
         .select("id")
@@ -95,7 +93,6 @@ export function FreeTextInput({ userId, onSaveComplete, onSignComplete }: FreeTe
       let error;
       
       if (data) {
-        // Update existing record
         console.log("[FreeTextInput] Updating existing record:", data.id);
         const { error: updateError } = await supabase
           .from("questionnaire_synthesis")
@@ -106,7 +103,6 @@ export function FreeTextInput({ userId, onSaveComplete, onSignComplete }: FreeTe
           
         error = updateError;
       } else {
-        // Insert new record
         console.log("[FreeTextInput] Creating new record for user:", userId);
         const { error: insertError } = await supabase
           .from("questionnaire_synthesis")
@@ -157,7 +153,6 @@ export function FreeTextInput({ userId, onSaveComplete, onSignComplete }: FreeTe
     }
   };
 
-  // Check if there are any changes to enable/disable the save button
   const hasChanges = freeText !== initialText;
   
   console.log("[FreeTextInput] Button state:", {
@@ -183,18 +178,29 @@ export function FreeTextInput({ userId, onSaveComplete, onSignComplete }: FreeTe
         placeholder={t('writeSynthesis')}
       />
       
-      {/* Step 1: Save Content */}
-      <Button
-        onClick={handleSubmit}
-        disabled={loading || !hasChanges}
-        className="w-full"
-      >
-        <Save className="mr-2 h-4 w-4" />
-        Enregistrer mes directives anticipées
-      </Button>
+      <div className="space-y-4">
+        <Button
+          onClick={handleSubmit}
+          disabled={loading || !hasChanges}
+          className="w-full"
+        >
+          <Save className="mr-2 h-4 w-4" />
+          Enregistrer mes directives anticipées
+        </Button>
+        
+        {isSaved && (
+          <Button
+            onClick={() => setShowSignatureSection(true)}
+            className="w-full"
+            variant="outline"
+          >
+            <FileSignature className="mr-2 h-4 w-4" />
+            Signer mes directives
+          </Button>
+        )}
+      </div>
       
-      {/* Step 2: Show Signature Section after saving */}
-      {isSaved && (
+      {isSaved && showSignatureSection && (
         <SignatureComponent 
           userId={userId} 
           existingSignature={signature}
