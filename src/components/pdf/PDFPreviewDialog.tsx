@@ -53,58 +53,29 @@ export function PDFPreviewDialog({
     }
 
     try {
-      // Create a hidden iframe for printing
-      if (!printFrameRef.current) {
-        const iframe = document.createElement('iframe');
-        iframe.style.display = 'none';
-        iframe.src = pdfUrl;
-        iframe.onload = () => {
-          setTimeout(() => {
-            try {
-              iframe.contentWindow?.focus();
-              iframe.contentWindow?.print();
-            } catch (err) {
-              console.error("Error in print function:", err);
-              toast({
-                title: "Erreur d'impression",
-                description: "Problème lors de l'impression. Essayez de télécharger le document et de l'imprimer manuellement.",
-                variant: "destructive",
-              });
-            }
-          }, 1000); // Small delay to ensure content is fully loaded
-        };
-        document.body.appendChild(iframe);
-        printFrameRef.current = iframe;
-      } else {
-        // Reuse existing iframe
-        printFrameRef.current.src = pdfUrl;
-        printFrameRef.current.onload = () => {
-          setTimeout(() => {
-            try {
-              printFrameRef.current?.contentWindow?.focus();
-              printFrameRef.current?.contentWindow?.print();
-            } catch (err) {
-              console.error("Error in print function:", err);
-              toast({
-                title: "Erreur d'impression",
-                description: "Problème lors de l'impression. Essayez de télécharger le document et de l'imprimer manuellement.",
-                variant: "destructive",
-              });
-            }
-          }, 1000);
-        };
-      }
+      // Instead of using iframe, download the PDF and open it in a new tab
+      const link = document.createElement('a');
+      link.href = pdfUrl;
+      link.target = '_blank'; // Open in new tab instead of downloading
+      link.rel = 'noopener noreferrer'; // Security best practice
+      link.click();
+      
+      // Show a message to guide the user
+      toast({
+        title: "PDF ouvert dans un nouvel onglet",
+        description: "Utilisez la fonction d'impression du navigateur (Ctrl+P / Cmd+P) pour imprimer le document.",
+      });
     } catch (error) {
-      console.error("Error setting up print iframe:", error);
+      console.error("Error opening PDF for print:", error);
       toast({
         title: "Erreur d'impression",
-        description: "Problème lors de la préparation de l'impression. Essayez de télécharger le document et de l'imprimer manuellement.",
+        description: "Problème lors de l'ouverture du PDF. Essayez de télécharger le document et de l'imprimer manuellement.",
         variant: "destructive",
       });
     }
   };
 
-  // Clean up the iframe when the dialog closes
+  // Clean up function no longer needed since we're not using iframes
   useEffect(() => {
     return () => {
       if (printFrameRef.current) {
