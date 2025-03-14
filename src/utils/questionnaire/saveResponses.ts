@@ -44,11 +44,24 @@ export async function saveResponses({
       return false;
     }
 
-    // Get the current auth session to ensure we have the latest token
-    const { data: { session } } = await supabase.auth.getSession();
+    // Vérifier explicitement la session de l'utilisateur
+    console.log(`[${questionnaireType}] Vérification de la session utilisateur...`);
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    
+    if (sessionError) {
+      console.error(`[${questionnaireType}] Erreur lors de la récupération de la session:`, sessionError);
+      toast({
+        title: language === 'en' ? "Error" : "Erreur",
+        description: language === 'en' 
+          ? "Unable to verify your session. Please try logging in again." 
+          : "Impossible de vérifier votre session. Veuillez vous reconnecter.",
+        variant: "destructive",
+      });
+      return false;
+    }
     
     if (!session) {
-      console.error(`[${questionnaireType}] No active session found`);
+      console.error(`[${questionnaireType}] Aucune session active trouvée`);
       toast({
         title: language === 'en' ? "Error" : "Erreur",
         description: language === 'en' 
@@ -58,6 +71,8 @@ export async function saveResponses({
       });
       return false;
     }
+
+    console.log(`[${questionnaireType}] Session utilisateur valide. Préparation des réponses...`);
 
     // Prepare all responses for insertion
     const responses = Object.entries(answers).flatMap(([questionId, values]) => {
@@ -82,9 +97,10 @@ export async function saveResponses({
       }));
     });
 
-    console.log(`[${questionnaireType}] Prepared responses for insertion:`, responses);
+    console.log(`[${questionnaireType}] Préparé ${responses.length} réponses pour insertion:`, responses);
 
     // Delete existing responses before inserting new ones
+    console.log(`[${questionnaireType}] Suppression des anciennes réponses...`);
     const { error: deleteError } = await supabase
       .from('questionnaire_responses')
       .delete()
@@ -92,23 +108,40 @@ export async function saveResponses({
       .eq('questionnaire_type', questionnaireType);
 
     if (deleteError) {
-      console.error(`[${questionnaireType}] Error deleting old responses:`, deleteError);
+      console.error(`[${questionnaireType}] Erreur lors de la suppression des anciennes réponses:`, deleteError);
       throw deleteError;
     }
 
+    console.log(`[${questionnaireType}] Anciennes réponses supprimées avec succès. Insertion des nouvelles réponses...`);
+
     // Insert new responses one by one to better pinpoint any issues
     for (const response of responses) {
+      console.log(`[${questionnaireType}] Insertion de la réponse:`, response);
       const { error } = await supabase
         .from('questionnaire_responses')
         .insert(response);
 
       if (error) {
-        console.error(`[${questionnaireType}] Error saving response:`, error, 'Response data:', response);
+        console.error(`[${questionnaireType}] Erreur lors de l'enregistrement de la réponse:`, error, 'Données de la réponse:', response);
+        
+        // Vérification spécifique pour les erreurs RLS
+        if (error.message?.includes('policy') || error.message?.includes('violates row-level security')) {
+          console.error(`[${questionnaireType}] Erreur de politique RLS détectée - vérifiez que user_id correspond à auth.uid()`);
+          toast({
+            title: language === 'en' ? "Permission Error" : "Erreur de permission",
+            description: language === 'en'
+              ? "You don't have permission to save these answers. Please try logging in again."
+              : "Vous n'avez pas la permission d'enregistrer ces réponses. Veuillez vous reconnecter.",
+            variant: "destructive",
+          });
+          return false;
+        }
+        
         throw error;
       }
     }
 
-    console.log(`[${questionnaireType}] All responses saved successfully`);
+    console.log(`[${questionnaireType}] Toutes les ${responses.length} réponses ont été enregistrées avec succès`);
     toast({
       title: language === 'en' ? "Success" : "Succès",
       description: language === 'en'
@@ -117,7 +150,7 @@ export async function saveResponses({
     });
     return true;
   } catch (error) {
-    console.error(`[${questionnaireType}] Unexpected error during submission:`, error);
+    console.error(`[${questionnaireType}] Erreur inattendue pendant l'enregistrement:`, error);
     toast({
       title: language === 'en' ? "Error" : "Erreur",
       description: language === 'en'
