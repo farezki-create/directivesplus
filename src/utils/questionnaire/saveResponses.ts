@@ -114,31 +114,28 @@ export async function saveResponses({
 
     console.log(`[${questionnaireType}] Anciennes réponses supprimées avec succès. Insertion des nouvelles réponses...`);
 
-    // Insert new responses one by one to better pinpoint any issues
-    for (const response of responses) {
-      console.log(`[${questionnaireType}] Insertion de la réponse:`, response);
-      const { error } = await supabase
-        .from('questionnaire_responses')
-        .insert(response);
+    // Insert all responses in a single batch instead of one by one
+    const { error: insertError } = await supabase
+      .from('questionnaire_responses')
+      .insert(responses);
 
-      if (error) {
-        console.error(`[${questionnaireType}] Erreur lors de l'enregistrement de la réponse:`, error, 'Données de la réponse:', response);
-        
-        // Vérification spécifique pour les erreurs RLS
-        if (error.message?.includes('policy') || error.message?.includes('violates row-level security')) {
-          console.error(`[${questionnaireType}] Erreur de politique RLS détectée - vérifiez que user_id correspond à auth.uid()`);
-          toast({
-            title: language === 'en' ? "Permission Error" : "Erreur de permission",
-            description: language === 'en'
-              ? "You don't have permission to save these answers. Please try logging in again."
-              : "Vous n'avez pas la permission d'enregistrer ces réponses. Veuillez vous reconnecter.",
-            variant: "destructive",
-          });
-          return false;
-        }
-        
-        throw error;
+    if (insertError) {
+      console.error(`[${questionnaireType}] Erreur lors de l'enregistrement des réponses:`, insertError);
+      
+      // Vérification spécifique pour les erreurs RLS
+      if (insertError.message?.includes('policy') || insertError.message?.includes('violates row-level security')) {
+        console.error(`[${questionnaireType}] Erreur de politique RLS détectée - vérifiez que user_id correspond à auth.uid()`);
+        toast({
+          title: language === 'en' ? "Permission Error" : "Erreur de permission",
+          description: language === 'en'
+            ? "You don't have permission to save these answers. Please try logging in again."
+            : "Vous n'avez pas la permission d'enregistrer ces réponses. Veuillez vous reconnecter.",
+          variant: "destructive",
+        });
+        return false;
       }
+      
+      throw insertError;
     }
 
     console.log(`[${questionnaireType}] Toutes les ${responses.length} réponses ont été enregistrées avec succès`);
