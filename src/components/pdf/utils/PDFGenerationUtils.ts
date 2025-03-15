@@ -19,7 +19,7 @@ export const handlePDFGeneration = async (
     }
 
     console.log("[PDFGeneration] Profile data:", profile);
-    console.log("[PDFGeneration] Responses data:", responses);
+    console.log("[PDFGeneration] Responses data available:", !!responses);
 
     // Generate PDF
     const pdfDataUrl = await PDFDocumentGenerator.generate(profile, responses, trustedPersons);
@@ -32,17 +32,42 @@ export const handlePDFGeneration = async (
     console.log("[PDFGeneration] PDF generated successfully, data URL length:", pdfDataUrl.length);
     console.log("[PDFGeneration] PDF data URL starts with:", pdfDataUrl.substring(0, 50) + "...");
 
-    // Save PDF to storage if user is logged in
+    // Save PDF to storage if user is logged in and storage bucket exists
     if (profile.unique_identifier) {
       try {
-        console.log("[PDFGeneration] Attempting to save PDF to storage for user:", profile.unique_identifier);
-        await savePDFToStorage(pdfDataUrl, profile.unique_identifier);
+        // Vérifier d'abord si le bucket existe
+        const { data: buckets, error: bucketError } = await supabase
+          .storage
+          .listBuckets();
+          
+        if (bucketError) {
+          console.error("[PDFStorage] Error checking buckets:", bucketError);
+        } else {
+          const bucketExists = buckets?.some(bucket => bucket.name === 'directives_pdfs');
+          
+          if (bucketExists) {
+            console.log("[PDFGeneration] Attempting to save PDF to storage for user:", profile.unique_identifier);
+            await savePDFToStorage(pdfDataUrl, profile.unique_identifier);
+          } else {
+            console.warn("[PDFStorage] Storage bucket 'directives_pdfs' does not exist, skipping storage");
+          }
+        }
       } catch (storageError) {
         console.error("[PDFGeneration] Error saving PDF to storage:", storageError);
         // Ne pas bloquer le flux - continuer avec l'aperçu même si le stockage échoue
       }
     }
 
+    // Store the PDF URL in localStorage as a backup
+    try {
+      localStorage.setItem(`pdf_${profile.unique_identifier}`, pdfDataUrl);
+      console.log("[PDFGeneration] PDF URL saved to localStorage");
+    } catch (localStorageError) {
+      console.error("[PDFGeneration] Error saving to localStorage:", localStorageError);
+      // Continue even if localStorage fails
+    }
+
+    // Set the PDF URL and show preview
     setPdfUrl(pdfDataUrl);
     setShowPreview(true);
 
@@ -79,7 +104,7 @@ export const savePDFToStorage = async (pdfDataUrl: string, userId: string) => {
     
     if (!bucketExists) {
       console.warn("[PDFStorage] Storage bucket 'directives_pdfs' does not exist");
-      return false; // Sortir silencieusement si le bucket n'existe pas
+      return false;
     }
     
     try {
@@ -163,10 +188,11 @@ export const handlePDFDownload = (pdfUrl: string | null) => {
 
   try {
     console.log("[PDFGeneration] Starting PDF download, URL type:", typeof pdfUrl);
+    console.log("[PDFGeneration] PDF URL length:", pdfUrl.length);
     
     // Verify URL is a valid data URL
-    if (!pdfUrl.startsWith('data:')) {
-      console.error("[PDFGeneration] Invalid PDF URL format:", pdfUrl.substring(0, 30) + "...");
+    if (typeof pdfUrl !== 'string' || pdfUrl.trim() === '') {
+      console.error("[PDFGeneration] Invalid PDF URL format: empty or not a string");
       toast({
         title: "Erreur",
         description: "Format de PDF invalide.",

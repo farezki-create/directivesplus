@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "./pdf/usePDFData";
-import { handlePDFGeneration, handlePDFDownload, savePDFToStorage } from "./pdf/utils/PDFGenerationUtils";
+import { handlePDFGeneration, handlePDFDownload } from "./pdf/utils/PDFGenerationUtils";
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
 import { PDFPreviewDialog } from "./pdf/PDFPreviewDialog";
@@ -27,13 +27,23 @@ const waitingMessages = [
 export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
   console.log("[PDFGenerator] Initializing with userId:", userId);
   
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(() => {
+    // Try to retrieve from localStorage on init (as fallback)
+    try {
+      const savedPdf = localStorage.getItem(`pdf_${userId}`);
+      console.log("[PDFGenerator] Found saved PDF in localStorage:", !!savedPdf);
+      return savedPdf;
+    } catch (e) {
+      return null;
+    }
+  });
+  
   const [showPreview, setShowPreview] = useState(false);
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationError, setGenerationError] = useState<string | null>(null);
-  const { responses } = useQuestionnairesResponses(userId);
-  const { profile, trustedPersons, loading } = usePDFData();
+  const { responses, isLoading: responsesLoading } = useQuestionnairesResponses(userId);
+  const { profile, trustedPersons, loading: profileLoading } = usePDFData();
 
   useEffect(() => {
     if (isGenerating) {
@@ -51,16 +61,16 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
       hasProfile: !!profile,
       hasTrustedPersons: trustedPersons.length,
       hasResponses: !!responses,
-      isLoading: loading,
+      isLoading: responsesLoading || profileLoading,
       showPreview,
       hasPdfUrl: !!pdfUrl
     });
     
     if (pdfUrl) {
       console.log("[PDFGenerator] PDF URL type:", typeof pdfUrl);
-      console.log("[PDFGenerator] PDF URL starts with:", pdfUrl.substring(0, 20) + "...");
+      console.log("[PDFGenerator] PDF URL length:", pdfUrl.length);
     }
-  }, [profile, trustedPersons, responses, loading, showPreview, pdfUrl]);
+  }, [profile, trustedPersons, responses, responsesLoading, profileLoading, showPreview, pdfUrl]);
 
   const generatePDF = () => {
     console.log("[PDFGenerator] Button clicked - Starting PDF generation");
@@ -73,6 +83,16 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
         title: "Erreur",
         description: "Données de profil non disponibles. Veuillez compléter votre profil.",
         variant: "destructive",
+      });
+      setIsGenerating(false);
+      return;
+    }
+
+    if (responsesLoading || profileLoading) {
+      console.error("[PDFGenerator] Data still loading");
+      toast({
+        title: "Patientez",
+        description: "Chargement des données en cours...",
       });
       setIsGenerating(false);
       return;
@@ -126,7 +146,7 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
     }
   };
 
-  if (loading) {
+  if (responsesLoading || profileLoading) {
     console.log("[PDFGenerator] Still loading data...");
     return null;
   }
