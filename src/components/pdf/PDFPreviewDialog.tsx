@@ -6,7 +6,7 @@ import { EmailForm } from "./EmailForm";
 import { PDFActionButtons } from "./PDFActionButtons";
 import { PDFViewer } from "./PDFViewer";
 import { Button } from "@/components/ui/button";
-import { Construction, Database } from "lucide-react";
+import { Construction, Database, Maximize2, Minimize2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface PDFPreviewDialogProps {
@@ -26,30 +26,17 @@ export function PDFPreviewDialog({
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [viewerKey, setViewerKey] = useState(0); // Key to force viewer remount
 
   useEffect(() => {
     console.log("[PDFPreviewDialog] Dialog open state:", open);
     console.log("[PDFPreviewDialog] PDF URL present:", pdfUrl ? "Yes" : "No");
     
-    if (pdfUrl) {
-      // Check if it's a data URL and log relevant information
+    if (open && pdfUrl) {
+      // Log URL type for debugging
       if (pdfUrl.startsWith('data:')) {
-        console.log("[PDFPreviewDialog] URL is a data URL");
-        console.log("[PDFPreviewDialog] Data URL length:", pdfUrl.length);
-        
-        if (pdfUrl.startsWith('data:application/pdf;base64,')) {
-          console.log("[PDFPreviewDialog] URL appears to be a valid PDF data URL");
-          
-          // Log the size of the base64 data
-          const base64Data = pdfUrl.split(',')[1];
-          if (base64Data) {
-            console.log("[PDFPreviewDialog] Base64 data length:", base64Data.length);
-          }
-        } else {
-          console.warn("[PDFPreviewDialog] Data URL doesn't seem to be a PDF data URL");
-        }
+        console.log("[PDFPreviewDialog] URL is a data URL (length: " + pdfUrl.length + ")");
       } else {
-        // Log the first 100 characters of the URL for non-data URLs
         console.log("[PDFPreviewDialog] URL preview:", pdfUrl.substring(0, 100) + "...");
       }
     }
@@ -62,6 +49,11 @@ export function PDFPreviewDialog({
       setIsFullscreen(false);
     }
   }, [open]);
+
+  // Force remount of viewer when fullscreen changes
+  useEffect(() => {
+    setViewerKey(prev => prev + 1);
+  }, [isFullscreen]);
 
   const handleDownload = () => {
     if (onSave) {
@@ -90,7 +82,10 @@ export function PDFPreviewDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
-        className={`${isFullscreen ? 'w-[95vw] max-w-none h-[95vh]' : 'w-full max-w-6xl max-h-[90vh]'} flex flex-col overflow-hidden`}
+        className={`
+          ${isFullscreen ? 'w-[95vw] max-w-none h-[95vh]' : 'w-full max-w-6xl max-h-[90vh]'} 
+          flex flex-col p-6 overflow-hidden
+        `}
       >
         <DialogTitle className="text-lg font-semibold mb-4 flex justify-between items-center">
           <span>Prévisualisation du document</span>
@@ -100,7 +95,11 @@ export function PDFPreviewDialog({
             onClick={toggleFullscreen}
             className="ml-4"
           >
-            {isFullscreen ? 'Réduire' : 'Agrandir'}
+            {isFullscreen ? (
+              <><Minimize2 className="h-4 w-4 mr-2" />Réduire</>
+            ) : (
+              <><Maximize2 className="h-4 w-4 mr-2" />Agrandir</>
+            )}
           </Button>
         </DialogTitle>
         
@@ -127,7 +126,7 @@ export function PDFPreviewDialog({
           </div>
           
           <div className="flex-1 overflow-hidden">
-            <PDFViewer pdfUrl={pdfUrl} />
+            <PDFViewer key={viewerKey} pdfUrl={pdfUrl} />
           </div>
         </div>
       </DialogContent>

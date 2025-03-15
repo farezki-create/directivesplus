@@ -10,12 +10,13 @@ export function PDFViewer({ pdfUrl }: PDFViewerProps) {
   const isMobile = useIsMobile();
   const [cleanUrl, setCleanUrl] = useState<string | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const objectRef = useRef<HTMLObjectElement>(null);
+  const [loadError, setLoadError] = useState(false);
   
   useEffect(() => {
     if (!pdfUrl) {
       console.log("[PDFViewer] No PDF URL provided");
       setCleanUrl(null);
+      setLoadError(false);
       return;
     }
     
@@ -26,6 +27,7 @@ export function PDFViewer({ pdfUrl }: PDFViewerProps) {
       if (pdfUrl.startsWith('data:application/pdf;base64,')) {
         console.log("[PDFViewer] Using data URL directly");
         setCleanUrl(pdfUrl);
+        setLoadError(false);
         return;
       }
       
@@ -41,10 +43,8 @@ export function PDFViewer({ pdfUrl }: PDFViewerProps) {
       console.log("[PDFViewer] Original URL:", pdfUrl);
       console.log("[PDFViewer] Cleaned URL:", cleaned);
       
-      // Ensure URL is valid (will throw if not)
-      new URL(cleaned);
-      
       setCleanUrl(cleaned);
+      setLoadError(false);
     } catch (error) {
       console.error("[PDFViewer] Invalid URL format:", error);
       
@@ -53,100 +53,69 @@ export function PDFViewer({ pdfUrl }: PDFViewerProps) {
       if (pdfUrl.includes('data:application/pdf;base64,')) {
         console.log("[PDFViewer] Attempting to use original data URL");
         setCleanUrl(pdfUrl);
+        setLoadError(false);
       } else {
         console.error("[PDFViewer] Cannot display PDF, invalid URL");
         setCleanUrl(null);
+        setLoadError(true);
       }
     }
   }, [pdfUrl]);
+
+  // Monitor iframe load events to detect success/failure
+  const handleIframeLoad = () => {
+    console.log("[PDFViewer] iframe loaded successfully");
+    setLoadError(false);
+  };
   
-  // Log when iframe is about to render
-  useEffect(() => {
-    if (cleanUrl) {
-      console.log("[PDFViewer] About to render PDF with URL type:", 
-        cleanUrl.startsWith('data:') ? 'data URL' : 'regular URL');
-      console.log("[PDFViewer] URL starts with:", cleanUrl.substring(0, 30) + "...");
-    }
-  }, [cleanUrl]);
-  
-  // Handle PDF loading errors
-  useEffect(() => {
-    const handleObjectError = () => {
-      console.error("[PDFViewer] Object tag failed to load PDF");
-      if (iframeRef.current) {
-        console.log("[PDFViewer] Attempting to use iframe as fallback");
-      }
-    };
+  const handleIframeError = () => {
+    console.error("[PDFViewer] iframe failed to load PDF");
+    setLoadError(true);
+  };
 
-    const handleIframeLoad = () => {
-      console.log("[PDFViewer] iframe loaded successfully");
-    };
-
-    const objectElement = objectRef.current;
-    const iframeElement = iframeRef.current;
-
-    if (objectElement) {
-      objectElement.addEventListener('error', handleObjectError);
+  // Simple pdf viewer fallback using iframe
+  const renderPdfViewer = () => {
+    if (!cleanUrl) {
+      return (
+        <div className="w-full h-full flex items-center justify-center text-gray-500">
+          Aucun document à afficher
+        </div>
+      );
     }
 
-    if (iframeElement) {
-      iframeElement.addEventListener('load', handleIframeLoad);
-    }
-
-    return () => {
-      if (objectElement) {
-        objectElement.removeEventListener('error', handleObjectError);
-      }
-      if (iframeElement) {
-        iframeElement.removeEventListener('load', handleIframeLoad);
-      }
-    };
-  }, [cleanUrl]);
-  
-  if (!cleanUrl) {
     return (
-      <div className="flex-1 flex items-center justify-center text-gray-500">
-        Aucun document à afficher
-      </div>
-    );
-  }
-
-  return (
-    <div className={`flex-1 ${isMobile ? 'min-h-[60vh]' : 'min-h-[75vh]'} border rounded overflow-hidden relative w-full h-full`}>
-      {/* Primary method: embed using object tag */}
-      <object
-        ref={objectRef}
-        data={cleanUrl}
-        type="application/pdf"
-        className="w-full h-full absolute inset-0"
-        title="PDF Preview"
-        id="pdf-viewer-object"
-      >
-        {/* Fallback: iframe */}
+      <>
         <iframe
           ref={iframeRef}
-          src={`${cleanUrl}#toolbar=0&navpanes=0`}
-          className="w-full h-full border-0 absolute inset-0"
+          src={cleanUrl}
+          className="w-full h-full border-0"
           title="PDF Preview"
-          id="pdf-viewer-iframe"
-          allow="fullscreen"
-          loading="eager"
-          onLoad={() => console.log("[PDFViewer] iframe loaded")}
-          onError={(e) => console.error("[PDFViewer] iframe error:", e)}
+          onLoad={handleIframeLoad}
+          onError={handleIframeError}
         />
-      </object>
-      
-      {/* Emergency fallback: link to PDF */}
-      <div className="absolute bottom-4 left-4 right-4 bg-white bg-opacity-75 p-2 rounded hidden data-[visible=true]:block" data-visible={!objectRef.current && !iframeRef.current}>
-        <a 
-          href={cleanUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-600 hover:underline text-sm flex justify-center"
-        >
-          Ouvrir le PDF dans un nouvel onglet
-        </a>
-      </div>
+        
+        {loadError && (
+          <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-90">
+            <div className="text-center p-4">
+              <p className="text-red-500 mb-2">Le PDF n'a pas pu être chargé</p>
+              <a 
+                href={cleanUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline text-sm"
+              >
+                Ouvrir le PDF dans un nouvel onglet
+              </a>
+            </div>
+          </div>
+        )}
+      </>
+    );
+  };
+
+  return (
+    <div className={`relative w-full h-full ${isMobile ? 'min-h-[60vh]' : 'min-h-[75vh]'} border rounded overflow-hidden`}>
+      {renderPdfViewer()}
     </div>
   );
 }

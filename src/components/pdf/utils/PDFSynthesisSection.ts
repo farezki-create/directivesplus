@@ -6,19 +6,12 @@ export class PDFSynthesisSection {
     let yPosition = startY;
     const pageWidth = doc.internal.pageSize.getWidth();
     
-    // More detailed logging to help diagnose issues
     console.log("[PDFSynthesisSection] Starting with yPosition:", startY);
-    console.log("[PDFSynthesisSection] Synthesis data type:", typeof responses?.synthesis);
     
     // Extract the synthesis text, handling different formats
     let synthesisText: string | null = null;
     
     if (responses?.synthesis) {
-      console.log("[PDFSynthesisSection] Synthesis format:", 
-        typeof responses.synthesis === 'object' ? 'object' : 
-        typeof responses.synthesis === 'string' ? 'string' : 
-        'unknown');
-      
       if (typeof responses.synthesis === 'object' && responses.synthesis.free_text) {
         synthesisText = responses.synthesis.free_text.trim();
         console.log("[PDFSynthesisSection] Using free_text from object, length:", synthesisText.length);
