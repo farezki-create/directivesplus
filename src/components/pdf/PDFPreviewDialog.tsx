@@ -1,13 +1,12 @@
 
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { EmailForm } from "./EmailForm";
-import { PDFActionButtons } from "./PDFActionButtons";
 import { PDFViewer } from "./PDFViewer";
-import { Button } from "@/components/ui/button";
-import { Construction, Database, Download, ExternalLink, Maximize2, Minimize2, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
+import { DialogHeader } from "./DialogHeader";
+import { PDFActionContainer } from "./PDFActionContainer";
 
 interface PDFPreviewDialogProps {
   open: boolean;
@@ -27,7 +26,6 @@ export function PDFPreviewDialog({
   const navigate = useNavigate();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [viewerKey, setViewerKey] = useState(0); // Key to force viewer remount
-  const [isDirectDownload, setIsDirectDownload] = useState(false);
   const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
@@ -109,13 +107,6 @@ export function PDFPreviewDialog({
     setLoadError(false);
   };
 
-  const handleSendToDMP = () => {
-    toast({
-      title: "En construction",
-      description: "Cette fonctionnalité est en cours de développement",
-    });
-  };
-
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
   };
@@ -133,21 +124,10 @@ export function PDFPreviewDialog({
           flex flex-col p-6 overflow-hidden
         `}
       >
-        <DialogTitle className="text-lg font-semibold mb-4 flex justify-between items-center">
-          <span>Prévisualisation du document</span>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={toggleFullscreen}
-            className="ml-4"
-          >
-            {isFullscreen ? (
-              <><Minimize2 className="h-4 w-4 mr-2" />Réduire</>
-            ) : (
-              <><Maximize2 className="h-4 w-4 mr-2" />Agrandir</>
-            )}
-          </Button>
-        </DialogTitle>
+        <DialogHeader 
+          isFullscreen={isFullscreen}
+          toggleFullscreen={toggleFullscreen}
+        />
         
         <div className="flex flex-col space-y-4 h-full overflow-hidden">
           <div className="flex flex-wrap justify-between gap-2">
@@ -155,49 +135,14 @@ export function PDFPreviewDialog({
               pdfUrl={pdfUrl} 
               onClose={() => onOpenChange(false)} 
             />
-            <div className="flex flex-wrap gap-2">
-              <Button 
-                variant="outline" 
-                onClick={handleSendToDMP}
-                className="flex items-center"
-              >
-                <Database className="mr-2 h-4 w-4" />
-                <Construction className="mr-2 h-4 w-4" />
-                Envoyer à votre DMP
-              </Button>
-              <PDFActionButtons 
-                onDownload={handleDownload} 
-              />
-              
-              {loadError && (
-                <>
-                  <Button 
-                    variant="outline" 
-                    onClick={handleRetry}
-                    className="flex items-center gap-2"
-                  >
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Réessayer
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    onClick={handleDirectDownload}
-                    className="flex items-center gap-2"
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    Télécharger
-                  </Button>
-                  <Button 
-                    variant="outline"
-                    onClick={openInNewTab}
-                    className="flex items-center gap-2"
-                  >
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    Ouvrir
-                  </Button>
-                </>
-              )}
-            </div>
+            
+            <PDFActionContainer 
+              onDownload={handleDownload}
+              loadError={loadError}
+              onRetry={handleRetry}
+              onDirectDownload={handleDirectDownload}
+              onOpenInNewTab={openInNewTab}
+            />
           </div>
           
           <div className="flex-1 overflow-hidden">
