@@ -1,4 +1,7 @@
 
+import { useRef, useEffect } from "react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+
 interface PDFViewerProps {
   textContent?: string | null;
 }
@@ -6,15 +9,30 @@ interface PDFViewerProps {
 export function PDFViewer({ textContent }: PDFViewerProps) {
   // Enhanced debugging
   console.log("[PDFViewer] Rendering with text content available:", !!textContent);
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
-  // If text content is provided, display it in a pre-formatted text box
+  // Focus on the text area when content is loaded
+  useEffect(() => {
+    if (textContent && textAreaRef.current) {
+      textAreaRef.current.focus();
+    }
+  }, [textContent]);
+
+  // If text content is provided, display it in a scrollable, selectable text area
   if (textContent) {
     return (
-      <div className="flex-1 border rounded overflow-auto bg-white p-6">
-        <pre className="whitespace-pre-wrap font-sans text-sm">
-          {textContent}
-        </pre>
-      </div>
+      <ScrollArea className="flex-1 h-[60vh]">
+        <div className="bg-white p-6 h-full">
+          <textarea
+            ref={textAreaRef}
+            className="w-full h-full font-sans text-sm resize-none focus:outline-none focus:ring-0 border-0"
+            value={textContent}
+            readOnly
+            spellCheck={false}
+            style={{ whiteSpace: "pre-wrap" }}
+          />
+        </div>
+      </ScrollArea>
     );
   }
 

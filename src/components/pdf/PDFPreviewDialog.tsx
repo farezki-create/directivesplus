@@ -62,7 +62,7 @@ export function PDFPreviewDialog({
           Prévisualisation du document
         </DialogTitle>
         <DialogDescription className="text-sm text-muted-foreground mb-4">
-          Votre document texte a été généré. Vous pouvez le télécharger.
+          Vous pouvez naviguer dans le document avec votre curseur et le télécharger.
         </DialogDescription>
         
         <div className="flex flex-col space-y-4 h-full">
