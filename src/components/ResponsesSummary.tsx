@@ -7,10 +7,8 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { FileText } from "lucide-react";
-import { PDFGenerator } from "./pdf/PDFGenerator";
+import { PDFGenerator } from "./PDFGenerator";
 import { usePDFData } from "./pdf/usePDFData";
-import { format, isValid, parseISO } from "date-fns";
-import { fr } from "date-fns/locale";
 
 interface ResponsesSummaryProps {
   userId: string;
@@ -35,7 +33,7 @@ export function ResponsesSummary({ userId }: ResponsesSummaryProps) {
   };
 
   console.log("[ResponsesSummary] User ID:", userId);
-  console.log("[ResponsesSummary] Profile data:", profile);
+  console.log("[ResponsesSummary] Responses:", responses);
 
   if (isLoading || profileLoading) {
     return <div className="p-4 text-center">Chargement de vos réponses...</div>;
@@ -55,40 +53,6 @@ export function ResponsesSummary({ userId }: ResponsesSummaryProps) {
     return null;
   }
 
-  // Formater une date avec gestion des erreurs
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'Non renseignée';
-    
-    try {
-      const dateObj = parseISO(dateString);
-      if (isValid(dateObj)) {
-        return format(dateObj, "d MMMM yyyy", { locale: fr });
-      }
-      return 'Non renseignée';
-    } catch (error) {
-      console.error("[ResponsesSummary] Error formatting date:", error);
-      return 'Non renseignée';
-    }
-  };
-
-  // Formater l'adresse complète
-  const formatAddress = () => {
-    if (!profile) return 'Non renseignée';
-    
-    const addressParts = [];
-    
-    if (profile.address) addressParts.push(profile.address);
-    
-    const cityLine = [profile.postal_code, profile.city]
-      .filter(Boolean)
-      .join(" ");
-      
-    if (cityLine) addressParts.push(cityLine);
-    if (profile.country) addressParts.push(profile.country);
-    
-    return addressParts.length > 0 ? addressParts.join(', ') : 'Non renseignée';
-  };
-
   // Display user profile information at the top
   const renderProfileInfo = () => {
     if (!profile) return null;
@@ -104,10 +68,10 @@ export function ResponsesSummary({ userId }: ResponsesSummaryProps) {
             <span className="font-semibold">Prénom :</span> {profile.first_name || 'Non renseigné'}
           </div>
           <div>
-            <span className="font-semibold">Date de naissance :</span> {formatDate(profile.birth_date)}
+            <span className="font-semibold">Date de naissance :</span> {profile.birth_date || 'Non renseignée'}
           </div>
           <div>
-            <span className="font-semibold">Adresse :</span> {formatAddress()}
+            <span className="font-semibold">Adresse :</span> {profile.address ? `${profile.address}, ${profile.postal_code} ${profile.city}` : 'Non renseignée'}
           </div>
         </div>
       </div>

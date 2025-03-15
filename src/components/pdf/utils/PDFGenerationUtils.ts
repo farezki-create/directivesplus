@@ -32,11 +32,11 @@ export const handlePDFGeneration = async (
     // Save PDF to storage if user is logged in
     if (profile.unique_identifier) {
       try {
-        console.log("[PDFGeneration] Attempting to save PDF to storage for user:", profile.unique_identifier);
+        console.log("[PDFGeneration] Saving PDF to storage for user:", profile.unique_identifier);
         await savePDFToStorage(pdfDataUrl, profile.unique_identifier);
       } catch (storageError) {
         console.error("[PDFGeneration] Error saving PDF to storage:", storageError);
-        // Ne pas bloquer le flux - continuer avec l'aperçu même si le stockage échoue
+        // Continue with preview even if storage fails
       }
     }
 
@@ -60,18 +60,6 @@ export const handlePDFGeneration = async (
 
 export const savePDFToStorage = async (pdfDataUrl: string, userId: string) => {
   try {
-    // Vérifier d'abord si le bucket existe
-    const { data: buckets, error: bucketError } = await supabase
-      .storage
-      .listBuckets();
-      
-    const bucketExists = buckets?.some(bucket => bucket.name === 'directives_pdfs');
-    
-    if (bucketError || !bucketExists) {
-      console.warn("[PDFStorage] Storage bucket 'directives_pdfs' does not exist");
-      return false; // Sortir silencieusement si le bucket n'existe pas
-    }
-    
     // Convert data URL to Blob
     const response = await fetch(pdfDataUrl);
     const blob = await response.blob();
