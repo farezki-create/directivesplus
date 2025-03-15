@@ -2,9 +2,9 @@
 import { useState, useEffect } from "react";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "./pdf/usePDFData";
-import { handlePDFGeneration, handlePDFDownload, savePDFToStorage } from "./pdf/utils/PDFGenerationUtils";
+import { handlePDFGeneration, handlePDFDownload } from "./pdf/utils/PDFGenerationUtils";
 import { Button } from "@/components/ui/button";
-import { FileText } from "lucide-react";
+import { FileText, RefreshCw } from "lucide-react";
 import { PDFPreviewDialog } from "./pdf/PDFPreviewDialog";
 import { toast } from "@/hooks/use-toast";
 
@@ -31,8 +31,24 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
   const [showPreview, setShowPreview] = useState(false);
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generationFailed, setGenerationFailed] = useState(false);
   const { responses } = useQuestionnairesResponses(userId);
   const { profile, trustedPersons, loading } = usePDFData();
+
+  // Check if we have a cached PDF in localStorage
+  useEffect(() => {
+    if (userId && !pdfUrl) {
+      try {
+        const cachedPdf = localStorage.getItem(`pdf_${userId}`);
+        if (cachedPdf && (cachedPdf.startsWith('data:') || cachedPdf.startsWith('http'))) {
+          console.log("[PDFGenerator] Found cached PDF in localStorage");
+          setPdfUrl(cachedPdf);
+        }
+      } catch (e) {
+        console.warn("[PDFGenerator] Could not read from localStorage:", e);
+      }
+    }
+  }, [userId, pdfUrl]);
 
   useEffect(() => {
     if (isGenerating) {
@@ -54,6 +70,7 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
   const generatePDF = () => {
     console.log("[PDFGenerator] Button clicked - Starting PDF generation");
     setIsGenerating(true);
+    setGenerationFailed(false);
     
     if (!profile) {
       console.error("[PDFGenerator] No profile data available");
@@ -63,6 +80,7 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
         variant: "destructive",
       });
       setIsGenerating(false);
+      setGenerationFailed(true);
       return;
     }
 
@@ -75,14 +93,14 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
         (url) => {
           console.log("[PDFGenerator] PDF generated, URL status:", url ? "success" : "failed");
           
-          // Store the PDF URL in localStorage as a backup
-          if (url) {
-            try {
-              localStorage.setItem(`pdf_${userId}`, url);
-              console.log("[PDFGenerator] PDF URL saved to localStorage");
-            } catch (e) {
-              console.warn("[PDFGenerator] Could not save PDF to localStorage:", e);
-            }
+          // Display detailed error if no URL was returned
+          if (!url) {
+            setGenerationFailed(true);
+            toast({
+              title: "Erreur",
+              description: "Impossible de générer le PDF. Veuillez vérifier votre connexion internet.",
+              variant: "destructive",
+            });
           }
           
           setPdfUrl(url);
@@ -101,6 +119,7 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
         variant: "destructive",
       });
       setIsGenerating(false);
+      setGenerationFailed(true);
     }
   };
 
@@ -128,13 +147,22 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
         className="flex items-center gap-2"
         disabled={isGenerating}
       >
-        <FileText className="h-4 w-4" />
-        Générer Mes directives anticipées
+        {generationFailed ? (
+          <>
+            <RefreshCw className="h-4 w-4" />
+            Réessayer la génération
+          </>
+        ) : (
+          <>
+            <FileText className="h-4 w-4" />
+            Générer Mes directives anticipées
+          </>
+        )}
       </Button>
       
       {showPreview && (
         <PDFPreviewDialog
-          key={pdfUrl}
+          key={`pdf-preview-${pdfUrl?.substring(0, 20)}`}
           open={showPreview}
           onOpenChange={(open) => {
             console.log("[PDFGenerator] Dialog state changing to:", open);

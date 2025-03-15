@@ -1,12 +1,12 @@
 
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { EmailForm } from "./EmailForm";
 import { PDFActionButtons } from "./PDFActionButtons";
 import { PDFViewer } from "./PDFViewer";
 import { Button } from "@/components/ui/button";
-import { Construction, Database, AlertCircle } from "lucide-react";
+import { Construction, Database, AlertCircle, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface PDFPreviewDialogProps {
@@ -26,12 +26,30 @@ export function PDFPreviewDialog({
   const { toast } = useToast();
   const navigate = useNavigate();
   const [pdfLoadError, setPdfLoadError] = useState<boolean>(false);
+  const [loadAttempts, setLoadAttempts] = useState<number>(0);
 
-  // Réinitialiser l'état d'erreur quand pdfUrl change
+  // Reset error state when URL changes or dialog opens
   useEffect(() => {
-    if (pdfUrl) {
+    if (open && pdfUrl) {
       setPdfLoadError(false);
-      console.log("[PDFPreviewDialog] New PDF URL received:", pdfUrl?.substring(0, 100) + "...");
+      setLoadAttempts(0);
+      console.log("[PDFPreviewDialog] Dialog opened with PDF URL:", 
+        pdfUrl?.substring(0, 50) + "...");
+    }
+  }, [pdfUrl, open]);
+
+  // Add additional check to validate PDF URL
+  useEffect(() => {
+    if (!pdfUrl) return;
+    
+    const isValidUrl = 
+      pdfUrl.startsWith('data:') || 
+      pdfUrl.startsWith('http://') || 
+      pdfUrl.startsWith('https://');
+      
+    if (!isValidUrl) {
+      console.error("[PDFPreviewDialog] Invalid PDF URL format:", pdfUrl.substring(0, 100));
+      setPdfLoadError(true);
     }
   }, [pdfUrl]);
 
@@ -51,7 +69,22 @@ export function PDFPreviewDialog({
     });
   };
 
-  // Vérifier si l'URL du PDF est valide
+  const handleRetry = () => {
+    setPdfLoadError(false);
+    setLoadAttempts(prev => prev + 1);
+    
+    // Try to regenerate the view by forcing a reload of the PDF
+    if (loadAttempts > 2) {
+      // After a few attempts, suggest refreshing the page
+      toast({
+        title: "Problème persistant",
+        description: "Essayez de rafraîchir la page complètement",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Verify if PDF URL is valid
   const isPdfUrlValid = pdfUrl && (
     pdfUrl.startsWith('http') || 
     pdfUrl.startsWith('https') || 
@@ -64,6 +97,9 @@ export function PDFPreviewDialog({
         <DialogTitle className="text-lg font-semibold mb-4">
           Prévisualisation du document
         </DialogTitle>
+        <DialogDescription className="text-sm text-muted-foreground mb-4">
+          Votre document PDF a été généré. Vous pouvez le télécharger ou l'envoyer par email.
+        </DialogDescription>
         
         <div className="flex flex-col space-y-4 h-full">
           <div className="flex flex-wrap justify-between gap-2">
@@ -93,9 +129,11 @@ export function PDFPreviewDialog({
               <h3 className="text-lg font-medium mb-2">Erreur de chargement du PDF</h3>
               <p className="text-center mb-4">Le document PDF n'a pas pu être chargé correctement.</p>
               <Button 
-                onClick={() => setPdfLoadError(false)} 
+                onClick={handleRetry} 
                 variant="outline"
+                className="flex items-center"
               >
+                <RefreshCw className="mr-2 h-4 w-4" />
                 Réessayer
               </Button>
             </div>

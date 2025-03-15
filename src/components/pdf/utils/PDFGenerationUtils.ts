@@ -30,51 +30,26 @@ export const handlePDFGeneration = async (
     }
     
     console.log("[PDFGeneration] PDF generated successfully, data URL length:", pdfDataUrl.length);
+    console.log("[PDFGeneration] PDF URL starts with:", pdfDataUrl.substring(0, 100));
 
-    // Clean the URL to ensure consistent format
-    const cleanPdfUrl = pdfDataUrl.replace(/([^:])\/\/+/g, '$1/').replace(/:\//g, '://');
-    
-    // Backup to localStorage regardless of storage upload success
+    // Validate data URL format
+    if (pdfDataUrl.startsWith('data:') && !pdfDataUrl.includes('base64,')) {
+      console.error("[PDFGeneration] Invalid data URL format");
+      throw new Error("Format d'URL de PDF invalide");
+    }
+
+    // Backup to localStorage 
     try {
       if (profile.unique_identifier) {
-        localStorage.setItem(`pdf_${profile.unique_identifier}`, cleanPdfUrl);
+        localStorage.setItem(`pdf_${profile.unique_identifier}`, pdfDataUrl);
         console.log("[PDFGeneration] PDF URL saved to localStorage as backup");
       }
     } catch (storageError) {
       console.warn("[PDFGeneration] Unable to save PDF to localStorage:", storageError);
     }
 
-    // Save PDF to storage if user is logged in
-    if (profile.unique_identifier) {
-      try {
-        // First, check if the bucket exists
-        const { data: buckets, error: bucketsError } = await supabase
-          .storage
-          .listBuckets();
-          
-        console.log("[PDFGeneration] Available buckets:", buckets?.map(b => b.name));
-        
-        if (bucketsError) {
-          console.error("[PDFGeneration] Error checking buckets:", bucketsError);
-          // We'll continue with the local PDF regardless of bucket availability
-        } else {
-          // If the directives_pdfs bucket exists, proceed with upload
-          const directivesBucketExists = buckets?.some(b => b.name === 'directives_pdfs');
-          
-          if (directivesBucketExists) {
-            console.log("[PDFGeneration] directives_pdfs bucket found, attempting storage");
-            await savePDFToStorage(cleanPdfUrl, profile.unique_identifier);
-          } else {
-            console.warn("[PDFGeneration] directives_pdfs bucket not found, using local PDF only");
-          }
-        }
-      } catch (storageError) {
-        console.error("[PDFGeneration] Error with storage operations:", storageError);
-        // Continue with preview even if storage fails
-      }
-    }
-
-    setPdfUrl(cleanPdfUrl);
+    // No additional storage attempts if URL is already invalid
+    setPdfUrl(pdfDataUrl);
     setShowPreview(true);
 
     console.log("[PDFGeneration] PDF preview ready to display");
@@ -109,6 +84,23 @@ export const savePDFToStorage = async (pdfDataUrl: string, userId: string) => {
     
     console.log("[PDFStorage] Uploading PDF to storage path:", filepath);
     
+    // Check if the bucket exists first
+    const { data: buckets, error: bucketsError } = await supabase
+      .storage
+      .listBuckets();
+      
+    if (bucketsError) {
+      console.error("[PDFStorage] Error checking buckets:", bucketsError);
+      return false;
+    }
+    
+    const directivesBucketExists = buckets?.some(b => b.name === 'directives_pdfs');
+    
+    if (!directivesBucketExists) {
+      console.warn("[PDFStorage] directives_pdfs bucket not found, skipping upload");
+      return false;
+    }
+    
     // Upload to storage
     const { data, error } = await supabase
       .storage
@@ -135,7 +127,7 @@ export const savePDFToStorage = async (pdfDataUrl: string, userId: string) => {
         user_id: userId,
         storage_path: filepath,
         file_name: filename,
-        created_at: currentDate, // Now using string format (ISO)
+        created_at: currentDate,
         file_path: filepath
       });
       
@@ -163,7 +155,18 @@ export const handlePDFDownload = (pdfUrl: string | null) => {
 
   try {
     console.log("[PDFGeneration] Starting download with URL type:", typeof pdfUrl);
-    console.log("[PDFGeneration] URL starts with:", pdfUrl.substring(0, 30));
+    console.log("[PDFGeneration] URL starts with:", pdfUrl.substring(0, 100));
+    
+    // Validate URL format before attempting download
+    if (!pdfUrl.startsWith('data:') && !pdfUrl.startsWith('http://') && !pdfUrl.startsWith('https://')) {
+      console.error("[PDFGeneration] Invalid URL format for download");
+      toast({
+        title: "Erreur",
+        description: "Format d'URL invalide pour le téléchargement.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     const link = document.createElement('a');
     link.href = pdfUrl;
