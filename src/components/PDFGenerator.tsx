@@ -1,11 +1,9 @@
 
 import { useEffect } from "react";
 import { PDFPreviewDialog } from "./pdf/PDFPreviewDialog";
-import { PDFGenerationButton } from "./pdf/buttons/PDFGenerationButton";
 import { TextGenerationButton } from "./pdf/buttons/TextGenerationButton";
 import { LoadingOverlay } from "./pdf/LoadingOverlay";
 import { usePDFGeneration } from "./pdf/hooks/usePDFGeneration";
-import { handlePDFDownload } from "./pdf/utils/PDFGenerationUtils";
 
 interface PDFGeneratorProps {
   userId: string;
@@ -27,30 +25,27 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
   console.log("[PDFGenerator] Initializing with userId:", userId);
   
   const {
-    pdfUrl,
     textContent,
     showPreview,
     setShowPreview,
     isGenerating,
-    generationFailed,
-    generatePDF,
     generateTextDocument,
     loading
   } = usePDFGeneration(userId);
 
-  // Call onPdfGenerated callback when pdfUrl changes
+  // Call onPdfGenerated callback when content changes
   useEffect(() => {
     if (onPdfGenerated) {
-      onPdfGenerated(pdfUrl);
+      onPdfGenerated(null);
     }
-  }, [pdfUrl, onPdfGenerated]);
+  }, [onPdfGenerated]);
 
   if (loading) {
     console.log("[PDFGenerator] Still loading data...");
     return null;
   }
 
-  console.log("[PDFGenerator] Rendering buttons");
+  console.log("[PDFGenerator] Rendering button");
   return (
     <>
       <LoadingOverlay 
@@ -59,12 +54,6 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
       />
       
       <div className="flex flex-wrap gap-4">
-        <PDFGenerationButton 
-          onClick={generatePDF}
-          isGenerating={isGenerating}
-          generationFailed={generationFailed}
-        />
-        
         <TextGenerationButton 
           onClick={generateTextDocument}
           isGenerating={isGenerating}
@@ -79,9 +68,7 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
             console.log("[PDFGenerator] Dialog state changing to:", open);
             setShowPreview(open);
           }}
-          pdfUrl={pdfUrl}
           textContent={textContent}
-          onSave={() => handlePDFDownload(pdfUrl)}
         />
       )}
     </>

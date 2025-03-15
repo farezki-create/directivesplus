@@ -16,10 +16,9 @@ export function TextGenerationButton({
       onClick={onClick}
       className="flex items-center gap-2"
       disabled={isGenerating}
-      variant="outline"
     >
       <AlignLeft className="h-4 w-4" />
-      Générer en texte simple
+      Générer mes directives anticipées
     </Button>
   );
 }
