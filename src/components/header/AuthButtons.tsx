@@ -1,6 +1,5 @@
-
 import { Button } from "../ui/button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -12,6 +11,7 @@ interface AuthButtonsProps {
 
 export const AuthButtons = ({ user }: AuthButtonsProps) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useLanguage();
 
   const handleSignOut = async () => {
@@ -152,96 +152,29 @@ export const AuthButtons = ({ user }: AuthButtonsProps) => {
           title: "Suppression des données",
           description: "Vos données ont été supprimées avec succès.",
         });
-      } catch (error) {
-        console.error("Error during data cleanup:", error);
+      } catch (e) {
+        console.error('Error during local storage cleanup:', e);
+      }
+      
+      // Log out user and stay on the current page
+      try {
+        await supabase.auth.signOut();
+        console.log("User signed out successfully");
+        window.location.reload();
+      } catch (signOutError) {
+        console.error("Error during sign out:", signOutError);
         toast({
           title: "Erreur",
-          description: "Une erreur est survenue lors de la suppression de vos données.",
+          description: "Une erreur est survenue lors de la déconnexion.",
           variant: "destructive",
         });
       }
     }
-    
-    // Delete locally stored PDFs and other data
-    try {
-      console.log("Clearing local storage data");
-      
-      // Clear PDF data
-      const pdfUrls = Object.keys(localStorage).filter(key => 
-        key.startsWith('pdf_') || key.includes('dataurlstring')
-      );
-      
-      pdfUrls.forEach(key => {
-        localStorage.removeItem(key);
-        console.log(`Removed localStorage item: ${key}`);
-      });
-      
-      // Revoke object URLs
-      if (window.URL && window.URL.revokeObjectURL) {
-        pdfUrls.forEach(key => {
-          try {
-            const value = localStorage.getItem(key);
-            if (value && value.startsWith('blob:')) {
-              window.URL.revokeObjectURL(value);
-              console.log(`Revoked object URL for: ${key}`);
-            }
-          } catch (e) {
-            console.error('Error revoking object URL:', e);
-          }
-        });
-      }
-      
-      // Clear any response data cached in localStorage
-      const cacheKeys = Object.keys(localStorage).filter(key => 
-        key.includes('response') || 
-        key.includes('directive') || 
-        key.includes('synthesis') ||
-        key.includes('profile')
-      );
-      
-      cacheKeys.forEach(key => {
-        localStorage.removeItem(key);
-        console.log(`Removed cached data: ${key}`);
-      });
-      
-      // Additional cleanup for any blob URLs or PDF data
-      const allKeys = Object.keys(localStorage);
-      allKeys.forEach(key => {
-        try {
-          const value = localStorage.getItem(key);
-          // Check if this item contains PDF-related data
-          if (value && (
-            value.includes('data:application/pdf') || 
-            value.includes('JVBERi0') || // PDF header in base64
-            key.includes('pdf') ||
-            key.includes('PDF')
-          )) {
-            localStorage.removeItem(key);
-            console.log(`Removed PDF-related data: ${key}`);
-          }
-        } catch (e) {
-          console.error(`Error processing localStorage item ${key}:`, e);
-        }
-      });
-      
-      console.log('Local storage cleanup completed');
-    } catch (e) {
-      console.error('Error during local storage cleanup:', e);
-    }
-    
-    // Log out user and redirect
-    try {
-      await supabase.auth.signOut();
-      console.log("User signed out successfully");
-      navigate("/");
-    } catch (signOutError) {
-      console.error("Error during sign out:", signOutError);
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la déconnexion.",
-        variant: "destructive",
-      });
-    }
+  };
+
+  const handleSignIn = () => {
+    // Navigate to auth page with current location as the return URL
+    navigate("/auth", { state: { from: location.pathname + location.search } });
   };
 
   const navButtonClass = "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl transform hover:-translate-y-1 text-white";
@@ -251,7 +184,7 @@ export const AuthButtons = ({ user }: AuthButtonsProps) => {
       {t('logout')}
     </Button>
   ) : (
-    <Button variant="default" onClick={() => navigate("/auth")} className={navButtonClass}>
+    <Button variant="default" onClick={handleSignIn} className={navButtonClass}>
       {t('login')}
     </Button>
   );

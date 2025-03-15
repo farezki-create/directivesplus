@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { AuthApiError } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,9 +13,13 @@ import { useLanguage } from "@/hooks/useLanguage";
 
 const Auth = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isSignUp, setIsSignUp] = useState(false);
   const { toast } = useToast();
   const { setLanguage } = useLanguage();
+
+  // Get the return URL from location state or default to home
+  const returnUrl = location.state?.from || "/";
 
   useEffect(() => {
     // Explicitly set language to French for the auth page
@@ -26,8 +30,8 @@ const Auth = () => {
       console.log('Auth state changed:', event, session);
       
       if (event === "SIGNED_IN" && session) {
-        console.log('User signed in, redirecting to home');
-        navigate("/");
+        console.log('User signed in, redirecting to:', returnUrl);
+        navigate(returnUrl);
       }
     });
 
@@ -35,7 +39,7 @@ const Auth = () => {
       console.log("Cleaning up auth state change listener");
       subscription.unsubscribe();
     };
-  }, [navigate, setLanguage]);
+  }, [navigate, setLanguage, returnUrl]);
 
   const handleSubmit = async (values: FormValues) => {
     try {
@@ -127,7 +131,7 @@ const Auth = () => {
           description: "Vous êtes maintenant connecté.",
         });
         
-        navigate("/");
+        navigate(returnUrl);
       }
     } catch (error) {
       console.error('Auth error:', error);
