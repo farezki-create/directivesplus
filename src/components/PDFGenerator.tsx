@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "./pdf/usePDFData";
 import { handlePDFGeneration, handlePDFDownload } from "./pdf/utils/PDFGenerationUtils";
@@ -7,32 +7,30 @@ import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
 import { PDFPreviewDialog } from "./pdf/PDFPreviewDialog";
 import { toast } from "@/hooks/use-toast";
+import { usePDFGenerationState } from "@/hooks/usePDFGenerationState";
+import { PDFGenerationOverlay } from "./pdf/PDFGenerationOverlay";
 
 interface PDFGeneratorProps {
   userId: string;
   onPdfGenerated?: (url: string | null) => void;
 }
 
-const waitingMessages = [
-  "Préparation de votre document avec soin... 📝",
-  "Mise en page de vos directives... 📄",
-  "Ajout d'une touche de professionnalisme... ✨",
-  "Finalisation des derniers détails... 🎯",
-  "Vérification de la mise en forme... 🔍",
-  "Assemblage de vos informations... 📋",
-  "Plus que quelques secondes... ⏳",
-  "Votre document est presque prêt... 🌟",
-];
-
 export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
   console.log("[PDFGenerator] Initializing with userId:", userId);
   
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-  const [showPreview, setShowPreview] = useState(false);
-  const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
-  const [isGenerating, setIsGenerating] = useState(false);
   const { responses, synthesis, isLoading: responsesLoading } = useQuestionnairesResponses(userId);
   const { profile, trustedPersons, loading: profileLoading } = usePDFData();
+  const { 
+    pdfUrl, 
+    setPdfUrl, 
+    showPreview, 
+    setShowPreview, 
+    isGenerating, 
+    currentMessageIndex,
+    startGeneration,
+    finishGeneration,
+    waitingMessages
+  } = usePDFGenerationState();
 
   // Try to load from localStorage if we have a saved PDF
   useEffect(() => {
@@ -45,17 +43,7 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
     } catch (e) {
       console.warn("[PDFGenerator] Could not read from localStorage:", e);
     }
-  }, [userId, pdfUrl]);
-
-  useEffect(() => {
-    if (isGenerating) {
-      const interval = setInterval(() => {
-        setCurrentMessageIndex((prev) => (prev + 1) % waitingMessages.length);
-      }, 2000);
-
-      return () => clearInterval(interval);
-    }
-  }, [isGenerating]);
+  }, [userId, pdfUrl, setPdfUrl]);
 
   // Enhanced debug logging
   useEffect(() => {
@@ -75,7 +63,7 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
 
   const generatePDF = () => {
     console.log("[PDFGenerator] Button clicked - Starting PDF generation");
-    setIsGenerating(true);
+    startGeneration();
     
     if (!profile) {
       console.error("[PDFGenerator] No profile data available");
@@ -84,7 +72,7 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
         description: "Données de profil non disponibles. Veuillez compléter votre profil.",
         variant: "destructive",
       });
-      setIsGenerating(false);
+      finishGeneration(null, false);
       return;
     }
 
@@ -126,35 +114,13 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
             }
           }
           
-          setPdfUrl(url);
-          setIsGenerating(false);
+          finishGeneration(url);
           
           if (onPdfGenerated) {
             onPdfGenerated(url);
           }
-          
-          // When setting the preview dialog, make sure we have a valid URL
-          if (url) {
-            // Add a short delay before showing preview to allow state to update
-            setTimeout(() => {
-              console.log("[PDFGenerator] Opening preview dialog");
-              setShowPreview(true);
-            }, 300);
-          } else {
-            toast({
-              title: "Erreur",
-              description: "Impossible de générer l'aperçu du PDF.",
-              variant: "destructive",
-            });
-          }
         },
-        (show) => {
-          // Only show preview if we have a URL and explicitly requested
-          if (show && pdfUrl) {
-            console.log("[PDFGenerator] Showing preview dialog from callback");
-            setShowPreview(show);
-          }
-        }
+        () => {}
       );
     } catch (error) {
       console.error("[PDFGenerator] Error during PDF generation:", error);
@@ -163,7 +129,7 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
         description: "Une erreur est survenue lors de la génération du PDF.",
         variant: "destructive",
       });
-      setIsGenerating(false);
+      finishGeneration(null, false);
     }
   };
 
@@ -175,16 +141,10 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
   console.log("[PDFGenerator] Rendering buttons, pdfUrl exists:", !!pdfUrl);
   return (
     <>
-      {isGenerating && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
-          <div className="max-w-sm p-6 text-center space-y-4 animate-fade-in">
-            <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
-            <p className="text-lg font-medium text-foreground animate-pulse">
-              {waitingMessages[currentMessageIndex]}
-            </p>
-          </div>
-        </div>
-      )}
+      <PDFGenerationOverlay 
+        isVisible={isGenerating}
+        message={waitingMessages[currentMessageIndex]}
+      />
       
       <Button 
         onClick={generatePDF}
