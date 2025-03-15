@@ -1,7 +1,7 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { FileText } from "lucide-react";
+import { Save } from "lucide-react";
 import { PDFPreviewDialog } from "../pdf/PDFPreviewDialog";
 import { usePDFData } from "../pdf/usePDFData";
 import { handlePDFGeneration, handlePDFDownload, savePDFToStorage } from "../pdf/utils/PDFGenerationUtils";
@@ -10,6 +10,12 @@ export function TrustedPersonPDFGenerator() {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const { profile, trustedPersons, loading } = usePDFData();
+
+  useEffect(() => {
+    if (!loading && profile) {
+      generatePDF();
+    }
+  }, [loading, profile]);
 
   const generatePDF = () => {
     console.log("[TrustedPersonPDF] Starting PDF generation");
@@ -30,8 +36,12 @@ export function TrustedPersonPDFGenerator() {
     );
   };
 
-  const handleEmail = async () => {
-    console.log("[TrustedPersonPDF] Email functionality not yet implemented");
+  const handleSave = () => {
+    if (pdfUrl) {
+      handlePDFDownload(pdfUrl);
+    } else {
+      generatePDF();
+    }
   };
 
   if (loading) {
@@ -41,11 +51,11 @@ export function TrustedPersonPDFGenerator() {
   return (
     <>
       <Button 
-        onClick={generatePDF}
+        onClick={handleSave}
         className="flex items-center gap-2"
       >
-        <FileText className="h-4 w-4" />
-        Générer le document de désignation
+        <Save className="h-4 w-4" />
+        Enregistrer
       </Button>
       
       <PDFPreviewDialog
