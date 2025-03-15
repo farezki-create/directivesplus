@@ -1,6 +1,7 @@
 
 import { TrustedPerson, UserProfile } from "../types";
 import { QuestionnaireResponses } from "../types/questionnaireResponses";
+import { formatResponseText } from "@/components/free-text/ResponseFormatter";
 
 export class TextDocumentGenerator {
   static generate(
@@ -9,6 +10,13 @@ export class TextDocumentGenerator {
     synthesis: any,
     trustedPersons: TrustedPerson[]
   ): string {
+    console.log("[TextDocumentGenerator] Generating text document with data:", {
+      profile: profile ? "available" : "null",
+      responses: responses ? "available" : "null",
+      synthesis: synthesis ? "available" : "null",
+      trustedPersons: trustedPersons?.length
+    });
+    
     let textDoc = "";
     
     // Add header with date
@@ -28,41 +36,45 @@ export class TextDocumentGenerator {
       textDoc += `\n`;
     }
     
-    // Add responses by category
+    // Add responses by category with proper formatting
     if (responses.general && responses.general.length > 0) {
       textDoc += `OPINION GÉNÉRALE\n`;
       responses.general.forEach(item => {
-        textDoc += `- Question: ${item.question_text}\n`;
-        textDoc += `  Réponse: ${item.response}\n`;
+        const question = item.question_text || 'Question non disponible';
+        const formattedResponse = formatResponseText(item.response);
+        textDoc += `- Question: ${question}\n`;
+        textDoc += `  Réponse: ${formattedResponse}\n\n`;
       });
-      textDoc += `\n`;
     }
     
     if (responses.lifeSupport && responses.lifeSupport.length > 0) {
       textDoc += `MAINTIEN ARTIFICIEL DE LA VIE\n`;
       responses.lifeSupport.forEach(item => {
-        textDoc += `- Question: ${item.question_text}\n`;
-        textDoc += `  Réponse: ${item.response}\n`;
+        const question = item.question_text || 'Question non disponible';
+        const formattedResponse = formatResponseText(item.response);
+        textDoc += `- Question: ${question}\n`;
+        textDoc += `  Réponse: ${formattedResponse}\n\n`;
       });
-      textDoc += `\n`;
     }
     
     if (responses.advancedIllness && responses.advancedIllness.length > 0) {
       textDoc += `MALADIE GRAVE\n`;
       responses.advancedIllness.forEach(item => {
-        textDoc += `- Question: ${item.question_text}\n`;
-        textDoc += `  Réponse: ${item.response}\n`;
+        const question = item.question_text || 'Question non disponible';
+        const formattedResponse = formatResponseText(item.response);
+        textDoc += `- Question: ${question}\n`;
+        textDoc += `  Réponse: ${formattedResponse}\n\n`;
       });
-      textDoc += `\n`;
     }
     
     if (responses.preferences && responses.preferences.length > 0) {
       textDoc += `PRÉFÉRENCES\n`;
       responses.preferences.forEach(item => {
-        textDoc += `- Question: ${item.question_text}\n`;
-        textDoc += `  Réponse: ${item.response}\n`;
+        const question = item.question_text || 'Question non disponible';
+        const formattedResponse = formatResponseText(item.response);
+        textDoc += `- Question: ${question}\n`;
+        textDoc += `  Réponse: ${formattedResponse}\n\n`;
       });
-      textDoc += `\n`;
     }
     
     // Add synthesis if available
@@ -75,7 +87,7 @@ export class TextDocumentGenerator {
       textDoc += `PERSONNES DE CONFIANCE\n`;
       trustedPersons.forEach((person, index) => {
         textDoc += `Personne de confiance ${index + 1}:\n`;
-        textDoc += `Nom: ${person.name}\n`;
+        textDoc += `Nom: ${person.name || 'Non renseigné'}\n`;
         if (person.relation) textDoc += `Relation: ${person.relation}\n`;
         if (person.phone) textDoc += `Téléphone: ${person.phone}\n`;
         if (person.email) textDoc += `Email: ${person.email}\n`;
@@ -91,6 +103,7 @@ export class TextDocumentGenerator {
     textDoc += `Date: ${dateStr}\n`;
     textDoc += `Signature: ________________________________\n`;
     
+    console.log("[TextDocumentGenerator] Document generated successfully");
     return textDoc;
   }
 }

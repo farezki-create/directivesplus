@@ -1,7 +1,6 @@
 
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
 import { PDFActionButtons } from "./PDFActionButtons";
 import { PDFViewer } from "./PDFViewer";
 import { useEffect } from "react";
@@ -20,7 +19,6 @@ export function PDFPreviewDialog({
   onSave,
 }: PDFPreviewDialogProps) {
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   // Reset state when dialog opens
   useEffect(() => {
@@ -32,13 +30,28 @@ export function PDFPreviewDialog({
 
   const handleDownload = () => {
     // Download as text file
+    if (!textContent) {
+      toast({
+        title: "Erreur",
+        description: "Aucun contenu à télécharger",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const element = document.createElement("a");
-    const file = new Blob([textContent || ""], {type: 'text/plain'});
+    const file = new Blob([textContent], {type: 'text/plain'});
     element.href = URL.createObjectURL(file);
     element.download = "directives-anticipees.txt";
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
+    
+    toast({
+      title: "Succès",
+      description: "Document téléchargé",
+    });
+    
     onOpenChange(false);
   };
 
