@@ -2,51 +2,38 @@
 import { useState } from "react";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "./usePDFData";
-import { handlePDFGeneration, handlePDFDownload } from "./utils/PDFGenerationUtils";
 import { PDFPreviewDialog } from "./PDFPreviewDialog";
 import { Button } from "@/components/ui/button";
 import { FileText, CreditCard } from "lucide-react";
-import { PDFCardGenerator } from "./utils/PDFCardGenerator";
+import { TextDocumentGenerator } from "./utils/TextDocumentGenerator";
 
 interface PDFGeneratorProps {
   userId: string;
 }
 
 export function PDFGenerator({ userId }: PDFGeneratorProps) {
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [textContent, setTextContent] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
-  const { responses } = useQuestionnairesResponses(userId);
+  const { responses, synthesis } = useQuestionnairesResponses(userId);
   const { profile, trustedPersons, loading } = usePDFData();
 
-  const generatePDF = () => {
-    console.log("[PDFGenerator] Starting PDF generation with profile:", profile);
-    handlePDFGeneration(
-      profile,
-      responses,
-      trustedPersons,
-      (url: string | null) => {
-        if (url) {
-          const cleanUrl = url.replace(/([^:])\/\/+/g, '$1/').replace(/:\//g, '://');
-          console.log("[PDFGenerator] Cleaned URL:", cleanUrl);
-          setPdfUrl(cleanUrl);
-        } else {
-          setPdfUrl(null);
-        }
-      },
-      setShowPreview
-    );
-  };
-
-  const generateCardPDF = () => {
-    console.log("[PDFGenerator] Starting card PDF generation");
-    if (!profile) {
-      console.error("[PDFGenerator] No profile data available");
-      return;
+  const generateTextDocument = () => {
+    console.log("[PDFGenerator] Starting text document generation with profile:", profile);
+    
+    try {
+      // Generate the text document
+      const generatedText = TextDocumentGenerator.generate(
+        profile,
+        responses,
+        synthesis,
+        trustedPersons
+      );
+      
+      setTextContent(generatedText);
+      setShowPreview(true);
+    } catch (error) {
+      console.error("[PDFGenerator] Error generating text document:", error);
     }
-
-    const pdfDataUrl = PDFCardGenerator.generate(profile, trustedPersons);
-    setPdfUrl(pdfDataUrl);
-    setShowPreview(true);
   };
 
   const handleEmail = async () => {
@@ -60,28 +47,18 @@ export function PDFGenerator({ userId }: PDFGeneratorProps) {
   return (
     <div className="flex gap-4">
       <Button 
-        onClick={generatePDF}
+        onClick={generateTextDocument}
         className="flex items-center gap-2"
       >
         <FileText className="h-4 w-4" />
         Générer Mes directives anticipées
       </Button>
-
-      <Button 
-        onClick={generateCardPDF}
-        variant="outline"
-        className="flex items-center gap-2"
-      >
-        <CreditCard className="h-4 w-4" />
-        Générer au format carte
-      </Button>
       
       <PDFPreviewDialog
         open={showPreview}
         onOpenChange={setShowPreview}
-        pdfUrl={pdfUrl}
-        onEmail={handleEmail}
-        onSave={() => handlePDFDownload(pdfUrl)}
+        textContent={textContent}
+        onSave={() => {}}
       />
     </div>
   );
