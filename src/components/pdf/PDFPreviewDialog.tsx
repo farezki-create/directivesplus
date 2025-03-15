@@ -1,58 +1,43 @@
 
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
+import { EmailForm } from "./EmailForm";
 import { PDFActionButtons } from "./PDFActionButtons";
 import { PDFViewer } from "./PDFViewer";
-import { useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Construction, Database } from "lucide-react";
 
 interface PDFPreviewDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  textContent?: string | null;
+  pdfUrl: string | null;
+  onEmail?: () => void;
   onSave?: () => void;
 }
 
 export function PDFPreviewDialog({
   open,
   onOpenChange,
-  textContent,
+  pdfUrl,
   onSave,
 }: PDFPreviewDialogProps) {
   const { toast } = useToast();
-
-  // Reset state when dialog opens
-  useEffect(() => {
-    if (open && textContent) {
-      console.log("[PDFPreviewDialog] Dialog opened with text content:", 
-        textContent?.substring(0, 50) + "...");
-    }
-  }, [textContent, open]);
+  const navigate = useNavigate();
 
   const handleDownload = () => {
-    // Download as text file
-    if (!textContent) {
-      toast({
-        title: "Erreur",
-        description: "Aucun contenu à télécharger",
-        variant: "destructive",
-      });
-      return;
+    if (onSave) {
+      onSave();
+      onOpenChange(false);
+      navigate("/generate-pdf");
     }
+  };
 
-    const element = document.createElement("a");
-    const file = new Blob([textContent], {type: 'text/plain'});
-    element.href = URL.createObjectURL(file);
-    element.download = "directives-anticipees.txt";
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
-    
+  const handleSendToDMP = () => {
     toast({
-      title: "Succès",
-      description: "Document téléchargé",
+      title: "En construction",
+      description: "Cette fonctionnalité est en cours de développement",
     });
-    
-    onOpenChange(false);
   };
 
   return (
@@ -61,19 +46,30 @@ export function PDFPreviewDialog({
         <DialogTitle className="text-lg font-semibold mb-4">
           Prévisualisation du document
         </DialogTitle>
-        <DialogDescription className="text-sm text-muted-foreground mb-4">
-          Vous pouvez naviguer dans le document avec votre curseur et le télécharger.
-        </DialogDescription>
         
         <div className="flex flex-col space-y-4 h-full">
-          <div className="flex flex-wrap justify-end gap-2">
-            <PDFActionButtons 
-              onDownload={handleDownload} 
-              isTextMode={true}
+          <div className="flex flex-wrap justify-between gap-2">
+            <EmailForm 
+              pdfUrl={pdfUrl} 
+              onClose={() => onOpenChange(false)} 
             />
+            <div className="flex flex-wrap gap-2">
+              <Button 
+                variant="outline" 
+                onClick={handleSendToDMP}
+                className="flex items-center"
+              >
+                <Database className="mr-2 h-4 w-4" />
+                <Construction className="mr-2 h-4 w-4" />
+                Envoyer à votre DMP
+              </Button>
+              <PDFActionButtons 
+                onDownload={handleDownload} 
+              />
+            </div>
           </div>
           
-          <PDFViewer textContent={textContent} />
+          <PDFViewer pdfUrl={pdfUrl} />
         </div>
       </DialogContent>
     </Dialog>
