@@ -1,7 +1,7 @@
 
 import { jsPDF } from "jspdf";
 import { UserProfile } from "../types";
-import { format } from "date-fns";
+import { format, isValid, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
 
 export class PDFUserSection {
@@ -27,38 +27,49 @@ export class PDFUserSection {
       labelStyle();
       doc.text("Nom :", 20, yPosition);
       valueStyle();
-      doc.text(profile.last_name?.toUpperCase() || '', 60, yPosition);
+      doc.text(profile.last_name?.toUpperCase() || 'Non renseigné', 60, yPosition);
       yPosition += 10;
 
       labelStyle();
       doc.text("Prénom :", 20, yPosition);
       valueStyle();
-      doc.text(profile.first_name || '', 60, yPosition);
+      doc.text(profile.first_name || 'Non renseigné', 60, yPosition);
       yPosition += 10;
 
-      // Date de naissance
+      // Date de naissance - Improved handling
+      labelStyle();
+      doc.text("Date de naissance :", 20, yPosition);
+      valueStyle();
+      
       if (profile.birth_date) {
         try {
-          labelStyle();
-          doc.text("Date de naissance :", 20, yPosition);
-          valueStyle();
-          const formattedDate = format(new Date(profile.birth_date), "d MMMM yyyy", { locale: fr });
-          doc.text(formattedDate, 60, yPosition);
-          yPosition += 10;
+          // Try different date formats and validations
+          const dateObj = parseISO(profile.birth_date);
+          if (isValid(dateObj)) {
+            const formattedDate = format(dateObj, "d MMMM yyyy", { locale: fr });
+            doc.text(formattedDate, 60, yPosition);
+          } else {
+            doc.text('Non renseignée', 60, yPosition);
+          }
         } catch (error) {
           console.error("[PDFUserSection] Error formatting birth date:", error);
+          doc.text('Non renseignée', 60, yPosition);
         }
+      } else {
+        doc.text('Non renseignée', 60, yPosition);
       }
+      yPosition += 10;
 
-      // Section adresse
+      // Section adresse - Improved display
+      labelStyle();
+      doc.text("Adresse :", 20, yPosition);
+      valueStyle();
+      
       const hasAddress = profile.address || profile.postal_code || profile.city || profile.country;
+      
       if (hasAddress) {
-        yPosition += 5;
-        labelStyle();
-        doc.text("Adresse :", 20, yPosition);
         yPosition += 7;
-        valueStyle();
-
+        
         if (profile.address) {
           doc.text(profile.address, 30, yPosition);
           yPosition += 7;
@@ -68,6 +79,7 @@ export class PDFUserSection {
         const cityLine = [profile.postal_code, profile.city]
           .filter(Boolean)
           .join(" ");
+          
         if (cityLine) {
           doc.text(cityLine, 30, yPosition);
           yPosition += 7;
@@ -75,8 +87,11 @@ export class PDFUserSection {
 
         if (profile.country) {
           doc.text(profile.country, 30, yPosition);
-          yPosition += 10;
+          yPosition += 7;
         }
+      } else {
+        doc.text('Non renseignée', 60, yPosition);
+        yPosition += 7;
       }
 
     } else {
