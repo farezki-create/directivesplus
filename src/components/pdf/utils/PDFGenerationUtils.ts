@@ -1,9 +1,15 @@
-
 import { toast } from "@/hooks/use-toast";
 import { UserProfile, TrustedPerson } from "../types";
 import { PDFDocumentGenerator } from "../PDFDocumentGenerator";
 import { supabase } from "@/integrations/supabase/client";
 
+/**
+ * @protected
+ * CETTE MÉTHODE EST PROTÉGÉE ET NE DOIT PAS ÊTRE MODIFIÉE.
+ * This method is protected and must not be modified.
+ * Version: 1.0.0
+ * Last Modified: ${new Date().toISOString()}
+ */
 export const handlePDFGeneration = async (
   profile: UserProfile | null,
   responses: any,
@@ -58,6 +64,13 @@ export const handlePDFGeneration = async (
   }
 };
 
+/**
+ * @protected
+ * CETTE MÉTHODE EST PROTÉGÉE ET NE DOIT PAS ÊTRE MODIFIÉE.
+ * This method is protected and must not be modified.
+ * Version: 1.0.0
+ * Last Modified: ${new Date().toISOString()}
+ */
 export const savePDFToStorage = async (pdfDataUrl: string, userId: string) => {
   try {
     // Convert data URL to Blob
@@ -112,6 +125,13 @@ export const savePDFToStorage = async (pdfDataUrl: string, userId: string) => {
   }
 };
 
+/**
+ * @protected
+ * CETTE MÉTHODE EST PROTÉGÉE ET NE DOIT PAS ÊTRE MODIFIÉE.
+ * This method is protected and must not be modified.
+ * Version: 1.0.0
+ * Last Modified: ${new Date().toISOString()}
+ */
 export const handlePDFDownload = (pdfUrl: string | null) => {
   if (!pdfUrl) {
     console.error("[PDFGeneration] No PDF URL available for download");

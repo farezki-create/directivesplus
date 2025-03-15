@@ -6,7 +6,7 @@ import { EmailForm } from "./EmailForm";
 import { PDFActionButtons } from "./PDFActionButtons";
 import { PDFViewer } from "./PDFViewer";
 import { Button } from "@/components/ui/button";
-import { Construction, Database } from "lucide-react";
+import { Construction, Database, Lock } from "lucide-react";
 
 interface PDFPreviewDialogProps {
   open: boolean;
@@ -43,8 +43,9 @@ export function PDFPreviewDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[90vw] w-[1200px] h-[90vh] max-h-[90vh] flex flex-col p-4">
-        <DialogTitle className="text-lg font-semibold mb-2">
+        <DialogTitle className="text-lg font-semibold mb-2 flex items-center">
           Prévisualisation du document
+          <Lock className="ml-2 h-4 w-4 text-green-500" title="Méthode de génération protégée" />
         </DialogTitle>
         
         <div className="flex flex-col space-y-3 h-full">

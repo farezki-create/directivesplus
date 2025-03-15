@@ -10,6 +10,13 @@ import { SignatureHandler } from "./utils/SignatureHandler";
 import { PageManager } from "./utils/PageManager";
 import { DocumentFooter } from "./utils/DocumentFooter";
 
+/**
+ * @protected
+ * CETTE CLASSE EST PROTÉGÉE ET NE DOIT PAS ÊTRE MODIFIÉE.
+ * This class is protected and must not be modified.
+ * Version: 1.0.0
+ * Last Modified: ${new Date().toISOString()}
+ */
 export class PDFDocumentGenerator {
   static async generate(profile: UserProfile, responses: any, trustedPersons: TrustedPerson[]) {
     console.log("[PDFGenerator] Generating PDF with profile:", profile);

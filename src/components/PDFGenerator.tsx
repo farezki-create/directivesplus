@@ -4,7 +4,7 @@ import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "./pdf/usePDFData";
 import { handlePDFGeneration, handlePDFDownload, savePDFToStorage } from "./pdf/utils/PDFGenerationUtils";
 import { Button } from "@/components/ui/button";
-import { FileText } from "lucide-react";
+import { FileText, Lock } from "lucide-react";
 import { PDFPreviewDialog } from "./pdf/PDFPreviewDialog";
 import { toast } from "@/hooks/use-toast";
 
@@ -13,6 +13,12 @@ interface PDFGeneratorProps {
   onPdfGenerated?: (url: string | null) => void;
 }
 
+/**
+ * @protected
+ * CCOMPOSANT PROTÉGÉ - NE PAS MODIFIER LA MÉTHODE DE GÉNÉRATION PDF
+ * Protected component - do not modify the PDF generation method
+ * Version: 1.0.0
+ */
 const waitingMessages = [
   "Préparation de votre document avec soin... 📝",
   "Mise en page de vos directives... 📄",
@@ -129,6 +135,7 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
         disabled={isGenerating}
       >
         <FileText className="h-4 w-4" />
+        <Lock className="h-3 w-3" />
         Générer Mes directives anticipées
       </Button>
       
