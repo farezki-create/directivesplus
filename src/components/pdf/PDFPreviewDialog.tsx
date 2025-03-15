@@ -13,6 +13,7 @@ interface PDFPreviewDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   pdfUrl: string | null;
+  textContent?: string | null;
   onEmail?: () => void;
   onSave?: () => void;
 }
@@ -21,6 +22,7 @@ export function PDFPreviewDialog({
   open,
   onOpenChange,
   pdfUrl,
+  textContent,
   onSave,
 }: PDFPreviewDialogProps) {
   const { toast } = useToast();
@@ -28,19 +30,27 @@ export function PDFPreviewDialog({
   const [pdfLoadError, setPdfLoadError] = useState<boolean>(false);
   const [loadAttempts, setLoadAttempts] = useState<number>(0);
 
+  const isTextMode = !!textContent;
+
   // Reset error state when URL changes or dialog opens
   useEffect(() => {
-    if (open && pdfUrl) {
+    if (open && (pdfUrl || textContent)) {
       setPdfLoadError(false);
       setLoadAttempts(0);
-      console.log("[PDFPreviewDialog] Dialog opened with PDF URL:", 
-        pdfUrl?.substring(0, 50) + "...");
+      
+      if (pdfUrl) {
+        console.log("[PDFPreviewDialog] Dialog opened with PDF URL:", 
+          pdfUrl?.substring(0, 50) + "...");
+      } else if (textContent) {
+        console.log("[PDFPreviewDialog] Dialog opened with text content:", 
+          textContent?.substring(0, 50) + "...");
+      }
     }
-  }, [pdfUrl, open]);
+  }, [pdfUrl, textContent, open]);
 
-  // Add additional check to validate PDF URL
+  // Add additional check to validate PDF URL if not in text mode
   useEffect(() => {
-    if (!pdfUrl) return;
+    if (!pdfUrl || isTextMode) return;
     
     const isValidUrl = 
       pdfUrl.startsWith('data:') || 
@@ -51,10 +61,20 @@ export function PDFPreviewDialog({
       console.error("[PDFPreviewDialog] Invalid PDF URL format:", pdfUrl.substring(0, 100));
       setPdfLoadError(true);
     }
-  }, [pdfUrl]);
+  }, [pdfUrl, isTextMode]);
 
   const handleDownload = () => {
-    if (onSave) {
+    if (isTextMode) {
+      // Download as text file
+      const element = document.createElement("a");
+      const file = new Blob([textContent || ""], {type: 'text/plain'});
+      element.href = URL.createObjectURL(file);
+      element.download = "directives-anticipees.txt";
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+      onOpenChange(false);
+    } else if (onSave) {
       console.log("[PDFPreviewDialog] Initiating PDF download");
       onSave();
       onOpenChange(false);
@@ -84,8 +104,8 @@ export function PDFPreviewDialog({
     }
   };
 
-  // Verify if PDF URL is valid
-  const isPdfUrlValid = pdfUrl && (
+  // Verify if PDF URL is valid (only in PDF mode)
+  const isPdfUrlValid = !isTextMode && pdfUrl && (
     pdfUrl.startsWith('http') || 
     pdfUrl.startsWith('https') || 
     pdfUrl.startsWith('data:')
@@ -98,15 +118,19 @@ export function PDFPreviewDialog({
           Prévisualisation du document
         </DialogTitle>
         <DialogDescription className="text-sm text-muted-foreground mb-4">
-          Votre document PDF a été généré. Vous pouvez le télécharger ou l'envoyer par email.
+          {isTextMode 
+            ? "Votre document texte a été généré. Vous pouvez le télécharger ou l'envoyer par email." 
+            : "Votre document PDF a été généré. Vous pouvez le télécharger ou l'envoyer par email."}
         </DialogDescription>
         
         <div className="flex flex-col space-y-4 h-full">
           <div className="flex flex-wrap justify-between gap-2">
-            <EmailForm 
-              pdfUrl={pdfUrl} 
-              onClose={() => onOpenChange(false)} 
-            />
+            {!isTextMode && (
+              <EmailForm 
+                pdfUrl={pdfUrl} 
+                onClose={() => onOpenChange(false)} 
+              />
+            )}
             <div className="flex flex-wrap gap-2">
               <Button 
                 variant="outline" 
@@ -119,11 +143,12 @@ export function PDFPreviewDialog({
               </Button>
               <PDFActionButtons 
                 onDownload={handleDownload} 
+                isTextMode={isTextMode}
               />
             </div>
           </div>
           
-          {pdfLoadError ? (
+          {pdfLoadError && !isTextMode ? (
             <div className="flex-1 flex items-center justify-center flex-col text-red-500 p-8 border rounded">
               <AlertCircle className="h-12 w-12 mb-4" />
               <h3 className="text-lg font-medium mb-2">Erreur de chargement du PDF</h3>
@@ -138,10 +163,10 @@ export function PDFPreviewDialog({
               </Button>
             </div>
           ) : (
-            <PDFViewer pdfUrl={pdfUrl} />
+            <PDFViewer pdfUrl={pdfUrl} textContent={textContent} />
           )}
           
-          {!isPdfUrlValid && pdfUrl && (
+          {!isTextMode && !isPdfUrlValid && pdfUrl && (
             <div className="bg-yellow-100 text-yellow-800 p-2 rounded text-sm">
               Format d'URL de PDF non valide: {pdfUrl.substring(0, 50)}...
             </div>
