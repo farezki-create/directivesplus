@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { FileText, Lock } from "lucide-react";
 import { PDFPreviewDialog } from "./pdf/PDFPreviewDialog";
 import { toast } from "@/hooks/use-toast";
+import { Progress } from "@/components/ui/progress";
 
 interface PDFGeneratorProps {
   userId: string;
@@ -37,16 +38,35 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
   const [showPreview, setShowPreview] = useState(false);
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [progress, setProgress] = useState(0);
   const { responses } = useQuestionnairesResponses(userId);
   const { profile, trustedPersons, loading } = usePDFData();
 
   useEffect(() => {
     if (isGenerating) {
-      const interval = setInterval(() => {
+      // Message rotation interval
+      const messageInterval = setInterval(() => {
         setCurrentMessageIndex((prev) => (prev + 1) % waitingMessages.length);
       }, 2000);
 
-      return () => clearInterval(interval);
+      // Progress bar animation
+      const progressInterval = setInterval(() => {
+        setProgress((prev) => {
+          // Slow down as we approach 100%
+          if (prev >= 90) {
+            return Math.min(prev + 0.5, 95);
+          }
+          return Math.min(prev + 5, 90);
+        });
+      }, 500);
+
+      return () => {
+        clearInterval(messageInterval);
+        clearInterval(progressInterval);
+      };
+    } else {
+      // Reset progress when not generating
+      setProgress(0);
     }
   }, [isGenerating]);
 
@@ -60,6 +80,7 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
   const generatePDF = () => {
     console.log("[PDFGenerator] Button clicked - Starting PDF generation");
     setIsGenerating(true);
+    setProgress(10); // Start with some progress
     
     if (!profile) {
       console.error("[PDFGenerator] No profile data available");
@@ -74,31 +95,41 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
 
     try {
       console.log("[PDFGenerator] Generating full PDF");
-      handlePDFGeneration(
-        profile,
-        responses,
-        trustedPersons,
-        (url) => {
-          console.log("[PDFGenerator] PDF generated, URL status:", url ? "success" : "failed");
-          
-          // Store the PDF URL in localStorage as a backup
-          if (url) {
-            try {
-              localStorage.setItem(`pdf_${userId}`, url);
-              console.log("[PDFGenerator] PDF URL saved to localStorage");
-            } catch (e) {
-              console.warn("[PDFGenerator] Could not save PDF to localStorage:", e);
+      
+      // Small delay to ensure UI updates before heavy PDF generation starts
+      setTimeout(() => {
+        handlePDFGeneration(
+          profile,
+          responses,
+          trustedPersons,
+          (url) => {
+            console.log("[PDFGenerator] PDF generated, URL status:", url ? "success" : "failed");
+            
+            // Set progress to complete
+            setProgress(100);
+            
+            // Store the PDF URL in localStorage as a backup
+            if (url) {
+              try {
+                localStorage.setItem(`pdf_${userId}`, url);
+                console.log("[PDFGenerator] PDF URL saved to localStorage");
+              } catch (e) {
+                console.warn("[PDFGenerator] Could not save PDF to localStorage:", e);
+              }
             }
-          }
-          
-          setPdfUrl(url);
-          if (onPdfGenerated) {
-            onPdfGenerated(url);
-          }
-          setIsGenerating(false);
-        },
-        setShowPreview
-      );
+            
+            // Short delay to show 100% before hiding the loading screen
+            setTimeout(() => {
+              setPdfUrl(url);
+              if (onPdfGenerated) {
+                onPdfGenerated(url);
+              }
+              setIsGenerating(false);
+            }, 500);
+          },
+          setShowPreview
+        );
+      }, 500);
     } catch (error) {
       console.error("[PDFGenerator] Error during PDF generation:", error);
       toast({
@@ -122,6 +153,7 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
           <div className="max-w-sm p-6 text-center space-y-4 animate-fade-in">
             <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+            <Progress value={progress} className="h-2 w-full" />
             <p className="text-lg font-medium text-foreground animate-pulse">
               {waitingMessages[currentMessageIndex]}
             </p>
