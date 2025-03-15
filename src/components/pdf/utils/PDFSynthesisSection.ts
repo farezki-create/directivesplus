@@ -7,15 +7,42 @@ export class PDFSynthesisSection {
     const pageWidth = doc.internal.pageSize.getWidth();
     
     // More detailed logging to help diagnose issues
-    console.log("[PDFSynthesisSection] Full responses object:", responses);
-    console.log("[PDFSynthesisSection] Synthesis object:", responses?.synthesis);
-    console.log("[PDFSynthesisSection] Processing synthesis text:", 
-      responses?.synthesis?.free_text 
-        ? `Present (length: ${responses.synthesis.free_text.length})` 
-        : "Not present");
+    console.log("[PDFSynthesisSection] Starting with yPosition:", startY);
+    console.log("[PDFSynthesisSection] Synthesis object type:", typeof responses?.synthesis);
     
-    // Free text synthesis
-    if (responses?.synthesis?.free_text) {
+    if (responses?.synthesis) {
+      if (typeof responses.synthesis === 'object') {
+        console.log("[PDFSynthesisSection] Synthesis object keys:", Object.keys(responses.synthesis));
+        console.log("[PDFSynthesisSection] Free text present:", !!responses.synthesis.free_text);
+        if (responses.synthesis.free_text) {
+          console.log("[PDFSynthesisSection] Free text length:", responses.synthesis.free_text.length);
+          console.log("[PDFSynthesisSection] Sample:", 
+            responses.synthesis.free_text.substring(0, 50) + "...");
+        }
+      } else if (typeof responses.synthesis === 'string') {
+        console.log("[PDFSynthesisSection] Synthesis is string, length:", responses.synthesis.length);
+        console.log("[PDFSynthesisSection] Sample:", 
+          responses.synthesis.substring(0, 50) + "...");
+      }
+    } else {
+      console.log("[PDFSynthesisSection] No synthesis data provided");
+    }
+    
+    // Extract the synthesis text, handling different formats
+    let synthesisText: string | null = null;
+    
+    if (responses?.synthesis) {
+      if (typeof responses.synthesis === 'object' && responses.synthesis.free_text) {
+        synthesisText = responses.synthesis.free_text.trim();
+      } else if (typeof responses.synthesis === 'string') {
+        synthesisText = responses.synthesis.trim();
+      }
+    }
+    
+    // Process synthesis text if available
+    if (synthesisText && synthesisText.length > 0) {
+      console.log("[PDFSynthesisSection] Processing synthesis text, length:", synthesisText.length);
+      
       // Check if we need a new page
       if (yPosition > doc.internal.pageSize.getHeight() - 40) {
         doc.addPage();
@@ -28,10 +55,6 @@ export class PDFSynthesisSection {
       doc.text("Expression libre :", 20, yPosition);
       doc.setFont("helvetica", "normal");
       yPosition += 7;
-
-      const synthesisText = responses.synthesis.free_text.trim();
-      console.log("[PDFSynthesisSection] Synthesis text to render:", 
-        synthesisText.substring(0, 50) + (synthesisText.length > 50 ? "..." : ""));
       
       // Split the text to fit within page width
       const textLines = doc.splitTextToSize(synthesisText, pageWidth - 40);
@@ -61,45 +84,10 @@ export class PDFSynthesisSection {
           yPosition = 20;
         }
       }
+      
+      console.log("[PDFSynthesisSection] Finished adding synthesis text at yPosition:", yPosition);
     } else {
       console.log("[PDFSynthesisSection] No synthesis text found to add to PDF");
-      // Try alternative path to synthesis text
-      if (typeof responses?.synthesis === 'string' && responses.synthesis.trim().length > 0) {
-        console.log("[PDFSynthesisSection] Found synthesis as string, length:", responses.synthesis.length);
-        
-        // Check if we need a new page
-        if (yPosition > doc.internal.pageSize.getHeight() - 40) {
-          doc.addPage();
-          yPosition = 20;
-        }
-
-        yPosition += 10;
-        doc.setFontSize(12);
-        doc.setFont("helvetica", "bold");
-        doc.text("Expression libre :", 20, yPosition);
-        doc.setFont("helvetica", "normal");
-        yPosition += 7;
-
-        const synthesisText = responses.synthesis.trim();
-        const textLines = doc.splitTextToSize(synthesisText, pageWidth - 40);
-        
-        console.log("[PDFSynthesisSection] Text lines to add from string:", textLines.length);
-        
-        let linesProcessed = 0;
-        
-        while (linesProcessed < textLines.length) {
-          const linesPerPage = Math.floor((doc.internal.pageSize.getHeight() - yPosition - 20) / 7);
-          const currentPageLines = textLines.slice(linesProcessed, linesProcessed + linesPerPage);
-          doc.text(currentPageLines, 20, yPosition);
-          linesProcessed += currentPageLines.length;
-          yPosition += currentPageLines.length * 7;
-          
-          if (linesProcessed < textLines.length) {
-            doc.addPage();
-            yPosition = 20;
-          }
-        }
-      }
     }
 
     return yPosition;

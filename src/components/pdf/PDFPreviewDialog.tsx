@@ -7,6 +7,7 @@ import { PDFActionButtons } from "./PDFActionButtons";
 import { PDFViewer } from "./PDFViewer";
 import { Button } from "@/components/ui/button";
 import { Construction, Database } from "lucide-react";
+import { useEffect } from "react";
 
 interface PDFPreviewDialogProps {
   open: boolean;
@@ -24,6 +25,14 @@ export function PDFPreviewDialog({
 }: PDFPreviewDialogProps) {
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Log the PDF URL for debugging
+  useEffect(() => {
+    console.log("[PDFPreviewDialog] Received PDF URL:", pdfUrl ? "Present (length: " + pdfUrl.length + ")" : "Not present");
+    if (pdfUrl) {
+      console.log("[PDFPreviewDialog] URL starts with:", pdfUrl.substring(0, 30) + "...");
+    }
+  }, [pdfUrl]);
 
   const handleDownload = () => {
     if (onSave) {

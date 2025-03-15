@@ -8,7 +8,7 @@ export class PDFResponsesSection {
     let yPosition = startY;
     const pageWidth = doc.internal.pageSize.getWidth();
     
-    // Enhanced logging
+    // Enhanced logging for debugging
     console.log("[PDFResponsesSection] Processing responses:", {
       general: responses.general?.length || 0,
       lifeSupport: responses.lifeSupport?.length || 0,
@@ -17,6 +17,17 @@ export class PDFResponsesSection {
       hasSynthesis: !!responses.synthesis,
       synthesisType: responses.synthesis ? typeof responses.synthesis : 'none'
     });
+    
+    if (responses.synthesis) {
+      console.log("[PDFResponsesSection] Synthesis content:", {
+        isFreeTextPresent: !!responses.synthesis.free_text,
+        freeTextLength: responses.synthesis.free_text?.length || 0,
+        freeTextSample: responses.synthesis.free_text ? 
+          responses.synthesis.free_text.substring(0, 30) + 
+          (responses.synthesis.free_text.length > 30 ? '...' : '') : 
+          'No text'
+      });
+    }
     
     // Styles
     const sectionTitleStyle = () => {

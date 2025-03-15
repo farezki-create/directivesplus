@@ -98,9 +98,10 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
         trustedPersons,
         (url) => {
           console.log("[PDFGenerator] PDF generated, URL status:", url ? "success" : "failed");
-          
-          // Store the PDF URL in localStorage as a backup
           if (url) {
+            console.log("[PDFGenerator] PDF URL sample:", url.substring(0, 50) + "...");
+            
+            // Store the PDF URL in localStorage as a backup
             try {
               localStorage.setItem(`pdf_${userId}`, url);
               console.log("[PDFGenerator] PDF URL saved to localStorage");
@@ -114,8 +115,24 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
             onPdfGenerated(url);
           }
           setIsGenerating(false);
+          
+          // When setting the preview dialog, make sure we have a valid URL
+          if (url) {
+            setShowPreview(true);
+          } else {
+            toast({
+              title: "Erreur",
+              description: "Impossible de générer l'aperçu du PDF.",
+              variant: "destructive",
+            });
+          }
         },
-        setShowPreview
+        (show) => {
+          // Only show preview if we have a URL
+          if (show && pdfUrl) {
+            setShowPreview(show);
+          }
+        }
       );
     } catch (error) {
       console.error("[PDFGenerator] Error during PDF generation:", error);
@@ -156,9 +173,9 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
         Générer Mes directives anticipées
       </Button>
       
-      {showPreview && (
+      {pdfUrl && (
         <PDFPreviewDialog
-          key={pdfUrl}
+          key={`pdf-preview-${pdfUrl ? 'loaded' : 'empty'}`}
           open={showPreview}
           onOpenChange={(open) => {
             console.log("[PDFGenerator] Dialog state changing to:", open);
