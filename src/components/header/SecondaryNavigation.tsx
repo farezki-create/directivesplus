@@ -1,6 +1,6 @@
 
 import { Button } from "../ui/button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { FileText, PenLine } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
 import { User } from "@supabase/supabase-js";
@@ -12,6 +12,7 @@ interface SecondaryNavigationProps {
 
 export const SecondaryNavigation = ({ user, navButtonClass }: SecondaryNavigationProps) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useLanguage();
 
   const handleHomeClick = () => {
@@ -19,7 +20,13 @@ export const SecondaryNavigation = ({ user, navButtonClass }: SecondaryNavigatio
   };
 
   const handleWriteClick = () => {
-    window.location.href = "/?writing=true";
+    if (user) {
+      // If user is logged in, go directly to writing mode
+      window.location.href = "/?writing=true";
+    } else {
+      // If not logged in, redirect to auth page with writing parameter
+      navigate("/auth?writing=true");
+    }
   };
 
   return (

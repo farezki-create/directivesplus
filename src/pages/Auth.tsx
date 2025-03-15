@@ -1,6 +1,5 @@
-
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { AuthApiError } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,12 +12,15 @@ import { useLanguage } from "@/hooks/useLanguage";
 
 const Auth = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isSignUp, setIsSignUp] = useState(false);
   const { toast } = useToast();
   const { setLanguage } = useLanguage();
 
+  const searchParams = new URLSearchParams(location.search);
+  const isWritingMode = searchParams.get('writing') === 'true';
+
   useEffect(() => {
-    // Explicitly set language to French for the auth page
     setLanguage('fr');
     
     console.log("Setting up auth state change listener");
@@ -26,8 +28,12 @@ const Auth = () => {
       console.log('Auth state changed:', event, session);
       
       if (event === "SIGNED_IN" && session) {
-        console.log('User signed in, redirecting to home');
-        navigate("/");
+        console.log('User signed in, redirecting to appropriate page');
+        if (isWritingMode) {
+          navigate("/?writing=true");
+        } else {
+          navigate("/");
+        }
       }
     });
 
@@ -35,7 +41,7 @@ const Auth = () => {
       console.log("Cleaning up auth state change listener");
       subscription.unsubscribe();
     };
-  }, [navigate, setLanguage]);
+  }, [navigate, setLanguage, isWritingMode]);
 
   const handleSubmit = async (values: FormValues) => {
     try {
@@ -81,7 +87,6 @@ const Auth = () => {
           return;
         }
 
-        // Envoi de l'email de vérification personnalisé
         try {
           if (data?.user?.email) {
             const response = await supabase.functions.invoke('send-verification-email', {
@@ -127,7 +132,11 @@ const Auth = () => {
           description: "Vous êtes maintenant connecté.",
         });
         
-        navigate("/");
+        if (isWritingMode) {
+          navigate("/?writing=true");
+        } else {
+          navigate("/");
+        }
       }
     } catch (error) {
       console.error('Auth error:', error);

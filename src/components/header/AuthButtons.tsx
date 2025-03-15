@@ -1,6 +1,6 @@
 
 import { Button } from "../ui/button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -12,7 +12,11 @@ interface AuthButtonsProps {
 
 export const AuthButtons = ({ user }: AuthButtonsProps) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useLanguage();
+
+  // Determine if we're in writing mode
+  const isWritingMode = location.search.includes('writing=true');
 
   const handleSignOut = async () => {
     if (user) {
@@ -244,6 +248,15 @@ export const AuthButtons = ({ user }: AuthButtonsProps) => {
     }
   };
 
+  const handleLogin = () => {
+    // If in writing mode, pass that parameter to the auth page
+    if (isWritingMode) {
+      navigate("/auth?writing=true");
+    } else {
+      navigate("/auth");
+    }
+  };
+
   const navButtonClass = "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl transform hover:-translate-y-1 text-white";
 
   return user ? (
@@ -251,7 +264,7 @@ export const AuthButtons = ({ user }: AuthButtonsProps) => {
       {t('logout')}
     </Button>
   ) : (
-    <Button variant="default" onClick={() => navigate("/auth")} className={navButtonClass}>
+    <Button variant="default" onClick={handleLogin} className={navButtonClass}>
       {t('login')}
     </Button>
   );
