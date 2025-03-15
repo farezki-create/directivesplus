@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { UserProfile, TrustedPerson } from "./types";
@@ -37,11 +38,12 @@ export function usePDFData() {
           return;
         }
 
-        const { data: user } = await supabase.auth.getUser();
-        const userData = user?.user?.user_metadata;
-        console.log("[PDFData] User metadata:", userData);
+        // Récupérer les métadonnées de l'utilisateur depuis l'authentification
+        const { data: userData } = await supabase.auth.getUser();
+        const userMetadata = userData?.user?.user_metadata;
+        console.log("[PDFData] User metadata from auth:", userMetadata);
 
-        // Charger le profil existant ou en créer un nouveau
+        // Charger le profil existant
         const { data: profileData, error: profileError } = await supabase
           .from("profiles")
           .select("*")
@@ -59,13 +61,19 @@ export function usePDFData() {
           return;
         }
 
-        // Si le profil n'existe pas, on le crée avec les métadonnées de l'utilisateur
+        // Si le profil n'existe pas, le créer avec les métadonnées de l'utilisateur
         if (!profileData) {
-          console.log("[PDFData] Creating new profile with user metadata:", userData);
+          console.log("[PDFData] Creating new profile with user metadata:", userMetadata);
           const newProfile = {
             id: session.user.id,
-            first_name: userData?.first_name || null,
-            last_name: userData?.last_name || null
+            first_name: userMetadata?.first_name || null,
+            last_name: userMetadata?.last_name || null,
+            birth_date: userMetadata?.birth_date || null,
+            address: userMetadata?.address || null,
+            city: userMetadata?.city || null,
+            postal_code: userMetadata?.postal_code || null,
+            country: userMetadata?.country || null,
+            phone_number: userMetadata?.phone_number || null
           };
 
           const { data: insertedProfile, error: insertError } = await supabase
@@ -85,17 +93,51 @@ export function usePDFData() {
             unique_identifier: session.user.id
           });
         } else {
-          // Utiliser les données du profil existant ou les métadonnées de l'utilisateur
-          const updatedProfile = {
+          // Fusionner les données du profil existant avec les métadonnées de l'utilisateur
+          // Prioriser les données du profil si elles existent, sinon utiliser les métadonnées
+          const mergedProfile = {
             ...profileData,
-            first_name: profileData.first_name || userData?.first_name || null,
-            last_name: profileData.last_name || userData?.last_name || null,
+            first_name: profileData.first_name || userMetadata?.first_name || null,
+            last_name: profileData.last_name || userMetadata?.last_name || null,
+            birth_date: profileData.birth_date || userMetadata?.birth_date || null,
+            address: profileData.address || userMetadata?.address || null,
+            city: profileData.city || userMetadata?.city || null,
+            postal_code: profileData.postal_code || userMetadata?.postal_code || null,
+            country: profileData.country || userMetadata?.country || null,
+            phone_number: profileData.phone_number || userMetadata?.phone_number || null,
             email: session.user.email,
             unique_identifier: session.user.id
           };
 
-          console.log("[PDFData] Using profile data:", updatedProfile);
-          setProfile(updatedProfile);
+          console.log("[PDFData] Merged profile data:", mergedProfile);
+          
+          // Mettre à jour le profil avec les données fusionnées si nécessaire
+          if (JSON.stringify(profileData) !== JSON.stringify({
+            ...mergedProfile,
+            email: undefined,
+            unique_identifier: undefined
+          })) {
+            console.log("[PDFData] Updating profile with merged data");
+            const { error: updateError } = await supabase
+              .from("profiles")
+              .update({
+                first_name: mergedProfile.first_name,
+                last_name: mergedProfile.last_name,
+                birth_date: mergedProfile.birth_date,
+                address: mergedProfile.address,
+                city: mergedProfile.city,
+                postal_code: mergedProfile.postal_code,
+                country: mergedProfile.country,
+                phone_number: mergedProfile.phone_number
+              })
+              .eq("id", session.user.id);
+
+            if (updateError) {
+              console.error("[PDFData] Error updating profile:", updateError);
+            }
+          }
+
+          setProfile(mergedProfile);
         }
         
         // Charger les personnes de confiance
