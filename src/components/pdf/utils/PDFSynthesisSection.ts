@@ -8,23 +8,41 @@ export class PDFSynthesisSection {
     
     // More detailed logging to help diagnose issues
     console.log("[PDFSynthesisSection] Starting with yPosition:", startY);
-    console.log("[PDFSynthesisSection] Synthesis object:", responses?.synthesis);
+    console.log("[PDFSynthesisSection] Synthesis data type:", typeof responses?.synthesis);
     
     // Extract the synthesis text, handling different formats
     let synthesisText: string | null = null;
     
     if (responses?.synthesis) {
+      console.log("[PDFSynthesisSection] Synthesis format:", 
+        typeof responses.synthesis === 'object' ? 'object' : 
+        typeof responses.synthesis === 'string' ? 'string' : 
+        'unknown');
+      
       if (typeof responses.synthesis === 'object' && responses.synthesis.free_text) {
         synthesisText = responses.synthesis.free_text.trim();
-        console.log("[PDFSynthesisSection] Using free_text from object:", 
-          synthesisText.substring(0, 50) + (synthesisText.length > 50 ? "..." : ""));
+        console.log("[PDFSynthesisSection] Using free_text from object, length:", synthesisText.length);
       } else if (typeof responses.synthesis === 'string') {
         synthesisText = responses.synthesis.trim();
-        console.log("[PDFSynthesisSection] Using string directly:", 
-          synthesisText.substring(0, 50) + (synthesisText.length > 50 ? "..." : ""));
+        console.log("[PDFSynthesisSection] Using string directly, length:", synthesisText.length);
       } else {
         console.log("[PDFSynthesisSection] Synthesis exists but format is unexpected:", 
-          typeof responses.synthesis, JSON.stringify(responses.synthesis).substring(0, 100));
+          typeof responses.synthesis);
+          
+        // Try to extract free_text if it's buried in another object
+        if (typeof responses.synthesis === 'object') {
+          // Log object keys to help debug
+          console.log("[PDFSynthesisSection] Object keys:", Object.keys(responses.synthesis));
+          
+          // Try to find free_text in nested structure
+          for (const key in responses.synthesis) {
+            if (typeof responses.synthesis[key] === 'object' && responses.synthesis[key]?.free_text) {
+              synthesisText = responses.synthesis[key].free_text.trim();
+              console.log("[PDFSynthesisSection] Found free_text in nested object:", key);
+              break;
+            }
+          }
+        }
       }
     } else {
       console.log("[PDFSynthesisSection] No synthesis data provided");

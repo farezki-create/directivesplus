@@ -26,26 +26,30 @@ export function PDFPreviewDialog({
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Enhanced logging for debugging PDF display issues
   useEffect(() => {
     console.log("[PDFPreviewDialog] Dialog open state:", open);
     console.log("[PDFPreviewDialog] PDF URL present:", pdfUrl ? "Yes" : "No");
     
     if (pdfUrl) {
-      // Log the first 100 characters of the URL to avoid overwhelming the console
-      console.log("[PDFPreviewDialog] URL preview:", pdfUrl.substring(0, 100) + "...");
-      
-      // Check if the URL seems to be a valid data URL
-      if (pdfUrl.startsWith('data:application/pdf;base64,')) {
-        console.log("[PDFPreviewDialog] URL appears to be a valid PDF data URL");
+      // Check if it's a data URL and log relevant information
+      if (pdfUrl.startsWith('data:')) {
+        console.log("[PDFPreviewDialog] URL is a data URL");
+        console.log("[PDFPreviewDialog] Data URL length:", pdfUrl.length);
         
-        // Log the size of the base64 data
-        const base64Data = pdfUrl.split(',')[1];
-        if (base64Data) {
-          console.log("[PDFPreviewDialog] Base64 data length:", base64Data.length);
+        if (pdfUrl.startsWith('data:application/pdf;base64,')) {
+          console.log("[PDFPreviewDialog] URL appears to be a valid PDF data URL");
+          
+          // Log the size of the base64 data
+          const base64Data = pdfUrl.split(',')[1];
+          if (base64Data) {
+            console.log("[PDFPreviewDialog] Base64 data length:", base64Data.length);
+          }
+        } else {
+          console.warn("[PDFPreviewDialog] Data URL doesn't seem to be a PDF data URL");
         }
       } else {
-        console.warn("[PDFPreviewDialog] URL doesn't seem to be a PDF data URL");
+        // Log the first 100 characters of the URL for non-data URLs
+        console.log("[PDFPreviewDialog] URL preview:", pdfUrl.substring(0, 100) + "...");
       }
     }
   }, [open, pdfUrl]);
@@ -64,6 +68,11 @@ export function PDFPreviewDialog({
       description: "Cette fonctionnalité est en cours de développement",
     });
   };
+
+  // If no PDF URL is provided, show a message
+  if (!pdfUrl && open) {
+    console.error("[PDFPreviewDialog] No PDF URL provided to the dialog");
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
