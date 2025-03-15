@@ -42,12 +42,12 @@ export function PDFPreviewDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[95vh] flex flex-col">
-        <DialogTitle className="text-lg font-semibold mb-4">
+      <DialogContent className="max-w-[90vw] w-[1200px] h-[90vh] max-h-[90vh] flex flex-col p-4">
+        <DialogTitle className="text-lg font-semibold mb-2">
           Prévisualisation du document
         </DialogTitle>
         
-        <div className="flex flex-col space-y-4 h-full">
+        <div className="flex flex-col space-y-3 h-full">
           <div className="flex flex-wrap justify-between gap-2">
             <EmailForm 
               pdfUrl={pdfUrl} 
@@ -69,7 +69,9 @@ export function PDFPreviewDialog({
             </div>
           </div>
           
-          <PDFViewer pdfUrl={pdfUrl} />
+          <div className="flex-1 overflow-hidden">
+            <PDFViewer pdfUrl={pdfUrl} />
+          </div>
         </div>
       </DialogContent>
     </Dialog>
