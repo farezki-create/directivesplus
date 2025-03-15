@@ -157,7 +157,7 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
         textDoc += `OPINION GÉNÉRALE\n`;
         responses.general.forEach(item => {
           textDoc += `- Question: ${item.question_text}\n`;
-          textDoc += `  Réponse: ${item.response_text}\n`;
+          textDoc += `  Réponse: ${item.response}\n`;
         });
         textDoc += `\n`;
       }
@@ -166,7 +166,7 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
         textDoc += `MAINTIEN ARTIFICIEL DE LA VIE\n`;
         responses.lifeSupport.forEach(item => {
           textDoc += `- Question: ${item.question_text}\n`;
-          textDoc += `  Réponse: ${item.response_text}\n`;
+          textDoc += `  Réponse: ${item.response}\n`;
         });
         textDoc += `\n`;
       }
@@ -175,7 +175,7 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
         textDoc += `MALADIE GRAVE\n`;
         responses.advancedIllness.forEach(item => {
           textDoc += `- Question: ${item.question_text}\n`;
-          textDoc += `  Réponse: ${item.response_text}\n`;
+          textDoc += `  Réponse: ${item.response}\n`;
         });
         textDoc += `\n`;
       }
@@ -184,7 +184,7 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
         textDoc += `PRÉFÉRENCES\n`;
         responses.preferences.forEach(item => {
           textDoc += `- Question: ${item.question_text}\n`;
-          textDoc += `  Réponse: ${item.response_text}\n`;
+          textDoc += `  Réponse: ${item.response}\n`;
         });
         textDoc += `\n`;
       }
