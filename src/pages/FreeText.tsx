@@ -5,9 +5,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { ResponsesSummary } from "@/components/ResponsesSummary";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { useSynthesis } from "@/hooks/useSynthesis";
 
 const FreeText = () => {
   const [userId, setUserId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -15,7 +17,10 @@ const FreeText = () => {
   useEffect(() => {
     const checkAuthAndLoadUser = async () => {
       try {
+        setIsLoading(true);
+        console.log("[FreeText] Checking authentication...");
         const { data: { session } } = await supabase.auth.getSession();
+        
         if (!session?.user) {
           console.error("[FreeText] No user session found");
           toast({
@@ -26,6 +31,7 @@ const FreeText = () => {
           navigate("/auth", { state: { from: location.pathname } });
           return;
         }
+        
         console.log("[FreeText] User session found:", session.user.id);
         setUserId(session.user.id);
       } catch (error) {
@@ -35,6 +41,8 @@ const FreeText = () => {
           description: "Une erreur est survenue lors de la vérification de votre session",
           variant: "destructive",
         });
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -53,6 +61,19 @@ const FreeText = () => {
 
     return () => subscription.unsubscribe();
   }, [navigate, toast, location.pathname]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-1 container mx-auto px-4 py-8 flex items-center justify-center">
+          <div className="text-center">
+            <p>Chargement...</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   if (!userId) {
     return null;

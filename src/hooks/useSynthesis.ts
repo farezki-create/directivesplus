@@ -1,17 +1,22 @@
+
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 export function useSynthesis(userId: string | null) {
   const [text, setText] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     const loadSynthesis = async () => {
-      if (!userId) return;
+      if (!userId) {
+        console.log("[Synthesis] No user ID, skipping load");
+        return;
+      }
 
       try {
-        console.log("[Synthesis] Loading existing synthesis");
+        console.log("[Synthesis] Loading existing synthesis for user:", userId);
         const { data, error } = await supabase
           .from('questionnaire_synthesis')
           .select('free_text')
@@ -24,7 +29,7 @@ export function useSynthesis(userId: string | null) {
         }
 
         if (data?.free_text) {
-          console.log("[Synthesis] Loaded existing synthesis");
+          console.log("[Synthesis] Loaded existing synthesis, length:", data.free_text.length);
           setText(data.free_text);
         } else {
           console.log("[Synthesis] No existing synthesis found");
@@ -50,23 +55,58 @@ export function useSynthesis(userId: string | null) {
         description: "Vous devez être connecté pour enregistrer vos réponses.",
         variant: "destructive",
       });
-      return;
+      return false;
+    }
+
+    if (isSaving) {
+      console.log("[Synthesis] Save already in progress, ignoring request");
+      return false;
     }
 
     try {
-      console.log("[Synthesis] Saving synthesis text");
-      const { error } = await supabase
+      setIsSaving(true);
+      console.log("[Synthesis] Saving synthesis text for user:", userId);
+      console.log("[Synthesis] Text length:", text.length);
+      
+      // First check if record exists
+      const { data: existingRecord, error: checkError } = await supabase
         .from('questionnaire_synthesis')
-        .upsert({
-          user_id: userId,
-          free_text: text
-        }, {
-          onConflict: 'user_id'
-        });
+        .select('id')
+        .eq('user_id', userId)
+        .maybeSingle();
+        
+      if (checkError) {
+        console.error("[Synthesis] Error checking existing record:", checkError);
+        throw checkError;
+      }
+      
+      let saveError;
+      
+      if (existingRecord) {
+        // Update existing record
+        console.log("[Synthesis] Updating existing record");
+        const { error } = await supabase
+          .from('questionnaire_synthesis')
+          .update({ free_text: text })
+          .eq('user_id', userId);
+          
+        saveError = error;
+      } else {
+        // Insert new record
+        console.log("[Synthesis] Creating new record");
+        const { error } = await supabase
+          .from('questionnaire_synthesis')
+          .insert({
+            user_id: userId,
+            free_text: text
+          });
+          
+        saveError = error;
+      }
 
-      if (error) {
-        console.error("[Synthesis] Error saving synthesis:", error);
-        throw error;
+      if (saveError) {
+        console.error("[Synthesis] Error saving synthesis:", saveError);
+        throw saveError;
       }
 
       console.log("[Synthesis] Synthesis saved successfully");
@@ -84,12 +124,15 @@ export function useSynthesis(userId: string | null) {
         variant: "destructive",
       });
       return false;
+    } finally {
+      setIsSaving(false);
     }
   };
 
   return {
     text,
     setText,
-    saveSynthesis
+    saveSynthesis,
+    isSaving
   };
 }
