@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "./pdf/usePDFData";
-import { handlePDFGeneration, handlePDFDownload } from "./pdf/utils/PDFGenerationUtils";
+import { usePDFGeneration } from "@/hooks/usePDFGeneration";
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
 import { PDFPreviewDialog } from "./pdf/PDFPreviewDialog";
@@ -21,16 +21,20 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
   const { responses, synthesis, isLoading: responsesLoading } = useQuestionnairesResponses(userId);
   const { profile, trustedPersons, loading: profileLoading } = usePDFData();
   const { 
-    pdfUrl, 
-    setPdfUrl, 
-    showPreview, 
-    setShowPreview, 
-    isGenerating, 
     currentMessageIndex,
+    waitingMessages,
+    isGenerating,
     startGeneration,
-    finishGeneration,
-    waitingMessages
+    finishGeneration
   } = usePDFGenerationState();
+  const {
+    pdfUrl,
+    setPdfUrl,
+    showPreview,
+    setShowPreview,
+    generatePDF,
+    handleDownload
+  } = usePDFGeneration();
 
   // Try to load from localStorage if we have a saved PDF
   useEffect(() => {
@@ -61,7 +65,7 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
     });
   }, [profile, trustedPersons, responses, synthesis, responsesLoading, profileLoading]);
 
-  const generatePDF = () => {
+  const handleGeneratePDF = async () => {
     console.log("[PDFGenerator] Button clicked - Starting PDF generation");
     startGeneration();
     
@@ -94,41 +98,34 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
       });
     }
 
-    try {
-      handlePDFGeneration(
-        profile,
-        fullResponses,
-        trustedPersons,
-        (url) => {
-          console.log("[PDFGenerator] PDF generated, URL status:", url ? "success" : "failed");
-          if (url) {
-            console.log("[PDFGenerator] PDF URL length:", url.length);
-            console.log("[PDFGenerator] PDF URL type:", url.startsWith('data:') ? 'data URL' : 'regular URL');
-            
-            // Store the PDF URL in localStorage as a backup
-            try {
-              localStorage.setItem(`pdf_${userId}`, url);
-              console.log("[PDFGenerator] PDF URL saved to localStorage");
-            } catch (e) {
-              console.warn("[PDFGenerator] Could not save PDF to localStorage:", e);
-            }
-          }
-          
-          finishGeneration(url);
-          
-          if (onPdfGenerated) {
-            onPdfGenerated(url);
-          }
-        },
-        () => {}
-      );
-    } catch (error) {
-      console.error("[PDFGenerator] Error during PDF generation:", error);
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la génération du PDF.",
-        variant: "destructive",
-      });
+    const pdfData = await generatePDF(profile, fullResponses, trustedPersons, {
+      saveToStorage: true,
+      onSuccess: (url) => {
+        console.log("[PDFGenerator] PDF generated, URL status:", url ? "success" : "failed");
+        
+        // Store the PDF URL in localStorage as a backup
+        try {
+          localStorage.setItem(`pdf_${userId}`, url);
+          console.log("[PDFGenerator] PDF URL saved to localStorage");
+        } catch (e) {
+          console.warn("[PDFGenerator] Could not save PDF to localStorage:", e);
+        }
+        
+        finishGeneration(url);
+        
+        if (onPdfGenerated) {
+          onPdfGenerated(url);
+        }
+      },
+      onError: () => {
+        finishGeneration(null, false);
+        if (onPdfGenerated) {
+          onPdfGenerated(null);
+        }
+      }
+    });
+    
+    if (!pdfData) {
       finishGeneration(null, false);
     }
   };
@@ -147,7 +144,7 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
       />
       
       <Button 
-        onClick={generatePDF}
+        onClick={handleGeneratePDF}
         className="flex items-center gap-2"
         disabled={isGenerating}
       >
@@ -165,7 +162,7 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
         pdfUrl={pdfUrl}
         onSave={() => {
           console.log("[PDFGenerator] Saving PDF");
-          handlePDFDownload(pdfUrl);
+          handleDownload();
         }}
       />
     </>
