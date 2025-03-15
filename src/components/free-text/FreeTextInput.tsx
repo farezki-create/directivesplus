@@ -15,11 +15,12 @@ interface FreeTextInputProps {
 }
 
 export function FreeTextInput({ userId, onSaveComplete, onSignComplete }: FreeTextInputProps) {
-  const { text, setText, saveSynthesis, isSaving } = useSynthesis(userId);
+  const { text, setText, isSaving } = useSynthesis(userId);
   const [initialText, setInitialText] = useState("");
   const [isSaved, setIsSaved] = useState(false);
   const [signature, setSignature] = useState<string | null>(null);
   const [showSignatureSection, setShowSignatureSection] = useState(false);
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -61,14 +62,10 @@ export function FreeTextInput({ userId, onSaveComplete, onSignComplete }: FreeTe
     setText(newText);
   };
 
-  const handleSaveComplete = async () => {
-    const success = await saveSynthesis();
-    if (success) {
-      setInitialText(text);
-      setIsSaved(true);
-      if (onSaveComplete) {
-        onSaveComplete();
-      }
+  const handleSaveComplete = () => {
+    setIsSaved(true);
+    if (onSaveComplete) {
+      onSaveComplete();
     }
   };
 
@@ -87,7 +84,7 @@ export function FreeTextInput({ userId, onSaveComplete, onSignComplete }: FreeTe
     hasChanges,
     freeTextLength: text.length,
     initialTextLength: initialText.length,
-    isDisabled: isSaving || (!hasChanges && text.length === 0)
+    isDisabled: loading || (!hasChanges && text.length === 0)
   });
 
   return (
@@ -102,9 +99,9 @@ export function FreeTextInput({ userId, onSaveComplete, onSignComplete }: FreeTe
           userId={userId}
           freeText={text}
           hasChanges={hasChanges || text.trim().length > 0}
-          loading={isSaving}
+          loading={loading || isSaving}
           onSaveComplete={handleSaveComplete}
-          setLoading={() => {}} // We're now using the internal isSaving state
+          setLoading={setLoading}
           setInitialText={setInitialText}
           setIsSaved={setIsSaved}
         />

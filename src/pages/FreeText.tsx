@@ -5,7 +5,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { ResponsesSummary } from "@/components/ResponsesSummary";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { useSynthesis } from "@/hooks/useSynthesis";
 
 const FreeText = () => {
   const [userId, setUserId] = useState<string | null>(null);
@@ -87,6 +86,9 @@ const FreeText = () => {
         <div className="max-w-4xl mx-auto space-y-8">
           <div className="mb-6">
             <h1 className="text-3xl font-bold">Synthèse de vos réponses</h1>
+            <p className="text-gray-600 mt-2">
+              Consultez et complétez vos directives anticipées avant de générer votre document.
+            </p>
           </div>
           
           <div className="bg-white rounded-lg shadow p-6">

@@ -6,16 +6,19 @@ import { supabase } from "@/integrations/supabase/client";
 export function useSynthesis(userId: string | null) {
   const [text, setText] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
     const loadSynthesis = async () => {
       if (!userId) {
         console.log("[Synthesis] No user ID, skipping load");
+        setIsLoading(false);
         return;
       }
 
       try {
+        setIsLoading(true);
         console.log("[Synthesis] Loading existing synthesis for user:", userId);
         const { data, error } = await supabase
           .from('questionnaire_synthesis')
@@ -33,6 +36,7 @@ export function useSynthesis(userId: string | null) {
           setText(data.free_text);
         } else {
           console.log("[Synthesis] No existing synthesis found");
+          setText(""); // Ensure text is empty when no synthesis exists
         }
       } catch (error) {
         console.error("[Synthesis] Error loading synthesis:", error);
@@ -41,6 +45,8 @@ export function useSynthesis(userId: string | null) {
           description: "Impossible de charger votre synthèse existante.",
           variant: "destructive",
         });
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -133,6 +139,7 @@ export function useSynthesis(userId: string | null) {
     text,
     setText,
     saveSynthesis,
-    isSaving
+    isSaving,
+    isLoading
   };
 }

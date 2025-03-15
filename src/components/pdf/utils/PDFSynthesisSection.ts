@@ -8,37 +8,34 @@ export class PDFSynthesisSection {
     
     console.log("[PDFSynthesisSection] Starting with yPosition:", startY);
     
-    // Extract the synthesis text, handling different formats
+    // Extract the synthesis text with improved error handling
     let synthesisText: string | null = null;
     
-    if (responses?.synthesis) {
-      if (typeof responses.synthesis === 'object' && responses.synthesis.free_text) {
-        synthesisText = responses.synthesis.free_text.trim();
-        console.log("[PDFSynthesisSection] Using free_text from object, length:", synthesisText.length);
-      } else if (typeof responses.synthesis === 'string') {
-        synthesisText = responses.synthesis.trim();
-        console.log("[PDFSynthesisSection] Using string directly, length:", synthesisText.length);
-      } else {
-        console.log("[PDFSynthesisSection] Synthesis exists but format is unexpected:", 
-          typeof responses.synthesis);
-          
-        // Try to extract free_text if it's buried in another object
+    try {
+      if (responses?.synthesis) {
+        console.log("[PDFSynthesisSection] Synthesis data type:", typeof responses.synthesis);
+        
         if (typeof responses.synthesis === 'object') {
-          // Log object keys to help debug
-          console.log("[PDFSynthesisSection] Object keys:", Object.keys(responses.synthesis));
-          
-          // Try to find free_text in nested structure
-          for (const key in responses.synthesis) {
-            if (typeof responses.synthesis[key] === 'object' && responses.synthesis[key]?.free_text) {
-              synthesisText = responses.synthesis[key].free_text.trim();
-              console.log("[PDFSynthesisSection] Found free_text in nested object:", key);
-              break;
-            }
+          if (responses.synthesis.free_text) {
+            synthesisText = responses.synthesis.free_text.trim();
+            console.log("[PDFSynthesisSection] Found free_text directly in synthesis object, length:", 
+              synthesisText.length);
+          } else {
+            console.log("[PDFSynthesisSection] No free_text in synthesis object, keys:", 
+              Object.keys(responses.synthesis));
           }
+        } else if (typeof responses.synthesis === 'string') {
+          synthesisText = responses.synthesis.trim();
+          console.log("[PDFSynthesisSection] Using synthesis as string directly, length:", 
+            synthesisText.length);
+        } else {
+          console.log("[PDFSynthesisSection] Unexpected synthesis format:", typeof responses.synthesis);
         }
+      } else {
+        console.log("[PDFSynthesisSection] No synthesis data provided in responses object");
       }
-    } else {
-      console.log("[PDFSynthesisSection] No synthesis data provided");
+    } catch (error) {
+      console.error("[PDFSynthesisSection] Error extracting synthesis text:", error);
     }
     
     // Process synthesis text if available
