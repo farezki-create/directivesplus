@@ -44,13 +44,17 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
     }
   }, [isGenerating]);
 
-  // Log the data we have for debugging
+  // Enhanced logging for synthesis data
   console.log("[PDFGenerator] Current state:", {
     hasProfile: !!profile,
     hasTrustedPersons: trustedPersons.length,
     hasResponses: !!responses,
     hasSynthesis: !!synthesis,
+    synthesisType: synthesis ? typeof synthesis : 'none',
     synthesisTextLength: synthesis?.free_text?.length || 0,
+    synthesisTextSample: synthesis?.free_text ? 
+      synthesis.free_text.substring(0, 30) + (synthesis.free_text.length > 30 ? '...' : '') : 
+      'None',
     isLoading: responsesLoading || profileLoading
   });
 
@@ -77,7 +81,14 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
 
     console.log("[PDFGenerator] Generating full PDF with synthesis:", synthesis ? "Present" : "Not present");
     if (synthesis) {
-      console.log("[PDFGenerator] Synthesis text length:", synthesis.free_text?.length || 0);
+      console.log("[PDFGenerator] Synthesis details:", {
+        type: typeof synthesis,
+        hasText: !!synthesis.free_text,
+        textLength: synthesis.free_text?.length || 0,
+        textSample: synthesis.free_text ? 
+          synthesis.free_text.substring(0, 30) + (synthesis.free_text.length > 30 ? '...' : '') : 
+          'None'
+      });
     }
 
     try {

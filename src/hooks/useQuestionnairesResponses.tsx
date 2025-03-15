@@ -58,10 +58,17 @@ export function useQuestionnairesResponses(userId: string | undefined) {
         console.error("[Responses] Error fetching synthesis:", error);
         throw error;
       }
+      
       console.log("[Responses] Retrieved synthesis:", data ? "yes" : "no");
       if (data) {
-        console.log("[Responses] Synthesis text length:", data.free_text ? data.free_text.length : 0);
+        console.log("[Responses] Synthesis text:", data.free_text ? 
+          `Present (length: ${data.free_text.length})` : "Not present");
+        if (data.free_text) {
+          console.log("[Responses] Synthesis text sample:", 
+            data.free_text.substring(0, 50) + (data.free_text.length > 50 ? "..." : ""));
+        }
       }
+      
       return data;
     },
     enabled: !!userId,
@@ -93,7 +100,10 @@ export function useQuestionnairesResponses(userId: string | undefined) {
   console.log("[Responses] Final combined data:", {
     hasResponses: !!responses,
     hasSynthesis: !!synthesis,
-    synthesisTextLength: synthesis?.free_text?.length || 0
+    synthesisTextLength: synthesis?.free_text?.length || 0,
+    synthesisTextSample: synthesis?.free_text ? 
+      synthesis.free_text.substring(0, 30) + (synthesis.free_text.length > 30 ? '...' : '') : 
+      'None'
   });
 
   return {

@@ -8,6 +8,16 @@ export class PDFResponsesSection {
     let yPosition = startY;
     const pageWidth = doc.internal.pageSize.getWidth();
     
+    // Enhanced logging
+    console.log("[PDFResponsesSection] Processing responses:", {
+      general: responses.general?.length || 0,
+      lifeSupport: responses.lifeSupport?.length || 0,
+      advancedIllness: responses.advancedIllness?.length || 0,
+      preferences: responses.preferences?.length || 0,
+      hasSynthesis: !!responses.synthesis,
+      synthesisType: responses.synthesis ? typeof responses.synthesis : 'none'
+    });
+    
     // Styles
     const sectionTitleStyle = () => {
       doc.setFontSize(14);
@@ -73,6 +83,13 @@ export class PDFResponsesSection {
 
     // Add the synthesis section using the dedicated class
     console.log("[PDFResponsesSection] Synthesis data:", responses.synthesis ? "Present" : "Not present");
+    if (responses.synthesis) {
+      console.log("[PDFResponsesSection] Synthesis free_text:", 
+        responses.synthesis.free_text ? 
+          `Present (${responses.synthesis.free_text.length} chars)` : 
+          "Not present");
+    }
+    
     yPosition = PDFSynthesisSection.generate(doc, responses, yPosition);
 
     return yPosition;
