@@ -1,33 +1,11 @@
 
 import { jsPDF } from "jspdf";
 import { formatResponseText } from "../../free-text/ResponseFormatter";
-import { PDFSynthesisSection } from "./PDFSynthesisSection";
 
 export class PDFResponsesSection {
   static generate(doc: jsPDF, responses: any, startY: number): number {
     let yPosition = startY;
     const pageWidth = doc.internal.pageSize.getWidth();
-    
-    // Enhanced logging for debugging
-    console.log("[PDFResponsesSection] Processing responses:", {
-      general: responses.general?.length || 0,
-      lifeSupport: responses.lifeSupport?.length || 0,
-      advancedIllness: responses.advancedIllness?.length || 0,
-      preferences: responses.preferences?.length || 0,
-      hasSynthesis: !!responses.synthesis,
-      synthesisType: responses.synthesis ? typeof responses.synthesis : 'none'
-    });
-    
-    if (responses.synthesis) {
-      console.log("[PDFResponsesSection] Synthesis content:", {
-        isFreeTextPresent: !!responses.synthesis.free_text,
-        freeTextLength: responses.synthesis.free_text?.length || 0,
-        freeTextSample: responses.synthesis.free_text ? 
-          responses.synthesis.free_text.substring(0, 30) + 
-          (responses.synthesis.free_text.length > 30 ? '...' : '') : 
-          'No text'
-      });
-    }
     
     // Styles
     const sectionTitleStyle = () => {
@@ -92,16 +70,46 @@ export class PDFResponsesSection {
     addSection("Maladie avancée", responses.advancedIllness || []);
     addSection("Mes goûts et mes peurs", responses.preferences || []);
 
-    // Add the synthesis section using the dedicated class
-    console.log("[PDFResponsesSection] Synthesis data:", responses.synthesis ? "Present" : "Not present");
-    if (responses.synthesis) {
-      console.log("[PDFResponsesSection] Synthesis free_text:", 
-        responses.synthesis.free_text ? 
-          `Present (${responses.synthesis.free_text.length} chars)` : 
-          "Not present");
+    // Section texte libre
+    if (responses.synthesis?.free_text) {
+      if (yPosition > doc.internal.pageSize.getHeight() - 40) {
+        doc.addPage();
+        yPosition = 30;
+      }
+
+      sectionTitleStyle();
+      doc.text("Texte libre", 20, yPosition);
+      yPosition += 10;
+
+      responseStyle();
+      const freeText = responses.synthesis.free_text;
+      // Ensure the free text is properly processed line by line
+      const lines = doc.splitTextToSize(freeText, pageWidth - 40);
+      
+      // Check if we need multiple pages
+      let linesProcessed = 0;
+      
+      while (linesProcessed < lines.length) {
+        // Calculate remaining space on current page
+        const linesPerPage = Math.floor((doc.internal.pageSize.getHeight() - yPosition - 20) / 6);
+        
+        // Get lines that fit on current page
+        const currentPageLines = lines.slice(linesProcessed, linesProcessed + linesPerPage);
+        
+        // Add lines to current page
+        doc.text(currentPageLines, 20, yPosition);
+        
+        // Update position and lines processed
+        linesProcessed += currentPageLines.length;
+        yPosition += currentPageLines.length * 6;
+        
+        // If there are more lines to process, add a new page
+        if (linesProcessed < lines.length) {
+          doc.addPage();
+          yPosition = 20;
+        }
+      }
     }
-    
-    yPosition = PDFSynthesisSection.generate(doc, responses, yPosition);
 
     return yPosition;
   }
