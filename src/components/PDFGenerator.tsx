@@ -31,8 +31,8 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
   const [showPreview, setShowPreview] = useState(false);
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
-  const { responses } = useQuestionnairesResponses(userId);
-  const { profile, trustedPersons, loading } = usePDFData();
+  const { responses, synthesis, isLoading: responsesLoading } = useQuestionnairesResponses(userId);
+  const { profile, trustedPersons, loading: profileLoading } = usePDFData();
 
   useEffect(() => {
     if (isGenerating) {
@@ -44,11 +44,14 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
     }
   }, [isGenerating]);
 
+  // Log the data we have for debugging
   console.log("[PDFGenerator] Current state:", {
     hasProfile: !!profile,
     hasTrustedPersons: trustedPersons.length,
     hasResponses: !!responses,
-    isLoading: loading
+    hasSynthesis: !!synthesis,
+    synthesisTextLength: synthesis?.free_text?.length || 0,
+    isLoading: responsesLoading || profileLoading
   });
 
   const generatePDF = () => {
@@ -66,11 +69,21 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
       return;
     }
 
+    // Make sure to combine the synthesis with the responses
+    const fullResponses = {
+      ...responses,
+      synthesis: synthesis || null
+    };
+
+    console.log("[PDFGenerator] Generating full PDF with synthesis:", synthesis ? "Present" : "Not present");
+    if (synthesis) {
+      console.log("[PDFGenerator] Synthesis text length:", synthesis.free_text?.length || 0);
+    }
+
     try {
-      console.log("[PDFGenerator] Generating full PDF");
       handlePDFGeneration(
         profile,
-        responses,
+        fullResponses,
         trustedPersons,
         (url) => {
           console.log("[PDFGenerator] PDF generated, URL status:", url ? "success" : "failed");
@@ -104,7 +117,7 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
     }
   };
 
-  if (loading) {
+  if (responsesLoading || profileLoading) {
     console.log("[PDFGenerator] Still loading data...");
     return null;
   }

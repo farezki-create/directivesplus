@@ -10,8 +10,8 @@ export function useQuestionnairesResponses(userId: string | undefined) {
 
   const {
     data: responses,
-    isLoading,
-    error
+    isLoading: responsesLoading,
+    error: responsesError
   } = useQuery({
     queryKey: ["questionnaire-responses", userId, currentLanguage],
     queryFn: async () => {
@@ -42,7 +42,7 @@ export function useQuestionnairesResponses(userId: string | undefined) {
 
   const {
     data: synthesis,
-    isLoading: isLoadingSynthesis,
+    isLoading: synthesisLoading,
     error: synthesisError
   } = useQuery({
     queryKey: ["synthesis", userId],
@@ -59,14 +59,17 @@ export function useQuestionnairesResponses(userId: string | undefined) {
         throw error;
       }
       console.log("[Responses] Retrieved synthesis:", data ? "yes" : "no");
+      if (data) {
+        console.log("[Responses] Synthesis text length:", data.free_text ? data.free_text.length : 0);
+      }
       return data;
     },
     enabled: !!userId,
   });
 
   // Handle errors by displaying a notification toast
-  if (error || synthesisError) {
-    console.error("[Responses] Error in useQuestionnairesResponses:", error || synthesisError);
+  if (responsesError || synthesisError) {
+    console.error("[Responses] Error in useQuestionnairesResponses:", responsesError || synthesisError);
     toast({
       title: currentLanguage === 'en' ? "Error retrieving responses" : "Erreur lors de la récupération des réponses",
       description: currentLanguage === 'en' 
@@ -76,15 +79,27 @@ export function useQuestionnairesResponses(userId: string | undefined) {
     });
   }
 
-  return {
-    responses: responses || {
+  // Combine responses and synthesis
+  const combinedData = {
+    ...responses || {
       general: [],
       lifeSupport: [],
       advancedIllness: [],
       preferences: [],
     },
+    synthesis: synthesis || null
+  };
+
+  console.log("[Responses] Final combined data:", {
+    hasResponses: !!responses,
+    hasSynthesis: !!synthesis,
+    synthesisTextLength: synthesis?.free_text?.length || 0
+  });
+
+  return {
+    responses: combinedData,
     synthesis,
-    isLoading: isLoading || isLoadingSynthesis,
-    hasErrors: !!error || !!synthesisError,
+    isLoading: responsesLoading || synthesisLoading,
+    hasErrors: !!responsesError || !!synthesisError,
   };
 }

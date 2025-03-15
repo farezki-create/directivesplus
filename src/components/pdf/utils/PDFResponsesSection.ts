@@ -1,6 +1,7 @@
 
 import { jsPDF } from "jspdf";
 import { formatResponseText } from "../../free-text/ResponseFormatter";
+import { PDFSynthesisSection } from "./PDFSynthesisSection";
 
 export class PDFResponsesSection {
   static generate(doc: jsPDF, responses: any, startY: number): number {
@@ -70,46 +71,9 @@ export class PDFResponsesSection {
     addSection("Maladie avancée", responses.advancedIllness || []);
     addSection("Mes goûts et mes peurs", responses.preferences || []);
 
-    // Section texte libre
-    if (responses.synthesis?.free_text) {
-      if (yPosition > doc.internal.pageSize.getHeight() - 40) {
-        doc.addPage();
-        yPosition = 30;
-      }
-
-      sectionTitleStyle();
-      doc.text("Texte libre", 20, yPosition);
-      yPosition += 10;
-
-      responseStyle();
-      const freeText = responses.synthesis.free_text;
-      // Ensure the free text is properly processed line by line
-      const lines = doc.splitTextToSize(freeText, pageWidth - 40);
-      
-      // Check if we need multiple pages
-      let linesProcessed = 0;
-      
-      while (linesProcessed < lines.length) {
-        // Calculate remaining space on current page
-        const linesPerPage = Math.floor((doc.internal.pageSize.getHeight() - yPosition - 20) / 6);
-        
-        // Get lines that fit on current page
-        const currentPageLines = lines.slice(linesProcessed, linesProcessed + linesPerPage);
-        
-        // Add lines to current page
-        doc.text(currentPageLines, 20, yPosition);
-        
-        // Update position and lines processed
-        linesProcessed += currentPageLines.length;
-        yPosition += currentPageLines.length * 6;
-        
-        // If there are more lines to process, add a new page
-        if (linesProcessed < lines.length) {
-          doc.addPage();
-          yPosition = 20;
-        }
-      }
-    }
+    // Add the synthesis section using the dedicated class
+    console.log("[PDFResponsesSection] Synthesis data:", responses.synthesis ? "Present" : "Not present");
+    yPosition = PDFSynthesisSection.generate(doc, responses, yPosition);
 
     return yPosition;
   }

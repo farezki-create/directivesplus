@@ -6,6 +6,8 @@ export class PDFSynthesisSection {
     let yPosition = startY;
     const pageWidth = doc.internal.pageSize.getWidth();
     
+    console.log("[PDFSynthesisSection] Processing synthesis text:", responses?.synthesis?.free_text ? "Present (length: " + responses.synthesis.free_text.length + ")" : "Not present");
+    
     // Free text synthesis
     if (responses?.synthesis?.free_text) {
       // Check if we need a new page
@@ -16,13 +18,17 @@ export class PDFSynthesisSection {
 
       yPosition += 10;
       doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
       doc.text("Expression libre :", 20, yPosition);
+      doc.setFont("helvetica", "normal");
       yPosition += 7;
 
       const synthesisText = responses.synthesis.free_text;
       
       // Split the text to fit within page width
       const textLines = doc.splitTextToSize(synthesisText, pageWidth - 40);
+      
+      console.log("[PDFSynthesisSection] Text lines to add:", textLines.length);
       
       // Calculate if we need multiple pages
       let linesProcessed = 0;
@@ -47,6 +53,8 @@ export class PDFSynthesisSection {
           yPosition = 20;
         }
       }
+    } else {
+      console.log("[PDFSynthesisSection] No synthesis text found to add to PDF");
     }
 
     return yPosition;
