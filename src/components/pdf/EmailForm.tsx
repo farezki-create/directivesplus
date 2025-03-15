@@ -1,14 +1,13 @@
 
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Mail, AlertCircle, Info, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/hooks/useLanguage";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { EmailFormInput } from "./EmailFormInput";
+import { EmailFormInfoSection } from "./EmailFormInfoSection";
+import { EmailAlerts } from "./EmailAlerts";
 
 interface EmailFormProps {
   pdfUrl: string | null;
@@ -16,7 +15,6 @@ interface EmailFormProps {
 }
 
 export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
-  const [emailAddress, setEmailAddress] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -24,31 +22,11 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
   const navigate = useNavigate();
   const { t } = useLanguage();
 
-  const handleEmailSend = async () => {
+  const handleEmailSend = async (emailAddress: string) => {
     if (!pdfUrl) {
       toast({
         title: "Erreur",
         description: "Aucun PDF à envoyer",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!emailAddress) {
-      toast({
-        title: "Erreur",
-        description: "Veuillez entrer une adresse email",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(emailAddress)) {
-      toast({
-        title: "Erreur",
-        description: "Veuillez entrer une adresse email valide",
         variant: "destructive",
       });
       return;
@@ -129,8 +107,6 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
         title: "Succès",
         description: "Le PDF a été envoyé par email. Vérifiez votre boîte de réception (et dossier spam).",
       });
-      
-      setEmailAddress("");
     } catch (error: any) {
       console.error("Error sending email:", error);
       toast({
@@ -145,51 +121,16 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
 
   return (
     <div className="flex flex-col space-y-4 mr-auto">
-      {apiError && (
-        <Alert variant="destructive" className="mb-4">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription className="text-sm">{apiError}</AlertDescription>
-        </Alert>
-      )}
-      
-      {success && (
-        <Alert className="mb-4 bg-green-50 border-green-200">
-          <CheckCircle className="h-4 w-4 text-green-500" />
-          <AlertDescription className="text-sm">Email envoyé avec succès! Vérifiez votre boîte de réception (et dossier spam).</AlertDescription>
-        </Alert>
-      )}
+      <EmailAlerts apiError={apiError} success={success} />
       
       <div className="flex flex-col space-y-2">
         <Label htmlFor="email">{t('email')}</Label>
-        <div className="flex items-center space-x-2">
-          <Input
-            id="email"
-            type="email"
-            placeholder="example@email.com"
-            value={emailAddress}
-            onChange={(e) => setEmailAddress(e.target.value)}
-            className="w-full sm:w-64"
-          />
-          <Button 
-            variant={success ? "outline" : "default"} 
-            onClick={handleEmailSend}
-            disabled={isSending}
-            className={success ? "bg-green-50 border-green-200 text-green-700 hover:bg-green-100" : ""}
-          >
-            <Mail className="mr-2 h-4 w-4" />
-            {isSending ? "Envoi..." : success ? "Renvoi" : "Envoyer"}
-          </Button>
-        </div>
-        <div className="flex flex-col space-y-2 text-xs text-muted-foreground mt-1">
-          <p className="flex items-center">
-            <AlertCircle className="h-3 w-3 mr-1" />
-            Vérifiez également votre dossier spam après l'envoi
-          </p>
-          <p className="flex items-center">
-            <Info className="h-3 w-3 mr-1" />
-            L'email sera envoyé depuis no-reply@directivesplus.fr
-          </p>
-        </div>
+        <EmailFormInput 
+          onSend={handleEmailSend}
+          isSending={isSending}
+          success={success}
+        />
+        <EmailFormInfoSection />
       </div>
     </div>
   );
