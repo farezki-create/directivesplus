@@ -3,13 +3,12 @@ import { Header } from "@/components/Header";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ResponsesSummary } from "@/components/ResponsesSummary";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
 const FreeText = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const navigate = useNavigate();
-  const location = useLocation();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -23,7 +22,7 @@ const FreeText = () => {
             description: "Vous devez être connecté pour accéder à cette page",
             variant: "destructive",
           });
-          navigate("/auth", { state: { from: location.pathname } });
+          navigate("/auth");
           return;
         }
         console.log("[FreeText] User session found:", session.user.id);
@@ -47,12 +46,12 @@ const FreeText = () => {
       } else {
         console.log("[FreeText] Auth state changed - no user");
         setUserId(null);
-        navigate("/auth", { state: { from: location.pathname } });
+        navigate("/auth");
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate, toast, location.pathname]);
+  }, [navigate, toast]);
 
   if (!userId) {
     return null;

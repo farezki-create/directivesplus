@@ -38,8 +38,6 @@ export const AuthForm = ({
       city: "",
       postalCode: "",
     },
-    // Preserve values between form modes
-    mode: "onChange",
   });
 
   console.log('Form mode:', isSignUp ? 'signup' : 'login');

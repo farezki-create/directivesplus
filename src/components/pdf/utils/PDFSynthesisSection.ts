@@ -1,4 +1,3 @@
-
 import { jsPDF } from "jspdf";
 
 export class PDFSynthesisSection {
@@ -20,29 +19,24 @@ export class PDFSynthesisSection {
       yPosition += 7;
 
       const synthesisText = responses.synthesis.free_text;
+      const lines = doc.splitTextToSize(synthesisText, pageWidth - 40);
       
-      // Split the text to fit within page width
-      const textLines = doc.splitTextToSize(synthesisText, pageWidth - 40);
-      
-      // Calculate if we need multiple pages
-      let linesProcessed = 0;
-      
-      while (linesProcessed < textLines.length) {
-        // Calculate remaining space on current page
-        const linesPerPage = Math.floor((doc.internal.pageSize.getHeight() - yPosition - 20) / 7);
+      // Check if we need multiple pages for the synthesis text
+      let currentLine = 0;
+      while (currentLine < lines.length) {
+        // Check remaining space on current page
+        const remainingLines = Math.floor((doc.internal.pageSize.getHeight() - yPosition - 20) / 7);
+        const linesToAdd = Math.min(remainingLines, lines.length - currentLine);
+
+        // Add lines that fit on current page
+        const pageLines = lines.slice(currentLine, currentLine + linesToAdd);
+        doc.text(pageLines, 20, yPosition);
         
-        // Get lines that fit on current page
-        const currentPageLines = textLines.slice(linesProcessed, linesProcessed + linesPerPage);
-        
-        // Add lines to current page
-        doc.text(currentPageLines, 20, yPosition);
-        
-        // Update position and lines processed
-        linesProcessed += currentPageLines.length;
-        yPosition += currentPageLines.length * 7;
-        
-        // If there are more lines to process, add a new page
-        if (linesProcessed < textLines.length) {
+        currentLine += linesToAdd;
+        yPosition += linesToAdd * 7;
+
+        // If there are more lines, add a new page
+        if (currentLine < lines.length) {
           doc.addPage();
           yPosition = 20;
         }

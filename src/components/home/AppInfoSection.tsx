@@ -33,16 +33,13 @@ export function AppInfoSection() {
         </p>
       </div>
       
-      {/* Application image - improved presentation */}
+      {/* Application image */}
       <div className="flex justify-center mb-8">
-        <div className="overflow-hidden rounded-lg shadow-md border border-gray-200 w-full max-w-2xl">
-          <img 
-            src="/lovable-uploads/14a66bde-c25e-4428-8ad2-9549af103c9d.png" 
-            alt={currentLanguage === 'fr' ? "Interface DirectivesPlus" : "DirectivesPlus Interface"} 
-            className="w-full object-cover" 
-            loading="lazy"
-          />
-        </div>
+        <img 
+          src="/lovable-uploads/14a66bde-c25e-4428-8ad2-9549af103c9d.png" 
+          alt={currentLanguage === 'fr' ? "Interface DirectivesPlus" : "DirectivesPlus Interface"} 
+          className="w-full max-w-2xl rounded-lg shadow-sm" 
+        />
       </div>
       
       {/* Original content about the application */}

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useState, useEffect } from "react";
 import { MainButtons } from "./MainButtons";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 interface WelcomeSectionProps {
   onShowMoreInfo: () => void;
@@ -19,7 +19,6 @@ export function WelcomeSection({
   const { currentLanguage } = useLanguage();
   const [showSections, setShowSections] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
 
   // Set showSections to true if showWritingSection prop is true
   useEffect(() => {
@@ -30,8 +29,7 @@ export function WelcomeSection({
 
   const handleStartClick = () => {
     if (!isAuthenticated) {
-      // Pass the current path as state to return here after login
-      navigate("/auth", { state: { from: location.pathname + location.search } });
+      navigate("/auth");
     } else {
       setShowSections(true);
     }
