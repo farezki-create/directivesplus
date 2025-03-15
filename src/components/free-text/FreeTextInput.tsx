@@ -69,6 +69,13 @@ export function FreeTextInput({ userId, onSaveComplete, onSignComplete }: FreeTe
 
   const handleSignatureSaved = (signatureData: string) => {
     setSignature(signatureData);
+    setShowSignatureSection(false);
+    
+    toast({
+      title: "Succès",
+      description: "Votre signature a été enregistrée.",
+    });
+    
     if (onSignComplete) {
       onSignComplete();
     }
@@ -80,12 +87,12 @@ export function FreeTextInput({ userId, onSaveComplete, onSignComplete }: FreeTe
     try {
       setLoading(true);
       
-      // For confirmation, we just need to trigger the onSignComplete callback
-      // since the signature is already saved in the database
       toast({
         title: "Succès",
         description: "Votre signature a été confirmée.",
       });
+      
+      setShowSignatureSection(false);
       
       if (onSignComplete) {
         onSignComplete();
@@ -105,14 +112,9 @@ export function FreeTextInput({ userId, onSaveComplete, onSignComplete }: FreeTe
   // Determine if there are changes that need to be saved
   const hasChanges = freeText !== initialText;
   
-  // If the signature section is not showing but we have a signature and the user clicks "confirm"
-  // we should just confirm the signature without showing the signature section
+  // Show signature options when user clicks the sign button
   const handleSignButtonClick = () => {
-    if (signature && !showSignatureSection) {
-      handleConfirmSignature();
-    } else {
-      setShowSignatureSection(true);
-    }
+    setShowSignatureSection(true);
   };
 
   return (
@@ -128,7 +130,10 @@ export function FreeTextInput({ userId, onSaveComplete, onSignComplete }: FreeTe
           freeText={freeText}
           hasChanges={hasChanges || freeText.trim().length > 0}
           loading={loading}
-          onSaveComplete={onSaveComplete}
+          onSaveComplete={() => {
+            if (onSaveComplete) onSaveComplete();
+            setIsSaved(true);
+          }}
           setLoading={setLoading}
           setInitialText={setInitialText}
           setIsSaved={setIsSaved}
@@ -146,6 +151,7 @@ export function FreeTextInput({ userId, onSaveComplete, onSignComplete }: FreeTe
           userId={userId} 
           existingSignature={signature}
           onSignatureSaved={handleSignatureSaved}
+          onConfirmExisting={handleConfirmSignature}
         />
       )}
     </div>

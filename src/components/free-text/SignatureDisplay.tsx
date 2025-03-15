@@ -1,7 +1,7 @@
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileSignature, Check } from "lucide-react";
+import { FileSignature, Check, Edit } from "lucide-react";
 
 interface SignatureDisplayProps {
   signatureData: string | null;
@@ -26,8 +26,8 @@ export function SignatureDisplay({ signatureData, onEdit, onConfirm }: Signature
           variant="outline"
           className="w-full"
         >
-          <FileSignature className="mr-2 h-4 w-4" />
-          Confirmer ma signature
+          <Edit className="mr-2 h-4 w-4" />
+          Modifier ma signature
         </Button>
         
         {onConfirm && (

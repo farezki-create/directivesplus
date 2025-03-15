@@ -13,10 +13,16 @@ interface SignatureComponentProps {
   userId: string;
   existingSignature: string | null;
   onSignatureSaved: (signature: string) => void;
+  onConfirmExisting?: () => void;
 }
 
-export function SignatureComponent({ userId, existingSignature, onSignatureSaved }: SignatureComponentProps) {
-  const [showSignature, setShowSignature] = useState(false);
+export function SignatureComponent({ 
+  userId, 
+  existingSignature, 
+  onSignatureSaved,
+  onConfirmExisting
+}: SignatureComponentProps) {
+  const [showSignatureEditor, setShowSignatureEditor] = useState(false);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const sigCanvas = useRef<SignatureCanvasLib>(null);
@@ -102,12 +108,6 @@ export function SignatureComponent({ userId, existingSignature, onSignatureSaved
         throw sigError;
       }
       
-      setShowSignature(false);
-      toast({
-        title: "Succès",
-        description: "Votre signature a été enregistrée.",
-      });
-      
       onSignatureSaved(signatureData);
     } catch (error) {
       console.error("Error saving signature:", error);
@@ -121,20 +121,33 @@ export function SignatureComponent({ userId, existingSignature, onSignatureSaved
     }
   };
 
-  const showSignatureEditor = () => {
-    setShowSignature(true);
+  const handleEditSignature = () => {
+    setShowSignatureEditor(true);
   };
 
-  const handleConfirmSignature = () => {
-    if (existingSignature) {
-      onSignatureSaved(existingSignature);
-      
-      toast({
-        title: "Succès",
-        description: "Votre signature a été confirmée.",
-      });
+  const handleConfirmExistingSignature = () => {
+    if (existingSignature && onConfirmExisting) {
+      onConfirmExisting();
     }
   };
+
+  // If there's an existing signature and we're not in edit mode, show the signature display
+  if (existingSignature && !showSignatureEditor) {
+    return (
+      <div className="space-y-4 border-t pt-4">
+        <h3 className="text-lg font-semibold">Confirmer ou modifier votre signature</h3>
+        <p className="text-sm text-gray-500">
+          Vous avez déjà une signature. Vous pouvez la confirmer ou la modifier.
+        </p>
+        
+        <SignatureDisplay 
+          signatureData={existingSignature}
+          onEdit={handleEditSignature}
+          onConfirm={handleConfirmExistingSignature}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 border-t pt-4">
@@ -143,36 +156,16 @@ export function SignatureComponent({ userId, existingSignature, onSignatureSaved
         Merci d'avoir enregistré vos directives. Veuillez maintenant signer pour valider ce document.
       </p>
       
-      {!showSignature && !existingSignature && (
-        <Button
-          onClick={showSignatureEditor}
-          className="w-full"
-        >
-          <FileSignature className="mr-2 h-4 w-4" />
-          Ajouter ma signature
-        </Button>
-      )}
-
-      {existingSignature && !showSignature && (
-        <SignatureDisplay 
-          signatureData={existingSignature}
-          onEdit={showSignatureEditor}
-          onConfirm={handleConfirmSignature}
+      <div className="space-y-4">
+        <SignatureCanvas 
+          signatureRef={sigCanvas}
+          disabled={loading}
         />
-      )}
-      
-      {showSignature && (
-        <div className="space-y-4">
-          <SignatureCanvas 
-            signatureRef={sigCanvas}
-            disabled={loading}
-          />
-          <SignatureActions 
-            onSaveSignature={handleSaveSignature}
-            loading={loading}
-          />
-        </div>
-      )}
+        <SignatureActions 
+          onSaveSignature={handleSaveSignature}
+          loading={loading}
+        />
+      </div>
     </div>
   );
 }

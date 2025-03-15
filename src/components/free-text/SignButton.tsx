@@ -22,7 +22,7 @@ export function SignButton({ isSaved, onShowSignature, existingSignature }: Sign
       {existingSignature ? (
         <>
           <Check className="mr-2 h-4 w-4" />
-          Confirmer ma signature
+          Confirmer ou modifier ma signature
         </>
       ) : (
         <>
