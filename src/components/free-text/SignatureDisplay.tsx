@@ -27,7 +27,7 @@ export function SignatureDisplay({ signatureData, onEdit, onConfirm }: Signature
           className="w-full"
         >
           <FileSignature className="mr-2 h-4 w-4" />
-          Modifier ma signature
+          Confirmer ma signature
         </Button>
         
         {onConfirm && (
