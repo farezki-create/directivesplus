@@ -112,10 +112,6 @@ export function TrustedPersonPDFGenerator() {
         title: "Succès",
         description: "Les informations de la personne de confiance ont été enregistrées.",
       });
-      
-      if (pdfUrl) {
-        handlePDFDownload(pdfUrl);
-      }
     } catch (error) {
       console.error("[TrustedPersonPDF] Error saving to synthesis:", error);
       toast({
