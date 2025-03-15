@@ -3,23 +3,18 @@ import { Header } from "@/components/Header";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ResponsesSummary } from "@/components/ResponsesSummary";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
 const FreeText = () => {
   const [userId, setUserId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
-  const location = useLocation();
   const { toast } = useToast();
 
   useEffect(() => {
     const checkAuthAndLoadUser = async () => {
       try {
-        setIsLoading(true);
-        console.log("[FreeText] Checking authentication...");
         const { data: { session } } = await supabase.auth.getSession();
-        
         if (!session?.user) {
           console.error("[FreeText] No user session found");
           toast({
@@ -27,10 +22,9 @@ const FreeText = () => {
             description: "Vous devez être connecté pour accéder à cette page",
             variant: "destructive",
           });
-          navigate("/auth", { state: { from: location.pathname } });
+          navigate("/auth");
           return;
         }
-        
         console.log("[FreeText] User session found:", session.user.id);
         setUserId(session.user.id);
       } catch (error) {
@@ -40,8 +34,6 @@ const FreeText = () => {
           description: "Une erreur est survenue lors de la vérification de votre session",
           variant: "destructive",
         });
-      } finally {
-        setIsLoading(false);
       }
     };
 
@@ -54,25 +46,12 @@ const FreeText = () => {
       } else {
         console.log("[FreeText] Auth state changed - no user");
         setUserId(null);
-        navigate("/auth", { state: { from: location.pathname } });
+        navigate("/auth");
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate, toast, location.pathname]);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        <main className="flex-1 container mx-auto px-4 py-8 flex items-center justify-center">
-          <div className="text-center">
-            <p>Chargement...</p>
-          </div>
-        </main>
-      </div>
-    );
-  }
+  }, [navigate, toast]);
 
   if (!userId) {
     return null;
@@ -86,9 +65,6 @@ const FreeText = () => {
         <div className="max-w-4xl mx-auto space-y-8">
           <div className="mb-6">
             <h1 className="text-3xl font-bold">Synthèse de vos réponses</h1>
-            <p className="text-gray-600 mt-2">
-              Consultez et complétez vos directives anticipées avant de générer votre document.
-            </p>
           </div>
           
           <div className="bg-white rounded-lg shadow p-6">

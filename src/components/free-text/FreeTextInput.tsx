@@ -6,7 +6,6 @@ import { FreeTextSection } from "./FreeTextSection";
 import { SaveButton } from "./SaveButton";
 import { SignButton } from "./SignButton";
 import { SignatureComponent } from "./SignatureComponent";
-import { useSynthesis } from "@/hooks/useSynthesis";
 
 interface FreeTextInputProps {
   userId: string;
@@ -15,58 +14,57 @@ interface FreeTextInputProps {
 }
 
 export function FreeTextInput({ userId, onSaveComplete, onSignComplete }: FreeTextInputProps) {
-  const { text, setText, isSaving } = useSynthesis(userId);
+  const [freeText, setFreeText] = useState("");
+  const [loading, setLoading] = useState(false);
   const [initialText, setInitialText] = useState("");
   const [isSaved, setIsSaved] = useState(false);
   const [signature, setSignature] = useState<string | null>(null);
   const [showSignatureSection, setShowSignatureSection] = useState(false);
-  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
-    const fetchSignature = async () => {
+    const fetchFreeText = async () => {
       if (!userId) return;
       
       try {
-        console.log("[FreeTextInput] Fetching signature for user:", userId);
+        setLoading(true);
+        console.log("[FreeTextInput] Fetching existing text for user:", userId);
         
         const { data, error } = await supabase
           .from("questionnaire_synthesis")
-          .select("signature")
+          .select("free_text, signature")
           .eq("user_id", userId)
           .maybeSingle();
 
         if (error) {
-          console.error("[FreeTextInput] Error fetching signature:", error);
+          console.error("[FreeTextInput] Error fetching free text:", error);
           return;
         }
 
-        if (data?.signature) {
-          console.log("[FreeTextInput] Found existing signature");
-          setSignature(data.signature);
-          setIsSaved(true);
+        if (data) {
+          console.log("[FreeTextInput] Found existing text:", data.free_text ? "Yes (length: " + data.free_text.length + ")" : "No");
+          setFreeText(data.free_text || "");
+          setInitialText(data.free_text || "");
+          if (data.signature) {
+            setSignature(data.signature);
+            setIsSaved(true);
+          }
         } else {
-          console.log("[FreeTextInput] No existing signature found");
+          console.log("[FreeTextInput] No existing text found");
         }
       } catch (error) {
         console.error("[FreeTextInput] Unexpected error:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchSignature();
-    setInitialText(text);
-  }, [userId, text]);
+    fetchFreeText();
+  }, [userId]);
 
   const handleTextChange = (newText: string) => {
     console.log("[FreeTextInput] Text changed, new length:", newText.length);
-    setText(newText);
-  };
-
-  const handleSaveComplete = () => {
-    setIsSaved(true);
-    if (onSaveComplete) {
-      onSaveComplete();
-    }
+    setFreeText(newText);
   };
 
   const handleSignatureSaved = (signatureData: string) => {
@@ -77,30 +75,30 @@ export function FreeTextInput({ userId, onSaveComplete, onSignComplete }: FreeTe
   };
 
   // Determine if there are changes that need to be saved
-  const hasChanges = text !== initialText;
+  const hasChanges = freeText !== initialText;
   
   console.log("[FreeTextInput] Button state:", {
-    isSaving,
+    loading,
     hasChanges,
-    freeTextLength: text.length,
+    freeTextLength: freeText.length,
     initialTextLength: initialText.length,
-    isDisabled: loading || (!hasChanges && text.length === 0)
+    isDisabled: loading || (!hasChanges && freeText.length === 0)
   });
 
   return (
     <div className="space-y-6">
       <FreeTextSection 
-        freeText={text}
+        freeText={freeText}
         onTextChange={handleTextChange}
       />
       
       <div className="space-y-4">
         <SaveButton
           userId={userId}
-          freeText={text}
-          hasChanges={hasChanges || text.trim().length > 0}
-          loading={loading || isSaving}
-          onSaveComplete={handleSaveComplete}
+          freeText={freeText}
+          hasChanges={hasChanges || freeText.trim().length > 0}
+          loading={loading}
+          onSaveComplete={onSaveComplete}
           setLoading={setLoading}
           setInitialText={setInitialText}
           setIsSaved={setIsSaved}

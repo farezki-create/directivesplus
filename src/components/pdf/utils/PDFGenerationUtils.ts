@@ -2,12 +2,8 @@
 import { toast } from "@/hooks/use-toast";
 import { UserProfile, TrustedPerson } from "../types";
 import { PDFDocumentGenerator } from "../PDFDocumentGenerator";
-import { generateSimplifiedPDF, generateBasicPDF, openPrintWindow } from "./PDFFallbackGenerator";
-import { savePDFToStorage, handlePDFDownload } from "./PDFStorageUtils";
+import { supabase } from "@/integrations/supabase/client";
 
-/**
- * Main function that handles PDF generation with retries and fallbacks
- */
 export const handlePDFGeneration = async (
   profile: UserProfile | null,
   responses: any,
@@ -25,43 +21,12 @@ export const handlePDFGeneration = async (
     console.log("[PDFGeneration] Profile data:", profile);
     console.log("[PDFGeneration] Responses data:", responses);
 
-    // Generate PDF with fallback mechanisms
-    let pdfDataUrl = null;
-    let attempts = 0;
-    const maxAttempts = 3;
-    
-    while (!pdfDataUrl && attempts < maxAttempts) {
-      attempts++;
-      console.log(`[PDFGeneration] Attempt ${attempts} of ${maxAttempts}`);
-      
-      try {
-        if (attempts === 1) {
-          // Try with the standard generator first
-          pdfDataUrl = await PDFDocumentGenerator.generate(profile, responses, trustedPersons);
-        } else if (attempts === 2) {
-          // Try with simpler content if first attempt failed
-          pdfDataUrl = await generateSimplifiedPDF(profile, responses, trustedPersons);
-        } else {
-          // Last attempt - generate extremely basic PDF
-          pdfDataUrl = await generateBasicPDF(profile);
-        }
-      } catch (genError) {
-        console.error(`[PDFGeneration] Error in attempt ${attempts}:`, genError);
-        // Continue to next attempt
-      }
-      
-      if (pdfDataUrl) {
-        console.log(`[PDFGeneration] Successfully generated PDF on attempt ${attempts}`);
-        break;
-      }
-      
-      // Small delay before next attempt
-      await new Promise(resolve => setTimeout(resolve, 500));
-    }
+    // Generate PDF
+    const pdfDataUrl = await PDFDocumentGenerator.generate(profile, responses, trustedPersons);
     
     if (!pdfDataUrl) {
-      console.error("[PDFGeneration] All PDF generation attempts failed");
-      throw new Error("La génération du PDF a échoué après plusieurs tentatives");
+      console.error("[PDFGeneration] PDF generation failed - no data URL returned");
+      throw new Error("La génération du PDF a échoué");
     }
 
     // Save PDF to storage if user is logged in
@@ -85,24 +50,6 @@ export const handlePDFGeneration = async (
     });
   } catch (error) {
     console.error("[PDFGeneration] Error generating PDF:", error);
-    
-    // Try in-browser printing as fallback if PDF generation fails completely
-    try {
-      console.log("[PDFGeneration] Attempting in-browser printing fallback");
-      const printWindow = openPrintWindow(profile, responses);
-      
-      if (printWindow) {
-        setPdfUrl(null);
-        toast({
-          title: "Alternative",
-          description: "Une fenêtre d'impression a été ouverte pour les directives.",
-        });
-        return;
-      }
-    } catch (printError) {
-      console.error("[PDFGeneration] Print fallback also failed:", printError);
-    }
-    
     toast({
       title: "Erreur",
       description: "Impossible de générer le PDF. Veuillez vérifier que toutes vos informations sont remplies.",
@@ -111,5 +58,85 @@ export const handlePDFGeneration = async (
   }
 };
 
-// Re-export functions from other modules for backward compatibility
-export { savePDFToStorage, handlePDFDownload };
+export const savePDFToStorage = async (pdfDataUrl: string, userId: string) => {
+  try {
+    // Convert data URL to Blob
+    const response = await fetch(pdfDataUrl);
+    const blob = await response.blob();
+    
+    // Generate a unique filename with timestamp
+    const timestamp = new Date().getTime();
+    const filename = `directives_${timestamp}.pdf`;
+    const filepath = `${userId}/${filename}`;
+    
+    console.log("[PDFStorage] Uploading PDF to storage path:", filepath);
+    
+    // Upload to storage
+    const { data, error } = await supabase
+      .storage
+      .from('directives_pdfs')
+      .upload(filepath, blob, {
+        contentType: 'application/pdf',
+        upsert: false
+      });
+      
+    if (error) {
+      console.error("[PDFStorage] Error uploading PDF:", error);
+      throw error;
+    }
+    
+    console.log("[PDFStorage] PDF uploaded successfully:", data);
+    
+    // Convert Date to ISO string for database compatibility
+    const currentDate = new Date().toISOString();
+    
+    // Also save reference in the database
+    const { error: dbError } = await supabase
+      .from('pdf_documents')
+      .insert({
+        user_id: userId,
+        storage_path: filepath,
+        file_name: filename,
+        created_at: currentDate, // Now using string format (ISO)
+        file_path: filepath
+      });
+      
+    if (dbError) {
+      console.error("[PDFStorage] Error saving PDF reference to database:", dbError);
+    }
+    
+    return true;
+  } catch (error) {
+    console.error("[PDFStorage] Error in savePDFToStorage:", error);
+    return false;
+  }
+};
+
+export const handlePDFDownload = (pdfUrl: string | null) => {
+  if (!pdfUrl) {
+    console.error("[PDFGeneration] No PDF URL available for download");
+    toast({
+      title: "Erreur",
+      description: "Impossible de télécharger le PDF.",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  try {
+    const link = document.createElement('a');
+    link.href = pdfUrl;
+    link.download = 'directives-anticipees.pdf';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    console.log("[PDFGeneration] PDF downloaded successfully");
+  } catch (error) {
+    console.error("[PDFGeneration] Error downloading PDF:", error);
+    toast({
+      title: "Erreur",
+      description: "Impossible de télécharger le PDF.",
+      variant: "destructive",
+    });
+  }
+};

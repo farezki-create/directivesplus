@@ -10,8 +10,8 @@ export function useQuestionnairesResponses(userId: string | undefined) {
 
   const {
     data: responses,
-    isLoading: responsesLoading,
-    error: responsesError
+    isLoading,
+    error
   } = useQuery({
     queryKey: ["questionnaire-responses", userId, currentLanguage],
     queryFn: async () => {
@@ -42,7 +42,7 @@ export function useQuestionnairesResponses(userId: string | undefined) {
 
   const {
     data: synthesis,
-    isLoading: synthesisLoading,
+    isLoading: isLoadingSynthesis,
     error: synthesisError
   } = useQuery({
     queryKey: ["synthesis", userId],
@@ -58,25 +58,15 @@ export function useQuestionnairesResponses(userId: string | undefined) {
         console.error("[Responses] Error fetching synthesis:", error);
         throw error;
       }
-      
       console.log("[Responses] Retrieved synthesis:", data ? "yes" : "no");
-      if (data) {
-        console.log("[Responses] Synthesis text:", data.free_text ? 
-          `Present (length: ${data.free_text.length})` : "Not present");
-        if (data.free_text) {
-          console.log("[Responses] Synthesis text sample:", 
-            data.free_text.substring(0, 50) + (data.free_text.length > 50 ? "..." : ""));
-        }
-      }
-      
       return data;
     },
     enabled: !!userId,
   });
 
   // Handle errors by displaying a notification toast
-  if (responsesError || synthesisError) {
-    console.error("[Responses] Error in useQuestionnairesResponses:", responsesError || synthesisError);
+  if (error || synthesisError) {
+    console.error("[Responses] Error in useQuestionnairesResponses:", error || synthesisError);
     toast({
       title: currentLanguage === 'en' ? "Error retrieving responses" : "Erreur lors de la récupération des réponses",
       description: currentLanguage === 'en' 
@@ -86,30 +76,15 @@ export function useQuestionnairesResponses(userId: string | undefined) {
     });
   }
 
-  // Combine responses and synthesis
-  const combinedData = {
-    ...responses || {
+  return {
+    responses: responses || {
       general: [],
       lifeSupport: [],
       advancedIllness: [],
       preferences: [],
     },
-    synthesis: synthesis || null
-  };
-
-  console.log("[Responses] Final combined data:", {
-    hasResponses: !!responses,
-    hasSynthesis: !!synthesis,
-    synthesisTextLength: synthesis?.free_text?.length || 0,
-    synthesisTextSample: synthesis?.free_text ? 
-      synthesis.free_text.substring(0, 30) + (synthesis.free_text.length > 30 ? '...' : '') : 
-      'None'
-  });
-
-  return {
-    responses: combinedData,
     synthesis,
-    isLoading: responsesLoading || synthesisLoading,
-    hasErrors: !!responsesError || !!synthesisError,
+    isLoading: isLoading || isLoadingSynthesis,
+    hasErrors: !!error || !!synthesisError,
   };
 }

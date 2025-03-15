@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "./usePDFData";
-import { usePDFGeneration } from "@/hooks/usePDFGeneration";
+import { handlePDFGeneration, handlePDFDownload } from "./utils/PDFGenerationUtils";
 import { PDFPreviewDialog } from "./PDFPreviewDialog";
 import { Button } from "@/components/ui/button";
 import { FileText, CreditCard } from "lucide-react";
@@ -13,24 +13,28 @@ interface PDFGeneratorProps {
 }
 
 export function PDFGenerator({ userId }: PDFGeneratorProps) {
-  const [showCardPreview, setShowCardPreview] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
   const { responses } = useQuestionnairesResponses(userId);
   const { profile, trustedPersons, loading } = usePDFData();
-  const {
-    pdfUrl,
-    setPdfUrl,
-    showPreview,
-    setShowPreview,
-    isGenerating,
-    generatePDF,
-    handleDownload
-  } = usePDFGeneration();
 
-  const handleGeneratePDF = async () => {
+  const generatePDF = () => {
     console.log("[PDFGenerator] Starting PDF generation with profile:", profile);
-    await generatePDF(profile, responses, trustedPersons, {
-      saveToStorage: true
-    });
+    handlePDFGeneration(
+      profile,
+      responses,
+      trustedPersons,
+      (url: string | null) => {
+        if (url) {
+          const cleanUrl = url.replace(/([^:])\/\/+/g, '$1/').replace(/:\//g, '://');
+          console.log("[PDFGenerator] Cleaned URL:", cleanUrl);
+          setPdfUrl(cleanUrl);
+        } else {
+          setPdfUrl(null);
+        }
+      },
+      setShowPreview
+    );
   };
 
   const generateCardPDF = () => {
@@ -56,19 +60,17 @@ export function PDFGenerator({ userId }: PDFGeneratorProps) {
   return (
     <div className="flex gap-4">
       <Button 
-        onClick={handleGeneratePDF}
+        onClick={generatePDF}
         className="flex items-center gap-2"
-        disabled={isGenerating}
       >
         <FileText className="h-4 w-4" />
-        {isGenerating ? "Génération en cours..." : "Générer Mes directives anticipées"}
+        Générer Mes directives anticipées
       </Button>
 
       <Button 
         onClick={generateCardPDF}
         variant="outline"
         className="flex items-center gap-2"
-        disabled={isGenerating}
       >
         <CreditCard className="h-4 w-4" />
         Générer au format carte
@@ -79,7 +81,7 @@ export function PDFGenerator({ userId }: PDFGeneratorProps) {
         onOpenChange={setShowPreview}
         pdfUrl={pdfUrl}
         onEmail={handleEmail}
-        onSave={handleDownload}
+        onSave={() => handlePDFDownload(pdfUrl)}
       />
     </div>
   );

@@ -1,73 +1,59 @@
 
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "./pdf/usePDFData";
-import { usePDFGeneration } from "@/hooks/usePDFGeneration";
+import { handlePDFGeneration, handlePDFDownload, savePDFToStorage } from "./pdf/utils/PDFGenerationUtils";
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
 import { PDFPreviewDialog } from "./pdf/PDFPreviewDialog";
 import { toast } from "@/hooks/use-toast";
-import { usePDFGenerationState } from "@/hooks/usePDFGenerationState";
-import { PDFGenerationOverlay } from "./pdf/PDFGenerationOverlay";
 
 interface PDFGeneratorProps {
   userId: string;
   onPdfGenerated?: (url: string | null) => void;
 }
 
+const waitingMessages = [
+  "Préparation de votre document avec soin... 📝",
+  "Mise en page de vos directives... 📄",
+  "Ajout d'une touche de professionnalisme... ✨",
+  "Finalisation des derniers détails... 🎯",
+  "Vérification de la mise en forme... 🔍",
+  "Assemblage de vos informations... 📋",
+  "Plus que quelques secondes... ⏳",
+  "Votre document est presque prêt... 🌟",
+];
+
 export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
   console.log("[PDFGenerator] Initializing with userId:", userId);
   
-  const { responses, synthesis, isLoading: responsesLoading } = useQuestionnairesResponses(userId);
-  const { profile, trustedPersons, loading: profileLoading } = usePDFData();
-  const { 
-    currentMessageIndex,
-    waitingMessages,
-    isGenerating,
-    startGeneration,
-    finishGeneration
-  } = usePDFGenerationState();
-  const {
-    pdfUrl,
-    setPdfUrl,
-    showPreview,
-    setShowPreview,
-    generatePDF,
-    handleDownload
-  } = usePDFGeneration();
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
+  const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const { responses } = useQuestionnairesResponses(userId);
+  const { profile, trustedPersons, loading } = usePDFData();
 
-  // Try to load from localStorage if we have a saved PDF
   useEffect(() => {
-    try {
-      const savedPdf = localStorage.getItem(`pdf_${userId}`);
-      if (savedPdf && !pdfUrl) {
-        console.log("[PDFGenerator] Found saved PDF in localStorage");
-        setPdfUrl(savedPdf);
-      }
-    } catch (e) {
-      console.warn("[PDFGenerator] Could not read from localStorage:", e);
+    if (isGenerating) {
+      const interval = setInterval(() => {
+        setCurrentMessageIndex((prev) => (prev + 1) % waitingMessages.length);
+      }, 2000);
+
+      return () => clearInterval(interval);
     }
-  }, [userId, pdfUrl, setPdfUrl]);
+  }, [isGenerating]);
 
-  // Enhanced debug logging
-  useEffect(() => {
-    console.log("[PDFGenerator] Current state:", {
-      hasProfile: !!profile,
-      hasTrustedPersons: trustedPersons.length,
-      hasResponses: !!responses,
-      hasSynthesis: !!synthesis,
-      synthesisType: synthesis ? typeof synthesis : 'none',
-      synthesisTextLength: synthesis?.free_text?.length || 0,
-      synthesisTextSample: synthesis?.free_text ? 
-        synthesis.free_text.substring(0, 30) + (synthesis.free_text.length > 30 ? '...' : '') : 
-        'None',
-      isLoading: responsesLoading || profileLoading
-    });
-  }, [profile, trustedPersons, responses, synthesis, responsesLoading, profileLoading]);
+  console.log("[PDFGenerator] Current state:", {
+    hasProfile: !!profile,
+    hasTrustedPersons: trustedPersons.length,
+    hasResponses: !!responses,
+    isLoading: loading
+  });
 
-  const handleGeneratePDF = async () => {
+  const generatePDF = () => {
     console.log("[PDFGenerator] Button clicked - Starting PDF generation");
-    startGeneration();
+    setIsGenerating(true);
     
     if (!profile) {
       console.error("[PDFGenerator] No profile data available");
@@ -76,75 +62,69 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
         description: "Données de profil non disponibles. Veuillez compléter votre profil.",
         variant: "destructive",
       });
-      finishGeneration(null, false);
+      setIsGenerating(false);
       return;
     }
 
-    // Make sure to combine the synthesis with the responses
-    const fullResponses = {
-      ...responses,
-      synthesis: synthesis || null
-    };
-
-    console.log("[PDFGenerator] Generating full PDF with synthesis:", synthesis ? "Present" : "Not present");
-    if (synthesis) {
-      console.log("[PDFGenerator] Synthesis details:", {
-        type: typeof synthesis,
-        hasText: !!synthesis.free_text,
-        textLength: synthesis.free_text?.length || 0,
-        textSample: synthesis.free_text ? 
-          synthesis.free_text.substring(0, 30) + (synthesis.free_text.length > 30 ? '...' : '') : 
-          'None'
+    try {
+      console.log("[PDFGenerator] Generating full PDF");
+      handlePDFGeneration(
+        profile,
+        responses,
+        trustedPersons,
+        (url) => {
+          console.log("[PDFGenerator] PDF generated, URL status:", url ? "success" : "failed");
+          
+          // Store the PDF URL in localStorage as a backup
+          if (url) {
+            try {
+              localStorage.setItem(`pdf_${userId}`, url);
+              console.log("[PDFGenerator] PDF URL saved to localStorage");
+            } catch (e) {
+              console.warn("[PDFGenerator] Could not save PDF to localStorage:", e);
+            }
+          }
+          
+          setPdfUrl(url);
+          if (onPdfGenerated) {
+            onPdfGenerated(url);
+          }
+          setIsGenerating(false);
+        },
+        setShowPreview
+      );
+    } catch (error) {
+      console.error("[PDFGenerator] Error during PDF generation:", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la génération du PDF.",
+        variant: "destructive",
       });
-    }
-
-    const pdfData = await generatePDF(profile, fullResponses, trustedPersons, {
-      saveToStorage: true,
-      onSuccess: (url) => {
-        console.log("[PDFGenerator] PDF generated, URL status:", url ? "success" : "failed");
-        
-        // Store the PDF URL in localStorage as a backup
-        try {
-          localStorage.setItem(`pdf_${userId}`, url);
-          console.log("[PDFGenerator] PDF URL saved to localStorage");
-        } catch (e) {
-          console.warn("[PDFGenerator] Could not save PDF to localStorage:", e);
-        }
-        
-        finishGeneration(url);
-        
-        if (onPdfGenerated) {
-          onPdfGenerated(url);
-        }
-      },
-      onError: () => {
-        finishGeneration(null, false);
-        if (onPdfGenerated) {
-          onPdfGenerated(null);
-        }
-      }
-    });
-    
-    if (!pdfData) {
-      finishGeneration(null, false);
+      setIsGenerating(false);
     }
   };
 
-  if (responsesLoading || profileLoading) {
+  if (loading) {
     console.log("[PDFGenerator] Still loading data...");
     return null;
   }
 
-  console.log("[PDFGenerator] Rendering buttons, pdfUrl exists:", !!pdfUrl);
+  console.log("[PDFGenerator] Rendering buttons");
   return (
     <>
-      <PDFGenerationOverlay 
-        isVisible={isGenerating}
-        message={waitingMessages[currentMessageIndex]}
-      />
+      {isGenerating && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="max-w-sm p-6 text-center space-y-4 animate-fade-in">
+            <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+            <p className="text-lg font-medium text-foreground animate-pulse">
+              {waitingMessages[currentMessageIndex]}
+            </p>
+          </div>
+        </div>
+      )}
       
       <Button 
-        onClick={handleGeneratePDF}
+        onClick={generatePDF}
         className="flex items-center gap-2"
         disabled={isGenerating}
       >
@@ -152,19 +132,18 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
         Générer Mes directives anticipées
       </Button>
       
-      <PDFPreviewDialog
-        key={`pdf-preview-${Date.now()}`} // Force new instance on each render
-        open={showPreview}
-        onOpenChange={(open) => {
-          console.log("[PDFGenerator] Dialog state changing to:", open);
-          setShowPreview(open);
-        }}
-        pdfUrl={pdfUrl}
-        onSave={() => {
-          console.log("[PDFGenerator] Saving PDF");
-          handleDownload();
-        }}
-      />
+      {showPreview && (
+        <PDFPreviewDialog
+          key={pdfUrl}
+          open={showPreview}
+          onOpenChange={(open) => {
+            console.log("[PDFGenerator] Dialog state changing to:", open);
+            setShowPreview(open);
+          }}
+          pdfUrl={pdfUrl}
+          onSave={() => handlePDFDownload(pdfUrl)}
+        />
+      )}
     </>
   );
 }

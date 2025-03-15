@@ -1,7 +1,7 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useRef, useEffect } from "react";
+import { useRef } from "react";
 import SignatureCanvas from "react-signature-canvas";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,35 +10,15 @@ interface SignatureDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   userId: string;
-  existingSignature?: string | null;
 }
 
-export function SignatureDialog({ open, onOpenChange, userId, existingSignature }: SignatureDialogProps) {
+export function SignatureDialog({ open, onOpenChange, userId }: SignatureDialogProps) {
   const signatureRef = useRef<SignatureCanvas | null>(null);
   const { toast } = useToast();
 
   const handleClear = () => {
     if (signatureRef.current) {
       signatureRef.current.clear();
-    }
-  };
-
-  const handleKeepExisting = async () => {
-    if (!existingSignature) return;
-    
-    try {
-      toast({
-        title: "Succès",
-        description: "Votre signature existante est conservée.",
-      });
-      onOpenChange(false);
-    } catch (error) {
-      console.error("Erreur lors de la conservation de la signature:", error);
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue.",
-        variant: "destructive",
-      });
     }
   };
 
@@ -98,17 +78,6 @@ export function SignatureDialog({ open, onOpenChange, userId, existingSignature 
         <DialogHeader>
           <DialogTitle>Signez votre document</DialogTitle>
         </DialogHeader>
-        
-        {existingSignature && (
-          <div className="border rounded-lg p-4 bg-gray-50 flex flex-col items-center space-y-2 mb-4">
-            <p className="text-sm font-medium">Signature existante :</p>
-            <img src={existingSignature} alt="Signature existante" className="max-h-[100px]" />
-            <Button variant="outline" onClick={handleKeepExisting} className="mt-2 w-full">
-              Ne pas modifier ma signature
-            </Button>
-          </div>
-        )}
-        
         <div className="border rounded-lg p-4 bg-white">
           <SignatureCanvas
             ref={signatureRef}

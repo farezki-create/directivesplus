@@ -1,6 +1,6 @@
 
 import { Button } from "../ui/button";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { FileText, PenLine } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
 import { User } from "@supabase/supabase-js";
@@ -12,19 +12,14 @@ interface SecondaryNavigationProps {
 
 export const SecondaryNavigation = ({ user, navButtonClass }: SecondaryNavigationProps) => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { t } = useLanguage();
 
   const handleHomeClick = () => {
-    navigate("/");
+    window.location.href = "/";
   };
 
   const handleWriteClick = () => {
-    // Preserve the current location and just add the writing parameter
-    const currentPath = location.pathname;
-    const searchParams = new URLSearchParams(location.search);
-    searchParams.set("writing", "true");
-    navigate(`${currentPath}?${searchParams.toString()}`);
+    window.location.href = "/?writing=true";
   };
 
   return (

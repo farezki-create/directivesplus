@@ -7,8 +7,7 @@ const RESPONSE_MAPPING: Record<string, string> = {
   'oui_médical': 'oui seulement si l\'équipe médicale le juge utile',
   'oui_medical': 'oui seulement si l\'équipe médicale le juge utile',
   'non_souffrance': 'la non souffrance est à privilégier',
-  'incertain': 'je ne sais pas',
-  'unsure': 'je ne sais pas',
+  'incertain': 'je ne suis pas sûr(e)',
   'oui': 'oui',
   'non': 'non',
 };

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { QuestionWithExplanation } from "@/components/questions/QuestionWithExplanation";
 import { useQuestionOptions } from "@/components/questions/QuestionOptions";
 import { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const AdvancedIllness = () => {
   const { t, currentLanguage } = useLanguage();
@@ -16,23 +16,18 @@ const AdvancedIllness = () => {
   const { getAdvancedIllnessOptions } = useQuestionOptions();
   const [isSaving, setIsSaving] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
   
   const onSubmit = async () => {
     setIsSaving(true);
     const success = await handleSubmit();
     setIsSaving(false);
     if (success) {
-      // Get the returnUrl from location state or default to the previous page with writing=true
-      const returnUrl = location.state?.from || "/?writing=true";
-      navigate(returnUrl);
+      navigate("/");
     }
   };
 
   const handleBack = () => {
-    // Return to the previous page or home with writing=true
-    const returnUrl = location.state?.from || "/?writing=true";
-    navigate(returnUrl);
+    navigate("/");
   };
 
   return (

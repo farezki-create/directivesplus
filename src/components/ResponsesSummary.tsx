@@ -1,11 +1,14 @@
 
-import { useState } from "react";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
+import { ResponseSection } from "./responses/ResponseSection";
+import { FreeTextInput } from "./free-text/FreeTextInput";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/hooks/useLanguage";
+import { useState } from "react";
+import { Button } from "./ui/button";
+import { FileText } from "lucide-react";
+import { PDFGenerator } from "./PDFGenerator";
 import { usePDFData } from "./pdf/usePDFData";
-import { ProfileSection } from "./profile/ProfileSection";
-import { DirectivesContent } from "./directives/DirectivesContent";
-import { PDFGenerationSection } from "./pdf/PDFGenerationSection";
 
 interface ResponsesSummaryProps {
   userId: string;
@@ -15,6 +18,7 @@ export function ResponsesSummary({ userId }: ResponsesSummaryProps) {
   const { responses, isLoading, hasErrors } = useQuestionnairesResponses(userId);
   const { profile, loading: profileLoading } = usePDFData();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [hasSaved, setHasSaved] = useState(false);
   const [hasSigned, setHasSigned] = useState(false);
   const [showPDFGenerator, setShowPDFGenerator] = useState(false);
@@ -49,21 +53,66 @@ export function ResponsesSummary({ userId }: ResponsesSummaryProps) {
     return null;
   }
 
+  // Display user profile information at the top
+  const renderProfileInfo = () => {
+    if (!profile) return null;
+    
+    return (
+      <div className="mb-8 p-4 bg-gray-50 rounded-lg border">
+        <h3 className="text-lg font-medium mb-3">Informations personnelles</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          <div>
+            <span className="font-semibold">Nom :</span> {profile.last_name || 'Non renseigné'}
+          </div>
+          <div>
+            <span className="font-semibold">Prénom :</span> {profile.first_name || 'Non renseigné'}
+          </div>
+          <div>
+            <span className="font-semibold">Date de naissance :</span> {profile.birth_date || 'Non renseignée'}
+          </div>
+          <div>
+            <span className="font-semibold">Adresse :</span> {profile.address ? `${profile.address}, ${profile.postal_code} ${profile.city}` : 'Non renseignée'}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-8">
-      <ProfileSection profile={profile} loading={profileLoading} />
+      {renderProfileInfo()}
       
-      <DirectivesContent 
+      <ResponseSection
+        title={t('generalOpinion')}
+        responses={responses?.general || []}
+      />
+      <ResponseSection
+        title={t('lifeSupport')}
+        responses={responses?.lifeSupport || []}
+      />
+      <ResponseSection
+        title={t('advancedIllnessTitle')}
+        responses={responses?.advancedIllness || []}
+      />
+      <ResponseSection
+        title={t('preferences')}
+        responses={responses?.preferences || []}
+      />
+      
+      <FreeTextInput 
         userId={userId} 
-        responses={responses}
         onSaveComplete={handleSaveComplete}
         onSignComplete={handleSignComplete}
       />
       
-      <PDFGenerationSection 
-        userId={userId} 
-        isVisible={showPDFGenerator}
-      />
+      {showPDFGenerator && (
+        <div className="mt-8 p-4 border rounded-lg bg-slate-50">
+          <h3 className="text-lg font-medium mb-4">Générer votre document</h3>
+          <div className="flex flex-wrap gap-4">
+            <PDFGenerator userId={userId} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

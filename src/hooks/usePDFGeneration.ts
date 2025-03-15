@@ -1,182 +1,103 @@
 
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { UserProfile, TrustedPerson } from "@/components/pdf/types";
+import { supabase } from "@/integrations/supabase/client";
 import { PDFDocumentGenerator } from "@/components/pdf/PDFDocumentGenerator";
-import { generateSimplifiedPDF, generateBasicPDF, openPrintWindow } from "@/components/pdf/utils/PDFFallbackGenerator";
-import { savePDFToStorage, handlePDFDownload } from "@/components/pdf/utils/PDFStorageUtils";
+import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 
-export function usePDFGeneration() {
+export function usePDFGeneration(userId: string | null, text: string) {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
+  const { responses } = useQuestionnairesResponses(userId || "");
 
-  const generatePDF = async (
-    profile: UserProfile | null,
-    responses: any,
-    trustedPersons: TrustedPerson[],
-    options?: {
-      onSuccess?: (url: string) => void;
-      onError?: (error: Error) => void;
-      saveToStorage?: boolean;
-    }
-  ) => {
-    if (isGenerating) {
-      console.log("[PDFGeneration] Generation already in progress, ignoring request");
-      return;
-    }
-
+  const generatePDF = async () => {
     try {
-      setIsGenerating(true);
-      console.log("[PDFGeneration] Starting PDF generation");
+      console.log("[PDFGeneration] Generating PDF");
       
-      if (!profile) {
-        console.error("[PDFGeneration] No profile data available");
-        throw new Error("Les données du profil sont requises");
+      if (!userId) {
+        console.error("[PDFGeneration] No user ID provided");
+        throw new Error("User ID is required");
       }
 
-      console.log("[PDFGeneration] Profile data:", profile);
-      console.log("[PDFGeneration] Responses data:", responses);
+      // Fetch user profile
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
 
-      // Generate PDF with fallback mechanisms
-      let pdfDataUrl = null;
-      let attempts = 0;
-      const maxAttempts = 3;
-      
-      while (!pdfDataUrl && attempts < maxAttempts) {
-        attempts++;
-        console.log(`[PDFGeneration] Attempt ${attempts} of ${maxAttempts}`);
-        
-        try {
-          if (attempts === 1) {
-            // Try with the standard generator first
-            pdfDataUrl = await PDFDocumentGenerator.generate(profile, responses, trustedPersons);
-          } else if (attempts === 2) {
-            // Try with simpler content if first attempt failed
-            pdfDataUrl = await generateSimplifiedPDF(profile, responses, trustedPersons);
-          } else {
-            // Last attempt - generate extremely basic PDF
-            pdfDataUrl = await generateBasicPDF(profile);
-          }
-        } catch (genError) {
-          console.error(`[PDFGeneration] Error in attempt ${attempts}:`, genError);
-          // Continue to next attempt
-        }
-        
-        if (pdfDataUrl) {
-          console.log(`[PDFGeneration] Successfully generated PDF on attempt ${attempts}`);
-          break;
-        }
-        
-        // Small delay before next attempt
-        await new Promise(resolve => setTimeout(resolve, 500));
-      }
-      
-      if (!pdfDataUrl) {
-        console.error("[PDFGeneration] All PDF generation attempts failed");
-        throw new Error("La génération du PDF a échoué après plusieurs tentatives");
+      if (profileError) {
+        console.error("[PDFGeneration] Error fetching profile:", profileError);
+        throw profileError;
       }
 
-      // Save PDF to storage if requested and user is logged in
-      if (options?.saveToStorage && profile.unique_identifier) {
-        try {
-          console.log("[PDFGeneration] Saving PDF to storage for user:", profile.unique_identifier);
-          await savePDFToStorage(pdfDataUrl, profile.unique_identifier);
-        } catch (storageError) {
-          console.error("[PDFGeneration] Error saving PDF to storage:", storageError);
-          // Continue with preview even if storage fails
-        }
+      // Get user email from auth session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        throw new Error("No authenticated user");
       }
 
+      // Generate PDF with all responses
+      const pdfDataUrl = await PDFDocumentGenerator.generate(
+        {
+          ...profile,
+          unique_identifier: userId,
+          email: session.user.email
+        },
+        {
+          ...responses,
+          synthesis: { free_text: text }
+        },
+        []
+      );
       setPdfUrl(pdfDataUrl);
       setShowPreview(true);
-      
-      if (options?.onSuccess) {
-        options.onSuccess(pdfDataUrl);
-      }
 
       console.log("[PDFGeneration] PDF generated successfully");
       toast({
         title: "Succès",
         description: "Le PDF a été généré avec succès.",
       });
-      
-      return pdfDataUrl;
     } catch (error) {
       console.error("[PDFGeneration] Error generating PDF:", error);
-      
-      // Try in-browser printing as fallback if PDF generation fails completely
-      try {
-        console.log("[PDFGeneration] Attempting in-browser printing fallback");
-        const printWindow = openPrintWindow(profile, responses);
-        
-        if (printWindow) {
-          setPdfUrl(null);
-          toast({
-            title: "Alternative",
-            description: "Une fenêtre d'impression a été ouverte pour les directives.",
-          });
-          return null;
-        }
-      } catch (printError) {
-        console.error("[PDFGeneration] Print fallback also failed:", printError);
-      }
-      
-      if (options?.onError) {
-        options.onError(error instanceof Error ? error : new Error(String(error)));
-      }
-      
       toast({
         title: "Erreur",
-        description: "Impossible de générer le PDF. Veuillez vérifier que toutes vos informations sont remplies.",
+        description: "Impossible de générer le PDF.",
         variant: "destructive",
       });
-      
-      return null;
-    } finally {
-      setIsGenerating(false);
     }
+  };
+
+  const handlePrint = () => {
+    if (pdfUrl) {
+      const printWindow = window.open(pdfUrl);
+      printWindow?.print();
+    }
+  };
+
+  const handleEmail = async () => {
+    // Email handling logic here
   };
 
   const handleDownload = () => {
     if (pdfUrl) {
-      handlePDFDownload(pdfUrl);
-    } else {
-      toast({
-        title: "Erreur",
-        description: "Aucun PDF disponible à télécharger.",
-        variant: "destructive",
-      });
+      const link = document.createElement('a');
+      link.href = pdfUrl;
+      link.download = 'synthese-directives-anticipees.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
-  };
-
-  const openInNewTab = () => {
-    if (pdfUrl) {
-      window.open(pdfUrl, '_blank');
-    } else {
-      toast({
-        title: "Erreur",
-        description: "Aucun PDF disponible à afficher.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const resetState = () => {
-    setPdfUrl(null);
-    setShowPreview(false);
   };
 
   return {
     pdfUrl,
-    setPdfUrl,
     showPreview,
     setShowPreview,
-    isGenerating,
     generatePDF,
-    handleDownload,
-    openInNewTab,
-    resetState
+    handlePrint,
+    handleEmail,
+    handleDownload
   };
 }

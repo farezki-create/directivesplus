@@ -1,4 +1,3 @@
-
 import { useLanguage } from "@/hooks/useLanguage";
 
 export function useQuestionOptions() {
@@ -32,7 +31,7 @@ export function useQuestionOptions() {
       const options = [
         { value: 'oui', label: t('yes') },
         { value: 'non', label: t('no') },
-        { value: 'je_ne_sais_pas', label: t('dontKnow') }
+        { value: 'incertain', label: t('notSure') }
       ];
       console.log('French life support options:', options);
       return options;
