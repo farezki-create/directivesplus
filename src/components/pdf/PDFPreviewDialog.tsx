@@ -1,7 +1,6 @@
-
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { EmailForm } from "./EmailForm";
 import { PDFViewer } from "./PDFViewer";
 import { useEffect, useState } from "react";
@@ -24,14 +23,21 @@ export function PDFPreviewDialog({
 }: PDFPreviewDialogProps) {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [viewerKey, setViewerKey] = useState(0); // Key to force viewer remount
   const [loadError, setLoadError] = useState(false);
   const [retryAttempts, setRetryAttempts] = useState(0);
+  const [localPdfUrl, setLocalPdfUrl] = useState<string | null>(null);
 
   useEffect(() => {
     console.log("[PDFPreviewDialog] Dialog open state:", open);
     console.log("[PDFPreviewDialog] PDF URL present:", pdfUrl ? "Yes" : "No");
+    
+    // Set the local PDF URL when the component mounts or when pdfUrl changes
+    if (pdfUrl !== localPdfUrl) {
+      setLocalPdfUrl(pdfUrl);
+    }
     
     if (open && pdfUrl) {
       // Log URL type for debugging
@@ -50,7 +56,7 @@ export function PDFPreviewDialog({
       setLoadError(false);
       setRetryAttempts(0);
     }
-  }, [open, pdfUrl]);
+  }, [open, pdfUrl, localPdfUrl]);
 
   // Handle dialog close
   useEffect(() => {
@@ -70,8 +76,15 @@ export function PDFPreviewDialog({
     if (onSave) {
       console.log("[PDFPreviewDialog] Handling download");
       onSave();
-      onOpenChange(false);
-      navigate("/generate-pdf");
+      
+      toast({
+        title: "Téléchargement",
+        description: "Votre document est en cours de téléchargement.",
+      });
+      
+      // Optional: keep the dialog open or navigate
+      // onOpenChange(false);
+      // navigate("/generate-pdf");
     }
   };
 
@@ -103,21 +116,31 @@ export function PDFPreviewDialog({
   };
 
   const handleDirectDownload = () => {
-    if (pdfUrl) {
+    if (localPdfUrl) {
       console.log("[PDFPreviewDialog] Direct download initiated");
       const link = document.createElement('a');
-      link.href = pdfUrl;
+      link.href = localPdfUrl;
       link.download = 'directives-anticipees.pdf';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      
+      toast({
+        title: "Téléchargement direct",
+        description: "Votre document a été téléchargé.",
+      });
     }
   };
 
   const openInNewTab = () => {
-    if (pdfUrl) {
+    if (localPdfUrl) {
       console.log("[PDFPreviewDialog] Opening PDF in new tab");
-      window.open(pdfUrl, '_blank');
+      window.open(localPdfUrl, '_blank');
+      
+      toast({
+        title: "Nouvel onglet",
+        description: "Votre document a été ouvert dans un nouvel onglet.",
+      });
     }
   };
 
@@ -126,6 +149,11 @@ export function PDFPreviewDialog({
     setViewerKey(prev => prev + 1);
     setLoadError(false);
     setRetryAttempts(0);
+    
+    toast({
+      title: "Nouvelle tentative",
+      description: "Tentative de rechargement du PDF...",
+    });
   };
 
   const toggleFullscreen = () => {
@@ -133,7 +161,7 @@ export function PDFPreviewDialog({
   };
 
   // If no PDF URL is provided, show a message
-  if (!pdfUrl && open) {
+  if (!localPdfUrl && open) {
     console.error("[PDFPreviewDialog] No PDF URL provided to the dialog");
     
     toast({
@@ -159,7 +187,7 @@ export function PDFPreviewDialog({
         <div className="flex flex-col space-y-4 h-full overflow-hidden">
           <div className="flex flex-wrap justify-between gap-2">
             <EmailForm 
-              pdfUrl={pdfUrl} 
+              pdfUrl={localPdfUrl} 
               onClose={() => onOpenChange(false)} 
             />
             
@@ -173,10 +201,10 @@ export function PDFPreviewDialog({
           </div>
           
           <div className="flex-1 overflow-hidden">
-            {pdfUrl ? (
+            {localPdfUrl ? (
               <PDFViewer 
                 key={viewerKey} 
-                pdfUrl={pdfUrl} 
+                pdfUrl={localPdfUrl} 
                 onLoadError={handleLoadError}
                 onLoadSuccess={handleLoadSuccess}
               />

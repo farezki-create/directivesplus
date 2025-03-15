@@ -5,6 +5,7 @@ import { usePDFUrl } from "./hooks/usePDFUrl";
 import { PDFErrorHandler } from "./PDFErrorHandler";
 import { PDFLoadingIndicator } from "./PDFLoadingIndicator";
 import { PDFRenderer } from "./PDFRenderer";
+import { toast } from "@/hooks/use-toast";
 
 interface PDFViewerProps {
   pdfUrl: string | null;
@@ -18,6 +19,19 @@ export function PDFViewer({ pdfUrl, onLoadError, onLoadSuccess }: PDFViewerProps
   const [retryCount, setRetryCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [renderMethod, setRenderMethod] = useState<'iframe' | 'object' | 'embed'>('iframe');
+  const [renderAttempts, setRenderAttempts] = useState(0);
+  
+  // Reset state when URL changes
+  useEffect(() => {
+    if (pdfUrl) {
+      console.log("[PDFViewer] New PDF URL provided, resetting state");
+      setIsLoading(true);
+      setLoadError(false);
+      setRetryCount(0);
+      setRenderMethod('iframe');
+      setRenderAttempts(0);
+    }
+  }, [pdfUrl, setLoadError]);
   
   // Handle iframe load events
   const handleIframeLoad = () => {
@@ -29,23 +43,39 @@ export function PDFViewer({ pdfUrl, onLoadError, onLoadSuccess }: PDFViewerProps
   
   const handleIframeError = () => {
     console.error(`[PDFViewer] Failed to load PDF with method: ${renderMethod}`);
+    setRenderAttempts(prev => prev + 1);
     
     // Try another rendering method if current one fails
-    if (renderMethod === 'iframe' && retryCount < 1) {
+    if (renderMethod === 'iframe' && renderAttempts < 1) {
       console.log("[PDFViewer] Switching to object tag rendering");
       setRenderMethod('object');
       setRetryCount(prev => prev + 1);
+      toast({
+        title: "Changement de méthode d'affichage",
+        description: "Essai d'une méthode alternative d'affichage du PDF...",
+      });
       return;
-    } else if (renderMethod === 'object' && retryCount < 2) {
+    } else if (renderMethod === 'object' && renderAttempts < 2) {
       console.log("[PDFViewer] Switching to embed tag rendering");
       setRenderMethod('embed');
       setRetryCount(prev => prev + 1);
+      toast({
+        title: "Dernière tentative",
+        description: "Essai de la dernière méthode d'affichage du PDF...",
+      });
       return;
     }
     
+    // If all methods fail, show error
     setLoadError(true);
     setIsLoading(false);
     if (onLoadError) onLoadError();
+    
+    toast({
+      title: "Erreur d'affichage",
+      description: "Impossible d'afficher le PDF. Essayez de le télécharger directement.",
+      variant: "destructive",
+    });
   };
 
   // Setup a timeout to detect loading issues
@@ -58,39 +88,63 @@ export function PDFViewer({ pdfUrl, onLoadError, onLoadSuccess }: PDFViewerProps
         console.log("[PDFViewer] PDF load timeout reached");
         
         // Try next render method on timeout
-        if (renderMethod === 'iframe' && retryCount < 1) {
+        if (renderMethod === 'iframe' && renderAttempts < 1) {
           console.log("[PDFViewer] Timeout - switching to object tag");
           setRenderMethod('object');
           setRetryCount(prev => prev + 1);
+          setRenderAttempts(prev => prev + 1);
+          toast({
+            title: "Chargement lent",
+            description: "Essai d'une méthode alternative d'affichage...",
+          });
           return;
-        } else if (renderMethod === 'object' && retryCount < 2) {
+        } else if (renderMethod === 'object' && renderAttempts < 2) {
           console.log("[PDFViewer] Timeout - switching to embed tag");
           setRenderMethod('embed');
           setRetryCount(prev => prev + 1);
+          setRenderAttempts(prev => prev + 1);
+          toast({
+            title: "Chargement lent",
+            description: "Dernière tentative d'affichage...",
+          });
           return;
         }
         
         setLoadError(true);
         setIsLoading(false);
         if (onLoadError) onLoadError();
+        
+        toast({
+          title: "Timeout",
+          description: "Le chargement du PDF a pris trop de temps. Essayez de le télécharger directement.",
+          variant: "destructive",
+        });
       }
     }, 10000); // 10 second timeout
     
     return () => clearTimeout(timeoutId);
-  }, [cleanUrl, isLoading, onLoadError, renderMethod, retryCount]);
+  }, [cleanUrl, isLoading, onLoadError, renderMethod, renderAttempts, setLoadError]);
 
-  // Reset loading state when URL changes or render method changes
+  // Reset loading state when render method changes
   useEffect(() => {
-    setIsLoading(true);
-  }, [cleanUrl, renderMethod]);
+    if (cleanUrl) {
+      setIsLoading(true);
+    }
+  }, [renderMethod, cleanUrl]);
 
   // Error handling functions
   const handleRetry = () => {
     console.log("[PDFViewer] Retrying PDF load");
-    setRetryCount(0); // Reset to start with iframe again
+    setRetryCount(0);
     setRenderMethod('iframe');
+    setRenderAttempts(0);
     setLoadError(false);
     setIsLoading(true);
+    
+    toast({
+      title: "Nouvelle tentative",
+      description: "Tentative de rechargement du PDF...",
+    });
   };
 
   const handleDirectDownload = () => {
@@ -102,6 +156,11 @@ export function PDFViewer({ pdfUrl, onLoadError, onLoadSuccess }: PDFViewerProps
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      
+      toast({
+        title: "Téléchargement",
+        description: "Le PDF a été téléchargé.",
+      });
     }
   };
 
@@ -109,6 +168,11 @@ export function PDFViewer({ pdfUrl, onLoadError, onLoadSuccess }: PDFViewerProps
     if (cleanUrl) {
       console.log("[PDFViewer] Opening PDF in new tab");
       window.open(cleanUrl, '_blank');
+      
+      toast({
+        title: "Nouvel onglet",
+        description: "Le PDF a été ouvert dans un nouvel onglet.",
+      });
     }
   };
 
