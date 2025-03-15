@@ -2,7 +2,7 @@
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Download, ExternalLink } from "lucide-react";
+import { Download, ExternalLink, RefreshCw } from "lucide-react";
 
 interface PDFViewerProps {
   pdfUrl: string | null;
@@ -79,6 +79,7 @@ export function PDFViewer({ pdfUrl }: PDFViewerProps) {
   const handleRetry = () => {
     if (!cleanUrl) return;
     
+    console.log("[PDFViewer] Retrying PDF load with count:", retryCount + 1);
     setRetryCount(prev => prev + 1);
     setLoadError(false);
     
@@ -89,30 +90,39 @@ export function PDFViewer({ pdfUrl }: PDFViewerProps) {
     // Only add timestamp to non-data URLs
     if (!urlToReload.startsWith('data:')) {
       urlToReload += (urlToReload.includes('?') ? '&' : '?') + `t=${timestamp}`;
-    } else {
-      // For data URLs, we can just reapply the same URL
-      // The browser should handle it as a new resource
     }
     
     // Force reload the iframe
     if (iframeRef.current) {
+      // First clear the iframe source completely
       iframeRef.current.src = 'about:blank';
+      
+      // Then after a delay, set the new URL
       setTimeout(() => {
         if (iframeRef.current) {
+          console.log("[PDFViewer] Setting new iframe URL after reset");
           iframeRef.current.src = urlToReload;
         }
-      }, 100);
+      }, 200); // Increased delay to ensure proper reset
     }
   };
   
   const handleDownload = () => {
     if (cleanUrl) {
+      console.log("[PDFViewer] Downloading PDF");
       const link = document.createElement('a');
       link.href = cleanUrl;
       link.download = 'directives-anticipees.pdf';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+    }
+  };
+
+  const openInNewTab = () => {
+    if (cleanUrl) {
+      console.log("[PDFViewer] Opening PDF in new tab");
+      window.open(cleanUrl, '_blank');
     }
   };
 
@@ -154,6 +164,7 @@ export function PDFViewer({ pdfUrl }: PDFViewerProps) {
                   onClick={handleRetry}
                   className="flex items-center gap-2"
                 >
+                  <RefreshCw className="h-4 w-4" />
                   Réessayer
                 </Button>
                 
@@ -168,11 +179,7 @@ export function PDFViewer({ pdfUrl }: PDFViewerProps) {
                 
                 <Button 
                   variant="outline"
-                  onClick={() => {
-                    if (cleanUrl) {
-                      window.open(cleanUrl, '_blank');
-                    }
-                  }}
+                  onClick={openInNewTab}
                   className="flex items-center gap-2"
                 >
                   <ExternalLink className="h-4 w-4" />

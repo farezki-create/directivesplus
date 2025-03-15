@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "./pdf/usePDFData";
-import { handlePDFGeneration, handlePDFDownload, savePDFToStorage } from "./pdf/utils/PDFGenerationUtils";
+import { handlePDFGeneration, handlePDFDownload } from "./pdf/utils/PDFGenerationUtils";
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
 import { PDFPreviewDialog } from "./pdf/PDFPreviewDialog";
@@ -44,19 +44,21 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
     }
   }, [isGenerating]);
 
-  // Enhanced logging for synthesis data
-  console.log("[PDFGenerator] Current state:", {
-    hasProfile: !!profile,
-    hasTrustedPersons: trustedPersons.length,
-    hasResponses: !!responses,
-    hasSynthesis: !!synthesis,
-    synthesisType: synthesis ? typeof synthesis : 'none',
-    synthesisTextLength: synthesis?.free_text?.length || 0,
-    synthesisTextSample: synthesis?.free_text ? 
-      synthesis.free_text.substring(0, 30) + (synthesis.free_text.length > 30 ? '...' : '') : 
-      'None',
-    isLoading: responsesLoading || profileLoading
-  });
+  // Enhanced debug logging
+  useEffect(() => {
+    console.log("[PDFGenerator] Current state:", {
+      hasProfile: !!profile,
+      hasTrustedPersons: trustedPersons.length,
+      hasResponses: !!responses,
+      hasSynthesis: !!synthesis,
+      synthesisType: synthesis ? typeof synthesis : 'none',
+      synthesisTextLength: synthesis?.free_text?.length || 0,
+      synthesisTextSample: synthesis?.free_text ? 
+        synthesis.free_text.substring(0, 30) + (synthesis.free_text.length > 30 ? '...' : '') : 
+        'None',
+      isLoading: responsesLoading || profileLoading
+    });
+  }, [profile, trustedPersons, responses, synthesis, responsesLoading, profileLoading]);
 
   const generatePDF = () => {
     console.log("[PDFGenerator] Button clicked - Starting PDF generation");
@@ -99,7 +101,8 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
         (url) => {
           console.log("[PDFGenerator] PDF generated, URL status:", url ? "success" : "failed");
           if (url) {
-            console.log("[PDFGenerator] PDF URL sample:", url.substring(0, 50) + "...");
+            console.log("[PDFGenerator] PDF URL length:", url.length);
+            console.log("[PDFGenerator] PDF URL type:", url.startsWith('data:') ? 'data URL' : 'regular URL');
             
             // Store the PDF URL in localStorage as a backup
             try {
@@ -111,14 +114,19 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
           }
           
           setPdfUrl(url);
+          setIsGenerating(false);
+          
           if (onPdfGenerated) {
             onPdfGenerated(url);
           }
-          setIsGenerating(false);
           
           // When setting the preview dialog, make sure we have a valid URL
           if (url) {
-            setShowPreview(true);
+            // Add a short delay before showing preview to allow state to update
+            setTimeout(() => {
+              console.log("[PDFGenerator] Opening preview dialog");
+              setShowPreview(true);
+            }, 300);
           } else {
             toast({
               title: "Erreur",
@@ -128,8 +136,9 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
           }
         },
         (show) => {
-          // Only show preview if we have a URL
+          // Only show preview if we have a URL and explicitly requested
           if (show && pdfUrl) {
+            console.log("[PDFGenerator] Showing preview dialog from callback");
             setShowPreview(show);
           }
         }
@@ -150,7 +159,7 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
     return null;
   }
 
-  console.log("[PDFGenerator] Rendering buttons");
+  console.log("[PDFGenerator] Rendering buttons, pdfUrl exists:", !!pdfUrl);
   return (
     <>
       {isGenerating && (
@@ -173,18 +182,19 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
         Générer Mes directives anticipées
       </Button>
       
-      {pdfUrl && (
-        <PDFPreviewDialog
-          key={`pdf-preview-${pdfUrl ? 'loaded' : 'empty'}`}
-          open={showPreview}
-          onOpenChange={(open) => {
-            console.log("[PDFGenerator] Dialog state changing to:", open);
-            setShowPreview(open);
-          }}
-          pdfUrl={pdfUrl}
-          onSave={() => handlePDFDownload(pdfUrl)}
-        />
-      )}
+      <PDFPreviewDialog
+        key={`pdf-preview-${Date.now()}`} // Force new instance on each render
+        open={showPreview}
+        onOpenChange={(open) => {
+          console.log("[PDFGenerator] Dialog state changing to:", open);
+          setShowPreview(open);
+        }}
+        pdfUrl={pdfUrl}
+        onSave={() => {
+          console.log("[PDFGenerator] Saving PDF");
+          handlePDFDownload(pdfUrl);
+        }}
+      />
     </>
   );
 }

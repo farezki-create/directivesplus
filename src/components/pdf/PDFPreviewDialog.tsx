@@ -36,9 +36,15 @@ export function PDFPreviewDialog({
       // Log URL type for debugging
       if (pdfUrl.startsWith('data:')) {
         console.log("[PDFPreviewDialog] URL is a data URL (length: " + pdfUrl.length + ")");
+        console.log("[PDFPreviewDialog] Data URL sample:", pdfUrl.substring(0, 100) + "...");
       } else {
         console.log("[PDFPreviewDialog] URL preview:", pdfUrl.substring(0, 100) + "...");
       }
+    }
+    
+    // Force a remount of the viewer when dialog opens
+    if (open) {
+      setViewerKey(prev => prev + 1);
     }
   }, [open, pdfUrl]);
 
@@ -57,6 +63,7 @@ export function PDFPreviewDialog({
 
   const handleDownload = () => {
     if (onSave) {
+      console.log("[PDFPreviewDialog] Handling download");
       onSave();
       onOpenChange(false);
       navigate("/generate-pdf");
