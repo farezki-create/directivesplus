@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "./use-toast";
@@ -58,15 +59,6 @@ export const useTrustedPersons = () => {
 
   const savePerson = async (newPerson: NewTrustedPerson) => {
     try {
-      if (persons.length > 0) {
-        toast({
-          title: "Erreur",
-          description: "Vous ne pouvez désigner qu'une seule personne de confiance.",
-          variant: "destructive",
-        });
-        return;
-      }
-
       console.log("[TrustedPersons] Saving new trusted person");
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
       
