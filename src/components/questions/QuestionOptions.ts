@@ -31,7 +31,7 @@ export function useQuestionOptions() {
       const options = [
         { value: 'oui', label: t('yes') },
         { value: 'non', label: t('no') },
-        { value: 'incertain', label: t('notSure') }
+        { value: 'je_ne_sais_pas', label: t('dontKnow') }
       ];
       console.log('French life support options:', options);
       return options;
