@@ -1,15 +1,18 @@
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { FileText } from "lucide-react";
 import { PDFPreviewDialog } from "../pdf/PDFPreviewDialog";
 import { usePDFData } from "../pdf/usePDFData";
-import { handlePDFGeneration, handlePDFDownload, savePDFToStorage } from "../pdf/utils/PDFGenerationUtils";
+import { handlePDFGeneration, handlePDFDownload } from "../pdf/utils/PDFGenerationUtils";
 
 export function TrustedPersonPDFGenerator() {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const { profile, trustedPersons, loading } = usePDFData();
+
+  // Auto-generate PDF when component mounts
+  useState(() => {
+    generatePDF();
+  }, []);
 
   const generatePDF = () => {
     console.log("[TrustedPersonPDF] Starting PDF generation");
@@ -22,6 +25,7 @@ export function TrustedPersonPDFGenerator() {
           const cleanUrl = url.replace(/([^:])\/\/+/g, '$1/').replace(/:\//g, '://');
           console.log("[TrustedPersonPDF] Cleaned URL:", cleanUrl);
           setPdfUrl(cleanUrl);
+          setShowPreview(true);
         } else {
           setPdfUrl(null);
         }
@@ -30,24 +34,12 @@ export function TrustedPersonPDFGenerator() {
     );
   };
 
-  const handleEmail = async () => {
-    console.log("[TrustedPersonPDF] Email functionality not yet implemented");
-  };
-
   if (loading) {
     return null;
   }
 
   return (
     <>
-      <Button 
-        onClick={generatePDF}
-        className="flex items-center gap-2"
-      >
-        <FileText className="h-4 w-4" />
-        Générer le document de désignation
-      </Button>
-      
       <PDFPreviewDialog
         open={showPreview}
         onOpenChange={setShowPreview}
