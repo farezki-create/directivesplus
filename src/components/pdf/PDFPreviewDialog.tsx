@@ -27,6 +27,7 @@ export function PDFPreviewDialog({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [viewerKey, setViewerKey] = useState(0); // Key to force viewer remount
   const [loadError, setLoadError] = useState(false);
+  const [retryAttempts, setRetryAttempts] = useState(0);
 
   useEffect(() => {
     console.log("[PDFPreviewDialog] Dialog open state:", open);
@@ -36,6 +37,7 @@ export function PDFPreviewDialog({
       // Log URL type for debugging
       if (pdfUrl.startsWith('data:')) {
         console.log("[PDFPreviewDialog] URL is a data URL (length: " + pdfUrl.length + ")");
+        // Only log a small sample to avoid console flooding
         console.log("[PDFPreviewDialog] Data URL sample:", pdfUrl.substring(0, 100) + "...");
       } else {
         console.log("[PDFPreviewDialog] URL preview:", pdfUrl.substring(0, 100) + "...");
@@ -46,6 +48,7 @@ export function PDFPreviewDialog({
     if (open) {
       setViewerKey(prev => prev + 1);
       setLoadError(false);
+      setRetryAttempts(0);
     }
   }, [open, pdfUrl]);
 
@@ -73,8 +76,25 @@ export function PDFPreviewDialog({
   };
 
   const handleLoadError = () => {
-    console.log("[PDFPreviewDialog] PDF load error detected");
-    setLoadError(true);
+    console.log("[PDFPreviewDialog] PDF load error detected, attempt:", retryAttempts + 1);
+    
+    if (retryAttempts < 2) {
+      // Auto-retry a couple of times
+      setRetryAttempts(prev => prev + 1);
+      setViewerKey(prev => prev + 1);
+      
+      // Only show error after retries exhausted
+      if (retryAttempts === 1) {
+        setLoadError(true);
+        toast({
+          title: "Problème d'affichage",
+          description: "Impossible d'afficher le PDF. Vous pouvez essayer de le télécharger directement.",
+          variant: "destructive",
+        });
+      }
+    } else {
+      setLoadError(true);
+    }
   };
 
   const handleLoadSuccess = () => {
@@ -102,9 +122,10 @@ export function PDFPreviewDialog({
   };
 
   const handleRetry = () => {
-    console.log("[PDFPreviewDialog] Retrying PDF load");
+    console.log("[PDFPreviewDialog] Manual retry initiated");
     setViewerKey(prev => prev + 1);
     setLoadError(false);
+    setRetryAttempts(0);
   };
 
   const toggleFullscreen = () => {
@@ -114,6 +135,12 @@ export function PDFPreviewDialog({
   // If no PDF URL is provided, show a message
   if (!pdfUrl && open) {
     console.error("[PDFPreviewDialog] No PDF URL provided to the dialog");
+    
+    toast({
+      title: "Erreur",
+      description: "Aucun document PDF n'a été généré.",
+      variant: "destructive",
+    });
   }
 
   return (
@@ -146,12 +173,20 @@ export function PDFPreviewDialog({
           </div>
           
           <div className="flex-1 overflow-hidden">
-            <PDFViewer 
-              key={viewerKey} 
-              pdfUrl={pdfUrl} 
-              onLoadError={handleLoadError}
-              onLoadSuccess={handleLoadSuccess}
-            />
+            {pdfUrl ? (
+              <PDFViewer 
+                key={viewerKey} 
+                pdfUrl={pdfUrl} 
+                onLoadError={handleLoadError}
+                onLoadSuccess={handleLoadSuccess}
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center border rounded p-4">
+                <p className="text-center text-gray-500">
+                  Aucun document PDF n'a été généré. Veuillez réessayer la génération.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </DialogContent>

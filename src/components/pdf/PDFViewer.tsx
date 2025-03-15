@@ -17,17 +17,32 @@ export function PDFViewer({ pdfUrl, onLoadError, onLoadSuccess }: PDFViewerProps
   const { cleanUrl, loadError, setLoadError } = usePDFUrl(pdfUrl);
   const [retryCount, setRetryCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [renderMethod, setRenderMethod] = useState<'iframe' | 'object' | 'embed'>('iframe');
   
   // Handle iframe load events
   const handleIframeLoad = () => {
-    console.log("[PDFViewer] iframe loaded successfully");
+    console.log("[PDFViewer] PDF content loaded successfully with method:", renderMethod);
     setLoadError(false);
     setIsLoading(false);
     if (onLoadSuccess) onLoadSuccess();
   };
   
   const handleIframeError = () => {
-    console.error("[PDFViewer] iframe failed to load PDF");
+    console.error(`[PDFViewer] Failed to load PDF with method: ${renderMethod}`);
+    
+    // Try another rendering method if current one fails
+    if (renderMethod === 'iframe' && retryCount < 1) {
+      console.log("[PDFViewer] Switching to object tag rendering");
+      setRenderMethod('object');
+      setRetryCount(prev => prev + 1);
+      return;
+    } else if (renderMethod === 'object' && retryCount < 2) {
+      console.log("[PDFViewer] Switching to embed tag rendering");
+      setRenderMethod('embed');
+      setRetryCount(prev => prev + 1);
+      return;
+    }
+    
     setLoadError(true);
     setIsLoading(false);
     if (onLoadError) onLoadError();
@@ -41,6 +56,20 @@ export function PDFViewer({ pdfUrl, onLoadError, onLoadSuccess }: PDFViewerProps
       // If still loading after timeout, consider it an error
       if (isLoading) {
         console.log("[PDFViewer] PDF load timeout reached");
+        
+        // Try next render method on timeout
+        if (renderMethod === 'iframe' && retryCount < 1) {
+          console.log("[PDFViewer] Timeout - switching to object tag");
+          setRenderMethod('object');
+          setRetryCount(prev => prev + 1);
+          return;
+        } else if (renderMethod === 'object' && retryCount < 2) {
+          console.log("[PDFViewer] Timeout - switching to embed tag");
+          setRenderMethod('embed');
+          setRetryCount(prev => prev + 1);
+          return;
+        }
+        
         setLoadError(true);
         setIsLoading(false);
         if (onLoadError) onLoadError();
@@ -48,17 +77,18 @@ export function PDFViewer({ pdfUrl, onLoadError, onLoadSuccess }: PDFViewerProps
     }, 10000); // 10 second timeout
     
     return () => clearTimeout(timeoutId);
-  }, [cleanUrl, isLoading, onLoadError]);
+  }, [cleanUrl, isLoading, onLoadError, renderMethod, retryCount]);
 
-  // Reset loading state when URL changes
+  // Reset loading state when URL changes or render method changes
   useEffect(() => {
     setIsLoading(true);
-  }, [cleanUrl]);
+  }, [cleanUrl, renderMethod]);
 
   // Error handling functions
   const handleRetry = () => {
     console.log("[PDFViewer] Retrying PDF load");
-    setRetryCount(prev => prev + 1);
+    setRetryCount(0); // Reset to start with iframe again
+    setRenderMethod('iframe');
     setLoadError(false);
     setIsLoading(true);
   };
@@ -98,6 +128,7 @@ export function PDFViewer({ pdfUrl, onLoadError, onLoadSuccess }: PDFViewerProps
         onLoad={handleIframeLoad}
         onError={handleIframeError}
         retryCount={retryCount}
+        renderMethod={renderMethod}
       />
     </div>
   );
