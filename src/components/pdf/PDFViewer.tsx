@@ -1,6 +1,8 @@
 
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useEffect, useState, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { Download, ExternalLink } from "lucide-react";
 
 interface PDFViewerProps {
   pdfUrl: string | null;
@@ -11,6 +13,7 @@ export function PDFViewer({ pdfUrl }: PDFViewerProps) {
   const [cleanUrl, setCleanUrl] = useState<string | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [loadError, setLoadError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
   
   useEffect(() => {
     if (!pdfUrl) {
@@ -23,11 +26,13 @@ export function PDFViewer({ pdfUrl }: PDFViewerProps) {
     try {
       console.log("[PDFViewer] Processing PDF URL:", pdfUrl.substring(0, 50) + "...");
       
+      // Reset error state when URL changes
+      setLoadError(false);
+      
       // For data URLs, use them directly
       if (pdfUrl.startsWith('data:application/pdf;base64,')) {
         console.log("[PDFViewer] Using data URL directly");
         setCleanUrl(pdfUrl);
-        setLoadError(false);
         return;
       }
       
@@ -44,7 +49,6 @@ export function PDFViewer({ pdfUrl }: PDFViewerProps) {
       console.log("[PDFViewer] Cleaned URL:", cleaned);
       
       setCleanUrl(cleaned);
-      setLoadError(false);
     } catch (error) {
       console.error("[PDFViewer] Invalid URL format:", error);
       
@@ -53,7 +57,6 @@ export function PDFViewer({ pdfUrl }: PDFViewerProps) {
       if (pdfUrl.includes('data:application/pdf;base64,')) {
         console.log("[PDFViewer] Attempting to use original data URL");
         setCleanUrl(pdfUrl);
-        setLoadError(false);
       } else {
         console.error("[PDFViewer] Cannot display PDF, invalid URL");
         setCleanUrl(null);
@@ -71,6 +74,46 @@ export function PDFViewer({ pdfUrl }: PDFViewerProps) {
   const handleIframeError = () => {
     console.error("[PDFViewer] iframe failed to load PDF");
     setLoadError(true);
+  };
+
+  const handleRetry = () => {
+    if (!cleanUrl) return;
+    
+    setRetryCount(prev => prev + 1);
+    setLoadError(false);
+    
+    // Add a timestamp parameter to force reload
+    const timestamp = new Date().getTime();
+    let urlToReload = cleanUrl;
+    
+    // Only add timestamp to non-data URLs
+    if (!urlToReload.startsWith('data:')) {
+      urlToReload += (urlToReload.includes('?') ? '&' : '?') + `t=${timestamp}`;
+    } else {
+      // For data URLs, we can just reapply the same URL
+      // The browser should handle it as a new resource
+    }
+    
+    // Force reload the iframe
+    if (iframeRef.current) {
+      iframeRef.current.src = 'about:blank';
+      setTimeout(() => {
+        if (iframeRef.current) {
+          iframeRef.current.src = urlToReload;
+        }
+      }, 100);
+    }
+  };
+  
+  const handleDownload = () => {
+    if (cleanUrl) {
+      const link = document.createElement('a');
+      link.href = cleanUrl;
+      link.download = 'directives-anticipees.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
   };
 
   // Simple pdf viewer fallback using iframe
@@ -92,20 +135,50 @@ export function PDFViewer({ pdfUrl }: PDFViewerProps) {
           title="PDF Preview"
           onLoad={handleIframeLoad}
           onError={handleIframeError}
+          key={`pdf-iframe-${retryCount}`} // Force re-render on retry
         />
         
         {loadError && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-90">
-            <div className="text-center p-4">
-              <p className="text-red-500 mb-2">Le PDF n'a pas pu être chargé</p>
-              <a 
-                href={cleanUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 hover:underline text-sm"
-              >
-                Ouvrir le PDF dans un nouvel onglet
-              </a>
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-white bg-opacity-95">
+            <div className="text-center p-6 max-w-md space-y-4">
+              <p className="text-red-500 font-medium text-lg mb-2">
+                Le PDF n'a pas pu être chargé
+              </p>
+              <p className="text-gray-600 mb-4">
+                Il se peut que la page web à l'adresse demandée soit temporairement indisponible.
+              </p>
+              
+              <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                <Button 
+                  variant="outline" 
+                  onClick={handleRetry}
+                  className="flex items-center gap-2"
+                >
+                  Réessayer
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  onClick={handleDownload}
+                  className="flex items-center gap-2"
+                >
+                  <Download className="h-4 w-4" />
+                  Télécharger le PDF
+                </Button>
+                
+                <Button 
+                  variant="outline"
+                  onClick={() => {
+                    if (cleanUrl) {
+                      window.open(cleanUrl, '_blank');
+                    }
+                  }}
+                  className="flex items-center gap-2"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  Ouvrir dans un nouvel onglet
+                </Button>
+              </div>
             </div>
           </div>
         )}
