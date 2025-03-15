@@ -7,7 +7,7 @@ import { PDFActionButtons } from "./PDFActionButtons";
 import { PDFViewer } from "./PDFViewer";
 import { Button } from "@/components/ui/button";
 import { Construction, Database } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface PDFPreviewDialogProps {
   open: boolean;
@@ -25,6 +25,7 @@ export function PDFPreviewDialog({
 }: PDFPreviewDialogProps) {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
     console.log("[PDFPreviewDialog] Dialog open state:", open);
@@ -54,6 +55,14 @@ export function PDFPreviewDialog({
     }
   }, [open, pdfUrl]);
 
+  // Handle dialog close
+  useEffect(() => {
+    if (!open) {
+      // Reset fullscreen when dialog closes
+      setIsFullscreen(false);
+    }
+  }, [open]);
+
   const handleDownload = () => {
     if (onSave) {
       onSave();
@@ -69,6 +78,10 @@ export function PDFPreviewDialog({
     });
   };
 
+  const toggleFullscreen = () => {
+    setIsFullscreen(!isFullscreen);
+  };
+
   // If no PDF URL is provided, show a message
   if (!pdfUrl && open) {
     console.error("[PDFPreviewDialog] No PDF URL provided to the dialog");
@@ -76,12 +89,22 @@ export function PDFPreviewDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-full max-w-6xl max-h-[90vh] flex flex-col overflow-hidden">
-        <DialogTitle className="text-lg font-semibold mb-4">
-          Prévisualisation du document
+      <DialogContent 
+        className={`${isFullscreen ? 'w-[95vw] max-w-none h-[95vh]' : 'w-full max-w-6xl max-h-[90vh]'} flex flex-col overflow-hidden`}
+      >
+        <DialogTitle className="text-lg font-semibold mb-4 flex justify-between items-center">
+          <span>Prévisualisation du document</span>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={toggleFullscreen}
+            className="ml-4"
+          >
+            {isFullscreen ? 'Réduire' : 'Agrandir'}
+          </Button>
         </DialogTitle>
         
-        <div className="flex flex-col space-y-4 h-full">
+        <div className="flex flex-col space-y-4 h-full overflow-hidden">
           <div className="flex flex-wrap justify-between gap-2">
             <EmailForm 
               pdfUrl={pdfUrl} 
@@ -103,7 +126,9 @@ export function PDFPreviewDialog({
             </div>
           </div>
           
-          <PDFViewer pdfUrl={pdfUrl} />
+          <div className="flex-1 overflow-hidden">
+            <PDFViewer pdfUrl={pdfUrl} />
+          </div>
         </div>
       </DialogContent>
     </Dialog>

@@ -1,6 +1,6 @@
 
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 interface PDFViewerProps {
   pdfUrl: string | null;
@@ -9,6 +9,8 @@ interface PDFViewerProps {
 export function PDFViewer({ pdfUrl }: PDFViewerProps) {
   const isMobile = useIsMobile();
   const [cleanUrl, setCleanUrl] = useState<string | null>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const objectRef = useRef<HTMLObjectElement>(null);
   
   useEffect(() => {
     if (!pdfUrl) {
@@ -61,10 +63,44 @@ export function PDFViewer({ pdfUrl }: PDFViewerProps) {
   // Log when iframe is about to render
   useEffect(() => {
     if (cleanUrl) {
-      console.log("[PDFViewer] About to render iframe with URL type:", 
+      console.log("[PDFViewer] About to render PDF with URL type:", 
         cleanUrl.startsWith('data:') ? 'data URL' : 'regular URL');
       console.log("[PDFViewer] URL starts with:", cleanUrl.substring(0, 30) + "...");
     }
+  }, [cleanUrl]);
+  
+  // Handle PDF loading errors
+  useEffect(() => {
+    const handleObjectError = () => {
+      console.error("[PDFViewer] Object tag failed to load PDF");
+      if (iframeRef.current) {
+        console.log("[PDFViewer] Attempting to use iframe as fallback");
+      }
+    };
+
+    const handleIframeLoad = () => {
+      console.log("[PDFViewer] iframe loaded successfully");
+    };
+
+    const objectElement = objectRef.current;
+    const iframeElement = iframeRef.current;
+
+    if (objectElement) {
+      objectElement.addEventListener('error', handleObjectError);
+    }
+
+    if (iframeElement) {
+      iframeElement.addEventListener('load', handleIframeLoad);
+    }
+
+    return () => {
+      if (objectElement) {
+        objectElement.removeEventListener('error', handleObjectError);
+      }
+      if (iframeElement) {
+        iframeElement.removeEventListener('load', handleIframeLoad);
+      }
+    };
   }, [cleanUrl]);
   
   if (!cleanUrl) {
@@ -76,17 +112,21 @@ export function PDFViewer({ pdfUrl }: PDFViewerProps) {
   }
 
   return (
-    <div className={`flex-1 ${isMobile ? 'min-h-[60vh]' : 'min-h-[75vh]'} border rounded overflow-hidden`}>
+    <div className={`flex-1 ${isMobile ? 'min-h-[60vh]' : 'min-h-[75vh]'} border rounded overflow-hidden relative w-full h-full`}>
+      {/* Primary method: embed using object tag */}
       <object
+        ref={objectRef}
         data={cleanUrl}
         type="application/pdf"
-        className="w-full h-full"
+        className="w-full h-full absolute inset-0"
         title="PDF Preview"
         id="pdf-viewer-object"
       >
+        {/* Fallback: iframe */}
         <iframe
-          src={cleanUrl}
-          className="w-full h-full border-0"
+          ref={iframeRef}
+          src={`${cleanUrl}#toolbar=0&navpanes=0`}
+          className="w-full h-full border-0 absolute inset-0"
           title="PDF Preview"
           id="pdf-viewer-iframe"
           allow="fullscreen"
@@ -95,6 +135,18 @@ export function PDFViewer({ pdfUrl }: PDFViewerProps) {
           onError={(e) => console.error("[PDFViewer] iframe error:", e)}
         />
       </object>
+      
+      {/* Emergency fallback: link to PDF */}
+      <div className="absolute bottom-4 left-4 right-4 bg-white bg-opacity-75 p-2 rounded hidden data-[visible=true]:block" data-visible={!objectRef.current && !iframeRef.current}>
+        <a 
+          href={cleanUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-600 hover:underline text-sm flex justify-center"
+        >
+          Ouvrir le PDF dans un nouvel onglet
+        </a>
+      </div>
     </div>
   );
 }
