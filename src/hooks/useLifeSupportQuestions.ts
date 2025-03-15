@@ -121,7 +121,7 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
                 options: {
                   yes: item.option_yes || "Oui",
                   no: item.option_no || "Non",
-                  unsure: item.option_unsure || "Je ne suis pas sûr(e)"
+                  unsure: item.option_unsure || "Je ne sais pas"
                 }
               };
             }
