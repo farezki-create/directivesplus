@@ -1,6 +1,10 @@
 
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useEffect, useState, useRef } from "react";
+import { useState, useEffect } from "react";
+import { usePDFUrl } from "./hooks/usePDFUrl";
+import { PDFErrorHandler } from "./PDFErrorHandler";
+import { PDFLoadingIndicator } from "./PDFLoadingIndicator";
+import { PDFRenderer } from "./PDFRenderer";
 
 interface PDFViewerProps {
   pdfUrl: string | null;
@@ -10,65 +14,11 @@ interface PDFViewerProps {
 
 export function PDFViewer({ pdfUrl, onLoadError, onLoadSuccess }: PDFViewerProps) {
   const isMobile = useIsMobile();
-  const [cleanUrl, setCleanUrl] = useState<string | null>(null);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [loadError, setLoadError] = useState(false);
+  const { cleanUrl, loadError, setLoadError } = usePDFUrl(pdfUrl);
   const [retryCount, setRetryCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   
-  useEffect(() => {
-    if (!pdfUrl) {
-      console.log("[PDFViewer] No PDF URL provided");
-      setCleanUrl(null);
-      setLoadError(false);
-      return;
-    }
-    
-    try {
-      console.log("[PDFViewer] Processing PDF URL:", pdfUrl.substring(0, 50) + "...");
-      
-      // Reset error state when URL changes
-      setLoadError(false);
-      setIsLoading(true);
-      
-      // For data URLs, use them directly
-      if (pdfUrl.startsWith('data:application/pdf;base64,')) {
-        console.log("[PDFViewer] Using data URL directly");
-        setCleanUrl(pdfUrl);
-        return;
-      }
-      
-      // For non-data URLs, clean them
-      // Remove any double slashes except in protocol
-      let cleaned = pdfUrl.replace(/([^:])\/\/+/g, '$1/');
-      
-      // Fix protocol if needed
-      if (cleaned.includes(':') && !cleaned.includes('://')) {
-        cleaned = cleaned.replace(/:\//g, '://');
-      }
-      
-      console.log("[PDFViewer] Original URL:", pdfUrl);
-      console.log("[PDFViewer] Cleaned URL:", cleaned);
-      
-      setCleanUrl(cleaned);
-    } catch (error) {
-      console.error("[PDFViewer] Invalid URL format:", error);
-      
-      // For data URLs that might have been corrupted by string handling,
-      // try to use the original URL
-      if (pdfUrl.includes('data:application/pdf;base64,')) {
-        console.log("[PDFViewer] Attempting to use original data URL");
-        setCleanUrl(pdfUrl);
-      } else {
-        console.error("[PDFViewer] Cannot display PDF, invalid URL");
-        setCleanUrl(null);
-        setLoadError(true);
-        if (onLoadError) onLoadError();
-      }
-    }
-  }, [pdfUrl, onLoadError]);
-
-  // Monitor iframe load events to detect success/failure
+  // Handle iframe load events
   const handleIframeLoad = () => {
     console.log("[PDFViewer] iframe loaded successfully");
     setLoadError(false);
@@ -100,40 +50,55 @@ export function PDFViewer({ pdfUrl, onLoadError, onLoadSuccess }: PDFViewerProps
     return () => clearTimeout(timeoutId);
   }, [cleanUrl, isLoading, onLoadError]);
 
-  // Simple pdf viewer fallback using iframe
-  const renderPdfViewer = () => {
-    if (!cleanUrl) {
-      return (
-        <div className="w-full h-full flex items-center justify-center text-gray-500">
-          Aucun document à afficher
-        </div>
-      );
-    }
+  // Reset loading state when URL changes
+  useEffect(() => {
+    setIsLoading(true);
+  }, [cleanUrl]);
 
-    return (
-      <>
-        {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-80 z-10">
-            <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-          </div>
-        )}
-        
-        <iframe
-          ref={iframeRef}
-          src={cleanUrl}
-          className="w-full h-full border-0"
-          title="PDF Preview"
-          onLoad={handleIframeLoad}
-          onError={handleIframeError}
-          key={`pdf-iframe-${retryCount}`} // Force re-render on retry
-        />
-      </>
-    );
+  // Error handling functions
+  const handleRetry = () => {
+    console.log("[PDFViewer] Retrying PDF load");
+    setRetryCount(prev => prev + 1);
+    setLoadError(false);
+    setIsLoading(true);
+  };
+
+  const handleDirectDownload = () => {
+    if (cleanUrl) {
+      console.log("[PDFViewer] Direct download initiated");
+      const link = document.createElement('a');
+      link.href = cleanUrl;
+      link.download = 'directives-anticipees.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
+  const openInNewTab = () => {
+    if (cleanUrl) {
+      console.log("[PDFViewer] Opening PDF in new tab");
+      window.open(cleanUrl, '_blank');
+    }
   };
 
   return (
     <div className={`relative w-full h-full ${isMobile ? 'min-h-[60vh]' : 'min-h-[75vh]'} border rounded overflow-hidden`}>
-      {renderPdfViewer()}
+      <PDFLoadingIndicator isLoading={isLoading} />
+      
+      <PDFErrorHandler 
+        isVisible={loadError}
+        onRetry={handleRetry}
+        onDirectDownload={handleDirectDownload}
+        onOpenInNewTab={openInNewTab}
+      />
+      
+      <PDFRenderer 
+        url={cleanUrl}
+        onLoad={handleIframeLoad}
+        onError={handleIframeError}
+        retryCount={retryCount}
+      />
     </div>
   );
 }
