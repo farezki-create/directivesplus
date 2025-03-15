@@ -6,7 +6,8 @@ import { EmailForm } from "./EmailForm";
 import { PDFActionButtons } from "./PDFActionButtons";
 import { PDFViewer } from "./PDFViewer";
 import { Button } from "@/components/ui/button";
-import { Construction, Database } from "lucide-react";
+import { Construction, Database, Maximize2, Minimize2 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface PDFPreviewDialogProps {
   open: boolean;
@@ -24,6 +25,35 @@ export function PDFPreviewDialog({
 }: PDFPreviewDialogProps) {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [viewerKey, setViewerKey] = useState(0); // Key to force viewer remount
+
+  useEffect(() => {
+    console.log("[PDFPreviewDialog] Dialog open state:", open);
+    console.log("[PDFPreviewDialog] PDF URL present:", pdfUrl ? "Yes" : "No");
+    
+    if (open && pdfUrl) {
+      // Log URL type for debugging
+      if (pdfUrl.startsWith('data:')) {
+        console.log("[PDFPreviewDialog] URL is a data URL (length: " + pdfUrl.length + ")");
+      } else {
+        console.log("[PDFPreviewDialog] URL preview:", pdfUrl.substring(0, 100) + "...");
+      }
+    }
+  }, [open, pdfUrl]);
+
+  // Handle dialog close
+  useEffect(() => {
+    if (!open) {
+      // Reset fullscreen when dialog closes
+      setIsFullscreen(false);
+    }
+  }, [open]);
+
+  // Force remount of viewer when fullscreen changes
+  useEffect(() => {
+    setViewerKey(prev => prev + 1);
+  }, [isFullscreen]);
 
   const handleDownload = () => {
     if (onSave) {
@@ -40,14 +70,40 @@ export function PDFPreviewDialog({
     });
   };
 
+  const toggleFullscreen = () => {
+    setIsFullscreen(!isFullscreen);
+  };
+
+  // If no PDF URL is provided, show a message
+  if (!pdfUrl && open) {
+    console.error("[PDFPreviewDialog] No PDF URL provided to the dialog");
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
-        <DialogTitle className="text-lg font-semibold mb-4">
-          Prévisualisation du document
+      <DialogContent 
+        className={`
+          ${isFullscreen ? 'w-[95vw] max-w-none h-[95vh]' : 'w-full max-w-6xl max-h-[90vh]'} 
+          flex flex-col p-6 overflow-hidden
+        `}
+      >
+        <DialogTitle className="text-lg font-semibold mb-4 flex justify-between items-center">
+          <span>Prévisualisation du document</span>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={toggleFullscreen}
+            className="ml-4"
+          >
+            {isFullscreen ? (
+              <><Minimize2 className="h-4 w-4 mr-2" />Réduire</>
+            ) : (
+              <><Maximize2 className="h-4 w-4 mr-2" />Agrandir</>
+            )}
+          </Button>
         </DialogTitle>
         
-        <div className="flex flex-col space-y-4 h-full">
+        <div className="flex flex-col space-y-4 h-full overflow-hidden">
           <div className="flex flex-wrap justify-between gap-2">
             <EmailForm 
               pdfUrl={pdfUrl} 
@@ -69,7 +125,9 @@ export function PDFPreviewDialog({
             </div>
           </div>
           
-          <PDFViewer pdfUrl={pdfUrl} />
+          <div className="flex-1 overflow-hidden">
+            <PDFViewer key={viewerKey} pdfUrl={pdfUrl} />
+          </div>
         </div>
       </DialogContent>
     </Dialog>

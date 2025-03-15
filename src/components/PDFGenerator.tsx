@@ -31,8 +31,8 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
   const [showPreview, setShowPreview] = useState(false);
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
-  const { responses } = useQuestionnairesResponses(userId);
-  const { profile, trustedPersons, loading } = usePDFData();
+  const { responses, synthesis, isLoading: responsesLoading } = useQuestionnairesResponses(userId);
+  const { profile, trustedPersons, loading: profileLoading } = usePDFData();
 
   useEffect(() => {
     if (isGenerating) {
@@ -44,11 +44,18 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
     }
   }, [isGenerating]);
 
+  // Enhanced logging for synthesis data
   console.log("[PDFGenerator] Current state:", {
     hasProfile: !!profile,
     hasTrustedPersons: trustedPersons.length,
     hasResponses: !!responses,
-    isLoading: loading
+    hasSynthesis: !!synthesis,
+    synthesisType: synthesis ? typeof synthesis : 'none',
+    synthesisTextLength: synthesis?.free_text?.length || 0,
+    synthesisTextSample: synthesis?.free_text ? 
+      synthesis.free_text.substring(0, 30) + (synthesis.free_text.length > 30 ? '...' : '') : 
+      'None',
+    isLoading: responsesLoading || profileLoading
   });
 
   const generatePDF = () => {
@@ -66,17 +73,35 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
       return;
     }
 
+    // Make sure to combine the synthesis with the responses
+    const fullResponses = {
+      ...responses,
+      synthesis: synthesis || null
+    };
+
+    console.log("[PDFGenerator] Generating full PDF with synthesis:", synthesis ? "Present" : "Not present");
+    if (synthesis) {
+      console.log("[PDFGenerator] Synthesis details:", {
+        type: typeof synthesis,
+        hasText: !!synthesis.free_text,
+        textLength: synthesis.free_text?.length || 0,
+        textSample: synthesis.free_text ? 
+          synthesis.free_text.substring(0, 30) + (synthesis.free_text.length > 30 ? '...' : '') : 
+          'None'
+      });
+    }
+
     try {
-      console.log("[PDFGenerator] Generating full PDF");
       handlePDFGeneration(
         profile,
-        responses,
+        fullResponses,
         trustedPersons,
         (url) => {
           console.log("[PDFGenerator] PDF generated, URL status:", url ? "success" : "failed");
-          
-          // Store the PDF URL in localStorage as a backup
           if (url) {
+            console.log("[PDFGenerator] PDF URL sample:", url.substring(0, 50) + "...");
+            
+            // Store the PDF URL in localStorage as a backup
             try {
               localStorage.setItem(`pdf_${userId}`, url);
               console.log("[PDFGenerator] PDF URL saved to localStorage");
@@ -90,8 +115,24 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
             onPdfGenerated(url);
           }
           setIsGenerating(false);
+          
+          // When setting the preview dialog, make sure we have a valid URL
+          if (url) {
+            setShowPreview(true);
+          } else {
+            toast({
+              title: "Erreur",
+              description: "Impossible de générer l'aperçu du PDF.",
+              variant: "destructive",
+            });
+          }
         },
-        setShowPreview
+        (show) => {
+          // Only show preview if we have a URL
+          if (show && pdfUrl) {
+            setShowPreview(show);
+          }
+        }
       );
     } catch (error) {
       console.error("[PDFGenerator] Error during PDF generation:", error);
@@ -104,7 +145,7 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
     }
   };
 
-  if (loading) {
+  if (responsesLoading || profileLoading) {
     console.log("[PDFGenerator] Still loading data...");
     return null;
   }
@@ -132,9 +173,9 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
         Générer Mes directives anticipées
       </Button>
       
-      {showPreview && (
+      {pdfUrl && (
         <PDFPreviewDialog
-          key={pdfUrl}
+          key={`pdf-preview-${pdfUrl ? 'loaded' : 'empty'}`}
           open={showPreview}
           onOpenChange={(open) => {
             console.log("[PDFGenerator] Dialog state changing to:", open);
