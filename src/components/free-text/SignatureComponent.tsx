@@ -125,6 +125,17 @@ export function SignatureComponent({ userId, existingSignature, onSignatureSaved
     setShowSignature(true);
   };
 
+  const handleConfirmSignature = () => {
+    if (existingSignature) {
+      onSignatureSaved(existingSignature);
+      
+      toast({
+        title: "Succès",
+        description: "Votre signature a été confirmée.",
+      });
+    }
+  };
+
   return (
     <div className="space-y-4 border-t pt-4">
       <h3 className="text-lg font-semibold">Signer le document</h3>
@@ -146,6 +157,7 @@ export function SignatureComponent({ userId, existingSignature, onSignatureSaved
         <SignatureDisplay 
           signatureData={existingSignature}
           onEdit={showSignatureEditor}
+          onConfirm={handleConfirmSignature}
         />
       )}
       

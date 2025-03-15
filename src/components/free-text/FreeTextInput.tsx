@@ -74,16 +74,46 @@ export function FreeTextInput({ userId, onSaveComplete, onSignComplete }: FreeTe
     }
   };
 
+  const handleConfirmSignature = async () => {
+    if (!signature || !userId) return;
+    
+    try {
+      setLoading(true);
+      
+      // For confirmation, we just need to trigger the onSignComplete callback
+      // since the signature is already saved in the database
+      toast({
+        title: "Succès",
+        description: "Votre signature a été confirmée.",
+      });
+      
+      if (onSignComplete) {
+        onSignComplete();
+      }
+    } catch (error) {
+      console.error("[FreeTextInput] Error confirming signature:", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la confirmation de votre signature.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Determine if there are changes that need to be saved
   const hasChanges = freeText !== initialText;
   
-  console.log("[FreeTextInput] Button state:", {
-    loading,
-    hasChanges,
-    freeTextLength: freeText.length,
-    initialTextLength: initialText.length,
-    isDisabled: loading || (!hasChanges && freeText.length === 0)
-  });
+  // If the signature section is not showing but we have a signature and the user clicks "confirm"
+  // we should just confirm the signature without showing the signature section
+  const handleSignButtonClick = () => {
+    if (signature && !showSignatureSection) {
+      handleConfirmSignature();
+    } else {
+      setShowSignatureSection(true);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -106,7 +136,8 @@ export function FreeTextInput({ userId, onSaveComplete, onSignComplete }: FreeTe
         
         <SignButton 
           isSaved={isSaved} 
-          onShowSignature={() => setShowSignatureSection(true)} 
+          onShowSignature={handleSignButtonClick}
+          existingSignature={signature}
         />
       </div>
       

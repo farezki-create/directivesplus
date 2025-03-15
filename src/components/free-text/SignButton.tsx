@@ -1,13 +1,14 @@
 
 import { Button } from "@/components/ui/button";
-import { FileSignature } from "lucide-react";
+import { FileSignature, Check } from "lucide-react";
 
 interface SignButtonProps {
   isSaved: boolean;
   onShowSignature: () => void;
+  existingSignature: string | null;
 }
 
-export function SignButton({ isSaved, onShowSignature }: SignButtonProps) {
+export function SignButton({ isSaved, onShowSignature, existingSignature }: SignButtonProps) {
   if (!isSaved) {
     return null;
   }
@@ -16,10 +17,19 @@ export function SignButton({ isSaved, onShowSignature }: SignButtonProps) {
     <Button
       onClick={onShowSignature}
       className="w-full"
-      variant="outline"
+      variant={existingSignature ? "outline" : "default"}
     >
-      <FileSignature className="mr-2 h-4 w-4" />
-      Signer mes directives
+      {existingSignature ? (
+        <>
+          <Check className="mr-2 h-4 w-4" />
+          Confirmer ma signature
+        </>
+      ) : (
+        <>
+          <FileSignature className="mr-2 h-4 w-4" />
+          Signer mes directives
+        </>
+      )}
     </Button>
   );
 }
