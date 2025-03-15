@@ -34,6 +34,19 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
   const { responses, synthesis, isLoading: responsesLoading } = useQuestionnairesResponses(userId);
   const { profile, trustedPersons, loading: profileLoading } = usePDFData();
 
+  // Try to load from localStorage if we have a saved PDF
+  useEffect(() => {
+    try {
+      const savedPdf = localStorage.getItem(`pdf_${userId}`);
+      if (savedPdf && !pdfUrl) {
+        console.log("[PDFGenerator] Found saved PDF in localStorage");
+        setPdfUrl(savedPdf);
+      }
+    } catch (e) {
+      console.warn("[PDFGenerator] Could not read from localStorage:", e);
+    }
+  }, [userId, pdfUrl]);
+
   useEffect(() => {
     if (isGenerating) {
       const interval = setInterval(() => {

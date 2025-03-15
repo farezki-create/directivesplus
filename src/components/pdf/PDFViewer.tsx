@@ -1,19 +1,20 @@
 
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useEffect, useState, useRef } from "react";
-import { Button } from "@/components/ui/button";
-import { Download, ExternalLink, RefreshCw } from "lucide-react";
 
 interface PDFViewerProps {
   pdfUrl: string | null;
+  onLoadError?: () => void;
+  onLoadSuccess?: () => void;
 }
 
-export function PDFViewer({ pdfUrl }: PDFViewerProps) {
+export function PDFViewer({ pdfUrl, onLoadError, onLoadSuccess }: PDFViewerProps) {
   const isMobile = useIsMobile();
   const [cleanUrl, setCleanUrl] = useState<string | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [loadError, setLoadError] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
     if (!pdfUrl) {
@@ -28,6 +29,7 @@ export function PDFViewer({ pdfUrl }: PDFViewerProps) {
       
       // Reset error state when URL changes
       setLoadError(false);
+      setIsLoading(true);
       
       // For data URLs, use them directly
       if (pdfUrl.startsWith('data:application/pdf;base64,')) {
@@ -61,70 +63,42 @@ export function PDFViewer({ pdfUrl }: PDFViewerProps) {
         console.error("[PDFViewer] Cannot display PDF, invalid URL");
         setCleanUrl(null);
         setLoadError(true);
+        if (onLoadError) onLoadError();
       }
     }
-  }, [pdfUrl]);
+  }, [pdfUrl, onLoadError]);
 
   // Monitor iframe load events to detect success/failure
   const handleIframeLoad = () => {
     console.log("[PDFViewer] iframe loaded successfully");
     setLoadError(false);
+    setIsLoading(false);
+    if (onLoadSuccess) onLoadSuccess();
   };
   
   const handleIframeError = () => {
     console.error("[PDFViewer] iframe failed to load PDF");
     setLoadError(true);
+    setIsLoading(false);
+    if (onLoadError) onLoadError();
   };
 
-  const handleRetry = () => {
-    if (!cleanUrl) return;
+  // Setup a timeout to detect loading issues
+  useEffect(() => {
+    if (!cleanUrl || !isLoading) return;
     
-    console.log("[PDFViewer] Retrying PDF load with count:", retryCount + 1);
-    setRetryCount(prev => prev + 1);
-    setLoadError(false);
+    const timeoutId = setTimeout(() => {
+      // If still loading after timeout, consider it an error
+      if (isLoading) {
+        console.log("[PDFViewer] PDF load timeout reached");
+        setLoadError(true);
+        setIsLoading(false);
+        if (onLoadError) onLoadError();
+      }
+    }, 10000); // 10 second timeout
     
-    // Add a timestamp parameter to force reload
-    const timestamp = new Date().getTime();
-    let urlToReload = cleanUrl;
-    
-    // Only add timestamp to non-data URLs
-    if (!urlToReload.startsWith('data:')) {
-      urlToReload += (urlToReload.includes('?') ? '&' : '?') + `t=${timestamp}`;
-    }
-    
-    // Force reload the iframe
-    if (iframeRef.current) {
-      // First clear the iframe source completely
-      iframeRef.current.src = 'about:blank';
-      
-      // Then after a delay, set the new URL
-      setTimeout(() => {
-        if (iframeRef.current) {
-          console.log("[PDFViewer] Setting new iframe URL after reset");
-          iframeRef.current.src = urlToReload;
-        }
-      }, 200); // Increased delay to ensure proper reset
-    }
-  };
-  
-  const handleDownload = () => {
-    if (cleanUrl) {
-      console.log("[PDFViewer] Downloading PDF");
-      const link = document.createElement('a');
-      link.href = cleanUrl;
-      link.download = 'directives-anticipees.pdf';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-  };
-
-  const openInNewTab = () => {
-    if (cleanUrl) {
-      console.log("[PDFViewer] Opening PDF in new tab");
-      window.open(cleanUrl, '_blank');
-    }
-  };
+    return () => clearTimeout(timeoutId);
+  }, [cleanUrl, isLoading, onLoadError]);
 
   // Simple pdf viewer fallback using iframe
   const renderPdfViewer = () => {
@@ -138,6 +112,12 @@ export function PDFViewer({ pdfUrl }: PDFViewerProps) {
 
     return (
       <>
+        {isLoading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-80 z-10">
+            <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        )}
+        
         <iframe
           ref={iframeRef}
           src={cleanUrl}
@@ -147,48 +127,6 @@ export function PDFViewer({ pdfUrl }: PDFViewerProps) {
           onError={handleIframeError}
           key={`pdf-iframe-${retryCount}`} // Force re-render on retry
         />
-        
-        {loadError && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-white bg-opacity-95">
-            <div className="text-center p-6 max-w-md space-y-4">
-              <p className="text-red-500 font-medium text-lg mb-2">
-                Le PDF n'a pas pu être chargé
-              </p>
-              <p className="text-gray-600 mb-4">
-                Il se peut que la page web à l'adresse demandée soit temporairement indisponible.
-              </p>
-              
-              <div className="flex flex-col sm:flex-row gap-2 justify-center">
-                <Button 
-                  variant="outline" 
-                  onClick={handleRetry}
-                  className="flex items-center gap-2"
-                >
-                  <RefreshCw className="h-4 w-4" />
-                  Réessayer
-                </Button>
-                
-                <Button 
-                  variant="outline" 
-                  onClick={handleDownload}
-                  className="flex items-center gap-2"
-                >
-                  <Download className="h-4 w-4" />
-                  Télécharger le PDF
-                </Button>
-                
-                <Button 
-                  variant="outline"
-                  onClick={openInNewTab}
-                  className="flex items-center gap-2"
-                >
-                  <ExternalLink className="h-4 w-4" />
-                  Ouvrir dans un nouvel onglet
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
       </>
     );
   };

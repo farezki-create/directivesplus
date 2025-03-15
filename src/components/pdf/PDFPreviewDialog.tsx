@@ -6,7 +6,7 @@ import { EmailForm } from "./EmailForm";
 import { PDFActionButtons } from "./PDFActionButtons";
 import { PDFViewer } from "./PDFViewer";
 import { Button } from "@/components/ui/button";
-import { Construction, Database, Maximize2, Minimize2 } from "lucide-react";
+import { Construction, Database, Download, ExternalLink, Maximize2, Minimize2, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface PDFPreviewDialogProps {
@@ -27,6 +27,8 @@ export function PDFPreviewDialog({
   const navigate = useNavigate();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [viewerKey, setViewerKey] = useState(0); // Key to force viewer remount
+  const [isDirectDownload, setIsDirectDownload] = useState(false);
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     console.log("[PDFPreviewDialog] Dialog open state:", open);
@@ -45,6 +47,7 @@ export function PDFPreviewDialog({
     // Force a remount of the viewer when dialog opens
     if (open) {
       setViewerKey(prev => prev + 1);
+      setLoadError(false);
     }
   }, [open, pdfUrl]);
 
@@ -53,6 +56,7 @@ export function PDFPreviewDialog({
     if (!open) {
       // Reset fullscreen when dialog closes
       setIsFullscreen(false);
+      setLoadError(false);
     }
   }, [open]);
 
@@ -68,6 +72,41 @@ export function PDFPreviewDialog({
       onOpenChange(false);
       navigate("/generate-pdf");
     }
+  };
+
+  const handleLoadError = () => {
+    console.log("[PDFPreviewDialog] PDF load error detected");
+    setLoadError(true);
+  };
+
+  const handleLoadSuccess = () => {
+    console.log("[PDFPreviewDialog] PDF loaded successfully");
+    setLoadError(false);
+  };
+
+  const handleDirectDownload = () => {
+    if (pdfUrl) {
+      console.log("[PDFPreviewDialog] Direct download initiated");
+      const link = document.createElement('a');
+      link.href = pdfUrl;
+      link.download = 'directives-anticipees.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
+  const openInNewTab = () => {
+    if (pdfUrl) {
+      console.log("[PDFPreviewDialog] Opening PDF in new tab");
+      window.open(pdfUrl, '_blank');
+    }
+  };
+
+  const handleRetry = () => {
+    console.log("[PDFPreviewDialog] Retrying PDF load");
+    setViewerKey(prev => prev + 1);
+    setLoadError(false);
   };
 
   const handleSendToDMP = () => {
@@ -129,11 +168,45 @@ export function PDFPreviewDialog({
               <PDFActionButtons 
                 onDownload={handleDownload} 
               />
+              
+              {loadError && (
+                <>
+                  <Button 
+                    variant="outline" 
+                    onClick={handleRetry}
+                    className="flex items-center gap-2"
+                  >
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Réessayer
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={handleDirectDownload}
+                    className="flex items-center gap-2"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Télécharger
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={openInNewTab}
+                    className="flex items-center gap-2"
+                  >
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Ouvrir
+                  </Button>
+                </>
+              )}
             </div>
           </div>
           
           <div className="flex-1 overflow-hidden">
-            <PDFViewer key={viewerKey} pdfUrl={pdfUrl} />
+            <PDFViewer 
+              key={viewerKey} 
+              pdfUrl={pdfUrl} 
+              onLoadError={handleLoadError}
+              onLoadSuccess={handleLoadSuccess}
+            />
           </div>
         </div>
       </DialogContent>
