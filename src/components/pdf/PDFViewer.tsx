@@ -12,14 +12,40 @@ export function PDFViewer({ pdfUrl }: PDFViewerProps) {
   
   useEffect(() => {
     if (pdfUrl) {
-      // Clean the URL to remove any double slashes except in protocol
-      const cleaned = pdfUrl.replace(/([^:])\/\/+/g, '$1/').replace(/:\//g, '://');
-      console.log("[PDFViewer] Cleaned URL:", cleaned);
-      setCleanUrl(cleaned);
+      // Enhanced URL cleaning and validation
+      try {
+        // Remove any double slashes except in protocol
+        let cleaned = pdfUrl.replace(/([^:])\/\/+/g, '$1/');
+        
+        // Fix protocol if needed
+        if (cleaned.includes(':') && !cleaned.includes('://')) {
+          cleaned = cleaned.replace(/:\//g, '://');
+        }
+        
+        // Log the cleaned URL for debugging
+        console.log("[PDFViewer] Original URL:", pdfUrl);
+        console.log("[PDFViewer] Cleaned URL:", cleaned);
+        
+        // Ensure URL is valid (will throw if not)
+        new URL(cleaned);
+        
+        setCleanUrl(cleaned);
+      } catch (error) {
+        console.error("[PDFViewer] Invalid URL format:", error);
+        console.log("[PDFViewer] Trying to use URL as-is");
+        setCleanUrl(pdfUrl); // Fallback to using original URL
+      }
     } else {
       setCleanUrl(null);
     }
   }, [pdfUrl]);
+  
+  // Additional debugging
+  useEffect(() => {
+    if (cleanUrl) {
+      console.log("[PDFViewer] Rendering iframe with URL:", cleanUrl);
+    }
+  }, [cleanUrl]);
   
   if (!cleanUrl) {
     return (
@@ -38,6 +64,8 @@ export function PDFViewer({ pdfUrl }: PDFViewerProps) {
         id="pdf-viewer-iframe"
         allow="fullscreen"
         loading="eager"
+        onLoad={() => console.log("[PDFViewer] iframe loaded")}
+        onError={(e) => console.error("[PDFViewer] iframe error:", e)}
       />
     </div>
   );

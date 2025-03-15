@@ -26,13 +26,29 @@ export function PDFPreviewDialog({
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Log the PDF URL for debugging
+  // Enhanced logging for debugging PDF display issues
   useEffect(() => {
-    console.log("[PDFPreviewDialog] Received PDF URL:", pdfUrl ? "Present (length: " + pdfUrl.length + ")" : "Not present");
+    console.log("[PDFPreviewDialog] Dialog open state:", open);
+    console.log("[PDFPreviewDialog] PDF URL present:", pdfUrl ? "Yes" : "No");
+    
     if (pdfUrl) {
-      console.log("[PDFPreviewDialog] URL starts with:", pdfUrl.substring(0, 30) + "...");
+      // Log the first 100 characters of the URL to avoid overwhelming the console
+      console.log("[PDFPreviewDialog] URL preview:", pdfUrl.substring(0, 100) + "...");
+      
+      // Check if the URL seems to be a valid data URL
+      if (pdfUrl.startsWith('data:application/pdf;base64,')) {
+        console.log("[PDFPreviewDialog] URL appears to be a valid PDF data URL");
+        
+        // Log the size of the base64 data
+        const base64Data = pdfUrl.split(',')[1];
+        if (base64Data) {
+          console.log("[PDFPreviewDialog] Base64 data length:", base64Data.length);
+        }
+      } else {
+        console.warn("[PDFPreviewDialog] URL doesn't seem to be a PDF data URL");
+      }
     }
-  }, [pdfUrl]);
+  }, [open, pdfUrl]);
 
   const handleDownload = () => {
     if (onSave) {

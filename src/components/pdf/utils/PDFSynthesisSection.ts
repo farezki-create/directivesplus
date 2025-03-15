@@ -8,25 +8,7 @@ export class PDFSynthesisSection {
     
     // More detailed logging to help diagnose issues
     console.log("[PDFSynthesisSection] Starting with yPosition:", startY);
-    console.log("[PDFSynthesisSection] Synthesis object type:", typeof responses?.synthesis);
-    
-    if (responses?.synthesis) {
-      if (typeof responses.synthesis === 'object') {
-        console.log("[PDFSynthesisSection] Synthesis object keys:", Object.keys(responses.synthesis));
-        console.log("[PDFSynthesisSection] Free text present:", !!responses.synthesis.free_text);
-        if (responses.synthesis.free_text) {
-          console.log("[PDFSynthesisSection] Free text length:", responses.synthesis.free_text.length);
-          console.log("[PDFSynthesisSection] Sample:", 
-            responses.synthesis.free_text.substring(0, 50) + "...");
-        }
-      } else if (typeof responses.synthesis === 'string') {
-        console.log("[PDFSynthesisSection] Synthesis is string, length:", responses.synthesis.length);
-        console.log("[PDFSynthesisSection] Sample:", 
-          responses.synthesis.substring(0, 50) + "...");
-      }
-    } else {
-      console.log("[PDFSynthesisSection] No synthesis data provided");
-    }
+    console.log("[PDFSynthesisSection] Synthesis object:", responses?.synthesis);
     
     // Extract the synthesis text, handling different formats
     let synthesisText: string | null = null;
@@ -34,9 +16,18 @@ export class PDFSynthesisSection {
     if (responses?.synthesis) {
       if (typeof responses.synthesis === 'object' && responses.synthesis.free_text) {
         synthesisText = responses.synthesis.free_text.trim();
+        console.log("[PDFSynthesisSection] Using free_text from object:", 
+          synthesisText.substring(0, 50) + (synthesisText.length > 50 ? "..." : ""));
       } else if (typeof responses.synthesis === 'string') {
         synthesisText = responses.synthesis.trim();
+        console.log("[PDFSynthesisSection] Using string directly:", 
+          synthesisText.substring(0, 50) + (synthesisText.length > 50 ? "..." : ""));
+      } else {
+        console.log("[PDFSynthesisSection] Synthesis exists but format is unexpected:", 
+          typeof responses.synthesis, JSON.stringify(responses.synthesis).substring(0, 100));
       }
+    } else {
+      console.log("[PDFSynthesisSection] No synthesis data provided");
     }
     
     // Process synthesis text if available
