@@ -7,7 +7,7 @@ import { PDFActionButtons } from "./PDFActionButtons";
 import { PDFViewer } from "./PDFViewer";
 import { Button } from "@/components/ui/button";
 import { Construction, Database } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface PDFPreviewDialogProps {
   open: boolean;
@@ -25,19 +25,49 @@ export function PDFPreviewDialog({
 }: PDFPreviewDialogProps) {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [validPdfUrl, setValidPdfUrl] = useState<string | null>(null);
 
-  // Vérifier si l'URL du PDF est valide
+  // Vérifier et traiter l'URL du PDF
   useEffect(() => {
     if (open && pdfUrl) {
-      console.log("[PDFPreview] PDF URL:", pdfUrl);
+      try {
+        console.log("[PDFPreview] Received PDF URL type:", typeof pdfUrl);
+        console.log("[PDFPreview] PDF URL starts with:", pdfUrl.substring(0, 30) + "...");
+        
+        // Tenter de nettoyer l'URL
+        const cleanUrl = pdfUrl.replace(/([^:])\/\/+/g, '$1/').replace(/:\//g, '://');
+        
+        if (cleanUrl !== pdfUrl) {
+          console.log("[PDFPreview] URL was cleaned, original length:", pdfUrl.length);
+        }
+        
+        setValidPdfUrl(cleanUrl);
+      } catch (error) {
+        console.error("[PDFPreview] Error processing PDF URL:", error);
+        toast({
+          title: "Erreur",
+          description: "Problème lors du traitement du PDF",
+          variant: "destructive",
+        });
+        setValidPdfUrl(null);
+      }
     }
-  }, [open, pdfUrl]);
+  }, [open, pdfUrl, toast]);
 
   const handleDownload = () => {
     if (onSave) {
-      onSave();
-      onOpenChange(false);
-      navigate("/generate-pdf");
+      try {
+        onSave();
+        onOpenChange(false);
+        navigate("/generate-pdf");
+      } catch (error) {
+        console.error("[PDFPreview] Error during download:", error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de télécharger le document",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -58,7 +88,7 @@ export function PDFPreviewDialog({
         <div className="flex flex-col space-y-4 h-full">
           <div className="flex flex-wrap justify-between gap-2">
             <EmailForm 
-              pdfUrl={pdfUrl} 
+              pdfUrl={validPdfUrl} 
               onClose={() => onOpenChange(false)} 
             />
             <div className="flex flex-wrap gap-2">
@@ -77,7 +107,7 @@ export function PDFPreviewDialog({
             </div>
           </div>
           
-          <PDFViewer pdfUrl={pdfUrl} />
+          <PDFViewer pdfUrl={validPdfUrl} />
         </div>
       </DialogContent>
     </Dialog>

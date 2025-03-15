@@ -29,6 +29,9 @@ export const handlePDFGeneration = async (
       throw new Error("La génération du PDF a échoué");
     }
 
+    console.log("[PDFGeneration] PDF generated successfully, data URL length:", pdfDataUrl.length);
+    console.log("[PDFGeneration] PDF data URL starts with:", pdfDataUrl.substring(0, 50) + "...");
+
     // Save PDF to storage if user is logged in
     if (profile.unique_identifier) {
       try {
@@ -43,7 +46,7 @@ export const handlePDFGeneration = async (
     setPdfUrl(pdfDataUrl);
     setShowPreview(true);
 
-    console.log("[PDFGeneration] PDF generated successfully");
+    console.log("[PDFGeneration] PDF generation and display successful");
     toast({
       title: "Succès",
       description: "Le PDF a été généré avec succès.",
@@ -55,6 +58,8 @@ export const handlePDFGeneration = async (
       description: "Impossible de générer le PDF. Veuillez vérifier que toutes vos informations sont remplies.",
       variant: "destructive",
     });
+    // Ensure we call setPdfUrl with null to indicate failure
+    setPdfUrl(null);
   }
 };
 
@@ -65,59 +70,80 @@ export const savePDFToStorage = async (pdfDataUrl: string, userId: string) => {
       .storage
       .listBuckets();
       
+    if (bucketError) {
+      console.error("[PDFStorage] Error checking buckets:", bucketError);
+      return false;
+    }
+      
     const bucketExists = buckets?.some(bucket => bucket.name === 'directives_pdfs');
     
-    if (bucketError || !bucketExists) {
+    if (!bucketExists) {
       console.warn("[PDFStorage] Storage bucket 'directives_pdfs' does not exist");
       return false; // Sortir silencieusement si le bucket n'existe pas
     }
     
-    // Convert data URL to Blob
-    const response = await fetch(pdfDataUrl);
-    const blob = await response.blob();
-    
-    // Generate a unique filename with timestamp
-    const timestamp = new Date().getTime();
-    const filename = `directives_${timestamp}.pdf`;
-    const filepath = `${userId}/${filename}`;
-    
-    console.log("[PDFStorage] Uploading PDF to storage path:", filepath);
-    
-    // Upload to storage
-    const { data, error } = await supabase
-      .storage
-      .from('directives_pdfs')
-      .upload(filepath, blob, {
-        contentType: 'application/pdf',
-        upsert: false
-      });
+    try {
+      // Convert data URL to Blob
+      const response = await fetch(pdfDataUrl);
       
-    if (error) {
-      console.error("[PDFStorage] Error uploading PDF:", error);
-      throw error;
-    }
-    
-    console.log("[PDFStorage] PDF uploaded successfully:", data);
-    
-    // Convert Date to ISO string for database compatibility
-    const currentDate = new Date().toISOString();
-    
-    // Also save reference in the database
-    const { error: dbError } = await supabase
-      .from('pdf_documents')
-      .insert({
-        user_id: userId,
-        storage_path: filepath,
-        file_name: filename,
-        created_at: currentDate, // Now using string format (ISO)
-        file_path: filepath
-      });
+      if (!response.ok) {
+        throw new Error(`Failed to fetch PDF data: ${response.statusText}`);
+      }
       
-    if (dbError) {
-      console.error("[PDFStorage] Error saving PDF reference to database:", dbError);
+      const blob = await response.blob();
+      
+      if (blob.size === 0) {
+        throw new Error("PDF blob is empty");
+      }
+      
+      console.log("[PDFStorage] PDF blob created successfully, size:", blob.size);
+      
+      // Generate a unique filename with timestamp
+      const timestamp = new Date().getTime();
+      const filename = `directives_${timestamp}.pdf`;
+      const filepath = `${userId}/${filename}`;
+      
+      console.log("[PDFStorage] Uploading PDF to storage path:", filepath);
+      
+      // Upload to storage
+      const { data, error } = await supabase
+        .storage
+        .from('directives_pdfs')
+        .upload(filepath, blob, {
+          contentType: 'application/pdf',
+          upsert: false
+        });
+        
+      if (error) {
+        console.error("[PDFStorage] Error uploading PDF:", error);
+        throw error;
+      }
+      
+      console.log("[PDFStorage] PDF uploaded successfully:", data);
+      
+      // Convert Date to ISO string for database compatibility
+      const currentDate = new Date().toISOString();
+      
+      // Also save reference in the database
+      const { error: dbError } = await supabase
+        .from('pdf_documents')
+        .insert({
+          user_id: userId,
+          storage_path: filepath,
+          file_name: filename,
+          created_at: currentDate,
+          file_path: filepath
+        });
+        
+      if (dbError) {
+        console.error("[PDFStorage] Error saving PDF reference to database:", dbError);
+      }
+      
+      return true;
+    } catch (conversionError) {
+      console.error("[PDFStorage] Error converting or uploading PDF:", conversionError);
+      return false;
     }
-    
-    return true;
   } catch (error) {
     console.error("[PDFStorage] Error in savePDFToStorage:", error);
     return false;
@@ -136,6 +162,19 @@ export const handlePDFDownload = (pdfUrl: string | null) => {
   }
 
   try {
+    console.log("[PDFGeneration] Starting PDF download, URL type:", typeof pdfUrl);
+    
+    // Verify URL is a valid data URL
+    if (!pdfUrl.startsWith('data:')) {
+      console.error("[PDFGeneration] Invalid PDF URL format:", pdfUrl.substring(0, 30) + "...");
+      toast({
+        title: "Erreur",
+        description: "Format de PDF invalide.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     const link = document.createElement('a');
     link.href = pdfUrl;
     link.download = 'directives-anticipees.pdf';
