@@ -7,7 +7,7 @@ import { PDFActionButtons } from "./PDFActionButtons";
 import { PDFViewer } from "./PDFViewer";
 import { Button } from "@/components/ui/button";
 import { Construction, Database } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 interface PDFPreviewDialogProps {
   open: boolean;
@@ -25,67 +25,19 @@ export function PDFPreviewDialog({
 }: PDFPreviewDialogProps) {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [validPdfUrl, setValidPdfUrl] = useState<string | null>(null);
-  const [processingError, setProcessingError] = useState<string | null>(null);
 
-  // Vérifier et traiter l'URL du PDF
+  // Vérifier si l'URL du PDF est valide
   useEffect(() => {
-    if (!open || !pdfUrl) {
-      setValidPdfUrl(null);
-      setProcessingError(null);
-      return;
+    if (open && pdfUrl) {
+      console.log("[PDFPreview] PDF URL:", pdfUrl);
     }
-
-    try {
-      console.log("[PDFPreview] Received PDF URL type:", typeof pdfUrl);
-      console.log("[PDFPreview] PDF URL length:", pdfUrl.length);
-      
-      if (typeof pdfUrl !== 'string' || pdfUrl.trim() === '') {
-        throw new Error("Invalid PDF URL: empty or not a string");
-      }
-      
-      // Vérifier le format de l'URL
-      if (!pdfUrl.startsWith('data:application/pdf') && 
-          !pdfUrl.startsWith('blob:') && 
-          !pdfUrl.startsWith('http')) {
-        console.warn("[PDFPreview] URL may not be in expected format:", pdfUrl.substring(0, 30) + "...");
-      }
-      
-      // Tenter de nettoyer l'URL
-      const cleanUrl = pdfUrl.replace(/([^:])\/\/+/g, '$1/').replace(/:\//g, '://');
-      
-      if (cleanUrl !== pdfUrl) {
-        console.log("[PDFPreview] URL was cleaned, original length:", pdfUrl.length);
-      }
-      
-      setValidPdfUrl(cleanUrl);
-      setProcessingError(null);
-    } catch (error) {
-      console.error("[PDFPreview] Error processing PDF URL:", error);
-      toast({
-        title: "Erreur",
-        description: "Problème lors du traitement du PDF",
-        variant: "destructive",
-      });
-      setValidPdfUrl(null);
-      setProcessingError("Impossible de traiter le PDF");
-    }
-  }, [open, pdfUrl, toast]);
+  }, [open, pdfUrl]);
 
   const handleDownload = () => {
     if (onSave) {
-      try {
-        onSave();
-        onOpenChange(false);
-        navigate("/generate-pdf");
-      } catch (error) {
-        console.error("[PDFPreview] Error during download:", error);
-        toast({
-          title: "Erreur",
-          description: "Impossible de télécharger le document",
-          variant: "destructive",
-        });
-      }
+      onSave();
+      onOpenChange(false);
+      navigate("/generate-pdf");
     }
   };
 
@@ -106,7 +58,7 @@ export function PDFPreviewDialog({
         <div className="flex flex-col space-y-4 h-full">
           <div className="flex flex-wrap justify-between gap-2">
             <EmailForm 
-              pdfUrl={validPdfUrl} 
+              pdfUrl={pdfUrl} 
               onClose={() => onOpenChange(false)} 
             />
             <div className="flex flex-wrap gap-2">
@@ -125,13 +77,7 @@ export function PDFPreviewDialog({
             </div>
           </div>
           
-          {processingError ? (
-            <div className="flex-1 flex items-center justify-center text-red-500">
-              {processingError}
-            </div>
-          ) : (
-            <PDFViewer pdfUrl={validPdfUrl} />
-          )}
+          <PDFViewer pdfUrl={pdfUrl} />
         </div>
       </DialogContent>
     </Dialog>
