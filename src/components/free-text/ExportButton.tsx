@@ -50,14 +50,22 @@ export function ExportButton({ data }: ExportButtonProps) {
         data.responses,
         trustedPersons,
         (url) => {
-          setPdfUrl(url);
-          if (url) {
-            handlePDFDownload(url);
-            toast({
-              title: "Succès",
-              description: "Le PDF a été généré et téléchargé avec succès.",
-            });
+          // Ensure we have a valid PDF URL
+          if (!url) {
+            throw new Error("La génération du PDF a échoué");
           }
+          
+          // Store the PDF URL
+          setPdfUrl(url);
+          
+          // Download the PDF
+          handlePDFDownload(url);
+          
+          toast({
+            title: "Succès",
+            description: "Le PDF a été généré et téléchargé avec succès.",
+          });
+          
           setIsGenerating(false);
         },
         () => {

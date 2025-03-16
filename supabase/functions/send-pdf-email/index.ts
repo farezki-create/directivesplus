@@ -81,42 +81,20 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Normalize the input - clean up any formatting issues
-    let base64Data: string;
+    // Extract the base64 data from the PDF URL
+    let base64Data = "";
     
     if (pdfUrl.startsWith('data:application/pdf;base64,')) {
       base64Data = pdfUrl.substring('data:application/pdf;base64,'.length);
-      console.log("Extracted base64 data from standard data URL format");
-    } else if (pdfUrl.includes('data:application/pdf;filename=')) {
-      // Handle filename format - extract the base64 data
-      const parts = pdfUrl.split(';base64,');
-      if (parts.length > 1) {
-        base64Data = parts[parts.length - 1];
-        console.log("Extracted base64 data from filename format");
-      } else {
-        return new Response(
-          JSON.stringify({ 
-            success: false,
-            error: "Unable to extract base64 content from PDF URL with filename" 
-          }),
-          {
-            status: 400,
-            headers: { "Content-Type": "application/json", ...corsHeaders },
-          }
-        );
-      }
     } else {
-      // Assume it's already a base64 string
+      // Try to be lenient and assume it's already a base64 string
       base64Data = pdfUrl;
-      console.log("Using raw base64 string");
     }
 
     // Remove any whitespace from the base64 string
     base64Data = base64Data.replace(/\s/g, '');
-    console.log("Base64 data length after cleaning:", base64Data.length);
-
+    
     if (base64Data.length < 100) {
-      console.error("Base64 data too short to be a valid PDF:", base64Data.length);
       return new Response(
         JSON.stringify({ 
           success: false,
@@ -129,8 +107,6 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    console.log("Sending email via Resend API...");
-    
     try {
       const emailResponse = await resend.emails.send({
         from: "DirectivesPlus <onboarding@resend.dev>",
@@ -142,7 +118,6 @@ const handler = async (req: Request): Promise<Response> => {
             <p>Bonjour,</p>
             <p>Vous trouverez en pièce jointe vos directives anticipées au format PDF.</p>
             <p>Ce document est personnel et confidentiel. Nous vous recommandons de le partager avec votre personne de confiance et votre médecin traitant.</p>
-            <p>Merci d'utiliser DirectivesPlus pour préserver vos souhaits concernant vos soins de fin de vie.</p>
             <p style="margin-top: 30px;">Cordialement,</p>
             <p style="margin: 0;">L'équipe DirectivesPlus</p>
           </div>
@@ -156,20 +131,6 @@ const handler = async (req: Request): Promise<Response> => {
       });
 
       console.log("Email API response:", JSON.stringify(emailResponse));
-
-      if (emailResponse.error) {
-        console.error("Resend API error details:", emailResponse.error);
-        return new Response(
-          JSON.stringify({ 
-            success: false,
-            error: `Resend API error: ${JSON.stringify(emailResponse.error)}` 
-          }),
-          {
-            status: 500,
-            headers: { "Content-Type": "application/json", ...corsHeaders },
-          }
-        );
-      }
 
       return new Response(JSON.stringify({ 
         success: true,
