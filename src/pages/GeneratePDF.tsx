@@ -18,7 +18,7 @@ export default function GeneratePDF() {
   const { toast } = useToast();
   const [userId, setUserId] = useState<string | null>(null);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-  const { responses, isLoading: responsesLoading } = useQuestionnairesResponses(userId || "");
+  const { responses, synthesis, isLoading: responsesLoading } = useQuestionnairesResponses(userId || "");
   const { profile, trustedPersons, loading: profileLoading } = usePDFData();
   const { directive, isLoading: directiveLoading, saveDirective } = useDirectives(userId || "");
   const [hasReviewed, setHasReviewed] = useState(false);
@@ -53,7 +53,7 @@ export default function GeneratePDF() {
   }, [userId, responses, profile, responsesLoading, profileLoading]);
 
   // Check if we have all the necessary information
-  const hasFreeText = responses?.synthesis?.free_text && responses.synthesis.free_text.length > 0;
+  const hasFreeText = synthesis?.free_text && synthesis.free_text.length > 0;
   const hasTrustedPerson = trustedPersons && trustedPersons.length > 0;
   const hasAnyResponses = responses && (
     (responses.general && responses.general.length > 0) ||
