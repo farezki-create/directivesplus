@@ -10,6 +10,7 @@ interface DirectiveContent {
   preferences: any[];
   profile: any;
   trustedPersons: any[];
+  synthesis?: any; // Added synthesis property as optional
 }
 
 interface Directive {
