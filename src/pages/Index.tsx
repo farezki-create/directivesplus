@@ -20,22 +20,26 @@ const Index = () => {
     // Check authentication status
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      setIsAuthenticated(!!session);
+      const isUserAuthenticated = !!session;
+      setIsAuthenticated(isUserAuthenticated);
       
-      // Check for the writing parameter in the URL and show writing section if present
+      // Check for the writing parameter in the URL
       const params = new URLSearchParams(location.search);
-      if (params.get('writing') === 'true') {
-        if (session) {
-          setShowWritingSection(true);
-          // Scroll to the buttons section for better visibility
-          setTimeout(() => {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }, 100);
-        } else {
-          // Redirect to login if not authenticated
-          toast.error("Vous devez être connecté pour accéder à cette page");
-          navigate("/auth");
-        }
+      const isWritingMode = params.get('writing') === 'true';
+      
+      // Show writing section if:
+      // 1. User is authenticated and writing mode is requested in URL
+      // 2. OR User is authenticated (automatically show writing for logged-in users)
+      if ((isUserAuthenticated && isWritingMode) || isUserAuthenticated) {
+        setShowWritingSection(true);
+        // Scroll to the buttons section for better visibility
+        setTimeout(() => {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 100);
+      } else if (isWritingMode && !isUserAuthenticated) {
+        // Redirect to login if not authenticated but writing mode requested
+        toast.error("Vous devez être connecté pour accéder à cette page");
+        navigate("/auth?writing=true");
       }
     };
     

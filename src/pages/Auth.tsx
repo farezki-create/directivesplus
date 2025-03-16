@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { AuthApiError } from "@supabase/supabase-js";
@@ -28,12 +29,9 @@ const Auth = () => {
       console.log('Auth state changed:', event, session);
       
       if (event === "SIGNED_IN" && session) {
-        console.log('User signed in, redirecting to appropriate page');
-        if (isWritingMode) {
-          navigate("/?writing=true");
-        } else {
-          navigate("/");
-        }
+        console.log('User signed in, redirecting to writing mode');
+        // Always redirect to writing mode after successful sign in
+        navigate("/?writing=true");
       }
     });
 
@@ -41,7 +39,7 @@ const Auth = () => {
       console.log("Cleaning up auth state change listener");
       subscription.unsubscribe();
     };
-  }, [navigate, setLanguage, isWritingMode]);
+  }, [navigate, setLanguage]);
 
   const handleSubmit = async (values: FormValues) => {
     try {
@@ -132,11 +130,8 @@ const Auth = () => {
           description: "Vous êtes maintenant connecté.",
         });
         
-        if (isWritingMode) {
-          navigate("/?writing=true");
-        } else {
-          navigate("/");
-        }
+        // Always redirect to writing mode after login
+        navigate("/?writing=true");
       }
     } catch (error) {
       console.error('Auth error:', error);
