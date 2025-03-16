@@ -1,3 +1,4 @@
+
 import { z } from "zod";
 
 export const loginSchema = z.object({
@@ -17,11 +18,11 @@ export const signUpSchema = z.object({
   confirmPassword: z.string(),
   firstName: z.string().min(1, "Le prénom est requis"),
   lastName: z.string().min(1, "Le nom est requis"),
-  birthDate: z.string().optional(),
-  address: z.string().optional(),
-  city: z.string().optional(),
-  postalCode: z.string().optional(),
-  country: z.string().optional(),
+  birthDate: z.string().min(1, "La date de naissance est requise"),
+  address: z.string().min(1, "L'adresse est requise"),
+  city: z.string().min(1, "La ville est requise"),
+  postalCode: z.string().min(1, "Le code postal est requis"),
+  country: z.string().min(1, "Le pays est requis"),
   phoneNumber: z.string().optional(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Les mots de passe ne correspondent pas",

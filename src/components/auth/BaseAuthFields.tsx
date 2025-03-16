@@ -20,9 +20,9 @@ export const BaseAuthFields = ({ form, isSignUp }: BaseAuthFieldsProps) => {
         name="email"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>{t('email')}</FormLabel>
+            <FormLabel>{t('email')} *</FormLabel>
             <FormControl>
-              <Input placeholder="Votre adresse email" {...field} />
+              <Input placeholder="Votre adresse email" {...field} required />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -35,7 +35,7 @@ export const BaseAuthFields = ({ form, isSignUp }: BaseAuthFieldsProps) => {
         render={({ field }) => (
           <FormItem>
             <FormLabel>
-              {t('password')}
+              {t('password')} *
               {isSignUp && t('passwordHint')}
             </FormLabel>
             <FormControl>
@@ -43,6 +43,7 @@ export const BaseAuthFields = ({ form, isSignUp }: BaseAuthFieldsProps) => {
                 type="password" 
                 placeholder={isSignUp ? t('choosePassword') : t('yourPassword')} 
                 {...field} 
+                required
               />
             </FormControl>
             <FormMessage />

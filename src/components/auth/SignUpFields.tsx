@@ -21,12 +21,13 @@ export const SignUpFields = ({ form }: SignUpFieldsProps) => {
         name="confirmPassword"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>{t('confirmPassword')}</FormLabel>
+            <FormLabel>{t('confirmPassword')} *</FormLabel>
             <FormControl>
               <Input 
                 type="password" 
                 placeholder={t('retypePassword')} 
                 {...field} 
+                required
               />
             </FormControl>
             <FormMessage />
@@ -40,9 +41,9 @@ export const SignUpFields = ({ form }: SignUpFieldsProps) => {
           name="firstName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t('firstName')}</FormLabel>
+              <FormLabel>{t('firstName')} *</FormLabel>
               <FormControl>
-                <Input placeholder={t('yourFirstName')} {...field} />
+                <Input placeholder={t('yourFirstName')} {...field} required />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -54,9 +55,9 @@ export const SignUpFields = ({ form }: SignUpFieldsProps) => {
           name="lastName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t('lastName')}</FormLabel>
+              <FormLabel>{t('lastName')} *</FormLabel>
               <FormControl>
-                <Input placeholder={t('yourLastName')} {...field} />
+                <Input placeholder={t('yourLastName')} {...field} required />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -69,9 +70,9 @@ export const SignUpFields = ({ form }: SignUpFieldsProps) => {
         name="birthDate"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>{t('birthDate')}</FormLabel>
+            <FormLabel>{t('birthDate')} *</FormLabel>
             <FormControl>
-              <Input type="date" {...field} />
+              <Input type="date" {...field} required />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -83,9 +84,9 @@ export const SignUpFields = ({ form }: SignUpFieldsProps) => {
         name="address"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>{t('address')}</FormLabel>
+            <FormLabel>{t('address')} *</FormLabel>
             <FormControl>
-              <Input placeholder={t('yourAddress')} {...field} />
+              <Input placeholder={t('yourAddress')} {...field} required />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -98,9 +99,9 @@ export const SignUpFields = ({ form }: SignUpFieldsProps) => {
           name="postalCode"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t('postalCode')}</FormLabel>
+              <FormLabel>{t('postalCode')} *</FormLabel>
               <FormControl>
-                <Input placeholder={t('yourPostalCode')} {...field} />
+                <Input placeholder={t('yourPostalCode')} {...field} required />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -112,9 +113,9 @@ export const SignUpFields = ({ form }: SignUpFieldsProps) => {
           name="city"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t('city')}</FormLabel>
+              <FormLabel>{t('city')} *</FormLabel>
               <FormControl>
-                <Input placeholder={t('yourCity')} {...field} />
+                <Input placeholder={t('yourCity')} {...field} required />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -127,8 +128,8 @@ export const SignUpFields = ({ form }: SignUpFieldsProps) => {
         name="country"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>{t('country')}</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
+            <FormLabel>{t('country')} *</FormLabel>
+            <Select onValueChange={field.onChange} defaultValue={field.value} required>
               <FormControl>
                 <SelectTrigger>
                   <SelectValue placeholder={t('selectCountry')} />
@@ -183,6 +184,10 @@ export const SignUpFields = ({ form }: SignUpFieldsProps) => {
           </FormItem>
         )}
       />
+      
+      <p className="text-xs text-muted-foreground">
+        * Champs obligatoires
+      </p>
     </div>
   );
 };
