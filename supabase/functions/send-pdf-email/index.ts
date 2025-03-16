@@ -108,6 +108,8 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     try {
+      console.log("Attempting to send email via Resend API...");
+      
       const emailResponse = await resend.emails.send({
         from: "DirectivesPlus <onboarding@resend.dev>",
         to: [recipientEmail],
@@ -131,6 +133,21 @@ const handler = async (req: Request): Promise<Response> => {
       });
 
       console.log("Email API response:", JSON.stringify(emailResponse));
+
+      if (emailResponse.error) {
+        console.error("Resend API returned an error:", emailResponse.error);
+        return new Response(
+          JSON.stringify({ 
+            success: false,
+            error: `Email service error: ${emailResponse.error.message || "Unknown error"}`,
+            details: JSON.stringify(emailResponse.error)
+          }),
+          {
+            status: 500,
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+          }
+        );
+      }
 
       return new Response(JSON.stringify({ 
         success: true,
