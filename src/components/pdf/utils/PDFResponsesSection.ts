@@ -70,23 +70,6 @@ export class PDFResponsesSection {
     addSection("Maladie avancée", responses.advancedIllness || []);
     addSection("Mes goûts et mes peurs", responses.preferences || []);
 
-    // Section texte libre
-    if (responses.synthesis?.free_text) {
-      if (yPosition > doc.internal.pageSize.getHeight() - 40) {
-        doc.addPage();
-        yPosition = 30;
-      }
-
-      sectionTitleStyle();
-      doc.text("Texte libre", 20, yPosition);
-      yPosition += 10;
-
-      responseStyle();
-      const lines = doc.splitTextToSize(responses.synthesis.free_text, pageWidth - 40);
-      doc.text(lines, 20, yPosition);
-      yPosition += lines.length * 6;
-    }
-
     return yPosition;
   }
 }

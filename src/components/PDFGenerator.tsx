@@ -12,6 +12,7 @@ import { Progress } from "@/components/ui/progress";
 interface PDFGeneratorProps {
   userId: string;
   onPdfGenerated?: (url: string | null) => void;
+  synthesisText?: string;
 }
 
 /**
@@ -31,7 +32,7 @@ const waitingMessages = [
   "Votre document est presque prêt... 🌟",
 ];
 
-export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
+export function PDFGenerator({ userId, onPdfGenerated, synthesisText }: PDFGeneratorProps) {
   console.log("[PDFGenerator] Initializing with userId:", userId);
   
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
@@ -39,7 +40,7 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
-  const { responses } = useQuestionnairesResponses(userId);
+  const { responses, synthesis, isLoading } = useQuestionnairesResponses(userId);
   const { profile, trustedPersons, loading } = usePDFData();
 
   useEffect(() => {
@@ -74,7 +75,9 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
     hasProfile: !!profile,
     hasTrustedPersons: trustedPersons.length,
     hasResponses: !!responses,
-    isLoading: loading
+    isLoading: loading || isLoading,
+    synthesisText: synthesisText ? "Provided" : "Not provided",
+    dbSynthesis: synthesis?.free_text ? "Available" : "Not available"
   });
 
   const generatePDF = () => {
@@ -96,11 +99,17 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
     try {
       console.log("[PDFGenerator] Generating full PDF");
       
+      // Use provided synthesis text if available, otherwise fallback to database
+      const finalSynthesisText = synthesisText || synthesis?.free_text || "";
+      
       // Small delay to ensure UI updates before heavy PDF generation starts
       setTimeout(() => {
         handlePDFGeneration(
           profile,
-          responses,
+          {
+            ...responses,
+            synthesis: { free_text: finalSynthesisText }
+          },
           trustedPersons,
           (url) => {
             console.log("[PDFGenerator] PDF generated, URL status:", url ? "success" : "failed");
@@ -141,7 +150,7 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
     }
   };
 
-  if (loading) {
+  if (loading || isLoading) {
     console.log("[PDFGenerator] Still loading data...");
     return null;
   }

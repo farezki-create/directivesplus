@@ -9,13 +9,15 @@ import { useDirectives } from "@/hooks/useDirectives";
 import { useToast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
 import { Header } from "@/components/Header";
+import { useSynthesis } from "@/hooks/useSynthesis";
 
 export default function GeneratePDF() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [userId, setUserId] = useState<string | null>(null);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-  const { responses, isLoading: responsesLoading } = useQuestionnairesResponses(userId || "");
+  const { responses, synthesis, isLoading: responsesLoading } = useQuestionnairesResponses(userId || "");
+  const { text: freeText } = useSynthesis(userId);
   const { profile, trustedPersons, loading: profileLoading } = usePDFData();
   const { directive, isLoading: directiveLoading, saveDirective } = useDirectives(userId || "");
 
@@ -37,6 +39,10 @@ export default function GeneratePDF() {
   useEffect(() => {
     if (userId && responses && profile && !responsesLoading && !profileLoading) {
       console.log("[GeneratePDF] Saving directives");
+      
+      // Ensure we have the free text synthesis from the database
+      const synthesisContent = synthesis?.free_text || freeText || "";
+      
       saveDirective.mutate({
         general: responses.general,
         lifeSupport: responses.lifeSupport,
@@ -44,9 +50,10 @@ export default function GeneratePDF() {
         preferences: responses.preferences,
         profile,
         trustedPersons,
+        synthesis: { free_text: synthesisContent }
       });
     }
-  }, [userId, responses, profile, responsesLoading, profileLoading]);
+  }, [userId, responses, profile, responsesLoading, profileLoading, synthesis, freeText]);
 
   if (!userId) {
     return null;
@@ -76,7 +83,11 @@ export default function GeneratePDF() {
             </div>
             
             {!isLoading && (
-              <FullPDFGenerator userId={userId} onPdfGenerated={setPdfUrl} />
+              <FullPDFGenerator 
+                userId={userId} 
+                onPdfGenerated={setPdfUrl} 
+                synthesisText={freeText || synthesis?.free_text || ""}
+              />
             )}
           </Card>
         </div>

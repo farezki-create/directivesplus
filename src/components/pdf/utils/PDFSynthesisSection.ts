@@ -1,3 +1,4 @@
+
 import { jsPDF } from "jspdf";
 
 export class PDFSynthesisSection {

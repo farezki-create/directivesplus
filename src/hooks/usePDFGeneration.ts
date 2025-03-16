@@ -4,12 +4,14 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { PDFDocumentGenerator } from "@/components/pdf/PDFDocumentGenerator";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
+import { useSynthesis } from "@/hooks/useSynthesis";
 
-export function usePDFGeneration(userId: string | null, text: string) {
+export function usePDFGeneration(userId: string | null, text?: string) {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const { toast } = useToast();
-  const { responses } = useQuestionnairesResponses(userId || "");
+  const { responses, synthesis } = useQuestionnairesResponses(userId || "");
+  const { text: freeText } = useSynthesis(userId);
 
   const generatePDF = async () => {
     try {
@@ -38,6 +40,20 @@ export function usePDFGeneration(userId: string | null, text: string) {
         throw new Error("No authenticated user");
       }
 
+      // Fetch trusted persons
+      const { data: trustedPersons, error: trustedPersonsError } = await supabase
+        .from('trusted_persons')
+        .select('*')
+        .eq('user_id', userId);
+
+      if (trustedPersonsError) {
+        console.error("[PDFGeneration] Error fetching trusted persons:", trustedPersonsError);
+        // Continue without trusted persons
+      }
+
+      // Use the passed text parameter if provided, otherwise use the synthesis text from database
+      const synthesisText = text || freeText || synthesis?.free_text || "";
+
       // Generate PDF with all responses
       const pdfDataUrl = await PDFDocumentGenerator.generate(
         {
@@ -47,9 +63,9 @@ export function usePDFGeneration(userId: string | null, text: string) {
         },
         {
           ...responses,
-          synthesis: { free_text: text }
+          synthesis: { free_text: synthesisText }
         },
-        []
+        trustedPersons || []
       );
       setPdfUrl(pdfDataUrl);
       setShowPreview(true);
