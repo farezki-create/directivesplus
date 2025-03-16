@@ -1,14 +1,14 @@
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { PDFGenerator } from "@/components/PDFGenerator";
+import { PDFGenerator as FullPDFGenerator } from "@/components/PDFGenerator";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "@/components/pdf/usePDFData";
 import { useDirectives } from "@/hooks/useDirectives";
 import { useToast } from "@/hooks/use-toast";
-import { ResponseSection } from "@/components/responses/ResponseSection";
 import { Card } from "@/components/ui/card";
+import { Header } from "@/components/Header";
 
 export default function GeneratePDF() {
   const navigate = useNavigate();
@@ -53,24 +53,34 @@ export default function GeneratePDF() {
   }
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold">Génération de mes directives anticipées</h2>
-          <button 
-            onClick={() => navigate("/free-text")}
-            className="text-blue-500 hover:text-blue-700"
-          >
-            Retour à la saisie
-          </button>
-        </div>
+    <div className="min-h-screen flex flex-col">
+      <Header />
+      
+      <main className="flex-1 container mx-auto py-8 px-4">
+        <div className="max-w-4xl mx-auto space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold">Génération de mes directives anticipées</h2>
+            <button 
+              onClick={() => navigate("/free-text")}
+              className="text-blue-500 hover:text-blue-700"
+            >
+              Retour à la saisie
+            </button>
+          </div>
 
-        <div className="flex gap-4 flex-wrap">
-          {!isLoading && (
-            <PDFGenerator userId={userId} onPdfGenerated={setPdfUrl} />
-          )}
+          <Card className="p-6">
+            <div className="flex gap-4 flex-wrap mb-6">
+              <p className="text-gray-600 mb-4">
+                Voici vos directives anticipées prêtes à être générées. Cliquez sur le bouton ci-dessous pour créer votre document PDF.
+              </p>
+            </div>
+            
+            {!isLoading && (
+              <FullPDFGenerator userId={userId} onPdfGenerated={setPdfUrl} />
+            )}
+          </Card>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

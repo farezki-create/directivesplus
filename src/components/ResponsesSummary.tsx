@@ -5,8 +5,6 @@ import { FreeTextInput } from "./free-text/FreeTextInput";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useState } from "react";
-import { Button } from "./ui/button";
-import { FileText } from "lucide-react";
 import { PDFGenerator } from "./pdf/PDFGenerator";
 import { usePDFData } from "./pdf/usePDFData";
 import { format, isValid, parseISO } from "date-fns";
