@@ -3,10 +3,10 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Mail, AlertCircle, Info, CheckCircle, Loader2 } from "lucide-react";
+import { Mail, AlertCircle, Info, CheckCircle, Loader2, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface EmailFormProps {
   pdfUrl: string | null;
@@ -65,7 +65,7 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
       
       // Ensure PDF URL is in the correct format
       let cleanPdfUrl = pdfUrl;
-      if (!cleanPdfUrl.startsWith('data:application/pdf;base64,')) {
+      if (cleanPdfUrl && !cleanPdfUrl.startsWith('data:application/pdf;base64,')) {
         cleanPdfUrl = 'data:application/pdf;base64,' + cleanPdfUrl;
       }
 
@@ -75,6 +75,8 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
           recipientEmail: emailAddress,
         },
       });
+
+      console.log("Function response:", data, error);
 
       if (error) {
         console.error("Supabase function error:", error);
@@ -94,6 +96,8 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
         
         if (errorMsg.includes("RESEND_API_KEY")) {
           setApiError("La clé d'API pour l'envoi d'emails n'est pas configurée. Veuillez contacter l'administrateur du site.");
+        } else if (errorMsg.includes("base64")) {
+          setApiError("Le format du PDF est invalide. Veuillez regénérer le document et réessayer.");
         } else {
           setApiError(errorMsg);
         }
@@ -111,6 +115,7 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
       toast({
         title: "Email envoyé",
         description: "L'email a été envoyé. Vérifiez votre boîte de réception et votre dossier spam.",
+        variant: "default",
       });
       
       setEmailAddress("");
@@ -131,20 +136,30 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
     <div className="flex flex-col space-y-4 mr-auto">
       {apiError && (
         <Alert variant="destructive" className="mb-4">
-          <AlertCircle className="h-4 w-4" />
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Erreur d'envoi</AlertTitle>
           <AlertDescription className="text-sm">{apiError}</AlertDescription>
+          <AlertDescription className="text-sm mt-2">
+            Vérifiez que:
+            <ul className="list-disc pl-5 mt-1">
+              <li>Le document PDF a été correctement généré</li>
+              <li>La clé d'API Resend est correctement configurée</li>
+              <li>L'adresse email est correcte</li>
+            </ul>
+          </AlertDescription>
         </Alert>
       )}
       
       {success && (
         <Alert className="mb-4 bg-green-50 border-green-200">
           <CheckCircle className="h-4 w-4 text-green-500" />
+          <AlertTitle className="text-green-700">Email envoyé avec succès!</AlertTitle>
           <AlertDescription className="text-sm">
-            Email envoyé! Si vous ne le recevez pas dans les 5 minutes, vérifiez:
+            Vérifiez votre boîte de réception. Si vous ne recevez pas l'email dans les 5 minutes, vérifiez:
             <ul className="list-disc pl-5 mt-1">
               <li>Votre dossier spam/indésirables</li>
-              <li>Que l'adresse email est correcte</li>
-              <li>Que la clé d'API Resend est correctement configurée</li>
+              <li>L'adresse email saisie: <strong>{emailAddress || "(non saisie)"}</strong></li>
+              <li>L'email sera envoyé depuis <strong>onboarding@resend.dev</strong></li>
             </ul>
           </AlertDescription>
         </Alert>
@@ -152,15 +167,18 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
       
       <div className="flex flex-col space-y-2">
         <Label htmlFor="email">Email</Label>
-        <div className="flex items-center space-x-2">
-          <Input
-            id="email"
-            type="email"
-            placeholder="example@email.com"
-            value={emailAddress}
-            onChange={(e) => setEmailAddress(e.target.value)}
-            className="w-full sm:w-64"
-          />
+        <div className="flex items-center space-x-2 flex-wrap gap-2">
+          <div className="flex-1 min-w-[200px]">
+            <Input
+              id="email"
+              type="email"
+              placeholder="example@email.com"
+              value={emailAddress}
+              onChange={(e) => setEmailAddress(e.target.value)}
+              className="w-full"
+              disabled={isSending}
+            />
+          </div>
           <Button 
             variant={success ? "outline" : "default"} 
             onClick={handleEmailSend}

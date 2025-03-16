@@ -58,6 +58,7 @@ const handler = async (req: Request): Promise<Response> => {
     let body;
     try {
       body = await req.json();
+      console.log("Request body parsed successfully");
     } catch (parseError) {
       console.error("Error parsing request body:", parseError);
       return new Response(
@@ -138,10 +139,40 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    // Validate base64 data format
+    const base64Regex = /^[A-Za-z0-9+/=]+$/;
+    if (!base64Regex.test(base64Data)) {
+      console.error("Invalid base64 format - contains non-base64 characters");
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          error: "Invalid PDF data format - contains non-base64 characters" 
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
     try {
       console.log("Attempting to send email via Resend API...");
       console.log("From: DirectivesPlus <onboarding@resend.dev>");
       console.log("To:", recipientEmail);
+      
+      if (!resend) {
+        console.error("Resend client is not initialized");
+        return new Response(
+          JSON.stringify({ 
+            success: false,
+            error: "Email service not initialized properly" 
+          }),
+          {
+            status: 500,
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+          }
+        );
+      }
       
       const emailResponse = await resend.emails.send({
         from: "DirectivesPlus <onboarding@resend.dev>",
