@@ -92,7 +92,7 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
       
       console.log("PDF format prepared for sending, prefix:", cleanPdfUrl.substring(0, 50));
       console.log("Total PDF length after cleaning:", cleanPdfUrl.length);
-      
+
       const { data, error } = await supabase.functions.invoke('send-pdf-email', {
         body: {
           pdfUrl: cleanPdfUrl,
@@ -106,22 +106,21 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
         throw new Error(`Erreur lors de l'appel à la fonction: ${error.message}`);
       }
 
-      if (!data) {
-        throw new Error("Aucune réponse reçue du serveur");
-      }
-
-      if (!data.success) {
-        console.error("Function returned error:", data.error);
-        if (data.error && data.error.includes("RESEND_API_KEY")) {
+      if (!data || !data.success) {
+        const errorMsg = data?.error || "Erreur inconnue lors de l'envoi du PDF";
+        console.error("Function returned error:", errorMsg);
+        
+        if (errorMsg.includes("RESEND_API_KEY")) {
           setApiError("La clé d'API pour l'envoi d'emails n'est pas configurée. Veuillez contacter l'administrateur du site.");
-        } else if (data.error && data.error.includes("API key is invalid")) {
+        } else if (errorMsg.includes("API key is invalid")) {
           setApiError("La clé d'API pour l'envoi d'emails est invalide. Veuillez contacter l'administrateur du site.");
-        } else if (data.error && data.error.includes("domain has not been verified")) {
+        } else if (errorMsg.includes("domain has not been verified")) {
           setApiError("Le domaine d'envoi d'email n'a pas été vérifié. Veuillez contacter l'administrateur du site.");
         } else {
-          setApiError(data.error || "Erreur inconnue lors de l'envoi du PDF");
+          setApiError(errorMsg);
         }
-        throw new Error(data.error || "Erreur inconnue lors de l'envoi du PDF");
+        
+        throw new Error(errorMsg);
       }
 
       setSuccess(true);
@@ -187,7 +186,7 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
           </p>
           <p className="flex items-center">
             <Info className="h-3 w-3 mr-1" />
-            L'email sera envoyé depuis no-reply@directivesplus.fr
+            L'email sera envoyé depuis onboarding@resend.dev
           </p>
         </div>
       </div>

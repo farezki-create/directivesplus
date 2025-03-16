@@ -37,7 +37,16 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     if (!RESEND_API_KEY || RESEND_API_KEY === "undefined") {
-      throw new Error("RESEND_API_KEY is not configured properly");
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          error: "RESEND_API_KEY is not configured properly" 
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
     }
     
     const { pdfUrl, recipientEmail }: EmailRequest = await req.json();
@@ -45,13 +54,31 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("PDF URL length:", pdfUrl?.length || 0);
     
     if (!pdfUrl || !recipientEmail) {
-      throw new Error("Missing required parameters: pdfUrl or recipientEmail");
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          error: "Missing required parameters: pdfUrl or recipientEmail" 
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
     }
 
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(recipientEmail)) {
-      throw new Error("Invalid email format");
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          error: "Invalid email format" 
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
     }
 
     // Normalize the input - clean up any formatting issues
@@ -67,7 +94,16 @@ const handler = async (req: Request): Promise<Response> => {
         base64Data = parts[parts.length - 1];
         console.log("Extracted base64 data from filename format");
       } else {
-        throw new Error("Unable to extract base64 content from PDF URL with filename");
+        return new Response(
+          JSON.stringify({ 
+            success: false,
+            error: "Unable to extract base64 content from PDF URL with filename" 
+          }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+          }
+        );
       }
     } else {
       // Assume it's already a base64 string
@@ -81,14 +117,23 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (base64Data.length < 100) {
       console.error("Base64 data too short to be a valid PDF:", base64Data.length);
-      throw new Error("Invalid PDF data - too short to be a valid document");
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          error: "Invalid PDF data - too short to be a valid document" 
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
     }
 
     console.log("Sending email via Resend API...");
     
     try {
       const emailResponse = await resend.emails.send({
-        from: "DirectivesPlus <no-reply@directivesplus.fr>",
+        from: "DirectivesPlus <onboarding@resend.dev>",
         to: [recipientEmail],
         subject: "Vos directives anticipées",
         html: `
@@ -113,7 +158,17 @@ const handler = async (req: Request): Promise<Response> => {
       console.log("Email API response:", JSON.stringify(emailResponse));
 
       if (emailResponse.error) {
-        throw new Error(`Resend API error: ${JSON.stringify(emailResponse.error)}`);
+        console.error("Resend API error details:", emailResponse.error);
+        return new Response(
+          JSON.stringify({ 
+            success: false,
+            error: `Resend API error: ${JSON.stringify(emailResponse.error)}` 
+          }),
+          {
+            status: 500,
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+          }
+        );
       }
 
       return new Response(JSON.stringify({ 
@@ -129,22 +184,25 @@ const handler = async (req: Request): Promise<Response> => {
       });
     } catch (resendError: any) {
       console.error("Resend API error details:", resendError);
-      let errorMessage = resendError.message || "Unknown error sending email";
       
-      // Check if it's a Resend error with more details
-      if (resendError.error) {
-        errorMessage = `${errorMessage}: ${JSON.stringify(resendError.error)}`;
-      }
-      
-      throw new Error(`Email service error: ${errorMessage}`);
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          error: `Email service error: ${resendError.message || "Unknown error"}`,
+          details: resendError.error ? JSON.stringify(resendError.error) : undefined
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
     }
   } catch (error: any) {
     console.error("Error sending email:", error);
     return new Response(
       JSON.stringify({ 
         success: false,
-        error: error.message || "Unknown error occurred",
-        stack: error.stack
+        error: error.message || "Unknown error occurred"
       }),
       {
         status: 500,
