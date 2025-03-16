@@ -9,7 +9,7 @@ export class PDFSynthesisSection {
     // Title for the synthesis section
     doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
-    doc.text("Ma synthèse", 20, yPosition);
+    doc.text("Aussi:", 20, yPosition);
     doc.setFont("helvetica", "normal");
     yPosition += 10;
     
