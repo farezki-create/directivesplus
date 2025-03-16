@@ -34,6 +34,7 @@ const waitingMessages = [
 
 export function PDFGenerator({ userId, onPdfGenerated, synthesisText }: PDFGeneratorProps) {
   console.log("[PDFGenerator] Initializing with userId:", userId);
+  console.log("[PDFGenerator] Synthesis text provided:", synthesisText ? "Yes" : "No");
   
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
@@ -101,6 +102,7 @@ export function PDFGenerator({ userId, onPdfGenerated, synthesisText }: PDFGener
       
       // Use provided synthesis text if available, otherwise fallback to database
       const finalSynthesisText = synthesisText || synthesis?.free_text || "";
+      console.log("[PDFGenerator] Using synthesis text, length:", finalSynthesisText.length);
       
       // Small delay to ensure UI updates before heavy PDF generation starts
       setTimeout(() => {

@@ -1,3 +1,4 @@
+
 import { toast } from "@/hooks/use-toast";
 import { UserProfile, TrustedPerson } from "../types";
 import { PDFDocumentGenerator } from "../PDFDocumentGenerator";
@@ -26,6 +27,7 @@ export const handlePDFGeneration = async (
 
     console.log("[PDFGeneration] Profile data:", profile);
     console.log("[PDFGeneration] Responses data:", responses);
+    console.log("[PDFGeneration] Synthesis data:", responses.synthesis);
 
     // Generate PDF
     const pdfDataUrl = await PDFDocumentGenerator.generate(profile, responses, trustedPersons);

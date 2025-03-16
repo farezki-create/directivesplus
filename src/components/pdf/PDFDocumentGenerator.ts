@@ -6,6 +6,7 @@ import { UserProfile, TrustedPerson } from "./types";
 import { PDFUserSection } from "./utils/PDFUserSection";
 import { PDFTrustedPersonSection } from "./utils/PDFTrustedPersonSection";
 import { PDFResponsesSection } from "./utils/PDFResponsesSection";
+import { PDFSynthesisSection } from "./utils/PDFSynthesisSection";
 import { SignatureHandler } from "./utils/SignatureHandler";
 import { PageManager } from "./utils/PageManager";
 import { DocumentFooter } from "./utils/DocumentFooter";
@@ -79,6 +80,12 @@ export class PDFDocumentGenerator {
       doc.setFont("helvetica", "normal");
       yPosition += 10;
       yPosition = PDFResponsesSection.generate(doc, responses, yPosition);
+      
+      // Add synthesis section after responses
+      if (responses?.synthesis?.free_text) {
+        yPosition += 10;
+        yPosition = PDFSynthesisSection.generate(doc, responses, yPosition);
+      }
     }
 
     // === PAGE 2 ===
