@@ -61,62 +61,146 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
       });
 
       console.log("Sending PDF to email:", emailAddress);
-      console.log("PDF URL length:", pdfUrl?.length || 0);
       
-      // Ensure PDF URL is in the correct format
-      let cleanPdfUrl = pdfUrl;
-      if (cleanPdfUrl && !cleanPdfUrl.startsWith('data:application/pdf;base64,')) {
-        cleanPdfUrl = 'data:application/pdf;base64,' + cleanPdfUrl;
-      }
-
-      const { data, error } = await supabase.functions.invoke('send-pdf-email', {
-        body: {
-          pdfUrl: cleanPdfUrl,
-          recipientEmail: emailAddress,
-        },
-      });
-
-      console.log("Function response:", data, error);
-
-      if (error) {
-        console.error("Supabase function error:", error);
-        setApiError(`Erreur lors de l'appel à la fonction: ${error.message}`);
-        toast({
-          title: "Erreur",
-          description: `Erreur lors de l'appel à la fonction: ${error.message}`,
-          variant: "destructive",
-        });
-        setIsSending(false);
-        return;
-      }
-
-      if (!data || !data.success) {
-        const errorMsg = data?.error || "Erreur inconnue lors de l'envoi du PDF";
-        console.error("Function returned error:", errorMsg, data);
+      // Try a different approach by splitting the request into smaller chunks
+      // First check if the PDF is too large, if so we'll use a chunking mechanism
+      const pdfSize = pdfUrl.length;
+      console.log("PDF size in bytes:", pdfSize);
+      
+      if (pdfSize > 500000) { // If PDF is larger than ~500KB
+        console.log("PDF is large, using chunked approach");
         
-        if (errorMsg.includes("RESEND_API_KEY")) {
-          setApiError("La clé d'API pour l'envoi d'emails n'est pas configurée. Veuillez contacter l'administrateur du site.");
-        } else if (errorMsg.includes("base64")) {
-          setApiError("Le format du PDF est invalide. Veuillez regénérer le document et réessayer.");
-        } else {
-          setApiError(errorMsg);
+        // Ensure PDF URL is in the correct format
+        let cleanPdfUrl = pdfUrl;
+        if (cleanPdfUrl && !cleanPdfUrl.startsWith('data:application/pdf;base64,')) {
+          cleanPdfUrl = 'data:application/pdf;base64,' + cleanPdfUrl;
         }
         
-        toast({
-          title: "Erreur d'envoi",
-          description: errorMsg,
-          variant: "destructive",
+        // Remove the data:application/pdf;base64, prefix for processing
+        const base64Data = cleanPdfUrl.replace(/^data:application\/pdf;base64,/, '');
+        
+        // Step 1: Initiate email session
+        const sessionResponse = await supabase.functions.invoke('send-pdf-email', {
+          body: {
+            action: "init",
+            recipientEmail: emailAddress,
+          },
         });
-        setIsSending(false);
-        return;
-      }
+        
+        if (sessionResponse.error) {
+          throw new Error(`Erreur d'initialisation: ${sessionResponse.error.message}`);
+        }
+        
+        if (!sessionResponse.data?.sessionId) {
+          throw new Error("Impossible d'initialiser la session d'envoi");
+        }
+        
+        const sessionId = sessionResponse.data.sessionId;
+        
+        // Step 2: Send PDF in chunks
+        const chunkSize = 100000; // ~100KB chunks
+        const totalChunks = Math.ceil(base64Data.length / chunkSize);
+        
+        for (let i = 0; i < totalChunks; i++) {
+          const chunk = base64Data.substring(i * chunkSize, (i + 1) * chunkSize);
+          
+          const chunkResponse = await supabase.functions.invoke('send-pdf-email', {
+            body: {
+              action: "chunk",
+              sessionId: sessionId,
+              chunkIndex: i,
+              totalChunks: totalChunks,
+              chunk: chunk,
+            },
+          });
+          
+          if (chunkResponse.error) {
+            throw new Error(`Erreur d'envoi du morceau ${i+1}/${totalChunks}: ${chunkResponse.error.message}`);
+          }
+          
+          console.log(`Chunk ${i+1}/${totalChunks} sent successfully`);
+        }
+        
+        // Step 3: Finalize and send email
+        const finalizeResponse = await supabase.functions.invoke('send-pdf-email', {
+          body: {
+            action: "finalize",
+            sessionId: sessionId,
+            recipientEmail: emailAddress,
+          },
+        });
+        
+        if (finalizeResponse.error) {
+          throw new Error(`Erreur de finalisation: ${finalizeResponse.error.message}`);
+        }
+        
+        console.log("Email sent successfully with chunked approach");
+        setSuccess(true);
+        toast({
+          title: "Email envoyé",
+          description: "L'email a été envoyé. Vérifiez votre boîte de réception et votre dossier spam.",
+          variant: "default",
+        });
+      } else {
+        // For smaller PDFs, use the original approach with some improvements
+        console.log("Using standard approach for smaller PDF");
+        
+        // Ensure PDF URL is in the correct format
+        let cleanPdfUrl = pdfUrl;
+        if (cleanPdfUrl && !cleanPdfUrl.startsWith('data:application/pdf;base64,')) {
+          cleanPdfUrl = 'data:application/pdf;base64,' + cleanPdfUrl;
+        }
 
-      setSuccess(true);
-      toast({
-        title: "Email envoyé",
-        description: "L'email a été envoyé. Vérifiez votre boîte de réception et votre dossier spam.",
-        variant: "default",
-      });
+        const { data, error } = await supabase.functions.invoke('send-pdf-email', {
+          body: {
+            action: "direct",
+            pdfUrl: cleanPdfUrl,
+            recipientEmail: emailAddress,
+          },
+        });
+
+        console.log("Function response:", data, error);
+
+        if (error) {
+          console.error("Supabase function error:", error);
+          setApiError(`Erreur lors de l'appel à la fonction: ${error.message}`);
+          toast({
+            title: "Erreur",
+            description: `Erreur lors de l'appel à la fonction: ${error.message}`,
+            variant: "destructive",
+          });
+          setIsSending(false);
+          return;
+        }
+
+        if (!data || !data.success) {
+          const errorMsg = data?.error || "Erreur inconnue lors de l'envoi du PDF";
+          console.error("Function returned error:", errorMsg, data);
+          
+          if (errorMsg.includes("RESEND_API_KEY")) {
+            setApiError("La clé d'API pour l'envoi d'emails n'est pas configurée. Veuillez contacter l'administrateur du site.");
+          } else if (errorMsg.includes("base64")) {
+            setApiError("Le format du PDF est invalide. Veuillez regénérer le document et réessayer.");
+          } else {
+            setApiError(errorMsg);
+          }
+          
+          toast({
+            title: "Erreur d'envoi",
+            description: errorMsg,
+            variant: "destructive",
+          });
+          setIsSending(false);
+          return;
+        }
+
+        setSuccess(true);
+        toast({
+          title: "Email envoyé",
+          description: "L'email a été envoyé. Vérifiez votre boîte de réception et votre dossier spam.",
+          variant: "default",
+        });
+      }
       
       setEmailAddress("");
     } catch (error: any) {
