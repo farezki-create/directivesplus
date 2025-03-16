@@ -96,11 +96,18 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
     try {
       console.log("[PDFGenerator] Generating full PDF");
       
+      // Prepare a modified responses object without synthesis
+      const pdfResponses = {...responses};
+      // Explicitly remove 'synthesis' if it exists to ensure free text is not included
+      if ('synthesis' in pdfResponses) {
+        delete pdfResponses.synthesis;
+      }
+      
       // Small delay to ensure UI updates before heavy PDF generation starts
       setTimeout(() => {
         handlePDFGeneration(
           profile,
-          responses,
+          pdfResponses, // Use the version without synthesis
           trustedPersons,
           (url) => {
             console.log("[PDFGenerator] PDF generated, URL status:", url ? "success" : "failed");
