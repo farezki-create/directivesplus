@@ -1,6 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { PDFGenerator as FullPDFGenerator } from "@/components/PDFGenerator";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "@/components/pdf/usePDFData";
@@ -8,19 +9,15 @@ import { useDirectives } from "@/hooks/useDirectives";
 import { useToast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
 import { Header } from "@/components/Header";
-import { IntroSection } from "@/components/generate-pdf/IntroSection";
-import { ReviewChecklist } from "@/components/generate-pdf/ReviewChecklist";
-import { PDFGenerationSection } from "@/components/generate-pdf/PDFGenerationSection";
 
 export default function GeneratePDF() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [userId, setUserId] = useState<string | null>(null);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-  const { responses, synthesis, isLoading: responsesLoading } = useQuestionnairesResponses(userId || "");
+  const { responses, isLoading: responsesLoading } = useQuestionnairesResponses(userId || "");
   const { profile, trustedPersons, loading: profileLoading } = usePDFData();
   const { directive, isLoading: directiveLoading, saveDirective } = useDirectives(userId || "");
-  const [hasReviewed, setHasReviewed] = useState(false);
 
   // Combine all loading states
   const isLoading = responsesLoading || profileLoading || directiveLoading;
@@ -51,24 +48,6 @@ export default function GeneratePDF() {
     }
   }, [userId, responses, profile, responsesLoading, profileLoading]);
 
-  // Check if we have all the necessary information
-  const hasFreeText = synthesis?.free_text && synthesis.free_text.length > 0;
-  const hasTrustedPerson = trustedPersons && trustedPersons.length > 0;
-  const hasAnyResponses = responses && (
-    (responses.general && responses.general.length > 0) ||
-    (responses.lifeSupport && responses.lifeSupport.length > 0) ||
-    (responses.advancedIllness && responses.advancedIllness.length > 0) ||
-    (responses.preferences && responses.preferences.length > 0)
-  );
-
-  const handleConfirmReview = () => {
-    setHasReviewed(true);
-    toast({
-      title: "Génération prête",
-      description: "Vous pouvez maintenant générer vos directives anticipées",
-    });
-  };
-
   if (!userId) {
     return null;
   }
@@ -90,24 +69,15 @@ export default function GeneratePDF() {
           </div>
 
           <Card className="p-6">
-            <div className="space-y-6">
-              <IntroSection />
-
-              <ReviewChecklist 
-                hasAnyResponses={hasAnyResponses}
-                hasFreeText={hasFreeText}
-                hasTrustedPerson={hasTrustedPerson}
-                hasReviewed={hasReviewed}
-                onConfirmReview={handleConfirmReview}
-              />
-
-              <PDFGenerationSection 
-                userId={userId}
-                hasReviewed={hasReviewed}
-                isLoading={isLoading}
-                onPdfGenerated={setPdfUrl}
-              />
+            <div className="flex gap-4 flex-wrap mb-6">
+              <p className="text-gray-600 mb-4">
+                Voici vos directives anticipées prêtes à être générées. Cliquez sur le bouton ci-dessous pour créer votre document PDF.
+              </p>
             </div>
+            
+            {!isLoading && (
+              <FullPDFGenerator userId={userId} onPdfGenerated={setPdfUrl} />
+            )}
           </Card>
         </div>
       </main>

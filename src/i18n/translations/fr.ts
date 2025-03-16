@@ -138,6 +138,5 @@ export const frTranslations = {
   alreadyHaveAccount: 'Vous avez déjà un compte ?',
   createAccount: 'Créer un compte',
   signUpDesc: 'Créez un compte pour sauvegarder vos directives anticipées',
-  loginDesc: 'Connectez-vous pour accéder à vos directives anticipées',
-  requiredFields: 'Champs obligatoires'
+  loginDesc: 'Connectez-vous pour accéder à vos directives anticipées'
 };
