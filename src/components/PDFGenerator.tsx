@@ -1,13 +1,10 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
-import { usePDFData } from "./pdf/usePDFData";
-import { handlePDFGeneration, handlePDFDownload, savePDFToStorage } from "./pdf/utils/PDFGenerationUtils";
-import { Button } from "@/components/ui/button";
-import { FileText, Lock } from "lucide-react";
 import { PDFPreviewDialog } from "./pdf/PDFPreviewDialog";
-import { toast } from "@/hooks/use-toast";
-import { Progress } from "@/components/ui/progress";
+import { handlePDFDownload } from "./pdf/utils/PDFGenerationUtils";
+import { PDFGenerationProgress } from "./pdf/PDFGenerationProgress";
+import { PDFGenerationButton } from "./pdf/PDFGenerationButton";
 
 interface PDFGeneratorProps {
   userId: string;
@@ -20,163 +17,43 @@ interface PDFGeneratorProps {
  * Protected component - do not modify the PDF generation method
  * Version: 1.0.0
  */
-const waitingMessages = [
-  "Préparation de votre document avec soin... 📝",
-  "Mise en page de vos directives... 📄",
-  "Ajout d'une touche de professionnalisme... ✨",
-  "Finalisation des derniers détails... 🎯",
-  "Vérification de la mise en forme... 🔍",
-  "Assemblage de vos informations... 📋",
-  "Plus que quelques secondes... ⏳",
-  "Votre document est presque prêt... 🌟",
-];
-
 export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
   console.log("[PDFGenerator] Initializing with userId:", userId);
   
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
-  const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const { responses } = useQuestionnairesResponses(userId);
-  const { profile, trustedPersons, loading } = usePDFData();
+  const { responses, loading } = useQuestionnairesResponses(userId);
 
-  useEffect(() => {
-    if (isGenerating) {
-      // Message rotation interval
-      const messageInterval = setInterval(() => {
-        setCurrentMessageIndex((prev) => (prev + 1) % waitingMessages.length);
-      }, 2000);
-
-      // Progress bar animation
-      const progressInterval = setInterval(() => {
-        setProgress((prev) => {
-          // Slow down as we approach 100%
-          if (prev >= 90) {
-            return Math.min(prev + 0.5, 95);
-          }
-          return Math.min(prev + 5, 90);
-        });
-      }, 500);
-
-      return () => {
-        clearInterval(messageInterval);
-        clearInterval(progressInterval);
-      };
-    } else {
-      // Reset progress when not generating
-      setProgress(0);
-    }
-  }, [isGenerating]);
-
-  console.log("[PDFGenerator] Current state:", {
-    hasProfile: !!profile,
-    hasTrustedPersons: trustedPersons.length,
-    hasResponses: !!responses,
-    isLoading: loading
-  });
-
-  const generatePDF = () => {
-    console.log("[PDFGenerator] Button clicked - Starting PDF generation");
+  const handleGenerationStart = () => {
     setIsGenerating(true);
-    setProgress(10); // Start with some progress
-    
-    if (!profile) {
-      console.error("[PDFGenerator] No profile data available");
-      toast({
-        title: "Erreur",
-        description: "Données de profil non disponibles. Veuillez compléter votre profil.",
-        variant: "destructive",
-      });
-      setIsGenerating(false);
-      return;
-    }
-
-    try {
-      console.log("[PDFGenerator] Generating full PDF");
-      
-      // Prepare a modified responses object without synthesis
-      const pdfResponses = {...responses};
-      // Explicitly remove 'synthesis' if it exists to ensure free text is not included
-      if ('synthesis' in pdfResponses) {
-        delete pdfResponses.synthesis;
-      }
-      
-      // Small delay to ensure UI updates before heavy PDF generation starts
-      setTimeout(() => {
-        handlePDFGeneration(
-          profile,
-          pdfResponses, // Use the version without synthesis
-          trustedPersons,
-          (url) => {
-            console.log("[PDFGenerator] PDF generated, URL status:", url ? "success" : "failed");
-            
-            // Set progress to complete
-            setProgress(100);
-            
-            // Store the PDF URL in localStorage as a backup
-            if (url) {
-              try {
-                localStorage.setItem(`pdf_${userId}`, url);
-                console.log("[PDFGenerator] PDF URL saved to localStorage");
-              } catch (e) {
-                console.warn("[PDFGenerator] Could not save PDF to localStorage:", e);
-              }
-            }
-            
-            // Short delay to show 100% before hiding the loading screen
-            setTimeout(() => {
-              setPdfUrl(url);
-              if (onPdfGenerated) {
-                onPdfGenerated(url);
-              }
-              setIsGenerating(false);
-            }, 500);
-          },
-          setShowPreview
-        );
-      }, 500);
-    } catch (error) {
-      console.error("[PDFGenerator] Error during PDF generation:", error);
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la génération du PDF.",
-        variant: "destructive",
-      });
-      setIsGenerating(false);
-    }
   };
 
+  const handleGenerationComplete = (url: string | null) => {
+    setPdfUrl(url);
+    setIsGenerating(false);
+    if (onPdfGenerated) {
+      onPdfGenerated(url);
+    }
+  };
+  
   if (loading) {
     console.log("[PDFGenerator] Still loading data...");
     return null;
   }
 
-  console.log("[PDFGenerator] Rendering buttons");
+  console.log("[PDFGenerator] Rendering component");
   return (
     <>
-      {isGenerating && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
-          <div className="max-w-sm p-6 text-center space-y-4 animate-fade-in">
-            <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
-            <Progress value={progress} className="h-2 w-full" />
-            <p className="text-lg font-medium text-foreground animate-pulse">
-              {waitingMessages[currentMessageIndex]}
-            </p>
-          </div>
-        </div>
-      )}
+      <PDFGenerationProgress isGenerating={isGenerating} />
       
-      <Button 
-        onClick={generatePDF}
-        className="flex items-center gap-2"
-        disabled={isGenerating}
-      >
-        <FileText className="h-4 w-4" />
-        <Lock className="h-3 w-3" />
-        Générer Mes directives anticipées
-      </Button>
+      <PDFGenerationButton
+        userId={userId}
+        responses={responses}
+        onGenerationStart={handleGenerationStart}
+        onGenerationComplete={handleGenerationComplete}
+        onShowPreview={setShowPreview}
+      />
       
       {showPreview && (
         <PDFPreviewDialog
