@@ -41,6 +41,7 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     if (!RESEND_API_KEY || RESEND_API_KEY === "undefined") {
+      console.error("Missing or invalid RESEND_API_KEY");
       return new Response(
         JSON.stringify({ 
           success: false,
@@ -53,11 +54,31 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
     
-    const { pdfUrl, recipientEmail }: EmailRequest = await req.json();
+    // Parse request body
+    let body;
+    try {
+      body = await req.json();
+    } catch (parseError) {
+      console.error("Error parsing request body:", parseError);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Invalid request format - could not parse JSON body" 
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+    
+    const { pdfUrl, recipientEmail }: EmailRequest = body;
+    
     console.log("Sending email to:", recipientEmail);
-    console.log("PDF URL length:", pdfUrl?.length || 0);
+    console.log("PDF URL provided:", pdfUrl ? "Yes (length: " + pdfUrl.length + ")" : "No");
     
     if (!pdfUrl || !recipientEmail) {
+      console.error("Missing required parameters");
       return new Response(
         JSON.stringify({ 
           success: false,
@@ -73,6 +94,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(recipientEmail)) {
+      console.error("Invalid email format:", recipientEmail);
       return new Response(
         JSON.stringify({ 
           success: false,
@@ -90,15 +112,20 @@ const handler = async (req: Request): Promise<Response> => {
     
     if (pdfUrl.startsWith('data:application/pdf;base64,')) {
       base64Data = pdfUrl.substring('data:application/pdf;base64,'.length);
+      console.log("Base64 data extracted from data URL");
     } else {
       // Try to be lenient and assume it's already a base64 string
       base64Data = pdfUrl;
+      console.log("Using raw string as base64 data");
     }
 
     // Remove any whitespace from the base64 string
     base64Data = base64Data.replace(/\s/g, '');
     
+    console.log("Base64 data length after cleaning:", base64Data.length);
+    
     if (base64Data.length < 100) {
+      console.error("Invalid PDF data - too short");
       return new Response(
         JSON.stringify({ 
           success: false,
