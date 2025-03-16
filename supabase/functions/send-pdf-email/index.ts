@@ -11,6 +11,10 @@ try {
     console.error("RESEND_API_KEY is not set in environment variables");
     throw new Error("RESEND_API_KEY is not configured properly");
   }
+  
+  // Log a masked version of the key for debugging
+  console.log(`API Key configured: ${RESEND_API_KEY.substring(0, 3)}...${RESEND_API_KEY.substring(RESEND_API_KEY.length - 3)}`);
+  
   resend = new Resend(RESEND_API_KEY);
 } catch (error) {
   console.error("Error initializing Resend client:", error);
@@ -109,6 +113,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     try {
       console.log("Attempting to send email via Resend API...");
+      console.log("From: DirectivesPlus <onboarding@resend.dev>");
+      console.log("To:", recipientEmail);
       
       const emailResponse = await resend.emails.send({
         from: "DirectivesPlus <onboarding@resend.dev>",
@@ -134,13 +140,13 @@ const handler = async (req: Request): Promise<Response> => {
 
       console.log("Email API response:", JSON.stringify(emailResponse));
 
-      if (emailResponse.error) {
-        console.error("Resend API returned an error:", emailResponse.error);
+      if (!emailResponse || emailResponse.error) {
+        console.error("Resend API returned an error:", emailResponse?.error || "No response");
         return new Response(
           JSON.stringify({ 
             success: false,
-            error: `Email service error: ${emailResponse.error.message || "Unknown error"}`,
-            details: JSON.stringify(emailResponse.error)
+            error: `Email service error: ${emailResponse?.error?.message || "Unknown error"}`,
+            details: emailResponse?.error ? JSON.stringify(emailResponse.error) : "No response from email service"
           }),
           {
             status: 500,

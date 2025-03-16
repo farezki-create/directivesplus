@@ -109,8 +109,8 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
 
       setSuccess(true);
       toast({
-        title: "Succès",
-        description: "Le PDF a été envoyé par email. Vérifiez votre boîte de réception (et dossier spam).",
+        title: "Email envoyé",
+        description: "L'email a été envoyé. Vérifiez votre boîte de réception et votre dossier spam.",
       });
       
       setEmailAddress("");
@@ -139,7 +139,14 @@ export function EmailForm({ pdfUrl, onClose }: EmailFormProps) {
       {success && (
         <Alert className="mb-4 bg-green-50 border-green-200">
           <CheckCircle className="h-4 w-4 text-green-500" />
-          <AlertDescription className="text-sm">Email envoyé avec succès! Si vous ne le recevez pas dans quelques minutes, vérifiez votre dossier spam ou essayez une autre adresse email.</AlertDescription>
+          <AlertDescription className="text-sm">
+            Email envoyé! Si vous ne le recevez pas dans les 5 minutes, vérifiez:
+            <ul className="list-disc pl-5 mt-1">
+              <li>Votre dossier spam/indésirables</li>
+              <li>Que l'adresse email est correcte</li>
+              <li>Que la clé d'API Resend est correctement configurée</li>
+            </ul>
+          </AlertDescription>
         </Alert>
       )}
       
