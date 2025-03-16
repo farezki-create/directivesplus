@@ -23,7 +23,7 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  const { responses, loading } = useQuestionnairesResponses(userId);
+  const { responses, isLoading } = useQuestionnairesResponses(userId);
 
   const handleGenerationStart = () => {
     setIsGenerating(true);
@@ -37,7 +37,7 @@ export function PDFGenerator({ userId, onPdfGenerated }: PDFGeneratorProps) {
     }
   };
   
-  if (loading) {
+  if (isLoading) {
     console.log("[PDFGenerator] Still loading data...");
     return null;
   }
