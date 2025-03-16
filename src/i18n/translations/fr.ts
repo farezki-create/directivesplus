@@ -39,6 +39,7 @@ export const frTranslations = {
   prioritizeNoSuffering: 'La non souffrance est à privilégier',
   indecision: 'Indécision',
   preferences: 'Mes goûts et mes peurs',
+  preferencesDesc: 'Partagez vos préférences personnelles pour mieux orienter vos soins',
   loginSignup: 'Connexion / Inscription',
   whatDoYouThink: 'Qu\'en pensez-vous ?',
   trustedPersons: 'Personnes de confiance',
