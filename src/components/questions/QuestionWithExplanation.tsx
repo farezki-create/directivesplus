@@ -81,7 +81,7 @@ export function QuestionWithExplanation({
         options={options}
       />
       
-      {explanation && (
+      {explanation && explanation.trim() !== '' && (
         <div className="mt-4 text-base text-foreground bg-muted/60 p-5 rounded-md border border-muted shadow-sm">
           {explanation}
         </div>

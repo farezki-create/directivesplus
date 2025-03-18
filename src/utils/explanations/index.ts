@@ -40,7 +40,10 @@ export const getQuestionExplanation = (questionId: string, language: 'en' | 'fr'
   // Log the result
   console.log(`Found explanation:`, explanation);
   
-  return explanation ? explanation.explanation : '';
+  // Return empty string if explanation is not found or the explanation text is empty
+  return (explanation && explanation.explanation && explanation.explanation.trim() !== '') 
+    ? explanation.explanation 
+    : '';
 };
 
 // Export everything for potential direct access
