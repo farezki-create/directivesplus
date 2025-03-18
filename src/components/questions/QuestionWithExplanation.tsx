@@ -35,39 +35,51 @@ export function QuestionWithExplanation({
     return null;
   }
   
-  // Skip explanations for life support questions entirely
-  // Check if this is a life support question by examining if it's from the life support questionnaire
+  // Déterminer si c'est une question de support de vie
+  // Vérifier d'abord par ID ou question_order (plage 21-32)
   const isLifeSupportQuestion = 
-    (question.id >= 21 && question.id <= 32) || // English life support questions use IDs 21-32
-    (question.question_order >= 21 && question.question_order <= 32); // French life support questions use question_order 21-32
+    (question.id && !isNaN(parseInt(question.id)) && parseInt(question.id) >= 21 && parseInt(question.id) <= 32) || 
+    (question.question_order && parseInt(question.question_order) >= 21 && parseInt(question.question_order) <= 32);
   
-  let explanation = '';
-  
-  // Only get explanation if this is NOT a life support question
-  if (!isLifeSupportQuestion) {
-    // Extract display order - prioritize display_order or question_order for explanation lookup
-    let explanationId = '';
-    
-    // First try using display_order (numerical field)
-    if (question.display_order !== undefined && question.display_order !== null) {
-      explanationId = question.display_order.toString();
-    } 
-    // Then try display_order_str (string representation)
-    else if (question.display_order_str) {
-      explanationId = question.display_order_str;
-    }
-    // Fall back to question_order
-    else if (question.question_order) {
-      explanationId = question.question_order.toString();
-    }
-    // Last resort fallback to numeric ID
-    else if (question.id && !isNaN(parseInt(question.id))) {
-      explanationId = question.id.toString();
-    }
-    
-    // Get the explanation using the extracted ID AND question text for better matching
-    explanation = getQuestionExplanation(explanationId, language, questionText);
+  // Si c'est une question de support de vie, ne pas afficher d'explication
+  if (isLifeSupportQuestion) {
+    return (
+      <div className="mb-8">
+        <QuestionCard
+          question={{
+            ...question,
+            question: questionText
+          }}
+          value={value}
+          onValueChange={onValueChange}
+          options={options}
+        />
+      </div>
+    );
   }
+  
+  // Pour les autres questions, continuer normalement
+  let explanationId = '';
+  
+  // First try using display_order (numerical field)
+  if (question.display_order !== undefined && question.display_order !== null) {
+    explanationId = question.display_order.toString();
+  } 
+  // Then try display_order_str (string representation)
+  else if (question.display_order_str) {
+    explanationId = question.display_order_str;
+  }
+  // Fall back to question_order
+  else if (question.question_order) {
+    explanationId = question.question_order.toString();
+  }
+  // Last resort fallback to numeric ID
+  else if (question.id && !isNaN(parseInt(question.id))) {
+    explanationId = question.id.toString();
+  }
+  
+  // Get the explanation using the extracted ID AND question text for better matching
+  const explanation = getQuestionExplanation(explanationId, language, questionText);
   
   // Skip rendering the explanation if it's empty
   const hasExplanation = explanation && explanation.trim() !== '';
