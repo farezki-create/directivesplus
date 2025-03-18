@@ -35,14 +35,48 @@ export function QuestionWithExplanation({
     return null;
   }
   
-  // STRICT CHECK: Determine if this is a life support question
-  // Check by ID range (21-32) or by question_order (21-32)
-  const isLifeSupportQuestion = 
-    (question.id && !isNaN(parseInt(question.id)) && parseInt(question.id) >= 21 && parseInt(question.id) <= 32) || 
-    (question.question_order && parseInt(question.question_order) >= 21 && parseInt(question.question_order) <= 32) ||
-    (question.display_order && parseInt(question.display_order) >= 21 && parseInt(question.display_order) <= 32);
+  // FIRST CHECK: Explicit flag for life support questions
+  if (question.isLifeSupportQuestion === true) {
+    console.log(`Explicit life support flag detected - no explanation will be shown: "${questionText.substring(0, 50)}..."`);
+    return (
+      <div className="mb-8">
+        <QuestionCard
+          question={{
+            ...question,
+            question: questionText
+          }}
+          value={value}
+          onValueChange={onValueChange}
+          options={options}
+        />
+      </div>
+    );
+  }
   
-  // Additional content-based check for life support keywords
+  // SECOND CHECK: Determine if this is a life support question by ID range
+  const questionId = 
+    (question.id && !isNaN(parseInt(question.id)) ? parseInt(question.id) : null) || 
+    (question.question_order ? parseInt(question.question_order) : null) ||
+    (question.display_order ? parseInt(question.display_order) : null);
+  
+  if (questionId && questionId >= 21 && questionId <= 32) {
+    console.log(`Life support question detected by ID range (${questionId}) - no explanation will be shown: "${questionText.substring(0, 50)}..."`);
+    return (
+      <div className="mb-8">
+        <QuestionCard
+          question={{
+            ...question,
+            question: questionText
+          }}
+          value={value}
+          onValueChange={onValueChange}
+          options={options}
+        />
+      </div>
+    );
+  }
+  
+  // THIRD CHECK: Content-based check for life support keywords
   const lifeSupportKeywords = language === 'en' 
     ? ['cpr', 'intensive care', 'intubated', 'ventilation', 'dialysis', 'tracheostomy', 'coma', 'artificial feeding']
     : ['rcp', 'réanimation', 'intubé', 'ventilation', 'dialyse', 'trachéotomie', 'coma', 'alimentation artificielle'];
@@ -51,9 +85,8 @@ export function QuestionWithExplanation({
     questionText.toLowerCase().includes(keyword.toLowerCase())
   );
   
-  // If life support question, do not show explanation
-  if (isLifeSupportQuestion || containsLifeSupportKeyword) {
-    console.log(`Life support question detected - no explanation will be shown: "${questionText.substring(0, 50)}..."`);
+  if (containsLifeSupportKeyword) {
+    console.log(`Life support keyword detected - no explanation will be shown: "${questionText.substring(0, 50)}..."`);
     return (
       <div className="mb-8">
         <QuestionCard

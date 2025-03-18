@@ -28,7 +28,22 @@ const questionExplanationsFR: QuestionExplanation[] = [
  * Uses multiple methods to identify life support questions to ensure they have no explanations
  */
 export const getQuestionExplanation = (questionId: string, language: 'en' | 'fr', questionText?: string): string => {
-  // TRIPLE-LAYER CHECK FOR LIFE SUPPORT QUESTIONS:
+  // FORCEFUL APPROACH: Permanent fix for all life support questions
+  
+  // === MANUAL ID LIST OF ALL LIFE SUPPORT QUESTIONS ===
+  // This is a comprehensive list of all question IDs that should NOT have explanations
+  const lifeSupportQuestionIds = [
+    '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32',
+    // Also include string versions with potential prefixes
+    'ls-21', 'ls-22', 'ls-23', 'ls-24', 'ls-25', 'ls-26', 'ls-27', 'ls-28', 'ls-29', 'ls-30', 'ls-31', 'ls-32',
+    // Include any other known life support question IDs here
+  ];
+  
+  // Direct and explicit check against the manual list
+  if (lifeSupportQuestionIds.includes(questionId)) {
+    console.log(`Life support question FORCED SUPPRESSION by ID match (${questionId}) - returning empty explanation`);
+    return '';
+  }
   
   // 1. Check by ID range (21-32)
   if (questionId && !isNaN(parseInt(questionId))) {
@@ -42,8 +57,10 @@ export const getQuestionExplanation = (questionId: string, language: 'en' | 'fr'
   // 2. Check by question content keywords if text is provided
   if (questionText) {
     const lifeSupportKeywords = language === 'en' 
-      ? ['cpr', 'intensive care', 'intubated', 'ventilation', 'dialysis', 'tracheostomy', 'coma', 'artificial feeding']
-      : ['rcp', 'réanimation', 'intubé', 'ventilation', 'dialyse', 'trachéotomie', 'coma', 'alimentation artificielle'];
+      ? ['cpr', 'intensive care', 'intubated', 'ventilation', 'dialysis', 'tracheostomy', 'coma', 'artificial feeding',
+         'life support', 'life-sustaining', 'resuscitation', 'medical interventions']
+      : ['rcp', 'réanimation', 'intubé', 'ventilation', 'dialyse', 'trachéotomie', 'coma', 'alimentation artificielle',
+         'maintien en vie', 'survie artificielle', 'interventions médicales', 'soins intensifs'];
     
     const containsLifeSupportKeyword = lifeSupportKeywords.some(keyword => 
       questionText.toLowerCase().includes(keyword.toLowerCase())
@@ -66,9 +83,14 @@ export const getQuestionExplanation = (questionId: string, language: 'en' | 'fr'
       const normalizedQuestionText = questionText.trim().toLowerCase();
       const normalizedExplanationQuestion = explanation.question.trim().toLowerCase();
       
+      // Use a more flexible matching approach to catch variations
       if (normalizedQuestionText === normalizedExplanationQuestion || 
           normalizedQuestionText.includes(normalizedExplanationQuestion) ||
-          normalizedExplanationQuestion.includes(normalizedQuestionText)) {
+          normalizedExplanationQuestion.includes(normalizedQuestionText) ||
+          // Check for significant word overlap
+          normalizedQuestionText.split(' ').filter(word => 
+            word.length > 3 && normalizedExplanationQuestion.includes(word)
+          ).length >= 3) {
         return true;
       }
     }
@@ -103,6 +125,12 @@ export const getQuestionExplanation = (questionId: string, language: 'en' | 'fr'
         )
       );
     }
+  }
+  
+  // Special check: if we somehow got a life support explanation despite all checks, return empty string
+  if (explanation && lifeSupportExplanations.some(lsExp => lsExp.id === explanation?.id)) {
+    console.log(`FINAL SAFETY CHECK: Caught life support explanation (ID: ${explanation.id}) - returning empty string`);
+    return '';
   }
   
   // Return empty string if explanation is not found or the explanation text is empty

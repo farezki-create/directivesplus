@@ -47,17 +47,19 @@ export function LifeSupportQuestionsDialog({
             return null;
           }
           
-          // Make sure we have a question_text field available for French questions
+          // Force strong life support identification with multiple signals
           const enhancedQuestion = {
             ...question,
             // For French questions, make sure both question and question_text are available
             question: question.question || question.question_text,
             question_text: question.question_text || question.question,
-            // Explicitly mark as life support question to ensure no explanation is shown
-            isLifeSupportQuestion: true
+            // Explicitly mark as life support question
+            isLifeSupportQuestion: true,
+            // Add type indicator to help with detection
+            questionType: 'life_support'
           };
           
-          console.log(`Rendering life support question: ${enhancedQuestion.id} - "${enhancedQuestion.question?.substring(0, 30) || 'No question text'}..."`);
+          console.log(`Rendering LIFE SUPPORT question: ${enhancedQuestion.id} - "${enhancedQuestion.question?.substring(0, 30) || 'No question text'}..."`);
           
           return (
             <QuestionWithExplanation

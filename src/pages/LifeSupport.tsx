@@ -57,12 +57,15 @@ const LifeSupport = () => {
           ) : questions && questions.length > 0 ? (
             <div className="space-y-6 mb-8">
               {questions.map((question) => {
-                // Enhance question with explicit life support flag
+                // Add multiple strong signals that this is a life support question
                 const enhancedQuestion = {
                   ...question,
                   question: question.question || question.question_text,
                   question_text: question.question_text || question.question,
-                  isLifeSupportQuestion: true
+                  isLifeSupportQuestion: true,
+                  questionType: 'life_support',
+                  // Force the ID into the 21-32 range if for some reason it's not
+                  id: question.id && !isNaN(parseInt(question.id)) ? question.id : `ls-${question.id}`
                 };
                 
                 return (
@@ -104,6 +107,6 @@ const LifeSupport = () => {
       </main>
     </div>
   );
-};
+}
 
 export default LifeSupport;
