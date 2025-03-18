@@ -49,7 +49,9 @@ export function AdvancedIllnessQuestionsDialog({
           display_order_str: question.display_order_str || (index + 1).toString(),
           // Make sure both question and question_text are available
           question: question.question || question.question_text,
-          question_text: question.question_text || question.question
+          question_text: question.question_text || question.question,
+          // Pass through database explanation
+          explanation: question.explanation || ''
         };
         
         // For debugging each question

@@ -38,16 +38,28 @@ export function QuestionsDialog({ open, onOpenChange }: QuestionsDialogProps) {
       loading={loading}
       questionsLength={questions.length}
     >
-      {questions.map((question) => (
-        <QuestionWithExplanation
-          key={question.id}
-          question={question}
-          value={answers[question.id] || []}
-          onValueChange={(value) => handleAnswerChange(question.id, value)}
-          options={getGeneralOpinionOptions()}
-          language={currentLanguage as 'en' | 'fr'}
-        />
-      ))}
+      {questions.map((question) => {
+        // S'assurer que la question a des propriétés correctes
+        const enhancedQuestion = {
+          ...question,
+          // Assurez-vous que question et question_text sont disponibles
+          question: question.question || question.question_text,
+          question_text: question.question_text || question.question,
+          // Passer l'explication de la base de données
+          explanation: question.explanation || ''
+        };
+        
+        return (
+          <QuestionWithExplanation
+            key={question.id}
+            question={enhancedQuestion}
+            value={answers[question.id] || []}
+            onValueChange={(value) => handleAnswerChange(question.id, value)}
+            options={getGeneralOpinionOptions()}
+            language={currentLanguage as 'en' | 'fr'}
+          />
+        );
+      })}
     </QuestionsDialogLayout>
   );
 }

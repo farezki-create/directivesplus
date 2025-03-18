@@ -35,7 +35,7 @@ export function QuestionWithExplanation({
     return null;
   }
   
-  // FIRST: Check if the question has its own explanation from the database
+  // FIRST PRIORITY: Check if the question has its own explanation from the database
   if (question.explanation) {
     console.log(`Using database-provided explanation for: "${questionText.substring(0, 50)}..."`);
     
