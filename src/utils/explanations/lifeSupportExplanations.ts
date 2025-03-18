@@ -1,4 +1,3 @@
-
 // Life Support Questions Explanations (English)
 export const lifeSupportExplanationsEN = [
   {
@@ -87,7 +86,7 @@ export const lifeSupportExplanationsFR = [
   },
   {
     id: "29",
-    explanation: "Cette question concerne votre souhait de continuer les traitements si vous êtes dans un coma profond avec un rétablissement incertain. Un coma profond signifie être inconscient sans réponse, et un rétablissement incertain signifie que les docteurs ne peuvent pas prédire si vous vous rétablirez."
+    explanation: "Cette question concerne votre souhait de subir une réanimation cardiopulmonaire (RCP) si votre cœur s'arrête soudainement. La RCP est une procédure qui vise à redémarrer votre cœur par des compressions thoraciques et, le cas échéant, une ventilation artificielle. La RCP peut être efficace dans certains cas, mais elle n'est pas toujours réussie, surtout chez les personnes âgées ou avec certaines conditions médicales. Même si elle réussit, il peut y avoir des complications."
   },
   {
     id: "30",
