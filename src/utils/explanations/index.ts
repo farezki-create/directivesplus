@@ -28,27 +28,27 @@ const questionExplanationsFR: QuestionExplanation[] = [
  * Now also attempts to match by question content if ID matching fails
  */
 export const getQuestionExplanation = (questionId: string, language: 'en' | 'fr', questionText?: string): string => {
-  // Log for debugging
-  console.log(`Getting explanation for question ID: ${questionId} in language: ${language}`);
-  if (questionText) {
-    console.log(`Question text: "${questionText}"`);
+  // Check if this is a life support question ID (21-32)
+  if (questionId && !isNaN(parseInt(questionId))) {
+    const idNumber = parseInt(questionId);
+    if (idNumber >= 21 && idNumber <= 32) {
+      // Early return with empty string for life support questions
+      return '';
+    }
   }
   
   const explanations = language === 'en' ? questionExplanationsEN : questionExplanationsFR;
-  
-  // Log all life support explanations for debugging
-  console.log("All life support explanations:");
-  const lifeSupport = language === 'en' ? lifeSupportExplanationsEN : lifeSupportExplanationsFR;
-  lifeSupport.forEach(exp => {
-    console.log(`ID: ${exp.id}, Question: "${exp.question}", Has explanation: ${exp.explanation !== ""}`);
-  });
   
   // Try to find explanation by exact ID match first
   let explanation = explanations.find(exp => exp.id === questionId);
   
   // If no direct match by ID, try to find by text content if question text is provided
   if (!explanation && questionText) {
-    console.log("No direct ID match, attempting to match by question content");
+    // Check if this is a life support question by examining content
+    const isLifeSupportQuestion = checkIfLifeSupportQuestion(questionText, language);
+    if (isLifeSupportQuestion) {
+      return '';
+    }
     
     // First try exact match - but only check if the explanation has a question property
     explanation = explanations.find(exp => 
@@ -57,7 +57,6 @@ export const getQuestionExplanation = (questionId: string, language: 'en' | 'fr'
     
     // If still no match, try partial match (question contains explanation question or vice versa)
     if (!explanation) {
-      console.log("No exact content match, trying partial match");
       explanation = explanations.find(exp => 
         exp.question && (
           exp.question.trim().toLowerCase().includes(questionText.trim().toLowerCase()) ||
@@ -65,17 +64,6 @@ export const getQuestionExplanation = (questionId: string, language: 'en' | 'fr'
         )
       );
     }
-    
-    if (explanation) {
-      console.log(`Found match by question content: "${explanation.question}"`);
-    }
-  }
-  
-  // Debug logs to see what's happening
-  console.log(`Found explanation for ID ${questionId}:`, explanation);
-  if (explanation) {
-    console.log(`Explanation text is: "${explanation.explanation}"`);
-    console.log(`Explanation text is empty:`, !explanation.explanation || explanation.explanation.trim() === '');
   }
   
   // Return empty string if explanation is not found or the explanation text is empty
@@ -83,6 +71,20 @@ export const getQuestionExplanation = (questionId: string, language: 'en' | 'fr'
     ? explanation.explanation 
     : '';
 };
+
+/**
+ * Helper function to check if a question is a life support question based on its content
+ */
+function checkIfLifeSupportQuestion(questionText: string, language: 'en' | 'fr'): boolean {
+  const lifeSupport = language === 'en' ? lifeSupportExplanationsEN : lifeSupportExplanationsFR;
+  
+  // Check if the question text matches or is contained in any life support question
+  return lifeSupport.some(question => 
+    question.question.trim().toLowerCase() === questionText.trim().toLowerCase() ||
+    question.question.trim().toLowerCase().includes(questionText.trim().toLowerCase()) ||
+    questionText.trim().toLowerCase().includes(question.question.trim().toLowerCase())
+  );
+}
 
 // Export everything for potential direct access
 export {
