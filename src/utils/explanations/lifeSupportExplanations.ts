@@ -1,10 +1,9 @@
-
 // Life Support Questions Explanations (English)
 export const lifeSupportExplanationsEN = [
   {
     id: "21",
     question: "If my heart stops suddenly, I want cardiopulmonary resuscitation (CPR) to be attempted.",
-    explanation: "This question concerns your wish to undergo cardiopulmonary resuscitation (CPR) if your heart suddenly stops. CPR is a procedure aimed at restarting your heart through chest compressions and, if necessary, artificial ventilation. CPR can be effective in some cases, but it is not always successful, especially in elderly people or those with certain medical conditions. Even if successful, there may be complications."
+    explanation: ""
   },
   {
     id: "22",
@@ -68,7 +67,7 @@ export const lifeSupportExplanationsFR = [
   {
     id: "21",
     question: "Si mon cœur s'arrête soudainement, je souhaite qu'une réanimation cardio-pulmonaire (RCP) soit tentée.",
-    explanation: "Cette question concerne votre souhait de bénéficier d'une réanimation cardio-pulmonaire (RCP) si votre cœur s'arrête soudainement. La RCP est une procédure visant à redémarrer votre cœur par des compressions thoraciques et, si nécessaire, une ventilation artificielle. La RCP peut être efficace dans certains cas, mais n'est pas toujours réussie, surtout chez les personnes âgées ou celles souffrant de certaines conditions médicales. Même en cas de succès, il peut y avoir des complications."
+    explanation: ""
   },
   {
     id: "22",
@@ -88,7 +87,7 @@ export const lifeSupportExplanationsFR = [
   {
     id: "25",
     question: "Je souhaite être intubé (avoir un tube inséré dans ma trachée) pour m'aider à respirer en cas de difficulté respiratoire sévère.",
-    explanation: "Cette question concerne votre souhait d'être intubé, c'est-à-dire d'avoir un tube inséré dans votre trachée pour aider votre respiration en cas de difficulté sévère, souvent connecté à un ventilateur. L'intubation est plus invasive et peut avoir des complications comme la pneumonie. Elle est utilisée quand les méthodes non invasives ne suffisent pas."
+    explanation: "Cette question concerne votre souhait d'être intubé, c'est-à-dire d'avoir un tube inséré dans votre trachée pour aider votre respiration en cas de difficult�� sévère, souvent connecté à un ventilateur. L'intubation est plus invasive et peut avoir des complications comme la pneumonie. Elle est utilisée quand les méthodes non invasives ne suffisent pas."
   },
   {
     id: "26",
