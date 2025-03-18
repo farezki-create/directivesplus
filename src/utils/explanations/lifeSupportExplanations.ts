@@ -35,7 +35,7 @@ export const lifeSupportExplanationsEN = [
   },
   {
     id: "29",
-    explanation: "This question concerns your wish to continue treatments if you are in a deep coma with uncertain recovery. A deep coma means being unconscious without response, and uncertain recovery means doctors cannot predict if you will recover."
+    explanation: "This question asks if you want to receive all possible medical treatments to prolong your life, even if they may be invasive or have significant side effects. Consider the quality of life you want, not just its duration. Some prioritize longevity, others comfort. Discuss with your doctor or loved ones to understand possible treatments."
   },
   {
     id: "30",
@@ -71,7 +71,7 @@ export const lifeSupportExplanationsFR = [
   },
   {
     id: "25",
- explanation: "Cette question concerne votre souhait d'être intubé, c'est-à-dire d'avoir un tube inséré dans votre trachée pour aider votre respiration en cas de difficulté sévère, souvent connecté à un ventilateur. L'intubation est plus invasive et peut avoir des complications comme la pneumonie. Elle est utilisée quand les méthodes non invasives ne suffisent pas."
+    explanation: "Cette question concerne votre souhait d'être intubé, c'est-à-dire d'avoir un tube inséré dans votre trachée pour aider votre respiration en cas de difficulté sévère, souvent connecté à un ventilateur. L'intubation est plus invasive et peut avoir des complications comme la pneumonie. Elle est utilisée quand les méthodes non invasives ne suffisent pas."
   },
   {
     id: "26",
@@ -87,7 +87,7 @@ export const lifeSupportExplanationsFR = [
   },
   {
     id: "29",
-    explanation: "Cette question concerne votre souhait de continuer les traitements si vous êtes dans un coma profond avec un rétablissement incertain. Un coma profond signifie être inconscient sans réponse, et un rétablissement incertain signifie que les docteurs ne peuvent pas prédire si vous vous rétablirez."
+    explanation: "Cette question demande si vous souhaitez recevoir tous les traitements médicaux possibles pour prolonger votre vie, même s'ils peuvent être invasifs ou avoir des effets secondaires importants. Réfléchissez à la qualité de vie que vous souhaitez, pas seulement à sa durée. Certains privilégient la longévité, d'autres le confort. Discutez avec votre médecin ou vos proches pour comprendre les traitements possibles."
   },
   {
     id: "30",
