@@ -71,7 +71,7 @@ export const lifeSupportExplanationsFR = [
   },
   {
     id: "25",
- explanation: "Cette question concerne votre souhait d'être intubé, c'est-à-dire d'avoir un tube inséré dans votre trachée pour aider votre respiration en cas de difficulté sévère, souvent connecté à un ventilateur. L'intubation est plus invasive et peut avoir des complications comme la pneumonie. Elle est utilisée quand les méthodes non invasives ne suffisent pas."
+    explanation: "Cette question concerne votre souhait d'être intubé, c'est-à-dire d'avoir un tube inséré dans votre trachée pour aider votre respiration en cas de difficulté sévère, souvent connecté à un ventilateur. L'intubation est plus invasive et peut avoir des complications comme la pneumonie. Elle est utilisée quand les méthodes non invasives ne suffisent pas."
   },
   {
     id: "26",
@@ -87,7 +87,7 @@ export const lifeSupportExplanationsFR = [
   },
   {
     id: "29",
-    explanation: "Cette question concerne votre souhait de subir une réanimation cardiopulmonaire (RCP) si votre cœur s'arrête soudainement. La RCP est une procédure qui vise à redémarrer votre cœur par des compressions thoraciques et, le cas échéant, une ventilation artificielle. La RCP peut être efficace dans certains cas, mais elle n'est pas toujours réussie, surtout chez les personnes âgées ou avec certaines conditions médicales. Même si elle réussit, il peut y avoir des complications."
+    explanation: "Cette question concerne votre souhait de continuer les traitements si vous êtes dans un coma profond avec une récupération incertaine. Un coma profond signifie être inconscient sans réponse, et une récupération incertaine signifie que les médecins ne peuvent pas prédire si vous récupérerez."
   },
   {
     id: "30",
