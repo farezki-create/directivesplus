@@ -3,14 +3,21 @@ import { generalExplanationsEN, generalExplanationsFR } from './generalExplanati
 import { lifeSupportExplanationsEN, lifeSupportExplanationsFR } from './lifeSupportExplanations';
 import { advancedIllnessExplanationsEN, advancedIllnessExplanationsFR } from './advancedIllnessExplanations';
 
+// Define the explanation type
+interface QuestionExplanation {
+  id: string;
+  explanation: string;
+  question?: string; // Make question property optional
+}
+
 // Combine all explanations
-const questionExplanationsEN = [
+const questionExplanationsEN: QuestionExplanation[] = [
   ...generalExplanationsEN,
   ...lifeSupportExplanationsEN,
   ...advancedIllnessExplanationsEN
 ];
 
-const questionExplanationsFR = [
+const questionExplanationsFR: QuestionExplanation[] = [
   ...generalExplanationsFR,
   ...lifeSupportExplanationsFR,
   ...advancedIllnessExplanationsFR
@@ -36,7 +43,7 @@ export const getQuestionExplanation = (questionId: string, language: 'en' | 'fr'
   if (!explanation && questionText) {
     console.log("No direct ID match, attempting to match by question content");
     
-    // First try exact match
+    // First try exact match - but only check if the explanation has a question property
     explanation = explanations.find(exp => 
       exp.question && exp.question.trim().toLowerCase() === questionText.trim().toLowerCase()
     );
