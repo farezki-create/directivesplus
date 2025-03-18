@@ -19,22 +19,9 @@ export function LifeSupportQuestionsDialog({
   const { questions, loading } = useLifeSupportQuestions(open);
   const { answers, handleAnswerChange, handleSubmit } = useLifeSupportAnswers(questions);
   const { getLifeSupportOptions } = useQuestionOptions();
-
-  // Detailed logging for debugging
-  console.log("[LifeSupportDialog] Dialog state:", open);
-  console.log("[LifeSupportDialog] Questions count:", questions?.length || 0);
-  console.log("[LifeSupportDialog] Current language:", currentLanguage);
-  console.log("[LifeSupportDialog] Loading state:", loading);
-  
-  if (questions?.length > 0) {
-    console.log("[LifeSupportDialog] First question sample:", JSON.stringify(questions[0], null, 2));
-  } else {
-    console.log("[LifeSupportDialog] No questions available");
-  }
   
   // Get appropriate options for the current language
   const options = getLifeSupportOptions();
-  console.log("[LifeSupportDialog] Options:", options);
 
   const onSubmit = async () => {
     const success = await handleSubmit();
@@ -55,7 +42,6 @@ export function LifeSupportQuestionsDialog({
     >
       {questions && questions.length > 0 ? (
         questions.map((question) => {
-          console.log(`Rendering question:`, question);
           if (!question || !question.id) {
             console.error("Invalid question object:", question);
             return null;
