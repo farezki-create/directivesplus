@@ -52,8 +52,12 @@ export function LifeSupportQuestionsDialog({
             ...question,
             // For French questions, make sure both question and question_text are available
             question: question.question || question.question_text,
-            question_text: question.question_text || question.question
+            question_text: question.question_text || question.question,
+            // Explicitly mark as life support question to ensure no explanation is shown
+            isLifeSupportQuestion: true
           };
+          
+          console.log(`Rendering life support question: ${enhancedQuestion.id} - "${enhancedQuestion.question?.substring(0, 30) || 'No question text'}..."`);
           
           return (
             <QuestionWithExplanation

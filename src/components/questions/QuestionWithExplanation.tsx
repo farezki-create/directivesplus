@@ -35,14 +35,25 @@ export function QuestionWithExplanation({
     return null;
   }
   
-  // Déterminer si c'est une question de support de vie
-  // Vérifier d'abord par ID ou question_order (plage 21-32)
+  // STRICT CHECK: Determine if this is a life support question
+  // Check by ID range (21-32) or by question_order (21-32)
   const isLifeSupportQuestion = 
     (question.id && !isNaN(parseInt(question.id)) && parseInt(question.id) >= 21 && parseInt(question.id) <= 32) || 
-    (question.question_order && parseInt(question.question_order) >= 21 && parseInt(question.question_order) <= 32);
+    (question.question_order && parseInt(question.question_order) >= 21 && parseInt(question.question_order) <= 32) ||
+    (question.display_order && parseInt(question.display_order) >= 21 && parseInt(question.display_order) <= 32);
   
-  // Si c'est une question de support de vie, ne pas afficher d'explication
-  if (isLifeSupportQuestion) {
+  // Additional content-based check for life support keywords
+  const lifeSupportKeywords = language === 'en' 
+    ? ['cpr', 'intensive care', 'intubated', 'ventilation', 'dialysis', 'tracheostomy', 'coma', 'artificial feeding']
+    : ['rcp', 'réanimation', 'intubé', 'ventilation', 'dialyse', 'trachéotomie', 'coma', 'alimentation artificielle'];
+  
+  const containsLifeSupportKeyword = lifeSupportKeywords.some(keyword => 
+    questionText.toLowerCase().includes(keyword.toLowerCase())
+  );
+  
+  // If life support question, do not show explanation
+  if (isLifeSupportQuestion || containsLifeSupportKeyword) {
+    console.log(`Life support question detected - no explanation will be shown: "${questionText.substring(0, 50)}..."`);
     return (
       <div className="mb-8">
         <QuestionCard
@@ -58,7 +69,7 @@ export function QuestionWithExplanation({
     );
   }
   
-  // Pour les autres questions, continuer normalement
+  // For non-life support questions, get explanation ID
   let explanationId = '';
   
   // First try using display_order (numerical field)
@@ -81,6 +92,9 @@ export function QuestionWithExplanation({
   // Get the explanation using the extracted ID AND question text for better matching
   const explanation = getQuestionExplanation(explanationId, language, questionText);
   
+  // Log the explanation lookup result
+  console.log(`Explanation for question "${questionText.substring(0, 30)}...": ${explanation ? "found" : "not found"}`);
+  
   // Skip rendering the explanation if it's empty
   const hasExplanation = explanation && explanation.trim() !== '';
   
@@ -89,7 +103,7 @@ export function QuestionWithExplanation({
       <QuestionCard
         question={{
           ...question,
-          question: questionText // Ensure the question text is properly passed
+          question: questionText
         }}
         value={value}
         onValueChange={onValueChange}

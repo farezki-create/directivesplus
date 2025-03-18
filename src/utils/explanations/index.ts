@@ -25,27 +25,63 @@ const questionExplanationsFR: QuestionExplanation[] = [
 
 /**
  * Gets the explanation for a question with the given ID in the specified language
- * Now also attempts to match by question content if ID matching fails
+ * Uses multiple methods to identify life support questions to ensure they have no explanations
  */
 export const getQuestionExplanation = (questionId: string, language: 'en' | 'fr', questionText?: string): string => {
-  // Vérifier explicitement si l'ID est dans la plage des questions de support de vie (21-32)
+  // TRIPLE-LAYER CHECK FOR LIFE SUPPORT QUESTIONS:
+  
+  // 1. Check by ID range (21-32)
   if (questionId && !isNaN(parseInt(questionId))) {
     const idNumber = parseInt(questionId);
     if (idNumber >= 21 && idNumber <= 32) {
-      // Retour immédiat avec une chaîne vide pour les questions de support de vie
+      console.log(`Life support question detected by ID range (${questionId}) - returning empty explanation`);
       return '';
     }
   }
   
-  // Si le texte de la question est fourni, vérifier s'il s'agit d'une question de support de vie
+  // 2. Check by question content keywords if text is provided
   if (questionText) {
-    // Vérifier si c'est une question de support de vie en examinant le contenu
-    const isLifeSupportQuestion = checkIfLifeSupportQuestion(questionText, language);
-    if (isLifeSupportQuestion) {
+    const lifeSupportKeywords = language === 'en' 
+      ? ['cpr', 'intensive care', 'intubated', 'ventilation', 'dialysis', 'tracheostomy', 'coma', 'artificial feeding']
+      : ['rcp', 'réanimation', 'intubé', 'ventilation', 'dialyse', 'trachéotomie', 'coma', 'alimentation artificielle'];
+    
+    const containsLifeSupportKeyword = lifeSupportKeywords.some(keyword => 
+      questionText.toLowerCase().includes(keyword.toLowerCase())
+    );
+    
+    if (containsLifeSupportKeyword) {
+      console.log(`Life support question detected by keyword in: "${questionText.substring(0, 30)}..." - returning empty explanation`);
       return '';
     }
   }
   
+  // 3. Manually check if this is a question from the life support explanations lists
+  const lifeSupportExplanations = language === 'en' ? lifeSupportExplanationsEN : lifeSupportExplanationsFR;
+  const isLifeSupportQuestion = lifeSupportExplanations.some(explanation => {
+    // Match by ID
+    if (explanation.id === questionId) return true;
+    
+    // Match by question text if both are available
+    if (explanation.question && questionText) {
+      const normalizedQuestionText = questionText.trim().toLowerCase();
+      const normalizedExplanationQuestion = explanation.question.trim().toLowerCase();
+      
+      if (normalizedQuestionText === normalizedExplanationQuestion || 
+          normalizedQuestionText.includes(normalizedExplanationQuestion) ||
+          normalizedExplanationQuestion.includes(normalizedQuestionText)) {
+        return true;
+      }
+    }
+    
+    return false;
+  });
+  
+  if (isLifeSupportQuestion) {
+    console.log(`Life support question detected by matching question lists - returning empty explanation`);
+    return '';
+  }
+  
+  // For non-life support questions, continue with normal logic
   const explanations = language === 'en' ? questionExplanationsEN : questionExplanationsFR;
   
   // Try to find explanation by exact ID match first
@@ -81,13 +117,13 @@ export const getQuestionExplanation = (questionId: string, language: 'en' | 'fr'
 function checkIfLifeSupportQuestion(questionText: string, language: 'en' | 'fr'): boolean {
   const lifeSupport = language === 'en' ? lifeSupportExplanationsEN : lifeSupportExplanationsFR;
   
-  // Vérification plus stricte pour s'assurer que nous identifions correctement les questions de support de vie
+  // Check against life support questions list
   for (const question of lifeSupport) {
     if (question.question) {
       const normalizedQuestionText = questionText.trim().toLowerCase();
       const normalizedLifeSupportQuestion = question.question.trim().toLowerCase();
       
-      // Vérification exacte ou si l'un contient l'autre
+      // Exact match or one contains the other
       if (normalizedQuestionText === normalizedLifeSupportQuestion ||
           normalizedQuestionText.includes(normalizedLifeSupportQuestion) ||
           normalizedLifeSupportQuestion.includes(normalizedQuestionText)) {
@@ -96,7 +132,7 @@ function checkIfLifeSupportQuestion(questionText: string, language: 'en' | 'fr')
     }
   }
   
-  // Vérifications supplémentaires basées sur des mots-clés spécifiques aux questions de support de vie
+  // Check against keywords specific to life support questions
   const lifeSupportKeywords = language === 'en' 
     ? ['cpr', 'intensive care', 'intubated', 'ventilation', 'dialysis', 'tracheostomy', 'coma', 'artificial feeding']
     : ['rcp', 'réanimation', 'intubé', 'ventilation', 'dialyse', 'trachéotomie', 'coma', 'alimentation artificielle'];
