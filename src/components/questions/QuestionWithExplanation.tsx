@@ -65,13 +65,8 @@ export function QuestionWithExplanation({
   // Get the explanation using the extracted ID AND question text for better matching
   const explanation = getQuestionExplanation(explanationId, language, questionText);
   
-  // For debugging - examine the explanation content
-  console.log(`Question ID: ${question.id}, Explanation ID: ${explanationId}`);
-  console.log(`Found explanation:`, explanation ? "Yes" : "No");
-  if (explanation) {
-    console.log(`Explanation text: "${explanation}"`);
-    console.log(`Explanation is empty:`, !explanation || explanation.trim() === '');
-  }
+  // Skip rendering the explanation if it's empty
+  const hasExplanation = explanation && explanation.trim() !== '';
   
   return (
     <div className="mb-8">
@@ -85,7 +80,7 @@ export function QuestionWithExplanation({
         options={options}
       />
       
-      {explanation && explanation.trim() !== '' && (
+      {hasExplanation && (
         <div className="mt-4 text-base text-foreground bg-muted/60 p-5 rounded-md border border-muted shadow-sm">
           {explanation}
         </div>
