@@ -1,5 +1,5 @@
 
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, HashRouter } from "react-router-dom";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Auth from "./pages/Auth";
@@ -22,7 +22,7 @@ function App() {
   return (
     <LanguageProvider>
       <DialogStateProvider>
-        <Router>
+        <HashRouter>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/dashboard" element={<Dashboard />} />
@@ -38,7 +38,7 @@ function App() {
             <Route path="/advanced-illness" element={<AdvancedIllness />} />
             <Route path="/preferences" element={<Preferences />} />
           </Routes>
-        </Router>
+        </HashRouter>
         <Toaster />
         <Sonner position="top-center" />
       </DialogStateProvider>

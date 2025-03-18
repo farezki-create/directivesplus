@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -40,8 +41,9 @@ export const ForgotPassword = ({ email }: ForgotPasswordProps) => {
       setIsLoading(true);
       console.log('Attempting to send password reset email to:', email);
 
+      // Modifier pour utiliser l'URL complète avec hash
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: `${window.location.origin}/#/reset-password`,
       });
 
       if (error) {
