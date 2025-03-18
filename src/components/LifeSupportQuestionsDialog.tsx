@@ -60,10 +60,19 @@ export function LifeSupportQuestionsDialog({
             console.error("Invalid question object:", question);
             return null;
           }
+          
+          // Make sure we have a question_text field available for French questions
+          const enhancedQuestion = {
+            ...question,
+            // For French questions, make sure both question and question_text are available
+            question: question.question || question.question_text,
+            question_text: question.question_text || question.question
+          };
+          
           return (
             <QuestionWithExplanation
               key={question.id}
-              question={question}
+              question={enhancedQuestion}
               value={answers[question.id] || []}
               onValueChange={(value) => handleAnswerChange(question.id, value, true)}
               options={options}

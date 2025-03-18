@@ -29,6 +29,15 @@ export function QuestionWithExplanation({
   
   console.log("Processing question:", question);
   
+  // Get the question text, with fallbacks to ensure it exists
+  const questionText = question.question || question.question_text || '';
+  console.log(`Question text: "${questionText}"`);
+  
+  if (!questionText) {
+    console.error("Question text is missing", question);
+    return null;
+  }
+  
   // Extract display order - prioritize display_order or question_order for explanation lookup
   let explanationId = '';
   
@@ -53,8 +62,8 @@ export function QuestionWithExplanation({
     console.log(`Using id as explanationId: ${explanationId}`);
   }
   
-  // Get the explanation using the extracted ID
-  const explanation = getQuestionExplanation(explanationId, language);
+  // Get the explanation using the extracted ID AND question text for better matching
+  const explanation = getQuestionExplanation(explanationId, language, questionText);
   
   // For debugging - examine the explanation content
   console.log(`Question ID: ${question.id}, Explanation ID: ${explanationId}`);
@@ -62,15 +71,6 @@ export function QuestionWithExplanation({
   if (explanation) {
     console.log(`Explanation text: "${explanation}"`);
     console.log(`Explanation is empty:`, !explanation || explanation.trim() === '');
-  }
-  
-  // Get the question text, with fallbacks to ensure it exists
-  const questionText = question.question || question.question_text || '';
-  console.log(`Question text: "${questionText}"`);
-  
-  if (!questionText) {
-    console.error("Question text is missing", question);
-    return null;
   }
   
   return (

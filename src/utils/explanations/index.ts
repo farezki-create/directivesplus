@@ -18,22 +18,42 @@ const questionExplanationsFR = [
 
 /**
  * Gets the explanation for a question with the given ID in the specified language
+ * Now also attempts to match by question content if ID matching fails
  */
-export const getQuestionExplanation = (questionId: string, language: 'en' | 'fr'): string => {
+export const getQuestionExplanation = (questionId: string, language: 'en' | 'fr', questionText?: string): string => {
   // Log for debugging
   console.log(`Getting explanation for question ID: ${questionId} in language: ${language}`);
+  if (questionText) {
+    console.log(`Question text: "${questionText}"`);
+  }
   
   const explanations = language === 'en' ? questionExplanationsEN : questionExplanationsFR;
   
   // Try to find explanation by exact ID match first
   let explanation = explanations.find(exp => exp.id === questionId);
   
-  if (!explanation) {
-    // If no direct match, and it looks like a UUID, try to find by position for advanced illness
-    // by checking if the question's display_order_str matches an explanation's numeric ID
-    if (questionId.includes('-')) {
-      // This is for logging only - explanations should be found by display_order_str
-      console.log("No direct match found for UUID, will check other methods");
+  // If no direct match by ID, try to find by text content if question text is provided
+  if (!explanation && questionText) {
+    console.log("No direct ID match, attempting to match by question content");
+    
+    // First try exact match
+    explanation = explanations.find(exp => 
+      exp.question && exp.question.trim().toLowerCase() === questionText.trim().toLowerCase()
+    );
+    
+    // If still no match, try partial match (question contains explanation question or vice versa)
+    if (!explanation) {
+      console.log("No exact content match, trying partial match");
+      explanation = explanations.find(exp => 
+        exp.question && (
+          exp.question.trim().toLowerCase().includes(questionText.trim().toLowerCase()) ||
+          questionText.trim().toLowerCase().includes(exp.question.trim().toLowerCase())
+        )
+      );
+    }
+    
+    if (explanation) {
+      console.log(`Found match by question content: "${explanation.question}"`);
     }
   }
   
