@@ -13,6 +13,7 @@ type QuestionObject = {
   display_order?: number;
   question_order?: number;
   created_at?: string;
+  explanation?: string; // Added explanation property
 };
 
 export function useGeneralOpinion(dialogOpen: boolean) {

@@ -199,18 +199,21 @@ export type Database = {
         Row: {
           created_at: string | null
           display_order: number | null
+          explanation: string | null
           id: string
           question: string
         }
         Insert: {
           created_at?: string | null
           display_order?: number | null
+          explanation?: string | null
           id?: string
           question: string
         }
         Update: {
           created_at?: string | null
           display_order?: number | null
+          explanation?: string | null
           id?: string
           question?: string
         }
@@ -220,18 +223,21 @@ export type Database = {
         Row: {
           created_at: string | null
           display_order: number | null
+          explanation: string | null
           id: string
           question: string
         }
         Insert: {
           created_at?: string | null
           display_order?: number | null
+          explanation?: string | null
           id?: string
           question: string
         }
         Update: {
           created_at?: string | null
           display_order?: number | null
+          explanation?: string | null
           id?: string
           question?: string
         }
@@ -241,18 +247,21 @@ export type Database = {
         Row: {
           created_at: string | null
           display_order: number | null
+          explanation: string | null
           id: string
           question: string
         }
         Insert: {
           created_at?: string | null
           display_order?: number | null
+          explanation?: string | null
           id?: string
           question: string
         }
         Update: {
           created_at?: string | null
           display_order?: number | null
+          explanation?: string | null
           id?: string
           question?: string
         }
@@ -262,6 +271,7 @@ export type Database = {
         Row: {
           created_at: string | null
           display_order: number
+          explanation: string | null
           id: string
           question: string
           question_order: number | null
@@ -269,6 +279,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           display_order: number
+          explanation?: string | null
           id?: string
           question: string
           question_order?: number | null
@@ -276,6 +287,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           display_order?: number
+          explanation?: string | null
           id?: string
           question?: string
           question_order?: number | null
@@ -340,18 +352,21 @@ export type Database = {
         Row: {
           created_at: string | null
           display_order: number | null
+          explanation: string | null
           id: string
           question: string
         }
         Insert: {
           created_at?: string | null
           display_order?: number | null
+          explanation?: string | null
           id?: string
           question: string
         }
         Update: {
           created_at?: string | null
           display_order?: number | null
+          explanation?: string | null
           id?: string
           question?: string
         }
@@ -361,18 +376,21 @@ export type Database = {
         Row: {
           created_at: string | null
           display_order: number | null
+          explanation: string | null
           id: string
           question: string
         }
         Insert: {
           created_at?: string | null
           display_order?: number | null
+          explanation?: string | null
           id?: string
           question: string
         }
         Update: {
           created_at?: string | null
           display_order?: number | null
+          explanation?: string | null
           id?: string
           question?: string
         }
