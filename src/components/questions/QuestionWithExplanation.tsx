@@ -56,9 +56,13 @@ export function QuestionWithExplanation({
   // Get the explanation using the extracted ID
   const explanation = getQuestionExplanation(explanationId, language);
   
-  // For debugging
+  // For debugging - examine the explanation content
   console.log(`Question ID: ${question.id}, Explanation ID: ${explanationId}`);
-  console.log("Found explanation:", explanation ? "Yes" : "No");
+  console.log(`Found explanation:`, explanation ? "Yes" : "No");
+  if (explanation) {
+    console.log(`Explanation text: "${explanation}"`);
+    console.log(`Explanation is empty:`, !explanation || explanation.trim() === '');
+  }
   
   // Get the question text, with fallbacks to ensure it exists
   const questionText = question.question || question.question_text || '';

@@ -37,8 +37,12 @@ export const getQuestionExplanation = (questionId: string, language: 'en' | 'fr'
     }
   }
   
-  // Log the result
-  console.log(`Found explanation:`, explanation);
+  // Debug logs to see what's happening
+  console.log(`Found explanation for ID ${questionId}:`, explanation);
+  if (explanation) {
+    console.log(`Explanation text is: "${explanation.explanation}"`);
+    console.log(`Explanation text is empty:`, !explanation.explanation || explanation.explanation.trim() === '');
+  }
   
   // Return empty string if explanation is not found or the explanation text is empty
   return (explanation && explanation.explanation && explanation.explanation.trim() !== '') 
