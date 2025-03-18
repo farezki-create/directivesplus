@@ -36,6 +36,13 @@ export const getQuestionExplanation = (questionId: string, language: 'en' | 'fr'
   
   const explanations = language === 'en' ? questionExplanationsEN : questionExplanationsFR;
   
+  // Log all life support explanations for debugging
+  console.log("All life support explanations:");
+  const lifeSupport = language === 'en' ? lifeSupportExplanationsEN : lifeSupportExplanationsFR;
+  lifeSupport.forEach(exp => {
+    console.log(`ID: ${exp.id}, Question: "${exp.question}", Has explanation: ${exp.explanation !== ""}`);
+  });
+  
   // Try to find explanation by exact ID match first
   let explanation = explanations.find(exp => exp.id === questionId);
   

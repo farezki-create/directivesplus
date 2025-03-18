@@ -68,6 +68,9 @@ export function QuestionWithExplanation({
   // Skip rendering the explanation if it's empty
   const hasExplanation = explanation && explanation.trim() !== '';
   
+  // Log for debugging
+  console.log(`Question ID ${question.id}: Has explanation to display: ${hasExplanation}`);
+  
   return (
     <div className="mb-8">
       <QuestionCard
