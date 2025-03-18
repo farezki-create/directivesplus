@@ -286,18 +286,21 @@ export type Database = {
         Row: {
           created_at: string | null
           display_order: number | null
+          explanation: string | null
           id: string
           question: string
         }
         Insert: {
           created_at?: string | null
           display_order?: number | null
+          explanation?: string | null
           id?: string
           question: string
         }
         Update: {
           created_at?: string | null
           display_order?: number | null
+          explanation?: string | null
           id?: string
           question?: string
         }
@@ -305,6 +308,7 @@ export type Database = {
       }
       questionnaire_life_support_fr: {
         Row: {
+          explanation: string | null
           id: number
           option_no: string
           option_unsure: string
@@ -313,6 +317,7 @@ export type Database = {
           question_text: string
         }
         Insert: {
+          explanation?: string | null
           id?: number
           option_no: string
           option_unsure: string
@@ -321,6 +326,7 @@ export type Database = {
           question_text: string
         }
         Update: {
+          explanation?: string | null
           id?: number
           option_no?: string
           option_unsure?: string

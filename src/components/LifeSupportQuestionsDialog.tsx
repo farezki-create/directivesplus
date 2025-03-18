@@ -53,13 +53,15 @@ export function LifeSupportQuestionsDialog({
             // For French questions, make sure both question and question_text are available
             question: question.question || question.question_text,
             question_text: question.question_text || question.question,
+            // Pass through the explanation from database
+            explanation: question.explanation || '',
             // Explicitly mark as life support question
             isLifeSupportQuestion: true,
             // Add type indicator to help with detection
             questionType: 'life_support'
           };
           
-          console.log(`Rendering LIFE SUPPORT question: ${enhancedQuestion.id} - "${enhancedQuestion.question?.substring(0, 30) || 'No question text'}..."`);
+          console.log(`Rendering LIFE SUPPORT question: ${enhancedQuestion.id} - "${enhancedQuestion.question?.substring(0, 30) || 'No question text'}..." - ${enhancedQuestion.explanation ? 'Has explanation' : 'No explanation'}`);
           
           return (
             <QuestionWithExplanation

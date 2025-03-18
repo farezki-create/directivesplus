@@ -62,6 +62,8 @@ const LifeSupport = () => {
                   ...question,
                   question: question.question || question.question_text,
                   question_text: question.question_text || question.question,
+                  // Pass through the explanation from database
+                  explanation: question.explanation || '',
                   isLifeSupportQuestion: true,
                   questionType: 'life_support',
                   // Force the ID into the 21-32 range if for some reason it's not

@@ -10,6 +10,7 @@ interface EnQuestion {
   display_order: number;
   created_at?: string;
   question: string;
+  explanation?: string;
 }
 
 interface FrQuestion {
@@ -19,6 +20,7 @@ interface FrQuestion {
   option_yes: string;
   option_no: string;
   option_unsure: string;
+  explanation?: string;
 }
 
 // Union type for all possible question formats
@@ -97,6 +99,7 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
                 question: item.question || '',
                 question_text: item.question || '', // Ensure both fields exist
                 display_order: item.display_order,
+                explanation: item.explanation || '',
                 options: {
                   yes: "Yes",
                   no: "No",
@@ -118,6 +121,7 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
                 question: item.question_text || '', // Ensure both fields exist
                 display_order: item.question_order || 0,
                 question_order: item.question_order || 0,
+                explanation: item.explanation || '',
                 options: {
                   yes: item.option_yes || "Oui",
                   no: item.option_no || "Non",

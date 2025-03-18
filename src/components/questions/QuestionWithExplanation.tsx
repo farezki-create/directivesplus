@@ -35,7 +35,32 @@ export function QuestionWithExplanation({
     return null;
   }
   
-  // FIRST CHECK: Explicit flag for life support questions
+  // FIRST: Check if the question has its own explanation from the database
+  if (question.explanation) {
+    console.log(`Using database-provided explanation for: "${questionText.substring(0, 50)}..."`);
+    
+    return (
+      <div className="mb-8">
+        <QuestionCard
+          question={{
+            ...question,
+            question: questionText
+          }}
+          value={value}
+          onValueChange={onValueChange}
+          options={options}
+        />
+        
+        {question.explanation.trim() !== '' && (
+          <div className="mt-4 text-base text-foreground bg-muted/60 p-5 rounded-md border border-muted shadow-sm">
+            {question.explanation}
+          </div>
+        )}
+      </div>
+    );
+  }
+  
+  // SECOND CHECK: Explicit flag for life support questions
   if (question.isLifeSupportQuestion === true) {
     console.log(`Explicit life support flag detected - no explanation will be shown: "${questionText.substring(0, 50)}..."`);
     return (
@@ -53,7 +78,7 @@ export function QuestionWithExplanation({
     );
   }
   
-  // SECOND CHECK: Determine if this is a life support question by ID range
+  // THIRD CHECK: Determine if this is a life support question by ID range
   const questionId = 
     (question.id && !isNaN(parseInt(question.id)) ? parseInt(question.id) : null) || 
     (question.question_order ? parseInt(question.question_order) : null) ||
@@ -76,7 +101,7 @@ export function QuestionWithExplanation({
     );
   }
   
-  // THIRD CHECK: Content-based check for life support keywords
+  // FOURTH CHECK: Content-based check for life support keywords
   const lifeSupportKeywords = language === 'en' 
     ? ['cpr', 'intensive care', 'intubated', 'ventilation', 'dialysis', 'tracheostomy', 'coma', 'artificial feeding']
     : ['rcp', 'réanimation', 'intubé', 'ventilation', 'dialyse', 'trachéotomie', 'coma', 'alimentation artificielle'];
