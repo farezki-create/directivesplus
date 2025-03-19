@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import { QuestionCard } from "./QuestionCard";
 import { Button } from "@/components/ui/button";
 import { Info } from "lucide-react";
-import { getQuestionExplanation } from "@/utils/explanations";
 
 interface QuestionWithExplanationProps {
   question: any;
@@ -39,7 +38,7 @@ export function QuestionWithExplanation({
     return null;
   }
 
-  // Use the explanation directly from the database if available, or fall back to the utility function
+  // Get explanation directly from the question object
   const explanation = question.explanation || '';
   
   return (
