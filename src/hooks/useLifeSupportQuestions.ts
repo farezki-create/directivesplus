@@ -80,6 +80,16 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
         console.log(`[LifeSupport] Questions loaded: ${data?.length || 0}`);
         if (data?.[0]) {
           console.log('[LifeSupport] First question sample:', data[0]);
+          
+          // Log if explanations exist in the data
+          const questionsWithExplanations = data.filter(q => q.explanation && q.explanation.trim() !== '');
+          console.log(`[LifeSupport] Questions with explanations: ${questionsWithExplanations.length}/${data.length}`);
+          if (questionsWithExplanations.length > 0) {
+            console.log('[LifeSupport] Sample explanation:', 
+              questionsWithExplanations[0].explanation?.substring(0, 50) + '...');
+          } else {
+            console.warn('[LifeSupport] No explanations found in the data from Supabase');
+          }
         } else {
           console.warn('[LifeSupport] No questions found in the database.');
           setQuestions([]);
@@ -136,6 +146,11 @@ export function useLifeSupportQuestions(isDialogOpen: boolean) {
         }
         
         console.log(`[LifeSupport] Formatted questions count: ${formattedData.length}`);
+        
+        // Check if explanations are properly passed through after formatting
+        const formattedWithExplanations = formattedData.filter(q => q.explanation && q.explanation.trim() !== '');
+        console.log(`[LifeSupport] Formatted questions with explanations: ${formattedWithExplanations.length}/${formattedData.length}`);
+        
         setQuestions(formattedData);
       } catch (error) {
         console.error('[LifeSupport] Unexpected error:', error);

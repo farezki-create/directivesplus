@@ -45,7 +45,7 @@ export function QuestionWithExplanation({
   // First, try to get explanation directly from the question object
   if (question.explanation && question.explanation.trim() !== '') {
     explanation = question.explanation;
-    console.log(`Using database explanation for question ID ${question.id}`);
+    console.log(`Using database explanation for question ID ${question.id}: "${question.explanation.substring(0, 30)}..."`);
   } 
   // If no explanation in the question object, try to get it from the utility
   else {
@@ -62,7 +62,7 @@ export function QuestionWithExplanation({
     } else {
       // For other question types, try to get explanation from the utility
       explanation = getQuestionExplanation(question.id, language, questionText);
-      console.log(`Using utility explanation for question ID ${question.id}:`, explanation ? 'Found' : 'Not found');
+      console.log(`Using utility explanation for question ID ${question.id}:`, explanation ? `Found: "${explanation.substring(0, 30)}..."` : 'Not found');
     }
   }
 
@@ -71,7 +71,8 @@ export function QuestionWithExplanation({
     id: question.id, 
     text: questionText.substring(0, 30) + "...", 
     hasExplanation: !!explanation,
-    explanationLength: explanation?.length || 0
+    explanationLength: explanation?.length || 0,
+    explanation: explanation ? explanation.substring(0, 30) + "..." : "None"
   });
   
   return (

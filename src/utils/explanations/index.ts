@@ -28,6 +28,8 @@ const questionExplanationsFR: QuestionExplanation[] = [
  * Uses multiple methods to identify life support questions to ensure they have no explanations
  */
 export const getQuestionExplanation = (questionId: string, language: 'en' | 'fr', questionText?: string): string => {
+  console.log(`Getting explanation for question ID: ${questionId}, language: ${language}`);
+  
   // FORCEFUL APPROACH: Permanent fix for all life support questions
   
   // === MANUAL ID LIST OF ALL LIFE SUPPORT QUESTIONS ===
@@ -134,9 +136,13 @@ export const getQuestionExplanation = (questionId: string, language: 'en' | 'fr'
   }
   
   // Return empty string if explanation is not found or the explanation text is empty
-  return (explanation && explanation.explanation && explanation.explanation.trim() !== '') 
-    ? explanation.explanation 
-    : '';
+  if (explanation && explanation.explanation && explanation.explanation.trim() !== '') {
+    console.log(`Found explanation for question ID ${questionId}: "${explanation.explanation.substring(0, 30)}..."`);
+    return explanation.explanation;
+  } else {
+    console.log(`No explanation found for question ID ${questionId}`);
+    return '';
+  }
 };
 
 /**

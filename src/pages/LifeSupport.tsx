@@ -111,6 +111,6 @@ const LifeSupport = () => {
       </main>
     </div>
   );
-}
+};
 
 export default LifeSupport;
