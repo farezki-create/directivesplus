@@ -102,7 +102,7 @@ export function QuestionWithExplanation({
             </Button>
             
             {showExplanation && (
-              <div className="mt-2 p-3 bg-muted rounded-md text-sm">
+              <div className="mt-2 p-4 bg-muted rounded-md text-base font-medium">
                 {explanation}
               </div>
             )}
