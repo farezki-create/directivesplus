@@ -88,11 +88,11 @@ export function PDFPreviewDialog({
               <Button 
                 variant="outline" 
                 onClick={handleSendToDMP}
-                className="flex items-center"
+                className="flex items-center gap-2"
               >
-                <Database className="mr-2 h-4 w-4" />
-                <Construction className="mr-2 h-4 w-4" />
-                Envoyer à votre DMP
+                <Database className="h-4 w-4" />
+                <Construction className="h-4 w-4" />
+                <span>Envoyer à votre DMP</span>
               </Button>
               
               <PDFActionButtons 

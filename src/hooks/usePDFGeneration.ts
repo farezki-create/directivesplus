@@ -11,6 +11,7 @@ export function usePDFGeneration(userId: string | null, text?: string) {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [isSavingToHDS, setIsSavingToHDS] = useState(false);
+  const [hdsStorageSuccess, setHdsStorageSuccess] = useState(false);
   const { toast } = useToast();
   const { responses, synthesis } = useQuestionnairesResponses(userId || "");
   const { text: freeText } = useSynthesis(userId);
@@ -120,6 +121,7 @@ export function usePDFGeneration(userId: string | null, text?: string) {
     }
 
     setIsSavingToHDS(true);
+    setHdsStorageSuccess(false);
     
     try {
       // Préparer les métadonnées
@@ -151,6 +153,8 @@ export function usePDFGeneration(userId: string | null, text?: string) {
         throw new Error(data.error || "Échec de l'envoi vers l'hébergeur HDS");
       }
 
+      setHdsStorageSuccess(true);
+      
       toast({
         title: "Succès",
         description: "Le document a été envoyé avec succès à l'hébergeur HDS.",
@@ -179,6 +183,7 @@ export function usePDFGeneration(userId: string | null, text?: string) {
     handleEmail,
     handleDownload,
     saveToHDS,
-    isSavingToHDS
+    isSavingToHDS,
+    hdsStorageSuccess
   };
 }

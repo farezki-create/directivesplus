@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Database, Shield } from "lucide-react";
+import { Database, Lock, Shield } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -11,13 +11,21 @@ interface HDSStorageButtonProps {
 
 export function HDSStorageButton({ onSave, disabled = false }: HDSStorageButtonProps) {
   const [isSaving, setIsSaving] = useState(false);
+  const [isComplete, setIsComplete] = useState(false);
   const { toast } = useToast();
 
   const handleSave = async () => {
     setIsSaving(true);
+    setIsComplete(false);
     try {
       const result = await onSave();
-      if (!result) {
+      if (result) {
+        setIsComplete(true);
+        toast({
+          title: "Succès",
+          description: "Document envoyé avec succès vers l'hébergeur HDS.",
+        });
+      } else {
         toast({
           title: "Attention",
           description: "Problème lors de l'envoi vers l'hébergeur HDS.",
@@ -48,6 +56,12 @@ export function HDSStorageButton({ onSave, disabled = false }: HDSStorageButtonP
         <>
           <div className="h-4 w-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
           <span>Envoi en cours...</span>
+        </>
+      ) : isComplete ? (
+        <>
+          <Shield className="h-4 w-4 text-green-500" />
+          <Lock className="h-4 w-4 text-green-500" />
+          <span className="text-green-500">Envoyé HDS</span>
         </>
       ) : (
         <>

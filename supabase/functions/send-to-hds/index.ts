@@ -35,6 +35,7 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     // Vérifier que les informations d'authentification HDS sont configurées
     if (!HDS_API_URL || !HDS_API_KEY || !HDS_CLIENT_ID) {
+      console.error("[HDS] Configuration manquante: HDS_API_URL, HDS_API_KEY ou HDS_CLIENT_ID non définis");
       throw new Error("La configuration de l'API HDS est incomplète. Vérifiez les variables d'environnement.");
     }
     
@@ -42,14 +43,23 @@ const handler = async (req: Request): Promise<Response> => {
     const { pdfData, userId, metadata }: HDSSaveRequest = await req.json();
     
     if (!pdfData || !userId) {
+      console.error("[HDS] Requête invalide: données PDF ou userId manquants");
       throw new Error("Les données PDF ou l'ID utilisateur sont manquants");
+    }
+
+    // Vérifier la taille approximative du PDF en Base64
+    const pdfSizeKB = Math.round(pdfData.length * 0.75 / 1024);
+    console.log(`[HDS] Taille approximative du PDF: ${pdfSizeKB} KB`);
+    
+    if (pdfSizeKB > 10000) { // Limite à 10MB
+      console.error(`[HDS] PDF trop volumineux: ${pdfSizeKB} KB`);
+      throw new Error(`Le PDF est trop volumineux (${pdfSizeKB} KB). La taille maximale acceptée est de 10MB.`);
     }
 
     console.log(`[HDS] Tentative d'enregistrement du document pour l'utilisateur ${userId}`);
     console.log(`[HDS] Métadonnées: ${JSON.stringify(metadata)}`);
 
     // Préparer les données pour l'appel à l'API HDS
-    // Note: La structure exacte dépendra de l'API HDS spécifique que vous utilisez
     const requestBody = {
       document: pdfData,
       patientId: metadata.patientId || userId,
@@ -64,24 +74,41 @@ const handler = async (req: Request): Promise<Response> => {
     
     /* 
     // Voici le code à décommenter et adapter pour l'intégration réelle:
-    const response = await fetch(HDS_API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${HDS_API_KEY}`,
-        "X-Client-Id": HDS_CLIENT_ID
-      },
-      body: JSON.stringify(requestBody)
-    });
+    try {
+      const response = await fetch(HDS_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${HDS_API_KEY}`,
+          "X-Client-Id": HDS_CLIENT_ID
+        },
+        body: JSON.stringify(requestBody)
+      });
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      console.error("[HDS] Échec de l'appel API:", response.status, errorData);
-      throw new Error(`Échec de l'appel à l'API HDS: ${response.status}`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`[HDS] Échec de l'appel API: ${response.status}`, errorText);
+        throw new Error(`Échec de l'appel à l'API HDS: ${response.status} - ${errorText}`);
+      }
+
+      const responseData = await response.json();
+      console.log("[HDS] Réponse de l'API:", responseData);
+      
+      return new Response(JSON.stringify({ 
+        success: true,
+        message: "Document envoyé avec succès à l'hébergeur HDS",
+        data: responseData
+      }), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          ...corsHeaders,
+        },
+      });
+    } catch (fetchError) {
+      console.error("[HDS] Erreur lors de la requête:", fetchError);
+      throw new Error(`Erreur de communication avec l'API HDS: ${fetchError.message}`);
     }
-
-    const responseData = await response.json();
-    console.log("[HDS] Réponse de l'API:", responseData);
     */
 
     // Pour le moment, simulons une réponse réussie
@@ -91,6 +118,9 @@ const handler = async (req: Request): Promise<Response> => {
       storageLocation: "HDS_SECURE_STORAGE",
       timestamp: new Date().toISOString()
     };
+
+    // Ajouter un délai simulé pour tester l'expérience utilisateur
+    await new Promise(resolve => setTimeout(resolve, 1500));
 
     return new Response(JSON.stringify({ 
       success: true,
