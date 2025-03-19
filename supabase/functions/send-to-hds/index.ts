@@ -1,12 +1,12 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
-// Obtenez les informations d'authentification de l'API HDS depuis les variables d'environnement
+// Get HDS API authentication info from environment variables
 const HDS_API_URL = Deno.env.get("HDS_API_URL");
 const HDS_API_KEY = Deno.env.get("HDS_API_KEY");
 const HDS_CLIENT_ID = Deno.env.get("HDS_CLIENT_ID");
 
-// Définir les en-têtes CORS pour permettre les requêtes depuis le frontend
+// Define CORS headers for allowing requests from the frontend
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -25,41 +25,41 @@ interface HDSSaveRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
-  console.log("HDS storage function called");
+  console.log("[HDS] Storage function called");
   
-  // Gérer les requêtes préliminaires CORS
+  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Vérifier que les informations d'authentification HDS sont configurées
+    // Verify HDS API authentication configuration
     if (!HDS_API_URL || !HDS_API_KEY || !HDS_CLIENT_ID) {
-      console.error("[HDS] Configuration manquante: HDS_API_URL, HDS_API_KEY ou HDS_CLIENT_ID non définis");
-      throw new Error("La configuration de l'API HDS est incomplète. Vérifiez les variables d'environnement.");
+      console.error("[HDS] Missing configuration: HDS_API_URL, HDS_API_KEY or HDS_CLIENT_ID not defined");
+      throw new Error("The HDS API configuration is incomplete. Check environment variables.");
     }
     
-    // Extraire les données de la requête
+    // Extract request data
     const { pdfData, userId, metadata }: HDSSaveRequest = await req.json();
     
     if (!pdfData || !userId) {
-      console.error("[HDS] Requête invalide: données PDF ou userId manquants");
-      throw new Error("Les données PDF ou l'ID utilisateur sont manquants");
+      console.error("[HDS] Invalid request: missing PDF data or userId");
+      throw new Error("PDF data or user ID is missing");
     }
 
-    // Vérifier la taille approximative du PDF en Base64
+    // Check approximate PDF size in Base64
     const pdfSizeKB = Math.round(pdfData.length * 0.75 / 1024);
-    console.log(`[HDS] Taille approximative du PDF: ${pdfSizeKB} KB`);
+    console.log(`[HDS] Approximate PDF size: ${pdfSizeKB} KB`);
     
-    if (pdfSizeKB > 10000) { // Limite à 10MB
-      console.error(`[HDS] PDF trop volumineux: ${pdfSizeKB} KB`);
-      throw new Error(`Le PDF est trop volumineux (${pdfSizeKB} KB). La taille maximale acceptée est de 10MB.`);
+    if (pdfSizeKB > 10000) { // Limit to 10MB
+      console.error(`[HDS] PDF too large: ${pdfSizeKB} KB`);
+      throw new Error(`PDF is too large (${pdfSizeKB} KB). Maximum accepted size is 10MB.`);
     }
 
-    console.log(`[HDS] Tentative d'enregistrement du document pour l'utilisateur ${userId}`);
-    console.log(`[HDS] Métadonnées: ${JSON.stringify(metadata)}`);
+    console.log(`[HDS] Attempting to save document for user ${userId}`);
+    console.log(`[HDS] Metadata: ${JSON.stringify(metadata)}`);
 
-    // Préparer les données pour l'appel à l'API HDS
+    // Prepare data for HDS API call
     const requestBody = {
       document: pdfData,
       patientId: metadata.patientId || userId,
@@ -69,11 +69,11 @@ const handler = async (req: Request): Promise<Response> => {
       format: "application/pdf"
     };
 
-    // Simuler l'appel à l'API HDS (à remplacer par le véritable appel API)
-    console.log("[HDS] Envoi des données à l'API HDS...");
+    // Simulate HDS API call
+    console.log("[HDS] Sending data to HDS API...");
     
     /* 
-    // Voici le code à décommenter et adapter pour l'intégration réelle:
+    // Code to uncomment and adapt for real integration:
     try {
       const response = await fetch(HDS_API_URL, {
         method: "POST",
@@ -87,16 +87,16 @@ const handler = async (req: Request): Promise<Response> => {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error(`[HDS] Échec de l'appel API: ${response.status}`, errorText);
-        throw new Error(`Échec de l'appel à l'API HDS: ${response.status} - ${errorText}`);
+        console.error(`[HDS] API call failed: ${response.status}`, errorText);
+        throw new Error(`HDS API call failed: ${response.status} - ${errorText}`);
       }
 
       const responseData = await response.json();
-      console.log("[HDS] Réponse de l'API:", responseData);
+      console.log("[HDS] API response:", responseData);
       
       return new Response(JSON.stringify({ 
         success: true,
-        message: "Document envoyé avec succès à l'hébergeur HDS",
+        message: "Document successfully sent to HDS storage provider",
         data: responseData
       }), {
         status: 200,
@@ -106,12 +106,12 @@ const handler = async (req: Request): Promise<Response> => {
         },
       });
     } catch (fetchError) {
-      console.error("[HDS] Erreur lors de la requête:", fetchError);
-      throw new Error(`Erreur de communication avec l'API HDS: ${fetchError.message}`);
+      console.error("[HDS] Request error:", fetchError);
+      throw new Error(`Error communicating with HDS API: ${fetchError.message}`);
     }
     */
 
-    // Pour le moment, simulons une réponse réussie
+    // Mock successful response for now
     const mockResponseData = {
       success: true,
       documentId: `hds-doc-${Date.now()}`,
@@ -119,12 +119,12 @@ const handler = async (req: Request): Promise<Response> => {
       timestamp: new Date().toISOString()
     };
 
-    // Ajouter un délai simulé pour tester l'expérience utilisateur
+    // Add simulated delay for testing user experience
     await new Promise(resolve => setTimeout(resolve, 1500));
 
     return new Response(JSON.stringify({ 
       success: true,
-      message: "Document envoyé avec succès à l'hébergeur HDS",
+      message: "Document successfully sent to HDS storage provider",
       data: mockResponseData
     }), {
       status: 200,
@@ -134,11 +134,11 @@ const handler = async (req: Request): Promise<Response> => {
       },
     });
   } catch (error: any) {
-    console.error("Erreur lors de l'envoi du document à l'API HDS:", error);
+    console.error("Error sending document to HDS API:", error);
     return new Response(
       JSON.stringify({ 
         success: false,
-        error: error.message || "Une erreur inconnue s'est produite",
+        error: error.message || "An unknown error occurred",
         stack: error.stack
       }),
       {

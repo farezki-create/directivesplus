@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Database, Lock, Shield } from "lucide-react";
+import { Check, Database, Lock, Shield } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -59,15 +59,15 @@ export function HDSStorageButton({ onSave, disabled = false }: HDSStorageButtonP
         </>
       ) : isComplete ? (
         <>
+          <Check className="h-4 w-4 text-green-500" />
           <Shield className="h-4 w-4 text-green-500" />
-          <Lock className="h-4 w-4 text-green-500" />
-          <span className="text-green-500">Envoyé HDS</span>
+          <span className="text-green-500">Stocké en HDS</span>
         </>
       ) : (
         <>
           <Database className="h-4 w-4" />
           <Shield className="h-4 w-4" />
-          <span>Envoyer vers hébergeur HDS</span>
+          <span>Envoyer vers HDS</span>
         </>
       )}
     </Button>
