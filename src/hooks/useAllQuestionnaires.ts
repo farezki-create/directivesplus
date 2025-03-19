@@ -9,6 +9,7 @@ export interface StandardQuestion {
   id: string | number;
   questionText: string;
   displayOrder: number;
+  explanation?: string;
   options?: any;
 }
 
@@ -33,6 +34,7 @@ export const useAllQuestionnaires = (language: SupportedLanguage) => {
       id: q.id,
       questionText: q.question || q.question_text || '',
       displayOrder: q.display_order || q.question_order || 0,
+      explanation: q.explanation || '',
       options: q.options || null
     };
   };
