@@ -54,26 +54,16 @@ const GeneralOpinion = () => {
             </div>
           ) : questions.length > 0 ? (
             <div className="space-y-6 mb-8">
-              {questions.map((question) => {
-                // S'assurer que les données de la question sont complètes
-                const enhancedQuestion = {
-                  ...question,
-                  question: question.question || question.question_text,
-                  question_text: question.question_text || question.question,
-                  explanation: question.explanation || ''
-                };
-                
-                return (
-                  <QuestionWithExplanation
-                    key={question.id}
-                    question={enhancedQuestion}
-                    value={answers[question.id] || []}
-                    onValueChange={(value) => handleAnswerChange(question.id, value)}
-                    options={getGeneralOpinionOptions()}
-                    language={currentLanguage as 'en' | 'fr'}
-                  />
-                );
-              })}
+              {questions.map((question) => (
+                <QuestionWithExplanation
+                  key={question.id}
+                  question={question}
+                  value={answers[question.id] || []}
+                  onValueChange={(value) => handleAnswerChange(question.id, value)}
+                  options={getGeneralOpinionOptions()}
+                  language={currentLanguage as 'en' | 'fr'}
+                />
+              ))}
               
               <div className="flex justify-center mt-8">
                 <Button

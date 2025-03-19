@@ -1,6 +1,9 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { QuestionCard } from "./QuestionCard";
+import { Button } from "@/components/ui/button";
+import { Info } from "lucide-react";
+import { getQuestionExplanation } from "@/utils/explanations";
 
 interface QuestionWithExplanationProps {
   question: any;
@@ -20,6 +23,8 @@ export function QuestionWithExplanation({
   options,
   language
 }: QuestionWithExplanationProps) {
+  const [showExplanation, setShowExplanation] = useState(false);
+  
   // Validate question object
   if (!question) {
     console.error("Question object is null or undefined");
@@ -33,18 +38,43 @@ export function QuestionWithExplanation({
     console.error("Question text is missing", question);
     return null;
   }
+
+  // Use the explanation directly from the database if available, or fall back to the utility function
+  const explanation = question.explanation || '';
   
   return (
     <div className="mb-8">
-      <QuestionCard
-        question={{
-          ...question,
-          question: questionText
-        }}
-        value={value}
-        onValueChange={onValueChange}
-        options={options}
-      />
+      <div className="p-6 bg-card rounded-lg border shadow-sm">
+        <QuestionCard
+          question={{
+            ...question,
+            question: questionText
+          }}
+          value={value}
+          onValueChange={onValueChange}
+          options={options}
+        />
+        
+        {explanation && (
+          <div className="mt-4">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="flex items-center text-muted-foreground hover:text-primary"
+              onClick={() => setShowExplanation(!showExplanation)}
+            >
+              <Info className="mr-1 h-4 w-4" />
+              {language === 'en' ? 'Explanation' : 'Explication'}
+            </Button>
+            
+            {showExplanation && (
+              <div className="mt-2 p-3 bg-muted rounded-md text-sm">
+                {explanation}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
