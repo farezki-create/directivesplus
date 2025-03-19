@@ -64,7 +64,7 @@ export function QuestionWithExplanation({
           options={options}
         />
         
-        {explanation && (
+        {explanation ? (
           <div className="mt-4">
             <Button 
               variant="ghost" 
@@ -74,7 +74,7 @@ export function QuestionWithExplanation({
             >
               <Info className="mr-1 h-4 w-4" />
               {language === 'en' ? 'Explanation' : 'Explication'}
-              {showExplanation ? ' (hide)' : ' (show)'}
+              {showExplanation ? ' (masquer)' : ' (afficher)'}
             </Button>
             
             {showExplanation && (
@@ -82,6 +82,10 @@ export function QuestionWithExplanation({
                 {explanation}
               </div>
             )}
+          </div>
+        ) : (
+          <div className="mt-4 text-xs text-muted-foreground">
+            {language === 'en' ? 'No explanation available' : 'Pas d\'explication disponible'}
           </div>
         )}
       </div>
