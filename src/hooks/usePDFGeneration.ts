@@ -5,10 +5,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { PDFDocumentGenerator } from "@/components/pdf/PDFDocumentGenerator";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { useSynthesis } from "@/hooks/useSynthesis";
+import { handlePDFGeneration, savePDFToStorage } from "@/components/pdf/utils/PDFGenerationUtils";
 
 export function usePDFGeneration(userId: string | null, text?: string) {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [isSavingToHDS, setIsSavingToHDS] = useState(false);
   const { toast } = useToast();
   const { responses, synthesis } = useQuestionnairesResponses(userId || "");
   const { text: freeText } = useSynthesis(userId);
@@ -107,6 +109,67 @@ export function usePDFGeneration(userId: string | null, text?: string) {
     }
   };
 
+  const saveToHDS = async () => {
+    if (!pdfUrl || !userId) {
+      toast({
+        title: "Erreur",
+        description: "Impossible d'envoyer le document à l'hébergeur HDS. PDF ou utilisateur non disponible.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    setIsSavingToHDS(true);
+    
+    try {
+      // Préparer les métadonnées
+      const metadata = {
+        createdAt: new Date().toISOString(),
+        documentType: "DIRECTIVES_ANTICIPEES",
+        documentName: `directives_anticipees_${new Date().toISOString()}`,
+      };
+
+      console.log("[HDS] Envoi du document vers l'hébergeur HDS...");
+      
+      // Appeler l'edge function pour envoyer le PDF vers l'hébergeur HDS
+      const { data, error } = await supabase.functions.invoke("send-to-hds", {
+        body: {
+          pdfData: pdfUrl,
+          userId: userId,
+          metadata: metadata
+        }
+      });
+
+      if (error) {
+        console.error("[HDS] Erreur lors de l'appel de la fonction:", error);
+        throw new Error(error.message || "Échec de l'envoi vers l'hébergeur HDS");
+      }
+
+      console.log("[HDS] Réponse de la fonction:", data);
+      
+      if (!data.success) {
+        throw new Error(data.error || "Échec de l'envoi vers l'hébergeur HDS");
+      }
+
+      toast({
+        title: "Succès",
+        description: "Le document a été envoyé avec succès à l'hébergeur HDS.",
+      });
+
+      return true;
+    } catch (error: any) {
+      console.error("[HDS] Erreur:", error);
+      toast({
+        title: "Erreur",
+        description: error.message || "Une erreur est survenue lors de l'envoi vers l'hébergeur HDS.",
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setIsSavingToHDS(false);
+    }
+  };
+
   return {
     pdfUrl,
     showPreview,
@@ -114,6 +177,8 @@ export function usePDFGeneration(userId: string | null, text?: string) {
     generatePDF,
     handlePrint,
     handleEmail,
-    handleDownload
+    handleDownload,
+    saveToHDS,
+    isSavingToHDS
   };
 }

@@ -6,8 +6,12 @@ import { EmailForm } from "./EmailForm";
 import { PDFActionButtons } from "./PDFActionButtons";
 import { PDFViewer } from "./PDFViewer";
 import { Button } from "@/components/ui/button";
-import { Construction, Database, Lock } from "lucide-react";
+import { Construction, Database, Lock, Shield } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { usePDFGeneration } from "@/hooks/usePDFGeneration";
+import { HDSStorageButton } from "./HDSStorageButton";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PDFPreviewDialogProps {
   open: boolean;
@@ -25,6 +29,17 @@ export function PDFPreviewDialog({
 }: PDFPreviewDialogProps) {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [userId, setUserId] = useState<string | null>(null);
+  const { saveToHDS, isSavingToHDS } = usePDFGeneration(userId, null);
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setUserId(session?.user?.id || null);
+    };
+    
+    getUser();
+  }, []);
 
   const handleDownload = () => {
     if (onSave) {
@@ -65,6 +80,11 @@ export function PDFPreviewDialog({
               onClose={() => onOpenChange(false)} 
             />
             <div className="flex flex-wrap gap-2">
+              <HDSStorageButton 
+                onSave={saveToHDS} 
+                disabled={!pdfUrl || !userId || isSavingToHDS}
+              />
+              
               <Button 
                 variant="outline" 
                 onClick={handleSendToDMP}
@@ -74,6 +94,7 @@ export function PDFPreviewDialog({
                 <Construction className="mr-2 h-4 w-4" />
                 Envoyer à votre DMP
               </Button>
+              
               <PDFActionButtons 
                 onDownload={handleDownload} 
               />
