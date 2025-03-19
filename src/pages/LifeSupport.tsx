@@ -70,6 +70,8 @@ const LifeSupport = () => {
                   id: question.id && !isNaN(parseInt(question.id)) ? question.id : `ls-${question.id}`
                 };
                 
+                console.log(`Rendering life support question ID ${enhancedQuestion.id} with explanation: ${enhancedQuestion.explanation ? 'Yes' : 'No'}`);
+                
                 return (
                   <QuestionWithExplanation
                     key={question.id}

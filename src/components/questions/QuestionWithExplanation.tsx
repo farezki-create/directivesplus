@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { QuestionCard } from "./QuestionCard";
 import { Button } from "@/components/ui/button";
 import { Info } from "lucide-react";
+import { getQuestionExplanation } from "@/utils/explanations";
 
 interface QuestionWithExplanationProps {
   question: any;
@@ -38,17 +39,39 @@ export function QuestionWithExplanation({
     return null;
   }
 
-  // Get explanation directly from the question object
-  // First try with the question.explanation property, then fall back to empty string
-  const explanation = question.explanation || '';
+  // Get explanation from question or from the explanations utility
+  let explanation = '';
   
-  // Debug log to check if explanation is being properly passed
-  console.log("Question with explanation:", { 
+  // First, try to get explanation directly from the question object
+  if (question.explanation && question.explanation.trim() !== '') {
+    explanation = question.explanation;
+    console.log(`Using database explanation for question ID ${question.id}`);
+  } 
+  // If no explanation in the question object, try to get it from the utility
+  else {
+    // Check if it's a life support question by ID range (21-32) or explicit flag
+    const isLifeSupportQuestion = 
+      (question.id && !isNaN(parseInt(question.id)) && parseInt(question.id) >= 21 && parseInt(question.id) <= 32) ||
+      question.isLifeSupportQuestion ||
+      question.questionType === 'life_support';
+    
+    if (isLifeSupportQuestion) {
+      console.log(`Life support question detected (ID: ${question.id}): ${questionText.substring(0, 30)}...`);
+      // Life support questions don't have explanations
+      explanation = '';
+    } else {
+      // For other question types, try to get explanation from the utility
+      explanation = getQuestionExplanation(question.id, language, questionText);
+      console.log(`Using utility explanation for question ID ${question.id}:`, explanation ? 'Found' : 'Not found');
+    }
+  }
+
+  // Debug log to check if explanation is being properly resolved
+  console.log("Question with explanation resolved:", { 
     id: question.id, 
     text: questionText.substring(0, 30) + "...", 
     hasExplanation: !!explanation,
-    explanationLength: explanation?.length || 0,
-    rawQuestion: question
+    explanationLength: explanation?.length || 0
   });
   
   return (
@@ -74,7 +97,7 @@ export function QuestionWithExplanation({
             >
               <Info className="mr-1 h-4 w-4" />
               {language === 'en' ? 'Explanation' : 'Explication'}
-              {showExplanation ? ' (masquer)' : ' (afficher)'}
+              {showExplanation ? (language === 'en' ? ' (hide)' : ' (masquer)') : (language === 'en' ? ' (show)' : ' (afficher)')}
             </Button>
             
             {showExplanation && (

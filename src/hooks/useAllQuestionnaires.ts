@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -83,7 +82,7 @@ export const useAllQuestionnaires = (language: SupportedLanguage) => {
       const { data, error } = await supabase
         .from(tableName)
         .select('*')
-        .order('question_order', { ascending: true });
+        .order(language === 'en' ? 'display_order' : 'question_order', { ascending: true });
 
       if (error) {
         console.error(`Error fetching life support questions: ${error.message}`);
