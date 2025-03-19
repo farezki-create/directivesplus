@@ -41,6 +41,13 @@ export function QuestionWithExplanation({
   // Get explanation directly from the question object
   const explanation = question.explanation || '';
   
+  console.log("Question with explanation:", { 
+    id: question.id, 
+    text: questionText.substring(0, 30) + "...", 
+    hasExplanation: !!explanation,
+    explanationLength: explanation?.length || 0
+  });
+  
   return (
     <div className="mb-8">
       <div className="p-6 bg-card rounded-lg border shadow-sm">
@@ -64,6 +71,7 @@ export function QuestionWithExplanation({
             >
               <Info className="mr-1 h-4 w-4" />
               {language === 'en' ? 'Explanation' : 'Explication'}
+              {showExplanation ? ' (hide)' : ' (show)'}
             </Button>
             
             {showExplanation && (
