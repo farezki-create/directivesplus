@@ -30,6 +30,7 @@ export const useAllQuestionnaires = (language: SupportedLanguage) => {
 
   // Helper function to normalize question data
   const normalizeQuestion = (q: any): StandardQuestion => {
+    // Make sure to explicitly include explanation in the normalized question object
     return {
       id: q.id,
       questionText: q.question || q.question_text || '',
@@ -49,6 +50,8 @@ export const useAllQuestionnaires = (language: SupportedLanguage) => {
         .order('display_order', { ascending: true });
 
       if (error) throw error;
+      console.log(`Fetched ${data?.length || 0} general questions with explanations:`, 
+        data?.map(q => ({id: q.id, hasExplanation: !!q.explanation})));
       return data?.map(normalizeQuestion) || [];
     },
   });
@@ -63,6 +66,8 @@ export const useAllQuestionnaires = (language: SupportedLanguage) => {
         .order('question_order', { ascending: true });
 
       if (error) throw error;
+      console.log(`Fetched ${data?.length || 0} life support questions with explanations:`, 
+        data?.map(q => ({id: q.id, hasExplanation: !!q.explanation})));
       return data?.map(normalizeQuestion) || [];
     },
   });
@@ -77,6 +82,8 @@ export const useAllQuestionnaires = (language: SupportedLanguage) => {
         .order('question_order', { ascending: true });
 
       if (error) throw error;
+      console.log(`Fetched ${data?.length || 0} advanced illness questions with explanations:`, 
+        data?.map(q => ({id: q.id, hasExplanation: !!q.explanation})));
       return data?.map(normalizeQuestion) || [];
     },
   });
@@ -91,6 +98,8 @@ export const useAllQuestionnaires = (language: SupportedLanguage) => {
         .order('display_order', { ascending: true });
 
       if (error) throw error;
+      console.log(`Fetched ${data?.length || 0} preferences questions with explanations:`, 
+        data?.map(q => ({id: q.id, hasExplanation: !!q.explanation})));
       return data?.map(normalizeQuestion) || [];
     },
   });

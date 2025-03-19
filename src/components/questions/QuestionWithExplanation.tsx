@@ -39,13 +39,16 @@ export function QuestionWithExplanation({
   }
 
   // Get explanation directly from the question object
+  // First try with the question.explanation property, then fall back to empty string
   const explanation = question.explanation || '';
   
+  // Debug log to check if explanation is being properly passed
   console.log("Question with explanation:", { 
     id: question.id, 
     text: questionText.substring(0, 30) + "...", 
     hasExplanation: !!explanation,
-    explanationLength: explanation?.length || 0
+    explanationLength: explanation?.length || 0,
+    rawQuestion: question
   });
   
   return (
