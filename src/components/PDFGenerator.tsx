@@ -1,8 +1,7 @@
-
 import { useState, useEffect } from "react";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "./pdf/usePDFData";
-import { handlePDFGeneration } from "./pdf/utils/PDFGenerationUtils";
+import { handlePDFGeneration, handlePDFDownload } from "./pdf/utils/PDFGenerationUtils";
 import { PDFPreviewDialog } from "./pdf/PDFPreviewDialog";
 import { toast } from "@/hooks/use-toast";
 import { PDFGenerationButtons } from "./pdf/PDFGenerationButtons";
