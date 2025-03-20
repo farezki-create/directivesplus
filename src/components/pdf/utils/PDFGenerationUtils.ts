@@ -160,7 +160,7 @@ export const handlePDFDownload = (pdfUrl: string | null, customFilename?: string
     console.log("[PDFGeneration] PDF downloaded successfully as:", filename);
     toast({
       title: "Téléchargement réussi",
-      description: `Le fichier "${filename}" a été téléchargé.`,
+      description: `Le fichier "${filename}" a été téléchargé dans votre dossier de téléchargements.`,
     });
   } catch (error) {
     console.error("[PDFGeneration] Error downloading PDF:", error);
