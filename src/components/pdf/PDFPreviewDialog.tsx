@@ -6,7 +6,7 @@ import { EmailForm } from "./EmailForm";
 import { PDFActionButtons } from "./PDFActionButtons";
 import { PDFViewer } from "./PDFViewer";
 import { Button } from "@/components/ui/button";
-import { Construction, Database, Lock, Copy } from "lucide-react";
+import { Lock, Copy, Download } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface PDFPreviewDialogProps {
@@ -46,13 +46,6 @@ export function PDFPreviewDialog({
     }
   };
 
-  const handleSendToDMP = () => {
-    toast({
-      title: "En construction",
-      description: "Cette fonctionnalité est en cours de développement",
-    });
-  };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[90vw] w-[1200px] h-[90vh] max-h-[90vh] flex flex-col p-4">
@@ -79,7 +72,7 @@ export function PDFPreviewDialog({
                 <Copy className="h-4 w-4" />
               </Button>
               <span className="text-xs text-gray-500 ml-2">
-                Conservez cet identifiant pour récupérer votre document ultérieurement
+                Conservez cet identifiant pour référence future
               </span>
             </div>
           )}
@@ -92,16 +85,12 @@ export function PDFPreviewDialog({
             <div className="flex flex-wrap gap-2">
               <Button 
                 variant="outline" 
-                onClick={handleSendToDMP}
+                onClick={handleDownload}
                 className="flex items-center"
               >
-                <Database className="mr-2 h-4 w-4" />
-                <Construction className="mr-2 h-4 w-4" />
-                Envoyer à votre DMP
+                <Download className="mr-2 h-4 w-4" />
+                Télécharger sur mon ordinateur
               </Button>
-              <PDFActionButtons 
-                onDownload={handleDownload} 
-              />
             </div>
           </div>
           

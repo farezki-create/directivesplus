@@ -1,14 +1,13 @@
+
 import { useState, useEffect } from "react";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "./pdf/usePDFData";
-import { handlePDFGeneration, handlePDFDownload, savePDFToStorage } from "./pdf/utils/PDFGenerationUtils";
+import { handlePDFGeneration, handlePDFDownload } from "./pdf/utils/PDFGenerationUtils";
 import { Button } from "@/components/ui/button";
-import { FileText, Lock } from "lucide-react";
+import { FileText, Download } from "lucide-react";
 import { PDFPreviewDialog } from "./pdf/PDFPreviewDialog";
 import { toast } from "@/hooks/use-toast";
 import { Progress } from "@/components/ui/progress";
-import { DocumentRetriever } from "./pdf/DocumentRetriever";
-import { supabase } from "@/integrations/supabase/client";
 
 interface PDFGeneratorProps {
   userId: string;
@@ -39,7 +38,7 @@ export function PDFGenerator({ userId, onPdfGenerated, synthesisText }: PDFGener
   
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
-  const [externalDocumentId, setExternalDocumentId] = useState<string | null>(null);
+  const [documentIdentifier, setDocumentIdentifier] = useState<string | null>(null);
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -121,60 +120,24 @@ export function PDFGenerator({ userId, onPdfGenerated, synthesisText }: PDFGener
             // Set progress to complete
             setProgress(100);
             
-            // Store the PDF URL in localStorage as a backup
-            if (url) {
+            // Generate document identifier based on profile info
+            if (url && profile) {
               try {
-                localStorage.setItem(`pdf_${userId}`, url);
-                console.log("[PDFGenerator] PDF URL saved to localStorage");
+                const firstName = profile.first_name || 'unknown';
+                const lastName = profile.last_name || 'unknown';
+                const birthDate = profile.birth_date ? new Date(profile.birth_date).toISOString().split('T')[0] : 'unknown';
+                const timestamp = new Date().toISOString().replace(/[-:.]/g, '').substring(0, 14);
                 
-                // Save to external storage and get the identifier
-                try {
-                  const response = await fetch(url);
-                  const blob = await response.blob();
-                  
-                  // Generate external ID based on profile info
-                  const firstName = profile.first_name || 'unknown';
-                  const lastName = profile.last_name || 'unknown';
-                  const birthDate = profile.birth_date ? new Date(profile.birth_date).toISOString().split('T')[0] : 'unknown';
-                  const timestamp = new Date().toISOString().replace(/[-:.]/g, '').substring(0, 14);
-                  
-                  const externalId = `${lastName}_${firstName}_${birthDate}_${timestamp}`;
-                  const sanitizedExternalId = externalId.replace(/[^a-zA-Z0-9_-]/g, '_');
-                  
-                  // Save external ID for display
-                  setExternalDocumentId(sanitizedExternalId);
-                  
-                  // Upload to storage
-                  const filePath = `external_storage/${sanitizedExternalId}.pdf`;
-                  const { error } = await supabase
-                    .storage
-                    .from('directives_pdfs')
-                    .upload(filePath, blob, {
-                      contentType: 'application/pdf',
-                      upsert: false
-                    });
-                    
-                  if (error) {
-                    console.error("[PDFGenerator] Error uploading to external storage:", error);
-                  } else {
-                    // Save reference to database
-                    const { error: dbError } = await supabase
-                      .from('pdf_documents')
-                      .insert({
-                        user_id: userId,
-                        file_name: `${sanitizedExternalId}.pdf`,
-                        file_path: filePath,
-                        content_type: 'application/pdf',
-                        description: `Directives anticipées de ${firstName} ${lastName}`
-                      });
-                      
-                    if (dbError) {
-                      console.error("[PDFGenerator] Error saving reference to database:", dbError);
-                    }
-                  }
-                } catch (storageError) {
-                  console.error("[PDFGenerator] Error saving to external storage:", storageError);
-                }
+                const identifier = `${lastName}_${firstName}_${birthDate}_${timestamp}`;
+                const sanitizedIdentifier = identifier.replace(/[^a-zA-Z0-9_-]/g, '_');
+                
+                // Save identifier for display
+                setDocumentIdentifier(sanitizedIdentifier);
+                
+                // Store the PDF URL in localStorage as a backup
+                localStorage.setItem(`pdf_${userId}`, url);
+                localStorage.setItem(`pdf_identifier_${userId}`, sanitizedIdentifier);
+                console.log("[PDFGenerator] PDF URL and identifier saved to localStorage");
               } catch (e) {
                 console.warn("[PDFGenerator] Could not save PDF to localStorage:", e);
               }
@@ -230,11 +193,32 @@ export function PDFGenerator({ userId, onPdfGenerated, synthesisText }: PDFGener
           disabled={isGenerating}
         >
           <FileText className="h-4 w-4" />
-          <Lock className="h-3 w-3" />
           Générer Mes directives anticipées
         </Button>
         
-        <DocumentRetriever userId={userId} />
+        <Button
+          onClick={() => {
+            if (pdfUrl) {
+              handlePDFDownload(pdfUrl);
+              toast({
+                title: "Téléchargement",
+                description: "Le téléchargement de votre fichier a démarré.",
+              });
+            } else {
+              toast({
+                title: "Erreur",
+                description: "Veuillez d'abord générer le document.",
+                variant: "destructive",
+              });
+            }
+          }}
+          className="flex items-center gap-2"
+          variant="outline"
+          disabled={!pdfUrl}
+        >
+          <Download className="h-4 w-4" />
+          Télécharger sur mon ordinateur
+        </Button>
       </div>
       
       {showPreview && (
@@ -247,7 +231,7 @@ export function PDFGenerator({ userId, onPdfGenerated, synthesisText }: PDFGener
           }}
           pdfUrl={pdfUrl}
           onSave={() => handlePDFDownload(pdfUrl)}
-          externalDocumentId={externalDocumentId}
+          externalDocumentId={documentIdentifier}
         />
       )}
     </>
