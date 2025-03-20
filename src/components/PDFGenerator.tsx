@@ -2,12 +2,12 @@
 import { useState, useEffect } from "react";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "./pdf/usePDFData";
-import { handlePDFGeneration, handlePDFDownload } from "./pdf/utils/PDFGenerationUtils";
-import { Button } from "@/components/ui/button";
-import { FileText, Download } from "lucide-react";
+import { handlePDFGeneration } from "./pdf/utils/PDFGenerationUtils";
 import { PDFPreviewDialog } from "./pdf/PDFPreviewDialog";
 import { toast } from "@/hooks/use-toast";
-import { Progress } from "@/components/ui/progress";
+import { PDFGenerationButtons } from "./pdf/PDFGenerationButtons";
+import { PDFGenerationOverlay } from "./pdf/PDFGenerationOverlay";
+import { usePDFGenerationState } from "./pdf/usePDFGenerationState";
 
 interface PDFGeneratorProps {
   userId: string;
@@ -21,57 +21,21 @@ interface PDFGeneratorProps {
  * Protected component - do not modify the PDF generation method
  * Version: 1.0.0
  */
-const waitingMessages = [
-  "Préparation de votre document avec soin... 📝",
-  "Mise en page de vos directives... 📄",
-  "Ajout d'une touche de professionnalisme... ✨",
-  "Finalisation des derniers détails... 🎯",
-  "Vérification de la mise en forme... 🔍",
-  "Assemblage de vos informations... 📋",
-  "Plus que quelques secondes... ⏳",
-  "Votre document est presque prêt... 🌟",
-];
-
 export function PDFGenerator({ userId, onPdfGenerated, synthesisText }: PDFGeneratorProps) {
   console.log("[PDFGenerator] Initializing with userId:", userId);
   console.log("[PDFGenerator] Synthesis text provided:", synthesisText ? "Yes" : "No");
   
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-  const [showPreview, setShowPreview] = useState(false);
-  const [documentIdentifier, setDocumentIdentifier] = useState<string | null>(null);
-  const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [progress, setProgress] = useState(0);
+  const { 
+    pdfUrl, setPdfUrl, 
+    showPreview, setShowPreview,
+    documentIdentifier, setDocumentIdentifier,
+    isGenerating, setIsGenerating,
+    progress, setProgress,
+    currentWaitingMessage 
+  } = usePDFGenerationState();
+  
   const { responses, synthesis, isLoading } = useQuestionnairesResponses(userId);
   const { profile, trustedPersons, loading } = usePDFData();
-
-  useEffect(() => {
-    if (isGenerating) {
-      // Message rotation interval
-      const messageInterval = setInterval(() => {
-        setCurrentMessageIndex((prev) => (prev + 1) % waitingMessages.length);
-      }, 2000);
-
-      // Progress bar animation
-      const progressInterval = setInterval(() => {
-        setProgress((prev) => {
-          // Slow down as we approach 100%
-          if (prev >= 90) {
-            return Math.min(prev + 0.5, 95);
-          }
-          return Math.min(prev + 5, 90);
-        });
-      }, 500);
-
-      return () => {
-        clearInterval(messageInterval);
-        clearInterval(progressInterval);
-      };
-    } else {
-      // Reset progress when not generating
-      setProgress(0);
-    }
-  }, [isGenerating]);
 
   console.log("[PDFGenerator] Current state:", {
     hasProfile: !!profile,
@@ -174,52 +138,17 @@ export function PDFGenerator({ userId, onPdfGenerated, synthesisText }: PDFGener
   console.log("[PDFGenerator] Rendering buttons");
   return (
     <>
-      {isGenerating && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
-          <div className="max-w-sm p-6 text-center space-y-4 animate-fade-in">
-            <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
-            <Progress value={progress} className="h-2 w-full" />
-            <p className="text-lg font-medium text-foreground animate-pulse">
-              {waitingMessages[currentMessageIndex]}
-            </p>
-          </div>
-        </div>
-      )}
+      <PDFGenerationOverlay 
+        isGenerating={isGenerating} 
+        progress={progress} 
+        waitingMessage={currentWaitingMessage} 
+      />
       
-      <div className="space-y-6">
-        <Button 
-          onClick={generatePDF}
-          className="flex items-center gap-2"
-          disabled={isGenerating}
-        >
-          <FileText className="h-4 w-4" />
-          Générer Mes directives anticipées
-        </Button>
-        
-        <Button
-          onClick={() => {
-            if (pdfUrl) {
-              handlePDFDownload(pdfUrl);
-              toast({
-                title: "Téléchargement",
-                description: "Le téléchargement de votre fichier a démarré.",
-              });
-            } else {
-              toast({
-                title: "Erreur",
-                description: "Veuillez d'abord générer le document.",
-                variant: "destructive",
-              });
-            }
-          }}
-          className="flex items-center gap-2"
-          variant="outline"
-          disabled={!pdfUrl}
-        >
-          <Download className="h-4 w-4" />
-          Télécharger sur mon ordinateur
-        </Button>
-      </div>
+      <PDFGenerationButtons 
+        pdfUrl={pdfUrl} 
+        isGenerating={isGenerating} 
+        onGenerateClick={generatePDF} 
+      />
       
       {showPreview && (
         <PDFPreviewDialog
