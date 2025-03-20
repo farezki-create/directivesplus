@@ -1,13 +1,14 @@
-
 import { useState, useEffect } from "react";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "./pdf/usePDFData";
-import { handlePDFGeneration, handlePDFDownload } from "./pdf/utils/PDFGenerationUtils";
+import { handlePDFGeneration, handlePDFDownload, savePDFToStorage } from "./pdf/utils/PDFGenerationUtils";
+import { Button } from "@/components/ui/button";
+import { FileText, Lock } from "lucide-react";
 import { PDFPreviewDialog } from "./pdf/PDFPreviewDialog";
 import { toast } from "@/hooks/use-toast";
-import { PDFGenerationButtons } from "./pdf/PDFGenerationButtons";
-import { PDFGenerationOverlay } from "./pdf/PDFGenerationOverlay";
-import { usePDFGenerationState } from "./pdf/usePDFGenerationState";
+import { Progress } from "@/components/ui/progress";
+import { DocumentRetriever } from "./pdf/DocumentRetriever";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PDFGeneratorProps {
   userId: string;
@@ -21,21 +22,57 @@ interface PDFGeneratorProps {
  * Protected component - do not modify the PDF generation method
  * Version: 1.0.0
  */
+const waitingMessages = [
+  "Préparation de votre document avec soin... 📝",
+  "Mise en page de vos directives... 📄",
+  "Ajout d'une touche de professionnalisme... ✨",
+  "Finalisation des derniers détails... 🎯",
+  "Vérification de la mise en forme... 🔍",
+  "Assemblage de vos informations... 📋",
+  "Plus que quelques secondes... ⏳",
+  "Votre document est presque prêt... 🌟",
+];
+
 export function PDFGenerator({ userId, onPdfGenerated, synthesisText }: PDFGeneratorProps) {
   console.log("[PDFGenerator] Initializing with userId:", userId);
   console.log("[PDFGenerator] Synthesis text provided:", synthesisText ? "Yes" : "No");
   
-  const { 
-    pdfUrl, setPdfUrl, 
-    showPreview, setShowPreview,
-    documentIdentifier, setDocumentIdentifier,
-    isGenerating, setIsGenerating,
-    progress, setProgress,
-    currentWaitingMessage 
-  } = usePDFGenerationState();
-  
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
+  const [externalDocumentId, setExternalDocumentId] = useState<string | null>(null);
+  const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [progress, setProgress] = useState(0);
   const { responses, synthesis, isLoading } = useQuestionnairesResponses(userId);
   const { profile, trustedPersons, loading } = usePDFData();
+
+  useEffect(() => {
+    if (isGenerating) {
+      // Message rotation interval
+      const messageInterval = setInterval(() => {
+        setCurrentMessageIndex((prev) => (prev + 1) % waitingMessages.length);
+      }, 2000);
+
+      // Progress bar animation
+      const progressInterval = setInterval(() => {
+        setProgress((prev) => {
+          // Slow down as we approach 100%
+          if (prev >= 90) {
+            return Math.min(prev + 0.5, 95);
+          }
+          return Math.min(prev + 5, 90);
+        });
+      }, 500);
+
+      return () => {
+        clearInterval(messageInterval);
+        clearInterval(progressInterval);
+      };
+    } else {
+      // Reset progress when not generating
+      setProgress(0);
+    }
+  }, [isGenerating]);
 
   console.log("[PDFGenerator] Current state:", {
     hasProfile: !!profile,
@@ -84,24 +121,60 @@ export function PDFGenerator({ userId, onPdfGenerated, synthesisText }: PDFGener
             // Set progress to complete
             setProgress(100);
             
-            // Generate document identifier based on profile info
-            if (url && profile) {
+            // Store the PDF URL in localStorage as a backup
+            if (url) {
               try {
-                const firstName = profile.first_name || 'unknown';
-                const lastName = profile.last_name || 'unknown';
-                const birthDate = profile.birth_date ? new Date(profile.birth_date).toISOString().split('T')[0] : 'unknown';
-                const timestamp = new Date().toISOString().replace(/[-:.]/g, '').substring(0, 14);
-                
-                const identifier = `${lastName}_${firstName}_${birthDate}_${timestamp}`;
-                const sanitizedIdentifier = identifier.replace(/[^a-zA-Z0-9_-]/g, '_');
-                
-                // Save identifier for display
-                setDocumentIdentifier(sanitizedIdentifier);
-                
-                // Store the PDF URL in localStorage as a backup
                 localStorage.setItem(`pdf_${userId}`, url);
-                localStorage.setItem(`pdf_identifier_${userId}`, sanitizedIdentifier);
-                console.log("[PDFGenerator] PDF URL and identifier saved to localStorage");
+                console.log("[PDFGenerator] PDF URL saved to localStorage");
+                
+                // Save to external storage and get the identifier
+                try {
+                  const response = await fetch(url);
+                  const blob = await response.blob();
+                  
+                  // Generate external ID based on profile info
+                  const firstName = profile.first_name || 'unknown';
+                  const lastName = profile.last_name || 'unknown';
+                  const birthDate = profile.birth_date ? new Date(profile.birth_date).toISOString().split('T')[0] : 'unknown';
+                  const timestamp = new Date().toISOString().replace(/[-:.]/g, '').substring(0, 14);
+                  
+                  const externalId = `${lastName}_${firstName}_${birthDate}_${timestamp}`;
+                  const sanitizedExternalId = externalId.replace(/[^a-zA-Z0-9_-]/g, '_');
+                  
+                  // Save external ID for display
+                  setExternalDocumentId(sanitizedExternalId);
+                  
+                  // Upload to storage
+                  const filePath = `external_storage/${sanitizedExternalId}.pdf`;
+                  const { error } = await supabase
+                    .storage
+                    .from('directives_pdfs')
+                    .upload(filePath, blob, {
+                      contentType: 'application/pdf',
+                      upsert: false
+                    });
+                    
+                  if (error) {
+                    console.error("[PDFGenerator] Error uploading to external storage:", error);
+                  } else {
+                    // Save reference to database
+                    const { error: dbError } = await supabase
+                      .from('pdf_documents')
+                      .insert({
+                        user_id: userId,
+                        file_name: `${sanitizedExternalId}.pdf`,
+                        file_path: filePath,
+                        content_type: 'application/pdf',
+                        description: `Directives anticipées de ${firstName} ${lastName}`
+                      });
+                      
+                    if (dbError) {
+                      console.error("[PDFGenerator] Error saving reference to database:", dbError);
+                    }
+                  }
+                } catch (storageError) {
+                  console.error("[PDFGenerator] Error saving to external storage:", storageError);
+                }
               } catch (e) {
                 console.warn("[PDFGenerator] Could not save PDF to localStorage:", e);
               }
@@ -138,18 +211,31 @@ export function PDFGenerator({ userId, onPdfGenerated, synthesisText }: PDFGener
   console.log("[PDFGenerator] Rendering buttons");
   return (
     <>
-      <PDFGenerationOverlay 
-        isGenerating={isGenerating} 
-        progress={progress} 
-        waitingMessage={currentWaitingMessage} 
-      />
+      {isGenerating && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="max-w-sm p-6 text-center space-y-4 animate-fade-in">
+            <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+            <Progress value={progress} className="h-2 w-full" />
+            <p className="text-lg font-medium text-foreground animate-pulse">
+              {waitingMessages[currentMessageIndex]}
+            </p>
+          </div>
+        </div>
+      )}
       
-      <PDFGenerationButtons 
-        pdfUrl={pdfUrl} 
-        isGenerating={isGenerating} 
-        onGenerateClick={generatePDF}
-        documentIdentifier={documentIdentifier}
-      />
+      <div className="space-y-6">
+        <Button 
+          onClick={generatePDF}
+          className="flex items-center gap-2"
+          disabled={isGenerating}
+        >
+          <FileText className="h-4 w-4" />
+          <Lock className="h-3 w-3" />
+          Générer Mes directives anticipées
+        </Button>
+        
+        <DocumentRetriever userId={userId} />
+      </div>
       
       {showPreview && (
         <PDFPreviewDialog
@@ -160,7 +246,8 @@ export function PDFGenerator({ userId, onPdfGenerated, synthesisText }: PDFGener
             setShowPreview(open);
           }}
           pdfUrl={pdfUrl}
-          externalDocumentId={documentIdentifier}
+          onSave={() => handlePDFDownload(pdfUrl)}
+          externalDocumentId={externalDocumentId}
         />
       )}
     </>
