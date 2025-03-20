@@ -8,18 +8,25 @@ interface PDFGenerationButtonsProps {
   pdfUrl: string | null;
   isGenerating: boolean;
   onGenerateClick: () => void;
+  documentIdentifier?: string | null;
 }
 
-export function PDFGenerationButtons({ pdfUrl, isGenerating, onGenerateClick }: PDFGenerationButtonsProps) {
+export function PDFGenerationButtons({ 
+  pdfUrl, 
+  isGenerating, 
+  onGenerateClick,
+  documentIdentifier 
+}: PDFGenerationButtonsProps) {
   const { toast } = useToast();
 
   const handleDownloadClick = () => {
     if (pdfUrl) {
-      handlePDFDownload(pdfUrl);
-      toast({
-        title: "Téléchargement",
-        description: "Le téléchargement de votre fichier a démarré.",
-      });
+      // Génère un nom de fichier personnalisé avec l'identifiant du document si disponible
+      const customFilename = documentIdentifier 
+        ? `directives-anticipees_${documentIdentifier}.pdf` 
+        : undefined;
+      
+      handlePDFDownload(pdfUrl, customFilename);
     } else {
       toast({
         title: "Erreur",

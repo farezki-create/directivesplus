@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "./pdf/usePDFData";
@@ -146,7 +147,8 @@ export function PDFGenerator({ userId, onPdfGenerated, synthesisText }: PDFGener
       <PDFGenerationButtons 
         pdfUrl={pdfUrl} 
         isGenerating={isGenerating} 
-        onGenerateClick={generatePDF} 
+        onGenerateClick={generatePDF}
+        documentIdentifier={documentIdentifier}
       />
       
       {showPreview && (
@@ -158,7 +160,6 @@ export function PDFGenerator({ userId, onPdfGenerated, synthesisText }: PDFGener
             setShowPreview(open);
           }}
           pdfUrl={pdfUrl}
-          onSave={() => handlePDFDownload(pdfUrl)}
           externalDocumentId={documentIdentifier}
         />
       )}

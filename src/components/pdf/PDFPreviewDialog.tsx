@@ -3,11 +3,12 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { EmailForm } from "./EmailForm";
-import { PDFActionButtons } from "./PDFActionButtons";
 import { PDFViewer } from "./PDFViewer";
 import { Button } from "@/components/ui/button";
 import { Lock, Copy, Download } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useState } from "react";
+import { handlePDFDownload } from "./utils/PDFGenerationUtils";
 
 interface PDFPreviewDialogProps {
   open: boolean;
@@ -22,18 +23,22 @@ export function PDFPreviewDialog({
   open,
   onOpenChange,
   pdfUrl,
-  onSave,
   externalDocumentId
 }: PDFPreviewDialogProps) {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [savingLocation, setSavingLocation] = useState("");
 
   const handleDownload = () => {
-    if (onSave) {
-      onSave();
-      onOpenChange(false);
-      navigate("/generate-pdf");
-    }
+    // Génère un nom de fichier basé sur l'ID du document si disponible
+    const customFilename = externalDocumentId 
+      ? `directives-anticipees_${externalDocumentId}.pdf` 
+      : undefined;
+    
+    handlePDFDownload(pdfUrl, customFilename);
+    
+    // Ajoute une information sur l'emplacement de sauvegarde
+    setSavingLocation("Le fichier a été téléchargé dans votre dossier de téléchargements.");
   };
 
   const handleCopyId = () => {
@@ -93,6 +98,15 @@ export function PDFPreviewDialog({
               </Button>
             </div>
           </div>
+          
+          {savingLocation && (
+            <div className="text-sm text-gray-600 p-2 bg-gray-50 rounded-md">
+              <p>{savingLocation}</p>
+              <p className="mt-1 text-xs italic">
+                Si vous souhaitez sauvegarder le fichier dans un dossier spécifique, vous pouvez le déplacer manuellement après le téléchargement.
+              </p>
+            </div>
+          )}
           
           <div className="flex-1 overflow-hidden">
             <PDFViewer pdfUrl={pdfUrl} />

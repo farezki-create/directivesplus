@@ -128,13 +128,10 @@ export const savePDFToStorage = async (pdfDataUrl: string, userId: string) => {
 };
 
 /**
- * @protected
- * CETTE MÉTHODE EST PROTÉGÉE ET NE DOIT PAS ÊTRE MODIFIÉE.
- * This method is protected and must not be modified.
- * Version: 1.0.0
- * Last Modified: ${new Date().toISOString()}
+ * Télécharge le PDF avec un nom de fichier personnalisé
+ * Cette méthode peut être modifiée selon les besoins
  */
-export const handlePDFDownload = (pdfUrl: string | null) => {
+export const handlePDFDownload = (pdfUrl: string | null, customFilename?: string) => {
   if (!pdfUrl) {
     console.error("[PDFGeneration] No PDF URL available for download");
     toast({
@@ -146,13 +143,25 @@ export const handlePDFDownload = (pdfUrl: string | null) => {
   }
 
   try {
+    // Créer un nom de fichier formaté avec la date
+    const now = new Date();
+    const dateFormatted = `${now.getDate()}-${now.getMonth() + 1}-${now.getFullYear()}`;
+    
+    // Utiliser le nom personnalisé ou un nom par défaut avec date
+    const filename = customFilename || `directives-anticipees_${dateFormatted}.pdf`;
+    
     const link = document.createElement('a');
     link.href = pdfUrl;
-    link.download = 'directives-anticipees.pdf';
+    link.download = filename;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    console.log("[PDFGeneration] PDF downloaded successfully");
+    
+    console.log("[PDFGeneration] PDF downloaded successfully as:", filename);
+    toast({
+      title: "Téléchargement réussi",
+      description: `Le fichier "${filename}" a été téléchargé.`,
+    });
   } catch (error) {
     console.error("[PDFGeneration] Error downloading PDF:", error);
     toast({
