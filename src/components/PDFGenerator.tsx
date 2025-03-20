@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "./pdf/usePDFData";
@@ -9,6 +8,7 @@ import { PDFPreviewDialog } from "./pdf/PDFPreviewDialog";
 import { toast } from "@/hooks/use-toast";
 import { Progress } from "@/components/ui/progress";
 import { DocumentRetriever } from "./pdf/DocumentRetriever";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PDFGeneratorProps {
   userId: string;
