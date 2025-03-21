@@ -8,11 +8,13 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { AIAssistant } from "@/components/ai-assistant/AIAssistant";
 
 const Index = () => {
   const [showMoreInfo, setShowMoreInfo] = useState(false);
   const [showWritingSection, setShowWritingSection] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showAIAssistant, setShowAIAssistant] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -81,6 +83,14 @@ const Index = () => {
           </>
         )}
       </main>
+      
+      {/* Ajout de l'assistant IA */}
+      {showAIAssistant && (
+        <AIAssistant 
+          questionText="Comment puis-je vous aider avec vos directives anticipées?"
+          active={true}
+        />
+      )}
     </div>
   );
 };
