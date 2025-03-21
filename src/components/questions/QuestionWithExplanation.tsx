@@ -1,7 +1,6 @@
 
 import React, { useState } from "react";
 import { QuestionCard } from "./QuestionCard";
-import { VoiceEnabledQuestionCard } from "./VoiceEnabledQuestionCard";
 import { Button } from "@/components/ui/button";
 import { Info } from "lucide-react";
 import { getQuestionExplanation } from "@/utils/explanations";
@@ -15,7 +14,6 @@ interface QuestionWithExplanationProps {
     label: string;
   }>;
   language: 'en' | 'fr';
-  voiceEnabled?: boolean;
 }
 
 export function QuestionWithExplanation({
@@ -23,8 +21,7 @@ export function QuestionWithExplanation({
   value,
   onValueChange,
   options,
-  language,
-  voiceEnabled = true
+  language
 }: QuestionWithExplanationProps) {
   const [showExplanation, setShowExplanation] = useState(false);
   
@@ -81,27 +78,15 @@ export function QuestionWithExplanation({
   return (
     <div className="mb-8">
       <div className="p-6 bg-card rounded-lg border shadow-sm">
-        {voiceEnabled ? (
-          <VoiceEnabledQuestionCard
-            question={{
-              ...question,
-              question: questionText
-            }}
-            value={value}
-            onValueChange={onValueChange}
-            options={options}
-          />
-        ) : (
-          <QuestionCard
-            question={{
-              ...question,
-              question: questionText
-            }}
-            value={value}
-            onValueChange={onValueChange}
-            options={options}
-          />
-        )}
+        <QuestionCard
+          question={{
+            ...question,
+            question: questionText
+          }}
+          value={value}
+          onValueChange={onValueChange}
+          options={options}
+        />
         
         {explanation ? (
           <div className="mt-4">
