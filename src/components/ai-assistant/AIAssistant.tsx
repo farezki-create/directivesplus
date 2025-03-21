@@ -151,11 +151,11 @@ export function AIAssistant({
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
           <Button
-            className="rounded-full h-16 w-16 shadow-lg bg-primary hover:bg-primary/90 text-white"
+            className="rounded-full h-16 w-16 shadow-lg bg-primary hover:bg-primary/90 text-white p-0 overflow-hidden"
             size="icon"
           >
             <AIAssistantAvatar 
-              size="md" 
+              size="lg" 
               isListening={isListening} 
               isSpeaking={isSpeaking} 
             />
