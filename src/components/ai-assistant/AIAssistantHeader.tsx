@@ -39,6 +39,7 @@ export function AIAssistantHeader({
             title={autoSpeak ? "Désactiver la parole automatique" : "Activer la parole automatique"}
           >
             {autoSpeak ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+            {isSpeaking && autoSpeak && <span className="absolute top-0 right-0 h-2 w-2 bg-green-500 rounded-full animate-pulse"></span>}
           </Button>
         </div>
       </div>

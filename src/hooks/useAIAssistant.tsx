@@ -56,10 +56,11 @@ export function useAIAssistant({
   // Effet pour parler automatiquement lorsqu'un message assistant est ajouté
   useEffect(() => {
     const lastMessage = messages[messages.length - 1];
-    if (lastMessage && lastMessage.role === 'assistant' && autoSpeak && !isSpeaking) {
+    if (lastMessage && lastMessage.role === 'assistant' && autoSpeak) {
+      console.log("Auto-speak triggered for message:", lastMessage.content.substring(0, 50) + "...");
       speak(lastMessage.content);
     }
-  }, [messages, autoSpeak, speak, isSpeaking]);
+  }, [messages, autoSpeak, speak]);
 
   // Fonction pour simuler une réponse de l'IA
   const getAIResponse = useCallback((userMessage: string): string => {
@@ -96,14 +97,19 @@ export function useAIAssistant({
     const newUserMessage = { role: 'user' as const, content: message };
     setMessages(prev => [...prev, newUserMessage]);
     
+    // Arrêter toute parole en cours avant de répondre
+    if (isSpeaking) {
+      cancel();
+    }
+    
     // Simuler un délai de réponse pour plus de naturel
     setTimeout(() => {
       const aiResponse = getAIResponse(message);
       const newAIMessage = { role: 'assistant' as const, content: aiResponse };
       setMessages(prev => [...prev, newAIMessage]);
-      // The speak will happen automatically via useEffect
+      // La parole sera déclenchée automatiquement via useEffect
     }, 600);
-  }, [getAIResponse]);
+  }, [getAIResponse, cancel, isSpeaking]);
 
   // Fonction pour initialiser l'assistant avec un message d'accueil
   const initializeAssistant = useCallback(() => {
@@ -112,15 +118,17 @@ export function useAIAssistant({
         ? `Bonjour, je suis votre assistant médical. Voici la question: ${currentQuestion}. Vous pouvez répondre par oui ou non, ou me demander des explications.`
         : "Bonjour, je suis votre assistant médical. Comment puis-je vous aider avec vos directives anticipées?";
       
+      console.log("Initialisation de l'assistant avec le message:", welcomeMessage);
       setMessages([{ role: 'assistant', content: welcomeMessage }]);
-      // The speak will happen automatically via useEffect
+      // La parole sera déclenchée automatiquement via useEffect
     }
   }, [currentQuestion, messages.length]);
 
   // Fonction pour activer/désactiver la parole automatique
   const toggleAutoSpeech = useCallback(() => {
     setAutoSpeak(prev => !prev);
-  }, []);
+    console.log("Auto-speak toggled to:", !autoSpeak);
+  }, [autoSpeak]);
 
   return {
     messages,

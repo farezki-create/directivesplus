@@ -40,14 +40,28 @@ export function useSpeechSynthesis({
     if (!isSupported) return;
 
     const loadVoices = () => {
-      const availableVoices = window.speechSynthesis.getVoices().filter(v => 
-        v.lang.startsWith('fr') // Filtrer les voix françaises
-      );
-      setVoices(availableVoices);
+      const availableVoices = window.speechSynthesis.getVoices();
+      console.log("Voix disponibles:", availableVoices.map(v => `${v.name} (${v.lang})`));
       
-      // Définir une voix française par défaut si disponible
-      if (availableVoices.length > 0 && !currentVoice) {
-        setCurrentVoice(availableVoices[0]);
+      // Préférer une voix française, mais accepter d'autres si nécessaire
+      const frenchVoices = availableVoices.filter(v => v.lang.startsWith('fr'));
+      const allVoices = availableVoices;
+      
+      console.log("Voix françaises:", frenchVoices.map(v => v.name));
+      
+      setVoices(allVoices);
+      
+      // Définir une voix par défaut
+      if (!currentVoice) {
+        // Priorité: voix française > toute voix disponible
+        const selectedVoice = frenchVoices.length > 0 
+          ? frenchVoices[0] 
+          : (allVoices.length > 0 ? allVoices[0] : null);
+        
+        if (selectedVoice) {
+          console.log("Voix sélectionnée:", selectedVoice.name);
+          setCurrentVoice(selectedVoice);
+        }
       }
     };
 
@@ -96,6 +110,7 @@ export function useSpeechSynthesis({
   // Fonction pour parler
   const speak = useCallback((text: string) => {
     if (!isSupported) {
+      console.error("Synthèse vocale non supportée");
       toast({
         title: "Non supporté",
         description: "La synthèse vocale n'est pas prise en charge par votre navigateur.",
@@ -104,14 +119,27 @@ export function useSpeechSynthesis({
       return;
     }
 
-    // Annuler toute synthèse en cours
+    if (!text || text.trim() === '') {
+      console.warn("Tentative de parler avec un texte vide");
+      return;
+    }
+
+    // Dans certains navigateurs, il faut annuler avant de parler à nouveau
+    console.log("Début de la synthèse vocale pour:", text.substring(0, 50) + "...");
     window.speechSynthesis.cancel();
 
     try {
       const utterance = new SpeechSynthesisUtterance(text);
       
       // Appliquer les paramètres
-      utterance.voice = voice || currentVoice || null;
+      const voiceToUse = voice || currentVoice;
+      if (voiceToUse) {
+        console.log("Utilisation de la voix:", voiceToUse.name);
+        utterance.voice = voiceToUse;
+      } else {
+        console.warn("Aucune voix disponible, utilisation de la voix par défaut");
+      }
+      
       utterance.rate = rate;
       utterance.pitch = pitch;
       utterance.volume = volume;
@@ -120,8 +148,16 @@ export function useSpeechSynthesis({
       utterance.lang = 'fr-FR';
 
       // Gérer les événements spécifiques à cette utterance
-      utterance.onstart = () => setIsSpeaking(true);
-      utterance.onend = () => setIsSpeaking(false);
+      utterance.onstart = () => {
+        console.log("Début de la parole");
+        setIsSpeaking(true);
+      };
+      
+      utterance.onend = () => {
+        console.log("Fin de la parole");
+        setIsSpeaking(false);
+      };
+      
       utterance.onerror = (event) => {
         console.error('Erreur d\'utterance:', event);
         setIsSpeaking(false);
@@ -141,6 +177,7 @@ export function useSpeechSynthesis({
   // Fonction pour arrêter de parler
   const cancel = useCallback(() => {
     if (isSupported) {
+      console.log("Annulation de la synthèse vocale");
       window.speechSynthesis.cancel();
       setIsSpeaking(false);
     }
@@ -148,6 +185,7 @@ export function useSpeechSynthesis({
 
   // Fonction pour changer de voix
   const setVoice = useCallback((voice: SpeechSynthesisVoice) => {
+    console.log("Changement de voix pour:", voice.name);
     setCurrentVoice(voice);
   }, []);
 
