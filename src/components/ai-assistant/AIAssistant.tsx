@@ -30,12 +30,14 @@ export function AIAssistant({
     isSpeechRecognitionSupported,
     transcript,
     currentQuestion,
+    autoSpeak,
     startListening,
     stopListening,
     handleUserMessage,
     initializeAssistant,
     speak,
-    cancel
+    cancel,
+    toggleAutoSpeech
   } = useAIAssistant({
     questionText,
     onResponse
@@ -68,15 +70,6 @@ export function AIAssistant({
     handleUserMessage("Explique cette question");
   };
 
-  // Fonction pour basculer la parole
-  const toggleSpeech = () => {
-    if (isSpeaking) {
-      cancel();
-    } else {
-      speak(currentQuestion || "Comment puis-je vous aider?");
-    }
-  };
-
   if (!active) return null;
 
   return (
@@ -99,7 +92,8 @@ export function AIAssistant({
             <AIAssistantHeader 
               isSpeaking={isSpeaking}
               isListening={isListening}
-              onToggleSpeech={toggleSpeech}
+              autoSpeak={autoSpeak}
+              onToggleAutoSpeech={toggleAutoSpeech}
               currentQuestion={currentQuestion}
             />
             

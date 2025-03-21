@@ -16,6 +16,7 @@ export function useAIAssistant({
   const [messages, setMessages] = useState<{ role: 'user' | 'assistant', content: string }[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState(questionText);
   const { currentLanguage } = useLanguage();
+  const [autoSpeak, setAutoSpeak] = useState(true); // Default to auto-speak enabled
 
   // Hooks pour la parole
   const {
@@ -51,6 +52,14 @@ export function useAIAssistant({
   useEffect(() => {
     setCurrentQuestion(questionText);
   }, [questionText]);
+
+  // Effet pour parler automatiquement lorsqu'un message assistant est ajouté
+  useEffect(() => {
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage && lastMessage.role === 'assistant' && autoSpeak && !isSpeaking) {
+      speak(lastMessage.content);
+    }
+  }, [messages, autoSpeak, speak, isSpeaking]);
 
   // Fonction pour simuler une réponse de l'IA
   const getAIResponse = useCallback((userMessage: string): string => {
@@ -92,9 +101,9 @@ export function useAIAssistant({
       const aiResponse = getAIResponse(message);
       const newAIMessage = { role: 'assistant' as const, content: aiResponse };
       setMessages(prev => [...prev, newAIMessage]);
-      speak(aiResponse);
+      // The speak will happen automatically via useEffect
     }, 600);
-  }, [getAIResponse, speak]);
+  }, [getAIResponse]);
 
   // Fonction pour initialiser l'assistant avec un message d'accueil
   const initializeAssistant = useCallback(() => {
@@ -104,9 +113,14 @@ export function useAIAssistant({
         : "Bonjour, je suis votre assistant médical. Comment puis-je vous aider avec vos directives anticipées?";
       
       setMessages([{ role: 'assistant', content: welcomeMessage }]);
-      speak(welcomeMessage);
+      // The speak will happen automatically via useEffect
     }
-  }, [currentQuestion, messages.length, speak]);
+  }, [currentQuestion, messages.length]);
+
+  // Fonction pour activer/désactiver la parole automatique
+  const toggleAutoSpeech = useCallback(() => {
+    setAutoSpeak(prev => !prev);
+  }, []);
 
   return {
     messages,
@@ -115,11 +129,13 @@ export function useAIAssistant({
     isSpeechRecognitionSupported,
     transcript,
     currentQuestion,
+    autoSpeak,
     startListening,
     stopListening,
     handleUserMessage,
     initializeAssistant,
     speak,
-    cancel
+    cancel,
+    toggleAutoSpeech
   };
 }

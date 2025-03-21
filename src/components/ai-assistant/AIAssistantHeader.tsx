@@ -7,14 +7,16 @@ import { Volume2, VolumeX } from 'lucide-react';
 interface AIAssistantHeaderProps {
   isSpeaking: boolean;
   isListening: boolean;
-  onToggleSpeech: () => void;
+  autoSpeak: boolean;
+  onToggleAutoSpeech: () => void;
   currentQuestion?: string;
 }
 
 export function AIAssistantHeader({
   isSpeaking,
   isListening,
-  onToggleSpeech,
+  autoSpeak,
+  onToggleAutoSpeech,
   currentQuestion
 }: AIAssistantHeaderProps) {
   return (
@@ -33,9 +35,10 @@ export function AIAssistantHeader({
             variant="ghost" 
             size="icon" 
             className="h-8 w-8"
-            onClick={onToggleSpeech}
+            onClick={onToggleAutoSpeech}
+            title={autoSpeak ? "Désactiver la parole automatique" : "Activer la parole automatique"}
           >
-            {isSpeaking ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+            {autoSpeak ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
           </Button>
         </div>
       </div>
