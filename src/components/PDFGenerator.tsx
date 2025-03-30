@@ -8,6 +8,7 @@ import { toast } from "@/hooks/use-toast";
 import { PDFGenerationButtons } from "./pdf/PDFGenerationButtons";
 import { PDFGenerationOverlay } from "./pdf/PDFGenerationOverlay";
 import { usePDFGenerationState } from "./pdf/usePDFGenerationState";
+import { PDFGenerationService } from "@/utils/PDFGenerationService";
 
 interface PDFGeneratorProps {
   userId: string;
@@ -17,7 +18,7 @@ interface PDFGeneratorProps {
 
 /**
  * @protected
- * CCOMPOSANT PROTÉGÉ - NE PAS MODIFIER LA MÉTHODE DE GÉNÉRATION PDF
+ * COMPOSANT PROTÉGÉ - NE PAS MODIFIER LA MÉTHODE DE GÉNÉRATION PDF
  * Protected component - do not modify the PDF generation method
  * Version: 1.0.0
  */

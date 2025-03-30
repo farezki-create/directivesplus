@@ -1,10 +1,11 @@
-import { useState, useCallback } from "react";
+
+import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { PDFDocumentGenerator } from "@/components/pdf/PDFDocumentGenerator";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { useSynthesis } from "@/hooks/useSynthesis";
 import { usePDFStorage } from "@/hooks/usePDFStorage";
+import { supabase } from "@/integrations/supabase/client";
+import { PDFGenerationService } from "@/utils/PDFGenerationService";
 
 export function usePDFGeneration(userId: string | null, text?: string) {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
@@ -41,12 +42,6 @@ export function usePDFGeneration(userId: string | null, text?: string) {
         throw profileError;
       }
 
-      // Get user email from auth session
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) {
-        throw new Error("No authenticated user");
-      }
-
       // Fetch trusted persons
       const { data: trustedPersons, error: trustedPersonsError } = await supabase
         .from('trusted_persons')
@@ -61,19 +56,17 @@ export function usePDFGeneration(userId: string | null, text?: string) {
       // Use the passed text parameter if provided, otherwise use the synthesis text from database
       const synthesisText = text || freeText || synthesis?.free_text || "";
 
-      // Generate PDF with all responses
-      const pdfDataUrl = await PDFDocumentGenerator.generate(
-        {
-          ...profile,
-          unique_identifier: userId,
-          email: session.user.email
-        },
+      // Generate PDF
+      const pdfDataUrl = await PDFGenerationService.generatePDF(
+        userId,
+        profile,
         {
           ...responses,
           synthesis: { free_text: synthesisText }
         },
         trustedPersons || []
       );
+      
       setPdfUrl(pdfDataUrl);
       setShowPreview(true);
 
@@ -102,14 +95,11 @@ export function usePDFGeneration(userId: string | null, text?: string) {
   };
 
   const handlePrint = () => {
-    if (pdfUrl) {
-      const printWindow = window.open(pdfUrl);
-      printWindow?.print();
-    }
+    PDFGenerationService.handlePrint(pdfUrl);
   };
 
   const handleEmail = async () => {
-    // Email handling logic here
+    // Email handling logic here - can be moved to PDFGenerationService in the future
   };
 
   const handleDownload = () => {
