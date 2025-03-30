@@ -1,6 +1,6 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import { PDFGenerationService } from "./PDFGenerationService";
 
 /**
  * Uploads a PDF to Supabase storage and saves reference in the database
@@ -13,59 +13,29 @@ export async function uploadPDFToStorage(pdfDataUrl: string, userId: string, pro
   try {
     console.log("[PDFStorageUtils] Uploading PDF to storage");
     
-    // Convert data URL to blob
-    const response = await fetch(pdfDataUrl);
-    const blob = await response.blob();
-
-    // Generate a unique identifier based on user details
-    const firstName = profile.first_name || 'unknown';
-    const lastName = profile.last_name || 'unknown';
-    const birthDate = profile.birth_date 
-      ? format(new Date(profile.birth_date), 'yyyy-MM-dd') 
-      : 'unknown';
-    const timestamp = format(new Date(), 'yyyyMMdd_HHmmss');
+    // Utiliser notre service de génération PDF pour télécharger vers le cloud
+    const externalId = await PDFGenerationService.uploadToCloud(pdfDataUrl, userId, profile);
     
-    // Create a unique external ID 
-    const externalId = `${lastName}_${firstName}_${birthDate}_${timestamp}`;
-    const sanitizedExternalId = externalId.replace(/[^a-zA-Z0-9_-]/g, '_');
-    
-    // File path in storage
-    const filePath = `external_storage/${sanitizedExternalId}.pdf`;
-    
-    // Upload to Supabase Storage
-    const { data, error } = await supabase
-      .storage
-      .from('directives_pdfs')
-      .upload(filePath, blob, {
-        contentType: 'application/pdf',
-        upsert: false
-      });
-      
-    if (error) {
-      console.error("[PDFStorageUtils] Error uploading to external storage:", error);
-      throw error;
+    if (externalId) {
+      // Enregistrer la référence dans la base de données
+      const { error: dbError } = await supabase
+        .from('pdf_documents')
+        .insert({
+          user_id: userId,
+          file_name: `${externalId}.pdf`,
+          file_path: `external_storage/${externalId}.pdf`,
+          content_type: 'application/pdf',
+          description: `Directives anticipées de ${profile.first_name || ''} ${profile.last_name || ''}`,
+          created_at: new Date().toISOString()
+        });
+          
+      if (dbError) {
+        console.error("[PDFStorageUtils] Error saving reference to database:", dbError);
+        throw dbError;
+      }
     }
     
-    console.log("[PDFStorageUtils] PDF saved to external storage:", data);
-
-    // Save reference in database for retrieval
-    const { error: dbError } = await supabase
-      .from('pdf_documents')
-      .insert({
-        user_id: userId,
-        file_name: `${sanitizedExternalId}.pdf`,
-        file_path: filePath,
-        content_type: 'application/pdf',
-        description: `Directives anticipées de ${firstName} ${lastName}`,
-        created_at: new Date().toISOString()
-      });
-      
-    if (dbError) {
-      console.error("[PDFStorageUtils] Error saving reference to database:", dbError);
-      throw dbError;
-    }
-    
-    return sanitizedExternalId;
+    return externalId;
   } catch (error) {
     console.error("[PDFStorageUtils] Error in uploadPDFToStorage:", error);
     return null;
@@ -119,33 +89,8 @@ export async function retrievePDFFromStorage(externalId: string): Promise<string
   try {
     console.log("[PDFStorageUtils] Retrieving external document:", externalId);
     
-    // Find the document in the database
-    const { data, error } = await supabase
-      .from('pdf_documents')
-      .select('*')
-      .ilike('file_name', `%${externalId}%`)
-      .single();
-      
-    if (error || !data) {
-      console.error("[PDFStorageUtils] Error finding document:", error);
-      throw new Error("Document non trouvé");
-    }
-    
-    // Get the file from storage
-    const { data: fileData, error: fileError } = await supabase
-      .storage
-      .from('directives_pdfs')
-      .download(data.file_path);
-      
-    if (fileError || !fileData) {
-      console.error("[PDFStorageUtils] Error downloading file:", fileError);
-      throw new Error("Impossible de télécharger le fichier");
-    }
-    
-    // Convert to URL for display
-    const url = URL.createObjectURL(fileData);
-    
-    return url;
+    // Utiliser notre service de génération PDF pour récupérer depuis le cloud
+    return await PDFGenerationService.retrieveFromCloud(externalId);
   } catch (error) {
     console.error("[PDFStorageUtils] Error in retrievePDFFromStorage:", error);
     return null;
