@@ -3,17 +3,19 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Search } from "lucide-react";
+import { Search, CloudCheck } from "lucide-react";
 import { usePDFGeneration } from "@/hooks/usePDFGeneration";
 
 interface DocumentRetrieverProps {
   userId: string;
+  onSyncComplete?: () => void;
 }
 
-export function DocumentRetriever({ userId }: DocumentRetrieverProps) {
+export function DocumentRetriever({ userId, onSyncComplete }: DocumentRetrieverProps) {
   const [documentId, setDocumentId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { retrieveExternalDocument } = usePDFGeneration(userId);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const { retrieveExternalDocument, syncToExternalStorage } = usePDFGeneration(userId);
 
   const handleRetrieve = async () => {
     if (!documentId.trim()) return;
@@ -23,6 +25,18 @@ export function DocumentRetriever({ userId }: DocumentRetrieverProps) {
       await retrieveExternalDocument(documentId.trim());
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleSyncToCloud = async () => {
+    setIsSyncing(true);
+    try {
+      await syncToExternalStorage();
+      if (onSyncComplete) {
+        onSyncComplete();
+      }
+    } finally {
+      setIsSyncing(false);
     }
   };
 
@@ -48,9 +62,28 @@ export function DocumentRetriever({ userId }: DocumentRetrieverProps) {
           Rechercher
         </Button>
       </div>
-      <p className="text-sm text-muted-foreground mt-2">
+      <p className="text-sm text-muted-foreground mt-2 mb-4">
         Utilisez l'identifiant qui vous a été fourni lors de la génération de votre document.
       </p>
+      
+      <div className="mt-4 pt-4 border-t border-border">
+        <Button 
+          onClick={handleSyncToCloud}
+          disabled={isSyncing}
+          variant="outline"
+          className="w-full"
+        >
+          {isSyncing ? (
+            <div className="h-4 w-4 border-b-2 border-primary rounded-full animate-spin mr-2"></div>
+          ) : (
+            <CloudCheck className="h-4 w-4 mr-2" />
+          )}
+          Synchroniser avec le stockage cloud
+        </Button>
+        <p className="text-xs text-muted-foreground mt-2">
+          Cette action sauvegardera vos documents dans une base de données cloud sécurisée pour un accès à long terme.
+        </p>
+      </div>
     </Card>
   );
 }

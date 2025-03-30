@@ -5,9 +5,15 @@ interface PDFGenerationOverlayProps {
   isGenerating: boolean;
   progress: number;
   waitingMessage: string;
+  transferringToCloud?: boolean;
 }
 
-export function PDFGenerationOverlay({ isGenerating, progress, waitingMessage }: PDFGenerationOverlayProps) {
+export function PDFGenerationOverlay({ 
+  isGenerating, 
+  progress, 
+  waitingMessage,
+  transferringToCloud = false
+}: PDFGenerationOverlayProps) {
   if (!isGenerating) {
     return null;
   }
@@ -20,6 +26,12 @@ export function PDFGenerationOverlay({ isGenerating, progress, waitingMessage }:
         <p className="text-lg font-medium text-foreground animate-pulse">
           {waitingMessage}
         </p>
+        {transferringToCloud && (
+          <p className="text-sm text-muted-foreground">
+            Votre document est en cours de transfert vers le stockage cloud sécurisé. 
+            Cela garantit l'accessibilité future de vos directives.
+          </p>
+        )}
       </div>
     </div>
   );
