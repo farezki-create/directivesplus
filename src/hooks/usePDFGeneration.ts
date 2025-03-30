@@ -56,10 +56,21 @@ export function usePDFGeneration(userId: string | null, text?: string) {
       // Use the passed text parameter if provided, otherwise use the synthesis text from database
       const synthesisText = text || freeText || synthesis?.free_text || "";
 
+      // Get user email from auth session
+      const { data: { session } } = await supabase.auth.getSession();
+      const userEmail = session?.user?.email || '';
+
+      // Transform profile to match UserProfile type with required unique_identifier
+      const userProfile = {
+        ...profile,
+        unique_identifier: userId,
+        email: userEmail
+      };
+
       // Generate PDF
       const pdfDataUrl = await PDFGenerationService.generatePDF(
         userId,
-        profile,
+        userProfile,
         {
           ...responses,
           synthesis: { free_text: synthesisText }

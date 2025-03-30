@@ -32,10 +32,17 @@ export class PDFGenerationService {
         throw new Error("User ID is required");
       }
 
-      // Get user email from auth session
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) {
-        throw new Error("No authenticated user");
+      // Get user email from auth session if not provided in the profile
+      if (!profile.email) {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          profile.email = session.user.email;
+        }
+      }
+
+      // Ensure unique_identifier is set
+      if (!profile.unique_identifier) {
+        profile.unique_identifier = userId;
       }
 
       // Use the passed text parameter if provided, otherwise use the synthesis text from database
@@ -46,7 +53,7 @@ export class PDFGenerationService {
         {
           ...profile,
           unique_identifier: userId,
-          email: session.user.email
+          email: profile.email
         },
         {
           ...responses,
