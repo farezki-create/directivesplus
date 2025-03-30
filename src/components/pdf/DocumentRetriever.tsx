@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Search, Cloud } from "lucide-react";
+import { Search, CloudUpload } from "lucide-react";
 import { usePDFGeneration } from "@/hooks/usePDFGeneration";
 
 interface DocumentRetrieverProps {
@@ -76,7 +76,7 @@ export function DocumentRetriever({ userId, onSyncComplete }: DocumentRetrieverP
           {isSyncing ? (
             <div className="h-4 w-4 border-b-2 border-primary rounded-full animate-spin mr-2"></div>
           ) : (
-            <Cloud className="h-4 w-4 mr-2" />
+            <CloudUpload className="h-4 w-4 mr-2" />
           )}
           Synchroniser avec le stockage cloud
         </Button>
