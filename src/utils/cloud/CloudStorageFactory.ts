@@ -5,6 +5,7 @@ import { AWSStorageProvider } from "./AWSStorageProvider";
 import { GoogleCloudStorageProvider } from "./GoogleCloudStorageProvider";
 import { AzureStorageProvider } from "./AzureStorageProvider";
 import { ScalingStorageProvider } from "./ScalingStorageProvider";
+import { ScalingoHDSStorageProvider } from "./ScalingoHDSStorageProvider";
 
 /**
  * Types de fournisseurs de stockage cloud supportés
@@ -15,6 +16,7 @@ export enum CloudProviderType {
   GOOGLE_CLOUD = 'google_cloud',
   AZURE_BLOB = 'azure_blob',
   SCALING = 'scaling',
+  SCALINGO_HDS = 'scalingo_hds',
   CUSTOM = 'custom'
 }
 
@@ -46,6 +48,12 @@ export interface CloudProviderConfig {
   azureAccountName?: string;
   azureContainer?: string;
   azureConnectionString?: string;
+  
+  // Scalingo HDS
+  scalingoApiKey?: string;
+  scalingoAppId?: string;
+  scalingoContainer?: string;
+  scalingoRegion?: string;
   
   // Scaling
   scalingStrategy?: ScalingStrategy;
@@ -102,6 +110,15 @@ export class CloudStorageFactory {
           config.azureAccountName,
           config.azureContainer,
           config.azureConnectionString
+        );
+      
+      case CloudProviderType.SCALINGO_HDS:
+        // Pour Scalingo HDS, nous permettons une configuration minimale
+        return new ScalingoHDSStorageProvider(
+          config.scalingoApiKey,
+          config.scalingoAppId,
+          config.scalingoContainer || 'documents',
+          config.scalingoRegion || 'osc-fr1'
         );
 
       case CloudProviderType.SCALING:

@@ -14,12 +14,18 @@ import { configureCustomScaling } from "@/utils/cloud/examples/ScalingExample";
 import { PDFGenerationService } from "@/utils/PDFGenerationService";
 import { toast } from "@/hooks/use-toast";
 import { SupabaseStorageProvider } from "@/utils/PDFGenerationService";
+import { Input } from "@/components/ui/input";
 
 type ProviderOption = {
   type: CloudProviderType;
   label: string;
   config: CloudProviderConfig;
   isSelected: boolean;
+  configFields?: {
+    key: string;
+    label: string;
+    placeholder: string;
+  }[];
 };
 
 export function StorageProviderSelector() {
@@ -28,8 +34,27 @@ export function StorageProviderSelector() {
     { type: CloudProviderType.SUPABASE, label: "Supabase", config: {}, isSelected: true },
     { type: CloudProviderType.AWS_S3, label: "Amazon S3", config: { awsRegion: "", awsBucket: "" }, isSelected: false },
     { type: CloudProviderType.GOOGLE_CLOUD, label: "Google Cloud", config: { gcpProjectId: "", gcpBucket: "" }, isSelected: false },
-    { type: CloudProviderType.AZURE_BLOB, label: "Azure Blob", config: { azureAccountName: "", azureContainer: "" }, isSelected: false }
+    { type: CloudProviderType.AZURE_BLOB, label: "Azure Blob", config: { azureAccountName: "", azureContainer: "" }, isSelected: false },
+    { 
+      type: CloudProviderType.SCALINGO_HDS, 
+      label: "Scalingo HDS", 
+      config: { 
+        scalingoApiKey: "", 
+        scalingoAppId: "",
+        scalingoContainer: "documents", 
+        scalingoRegion: "osc-fr1" 
+      }, 
+      isSelected: false,
+      configFields: [
+        { key: "scalingoApiKey", label: "Clé API", placeholder: "Votre clé API Scalingo" },
+        { key: "scalingoAppId", label: "ID Application", placeholder: "ID de votre application" },
+        { key: "scalingoContainer", label: "Conteneur", placeholder: "documents" },
+        { key: "scalingoRegion", label: "Région", placeholder: "osc-fr1" }
+      ]
+    }
   ]);
+  
+  const [showConfig, setShowConfig] = useState<number | null>(null);
   
   const toggleProvider = (index: number) => {
     const updatedProviders = [...providers];
@@ -40,6 +65,19 @@ export function StorageProviderSelector() {
   const updateProviderConfig = (index: number, config: CloudProviderConfig) => {
     const updatedProviders = [...providers];
     updatedProviders[index].config = { ...updatedProviders[index].config, ...config };
+    setProviders(updatedProviders);
+  };
+  
+  const toggleConfigPanel = (index: number) => {
+    setShowConfig(showConfig === index ? null : index);
+  };
+  
+  const updateConfigField = (providerIndex: number, fieldKey: string, value: string) => {
+    const updatedProviders = [...providers];
+    updatedProviders[providerIndex].config = { 
+      ...updatedProviders[providerIndex].config, 
+      [fieldKey]: value 
+    };
     setProviders(updatedProviders);
   };
   
@@ -144,13 +182,53 @@ export function StorageProviderSelector() {
           <div className="space-y-2">
             <Label>Fournisseurs de stockage</Label>
             {providers.map((provider, index) => (
-              <div key={provider.type} className="flex items-center space-x-2 border p-3 rounded-md">
-                <Checkbox
-                  id={`provider-${index}`}
-                  checked={provider.isSelected}
-                  onCheckedChange={() => toggleProvider(index)}
-                />
-                <Label htmlFor={`provider-${index}`} className="font-medium">{provider.label}</Label>
+              <div key={provider.type} className="flex flex-col border p-3 rounded-md">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`provider-${index}`}
+                      checked={provider.isSelected}
+                      onCheckedChange={() => toggleProvider(index)}
+                    />
+                    <Label htmlFor={`provider-${index}`} className="font-medium">
+                      {provider.label}
+                      {provider.label === "Scalingo HDS" && (
+                        <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">
+                          Hébergement de Données de Santé
+                        </span>
+                      )}
+                    </Label>
+                  </div>
+                  
+                  {provider.configFields && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => toggleConfigPanel(index)}
+                    >
+                      {showConfig === index ? "Masquer" : "Configurer"}
+                    </Button>
+                  )}
+                </div>
+                
+                {showConfig === index && provider.configFields && (
+                  <div className="mt-3 pl-6 space-y-2 border-t pt-2">
+                    {provider.configFields.map(field => (
+                      <div key={field.key} className="grid grid-cols-1 gap-2">
+                        <Label htmlFor={`${provider.type}-${field.key}`} className="text-sm">
+                          {field.label}
+                        </Label>
+                        <Input
+                          id={`${provider.type}-${field.key}`}
+                          placeholder={field.placeholder}
+                          value={(provider.config[field.key as keyof CloudProviderConfig] as string) || ''}
+                          onChange={(e) => updateConfigField(index, field.key, e.target.value)}
+                          className="h-8"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
           </div>

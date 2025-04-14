@@ -3,9 +3,10 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Search, CloudUpload, Settings } from "lucide-react";
+import { Search, CloudUpload, Settings, CloudCog } from "lucide-react";
 import { usePDFGeneration } from "@/hooks/usePDFGeneration";
 import { StorageProviderSelector } from "./StorageProviderSelector";
+import { Badge } from "@/components/ui/badge";
 
 interface DocumentRetrieverProps {
   userId: string;
@@ -44,7 +45,13 @@ export function DocumentRetriever({ userId, onSyncComplete }: DocumentRetrieverP
 
   return (
     <Card className="p-4">
-      <h3 className="text-lg font-semibold mb-4">Récupérer un document</h3>
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold">Récupérer un document</h3>
+        <Badge variant="outline" className="bg-blue-50">
+          Stockage Cloud
+        </Badge>
+      </div>
+      
       <div className="flex space-x-2">
         <Input
           placeholder="Entrez l'identifiant du document"
@@ -88,12 +95,17 @@ export function DocumentRetriever({ userId, onSyncComplete }: DocumentRetrieverP
           className="w-full flex justify-center items-center"
           onClick={() => setShowCloudConfig(!showCloudConfig)}
         >
-          <Settings className="h-4 w-4 mr-2" />
-          {showCloudConfig ? "Masquer les options avancées" : "Options avancées du cloud"}
+          <CloudCog className="h-4 w-4 mr-2" />
+          {showCloudConfig ? "Masquer les options d'hébergement" : "Options d'hébergement (incl. HDS)"}
         </Button>
         
         <p className="text-xs text-muted-foreground mt-2">
           Cette action sauvegardera vos documents dans une base de données cloud sécurisée pour un accès à long terme.
+          {!showCloudConfig && (
+            <span className="block mt-1 font-medium text-blue-600">
+              Des options d'hébergement HDS sont disponibles.
+            </span>
+          )}
         </p>
       </div>
       
