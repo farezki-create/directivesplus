@@ -3,8 +3,9 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Search, CloudUpload } from "lucide-react";
+import { Search, CloudUpload, Settings } from "lucide-react";
 import { usePDFGeneration } from "@/hooks/usePDFGeneration";
+import { StorageProviderSelector } from "./StorageProviderSelector";
 
 interface DocumentRetrieverProps {
   userId: string;
@@ -15,6 +16,7 @@ export function DocumentRetriever({ userId, onSyncComplete }: DocumentRetrieverP
   const [documentId, setDocumentId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [showCloudConfig, setShowCloudConfig] = useState(false);
   const { retrieveExternalDocument, syncToExternalStorage } = usePDFGeneration(userId);
 
   const handleRetrieve = async () => {
@@ -71,7 +73,7 @@ export function DocumentRetriever({ userId, onSyncComplete }: DocumentRetrieverP
           onClick={handleSyncToCloud}
           disabled={isSyncing}
           variant="outline"
-          className="w-full"
+          className="w-full mb-2"
         >
           {isSyncing ? (
             <div className="h-4 w-4 border-b-2 border-primary rounded-full animate-spin mr-2"></div>
@@ -80,10 +82,26 @@ export function DocumentRetriever({ userId, onSyncComplete }: DocumentRetrieverP
           )}
           Synchroniser avec le stockage cloud
         </Button>
+        
+        <Button
+          variant="ghost"
+          className="w-full flex justify-center items-center"
+          onClick={() => setShowCloudConfig(!showCloudConfig)}
+        >
+          <Settings className="h-4 w-4 mr-2" />
+          {showCloudConfig ? "Masquer les options avancées" : "Options avancées du cloud"}
+        </Button>
+        
         <p className="text-xs text-muted-foreground mt-2">
           Cette action sauvegardera vos documents dans une base de données cloud sécurisée pour un accès à long terme.
         </p>
       </div>
+      
+      {showCloudConfig && (
+        <div className="mt-4 pt-4 border-t border-border">
+          <StorageProviderSelector />
+        </div>
+      )}
     </Card>
   );
 }

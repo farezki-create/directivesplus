@@ -4,6 +4,7 @@ import { SupabaseStorageProvider } from "@/utils/PDFGenerationService";
 import { AWSStorageProvider } from "./AWSStorageProvider";
 import { GoogleCloudStorageProvider } from "./GoogleCloudStorageProvider";
 import { AzureStorageProvider } from "./AzureStorageProvider";
+import { ScalingStorageProvider } from "./ScalingStorageProvider";
 
 /**
  * Types de fournisseurs de stockage cloud supportés
@@ -13,7 +14,18 @@ export enum CloudProviderType {
   AWS_S3 = 'aws_s3',
   GOOGLE_CLOUD = 'google_cloud',
   AZURE_BLOB = 'azure_blob',
+  SCALING = 'scaling',
   CUSTOM = 'custom'
+}
+
+/**
+ * Stratégies de scaling pour la répartition des fichiers
+ */
+export enum ScalingStrategy {
+  ROUND_ROBIN = 'round_robin',
+  FILE_SIZE = 'file_size',
+  RANDOM = 'random',
+  AVAILABILITY = 'availability'
 }
 
 /**
@@ -34,6 +46,11 @@ export interface CloudProviderConfig {
   azureAccountName?: string;
   azureContainer?: string;
   azureConnectionString?: string;
+  
+  // Scaling
+  scalingStrategy?: ScalingStrategy;
+  providers?: CloudProviderType[];
+  providerConfigs?: CloudProviderConfig[];
   
   // Autres paramètres communs
   customConfig?: Record<string, any>;
@@ -85,6 +102,30 @@ export class CloudStorageFactory {
           config.azureAccountName,
           config.azureContainer,
           config.azureConnectionString
+        );
+
+      case CloudProviderType.SCALING:
+        if (!config.providers || config.providers.length === 0) {
+          throw new Error("Scaling configuration incomplete: at least one provider is required");
+        }
+        
+        // Créer les fournisseurs sous-jacents
+        const providers: CloudStorageProvider[] = [];
+        for (let i = 0; i < config.providers.length; i++) {
+          const providerType = config.providers[i];
+          const providerConfig = config.providerConfigs?.[i] || {};
+          
+          // Éviter une récursion infinie
+          if (providerType === CloudProviderType.SCALING) {
+            throw new Error("Cannot nest scaling providers");
+          }
+          
+          providers.push(this.createProvider(providerType, providerConfig));
+        }
+        
+        return new ScalingStorageProvider(
+          providers,
+          config.scalingStrategy || ScalingStrategy.ROUND_ROBIN
         );
         
       case CloudProviderType.CUSTOM:
