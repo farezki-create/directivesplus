@@ -1,9 +1,7 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { QuestionCard } from "./QuestionCard";
-import { Button } from "@/components/ui/button";
-import { Info } from "lucide-react";
-import { getQuestionExplanation } from "@/utils/explanations";
+import { QuestionExplanationAccordion } from "./QuestionExplanationAccordion";
 
 interface QuestionWithExplanationProps {
   question: any;
@@ -23,8 +21,6 @@ export function QuestionWithExplanation({
   options,
   language
 }: QuestionWithExplanationProps) {
-  const [showExplanation, setShowExplanation] = useState(false);
-  
   // Validate question object
   if (!question) {
     console.error("Question object is null or undefined");
@@ -39,22 +35,11 @@ export function QuestionWithExplanation({
     return null;
   }
 
-  // Get explanation from question or from the explanations utility
-  let explanation = '';
-  
-  // First, try to get explanation directly from the question object
-  if (question.explanation && question.explanation.trim() !== '') {
-    explanation = question.explanation;
-    console.log(`Using database explanation for question ID ${question.id}: "${question.explanation.substring(0, 30)}..."`);
-  } 
-  // If no explanation in the question object, try to get it from the utility
-  else {
-    explanation = getQuestionExplanation(question.id, language, questionText);
-    console.log(`Using utility explanation for question ID ${question.id}:`, explanation ? `Found: "${explanation.substring(0, 30)}..."` : 'Not found');
-  }
+  // Use explanation directly from the question object from database
+  const explanation = question.explanation || '';
 
-  // Debug log to check if explanation is being properly resolved
-  console.log("Question with explanation resolved:", { 
+  // Debug log
+  console.log("Question with explanation:", { 
     id: question.id, 
     text: questionText.substring(0, 30) + "...", 
     hasExplanation: !!explanation,
@@ -75,30 +60,11 @@ export function QuestionWithExplanation({
           options={options}
         />
         
-        {explanation ? (
-          <div className="mt-4">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="flex items-center text-muted-foreground hover:text-primary"
-              onClick={() => setShowExplanation(!showExplanation)}
-            >
-              <Info className="mr-1 h-4 w-4" />
-              {language === 'en' ? 'Explanation' : 'Explication'}
-              {showExplanation ? (language === 'en' ? ' (hide)' : ' (masquer)') : (language === 'en' ? ' (show)' : ' (afficher)')}
-            </Button>
-            
-            {showExplanation && (
-              <div className="mt-2 p-4 bg-muted rounded-md text-base font-medium">
-                {explanation}
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="mt-4 text-xs text-muted-foreground">
-            {language === 'en' ? 'No explanation available' : 'Pas d\'explication disponible'}
-          </div>
-        )}
+        {/* Use the QuestionExplanationAccordion component */}
+        <QuestionExplanationAccordion
+          explanationText={explanation}
+          language={language}
+        />
       </div>
     </div>
   );

@@ -5,6 +5,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { useAdvancedIllnessQuestions } from "@/hooks/useAdvancedIllnessQuestions";
 import { useAdvancedIllnessResponses } from "@/hooks/useAdvancedIllnessResponses";
 import { useQuestionOptions } from "./questions/QuestionOptions";
+import { QuestionExplanationAccordion } from "./questions/QuestionExplanationAccordion";
 
 interface AdvancedIllnessQuestionsDialogProps {
   open: boolean;
@@ -20,7 +21,7 @@ export function AdvancedIllnessQuestionsDialog({
   const { answers, handleAnswerChange, handleSubmit } = useAdvancedIllnessResponses(questions);
   const { getAdvancedIllnessOptions } = useQuestionOptions();
 
-  // Pour le débogage
+  // Debug logs
   console.log("AdvancedIllnessQuestionsDialog - questions count:", questions.length);
   console.log("AdvancedIllnessQuestionsDialog - language:", currentLanguage);
   if (questions.length > 0) {
@@ -45,33 +46,71 @@ export function AdvancedIllnessQuestionsDialog({
       questionsLength={questions.length}
     >
       {questions.map((question, index) => {
-        // Ensure display_order is available for explanation lookup
+        // Ensure we have all necessary properties standardized
         const questionWithOrder = {
           ...question,
           display_order: question.display_order || index + 1,
           display_order_str: question.display_order_str || (index + 1).toString(),
-          // Make sure both question and question_text are available
           question: question.question || question.question_text,
           question_text: question.question_text || question.question,
-          // Pass through database explanation
+          // Use the explanation directly from the database
           explanation: question.explanation || ''
         };
         
-        // Pour le débogage de chaque question
-        console.log(`Question ${index + 1}: ID=${question.id}, display_order=${questionWithOrder.display_order}, display_order_str=${questionWithOrder.display_order_str}`);
-        console.log(`Explanation for question ${question.id}: ${question.explanation ? 'Present in DB' : 'Not in DB'}`);
+        // Debug each question
+        console.log(`Question ${index + 1}: ID=${question.id}, display_order=${questionWithOrder.display_order}`);
+        console.log(`Database explanation for question ${question.id}: ${question.explanation ? 'Present' : 'Not present'}`);
         
         return (
-          <QuestionWithExplanation
-            key={question.id}
-            question={questionWithOrder}
-            value={answers[question.id] || []}
-            onValueChange={(value) => handleAnswerChange(question.id, value)}
-            options={getAdvancedIllnessOptions()}
-            language={currentLanguage as 'en' | 'fr'}
-          />
+          <div className="mb-8" key={question.id}>
+            <div className="p-6 bg-card rounded-lg border shadow-sm">
+              <QuestionCard
+                question={questionWithOrder}
+                value={answers[question.id] || []}
+                onValueChange={(value) => handleAnswerChange(question.id, value)}
+                options={getAdvancedIllnessOptions()}
+              />
+              
+              {/* Use the QuestionExplanationAccordion with the explanation from the database */}
+              <QuestionExplanationAccordion 
+                explanationText={questionWithOrder.explanation} 
+                language={currentLanguage as 'en' | 'fr'} 
+              />
+            </div>
+          </div>
         );
       })}
     </QuestionsDialogLayout>
+  );
+}
+
+// Helper component for rendering question without creating a new file
+function QuestionCard({ question, value, onValueChange, options }) {
+  return (
+    <div>
+      <p className="text-lg font-medium mb-4">
+        {question.question}
+      </p>
+      <div className="flex flex-col space-y-3">
+        {options.map((option) => (
+          <div key={option.value} className="flex items-center space-x-2">
+            <input
+              type="radio"
+              id={`${question.id}-${option.value}`}
+              name={`question-${question.id}`}
+              checked={value.includes(option.value)}
+              onChange={() => onValueChange(option.value)}
+              className="h-4 w-4"
+            />
+            <label 
+              htmlFor={`${question.id}-${option.value}`}
+              className="text-base"
+            >
+              {option.label}
+            </label>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

@@ -12,7 +12,8 @@ export function QuestionExplanationAccordion({
   explanationText,
   language
 }: QuestionExplanationAccordionProps) {
-  if (!explanationText) {
+  // Early return with a message if no explanation is available
+  if (!explanationText || explanationText.trim() === '') {
     return (
       <div className="text-xs text-muted-foreground mt-2">
         {language === 'en' ? 'No explanation available' : 'Pas d\'explication disponible'}
