@@ -30,6 +30,13 @@ const AdvancedIllness = () => {
     navigate("/");
   };
 
+  // Pour le débogage
+  console.log("AdvancedIllness page - questions count:", questions.length);
+  console.log("AdvancedIllness page - current language:", currentLanguage);
+  if (questions.length > 0) {
+    console.log("Sample question explanation:", questions[0].explanation || "No explanation");
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />

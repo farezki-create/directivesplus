@@ -49,21 +49,8 @@ export function QuestionWithExplanation({
   } 
   // If no explanation in the question object, try to get it from the utility
   else {
-    // Check if it's a life support question by ID range (21-32) or explicit flag
-    const isLifeSupportQuestion = 
-      (question.id && !isNaN(parseInt(question.id)) && parseInt(question.id) >= 21 && parseInt(question.id) <= 32) ||
-      question.isLifeSupportQuestion ||
-      question.questionType === 'life_support';
-    
-    if (isLifeSupportQuestion) {
-      console.log(`Life support question detected (ID: ${question.id}): ${questionText.substring(0, 30)}...`);
-      // Life support questions don't have explanations
-      explanation = '';
-    } else {
-      // For other question types, try to get explanation from the utility
-      explanation = getQuestionExplanation(question.id, language, questionText);
-      console.log(`Using utility explanation for question ID ${question.id}:`, explanation ? `Found: "${explanation.substring(0, 30)}..."` : 'Not found');
-    }
+    explanation = getQuestionExplanation(question.id, language, questionText);
+    console.log(`Using utility explanation for question ID ${question.id}:`, explanation ? `Found: "${explanation.substring(0, 30)}..."` : 'Not found');
   }
 
   // Debug log to check if explanation is being properly resolved

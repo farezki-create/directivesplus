@@ -20,9 +20,12 @@ export function AdvancedIllnessQuestionsDialog({
   const { answers, handleAnswerChange, handleSubmit } = useAdvancedIllnessResponses(questions);
   const { getAdvancedIllnessOptions } = useQuestionOptions();
 
-  // For debugging
+  // Pour le débogage
   console.log("AdvancedIllnessQuestionsDialog - questions count:", questions.length);
   console.log("AdvancedIllnessQuestionsDialog - language:", currentLanguage);
+  if (questions.length > 0) {
+    console.log("First question explanation:", questions[0].explanation || "No direct explanation");
+  }
 
   const onSubmit = async () => {
     const success = await handleSubmit();
@@ -54,8 +57,9 @@ export function AdvancedIllnessQuestionsDialog({
           explanation: question.explanation || ''
         };
         
-        // For debugging each question
+        // Pour le débogage de chaque question
         console.log(`Question ${index + 1}: ID=${question.id}, display_order=${questionWithOrder.display_order}, display_order_str=${questionWithOrder.display_order_str}`);
+        console.log(`Explanation for question ${question.id}: ${question.explanation ? 'Present in DB' : 'Not in DB'}`);
         
         return (
           <QuestionWithExplanation
