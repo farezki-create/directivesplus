@@ -22,9 +22,10 @@ export function usePreferencesQuestions(open: boolean) {
         
         console.log(`[Preferences] Using table: ${tableName}`);
         
+        // Explicitly request all fields, especially explanation
         const { data, error } = await supabase
           .from(tableName)
-          .select("*")
+          .select('id, display_order, question, explanation, created_at')
           .order("display_order", { ascending: true });
 
         if (error) {
@@ -38,8 +39,28 @@ export function usePreferencesQuestions(open: boolean) {
           });
           return;
         }
-        console.log('[Preferences] Questions loaded:', data?.length, 'questions');
-        setQuestions(data || []);
+        
+        // Log the raw data from database to check explanations
+        console.log('[Preferences] Raw data from database:', data);
+        
+        // Process the data and ensure explanations are preserved
+        const processedData = data?.map((q, index) => ({
+          ...q,
+          // Use existing display_order if available, otherwise use 1-based index
+          display_order_str: q.display_order ? q.display_order.toString() : (index + 1).toString(),
+          // Ensure explanation is preserved
+          explanation: q.explanation || ''
+        })) || [];
+        
+        // Debug log explanations
+        processedData.forEach((q, i) => {
+          console.log(`[Preferences] Question ${i+1}: ID=${q.id}, explanation present: ${!!q.explanation}, length: ${q.explanation?.length || 0}`);
+          if (q.explanation) {
+            console.log(`[Preferences] Sample explanation: ${q.explanation.substring(0, 50)}...`);
+          }
+        });
+        
+        setQuestions(processedData);
       } catch (error) {
         console.error("[Preferences] Unexpected error:", error);
         toast({

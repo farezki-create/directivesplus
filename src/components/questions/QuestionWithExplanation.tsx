@@ -35,11 +35,11 @@ export function QuestionWithExplanation({
     return null;
   }
 
-  // Use explanation directly from the question object from database
+  // Ensure we get the explanation directly from the database question object
   const explanation = question.explanation || '';
 
-  // Debug log with more details
-  console.log("Question with explanation:", { 
+  // Debug log with more details to check if explanation is being correctly passed
+  console.log(`[${question.questionnaire_type || 'Unknown'}] Question with explanation:`, { 
     id: question.id, 
     text: questionText.substring(0, 30) + "...", 
     hasExplanation: !!explanation,

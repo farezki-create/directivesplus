@@ -14,6 +14,7 @@ export function QuestionExplanationAccordion({
 }: QuestionExplanationAccordionProps) {
   // Early return with a message if no explanation is available
   if (!explanationText || explanationText.trim() === '') {
+    console.log("No explanation available for this question");
     return (
       <div className="text-xs text-muted-foreground mt-2">
         {language === 'en' ? 'No explanation available' : 'Pas d\'explication disponible'}
@@ -21,8 +22,8 @@ export function QuestionExplanationAccordion({
     );
   }
 
-  // Debug the explanation text
-  console.log("[QuestionExplanationAccordion] Rendering with explanation:", explanationText.substring(0, 30) + "...");
+  // Debug the explanation text to ensure it's available
+  console.log("[QuestionExplanationAccordion] Rendering with explanation:", explanationText.substring(0, 30) + "...", "Length:", explanationText.length);
 
   return (
     <Accordion type="single" collapsible className="mt-2">

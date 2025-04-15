@@ -30,11 +30,14 @@ const AdvancedIllness = () => {
     navigate("/");
   };
 
-  // Pour le débogage
+  // Pour le débogage des explications
   console.log("AdvancedIllness page - questions count:", questions.length);
   console.log("AdvancedIllness page - current language:", currentLanguage);
   if (questions.length > 0) {
     console.log("Sample question explanation:", questions[0].explanation || "No explanation");
+    questions.forEach((q, i) => {
+      console.log(`Question ${i+1}: ID=${q.id}, has explanation: ${!!q.explanation}, explanation length: ${q.explanation?.length || 0}`);
+    });
   }
 
   return (
@@ -64,21 +67,23 @@ const AdvancedIllness = () => {
           ) : questions.length > 0 ? (
             <div className="space-y-6 mb-8">
               {questions.map((question, index) => {
-                // Ensure display_order is available for explanation lookup
-                const questionWithOrder = {
+                // Make sure all fields are standardized, especially ensuring explanation is preserved
+                const enhancedQuestion = {
                   ...question,
                   display_order: question.display_order || index + 1,
                   display_order_str: question.display_order_str || (index + 1).toString(),
-                  // Make sure both question and question_text are available
                   question: question.question || question.question_text,
                   question_text: question.question_text || question.question,
-                  explanation: question.explanation || ''
+                  explanation: question.explanation || '',
+                  questionnaire_type: 'advanced_illness'
                 };
+                
+                console.log(`[AdvancedIllness] Preparing question ${index + 1}: ID=${question.id}, Explanation length: ${enhancedQuestion.explanation?.length || 0}`);
                 
                 return (
                   <QuestionWithExplanation
                     key={question.id}
-                    question={questionWithOrder}
+                    question={enhancedQuestion}
                     value={answers[question.id] || []}
                     onValueChange={(value) => handleAnswerChange(question.id, value)}
                     options={getAdvancedIllnessOptions()}
