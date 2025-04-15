@@ -38,7 +38,7 @@ export function QuestionWithExplanation({
   // Use explanation directly from the question object from database
   const explanation = question.explanation || '';
 
-  // Debug log
+  // Debug log with more details
   console.log("Question with explanation:", { 
     id: question.id, 
     text: questionText.substring(0, 30) + "...", 

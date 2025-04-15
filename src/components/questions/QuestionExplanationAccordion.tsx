@@ -21,6 +21,9 @@ export function QuestionExplanationAccordion({
     );
   }
 
+  // Debug the explanation text
+  console.log("[QuestionExplanationAccordion] Rendering with explanation:", explanationText.substring(0, 30) + "...");
+
   return (
     <Accordion type="single" collapsible className="mt-2">
       <AccordionItem value="explanation" className="border-0">
