@@ -16,6 +16,8 @@ import GeneralOpinion from "./pages/GeneralOpinion";
 import LifeSupport from "./pages/LifeSupport";
 import AdvancedIllness from "./pages/AdvancedIllness";
 import Preferences from "./pages/Preferences";
+import MyDocuments from "./pages/MyDocuments";
+import ExternalAccess from "./pages/ExternalAccess";
 import { DialogStateProvider } from "./hooks/useDialogState";
 
 function App() {
@@ -37,6 +39,8 @@ function App() {
             <Route path="/life-support" element={<LifeSupport />} />
             <Route path="/advanced-illness" element={<AdvancedIllness />} />
             <Route path="/preferences" element={<Preferences />} />
+            <Route path="/my-documents" element={<MyDocuments />} />
+            <Route path="/access/:code?" element={<ExternalAccess />} />
           </Routes>
         </HashRouter>
         <Toaster />
