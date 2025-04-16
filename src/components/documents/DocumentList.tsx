@@ -9,7 +9,11 @@ import {
   Eye, 
   Share2, 
   Calendar, 
-  Loader2
+  Loader2,
+  FileText,
+  CreditCard,
+  UploadCloud,
+  ScanLine
 } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -17,6 +21,7 @@ import { PDFPreviewDialog } from "@/components/pdf/PDFPreviewDialog";
 import { usePDFGeneration } from "@/hooks/usePDFGeneration";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { DocumentScanner } from "@/components/DocumentScanner";
 
 interface Document {
   id: string;
@@ -34,6 +39,7 @@ export function DocumentList({ userId }: { userId: string }) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [sharingCode, setSharingCode] = useState<string | null>(null);
+  const [showDocumentScanner, setShowDocumentScanner] = useState(false);
   const { retrieveExternalDocument } = usePDFGeneration(userId);
   const { toast } = useToast();
 
@@ -102,6 +108,40 @@ export function DocumentList({ userId }: { userId: string }) {
     });
   };
 
+  // Trouve le document le plus récent des directives anticipées
+  const findLatestDirective = () => {
+    const directives = documents.filter(doc => 
+      doc.description?.toLowerCase().includes('directive') || 
+      doc.file_name.toLowerCase().includes('directive')
+    );
+    return directives.length > 0 ? directives[0] : null;
+  };
+
+  const handleAddMedicalDocument = () => {
+    setShowDocumentScanner(true);
+  };
+
+  const handleViewDirectives = async () => {
+    const latestDirective = findLatestDirective();
+    
+    if (latestDirective) {
+      handlePreview(latestDirective);
+    } else {
+      toast({
+        title: "Information",
+        description: "Aucune directive anticipée trouvée. Veuillez générer vos directives d'abord.",
+      });
+      setTimeout(() => {
+        navigate('/generate-pdf');
+      }, 2000);
+    }
+  };
+
+  const handleViewCardFormat = async () => {
+    // Rediriger vers la page de génération de carte format bancaire
+    navigate('/generate-pdf');
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center p-12">
@@ -113,6 +153,31 @@ export function DocumentList({ userId }: { userId: string }) {
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-semibold mb-4">Vos directives anticipées</h2>
+      
+      <div className="grid gap-4 md:grid-cols-2 mb-6">
+        <Button
+          onClick={handleViewDirectives}
+          className="flex items-center gap-2 h-auto py-3"
+        >
+          <FileText className="h-5 w-5" />
+          <div className="text-left">
+            <div className="font-medium">Mes directives anticipées</div>
+            <div className="text-xs text-muted-foreground">Afficher mon document complet</div>
+          </div>
+        </Button>
+        
+        <Button
+          onClick={handleAddMedicalDocument}
+          variant="outline"
+          className="flex items-center gap-2 h-auto py-3"
+        >
+          <UploadCloud className="h-5 w-5" />
+          <div className="text-left">
+            <div className="font-medium">Ajouter un document médical</div>
+            <div className="text-xs text-muted-foreground">Télécharger ou scanner un document</div>
+          </div>
+        </Button>
+      </div>
       
       {documents.length === 0 ? (
         <div className="text-center py-8 text-gray-500">
@@ -127,6 +192,7 @@ export function DocumentList({ userId }: { userId: string }) {
         </div>
       ) : (
         <div className="space-y-4">
+          <h3 className="text-lg font-medium border-b pb-2">Mes documents</h3>
           {documents.map((doc) => (
             <Card key={doc.id} className="p-4">
               <div className="flex items-start justify-between">
@@ -207,6 +273,11 @@ export function DocumentList({ userId }: { userId: string }) {
           externalDocumentId={selectedDocument?.external_id || ""}
         />
       )}
+
+      <DocumentScanner 
+        open={showDocumentScanner} 
+        onClose={() => setShowDocumentScanner(false)}
+      />
     </div>
   );
 }
