@@ -60,11 +60,13 @@ export function QuestionWithExplanation({
           options={options}
         />
         
-        {/* Use the QuestionExplanationAccordion component */}
-        <QuestionExplanationAccordion
-          explanationText={explanation}
-          language={language}
-        />
+        {/* Only render the explanation component if there's an explanation */}
+        {explanation && explanation.trim() !== '' && (
+          <QuestionExplanationAccordion
+            explanationText={explanation}
+            language={language}
+          />
+        )}
       </div>
     </div>
   );

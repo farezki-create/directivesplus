@@ -12,14 +12,10 @@ export function QuestionExplanationAccordion({
   explanationText,
   language
 }: QuestionExplanationAccordionProps) {
-  // Early return with a message if no explanation is available
+  // Only render the accordion if there's an explanation text
   if (!explanationText || explanationText.trim() === '') {
     console.log("No explanation available for this question");
-    return (
-      <div className="text-xs text-muted-foreground mt-2">
-        {language === 'en' ? 'No explanation available' : 'Pas d\'explication disponible'}
-      </div>
-    );
+    return null; // Don't render anything if there's no explanation
   }
 
   // Debug the explanation text to ensure it's available
