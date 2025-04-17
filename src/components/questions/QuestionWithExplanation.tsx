@@ -1,5 +1,7 @@
 
 import React from "react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Info } from "lucide-react";
 import { QuestionCard } from "./QuestionCard";
 import { QuestionExplanationAccordion } from "./QuestionExplanationAccordion";
 
@@ -35,18 +37,13 @@ export function QuestionWithExplanation({
     return null;
   }
 
-  // Ensure we get the explanation directly from the database question object
+  // Get the explanation directly from the question object
   const explanation = question.explanation || '';
-
-  // Debug log with more details to check if explanation is being correctly passed
-  console.log(`[${question.questionnaire_type || 'Unknown'}] Question with explanation:`, { 
-    id: question.id, 
-    text: questionText.substring(0, 30) + "...", 
-    hasExplanation: !!explanation,
-    explanationLength: explanation?.length || 0,
-    explanation: explanation ? explanation.substring(0, 30) + "..." : "None"
-  });
   
+  // Debug logging
+  console.log(`[QuestionWithExplanation] Question: "${questionText.substring(0, 30)}..."`, 
+    `Has explanation: ${!!explanation}, Length: ${explanation?.length || 0}`);
+
   return (
     <div className="mb-8">
       <div className="p-6 bg-card rounded-lg border shadow-sm">
@@ -60,7 +57,7 @@ export function QuestionWithExplanation({
           options={options}
         />
         
-        {/* Only render the explanation component if there's an explanation */}
+        {/* Only render explanation if it exists */}
         {explanation && explanation.trim() !== '' && (
           <QuestionExplanationAccordion
             explanationText={explanation}

@@ -1,4 +1,3 @@
-
 import { generalExplanationsEN, generalExplanationsFR } from './generalExplanations';
 import { lifeSupportExplanationsEN, lifeSupportExplanationsFR } from './lifeSupportExplanations';
 import { advancedIllnessExplanationsEN, advancedIllnessExplanationsFR } from './advancedIllnessExplanations';
