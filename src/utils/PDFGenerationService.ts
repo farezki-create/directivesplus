@@ -3,6 +3,7 @@ import { jsPDF } from "jspdf";
 import { UserProfile, TrustedPerson } from "@/components/pdf/types";
 import { PDFStorageService } from './storage/PDFStorageService';
 import { supabase } from "@/integrations/supabase/client";
+import { CloudStorageProvider } from "./storage/types";
 import { PageManager } from "@/components/pdf/utils/PageManager";
 import { PDFUserSection } from "@/components/pdf/utils/PDFUserSection";
 import { PDFTrustedPersonSection } from "@/components/pdf/utils/PDFTrustedPersonSection";
@@ -111,6 +112,7 @@ export class PDFGenerationService {
   static handlePrint = PDFStorageService.handlePrint;
 }
 
-// Use 'export type' for type re-exports
+// Properly re-export both types and values
 export type { CloudStorageProvider } from './storage/types';
-export type { SupabaseStorageProvider } from './storage/providers/SupabaseProvider';
+// Export the implementation too, not just the type
+export { SupabaseStorageProvider } from './storage/providers/SupabaseProvider';

@@ -13,7 +13,7 @@ import {
 import { configureCustomScaling } from "@/utils/cloud/examples/ScalingExample";
 import { PDFGenerationService } from "@/utils/PDFGenerationService";
 import { toast } from "@/hooks/use-toast";
-import { SupabaseStorageProvider } from "@/utils/PDFGenerationService";
+import { SupabaseStorageProvider } from "@/utils/storage/providers/SupabaseProvider";
 import { Input } from "@/components/ui/input";
 
 type ProviderOption = {
