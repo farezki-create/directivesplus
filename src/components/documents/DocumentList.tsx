@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
@@ -73,33 +72,8 @@ export function DocumentList({ userId }: { userId: string }) {
     }
   };
 
-  // Trouve le document le plus récent des directives anticipées
-  const findLatestDirective = () => {
-    const directives = documents.filter(doc => 
-      doc.description?.toLowerCase().includes('directive') || 
-      doc.file_name.toLowerCase().includes('directive')
-    );
-    return directives.length > 0 ? directives[0] : null;
-  };
-
   const handleAddMedicalDocument = () => {
     setShowDocumentScanner(true);
-  };
-
-  const handleViewDirectives = async () => {
-    const latestDirective = findLatestDirective();
-    
-    if (latestDirective) {
-      handlePreview(latestDirective);
-    } else {
-      toast({
-        title: "Information",
-        description: "Aucune directive anticipée trouvée. Veuillez générer vos directives d'abord.",
-      });
-      setTimeout(() => {
-        navigate('/generate-pdf');
-      }, 2000);
-    }
   };
 
   if (isLoading) {
@@ -112,7 +86,7 @@ export function DocumentList({ userId }: { userId: string }) {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-semibold mb-4">Vos directives anticipées</h2>
+      <h2 className="text-xl font-semibold mb-4">Vos documents médicaux</h2>
       
       <DocumentActions 
         onAddMedicalDocument={handleAddMedicalDocument}
@@ -146,7 +120,6 @@ export function DocumentList({ userId }: { userId: string }) {
   );
 }
 
-// Helper function for navigation
 function navigate(path: string) {
   window.location.href = path;
 }
