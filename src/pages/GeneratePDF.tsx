@@ -81,10 +81,36 @@ export default function GeneratePDF() {
       const cardUrl = await PDFCardGenerator.generate(profileWithId, trustedPersons);
       setCardPdfUrl(cardUrl);
       
-      toast({
-        title: "Succès",
-        description: "Carte format bancaire générée avec succès",
-      });
+      // Save the card to pdf_documents
+      if (cardUrl) {
+        const timestamp = new Date().toISOString().replace(/[-:.]/g, '').substring(0, 14);
+        const fileName = `carte-directives-${timestamp}.pdf`;
+        
+        const { error } = await supabase
+          .from('pdf_documents')
+          .insert({
+            user_id: userId,
+            file_name: fileName,
+            file_path: `cards/${fileName}`,
+            content_type: 'application/pdf',
+            description: 'Carte format bancaire - Directives anticipées',
+            created_at: new Date().toISOString()
+          });
+
+        if (error) {
+          console.error("Error saving card to documents:", error);
+          toast({
+            title: "Attention",
+            description: "La carte a été générée mais n'a pas pu être sauvegardée dans vos documents",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Succès",
+            description: "Carte format bancaire générée et sauvegardée dans vos documents",
+          });
+        }
+      }
     } catch (error) {
       console.error("[GeneratePDF] Error generating card:", error);
       toast({
