@@ -48,7 +48,7 @@ export default function MyDocuments() {
           <Tabs defaultValue="documents">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="documents">Mes documents</TabsTrigger>
-              <TabsTrigger value="access">Partager mes documents</TabsTrigger>
+              <TabsTrigger value="access">Accéder à un document partagé</TabsTrigger>
             </TabsList>
             
             <TabsContent value="documents" className="mt-4">
