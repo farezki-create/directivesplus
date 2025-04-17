@@ -131,11 +131,18 @@ export class PDFCardGenerator {
     doc.setTextColor(100, 100, 100);
     doc.text("- - - - - - - - - - - Pliez ici - - - - - - - - - - -", pageWidth / 2, yPosition - 10, { align: 'center' });
 
-    // Add dotted line for folding
+    // Add dotted line for folding (using individual small lines instead of setLineDash)
     doc.setDrawColor(150, 150, 150);
-    doc.setLineDash([2, 2], 0);
-    doc.line(margin, yPosition - 5, pageWidth - margin, yPosition - 5);
-    doc.setLineDash([]);
+    
+    // Draw a series of small lines to create a dotted effect
+    const lineLength = 2;
+    const gapLength = 2;
+    let currentX = margin;
+    
+    while (currentX < pageWidth - margin) {
+      doc.line(currentX, yPosition - 5, currentX + lineLength, yPosition - 5);
+      currentX += lineLength + gapLength;
+    }
 
     // Add usage instructions
     doc.setFont("helvetica", "normal");
