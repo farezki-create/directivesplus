@@ -7,7 +7,7 @@ import { QRCode } from "qrcode";
 
 export class PDFCardGenerator {
   static async generate(profile: UserProfile, trustedPersons: TrustedPerson[]) {
-    console.log("[PDFCardGenerator] Generating double-sheet card PDF");
+    console.log("[PDFCardGenerator] Generating foldable double-card PDF");
     
     // A4 dimensions in mm
     const pageWidth = 210;
@@ -23,28 +23,29 @@ export class PDFCardGenerator {
       orientation: 'portrait'
     });
 
-    // Function to generate a single card
+    // Function to generate a single card side
     const generateCard = (
       title: string,
-      yPosition: number,
+      startX: number,
+      startY: number,
       isDirectivesCard: boolean
     ) => {
       // Add a light background color and border
       doc.setFillColor(245, 245, 250);
-      doc.rect((pageWidth - cardWidth) / 2, yPosition, cardWidth, cardHeight, 'F');
+      doc.rect(startX, startY, cardWidth, cardHeight, 'F');
       
       // Add a border
       doc.setDrawColor(100, 100, 150);
       doc.setLineWidth(0.5);
-      doc.rect((pageWidth - cardWidth) / 2 + 2, yPosition + 2, cardWidth - 4, cardHeight - 4, 'S');
+      doc.rect(startX + 2, startY + 2, cardWidth - 4, cardHeight - 4, 'S');
       
       // Add a header title
       doc.setFillColor(70, 70, 120);
-      doc.rect((pageWidth - cardWidth) / 2, yPosition, cardWidth, 7, 'F');
+      doc.rect(startX, startY, cardWidth, 7, 'F');
       doc.setTextColor(255, 255, 255);
       doc.setFont("helvetica", "bold");
       doc.setFontSize(9);
-      doc.text(title, pageWidth / 2, yPosition + 4.5, { align: 'center' });
+      doc.text(title, startX + cardWidth/2, startY + 4.5, { align: 'center' });
       
       // Reset text color and font for content
       doc.setTextColor(0, 0, 0);
@@ -52,7 +53,7 @@ export class PDFCardGenerator {
       doc.setFontSize(7);
       
       // Content position
-      let contentY = yPosition + 12;
+      let contentY = startY + 12;
 
       // Full name
       const firstName = profile.first_name || '';
@@ -61,9 +62,9 @@ export class PDFCardGenerator {
       
       if (fullName) {
         doc.setFont("helvetica", "bold");
-        doc.text(`NOM / PRÉNOM : `, (pageWidth - cardWidth) / 2 + 5, contentY);
+        doc.text(`NOM / PRÉNOM : `, startX + 5, contentY);
         doc.setFont("helvetica", "normal");
-        doc.text(`${fullName}`, (pageWidth - cardWidth) / 2 + 28, contentY);
+        doc.text(`${fullName}`, startX + 28, contentY);
         contentY += 5;
       }
 
@@ -71,26 +72,26 @@ export class PDFCardGenerator {
       if (profile.birth_date) {
         const formattedDate = format(new Date(profile.birth_date), "dd/MM/yyyy", { locale: fr });
         doc.setFont("helvetica", "bold");
-        doc.text(`DATE DE NAISSANCE : `, (pageWidth - cardWidth) / 2 + 5, contentY);
+        doc.text(`DATE DE NAISSANCE : `, startX + 5, contentY);
         doc.setFont("helvetica", "normal");
-        doc.text(`${formattedDate}`, (pageWidth - cardWidth) / 2 + 33, contentY);
+        doc.text(`${formattedDate}`, startX + 33, contentY);
         contentY += 5;
       }
       
       // Access code (unique identifier)
       doc.setFont("helvetica", "bold");
-      doc.text(`CODE D'ACCÈS :`, (pageWidth - cardWidth) / 2 + 5, contentY);
+      doc.text(`CODE D'ACCÈS :`, startX + 5, contentY);
       doc.setFont("helvetica", "normal");
-      doc.text(`${profile.unique_identifier}`, (pageWidth - cardWidth) / 2 + 26, contentY);
+      doc.text(`${profile.unique_identifier}`, startX + 26, contentY);
       contentY += 5;
 
       // Connection link
       doc.setFont("helvetica", "bold");
-      doc.text(`LIEN : `, (pageWidth - cardWidth) / 2 + 5, contentY);
+      doc.text(`LIEN : `, startX + 5, contentY);
       doc.setFont("helvetica", "normal");
       doc.text(
         isDirectivesCard ? "directives.sante.fr/access" : "documents.sante.fr/access", 
-        (pageWidth - cardWidth) / 2 + 15, 
+        startX + 15, 
         contentY
       );
       doc.setTextColor(0, 0, 0);
@@ -100,26 +101,62 @@ export class PDFCardGenerator {
       if (isDirectivesCard && trustedPersons && trustedPersons.length > 0) {
         const person = trustedPersons[0];
         doc.setFont("helvetica", "bold");
-        doc.text(`PERSONNE DE CONFIANCE : `, (pageWidth - cardWidth) / 2 + 5, contentY);
+        doc.text(`PERSONNE DE CONFIANCE : `, startX + 5, contentY);
         doc.setFont("helvetica", "normal");
-        doc.text(`${person.name}`, (pageWidth - cardWidth) / 2 + 42, contentY);
+        doc.text(`${person.name}`, startX + 42, contentY);
         contentY += 5;
       }
 
       // Date and signature
       doc.text(
         "Date : ..................  Signature : ..................", 
-        (pageWidth - cardWidth) / 2 + 5, 
+        startX + 5, 
         contentY + 2
       );
     };
 
-    // First page: Directives Anticipées
-    generateCard("CARTE DIRECTIVES ANTICIPÉES", 50, true);
+    // Calculate positions for the cards
+    const margin = (pageWidth - (cardWidth * 2)) / 3;
+    const yPosition = 100; // Position on the page where the cards will be placed
 
-    // Second page: Documents Médicaux
-    doc.addPage();
-    generateCard("CARTE DOCUMENTS MÉDICAUX", 50, false);
+    // Generate the first card (Directives Anticipées)
+    generateCard("CARTE DIRECTIVES ANTICIPÉES", margin, yPosition, true);
+    
+    // Generate the second card (Documents Médicaux)
+    generateCard("CARTE DOCUMENTS MÉDICAUX", margin * 2 + cardWidth, yPosition, false);
+
+    // Add folding instructions
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.text("- - - - - - - - - - - Pliez ici - - - - - - - - - - -", pageWidth / 2, yPosition - 10, { align: 'center' });
+
+    // Add dotted line for folding
+    doc.setDrawColor(150, 150, 150);
+    doc.setLineDash([2, 2], 0);
+    doc.line(margin, yPosition - 5, pageWidth - margin, yPosition - 5);
+    doc.setLineDash([]);
+
+    // Add usage instructions
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(12);
+    doc.setTextColor(70, 70, 120);
+    doc.text("Instructions :", margin, yPosition + cardHeight + 20);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    const instructions = [
+      "1. Découpez le long du contour extérieur",
+      "2. Pliez selon la ligne pointillée",
+      "3. Complétez la date et signez les deux cartes",
+      "4. Conservez cette carte sur vous"
+    ];
+    
+    let instructionY = yPosition + cardHeight + 30;
+    instructions.forEach(instruction => {
+      doc.text(instruction, margin, instructionY);
+      instructionY += 8;
+    });
 
     return doc.output('dataurlstring');
   }
