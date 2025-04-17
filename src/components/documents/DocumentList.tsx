@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { DocumentScanner } from "@/components/DocumentScanner";
 import { DocumentActions } from "./DocumentActions";
@@ -15,7 +14,6 @@ export function DocumentList({ userId }: { userId: string }) {
   const [accessCode, setAccessCode] = useState<string | null>(null);
   const { toast } = useToast();
   
-  // Initialize Scalingo HDS provider
   const scalingoProvider = new ScalingoHDSStorageProvider();
   
   const handleAddMedicalDocument = () => {
@@ -69,7 +67,7 @@ export function DocumentList({ userId }: { userId: string }) {
               <div class="content">
                 <p><strong>Code d'accès:</strong> ${accessCode}</p>
                 <p><strong>Date d'émission:</strong> ${format(new Date(), "dd MMMM yyyy", { locale: fr })}</p>
-                <p><strong>Lien d'accès:</strong> directives-anticipees.lovable.dev/access</p>
+                <p><strong>Lien d'accès:</strong> documents.sante.fr/access</p>
               </div>
               <div class="info">
                 Cette carte permet l'accès sécurisé aux documents médicaux. 
@@ -116,7 +114,7 @@ export function DocumentList({ userId }: { userId: string }) {
                   <div className="space-y-1 text-sm">
                     <p><span className="font-semibold">Code d'accès:</span> {accessCode}</p>
                     <p><span className="font-semibold">Date d'émission:</span> {format(new Date(), "dd MMMM yyyy", { locale: fr })}</p>
-                    <p><span className="font-semibold">Lien d'accès:</span> directives-anticipees.lovable.dev/access</p>
+                    <p><span className="font-semibold">Lien d'accès:</span> documents.sante.fr/access</p>
                   </div>
                 </div>
                 <div className="bg-white p-2 rounded border border-blue-100">

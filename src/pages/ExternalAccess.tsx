@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,10 +33,8 @@ export default function ExternalAccess() {
     setIsVerifying(true);
     
     try {
-      // Récupérer le provider Scalingo HDS
       const scalingoProvider = new ScalingoHDSStorageProvider();
       
-      // Vérifier l'accès au document avec les informations fournies
       const documentId = await scalingoProvider.verifyAccessByCode(accessId, {
         firstName,
         lastName,
@@ -48,7 +45,6 @@ export default function ExternalAccess() {
         throw new Error("Accès refusé ou document non trouvé");
       }
       
-      // Récupérer le document
       const url = await scalingoProvider.retrieveFile(documentId);
       
       if (!url) {
@@ -78,7 +74,7 @@ export default function ExternalAccess() {
     <div className="min-h-screen flex flex-col justify-center items-center p-4 bg-gray-50">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-primary">DirectivesPlus</h1>
+          <h1 className="text-3xl font-bold text-primary">Santé+</h1>
           <h2 className="mt-6 text-2xl font-semibold">Accès aux directives anticipées</h2>
           <p className="mt-2 text-gray-600">
             Veuillez compléter le formulaire pour accéder au document partagé.

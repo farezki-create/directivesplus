@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -29,7 +28,6 @@ export function DocumentCard({ document, onPreview, selectedDocumentId, sharingC
   const [localSharingCode, setLocalSharingCode] = useState<string | null>(null);
   
   const generateSharingCode = () => {
-    // Pour une démonstration, nous prenons l'external_id existant ou générons un code simple
     const code = document.external_id || 
                 document.file_name.replace('.pdf', '').substring(0, 10) + 
                 Math.random().toString(36).substring(2, 8);
@@ -109,6 +107,9 @@ export function DocumentCard({ document, onPreview, selectedDocumentId, sharingC
               Copier
             </Button>
           </div>
+          <p className="text-xs text-gray-500 mt-2">
+            Accédez au document sur: directives.sante.fr/access
+          </p>
         </div>
       ) : null}
     </Card>
