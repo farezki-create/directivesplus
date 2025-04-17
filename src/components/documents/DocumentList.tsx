@@ -115,7 +115,6 @@ export function DocumentList({ userId }: { userId: string }) {
       <h2 className="text-xl font-semibold mb-4">Vos directives anticipées</h2>
       
       <DocumentActions 
-        onViewDirectives={handleViewDirectives}
         onAddMedicalDocument={handleAddMedicalDocument}
       />
       
