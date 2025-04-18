@@ -42,11 +42,11 @@ function App() {
             <Route path="/access" element={<ExternalAccess />} />
             
             <Route 
-              path="/lovable-directives/access/*" 
+              path="/scalingo-directives/access/*" 
               element={<Navigate to="/access" replace />} 
             />
             <Route 
-              path="/lovable/access/*" 
+              path="/scalingo/access/*" 
               element={<Navigate to="/access" replace />} 
             />
             <Route 
