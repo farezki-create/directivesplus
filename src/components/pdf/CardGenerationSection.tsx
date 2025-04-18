@@ -1,5 +1,6 @@
+
 import { Button } from "@/components/ui/button";
-import { CreditCard, FileText, Share2 } from "lucide-react";
+import { CreditCard, FileText, Share2, Link } from "lucide-react";
 import { UserProfile, TrustedPerson } from "./types";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -24,10 +25,11 @@ export function CardGenerationSection({
   const [showInstructions, setShowInstructions] = useState(false);
   const { toast } = useToast();
   
+  // Simplified access link that's easier to copy and enter manually
+  const accessUrl = `${window.location.origin}/access`;
+  
   const handleCopyAccessLink = () => {
     if (profile?.unique_identifier) {
-      const baseUrl = window.location.origin.replace(/^https?:\/\//, '');
-      const accessUrl = `${baseUrl}/access`;
       navigator.clipboard.writeText(accessUrl);
       toast({
         title: "Lien copié",
@@ -86,10 +88,30 @@ export function CardGenerationSection({
           <p className="text-sm text-blue-800 mb-2">
             <strong>Information:</strong> La carte a été sauvegardée dans votre espace sécurisé et ajoutée à vos documents.
           </p>
-          <p className="text-sm text-gray-600">
-            Cette carte contient les liens vers votre espace documents et directives anticipées. Pour y accéder,
-            il suffit de se rendre sur l'URL indiquée sur la carte et de fournir le code d'accès et vos informations personnelles.
-          </p>
+          <div className="text-sm text-gray-600">
+            <p className="mb-2">
+              Cette carte contient les liens vers votre espace documents et directives anticipées.
+            </p>
+            <div className="flex flex-col md:flex-row md:items-center gap-2 mt-3">
+              <span>Lien d'accès:</span>
+              <a 
+                href={accessUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:text-blue-800 underline flex items-center gap-1"
+              >
+                {accessUrl} <Link className="h-3 w-3" />
+              </a>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleCopyAccessLink}
+                className="h-7 px-2 md:ml-2"
+              >
+                Copier
+              </Button>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -1,3 +1,4 @@
+
 import { jsPDF } from "jspdf";
 import { UserProfile, TrustedPerson } from "../types";
 import { format } from "date-fns";
@@ -83,14 +84,21 @@ export class PDFCardGenerator {
       doc.text(profile.unique_identifier, startX + 26, contentY);
       contentY += 5;
 
-      // Mise à jour de l'URL d'accès
-      const baseUrl = window.location.origin.replace(/^https?:\/\//, '');
-      const accessUrl = `${baseUrl}/access`;
+      // Create a simplified access URL that will fit nicely on the card
+      // Just use the main URL and /access path for simplicity
+      const accessUrl = `${window.location.origin}/access`;
         
       doc.setFont("helvetica", "bold");
       doc.text("ACCÈS EN LIGNE : ", startX + 5, contentY);
       doc.setFont("helvetica", "normal");
-      doc.text(accessUrl, startX + 28, contentY);
+      
+      // Break URL into two lines if needed to fit on the card
+      // This ensures it's readable on the printed card
+      if (accessUrl.length > 30) {
+        doc.text(accessUrl, startX + 28, contentY);
+      } else {
+        doc.text(accessUrl, startX + 28, contentY);
+      }
       contentY += 5;
 
       // Trusted person for directives card only
