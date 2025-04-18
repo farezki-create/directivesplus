@@ -10,8 +10,9 @@
 "scripts": {
   "dev": "vite",
   "build": "vite build",
-  "build:dev": "vite build --mode development",
-  "start": "vite preview"
+  "start": "vite preview", // Ajoute ce script pour démarrer l'application en production
+  "lint": "eslint .",
+  "preview": "vite preview"
 },
   "dependencies": {
     "@aws-sdk/s3-request-presigner": "^3.787.0",
