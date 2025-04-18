@@ -4,12 +4,16 @@ import { useToast } from "@/hooks/use-toast";
 import { UserProfile, TrustedPerson } from "@/components/pdf/types";
 import { CardGenerationService } from "@/services/card/CardGenerationService";
 import { generateAccessCodes } from "@/services/card/utils/accessCodeGenerator";
-import { saveCardToStorage } from "@/services/card/utils/cardStorage";
+import { useCardStorage } from "./useCardStorage";
+import { useCardDownload } from "./useCardDownload";
 
 export function useCardGeneration(userId: string | null) {
   const [isGeneratingCard, setIsGeneratingCard] = useState(false);
   const [cardPdfUrl, setCardPdfUrl] = useState<string | null>(null);
   const { toast } = useToast();
+  
+  const { storeCard, isSaving } = useCardStorage(userId);
+  const { downloadCardPdf } = useCardDownload();
 
   const generateCard = async (profile: UserProfile | null, trustedPersons: TrustedPerson[]) => {
     if (!profile || !userId) {
@@ -32,20 +36,21 @@ export function useCardGeneration(userId: string | null) {
       const cardUrl = await CardGenerationService.generateCard(profile, trustedPersons);
       
       if (cardUrl) {
-        // Store the URL for immediate use
         setCardPdfUrl(cardUrl);
         
         try {
           // Save to storage and get document ID
-          const { fileName } = await saveCardToStorage(cardUrl, userId, profile);
+          const storageResult = await storeCard(cardUrl, profile);
           
-          // Generate and save access codes
-          await generateAccessCodes(userId);
-          
-          toast({
-            title: "Succès",
-            description: "Carte format bancaire générée et sauvegardée dans vos documents",
-          });
+          if (storageResult) {
+            // Generate and save access codes
+            await generateAccessCodes(userId);
+            
+            toast({
+              title: "Succès",
+              description: "Carte format bancaire générée et sauvegardée dans vos documents",
+            });
+          }
         } catch (storageError) {
           console.error("Storage error:", storageError);
           toast({
@@ -68,27 +73,7 @@ export function useCardGeneration(userId: string | null) {
 
   const handleDownloadCard = () => {
     if (cardPdfUrl) {
-      try {
-        const link = document.createElement('a');
-        link.href = cardPdfUrl;
-        link.download = 'carte-directives-anticipees.pdf';
-        link.type = 'application/pdf';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        toast({
-          title: "Téléchargement démarré",
-          description: "La carte au format PDF est en cours de téléchargement"
-        });
-      } catch (error) {
-        console.error("Erreur lors du téléchargement:", error);
-        toast({
-          title: "Erreur",
-          description: "Impossible de télécharger le fichier PDF. Veuillez réessayer.",
-          variant: "destructive"
-        });
-      }
+      downloadCardPdf(cardPdfUrl, 'carte-directives-anticipees.pdf');
     } else {
       toast({
         title: "Erreur", 
@@ -102,6 +87,7 @@ export function useCardGeneration(userId: string | null) {
     isGeneratingCard,
     cardPdfUrl,
     generateCard,
-    handleDownloadCard
+    handleDownloadCard,
+    isSaving
   };
 }
