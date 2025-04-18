@@ -36,24 +36,22 @@ export function useCardGeneration(userId: string | null) {
         unique_identifier: userId
       };
       
-      // Generate the card PDF
+      // Generate the card PDF - using the new method that returns a blob URL
       const cardUrl = await PDFCardGenerator.generate(profileWithId, trustedPersons);
       
       if (cardUrl) {
         const timestamp = new Date().toISOString().replace(/[-:.]/g, '').substring(0, 14);
         const fileName = `carte-directives-${timestamp}.pdf`;
         
-        // Store the data URL for immediate use
+        // Store the blob URL for immediate use
         setCardPdfUrl(cardUrl);
         
         try {
-          // Convert data URL to Blob
+          // Fetch content from blob URL or data URL
           const response = await fetch(cardUrl);
           const blob = await response.blob();
           
           // Upload to Supabase storage in a "cards" folder with user_id in the path
-          // Ceci assure la compatibilité avec les politiques RLS qui requièrent généralement
-          // que l'utilisateur soit propriétaire du chemin de fichier via son ID
           const filePath = `${userId}/cards/${fileName}`;
           const { data, error } = await supabase
             .storage
@@ -152,15 +150,30 @@ export function useCardGeneration(userId: string | null) {
   };
 
   const handleDownloadCard = () => {
-    // Cette fonction n'est plus utilisée directement,
-    // le téléchargement est géré dans CardGenerationSection
     if (cardPdfUrl) {
-      const link = document.createElement('a');
-      link.href = cardPdfUrl;
-      link.download = 'carte-directives-anticipees.pdf';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      try {
+        // Créer un élément a pour télécharger le PDF
+        const link = document.createElement('a');
+        link.href = cardPdfUrl;
+        link.download = 'carte-directives-anticipees.pdf';
+        link.type = 'application/pdf';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (error) {
+        console.error("Erreur lors du téléchargement:", error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de télécharger le fichier PDF. Veuillez réessayer.",
+          variant: "destructive"
+        });
+      }
+    } else {
+      toast({
+        title: "Erreur", 
+        description: "Aucun PDF généré à télécharger", 
+        variant: "destructive"
+      });
     }
   };
 

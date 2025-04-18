@@ -43,41 +43,13 @@ export function CardGenerationSection({
     window.open(accessUrl, '_blank', 'noopener,noreferrer');
   };
   
-  // Fonction de téléchargement améliorée pour garantir la compatibilité PDF
+  // Fonction de téléchargement améliorée pour garantir un PDF valide qui s'ouvre
   const handleDirectDownload = () => {
     if (cardPdfUrl) {
       try {
-        // Vérifier si l'URL commence par data:application/pdf pour garantir que c'est un PDF valide
-        if (!cardPdfUrl.startsWith('data:application/pdf')) {
-          // Convertir l'URL au format PDF correct si nécessaire
-          const pdfUrl = cardPdfUrl.replace(/^data:image\/(png|jpg|jpeg);base64,/, 'data:application/pdf;base64,');
-          
-          // Créer un blob à partir de l'URL de données
-          const base64Data = pdfUrl.split(',')[1];
-          const binaryString = window.atob(base64Data);
-          const bytes = new Uint8Array(binaryString.length);
-          
-          for (let i = 0; i < binaryString.length; i++) {
-            bytes[i] = binaryString.charCodeAt(i);
-          }
-          
-          const blob = new Blob([bytes], { type: 'application/pdf' });
-          const objectUrl = URL.createObjectURL(blob);
-          
-          // Créer un élément a avec le bon attribut download
-          const link = document.createElement('a');
-          link.href = objectUrl;
-          link.download = 'carte-directives-anticipees.pdf';
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          
-          // Libérer l'URL d'objet après utilisation
-          setTimeout(() => {
-            URL.revokeObjectURL(objectUrl);
-          }, 100);
-        } else {
-          // Si c'est déjà un PDF valide, utiliser directement l'URL
+        // Vérifier si l'URL est un objet URL
+        if (cardPdfUrl.startsWith('blob:')) {
+          // Si c'est déjà un blob URL, utiliser directement
           const link = document.createElement('a');
           link.href = cardPdfUrl;
           link.download = 'carte-directives-anticipees.pdf';
@@ -85,12 +57,55 @@ export function CardGenerationSection({
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
+        } else if (cardPdfUrl.startsWith('data:')) {
+          // Si c'est une data URL, créer un blob à partir de cette URL
+          // Extraire le type MIME correct
+          let mimeType = 'application/pdf';
+          if (cardPdfUrl.includes(';base64,')) {
+            const mimeMatch = cardPdfUrl.match(/^data:([^;]+);/);
+            if (mimeMatch && mimeMatch.length > 1) {
+              mimeType = mimeMatch[1];
+            }
+          }
+          
+          fetch(cardPdfUrl)
+            .then(res => res.blob())
+            .then(blob => {
+              // Créer un blob avec le type MIME correct
+              const pdfBlob = new Blob([blob], { type: mimeType });
+              const objectUrl = URL.createObjectURL(pdfBlob);
+              
+              const link = document.createElement('a');
+              link.href = objectUrl;
+              link.download = 'carte-directives-anticipees.pdf';
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+              
+              // Libérer l'URL après téléchargement
+              setTimeout(() => URL.revokeObjectURL(objectUrl), 100);
+            })
+            .catch(err => {
+              console.error("Erreur lors de la création du blob:", err);
+              toast({
+                title: "Erreur",
+                description: "Impossible de préparer le PDF pour le téléchargement. Veuillez réessayer.",
+                variant: "destructive",
+              });
+            });
+        } else {
+          toast({
+            title: "Erreur",
+            description: "Format de fichier non reconnu. Veuillez régénérer la carte.",
+            variant: "destructive",
+          });
         }
         
         toast({
           title: "Téléchargement démarré",
           description: "La carte au format PDF est en cours de téléchargement"
         });
+        
       } catch (error) {
         console.error("Erreur lors du téléchargement du PDF:", error);
         toast({
