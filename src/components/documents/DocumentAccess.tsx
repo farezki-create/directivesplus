@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { DocumentAccessForm } from "./access/DocumentAccessForm";
 import { AccessedDocuments } from "./access/AccessedDocuments";
+import { useDocumentPreview } from "@/hooks/useDocumentPreview";
 
 interface DocumentAccessProps {
   userId: string;
@@ -18,9 +19,13 @@ export function DocumentAccess({ userId }: DocumentAccessProps) {
     allowedDocumentId?: string;
   } | null>(null);
   const [documents, setDocuments] = useState([]);
-  const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const {
+    selectedDocumentId,
+    previewUrl,
+    isPreviewOpen,
+    setIsPreviewOpen,
+    handlePreviewDocument
+  } = useDocumentPreview();
 
   const handleAccessDocument = async ({ 
     firstName, 
@@ -65,29 +70,6 @@ export function DocumentAccess({ userId }: DocumentAccessProps) {
         title: "Erreur d'accès",
         description: error.message || "Impossible d'accéder aux documents",
         variant: "destructive"
-      });
-    }
-  };
-
-  const handlePreviewDocument = async (doc: any) => {
-    try {
-      const fileUrl = doc.file_path.startsWith('http') 
-        ? doc.file_path 
-        : (await supabase.storage.from('directives_pdfs').createSignedUrl(doc.file_path, 3600)).data?.signedUrl;
-      
-      if (!fileUrl) {
-        throw new Error("Impossible de récupérer l'URL du document");
-      }
-      
-      setPreviewUrl(fileUrl);
-      setSelectedDocumentId(doc.id);
-      setIsPreviewOpen(true);
-    } catch (error) {
-      console.error("Error getting document preview URL:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de prévisualiser le document",
-        variant: "destructive",
       });
     }
   };
