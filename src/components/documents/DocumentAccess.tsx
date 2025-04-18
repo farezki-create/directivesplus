@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { DocumentAccessForm } from "./access/DocumentAccessForm";
 import { AccessedDocuments } from "./access/AccessedDocuments";
 import { useDocumentPreview } from "@/hooks/useDocumentPreview";
+import { useNavigate } from "react-router-dom";
 
 interface DocumentAccessProps {
   userId: string;
@@ -13,6 +14,7 @@ interface DocumentAccessProps {
 
 export function DocumentAccess({ userId }: DocumentAccessProps) {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const { isVerifying, verifyAccess } = useDocumentAccess();
   const [accessData, setAccessData] = useState<{
     isFullAccess: boolean;
@@ -58,12 +60,25 @@ export function DocumentAccess({ userId }: DocumentAccessProps) {
       if (docsError) throw docsError;
       setDocuments(docs);
       
+      // Show success toast
       toast({
         title: "Accès autorisé",
         description: accessResult.is_full_access 
           ? "Vous avez accès à tous les documents" 
           : "Vous avez accès au document spécifié"
       });
+
+      // Navigate to /my-documents with the access data
+      navigate("/my-documents", { 
+        state: { 
+          accessData: {
+            isFullAccess: accessResult.is_full_access,
+            allowedDocumentId: accessResult.document_id,
+            documents: docs
+          }
+        } 
+      });
+
     } catch (error: any) {
       console.error("Error accessing documents:", error);
       toast({

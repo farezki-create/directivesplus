@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Document } from "@/components/documents/types";
 import { DocumentsList } from "./DocumentsList";
@@ -7,10 +6,16 @@ import { useToast } from "@/hooks/use-toast";
 
 interface DocumentListProps {
   userId: string;
+  restrictedAccess?: {
+    isFullAccess: boolean;
+    allowedDocumentId?: string;
+    documents?: Document[];
+  };
+  initialDocuments?: Document[];
 }
 
-export function DocumentList({ userId }: DocumentListProps) {
-  const [documents, setDocuments] = useState<Document[]>([]);
+export function DocumentList({ userId, restrictedAccess, initialDocuments }: DocumentListProps) {
+  const [documents, setDocuments] = useState<Document[]>(initialDocuments || []);
   const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(null);
   const [sharingCode, setSharingCode] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -38,10 +43,10 @@ export function DocumentList({ userId }: DocumentListProps) {
   };
   
   useEffect(() => {
-    if (userId) {
+    if (userId && !initialDocuments) {
       fetchDocuments();
     }
-  }, [userId, toast]);
+  }, [userId, toast, initialDocuments]);
 
   const handleDocumentPreview = async (doc: Document) => {
     try {
@@ -88,6 +93,7 @@ export function DocumentList({ userId }: DocumentListProps) {
       isPreviewOpen={isPreviewOpen}
       setIsPreviewOpen={setIsPreviewOpen}
       onDelete={handleDocumentDelete}
+      restrictedAccess={restrictedAccess}
     />
   );
 }

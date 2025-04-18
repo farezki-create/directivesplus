@@ -1,5 +1,6 @@
+
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Card } from "@/components/ui/card";
@@ -11,9 +12,11 @@ import { useAuth } from "@/hooks/useAuth";
 
 export default function MyDocuments() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [userId, setUserId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
+  const accessData = location.state?.accessData;
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -51,16 +54,26 @@ export default function MyDocuments() {
         <div className="max-w-4xl mx-auto space-y-6">
           <h1 className="text-2xl font-bold">Mes Documents</h1>
           
-          {user ? (
+          {user || accessData ? (
             <Tabs defaultValue="documents">
               <TabsList className="grid w-full grid-cols-1">
-                <TabsTrigger value="documents">Tous mes documents</TabsTrigger>
+                <TabsTrigger value="documents">
+                  {accessData ? "Documents partagés" : "Tous mes documents"}
+                </TabsTrigger>
               </TabsList>
               
               <TabsContent value="documents" className="mt-4">
                 <Card className="p-6">
-                  <DocumentActions onAddMedicalDocument={handleAddMedicalDocument} />
-                  {userId && <DocumentList userId={userId} />}
+                  {!accessData && (
+                    <DocumentActions onAddMedicalDocument={handleAddMedicalDocument} />
+                  )}
+                  {userId && (
+                    <DocumentList 
+                      userId={userId} 
+                      restrictedAccess={accessData}
+                      initialDocuments={accessData?.documents}
+                    />
+                  )}
                 </Card>
               </TabsContent>
             </Tabs>
