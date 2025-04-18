@@ -10,6 +10,8 @@ import { DocumentActions } from "@/components/documents/DocumentActions";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { PDFPreviewDialog } from "@/components/pdf/PDFPreviewDialog";
+import { Button } from "@/components/ui/button";
+import { FileText } from "lucide-react";
 
 export default function MyDocuments() {
   const navigate = useNavigate();
@@ -38,29 +40,19 @@ export default function MyDocuments() {
     };
     checkAuth();
     
-    // Check if we have a direct document URL from external access
+    // Store document URL from external access but don't show preview automatically
     if (accessData?.documentUrl) {
       console.log("Setting up direct preview with URL:", accessData.documentUrl);
       setDirectPreviewUrl(accessData.documentUrl);
       setDirectExternalId(accessData.externalDocumentId || null);
-      setShowDirectPreview(true);
+      // Don't automatically open the preview
+      // setShowDirectPreview(true);
     }
   }, [navigate, accessData]);
 
   const handleAddMedicalDocument = () => {
     navigate("/document-viewer");
   };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        <div className="container mx-auto py-8 px-4 flex-1 flex items-center justify-center">
-          <div className="h-8 w-8 border-b-2 border-primary rounded-full animate-spin"></div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -71,6 +63,26 @@ export default function MyDocuments() {
           <h1 className="text-2xl font-bold">
             {accessData ? "Documents Partagés" : "Mes Documents"}
           </h1>
+          
+          {accessData?.documentUrl && (
+            <Card className="p-4 border-2 border-blue-200 bg-blue-50">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-medium text-blue-800">Document partagé disponible</h3>
+                  <p className="text-sm text-gray-600">
+                    Un document a été partagé avec vous. Cliquez sur le bouton pour le visualiser.
+                  </p>
+                </div>
+                <Button 
+                  onClick={() => setShowDirectPreview(true)}
+                  className="flex items-center gap-2"
+                >
+                  <FileText className="h-4 w-4" />
+                  Voir le document
+                </Button>
+              </div>
+            </Card>
+          )}
           
           {user || accessData ? (
             <Tabs defaultValue="documents">

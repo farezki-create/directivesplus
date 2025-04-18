@@ -3,6 +3,7 @@ import { Document } from "@/components/documents/types";
 import { DocumentCard } from "./DocumentCard";
 import { useAuth } from "@/hooks/useAuth";
 import { PDFPreviewDialog } from "@/components/pdf/PDFPreviewDialog";
+import { useState } from "react";
 
 interface DocumentsListProps {
   documents: Document[];

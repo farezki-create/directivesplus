@@ -63,7 +63,8 @@ export default function ExternalAccess() {
       }
       
       setPreviewUrl(url);
-      setShowPreview(true);
+      // Don't automatically show the preview
+      // setShowPreview(true);
       
       toast({
         title: "Accès autorisé",
