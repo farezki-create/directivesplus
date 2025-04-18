@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "./pdf/usePDFData";
@@ -68,7 +69,7 @@ export function PDFGenerator({ userId, onPdfGenerated, synthesisText }: PDFGener
       
       const finalSynthesisText = synthesisText || synthesis?.free_text || "";
       
-      setTimeout(() => {
+      setTimeout(async () => {
         handlePDFGeneration(
           profile,
           {
@@ -78,7 +79,7 @@ export function PDFGenerator({ userId, onPdfGenerated, synthesisText }: PDFGener
           trustedPersons,
           async (url) => {
             console.log("[PDFGenerator] PDF generated, URL status:", url ? "success" : "failed");
-            setProgress(100);
+            setProgress(80);
             
             if (url && profile) {
               try {
@@ -92,25 +93,37 @@ export function PDFGenerator({ userId, onPdfGenerated, synthesisText }: PDFGener
                 
                 setDocumentIdentifier(sanitizedIdentifier);
                 
-                // Sauvegarder automatiquement dans pdf_documents
+                // Ensure Supabase storage bucket exists
+                setProgress(85);
+                console.log("[PDFGenerator] Preparing to save document to storage...");
+                
+                // Convert data URL to Blob
                 const response = await fetch(url);
                 const blob = await response.blob();
                 const fileName = `directives-anticipees_${sanitizedIdentifier}.pdf`;
                 const filePath = `${userId}/${fileName}`;
-
-                // Upload to Supabase storage
+                
+                // Delay slightly to ensure blob is fully prepared
+                setProgress(90);
+                
+                console.log("[PDFGenerator] Uploading document to storage, size:", blob.size);
+                
+                // Upload to Supabase storage with a small delay to ensure proper processing
                 const { data: storageData, error: storageError } = await supabase
                   .storage
                   .from('directives_pdfs')
                   .upload(filePath, blob, {
                     contentType: 'application/pdf',
-                    upsert: false
+                    upsert: true // Use upsert to overwrite if exists
                   });
 
                 if (storageError) {
                   console.error("[PDFGenerator] Storage upload error:", storageError);
                   throw storageError;
                 }
+                
+                console.log("[PDFGenerator] Document uploaded successfully to storage");
+                setProgress(95);
 
                 // Save reference in database
                 const { error: dbError } = await supabase
@@ -120,7 +133,9 @@ export function PDFGenerator({ userId, onPdfGenerated, synthesisText }: PDFGener
                     file_name: fileName,
                     file_path: filePath,
                     content_type: 'application/pdf',
+                    file_size: blob.size,
                     description: `Directives anticipées de ${firstName} ${lastName}`,
+                    external_id: sanitizedIdentifier,
                     created_at: new Date().toISOString()
                   });
 
@@ -128,6 +143,9 @@ export function PDFGenerator({ userId, onPdfGenerated, synthesisText }: PDFGener
                   console.error("[PDFGenerator] Database insert error:", dbError);
                   throw dbError;
                 }
+                
+                console.log("[PDFGenerator] Document reference saved in database");
+                setProgress(98);
 
                 toast({
                   title: "Document sauvegardé",
@@ -146,17 +164,21 @@ export function PDFGenerator({ userId, onPdfGenerated, synthesisText }: PDFGener
               }
             }
             
+            setProgress(100);
+            console.log("[PDFGenerator] PDF processing completed");
+            
+            // Add a delay before finishing to ensure all storage operations are complete
             setTimeout(() => {
               setPdfUrl(url);
               if (onPdfGenerated) {
                 onPdfGenerated(url);
               }
               setIsGenerating(false);
-            }, 500);
+            }, 1000);
           },
           setShowPreview
         );
-      }, 500);
+      }, 1000); // Longer delay to ensure UI responsiveness
     } catch (error) {
       console.error("[PDFGenerator] Error during PDF generation:", error);
       toast({
