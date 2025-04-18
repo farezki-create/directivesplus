@@ -60,11 +60,24 @@ export class CardContentGenerator {
       contentY += cardDimensions.margins.lineSpacing;
     }
     
-    // Access code
+    // Access code - Now with differentiated codes for each card
     doc.setFont("helvetica", "bold");
     doc.text("CODE D'ACCÈS :", startX + 5, contentY);
     doc.setFont("helvetica", "normal");
-    doc.text(profile.unique_identifier || '', startX + 26, contentY);
+    
+    const uniqueId = profile.unique_identifier || '';
+    let codeToDisplay;
+    
+    // Generate different codes for each card
+    if (isDirectivesCard) {
+      // Pour la carte Directives Anticipées: préfixe DA-
+      codeToDisplay = `DA-${uniqueId.substring(0, 8)}`;
+    } else {
+      // Pour la carte Documents Médicaux: préfixe DM-
+      codeToDisplay = `DM-${uniqueId.substring(0, 8)}`;
+    }
+    
+    doc.text(codeToDisplay, startX + 26, contentY);
     contentY += cardDimensions.margins.lineSpacing;
 
     // URL - Removed external URL in favor of app instructions
@@ -72,6 +85,13 @@ export class CardContentGenerator {
     doc.text("ACCÈS : ", startX + 5, contentY);
     doc.setFont("helvetica", "normal");
     doc.text("Via l'application - Mes Documents", startX + 15, contentY);
+    contentY += cardDimensions.margins.lineSpacing;
+
+    // Type d'accès - Ajout d'une ligne pour clarifier le type d'accès
+    doc.setFont("helvetica", "bold");
+    doc.text("TYPE D'ACCÈS : ", startX + 5, contentY);
+    doc.setFont("helvetica", "normal");
+    doc.text(isDirectivesCard ? "Uniquement directives anticipées" : "Tous documents", startX + 25, contentY);
     contentY += cardDimensions.margins.lineSpacing;
 
     // Trusted person info for directives card

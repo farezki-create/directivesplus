@@ -95,6 +95,49 @@ export function useCardGeneration(userId: string | null) {
                 description: "Carte format bancaire générée et sauvegardée dans vos documents",
               });
               
+              // Créer deux codes d'accès différents pour les deux types d'accès
+              try {
+                // Code pour directives anticipées seulement
+                const directivesAccessCode = `DA-${userId.substring(0, 8)}`;
+                
+                // Trouver le premier document de type directives
+                const { data: directivesDoc } = await supabase
+                  .from('pdf_documents')
+                  .select('id')
+                  .ilike('description', '%directives anticipées%')
+                  .eq('user_id', userId)
+                  .order('created_at', { ascending: false })
+                  .limit(1)
+                  .single();
+                
+                if (directivesDoc) {
+                  // Sauvegarder le code d'accès pour directives seulement
+                  await supabase
+                    .from('document_access_codes')
+                    .insert({
+                      user_id: userId,
+                      access_code: directivesAccessCode,
+                      is_full_access: false,
+                      document_id: directivesDoc.id
+                    });
+                }
+                
+                // Code pour tous les documents
+                const fullAccessCode = `DM-${userId.substring(0, 8)}`;
+                
+                // Sauvegarder le code d'accès pour tous les documents
+                await supabase
+                  .from('document_access_codes')
+                  .insert({
+                    user_id: userId,
+                    access_code: fullAccessCode,
+                    is_full_access: true
+                  });
+                
+              } catch (accessCodeError) {
+                console.error("Error creating access codes:", accessCodeError);
+              }
+              
               // Attempt to save to external Scalingo HDS storage as well
               try {
                 // Upload to Scalingo HDS storage
