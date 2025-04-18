@@ -1,4 +1,3 @@
-
 import { Button } from "./ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -75,7 +74,7 @@ export const Header = () => {
             Je rédige
           </Button>
           
-          {user && (
+          {user ? (
             <>
               <Button
                 className={navButtonClass}
@@ -91,6 +90,13 @@ export const Header = () => {
                 Mes documents
               </Button>
             </>
+          ) : (
+            <Button
+              className={navButtonClass}
+              onClick={() => navigate("/my-documents")}
+            >
+              Documents partagés
+            </Button>
           )}
           
           <NavigationButtons navButtonClass={navButtonClass} />
