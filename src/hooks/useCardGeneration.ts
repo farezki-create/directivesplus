@@ -48,81 +48,97 @@ export function useCardGeneration(userId: string | null) {
         const response = await fetch(cardUrl);
         const blob = await response.blob();
         
-        // Upload to Supabase storage in a "cards" folder
-        const filePath = `cards/${fileName}`;
-        const { data, error } = await supabase
-          .storage
-          .from('directives_pdfs')
-          .upload(filePath, blob, {
-            contentType: 'application/pdf',
-            upsert: false
-          });
+        // Stocker d'abord en local dans l'application pour permettre le téléchargement immédiat
+        const objectUrl = URL.createObjectURL(blob);
+        setCardPdfUrl(objectUrl);
 
-        if (error) {
-          throw new Error(`Erreur lors du téléchargement: ${error.message}`);
-        }
-        
-        // Save reference in Supabase database with a delay to ensure storage has completed
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        const { error: dbError } = await supabase
-          .from('pdf_documents')
-          .insert({
-            user_id: userId,
-            file_name: fileName,
-            file_path: filePath,
-            content_type: 'application/pdf',
-            description: 'Carte format bancaire - Directives anticipées',
-            created_at: new Date().toISOString()
-          });
+        try {
+          // Upload to Supabase storage in a "cards" folder with user_id in the path
+          // Ceci assure la compatibilité avec les politiques RLS qui requièrent généralement
+          // que l'utilisateur soit propriétaire du chemin de fichier via son ID
+          const filePath = `${userId}/cards/${fileName}`;
+          const { data, error } = await supabase
+            .storage
+            .from('directives_pdfs')
+            .upload(filePath, blob, {
+              contentType: 'application/pdf',
+              upsert: false
+            });
 
-        if (dbError) {
-          console.error("Error saving card to documents:", dbError);
-          toast({
-            title: "Attention",
-            description: "La carte a été générée mais n'a pas pu être sauvegardée dans vos documents",
-            variant: "destructive",
-          });
-        } else {
-          toast({
-            title: "Succès",
-            description: "Carte format bancaire générée et sauvegardée dans vos documents",
-          });
-          
-          // Attempt to save to external Scalingo HDS storage as well
-          try {
-            // Upload to Scalingo HDS storage
-            const externalId = await scalingoProvider.uploadFile(
-              cardUrl,
-              fileName,
-              {
-                userId,
-                firstName: profile.first_name,
-                lastName: profile.last_name,
-                documentType: 'carte_directive',
-                createdAt: new Date().toISOString()
-              }
-            );
+          if (error) {
+            console.error("Error uploading card to storage:", error);
+            // On continue malgré l'erreur pour permettre le téléchargement local
+          } else {
+            // Save reference in Supabase database with a delay to ensure storage has completed
+            await new Promise(resolve => setTimeout(resolve, 1000));
             
-            if (externalId) {
-              console.log(`Card saved to Scalingo HDS storage with ID: ${externalId}`);
+            const { error: dbError } = await supabase
+              .from('pdf_documents')
+              .insert({
+                user_id: userId,
+                file_name: fileName,
+                file_path: filePath,
+                content_type: 'application/pdf',
+                description: 'Carte format bancaire - Directives anticipées',
+                created_at: new Date().toISOString()
+              });
+
+            if (dbError) {
+              console.error("Error saving card to documents:", dbError);
+              toast({
+                title: "Attention",
+                description: "La carte a été générée mais n'a pas pu être sauvegardée dans vos documents",
+                variant: "destructive",
+              });
+            } else {
+              toast({
+                title: "Succès",
+                description: "Carte format bancaire générée et sauvegardée dans vos documents",
+              });
               
-              // Store the external ID in the description field
-              const updatedDescription = `Carte format bancaire - Directives anticipées (ID externe: ${externalId})`;
-              
-              await supabase
-                .from('pdf_documents')
-                .update({ 
-                  description: updatedDescription,
-                  external_id: externalId
-                })
-                .eq('file_name', fileName)
-                .eq('user_id', userId);
+              // Attempt to save to external Scalingo HDS storage as well
+              try {
+                // Upload to Scalingo HDS storage
+                const externalId = await scalingoProvider.uploadFile(
+                  cardUrl,
+                  fileName,
+                  {
+                    userId,
+                    firstName: profile.first_name,
+                    lastName: profile.last_name,
+                    documentType: 'carte_directive',
+                    createdAt: new Date().toISOString()
+                  }
+                );
+                
+                if (externalId) {
+                  console.log(`Card saved to Scalingo HDS storage with ID: ${externalId}`);
+                  
+                  // Store the external ID in the description field
+                  const updatedDescription = `Carte format bancaire - Directives anticipées (ID externe: ${externalId})`;
+                  
+                  await supabase
+                    .from('pdf_documents')
+                    .update({ 
+                      description: updatedDescription,
+                      external_id: externalId
+                    })
+                    .eq('file_name', fileName)
+                    .eq('user_id', userId);
+                }
+              } catch (externalError) {
+                console.error("Error saving to external storage:", externalError);
+                // Continue even if external storage fails - we already have it in Supabase
+              }
             }
-          } catch (externalError) {
-            console.error("Error saving to external storage:", externalError);
-            // Continue even if external storage fails - we already have it in Supabase
           }
+        } catch (storageError) {
+          console.error("Storage error:", storageError);
+          // La carte est quand même générée localement
+          toast({
+            title: "Carte générée localement uniquement",
+            description: "La carte n'a pas pu être sauvegardée dans le stockage cloud, mais vous pouvez la télécharger.",
+          });
         }
       }
     } catch (error) {
