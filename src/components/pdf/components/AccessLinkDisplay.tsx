@@ -1,12 +1,12 @@
 
 import { Button } from "@/components/ui/button";
 import { Link } from "lucide-react";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 
 interface AccessLinkDisplayProps {
   accessUrl: string;
   onCopy: () => void;
-  onLinkClick: (e: React.MouseEvent<HTMLAnchorElement>) => void;
+  onLinkClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
 }
 
 export function AccessLinkDisplay({ 
@@ -14,16 +14,30 @@ export function AccessLinkDisplay({
   onCopy, 
   onLinkClick 
 }: AccessLinkDisplayProps) {
+  const navigate = useNavigate();
+  
+  const handleDocumentsClick = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent default navigation
+    
+    // Call the onLinkClick handler if provided
+    if (onLinkClick) {
+      onLinkClick(e as React.MouseEvent<HTMLAnchorElement>);
+    }
+    
+    // Direct navigation using navigate
+    navigate("/my-documents");
+  };
+  
   return (
     <div className="flex flex-col md:flex-row md:items-center gap-2 mt-3">
       <span>Accès aux documents:</span>
-      <RouterLink 
-        to="/my-documents"
-        onClick={onLinkClick}
-        className="text-blue-600 hover:text-blue-800 underline flex items-center gap-1 cursor-pointer"
+      <Button 
+        variant="link" 
+        onClick={handleDocumentsClick}
+        className="text-blue-600 hover:text-blue-800 flex items-center gap-1 p-0 h-auto font-normal underline"
       >
         Mes Documents <Link className="h-3 w-3" />
-      </RouterLink>
+      </Button>
       <Button 
         variant="ghost" 
         size="sm" 

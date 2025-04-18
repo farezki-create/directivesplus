@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +9,7 @@ import { FileText, Loader2 } from "lucide-react";
 import { useDocumentAccess } from "@/hooks/useDocumentAccess";
 import { DocumentsList } from "./DocumentsList";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 interface DocumentAccessProps {
   userId: string;
@@ -21,6 +21,7 @@ export function DocumentAccess({ userId }: DocumentAccessProps) {
   const [birthDate, setBirthDate] = useState("");
   const [accessId, setAccessId] = useState("");
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const { isVerifying, verifyAccess } = useDocumentAccess();
   const [accessData, setAccessData] = useState<{
@@ -28,6 +29,9 @@ export function DocumentAccess({ userId }: DocumentAccessProps) {
     allowedDocumentId?: string;
   } | null>(null);
   const [documents, setDocuments] = useState([]);
+  const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const handleAccessDocument = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,7 +57,6 @@ export function DocumentAccess({ userId }: DocumentAccessProps) {
         allowedDocumentId: accessResult.document_id
       });
 
-      // Fetch available documents
       const { data: docs, error: docsError } = await supabase
         .from('pdf_documents')
         .select('*')
@@ -74,6 +77,29 @@ export function DocumentAccess({ userId }: DocumentAccessProps) {
         title: "Erreur d'accès",
         description: error.message || "Impossible d'accéder aux documents",
         variant: "destructive"
+      });
+    }
+  };
+
+  const handlePreviewDocument = async (doc: any) => {
+    try {
+      const fileUrl = doc.file_path.startsWith('http') 
+        ? doc.file_path 
+        : (await supabase.storage.from('directives_pdfs').createSignedUrl(doc.file_path, 3600)).data?.signedUrl;
+      
+      if (!fileUrl) {
+        throw new Error("Impossible de récupérer l'URL du document");
+      }
+      
+      setPreviewUrl(fileUrl);
+      setSelectedDocumentId(doc.id);
+      setIsPreviewOpen(true);
+    } catch (error) {
+      console.error("Error getting document preview URL:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de prévisualiser le document",
+        variant: "destructive",
       });
     }
   };
@@ -157,15 +183,23 @@ export function DocumentAccess({ userId }: DocumentAccessProps) {
         <Card className="p-6">
           <DocumentsList
             documents={documents}
-            onPreview={() => {}}
-            selectedDocumentId={null}
+            onPreview={handlePreviewDocument}
+            selectedDocumentId={selectedDocumentId}
             sharingCode={null}
-            previewUrl={null}
-            isPreviewOpen={false}
-            setIsPreviewOpen={() => {}}
+            previewUrl={previewUrl}
+            isPreviewOpen={isPreviewOpen}
+            setIsPreviewOpen={setIsPreviewOpen}
             restrictedAccess={accessData}
           />
         </Card>
+      )}
+      
+      {previewUrl && (
+        <PDFPreviewDialog
+          open={isPreviewOpen}
+          onOpenChange={setIsPreviewOpen}
+          pdfUrl={previewUrl}
+        />
       )}
     </div>
   );

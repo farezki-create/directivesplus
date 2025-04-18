@@ -32,10 +32,16 @@ export const Header = () => {
 
   const handleWritingClick = () => {
     if (user) {
-      window.location.href = "/?writing=true";
+      navigate("/", { state: { writing: true } });
     } else {
       navigate("/auth");
     }
+  };
+  
+  // Direct navigation handlers
+  const navigateTo = (path: string) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    navigate(path);
   };
 
   const isHomePage = location.pathname === "/";
@@ -63,7 +69,7 @@ export const Header = () => {
           
           <Button
             className={navButtonClass}
-            onClick={() => window.location.href = "/"}
+            onClick={navigateTo("/")}
           >
             Accueil
           </Button>
@@ -79,14 +85,14 @@ export const Header = () => {
             <>
               <Button
                 className={navButtonClass}
-                onClick={() => navigate("/generate-pdf")}
+                onClick={navigateTo("/generate-pdf")}
               >
                 Mes directives
               </Button>
               
               <Button
                 className={navButtonClass}
-                onClick={() => navigate("/my-documents")}
+                onClick={navigateTo("/my-documents")}
               >
                 Mes documents
               </Button>
@@ -94,7 +100,7 @@ export const Header = () => {
           ) : (
             <Button
               className={navButtonClass}
-              onClick={() => navigate("/access")}
+              onClick={navigateTo("/access")}
             >
               Documents partagés
             </Button>
