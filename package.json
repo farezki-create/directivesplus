@@ -15,6 +15,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    // Your dependencies here
+  }
+}
     "@aws-sdk/s3-request-presigner": "^3.787.0",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "^1.2.0",
