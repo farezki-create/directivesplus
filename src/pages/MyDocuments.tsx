@@ -7,11 +7,15 @@ import { Card } from "@/components/ui/card";
 import { DocumentList } from "@/components/documents/DocumentList";
 import { DocumentAccess } from "@/components/documents/DocumentAccess";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { FileText } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function MyDocuments() {
   const navigate = useNavigate();
   const [userId, setUserId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuth();
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -45,24 +49,41 @@ export default function MyDocuments() {
         <div className="max-w-4xl mx-auto space-y-6">
           <h1 className="text-2xl font-bold">Mes Documents</h1>
           
-          <Tabs defaultValue="documents">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="documents">Mes documents</TabsTrigger>
-              <TabsTrigger value="access">Accéder à un document partagé</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="documents" className="mt-4">
-              <Card className="p-6">
-                {userId && <DocumentList userId={userId} />}
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="access" className="mt-4">
-              <Card className="p-6">
-                <DocumentAccess userId={userId || ""} />
-              </Card>
-            </TabsContent>
-          </Tabs>
+          {user ? (
+            <Tabs defaultValue="documents">
+              <TabsList className="grid w-full grid-cols-1">
+                <TabsTrigger value="documents">Mes documents</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="documents" className="mt-4">
+                <Card className="p-6">
+                  <div className="mb-4">
+                    <Button 
+                      onClick={() => navigate("/my-documents")}
+                      variant="outline"
+                      className="flex items-center gap-2"
+                    >
+                      <FileText className="h-4 w-4" />
+                      Accès à mes documents
+                    </Button>
+                  </div>
+                  {userId && <DocumentList userId={userId} />}
+                </Card>
+              </TabsContent>
+            </Tabs>
+          ) : (
+            <Tabs defaultValue="access">
+              <TabsList className="grid w-full grid-cols-1">
+                <TabsTrigger value="access">Accéder à un document partagé</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="access" className="mt-4">
+                <Card className="p-6">
+                  <DocumentAccess userId={userId || ""} />
+                </Card>
+              </TabsContent>
+            </Tabs>
+          )}
         </div>
       </main>
     </div>

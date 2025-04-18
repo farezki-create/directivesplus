@@ -19,6 +19,7 @@ export function useAuth() {
       setUser(session?.user ?? null);
     });
 
+    // Clean up the subscription when the component unmounts
     return () => subscription.unsubscribe();
   }, []);
 
