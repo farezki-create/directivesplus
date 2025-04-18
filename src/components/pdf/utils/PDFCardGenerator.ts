@@ -1,3 +1,4 @@
+
 import { jsPDF } from "jspdf";
 import { UserProfile, TrustedPerson } from "../types";
 import { format } from "date-fns";
@@ -83,7 +84,7 @@ export class PDFCardGenerator {
       doc.text(profile.unique_identifier, startX + 26, contentY);
       contentY += 5;
 
-      // URL fixe pour l'accès aux documents
+      // URL fixe pour l'accès aux documents - mise à jour pour directivesplus.com
       const accessUrl = "https://888b4fe0-9edf-469c-bb32-652a4b2227bb.directivesplus.com/my-documents";
         
       doc.setFont("helvetica", "bold");

@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route, HashRouter, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
@@ -52,6 +53,14 @@ function App() {
             <Route 
               path="/directives/access/*" 
               element={<Navigate to="/access" replace />} 
+            />
+            <Route 
+              path="/scalingo/my-documents/*" 
+              element={<Navigate to="/my-documents" replace />} 
+            />
+            <Route 
+              path="/directives/my-documents/*" 
+              element={<Navigate to="/my-documents" replace />} 
             />
           </Routes>
         </HashRouter>

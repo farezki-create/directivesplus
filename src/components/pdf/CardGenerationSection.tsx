@@ -25,7 +25,7 @@ export function CardGenerationSection({
   const [showInstructions, setShowInstructions] = useState(false);
   const { toast } = useToast();
   
-  // URL fixe pour l'accès aux documents
+  // URL fixe pour l'accès aux documents - mise à jour pour directivesplus.com
   const accessUrl = `https://888b4fe0-9edf-469c-bb32-652a4b2227bb.directivesplus.com/my-documents`;
   
   const handleCopyAccessLink = () => {
@@ -36,6 +36,11 @@ export function CardGenerationSection({
         description: "Le lien d'accès a été copié dans le presse-papier",
       });
     }
+  };
+
+  const handleAccessLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    // Ouvrir dans un nouvel onglet avec tous les attributs de sécurité
+    window.open(accessUrl, '_blank', 'noopener,noreferrer');
   };
   
   return (
@@ -98,6 +103,7 @@ export function CardGenerationSection({
                 href={accessUrl}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={handleAccessLinkClick}
                 className="text-blue-600 hover:text-blue-800 underline flex items-center gap-1"
               >
                 {accessUrl} <Link className="h-3 w-3" />
