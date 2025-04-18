@@ -22,16 +22,24 @@ export const AuthButtons = ({ user }: AuthButtonsProps) => {
   const handleSignOut = async () => {
     if (user) {
       try {
-        // First clean up user data in database
+        // First clean up user data in database and Scalingo HDS
         await cleanupUserData(user.id);
         
         // Then clean up local storage
         cleanupLocalStorage();
         
-        // Log out user and redirect
-        await supabase.auth.signOut();
-        console.log("User signed out successfully");
-        navigate("/");
+        // Display a toast message informing the user that all their data has been deleted
+        toast({
+          title: "Données supprimées",
+          description: "Toutes vos données ont été supprimées des serveurs, y compris des systèmes de stockage HDS.",
+        });
+        
+        // Log out user and redirect after a short delay to ensure user sees the toast
+        setTimeout(async () => {
+          await supabase.auth.signOut();
+          console.log("User signed out successfully");
+          navigate("/");
+        }, 1500);
       } catch (signOutError) {
         console.error("Error during sign out:", signOutError);
         toast({

@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { ScalingoHDSStorageProvider } from "@/utils/cloud/ScalingoHDSStorageProvider";
 
 /**
  * Handles cleanup of all user data when signing out
@@ -82,10 +83,13 @@ export const cleanupUserData = async (userId: string): Promise<boolean> => {
       console.log("PDF documents deleted from database successfully");
     }
 
-    // Step 7: Delete any PDF files from storage
+    // Step 7: Delete files from Scalingo HDS storage
+    await cleanupScalingoHDSFiles(userId);
+    
+    // Step 8: Delete any PDF files from storage
     await cleanupStorageFiles(userId);
     
-    // Step 8: Delete directives (ensure it runs last to maintain referential integrity)
+    // Step 9: Delete directives (ensure it runs last to maintain referential integrity)
     const { error: directivesError } = await supabase
       .from("directives")
       .delete()
@@ -112,6 +116,29 @@ export const cleanupUserData = async (userId: string): Promise<boolean> => {
       variant: "destructive",
     });
     return false;
+  }
+};
+
+/**
+ * Clean up files stored in Scalingo HDS
+ */
+const cleanupScalingoHDSFiles = async (userId: string): Promise<void> => {
+  try {
+    console.log("Starting Scalingo HDS cleanup for user:", userId);
+    
+    // Initialize Scalingo HDS provider
+    const scalingoProvider = new ScalingoHDSStorageProvider();
+    
+    // Delete all user files from Scalingo HDS
+    const result = await scalingoProvider.deleteUserFiles(userId);
+    
+    if (result) {
+      console.log("All user files successfully deleted from Scalingo HDS");
+    } else {
+      console.error("Failed to delete some files from Scalingo HDS");
+    }
+  } catch (error) {
+    console.error("Error during Scalingo HDS cleanup:", error);
   }
 };
 

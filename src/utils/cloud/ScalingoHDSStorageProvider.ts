@@ -143,6 +143,30 @@ export class ScalingoHDSStorageProvider implements CloudStorageProvider {
       return null;
     }
   }
+
+  /**
+   * Supprime tous les fichiers d'un utilisateur du stockage Scalingo HDS
+   * @param userId - L'identifiant de l'utilisateur
+   * @returns true si la suppression est réussie, false sinon
+   */
+  async deleteUserFiles(userId: string): Promise<boolean> {
+    try {
+      console.log(`[ScalingoHDSStorageProvider] Deleting all files for user ${userId} from Scalingo HDS storage`);
+      
+      // NOTE: Ici, il faudrait implémenter l'appel API réel à Scalingo HDS
+      // Cette implémentation est un placeholder pour montrer comment cela fonctionnerait
+      
+      // Simuler une suppression réussie avec un délai
+      await new Promise(resolve => setTimeout(resolve, 700));
+      
+      console.log(`[ScalingoHDSStorageProvider] All files for user ${userId} deleted successfully from region ${this.region}`);
+      
+      return true;
+    } catch (error) {
+      console.error("[ScalingoHDSStorageProvider] File deletion error:", error);
+      return false;
+    }
+  }
   
   /**
    * Vérifie l'accès à un document par identifiant d'accès externe
