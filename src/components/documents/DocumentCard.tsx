@@ -3,10 +3,11 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Eye, FileIcon, Share2 } from "lucide-react";
+import { Calendar, Download, Eye, FileIcon, Printer, Share2 } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
+import { printPDF } from "@/components/pdf/utils/PrintUtils";
 
 interface Document {
   id: string;
@@ -40,6 +41,36 @@ export function DocumentCard({ document, onPreview, selectedDocumentId, sharingC
     });
   };
 
+  const handleDownload = async () => {
+    try {
+      const link = document.file_path;
+      if (link) {
+        const a = document.createElement('a');
+        a.href = link;
+        a.download = document.file_name;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        
+        toast({
+          title: "Téléchargement démarré",
+          description: "Le document va être téléchargé"
+        });
+      }
+    } catch (error) {
+      console.error("Error downloading document:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de télécharger le document",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handlePrint = () => {
+    printPDF(document.file_path);
+  };
+
   return (
     <Card key={document.id} className="p-4">
       <div className="flex items-start justify-between">
@@ -71,6 +102,22 @@ export function DocumentCard({ document, onPreview, selectedDocumentId, sharingC
             title="Prévisualiser"
           >
             <Eye className="h-4 w-4" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={handlePrint}
+            title="Imprimer"
+          >
+            <Printer className="h-4 w-4" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={handleDownload}
+            title="Télécharger"
+          >
+            <Download className="h-4 w-4" />
           </Button>
           <Button 
             variant="ghost" 
