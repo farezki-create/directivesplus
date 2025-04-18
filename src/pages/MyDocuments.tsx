@@ -52,19 +52,25 @@ export default function MyDocuments() {
           {user ? (
             <Tabs defaultValue="documents">
               <TabsList className="grid w-full grid-cols-1">
-                <TabsTrigger value="documents">Mes documents</TabsTrigger>
+                <TabsTrigger value="documents">Tous mes documents</TabsTrigger>
               </TabsList>
               
               <TabsContent value="documents" className="mt-4">
                 <Card className="p-6">
-                  <div className="mb-4">
+                  <div className="mb-4 flex items-center justify-between">
+                    <div className="space-y-1">
+                      <h2 className="text-lg font-medium">Documents stockés</h2>
+                      <p className="text-sm text-muted-foreground">
+                        Vos documents PDF, Excel, texte, images et autres fichiers supportés.
+                      </p>
+                    </div>
                     <Button 
-                      onClick={() => navigate("/my-documents")}
+                      onClick={() => navigate("/document-viewer")}
                       variant="outline"
                       className="flex items-center gap-2"
                     >
                       <FileText className="h-4 w-4" />
-                      Accès à mes documents
+                      Voir tous les documents
                     </Button>
                   </div>
                   {userId && <DocumentList userId={userId} />}
