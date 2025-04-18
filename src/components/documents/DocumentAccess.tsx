@@ -8,7 +8,7 @@ import { PDFPreviewDialog } from "@/components/pdf/PDFPreviewDialog";
 import { useToast } from "@/hooks/use-toast";
 import { PDFGenerationService } from "@/utils/PDFGenerationService";
 import { ScalingoHDSStorageProvider } from "@/utils/cloud/ScalingoHDSStorageProvider";
-import { Loader2 } from "lucide-react";
+import { FileText, Loader2 } from "lucide-react";
 
 interface DocumentAccessProps {
   userId: string;
@@ -99,6 +99,7 @@ export function DocumentAccess({ userId }: DocumentAccessProps) {
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 placeholder="Prénom du patient"
+                required
               />
             </div>
             
@@ -109,6 +110,7 @@ export function DocumentAccess({ userId }: DocumentAccessProps) {
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 placeholder="Nom du patient"
+                required
               />
             </div>
           </div>
@@ -121,6 +123,7 @@ export function DocumentAccess({ userId }: DocumentAccessProps) {
               onChange={(e) => setBirthDate(e.target.value)}
               placeholder="JJ/MM/AAAA"
               type="date"
+              required
             />
           </div>
           
@@ -131,6 +134,7 @@ export function DocumentAccess({ userId }: DocumentAccessProps) {
               value={accessId}
               onChange={(e) => setAccessId(e.target.value)}
               placeholder="Entrez le code d'accès qui vous a été communiqué"
+              required
             />
           </div>
           
@@ -141,7 +145,10 @@ export function DocumentAccess({ userId }: DocumentAccessProps) {
                 Vérification en cours...
               </>
             ) : (
-              "Accéder au document"
+              <>
+                <FileText className="h-4 w-4 mr-2" />
+                Accéder au document
+              </>
             )}
           </Button>
         </form>
