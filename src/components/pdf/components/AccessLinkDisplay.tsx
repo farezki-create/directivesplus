@@ -19,7 +19,8 @@ export function AccessLinkDisplay({
       <span>Accès aux documents:</span>
       <RouterLink 
         to="/my-documents"
-        className="text-blue-600 hover:text-blue-800 underline flex items-center gap-1"
+        onClick={onLinkClick}
+        className="text-blue-600 hover:text-blue-800 underline flex items-center gap-1 cursor-pointer"
       >
         Mes Documents <Link className="h-3 w-3" />
       </RouterLink>
