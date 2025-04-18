@@ -48,18 +48,17 @@ export class PDFCardGenerator {
     );
 
     try {
-      // Generate PDF as blob with proper MIME type
-      const pdfBlob = doc.output('blob');
-      const blobUrl = URL.createObjectURL(
-        new Blob([pdfBlob], { type: 'application/pdf' })
-      );
+      // Approche améliorée pour générer un PDF valide
+      const pdfOutput = doc.output('arraybuffer');
+      const pdfBlob = new Blob([pdfOutput], { type: 'application/pdf' });
+      const blobUrl = URL.createObjectURL(pdfBlob);
       
       console.log("[PDFCardGenerator] PDF generated successfully as blob URL");
       return blobUrl;
     } catch (error) {
-      console.error("[PDFCardGenerator] Error generating PDF:", error);
+      console.error("[PDFCardGenerator] Error generating PDF as blob:", error);
       
-      // Fallback method as last resort
+      // Fallback to data URL method if blob fails
       try {
         const dataUrl = doc.output('dataurlstring');
         console.log("[PDFCardGenerator] Fallback to data URL generation");

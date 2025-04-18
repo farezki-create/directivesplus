@@ -8,6 +8,7 @@ import { ShareLinkButton } from "./components/ShareLinkButton";
 import { CardInfoMessage } from "./components/CardInfoMessage";
 import { AccessLinkDisplay } from "./components/AccessLinkDisplay";
 import { CardSectionContainer } from "./components/CardSectionContainer";
+import { useCardDownload } from "@/hooks/useCardDownload";
 
 interface CardGenerationSectionProps {
   isGenerating: boolean;
@@ -27,18 +28,17 @@ export function CardGenerationSection({
   trustedPersons
 }: CardGenerationSectionProps) {
   const { toast } = useToast();
+  const { downloadCardPdf, isDownloading } = useCardDownload();
   
   // URL fixe pour l'accès aux documents - mise à jour pour directivesplus.com
   const accessUrl = `https://888b4fe0-9edf-469c-bb32-652a4b2227bb.directivesplus.com/my-documents`;
   
   const handleCopyAccessLink = () => {
-    if (profile?.unique_identifier) {
-      navigator.clipboard.writeText(accessUrl);
-      toast({
-        title: "Lien copié",
-        description: "Le lien d'accès a été copié dans le presse-papier",
-      });
-    }
+    navigator.clipboard.writeText(accessUrl);
+    toast({
+      title: "Lien copié",
+      description: "Le lien d'accès a été copié dans le presse-papier",
+    });
   };
 
   const handleAccessLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -46,7 +46,6 @@ export function CardGenerationSection({
     window.open(accessUrl, '_blank', 'noopener,noreferrer');
   };
   
-  // Fonction de téléchargement optimisée pour garantir un PDF valide
   const handleDirectDownload = () => {
     if (!cardPdfUrl) {
       toast({
@@ -57,51 +56,8 @@ export function CardGenerationSection({
       return;
     }
     
-    try {
-      // Force le téléchargement par fetch puis blob
-      fetch(cardPdfUrl)
-        .then(response => {
-          if (!response.ok) {
-            throw new Error("Échec de récupération du PDF");
-          }
-          return response.blob();
-        })
-        .then(blob => {
-          // Créer un nouvel URL de blob avec le type MIME approprié
-          const pdfBlob = new Blob([blob], { type: 'application/pdf' });
-          const downloadUrl = URL.createObjectURL(pdfBlob);
-          
-          const link = document.createElement('a');
-          link.href = downloadUrl;
-          link.download = 'carte-directives-anticipees.pdf';
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          
-          // Libérer l'URL après téléchargement
-          setTimeout(() => URL.revokeObjectURL(downloadUrl), 100);
-          
-          toast({
-            title: "Téléchargement démarré",
-            description: "La carte au format PDF est en cours de téléchargement"
-          });
-        })
-        .catch(err => {
-          console.error("Erreur lors du téléchargement:", err);
-          toast({
-            title: "Erreur",
-            description: "Impossible de télécharger le PDF. Veuillez réessayer.",
-            variant: "destructive"
-          });
-        });
-    } catch (error) {
-      console.error("Erreur critique lors du téléchargement:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de traiter le fichier PDF. Veuillez régénérer la carte.",
-        variant: "destructive"
-      });
-    }
+    // Utiliser le hook de téléchargement amélioré
+    downloadCardPdf(cardPdfUrl, 'carte-directives-anticipees.pdf');
   };
   
   return (
@@ -116,7 +72,10 @@ export function CardGenerationSection({
         
         {cardPdfUrl && (
           <>
-            <CardDownloadButton onDownload={handleDirectDownload} />
+            <CardDownloadButton 
+              onDownload={handleDirectDownload} 
+              isDownloading={isDownloading}
+            />
             <ShareLinkButton onShare={handleCopyAccessLink} />
           </>
         )}
