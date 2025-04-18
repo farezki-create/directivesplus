@@ -29,8 +29,8 @@ export function CardGenerationSection({
   trustedPersons
 }: CardGenerationSectionProps) {
   const { toast } = useToast();
-  const { downloadCardPdf, isDownloading } = useCardDownload();
-  const [downloadError, setDownloadError] = useState<string | null>(null);
+  const { downloadCardPdf, isDownloading, downloadError, hasError } = useCardDownload();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   
   // URL fixe pour l'accès aux documents - mise à jour pour directivesplus.com
   const accessUrl = `https://888b4fe0-9edf-469c-bb32-652a4b2227bb.directivesplus.com/my-documents`;
@@ -49,7 +49,7 @@ export function CardGenerationSection({
   };
   
   const handleDirectDownload = async () => {
-    setDownloadError(null);
+    setErrorMessage(null);
     
     if (!cardPdfUrl) {
       toast({
@@ -61,23 +61,22 @@ export function CardGenerationSection({
     }
     
     console.log("[CardGenerationSection] Démarrage du téléchargement de la carte PDF");
+    console.log(`[CardGenerationSection] URL du PDF: ${cardPdfUrl.substring(0, 50)}...`);
     
     try {
       // Utiliser le hook de téléchargement amélioré
-      const success = await downloadCardPdf(cardPdfUrl, 'carte-directives-anticipees.pdf');
+      const timestamp = new Date().toISOString().replace(/[:-]/g, '').substring(0, 15);
+      const fileName = `carte-directives-${timestamp}.pdf`;
+      const success = await downloadCardPdf(cardPdfUrl, fileName);
       
       if (success) {
         console.log("[CardGenerationSection] Téléchargement initié avec succès");
-        toast({
-          title: "Téléchargement démarré",
-          description: "La carte au format PDF est en cours de téléchargement"
-        });
       } else {
-        setDownloadError("Échec du téléchargement. Veuillez réessayer.");
+        setErrorMessage("Le téléchargement n'a pas pu être effectué. Veuillez réessayer.");
       }
     } catch (error) {
       console.error("[CardGenerationSection] Erreur lors du téléchargement:", error);
-      setDownloadError(`Erreur: ${(error as Error).message}`);
+      setErrorMessage(`Erreur: ${(error as Error).message}`);
     }
   };
   
@@ -96,16 +95,20 @@ export function CardGenerationSection({
             <CardDownloadButton 
               onDownload={handleDirectDownload} 
               isDownloading={isDownloading}
+              hasError={hasError}
             />
             <ShareLinkButton onShare={handleCopyAccessLink} />
           </>
         )}
       </div>
       
-      {downloadError && (
+      {(errorMessage || downloadError) && (
         <div className="p-3 mb-4 bg-red-50 border border-red-200 rounded-md flex items-center gap-2 text-red-800">
           <AlertTriangle className="h-5 w-5 flex-shrink-0 text-red-500" />
-          <p className="text-sm">{downloadError}</p>
+          <div className="text-sm space-y-1">
+            <p>{errorMessage || downloadError}</p>
+            <p className="text-xs italic">Si le problème persiste, essayez de recharger la page et de générer à nouveau la carte.</p>
+          </div>
         </div>
       )}
       
