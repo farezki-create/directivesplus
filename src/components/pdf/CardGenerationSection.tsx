@@ -10,6 +10,7 @@ import { AccessLinkDisplay } from "./components/AccessLinkDisplay";
 import { CardSectionContainer } from "./components/CardSectionContainer";
 import { useCardDownload } from "@/hooks/useCardDownload";
 import { AlertTriangle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface CardGenerationSectionProps {
   isGenerating: boolean;
@@ -29,14 +30,17 @@ export function CardGenerationSection({
   trustedPersons
 }: CardGenerationSectionProps) {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const { downloadCardPdf, isDownloading, downloadError, hasError } = useCardDownload();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   
-  // URL simplifiée pour l'accès aux documents
-  const accessUrl = `https://documents.sante.fr/access`;
+  // URL interne pour l'accès aux documents
+  const accessUrl = `/my-documents`;
   
   const handleCopyAccessLink = () => {
-    navigator.clipboard.writeText(accessUrl);
+    // Create a full URL including origin for copying
+    const fullUrl = `${window.location.origin}${accessUrl}`;
+    navigator.clipboard.writeText(fullUrl);
     toast({
       title: "Lien copié",
       description: "Le lien d'accès a été copié dans le presse-papier",
@@ -44,8 +48,8 @@ export function CardGenerationSection({
   };
 
   const handleAccessLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    // Ouvrir dans un nouvel onglet avec tous les attributs de sécurité
-    window.open(accessUrl, '_blank', 'noopener,noreferrer');
+    e.preventDefault();
+    navigate(accessUrl);
   };
   
   const handleDirectDownload = async () => {

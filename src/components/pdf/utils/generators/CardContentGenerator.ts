@@ -67,22 +67,12 @@ export class CardContentGenerator {
     doc.text(profile.unique_identifier || '', startX + 26, contentY);
     contentY += cardDimensions.margins.lineSpacing;
 
-    // URL - Updated to use the simplified URL
-    const accessUrl = "https://documents.sante.fr/access";
+    // URL - Removed external URL in favor of app instructions
     doc.setFont("helvetica", "bold");
-    doc.text("ACCÈS EN LIGNE : ", startX + 5, contentY);
+    doc.text("ACCÈS : ", startX + 5, contentY);
     doc.setFont("helvetica", "normal");
-    
-    if (accessUrl.length > 30) {
-      const firstPart = accessUrl.substring(0, 30);
-      const secondPart = accessUrl.substring(30);
-      doc.text(firstPart, startX + 28, contentY);
-      doc.text(secondPart, startX + 28, contentY + 3);
-      contentY += cardDimensions.margins.lineSpacing + 3;
-    } else {
-      doc.text(accessUrl, startX + 28, contentY);
-      contentY += cardDimensions.margins.lineSpacing;
-    }
+    doc.text("Via l'application - Mes Documents", startX + 15, contentY);
+    contentY += cardDimensions.margins.lineSpacing;
 
     // Trusted person info for directives card
     if (isDirectivesCard && trustedPersons && trustedPersons.length > 0) {
