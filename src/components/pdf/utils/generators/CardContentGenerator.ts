@@ -67,8 +67,8 @@ export class CardContentGenerator {
     doc.text(profile.unique_identifier || '', startX + 26, contentY);
     contentY += cardDimensions.margins.lineSpacing;
 
-    // URL
-    const accessUrl = "https://888b4fe0-9edf-469c-bb32-652a4b2227bb.directivesplus.com/my-documents";
+    // URL - Updated to use the simplified URL
+    const accessUrl = "https://documents.sante.fr/access";
     doc.setFont("helvetica", "bold");
     doc.text("ACCÈS EN LIGNE : ", startX + 5, contentY);
     doc.setFont("helvetica", "normal");

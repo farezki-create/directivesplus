@@ -44,7 +44,7 @@ export class InstructionsGenerator {
       instructionY += 8;
     });
 
-    // Add sharing box
+    // Add sharing box with updated URL
     doc.setFillColor(240, 245, 255);
     doc.rect(margin, instructionY + 5, pageLayout.width - (margin * 2), 25, 'F');
     doc.setTextColor(70, 70, 120);
@@ -54,7 +54,7 @@ export class InstructionsGenerator {
     doc.setTextColor(100, 100, 100);
     doc.text([
       "1. Communiquez le code d'accès à la personne concernée",
-      "2. Dirigez-la vers https://888b4fe0-9edf-469c-bb32-652a4b2227bb.directivesplus.com/my-documents",
+      "2. Dirigez-la vers https://documents.sante.fr/access",
       "3. Elle pourra accéder à vos documents en utilisant le code d'accès et vos informations personnelles"
     ], margin, instructionY + 20);
   }

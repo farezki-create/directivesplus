@@ -64,7 +64,7 @@ function App() {
               element={<Navigate to="/my-documents" replace />} 
             />
             
-            {/* Ajout de la redirection pour le nouveau lien simplié */}
+            {/* Ajout de la redirection pour le nouveau lien simplifié */}
             <Route 
               path="/documents.sante.fr/access" 
               element={<Navigate to="/access" replace />} 
