@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { CreditCard, FileText, Share2 } from "lucide-react";
 import { UserProfile, TrustedPerson } from "./types";
@@ -27,7 +26,8 @@ export function CardGenerationSection({
   
   const handleCopyAccessLink = () => {
     if (profile?.unique_identifier) {
-      const accessUrl = `${window.location.origin}/access`;
+      const baseUrl = window.location.origin.replace(/^https?:\/\//, '');
+      const accessUrl = `${baseUrl}/access`;
       navigator.clipboard.writeText(accessUrl);
       toast({
         title: "Lien copié",

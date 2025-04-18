@@ -1,4 +1,3 @@
-
 import { jsPDF } from "jspdf";
 import { UserProfile, TrustedPerson } from "../types";
 import { format } from "date-fns";
@@ -84,11 +83,9 @@ export class PDFCardGenerator {
       doc.text(profile.unique_identifier, startX + 26, contentY);
       contentY += 5;
 
-      // Connection link with full URL - Updated to use the correct access paths
-      const baseUrl = window.location.origin;
-      const accessUrl = isDirectivesCard 
-        ? `${baseUrl}/access/directives` 
-        : `${baseUrl}/access/documents`;
+      // Mise à jour de l'URL d'accès
+      const baseUrl = window.location.origin.replace(/^https?:\/\//, '');
+      const accessUrl = `${baseUrl}/access`;
         
       doc.setFont("helvetica", "bold");
       doc.text("ACCÈS EN LIGNE : ", startX + 5, contentY);

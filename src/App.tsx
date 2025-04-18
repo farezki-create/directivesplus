@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route, HashRouter } from "react-router-dom";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
@@ -40,7 +39,7 @@ function App() {
             <Route path="/advanced-illness" element={<AdvancedIllness />} />
             <Route path="/preferences" element={<Preferences />} />
             <Route path="/my-documents" element={<MyDocuments />} />
-            <Route path="/access/:code?" element={<ExternalAccess />} />
+            <Route path="/access" element={<ExternalAccess />} />
           </Routes>
         </HashRouter>
         <Toaster />
