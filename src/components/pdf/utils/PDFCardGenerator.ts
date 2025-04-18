@@ -84,15 +84,16 @@ export class PDFCardGenerator {
       doc.text(profile.unique_identifier, startX + 26, contentY);
       contentY += 5;
 
-      // Connection link with full URL
+      // Connection link with full URL - Updated to use the correct access paths
+      const baseUrl = window.location.origin;
+      const accessUrl = isDirectivesCard 
+        ? `${baseUrl}/access/directives` 
+        : `${baseUrl}/access/documents`;
+        
       doc.setFont("helvetica", "bold");
       doc.text("ACCÈS EN LIGNE : ", startX + 5, contentY);
       doc.setFont("helvetica", "normal");
-      doc.text(
-        isDirectivesCard ? "https://directives.sante.fr/access" : "https://documents.sante.fr/access", 
-        startX + 28, 
-        contentY
-      );
+      doc.text(accessUrl, startX + 28, contentY);
       contentY += 5;
 
       // Trusted person for directives card only
@@ -172,7 +173,7 @@ export class PDFCardGenerator {
     doc.setTextColor(100, 100, 100);
     doc.text([
       "1. Communiquez le code d'accès à la personne concernée",
-      "2. Dirigez-la vers le site web indiqué sur la carte",
+      `2. Dirigez-la vers ${window.location.origin}/access`,
       "3. Elle pourra accéder à vos documents en utilisant le code d'accès et vos informations personnelles"
     ], margin, instructionY + 20);
 

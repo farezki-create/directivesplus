@@ -4,11 +4,15 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { PDFCardGenerator } from "@/components/pdf/utils/PDFCardGenerator";
 import { UserProfile, TrustedPerson } from "@/components/pdf/types";
+import { ScalingoHDSStorageProvider } from "@/utils/cloud/ScalingoHDSStorageProvider";
 
 export function useCardGeneration(userId: string | null) {
   const [isGeneratingCard, setIsGeneratingCard] = useState(false);
   const [cardPdfUrl, setCardPdfUrl] = useState<string | null>(null);
   const { toast } = useToast();
+  
+  // Initialize the Scalingo HDS Storage Provider
+  const scalingoProvider = new ScalingoHDSStorageProvider();
 
   const generateCard = async (profile: UserProfile | null, trustedPersons: TrustedPerson[]) => {
     if (!profile || !userId) {
@@ -27,6 +31,7 @@ export function useCardGeneration(userId: string | null) {
         unique_identifier: userId
       };
       
+      // Generate the card PDF
       const cardUrl = await PDFCardGenerator.generate(profileWithId, trustedPersons);
       setCardPdfUrl(cardUrl);
       
@@ -34,6 +39,20 @@ export function useCardGeneration(userId: string | null) {
         const timestamp = new Date().toISOString().replace(/[-:.]/g, '').substring(0, 14);
         const fileName = `carte-directives-${timestamp}.pdf`;
         
+        // Upload to Scalingo HDS storage
+        const externalId = await scalingoProvider.uploadFile(
+          cardUrl,
+          fileName,
+          {
+            userId,
+            firstName: profile.first_name,
+            lastName: profile.last_name,
+            documentType: 'carte_directive',
+            createdAt: new Date().toISOString()
+          }
+        );
+        
+        // Save reference in Supabase database
         const { error } = await supabase
           .from('pdf_documents')
           .insert({
@@ -57,6 +76,19 @@ export function useCardGeneration(userId: string | null) {
             title: "Succès",
             description: "Carte format bancaire générée et sauvegardée dans vos documents",
           });
+          
+          if (externalId) {
+            console.log(`Card saved to Scalingo HDS storage with ID: ${externalId}`);
+            
+            // Update the document record with external ID
+            await supabase
+              .from('pdf_documents')
+              .update({ 
+                external_id: externalId 
+              })
+              .eq('file_name', fileName)
+              .eq('user_id', userId);
+          }
         }
       }
     } catch (error) {

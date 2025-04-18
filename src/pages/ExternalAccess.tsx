@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +19,9 @@ export default function ExternalAccess() {
   const [showPreview, setShowPreview] = useState(false);
   const { toast } = useToast();
 
+  // Initialize Scalingo HDS Storage Provider
+  const scalingoProvider = new ScalingoHDSStorageProvider();
+
   const handleAccessDocument = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -33,8 +37,9 @@ export default function ExternalAccess() {
     setIsVerifying(true);
     
     try {
-      const scalingoProvider = new ScalingoHDSStorageProvider();
+      console.log("[ExternalAccess] Verifying access to document via Scalingo HDS");
       
+      // Verify access to the document
       const documentId = await scalingoProvider.verifyAccessByCode(accessId, {
         firstName,
         lastName,
@@ -45,6 +50,9 @@ export default function ExternalAccess() {
         throw new Error("Accès refusé ou document non trouvé");
       }
       
+      console.log("[ExternalAccess] Access verified, retrieving document from Scalingo HDS");
+      
+      // Retrieve the document
       const url = await scalingoProvider.retrieveFile(documentId);
       
       if (!url) {
@@ -56,10 +64,10 @@ export default function ExternalAccess() {
       
       toast({
         title: "Accès autorisé",
-        description: "Le document a été récupéré avec succès"
+        description: "Le document a été récupéré depuis Scalingo HDS avec succès"
       });
     } catch (error: any) {
-      console.error("Error accessing document:", error);
+      console.error("[ExternalAccess] Error accessing document:", error);
       toast({
         title: "Erreur d'accès",
         description: error.message || "Impossible d'accéder au document",
@@ -75,9 +83,9 @@ export default function ExternalAccess() {
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-primary">Santé+</h1>
-          <h2 className="mt-6 text-2xl font-semibold">Accès aux directives anticipées</h2>
+          <h2 className="mt-6 text-2xl font-semibold">Accès sécurisé via Scalingo HDS</h2>
           <p className="mt-2 text-gray-600">
-            Veuillez compléter le formulaire pour accéder au document partagé.
+            Veuillez compléter le formulaire pour accéder aux documents partagés.
           </p>
         </div>
         
@@ -132,7 +140,7 @@ export default function ExternalAccess() {
               {isVerifying ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Vérification en cours...
+                  Vérification en cours via Scalingo HDS...
                 </>
               ) : (
                 "Accéder au document"
@@ -141,7 +149,7 @@ export default function ExternalAccess() {
           </form>
           
           <p className="mt-4 text-sm text-center text-gray-500">
-            Cet accès est sécurisé et conforme aux normes HDS (Hébergement de Données de Santé).
+            Cet accès est sécurisé et conforme aux normes HDS (Hébergement de Données de Santé) via Scalingo HDS.
           </p>
         </Card>
       </div>
