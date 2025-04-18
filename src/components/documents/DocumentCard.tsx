@@ -8,15 +8,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
 import { printPDF } from "@/components/pdf/utils/PrintUtils";
-
-interface Document {
-  id: string;
-  file_name: string;
-  description?: string;
-  created_at: string;
-  file_path: string;
-  external_id?: string;
-}
+import { Document } from "@/components/documents/types";
 
 interface DocumentCardProps {
   document: Document;
