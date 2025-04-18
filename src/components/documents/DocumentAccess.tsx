@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +8,7 @@ import { PDFPreviewDialog } from "@/components/pdf/PDFPreviewDialog";
 import { useToast } from "@/hooks/use-toast";
 import { FileText, Loader2 } from "lucide-react";
 import { useDocumentAccess } from "@/hooks/useDocumentAccess";
-import { DocumentList } from "./DocumentList";
+import { DocumentsList } from "./DocumentsList";
 import { supabase } from "@/integrations/supabase/client";
 
 interface DocumentAccessProps {
@@ -154,7 +155,7 @@ export function DocumentAccess({ userId }: DocumentAccessProps) {
       
       {accessData && documents.length > 0 && (
         <Card className="p-6">
-          <DocumentList
+          <DocumentsList
             documents={documents}
             onPreview={() => {}}
             selectedDocumentId={null}
