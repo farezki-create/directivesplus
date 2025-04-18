@@ -36,20 +36,23 @@ export function useCardGeneration(userId: string | null) {
         unique_identifier: userId
       };
       
-      // Generate the card PDF - using the new method that returns a blob URL
+      // Generate the card PDF
       const cardUrl = await PDFCardGenerator.generate(profileWithId, trustedPersons);
       
       if (cardUrl) {
-        const timestamp = new Date().toISOString().replace(/[-:.]/g, '').substring(0, 14);
-        const fileName = `carte-directives-${timestamp}.pdf`;
-        
         // Store the blob URL for immediate use
         setCardPdfUrl(cardUrl);
         
+        const timestamp = new Date().toISOString().replace(/[-:.]/g, '').substring(0, 14);
+        const fileName = `carte-directives-${timestamp}.pdf`;
+        
         try {
-          // Fetch content from blob URL or data URL
+          // Fetch content from blob URL
           const response = await fetch(cardUrl);
+          if (!response.ok) throw new Error("Failed to fetch generated PDF");
+          
           const blob = await response.blob();
+          if (!blob || blob.size === 0) throw new Error("Generated PDF is empty");
           
           // Upload to Supabase storage in a "cards" folder with user_id in the path
           const filePath = `${userId}/cards/${fileName}`;
@@ -96,7 +99,7 @@ export function useCardGeneration(userId: string | null) {
               try {
                 // Upload to Scalingo HDS storage
                 const externalId = await scalingoProvider.uploadFile(
-                  cardUrl,
+                  blob,
                   fileName,
                   {
                     userId,
@@ -152,7 +155,7 @@ export function useCardGeneration(userId: string | null) {
   const handleDownloadCard = () => {
     if (cardPdfUrl) {
       try {
-        // Créer un élément a pour télécharger le PDF
+        // Create a download link and trigger a click
         const link = document.createElement('a');
         link.href = cardPdfUrl;
         link.download = 'carte-directives-anticipees.pdf';
@@ -160,6 +163,11 @@ export function useCardGeneration(userId: string | null) {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        
+        toast({
+          title: "Téléchargement démarré",
+          description: "La carte au format PDF est en cours de téléchargement"
+        });
       } catch (error) {
         console.error("Erreur lors du téléchargement:", error);
         toast({

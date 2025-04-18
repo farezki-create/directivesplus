@@ -19,8 +19,7 @@ export class PDFCardGenerator {
     const doc = new jsPDF({
       unit: 'mm',
       format: 'a4',
-      orientation: 'portrait',
-      compress: true
+      orientation: 'portrait'
     });
 
     // Function to generate a single card side
@@ -187,14 +186,29 @@ export class PDFCardGenerator {
     ], margin, instructionY + 20);
 
     try {
-      // Utiliser le format blob pour optimiser la compatibilité du PDF
+      // Generate PDF as blob directly with proper MIME type
       const pdfBlob = doc.output('blob');
-      // Convertir le blob en URL de données pour la prévisualisation
-      return URL.createObjectURL(pdfBlob);
+      
+      // Create a clean, reliable URL for the blob
+      const blobUrl = URL.createObjectURL(
+        new Blob([pdfBlob], { type: 'application/pdf' })
+      );
+      
+      console.log("[PDFCardGenerator] PDF generated successfully as blob URL");
+      return blobUrl;
     } catch (error) {
       console.error("[PDFCardGenerator] Error generating PDF:", error);
-      // Fallback au format dataURL si createObjectURL échoue
-      return doc.output('dataurlstring');
+      
+      // Fallback method as last resort
+      try {
+        // Try with data URL method as fallback
+        const dataUrl = doc.output('dataurlstring');
+        console.log("[PDFCardGenerator] Fallback to data URL generation");
+        return dataUrl;
+      } catch (fallbackError) {
+        console.error("[PDFCardGenerator] Complete PDF generation failure:", fallbackError);
+        throw new Error("Impossible de générer le PDF");
+      }
     }
   }
 }
