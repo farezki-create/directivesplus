@@ -6,25 +6,22 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "@/components/pdf/usePDFData";
 import { useDirectives } from "@/hooks/useDirectives";
-import { useToast } from "@/hooks/use-toast";
+import { useCardGeneration } from "@/hooks/useCardGeneration";
 import { Card } from "@/components/ui/card";
 import { Header } from "@/components/Header";
 import { useSynthesis } from "@/hooks/useSynthesis";
-import { PDFCardGenerator } from "@/components/pdf/utils/PDFCardGenerator";
-import { Button } from "@/components/ui/button";
-import { CreditCard, FileText } from "lucide-react";
+import { CardGenerationSection } from "@/components/pdf/CardGenerationSection";
 
 export default function GeneratePDF() {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [userId, setUserId] = useState<string | null>(null);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-  const [cardPdfUrl, setCardPdfUrl] = useState<string | null>(null);
-  const [isGeneratingCard, setIsGeneratingCard] = useState(false);
+  
   const { responses, synthesis, isLoading: responsesLoading } = useQuestionnairesResponses(userId || "");
   const { text: freeText } = useSynthesis(userId);
   const { profile, trustedPersons, loading: profileLoading } = usePDFData();
   const { directive, isLoading: directiveLoading, saveDirective } = useDirectives(userId || "");
+  const { isGeneratingCard, cardPdfUrl, generateCard, handleDownloadCard } = useCardGeneration(userId);
 
   // Combine all loading states
   const isLoading = responsesLoading || profileLoading || directiveLoading;
@@ -44,10 +41,7 @@ export default function GeneratePDF() {
   useEffect(() => {
     if (userId && responses && profile && !responsesLoading && !profileLoading) {
       console.log("[GeneratePDF] Saving directives");
-      
-      // Ensure we have the free text synthesis from the database
       const synthesisContent = synthesis?.free_text || freeText || "";
-      
       saveDirective.mutate({
         general: responses.general,
         lifeSupport: responses.lifeSupport,
@@ -59,80 +53,6 @@ export default function GeneratePDF() {
       });
     }
   }, [userId, responses, profile, responsesLoading, profileLoading, synthesis, freeText]);
-
-  const handleGenerateCard = async () => {
-    if (!profile || !userId) {
-      toast({
-        title: "Erreur",
-        description: "Informations de profil incomplètes",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      setIsGeneratingCard(true);
-      // Ensure unique_identifier is set
-      const profileWithId = {
-        ...profile,
-        unique_identifier: userId
-      };
-      
-      const cardUrl = await PDFCardGenerator.generate(profileWithId, trustedPersons);
-      setCardPdfUrl(cardUrl);
-      
-      // Save the card to pdf_documents
-      if (cardUrl) {
-        const timestamp = new Date().toISOString().replace(/[-:.]/g, '').substring(0, 14);
-        const fileName = `carte-directives-${timestamp}.pdf`;
-        
-        const { error } = await supabase
-          .from('pdf_documents')
-          .insert({
-            user_id: userId,
-            file_name: fileName,
-            file_path: `cards/${fileName}`,
-            content_type: 'application/pdf',
-            description: 'Carte format bancaire - Directives anticipées',
-            created_at: new Date().toISOString()
-          });
-
-        if (error) {
-          console.error("Error saving card to documents:", error);
-          toast({
-            title: "Attention",
-            description: "La carte a été générée mais n'a pas pu être sauvegardée dans vos documents",
-            variant: "destructive",
-          });
-        } else {
-          toast({
-            title: "Succès",
-            description: "Carte format bancaire générée et sauvegardée dans vos documents",
-          });
-        }
-      }
-    } catch (error) {
-      console.error("[GeneratePDF] Error generating card:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de générer la carte format bancaire",
-        variant: "destructive",
-      });
-    } finally {
-      setIsGeneratingCard(false);
-    }
-  };
-
-  const handleDownloadCard = () => {
-    if (cardPdfUrl) {
-      const link = document.createElement('a');
-      link.href = cardPdfUrl;
-      link.download = 'carte-directives-anticipees.pdf';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-  };
 
   if (!userId) {
     return null;
@@ -172,34 +92,14 @@ export default function GeneratePDF() {
                   />
                 </div>
                 
-                <div className="border-t pt-6">
-                  <h3 className="text-lg font-semibold mb-3">Carte format bancaire</h3>
-                  <p className="text-sm text-gray-500 mb-4">
-                    Générez une carte au format bancaire contenant vos informations principales pour un accès facile à vos directives.
-                  </p>
-                  
-                  <div className="flex flex-wrap gap-3">
-                    <Button 
-                      onClick={handleGenerateCard} 
-                      disabled={isGeneratingCard}
-                      className="flex items-center gap-2"
-                    >
-                      <CreditCard className="h-4 w-4" />
-                      {isGeneratingCard ? 'Génération...' : 'Générer la carte'}
-                    </Button>
-                    
-                    {cardPdfUrl && (
-                      <Button
-                        onClick={handleDownloadCard}
-                        variant="outline"
-                        className="flex items-center gap-2"
-                      >
-                        <FileText className="h-4 w-4" />
-                        Télécharger la carte
-                      </Button>
-                    )}
-                  </div>
-                </div>
+                <CardGenerationSection
+                  isGenerating={isGeneratingCard}
+                  cardPdfUrl={cardPdfUrl}
+                  onGenerate={generateCard}
+                  onDownload={handleDownloadCard}
+                  profile={profile}
+                  trustedPersons={trustedPersons}
+                />
               </div>
             )}
           </Card>
