@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,9 +5,8 @@ import { Header } from "@/components/Header";
 import { Card } from "@/components/ui/card";
 import { DocumentList } from "@/components/documents/DocumentList";
 import { DocumentAccess } from "@/components/documents/DocumentAccess";
+import { DocumentActions } from "@/components/documents/DocumentActions";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { FileText } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function MyDocuments() {
@@ -29,6 +27,10 @@ export default function MyDocuments() {
     };
     checkAuth();
   }, [navigate]);
+
+  const handleAddMedicalDocument = () => {
+    navigate("/document-viewer");
+  };
 
   if (isLoading) {
     return (
@@ -57,22 +59,7 @@ export default function MyDocuments() {
               
               <TabsContent value="documents" className="mt-4">
                 <Card className="p-6">
-                  <div className="mb-4 flex items-center justify-between">
-                    <div className="space-y-1">
-                      <h2 className="text-lg font-medium">Documents stockés</h2>
-                      <p className="text-sm text-muted-foreground">
-                        Vos documents PDF, Excel, texte, images et autres fichiers supportés.
-                      </p>
-                    </div>
-                    <Button 
-                      onClick={() => navigate("/document-viewer")}
-                      variant="outline"
-                      className="flex items-center gap-2"
-                    >
-                      <FileText className="h-4 w-4" />
-                      Voir tous les documents
-                    </Button>
-                  </div>
+                  <DocumentActions onAddMedicalDocument={handleAddMedicalDocument} />
                   {userId && <DocumentList userId={userId} />}
                 </Card>
               </TabsContent>
