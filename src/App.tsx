@@ -42,6 +42,7 @@ function App() {
             <Route path="/my-documents" element={<MyDocuments />} />
             <Route path="/access" element={<ExternalAccess />} />
             
+            {/* Redirection des anciens chemins vers les nouveaux */}
             <Route 
               path="/scalingo-directives/access/*" 
               element={<Navigate to="/access" replace />} 
@@ -61,6 +62,12 @@ function App() {
             <Route 
               path="/directives/my-documents/*" 
               element={<Navigate to="/my-documents" replace />} 
+            />
+            
+            {/* Ajout de la redirection pour le nouveau lien simplié */}
+            <Route 
+              path="/documents.sante.fr/access" 
+              element={<Navigate to="/access" replace />} 
             />
           </Routes>
         </HashRouter>

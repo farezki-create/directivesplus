@@ -32,8 +32,8 @@ export function CardGenerationSection({
   const { downloadCardPdf, isDownloading, downloadError, hasError } = useCardDownload();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   
-  // URL fixe pour l'accès aux documents - mise à jour pour directivesplus.com
-  const accessUrl = `https://888b4fe0-9edf-469c-bb32-652a4b2227bb.directivesplus.com/my-documents`;
+  // URL simplifiée pour l'accès aux documents
+  const accessUrl = `https://documents.sante.fr/access`;
   
   const handleCopyAccessLink = () => {
     navigator.clipboard.writeText(accessUrl);
