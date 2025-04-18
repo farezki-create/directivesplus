@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ScalingoHDSStorageProvider } from "@/utils/cloud/ScalingoHDSStorageProvider";
 import { Loader2, FileText } from "lucide-react";
 import { Header } from "@/components/Header";
+import { useNavigate } from "react-router-dom";
 
 export default function ExternalAccess() {
   const [firstName, setFirstName] = useState("");
@@ -19,6 +20,7 @@ export default function ExternalAccess() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   // Initialize Scalingo HDS Storage Provider
   const scalingoProvider = new ScalingoHDSStorageProvider();
@@ -67,6 +69,18 @@ export default function ExternalAccess() {
         title: "Accès autorisé",
         description: "Le document a été récupéré depuis Scalingo HDS avec succès"
       });
+
+      // Instead of showing the preview directly, redirect to a dedicated document viewer page
+      // with the URL as state
+      navigate("/my-documents", { 
+        state: { 
+          accessData: {
+            documentUrl: url,
+            externalDocumentId: accessId
+          }
+        }
+      });
+
     } catch (error: any) {
       console.error("[ExternalAccess] Error accessing document:", error);
       toast({

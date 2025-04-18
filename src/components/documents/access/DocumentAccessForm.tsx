@@ -3,106 +3,138 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
-import { FileText, Loader2 } from "lucide-react";
+import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { Loader2 } from "lucide-react";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+const accessFormSchema = z.object({
+  firstName: z.string().min(1, "Le prénom est requis"),
+  lastName: z.string().min(1, "Le nom est requis"),
+  birthDate: z.string().min(1, "La date de naissance est requise"),
+  accessId: z.string().min(1, "Le code d'accès est requis")
+});
+
+type AccessFormData = z.infer<typeof accessFormSchema>;
 
 interface DocumentAccessFormProps {
-  onSubmit: (formData: {
-    firstName: string;
-    lastName: string;
-    birthDate: string;
-    accessId: string;
-  }) => Promise<void>;
+  onSubmit: (data: AccessFormData) => void;
   isVerifying: boolean;
 }
 
-export function DocumentAccessForm({ onSubmit, isVerifying }: DocumentAccessFormProps) {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [birthDate, setBirthDate] = useState("");
-  const [accessId, setAccessId] = useState("");
-  const { toast } = useToast();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!firstName || !lastName || !birthDate || !accessId) {
-      toast({
-        title: "Formulaire incomplet",
-        description: "Veuillez remplir tous les champs",
-        variant: "destructive"
-      });
-      return;
+export function DocumentAccessForm({ 
+  onSubmit, 
+  isVerifying 
+}: DocumentAccessFormProps) {
+  const form = useForm<AccessFormData>({
+    resolver: zodResolver(accessFormSchema),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      birthDate: "",
+      accessId: ""
     }
+  });
 
-    await onSubmit({ firstName, lastName, birthDate, accessId });
+  const handleSubmit = (data: AccessFormData) => {
+    onSubmit(data);
   };
 
   return (
-    <Card className="p-6">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="firstName">Prénom</Label>
-            <Input 
-              id="firstName"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              placeholder="Prénom du patient"
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="lastName">Nom</Label>
-            <Input
-              id="lastName"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              placeholder="Nom du patient"
-              required
-            />
-          </div>
-        </div>
-        
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="birthDate">Date de naissance</Label>
-          <Input
-            id="birthDate"
-            value={birthDate}
-            onChange={(e) => setBirthDate(e.target.value)}
-            placeholder="JJ/MM/AAAA"
-            type="date"
-            required
+          <FormField
+            control={form.control}
+            name="firstName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Prénom du patient</FormLabel>
+                <FormControl>
+                  <Input 
+                    placeholder="Prénom" 
+                    {...field} 
+                    disabled={isVerifying}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
           />
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="accessId">Code d'accès</Label>
-          <Input
-            id="accessId"
-            value={accessId}
-            onChange={(e) => setAccessId(e.target.value)}
-            placeholder="Entrez le code d'accès qui vous a été communiqué"
-            required
+          <FormField
+            control={form.control}
+            name="lastName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nom du patient</FormLabel>
+                <FormControl>
+                  <Input 
+                    placeholder="Nom" 
+                    {...field}
+                    disabled={isVerifying} 
+                  />
+                </FormControl>
+              </FormItem>
+            )}
           />
         </div>
         
-        <Button type="submit" className="w-full" disabled={isVerifying}>
+        <div className="space-y-2">
+          <FormField
+            control={form.control}
+            name="birthDate"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Date de naissance</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="date" 
+                    {...field}
+                    disabled={isVerifying} 
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <FormField
+            control={form.control}
+            name="accessId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Code d'accès</FormLabel>
+                <FormControl>
+                  <Input 
+                    placeholder="Code d'accès" 
+                    {...field}
+                    disabled={isVerifying} 
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        </div>
+        
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={isVerifying}
+        >
           {isVerifying ? (
             <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Vérification en cours...
             </>
           ) : (
-            <>
-              <FileText className="h-4 w-4 mr-2" />
-              Accéder aux documents
-            </>
+            "Accéder au document"
           )}
         </Button>
       </form>
-    </Card>
+    </Form>
   );
 }

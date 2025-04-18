@@ -9,6 +9,7 @@ import { DocumentAccess } from "@/components/documents/DocumentAccess";
 import { DocumentActions } from "@/components/documents/DocumentActions";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
+import { PDFPreviewDialog } from "@/components/pdf/PDFPreviewDialog";
 
 export default function MyDocuments() {
   const navigate = useNavigate();
@@ -17,19 +18,34 @@ export default function MyDocuments() {
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
   const accessData = location.state?.accessData;
+  
+  // For direct document preview from external access
+  const [showDirectPreview, setShowDirectPreview] = useState(false);
+  const [directPreviewUrl, setDirectPreviewUrl] = useState<string | null>(null);
+  const [directExternalId, setDirectExternalId] = useState<string | null>(null);
+  
+  console.log("Access data from location:", accessData);
 
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) {
+      if (!session?.user && !accessData) {
         navigate("/auth");
         return;
       }
-      setUserId(session.user.id);
+      setUserId(session?.user?.id || null);
       setIsLoading(false);
     };
     checkAuth();
-  }, [navigate]);
+    
+    // Check if we have a direct document URL from external access
+    if (accessData?.documentUrl) {
+      console.log("Setting up direct preview with URL:", accessData.documentUrl);
+      setDirectPreviewUrl(accessData.documentUrl);
+      setDirectExternalId(accessData.externalDocumentId || null);
+      setShowDirectPreview(true);
+    }
+  }, [navigate, accessData]);
 
   const handleAddMedicalDocument = () => {
     navigate("/document-viewer");
@@ -52,7 +68,9 @@ export default function MyDocuments() {
       
       <main className="flex-1 container mx-auto py-8 px-4">
         <div className="max-w-4xl mx-auto space-y-6">
-          <h1 className="text-2xl font-bold">Mes Documents</h1>
+          <h1 className="text-2xl font-bold">
+            {accessData ? "Documents Partagés" : "Mes Documents"}
+          </h1>
           
           {user || accessData ? (
             <Tabs defaultValue="documents">
@@ -92,6 +110,15 @@ export default function MyDocuments() {
           )}
         </div>
       </main>
+      
+      {showDirectPreview && directPreviewUrl && (
+        <PDFPreviewDialog
+          open={showDirectPreview}
+          onOpenChange={setShowDirectPreview}
+          pdfUrl={directPreviewUrl}
+          externalDocumentId={directExternalId}
+        />
+      )}
     </div>
   );
 }

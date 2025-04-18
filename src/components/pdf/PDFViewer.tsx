@@ -10,7 +10,19 @@ export const PDFViewer = ({ pdfUrl }: PDFViewerProps) => {
 
   useEffect(() => {
     if (pdfUrl) {
+      // Use Google PDF Viewer as a fallback for better compatibility
+      const googleViewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(pdfUrl)}&embedded=true`;
+      
+      // First try to use the direct URL, the browser might have a PDF viewer
       setViewerUrl(pdfUrl);
+      
+      // If direct URL doesn't work after 3 seconds, switch to Google Viewer
+      const fallbackTimer = setTimeout(() => {
+        console.log("Switching to Google PDF Viewer fallback");
+        setViewerUrl(googleViewerUrl);
+      }, 3000);
+      
+      return () => clearTimeout(fallbackTimer);
     }
   }, [pdfUrl]);
 
@@ -27,6 +39,7 @@ export const PDFViewer = ({ pdfUrl }: PDFViewerProps) => {
       src={viewerUrl}
       className="w-full h-full rounded-lg"
       title="PDF Viewer"
+      sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation"
     />
   );
 };

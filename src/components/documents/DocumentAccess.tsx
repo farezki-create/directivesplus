@@ -41,24 +41,38 @@ export function DocumentAccess({ userId }: DocumentAccessProps) {
     accessId: string;
   }) => {
     try {
+      console.log("Verifying access with:", { firstName, lastName, birthDate, accessId });
       const accessResult = await verifyAccess(accessId, firstName, lastName, birthDate);
       
       if (!accessResult) {
         throw new Error("Accès refusé ou document non trouvé");
       }
 
+      console.log("Access result:", accessResult);
       setAccessData({
         isFullAccess: accessResult.is_full_access,
         allowedDocumentId: accessResult.document_id
       });
 
-      const { data: docs, error: docsError } = await supabase
-        .from('pdf_documents')
-        .select('*')
-        .eq('user_id', userId);
+      // Fetch documents
+      let docsQuery = supabase.from('pdf_documents').select('*');
+      
+      // If not full access, restrict to the specific document
+      if (!accessResult.is_full_access && accessResult.document_id) {
+        docsQuery = docsQuery.eq('id', accessResult.document_id);
+      } else {
+        docsQuery = docsQuery.eq('user_id', userId);
+      }
+      
+      const { data: docs, error: docsError } = await docsQuery;
 
-      if (docsError) throw docsError;
-      setDocuments(docs);
+      if (docsError) {
+        console.error("Error fetching documents:", docsError);
+        throw docsError;
+      }
+      
+      console.log("Retrieved documents:", docs);
+      setDocuments(docs || []);
       
       // Show success toast
       toast({
