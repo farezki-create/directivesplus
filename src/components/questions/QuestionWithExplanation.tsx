@@ -36,12 +36,18 @@ export function QuestionWithExplanation({
     return null;
   }
 
-  // Get the explanation using the utility function
-  const explanation = getQuestionExplanation(question.id, language, questionText);
+  // First try to get explanation directly from the database record
+  let explanation = question.explanation || '';
+  
+  // If no explanation found directly, try using the utility function as a fallback
+  if (!explanation || explanation.trim() === '') {
+    explanation = getQuestionExplanation(question.id, language, questionText);
+  }
   
   // Debug logging
   console.log(`[QuestionWithExplanation] Question: "${questionText.substring(0, 30)}..."`, 
-    `Has explanation: ${!!explanation}, Length: ${explanation?.length || 0}`);
+    `Direct explanation: ${!!question.explanation}, Length: ${question.explanation?.length || 0}`,
+    `Final explanation: ${!!explanation}, Length: ${explanation?.length || 0}`);
 
   return (
     <div className="mb-8">
