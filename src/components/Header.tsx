@@ -38,9 +38,10 @@ export const Header = () => {
     }
   };
   
-  // Direct navigation handlers
+  // Direct navigation handlers - use callback to prevent unwanted reactions
   const navigateTo = (path: string) => (e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation(); // Prevent event bubbling
     navigate(path);
   };
 
@@ -115,4 +116,4 @@ export const Header = () => {
       </div>
     </header>
   );
-};
+}

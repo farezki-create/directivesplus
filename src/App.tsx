@@ -73,6 +73,12 @@ function App() {
               path="/documents/*" 
               element={<Navigate to="/my-documents" replace />} 
             />
+            
+            {/* Catch-all redirect for data URLs that might be clicked accidentally */}
+            <Route 
+              path="data:application/*" 
+              element={<Navigate to="/my-documents" replace />} 
+            />
           </Routes>
         </HashRouter>
         <Toaster />

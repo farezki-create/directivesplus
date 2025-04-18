@@ -24,7 +24,7 @@ export function AccessLinkDisplay({
       onLinkClick(e as React.MouseEvent<HTMLAnchorElement>);
     }
     
-    // Direct navigation using navigate
+    // Navigate to the documents page
     navigate("/my-documents");
   };
   
