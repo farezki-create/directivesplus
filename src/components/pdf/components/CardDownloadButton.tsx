@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { FileText } from "lucide-react";
+import { FileText, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface CardDownloadButtonProps {
@@ -16,8 +16,17 @@ export function CardDownloadButton({ onDownload, isDownloading = false }: CardDo
       className="flex items-center gap-2"
       disabled={isDownloading}
     >
-      <FileText className="h-4 w-4" />
-      {isDownloading ? "Téléchargement..." : "Télécharger la carte"}
+      {isDownloading ? (
+        <>
+          <div className="h-4 w-4 border-t-2 border-b-2 border-primary rounded-full animate-spin"></div>
+          Téléchargement...
+        </>
+      ) : (
+        <>
+          <Download className="h-4 w-4" />
+          Télécharger la carte
+        </>
+      )}
     </Button>
   );
 }
