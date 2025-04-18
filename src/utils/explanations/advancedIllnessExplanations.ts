@@ -1,57 +1,56 @@
-
 // Advanced Illness Questions Explanations (English)
 export const advancedIllnessExplanationsEN = [
   {
     id: "1",
-    explanation: "This question concerns your willingness to be treated in intensive care if your health condition requires it. Intensive care offers intensive treatments for seriously ill patients, often with invasive procedures."
+    explanation: "This question asks if you would want to be transferred to intensive care for intensive treatments (such as ventilation, continuous monitoring, heavy treatments) if your condition worsens. Consider your priorities: do you want everything possible done to survive, or would you prefer to avoid very intensive care that might be difficult to endure?"
   },
   {
     id: "2",
-    explanation: "Intubation involves inserting a tube into your trachea to help you breathe, often connected to a ventilator. This question asks if, due to your existing health problems, you want to avoid this procedure."
+    explanation: "Intubation involves inserting a breathing tube connected to a ventilator. This question asks whether, given your current health issues, you would prefer to avoid this procedure which can be invasive but sometimes necessary for survival."
   },
   {
     id: "3",
-    explanation: "This question concerns your willingness to take medications, including sedatives, while remaining lucid and able to communicate. Sedatives can manage pain or anxiety but may affect your mental clarity."
+    explanation: "Some medications, including sedatives, can help manage pain or anxiety but might affect your alertness. This question asks about your preference for medications while maintaining consciousness and ability to communicate."
   },
   {
     id: "4",
-    explanation: "This question concerns the use of sedatives to manage your suffering, accepting possible impacts on your health, such as respiratory depression."
+    explanation: "This concerns accepting sedatives to manage your suffering, even if they might affect your breathing or other body functions. It's about balancing comfort with potential health impacts."
   },
   {
     id: "5",
-    explanation: "This concerns deep and continuous sedation at the end of life, often to manage severe symptoms, rendering you unconscious. This affects your ability to interact with your loved ones; it's a personal choice based on your values."
+    explanation: "Deep and continuous sedation at the end of life means being kept unconscious to manage severe symptoms. This affects your ability to interact with loved ones, but prevents suffering. It's a personal choice based on your values and priorities."
   },
   {
     id: "6",
-    explanation: "This question concerns a transition to palliative care, stopping examinations and treatments to focus on comfort."
+    explanation: "This asks if you want to stop diagnostic tests and treatments to focus solely on comfort care when treatments are no longer effective. This means shifting from trying to cure to ensuring comfort."
   },
   {
     id: "7",
-    explanation: "A vegetative state means being awake but without consciousness. This question asks if you want to stop treatments that would keep you in such a state."
+    explanation: "A vegetative state means being awake but without awareness or ability to interact meaningfully. This question asks if you want to stop treatments that would maintain you in such a condition."
   },
   {
     id: "8",
-    explanation: "This concerns stopping unnecessary treatments if your condition worsens, to focus on comfort."
+    explanation: "If your condition deteriorates, some medications or tests might not improve your situation. This asks if you want to stop such interventions to focus on comfort."
   },
   {
     id: "9",
-    explanation: "Total dependence means not being able to perform daily activities without help, with no hope of recovery. This is a serious decision; discuss it with your family and doctors."
+    explanation: "Total dependence means needing help for all daily activities with no hope of improvement. This is a serious decision about quality of life versus longevity. Discuss with your family and doctors."
   },
   {
     id: "10",
-    explanation: "This concerns reducing or stopping hydration in case of severe suffering and worsening of your illness, for comfort. Discuss the benefits and risks with your medical team."
+    explanation: "When suffering is severe and illness is progressing, reducing hydration can sometimes increase comfort. This is about your preferences regarding hydration in end-stage illness. Discuss benefits and risks with your medical team."
   },
   {
     id: "11",
-    explanation: "Palliative care focuses on comfort. Check feasibility with your family and care services (treating physician, home hospitalization, mobile palliative care team)."
+    explanation: "Palliative care at home focuses on comfort and quality of life. Consider if this aligns with your wishes and discuss feasibility with your family and care providers (primary physician, home care services, mobile palliative care team)."
   },
   {
     id: "12",
-    explanation: "This concerns your preference for the place and atmosphere of your death. It's a personal choice based on comfort and available support."
+    explanation: "This concerns your preferred environment for end of life - at home with loved ones in a familiar setting. Consider practical aspects and available support systems."
   },
   {
     id: "13",
-    explanation: "This reflects a general desire to die without excessive pain."
+    explanation: "This reflects a general desire for a peaceful death without excessive suffering, prioritizing comfort and dignity in end-of-life care."
   }
 ];
 
