@@ -1,4 +1,3 @@
-
 import { jsPDF } from "jspdf";
 import { pageLayout } from "../constants/cardDimensions";
 import { pdfStyles } from "../styles/pdfStyles";
