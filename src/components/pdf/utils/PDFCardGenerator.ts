@@ -3,7 +3,6 @@ import { jsPDF } from "jspdf";
 import { UserProfile, TrustedPerson } from "../types";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { QRCode } from "qrcode";
 
 export class PDFCardGenerator {
   static async generate(profile: UserProfile, trustedPersons: TrustedPerson[]) {
@@ -62,9 +61,9 @@ export class PDFCardGenerator {
       
       if (fullName) {
         doc.setFont("helvetica", "bold");
-        doc.text(`NOM / PRÉNOM : `, startX + 5, contentY);
+        doc.text("NOM / PRÉNOM : ", startX + 5, contentY);
         doc.setFont("helvetica", "normal");
-        doc.text(`${fullName}`, startX + 28, contentY);
+        doc.text(fullName, startX + 28, contentY);
         contentY += 5;
       }
 
@@ -72,38 +71,37 @@ export class PDFCardGenerator {
       if (profile.birth_date) {
         const formattedDate = format(new Date(profile.birth_date), "dd/MM/yyyy", { locale: fr });
         doc.setFont("helvetica", "bold");
-        doc.text(`DATE DE NAISSANCE : `, startX + 5, contentY);
+        doc.text("DATE DE NAISSANCE : ", startX + 5, contentY);
         doc.setFont("helvetica", "normal");
-        doc.text(`${formattedDate}`, startX + 33, contentY);
+        doc.text(formattedDate, startX + 33, contentY);
         contentY += 5;
       }
       
       // Access code (unique identifier)
       doc.setFont("helvetica", "bold");
-      doc.text(`CODE D'ACCÈS :`, startX + 5, contentY);
+      doc.text("CODE D'ACCÈS :", startX + 5, contentY);
       doc.setFont("helvetica", "normal");
-      doc.text(`${profile.unique_identifier}`, startX + 26, contentY);
+      doc.text(profile.unique_identifier, startX + 26, contentY);
       contentY += 5;
 
-      // Connection link
+      // Connection link with full URL
       doc.setFont("helvetica", "bold");
-      doc.text(`LIEN : `, startX + 5, contentY);
+      doc.text("ACCÈS EN LIGNE : ", startX + 5, contentY);
       doc.setFont("helvetica", "normal");
       doc.text(
-        isDirectivesCard ? "directives.sante.fr/access" : "documents.sante.fr/access", 
-        startX + 15, 
+        isDirectivesCard ? "https://directives.sante.fr/access" : "https://documents.sante.fr/access", 
+        startX + 28, 
         contentY
       );
-      doc.setTextColor(0, 0, 0);
       contentY += 5;
 
       // Trusted person for directives card only
       if (isDirectivesCard && trustedPersons && trustedPersons.length > 0) {
         const person = trustedPersons[0];
         doc.setFont("helvetica", "bold");
-        doc.text(`PERSONNE DE CONFIANCE : `, startX + 5, contentY);
+        doc.text("PERSONNE DE CONFIANCE : ", startX + 5, contentY);
         doc.setFont("helvetica", "normal");
-        doc.text(`${person.name}`, startX + 42, contentY);
+        doc.text(person.name, startX + 42, contentY);
         contentY += 5;
       }
 
@@ -131,10 +129,8 @@ export class PDFCardGenerator {
     doc.setTextColor(100, 100, 100);
     doc.text("- - - - - - - - - - - Pliez ici - - - - - - - - - - -", pageWidth / 2, yPosition - 10, { align: 'center' });
 
-    // Add dotted line for folding (using individual small lines instead of setLineDash)
+    // Draw a series of small lines to create a dotted effect for folding line
     doc.setDrawColor(150, 150, 150);
-    
-    // Draw a series of small lines to create a dotted effect
     const lineLength = 2;
     const gapLength = 2;
     let currentX = margin;
@@ -156,7 +152,8 @@ export class PDFCardGenerator {
       "1. Découpez le long du contour extérieur",
       "2. Pliez selon la ligne pointillée",
       "3. Complétez la date et signez les deux cartes",
-      "4. Conservez cette carte sur vous"
+      "4. Conservez cette carte sur vous",
+      "5. Partagez le code d'accès avec les personnes concernées"
     ];
     
     let instructionY = yPosition + cardHeight + 30;
@@ -164,6 +161,20 @@ export class PDFCardGenerator {
       doc.text(instruction, margin, instructionY);
       instructionY += 8;
     });
+
+    // Add sharing instructions
+    doc.setFillColor(240, 245, 255);
+    doc.rect(margin, instructionY + 5, pageWidth - (margin * 2), 25, 'F');
+    doc.setTextColor(70, 70, 120);
+    doc.setFont("helvetica", "bold");
+    doc.text("Comment partager vos directives en ligne :", margin, instructionY + 15);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(100, 100, 100);
+    doc.text([
+      "1. Communiquez le code d'accès à la personne concernée",
+      "2. Dirigez-la vers le site web indiqué sur la carte",
+      "3. Elle pourra accéder à vos documents en utilisant le code d'accès et vos informations personnelles"
+    ], margin, instructionY + 20);
 
     return doc.output('dataurlstring');
   }
