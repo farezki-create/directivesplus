@@ -45,12 +45,13 @@ export function DocumentCard({ document, onPreview, selectedDocumentId, sharingC
     try {
       const link = document.file_path;
       if (link) {
-        const a = document.createElement('a');
+        // Using the global window.document instead of the Document interface
+        const a = window.document.createElement('a');
         a.href = link;
         a.download = document.file_name;
-        document.body.appendChild(a);
+        window.document.body.appendChild(a);
         a.click();
-        document.body.removeChild(a);
+        window.document.body.removeChild(a);
         
         toast({
           title: "Téléchargement démarré",
