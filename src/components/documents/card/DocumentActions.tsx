@@ -1,14 +1,12 @@
 
 import { Button } from "@/components/ui/button";
-import { Eye, Printer, Download, Trash2 } from "lucide-react";
+import { Eye, Trash2 } from "lucide-react";
 import { Document } from "@/components/documents/types";
 
 interface DocumentActionsProps {
   document: Document;
   isAuthenticated: boolean;
   onPreview: (document: Document) => void;
-  onPrint: () => void;
-  onDownload: () => void;
   onDelete?: () => void;
 }
 
@@ -16,8 +14,6 @@ export function DocumentActions({
   document,
   isAuthenticated,
   onPreview,
-  onPrint,
-  onDownload,
   onDelete
 }: DocumentActionsProps) {
   return (
@@ -29,22 +25,6 @@ export function DocumentActions({
         title="Prévisualiser"
       >
         <Eye className="h-4 w-4" />
-      </Button>
-      <Button 
-        variant="ghost" 
-        size="icon"
-        onClick={onPrint}
-        title="Imprimer"
-      >
-        <Printer className="h-4 w-4" />
-      </Button>
-      <Button 
-        variant="ghost" 
-        size="icon"
-        onClick={onDownload}
-        title="Télécharger"
-      >
-        <Download className="h-4 w-4" />
       </Button>
       {isAuthenticated && onDelete && (
         <Button 

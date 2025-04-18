@@ -6,7 +6,6 @@ import { DocumentMeta } from "./card/DocumentMeta";
 import { DocumentActions } from "./card/DocumentActions";
 import { DeleteConfirmDialog } from "./card/DeleteConfirmDialog";
 import { useToast } from "@/hooks/use-toast";
-import { PDFStorageService } from "@/utils/storage/PDFStorageService";
 import { supabase } from "@/integrations/supabase/client";
 
 interface DocumentCardProps {
@@ -27,112 +26,6 @@ export function DocumentCard({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
-  const isCardDocument = document.description?.toLowerCase().includes('carte') || 
-    document.file_path?.includes('cards/');
-
-  const handleDownload = async () => {
-    try {
-      if (document.file_path && document.file_path.includes('cards/')) {
-        const fileName = document.file_path.split('/').pop() || document.file_name;
-        const a = window.document.createElement('a');
-        a.href = `${window.location.origin}/download/${fileName}`;
-        a.download = fileName;
-        window.document.body.appendChild(a);
-        a.click();
-        window.document.body.removeChild(a);
-        
-        toast({
-          title: "Téléchargement démarré",
-          description: "Le document va être téléchargé"
-        });
-        return;
-      }
-      
-      if (document.file_path && document.file_path.includes('/')) {
-        const bucket = document.file_path.split('/')[0] === document.file_path 
-          ? 'directives_pdfs' 
-          : document.file_path.split('/')[0];
-          
-        const path = document.file_path.includes('/') 
-          ? document.file_path.substring(document.file_path.indexOf('/') + 1) 
-          : document.file_path;
-        
-        const { data, error } = await supabase
-          .storage
-          .from(bucket)
-          .createSignedUrl(path, 60);
-          
-        if (error) throw error;
-        
-        if (data && data.signedUrl) {
-          const a = window.document.createElement('a');
-          a.href = data.signedUrl;
-          a.download = document.file_name;
-          window.document.body.appendChild(a);
-          a.click();
-          window.document.body.removeChild(a);
-          
-          toast({
-            title: "Téléchargement démarré",
-            description: "Le document va être téléchargé"
-          });
-          return;
-        }
-      }
-      
-      toast({
-        title: "Erreur",
-        description: "Impossible de télécharger ce type de document directement",
-        variant: "destructive"
-      });
-    } catch (error) {
-      console.error("Error downloading document:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de télécharger le document",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handlePrint = async () => {
-    try {
-      if (document.file_path && document.file_path.includes('/')) {
-        const bucket = document.file_path.split('/')[0] === document.file_path 
-          ? 'directives_pdfs' 
-          : document.file_path.split('/')[0];
-          
-        const path = document.file_path.includes('/') 
-          ? document.file_path.substring(document.file_path.indexOf('/') + 1) 
-          : document.file_path;
-        
-        const { data, error } = await supabase
-          .storage
-          .from(bucket)
-          .createSignedUrl(path, 60);
-          
-        if (error) throw error;
-        
-        if (data && data.signedUrl) {
-          PDFStorageService.handlePrint(data.signedUrl);
-          return;
-        }
-      }
-      
-      toast({
-        title: "Erreur",
-        description: "Impossible d'imprimer ce document",
-        variant: "destructive"
-      });
-    } catch (error) {
-      console.error("Error preparing document for print:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible d'imprimer le document",
-        variant: "destructive"
-      });
-    }
-  };
 
   const handleDeleteDocument = async () => {
     if (!document.id || !onDelete) return;
@@ -196,15 +89,13 @@ export function DocumentCard({
             description={document.description || ""}
             createdAt={document.created_at}
             externalId={document.external_id}
-            isCard={isCardDocument}
+            isCard={document.file_path?.includes('cards/')}
           />
           
           <DocumentActions
             document={document}
             isAuthenticated={isAuthenticated}
             onPreview={onPreview}
-            onPrint={handlePrint}
-            onDownload={handleDownload}
             onDelete={() => setShowDeleteDialog(true)}
           />
         </div>
