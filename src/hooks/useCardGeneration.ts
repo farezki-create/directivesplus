@@ -38,7 +38,6 @@ export function useCardGeneration(userId: string | null) {
       
       // Generate the card PDF
       const cardUrl = await PDFCardGenerator.generate(profileWithId, trustedPersons);
-      setCardPdfUrl(cardUrl);
       
       if (cardUrl) {
         const timestamp = new Date().toISOString().replace(/[-:.]/g, '').substring(0, 14);
@@ -62,7 +61,7 @@ export function useCardGeneration(userId: string | null) {
             .from('directives_pdfs')
             .upload(filePath, blob, {
               contentType: 'application/pdf',
-              upsert: false
+              upsert: true // Change from false to true to allow overwriting
             });
 
           if (error) {
@@ -154,6 +153,8 @@ export function useCardGeneration(userId: string | null) {
   };
 
   const handleDownloadCard = () => {
+    // Cette fonction n'est plus utilisée directement,
+    // le téléchargement est géré dans CardGenerationSection
     if (cardPdfUrl) {
       const link = document.createElement('a');
       link.href = cardPdfUrl;

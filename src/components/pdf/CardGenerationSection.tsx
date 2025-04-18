@@ -43,6 +43,30 @@ export function CardGenerationSection({
     window.open(accessUrl, '_blank', 'noopener,noreferrer');
   };
   
+  // Fonction de téléchargement modifiée pour utiliser directement l'URL de données
+  const handleDirectDownload = () => {
+    if (cardPdfUrl) {
+      // Créer un élément a avec le bon attribut download
+      const link = document.createElement('a');
+      link.href = cardPdfUrl;
+      link.download = 'carte-directives-anticipees.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast({
+        title: "Téléchargement démarré",
+        description: "La carte au format PDF est en cours de téléchargement"
+      });
+    } else {
+      toast({
+        title: "Erreur",
+        description: "La carte PDF n'est pas encore générée",
+        variant: "destructive"
+      });
+    }
+  };
+  
   return (
     <div className="border-t pt-6">
       <h3 className="text-lg font-semibold mb-3">Carte format bancaire</h3>
@@ -68,7 +92,7 @@ export function CardGenerationSection({
         {cardPdfUrl && (
           <>
             <Button
-              onClick={onDownload}
+              onClick={handleDirectDownload}
               variant="outline"
               className="flex items-center gap-2"
             >
