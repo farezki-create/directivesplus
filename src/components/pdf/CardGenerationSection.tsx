@@ -50,7 +50,12 @@ export function CardGenerationSection({
           className="flex items-center gap-2"
         >
           <CreditCard className="h-4 w-4" />
-          {isGenerating ? 'Génération...' : 'Générer la carte'}
+          {isGenerating ? (
+            <span className="flex items-center gap-2">
+              <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+              Génération...
+            </span>
+          ) : 'Générer la carte'}
         </Button>
         
         {cardPdfUrl && (
@@ -79,7 +84,7 @@ export function CardGenerationSection({
       {cardPdfUrl && (
         <div className="mt-4 p-3 bg-blue-50 rounded-md">
           <p className="text-sm text-blue-800 mb-2">
-            <strong>Information:</strong> La carte a été sauvegardée dans votre espace sécurisé Scalingo HDS.
+            <strong>Information:</strong> La carte a été sauvegardée dans votre espace sécurisé et ajoutée à vos documents.
           </p>
           <p className="text-sm text-gray-600">
             Cette carte contient les liens vers votre espace documents et directives anticipées. Pour y accéder,

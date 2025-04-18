@@ -35,22 +35,45 @@ export function DocumentCard({
 
   const handlePreview = async () => {
     try {
-      // Get a signed URL for the document
-      const { data, error } = await supabase
-        .storage
-        .from('directives_pdfs')
-        .createSignedUrl(document.file_path, 3600); // 1 hour expiry
+      console.log("Prévisualisation du document:", document.file_name);
+      
+      // Check if we have a bucket-based storage path
+      if (document.file_path && document.file_path.includes('/')) {
+        const bucket = document.file_path.split('/')[0] === document.file_path 
+          ? 'directives_pdfs' // Default bucket if no slash in path
+          : document.file_path.split('/')[0];
+          
+        const path = document.file_path.includes('/') 
+          ? document.file_path.substring(document.file_path.indexOf('/') + 1) 
+          : document.file_path;
         
-      if (error) {
-        throw error;
+        console.log(`Accessing file in bucket: ${bucket}, path: ${path}`);
+        
+        // Get a signed URL for the document
+        const { data, error } = await supabase
+          .storage
+          .from(bucket)
+          .createSignedUrl(path, 3600); // 1 hour expiry
+          
+        if (error) {
+          console.error("Error getting signed URL:", error);
+          throw error;
+        }
+        
+        if (data && data.signedUrl) {
+          console.log("Signed URL obtained successfully");
+          onPreview({ ...document, file_path: data.signedUrl });
+          return;
+        }
       }
       
-      onPreview({ ...document, file_path: data.signedUrl });
+      // Fallback for direct file paths or if signed URL failed
+      onPreview(document);
     } catch (error) {
       console.error("Error getting document preview URL:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de prévisualiser le document",
+        description: "Impossible de prévisualiser le document. Vérifiez qu'il existe toujours dans le stockage.",
         variant: "destructive",
       });
     }
@@ -58,33 +81,75 @@ export function DocumentCard({
 
   const handleDownload = async () => {
     try {
-      // Get download URL from Supabase storage
-      const { data, error } = await supabase
-        .storage
-        .from('directives_pdfs')
-        .createSignedUrl(document.file_path, 60);
+      // Handle special case for cards with "cards/" in the path
+      if (document.file_path && document.file_path.includes('cards/')) {
+        // For cards, we'll use a different approach
+        const fileName = document.file_path.split('/').pop() || document.file_name;
         
-      if (error) {
-        throw error;
+        // Create a download link directly with the file_name
+        const a = window.document.createElement('a');
+        a.href = `${window.location.origin}/download/${fileName}`;
+        a.download = fileName;
+        window.document.body.appendChild(a);
+        a.click();
+        window.document.body.removeChild(a);
+        
+        toast({
+          title: "Téléchargement démarré",
+          description: "Le document va être téléchargé"
+        });
+        return;
       }
       
-      // Use the signed URL to download the file
-      const a = window.document.createElement('a');
-      a.href = data.signedUrl;
-      a.download = document.file_name;
-      window.document.body.appendChild(a);
-      a.click();
-      window.document.body.removeChild(a);
+      // Regular Supabase storage approach for non-card documents
+      if (document.file_path && document.file_path.includes('/')) {
+        const bucket = document.file_path.split('/')[0] === document.file_path 
+          ? 'directives_pdfs' 
+          : document.file_path.split('/')[0];
+          
+        const path = document.file_path.includes('/') 
+          ? document.file_path.substring(document.file_path.indexOf('/') + 1) 
+          : document.file_path;
+        
+        // Get download URL from Supabase storage
+        const { data, error } = await supabase
+          .storage
+          .from(bucket)
+          .createSignedUrl(path, 60);
+          
+        if (error) {
+          console.error("Error creating signed URL:", error);
+          throw error;
+        }
+        
+        if (data && data.signedUrl) {
+          // Use the signed URL to download the file
+          const a = window.document.createElement('a');
+          a.href = data.signedUrl;
+          a.download = document.file_name;
+          window.document.body.appendChild(a);
+          a.click();
+          window.document.body.removeChild(a);
+          
+          toast({
+            title: "Téléchargement démarré",
+            description: "Le document va être téléchargé"
+          });
+          return;
+        }
+      }
       
+      // Fallback for direct file paths or other storage mechanisms
       toast({
-        title: "Téléchargement démarré",
-        description: "Le document va être téléchargé"
+        title: "Erreur",
+        description: "Impossible de télécharger ce type de document directement",
+        variant: "destructive"
       });
     } catch (error) {
       console.error("Error downloading document:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de télécharger le document",
+        description: "Impossible de télécharger le document. Vérifiez qu'il existe toujours dans le stockage.",
         variant: "destructive"
       });
     }
@@ -92,18 +157,38 @@ export function DocumentCard({
 
   const handlePrint = async () => {
     try {
-      // Get download URL from Supabase storage
-      const { data, error } = await supabase
-        .storage
-        .from('directives_pdfs')
-        .createSignedUrl(document.file_path, 60);
+      if (document.file_path && document.file_path.includes('/')) {
+        const bucket = document.file_path.split('/')[0] === document.file_path 
+          ? 'directives_pdfs' 
+          : document.file_path.split('/')[0];
+          
+        const path = document.file_path.includes('/') 
+          ? document.file_path.substring(document.file_path.indexOf('/') + 1) 
+          : document.file_path;
         
-      if (error) {
-        throw error;
+        // Get download URL from Supabase storage
+        const { data, error } = await supabase
+          .storage
+          .from(bucket)
+          .createSignedUrl(path, 60);
+          
+        if (error) {
+          throw error;
+        }
+        
+        if (data && data.signedUrl) {
+          // Use the signed URL for printing
+          PDFStorageService.handlePrint(data.signedUrl);
+          return;
+        }
       }
       
-      // Use the signed URL for printing
-      PDFStorageService.handlePrint(data.signedUrl);
+      // Fallback for direct printing if signed URL fails
+      toast({
+        title: "Erreur",
+        description: "Impossible d'imprimer ce document. Format non supporté ou fichier introuvable.",
+        variant: "destructive"
+      });
     } catch (error) {
       console.error("Error preparing document for print:", error);
       toast({
@@ -122,13 +207,22 @@ export function DocumentCard({
       
       // Delete from storage first
       if (document.file_path) {
+        const bucket = document.file_path.split('/')[0] === document.file_path 
+          ? 'directives_pdfs' 
+          : document.file_path.split('/')[0];
+          
+        const path = document.file_path.includes('/') 
+          ? document.file_path.substring(document.file_path.indexOf('/') + 1) 
+          : document.file_path;
+        
         const { error: storageError } = await supabase
           .storage
-          .from('directives_pdfs')
-          .remove([document.file_path]);
+          .from(bucket)
+          .remove([path]);
           
         if (storageError) {
           console.error("Error deleting file from storage:", storageError);
+          // Continue with database deletion even if storage deletion fails
         }
       }
       
@@ -163,13 +257,18 @@ export function DocumentCard({
     }
   };
 
+  // Determine if this is a card document
+  const isCardDocument = document.description && 
+    (document.description.toLowerCase().includes('carte') || 
+     document.file_path?.includes('cards/'));
+
   return (
     <>
       <Card key={document.id} className="p-4">
         <div className="flex items-start justify-between">
           <div className="flex items-start space-x-3">
-            <div className="bg-blue-50 p-2 rounded-lg">
-              <FileIcon className="h-6 w-6 text-blue-600" />
+            <div className={`p-2 rounded-lg ${isCardDocument ? 'bg-purple-50' : 'bg-blue-50'}`}>
+              <FileIcon className={`h-6 w-6 ${isCardDocument ? 'text-purple-600' : 'text-blue-600'}`} />
             </div>
             <div>
               <h3 className="font-medium">{document.description || "Directives anticipées"}</h3>

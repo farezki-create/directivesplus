@@ -26,6 +26,11 @@ export function useCardGeneration(userId: string | null) {
 
     try {
       setIsGeneratingCard(true);
+      toast({
+        title: "Génération en cours",
+        description: "Veuillez patienter pendant la génération de votre carte",
+      });
+      
       const profileWithId = {
         ...profile,
         unique_identifier: userId
@@ -39,33 +44,40 @@ export function useCardGeneration(userId: string | null) {
         const timestamp = new Date().toISOString().replace(/[-:.]/g, '').substring(0, 14);
         const fileName = `carte-directives-${timestamp}.pdf`;
         
-        // Upload to Scalingo HDS storage
-        const externalId = await scalingoProvider.uploadFile(
-          cardUrl,
-          fileName,
-          {
-            userId,
-            firstName: profile.first_name,
-            lastName: profile.last_name,
-            documentType: 'carte_directive',
-            createdAt: new Date().toISOString()
-          }
-        );
+        // Convert data URL to Blob
+        const response = await fetch(cardUrl);
+        const blob = await response.blob();
         
-        // Save reference in Supabase database
-        const { error } = await supabase
+        // Upload to Supabase storage in a "cards" folder
+        const filePath = `cards/${fileName}`;
+        const { data, error } = await supabase
+          .storage
+          .from('directives_pdfs')
+          .upload(filePath, blob, {
+            contentType: 'application/pdf',
+            upsert: false
+          });
+
+        if (error) {
+          throw new Error(`Erreur lors du téléchargement: ${error.message}`);
+        }
+        
+        // Save reference in Supabase database with a delay to ensure storage has completed
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        const { error: dbError } = await supabase
           .from('pdf_documents')
           .insert({
             user_id: userId,
             file_name: fileName,
-            file_path: `cards/${fileName}`,
+            file_path: filePath,
             content_type: 'application/pdf',
             description: 'Carte format bancaire - Directives anticipées',
             created_at: new Date().toISOString()
           });
 
-        if (error) {
-          console.error("Error saving card to documents:", error);
+        if (dbError) {
+          console.error("Error saving card to documents:", dbError);
           toast({
             title: "Attention",
             description: "La carte a été générée mais n'a pas pu être sauvegardée dans vos documents",
@@ -77,20 +89,39 @@ export function useCardGeneration(userId: string | null) {
             description: "Carte format bancaire générée et sauvegardée dans vos documents",
           });
           
-          if (externalId) {
-            console.log(`Card saved to Scalingo HDS storage with ID: ${externalId}`);
+          // Attempt to save to external Scalingo HDS storage as well
+          try {
+            // Upload to Scalingo HDS storage
+            const externalId = await scalingoProvider.uploadFile(
+              cardUrl,
+              fileName,
+              {
+                userId,
+                firstName: profile.first_name,
+                lastName: profile.last_name,
+                documentType: 'carte_directive',
+                createdAt: new Date().toISOString()
+              }
+            );
             
-            // Store the external ID in a metadata field since external_id doesn't exist
-            // We'll use the description field to store this information
-            const updatedDescription = `Carte format bancaire - Directives anticipées (ID externe: ${externalId})`;
-            
-            await supabase
-              .from('pdf_documents')
-              .update({ 
-                description: updatedDescription
-              })
-              .eq('file_name', fileName)
-              .eq('user_id', userId);
+            if (externalId) {
+              console.log(`Card saved to Scalingo HDS storage with ID: ${externalId}`);
+              
+              // Store the external ID in the description field
+              const updatedDescription = `Carte format bancaire - Directives anticipées (ID externe: ${externalId})`;
+              
+              await supabase
+                .from('pdf_documents')
+                .update({ 
+                  description: updatedDescription,
+                  external_id: externalId
+                })
+                .eq('file_name', fileName)
+                .eq('user_id', userId);
+            }
+          } catch (externalError) {
+            console.error("Error saving to external storage:", externalError);
+            // Continue even if external storage fails - we already have it in Supabase
           }
         }
       }
