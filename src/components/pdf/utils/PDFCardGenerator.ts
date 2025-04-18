@@ -19,7 +19,8 @@ export class PDFCardGenerator {
     const doc = new jsPDF({
       unit: 'mm',
       format: 'a4',
-      orientation: 'portrait'
+      orientation: 'portrait',
+      compress: true // Amélioration: Compression pour des PDF plus petits
     });
 
     // Function to generate a single card side
@@ -185,6 +186,15 @@ export class PDFCardGenerator {
       "3. Elle pourra accéder à vos documents en utilisant le code d'accès et vos informations personnelles"
     ], margin, instructionY + 20);
 
-    return doc.output('dataurlstring');
+    // Optimiser le PDF pour une meilleure compatibilité
+    // Assurer que le MIME type est correctement défini
+    const pdfOutput = doc.output('dataurlstring', {filename: 'carte-directives-anticipees.pdf'});
+    
+    // Vérifier et corriger le format de l'URL si nécessaire
+    if (!pdfOutput.startsWith('data:application/pdf')) {
+      return 'data:application/pdf;base64,' + pdfOutput.split(',')[1];
+    }
+    
+    return pdfOutput;
   }
 }

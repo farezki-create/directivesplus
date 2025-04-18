@@ -43,15 +43,14 @@ export function useCardGeneration(userId: string | null) {
         const timestamp = new Date().toISOString().replace(/[-:.]/g, '').substring(0, 14);
         const fileName = `carte-directives-${timestamp}.pdf`;
         
-        // Convert data URL to Blob
-        const response = await fetch(cardUrl);
-        const blob = await response.blob();
+        // Store the data URL for immediate use
+        setCardPdfUrl(cardUrl);
         
-        // Stocker d'abord en local dans l'application pour permettre le téléchargement immédiat
-        const objectUrl = URL.createObjectURL(blob);
-        setCardPdfUrl(objectUrl);
-
         try {
+          // Convert data URL to Blob
+          const response = await fetch(cardUrl);
+          const blob = await response.blob();
+          
           // Upload to Supabase storage in a "cards" folder with user_id in the path
           // Ceci assure la compatibilité avec les politiques RLS qui requièrent généralement
           // que l'utilisateur soit propriétaire du chemin de fichier via son ID
@@ -61,7 +60,7 @@ export function useCardGeneration(userId: string | null) {
             .from('directives_pdfs')
             .upload(filePath, blob, {
               contentType: 'application/pdf',
-              upsert: true // Change from false to true to allow overwriting
+              upsert: true // Allow overwriting
             });
 
           if (error) {

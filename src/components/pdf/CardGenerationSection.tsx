@@ -43,21 +43,62 @@ export function CardGenerationSection({
     window.open(accessUrl, '_blank', 'noopener,noreferrer');
   };
   
-  // Fonction de téléchargement modifiée pour utiliser directement l'URL de données
+  // Fonction de téléchargement améliorée pour garantir la compatibilité PDF
   const handleDirectDownload = () => {
     if (cardPdfUrl) {
-      // Créer un élément a avec le bon attribut download
-      const link = document.createElement('a');
-      link.href = cardPdfUrl;
-      link.download = 'carte-directives-anticipees.pdf';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      toast({
-        title: "Téléchargement démarré",
-        description: "La carte au format PDF est en cours de téléchargement"
-      });
+      try {
+        // Vérifier si l'URL commence par data:application/pdf pour garantir que c'est un PDF valide
+        if (!cardPdfUrl.startsWith('data:application/pdf')) {
+          // Convertir l'URL au format PDF correct si nécessaire
+          const pdfUrl = cardPdfUrl.replace(/^data:image\/(png|jpg|jpeg);base64,/, 'data:application/pdf;base64,');
+          
+          // Créer un blob à partir de l'URL de données
+          const base64Data = pdfUrl.split(',')[1];
+          const binaryString = window.atob(base64Data);
+          const bytes = new Uint8Array(binaryString.length);
+          
+          for (let i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+          }
+          
+          const blob = new Blob([bytes], { type: 'application/pdf' });
+          const objectUrl = URL.createObjectURL(blob);
+          
+          // Créer un élément a avec le bon attribut download
+          const link = document.createElement('a');
+          link.href = objectUrl;
+          link.download = 'carte-directives-anticipees.pdf';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          
+          // Libérer l'URL d'objet après utilisation
+          setTimeout(() => {
+            URL.revokeObjectURL(objectUrl);
+          }, 100);
+        } else {
+          // Si c'est déjà un PDF valide, utiliser directement l'URL
+          const link = document.createElement('a');
+          link.href = cardPdfUrl;
+          link.download = 'carte-directives-anticipees.pdf';
+          link.type = 'application/pdf';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+        
+        toast({
+          title: "Téléchargement démarré",
+          description: "La carte au format PDF est en cours de téléchargement"
+        });
+      } catch (error) {
+        console.error("Erreur lors du téléchargement du PDF:", error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de télécharger la carte PDF. Veuillez réessayer.",
+          variant: "destructive"
+        });
+      }
     } else {
       toast({
         title: "Erreur",
