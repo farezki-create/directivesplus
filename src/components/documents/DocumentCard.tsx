@@ -23,9 +23,10 @@ interface DocumentCardProps {
   onPreview: (document: Document) => void;
   selectedDocumentId?: string | null;
   sharingCode: string | null;
+  isAuthenticated: boolean;
 }
 
-export function DocumentCard({ document, onPreview, selectedDocumentId, sharingCode }: DocumentCardProps) {
+export function DocumentCard({ document, onPreview, selectedDocumentId, sharingCode, isAuthenticated }: DocumentCardProps) {
   const { toast } = useToast();
   const [localSharingCode, setLocalSharingCode] = useState<string | null>(null);
   
@@ -120,18 +121,20 @@ export function DocumentCard({ document, onPreview, selectedDocumentId, sharingC
           >
             <Download className="h-4 w-4" />
           </Button>
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={generateSharingCode}
-            title="Partager"
-          >
-            <Share2 className="h-4 w-4" />
-          </Button>
+          {!isAuthenticated && (
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={generateSharingCode}
+              title="Partager"
+            >
+              <Share2 className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       </div>
       
-      {(sharingCode && selectedDocumentId === document.id) || localSharingCode ? (
+      {!isAuthenticated && ((sharingCode && selectedDocumentId === document.id) || localSharingCode) ? (
         <div className="mt-3 p-2 border rounded-md bg-gray-50">
           <p className="text-sm font-medium">Code de partage:</p>
           <div className="flex items-center mt-1">

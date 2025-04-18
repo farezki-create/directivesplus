@@ -1,6 +1,7 @@
 
 import { Document } from "@/components/documents/types";
 import { DocumentCard } from "./DocumentCard";
+import { useAuth } from "@/hooks/useAuth";
 
 interface DocumentsListProps {
   documents: Document[];
@@ -10,6 +11,8 @@ interface DocumentsListProps {
 }
 
 export function DocumentsList({ documents, onPreview, selectedDocumentId, sharingCode }: DocumentsListProps) {
+  const { user } = useAuth();
+
   if (!documents.length) {
     return (
       <div className="text-center py-8 text-gray-500">
@@ -28,6 +31,7 @@ export function DocumentsList({ documents, onPreview, selectedDocumentId, sharin
           onPreview={onPreview}
           selectedDocumentId={selectedDocumentId}
           sharingCode={sharingCode}
+          isAuthenticated={!!user}
         />
       ))}
     </div>
