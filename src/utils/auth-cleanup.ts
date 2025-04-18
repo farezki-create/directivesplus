@@ -15,6 +15,18 @@ export const cleanupLocalStorage = (): void => {
     // Clean up cached responses
     cleanupCacheData();
     
+    // Clean up any session-specific data that might be lingering
+    const sessionKeys = Object.keys(localStorage).filter(key => 
+      key.includes('supabase.auth') || 
+      key.includes('session') ||
+      key.includes('token')
+    );
+    
+    sessionKeys.forEach(key => {
+      localStorage.removeItem(key);
+      console.log(`Removed session data: ${key}`);
+    });
+    
     console.log('Local storage cleanup completed');
   } catch (e) {
     console.error('Error during local storage cleanup:', e);
