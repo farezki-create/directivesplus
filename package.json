@@ -4,16 +4,16 @@
   "version": "0.0.0",
   "type": "module",
   "engines": {
-  "node": "22.x",
-  "npm": "10.x"
-},
-"scripts": {
-  "dev": "vite",
-  "build": "vite build",
-  "start": "vite preview", // Ajoute ce script pour démarrer l'application en production
-  "lint": "eslint .",
-  "preview": "vite preview"
-},
+    "node": "14.x",
+    "npm": "6.x"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "start": "vite preview", // This will start the app in production
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
   "dependencies": {
     "@aws-sdk/s3-request-presigner": "^3.787.0",
     "@hookform/resolvers": "^3.10.0",
