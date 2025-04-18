@@ -25,8 +25,8 @@ export function CardGenerationSection({
   const [showInstructions, setShowInstructions] = useState(false);
   const { toast } = useToast();
   
-  // Simplified access link that's easier to copy and enter manually
-  const accessUrl = `${window.location.origin}/access`;
+  // URL fixe pour l'accès
+  const accessUrl = `https://888b4fe0-9edf-469c-bb32-652a4b2227bb.lovableproject.com/access`;
   
   const handleCopyAccessLink = () => {
     if (profile?.unique_identifier) {

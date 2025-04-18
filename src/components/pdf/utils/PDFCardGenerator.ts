@@ -84,22 +84,25 @@ export class PDFCardGenerator {
       doc.text(profile.unique_identifier, startX + 26, contentY);
       contentY += 5;
 
-      // Create a simplified access URL that will fit nicely on the card
-      // Just use the main URL and /access path for simplicity
-      const accessUrl = `${window.location.origin}/access`;
+      // URL fixe pour l'accès
+      const accessUrl = "https://888b4fe0-9edf-469c-bb32-652a4b2227bb.lovableproject.com/access";
         
       doc.setFont("helvetica", "bold");
       doc.text("ACCÈS EN LIGNE : ", startX + 5, contentY);
       doc.setFont("helvetica", "normal");
       
-      // Break URL into two lines if needed to fit on the card
-      // This ensures it's readable on the printed card
+      // L'URL peut être longue, on la divise en deux lignes si nécessaire
+      // Cela garantit qu'elle est lisible sur la carte imprimée
       if (accessUrl.length > 30) {
-        doc.text(accessUrl, startX + 28, contentY);
+        const firstPart = accessUrl.substring(0, 30);
+        const secondPart = accessUrl.substring(30);
+        doc.text(firstPart, startX + 28, contentY);
+        doc.text(secondPart, startX + 28, contentY + 3);
+        contentY += 8; // Extra space for the second line
       } else {
         doc.text(accessUrl, startX + 28, contentY);
+        contentY += 5;
       }
-      contentY += 5;
 
       // Trusted person for directives card only
       if (isDirectivesCard && trustedPersons && trustedPersons.length > 0) {
@@ -178,7 +181,7 @@ export class PDFCardGenerator {
     doc.setTextColor(100, 100, 100);
     doc.text([
       "1. Communiquez le code d'accès à la personne concernée",
-      `2. Dirigez-la vers ${window.location.origin}/access`,
+      "2. Dirigez-la vers https://888b4fe0-9edf-469c-bb32-652a4b2227bb.lovableproject.com/access",
       "3. Elle pourra accéder à vos documents en utilisant le code d'accès et vos informations personnelles"
     ], margin, instructionY + 20);
 
