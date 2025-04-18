@@ -1,28 +1,17 @@
+
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card } from "@/components/ui/card";
-import { PDFPreviewDialog } from "@/components/pdf/PDFPreviewDialog";
-import { useToast } from "@/hooks/use-toast";
-import { FileText, Loader2 } from "lucide-react";
 import { useDocumentAccess } from "@/hooks/useDocumentAccess";
-import { DocumentsList } from "./DocumentsList";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
+import { DocumentAccessForm } from "./access/DocumentAccessForm";
+import { AccessedDocuments } from "./access/AccessedDocuments";
 
 interface DocumentAccessProps {
   userId: string;
 }
 
 export function DocumentAccess({ userId }: DocumentAccessProps) {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [birthDate, setBirthDate] = useState("");
-  const [accessId, setAccessId] = useState("");
   const { toast } = useToast();
-  const navigate = useNavigate();
-
   const { isVerifying, verifyAccess } = useDocumentAccess();
   const [accessData, setAccessData] = useState<{
     isFullAccess: boolean;
@@ -33,18 +22,17 @@ export function DocumentAccess({ userId }: DocumentAccessProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
-  const handleAccessDocument = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!firstName || !lastName || !birthDate || !accessId) {
-      toast({
-        title: "Formulaire incomplet",
-        description: "Veuillez remplir tous les champs",
-        variant: "destructive"
-      });
-      return;
-    }
-    
+  const handleAccessDocument = async ({ 
+    firstName, 
+    lastName, 
+    birthDate, 
+    accessId 
+  }: {
+    firstName: string;
+    lastName: string;
+    birthDate: string;
+    accessId: string;
+  }) => {
     try {
       const accessResult = await verifyAccess(accessId, firstName, lastName, birthDate);
       
@@ -114,93 +102,20 @@ export function DocumentAccess({ userId }: DocumentAccessProps) {
         informations d'identité correspondant au document.
       </p>
       
-      <Card className="p-6">
-        <form onSubmit={handleAccessDocument} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="firstName">Prénom</Label>
-              <Input 
-                id="firstName"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                placeholder="Prénom du patient"
-                required
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="lastName">Nom</Label>
-              <Input
-                id="lastName"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                placeholder="Nom du patient"
-                required
-              />
-            </div>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="birthDate">Date de naissance</Label>
-            <Input
-              id="birthDate"
-              value={birthDate}
-              onChange={(e) => setBirthDate(e.target.value)}
-              placeholder="JJ/MM/AAAA"
-              type="date"
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="accessId">Code d'accès</Label>
-            <Input
-              id="accessId"
-              value={accessId}
-              onChange={(e) => setAccessId(e.target.value)}
-              placeholder="Entrez le code d'accès qui vous a été communiqué"
-              required
-            />
-          </div>
-          
-          <Button type="submit" className="w-full" disabled={isVerifying}>
-            {isVerifying ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Vérification en cours...
-              </>
-            ) : (
-              <>
-                <FileText className="h-4 w-4 mr-2" />
-                Accéder aux documents
-              </>
-            )}
-          </Button>
-        </form>
-      </Card>
+      <DocumentAccessForm
+        onSubmit={handleAccessDocument}
+        isVerifying={isVerifying}
+      />
       
-      {accessData && documents.length > 0 && (
-        <Card className="p-6">
-          <DocumentsList
-            documents={documents}
-            onPreview={handlePreviewDocument}
-            selectedDocumentId={selectedDocumentId}
-            sharingCode={null}
-            previewUrl={previewUrl}
-            isPreviewOpen={isPreviewOpen}
-            setIsPreviewOpen={setIsPreviewOpen}
-            restrictedAccess={accessData}
-          />
-        </Card>
-      )}
-      
-      {previewUrl && (
-        <PDFPreviewDialog
-          open={isPreviewOpen}
-          onOpenChange={setIsPreviewOpen}
-          pdfUrl={previewUrl}
-        />
-      )}
+      <AccessedDocuments
+        documents={documents}
+        selectedDocumentId={selectedDocumentId}
+        previewUrl={previewUrl}
+        isPreviewOpen={isPreviewOpen}
+        setIsPreviewOpen={setIsPreviewOpen}
+        onPreview={handlePreviewDocument}
+        accessData={accessData}
+      />
     </div>
   );
 }
