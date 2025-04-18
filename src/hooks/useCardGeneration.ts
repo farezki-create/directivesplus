@@ -80,11 +80,14 @@ export function useCardGeneration(userId: string | null) {
           if (externalId) {
             console.log(`Card saved to Scalingo HDS storage with ID: ${externalId}`);
             
-            // Update the document record with external ID
+            // Store the external ID in a metadata field since external_id doesn't exist
+            // We'll use the description field to store this information
+            const updatedDescription = `Carte format bancaire - Directives anticipées (ID externe: ${externalId})`;
+            
             await supabase
               .from('pdf_documents')
               .update({ 
-                external_id: externalId 
+                description: updatedDescription
               })
               .eq('file_name', fileName)
               .eq('user_id', userId);
