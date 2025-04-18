@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,9 +5,10 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { PDFPreviewDialog } from "@/components/pdf/PDFPreviewDialog";
 import { useToast } from "@/hooks/use-toast";
-import { PDFGenerationService } from "@/utils/PDFGenerationService";
-import { ScalingoHDSStorageProvider } from "@/utils/cloud/ScalingoHDSStorageProvider";
 import { FileText, Loader2 } from "lucide-react";
+import { useDocumentAccess } from "@/hooks/useDocumentAccess";
+import { DocumentList } from "./DocumentList";
+import { supabase } from "@/integrations/supabase/client";
 
 interface DocumentAccessProps {
   userId: string;
@@ -19,10 +19,14 @@ export function DocumentAccess({ userId }: DocumentAccessProps) {
   const [lastName, setLastName] = useState("");
   const [birthDate, setBirthDate] = useState("");
   const [accessId, setAccessId] = useState("");
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [showPreview, setShowPreview] = useState(false);
   const { toast } = useToast();
+
+  const { isVerifying, verifyAccess } = useDocumentAccess();
+  const [accessData, setAccessData] = useState<{
+    isFullAccess: boolean;
+    allowedDocumentId?: string;
+  } | null>(null);
+  const [documents, setDocuments] = useState([]);
 
   const handleAccessDocument = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,46 +40,40 @@ export function DocumentAccess({ userId }: DocumentAccessProps) {
       return;
     }
     
-    setIsVerifying(true);
-    
     try {
-      // Récupérer le provider Scalingo HDS
-      const scalingoProvider = new ScalingoHDSStorageProvider();
+      const accessResult = await verifyAccess(accessId, firstName, lastName, birthDate);
       
-      // Vérifier l'accès au document avec les informations fournies
-      const documentId = await scalingoProvider.verifyAccessByCode(accessId, {
-        firstName,
-        lastName,
-        birthDate
-      });
-      
-      if (!documentId) {
+      if (!accessResult) {
         throw new Error("Accès refusé ou document non trouvé");
       }
-      
-      // Récupérer le document
-      const url = await scalingoProvider.retrieveFile(documentId);
-      
-      if (!url) {
-        throw new Error("Impossible de récupérer le document");
-      }
-      
-      setPreviewUrl(url);
-      setShowPreview(true);
+
+      setAccessData({
+        isFullAccess: accessResult.is_full_access,
+        allowedDocumentId: accessResult.document_id
+      });
+
+      // Fetch available documents
+      const { data: docs, error: docsError } = await supabase
+        .from('pdf_documents')
+        .select('*')
+        .eq('user_id', userId);
+
+      if (docsError) throw docsError;
+      setDocuments(docs);
       
       toast({
         title: "Accès autorisé",
-        description: "Le document a été récupéré avec succès"
+        description: accessResult.is_full_access 
+          ? "Vous avez accès à tous les documents" 
+          : "Vous avez accès au document spécifié"
       });
     } catch (error: any) {
-      console.error("Error accessing document:", error);
+      console.error("Error accessing documents:", error);
       toast({
         title: "Erreur d'accès",
-        description: error.message || "Impossible d'accéder au document",
+        description: error.message || "Impossible d'accéder aux documents",
         variant: "destructive"
       });
-    } finally {
-      setIsVerifying(false);
     }
   };
 
@@ -84,7 +82,7 @@ export function DocumentAccess({ userId }: DocumentAccessProps) {
       <h2 className="text-xl font-semibold mb-4">Accéder à un document partagé</h2>
       
       <p className="text-gray-600">
-        Utilisez ce formulaire pour accéder à un document qui vous a été partagé. 
+        Utilisez ce formulaire pour accéder aux documents qui vous ont été partagés. 
         Vous devez fournir le code d'accès qui vous a été communiqué, ainsi que les 
         informations d'identité correspondant au document.
       </p>
@@ -147,20 +145,26 @@ export function DocumentAccess({ userId }: DocumentAccessProps) {
             ) : (
               <>
                 <FileText className="h-4 w-4 mr-2" />
-                Accéder au document
+                Accéder aux documents
               </>
             )}
           </Button>
         </form>
       </Card>
       
-      {showPreview && previewUrl && (
-        <PDFPreviewDialog
-          open={showPreview}
-          onOpenChange={setShowPreview}
-          pdfUrl={previewUrl}
-          externalDocumentId={accessId}
-        />
+      {accessData && documents.length > 0 && (
+        <Card className="p-6">
+          <DocumentList
+            documents={documents}
+            onPreview={() => {}}
+            selectedDocumentId={null}
+            sharingCode={null}
+            previewUrl={null}
+            isPreviewOpen={false}
+            setIsPreviewOpen={() => {}}
+            restrictedAccess={accessData}
+          />
+        </Card>
       )}
     </div>
   );

@@ -13,6 +13,10 @@ interface DocumentsListProps {
   isPreviewOpen: boolean;
   setIsPreviewOpen: (open: boolean) => void;
   onDelete?: (documentId: string) => void;
+  restrictedAccess?: {
+    isFullAccess: boolean;
+    allowedDocumentId?: string;
+  };
 }
 
 export function DocumentsList({ 
@@ -23,7 +27,8 @@ export function DocumentsList({
   previewUrl,
   isPreviewOpen,
   setIsPreviewOpen,
-  onDelete
+  onDelete,
+  restrictedAccess
 }: DocumentsListProps) {
   const { user } = useAuth();
 
@@ -35,19 +40,25 @@ export function DocumentsList({
     );
   }
 
+  const isDocumentAccessible = (documentId: string) => {
+    if (!restrictedAccess) return true;
+    return restrictedAccess.isFullAccess || restrictedAccess.allowedDocumentId === documentId;
+  };
+
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-medium border-b pb-2">Mes documents</h3>
+      <h3 className="text-lg font-medium border-b pb-2">Documents disponibles</h3>
       {documents.map((doc) => (
-        <DocumentCard
-          key={doc.id}
-          document={doc}
-          onPreview={onPreview}
-          selectedDocumentId={selectedDocumentId}
-          sharingCode={sharingCode}
-          isAuthenticated={!!user}
-          onDelete={onDelete}
-        />
+        <div key={doc.id} className={!isDocumentAccessible(doc.id) ? "opacity-50 pointer-events-none" : ""}>
+          <DocumentCard
+            document={doc}
+            onPreview={onPreview}
+            selectedDocumentId={selectedDocumentId}
+            sharingCode={sharingCode}
+            isAuthenticated={!!user}
+            onDelete={onDelete}
+          />
+        </div>
       ))}
       
       {previewUrl && (
