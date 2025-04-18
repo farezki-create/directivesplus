@@ -45,21 +45,19 @@ export function DocumentList({ userId }: DocumentListProps) {
 
   const handleDocumentPreview = async (doc: Document) => {
     try {
-      // Get a signed URL for the document
-      const { data, error } = await supabase
-        .storage
-        .from('directives_pdfs')
-        .createSignedUrl(doc.file_path, 3600); // 1 hour expiry
-        
-      if (error) {
-        throw error;
+      // Check if the file_path is already a signed URL
+      const fileUrl = doc.file_path.startsWith('http') 
+        ? doc.file_path 
+        : (await supabase.storage.from('directives_pdfs').createSignedUrl(doc.file_path, 3600)).data?.signedUrl;
+      
+      if (!fileUrl) {
+        throw new Error("Impossible de récupérer l'URL du document");
       }
       
-      setPreviewUrl(data.signedUrl);
+      setPreviewUrl(fileUrl);
       setSelectedDocumentId(doc.id);
       setSharingCode(null);
       setIsPreviewOpen(true);
-      
     } catch (error) {
       console.error("Error getting document preview URL:", error);
       toast({

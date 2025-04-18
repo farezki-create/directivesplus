@@ -7,7 +7,7 @@ import { Calendar, Download, Eye, FileIcon, Printer, Share2, Trash2 } from "luci
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
-import { printPDF } from "@/components/pdf/utils/PrintUtils";
+import { PDFStorageService } from "@/utils/storage/PDFStorageService";
 import { Document } from "@/components/documents/types";
 import { supabase } from "@/integrations/supabase/client";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -21,22 +21,39 @@ interface DocumentCardProps {
   onDelete?: (documentId: string) => void;
 }
 
-export function DocumentCard({ document, onPreview, selectedDocumentId, sharingCode, isAuthenticated, onDelete }: DocumentCardProps) {
+export function DocumentCard({ 
+  document, 
+  onPreview, 
+  selectedDocumentId, 
+  sharingCode, 
+  isAuthenticated, 
+  onDelete 
+}: DocumentCardProps) {
   const { toast } = useToast();
-  const [localSharingCode, setLocalSharingCode] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  
-  const generateSharingCode = () => {
-    const code = document.external_id || 
-                document.file_name.replace('.pdf', '').substring(0, 10) + 
-                Math.random().toString(36).substring(2, 8);
-    
-    setLocalSharingCode(code);
-    toast({
-      title: "Code de partage généré",
-      description: "Partagez ce code avec la personne qui doit accéder au document"
-    });
+
+  const handlePreview = async () => {
+    try {
+      // Get a signed URL for the document
+      const { data, error } = await supabase
+        .storage
+        .from('directives_pdfs')
+        .createSignedUrl(document.file_path, 3600); // 1 hour expiry
+        
+      if (error) {
+        throw error;
+      }
+      
+      onPreview({ ...document, file_path: data.signedUrl });
+    } catch (error) {
+      console.error("Error getting document preview URL:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de prévisualiser le document",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleDownload = async () => {
@@ -86,7 +103,7 @@ export function DocumentCard({ document, onPreview, selectedDocumentId, sharingC
       }
       
       // Use the signed URL for printing
-      printPDF(data.signedUrl);
+      PDFStorageService.handlePrint(data.signedUrl);
     } catch (error) {
       console.error("Error preparing document for print:", error);
       toast({
@@ -174,7 +191,7 @@ export function DocumentCard({ document, onPreview, selectedDocumentId, sharingC
             <Button 
               variant="ghost" 
               size="icon"
-              onClick={() => onPreview(document)}
+              onClick={handlePreview}
               title="Prévisualiser"
             >
               <Eye className="h-4 w-4" />
@@ -195,16 +212,6 @@ export function DocumentCard({ document, onPreview, selectedDocumentId, sharingC
             >
               <Download className="h-4 w-4" />
             </Button>
-            {!isAuthenticated && (
-              <Button 
-                variant="ghost" 
-                size="icon"
-                onClick={generateSharingCode}
-                title="Partager"
-              >
-                <Share2 className="h-4 w-4" />
-              </Button>
-            )}
             {isAuthenticated && onDelete && (
               <Button 
                 variant="ghost" 
@@ -218,37 +225,6 @@ export function DocumentCard({ document, onPreview, selectedDocumentId, sharingC
             )}
           </div>
         </div>
-        
-        {!isAuthenticated && ((sharingCode && selectedDocumentId === document.id) || localSharingCode) ? (
-          <div className="mt-3 p-2 border rounded-md bg-gray-50">
-            <p className="text-sm font-medium">Code de partage:</p>
-            <div className="flex items-center mt-1">
-              <code className="bg-white px-2 py-1 rounded border flex-1 text-sm">
-                {sharingCode || localSharingCode}
-              </code>
-              <Button 
-                variant="ghost" 
-                size="sm"
-                className="ml-2"
-                onClick={() => {
-                  const codeToCopy = sharingCode || localSharingCode;
-                  if (codeToCopy) {
-                    navigator.clipboard.writeText(codeToCopy);
-                    toast({
-                      title: "Code copié",
-                      description: "Le code a été copié dans le presse-papier"
-                    });
-                  }
-                }}
-              >
-                Copier
-              </Button>
-            </div>
-            <p className="text-xs text-gray-500 mt-2">
-              Accédez au document sur: directives.sante.fr/access
-            </p>
-          </div>
-        ) : null}
       </Card>
       
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
