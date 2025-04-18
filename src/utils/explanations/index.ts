@@ -1,3 +1,4 @@
+
 import { generalExplanationsEN, generalExplanationsFR } from './generalExplanations';
 import { lifeSupportExplanationsEN, lifeSupportExplanationsFR } from './lifeSupportExplanations';
 import { advancedIllnessExplanationsEN, advancedIllnessExplanationsFR } from './advancedIllnessExplanations';
@@ -6,7 +7,7 @@ import { advancedIllnessExplanationsEN, advancedIllnessExplanationsFR } from './
 interface QuestionExplanation {
   id: string;
   explanation: string;
-  question?: string; // Make question property optional
+  question?: string;
 }
 
 // Combine all explanations
@@ -22,10 +23,6 @@ const questionExplanationsFR: QuestionExplanation[] = [
   ...advancedIllnessExplanationsFR
 ];
 
-/**
- * Gets the explanation for a question with the given ID in the specified language
- * Uses multiple methods to identify life support questions to ensure they have no explanations
- */
 export const getQuestionExplanation = (questionId: string, language: 'en' | 'fr', questionText?: string): string => {
   console.log(`Getting explanation for question ID: ${questionId}, language: ${language}`);
   
@@ -37,7 +34,7 @@ export const getQuestionExplanation = (questionId: string, language: 'en' | 'fr'
     return '';
   }
   
-  // For other question types including advanced illness, continue with normal logic
+  // For other question types, continue with normal logic
   const explanations = language === 'en' ? questionExplanationsEN : questionExplanationsFR;
   
   // Try to find explanation by exact ID match first
@@ -45,12 +42,12 @@ export const getQuestionExplanation = (questionId: string, language: 'en' | 'fr'
   
   // If no direct match by ID, try to find by text content if question text is provided
   if (!explanation && questionText) {
-    // First try exact match - but only check if the explanation has a question property
+    // First try exact match
     explanation = explanations.find(exp => 
       exp.question && exp.question.trim().toLowerCase() === questionText.trim().toLowerCase()
     );
     
-    // If still no match, try partial match (question contains explanation question or vice versa)
+    // If still no match, try partial match
     if (!explanation) {
       explanation = explanations.find(exp => 
         exp.question && (
@@ -61,7 +58,7 @@ export const getQuestionExplanation = (questionId: string, language: 'en' | 'fr'
     }
   }
   
-  // Return empty string if explanation is not found or the explanation text is empty
+  // Return explanation text if found, empty string otherwise
   if (explanation && explanation.explanation && explanation.explanation.trim() !== '') {
     console.log(`Found explanation for question ID ${questionId}: "${explanation.explanation.substring(0, 30)}..."`);
     return explanation.explanation;

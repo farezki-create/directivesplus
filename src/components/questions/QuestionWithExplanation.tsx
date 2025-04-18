@@ -1,9 +1,8 @@
 
 import React from "react";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Info } from "lucide-react";
 import { QuestionCard } from "./QuestionCard";
 import { QuestionExplanationAccordion } from "./QuestionExplanationAccordion";
+import { getQuestionExplanation } from "@/utils/explanations";
 
 interface QuestionWithExplanationProps {
   question: any;
@@ -37,8 +36,8 @@ export function QuestionWithExplanation({
     return null;
   }
 
-  // Get the explanation directly from the question object
-  const explanation = question.explanation || '';
+  // Get the explanation using the utility function
+  const explanation = getQuestionExplanation(question.id, language, questionText);
   
   // Debug logging
   console.log(`[QuestionWithExplanation] Question: "${questionText.substring(0, 30)}..."`, 
