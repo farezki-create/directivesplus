@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, HashRouter } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, HashRouter, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Auth from "./pages/Auth";
@@ -40,6 +40,19 @@ function App() {
             <Route path="/preferences" element={<Preferences />} />
             <Route path="/my-documents" element={<MyDocuments />} />
             <Route path="/access" element={<ExternalAccess />} />
+            
+            <Route 
+              path="/lovable-directives/access/*" 
+              element={<Navigate to="/access" replace />} 
+            />
+            <Route 
+              path="/lovable/access/*" 
+              element={<Navigate to="/access" replace />} 
+            />
+            <Route 
+              path="/directives/access/*" 
+              element={<Navigate to="/access" replace />} 
+            />
           </Routes>
         </HashRouter>
         <Toaster />
