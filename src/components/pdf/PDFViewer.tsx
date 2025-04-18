@@ -1,29 +1,32 @@
 
-import { ScrollArea } from "@/components/ui/scroll-area";
+import React, { useEffect, useState } from 'react';
 
 interface PDFViewerProps {
   pdfUrl: string | null;
 }
 
-export function PDFViewer({ pdfUrl }: PDFViewerProps) {
-  if (!pdfUrl) {
+export const PDFViewer = ({ pdfUrl }: PDFViewerProps) => {
+  const [viewerUrl, setViewerUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (pdfUrl) {
+      setViewerUrl(pdfUrl);
+    }
+  }, [pdfUrl]);
+
+  if (!viewerUrl) {
     return (
-      <div className="flex-1 flex items-center justify-center text-gray-500">
-        Aucun document à afficher
+      <div className="flex items-center justify-center h-full">
+        <div className="h-8 w-8 border-b-2 border-primary rounded-full animate-spin"></div>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 h-full border rounded overflow-hidden">
-      <iframe
-        src={pdfUrl}
-        className="w-full h-full border-0"
-        title="PDF Preview"
-        id="pdf-viewer-iframe"
-        allow="fullscreen"
-        loading="eager"
-      />
-    </div>
+    <iframe
+      src={viewerUrl}
+      className="w-full h-full rounded-lg"
+      title="PDF Viewer"
+    />
   );
-}
+};
