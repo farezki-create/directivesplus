@@ -1,4 +1,3 @@
-
 import { jsPDF } from "jspdf";
 import { UserProfile, TrustedPerson } from "../types";
 import { format } from "date-fns";
@@ -84,8 +83,8 @@ export class PDFCardGenerator {
       doc.text(profile.unique_identifier, startX + 26, contentY);
       contentY += 5;
 
-      // URL fixe pour l'accès
-      const accessUrl = "https://888b4fe0-9edf-469c-bb32-652a4b2227bb.lovableproject.com/access";
+      // URL fixe pour l'accès aux documents
+      const accessUrl = "https://888b4fe0-9edf-469c-bb32-652a4b2227bb.directivesplus.com/my-documents";
         
       doc.setFont("helvetica", "bold");
       doc.text("ACCÈS EN LIGNE : ", startX + 5, contentY);
@@ -181,7 +180,7 @@ export class PDFCardGenerator {
     doc.setTextColor(100, 100, 100);
     doc.text([
       "1. Communiquez le code d'accès à la personne concernée",
-      "2. Dirigez-la vers https://888b4fe0-9edf-469c-bb32-652a4b2227bb.lovableproject.com/access",
+      "2. Dirigez-la vers https://888b4fe0-9edf-469c-bb32-652a4b2227bb.directivesplus.com/my-documents",
       "3. Elle pourra accéder à vos documents en utilisant le code d'accès et vos informations personnelles"
     ], margin, instructionY + 20);
 
