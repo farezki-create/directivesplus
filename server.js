@@ -1,8 +1,12 @@
-const express = require('express');
-const path = require('path');
-const helmet = require('helmet');
-const compression = require('compression');
-const cors = require('cors');
+import express from 'express';
+import path from 'path';
+import helmet from 'helmet';
+import compression from 'compression';
+import cors from 'cors';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -20,7 +24,7 @@ app.use(helmet({
 }));
 app.use(compression());
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'https://votre-domaine.scalingo.io',
+  origin: process.env.CORS_ORIGIN || 'https://*.scalingo.io',
   methods: ['GET', 'POST', 'PUT', 'DELETE']
 }));
 
@@ -28,14 +32,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(express.static(path.join(__dirname, 'dist'), {
-  setHeaders: (res, path) => {
-    if (path.endsWith('.html')) {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.html')) {
       res.set('Cache-Control', 'no-store');
     } else {
       res.set('Cache-Control', 'public, max-age=31536000');
     }
   }
-});
+}));
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
@@ -51,5 +55,5 @@ app.get('*', (req, res) => {
 });
 
 app.listen(port, '0.0.0.0', () => {
-  console.log(`Server démarré sur le port ${port}`);
+  console.log(`Serveur démarré sur le port ${port}`);
 });
