@@ -1,5 +1,6 @@
 
 import React, { useEffect, useRef, useState } from 'react';
+import { useToast } from "@/hooks/use-toast";
 
 interface PDFViewerProps {
   pdfUrl: string | null;
@@ -11,17 +12,44 @@ export const PDFViewer = ({ pdfUrl }: PDFViewerProps) => {
   const [renderError, setRenderError] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isDataUrl, setIsDataUrl] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (pdfUrl) {
-      // Reset states when PDF changes
-      setRenderError(false);
-      setIsDataUrl(pdfUrl.startsWith('data:application/pdf'));
-      
-      // For Scalingo HDS, always use direct rendering
-      console.log("Using direct rendering for Scalingo HDS URL");
-      setViewerUrl(pdfUrl);
-      setUseGoogleViewer(false);
+      try {
+        // Reset states when PDF changes
+        setRenderError(false);
+        
+        // Check if it's a data URL
+        const isDataUrlFormat = pdfUrl.startsWith('data:application/pdf');
+        setIsDataUrl(isDataUrlFormat);
+        
+        // Clean data URL if needed
+        if (isDataUrlFormat) {
+          // Ensure the data URL is correctly formatted
+          const parts = pdfUrl.split(',');
+          if (parts.length > 1) {
+            try {
+              // Test if the base64 part can be decoded
+              const base64Content = parts[1];
+              // Just testing validity - this will throw an error if invalid
+              const testDecode = window.atob(base64Content.trim());
+              // If we got here, it's valid
+              console.log("Base64 data is valid");
+            } catch (e) {
+              console.error("Error decoding base64:", e);
+              setRenderError(true);
+            }
+          }
+        }
+        
+        console.log("Using direct rendering for PDF URL");
+        setViewerUrl(pdfUrl);
+        setUseGoogleViewer(false);
+      } catch (error) {
+        console.error("Error processing PDF URL:", error);
+        setRenderError(true);
+      }
     }
   }, [pdfUrl]);
 
@@ -37,34 +65,51 @@ export const PDFViewer = ({ pdfUrl }: PDFViewerProps) => {
       try {
         // If it's a data URL, we need to create a blob URL
         if (isDataUrl) {
-          // Extract the base64 part of the data URL
-          const base64Content = pdfUrl.split(',')[1];
-          // Convert base64 to Blob
-          const byteCharacters = atob(base64Content);
-          const byteArrays = [];
-          for (let offset = 0; offset < byteCharacters.length; offset += 1024) {
-            const slice = byteCharacters.slice(offset, offset + 1024);
-            const byteNumbers = new Array(slice.length);
-            for (let i = 0; i < slice.length; i++) {
-              byteNumbers[i] = slice.charCodeAt(i);
+          try {
+            // Extract the base64 part of the data URL
+            const base64Content = pdfUrl.split(',')[1]?.trim();
+            if (!base64Content) {
+              throw new Error("Invalid data URL format");
             }
-            const byteArray = new Uint8Array(byteNumbers);
-            byteArrays.push(byteArray);
+            
+            // Convert base64 to Blob
+            const byteCharacters = window.atob(base64Content);
+            const byteArrays = [];
+            
+            for (let offset = 0; offset < byteCharacters.length; offset += 1024) {
+              const slice = byteCharacters.slice(offset, offset + 1024);
+              const byteNumbers = new Array(slice.length);
+              for (let i = 0; i < slice.length; i++) {
+                byteNumbers[i] = slice.charCodeAt(i);
+              }
+              const byteArray = new Uint8Array(byteNumbers);
+              byteArrays.push(byteArray);
+            }
+            
+            const blob = new Blob(byteArrays, {type: 'application/pdf'});
+            const blobUrl = URL.createObjectURL(blob);
+            
+            // Open in a new window
+            window.open(blobUrl, '_blank');
+          } catch (error) {
+            console.error("Error opening PDF as blob:", error);
+            toast({
+              title: "Erreur d'ouverture",
+              description: "Impossible d'ouvrir le document PDF",
+              variant: "destructive",
+            });
           }
-          
-          const blob = new Blob(byteArrays, {type: 'application/pdf'});
-          const blobUrl = URL.createObjectURL(blob);
-          
-          // Open in a new window
-          window.open(blobUrl, '_blank');
         } else {
           // For regular URLs
           window.open(pdfUrl, '_blank');
         }
       } catch (e) {
         console.error("Error opening PDF:", e);
-        // Fallback - try to open directly
-        window.open(pdfUrl, '_blank');
+        toast({
+          title: "Erreur d'ouverture",
+          description: "Impossible d'ouvrir le document PDF",
+          variant: "destructive",
+        });
       }
     }
   };
@@ -98,7 +143,7 @@ export const PDFViewer = ({ pdfUrl }: PDFViewerProps) => {
     );
   }
 
-  // For data URLs, we need to handle them differently
+  // For data URLs, we use object tag which handles them better than iframe
   if (isDataUrl) {
     return (
       <div className="w-full h-full">
@@ -106,6 +151,7 @@ export const PDFViewer = ({ pdfUrl }: PDFViewerProps) => {
           data={viewerUrl}
           type="application/pdf"
           className="w-full h-full rounded-lg"
+          onError={() => setRenderError(true)}
         >
           <div className="flex flex-col items-center justify-center h-full p-4 bg-gray-50 rounded-lg border border-gray-200">
             <p className="text-red-500 font-medium">Impossible d'afficher le PDF directement</p>

@@ -19,7 +19,7 @@ export function AccessLinkDisplay({
   const handleDocumentsClick = (e: React.MouseEvent) => {
     e.preventDefault();
     // Redirect to the access page for users who are not logged in
-    navigate("/access", { preventScrollReset: true });
+    navigate("/access", { state: { accessRedirect: true } });
   };
   
   return (

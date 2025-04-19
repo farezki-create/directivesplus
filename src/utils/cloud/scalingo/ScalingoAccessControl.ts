@@ -27,7 +27,13 @@ export class ScalingoAccessControl {
       // Also trim any whitespace to avoid issues with copied codes
       let normalizedAccessId = accessId.trim();
       if (normalizedAccessId.startsWith('DA-') || normalizedAccessId.startsWith('DM-')) {
-        normalizedAccessId = normalizedAccessId.substring(3);
+        normalizedAccessId = normalizedAccessId.substring(3).trim();
+      }
+      
+      // Ensure we have a valid code
+      if (!normalizedAccessId) {
+        console.error("[ScalingoAccessControl] Empty access code after normalization");
+        return null;
       }
       
       // Simulate verification with delay
