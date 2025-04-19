@@ -1,4 +1,3 @@
-
 import { Button } from "./ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -45,6 +44,11 @@ export const Header = () => {
     navigate(path);
   };
 
+  const handleDocumentsClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    window.location.href = "https://directivesplus.fr";
+  };
+  
   const isHomePage = location.pathname === "/";
   const navButtonClass = "text-sm px-3 py-1.5 rounded-md bg-white border border-purple-300 text-purple-700 hover:bg-purple-50 transition-all duration-200 shadow-sm";
 
@@ -93,7 +97,7 @@ export const Header = () => {
               
               <Button
                 className={navButtonClass}
-                onClick={navigateTo("/my-documents")}
+                onClick={handleDocumentsClick}
               >
                 Mes documents
               </Button>
