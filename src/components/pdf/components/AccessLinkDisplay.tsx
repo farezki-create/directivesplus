@@ -1,6 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Link } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface AccessLinkDisplayProps {
   accessUrl: string;
@@ -13,9 +14,12 @@ export function AccessLinkDisplay({
   onCopy, 
   onLinkClick 
 }: AccessLinkDisplayProps) {
+  const navigate = useNavigate();
+  
   const handleDocumentsClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    window.location.href = "https://directivesplus.fr";
+    // Rediriger vers la page locale des documents au lieu d'une URL externe
+    navigate("/my-documents");
   };
   
   return (

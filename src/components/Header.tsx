@@ -1,3 +1,4 @@
+
 import { Button } from "./ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -46,7 +47,8 @@ export const Header = () => {
 
   const handleDocumentsClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    window.location.href = "https://directivesplus.fr";
+    // Redirection vers la page locale des documents au lieu d'une URL externe qui ne fonctionne pas
+    navigate("/my-documents");
   };
   
   const isHomePage = location.pathname === "/";
