@@ -1,10 +1,10 @@
+
 import { CloudStorageProvider, CloudProviderConfig } from './types';
-import { SupabaseStorageProvider } from './providers/SupabaseProvider';
+import { ScalingoHDSStorageProvider } from '../cloud/ScalingoHDSStorageProvider';
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 
 export class PDFStorageService {
-  private static storageProvider: CloudStorageProvider = new SupabaseStorageProvider();
+  private static storageProvider: CloudStorageProvider = new ScalingoHDSStorageProvider();
   
   static setStorageProvider(provider: CloudStorageProvider): void {
     this.storageProvider = provider;
@@ -20,6 +20,11 @@ export class PDFStorageService {
     profile: any
   ): Promise<string | null> {
     try {
+      // Convert data URL to Blob
+      const response = await fetch(pdfDataUrl);
+      const blob = await response.blob();
+      
+      // Generate filename with metadata
       const firstName = profile.first_name || 'unknown';
       const lastName = profile.last_name || 'unknown';
       const birthDate = profile.birth_date 
@@ -30,78 +35,46 @@ export class PDFStorageService {
       const externalId = `${lastName}_${firstName}_${birthDate}_${timestamp}`;
       const sanitizedExternalId = externalId.replace(/[^a-zA-Z0-9_-]/g, '_');
       const fileName = `${sanitizedExternalId}.pdf`;
-      const filePath = `${userId}/${fileName}`;
       
-      // Convert data URL to Blob
-      const response = await fetch(pdfDataUrl);
-      const blob = await response.blob();
-
-      // Upload to Supabase storage
-      const { data, error } = await supabase
-        .storage
-        .from('directives_pdfs')
-        .upload(filePath, blob, {
-          contentType: 'application/pdf',
-          upsert: false
+      // Upload using the storage provider
+      const documentId = await this.storageProvider.uploadFile(blob, fileName, {
+        userId,
+        firstName,
+        lastName,
+        birthDate,
+        documentType: 'directives',
+        createdAt: new Date().toISOString()
+      });
+      
+      if (documentId) {
+        toast({
+          title: "Document sauvegardé",
+          description: "Votre document a été stocké en toute sécurité.",
         });
-
-      if (error) {
-        console.error("[PDFStorageService] Error uploading file:", error);
-        throw error;
-      }
-
-      // Save reference in the database
-      const { error: dbError } = await supabase
-        .from('pdf_documents')
-        .insert({
-          user_id: userId,
-          file_name: fileName,
-          file_path: filePath,
-          content_type: 'application/pdf',
-          description: `Directives anticipées de ${firstName} ${lastName}`,
-          created_at: new Date().toISOString()
-        });
-          
-      if (dbError) {
-        console.error("[PDFStorageService] Error saving reference to database:", dbError);
-        throw dbError;
       }
       
-      return sanitizedExternalId;
+      return documentId;
     } catch (error) {
       console.error("[PDFStorageService] Cloud upload error:", error);
+      toast({
+        title: "Erreur de stockage",
+        description: "Impossible de sauvegarder le document. Veuillez réessayer.",
+        variant: "destructive",
+      });
       return null;
     }
   }
 
   static async retrieveFromCloud(documentId: string): Promise<string | null> {
     try {
-      // Find the document in the database
-      const { data: document, error } = await supabase
-        .from('pdf_documents')
-        .select('*')
-        .ilike('file_name', `%${documentId}%`)
-        .single();
-          
-      if (error || !document) {
-        console.error("[PDFStorageService] Error finding document:", error);
-        throw new Error("Document non trouvé");
-      }
-      
-      // Download from storage
-      const { data: fileData, error: downloadError } = await supabase
-        .storage
-        .from('directives_pdfs')
-        .download(document.file_path);
-          
-      if (downloadError || !fileData) {
-        console.error("[PDFStorageService] Error downloading file:", downloadError);
-        throw new Error("Impossible de télécharger le fichier");
-      }
-      
-      return URL.createObjectURL(fileData);
+      return await this.storageProvider.retrieveFile(documentId);
     } catch (error) {
-      console.error("[PDFStorageService] Retrieval error:", error);
+      console.error("[PDFStorageService] Cloud retrieval error:", error);
+      toast({
+        title: "Erreur de récupération",
+        description: "Impossible de récupérer le document. Veuillez réessayer.",
+        variant: "destructive",
+      });
       return null;
     }
   }
@@ -119,3 +92,4 @@ export class PDFStorageService {
     }
   }
 }
+

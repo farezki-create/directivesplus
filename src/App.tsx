@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route, HashRouter, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
@@ -19,8 +18,13 @@ import Preferences from "./pages/Preferences";
 import MyDocuments from "./pages/MyDocuments";
 import ExternalAccess from "./pages/ExternalAccess";
 import { DialogStateProvider } from "./hooks/useDialogState";
+import { PDFStorageService } from './utils/storage/PDFStorageService';
+import { ScalingoHDSStorageProvider } from './utils/cloud/ScalingoHDSStorageProvider';
 
 function App() {
+  // Initialize the storage provider
+  PDFStorageService.setStorageProvider(new ScalingoHDSStorageProvider());
+
   return (
     <LanguageProvider>
       <DialogStateProvider>

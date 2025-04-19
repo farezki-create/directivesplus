@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 
 interface PDFViewerProps {
@@ -17,30 +16,10 @@ export const PDFViewer = ({ pdfUrl }: PDFViewerProps) => {
       // Réinitialiser les états en cas de changement de PDF
       setRenderError(false);
       
-      // Vérifie si l'URL est une data URL (commence par data:)
-      const isDataUrlPdf = pdfUrl.startsWith('data:');
-      setIsDataUrl(isDataUrlPdf);
-      
-      if (isDataUrlPdf) {
-        // Pour les data URLs, utiliser uniquement la visualisation directe
-        console.log("Using direct rendering for data URL");
-        setViewerUrl(pdfUrl);
-        setUseGoogleViewer(false);
-      } else {
-        // Pour les URLs normales, utiliser d'abord l'URL directe
-        setViewerUrl(pdfUrl);
-        
-        // Si l'URL directe ne fonctionne pas après 3 secondes, essayer Google Viewer
-        // Uniquement pour les URLs normales (non-data URLs)
-        const fallbackTimer = setTimeout(() => {
-          console.log("Switching to Google PDF Viewer fallback");
-          const googleViewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(pdfUrl)}&embedded=true`;
-          setViewerUrl(googleViewerUrl);
-          setUseGoogleViewer(true);
-        }, 3000);
-        
-        return () => clearTimeout(fallbackTimer);
-      }
+      // Pour Scalingo HDS, toujours utiliser la visualisation directe
+      console.log("Using direct rendering for Scalingo HDS URL");
+      setViewerUrl(pdfUrl);
+      setUseGoogleViewer(false);
     }
   }, [pdfUrl]);
 
@@ -125,7 +104,6 @@ export const PDFViewer = ({ pdfUrl }: PDFViewerProps) => {
       src={viewerUrl}
       className="w-full h-full rounded-lg"
       title="PDF Viewer"
-      sandbox={useGoogleViewer ? "allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation" : undefined}
       onError={handleIframeError}
     />
   );
