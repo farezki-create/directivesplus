@@ -18,6 +18,18 @@ export function useDocumentDeletion(
     try {
       setIsDeleting(true);
       
+      // First delete associated access codes
+      const { error: accessCodesError } = await supabase
+        .from('document_access_codes')
+        .delete()
+        .eq('document_id', document.id);
+        
+      if (accessCodesError) {
+        console.error("Error deleting access codes:", accessCodesError);
+        throw accessCodesError;
+      }
+      
+      // Then delete storage file if exists
       if (document.file_path) {
         const bucket = document.file_path.split('/')[0] === document.file_path 
           ? 'directives_pdfs' 
@@ -34,9 +46,11 @@ export function useDocumentDeletion(
           
         if (storageError) {
           console.error("Error deleting file from storage:", storageError);
+          // Continue with database deletion even if storage fails
         }
       }
       
+      // Finally delete document record
       const { error: dbError } = await supabase
         .from('pdf_documents')
         .delete()
