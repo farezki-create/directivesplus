@@ -54,8 +54,8 @@ export class InstructionsGenerator {
     doc.setTextColor(100, 100, 100);
     doc.text([
       "1. Communiquez le code d'accès à la personne concernée",
-      "2. Dirigez-la vers l'application « Mes documents »",
-      "3. Elle pourra accéder à vos documents en utilisant le code d'accès et vos informations personnelles"
+      "2. Dirigez-la vers la page \"Accès aux documents\"",
+      "3. Elle pourra accéder à vos documents avec le code d'accès et vos informations personnelles"
     ], margin, instructionY + 20);
   }
 }

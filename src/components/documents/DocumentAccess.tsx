@@ -7,6 +7,7 @@ import { DocumentAccessForm } from "./access/DocumentAccessForm";
 import { AccessedDocuments } from "./access/AccessedDocuments";
 import { useDocumentPreview } from "@/hooks/useDocumentPreview";
 import { useNavigate } from "react-router-dom";
+import { PDFStorageService } from "@/utils/storage/PDFStorageService";
 
 interface DocumentAccessProps {
   userId: string;
@@ -54,43 +55,60 @@ export function DocumentAccess({ userId }: DocumentAccessProps) {
         allowedDocumentId: accessResult.document_id
       });
 
-      // Fetch documents
-      let docsQuery = supabase.from('pdf_documents').select('*');
-      
-      // If not full access, restrict to the specific document
-      if (!accessResult.is_full_access && accessResult.document_id) {
-        docsQuery = docsQuery.eq('id', accessResult.document_id);
+      // Fetch documents or get document from external service
+      if (accessResult.document_id.startsWith('document_')) {
+        // Handle Scalingo HDS case
+        const documentUrl = await PDFStorageService.retrieveFromCloud(accessResult.document_id);
+        
+        if (documentUrl) {
+          // Navigate to the documents page with the external document data
+          navigate("/my-documents", { 
+            state: { 
+              accessData: {
+                documentUrl,
+                externalDocumentId: accessId
+              }
+            } 
+          });
+          return;
+        }
       } else {
-        docsQuery = docsQuery.eq('user_id', userId);
-      }
-      
-      const { data: docs, error: docsError } = await docsQuery;
+        // Handle Supabase case
+        let docsQuery = supabase.from('pdf_documents').select('*');
+        
+        // If not full access, restrict to the specific document
+        if (!accessResult.is_full_access && accessResult.document_id) {
+          docsQuery = docsQuery.eq('id', accessResult.document_id);
+        } else {
+          docsQuery = docsQuery.eq('user_id', userId);
+        }
+        
+        const { data: docs, error: docsError } = await docsQuery;
 
-      if (docsError) {
-        console.error("Error fetching documents:", docsError);
-        throw docsError;
+        if (docsError) {
+          console.error("Error fetching documents:", docsError);
+          throw docsError;
+        }
+        
+        console.log("Retrieved documents:", docs);
+        setDocuments(docs || []);
+        
+        // Navigate to /my-documents with the access data
+        navigate("/my-documents", { 
+          state: { 
+            accessData: {
+              isFullAccess: accessResult.is_full_access,
+              allowedDocumentId: accessResult.document_id,
+              documents: docs
+            }
+          } 
+        });
       }
-      
-      console.log("Retrieved documents:", docs);
-      setDocuments(docs || []);
-      
+
       // Show success toast
       toast({
         title: "Accès autorisé",
-        description: accessResult.is_full_access 
-          ? "Vous avez accès à tous les documents" 
-          : "Vous avez accès au document spécifié"
-      });
-
-      // Navigate to /my-documents with the access data
-      navigate("/my-documents", { 
-        state: { 
-          accessData: {
-            isFullAccess: accessResult.is_full_access,
-            allowedDocumentId: accessResult.document_id,
-            documents: docs
-          }
-        } 
+        description: "Vous avez accès aux documents demandés"
       });
 
     } catch (error: any) {

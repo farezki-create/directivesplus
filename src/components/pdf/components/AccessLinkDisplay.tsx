@@ -18,8 +18,8 @@ export function AccessLinkDisplay({
   
   const handleDocumentsClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    // Rediriger vers la page locale des documents au lieu d'une URL externe
-    navigate("/my-documents");
+    // Rediriger vers la page d'accès externe pour les utilisateurs non connectés
+    navigate("/access");
   };
   
   return (
@@ -30,7 +30,7 @@ export function AccessLinkDisplay({
         onClick={handleDocumentsClick}
         className="text-blue-600 hover:text-blue-800 flex items-center gap-1 p-0 h-auto font-normal underline"
       >
-        Mes Documents <Link className="h-3 w-3" />
+        Accéder aux documents <Link className="h-3 w-3" />
       </Button>
       <Button 
         variant="ghost" 

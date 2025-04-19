@@ -85,7 +85,7 @@ export class CardContentGenerator {
     doc.setFont("helvetica", "bold");
     doc.text("ACCÈS : ", startX + 5, contentY);
     doc.setFont("helvetica", "normal");
-    doc.text("Dans l'application - Mes Documents", startX + 15, contentY);
+    doc.text("Dans l'application - Accès Documents", startX + 15, contentY);
     contentY += cardDimensions.margins.lineSpacing;
 
     // Type d'accès - Ajout d'une ligne pour clarifier le type d'accès

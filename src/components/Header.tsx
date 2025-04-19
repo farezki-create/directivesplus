@@ -47,8 +47,12 @@ export const Header = () => {
 
   const handleDocumentsClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    // Redirection vers la page locale des documents au lieu d'une URL externe qui ne fonctionne pas
-    navigate("/my-documents");
+    // Redirection adaptée selon que l'utilisateur est connecté ou non
+    if (user) {
+      navigate("/my-documents");
+    } else {
+      navigate("/access");
+    }
   };
   
   const isHomePage = location.pathname === "/";
@@ -107,7 +111,7 @@ export const Header = () => {
           ) : (
             <Button
               className={navButtonClass}
-              onClick={navigateTo("/access")}
+              onClick={handleDocumentsClick}
             >
               Documents partagés
             </Button>
