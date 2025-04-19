@@ -24,10 +24,13 @@ export class ScalingoStorageService extends BaseStorageProvider {
       const blob = await this.convertToBlob(fileData);
       const accessId = ScalingoAccessControl.generateAccessId();
       
+      const isCardDocument = fileName.toLowerCase().includes('carte');
+      const containerPath = isCardDocument ? 'cards' : 'documents';
+      
       // Simulate successful upload with delay
       await new Promise(resolve => setTimeout(resolve, 800));
       
-      console.log(`[ScalingoStorageService] File uploaded successfully to ${this.containerName}/${fileName}`);
+      console.log(`[ScalingoStorageService] File uploaded successfully to ${this.containerName}/${containerPath}/${fileName}`);
       console.log(`[ScalingoStorageService] Using Scalingo HDS region: ${this.region}`);
       console.log(`[ScalingoStorageService] Document access ID: ${accessId}`);
       

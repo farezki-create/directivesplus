@@ -29,9 +29,21 @@ export async function saveCardToStorage(
 
     if (error) throw error;
 
+    // Upload to Scalingo HDS storage
+    const scalingoProvider = new ScalingoHDSStorageProvider();
+    const externalId = await scalingoProvider.uploadFile(
+      blob,
+      fileName,
+      {
+        userId,
+        firstName: profile.first_name,
+        lastName: profile.last_name,
+        documentType: 'carte_directive',
+        createdAt: new Date().toISOString()
+      }
+    );
+
     // Save reference in database
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
     const { error: dbError } = await supabase
       .from('pdf_documents')
       .insert({
@@ -39,40 +51,11 @@ export async function saveCardToStorage(
         file_name: fileName,
         file_path: filePath,
         content_type: 'application/pdf',
-        description: 'Carte format bancaire - Directives anticipées'
+        description: 'Carte format bancaire - Directives anticipées',
+        external_id: externalId
       });
 
     if (dbError) throw dbError;
-
-    // Try to save to Scalingo HDS storage
-    try {
-      const scalingoProvider = new ScalingoHDSStorageProvider();
-      const externalId = await scalingoProvider.uploadFile(
-        blob,
-        fileName,
-        {
-          userId,
-          firstName: profile.first_name,
-          lastName: profile.last_name,
-          documentType: 'carte_directive',
-          createdAt: new Date().toISOString()
-        }
-      );
-
-      if (externalId) {
-        await supabase
-          .from('pdf_documents')
-          .update({ 
-            description: `Carte format bancaire - Directives anticipées (ID externe: ${externalId})`,
-            external_id: externalId
-          })
-          .eq('file_name', fileName)
-          .eq('user_id', userId);
-      }
-    } catch (externalError) {
-      console.error("[CardStorage] External storage error:", externalError);
-      // Continue even if external storage fails
-    }
 
     return { fileName, filePath };
   } catch (error) {
