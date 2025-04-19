@@ -7,22 +7,33 @@ interface PDFViewerProps {
 
 export const PDFViewer = ({ pdfUrl }: PDFViewerProps) => {
   const [viewerUrl, setViewerUrl] = useState<string | null>(null);
+  const [useGoogleViewer, setUseGoogleViewer] = useState(false);
 
   useEffect(() => {
     if (pdfUrl) {
-      // Use Google PDF Viewer as a fallback for better compatibility
-      const googleViewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(pdfUrl)}&embedded=true`;
+      // Vérifie si l'URL est une data URL (commence par data:)
+      const isDataUrl = pdfUrl.startsWith('data:');
       
-      // First try to use the direct URL, the browser might have a PDF viewer
-      setViewerUrl(pdfUrl);
-      
-      // If direct URL doesn't work after 3 seconds, switch to Google Viewer
-      const fallbackTimer = setTimeout(() => {
-        console.log("Switching to Google PDF Viewer fallback");
-        setViewerUrl(googleViewerUrl);
-      }, 3000);
-      
-      return () => clearTimeout(fallbackTimer);
+      if (isDataUrl) {
+        // Pour les data URLs, utiliser uniquement la visualisation directe
+        // sans essayer Google Viewer (qui génère l'erreur 400)
+        setViewerUrl(pdfUrl);
+        setUseGoogleViewer(false);
+      } else {
+        // Pour les URLs normales, utiliser d'abord l'URL directe
+        setViewerUrl(pdfUrl);
+        
+        // Si l'URL directe ne fonctionne pas après 3 secondes, essayer Google Viewer
+        // Uniquement pour les URLs normales (non-data URLs)
+        const fallbackTimer = setTimeout(() => {
+          console.log("Switching to Google PDF Viewer fallback");
+          const googleViewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(pdfUrl)}&embedded=true`;
+          setViewerUrl(googleViewerUrl);
+          setUseGoogleViewer(true);
+        }, 3000);
+        
+        return () => clearTimeout(fallbackTimer);
+      }
     }
   }, [pdfUrl]);
 
@@ -39,7 +50,7 @@ export const PDFViewer = ({ pdfUrl }: PDFViewerProps) => {
       src={viewerUrl}
       className="w-full h-full rounded-lg"
       title="PDF Viewer"
-      sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation"
+      sandbox={useGoogleViewer ? "allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation" : undefined}
     />
   );
 };
