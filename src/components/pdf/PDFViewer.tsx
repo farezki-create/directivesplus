@@ -9,52 +9,53 @@ interface PDFViewerProps {
 }
 
 export const PDFViewer = ({ pdfUrl }: PDFViewerProps) => {
-  const [isDataUrl, setIsDataUrl] = useState(false);
-  const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
+  const [iframeUrl, setIframeUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(false);
+  const [hasError, setHasError] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
-    // Réinitialiser l'état quand l'URL change
-    setError(false);
-    setIsLoading(false);
-    setPdfBlobUrl(null);
+    // Reset state when URL changes
+    setHasError(false);
+    setIsLoading(true);
+    setIframeUrl(null);
     
-    if (!pdfUrl) return;
+    if (!pdfUrl) {
+      setIsLoading(false);
+      return;
+    }
     
-    const isDataUrlFormat = pdfUrl.startsWith('data:application/pdf');
-    setIsDataUrl(isDataUrlFormat);
-    
-    // Si c'est une data URL, convertir en Blob URL pour une meilleure compatibilité
-    if (isDataUrlFormat) {
-      setIsLoading(true);
-      try {
-        // Convertir data URL en Blob URL
+    // Process PDF URL
+    try {
+      // For data URLs, convert to blob URL for better browser compatibility
+      if (pdfUrl.startsWith('data:application/pdf')) {
         fetch(pdfUrl)
           .then(response => response.blob())
           .then(blob => {
-            const blobUrl = URL.createObjectURL(blob);
-            setPdfBlobUrl(blobUrl);
+            const url = URL.createObjectURL(blob);
+            setIframeUrl(url);
             setIsLoading(false);
           })
           .catch(err => {
-            console.error("Erreur lors de la conversion data URL en Blob URL:", err);
-            setError(true);
+            console.error("Error processing PDF URL:", err);
+            setHasError(true);
             setIsLoading(false);
           });
-      } catch (e) {
-        console.error("Erreur lors du traitement de l'URL du PDF:", e);
-        setError(true);
+      } else {
+        // Use the URL directly if it's not a data URL
+        setIframeUrl(pdfUrl);
         setIsLoading(false);
       }
+    } catch (e) {
+      console.error("Error handling PDF URL:", e);
+      setHasError(true);
+      setIsLoading(false);
     }
   }, [pdfUrl]);
 
-  // Fonction pour ouvrir le PDF dans un nouvel onglet
+  // Function to open the PDF in a new tab
   const openInNewTab = () => {
-    // Utiliser l'URL Blob si disponible, sinon l'URL d'origine
-    const urlToOpen = pdfBlobUrl || pdfUrl;
+    const urlToOpen = iframeUrl || pdfUrl;
     
     if (!urlToOpen) {
       toast({
@@ -68,9 +69,9 @@ export const PDFViewer = ({ pdfUrl }: PDFViewerProps) => {
     window.open(urlToOpen, '_blank');
   };
 
-  // Fonction pour télécharger le PDF
+  // Function to download the PDF
   const downloadPdf = () => {
-    const urlToUse = pdfBlobUrl || pdfUrl;
+    const urlToUse = iframeUrl || pdfUrl;
     
     if (!urlToUse) {
       toast({
@@ -102,42 +103,23 @@ export const PDFViewer = ({ pdfUrl }: PDFViewerProps) => {
     );
   }
 
-  if (error || !pdfUrl) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full p-4 bg-gray-50 rounded-lg border border-gray-200">
-        <div className="text-center space-y-4">
-          <p className="text-red-500 font-medium">Impossible d'afficher le PDF directement</p>
-          <p className="text-gray-600">Le document PDF ne peut pas être affiché dans le navigateur.</p>
-          
-          <div className="flex flex-col space-y-2">
-            <Button 
-              onClick={openInNewTab}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
-            >
-              <ExternalLink size={16} />
-              Ouvrir dans un nouvel onglet
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Interface minimaliste avec seulement des boutons d'action
   return (
     <div className="flex flex-col h-full">
-      <div className="bg-gray-100 p-4 flex justify-center items-center flex-grow rounded-lg border border-gray-200">
-        <div className="text-center max-w-md">
-          <h3 className="font-medium text-lg mb-2">Document PDF disponible</h3>
-          <p className="text-gray-600 mb-6">
-            Pour une meilleure expérience et éviter les problèmes d'affichage, 
-            veuillez utiliser l'une des options ci-dessous pour consulter votre document.
-          </p>
+      {iframeUrl && !hasError ? (
+        <div className="flex flex-col h-full">
+          <div className="flex-grow relative rounded-lg overflow-hidden border border-gray-200">
+            <iframe 
+              src={iframeUrl}
+              className="w-full h-full"
+              title="PDF Viewer"
+              sandbox="allow-same-origin allow-scripts"
+            />
+          </div>
           
-          <div className="space-y-3">
+          <div className="mt-4 flex justify-center space-x-4">
             <Button 
               onClick={openInNewTab}
-              className="w-full flex items-center justify-center gap-2"
+              className="flex items-center justify-center gap-2"
             >
               <ExternalLink size={16} />
               Ouvrir dans un nouvel onglet
@@ -146,14 +128,40 @@ export const PDFViewer = ({ pdfUrl }: PDFViewerProps) => {
             <Button 
               onClick={downloadPdf}
               variant="outline"
-              className="w-full flex items-center justify-center gap-2"
+              className="flex items-center justify-center gap-2"
             >
               <Download size={16} />
               Télécharger le PDF
             </Button>
           </div>
         </div>
-      </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center h-full p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="text-center space-y-4">
+            <p className="text-red-500 font-medium">Impossible d'afficher le PDF directement</p>
+            <p className="text-gray-600">Le document PDF ne peut pas être affiché dans le navigateur.</p>
+            
+            <div className="flex flex-col space-y-2">
+              <Button 
+                onClick={openInNewTab}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+              >
+                <ExternalLink size={16} />
+                Ouvrir dans un nouvel onglet
+              </Button>
+              
+              <Button 
+                onClick={downloadPdf}
+                variant="outline"
+                className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
+              >
+                <Download size={16} />
+                Télécharger le PDF
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
