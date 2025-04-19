@@ -1,4 +1,3 @@
-
 import { jsPDF } from "jspdf";
 import { UserProfile, TrustedPerson } from "../../types";
 import { cardDimensions } from "../constants/cardDimensions";
@@ -38,6 +37,7 @@ export class CardContentGenerator {
     // Reset style for content
     pdfStyles.setContentStyle(doc);
     
+    // Find the current content Y position after previous entries
     let contentY = startY + cardDimensions.margins.contentStartY;
     
     // Add user information
@@ -84,7 +84,7 @@ export class CardContentGenerator {
     doc.setFont("helvetica", "bold");
     doc.text("ACCÈS : ", startX + 5, contentY);
     doc.setFont("helvetica", "normal");
-    doc.text("Via l'application - Mes Documents", startX + 15, contentY);
+    doc.text("directivesplus.fr", startX + 15, contentY);
     contentY += cardDimensions.margins.lineSpacing;
 
     // Type d'accès - Ajout d'une ligne pour clarifier le type d'accès
