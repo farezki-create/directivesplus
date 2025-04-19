@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Link } from "lucide-react";
+import { Link, ExternalLink } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface AccessLinkDisplayProps {

@@ -1,6 +1,8 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { ExternalLink } from "lucide-react";
 
 interface PDFViewerProps {
   pdfUrl: string | null;
@@ -8,7 +10,6 @@ interface PDFViewerProps {
 
 export const PDFViewer = ({ pdfUrl }: PDFViewerProps) => {
   const [viewerUrl, setViewerUrl] = useState<string | null>(null);
-  const [useGoogleViewer, setUseGoogleViewer] = useState(false);
   const [renderError, setRenderError] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isDataUrl, setIsDataUrl] = useState(false);
@@ -24,28 +25,8 @@ export const PDFViewer = ({ pdfUrl }: PDFViewerProps) => {
         const isDataUrlFormat = pdfUrl.startsWith('data:application/pdf');
         setIsDataUrl(isDataUrlFormat);
         
-        // Clean data URL if needed
-        if (isDataUrlFormat) {
-          // Ensure the data URL is correctly formatted
-          const parts = pdfUrl.split(',');
-          if (parts.length > 1) {
-            try {
-              // Test if the base64 part can be decoded
-              const base64Content = parts[1];
-              // Just testing validity - this will throw an error if invalid
-              const testDecode = window.atob(base64Content.trim());
-              // If we got here, it's valid
-              console.log("Base64 data is valid");
-            } catch (e) {
-              console.error("Error decoding base64:", e);
-              setRenderError(true);
-            }
-          }
-        }
-        
-        console.log("Using direct rendering for PDF URL");
+        // Set the URL for viewing
         setViewerUrl(pdfUrl);
-        setUseGoogleViewer(false);
       } catch (error) {
         console.error("Error processing PDF URL:", error);
         setRenderError(true);
@@ -63,46 +44,35 @@ export const PDFViewer = ({ pdfUrl }: PDFViewerProps) => {
   const openInNewTab = () => {
     if (pdfUrl) {
       try {
-        // If it's a data URL, we need to create a blob URL
-        if (isDataUrl) {
-          try {
-            // Extract the base64 part of the data URL
-            const base64Content = pdfUrl.split(',')[1]?.trim();
-            if (!base64Content) {
-              throw new Error("Invalid data URL format");
-            }
-            
-            // Convert base64 to Blob
-            const byteCharacters = window.atob(base64Content);
-            const byteArrays = [];
-            
-            for (let offset = 0; offset < byteCharacters.length; offset += 1024) {
-              const slice = byteCharacters.slice(offset, offset + 1024);
-              const byteNumbers = new Array(slice.length);
-              for (let i = 0; i < slice.length; i++) {
-                byteNumbers[i] = slice.charCodeAt(i);
-              }
-              const byteArray = new Uint8Array(byteNumbers);
-              byteArrays.push(byteArray);
-            }
-            
-            const blob = new Blob(byteArrays, {type: 'application/pdf'});
-            const blobUrl = URL.createObjectURL(blob);
-            
-            // Open in a new window
-            window.open(blobUrl, '_blank');
-          } catch (error) {
-            console.error("Error opening PDF as blob:", error);
-            toast({
-              title: "Erreur d'ouverture",
-              description: "Impossible d'ouvrir le document PDF",
-              variant: "destructive",
-            });
-          }
-        } else {
-          // For regular URLs
+        // For regular URLs, just open in a new window
+        if (!isDataUrl) {
           window.open(pdfUrl, '_blank');
+          return;
         }
+        
+        // For data URLs, we need to be careful
+        // Create a new window/tab with a simple HTML page that embeds the PDF
+        const newWindow = window.open('', '_blank');
+        if (!newWindow) {
+          throw new Error("Le navigateur a bloqué l'ouverture d'une nouvelle fenêtre");
+        }
+        
+        newWindow.document.write(`
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <title>Document PDF</title>
+              <style>
+                body, html { margin: 0; padding: 0; height: 100%; }
+                embed { width: 100%; height: 100%; }
+              </style>
+            </head>
+            <body>
+              <embed src="${pdfUrl}" type="application/pdf" />
+            </body>
+          </html>
+        `);
+        newWindow.document.close();
       } catch (e) {
         console.error("Error opening PDF:", e);
         toast({
@@ -131,12 +101,13 @@ export const PDFViewer = ({ pdfUrl }: PDFViewerProps) => {
           <p className="text-gray-600">Le document PDF ne peut pas être affiché dans le navigateur.</p>
           
           <div className="flex flex-col space-y-2">
-            <button 
+            <Button 
               onClick={openInNewTab}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
             >
+              <ExternalLink size={16} />
               Ouvrir dans un nouvel onglet
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -155,26 +126,41 @@ export const PDFViewer = ({ pdfUrl }: PDFViewerProps) => {
         >
           <div className="flex flex-col items-center justify-center h-full p-4 bg-gray-50 rounded-lg border border-gray-200">
             <p className="text-red-500 font-medium">Impossible d'afficher le PDF directement</p>
-            <button 
+            <Button 
               onClick={openInNewTab}
-              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
             >
+              <ExternalLink size={16} />
               Ouvrir dans un nouvel onglet
-            </button>
+            </Button>
           </div>
         </object>
       </div>
     );
   }
 
-  // For regular URLs, use iframe
+  // For regular URLs, use iframe with better error handling
   return (
-    <iframe
-      ref={iframeRef}
-      src={viewerUrl}
-      className="w-full h-full rounded-lg"
-      title="PDF Viewer"
-      onError={handleIframeError}
-    />
+    <div className="w-full h-full relative">
+      <iframe
+        ref={iframeRef}
+        src={viewerUrl}
+        className="w-full h-full rounded-lg"
+        title="PDF Viewer"
+        onError={handleIframeError}
+      />
+      {/* Add a fallback option that's always visible */}
+      <div className="absolute top-2 right-2">
+        <Button 
+          onClick={openInNewTab}
+          size="sm"
+          variant="secondary"
+          className="flex items-center gap-1"
+        >
+          <ExternalLink size={14} />
+          Nouvel onglet
+        </Button>
+      </div>
+    </div>
   );
 };
