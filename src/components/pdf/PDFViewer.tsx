@@ -2,8 +2,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Download, FileText } from "lucide-react";
-import { printPDF } from "./utils/PrintUtils";
+import { ExternalLink, Download, Printer, FileText } from "lucide-react";
+import { printPDF, downloadPDF } from "./utils/PrintUtils";
 
 interface PDFViewerProps {
   pdfUrl: string | null;
@@ -18,7 +18,7 @@ export const PDFViewer = ({ pdfUrl }: PDFViewerProps) => {
 
   useEffect(() => {
     // Nettoyer l'URL Blob précédente pour éviter les fuites de mémoire
-    if (blobUrl) {
+    if (blobUrl && blobUrl.startsWith('blob:')) {
       URL.revokeObjectURL(blobUrl);
       setBlobUrl(null);
     }
@@ -67,7 +67,7 @@ export const PDFViewer = ({ pdfUrl }: PDFViewerProps) => {
         URL.revokeObjectURL(blobUrl);
       }
     };
-  }, [pdfUrl, toast]);
+  }, [pdfUrl, toast, blobUrl]);
 
   // Fonction pour ouvrir le PDF dans un nouvel onglet
   const openInNewTab = () => {
@@ -85,63 +85,6 @@ export const PDFViewer = ({ pdfUrl }: PDFViewerProps) => {
     window.open(urlToOpen, '_blank');
   };
 
-  // Fonction pour télécharger le PDF
-  const downloadPdf = async () => {
-    try {
-      if (!blobUrl && !pdfUrl) {
-        toast({
-          title: "Erreur",
-          description: "Aucun PDF disponible à télécharger",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      const urlToDownload = blobUrl || pdfUrl;
-      
-      if (!urlToDownload) {
-        throw new Error("URL invalide");
-      }
-
-      // Pour les URLs blob ou data
-      if (urlToDownload.startsWith('blob:') || urlToDownload.startsWith('data:')) {
-        const response = await fetch(urlToDownload);
-        const blob = await response.blob();
-        
-        // Créer un lien temporaire pour télécharger
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = "document.pdf";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(link.href);
-      } 
-      // Pour les URLs http standard
-      else {
-        const link = document.createElement('a');
-        link.href = urlToDownload;
-        link.download = "document.pdf";
-        link.target = "_blank";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }
-      
-      toast({
-        title: "Téléchargement",
-        description: "Le PDF a été téléchargé avec succès",
-      });
-    } catch (error) {
-      console.error("Erreur lors du téléchargement:", error);
-      toast({
-        title: "Erreur",
-        description: "Le téléchargement a échoué. Veuillez réessayer.",
-        variant: "destructive",
-      });
-    }
-  };
-
   // Fonction pour imprimer le PDF
   const handlePrint = () => {
     if (blobUrl) {
@@ -157,6 +100,21 @@ export const PDFViewer = ({ pdfUrl }: PDFViewerProps) => {
     }
   };
 
+  // Fonction pour télécharger le PDF
+  const handleDownload = () => {
+    if (blobUrl) {
+      downloadPDF(blobUrl);
+    } else if (pdfUrl) {
+      downloadPDF(pdfUrl);
+    } else {
+      toast({
+        title: "Erreur",
+        description: "Aucun PDF disponible à télécharger",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -165,10 +123,9 @@ export const PDFViewer = ({ pdfUrl }: PDFViewerProps) => {
     );
   }
 
-  // S'il y a une URL Blob, affichons le PDF dans un iframe
-  if (blobUrl && !hasError) {
-    return (
-      <div className="flex flex-col h-full">
+  return (
+    <div className="flex flex-col h-full">
+      {!hasError && blobUrl ? (
         <div className="flex-grow relative min-h-[400px] bg-white rounded-lg overflow-hidden border border-gray-200">
           <iframe
             ref={iframeRef}
@@ -178,58 +135,43 @@ export const PDFViewer = ({ pdfUrl }: PDFViewerProps) => {
             onError={() => setHasError(true)}
           />
         </div>
-        
-        <div className="mt-4 flex flex-wrap justify-center gap-3">
-          <Button 
-            onClick={openInNewTab}
-            className="flex items-center justify-center gap-2"
-          >
-            <ExternalLink size={16} />
-            Ouvrir dans un nouvel onglet
-          </Button>
-          
-          <Button 
-            onClick={downloadPdf}
-            variant="outline"
-            className="flex items-center justify-center gap-2"
-          >
-            <Download size={16} />
-            Télécharger
-          </Button>
+      ) : (
+        <div className="flex-grow relative rounded-lg overflow-hidden border border-gray-200 bg-gray-50 flex flex-col items-center justify-center p-8">
+          <FileText size={64} className="text-gray-400 mb-4" />
+          <p className="text-gray-700 text-lg font-medium mb-2">Document PDF disponible</p>
+          <p className="text-gray-500 mb-6 text-center">
+            Pour des raisons de compatibilité, le document ne peut pas être affiché directement dans l'application.<br/>
+            Veuillez utiliser les options ci-dessous pour consulter le document.
+          </p>
         </div>
-      </div>
-    );
-  }
-
-  // Fallback si l'iframe échoue ou s'il y a une erreur
-  return (
-    <div className="flex flex-col h-full">
-      <div className="flex-grow relative rounded-lg overflow-hidden border border-gray-200 bg-gray-50 flex flex-col items-center justify-center p-8">
-        <FileText size={64} className="text-gray-400 mb-4" />
-        <p className="text-gray-700 text-lg font-medium mb-2">Document PDF disponible</p>
-        <p className="text-gray-500 mb-6 text-center">
-          Pour des raisons de compatibilité, le document ne peut pas être affiché directement dans l'application.<br/>
-          Veuillez utiliser les options ci-dessous pour consulter le document.
-        </p>
+      )}
+      
+      <div className="mt-4 flex flex-wrap justify-center gap-3">
+        <Button 
+          onClick={openInNewTab}
+          className="flex items-center justify-center gap-2"
+        >
+          <ExternalLink size={16} />
+          Ouvrir dans un nouvel onglet
+        </Button>
         
-        <div className="space-y-4 w-full max-w-md">
-          <Button 
-            onClick={openInNewTab}
-            className="w-full flex items-center justify-center gap-2"
-          >
-            <ExternalLink size={16} />
-            Ouvrir dans un nouvel onglet
-          </Button>
-          
-          <Button 
-            onClick={downloadPdf}
-            variant="outline"
-            className="w-full flex items-center justify-center gap-2"
-          >
-            <Download size={16} />
-            Télécharger le PDF
-          </Button>
-        </div>
+        <Button 
+          onClick={handleDownload}
+          variant="outline"
+          className="flex items-center justify-center gap-2"
+        >
+          <Download size={16} />
+          Télécharger
+        </Button>
+        
+        <Button
+          onClick={handlePrint}
+          variant="secondary"
+          className="flex items-center justify-center gap-2"
+        >
+          <Printer size={16} />
+          Imprimer
+        </Button>
       </div>
     </div>
   );

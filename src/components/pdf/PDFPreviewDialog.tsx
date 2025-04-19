@@ -23,14 +23,10 @@ const PDFPreviewDialog = ({
   // Lorsque le dialog s'ouvre ou que l'URL change, traiter l'URL
   useEffect(() => {
     if (open && pdfUrl) {
+      // Si c'est une URL de données ou une URL normale, utilisez-la directement
       setProcessedPdfUrl(pdfUrl);
-    }
-  }, [open, pdfUrl]);
-  
-  // Nettoyer l'URL traitée à la fermeture
-  useEffect(() => {
-    if (!open) {
-      // Révoquer l'URL Blob si nécessaire
+    } else if (!open) {
+      // Révoquer l'URL Blob à la fermeture si nécessaire
       if (processedPdfUrl && processedPdfUrl.startsWith('blob:') && processedPdfUrl !== pdfUrl) {
         URL.revokeObjectURL(processedPdfUrl);
         setProcessedPdfUrl(null);
