@@ -24,9 +24,10 @@ export class ScalingoAccessControl {
       console.log(`[ScalingoAccessControl] User info:`, userInfo);
       
       // Handle both formats: with or without prefixes
-      let normalizedAccessId = accessId;
-      if (accessId.startsWith('DA-') || accessId.startsWith('DM-')) {
-        normalizedAccessId = accessId.substring(3);
+      // Also trim any whitespace to avoid issues with copied codes
+      let normalizedAccessId = accessId.trim();
+      if (normalizedAccessId.startsWith('DA-') || normalizedAccessId.startsWith('DM-')) {
+        normalizedAccessId = normalizedAccessId.substring(3);
       }
       
       // Simulate verification with delay
