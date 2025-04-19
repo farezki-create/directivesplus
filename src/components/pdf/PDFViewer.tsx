@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, Download, FileText } from "lucide-react";
@@ -12,9 +12,17 @@ interface PDFViewerProps {
 export const PDFViewer = ({ pdfUrl }: PDFViewerProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
   const { toast } = useToast();
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
+    // Nettoyer l'URL Blob précédente pour éviter les fuites de mémoire
+    if (blobUrl) {
+      URL.revokeObjectURL(blobUrl);
+      setBlobUrl(null);
+    }
+
     setIsLoading(true);
     setHasError(false);
     
@@ -22,19 +30,50 @@ export const PDFViewer = ({ pdfUrl }: PDFViewerProps) => {
       setIsLoading(false);
       return;
     }
-    
-    // Simple validation check for the PDF URL
-    if (!pdfUrl.startsWith('data:application/pdf') && !pdfUrl.startsWith('blob:') && !pdfUrl.startsWith('http')) {
-      console.error("Invalid PDF URL format:", pdfUrl.substring(0, 50) + "...");
-      setHasError(true);
-    }
-    
-    setIsLoading(false);
-  }, [pdfUrl]);
 
-  // Function to open the PDF in a new tab
+    // Convertir les data URLs en URLs Blob pour une meilleure compatibilité
+    const handlePdfUrl = async () => {
+      try {
+        if (pdfUrl.startsWith('data:application/pdf')) {
+          // Convertir data URL en Blob
+          const response = await fetch(pdfUrl);
+          const blob = await response.blob();
+          const url = URL.createObjectURL(blob);
+          setBlobUrl(url);
+          console.log("PDF data URL convertie en Blob URL:", url);
+        } else {
+          // Utiliser directement l'URL externe
+          setBlobUrl(pdfUrl);
+          console.log("Utilisation directe de l'URL externe:", pdfUrl);
+        }
+      } catch (error) {
+        console.error("Erreur lors de la conversion du PDF:", error);
+        setHasError(true);
+        toast({
+          title: "Erreur",
+          description: "Impossible de préparer le document PDF pour l'affichage",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    handlePdfUrl();
+
+    // Nettoyer à la démontage du composant
+    return () => {
+      if (blobUrl && blobUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(blobUrl);
+      }
+    };
+  }, [pdfUrl, toast]);
+
+  // Fonction pour ouvrir le PDF dans un nouvel onglet
   const openInNewTab = () => {
-    if (!pdfUrl) {
+    const urlToOpen = blobUrl || pdfUrl;
+    
+    if (!urlToOpen) {
       toast({
         title: "Erreur",
         description: "Aucun PDF disponible à afficher",
@@ -43,32 +82,79 @@ export const PDFViewer = ({ pdfUrl }: PDFViewerProps) => {
       return;
     }
     
-    window.open(pdfUrl, '_blank');
+    window.open(urlToOpen, '_blank');
   };
 
-  // Function to download the PDF
-  const downloadPdf = () => {
-    if (!pdfUrl) {
+  // Fonction pour télécharger le PDF
+  const downloadPdf = async () => {
+    try {
+      if (!blobUrl && !pdfUrl) {
+        toast({
+          title: "Erreur",
+          description: "Aucun PDF disponible à télécharger",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      const urlToDownload = blobUrl || pdfUrl;
+      
+      if (!urlToDownload) {
+        throw new Error("URL invalide");
+      }
+
+      // Pour les URLs blob ou data
+      if (urlToDownload.startsWith('blob:') || urlToDownload.startsWith('data:')) {
+        const response = await fetch(urlToDownload);
+        const blob = await response.blob();
+        
+        // Créer un lien temporaire pour télécharger
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = "document.pdf";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+      } 
+      // Pour les URLs http standard
+      else {
+        const link = document.createElement('a');
+        link.href = urlToDownload;
+        link.download = "document.pdf";
+        link.target = "_blank";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+      
+      toast({
+        title: "Téléchargement",
+        description: "Le PDF a été téléchargé avec succès",
+      });
+    } catch (error) {
+      console.error("Erreur lors du téléchargement:", error);
       toast({
         title: "Erreur",
-        description: "Aucun PDF disponible à télécharger",
+        description: "Le téléchargement a échoué. Veuillez réessayer.",
         variant: "destructive",
       });
-      return;
     }
-    
-    // Use the same method as in PDFGenerationUtils
-    const link = document.createElement('a');
-    link.href = pdfUrl;
-    link.download = "document.pdf";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    toast({
-      title: "Téléchargement",
-      description: "Le PDF a été téléchargé avec succès",
-    });
+  };
+
+  // Fonction pour imprimer le PDF
+  const handlePrint = () => {
+    if (blobUrl) {
+      printPDF(blobUrl);
+    } else if (pdfUrl) {
+      printPDF(pdfUrl);
+    } else {
+      toast({
+        title: "Erreur",
+        description: "Aucun PDF disponible à imprimer",
+        variant: "destructive",
+      });
+    }
   };
 
   if (isLoading) {
@@ -79,6 +165,43 @@ export const PDFViewer = ({ pdfUrl }: PDFViewerProps) => {
     );
   }
 
+  // S'il y a une URL Blob, affichons le PDF dans un iframe
+  if (blobUrl && !hasError) {
+    return (
+      <div className="flex flex-col h-full">
+        <div className="flex-grow relative min-h-[400px] bg-white rounded-lg overflow-hidden border border-gray-200">
+          <iframe
+            ref={iframeRef}
+            src={blobUrl}
+            className="absolute inset-0 w-full h-full"
+            title="Aperçu PDF"
+            onError={() => setHasError(true)}
+          />
+        </div>
+        
+        <div className="mt-4 flex flex-wrap justify-center gap-3">
+          <Button 
+            onClick={openInNewTab}
+            className="flex items-center justify-center gap-2"
+          >
+            <ExternalLink size={16} />
+            Ouvrir dans un nouvel onglet
+          </Button>
+          
+          <Button 
+            onClick={downloadPdf}
+            variant="outline"
+            className="flex items-center justify-center gap-2"
+          >
+            <Download size={16} />
+            Télécharger
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Fallback si l'iframe échoue ou s'il y a une erreur
   return (
     <div className="flex flex-col h-full">
       <div className="flex-grow relative rounded-lg overflow-hidden border border-gray-200 bg-gray-50 flex flex-col items-center justify-center p-8">

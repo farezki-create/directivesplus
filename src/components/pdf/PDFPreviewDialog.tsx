@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PDFViewer } from "./PDFViewer";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,26 @@ const PDFPreviewDialog = ({
   pdfUrl,
   externalDocumentId
 }: PDFPreviewDialogProps) => {
+  const [processedPdfUrl, setProcessedPdfUrl] = useState<string | null>(null);
+  
+  // Lorsque le dialog s'ouvre ou que l'URL change, traiter l'URL
+  useEffect(() => {
+    if (open && pdfUrl) {
+      setProcessedPdfUrl(pdfUrl);
+    }
+  }, [open, pdfUrl]);
+  
+  // Nettoyer l'URL traitée à la fermeture
+  useEffect(() => {
+    if (!open) {
+      // Révoquer l'URL Blob si nécessaire
+      if (processedPdfUrl && processedPdfUrl.startsWith('blob:') && processedPdfUrl !== pdfUrl) {
+        URL.revokeObjectURL(processedPdfUrl);
+        setProcessedPdfUrl(null);
+      }
+    }
+  }, [open, pdfUrl, processedPdfUrl]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[90vw] max-w-[1000px] h-[80vh] sm:h-[85vh] flex flex-col p-0 gap-0">
@@ -36,7 +56,7 @@ const PDFPreviewDialog = ({
           </div>
         </DialogHeader>
         <div className="flex-grow p-4 overflow-hidden">
-          <PDFViewer pdfUrl={pdfUrl} />
+          <PDFViewer pdfUrl={processedPdfUrl} />
         </div>
       </DialogContent>
     </Dialog>

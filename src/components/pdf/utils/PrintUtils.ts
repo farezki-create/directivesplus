@@ -12,73 +12,62 @@ export const printPDF = (pdfUrl: string | null) => {
   }
 
   try {
-    // Ouvrir dans un nouvel onglet pour impression
+    // Créer une fenêtre temporaire pour l'impression
     const printWindow = window.open(pdfUrl, '_blank');
     
-    if (printWindow) {
-      // Attendre le chargement du PDF avant de lancer l'impression
-      printWindow.onload = () => {
+    if (!printWindow) {
+      // Si le navigateur bloque l'ouverture, proposer le téléchargement
+      downloadPDF(pdfUrl);
+      return false;
+    }
+    
+    // Attendre le chargement du PDF avant d'imprimer
+    printWindow.onload = () => {
+      setTimeout(() => {
         try {
           printWindow.print();
         } catch (printError) {
-          console.error("[PrintUtils] Error during print:", printError);
+          console.error("[PrintUtils] Erreur pendant l'impression:", printError);
+          // En cas d'erreur d'impression, garder la fenêtre ouverte pour permettre l'interaction manuelle
         }
-      };
-      
-      // Fallback en cas d'échec du onload
-      setTimeout(() => {
-        try {
-          if (!printWindow.closed) {
-            printWindow.print();
-          }
-        } catch (timeoutError) {
-          console.error("[PrintUtils] Error during delayed print:", timeoutError);
-        }
-      }, 1500);
-    } else {
-      // Si la fenêtre ne s'ouvre pas, téléchargeons simplement le PDF
-      const link = document.createElement('a');
-      link.href = pdfUrl;
-      link.download = 'directives-anticipees.pdf';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      toast({
-        title: "Information",
-        description: "Le PDF a été téléchargé (impossible d'ouvrir un nouvel onglet)",
-      });
-    }
+      }, 1000); // Petit délai pour s'assurer que le contenu est bien chargé
+    };
     
     return true;
   } catch (error) {
-    console.error("[PrintUtils] Error with PDF:", error);
+    console.error("[PrintUtils] Erreur avec le PDF:", error);
     
-    // En cas d'erreur, télécharger directement
-    try {
-      const link = document.createElement('a');
-      link.href = pdfUrl;
-      link.download = 'directives-anticipees.pdf';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      toast({
-        title: "Information",
-        description: "Le PDF a été téléchargé suite à une erreur d'affichage",
-      });
-      
-      return true;
-    } catch (downloadError) {
-      console.error("[PrintUtils] Error downloading PDF:", downloadError);
-      
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors du téléchargement du document",
-        variant: "destructive",
-      });
-      
-      return false;
-    }
+    // En cas d'erreur, tenter le téléchargement direct
+    return downloadPDF(pdfUrl);
+  }
+};
+
+// Fonction de téléchargement séparée pour la réutilisation
+export const downloadPDF = (pdfUrl: string): boolean => {
+  try {
+    // Créer un lien temporaire pour le téléchargement
+    const link = document.createElement('a');
+    link.href = pdfUrl;
+    link.download = 'directives-anticipees.pdf';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast({
+      title: "Information",
+      description: "Le PDF a été téléchargé",
+    });
+    
+    return true;
+  } catch (downloadError) {
+    console.error("[PrintUtils] Erreur de téléchargement du PDF:", downloadError);
+    
+    toast({
+      title: "Erreur",
+      description: "Une erreur est survenue lors du téléchargement du document",
+      variant: "destructive",
+    });
+    
+    return false;
   }
 };
