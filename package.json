@@ -4,8 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "engines": {
-  "node": ">=18.17.0 <19.0.0",
-  "npm": ">=8.19.4 <9.0.0"
+  "node": "18.18.0",
+  "npm": "8.19.4"
   },
   "scripts": {
     "dev": "vite",
