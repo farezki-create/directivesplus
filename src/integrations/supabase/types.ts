@@ -75,44 +75,6 @@ export type Database = {
         }
         Relationships: []
       }
-      document_access_codes: {
-        Row: {
-          access_code: string
-          created_at: string | null
-          document_id: string | null
-          expires_at: string | null
-          id: string
-          is_full_access: boolean | null
-          user_id: string
-        }
-        Insert: {
-          access_code: string
-          created_at?: string | null
-          document_id?: string | null
-          expires_at?: string | null
-          id?: string
-          is_full_access?: boolean | null
-          user_id: string
-        }
-        Update: {
-          access_code?: string
-          created_at?: string | null
-          document_id?: string | null
-          expires_at?: string | null
-          id?: string
-          is_full_access?: boolean | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "document_access_codes_document_id_fkey"
-            columns: ["document_id"]
-            isOneToOne: false
-            referencedRelation: "pdf_documents"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       orders: {
         Row: {
           address: string
@@ -163,7 +125,6 @@ export type Database = {
           content_type: string | null
           created_at: string | null
           description: string | null
-          external_id: string | null
           file_name: string
           file_path: string
           file_size: number | null
@@ -175,7 +136,6 @@ export type Database = {
           content_type?: string | null
           created_at?: string | null
           description?: string | null
-          external_id?: string | null
           file_name: string
           file_path: string
           file_size?: number | null
@@ -187,7 +147,6 @@ export type Database = {
           content_type?: string | null
           created_at?: string | null
           description?: string | null
-          external_id?: string | null
           file_name?: string
           file_path?: string
           file_size?: number | null
@@ -613,18 +572,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      verify_document_access: {
-        Args: {
-          p_access_code: string
-          p_first_name: string
-          p_last_name: string
-          p_birth_date: string
-        }
-        Returns: {
-          document_id: string
-          is_full_access: boolean
-        }[]
-      }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never

@@ -110,11 +110,10 @@ export const savePDFToStorage = async (pdfDataUrl: string, userId: string) => {
       .from('pdf_documents')
       .insert({
         user_id: userId,
+        storage_path: filepath,
         file_name: filename,
-        file_path: filepath,
-        created_at: currentDate,
-        content_type: 'application/pdf',
-        description: 'Directives anticipées générées'
+        created_at: currentDate, // Now using string format (ISO)
+        file_path: filepath
       });
       
     if (dbError) {

@@ -1,4 +1,3 @@
-
 import { Button } from "../ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
 import { User } from "@supabase/supabase-js";
@@ -22,7 +21,7 @@ export const AuthButtons = ({ user }: AuthButtonsProps) => {
   const handleSignOut = async () => {
     if (user) {
       try {
-        // Clean up local storage
+        // Only clean up local storage
         cleanupLocalStorage();
         
         // Display a toast message informing the user
@@ -31,12 +30,12 @@ export const AuthButtons = ({ user }: AuthButtonsProps) => {
           description: "Vos données sont conservées de manière sécurisée sur nos serveurs HDS.",
         });
         
-        // Log out user first, then redirect to ensure session is properly cleared
-        await supabase.auth.signOut();
-        console.log("User signed out successfully");
-        
-        // Force navigation to home page and refresh to ensure complete cleanup
-        window.location.href = "/";
+        // Log out user and redirect after a short delay to ensure user sees the toast
+        setTimeout(async () => {
+          await supabase.auth.signOut();
+          console.log("User signed out successfully");
+          navigate("/");
+        }, 1500);
       } catch (signOutError) {
         console.error("Error during sign out:", signOutError);
         toast({

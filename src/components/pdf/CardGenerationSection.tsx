@@ -1,16 +1,9 @@
 
+import { Button } from "@/components/ui/button";
+import { CreditCard, FileText, Share2 } from "lucide-react";
 import { UserProfile, TrustedPerson } from "./types";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { CardGenerateButton } from "./components/CardGenerateButton";
-import { CardDownloadButton } from "./components/CardDownloadButton";
-import { ShareLinkButton } from "./components/ShareLinkButton";
-import { CardInfoMessage } from "./components/CardInfoMessage";
-import { AccessLinkDisplay } from "./components/AccessLinkDisplay";
-import { CardSectionContainer } from "./components/CardSectionContainer";
-import { useCardDownload } from "@/hooks/useCardDownload";
-import { AlertTriangle } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 
 interface CardGenerationSectionProps {
   isGenerating: boolean;
@@ -29,105 +22,71 @@ export function CardGenerationSection({
   profile,
   trustedPersons
 }: CardGenerationSectionProps) {
+  const [showInstructions, setShowInstructions] = useState(false);
   const { toast } = useToast();
-  const navigate = useNavigate();
-  const { downloadCardPdf, isDownloading, downloadError, hasError } = useCardDownload();
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  
-  // URL interne pour l'accès aux documents
-  const accessUrl = `/my-documents`;
   
   const handleCopyAccessLink = () => {
-    // Create a full URL including origin for copying
-    const fullUrl = `${window.location.origin}${accessUrl}`;
-    navigator.clipboard.writeText(fullUrl);
-    toast({
-      title: "Lien copié",
-      description: "Le lien d'accès a été copié dans le presse-papier",
-    });
-  };
-
-  const handleAccessLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
-    navigate(accessUrl);
-  };
-  
-  const handleDirectDownload = async () => {
-    setErrorMessage(null);
-    
-    if (!cardPdfUrl) {
+    if (profile?.unique_identifier) {
+      const accessUrl = `${window.location.origin}/access`;
+      navigator.clipboard.writeText(accessUrl);
       toast({
-        title: "Erreur",
-        description: "La carte PDF n'est pas encore générée",
-        variant: "destructive"
+        title: "Lien copié",
+        description: "Le lien d'accès a été copié dans le presse-papier",
       });
-      return;
-    }
-    
-    console.log("[CardGenerationSection] Démarrage du téléchargement de la carte PDF");
-    console.log(`[CardGenerationSection] URL du PDF: ${cardPdfUrl.substring(0, 50)}...`);
-    
-    try {
-      // Utiliser le hook de téléchargement amélioré
-      const timestamp = new Date().toISOString().replace(/[:-]/g, '').substring(0, 15);
-      const fileName = `carte-directives-${timestamp}.pdf`;
-      const success = await downloadCardPdf(cardPdfUrl, fileName);
-      
-      if (success) {
-        console.log("[CardGenerationSection] Téléchargement initié avec succès");
-      } else {
-        setErrorMessage("Le téléchargement n'a pas pu être effectué. Veuillez réessayer.");
-      }
-    } catch (error) {
-      console.error("[CardGenerationSection] Erreur lors du téléchargement:", error);
-      setErrorMessage(`Erreur: ${(error as Error).message}`);
     }
   };
   
   return (
-    <CardSectionContainer>
+    <div className="border-t pt-6">
+      <h3 className="text-lg font-semibold mb-3">Carte format bancaire</h3>
+      <p className="text-sm text-gray-500 mb-4">
+        Générez une carte au format bancaire contenant vos informations principales et les liens d'accès pour un accès facile à vos directives via Scalingo HDS.
+      </p>
+      
       <div className="flex flex-wrap gap-3 mb-4">
-        <CardGenerateButton 
-          onGenerate={onGenerate}
-          profile={profile}
-          trustedPersons={trustedPersons}
-          isGenerating={isGenerating}
-        />
+        <Button 
+          onClick={() => profile && onGenerate(profile, trustedPersons)} 
+          disabled={isGenerating}
+          className="flex items-center gap-2"
+        >
+          <CreditCard className="h-4 w-4" />
+          {isGenerating ? 'Génération...' : 'Générer la carte'}
+        </Button>
         
         {cardPdfUrl && (
           <>
-            <CardDownloadButton 
-              onDownload={handleDirectDownload} 
-              isDownloading={isDownloading}
-              hasError={hasError}
-            />
-            <ShareLinkButton onShare={handleCopyAccessLink} />
+            <Button
+              onClick={onDownload}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <FileText className="h-4 w-4" />
+              Télécharger la carte
+            </Button>
+            
+            <Button
+              onClick={handleCopyAccessLink}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <Share2 className="h-4 w-4" />
+              Copier le lien d'accès
+            </Button>
           </>
         )}
       </div>
       
-      {(errorMessage || downloadError) && (
-        <div className="p-3 mb-4 bg-red-50 border border-red-200 rounded-md flex items-center gap-2 text-red-800">
-          <AlertTriangle className="h-5 w-5 flex-shrink-0 text-red-500" />
-          <div className="text-sm space-y-1">
-            <p>{errorMessage || downloadError}</p>
-            <p className="text-xs italic">Si le problème persiste, essayez de recharger la page et de générer à nouveau la carte.</p>
-          </div>
+      {cardPdfUrl && (
+        <div className="mt-4 p-3 bg-blue-50 rounded-md">
+          <p className="text-sm text-blue-800 mb-2">
+            <strong>Information:</strong> La carte a été sauvegardée dans votre espace sécurisé Scalingo HDS.
+          </p>
+          <p className="text-sm text-gray-600">
+            Cette carte contient les liens vers votre espace documents et directives anticipées. Pour y accéder,
+            il suffit de se rendre sur l'URL indiquée sur la carte et de fournir le code d'accès et vos informations personnelles.
+          </p>
         </div>
       )}
-      
-      {cardPdfUrl && (
-        <>
-          <CardInfoMessage cardPdfUrl={cardPdfUrl} />
-          <div className="text-sm text-gray-600">
-            <AccessLinkDisplay 
-              accessUrl={accessUrl}
-              onCopy={handleCopyAccessLink}
-              onLinkClick={handleAccessLinkClick}
-            />
-          </div>
-        </>
-      )}
-    </CardSectionContainer>
+    </div>
   );
 }

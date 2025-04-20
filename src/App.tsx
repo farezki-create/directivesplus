@@ -1,4 +1,5 @@
-import { BrowserRouter as Router, Routes, Route, HashRouter, Navigate } from "react-router-dom";
+
+import { BrowserRouter as Router, Routes, Route, HashRouter } from "react-router-dom";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Auth from "./pages/Auth";
@@ -18,13 +19,8 @@ import Preferences from "./pages/Preferences";
 import MyDocuments from "./pages/MyDocuments";
 import ExternalAccess from "./pages/ExternalAccess";
 import { DialogStateProvider } from "./hooks/useDialogState";
-import { PDFStorageService } from './utils/storage/PDFStorageService';
-import { ScalingoHDSStorageProvider } from './utils/cloud/ScalingoHDSStorageProvider';
 
 function App() {
-  // Initialize the storage provider
-  PDFStorageService.setStorageProvider(new ScalingoHDSStorageProvider());
-
   return (
     <LanguageProvider>
       <DialogStateProvider>
@@ -44,45 +40,7 @@ function App() {
             <Route path="/advanced-illness" element={<AdvancedIllness />} />
             <Route path="/preferences" element={<Preferences />} />
             <Route path="/my-documents" element={<MyDocuments />} />
-            <Route path="/access" element={<ExternalAccess />} />
-            
-            {/* Redirection des anciens chemins vers les nouveaux */}
-            <Route 
-              path="/scalingo-directives/access/*" 
-              element={<Navigate to="/access" replace />} 
-            />
-            <Route 
-              path="/scalingo/access/*" 
-              element={<Navigate to="/access" replace />} 
-            />
-            <Route 
-              path="/directives/access/*" 
-              element={<Navigate to="/access" replace />} 
-            />
-            <Route 
-              path="/scalingo/my-documents/*" 
-              element={<Navigate to="/my-documents" replace />} 
-            />
-            <Route 
-              path="/directives/my-documents/*" 
-              element={<Navigate to="/my-documents" replace />} 
-            />
-            
-            {/* Ajout de la redirection pour le nouveau lien simplifié */}
-            <Route 
-              path="/documents.sante.fr/access" 
-              element={<Navigate to="/access" replace />} 
-            />
-            <Route 
-              path="/documents/*" 
-              element={<Navigate to="/my-documents" replace />} 
-            />
-            
-            {/* Catch-all redirect for data URLs that might be clicked accidentally */}
-            <Route 
-              path="data:application/*" 
-              element={<Navigate to="/my-documents" replace />} 
-            />
+            <Route path="/access/:code?" element={<ExternalAccess />} />
           </Routes>
         </HashRouter>
         <Toaster />

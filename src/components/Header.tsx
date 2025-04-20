@@ -32,29 +32,12 @@ export const Header = () => {
 
   const handleWritingClick = () => {
     if (user) {
-      navigate("/", { state: { writing: true } });
+      window.location.href = "/?writing=true";
     } else {
       navigate("/auth");
     }
   };
-  
-  // Direct navigation handlers - use callback to prevent unwanted reactions
-  const navigateTo = (path: string) => (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation(); // Prevent event bubbling
-    navigate(path);
-  };
 
-  const handleDocumentsClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    // Redirection adaptée selon que l'utilisateur est connecté ou non
-    if (user) {
-      navigate("/my-documents");
-    } else {
-      navigate("/access");
-    }
-  };
-  
   const isHomePage = location.pathname === "/";
   const navButtonClass = "text-sm px-3 py-1.5 rounded-md bg-white border border-purple-300 text-purple-700 hover:bg-purple-50 transition-all duration-200 shadow-sm";
 
@@ -80,7 +63,7 @@ export const Header = () => {
           
           <Button
             className={navButtonClass}
-            onClick={navigateTo("/")}
+            onClick={() => window.location.href = "/"}
           >
             Accueil
           </Button>
@@ -92,29 +75,22 @@ export const Header = () => {
             Je rédige
           </Button>
           
-          {user ? (
+          {user && (
             <>
               <Button
                 className={navButtonClass}
-                onClick={navigateTo("/generate-pdf")}
+                onClick={() => navigate("/generate-pdf")}
               >
                 Mes directives
               </Button>
               
               <Button
                 className={navButtonClass}
-                onClick={handleDocumentsClick}
+                onClick={() => navigate("/my-documents")}
               >
                 Mes documents
               </Button>
             </>
-          ) : (
-            <Button
-              className={navButtonClass}
-              onClick={handleDocumentsClick}
-            >
-              Documents partagés
-            </Button>
           )}
           
           <NavigationButtons navButtonClass={navButtonClass} />
@@ -126,4 +102,4 @@ export const Header = () => {
       </div>
     </header>
   );
-}
+};
