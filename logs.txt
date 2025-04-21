@@ -1,0 +1,20 @@
+2025-04-21 12:39:57.135163722 +0200 CEST [web-2] npm error
+2025-04-21 12:39:57.135167078 +0200 CEST [web-2] npm error
+2025-04-21 12:39:57.135141201 +0200 CEST [web-2] npm error Missing script: "start"
+2025-04-21 12:39:57.135167984 +0200 CEST [web-2] npm error   npm run
+2025-04-21 12:39:57.135164524 +0200 CEST [web-2] npm error Did you mean one of these?
+2025-04-21 12:39:57.135166163 +0200 CEST [web-2] npm error   npm star # Mark your favorite packages
+2025-04-21 12:39:57.135167573 +0200 CEST [web-2] npm error To see a list of scripts, run:
+2025-04-21 12:39:57.135949163 +0200 CEST [web-2] npm error A complete log of this run can be found in: /app/.npm/_logs/2025-04-21T10_39_56_817Z-debug-0.log
+2025-04-21 12:39:57.135166521 +0200 CEST [web-2] npm error   npm stars # View packages marked as favorites
+2025-04-21 12:40:00.169291446 +0200 CEST [manager] container [web-2] (6806206a99c3cd41f1e85079) has stopped
+2025-04-21 15:27:18.853308780 +0200 CEST [manager] container [web-1] (680647ae99c3cd41f1e8a604) started with the command 'npm run start'
+2025-04-21 15:27:19.223210328 +0200 CEST [web-1] > directivesplus@1.0.0 start
+2025-04-21 15:27:19.338426009 +0200 CEST [web-1] Server running on http://0.0.0.0:21144
+2025-04-21 15:27:19.223216279 +0200 CEST [web-1] > node server.js
+2025-04-21 15:27:20.084465321 +0200 CEST [manager] container [web-2] (680647ae99c3cd41f1e8a60c) started with the command 'npm run start'
+2025-04-21 15:27:20.544579187 +0200 CEST [web-2] > node server.js
+2025-04-21 15:27:20.544559731 +0200 CEST [web-2] > directivesplus@1.0.0 start
+2025-04-21 15:27:20.682521466 +0200 CEST [web-2] Server running on http://0.0.0.0:22312
+2025-04-21 15:27:34.727349995 +0200 CEST [manager] container [web-2] (68061e79998269274560133b) has stopped
+2025-04-21 15:27:34.823846213 +0200 CEST [manager] container [web-1] (68061e799982692745601333) has stopped
