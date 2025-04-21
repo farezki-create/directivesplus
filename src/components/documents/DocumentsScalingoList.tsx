@@ -1,10 +1,9 @@
-
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ScalingoHDSStorageProvider } from "@/utils/cloud/ScalingoHDSStorageProvider";
 import { useToast } from "@/hooks/use-toast";
-import { Eye, Trash2, AlertTriangle } from "lucide-react";
+import { Eye, Trash2, AlertTriangle, ExternalLink } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { PDFViewer } from "@/components/pdf/PDFViewer";
@@ -30,6 +29,7 @@ export function DocumentsScalingoList({ userId }: DocumentsScalingoListProps) {
   const [selectedFile, setSelectedFile] = useState<ScalingoFile | null>(null);
   const [previewOpen, setPreviewOpen] = useState<boolean>(false);
   const [verificationWarning, setVerificationWarning] = useState<string | null>(null);
+  const [loadingFile, setLoadingFile] = useState<string | null>(null);
   const scalingoProvider = new ScalingoHDSStorageProvider();
   const { toast } = useToast();
 
@@ -57,16 +57,45 @@ export function DocumentsScalingoList({ userId }: DocumentsScalingoListProps) {
     // eslint-disable-next-line
   }, [userId]);
 
-  const handleOpen = (file: ScalingoFile) => {
-    if (file.url) {
-      setSelectedFile(file);
-      setPreviewOpen(true);
-    } else {
+  const handleOpen = async (file: ScalingoFile) => {
+    try {
+      setLoadingFile(file.id);
+      
+      // If the URL is already present, use it
+      if (file.url) {
+        setSelectedFile(file);
+        setPreviewOpen(true);
+        return;
+      }
+      
+      // If not, try to fetch the URL
+      console.log("Fetching PDF URL for file:", file.id);
+      const url = await scalingoProvider.retrieveFile(file.id);
+      
+      if (url) {
+        const updatedFile = { ...file, url };
+        // Update the file in the array with the URL
+        setFiles(prevFiles => 
+          prevFiles.map(f => f.id === file.id ? updatedFile : f)
+        );
+        setSelectedFile(updatedFile);
+        setPreviewOpen(true);
+      } else {
+        toast({
+          title: "Erreur",
+          description: "Impossible de récupérer le document PDF.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error opening file:", error);
       toast({
         title: "Erreur",
-        description: "L'URL du document est introuvable.",
+        description: "Une erreur est survenue lors de l'ouverture du document.",
         variant: "destructive",
       });
+    } finally {
+      setLoadingFile(null);
     }
   };
 
@@ -163,8 +192,18 @@ export function DocumentsScalingoList({ userId }: DocumentsScalingoListProps) {
             <div className="text-sm text-gray-500">{format(new Date(file.created_at), "dd MMMM yyyy", { locale: fr })}</div>
           </div>
           <div className="flex gap-2">
-            <Button size="icon" variant="ghost" title="Ouvrir" onClick={() => handleOpen(file)}>
-              <Eye className="h-5 w-5" />
+            <Button 
+              size="icon" 
+              variant="ghost" 
+              title="Ouvrir" 
+              onClick={() => handleOpen(file)}
+              disabled={loadingFile === file.id}
+            >
+              {loadingFile === file.id ? (
+                <div className="h-4 w-4 border-b-2 border-primary rounded-full animate-spin"></div>
+              ) : (
+                <Eye className="h-5 w-5" />
+              )}
             </Button>
             <Button 
               size="icon" 
@@ -188,11 +227,24 @@ export function DocumentsScalingoList({ userId }: DocumentsScalingoListProps) {
           <DialogHeader>
             <DialogTitle className="flex justify-between items-center">
               <span>Prévisualisation du document</span>
-              <DialogClose asChild>
-                <Button variant="ghost" size="icon">
-                  <X className="h-4 w-4" />
-                </Button>
-              </DialogClose>
+              <div className="flex items-center gap-2">
+                {selectedFile?.url && (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="h-8 px-2"
+                    onClick={() => window.open(selectedFile.url, '_blank')}
+                  >
+                    <ExternalLink className="h-4 w-4 mr-1" />
+                    Ouvrir
+                  </Button>
+                )}
+                <DialogClose asChild>
+                  <Button variant="ghost" size="icon">
+                    <X className="h-4 w-4" />
+                  </Button>
+                </DialogClose>
+              </div>
             </DialogTitle>
           </DialogHeader>
           <div className="flex-1 mt-4">
