@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -107,6 +108,7 @@ export function DocumentsScalingoList({ userId }: DocumentsScalingoListProps) {
       <div className="flex flex-col items-center justify-center h-48 space-y-4">
         <div className="h-10 w-10 border-b-4 border-primary rounded-full animate-spin"></div>
         <p className="text-primary font-semibold select-none">Chargement des documents...</p>
+        <p className="text-sm text-gray-600 select-none">Merci de patienter, récupération depuis le serveur Scalingo en cours.</p>
       </div>
     );
   }
@@ -170,3 +172,4 @@ export function DocumentsScalingoList({ userId }: DocumentsScalingoListProps) {
     </div>
   );
 }
+
