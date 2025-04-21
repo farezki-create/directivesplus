@@ -7,6 +7,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Eye, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { PDFViewer } from "@/components/pdf/PDFViewer";
+import { Dialog, DialogContent, DialogTitle, DialogClose, DialogHeader } from "@/components/ui/dialog";
+import { X } from "lucide-react";
 
 type ScalingoFile = {
   id: string;
@@ -23,6 +26,8 @@ export function DocumentsScalingoList({ userId }: DocumentsScalingoListProps) {
   const [files, setFiles] = useState<ScalingoFile[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<ScalingoFile | null>(null);
+  const [previewOpen, setPreviewOpen] = useState<boolean>(false);
   const scalingoProvider = new ScalingoHDSStorageProvider();
   const { toast } = useToast();
 
@@ -52,7 +57,9 @@ export function DocumentsScalingoList({ userId }: DocumentsScalingoListProps) {
 
   const handleOpen = (file: ScalingoFile) => {
     if (file.url) {
-      window.open(file.url, "_blank");
+      // Au lieu d'ouvrir l'URL directement, nous affichons le PDF dans une boîte de dialogue
+      setSelectedFile(file);
+      setPreviewOpen(true);
     } else {
       toast({
         title: "Erreur",
@@ -142,6 +149,26 @@ export function DocumentsScalingoList({ userId }: DocumentsScalingoListProps) {
           </div>
         </Card>
       ))}
+
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="max-w-3xl w-full h-[80vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex justify-between items-center">
+              <span>Prévisualisation du document</span>
+              <DialogClose asChild>
+                <Button variant="ghost" size="icon">
+                  <X className="h-4 w-4" />
+                </Button>
+              </DialogClose>
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 mt-4">
+            {selectedFile && selectedFile.url && (
+              <PDFViewer pdfUrl={selectedFile.url} />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
