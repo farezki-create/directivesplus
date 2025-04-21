@@ -10,13 +10,54 @@ interface PDFViewerProps {
 export function PDFViewer({ pdfUrl }: PDFViewerProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [safeUrl, setSafeUrl] = useState<string | null>(null);
 
   useEffect(() => {
     // Reset states when PDF URL changes
     if (pdfUrl) {
       setLoading(true);
       setError(null);
+      
+      // Process the PDF URL to ensure it's safe
+      try {
+        // Si c'est une URL de données (data URL), nous devons la traiter différemment
+        if (pdfUrl.startsWith('data:application/pdf')) {
+          // Pour les URL de données, nous créons un Blob pour éviter les problèmes de sécurité
+          // avec Chrome qui bloque parfois les data URLs directes
+          fetch(pdfUrl)
+            .then(response => response.blob())
+            .then(blob => {
+              // Créer une URL d'objet à partir du Blob
+              const blobUrl = URL.createObjectURL(blob);
+              setSafeUrl(blobUrl);
+              setLoading(false);
+            })
+            .catch(err => {
+              console.error("Error converting data URL to blob:", err);
+              setError("Impossible de préparer le document PDF");
+              setLoading(false);
+            });
+        } else {
+          // URL normale, on peut l'utiliser directement
+          setSafeUrl(pdfUrl);
+          // On laisse l'événement onLoad gérer l'état de chargement
+        }
+      } catch (err) {
+        console.error("Error processing PDF URL:", err);
+        setError("URL du document invalide");
+        setLoading(false);
+      }
+    } else {
+      setSafeUrl(null);
     }
+    
+    // Nettoyage lors du démontage du composant
+    return () => {
+      // Libérer les ressources d'URL.createObjectURL
+      if (safeUrl && safeUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(safeUrl);
+      }
+    };
   }, [pdfUrl]);
 
   const handleIframeLoad = () => {
@@ -53,23 +94,25 @@ export function PDFViewer({ pdfUrl }: PDFViewerProps) {
             <AlertTriangle className="h-8 w-8 text-amber-500 mb-2" />
             <p className="text-red-600 font-medium">{error}</p>
             <p className="text-sm text-gray-600 mt-2">
-              Le format du document n'est peut-être pas supporté par votre navigateur ou le fichier est corrompu.
+              Le format du document n'est peut-être pas supporté par votre navigateur, le fichier est corrompu, ou votre navigateur bloque l'affichage pour des raisons de sécurité.
             </p>
           </div>
         </div>
       )}
       
-      <iframe
-        src={pdfUrl}
-        className="w-full h-full border-0"
-        title="PDF Preview"
-        id="pdf-viewer-iframe"
-        allow="fullscreen"
-        loading="eager"
-        onLoad={handleIframeLoad}
-        onError={handleIframeError}
-        sandbox="allow-scripts allow-same-origin"
-      />
+      {safeUrl && (
+        <iframe
+          src={safeUrl}
+          className="w-full h-full border-0"
+          title="PDF Preview"
+          id="pdf-viewer-iframe"
+          allow="fullscreen"
+          loading="eager"
+          onLoad={handleIframeLoad}
+          onError={handleIframeError}
+          sandbox="allow-scripts allow-same-origin"
+        />
+      )}
     </div>
   );
 }

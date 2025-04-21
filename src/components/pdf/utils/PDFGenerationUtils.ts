@@ -1,4 +1,3 @@
-
 import { toast } from "@/hooks/use-toast";
 import { UserProfile, TrustedPerson } from "../types";
 import { PDFDocumentGenerator } from "../PDFDocumentGenerator";
@@ -150,18 +149,56 @@ export const handlePDFDownload = (pdfUrl: string | null, customFilename?: string
     // Utiliser le nom personnalisé ou un nom par défaut avec date
     const filename = customFilename || `directives-anticipees_${dateFormatted}.pdf`;
     
-    const link = document.createElement('a');
-    link.href = pdfUrl;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    console.log("[PDFGeneration] PDF downloaded successfully as:", filename);
-    toast({
-      title: "Téléchargement réussi",
-      description: `Le fichier "${filename}" a été téléchargé dans votre dossier de téléchargements.`,
-    });
+    // Si c'est une URL de données, la convertir en Blob pour éviter les problèmes avec Chrome
+    if (pdfUrl.startsWith('data:application/pdf')) {
+      fetch(pdfUrl)
+        .then(response => response.blob())
+        .then(blob => {
+          // Créer une URL d'objet à partir du blob
+          const blobUrl = URL.createObjectURL(blob);
+          
+          // Créer un élément de lien pour le téléchargement
+          const link = document.createElement('a');
+          link.href = blobUrl;
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          
+          // Nettoyer
+          document.body.removeChild(link);
+          
+          // Libérer l'URL après un court délai pour s'assurer que le téléchargement a commencé
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+          
+          console.log("[PDFGeneration] PDF downloaded successfully as:", filename);
+          toast({
+            title: "Téléchargement réussi",
+            description: `Le fichier "${filename}" a été téléchargé dans votre dossier de téléchargements.`,
+          });
+        })
+        .catch(error => {
+          console.error("[PDFGeneration] Error downloading PDF:", error);
+          toast({
+            title: "Erreur",
+            description: "Impossible de télécharger le PDF.",
+            variant: "destructive",
+          });
+        });
+    } else {
+      // Pour les URL normales, utiliser la méthode habituelle
+      const link = document.createElement('a');
+      link.href = pdfUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      console.log("[PDFGeneration] PDF downloaded successfully as:", filename);
+      toast({
+        title: "Téléchargement réussi",
+        description: `Le fichier "${filename}" a été téléchargé dans votre dossier de téléchargements.`,
+      });
+    }
   } catch (error) {
     console.error("[PDFGeneration] Error downloading PDF:", error);
     toast({
