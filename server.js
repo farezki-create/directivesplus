@@ -12,8 +12,25 @@ const __dirname = dirname(__filename);
 
 const app = express();
 
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok' });
+});
+
 // Déclarez le port
 const port = process.env.PORT || 3000;
+app.listen(port, '0.0.0.0', () => {
+  console.log(`Server running on http://0.0.0.0:${port}`);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('There was an uncaught error', err);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
 
 // Sécurité avec Helmet
 app.use(helmet({
