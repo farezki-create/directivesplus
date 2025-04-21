@@ -1,17 +1,15 @@
-
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ScalingoHDSStorageProvider } from "@/utils/cloud/ScalingoHDSStorageProvider";
 import { useToast } from "@/hooks/use-toast";
-import { Eye, Trash2, AlertTriangle, ExternalLink, FileText } from "lucide-react";
+import { Eye, Trash2, AlertTriangle, ExternalLink } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { PDFViewer } from "@/components/pdf/PDFViewer";
-import { Dialog, DialogContent, DialogTitle, DialogClose, DialogHeader, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogClose, DialogHeader } from "@/components/ui/dialog";
 import { X } from "lucide-react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { Skeleton } from "@/components/ui/skeleton";
 
 type ScalingoFile = {
   id: string;
@@ -32,8 +30,6 @@ export function DocumentsScalingoList({ userId }: DocumentsScalingoListProps) {
   const [previewOpen, setPreviewOpen] = useState<boolean>(false);
   const [verificationWarning, setVerificationWarning] = useState<string | null>(null);
   const [loadingFile, setLoadingFile] = useState<string | null>(null);
-  const [fetchingPDF, setFetchingPDF] = useState<boolean>(false);
-  const [fetchError, setFetchError] = useState<string | null>(null);
   const scalingoProvider = new ScalingoHDSStorageProvider();
   const { toast } = useToast();
 
@@ -63,59 +59,36 @@ export function DocumentsScalingoList({ userId }: DocumentsScalingoListProps) {
 
   const handleOpen = async (file: ScalingoFile) => {
     try {
-      // Réinitialiser les états d'erreur précédents
-      setFetchError(null);
       setLoadingFile(file.id);
-      setFetchingPDF(true);
-
-      // Préparation pour l'affichage du loader pendant un minimum de temps
-      const startTime = Date.now();
-      const minimumLoadingTime = 1500; // 1.5 secondes minimum pour le loader
-
-      let url = file.url;
-      let updatedFile = file;
-
-      // Récupérer systématiquement l'URL, même si elle est déjà présente pour la robustesse
+      
+      // If the URL is already present, use it
+      if (file.url) {
+        setSelectedFile(file);
+        setPreviewOpen(true);
+        return;
+      }
+      
+      // If not, try to fetch the URL
       console.log("Fetching PDF URL for file:", file.id);
-      url = await scalingoProvider.retrieveFile(file.id);
-
-      if (!url) {
-        setFetchError("Impossible de récupérer le document PDF du serveur.");
+      const url = await scalingoProvider.retrieveFile(file.id);
+      
+      if (url) {
+        const updatedFile = { ...file, url };
+        // Update the file in the array with the URL
+        setFiles(prevFiles => 
+          prevFiles.map(f => f.id === file.id ? updatedFile : f)
+        );
+        setSelectedFile(updatedFile);
+        setPreviewOpen(true);
+      } else {
         toast({
           title: "Erreur",
           description: "Impossible de récupérer le document PDF.",
           variant: "destructive",
         });
-        
-        // Assurer un temps minimum d'affichage du loader
-        const elapsedTime = Date.now() - startTime;
-        if (elapsedTime < minimumLoadingTime) {
-          await new Promise(resolve => setTimeout(resolve, minimumLoadingTime - elapsedTime));
-        }
-        
-        setLoadingFile(null);
-        setFetchingPDF(false);
-        return;
       }
-
-      // Mise à jour du fichier dans le tableau avec l'URL
-      updatedFile = { ...file, url };
-      setFiles(prevFiles =>
-        prevFiles.map(f => f.id === file.id ? updatedFile : f)
-      );
-
-      // Assurer un temps minimum d'affichage du loader
-      const elapsedTime = Date.now() - startTime;
-      if (elapsedTime < minimumLoadingTime) {
-        await new Promise(resolve => setTimeout(resolve, minimumLoadingTime - elapsedTime));
-      }
-
-      // Ouvrir la prévisualisation
-      setSelectedFile(updatedFile);
-      setPreviewOpen(true);
     } catch (error) {
       console.error("Error opening file:", error);
-      setFetchError("Une erreur est survenue lors de la récupération du document.");
       toast({
         title: "Erreur",
         description: "Une erreur est survenue lors de l'ouverture du document.",
@@ -123,7 +96,6 @@ export function DocumentsScalingoList({ userId }: DocumentsScalingoListProps) {
       });
     } finally {
       setLoadingFile(null);
-      setTimeout(() => setFetchingPDF(false), 500); // Laisser l'overlay le temps du rendu
     }
   };
 
@@ -153,7 +125,7 @@ export function DocumentsScalingoList({ userId }: DocumentsScalingoListProps) {
           setFiles(files.filter(f => f.id !== file.id));
         } catch (verificationError) {
           console.error("Failed to verify deletion on server:", verificationError);
-          // Utilise la variante "default" autorisée au lieu de "warning"
+          // Use a default toast instead of warning variant (which isn't available)
           toast({
             title: "Attention",
             description: "Le document a été marqué comme supprimé, mais nous n'avons pas pu vérifier sa suppression complète du serveur.",
@@ -204,7 +176,7 @@ export function DocumentsScalingoList({ userId }: DocumentsScalingoListProps) {
   return (
     <div className="space-y-4">
       {verificationWarning && (
-        <Alert className="bg-amber-50 border-amber-200" variant="default">
+        <Alert className="bg-amber-50 border-amber-200">
           <AlertTriangle className="h-4 w-4 text-amber-600" />
           <AlertTitle className="text-amber-800">Attention</AlertTitle>
           <AlertDescription className="text-amber-700">
@@ -213,24 +185,11 @@ export function DocumentsScalingoList({ userId }: DocumentsScalingoListProps) {
         </Alert>
       )}
 
-      {fetchError && (
-        <Alert className="bg-red-50 border-red-200" variant="destructive">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>Erreur de récupération</AlertTitle>
-          <AlertDescription>
-            {fetchError}
-          </AlertDescription>
-        </Alert>
-      )}
-
       {files.map(file => (
         <Card key={file.id} className="p-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <FileText className="h-10 w-10 text-blue-500" />
-            <div>
-              <div className="font-medium">{file.file_name}</div>
-              <div className="text-sm text-gray-500">{format(new Date(file.created_at), "dd MMMM yyyy", { locale: fr })}</div>
-            </div>
+          <div>
+            <div className="font-medium">{file.file_name}</div>
+            <div className="text-sm text-gray-500">{format(new Date(file.created_at), "dd MMMM yyyy", { locale: fr })}</div>
           </div>
           <div className="flex gap-2">
             <Button 
@@ -263,10 +222,7 @@ export function DocumentsScalingoList({ userId }: DocumentsScalingoListProps) {
         </Card>
       ))}
 
-      <Dialog open={previewOpen} onOpenChange={(open) => {
-        setPreviewOpen(open);
-        if (!open) setSelectedFile(null);
-      }}>
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
         <DialogContent className="max-w-3xl w-full h-[80vh] flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex justify-between items-center">
@@ -277,34 +233,10 @@ export function DocumentsScalingoList({ userId }: DocumentsScalingoListProps) {
                     variant="outline" 
                     size="sm" 
                     className="h-8 px-2"
-                    onClick={() => {
-                      if (selectedFile?.url) {
-                        // Création d'un Blob URL si nécessaire pour éviter le blocage
-                        if (selectedFile.url.startsWith('data:application/pdf')) {
-                          fetch(selectedFile.url)
-                            .then(response => response.blob())
-                            .then(blob => {
-                              const blobUrl = URL.createObjectURL(blob);
-                              window.open(blobUrl, '_blank');
-                              // Nous ne révoquons pas l'URL immédiatement pour laisser le temps au navigateur de l'ouvrir
-                              setTimeout(() => URL.revokeObjectURL(blobUrl), 60000); // Nettoyage après 1 minute
-                            })
-                            .catch(err => {
-                              console.error("Error opening file in new tab:", err);
-                              toast({
-                                title: "Erreur",
-                                description: "Impossible d'ouvrir le document dans un nouvel onglet.",
-                                variant: "destructive",
-                              });
-                            });
-                        } else {
-                          window.open(selectedFile.url, '_blank');
-                        }
-                      }
-                    }}
+                    onClick={() => window.open(selectedFile.url, '_blank')}
                   >
                     <ExternalLink className="h-4 w-4 mr-1" />
-                    Ouvrir dans un nouvel onglet
+                    Ouvrir
                   </Button>
                 )}
                 <DialogClose asChild>
@@ -314,25 +246,9 @@ export function DocumentsScalingoList({ userId }: DocumentsScalingoListProps) {
                 </DialogClose>
               </div>
             </DialogTitle>
-            <DialogDescription>
-              {selectedFile?.file_name && (
-                <span className="text-sm text-muted-foreground">{selectedFile.file_name}</span>
-              )}
-            </DialogDescription>
           </DialogHeader>
-          <div className="flex-1 mt-4 relative">
-            {(fetchingPDF || !selectedFile?.url) && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-white z-20">
-                <div className="h-10 w-10 border-b-4 border-primary rounded-full animate-spin mb-4"></div>
-                <p className="text-lg font-medium text-primary">
-                  Chargement du document depuis le serveur...
-                </p>
-                <p className="text-sm text-gray-600">
-                  Veuillez patienter, la demande peut prendre quelques secondes.
-                </p>
-              </div>
-            )}
-            {selectedFile && selectedFile.url && !fetchingPDF && (
+          <div className="flex-1 mt-4">
+            {selectedFile && selectedFile.url && (
               <PDFViewer pdfUrl={selectedFile.url} />
             )}
           </div>
