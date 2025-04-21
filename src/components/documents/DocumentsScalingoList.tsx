@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ScalingoHDSStorageProvider } from "@/utils/cloud/ScalingoHDSStorageProvider";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Eye, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -22,13 +22,27 @@ interface DocumentsScalingoListProps {
 export function DocumentsScalingoList({ userId }: DocumentsScalingoListProps) {
   const [files, setFiles] = useState<ScalingoFile[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [deleting, setDeleting] = useState<string | null>(null);
   const scalingoProvider = new ScalingoHDSStorageProvider();
+  const { toast } = useToast();
 
   const fetchFiles = async () => {
     setLoading(true);
-    const result = await scalingoProvider.listFiles(userId);
-    setFiles(result);
-    setLoading(false);
+    try {
+      console.log("Fetching files for user:", userId);
+      const result = await scalingoProvider.listFiles(userId);
+      console.log("Files fetched:", result);
+      setFiles(result);
+    } catch (error) {
+      console.error("Error fetching files:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de récupérer la liste des documents.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -49,21 +63,38 @@ export function DocumentsScalingoList({ userId }: DocumentsScalingoListProps) {
   };
 
   const handleDelete = async (file: ScalingoFile) => {
-    const confirmed = window.confirm("Voulez-vous vraiment supprimer ce document ?");
-    if (!confirmed) return;
-    const ok = await scalingoProvider.deleteFile(file.id);
-    if (ok) {
-      toast({
-        title: "Document supprimé",
-        description: "Le document a été supprimé du serveur Scalingo.",
-      });
-      fetchFiles();
-    } else {
+    try {
+      const confirmed = window.confirm("Voulez-vous vraiment supprimer ce document ?");
+      if (!confirmed) return;
+      
+      setDeleting(file.id);
+      console.log("Deleting file with ID:", file.id);
+      
+      const ok = await scalingoProvider.deleteFile(file.id);
+      
+      if (ok) {
+        toast({
+          title: "Document supprimé",
+          description: `Le document ${file.file_name} a été supprimé avec succès.`,
+        });
+        // Mettre à jour la liste de fichiers localement sans refetch
+        setFiles(files.filter(f => f.id !== file.id));
+      } else {
+        toast({
+          title: "Erreur",
+          description: "Impossible de supprimer le document.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error deleting file:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de supprimer le document.",
+        description: "Une erreur s'est produite lors de la suppression.",
         variant: "destructive",
       });
+    } finally {
+      setDeleting(null);
     }
   };
 
@@ -95,8 +126,18 @@ export function DocumentsScalingoList({ userId }: DocumentsScalingoListProps) {
             <Button size="icon" variant="ghost" title="Ouvrir" onClick={() => handleOpen(file)}>
               <Eye className="h-5 w-5" />
             </Button>
-            <Button size="icon" variant="destructive" title="Supprimer" onClick={() => handleDelete(file)}>
-              <Trash2 className="h-5 w-5" />
+            <Button 
+              size="icon" 
+              variant="destructive" 
+              title="Supprimer" 
+              onClick={() => handleDelete(file)}
+              disabled={deleting === file.id}
+            >
+              {deleting === file.id ? (
+                <div className="h-4 w-4 border-b-2 border-white rounded-full animate-spin"></div>
+              ) : (
+                <Trash2 className="h-5 w-5" />
+              )}
             </Button>
           </div>
         </Card>
