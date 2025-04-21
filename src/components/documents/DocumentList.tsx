@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { IdCard, Printer } from "lucide-react";
 import { ScalingoHDSStorageProvider } from "@/utils/cloud/ScalingoHDSStorageProvider";
+import { DocumentsScalingoList } from "./DocumentsScalingoList";
 
 export function DocumentList({ userId }: { userId: string }) {
   const [showDocumentScanner, setShowDocumentScanner] = useState(false);
@@ -90,6 +91,12 @@ export function DocumentList({ userId }: { userId: string }) {
         onAddMedicalDocument={handleAddMedicalDocument}
       />
 
+      <div className="border-t pt-6">
+        <h3 className="text-lg font-medium mb-3">Documents depuis Scalingo (rapide)</h3>
+
+        <DocumentsScalingoList userId={userId} />
+      </div>
+      
       <div className="border-t pt-6">
         <h3 className="text-lg font-medium mb-3">Accès à vos documents</h3>
         <p className="text-sm text-muted-foreground mb-4">

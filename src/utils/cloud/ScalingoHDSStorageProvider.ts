@@ -1,4 +1,3 @@
-
 import { CloudStorageProvider } from "@/utils/PDFGenerationService";
 
 /**
@@ -133,7 +132,7 @@ export class ScalingoHDSStorageProvider implements CloudStorageProvider {
       
       // Dans une implémentation réelle, on récupérerait le fichier et on générerait une URL
       // Pour cette démo, on crée simplement une URL factice
-      const mockUrl = `data:application/pdf;base64,JVBERi0xLjcKJeLjz9MKNSAwIG9iago...`;
+      const mockUrl = `data:application/pdf;base64,JVBERi0xLjcKJeLjz9MK...`;
       
       console.log(`[ScalingoHDSStorageProvider] File retrieved successfully from region ${this.region}`);
       
@@ -197,6 +196,55 @@ export class ScalingoHDSStorageProvider implements CloudStorageProvider {
     } catch (error) {
       console.error("[ScalingoHDSStorageProvider] Access verification error:", error);
       return null;
+    }
+  }
+
+  /**
+   * Liste tous les fichiers PDF d'un utilisateur stockés chez Scalingo HDS
+   * @param userId - Identifiant de l'utilisateur
+   * @returns Tableau de meta-infos sur les fichiers (mocké ici)
+   */
+  async listFiles(userId: string): Promise<
+    { id: string, file_name: string, created_at: string, url?: string }[]
+  > {
+    try {
+      // Ici, il faudrait requêter l'API Scalingo HDS (mock)
+      // MOCK: On retourne 2 PDF fictifs pour démo
+      await new Promise(resolve => setTimeout(resolve, 600));
+      return [
+        {
+          id: `directive_${userId}_A`,
+          file_name: `Directives_${userId}_A.pdf`,
+          created_at: new Date().toISOString(),
+          url: `data:application/pdf;base64,JVBERi0xLjcKJeLjz9MK...`
+        },
+        {
+          id: `directive_${userId}_B`,
+          file_name: `Directives_${userId}_B.pdf`,
+          created_at: new Date(Date.now() - 86400000).toISOString(),
+          url: `data:application/pdf;base64,JVBERi0xLjcKJeLjz9MK...`
+        }
+      ];
+    } catch (err) {
+      console.error("[ScalingoHDSStorageProvider] listFiles error", err);
+      return [];
+    }
+  }
+
+  /**
+   * Supprime un fichier PDF stocké chez Scalingo HDS
+   * @param documentId - Identifiant du document PDF
+   * @returns true si suppression réussie
+   */
+  async deleteFile(documentId: string): Promise<boolean> {
+    try {
+      // Ici il faudrait appeler l’API Scalingo HDS pour supprimer le fichier
+      await new Promise(resolve => setTimeout(resolve, 500));
+      console.log(`[ScalingoHDSStorageProvider] Fichier supprimé: ${documentId}`);
+      return true;
+    } catch (err) {
+      console.error("[ScalingoHDSStorageProvider] deleteFile error", err);
+      return false;
     }
   }
 }
