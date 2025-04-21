@@ -22,13 +22,24 @@ interface DocumentsScalingoListProps {
 export function DocumentsScalingoList({ userId }: DocumentsScalingoListProps) {
   const [files, setFiles] = useState<ScalingoFile[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const scalingoProvider = new ScalingoHDSStorageProvider();
 
   const fetchFiles = async () => {
     setLoading(true);
-    const result = await scalingoProvider.listFiles(userId);
-    setFiles(result);
-    setLoading(false);
+    try {
+      const result = await scalingoProvider.listFiles(userId);
+      setFiles(result);
+    } catch (error) {
+      console.error("Error fetching files:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les documents.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -49,21 +60,35 @@ export function DocumentsScalingoList({ userId }: DocumentsScalingoListProps) {
   };
 
   const handleDelete = async (file: ScalingoFile) => {
-    const confirmed = window.confirm("Voulez-vous vraiment supprimer ce document ?");
+    const confirmed = window.confirm("Voulez-vous vraiment supprimer ce document ?");
     if (!confirmed) return;
-    const ok = await scalingoProvider.deleteFile(file.id);
-    if (ok) {
-      toast({
-        title: "Document supprimé",
-        description: "Le document a été supprimé du serveur Scalingo.",
-      });
-      fetchFiles();
-    } else {
+    
+    setDeletingId(file.id);
+    try {
+      const ok = await scalingoProvider.deleteFile(file.id);
+      if (ok) {
+        toast({
+          title: "Document supprimé",
+          description: "Le document a été supprimé du serveur Scalingo.",
+        });
+        // Update the files list by filtering out the deleted file
+        setFiles(files.filter(f => f.id !== file.id));
+      } else {
+        toast({
+          title: "Erreur",
+          description: "Impossible de supprimer le document.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error deleting file:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de supprimer le document.",
+        description: "Une erreur s'est produite lors de la suppression.",
         variant: "destructive",
       });
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -95,8 +120,18 @@ export function DocumentsScalingoList({ userId }: DocumentsScalingoListProps) {
             <Button size="icon" variant="ghost" title="Ouvrir" onClick={() => handleOpen(file)}>
               <Eye className="h-5 w-5" />
             </Button>
-            <Button size="icon" variant="destructive" title="Supprimer" onClick={() => handleDelete(file)}>
-              <Trash2 className="h-5 w-5" />
+            <Button 
+              size="icon" 
+              variant="destructive" 
+              title="Supprimer" 
+              onClick={() => handleDelete(file)}
+              disabled={deletingId === file.id}
+            >
+              {deletingId === file.id ? (
+                <div className="h-4 w-4 border-b-2 border-white rounded-full animate-spin"></div>
+              ) : (
+                <Trash2 className="h-5 w-5" />
+              )}
             </Button>
           </div>
         </Card>

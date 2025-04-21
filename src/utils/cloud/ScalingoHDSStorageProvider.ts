@@ -1,3 +1,4 @@
+
 import { CloudStorageProvider } from "@/utils/PDFGenerationService";
 
 /**
@@ -208,6 +209,7 @@ export class ScalingoHDSStorageProvider implements CloudStorageProvider {
     { id: string, file_name: string, created_at: string, url?: string }[]
   > {
     try {
+      console.log(`[ScalingoHDSStorageProvider] Listing files for user ${userId}`);
       // Ici, il faudrait requêter l'API Scalingo HDS (mock)
       // MOCK: On retourne 2 PDF fictifs pour démo
       await new Promise(resolve => setTimeout(resolve, 600));
@@ -238,9 +240,16 @@ export class ScalingoHDSStorageProvider implements CloudStorageProvider {
    */
   async deleteFile(documentId: string): Promise<boolean> {
     try {
-      // Ici il faudrait appeler l’API Scalingo HDS pour supprimer le fichier
+      console.log(`[ScalingoHDSStorageProvider] Attempting to delete file: ${documentId}`);
+      
+      // Ici il faudrait appeler l'API Scalingo HDS pour supprimer le fichier
+      // Simuler un délai pour l'appel API
       await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Log de confirmation
       console.log(`[ScalingoHDSStorageProvider] Fichier supprimé: ${documentId}`);
+      
+      // Retourner le succès de l'opération
       return true;
     } catch (err) {
       console.error("[ScalingoHDSStorageProvider] deleteFile error", err);
