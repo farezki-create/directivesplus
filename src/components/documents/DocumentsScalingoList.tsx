@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -10,6 +11,7 @@ import { PDFViewer } from "@/components/pdf/PDFViewer";
 import { Dialog, DialogContent, DialogTitle, DialogClose, DialogHeader } from "@/components/ui/dialog";
 import { X } from "lucide-react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type ScalingoFile = {
   id: string;
@@ -30,6 +32,7 @@ export function DocumentsScalingoList({ userId }: DocumentsScalingoListProps) {
   const [previewOpen, setPreviewOpen] = useState<boolean>(false);
   const [verificationWarning, setVerificationWarning] = useState<string | null>(null);
   const [loadingFile, setLoadingFile] = useState<string | null>(null);
+  const [fetchingPDF, setFetchingPDF] = useState<boolean>(false);
   const scalingoProvider = new ScalingoHDSStorageProvider();
   const { toast } = useToast();
 
@@ -60,33 +63,36 @@ export function DocumentsScalingoList({ userId }: DocumentsScalingoListProps) {
   const handleOpen = async (file: ScalingoFile) => {
     try {
       setLoadingFile(file.id);
-      
-      // If the URL is already present, use it
-      if (file.url) {
-        setSelectedFile(file);
-        setPreviewOpen(true);
-        return;
+      setFetchingPDF(true);
+
+      let url = file.url;
+      let updatedFile = file;
+
+      // On attend systématiquement la récupération, même si l'URL est déjà présente pour la robustesse
+      if (!url) {
+        console.log("Fetching PDF URL for file:", file.id);
+        url = await scalingoProvider.retrieveFile(file.id);
+
+        if (url) {
+          updatedFile = { ...file, url };
+          // Update the file in the array with the URL
+          setFiles(prevFiles =>
+            prevFiles.map(f => f.id === file.id ? updatedFile : f)
+          );
+        } else {
+          toast({
+            title: "Erreur",
+            description: "Impossible de récupérer le document PDF.",
+            variant: "destructive",
+          });
+          setLoadingFile(null);
+          setFetchingPDF(false);
+          return;
+        }
       }
-      
-      // If not, try to fetch the URL
-      console.log("Fetching PDF URL for file:", file.id);
-      const url = await scalingoProvider.retrieveFile(file.id);
-      
-      if (url) {
-        const updatedFile = { ...file, url };
-        // Update the file in the array with the URL
-        setFiles(prevFiles => 
-          prevFiles.map(f => f.id === file.id ? updatedFile : f)
-        );
-        setSelectedFile(updatedFile);
-        setPreviewOpen(true);
-      } else {
-        toast({
-          title: "Erreur",
-          description: "Impossible de récupérer le document PDF.",
-          variant: "destructive",
-        });
-      }
+
+      setSelectedFile(updatedFile);
+      setPreviewOpen(true);
     } catch (error) {
       console.error("Error opening file:", error);
       toast({
@@ -96,6 +102,7 @@ export function DocumentsScalingoList({ userId }: DocumentsScalingoListProps) {
       });
     } finally {
       setLoadingFile(null);
+      setTimeout(() => setFetchingPDF(false), 500); // Laisser l’overlay le temps du rendu
     }
   };
 
@@ -125,7 +132,7 @@ export function DocumentsScalingoList({ userId }: DocumentsScalingoListProps) {
           setFiles(files.filter(f => f.id !== file.id));
         } catch (verificationError) {
           console.error("Failed to verify deletion on server:", verificationError);
-          // Use a default toast instead of warning variant (which isn't available)
+          // Utilise la variante "default" autorisée au lieu de "warning"
           toast({
             title: "Attention",
             description: "Le document a été marqué comme supprimé, mais nous n'avons pas pu vérifier sa suppression complète du serveur.",
@@ -176,7 +183,7 @@ export function DocumentsScalingoList({ userId }: DocumentsScalingoListProps) {
   return (
     <div className="space-y-4">
       {verificationWarning && (
-        <Alert className="bg-amber-50 border-amber-200">
+        <Alert className="bg-amber-50 border-amber-200" variant="default">
           <AlertTriangle className="h-4 w-4 text-amber-600" />
           <AlertTitle className="text-amber-800">Attention</AlertTitle>
           <AlertDescription className="text-amber-700">
@@ -222,7 +229,10 @@ export function DocumentsScalingoList({ userId }: DocumentsScalingoListProps) {
         </Card>
       ))}
 
-      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+      <Dialog open={previewOpen} onOpenChange={(open) => {
+        setPreviewOpen(open);
+        if (!open) setSelectedFile(null);
+      }}>
         <DialogContent className="max-w-3xl w-full h-[80vh] flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex justify-between items-center">
@@ -247,8 +257,19 @@ export function DocumentsScalingoList({ userId }: DocumentsScalingoListProps) {
               </div>
             </DialogTitle>
           </DialogHeader>
-          <div className="flex-1 mt-4">
-            {selectedFile && selectedFile.url && (
+          <div className="flex-1 mt-4 relative">
+            {(fetchingPDF || !selectedFile?.url) && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-white z-20">
+                <div className="h-10 w-10 border-b-4 border-primary rounded-full animate-spin mb-4"></div>
+                <p className="text-lg font-medium text-primary">
+                  Chargement du document depuis le serveur...
+                </p>
+                <p className="text-sm text-gray-600">
+                  Veuillez patienter, la demande peut prendre quelques secondes.
+                </p>
+              </div>
+            )}
+            {selectedFile && selectedFile.url && !fetchingPDF && (
               <PDFViewer pdfUrl={selectedFile.url} />
             )}
           </div>
