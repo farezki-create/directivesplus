@@ -1,4 +1,3 @@
-
 import { CloudStorageProvider } from "@/utils/PDFGenerationService";
 
 /**
@@ -52,6 +51,10 @@ export class ScalingoHDSStorageProvider implements CloudStorageProvider {
     this.region = region;
   }
   
+  /**
+   * Génère un identifiant d'accès unique pour le document
+   * Cet identifiant peut être partagé avec des tiers pour accéder au document
+   */
   private generateAccessId(): string {
     // Générer un identifiant aléatoire de 10 caractères
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -205,8 +208,6 @@ export class ScalingoHDSStorageProvider implements CloudStorageProvider {
     { id: string, file_name: string, created_at: string, url?: string }[]
   > {
     try {
-      console.log(`[ScalingoHDSStorageProvider] Listing files for user ${userId}`);
-      
       // Ici, il faudrait requêter l'API Scalingo HDS (mock)
       // MOCK: On retourne 2 PDF fictifs pour démo
       await new Promise(resolve => setTimeout(resolve, 600));
@@ -232,30 +233,14 @@ export class ScalingoHDSStorageProvider implements CloudStorageProvider {
 
   /**
    * Supprime un fichier PDF stocké chez Scalingo HDS
-   * S'assure que la suppression est complète sur le serveur
    * @param documentId - Identifiant du document PDF
    * @returns true si suppression réussie
    */
   async deleteFile(documentId: string): Promise<boolean> {
     try {
-      console.log(`[ScalingoHDSStorageProvider] Tentative de suppression du fichier: ${documentId}`);
-      
-      // Ici on appelle l'API Scalingo HDS pour supprimer le fichier
+      // Ici il faudrait appeler l’API Scalingo HDS pour supprimer le fichier
       await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Vérification que le fichier a bien été supprimé du serveur
-      console.log(`[ScalingoHDSStorageProvider] Vérification de la suppression complète sur le serveur...`);
-      
-      // Simulation d'une requête de vérification vers le serveur
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      // Log pour confirmer la suppression
-      console.log(`[ScalingoHDSStorageProvider] Fichier complètement supprimé du serveur: ${documentId}`);
-      
-      // Suppression des caches et traces éventuelles
-      console.log(`[ScalingoHDSStorageProvider] Nettoyage des caches et métadonnées associées`);
-      
-      // Retourne true pour indiquer une suppression réussie et complète
+      console.log(`[ScalingoHDSStorageProvider] Fichier supprimé: ${documentId}`);
       return true;
     } catch (err) {
       console.error("[ScalingoHDSStorageProvider] deleteFile error", err);
