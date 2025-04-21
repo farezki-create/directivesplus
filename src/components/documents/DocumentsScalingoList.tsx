@@ -4,12 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ScalingoHDSStorageProvider } from "@/utils/cloud/ScalingoHDSStorageProvider";
 import { useToast } from "@/hooks/use-toast";
-import { Eye, Trash2 } from "lucide-react";
+import { Eye, Trash2, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { PDFViewer } from "@/components/pdf/PDFViewer";
 import { Dialog, DialogContent, DialogTitle, DialogClose, DialogHeader } from "@/components/ui/dialog";
 import { X } from "lucide-react";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 type ScalingoFile = {
   id: string;
@@ -28,6 +29,7 @@ export function DocumentsScalingoList({ userId }: DocumentsScalingoListProps) {
   const [deleting, setDeleting] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<ScalingoFile | null>(null);
   const [previewOpen, setPreviewOpen] = useState<boolean>(false);
+  const [verificationWarning, setVerificationWarning] = useState<string | null>(null);
   const scalingoProvider = new ScalingoHDSStorageProvider();
   const { toast } = useToast();
 
@@ -94,11 +96,14 @@ export function DocumentsScalingoList({ userId }: DocumentsScalingoListProps) {
           setFiles(files.filter(f => f.id !== file.id));
         } catch (verificationError) {
           console.error("Failed to verify deletion on server:", verificationError);
+          // Use a default toast instead of warning variant (which isn't available)
           toast({
-            title: "Avertissement",
+            title: "Attention",
             description: "Le document a été marqué comme supprimé, mais nous n'avons pas pu vérifier sa suppression complète du serveur.",
-            variant: "warning",
+            variant: "default",
           });
+          // Set warning message to display in UI
+          setVerificationWarning(`Le document ${file.file_name} a été marqué comme supprimé, mais nous n'avons pas pu vérifier sa suppression complète.`);
           // Actualiser la liste au cas où
           fetchFiles();
         }
@@ -141,6 +146,16 @@ export function DocumentsScalingoList({ userId }: DocumentsScalingoListProps) {
 
   return (
     <div className="space-y-4">
+      {verificationWarning && (
+        <Alert className="bg-amber-50 border-amber-200">
+          <AlertTriangle className="h-4 w-4 text-amber-600" />
+          <AlertTitle className="text-amber-800">Attention</AlertTitle>
+          <AlertDescription className="text-amber-700">
+            {verificationWarning}
+          </AlertDescription>
+        </Alert>
+      )}
+
       {files.map(file => (
         <Card key={file.id} className="p-4 flex items-center justify-between">
           <div>
@@ -190,4 +205,3 @@ export function DocumentsScalingoList({ userId }: DocumentsScalingoListProps) {
     </div>
   );
 }
-
