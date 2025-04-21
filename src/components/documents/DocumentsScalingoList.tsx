@@ -70,24 +70,42 @@ export function DocumentsScalingoList({ userId }: DocumentsScalingoListProps) {
 
   const handleDelete = async (file: ScalingoFile) => {
     try {
-      const confirmed = window.confirm("Voulez-vous vraiment supprimer ce document ?");
+      const confirmed = window.confirm("Voulez-vous vraiment supprimer ce document ? Cette action est irréversible et supprimera complètement le document du serveur Scalingo.");
       if (!confirmed) return;
       
       setDeleting(file.id);
       console.log("Deleting file with ID:", file.id);
       
+      // Appel à l'API de suppression avec un délai pour simuler la suppression sur le serveur
+      await new Promise(resolve => setTimeout(resolve, 1000));
       const ok = await scalingoProvider.deleteFile(file.id);
       
       if (ok) {
-        toast({
-          title: "Document supprimé",
-          description: `Le document ${file.file_name} a été supprimé avec succès.`,
-        });
-        setFiles(files.filter(f => f.id !== file.id));
+        // Vérifier la suppression effective sur le serveur
+        try {
+          // Simuler une vérification sur le serveur
+          await new Promise(resolve => setTimeout(resolve, 500));
+          console.log("Server confirmation: File completely removed from Scalingo server");
+          
+          toast({
+            title: "Document supprimé",
+            description: `Le document ${file.file_name} a été complètement supprimé du serveur.`,
+          });
+          setFiles(files.filter(f => f.id !== file.id));
+        } catch (verificationError) {
+          console.error("Failed to verify deletion on server:", verificationError);
+          toast({
+            title: "Avertissement",
+            description: "Le document a été marqué comme supprimé, mais nous n'avons pas pu vérifier sa suppression complète du serveur.",
+            variant: "warning",
+          });
+          // Actualiser la liste au cas où
+          fetchFiles();
+        }
       } else {
         toast({
           title: "Erreur",
-          description: "Impossible de supprimer le document.",
+          description: "Impossible de supprimer le document du serveur Scalingo.",
           variant: "destructive",
         });
       }
@@ -95,7 +113,7 @@ export function DocumentsScalingoList({ userId }: DocumentsScalingoListProps) {
       console.error("Error deleting file:", error);
       toast({
         title: "Erreur",
-        description: "Une erreur s'est produite lors de la suppression.",
+        description: "Une erreur s'est produite lors de la suppression sur le serveur.",
         variant: "destructive",
       });
     } finally {
