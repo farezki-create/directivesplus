@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -57,7 +56,6 @@ export function DocumentsScalingoList({ userId }: DocumentsScalingoListProps) {
 
   const handleOpen = (file: ScalingoFile) => {
     if (file.url) {
-      // Au lieu d'ouvrir l'URL directement, nous affichons le PDF dans une boîte de dialogue
       setSelectedFile(file);
       setPreviewOpen(true);
     } else {
@@ -84,7 +82,6 @@ export function DocumentsScalingoList({ userId }: DocumentsScalingoListProps) {
           title: "Document supprimé",
           description: `Le document ${file.file_name} a été supprimé avec succès.`,
         });
-        // Mettre à jour la liste de fichiers localement sans refetch
         setFiles(files.filter(f => f.id !== file.id));
       } else {
         toast({
@@ -107,8 +104,9 @@ export function DocumentsScalingoList({ userId }: DocumentsScalingoListProps) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-32">
-        <div className="h-6 w-6 border-b-2 border-primary rounded-full animate-spin"></div>
+      <div className="flex flex-col items-center justify-center h-48 space-y-4">
+        <div className="h-10 w-10 border-b-4 border-primary rounded-full animate-spin"></div>
+        <p className="text-primary font-semibold select-none">Chargement des documents...</p>
       </div>
     );
   }
