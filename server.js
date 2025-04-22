@@ -1,3 +1,4 @@
+
 import express from 'express';
 import helmet from 'helmet';
 import compression from 'compression';
@@ -5,10 +6,28 @@ import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { exec } from 'child_process';
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Build script function to run before starting server
+function runBuild() {
+  return new Promise((resolve, reject) => {
+    console.log('Building application...');
+    exec('npx vite build', (error, stdout, stderr) => {
+      if (error) {
+        console.error('Build error:', error);
+        console.error('Build stderr:', stderr);
+        reject(error);
+        return;
+      }
+      console.log('Build output:', stdout);
+      resolve();
+    });
+  });
+}
 
 // Middleware de sécurité
 app.use(helmet());
@@ -45,16 +64,37 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
-// Démarre le serveur sur le port spécifié par l'environnement ou 3000
-const port = process.env.PORT || 3000;
-const server = app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
-});
+// Check if we need to run the build (in production)
+if (process.env.NODE_ENV === 'production') {
+  runBuild()
+    .then(() => {
+      // Démarre le serveur sur le port spécifié par l'environnement ou 3000
+      const port = process.env.PORT || 3000;
+      const server = app.listen(port, () => {
+        console.log(`Server running on http://localhost:${port}`);
+      });
 
-// Gestion des erreurs serveur
-server.on('error', (err) => {
-  console.error('Server error:', err);
-});
+      // Gestion des erreurs serveur
+      server.on('error', (err) => {
+        console.error('Server error:', err);
+      });
+    })
+    .catch(err => {
+      console.error('Failed to build the application:', err);
+      process.exit(1);
+    });
+} else {
+  // In development, just start the server without building
+  const port = process.env.PORT || 3000;
+  const server = app.listen(port, () => {
+    console.log(`Server running on http://localhost:${port}`);
+  });
+
+  // Gestion des erreurs serveur
+  server.on('error', (err) => {
+    console.error('Server error:', err);
+  });
+}
 
 process.on('uncaughtException', (err) => {
   console.error('Uncaught Exception:', err);

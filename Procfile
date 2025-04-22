@@ -1,2 +1,2 @@
 
-web: npm install && npx vite build && node server.js
+web: NODE_ENV=production node server.js
