@@ -8,6 +8,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
+    "heroku-postbuild": "vite build",
     "vite:dev": "vite",
     "vite:build": "vite build",
     "vite:preview": "vite preview",
