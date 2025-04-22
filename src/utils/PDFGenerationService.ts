@@ -1,9 +1,9 @@
-
 import { jsPDF } from "jspdf";
 import { UserProfile, TrustedPerson } from "@/components/pdf/types";
 import { PDFStorageService } from './storage/PDFStorageService';
 import { supabase } from "@/integrations/supabase/client";
 import { CloudStorageProvider } from "./storage/types";
+import { ScalingoHDSStorageProvider } from "./cloud/ScalingoHDSStorageProvider";
 import { PageManager } from "@/components/pdf/utils/PageManager";
 import { PDFUserSection } from "@/components/pdf/utils/PDFUserSection";
 import { PDFTrustedPersonSection } from "@/components/pdf/utils/PDFTrustedPersonSection";
@@ -11,6 +11,9 @@ import { PDFResponsesSection } from "@/components/pdf/utils/PDFResponsesSection"
 import { PDFSynthesisSection } from "@/components/pdf/utils/PDFSynthesisSection";
 import { DocumentFooter } from "@/components/pdf/utils/DocumentFooter";
 import { SignatureHandler } from "@/components/pdf/utils/SignatureHandler";
+
+// Initialize the default storage provider as ScalingoHDSStorageProvider
+PDFStorageService.setStorageProvider(new ScalingoHDSStorageProvider());
 
 export class PDFGenerationService {
   static setStorageProvider(provider: CloudStorageProvider): void {
