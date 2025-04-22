@@ -1,6 +1,6 @@
 
-import { CloudStorageProvider } from "@/utils/PDFGenerationService";
-import { SupabaseStorageProvider } from "@/utils/PDFGenerationService";
+import { CloudStorageProvider } from "@/utils/storage/types";
+import { SupabaseStorageProvider } from "@/utils/storage/providers/SupabaseProvider";
 import { AWSStorageProvider } from "./AWSStorageProvider";
 import { GoogleCloudStorageProvider } from "./GoogleCloudStorageProvider";
 import { AzureStorageProvider } from "./AzureStorageProvider";

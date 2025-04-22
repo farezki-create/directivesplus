@@ -6,20 +6,22 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "@/components/pdf/usePDFData";
 import { useDirectives } from "@/hooks/useDirectives";
-import { useToast } from "@/hooks/use-toast";
+import { useCardGeneration } from "@/hooks/useCardGeneration";
 import { Card } from "@/components/ui/card";
 import { Header } from "@/components/Header";
 import { useSynthesis } from "@/hooks/useSynthesis";
+import { CardGenerationSection } from "@/components/pdf/CardGenerationSection";
 
 export default function GeneratePDF() {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [userId, setUserId] = useState<string | null>(null);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  
   const { responses, synthesis, isLoading: responsesLoading } = useQuestionnairesResponses(userId || "");
   const { text: freeText } = useSynthesis(userId);
   const { profile, trustedPersons, loading: profileLoading } = usePDFData();
   const { directive, isLoading: directiveLoading, saveDirective } = useDirectives(userId || "");
+  const { isGeneratingCard, cardPdfUrl, generateCard, handleDownloadCard } = useCardGeneration(userId);
 
   // Combine all loading states
   const isLoading = responsesLoading || profileLoading || directiveLoading;
@@ -39,10 +41,7 @@ export default function GeneratePDF() {
   useEffect(() => {
     if (userId && responses && profile && !responsesLoading && !profileLoading) {
       console.log("[GeneratePDF] Saving directives");
-      
-      // Ensure we have the free text synthesis from the database
       const synthesisContent = synthesis?.free_text || freeText || "";
-      
       saveDirective.mutate({
         general: responses.general,
         lifeSupport: responses.lifeSupport,
@@ -83,11 +82,25 @@ export default function GeneratePDF() {
             </div>
             
             {!isLoading && (
-              <FullPDFGenerator 
-                userId={userId} 
-                onPdfGenerated={setPdfUrl} 
-                synthesisText={freeText || synthesis?.free_text || ""}
-              />
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-semibold mb-3">Document principal</h3>
+                  <FullPDFGenerator 
+                    userId={userId} 
+                    onPdfGenerated={setPdfUrl} 
+                    synthesisText={freeText || synthesis?.free_text || ""}
+                  />
+                </div>
+                
+                <CardGenerationSection
+                  isGenerating={isGeneratingCard}
+                  cardPdfUrl={cardPdfUrl}
+                  onGenerate={generateCard}
+                  onDownload={handleDownloadCard}
+                  profile={profile}
+                  trustedPersons={trustedPersons}
+                />
+              </div>
             )}
           </Card>
         </div>

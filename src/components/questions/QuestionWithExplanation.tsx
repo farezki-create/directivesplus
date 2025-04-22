@@ -1,8 +1,7 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { QuestionCard } from "./QuestionCard";
-import { Button } from "@/components/ui/button";
-import { Info } from "lucide-react";
+import { QuestionExplanationAccordion } from "./QuestionExplanationAccordion";
 import { getQuestionExplanation } from "@/utils/explanations";
 
 interface QuestionWithExplanationProps {
@@ -23,8 +22,6 @@ export function QuestionWithExplanation({
   options,
   language
 }: QuestionWithExplanationProps) {
-  const [showExplanation, setShowExplanation] = useState(false);
-  
   // Validate question object
   if (!question) {
     console.error("Question object is null or undefined");
@@ -39,42 +36,19 @@ export function QuestionWithExplanation({
     return null;
   }
 
-  // Get explanation from question or from the explanations utility
-  let explanation = '';
+  // First try to get explanation directly from the database record
+  let explanation = question.explanation || '';
   
-  // First, try to get explanation directly from the question object
-  if (question.explanation && question.explanation.trim() !== '') {
-    explanation = question.explanation;
-    console.log(`Using database explanation for question ID ${question.id}: "${question.explanation.substring(0, 30)}..."`);
-  } 
-  // If no explanation in the question object, try to get it from the utility
-  else {
-    // Check if it's a life support question by ID range (21-32) or explicit flag
-    const isLifeSupportQuestion = 
-      (question.id && !isNaN(parseInt(question.id)) && parseInt(question.id) >= 21 && parseInt(question.id) <= 32) ||
-      question.isLifeSupportQuestion ||
-      question.questionType === 'life_support';
-    
-    if (isLifeSupportQuestion) {
-      console.log(`Life support question detected (ID: ${question.id}): ${questionText.substring(0, 30)}...`);
-      // Life support questions don't have explanations
-      explanation = '';
-    } else {
-      // For other question types, try to get explanation from the utility
-      explanation = getQuestionExplanation(question.id, language, questionText);
-      console.log(`Using utility explanation for question ID ${question.id}:`, explanation ? `Found: "${explanation.substring(0, 30)}..."` : 'Not found');
-    }
+  // If no explanation found directly, try using the utility function as a fallback
+  if (!explanation || explanation.trim() === '') {
+    explanation = getQuestionExplanation(question.id, language, questionText);
   }
-
-  // Debug log to check if explanation is being properly resolved
-  console.log("Question with explanation resolved:", { 
-    id: question.id, 
-    text: questionText.substring(0, 30) + "...", 
-    hasExplanation: !!explanation,
-    explanationLength: explanation?.length || 0,
-    explanation: explanation ? explanation.substring(0, 30) + "..." : "None"
-  });
   
+  // Debug logging
+  console.log(`[QuestionWithExplanation] Question: "${questionText.substring(0, 30)}..."`, 
+    `Direct explanation: ${!!question.explanation}, Length: ${question.explanation?.length || 0}`,
+    `Final explanation: ${!!explanation}, Length: ${explanation?.length || 0}`);
+
   return (
     <div className="mb-8">
       <div className="p-6 bg-card rounded-lg border shadow-sm">
@@ -88,29 +62,12 @@ export function QuestionWithExplanation({
           options={options}
         />
         
-        {explanation ? (
-          <div className="mt-4">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="flex items-center text-muted-foreground hover:text-primary"
-              onClick={() => setShowExplanation(!showExplanation)}
-            >
-              <Info className="mr-1 h-4 w-4" />
-              {language === 'en' ? 'Explanation' : 'Explication'}
-              {showExplanation ? (language === 'en' ? ' (hide)' : ' (masquer)') : (language === 'en' ? ' (show)' : ' (afficher)')}
-            </Button>
-            
-            {showExplanation && (
-              <div className="mt-2 p-4 bg-muted rounded-md text-base font-medium">
-                {explanation}
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="mt-4 text-xs text-muted-foreground">
-            {language === 'en' ? 'No explanation available' : 'Pas d\'explication disponible'}
-          </div>
+        {/* Only render explanation if it exists */}
+        {explanation && explanation.trim() !== '' && (
+          <QuestionExplanationAccordion
+            explanationText={explanation}
+            language={language}
+          />
         )}
       </div>
     </div>

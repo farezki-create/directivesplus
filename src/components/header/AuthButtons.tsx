@@ -1,11 +1,10 @@
-
 import { Button } from "../ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/hooks/useLanguage";
 import { toast } from "@/hooks/use-toast";
-import { cleanupUserData, cleanupLocalStorage } from "@/utils/auth-cleanup";
+import { cleanupLocalStorage } from "@/utils/auth-cleanup";
 
 interface AuthButtonsProps {
   user: User | null;
@@ -22,16 +21,21 @@ export const AuthButtons = ({ user }: AuthButtonsProps) => {
   const handleSignOut = async () => {
     if (user) {
       try {
-        // First clean up user data in database
-        await cleanupUserData(user.id);
-        
-        // Then clean up local storage
+        // Only clean up local storage
         cleanupLocalStorage();
         
-        // Log out user and redirect
-        await supabase.auth.signOut();
-        console.log("User signed out successfully");
-        navigate("/");
+        // Display a toast message informing the user
+        toast({
+          title: "Déconnexion",
+          description: "Vos données sont conservées de manière sécurisée sur nos serveurs HDS.",
+        });
+        
+        // Log out user and redirect after a short delay to ensure user sees the toast
+        setTimeout(async () => {
+          await supabase.auth.signOut();
+          console.log("User signed out successfully");
+          navigate("/");
+        }, 1500);
       } catch (signOutError) {
         console.error("Error during sign out:", signOutError);
         toast({

@@ -20,9 +20,15 @@ export function AdvancedIllnessQuestionsDialog({
   const { answers, handleAnswerChange, handleSubmit } = useAdvancedIllnessResponses(questions);
   const { getAdvancedIllnessOptions } = useQuestionOptions();
 
-  // For debugging
+  // Debug logs
   console.log("AdvancedIllnessQuestionsDialog - questions count:", questions.length);
   console.log("AdvancedIllnessQuestionsDialog - language:", currentLanguage);
+  if (questions.length > 0) {
+    console.log("First question explanation:", questions[0].explanation || "No direct explanation");
+    questions.forEach((q, i) => {
+      console.log(`Dialog Question ${i+1}: ID=${q.id}, explanation length: ${q.explanation?.length || 0}`);
+    });
+  }
 
   const onSubmit = async () => {
     const success = await handleSubmit();
@@ -42,25 +48,23 @@ export function AdvancedIllnessQuestionsDialog({
       questionsLength={questions.length}
     >
       {questions.map((question, index) => {
-        // Ensure display_order is available for explanation lookup
-        const questionWithOrder = {
+        // Ensure we have all necessary properties standardized
+        const enhancedQuestion = {
           ...question,
           display_order: question.display_order || index + 1,
           display_order_str: question.display_order_str || (index + 1).toString(),
-          // Make sure both question and question_text are available
           question: question.question || question.question_text,
           question_text: question.question_text || question.question,
-          // Pass through database explanation
-          explanation: question.explanation || ''
+          explanation: question.explanation || '',
+          questionnaire_type: 'advanced_illness'
         };
         
-        // For debugging each question
-        console.log(`Question ${index + 1}: ID=${question.id}, display_order=${questionWithOrder.display_order}, display_order_str=${questionWithOrder.display_order_str}`);
+        console.log(`[Dialog] Rendering question ${index+1}: ID=${question.id}, explanation length: ${enhancedQuestion.explanation?.length || 0}`);
         
         return (
           <QuestionWithExplanation
             key={question.id}
-            question={questionWithOrder}
+            question={enhancedQuestion}
             value={answers[question.id] || []}
             onValueChange={(value) => handleAnswerChange(question.id, value)}
             options={getAdvancedIllnessOptions()}
