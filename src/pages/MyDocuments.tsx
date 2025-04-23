@@ -100,7 +100,6 @@ export default function MyDocuments() {
                   {userId && (
                     <DocumentList 
                       userId={userId} 
-                      restrictedAccess={accessData}
                       initialDocuments={accessData?.documents}
                     />
                   )}

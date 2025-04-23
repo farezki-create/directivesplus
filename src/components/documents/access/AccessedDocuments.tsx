@@ -34,7 +34,6 @@ export function AccessedDocuments({
         documents={documents}
         onPreview={onPreview}
         selectedDocumentId={selectedDocumentId}
-        sharingCode={null}
         previewUrl={previewUrl}
         isPreviewOpen={isPreviewOpen}
         setIsPreviewOpen={setIsPreviewOpen}

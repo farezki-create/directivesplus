@@ -10,7 +10,6 @@ interface DocumentCardProps {
   document: Document;
   onPreview: (document: Document) => void;
   selectedDocumentId?: string | null;
-  sharingCode: string | null;
   isAuthenticated: boolean;
   onDelete?: (documentId: string) => void;
 }

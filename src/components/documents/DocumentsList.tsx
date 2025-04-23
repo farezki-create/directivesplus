@@ -12,6 +12,7 @@ interface DocumentsListProps {
   isPreviewOpen: boolean;
   setIsPreviewOpen: (open: boolean) => void;
   onDelete?: (documentId: string) => void;
+  restrictedAccess?: any; // Optional property for access restrictions
 }
 
 export function DocumentsList({ 
