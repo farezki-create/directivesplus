@@ -7,18 +7,12 @@ import { useToast } from "@/hooks/use-toast";
 
 interface DocumentListProps {
   userId: string;
-  restrictedAccess?: {
-    isFullAccess: boolean;
-    allowedDocumentId?: string;
-    documents?: Document[];
-  };
   initialDocuments?: Document[];
 }
 
-export function DocumentList({ userId, restrictedAccess, initialDocuments }: DocumentListProps) {
+export function DocumentList({ userId, initialDocuments }: DocumentListProps) {
   const [documents, setDocuments] = useState<Document[]>(initialDocuments || []);
   const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(null);
-  const [sharingCode, setSharingCode] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const { toast } = useToast();
@@ -54,14 +48,10 @@ export function DocumentList({ userId, restrictedAccess, initialDocuments }: Doc
       console.log("Preview document:", doc);
       let fileUrl;
       
-      // Check if the file_path is already a signed URL
       if (doc.file_path.startsWith('http')) {
         fileUrl = doc.file_path;
       } else {
-        const bucketName = doc.file_path.includes('/') 
-          ? 'directives_pdfs' 
-          : 'directives_pdfs';
-          
+        const bucketName = 'directives_pdfs';
         const path = doc.file_path.includes('/') 
           ? doc.file_path 
           : `${userId}/${doc.file_path}`;
@@ -87,7 +77,6 @@ export function DocumentList({ userId, restrictedAccess, initialDocuments }: Doc
       console.log("Document URL:", fileUrl);
       setPreviewUrl(fileUrl);
       setSelectedDocumentId(doc.id);
-      setSharingCode(null);
       setIsPreviewOpen(true);
     } catch (error) {
       console.error("Error getting document preview URL:", error);
@@ -101,7 +90,6 @@ export function DocumentList({ userId, restrictedAccess, initialDocuments }: Doc
   
   const handleDocumentDelete = (documentId: string) => {
     setDocuments(documents.filter(doc => doc.id !== documentId));
-    // Close preview if the deleted document was being previewed
     if (selectedDocumentId === documentId) {
       setSelectedDocumentId(null);
       setPreviewUrl(null);
@@ -114,12 +102,10 @@ export function DocumentList({ userId, restrictedAccess, initialDocuments }: Doc
       documents={documents}
       onPreview={handleDocumentPreview}
       selectedDocumentId={selectedDocumentId}
-      sharingCode={sharingCode}
       previewUrl={previewUrl}
       isPreviewOpen={isPreviewOpen}
       setIsPreviewOpen={setIsPreviewOpen}
       onDelete={handleDocumentDelete}
-      restrictedAccess={restrictedAccess}
     />
   );
 }

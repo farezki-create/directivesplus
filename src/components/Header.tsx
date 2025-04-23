@@ -38,21 +38,10 @@ export const Header = () => {
     }
   };
   
-  // Direct navigation handlers - use callback to prevent unwanted reactions
   const navigateTo = (path: string) => (e: React.MouseEvent) => {
     e.preventDefault();
-    e.stopPropagation(); // Prevent event bubbling
+    e.stopPropagation();
     navigate(path);
-  };
-
-  const handleDocumentsClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    // Redirection adaptée selon que l'utilisateur est connecté ou non
-    if (user) {
-      navigate("/my-documents");
-    } else {
-      navigate("/access");
-    }
   };
   
   const isHomePage = location.pathname === "/";
@@ -92,7 +81,7 @@ export const Header = () => {
             Je rédige
           </Button>
           
-          {user ? (
+          {user && (
             <>
               <Button
                 className={navButtonClass}
@@ -103,18 +92,11 @@ export const Header = () => {
               
               <Button
                 className={navButtonClass}
-                onClick={handleDocumentsClick}
+                onClick={navigateTo("/my-documents")}
               >
                 Mes documents
               </Button>
             </>
-          ) : (
-            <Button
-              className={navButtonClass}
-              onClick={handleDocumentsClick}
-            >
-              Documents partagés
-            </Button>
           )}
           
           <NavigationButtons navButtonClass={navButtonClass} />
@@ -127,3 +109,4 @@ export const Header = () => {
     </header>
   );
 }
+
