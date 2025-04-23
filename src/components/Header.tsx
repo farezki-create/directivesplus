@@ -82,21 +82,12 @@ export const Header = () => {
           </Button>
           
           {user && (
-            <>
-              <Button
-                className={navButtonClass}
-                onClick={navigateTo("/generate-pdf")}
-              >
-                Mes directives
-              </Button>
-              
-              <Button
-                className={navButtonClass}
-                onClick={navigateTo("/my-documents")}
-              >
-                Mes documents
-              </Button>
-            </>
+            <Button
+              className={navButtonClass}
+              onClick={navigateTo("/generate-pdf")}
+            >
+              Mes directives
+            </Button>
           )}
           
           <NavigationButtons navButtonClass={navButtonClass} />
@@ -109,4 +100,3 @@ export const Header = () => {
     </header>
   );
 }
-

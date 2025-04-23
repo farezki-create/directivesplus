@@ -16,7 +16,6 @@ import GeneralOpinion from "./pages/GeneralOpinion";
 import LifeSupport from "./pages/LifeSupport";
 import AdvancedIllness from "./pages/AdvancedIllness";
 import Preferences from "./pages/Preferences";
-import MyDocuments from "./pages/MyDocuments";
 import { DialogStateProvider } from "./hooks/useDialogState";
 import { PDFStorageService } from './utils/storage/PDFStorageService';
 import { ScalingoHDSStorageProvider } from './utils/cloud/ScalingoHDSStorageProvider';
@@ -42,12 +41,11 @@ function App() {
             <Route path="/life-support" element={<LifeSupport />} />
             <Route path="/advanced-illness" element={<AdvancedIllness />} />
             <Route path="/preferences" element={<Preferences />} />
-            <Route path="/my-documents" element={<MyDocuments />} />
             
             {/* Catch-all redirect for data URLs that might be clicked accidentally */}
             <Route 
               path="data:application/*" 
-              element={<Navigate to="/my-documents" replace />} 
+              element={<Navigate to="/generate-pdf" replace />} 
             />
           </Routes>
         </HashRouter>
@@ -59,4 +57,3 @@ function App() {
 }
 
 export default App;
-
