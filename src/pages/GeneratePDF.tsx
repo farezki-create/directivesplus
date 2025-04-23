@@ -6,11 +6,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "@/components/pdf/usePDFData";
 import { useDirectives } from "@/hooks/useDirectives";
-import { useCardGeneration } from "@/hooks/useCardGeneration";
 import { Card } from "@/components/ui/card";
 import { Header } from "@/components/Header";
 import { useSynthesis } from "@/hooks/useSynthesis";
-import { CardGenerationSection } from "@/components/pdf/CardGenerationSection";
 
 export default function GeneratePDF() {
   const navigate = useNavigate();
@@ -21,7 +19,6 @@ export default function GeneratePDF() {
   const { text: freeText } = useSynthesis(userId);
   const { profile, trustedPersons, loading: profileLoading } = usePDFData();
   const { directive, isLoading: directiveLoading, saveDirective } = useDirectives(userId || "");
-  const { isGeneratingCard, cardPdfUrl, generateCard, handleDownloadCard } = useCardGeneration(userId);
 
   // Combine all loading states
   const isLoading = responsesLoading || profileLoading || directiveLoading;
@@ -82,23 +79,12 @@ export default function GeneratePDF() {
             </div>
             
             {!isLoading && (
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-semibold mb-3">Document principal</h3>
-                  <FullPDFGenerator 
-                    userId={userId} 
-                    onPdfGenerated={setPdfUrl} 
-                    synthesisText={freeText || synthesis?.free_text || ""}
-                  />
-                </div>
-                
-                <CardGenerationSection
-                  isGenerating={isGeneratingCard}
-                  cardPdfUrl={cardPdfUrl}
-                  onGenerate={generateCard}
-                  onDownload={handleDownloadCard}
-                  profile={profile}
-                  trustedPersons={trustedPersons}
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Document principal</h3>
+                <FullPDFGenerator 
+                  userId={userId} 
+                  onPdfGenerated={setPdfUrl} 
+                  synthesisText={freeText || synthesis?.free_text || ""}
                 />
               </div>
             )}
