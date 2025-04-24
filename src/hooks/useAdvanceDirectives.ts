@@ -95,11 +95,13 @@ export function useAdvanceDirectives(userId: string) {
         accessCode
       );
       
-      if (!result || !result.is_valid) {
+      // Fix: Check if result exists and access the first item in the array
+      if (!result || result.length === 0 || !result[0].is_valid) {
         throw new Error("Accès refusé");
       }
       
-      return result.directive_content;
+      // Return the directive content from the first item in the array
+      return result[0].directive_content;
     } catch (error) {
       console.error("Access request failed:", error);
       toast({
