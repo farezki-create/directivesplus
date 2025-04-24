@@ -9,6 +9,71 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      access_requests: {
+        Row: {
+          access_code: string
+          created_at: string | null
+          directive_id: string | null
+          id: string
+          requester_birthdate: string
+          requester_name: string
+          status: string | null
+        }
+        Insert: {
+          access_code: string
+          created_at?: string | null
+          directive_id?: string | null
+          id?: string
+          requester_birthdate: string
+          requester_name: string
+          status?: string | null
+        }
+        Update: {
+          access_code?: string
+          created_at?: string | null
+          directive_id?: string | null
+          id?: string
+          requester_birthdate?: string
+          requester_name?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "access_requests_directive_id_fkey"
+            columns: ["directive_id"]
+            isOneToOne: false
+            referencedRelation: "advance_directives"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      advance_directives: {
+        Row: {
+          access_code: string
+          content: string
+          created_at: string | null
+          id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          access_code: string
+          content: string
+          created_at?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          access_code?: string
+          content?: string
+          created_at?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       articles: {
         Row: {
           category: string
@@ -613,6 +678,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      verify_directive_access: {
+        Args: {
+          p_directive_id: string
+          p_name: string
+          p_birthdate: string
+          p_access_code: string
+        }
+        Returns: {
+          is_valid: boolean
+          directive_content: string
+        }[]
+      }
       verify_document_access: {
         Args: {
           p_access_code: string

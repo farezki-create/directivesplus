@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { DocumentList } from "@/components/documents/DocumentList";
 import { DocumentAccess } from "@/components/documents/DocumentAccess";
 import { DocumentActions } from "@/components/documents/DocumentActions";
+import { AdvanceDirectivesList } from "@/components/directives/AdvanceDirectivesList";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { PDFPreviewDialog } from "@/components/pdf/PDFPreviewDialog";
@@ -45,8 +46,6 @@ export default function MyDocuments() {
       console.log("Setting up direct preview with URL:", accessData.documentUrl);
       setDirectPreviewUrl(accessData.documentUrl);
       setDirectExternalId(accessData.externalDocumentId || null);
-      // Don't automatically open the preview
-      // setShowDirectPreview(true);
     }
   }, [navigate, accessData]);
 
@@ -86,9 +85,12 @@ export default function MyDocuments() {
           
           {user || accessData ? (
             <Tabs defaultValue="documents">
-              <TabsList className="grid w-full grid-cols-1">
+              <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="documents">
                   {accessData ? "Documents partagés" : "Tous mes documents"}
+                </TabsTrigger>
+                <TabsTrigger value="directives">
+                  Directives anticipées
                 </TabsTrigger>
               </TabsList>
               
@@ -103,6 +105,12 @@ export default function MyDocuments() {
                       initialDocuments={accessData?.documents}
                     />
                   )}
+                </Card>
+              </TabsContent>
+              
+              <TabsContent value="directives" className="mt-4">
+                <Card className="p-6">
+                  {userId && <AdvanceDirectivesList userId={userId} />}
                 </Card>
               </TabsContent>
             </Tabs>

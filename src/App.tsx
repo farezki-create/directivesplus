@@ -16,6 +16,7 @@ import GeneralOpinion from "./pages/GeneralOpinion";
 import LifeSupport from "./pages/LifeSupport";
 import AdvancedIllness from "./pages/AdvancedIllness";
 import Preferences from "./pages/Preferences";
+import MedicalAccess from "./pages/MedicalAccess";
 import { DialogStateProvider } from "./hooks/useDialogState";
 import { PDFStorageService } from './utils/storage/PDFStorageService';
 import { ScalingoHDSStorageProvider } from './utils/cloud/ScalingoHDSStorageProvider';
@@ -41,6 +42,7 @@ function App() {
             <Route path="/life-support" element={<LifeSupport />} />
             <Route path="/advanced-illness" element={<AdvancedIllness />} />
             <Route path="/preferences" element={<Preferences />} />
+            <Route path="/medical-access" element={<MedicalAccess />} />
             
             {/* Catch-all redirect for data URLs that might be clicked accidentally */}
             <Route 
