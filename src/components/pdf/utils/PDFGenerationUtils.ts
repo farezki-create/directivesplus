@@ -30,8 +30,8 @@ export const handlePDFGeneration = async (
     console.log("[PDFGeneration] Responses data:", responses);
     console.log("[PDFGeneration] Synthesis data:", responses.synthesis);
 
-    // Generate PDF - Passing only the required 3 arguments
-    const pdfDataUrl = await PDFDocumentGenerator.generate(profile, responses, trustedPersons);
+    // Generate PDF - Pass the isCard parameter
+    const pdfDataUrl = await PDFDocumentGenerator.generate(profile, responses, trustedPersons, isCard);
     
     if (!pdfDataUrl) {
       console.error("[PDFGeneration] PDF generation failed - no data URL returned");
