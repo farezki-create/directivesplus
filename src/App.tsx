@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route, HashRouter, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
@@ -17,6 +16,7 @@ import LifeSupport from "./pages/LifeSupport";
 import AdvancedIllness from "./pages/AdvancedIllness";
 import Preferences from "./pages/Preferences";
 import MedicalAccess from "./pages/MedicalAccess";
+import MedicalData from "./pages/MedicalData";
 import { DialogStateProvider } from "./hooks/useDialogState";
 import { PDFStorageService } from './utils/storage/PDFStorageService';
 import { ScalingoHDSStorageProvider } from './utils/cloud/ScalingoHDSStorageProvider';
@@ -43,6 +43,7 @@ function App() {
             <Route path="/advanced-illness" element={<AdvancedIllness />} />
             <Route path="/preferences" element={<Preferences />} />
             <Route path="/medical-access" element={<MedicalAccess />} />
+            <Route path="/medical-data" element={<MedicalData />} />
             
             {/* Catch-all redirect for data URLs that might be clicked accidentally */}
             <Route 

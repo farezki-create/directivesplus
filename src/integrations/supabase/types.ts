@@ -178,6 +178,71 @@ export type Database = {
           },
         ]
       }
+      medical_data: {
+        Row: {
+          access_code: string
+          created_at: string | null
+          data: string
+          id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          access_code: string
+          created_at?: string | null
+          data: string
+          id?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          access_code?: string
+          created_at?: string | null
+          data?: string
+          id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      medical_data_access_requests: {
+        Row: {
+          access_code: string
+          created_at: string | null
+          id: string
+          medical_data_id: string | null
+          requester_birthdate: string
+          requester_name: string
+          status: string | null
+        }
+        Insert: {
+          access_code: string
+          created_at?: string | null
+          id?: string
+          medical_data_id?: string | null
+          requester_birthdate: string
+          requester_name: string
+          status?: string | null
+        }
+        Update: {
+          access_code?: string
+          created_at?: string | null
+          id?: string
+          medical_data_id?: string | null
+          requester_birthdate?: string
+          requester_name?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medical_data_access_requests_medical_data_id_fkey"
+            columns: ["medical_data_id"]
+            isOneToOne: false
+            referencedRelation: "medical_data"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
           address: string
@@ -700,6 +765,18 @@ export type Database = {
         Returns: {
           document_id: string
           is_full_access: boolean
+        }[]
+      }
+      verify_medical_data_access: {
+        Args: {
+          p_medical_data_id: string
+          p_name: string
+          p_birthdate: string
+          p_access_code: string
+        }
+        Returns: {
+          is_valid: boolean
+          medical_data_content: Json
         }[]
       }
     }
