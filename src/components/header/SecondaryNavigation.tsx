@@ -21,26 +21,24 @@ export const SecondaryNavigation = ({ user, navButtonClass }: SecondaryNavigatio
 
   const handleWriteClick = () => {
     if (user) {
-      // If user is logged in, go directly to writing mode
       window.location.href = "/?writing=true";
     } else {
-      // If not logged in, redirect to auth page with writing parameter
       navigate("/auth?writing=true");
     }
   };
 
   return (
-    <div className="w-full bg-gray-50 py-2 shadow-sm">
+    <div className="w-full bg-gradient-to-r from-purple-50 to-purple-100 py-3 shadow-sm border-b border-purple-200">
       <div className="container mx-auto px-4 flex items-center justify-center gap-4 flex-wrap">
         <Button
-          className={navButtonClass}
+          className={`${navButtonClass} transition-all duration-300 hover:scale-105 hover:shadow-md bg-white border-purple-300 text-purple-700 hover:bg-purple-50`}
           onClick={handleHomeClick}
         >
           {t('home')}
         </Button>
 
         <Button
-          className={navButtonClass}
+          className={`${navButtonClass} transition-all duration-300 hover:scale-105 hover:shadow-md bg-white border-purple-300 text-purple-700 hover:bg-purple-50 flex items-center gap-2`}
           onClick={handleWriteClick}
         >
           <PenLine className="w-4 h-4 mr-1" />
@@ -49,7 +47,7 @@ export const SecondaryNavigation = ({ user, navButtonClass }: SecondaryNavigatio
 
         {user && (
           <Button
-            className={navButtonClass}
+            className={`${navButtonClass} transition-all duration-300 hover:scale-105 hover:shadow-md bg-white border-purple-300 text-purple-700 hover:bg-purple-50 flex items-center gap-2`}
             onClick={() => navigate("/generate-pdf")}
           >
             <FileText className="w-4 h-4 mr-1" />
