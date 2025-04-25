@@ -1,38 +1,35 @@
 
+import { Calendar } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { Badge } from "@/components/ui/badge";
+import { FileIcon } from "lucide-react";
 
 interface DocumentMetaProps {
   description: string;
   createdAt: string;
-  externalId?: string | null;
+  externalId?: string;
   isCard?: boolean;
 }
 
-export function DocumentMeta({ 
-  description, 
-  createdAt, 
-  externalId,
-  isCard
-}: DocumentMetaProps) {
-  const formattedDate = format(new Date(createdAt), "d MMMM yyyy", { locale: fr });
-  
+export function DocumentMeta({ description, createdAt, externalId, isCard }: DocumentMetaProps) {
   return (
-    <div className="flex-grow">
-      <div className="flex items-center gap-2">
-        <h3 className="font-medium">
-          {isCard ? "Carte de directives anticipées" : description}
-        </h3>
-        {isCard && (
-          <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700">
-            Format carte
-          </span>
-        )}
+    <div className="flex items-start space-x-3">
+      <div className={`p-2 rounded-lg ${isCard ? 'bg-purple-50' : 'bg-blue-50'}`}>
+        <FileIcon className={`h-6 w-6 ${isCard ? 'text-purple-600' : 'text-blue-600'}`} />
       </div>
-      <div className="text-sm text-muted-foreground mt-1 space-y-1">
-        <p>Généré le {formattedDate}</p>
+      <div>
+        <h3 className="font-medium">{description || "Directives anticipées"}</h3>
+        <div className="flex items-center text-sm text-gray-500 mt-1">
+          <Calendar className="h-3 w-3 mr-1" />
+          <span>
+            {format(new Date(createdAt), "dd MMMM yyyy à HH:mm", { locale: fr })}
+          </span>
+        </div>
         {externalId && (
-          <p className="text-xs text-muted-foreground">ID: {externalId}</p>
+          <Badge variant="outline" className="mt-2">
+            ID: {externalId}
+          </Badge>
         )}
       </div>
     </div>
