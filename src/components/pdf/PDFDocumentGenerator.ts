@@ -42,7 +42,7 @@ export class PDFDocumentGenerator {
         
         let yPos = 90;
         trustedPersons.forEach((person, index) => {
-          doc.text(`${index + 1}. ${person.first_name} ${person.last_name}`, 25, yPos);
+          doc.text(`${index + 1}. ${person.name}`, 25, yPos);
           yPos += 10;
         });
       }

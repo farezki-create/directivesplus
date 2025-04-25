@@ -30,7 +30,7 @@ export const handlePDFGeneration = async (
     console.log("[PDFGeneration] Responses data:", responses);
     console.log("[PDFGeneration] Synthesis data:", responses.synthesis);
 
-    // Generate PDF - Fix here: passing only the required 3 arguments
+    // Generate PDF - Passing only the required 3 arguments
     const pdfDataUrl = await PDFDocumentGenerator.generate(profile, responses, trustedPersons);
     
     if (!pdfDataUrl) {
