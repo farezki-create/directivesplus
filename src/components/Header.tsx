@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, FileText, FileMedical } from "lucide-react";
 import { LanguageSelector } from "./LanguageSelector";
 import { NavigationButtons } from "./header/NavigationButtons";
 import { AuthButtons } from "./header/AuthButtons";
@@ -82,12 +82,30 @@ export const Header = () => {
           </Button>
           
           {user && (
-            <Button
-              className={navButtonClass}
-              onClick={navigateTo("/generate-pdf")}
-            >
-              Mes directives
-            </Button>
+            <>
+              <Button
+                className={navButtonClass}
+                onClick={navigateTo("/generate-pdf")}
+              >
+                Mes directives
+              </Button>
+              
+              <Button
+                className={navButtonClass}
+                onClick={navigateTo("/my-documents")}
+              >
+                <FileText className="h-4 w-4 mr-1" />
+                Mes documents
+              </Button>
+              
+              <Button
+                className={navButtonClass}
+                onClick={navigateTo("/medical-data")}
+              >
+                <Filemedical className="h-4 w-4 mr-1" />
+                Mes données médicales
+              </Button>
+            </>
           )}
           
           <NavigationButtons navButtonClass={navButtonClass} />
