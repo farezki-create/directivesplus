@@ -1,21 +1,13 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
-/**
- * Handles server-side encryption and decryption of directive content
- * through Supabase RPC functions to maintain security
- */
 export const directiveEncryption = {
-  /**
-   * Store encrypted directive content and generate an access code
-   */
   async storeDirective(userId: string, content: string): Promise<string | null> {
     try {
       // Generate a secure access code
       const accessCode = generateSecureAccessCode();
       
-      // Insert the encrypted directive via RPC function
+      // Insert the directive with encrypted content
       const { data, error } = await supabase
         .from('advance_directives')
         .insert([
@@ -42,9 +34,6 @@ export const directiveEncryption = {
     }
   },
   
-  /**
-   * Verify access to a directive
-   */
   async verifyAccess(directiveId: string, name: string, birthdate: string, accessCode: string) {
     try {
       const { data, error } = await supabase.rpc(
@@ -57,7 +46,10 @@ export const directiveEncryption = {
         }
       );
       
-      if (error) throw error;
+      if (error) {
+        console.error("Verification error:", error);
+        throw error;
+      }
       
       return data;
     } catch (error) {
@@ -67,9 +59,6 @@ export const directiveEncryption = {
   }
 };
 
-/**
- * Generate a secure, human-readable access code
- */
 function generateSecureAccessCode(): string {
   // Generate a random 8-character code
   const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';

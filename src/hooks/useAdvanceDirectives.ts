@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -63,7 +62,6 @@ export function useAdvanceDirectives(userId: string) {
           description: "Vos directives anticipées ont été sauvegardées",
         });
         
-        // Refresh the directives list
         await fetchUserDirectives();
         return accessCode;
       }
@@ -95,12 +93,10 @@ export function useAdvanceDirectives(userId: string) {
         accessCode
       );
       
-      // Fix: Check if result exists and access the first item in the array
       if (!result || result.length === 0 || !result[0].is_valid) {
         throw new Error("Accès refusé");
       }
       
-      // Return the directive content from the first item in the array
       return result[0].directive_content;
     } catch (error) {
       console.error("Access request failed:", error);
