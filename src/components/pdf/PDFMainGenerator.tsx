@@ -6,6 +6,7 @@ import { toast } from "@/hooks/use-toast";
 import { PDFGenerationButtons } from "./PDFGenerationButtons";
 import { PDFGeneratorStatus } from "./PDFGeneratorStatus";
 import { usePDFGenerationState } from "./usePDFGenerationState";
+import { useNavigate } from "react-router-dom";
 
 interface PDFMainGeneratorProps {
   userId: string;
@@ -26,6 +27,7 @@ export function PDFMainGenerator({
   trustedPersons,
   synthesis
 }: PDFMainGeneratorProps) {
+  const navigate = useNavigate();
   const { 
     pdfUrl, setPdfUrl, 
     showPreview, setShowPreview,
@@ -71,6 +73,17 @@ export function PDFMainGenerator({
               onPdfGenerated(url);
             }
             setIsGenerating(false);
+            
+            // Navigate to documents page after successful generation
+            toast({
+              title: "Succès",
+              description: "Vos directives ont été générées et sauvegardées. Redirection vers vos documents...",
+            });
+            
+            // Add a small delay before navigation to ensure the user sees the success message
+            setTimeout(() => {
+              navigate("/my-documents");
+            }, 2000);
           },
           setShowPreview
         );
