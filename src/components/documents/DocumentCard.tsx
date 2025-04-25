@@ -27,15 +27,17 @@ export function DocumentCard({
     handleDeleteDocument
   } = useDocumentDeletion(document, onDelete);
 
+  const isCard = document.file_path?.includes('cards/');
+
   return (
     <>
-      <Card key={document.id} className="p-4">
+      <Card key={document.id} className={`p-4 ${isCard ? 'border-blue-200 bg-blue-50/50' : ''}`}>
         <div className="flex items-start justify-between">
           <DocumentMeta
             description={document.description || ""}
             createdAt={document.created_at}
             externalId={document.external_id}
-            isCard={document.file_path?.includes('cards/')}
+            isCard={isCard}
           />
           
           <DocumentActions
