@@ -8,7 +8,11 @@ import { useToast } from "@/hooks/use-toast";
 import { useAdvanceDirectives } from "@/hooks/useAdvanceDirectives";
 import { Loader2 } from "lucide-react";
 
-export function MedicalAccessForm() {
+interface MedicalAccessFormProps {
+  type?: "directive" | "medical";
+}
+
+export function MedicalAccessForm({ type = "directive" }: MedicalAccessFormProps) {
   const [name, setName] = useState("");
   const [birthdate, setBirthdate] = useState("");
   const [accessCode, setAccessCode] = useState("");
@@ -31,21 +35,27 @@ export function MedicalAccessForm() {
     
     setIsVerifying(true);
     try {
-      const content = await requestAccess(
-        directiveId,
-        name,
-        birthdate,
-        accessCode
-      );
-      
-      if (content) {
-        toast({
-          title: "Accès autorisé",
-          description: "Vous pouvez maintenant consulter les directives anticipées du patient"
-        });
+      if (type === "directive") {
+        const content = await requestAccess(
+          directiveId,
+          name,
+          birthdate,
+          accessCode
+        );
         
-        // Handle displaying the directive content
-        // This would typically open a PDF or render the structured content
+        if (content) {
+          toast({
+            title: "Accès autorisé",
+            description: "Vous pouvez maintenant consulter les directives anticipées du patient"
+          });
+        }
+      } else {
+        // Handle medical data access here
+        // TODO: Implement medical data access verification
+        toast({
+          title: "Accès médical",
+          description: "Cette fonctionnalité sera bientôt disponible"
+        });
       }
     } catch (error) {
       console.error("Access verification failed:", error);
@@ -53,6 +63,8 @@ export function MedicalAccessForm() {
       setIsVerifying(false);
     }
   };
+  
+  const formTitle = type === "directive" ? "directives anticipées" : "données médicales";
   
   return (
     <form onSubmit={handleFormSubmit}>
@@ -105,7 +117,7 @@ export function MedicalAccessForm() {
       <CardFooter>
         <Button type="submit" disabled={isVerifying} className="w-full">
           {isVerifying && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Vérifier l'accès
+          Vérifier l'accès aux {formTitle}
         </Button>
       </CardFooter>
     </form>
