@@ -1,9 +1,9 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Header } from "@/components/Header";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { useMedicalData } from "@/hooks/useMedicalData";
 import { useAuth } from "@/hooks/useAuth";
 import { MedicalDataList } from "@/components/medical/MedicalDataList";
@@ -12,12 +12,22 @@ import { MedicalDataForm } from "@/components/medical/MedicalDataForm";
 export default function MedicalData() {
   const { user } = useAuth();
   const { medicalData, isLoading, fetchMedicalData } = useMedicalData(user?.id || "");
+  const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
     if (user) {
       fetchMedicalData();
     }
   }, [user]);
+
+  const handleFormToggle = () => {
+    setShowForm(!showForm);
+  };
+
+  const handleDataSaved = () => {
+    setShowForm(false);
+    fetchMedicalData();
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -27,11 +37,27 @@ export default function MedicalData() {
         <div className="max-w-4xl mx-auto space-y-6">
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold">Mes Données Médicales</h1>
-            <Button className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Ajouter des données
+            <Button 
+              className="flex items-center gap-2"
+              onClick={handleFormToggle}
+            >
+              {showForm ? (
+                <>
+                  <X className="h-4 w-4" />
+                  Annuler
+                </>
+              ) : (
+                <>
+                  <Plus className="h-4 w-4" />
+                  Ajouter des données
+                </>
+              )}
             </Button>
           </div>
+          
+          {showForm && (
+            <MedicalDataForm onDataSaved={handleDataSaved} />
+          )}
           
           <Card className="p-6">
             {isLoading ? (
