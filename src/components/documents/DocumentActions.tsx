@@ -4,7 +4,7 @@ import { FileText, CreditCard } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface DocumentActionsProps {
-  onAddMedicalDocument: () => void;
+  onAddMedicalDocument?: () => void;
 }
 
 export function DocumentActions({ onAddMedicalDocument }: DocumentActionsProps) {
