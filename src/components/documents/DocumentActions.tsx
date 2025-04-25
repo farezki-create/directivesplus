@@ -13,7 +13,7 @@ export function DocumentActions({ onAddMedicalDocument }: DocumentActionsProps) 
   return (
     <div className="space-y-4 mb-6">
       <Button
-        onClick={() => navigate("/generate-pdf")}
+        onClick={() => navigate("/generate-pdf?format=card")}
         variant="outline"
         className="w-full flex items-center gap-3 h-auto py-4 transition-all shadow-sm hover:shadow-md hover:bg-purple-50"
       >

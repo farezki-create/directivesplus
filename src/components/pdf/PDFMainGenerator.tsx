@@ -16,6 +16,7 @@ interface PDFMainGeneratorProps {
   responses: any;
   trustedPersons: TrustedPerson[];
   synthesis?: { free_text: string } | null;
+  isCard?: boolean;
 }
 
 export function PDFMainGenerator({
@@ -25,7 +26,8 @@ export function PDFMainGenerator({
   profile,
   responses,
   trustedPersons,
-  synthesis
+  synthesis,
+  isCard
 }: PDFMainGeneratorProps) {
   const navigate = useNavigate();
   const { 
@@ -54,7 +56,7 @@ export function PDFMainGenerator({
     }
 
     try {
-      console.log("[PDFGenerator] Generating full PDF");
+      console.log("[PDFGenerator] Generating PDF", isCard ? "as card format" : "as full document");
       
       const finalSynthesisText = synthesisText || synthesis?.free_text || "";
       
@@ -74,10 +76,15 @@ export function PDFMainGenerator({
             }
             setIsGenerating(false);
             
+            // Save with the correct format designation
+            const saveFormat = isCard ? 'card' : 'full';
+            
             // Navigate to documents page after successful generation
             toast({
               title: "Succès",
-              description: "Vos directives ont été générées et sauvegardées. Redirection vers vos documents...",
+              description: isCard 
+                ? "Votre carte d'accès a été générée et sauvegardée. Redirection vers vos documents..." 
+                : "Vos directives ont été générées et sauvegardées. Redirection vers vos documents...",
             });
             
             // Add a small delay before navigation to ensure the user sees the success message
@@ -85,7 +92,8 @@ export function PDFMainGenerator({
               navigate("/my-documents");
             }, 2000);
           },
-          setShowPreview
+          setShowPreview,
+          isCard
         );
       }, 1000);
     } catch (error) {
@@ -109,6 +117,7 @@ export function PDFMainGenerator({
         pdfUrl={pdfUrl}
         responses={responses}
         synthesis={synthesis}
+        isCard={isCard}
       />
       
       <PDFGenerationButtons 
@@ -116,6 +125,7 @@ export function PDFMainGenerator({
         isGenerating={isGenerating}
         onGenerateClick={generatePDF}
         documentIdentifier={documentIdentifier}
+        isCard={isCard}
       />
     </>
   );

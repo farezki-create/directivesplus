@@ -7,11 +7,13 @@ interface PDFGeneratorProps {
   userId: string;
   onPdfGenerated?: (url: string | null) => void;
   synthesisText?: string;
+  isCard?: boolean;
 }
 
-export function PDFGenerator({ userId, onPdfGenerated, synthesisText }: PDFGeneratorProps) {
+export function PDFGenerator({ userId, onPdfGenerated, synthesisText, isCard }: PDFGeneratorProps) {
   console.log("[PDFGenerator] Initializing with userId:", userId);
   console.log("[PDFGenerator] Synthesis text provided:", synthesisText ? "Yes" : "No");
+  console.log("[PDFGenerator] Generating card format:", isCard ? "Yes" : "No");
   
   const { responses, synthesis, isLoading } = useQuestionnairesResponses(userId);
   const { profile, trustedPersons, loading } = usePDFData();
@@ -39,6 +41,7 @@ export function PDFGenerator({ userId, onPdfGenerated, synthesisText }: PDFGener
       responses={responses}
       trustedPersons={trustedPersons}
       synthesis={synthesis}
+      isCard={isCard}
     />
   );
 }

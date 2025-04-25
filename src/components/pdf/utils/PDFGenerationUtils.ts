@@ -16,10 +16,11 @@ export const handlePDFGeneration = async (
   responses: any,
   trustedPersons: TrustedPerson[],
   setPdfUrl: (url: string | null) => void,
-  setShowPreview: (show: boolean) => void
+  setShowPreview: (show: boolean) => void,
+  isCard?: boolean
 ) => {
   try {
-    console.log("[PDFGeneration] Starting PDF generation");
+    console.log("[PDFGeneration] Starting PDF generation", isCard ? "as card" : "as full document");
     if (!profile) {
       console.error("[PDFGeneration] No profile data available");
       throw new Error("Les données du profil sont requises");
@@ -30,7 +31,7 @@ export const handlePDFGeneration = async (
     console.log("[PDFGeneration] Synthesis data:", responses.synthesis);
 
     // Generate PDF
-    const pdfDataUrl = await PDFDocumentGenerator.generate(profile, responses, trustedPersons);
+    const pdfDataUrl = await PDFDocumentGenerator.generate(profile, responses, trustedPersons, isCard);
     
     if (!pdfDataUrl) {
       console.error("[PDFGeneration] PDF generation failed - no data URL returned");
@@ -41,7 +42,7 @@ export const handlePDFGeneration = async (
     if (profile.unique_identifier) {
       try {
         console.log("[PDFGeneration] Saving PDF to storage for user:", profile.unique_identifier);
-        await savePDFToStorage(pdfDataUrl, profile.unique_identifier);
+        await savePDFToStorage(pdfDataUrl, profile.unique_identifier, isCard);
       } catch (storageError) {
         console.error("[PDFGeneration] Error saving PDF to storage:", storageError);
         // Continue with preview even if storage fails
@@ -54,7 +55,7 @@ export const handlePDFGeneration = async (
     console.log("[PDFGeneration] PDF generated successfully");
     toast({
       title: "Succès",
-      description: "Le PDF a été généré avec succès.",
+      description: isCard ? "Votre carte d'accès a été générée avec succès." : "Le PDF a été généré avec succès.",
     });
   } catch (error) {
     console.error("[PDFGeneration] Error generating PDF:", error);
@@ -73,7 +74,7 @@ export const handlePDFGeneration = async (
  * Version: 1.0.0
  * Last Modified: ${new Date().toISOString()}
  */
-export const savePDFToStorage = async (pdfDataUrl: string, userId: string) => {
+export const savePDFToStorage = async (pdfDataUrl: string, userId: string, isCard = false) => {
   try {
     // Convert data URL to Blob
     const response = await fetch(pdfDataUrl);
@@ -81,8 +82,13 @@ export const savePDFToStorage = async (pdfDataUrl: string, userId: string) => {
     
     // Generate a unique filename with timestamp
     const timestamp = new Date().getTime();
-    const filename = `directives_${timestamp}.pdf`;
-    const filepath = `${userId}/${filename}`;
+    const filePrefix = isCard ? 'card_' : 'directives_';
+    const filename = `${filePrefix}${timestamp}.pdf`;
+    
+    // Save cards in a separate folder
+    const filepath = isCard 
+      ? `${userId}/cards/${filename}`
+      : `${userId}/${filename}`;
     
     console.log("[PDFStorage] Uploading PDF to storage path:", filepath);
     
@@ -114,7 +120,7 @@ export const savePDFToStorage = async (pdfDataUrl: string, userId: string) => {
         file_path: filepath,
         created_at: currentDate,
         content_type: 'application/pdf',
-        description: 'Directives anticipées générées'
+        description: isCard ? 'Carte d\'accès' : 'Directives anticipées générées'
       });
       
     if (dbError) {

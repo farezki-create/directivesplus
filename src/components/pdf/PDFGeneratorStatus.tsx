@@ -12,6 +12,7 @@ interface PDFGeneratorStatusProps {
   pdfUrl: string | null;
   responses: any;
   synthesis?: { free_text: string } | null;
+  isCard?: boolean;
 }
 
 export function PDFGeneratorStatus({
@@ -21,7 +22,8 @@ export function PDFGeneratorStatus({
   profile,
   pdfUrl,
   responses,
-  synthesis
+  synthesis,
+  isCard
 }: PDFGeneratorStatusProps) {
   useEffect(() => {
     if (!profile && isGenerating) {
@@ -43,6 +45,7 @@ export function PDFGeneratorStatus({
       isGenerating={isGenerating}
       progress={progress}
       waitingMessage={currentWaitingMessage}
+      isCard={isCard}
     />
   );
 }
