@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
@@ -73,7 +73,9 @@ export function MedicalDataForm({ onDataSaved }: MedicalDataFormProps) {
     }
   });
   
-  const { fields: medicationFields, append: appendMedication, remove: removeMedication } = form.useFieldArray({
+  // Use the useFieldArray hook separately, rather than as a method on form
+  const { fields: medicationFields, append: appendMedication, remove: removeMedication } = useFieldArray({
+    control: form.control, // Pass the form control
     name: "medications"
   });
 
