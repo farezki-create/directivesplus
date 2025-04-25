@@ -2,7 +2,7 @@
 import { Header } from "@/components/Header";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { MedicalAccessForm } from "@/components/directives/MedicalAccessForm";
-import { FileText, Shield, FileMedical } from "lucide-react";
+import { FileText, Shield } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 export default function MedicalAccess() {
@@ -40,7 +40,7 @@ export default function MedicalAccess() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center">
-                  <FileMedical className="mr-2 h-5 w-5" />
+                  <FileText className="mr-2 h-5 w-5" />
                   Consulter les données médicales
                 </CardTitle>
                 <CardDescription>
