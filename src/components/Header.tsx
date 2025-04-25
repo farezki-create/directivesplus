@@ -1,10 +1,9 @@
-
 import { Button } from "./ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
-import { ArrowLeft, FileText, FileMedical } from "lucide-react";
+import { ArrowLeft, FileText, File } from "lucide-react";
 import { LanguageSelector } from "./LanguageSelector";
 import { NavigationButtons } from "./header/NavigationButtons";
 import { AuthButtons } from "./header/AuthButtons";
@@ -102,7 +101,7 @@ export const Header = () => {
                 className={navButtonClass}
                 onClick={navigateTo("/medical-data")}
               >
-                <Filemedical className="h-4 w-4 mr-1" />
+                <File className="h-4 w-4 mr-1" />
                 Mes données médicales
               </Button>
             </>
