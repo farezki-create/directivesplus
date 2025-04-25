@@ -1,4 +1,3 @@
-
 import { Button } from "../ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
 import { User } from "@supabase/supabase-js";
@@ -6,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/hooks/useLanguage";
 import { toast } from "@/hooks/use-toast";
 import { cleanupLocalStorage } from "@/utils/auth-cleanup";
-import { LogOut } from "lucide-react";  // Added Lucide logout icon
+import { LogOut, Building } from "lucide-react";
 
 interface AuthButtonsProps {
   user: User | null;
@@ -54,24 +53,41 @@ export const AuthButtons = ({ user }: AuthButtonsProps) => {
     navigate("/auth?writing=true");
   };
 
+  const handleMedicalAccess = () => {
+    navigate("/medical-access");
+  };
+
   const navButtonClass = "flex items-center gap-2 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl transform hover:-translate-y-1 text-white";
 
-  return user ? (
-    <Button 
-      variant="default" 
-      onClick={handleSignOut} 
-      className={navButtonClass}
-    >
-      <LogOut className="w-4 h-4 mr-1" />
-      {t('logout')}
-    </Button>
-  ) : (
-    <Button 
-      variant="default" 
-      onClick={handleLogin} 
-      className={navButtonClass}
-    >
-      {t('login')}
-    </Button>
+  return (
+    <div className="flex items-center gap-3">
+      <Button
+        variant="outline"
+        onClick={handleMedicalAccess}
+        className="flex items-center gap-2 bg-white text-primary border-primary hover:bg-primary/5"
+      >
+        <Building className="w-4 h-4" />
+        <span>Accès professionnel</span>
+      </Button>
+
+      {user ? (
+        <Button 
+          variant="default" 
+          onClick={handleSignOut} 
+          className={navButtonClass}
+        >
+          <LogOut className="w-4 h-4 mr-1" />
+          {t('logout')}
+        </Button>
+      ) : (
+        <Button 
+          variant="default" 
+          onClick={handleLogin} 
+          className={navButtonClass}
+        >
+          {t('login')}
+        </Button>
+      )}
+    </div>
   );
 };
