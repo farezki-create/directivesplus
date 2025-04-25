@@ -7,8 +7,6 @@ import { Card } from "@/components/ui/card";
 import { DocumentList } from "@/components/documents/DocumentList";
 import { DocumentAccess } from "@/components/documents/DocumentAccess";
 import { DocumentActions } from "@/components/documents/DocumentActions";
-import { AdvanceDirectivesList } from "@/components/directives/AdvanceDirectivesList";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { PDFPreviewDialog } from "@/components/pdf/PDFPreviewDialog";
 import { Button } from "@/components/ui/button";
@@ -22,7 +20,6 @@ export default function MyDocuments() {
   const { user } = useAuth();
   const accessData = location.state?.accessData;
   
-  // For direct document preview from external access
   const [showDirectPreview, setShowDirectPreview] = useState(false);
   const [directPreviewUrl, setDirectPreviewUrl] = useState<string | null>(null);
   const [directExternalId, setDirectExternalId] = useState<string | null>(null);
@@ -41,17 +38,12 @@ export default function MyDocuments() {
     };
     checkAuth();
     
-    // Store document URL from external access but don't show preview automatically
     if (accessData?.documentUrl) {
       console.log("Setting up direct preview with URL:", accessData.documentUrl);
       setDirectPreviewUrl(accessData.documentUrl);
       setDirectExternalId(accessData.externalDocumentId || null);
     }
   }, [navigate, accessData]);
-
-  const handleAddMedicalDocument = () => {
-    navigate("/document-viewer");
-  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -84,48 +76,19 @@ export default function MyDocuments() {
           )}
           
           {user || accessData ? (
-            <Tabs defaultValue="documents">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="documents">
-                  {accessData ? "Documents partagés" : "Tous mes documents"}
-                </TabsTrigger>
-                <TabsTrigger value="directives">
-                  Directives anticipées
-                </TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="documents" className="mt-4">
-                <Card className="p-6">
-                  {!accessData && (
-                    <DocumentActions onAddMedicalDocument={handleAddMedicalDocument} />
-                  )}
-                  {userId && (
-                    <DocumentList 
-                      userId={userId} 
-                      initialDocuments={accessData?.documents}
-                    />
-                  )}
-                </Card>
-              </TabsContent>
-              
-              <TabsContent value="directives" className="mt-4">
-                <Card className="p-6">
-                  {userId && <AdvanceDirectivesList userId={userId} />}
-                </Card>
-              </TabsContent>
-            </Tabs>
+            <Card className="p-6">
+              <DocumentActions />
+              {userId && (
+                <DocumentList 
+                  userId={userId} 
+                  initialDocuments={accessData?.documents}
+                />
+              )}
+            </Card>
           ) : (
-            <Tabs defaultValue="access">
-              <TabsList className="grid w-full grid-cols-1">
-                <TabsTrigger value="access">Accéder à un document partagé</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="access" className="mt-4">
-                <Card className="p-6">
-                  <DocumentAccess userId={userId || ""} />
-                </Card>
-              </TabsContent>
-            </Tabs>
+            <Card className="p-6">
+              <DocumentAccess userId={userId || ""} />
+            </Card>
           )}
         </div>
       </main>
