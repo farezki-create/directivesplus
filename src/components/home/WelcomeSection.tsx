@@ -4,6 +4,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { useState, useEffect } from "react";
 import { MainButtons } from "./MainButtons";
 import { useNavigate } from "react-router-dom";
+import { Move } from "lucide-react";
 
 interface WelcomeSectionProps {
   onShowMoreInfo: () => void;
@@ -67,6 +68,16 @@ export function WelcomeSection({
           >
             {currentLanguage === 'fr' ? 'En savoir plus' : 'Learn more'}
           </Button>
+
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => navigate('/reviews')}
+            className="mt-8"
+          >
+            <Move className="h-4 w-4 mr-2" />
+            {currentLanguage === 'fr' ? 'Voir les avis' : 'See reviews'}
+          </Button>
         </div>
       ) : (
         <MainButtons />
@@ -74,3 +85,4 @@ export function WelcomeSection({
     </div>
   );
 }
+

@@ -1,24 +1,19 @@
 
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { MessageSquare } from "lucide-react";
-import { useLanguage } from "@/hooks/useLanguage";
+import { Move } from "lucide-react";
 
-interface NavigationButtonsProps {
-  navButtonClass: string;
-}
-
-export const NavigationButtons = ({ navButtonClass }: NavigationButtonsProps) => {
+export function NavigationButtons({ navButtonClass }: { navButtonClass: string }) {
   const navigate = useNavigate();
-  const { t } = useLanguage();
 
   return (
     <Button
       className={navButtonClass}
-      onClick={() => navigate("/reviews")}
+      onClick={() => navigate("/faq")}
     >
-      <MessageSquare className="w-3 h-3 mr-1" />
-      <span>{t('reviews')}</span>
+      <Move className="h-4 w-4 mr-1" />
+      FAQ
     </Button>
   );
-};
+}
+
