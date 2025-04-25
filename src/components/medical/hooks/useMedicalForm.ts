@@ -1,27 +1,10 @@
-
 import { useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { useMedicalData } from "@/hooks/useMedicalData";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-
-const formSchema = z.object({
-  bloodType: z.string().optional(),
-  allergies: z.array(z.string()).default([]),
-  conditions: z.array(z.string()).default([]),
-  medications: z.array(
-    z.object({
-      name: z.string().min(1, "Le nom est requis"),
-      dosage: z.string().optional(),
-      frequency: z.string().optional()
-    })
-  ).default([]),
-  otherInfo: z.string().optional()
-});
-
-export type FormData = z.infer<typeof formSchema>;
+import { medicalFormSchema, FormData } from "../schemas/medicalFormSchema";
 
 export function useMedicalForm(onDataSaved?: () => void) {
   const { user } = useAuth();
@@ -31,7 +14,7 @@ export function useMedicalForm(onDataSaved?: () => void) {
   const [newCondition, setNewCondition] = useState("");
 
   const form = useForm<FormData>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(medicalFormSchema),
     defaultValues: {
       bloodType: "",
       allergies: [],
