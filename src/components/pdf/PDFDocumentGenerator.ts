@@ -1,3 +1,4 @@
+
 import { jsPDF } from "jspdf";
 import { UserProfile, TrustedPerson } from "./types";
 import { cardDimensions } from "./utils/constants/cardDimensions";
@@ -56,12 +57,14 @@ export class PDFDocumentGenerator {
         doc.text(`Date de naissance: ${profile.birth_date || ""}`, 20, 60);
         
         // Add trusted persons if any
+        let yPos = 80; // Initialize yPos for positioning elements
+        
         if (trustedPersons && trustedPersons.length > 0) {
           doc.setFont("helvetica", "bold");
-          doc.text("Personnes de confiance:", 20, 80);
+          doc.text("Personnes de confiance:", 20, yPos);
           doc.setFont("helvetica", "normal");
           
-          let yPos = 90;
+          yPos += 10;
           trustedPersons.forEach((person, index) => {
             doc.text(`${index + 1}. ${person.name || "Non renseigné"}`, 25, yPos);
             yPos += 10;
@@ -79,20 +82,20 @@ export class PDFDocumentGenerator {
           
           // Ajouter une nouvelle page pour les réponses aux questionnaires
           doc.addPage();
-          let yPos = 20;  // Réinitialise la position Y pour la nouvelle page
+          yPos = 20;  // Réinitialise la position Y pour la nouvelle page
         } else {
           // Si pas de personnes de confiance, continuer sur la même page
-          let yPos = 100;
+          yPos = 100;
         }
         
         // Ajouter les réponses aux questionnaires en utilisant PDFResponsesSection
         if (responses) {
           // Utiliser PDFResponsesSection pour ajouter les réponses au document
           console.log("[PDFDocumentGenerator] Ajout des réponses aux questionnaires");
-          let newYPos = PDFResponsesSection.generate(doc, responses, 30);
+          let newYPos = PDFResponsesSection.generate(doc, responses, yPos);
           
           // Si des réponses ont été ajoutées, laissez de l'espace avant la synthèse
-          if (newYPos > 30) {
+          if (newYPos > yPos) {
             newYPos += 20;
           }
           
