@@ -12,7 +12,9 @@ export async function handlePDFGeneration(
   responses: any,
   trustedPersons: any[],
   onComplete: (url: string | null) => void,
-  onShowPreview?: (show: boolean) => void
+  onShowPreview?: (show: boolean) => void,
+  synthesisText?: string,
+  isCard?: boolean
 ) {
   if (!profile) {
     console.error("[PDFGenerator] No profile data available");
@@ -32,7 +34,8 @@ export async function handlePDFGeneration(
     const pdfDataUrl = await PDFDocumentGenerator.generate(
       profile,
       responses,
-      trustedPersons
+      trustedPersons,
+      isCard
     );
     
     if (!pdfDataUrl) {

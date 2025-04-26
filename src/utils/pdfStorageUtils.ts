@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { PDFGenerationService } from "./PDFGenerationService";
@@ -9,23 +10,42 @@ import { PDFGenerationService } from "./PDFGenerationService";
  * @param profile - The user profile information
  * @returns The external document ID (sanitized)
  */
-export async function uploadPDFToStorage(pdfDataUrl: string, userId: string, profile: any): Promise<string | null> {
+export async function uploadPDFToStorage(pdfDataUrl: string | Blob, userId: string, profile: any): Promise<string | null> {
   try {
     console.log("[PDFStorageUtils] Uploading PDF to storage");
     
-    // Utiliser notre service de génération PDF pour télécharger vers le cloud
-    const externalId = await PDFGenerationService.uploadToCloud(pdfDataUrl, userId, profile);
+    // Prepare file name
+    const firstName = profile.first_name || 'unknown';
+    const lastName = profile.last_name || 'unknown';
+    const birthDate = profile.birth_date 
+      ? new Date(profile.birth_date).toISOString().split('T')[0]
+      : 'unknown';
+    const timestamp = new Date().toISOString().replace(/[-:.]/g, '').substring(0, 14);
     
-    if (externalId) {
+    const externalId = `${lastName}_${firstName}_${birthDate}_${timestamp}`;
+    const sanitizedExternalId = externalId.replace(/[^a-zA-Z0-9_-]/g, '_');
+    const fileName = `${sanitizedExternalId}.pdf`;
+    
+    // Utiliser notre service de génération PDF pour télécharger vers le cloud
+    const documentId = await PDFGenerationService.uploadToCloud(pdfDataUrl, fileName, {
+      userId,
+      firstName,
+      lastName,
+      birthDate,
+      documentType: 'directives',
+      createdAt: new Date().toISOString()
+    });
+    
+    if (documentId) {
       // Enregistrer la référence dans la base de données
       const { error: dbError } = await supabase
         .from('pdf_documents')
         .insert({
           user_id: userId,
-          file_name: `${externalId}.pdf`,
-          file_path: `external_storage/${externalId}.pdf`,
+          file_name: `${documentId}.pdf`,
+          file_path: `external_storage/${documentId}.pdf`,
           content_type: 'application/pdf',
-          description: `Directives anticipées de ${profile.first_name || ''} ${profile.last_name || ''}`,
+          description: `Directives anticipées de ${firstName} ${lastName}`,
           created_at: new Date().toISOString()
         });
           
@@ -35,7 +55,7 @@ export async function uploadPDFToStorage(pdfDataUrl: string, userId: string, pro
       }
     }
     
-    return externalId;
+    return documentId;
   } catch (error) {
     console.error("[PDFStorageUtils] Error in uploadPDFToStorage:", error);
     return null;

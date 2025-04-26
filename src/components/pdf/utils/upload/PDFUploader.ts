@@ -15,8 +15,11 @@ export async function uploadPDFToStorage(pdfDataUrl: string | Blob, userId: stri
       blob = await response.blob();
     } else if (pdfDataUrl instanceof Blob) {
       blob = pdfDataUrl;
+    } else if (typeof pdfDataUrl === 'string') {
+      // Handle other string formats if needed
+      throw new Error("Invalid PDF data format: must be a data URL or a Blob");
     } else {
-      throw new Error("Invalid PDF data format");
+      throw new Error("Invalid PDF data format: must be a data URL or a Blob");
     }
     
     // Generate filename with metadata
