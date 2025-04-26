@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { handlePDFGeneration } from "../utils/PDFGenerationUtils";
 import { UserProfile, TrustedPerson } from "../types";
@@ -7,11 +7,11 @@ import { toast } from "@/hooks/use-toast";
 
 export function usePDFGeneration(
   userId: string,
-  onPdfGenerated?: (url: string | null) => void,
-  onGenerationStart?: () => void,
   profile: UserProfile | null,
   responses: any,
   trustedPersons: TrustedPerson[],
+  onPdfGenerated?: (url: string | null) => void,
+  onGenerationStart?: () => void,
   synthesisText?: string,
   isCard?: boolean
 ) {
