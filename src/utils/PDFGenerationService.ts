@@ -1,4 +1,3 @@
-
 import { jsPDF } from "jspdf";
 import { UserProfile, TrustedPerson } from "@/components/pdf/types";
 import { PDFStorageService } from './storage/PDFStorageService';

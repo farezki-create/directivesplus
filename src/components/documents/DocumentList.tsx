@@ -15,36 +15,26 @@ export function DocumentList({ userId, initialDocuments }: DocumentListProps) {
   const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   
   const fetchDocuments = async () => {
-    setIsLoading(true);
-    try {
-      console.log("[DocumentList] Fetching documents for user:", userId);
-      const { data, error } = await supabase
-        .from('pdf_documents')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
-        
-      if (error) {
-        console.error("[DocumentList] Error fetching documents:", error);
-        toast({
-          title: "Erreur",
-          description: "Impossible de charger vos documents.",
-          variant: "destructive",
-        });
-        return;
-      }
+    const { data, error } = await supabase
+      .from('pdf_documents')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
       
-      console.log("[DocumentList] Documents fetched:", data ? data.length : 0);
-      setDocuments(data || []);
-    } catch (error) {
-      console.error("[DocumentList] Exception in fetchDocuments:", error);
-    } finally {
-      setIsLoading(false);
+    if (error) {
+      console.error("Error fetching documents:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger vos documents.",
+        variant: "destructive",
+      });
+      return;
     }
+    
+    setDocuments(data || []);
   };
   
   useEffect(() => {
@@ -55,7 +45,7 @@ export function DocumentList({ userId, initialDocuments }: DocumentListProps) {
 
   const handleDocumentPreview = async (doc: Document) => {
     try {
-      console.log("[DocumentList] Preview document:", doc);
+      console.log("Preview document:", doc);
       let fileUrl;
       
       if (doc.file_path.startsWith('http')) {
@@ -66,14 +56,14 @@ export function DocumentList({ userId, initialDocuments }: DocumentListProps) {
           ? doc.file_path 
           : `${userId}/${doc.file_path}`;
           
-        console.log("[DocumentList] Fetching signed URL for:", path, "from bucket:", bucketName);
+        console.log("Fetching signed URL for:", path, "from bucket:", bucketName);
         
         const { data, error } = await supabase.storage
           .from(bucketName)
           .createSignedUrl(path, 3600);
           
         if (error) {
-          console.error("[DocumentList] Error creating signed URL:", error);
+          console.error("Error creating signed URL:", error);
           throw new Error("Impossible de récupérer l'URL du document");
         }
         
@@ -84,12 +74,12 @@ export function DocumentList({ userId, initialDocuments }: DocumentListProps) {
         throw new Error("Impossible de récupérer l'URL du document");
       }
       
-      console.log("[DocumentList] Document URL:", fileUrl);
+      console.log("Document URL:", fileUrl);
       setPreviewUrl(fileUrl);
       setSelectedDocumentId(doc.id);
       setIsPreviewOpen(true);
     } catch (error) {
-      console.error("[DocumentList] Error getting document preview URL:", error);
+      console.error("Error getting document preview URL:", error);
       toast({
         title: "Erreur",
         description: "Impossible de prévisualiser le document",
@@ -98,58 +88,14 @@ export function DocumentList({ userId, initialDocuments }: DocumentListProps) {
     }
   };
   
-  const handleDocumentDelete = async (documentId: string) => {
-    try {
-      const documentToDelete = documents.find(doc => doc.id === documentId);
-      if (!documentToDelete) return;
-      
-      // Delete file from storage
-      if (documentToDelete.file_path) {
-        const { error: storageError } = await supabase.storage
-          .from('directives_pdfs')
-          .remove([documentToDelete.file_path]);
-          
-        if (storageError) {
-          console.error("[DocumentList] Error deleting file from storage:", storageError);
-        }
-      }
-      
-      // Delete record from database
-      const { error: dbError } = await supabase
-        .from('pdf_documents')
-        .delete()
-        .eq('id', documentId);
-        
-      if (dbError) {
-        console.error("[DocumentList] Error deleting document record:", dbError);
-        throw dbError;
-      }
-      
-      // Update state
-      setDocuments(documents.filter(doc => doc.id !== documentId));
-      if (selectedDocumentId === documentId) {
-        setSelectedDocumentId(null);
-        setPreviewUrl(null);
-        setIsPreviewOpen(false);
-      }
-      
-      toast({
-        title: "Succès",
-        description: "Document supprimé avec succès",
-      });
-    } catch (error) {
-      console.error("[DocumentList] Error deleting document:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de supprimer le document",
-        variant: "destructive",
-      });
+  const handleDocumentDelete = (documentId: string) => {
+    setDocuments(documents.filter(doc => doc.id !== documentId));
+    if (selectedDocumentId === documentId) {
+      setSelectedDocumentId(null);
+      setPreviewUrl(null);
+      setIsPreviewOpen(false);
     }
   };
-
-  if (isLoading) {
-    return <div className="text-center py-4">Chargement de vos documents...</div>;
-  }
 
   return (
     <DocumentsList 

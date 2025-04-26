@@ -9,7 +9,6 @@ import { useDirectives } from "@/hooks/useDirectives";
 import { Card } from "@/components/ui/card";
 import { Header } from "@/components/Header";
 import { useSynthesis } from "@/hooks/useSynthesis";
-import { toast } from "@/hooks/use-toast";
 
 export default function GeneratePDF() {
   const navigate = useNavigate();
@@ -36,11 +35,6 @@ export default function GeneratePDF() {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) {
-        toast({
-          title: "Erreur d'authentification",
-          description: "Vous devez être connecté pour générer vos directives.",
-          variant: "destructive",
-        });
         navigate("/auth");
         return;
       }
@@ -64,10 +58,6 @@ export default function GeneratePDF() {
       });
     }
   }, [userId, responses, profile, responsesLoading, profileLoading, synthesis, freeText]);
-
-  const handlePdfGenerated = (url: string | null) => {
-    setPdfUrl(url);
-  };
 
   if (!userId) {
     return null;
@@ -95,8 +85,8 @@ export default function GeneratePDF() {
             <div className="flex gap-4 flex-wrap mb-6">
               <p className="text-gray-600 mb-4">
                 {isCard 
-                  ? "Voici votre carte d'accès prête à être générée. Cliquez sur le bouton ci-dessous pour créer et prévisualiser votre carte au format PDF."
-                  : "Voici vos directives anticipées prêtes à être générées. Cliquez sur le bouton ci-dessous pour créer et prévisualiser votre document PDF."
+                  ? "Voici votre carte d'accès prête à être générée. Cliquez sur le bouton ci-dessous pour créer votre carte au format PDF."
+                  : "Voici vos directives anticipées prêtes à être générées. Cliquez sur le bouton ci-dessous pour créer votre document PDF."
                 }
               </p>
             </div>
@@ -108,7 +98,7 @@ export default function GeneratePDF() {
                 </h3>
                 <FullPDFGenerator 
                   userId={userId} 
-                  onPdfGenerated={handlePdfGenerated} 
+                  onPdfGenerated={setPdfUrl} 
                   synthesisText={freeText || synthesis?.free_text || ""}
                   isCard={isCard}
                 />

@@ -19,10 +19,7 @@ export class PDFDocumentGenerator {
     isCard: boolean = false
   ): Promise<string | null> {
     try {
-      console.log("[PDFDocumentGenerator] Generating PDF document", 
-        isCard ? "as card format" : "as full document",
-        "for user:", profile.first_name, profile.last_name
-      );
+      console.log("[PDFDocumentGenerator] Generating PDF document", isCard ? "as card format" : "as full document");
       
       // Create a new PDF document with appropriate format
       const doc = isCard 
@@ -77,7 +74,6 @@ export class PDFDocumentGenerator {
       }
       
       // Return the PDF as a data URL
-      console.log("[PDFDocumentGenerator] PDF generation completed successfully");
       return doc.output('dataurlstring');
     } catch (error) {
       console.error("[PDFDocumentGenerator] Error generating PDF:", error);

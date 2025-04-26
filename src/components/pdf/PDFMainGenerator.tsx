@@ -1,15 +1,12 @@
 
 import { useState, useEffect } from "react";
+import { handlePDFGeneration } from "./utils/PDFGenerationUtils";
+import { UserProfile, TrustedPerson } from "./types";
+import { toast } from "@/hooks/use-toast";
 import { PDFGenerationButtons } from "./PDFGenerationButtons";
 import { PDFGeneratorStatus } from "./PDFGeneratorStatus";
 import { usePDFGenerationState } from "./usePDFGenerationState";
-import { PDFGenerationSafetyTimeout } from "./components/PDFGenerationSafetyTimeout";
-import { usePDFGeneration } from "./hooks/usePDFGeneration";
-import { PDFPreviewDialog } from "./PDFPreviewDialog";
-import { UserProfile, TrustedPerson } from "./types";
-import { Button } from "../ui/button";
-import { FileText, Download, Save } from "lucide-react";
-import { handlePDFDownload } from "./utils/PDFGenerationUtils";
+import { useNavigate } from "react-router-dom";
 
 interface PDFMainGeneratorProps {
   userId: string;
@@ -20,8 +17,6 @@ interface PDFMainGeneratorProps {
   trustedPersons: TrustedPerson[];
   synthesis?: { free_text: string } | null;
   isCard?: boolean;
-  onGenerationStart?: () => void;
-  generationState?: 'idle' | 'generating' | 'completed';
 }
 
 export function PDFMainGenerator({
@@ -32,61 +27,88 @@ export function PDFMainGenerator({
   responses,
   trustedPersons,
   synthesis,
-  isCard,
-  onGenerationStart,
-  generationState = 'idle'
+  isCard
 }: PDFMainGeneratorProps) {
-  const [errorCount, setErrorCount] = useState(0);
-  const [showPreview, setShowPreview] = useState(false);
-  
+  const navigate = useNavigate();
   const { 
-    currentWaitingMessage,
-    setIsGenerating: setStateIsGenerating
+    pdfUrl, setPdfUrl, 
+    showPreview, setShowPreview,
+    documentIdentifier, setDocumentIdentifier,
+    isGenerating, setIsGenerating,
+    progress, setProgress,
+    currentWaitingMessage 
   } = usePDFGenerationState();
 
-  const {
-    isGenerating,
-    progress,
-    pdfUrl,
-    generatePDF,
-    saveToDocuments
-  } = usePDFGeneration(
-    userId,
-    profile,
-    responses,
-    trustedPersons,
-    (url) => {
-      if (onPdfGenerated) {
-        onPdfGenerated(url);
-      }
-    },
-    onGenerationStart,
-    synthesisText,
-    isCard
-  );
-
-  // Effect to sync with external generation state
-  useEffect(() => {
-    if (generationState === 'generating' && !isGenerating) {
-      setStateIsGenerating(true);
-    } else if (generationState === 'idle' && isGenerating) {
-      setStateIsGenerating(false);
+  const generatePDF = () => {
+    console.log("[PDFGenerator] Button clicked - Starting PDF generation");
+    setIsGenerating(true);
+    setProgress(10);
+    
+    if (!profile) {
+      console.error("[PDFGenerator] No profile data available");
+      toast({
+        title: "Erreur",
+        description: "Données de profil non disponibles. Veuillez compléter votre profil.",
+        variant: "destructive",
+      });
+      setIsGenerating(false);
+      return;
     }
-  }, [generationState, isGenerating, setStateIsGenerating]);
 
-  const handleDownload = () => {
-    handlePDFDownload(pdfUrl);
+    try {
+      console.log("[PDFGenerator] Generating PDF", isCard ? "as card format" : "as full document");
+      
+      const finalSynthesisText = synthesisText || synthesis?.free_text || "";
+      
+      setTimeout(async () => {
+        handlePDFGeneration(
+          profile,
+          {
+            ...responses,
+            synthesis: { free_text: finalSynthesisText }
+          },
+          trustedPersons,
+          async (url) => {
+            setProgress(100);
+            setPdfUrl(url);
+            if (onPdfGenerated) {
+              onPdfGenerated(url);
+            }
+            setIsGenerating(false);
+            
+            // Save with the correct format designation
+            const saveFormat = isCard ? 'card' : 'full';
+            
+            // Navigate to documents page after successful generation
+            toast({
+              title: "Succès",
+              description: isCard 
+                ? "Votre carte d'accès a été générée et sauvegardée. Redirection vers vos documents..." 
+                : "Vos directives ont été générées et sauvegardées. Redirection vers vos documents...",
+            });
+            
+            // Add a small delay before navigation to ensure the user sees the success message
+            setTimeout(() => {
+              navigate("/my-documents");
+            }, 2000);
+          },
+          setShowPreview,
+          isCard
+        );
+      }, 1000);
+    } catch (error) {
+      console.error("[PDFGenerator] Error during PDF generation:", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la génération du PDF.",
+        variant: "destructive",
+      });
+      setIsGenerating(false);
+    }
   };
 
   return (
     <>
-      <PDFGenerationSafetyTimeout
-        isGenerating={isGenerating}
-        pdfUrl={pdfUrl}
-        setIsGenerating={setStateIsGenerating}
-        setErrorCount={setErrorCount}
-      />
-      
       <PDFGeneratorStatus
         isGenerating={isGenerating}
         progress={progress}
@@ -98,55 +120,13 @@ export function PDFMainGenerator({
         isCard={isCard}
       />
       
-      {!pdfUrl && (
-        <Button 
-          onClick={generatePDF}
-          className="w-full mb-4 py-6 flex items-center justify-center gap-2"
-          disabled={isGenerating}
-        >
-          <FileText className="h-5 w-5 mr-2" />
-          {isCard ? 'Générer ma carte d\'accès' : 'Générer mes directives anticipées'}
-        </Button>
-      )}
-
-      {pdfUrl && (
-        <div className="space-y-4">
-          <Button 
-            onClick={() => setShowPreview(true)}
-            className="w-full"
-            variant="outline"
-          >
-            <FileText className="h-4 w-4 mr-2" />
-            Prévisualiser {isCard ? "la carte" : "les directives"}
-          </Button>
-          
-          <Button 
-            onClick={handleDownload}
-            className="w-full"
-            variant="secondary"
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Télécharger sur mon ordinateur
-          </Button>
-          
-          <Button 
-            onClick={saveToDocuments}
-            className="w-full"
-            variant="default"
-          >
-            <Save className="h-4 w-4 mr-2" />
-            Sauvegarder dans mes documents
-          </Button>
-        </div>
-      )}
-
-      {pdfUrl && showPreview && (
-        <PDFPreviewDialog
-          open={showPreview}
-          onOpenChange={setShowPreview}
-          pdfUrl={pdfUrl}
-        />
-      )}
+      <PDFGenerationButtons 
+        pdfUrl={pdfUrl}
+        isGenerating={isGenerating}
+        onGenerateClick={generatePDF}
+        documentIdentifier={documentIdentifier}
+        isCard={isCard}
+      />
     </>
   );
 }

@@ -2,7 +2,6 @@
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "./pdf/usePDFData";
 import { PDFMainGenerator } from "./pdf/PDFMainGenerator";
-import { useState } from "react";
 
 interface PDFGeneratorProps {
   userId: string;
@@ -12,8 +11,6 @@ interface PDFGeneratorProps {
 }
 
 export function PDFGenerator({ userId, onPdfGenerated, synthesisText, isCard }: PDFGeneratorProps) {
-  const [generationState, setGenerationState] = useState<'idle' | 'generating' | 'completed'>('idle');
-  
   console.log("[PDFGenerator] Initializing with userId:", userId);
   console.log("[PDFGenerator] Synthesis text provided:", synthesisText ? "Yes" : "No");
   console.log("[PDFGenerator] Generating card format:", isCard ? "Yes" : "No");
@@ -27,8 +24,7 @@ export function PDFGenerator({ userId, onPdfGenerated, synthesisText, isCard }: 
     hasResponses: !!responses,
     isLoading: loading || isLoading,
     synthesisText: synthesisText ? "Provided" : "Not provided",
-    dbSynthesis: synthesis?.free_text ? "Available" : "Not available",
-    generationState
+    dbSynthesis: synthesis?.free_text ? "Available" : "Not available"
   });
 
   if (loading || isLoading) {
@@ -39,20 +35,13 @@ export function PDFGenerator({ userId, onPdfGenerated, synthesisText, isCard }: 
   return (
     <PDFMainGenerator
       userId={userId}
-      onPdfGenerated={(url) => {
-        setGenerationState('completed');
-        if (onPdfGenerated) {
-          onPdfGenerated(url);
-        }
-      }}
+      onPdfGenerated={onPdfGenerated}
       synthesisText={synthesisText}
       profile={profile}
       responses={responses}
       trustedPersons={trustedPersons}
       synthesis={synthesis}
       isCard={isCard}
-      onGenerationStart={() => setGenerationState('generating')}
-      generationState={generationState}
     />
   );
 }

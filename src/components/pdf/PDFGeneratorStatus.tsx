@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { PDFGenerationOverlay } from "./PDFGenerationOverlay";
 import { toast } from "@/hooks/use-toast";
-import { UserProfile } from "./types";
+import { UserProfile, TrustedPerson } from "./types";
 
 interface PDFGeneratorStatusProps {
   isGenerating: boolean;
@@ -21,33 +21,19 @@ export function PDFGeneratorStatus({
   currentWaitingMessage,
   profile,
   pdfUrl,
+  responses,
+  synthesis,
   isCard
 }: PDFGeneratorStatusProps) {
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout | null = null;
-
-    if (isGenerating && !profile) {
+    if (!profile && isGenerating) {
       console.error("[PDFGenerator] No profile data available");
       toast({
         title: "Erreur",
         description: "Données de profil non disponibles. Veuillez compléter votre profil.",
         variant: "destructive",
       });
-      
-      timeoutId = setTimeout(() => {
-        toast({
-          title: "Génération annulée",
-          description: "La génération a été annulée en raison d'une erreur.",
-          variant: "destructive",
-        });
-      }, 1500);
     }
-
-    return () => {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-    };
   }, [profile, isGenerating]);
 
   if (!isGenerating && !pdfUrl) {
@@ -55,24 +41,11 @@ export function PDFGeneratorStatus({
   }
 
   return (
-    <div className="mb-6">
-      <PDFGenerationOverlay 
-        isGenerating={isGenerating}
-        progress={progress}
-        waitingMessage={currentWaitingMessage}
-        isCard={isCard}
-      />
-      
-      {!isGenerating && pdfUrl && (
-        <div className="p-4 bg-green-50 border border-green-200 rounded-lg mt-2 animate-fade-in">
-          <p className="text-green-700 text-sm">
-            {isCard 
-              ? "Votre carte d'accès a été générée avec succès. Cliquez sur Prévisualiser pour la voir."
-              : "Vos directives ont été générées avec succès. Cliquez sur Prévisualiser pour les voir."
-            }
-          </p>
-        </div>
-      )}
-    </div>
+    <PDFGenerationOverlay 
+      isGenerating={isGenerating}
+      progress={progress}
+      waitingMessage={currentWaitingMessage}
+      isCard={isCard}
+    />
   );
 }

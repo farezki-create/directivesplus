@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { PDFGenerationService } from "./PDFGenerationService";
@@ -10,55 +9,23 @@ import { PDFGenerationService } from "./PDFGenerationService";
  * @param profile - The user profile information
  * @returns The external document ID (sanitized)
  */
-export async function uploadPDFToStorage(pdfDataUrl: string | Blob, userId: string, profile: any): Promise<string | null> {
+export async function uploadPDFToStorage(pdfDataUrl: string, userId: string, profile: any): Promise<string | null> {
   try {
     console.log("[PDFStorageUtils] Uploading PDF to storage");
     
-    // Prepare file name
-    const firstName = profile.first_name || 'unknown';
-    const lastName = profile.last_name || 'unknown';
-    const birthDate = profile.birth_date 
-      ? new Date(profile.birth_date).toISOString().split('T')[0]
-      : 'unknown';
-    const timestamp = new Date().toISOString().replace(/[-:.]/g, '').substring(0, 14);
-    
-    const externalId = `${lastName}_${firstName}_${birthDate}_${timestamp}`;
-    const sanitizedExternalId = externalId.replace(/[^a-zA-Z0-9_-]/g, '_');
-    const fileName = `${sanitizedExternalId}.pdf`;
-    
-    // Convert data URL to Blob if necessary
-    let pdfBlob: Blob;
-    if (typeof pdfDataUrl === 'string' && pdfDataUrl.startsWith('data:')) {
-      const response = await fetch(pdfDataUrl);
-      pdfBlob = await response.blob();
-    } else if (pdfDataUrl instanceof Blob) {
-      pdfBlob = pdfDataUrl;
-    } else if (typeof pdfDataUrl === 'string') {
-      throw new Error("Invalid PDF data format: must be a data URL");
-    } else {
-      throw new Error("Invalid PDF data format: must be a data URL or a Blob");
-    }
-    
     // Utiliser notre service de génération PDF pour télécharger vers le cloud
-    const documentId = await PDFGenerationService.uploadToCloud(pdfBlob, fileName, {
-      userId,
-      firstName,
-      lastName,
-      birthDate,
-      documentType: 'directives',
-      createdAt: new Date().toISOString()
-    });
+    const externalId = await PDFGenerationService.uploadToCloud(pdfDataUrl, userId, profile);
     
-    if (documentId) {
+    if (externalId) {
       // Enregistrer la référence dans la base de données
       const { error: dbError } = await supabase
         .from('pdf_documents')
         .insert({
           user_id: userId,
-          file_name: `${documentId}.pdf`,
-          file_path: `external_storage/${documentId}.pdf`,
+          file_name: `${externalId}.pdf`,
+          file_path: `external_storage/${externalId}.pdf`,
           content_type: 'application/pdf',
-          description: `Directives anticipées de ${firstName} ${lastName}`,
+          description: `Directives anticipées de ${profile.first_name || ''} ${profile.last_name || ''}`,
           created_at: new Date().toISOString()
         });
           
@@ -68,7 +35,7 @@ export async function uploadPDFToStorage(pdfDataUrl: string | Blob, userId: stri
       }
     }
     
-    return documentId;
+    return externalId;
   } catch (error) {
     console.error("[PDFStorageUtils] Error in uploadPDFToStorage:", error);
     return null;
