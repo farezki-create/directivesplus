@@ -2,11 +2,13 @@
 import { useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, Lock, User, Calendar } from "lucide-react";
+import { FileText, Lock, User, Calendar, CreditCard } from "lucide-react";
 import { useAdvanceDirectives } from "@/hooks/useAdvanceDirectives";
 import { format } from "date-fns";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { AdvanceDirectiveAccessDialog } from "./AdvanceDirectiveAccessDialog";
+import { useNavigate } from "react-router-dom";
+import { ExportButton } from "../free-text/ExportButton";
 
 interface AdvanceDirectivesListProps {
   userId: string;
@@ -14,6 +16,7 @@ interface AdvanceDirectivesListProps {
 
 export function AdvanceDirectivesList({ userId }: AdvanceDirectivesListProps) {
   const { directives, isLoading, fetchUserDirectives } = useAdvanceDirectives(userId);
+  const navigate = useNavigate();
   
   useEffect(() => {
     if (userId) {
@@ -37,6 +40,19 @@ export function AdvanceDirectivesList({ userId }: AdvanceDirectivesListProps) {
       </div>
     );
   }
+  
+  // Get the latest directive to pass to ExportButton
+  const latestDirective = directives[0];
+  const exportData = {
+    responses: {
+      general: latestDirective.content?.general || [],
+      lifeSupport: latestDirective.content?.lifeSupport || [],
+      advancedIllness: latestDirective.content?.advancedIllness || [],
+      preferences: latestDirective.content?.preferences || [],
+    },
+    synthesis: latestDirective.content?.synthesis || null,
+    userId: userId
+  };
   
   return (
     <div className="space-y-4">
@@ -71,6 +87,7 @@ export function AdvanceDirectivesList({ userId }: AdvanceDirectivesListProps) {
               
               <Button variant="default" size="sm" onClick={() => {
                 // Handle viewing/downloading directive
+                navigate("/generate-pdf");
               }}>
                 <FileText className="h-4 w-4 mr-2" />
                 Consulter
@@ -79,6 +96,11 @@ export function AdvanceDirectivesList({ userId }: AdvanceDirectivesListProps) {
           </div>
         </Card>
       ))}
+      
+      <div className="mt-8 pt-4 border-t">
+        <h4 className="font-medium mb-3">Générer vos documents</h4>
+        <ExportButton data={exportData} />
+      </div>
     </div>
   );
 }
