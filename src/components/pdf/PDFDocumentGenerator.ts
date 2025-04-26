@@ -15,8 +15,6 @@ export class PDFDocumentGenerator {
     try {
       console.log("[PDFDocumentGenerator] Generating PDF document", isCard ? "as card format" : "as full document");
       console.log("[PDFDocumentGenerator] Profile:", profile);
-      console.log("[PDFDocumentGenerator] Responses:", responses);
-      console.log("[PDFDocumentGenerator] Trusted persons:", trustedPersons);
       
       // Create a new PDF document with appropriate format
       const doc = isCard 
@@ -49,16 +47,47 @@ export class PDFDocumentGenerator {
         doc.setFontSize(16);
         doc.text("Directives Anticipées", 105, 20, { align: "center" });
         
-        // Add user information
+        // Add user information with complete address
         doc.setFontSize(12);
         doc.setFont("helvetica", "normal");
         doc.text(`Nom: ${profile.last_name || ""}`, 20, 40);
         doc.text(`Prénom: ${profile.first_name || ""}`, 20, 50);
         doc.text(`Date de naissance: ${profile.birth_date || ""}`, 20, 60);
-        
+
+        let yPos = 70;
+
+        // Add address information if available
+        if (profile.address || profile.postal_code || profile.city || profile.country) {
+          doc.setFont("helvetica", "bold");
+          doc.text("Adresse:", 20, yPos);
+          doc.setFont("helvetica", "normal");
+          yPos += 10;
+
+          if (profile.address) {
+            doc.text(profile.address, 25, yPos);
+            yPos += 10;
+          }
+
+          // Combine postal code and city on the same line if both exist
+          if (profile.postal_code || profile.city) {
+            const locationLine = [profile.postal_code, profile.city]
+              .filter(Boolean)
+              .join(" ");
+            if (locationLine) {
+              doc.text(locationLine, 25, yPos);
+              yPos += 10;
+            }
+          }
+
+          if (profile.country) {
+            doc.text(profile.country, 25, yPos);
+            yPos += 10;
+          }
+        }
+
+        yPos += 10; // Add some spacing before trusted persons section
+
         // Add trusted persons if any
-        let yPos = 80; // Initialize yPos for positioning elements
-        
         if (trustedPersons && trustedPersons.length > 0) {
           doc.setFont("helvetica", "bold");
           doc.text("Personnes de confiance:", 20, yPos);
@@ -80,28 +109,22 @@ export class PDFDocumentGenerator {
             }
           });
           
-          // Ajouter une nouvelle page pour les réponses aux questionnaires
+          // Add a new page for questionnaire responses
           doc.addPage();
-          yPos = 20;  // Réinitialise la position Y pour la nouvelle page
-        } else {
-          // Si pas de personnes de confiance, continuer sur la même page
-          yPos = 100;
+          yPos = 20;
         }
         
-        // Ajouter les réponses aux questionnaires en utilisant PDFResponsesSection
+        // Add questionnaire responses using PDFResponsesSection
         if (responses) {
-          // Utiliser PDFResponsesSection pour ajouter les réponses au document
-          console.log("[PDFDocumentGenerator] Ajout des réponses aux questionnaires");
+          console.log("[PDFDocumentGenerator] Adding questionnaire responses");
           let newYPos = PDFResponsesSection.generate(doc, responses, yPos);
           
-          // Si des réponses ont été ajoutées, laissez de l'espace avant la synthèse
           if (newYPos > yPos) {
             newYPos += 20;
           }
           
           // Add synthesis if available on a new page
           if (responses && responses.synthesis && responses.synthesis.free_text) {
-            // Vérifier si nous avons besoin d'une nouvelle page pour la synthèse
             if (newYPos > doc.internal.pageSize.getHeight() - 60) {
               doc.addPage();
               newYPos = 30;
