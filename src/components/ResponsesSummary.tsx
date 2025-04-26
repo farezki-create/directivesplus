@@ -148,10 +148,11 @@ export function ResponsesSummary({ userId }: ResponsesSummaryProps) {
           <h3 className="text-lg font-medium mb-4">Générer votre document</h3>
           <div className="flex flex-col gap-4">
             <PDFGenerator userId={userId} />
+            
             <Button 
               onClick={() => navigate("/generate-pdf?format=card")}
               variant="outline"
-              className="flex items-center gap-3 h-auto py-4 transition-all hover:bg-purple-50"
+              className="flex items-center gap-3 h-auto py-4 w-full transition-all hover:bg-purple-50"
             >
               <div className="bg-purple-100 p-2 rounded-full">
                 <CreditCard className="h-5 w-5 text-purple-600" />
