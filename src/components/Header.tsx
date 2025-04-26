@@ -1,9 +1,10 @@
+
 import { Button } from "./ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
-import { ArrowLeft, FileText, File } from "lucide-react";
+import { ArrowLeft, File } from "lucide-react";
 import { LanguageSelector } from "./LanguageSelector";
 import { NavigationButtons } from "./header/NavigationButtons";
 import { AuthButtons } from "./header/AuthButtons";
@@ -86,16 +87,8 @@ export const Header = () => {
                 className={navButtonClass}
                 onClick={navigateTo("/my-documents")}
               >
-                <FileText className="h-4 w-4 mr-1" />
-                Mes documents
-              </Button>
-              
-              <Button
-                className={navButtonClass}
-                onClick={navigateTo("/medical-data")}
-              >
                 <File className="h-4 w-4 mr-1" />
-                Mes données médicales
+                Mes documents
               </Button>
             </>
           )}

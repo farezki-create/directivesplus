@@ -92,6 +92,19 @@ export const savePDFToStorage = async (pdfDataUrl: string, userId: string, isCar
     
     console.log("[PDFStorage] Uploading PDF to storage path:", filepath);
     
+    // Check if directives_pdfs bucket exists, if not create it
+    const { data: bucketExists } = await supabase.storage.getBucket('directives_pdfs');
+    if (!bucketExists) {
+      const { error: bucketError } = await supabase.storage.createBucket('directives_pdfs', {
+        public: false,
+        fileSizeLimit: 5242880 // 5MB
+      });
+      if (bucketError) {
+        console.error("[PDFStorage] Error creating bucket:", bucketError);
+        throw bucketError;
+      }
+    }
+    
     // Upload to storage
     const { data, error } = await supabase
       .storage

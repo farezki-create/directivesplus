@@ -9,6 +9,7 @@ import { useDirectives } from "@/hooks/useDirectives";
 import { Card } from "@/components/ui/card";
 import { Header } from "@/components/Header";
 import { useSynthesis } from "@/hooks/useSynthesis";
+import { toast } from "@/hooks/use-toast";
 
 export default function GeneratePDF() {
   const navigate = useNavigate();
@@ -35,6 +36,11 @@ export default function GeneratePDF() {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) {
+        toast({
+          title: "Erreur d'authentification",
+          description: "Vous devez être connecté pour générer vos directives.",
+          variant: "destructive",
+        });
         navigate("/auth");
         return;
       }
@@ -58,6 +64,22 @@ export default function GeneratePDF() {
       });
     }
   }, [userId, responses, profile, responsesLoading, profileLoading, synthesis, freeText]);
+
+  const handlePdfGenerated = (url: string | null) => {
+    setPdfUrl(url);
+    if (url) {
+      toast({
+        title: "Succès",
+        description: isCard 
+          ? "Votre carte d'accès a été générée. Vous serez redirigé vers vos documents."
+          : "Vos directives ont été générées. Vous serez redirigé vers vos documents.",
+      });
+      
+      setTimeout(() => {
+        navigate("/my-documents");
+      }, 2000);
+    }
+  };
 
   if (!userId) {
     return null;
@@ -98,7 +120,7 @@ export default function GeneratePDF() {
                 </h3>
                 <FullPDFGenerator 
                   userId={userId} 
-                  onPdfGenerated={setPdfUrl} 
+                  onPdfGenerated={handlePdfGenerated} 
                   synthesisText={freeText || synthesis?.free_text || ""}
                   isCard={isCard}
                 />

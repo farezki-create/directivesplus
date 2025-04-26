@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { handlePDFGeneration } from "./utils/PDFGenerationUtils";
 import { UserProfile, TrustedPerson } from "./types";
 import { toast } from "@/hooks/use-toast";
@@ -17,6 +17,8 @@ interface PDFMainGeneratorProps {
   trustedPersons: TrustedPerson[];
   synthesis?: { free_text: string } | null;
   isCard?: boolean;
+  onGenerationStart?: () => void;
+  generationState?: 'idle' | 'generating' | 'completed';
 }
 
 export function PDFMainGenerator({
@@ -27,7 +29,9 @@ export function PDFMainGenerator({
   responses,
   trustedPersons,
   synthesis,
-  isCard
+  isCard,
+  onGenerationStart,
+  generationState = 'idle'
 }: PDFMainGeneratorProps) {
   const navigate = useNavigate();
   const { 
@@ -39,10 +43,23 @@ export function PDFMainGenerator({
     currentWaitingMessage 
   } = usePDFGenerationState();
 
+  // Effect to update local state when external generation state changes
+  useEffect(() => {
+    if (generationState === 'generating' && !isGenerating) {
+      setIsGenerating(true);
+    } else if (generationState === 'idle' && isGenerating) {
+      setIsGenerating(false);
+    }
+  }, [generationState, isGenerating]);
+
   const generatePDF = () => {
     console.log("[PDFGenerator] Button clicked - Starting PDF generation");
     setIsGenerating(true);
     setProgress(10);
+    
+    if (onGenerationStart) {
+      onGenerationStart();
+    }
     
     if (!profile) {
       console.error("[PDFGenerator] No profile data available");

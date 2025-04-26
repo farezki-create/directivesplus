@@ -12,6 +12,20 @@ const waitingMessages = [
   "Votre document est presque prêt... 🌟",
 ];
 
+// Playful fun animation theme messages
+const funMessages = [
+  "Les pixels s'assemblent comme par magie... 🧙‍♂️",
+  "Nos petits lutins travaillent pour vous... 🧝",
+  "Fabrication d'un document aussi unique que vous... 🌈",
+  "Pétrissage du PDF avec amour... ❤️",
+  "Un document si beau qu'il ferait pleurer un robot... 🤖",
+  "Mélange des encres numériques... 🎨",
+  "Pliage des coins virtuels... 📐",
+  "Ajout d'un soupçon de bonne humeur... 😊",
+  "Le document danse la valse des octets... 💃",
+  "Polissage jusqu'à ce que ça brille... ✨",
+];
+
 export function usePDFGenerationState() {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
@@ -19,12 +33,16 @@ export function usePDFGenerationState() {
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [usePlayfulTheme, setUsePlayfulTheme] = useState(true);
+
+  // Select the appropriate message list based on theme
+  const messageList = usePlayfulTheme ? funMessages : waitingMessages;
 
   useEffect(() => {
     if (isGenerating) {
       // Message rotation interval
       const messageInterval = setInterval(() => {
-        setCurrentMessageIndex((prev) => (prev + 1) % waitingMessages.length);
+        setCurrentMessageIndex((prev) => (prev + 1) % messageList.length);
       }, 2000);
 
       // Progress bar animation
@@ -46,7 +64,7 @@ export function usePDFGenerationState() {
       // Reset progress when not generating
       setProgress(0);
     }
-  }, [isGenerating]);
+  }, [isGenerating, messageList.length]);
 
   return {
     pdfUrl,
@@ -60,7 +78,9 @@ export function usePDFGenerationState() {
     setIsGenerating,
     progress, 
     setProgress,
-    currentWaitingMessage: waitingMessages[currentMessageIndex],
-    waitingMessages,
+    usePlayfulTheme,
+    setUsePlayfulTheme,
+    currentWaitingMessage: messageList[currentMessageIndex],
+    waitingMessages: messageList,
   };
 }
