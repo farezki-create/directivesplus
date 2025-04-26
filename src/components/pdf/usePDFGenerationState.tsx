@@ -33,6 +33,7 @@ export function usePDFGenerationState() {
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
+  // Set default to true to enable playful theme by default
   const [usePlayfulTheme, setUsePlayfulTheme] = useState(true);
 
   // Select the appropriate message list based on theme
@@ -40,31 +41,41 @@ export function usePDFGenerationState() {
 
   useEffect(() => {
     if (isGenerating) {
-      // Message rotation interval
+      // Message rotation interval - faster for more animation
       const messageInterval = setInterval(() => {
         setCurrentMessageIndex((prev) => (prev + 1) % messageList.length);
-      }, 2000);
+      }, 1500); // Reduced from 2000 to 1500ms for more animation
 
-      // Progress bar animation
+      // Progress bar animation with timeout safety
       const progressInterval = setInterval(() => {
         setProgress((prev) => {
-          // Slow down as we approach 100%
+          // Slow down as we approach 100%, but ensure we reach at least 95%
           if (prev >= 90) {
             return Math.min(prev + 0.5, 95);
           }
           return Math.min(prev + 5, 90);
         });
-      }, 500);
+      }, 400); // Slightly faster progress updates (was 500ms)
+
+      // Safety timeout to ensure process doesn't appear stuck
+      const safetyTimeout = setTimeout(() => {
+        if (progress < 95) {
+          console.log("Safety timeout triggered, ensuring progress continues");
+          setProgress(95); // Force progress to near completion if stuck
+        }
+      }, 15000); // 15 seconds safety
 
       return () => {
         clearInterval(messageInterval);
         clearInterval(progressInterval);
+        clearTimeout(safetyTimeout);
       };
     } else {
       // Reset progress when not generating
       setProgress(0);
+      setCurrentMessageIndex(0);
     }
-  }, [isGenerating, messageList.length]);
+  }, [isGenerating, messageList.length, progress]);
 
   return {
     pdfUrl,

@@ -52,6 +52,29 @@ export function PDFMainGenerator({
     }
   }, [generationState, isGenerating]);
 
+  // Safety timeout to prevent getting stuck in generating state
+  useEffect(() => {
+    let safetyTimeout: NodeJS.Timeout | null = null;
+    
+    if (isGenerating) {
+      safetyTimeout = setTimeout(() => {
+        console.log("[PDFMainGenerator] Safety timeout triggered - generation taking too long");
+        if (!pdfUrl) {
+          // Retry generation or force completion
+          toast({
+            title: "Génération prolongée",
+            description: "La génération prend plus de temps que prévu, veuillez patienter...",
+          });
+          setProgress(95); // Show near completion
+        }
+      }, 30000); // 30 seconds safety timeout
+    }
+    
+    return () => {
+      if (safetyTimeout) clearTimeout(safetyTimeout);
+    };
+  }, [isGenerating, pdfUrl, setProgress]);
+
   const generatePDF = () => {
     console.log("[PDFGenerator] Button clicked - Starting PDF generation");
     setIsGenerating(true);
@@ -77,6 +100,7 @@ export function PDFMainGenerator({
       
       const finalSynthesisText = synthesisText || synthesis?.free_text || "";
       
+      // Use smaller timeout to start generation faster
       setTimeout(async () => {
         handlePDFGeneration(
           profile,
@@ -86,11 +110,14 @@ export function PDFMainGenerator({
           },
           trustedPersons,
           async (url) => {
+            console.log("[PDFGenerator] Generation complete, URL received:", !!url);
             setProgress(100);
             setPdfUrl(url);
+            
             if (onPdfGenerated) {
               onPdfGenerated(url);
             }
+            
             setIsGenerating(false);
             
             // Save with the correct format designation
@@ -112,7 +139,7 @@ export function PDFMainGenerator({
           setShowPreview,
           isCard
         );
-      }, 1000);
+      }, 500); // Reduced from 1000ms to 500ms
     } catch (error) {
       console.error("[PDFGenerator] Error during PDF generation:", error);
       toast({
