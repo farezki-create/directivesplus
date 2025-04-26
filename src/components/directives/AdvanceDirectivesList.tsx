@@ -1,8 +1,7 @@
-
 import { useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, Lock, User, Calendar, CreditCard } from "lucide-react";
+import { FileText, Lock } from "lucide-react";
 import { useAdvanceDirectives, DirectiveContent } from "@/hooks/useAdvanceDirectives";
 import { format } from "date-fns";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
@@ -106,7 +105,6 @@ export function AdvanceDirectivesList({ userId }: AdvanceDirectivesListProps) {
               </Dialog>
               
               <Button variant="default" size="sm" onClick={() => {
-                // Handle viewing/downloading directive
                 navigate("/generate-pdf");
               }}>
                 <FileText className="h-4 w-4 mr-2" />

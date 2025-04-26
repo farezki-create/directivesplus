@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { FileText, CreditCard } from "lucide-react";
+import { FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface ExportButtonProps {
@@ -25,35 +25,17 @@ export function ExportButton({ data }: ExportButtonProps) {
     navigate("/generate-pdf");
   };
 
-  const handleCardClick = () => {
-    navigate("/generate-pdf?format=card");
-  };
-
   return (
-    <div className="flex flex-col sm:flex-row gap-3 w-full">
-      <Button 
-        onClick={handleDirectivesClick} 
-        className="flex items-center gap-3 h-auto py-4 w-full transition-all"
-      >
-        <div className="bg-blue-100 p-2 rounded-full">
-          <FileText className="h-5 w-5 text-blue-600" />
-        </div>
-        <div className="text-left">
-          <div className="font-medium">Générer Mes directives anticipées</div>
-        </div>
-      </Button>
-      
-      <Button 
-        onClick={handleCardClick} 
-        className="flex items-center gap-3 h-auto py-4 w-full transition-all"
-      >
-        <div className="bg-purple-100 p-2 rounded-full">
-          <CreditCard className="h-5 w-5 text-purple-600" />
-        </div>
-        <div className="text-left">
-          <div className="font-medium">Générer ma carte d'accès</div>
-        </div>
-      </Button>
-    </div>
+    <Button 
+      onClick={handleDirectivesClick} 
+      className="flex items-center gap-3 h-auto py-4 w-full transition-all"
+    >
+      <div className="bg-blue-100 p-2 rounded-full">
+        <FileText className="h-5 w-5 text-blue-600" />
+      </div>
+      <div className="text-left">
+        <div className="font-medium">Générer Mes directives anticipées</div>
+      </div>
+    </Button>
   );
 }
