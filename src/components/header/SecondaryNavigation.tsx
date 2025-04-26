@@ -44,6 +44,16 @@ export const SecondaryNavigation = ({ user, navButtonClass }: SecondaryNavigatio
           <PenLine className="w-4 h-4 mr-1" />
           <span>Je rédige</span>
         </Button>
+
+        {user && (
+          <Button
+            className={`${navButtonClass} transition-all duration-300 hover:scale-105 hover:shadow-md bg-white border-purple-300 text-purple-700 hover:bg-purple-50 flex items-center gap-2`}
+            onClick={() => navigate("/generate-pdf")}
+          >
+            <FileText className="w-4 h-4 mr-1" />
+            <span>Mes directives générées</span>
+          </Button>
+        )}
       </div>
     </div>
   );
