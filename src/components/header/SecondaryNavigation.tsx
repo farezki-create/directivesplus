@@ -1,7 +1,7 @@
 
 import { Button } from "../ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
-import { FileText, PenLine } from "lucide-react";
+import { PenLine } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
 import { User } from "@supabase/supabase-js";
 
@@ -12,7 +12,6 @@ interface SecondaryNavigationProps {
 
 export const SecondaryNavigation = ({ user, navButtonClass }: SecondaryNavigationProps) => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { t } = useLanguage();
 
   const handleHomeClick = () => {
@@ -44,16 +43,6 @@ export const SecondaryNavigation = ({ user, navButtonClass }: SecondaryNavigatio
           <PenLine className="w-4 h-4 mr-1" />
           <span>Je rédige</span>
         </Button>
-
-        {user && (
-          <Button
-            className={`${navButtonClass} transition-all duration-300 hover:scale-105 hover:shadow-md bg-white border-purple-300 text-purple-700 hover:bg-purple-50 flex items-center gap-2`}
-            onClick={() => navigate("/generate-pdf")}
-          >
-            <FileText className="w-4 h-4 mr-1" />
-            <span>Mes directives générées</span>
-          </Button>
-        )}
       </div>
     </div>
   );

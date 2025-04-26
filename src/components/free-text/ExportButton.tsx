@@ -1,9 +1,7 @@
 
 import { Button } from "@/components/ui/button";
-import { handlePDFGeneration, handlePDFDownload } from "@/components/pdf/utils/PDFGenerationUtils";
-import { useLanguage } from "@/hooks/useLanguage";
-import { usePDFData } from "@/components/pdf/usePDFData";
-import { useState } from "react";
+import { FileText } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface ExportButtonProps {
   data: {
@@ -21,51 +19,23 @@ interface ExportButtonProps {
 }
 
 export function ExportButton({ data }: ExportButtonProps) {
-  const { t } = useLanguage();
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-  const { profile, trustedPersons } = usePDFData();
+  const navigate = useNavigate();
   
-  if (!data) return null;
-
-  const handleExport = async () => {
-    setIsGenerating(true);
-    
-    if (!profile) {
-      console.error("[ExportButton] No profile data available");
-      setIsGenerating(false);
-      return;
-    }
-    
-    try {
-      await handlePDFGeneration(
-        profile,
-        data.responses,
-        trustedPersons,
-        (url) => {
-          setPdfUrl(url);
-          if (url) {
-            handlePDFDownload(url);
-          }
-          setIsGenerating(false);
-        },
-        () => {}
-      );
-    } catch (error) {
-      console.error("[ExportButton] Error generating PDF:", error);
-      setIsGenerating(false);
-    }
+  const handleExport = () => {
+    navigate("/generate-pdf", {
+      state: { synthesisText: data.synthesis?.free_text }
+    });
   };
 
   return (
     <Button 
       variant="outline" 
       size="default" 
-      className="w-full mt-4" 
-      disabled={isGenerating}
+      className="w-full mt-4 flex items-center gap-2" 
       onClick={handleExport}
     >
-      {isGenerating ? t('generatingPDF') : t('exportPDF')}
+      <FileText className="h-4 w-4" />
+      Générer Mes directives anticipées
     </Button>
   );
 }
