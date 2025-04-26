@@ -43,14 +43,32 @@ export function AdvanceDirectivesList({ userId }: AdvanceDirectivesListProps) {
   
   // Get the latest directive to pass to ExportButton
   const latestDirective = directives[0];
+  
+  // Parse the content if it's a string
+  let directiveContent = latestDirective.content;
+  if (typeof directiveContent === 'string') {
+    try {
+      directiveContent = JSON.parse(directiveContent);
+    } catch (e) {
+      console.error("Error parsing directive content:", e);
+      directiveContent = {
+        general: [],
+        lifeSupport: [],
+        advancedIllness: [],
+        preferences: [],
+        synthesis: null
+      };
+    }
+  }
+  
   const exportData = {
     responses: {
-      general: latestDirective.content?.general || [],
-      lifeSupport: latestDirective.content?.lifeSupport || [],
-      advancedIllness: latestDirective.content?.advancedIllness || [],
-      preferences: latestDirective.content?.preferences || [],
+      general: directiveContent?.general || [],
+      lifeSupport: directiveContent?.lifeSupport || [],
+      advancedIllness: directiveContent?.advancedIllness || [],
+      preferences: directiveContent?.preferences || [],
     },
-    synthesis: latestDirective.content?.synthesis || null,
+    synthesis: directiveContent?.synthesis || null,
     userId: userId
   };
   

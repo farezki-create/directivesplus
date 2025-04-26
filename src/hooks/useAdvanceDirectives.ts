@@ -1,11 +1,22 @@
+
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { directiveEncryption } from "@/utils/directives/directiveEncryption";
 
+export interface DirectiveContent {
+  general?: any[];
+  lifeSupport?: any[];
+  advancedIllness?: any[];
+  preferences?: any[];
+  profile?: any;
+  trustedPersons?: any[];
+  synthesis?: any;
+}
+
 export interface AdvanceDirective {
   id: string;
-  content: string;
+  content: string | DirectiveContent;
   created_at: string;
   updated_at: string;
   access_code?: string;
