@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { PDFGenerator } from "./pdf/PDFGenerator";
 import { Button } from "@/components/ui/button";
-import { CreditCard } from "lucide-react";
+import { CreditCard, FileText } from "lucide-react";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { ResponseSection } from "./responses/ResponseSection";
 import { FreeTextInput } from "./free-text/FreeTextInput";
