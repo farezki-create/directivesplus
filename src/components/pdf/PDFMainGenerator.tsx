@@ -5,7 +5,11 @@ import { PDFGeneratorStatus } from "./PDFGeneratorStatus";
 import { usePDFGenerationState } from "./usePDFGenerationState";
 import { PDFGenerationSafetyTimeout } from "./components/PDFGenerationSafetyTimeout";
 import { usePDFGeneration } from "./hooks/usePDFGeneration";
+import { PDFPreviewDialog } from "./PDFPreviewDialog";
 import { UserProfile, TrustedPerson } from "./types";
+import { Button } from "../ui/button";
+import { toast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface PDFMainGeneratorProps {
   userId: string;
@@ -33,6 +37,8 @@ export function PDFMainGenerator({
   generationState = 'idle'
 }: PDFMainGeneratorProps) {
   const [errorCount, setErrorCount] = useState(0);
+  const [showPreview, setShowPreview] = useState(false);
+  const navigate = useNavigate();
   
   const { 
     currentWaitingMessage,
@@ -65,6 +71,19 @@ export function PDFMainGenerator({
     }
   }, [generationState, isGenerating, setIsGenerating]);
 
+  const handleSaveToDocuments = () => {
+    setShowPreview(false);
+    toast({
+      title: "Succès",
+      description: isCard 
+        ? "Votre carte d'accès a été sauvegardée. Redirection vers vos documents..."
+        : "Vos directives ont été sauvegardées. Redirection vers vos documents...",
+    });
+    setTimeout(() => {
+      navigate("/my-documents");
+    }, 1500);
+  };
+
   return (
     <>
       <PDFGenerationSafetyTimeout
@@ -92,6 +111,26 @@ export function PDFMainGenerator({
         documentIdentifier={documentIdentifier}
         isCard={isCard}
       />
+
+      {pdfUrl && showPreview && (
+        <PDFPreviewDialog
+          open={showPreview}
+          onOpenChange={setShowPreview}
+          pdfUrl={pdfUrl}
+        />
+      )}
+
+      {pdfUrl && !showPreview && (
+        <div className="mt-4">
+          <Button 
+            onClick={handleSaveToDocuments}
+            className="w-full"
+            variant="secondary"
+          >
+            Sauvegarder dans mes documents
+          </Button>
+        </div>
+      )}
     </>
   );
 }

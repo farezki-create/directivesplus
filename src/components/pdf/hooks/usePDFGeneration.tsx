@@ -68,13 +68,9 @@ export function usePDFGeneration(
               toast({
                 title: "Succès",
                 description: isCard 
-                  ? "Votre carte d'accès a été générée et sauvegardée. Redirection vers vos documents..." 
-                  : "Vos directives ont été générées et sauvegardées. Redirection vers vos documents...",
+                  ? "Votre carte d'accès a été générée. Vous pouvez maintenant la prévisualiser."
+                  : "Vos directives ont été générées. Vous pouvez maintenant les prévisualiser.",
               });
-              
-              setTimeout(() => {
-                navigate("/my-documents");
-              }, 1500);
             },
             () => {},
             isCard

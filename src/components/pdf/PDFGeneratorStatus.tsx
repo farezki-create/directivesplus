@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { PDFGenerationOverlay } from "./PDFGenerationOverlay";
 import { toast } from "@/hooks/use-toast";
-import { UserProfile, TrustedPerson } from "./types";
+import { UserProfile } from "./types";
 
 interface PDFGeneratorStatusProps {
   isGenerating: boolean;
@@ -36,7 +36,6 @@ export function PDFGeneratorStatus({
         variant: "destructive",
       });
       
-      // Annuler la génération après un délai
       timeoutId = setTimeout(() => {
         toast({
           title: "Génération annulée",
@@ -53,7 +52,6 @@ export function PDFGeneratorStatus({
     };
   }, [profile, isGenerating]);
 
-  // N'afficher l'overlay que si la génération est active ou si le PDF est prêt
   if (!isGenerating && !pdfUrl) {
     return null;
   }
@@ -71,8 +69,8 @@ export function PDFGeneratorStatus({
         <div className="p-4 bg-green-50 border border-green-200 rounded-lg mt-2 animate-fade-in">
           <p className="text-green-700 text-sm">
             {isCard 
-              ? "Votre carte d'accès a été générée avec succès et sauvegardée dans vos documents."
-              : "Vos directives ont été générées avec succès et sauvegardées dans vos documents."
+              ? "Votre carte d'accès a été générée avec succès. Vous pouvez maintenant la prévisualiser avant de l'enregistrer."
+              : "Vos directives ont été générées avec succès. Vous pouvez maintenant les prévisualiser avant de les enregistrer."
             }
           </p>
         </div>
