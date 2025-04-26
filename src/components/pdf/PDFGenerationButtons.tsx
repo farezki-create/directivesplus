@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { FileText, Download, HelpCircle } from "lucide-react";
+import { FileText, Download, HelpCircle, CreditCard } from "lucide-react";
 import { handlePDFDownload } from "./utils/PDFGenerationUtils";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
@@ -16,13 +16,15 @@ interface PDFGenerationButtonsProps {
   isGenerating: boolean;
   onGenerateClick: () => void;
   documentIdentifier?: string | null;
+  isCard?: boolean;
 }
 
 export function PDFGenerationButtons({ 
   pdfUrl, 
   isGenerating, 
   onGenerateClick,
-  documentIdentifier 
+  documentIdentifier,
+  isCard
 }: PDFGenerationButtonsProps) {
   const { toast } = useToast();
   const [showInstructions, setShowInstructions] = useState(false);
@@ -31,7 +33,7 @@ export function PDFGenerationButtons({
     if (pdfUrl) {
       // Génère un nom de fichier personnalisé avec l'identifiant du document si disponible
       const customFilename = documentIdentifier 
-        ? `directives-anticipees_${documentIdentifier}.pdf` 
+        ? `${isCard ? 'carte-acces' : 'directives-anticipees'}_${documentIdentifier}.pdf` 
         : undefined;
       
       handlePDFDownload(pdfUrl, customFilename);
@@ -54,8 +56,12 @@ export function PDFGenerationButtons({
         className="flex items-center gap-2"
         disabled={isGenerating}
       >
-        <FileText className="h-4 w-4" />
-        Générer Mes directives anticipées
+        {isCard ? (
+          <CreditCard className="h-4 w-4" />
+        ) : (
+          <FileText className="h-4 w-4" />
+        )}
+        {isCard ? 'Générer Ma carte d\'accès' : 'Générer Mes directives anticipées'}
       </Button>
       
       <div className="flex items-center">
@@ -101,13 +107,6 @@ export function PDFGenerationButtons({
             </code>
             ), vous devrez le faire manuellement après le téléchargement.
           </p>
-          <div className="mt-2 p-2 bg-blue-50 rounded-md text-xs">
-            <p className="font-medium text-blue-700">Astuce de productivité:</p>
-            <p className="text-gray-700 mt-1">
-              Sur Mac, vous pouvez utiliser des applications comme Hazel ou des Automator pour déplacer automatiquement 
-              les fichiers téléchargés avec "directives-anticipees" dans le nom vers votre dossier cible.
-            </p>
-          </div>
         </div>
       )}
     </div>

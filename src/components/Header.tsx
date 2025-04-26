@@ -1,10 +1,9 @@
-
 import { Button } from "./ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, FileText, File } from "lucide-react";
 import { LanguageSelector } from "./LanguageSelector";
 import { NavigationButtons } from "./header/NavigationButtons";
 import { AuthButtons } from "./header/AuthButtons";
@@ -32,12 +31,18 @@ export const Header = () => {
 
   const handleWritingClick = () => {
     if (user) {
-      window.location.href = "/?writing=true";
+      navigate("/", { state: { writing: true } });
     } else {
       navigate("/auth");
     }
   };
-
+  
+  const navigateTo = (path: string) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigate(path);
+  };
+  
   const isHomePage = location.pathname === "/";
   const navButtonClass = "text-sm px-3 py-1.5 rounded-md bg-white border border-purple-300 text-purple-700 hover:bg-purple-50 transition-all duration-200 shadow-sm";
 
@@ -63,7 +68,7 @@ export const Header = () => {
           
           <Button
             className={navButtonClass}
-            onClick={() => window.location.href = "/"}
+            onClick={navigateTo("/")}
           >
             Accueil
           </Button>
@@ -76,12 +81,30 @@ export const Header = () => {
           </Button>
           
           {user && (
-            <Button
-              className={navButtonClass}
-              onClick={() => navigate("/generate-pdf")}
-            >
-              Mes directives
-            </Button>
+            <>
+              <Button
+                className={navButtonClass}
+                onClick={navigateTo("/generate-pdf")}
+              >
+                Mes directives
+              </Button>
+              
+              <Button
+                className={navButtonClass}
+                onClick={navigateTo("/my-documents")}
+              >
+                <FileText className="h-4 w-4 mr-1" />
+                Mes documents
+              </Button>
+              
+              <Button
+                className={navButtonClass}
+                onClick={navigateTo("/medical-data")}
+              >
+                <File className="h-4 w-4 mr-1" />
+                Mes données médicales
+              </Button>
+            </>
           )}
           
           <NavigationButtons navButtonClass={navButtonClass} />
@@ -93,4 +116,4 @@ export const Header = () => {
       </div>
     </header>
   );
-};
+}

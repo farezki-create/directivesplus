@@ -9,6 +9,71 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      access_requests: {
+        Row: {
+          access_code: string
+          created_at: string | null
+          directive_id: string | null
+          id: string
+          requester_birthdate: string
+          requester_name: string
+          status: string | null
+        }
+        Insert: {
+          access_code: string
+          created_at?: string | null
+          directive_id?: string | null
+          id?: string
+          requester_birthdate: string
+          requester_name: string
+          status?: string | null
+        }
+        Update: {
+          access_code?: string
+          created_at?: string | null
+          directive_id?: string | null
+          id?: string
+          requester_birthdate?: string
+          requester_name?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "access_requests_directive_id_fkey"
+            columns: ["directive_id"]
+            isOneToOne: false
+            referencedRelation: "advance_directives"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      advance_directives: {
+        Row: {
+          access_code: string
+          content: string
+          created_at: string | null
+          id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          access_code: string
+          content: string
+          created_at?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          access_code?: string
+          content?: string
+          created_at?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       articles: {
         Row: {
           category: string
@@ -75,6 +140,109 @@ export type Database = {
         }
         Relationships: []
       }
+      document_access_codes: {
+        Row: {
+          access_code: string
+          created_at: string | null
+          document_id: string | null
+          expires_at: string | null
+          id: string
+          is_full_access: boolean | null
+          user_id: string
+        }
+        Insert: {
+          access_code: string
+          created_at?: string | null
+          document_id?: string | null
+          expires_at?: string | null
+          id?: string
+          is_full_access?: boolean | null
+          user_id: string
+        }
+        Update: {
+          access_code?: string
+          created_at?: string | null
+          document_id?: string | null
+          expires_at?: string | null
+          id?: string
+          is_full_access?: boolean | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_access_codes_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "pdf_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      medical_data: {
+        Row: {
+          access_code: string
+          created_at: string | null
+          data: string
+          id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          access_code: string
+          created_at?: string | null
+          data: string
+          id?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          access_code?: string
+          created_at?: string | null
+          data?: string
+          id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      medical_data_access_requests: {
+        Row: {
+          access_code: string
+          created_at: string | null
+          id: string
+          medical_data_id: string | null
+          requester_birthdate: string
+          requester_name: string
+          status: string | null
+        }
+        Insert: {
+          access_code: string
+          created_at?: string | null
+          id?: string
+          medical_data_id?: string | null
+          requester_birthdate: string
+          requester_name: string
+          status?: string | null
+        }
+        Update: {
+          access_code?: string
+          created_at?: string | null
+          id?: string
+          medical_data_id?: string | null
+          requester_birthdate?: string
+          requester_name?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medical_data_access_requests_medical_data_id_fkey"
+            columns: ["medical_data_id"]
+            isOneToOne: false
+            referencedRelation: "medical_data"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
           address: string
@@ -125,6 +293,7 @@ export type Database = {
           content_type: string | null
           created_at: string | null
           description: string | null
+          external_id: string | null
           file_name: string
           file_path: string
           file_size: number | null
@@ -136,6 +305,7 @@ export type Database = {
           content_type?: string | null
           created_at?: string | null
           description?: string | null
+          external_id?: string | null
           file_name: string
           file_path: string
           file_size?: number | null
@@ -147,6 +317,7 @@ export type Database = {
           content_type?: string | null
           created_at?: string | null
           description?: string | null
+          external_id?: string | null
           file_name?: string
           file_path?: string
           file_size?: number | null
@@ -572,7 +743,42 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      verify_directive_access: {
+        Args: {
+          p_directive_id: string
+          p_name: string
+          p_birthdate: string
+          p_access_code: string
+        }
+        Returns: {
+          is_valid: boolean
+          directive_content: string
+        }[]
+      }
+      verify_document_access: {
+        Args: {
+          p_access_code: string
+          p_first_name: string
+          p_last_name: string
+          p_birth_date: string
+        }
+        Returns: {
+          document_id: string
+          is_full_access: boolean
+        }[]
+      }
+      verify_medical_data_access: {
+        Args: {
+          p_medical_data_id: string
+          p_name: string
+          p_birthdate: string
+          p_access_code: string
+        }
+        Returns: {
+          is_valid: boolean
+          medical_data_content: Json
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

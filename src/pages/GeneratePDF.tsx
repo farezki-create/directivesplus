@@ -6,16 +6,23 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "@/components/pdf/usePDFData";
 import { useDirectives } from "@/hooks/useDirectives";
-import { useToast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
 import { Header } from "@/components/Header";
 import { useSynthesis } from "@/hooks/useSynthesis";
 
 export default function GeneratePDF() {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [userId, setUserId] = useState<string | null>(null);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [isCard, setIsCard] = useState(false);
+  
+  // Check if this is a card generation based on URL search params
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const cardParam = searchParams.get('format');
+    setIsCard(cardParam === 'card');
+  }, []);
+  
   const { responses, synthesis, isLoading: responsesLoading } = useQuestionnairesResponses(userId || "");
   const { text: freeText } = useSynthesis(userId);
   const { profile, trustedPersons, loading: profileLoading } = usePDFData();
@@ -39,10 +46,7 @@ export default function GeneratePDF() {
   useEffect(() => {
     if (userId && responses && profile && !responsesLoading && !profileLoading) {
       console.log("[GeneratePDF] Saving directives");
-      
-      // Ensure we have the free text synthesis from the database
       const synthesisContent = synthesis?.free_text || freeText || "";
-      
       saveDirective.mutate({
         general: responses.general,
         lifeSupport: responses.lifeSupport,
@@ -66,7 +70,9 @@ export default function GeneratePDF() {
       <main className="flex-1 container mx-auto py-8 px-4">
         <div className="max-w-4xl mx-auto space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold">Génération de mes directives anticipées</h2>
+            <h2 className="text-2xl font-bold">
+              {isCard ? "Génération de ma carte d'accès" : "Génération de mes directives anticipées"}
+            </h2>
             <button 
               onClick={() => navigate("/free-text")}
               className="text-blue-500 hover:text-blue-700"
@@ -78,16 +84,25 @@ export default function GeneratePDF() {
           <Card className="p-6">
             <div className="flex gap-4 flex-wrap mb-6">
               <p className="text-gray-600 mb-4">
-                Voici vos directives anticipées prêtes à être générées. Cliquez sur le bouton ci-dessous pour créer votre document PDF.
+                {isCard 
+                  ? "Voici votre carte d'accès prête à être générée. Cliquez sur le bouton ci-dessous pour créer votre carte au format PDF."
+                  : "Voici vos directives anticipées prêtes à être générées. Cliquez sur le bouton ci-dessous pour créer votre document PDF."
+                }
               </p>
             </div>
             
             {!isLoading && (
-              <FullPDFGenerator 
-                userId={userId} 
-                onPdfGenerated={setPdfUrl} 
-                synthesisText={freeText || synthesis?.free_text || ""}
-              />
+              <div>
+                <h3 className="text-lg font-semibold mb-3">
+                  {isCard ? "Carte d'accès" : "Document principal"}
+                </h3>
+                <FullPDFGenerator 
+                  userId={userId} 
+                  onPdfGenerated={setPdfUrl} 
+                  synthesisText={freeText || synthesis?.free_text || ""}
+                  isCard={isCard}
+                />
+              </div>
             )}
           </Card>
         </div>

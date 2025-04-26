@@ -21,9 +21,10 @@ export function useAdvancedIllnessQuestions(open: boolean) {
         
         console.log(`[AdvancedIllness] Using table: ${tableName}`);
         
+        // Explicitly request all fields, especially explanation
         const { data, error } = await supabase
           .from(tableName)
-          .select('*')
+          .select('id, display_order, question, explanation, created_at')
           .order('display_order', { ascending: true });
         
         if (error) {
@@ -38,15 +39,26 @@ export function useAdvancedIllnessQuestions(open: boolean) {
           return;
         }
         
+        // Log the raw data from database to check explanations
+        console.log('[AdvancedIllness] Raw data from database:', data);
+        
         // Add position index (1-based) as display_order_str to each question
-        // This will help match questions with explanations when display_order is null
         const processedData = data?.map((q, index) => ({
           ...q,
           // Use existing display_order if available, otherwise use 1-based index
-          display_order_str: q.display_order ? q.display_order.toString() : (index + 1).toString()
+          display_order_str: q.display_order ? q.display_order.toString() : (index + 1).toString(),
+          // Ensure explanation is preserved
+          explanation: q.explanation || ''
         })) || [];
         
-        console.log('[AdvancedIllness] Processed questions:', processedData);
+        // Debug log explanations
+        processedData.forEach((q, i) => {
+          console.log(`[AdvancedIllness] Question ${i+1}: ID=${q.id}, explanation present: ${!!q.explanation}, length: ${q.explanation?.length || 0}`);
+          if (q.explanation) {
+            console.log(`[AdvancedIllness] Sample explanation: ${q.explanation.substring(0, 50)}...`);
+          }
+        });
+        
         setQuestions(processedData);
       } catch (error) {
         console.error('[AdvancedIllness] Unexpected error:', error);
