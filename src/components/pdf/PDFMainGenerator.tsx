@@ -66,10 +66,18 @@ export function PDFMainGenerator({
         try {
           // On vérifie que les données sont correctes
           console.log("[PDFGenerator] Profile:", profile);
-          console.log("[PDFGenerator] Responses count:", 
-            Object.keys(responses || {}).length, 
-            "Synthesis text length:", finalSynthesisText.length);
+          console.log("[PDFGenerator] Responses:", responses);
           console.log("[PDFGenerator] Trusted persons count:", trustedPersons?.length || 0);
+          console.log("[PDFGenerator] Synthesis text length:", finalSynthesisText.length);
+          
+          // Format des données pour être sûr que les réponses sont bien structurées
+          const formattedResponses = {
+            general: responses?.general || [],
+            lifeSupport: responses?.lifeSupport || [],
+            advancedIllness: responses?.advancedIllness || [],
+            preferences: responses?.preferences || [],
+            synthesis: { free_text: finalSynthesisText }
+          };
           
           // Création d'une copie propre des données pour éviter des références circulaires
           const cleanProfile = { 
@@ -77,14 +85,9 @@ export function PDFMainGenerator({
             unique_identifier: profile.unique_identifier || userId
           };
           
-          const cleanResponses = {
-            ...(responses || {}),
-            synthesis: { free_text: finalSynthesisText }
-          };
-          
           handlePDFGeneration(
             cleanProfile,
-            cleanResponses,
+            formattedResponses,
             trustedPersons || [],
             (url) => {
               console.log("[PDFGenerator] PDF URL received:", url ? "URL length: " + url.length : "null");

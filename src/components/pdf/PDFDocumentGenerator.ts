@@ -2,6 +2,7 @@
 import { jsPDF } from "jspdf";
 import { UserProfile, TrustedPerson } from "./types";
 import { cardDimensions } from "./utils/constants/cardDimensions";
+import { PDFResponsesSection } from "./utils/PDFResponsesSection";
 
 export class PDFDocumentGenerator {
   /**
@@ -83,28 +84,53 @@ export class PDFDocumentGenerator {
               yPos += 10;
             }
           });
+          
+          // Ajouter une nouvelle page pour les réponses aux questionnaires
+          doc.addPage();
+          yPos = 20;  // Réinitialise la position Y pour la nouvelle page
+        } else {
+          // Si pas de personnes de confiance, continuer sur la même page
+          let yPos = 100;
         }
         
-        // Add synthesis if available
-        if (responses && responses.synthesis && responses.synthesis.free_text) {
-          doc.addPage();
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(14);
-          doc.text("Synthèse", 20, 20);
-          doc.setFont("helvetica", "normal");
-          doc.setFontSize(11);
+        // Ajouter les réponses aux questionnaires en utilisant PDFResponsesSection
+        if (responses) {
+          // Utiliser PDFResponsesSection pour ajouter les réponses au document
+          console.log("[PDFDocumentGenerator] Ajout des réponses aux questionnaires");
+          let newYPos = PDFResponsesSection.generate(doc, responses, 30);
           
-          const synthesisText = responses.synthesis.free_text;
-          const splitText = doc.splitTextToSize(synthesisText, 170);
-          doc.text(splitText, 20, 30);
+          // Si des réponses ont été ajoutées, laissez de l'espace avant la synthèse
+          if (newYPos > 30) {
+            newYPos += 20;
+          }
+          
+          // Add synthesis if available on a new page
+          if (responses && responses.synthesis && responses.synthesis.free_text) {
+            // Vérifier si nous avons besoin d'une nouvelle page pour la synthèse
+            if (newYPos > doc.internal.pageSize.getHeight() - 60) {
+              doc.addPage();
+              newYPos = 30;
+            }
+            
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(14);
+            doc.text("Synthèse", 20, newYPos);
+            newYPos += 10;
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(11);
+            
+            const synthesisText = responses.synthesis.free_text;
+            const splitText = doc.splitTextToSize(synthesisText, 170);
+            doc.text(splitText, 20, newYPos);
+          }
         }
         
         // Add page numbers
-        const totalPages = doc.internal.getNumberOfPages();
-        for (let i = 1; i <= totalPages; i++) {
-            doc.setPage(i);
-            doc.setFontSize(10);
-            doc.text(`Page ${i} / ${totalPages}`, doc.internal.pageSize.getWidth() - 30, doc.internal.pageSize.getHeight() - 10);
+        const pageCount = doc.internal.pages.length;
+        for (let i = 1; i < pageCount; i++) {
+          doc.setPage(i);
+          doc.setFontSize(10);
+          doc.text(`Page ${i} / ${pageCount - 1}`, doc.internal.pageSize.getWidth() - 30, doc.internal.pageSize.getHeight() - 10);
         }
       }
       
