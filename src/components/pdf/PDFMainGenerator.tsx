@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { PDFGenerationButtons } from "./PDFGenerationButtons";
 import { PDFGeneratorStatus } from "./PDFGeneratorStatus";
 import { usePDFGenerationState } from "./usePDFGenerationState";
