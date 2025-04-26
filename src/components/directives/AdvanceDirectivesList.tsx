@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FileText, Lock, User, Calendar, CreditCard } from "lucide-react";
-import { useAdvanceDirectives } from "@/hooks/useAdvanceDirectives";
+import { useAdvanceDirectives, DirectiveContent } from "@/hooks/useAdvanceDirectives";
 import { format } from "date-fns";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { AdvanceDirectiveAccessDialog } from "./AdvanceDirectiveAccessDialog";
@@ -45,10 +45,10 @@ export function AdvanceDirectivesList({ userId }: AdvanceDirectivesListProps) {
   const latestDirective = directives[0];
   
   // Parse the content if it's a string
-  let directiveContent = latestDirective.content;
-  if (typeof directiveContent === 'string') {
+  let directiveContent: DirectiveContent;
+  if (typeof latestDirective.content === 'string') {
     try {
-      directiveContent = JSON.parse(directiveContent);
+      directiveContent = JSON.parse(latestDirective.content) as DirectiveContent;
     } catch (e) {
       console.error("Error parsing directive content:", e);
       directiveContent = {
@@ -59,16 +59,18 @@ export function AdvanceDirectivesList({ userId }: AdvanceDirectivesListProps) {
         synthesis: null
       };
     }
+  } else {
+    directiveContent = latestDirective.content as DirectiveContent;
   }
   
   const exportData = {
     responses: {
-      general: directiveContent?.general || [],
-      lifeSupport: directiveContent?.lifeSupport || [],
-      advancedIllness: directiveContent?.advancedIllness || [],
-      preferences: directiveContent?.preferences || [],
+      general: directiveContent.general || [],
+      lifeSupport: directiveContent.lifeSupport || [],
+      advancedIllness: directiveContent.advancedIllness || [],
+      preferences: directiveContent.preferences || [],
     },
-    synthesis: directiveContent?.synthesis || null,
+    synthesis: directiveContent.synthesis || null,
     userId: userId
   };
   
