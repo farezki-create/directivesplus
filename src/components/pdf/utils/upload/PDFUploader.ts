@@ -6,7 +6,7 @@ import { PDFGenerationService } from "@/utils/PDFGenerationService";
 /**
  * Uploads a PDF to cloud storage
  */
-export async function uploadPDFToStorage(pdfDataUrl: string, userId: string, profile: any): Promise<string | null> {
+export async function uploadPDFToStorage(pdfDataUrl: string | Blob, userId: string, profile: any): Promise<string | null> {
   try {
     // Convert data URL to Blob if it's a string starting with "data:"
     let blob: Blob;

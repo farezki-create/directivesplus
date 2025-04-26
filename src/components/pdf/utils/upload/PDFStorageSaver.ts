@@ -11,6 +11,16 @@ export async function savePDFToStorage(
   isCard: boolean = false
 ): Promise<string | null> {
   try {
+    if (!userId) {
+      console.error("[PDFStorageSaver] No user ID provided");
+      toast({
+        title: "Erreur",
+        description: "Utilisateur non connecté.",
+        variant: "destructive",
+      });
+      return null;
+    }
+
     // Get profile data
     const { profile } = await import('@/components/pdf/usePDFData').then(m => m.usePDFData());
     

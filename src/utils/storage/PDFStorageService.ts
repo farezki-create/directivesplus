@@ -15,36 +15,24 @@ export class PDFStorageService {
   }
 
   static async uploadToCloud(
-    pdfDataUrl: string, 
-    userId: string, 
-    profile: any
+    pdfData: string | Blob, 
+    fileName: string, 
+    metadata?: any
   ): Promise<string | null> {
     try {
-      // Convert data URL to Blob
-      const response = await fetch(pdfDataUrl);
-      const blob = await response.blob();
-      
-      // Generate filename with metadata
-      const firstName = profile.first_name || 'unknown';
-      const lastName = profile.last_name || 'unknown';
-      const birthDate = profile.birth_date 
-        ? new Date(profile.birth_date).toISOString().split('T')[0]
-        : 'unknown';
-      const timestamp = new Date().toISOString().replace(/[-:.]/g, '').substring(0, 14);
-      
-      const externalId = `${lastName}_${firstName}_${birthDate}_${timestamp}`;
-      const sanitizedExternalId = externalId.replace(/[^a-zA-Z0-9_-]/g, '_');
-      const fileName = `${sanitizedExternalId}.pdf`;
+      // Convert data URL to Blob if necessary
+      let blob: Blob;
+      if (typeof pdfData === 'string' && pdfData.startsWith('data:')) {
+        const response = await fetch(pdfData);
+        blob = await response.blob();
+      } else if (pdfData instanceof Blob) {
+        blob = pdfData;
+      } else {
+        throw new Error("Invalid PDF data format");
+      }
       
       // Upload using the storage provider
-      const documentId = await this.storageProvider.uploadFile(blob, fileName, {
-        userId,
-        firstName,
-        lastName,
-        birthDate,
-        documentType: 'directives',
-        createdAt: new Date().toISOString()
-      });
+      const documentId = await this.storageProvider.uploadFile(blob, fileName, metadata);
       
       if (documentId) {
         toast({
@@ -92,4 +80,3 @@ export class PDFStorageService {
     }
   }
 }
-
