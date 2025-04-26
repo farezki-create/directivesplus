@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { PDFGenerator } from "./pdf/PDFGenerator";
 import { Button } from "@/components/ui/button";
@@ -12,46 +11,51 @@ import { usePDFData } from "./pdf/usePDFData";
 import { format, isValid, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
-
 interface ResponsesSummaryProps {
   userId: string;
 }
-
-export function ResponsesSummary({ userId }: ResponsesSummaryProps) {
-  const { responses, isLoading, hasErrors } = useQuestionnairesResponses(userId);
-  const { profile, loading: profileLoading } = usePDFData();
-  const { toast } = useToast();
-  const { t } = useLanguage();
+export function ResponsesSummary({
+  userId
+}: ResponsesSummaryProps) {
+  const {
+    responses,
+    isLoading,
+    hasErrors
+  } = useQuestionnairesResponses(userId);
+  const {
+    profile,
+    loading: profileLoading
+  } = usePDFData();
+  const {
+    toast
+  } = useToast();
+  const {
+    t
+  } = useLanguage();
   const navigate = useNavigate();
   const [hasSaved, setHasSaved] = useState(false);
   const [hasSigned, setHasSigned] = useState(false);
   const [showPDFGenerator, setShowPDFGenerator] = useState(false);
-
   const handleSaveComplete = () => {
     setHasSaved(true);
   };
-
   const handleSignComplete = () => {
     setHasSigned(true);
     setShowPDFGenerator(true);
   };
-
   console.log("[ResponsesSummary] User ID:", userId);
   console.log("[ResponsesSummary] Profile data:", profile);
-
   if (isLoading || profileLoading) {
     return <div className="p-4 text-center">Chargement de vos réponses...</div>;
   }
-
   if (hasErrors) {
     toast({
       title: "Erreur",
       description: "Une erreur est survenue lors du chargement des réponses.",
-      variant: "destructive",
+      variant: "destructive"
     });
     return <div className="p-4 text-center text-red-500">Une erreur est survenue lors du chargement des réponses.</div>;
   }
-
   if (!userId) {
     console.error("[ResponsesSummary] No user ID provided");
     return null;
@@ -60,11 +64,12 @@ export function ResponsesSummary({ userId }: ResponsesSummaryProps) {
   // Formater une date avec gestion des erreurs
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'Non renseignée';
-    
     try {
       const dateObj = parseISO(dateString);
       if (isValid(dateObj)) {
-        return format(dateObj, "d MMMM yyyy", { locale: fr });
+        return format(dateObj, "d MMMM yyyy", {
+          locale: fr
+        });
       }
       return 'Non renseignée';
     } catch (error) {
@@ -76,27 +81,18 @@ export function ResponsesSummary({ userId }: ResponsesSummaryProps) {
   // Formater l'adresse complète
   const formatAddress = () => {
     if (!profile) return 'Non renseignée';
-    
     const addressParts = [];
-    
     if (profile.address) addressParts.push(profile.address);
-    
-    const cityLine = [profile.postal_code, profile.city]
-      .filter(Boolean)
-      .join(" ");
-      
+    const cityLine = [profile.postal_code, profile.city].filter(Boolean).join(" ");
     if (cityLine) addressParts.push(cityLine);
     if (profile.country) addressParts.push(profile.country);
-    
     return addressParts.length > 0 ? addressParts.join(', ') : 'Non renseignée';
   };
 
   // Display user profile information at the top
   const renderProfileInfo = () => {
     if (!profile) return null;
-    
-    return (
-      <div className="mb-8 p-4 bg-gray-50 rounded-lg border">
+    return <div className="mb-8 p-4 bg-gray-50 rounded-lg border">
         <h3 className="text-lg font-medium mb-3">Informations personnelles</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
           <div>
@@ -112,61 +108,25 @@ export function ResponsesSummary({ userId }: ResponsesSummaryProps) {
             <span className="font-semibold">Adresse :</span> {formatAddress()}
           </div>
         </div>
-      </div>
-    );
+      </div>;
   };
-
-  return (
-    <div className="space-y-8">
+  return <div className="space-y-8">
       {renderProfileInfo()}
       
-      <ResponseSection
-        title={t('generalOpinion')}
-        responses={responses?.general || []}
-      />
-      <ResponseSection
-        title={t('lifeSupport')}
-        responses={responses?.lifeSupport || []}
-      />
-      <ResponseSection
-        title={t('advancedIllnessTitle')}
-        responses={responses?.advancedIllness || []}
-      />
-      <ResponseSection
-        title={t('preferences')}
-        responses={responses?.preferences || []}
-      />
+      <ResponseSection title={t('generalOpinion')} responses={responses?.general || []} />
+      <ResponseSection title={t('lifeSupport')} responses={responses?.lifeSupport || []} />
+      <ResponseSection title={t('advancedIllnessTitle')} responses={responses?.advancedIllness || []} />
+      <ResponseSection title={t('preferences')} responses={responses?.preferences || []} />
       
-      <FreeTextInput 
-        userId={userId} 
-        onSaveComplete={handleSaveComplete}
-        onSignComplete={handleSignComplete}
-      />
+      <FreeTextInput userId={userId} onSaveComplete={handleSaveComplete} onSignComplete={handleSignComplete} />
       
-      {showPDFGenerator && (
-        <div className="mt-8 p-4 border rounded-lg bg-slate-50">
+      {showPDFGenerator && <div className="mt-8 p-4 border rounded-lg bg-slate-50">
           <h3 className="text-lg font-medium mb-4">Générer votre document</h3>
           <div className="flex flex-col gap-4">
             <PDFGenerator userId={userId} />
             
-            <Button 
-              onClick={() => navigate("/generate-pdf?format=card")}
-              variant="outline"
-              className="flex items-center gap-3 h-auto py-4 w-full transition-all hover:bg-purple-50"
-            >
-              <div className="bg-purple-100 p-2 rounded-full">
-                <CreditCard className="h-5 w-5 text-purple-600" />
-              </div>
-              <div className="text-left">
-                <div className="font-medium">Générer ma carte d'accès</div>
-                <div className="text-sm text-muted-foreground">
-                  Format carte bancaire avec vos informations essentielles
-                </div>
-              </div>
-            </Button>
+            
           </div>
-        </div>
-      )}
-    </div>
-  );
+        </div>}
+    </div>;
 }
