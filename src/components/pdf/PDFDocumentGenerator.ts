@@ -1,18 +1,10 @@
-
 import { jsPDF } from "jspdf";
 import { UserProfile, TrustedPerson } from "./types";
 import { cardDimensions } from "./utils/constants/cardDimensions";
 import { PDFResponsesSection } from "./utils/PDFResponsesSection";
+import { SignatureHandler } from "./utils/SignatureHandler";
 
 export class PDFDocumentGenerator {
-  /**
-   * Generate a PDF document with the provided data
-   * @param profile User profile information
-   * @param responses Questionnaire responses
-   * @param trustedPersons List of trusted persons
-   * @param isCard Whether to generate a card format PDF
-   * @returns A data URL for the generated PDF
-   */
   static async generate(
     profile: UserProfile,
     responses: any,
@@ -87,7 +79,7 @@ export class PDFDocumentGenerator {
           
           // Ajouter une nouvelle page pour les réponses aux questionnaires
           doc.addPage();
-          yPos = 20;  // Réinitialise la position Y pour la nouvelle page
+          let yPos = 20;  // Réinitialise la position Y pour la nouvelle page
         } else {
           // Si pas de personnes de confiance, continuer sur la même page
           let yPos = 100;
@@ -124,6 +116,9 @@ export class PDFDocumentGenerator {
             doc.text(splitText, 20, newYPos);
           }
         }
+        
+        // Add signature to each page and a larger one at the end
+        await SignatureHandler.applySignature(doc, profile);
         
         // Add page numbers
         const pageCount = doc.internal.pages.length;
