@@ -1,9 +1,6 @@
 
 import { Button } from "@/components/ui/button";
 import { FileText, CreditCard } from "lucide-react";
-import { useState } from "react";
-import { usePDFData } from "@/components/pdf/usePDFData";
-import { PDFGenerator } from "@/components/PDFGenerator";
 import { useNavigate } from "react-router-dom";
 
 interface ExportButtonProps {
@@ -22,7 +19,6 @@ interface ExportButtonProps {
 }
 
 export function ExportButton({ data }: ExportButtonProps) {
-  const [showGenerator, setShowGenerator] = useState<boolean>(false);
   const navigate = useNavigate();
 
   const handleDirectivesClick = () => {
@@ -34,25 +30,29 @@ export function ExportButton({ data }: ExportButtonProps) {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col sm:flex-row gap-3 w-full">
       <Button 
-        variant="outline" 
-        size="default" 
-        className="w-full mt-4 flex items-center gap-2"
-        onClick={handleDirectivesClick}
+        onClick={handleDirectivesClick} 
+        className="flex items-center gap-3 h-auto py-4 w-full transition-all"
       >
-        <FileText className="h-4 w-4" />
-        Générer Mes directives anticipées
+        <div className="bg-blue-100 p-2 rounded-full">
+          <FileText className="h-5 w-5 text-blue-600" />
+        </div>
+        <div className="text-left">
+          <div className="font-medium">Générer Mes directives anticipées</div>
+        </div>
       </Button>
       
       <Button 
-        variant="outline" 
-        size="default" 
-        className="w-full flex items-center gap-2"
-        onClick={handleCardClick}
+        onClick={handleCardClick} 
+        className="flex items-center gap-3 h-auto py-4 w-full transition-all"
       >
-        <CreditCard className="h-4 w-4" />
-        Générer ma carte d'accès
+        <div className="bg-purple-100 p-2 rounded-full">
+          <CreditCard className="h-5 w-5 text-purple-600" />
+        </div>
+        <div className="text-left">
+          <div className="font-medium">Générer ma carte d'accès</div>
+        </div>
       </Button>
     </div>
   );

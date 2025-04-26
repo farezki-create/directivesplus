@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { PDFGenerator } from "./pdf/PDFGenerator";
+import { PDFGenerator } from "@/components/PDFGenerator";
 import { Button } from "@/components/ui/button";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { ResponseSection } from "./responses/ResponseSection";
