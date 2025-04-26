@@ -84,13 +84,6 @@ export const Header = () => {
             <>
               <Button
                 className={navButtonClass}
-                onClick={navigateTo("/generate-pdf")}
-              >
-                Mes directives
-              </Button>
-              
-              <Button
-                className={navButtonClass}
                 onClick={navigateTo("/my-documents")}
               >
                 <FileText className="h-4 w-4 mr-1" />
