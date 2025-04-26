@@ -1,14 +1,17 @@
 
+import { useState } from "react";
+import { PDFGenerator } from "./pdf/PDFGenerator";
+import { Button } from "@/components/ui/button";
+import { CreditCard } from "lucide-react";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { ResponseSection } from "./responses/ResponseSection";
 import { FreeTextInput } from "./free-text/FreeTextInput";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/useLanguage";
-import { useState } from "react";
-import { PDFGenerator } from "./pdf/PDFGenerator";
 import { usePDFData } from "./pdf/usePDFData";
 import { format, isValid, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
+import { useNavigate } from "react-router-dom";
 
 interface ResponsesSummaryProps {
   userId: string;
@@ -19,6 +22,7 @@ export function ResponsesSummary({ userId }: ResponsesSummaryProps) {
   const { profile, loading: profileLoading } = usePDFData();
   const { toast } = useToast();
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const [hasSaved, setHasSaved] = useState(false);
   const [hasSigned, setHasSigned] = useState(false);
   const [showPDFGenerator, setShowPDFGenerator] = useState(false);
@@ -142,8 +146,23 @@ export function ResponsesSummary({ userId }: ResponsesSummaryProps) {
       {showPDFGenerator && (
         <div className="mt-8 p-4 border rounded-lg bg-slate-50">
           <h3 className="text-lg font-medium mb-4">Générer votre document</h3>
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-col gap-4">
             <PDFGenerator userId={userId} />
+            <Button 
+              onClick={() => navigate("/generate-pdf?format=card")}
+              variant="outline"
+              className="flex items-center gap-3 h-auto py-4 transition-all hover:bg-purple-50"
+            >
+              <div className="bg-purple-100 p-2 rounded-full">
+                <CreditCard className="h-5 w-5 text-purple-600" />
+              </div>
+              <div className="text-left">
+                <div className="font-medium">Générer ma carte d'accès</div>
+                <div className="text-sm text-muted-foreground">
+                  Format carte bancaire avec vos informations essentielles
+                </div>
+              </div>
+            </Button>
           </div>
         </div>
       )}
