@@ -3,11 +3,21 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { PDFGenerationService } from "@/utils/PDFGenerationService";
 
+/**
+ * Uploads a PDF to cloud storage
+ */
 export async function uploadPDFToStorage(pdfDataUrl: string, userId: string, profile: any): Promise<string | null> {
   try {
-    // Convert data URL to Blob
-    const response = await fetch(pdfDataUrl);
-    const blob = await response.blob();
+    // Convert data URL to Blob if it's a string starting with "data:"
+    let blob: Blob;
+    if (typeof pdfDataUrl === 'string' && pdfDataUrl.startsWith('data:')) {
+      const response = await fetch(pdfDataUrl);
+      blob = await response.blob();
+    } else if (pdfDataUrl instanceof Blob) {
+      blob = pdfDataUrl;
+    } else {
+      throw new Error("Invalid PDF data format");
+    }
     
     // Generate filename with metadata
     const firstName = profile.first_name || 'unknown';
@@ -41,7 +51,7 @@ export async function uploadPDFToStorage(pdfDataUrl: string, userId: string, pro
           file_path: `external_storage/${documentId}.pdf`,
           content_type: 'application/pdf',
           description: `Directives anticipées de ${firstName} ${lastName}`,
-          created_at: new Date().toISOString()
+          external_id: documentId
         });
           
       if (dbError) {
