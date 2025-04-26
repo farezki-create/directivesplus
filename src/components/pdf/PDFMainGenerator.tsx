@@ -10,6 +10,7 @@ import { UserProfile, TrustedPerson } from "./types";
 import { Button } from "../ui/button";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { FileText } from "lucide-react";
 
 interface PDFMainGeneratorProps {
   userId: string;
@@ -56,7 +57,14 @@ export function PDFMainGenerator({
     profile,
     responses,
     trustedPersons,
-    onPdfGenerated,
+    (url) => {
+      if (onPdfGenerated) {
+        onPdfGenerated(url);
+      }
+      if (url) {
+        setShowPreview(true);
+      }
+    },
     onGenerationStart,
     synthesisText,
     isCard
@@ -104,13 +112,15 @@ export function PDFMainGenerator({
         isCard={isCard}
       />
       
-      <PDFGenerationButtons 
-        pdfUrl={pdfUrl}
-        isGenerating={isGenerating}
-        onGenerateClick={generatePDF}
-        documentIdentifier={documentIdentifier}
-        isCard={isCard}
-      />
+      {!pdfUrl && (
+        <PDFGenerationButtons 
+          pdfUrl={pdfUrl}
+          isGenerating={isGenerating}
+          onGenerateClick={generatePDF}
+          documentIdentifier={documentIdentifier}
+          isCard={isCard}
+        />
+      )}
 
       {pdfUrl && showPreview && (
         <PDFPreviewDialog
@@ -120,12 +130,21 @@ export function PDFMainGenerator({
         />
       )}
 
-      {pdfUrl && !showPreview && (
+      {pdfUrl && (
         <div className="mt-4">
+          <Button 
+            onClick={() => setShowPreview(true)}
+            className="w-full mb-2"
+            variant="outline"
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            Prévisualiser {isCard ? "la carte" : "les directives"}
+          </Button>
+          
           <Button 
             onClick={handleSaveToDocuments}
             className="w-full"
-            variant="secondary"
+            variant="default"
           >
             Sauvegarder dans mes documents
           </Button>

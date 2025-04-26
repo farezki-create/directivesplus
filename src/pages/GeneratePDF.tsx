@@ -67,18 +67,6 @@ export default function GeneratePDF() {
 
   const handlePdfGenerated = (url: string | null) => {
     setPdfUrl(url);
-    if (url) {
-      toast({
-        title: "Succès",
-        description: isCard 
-          ? "Votre carte d'accès a été générée. Vous serez redirigé vers vos documents."
-          : "Vos directives ont été générées. Vous serez redirigé vers vos documents.",
-      });
-      
-      setTimeout(() => {
-        navigate("/my-documents");
-      }, 2000);
-    }
   };
 
   if (!userId) {
@@ -107,8 +95,8 @@ export default function GeneratePDF() {
             <div className="flex gap-4 flex-wrap mb-6">
               <p className="text-gray-600 mb-4">
                 {isCard 
-                  ? "Voici votre carte d'accès prête à être générée. Cliquez sur le bouton ci-dessous pour créer votre carte au format PDF."
-                  : "Voici vos directives anticipées prêtes à être générées. Cliquez sur le bouton ci-dessous pour créer votre document PDF."
+                  ? "Voici votre carte d'accès prête à être générée. Cliquez sur le bouton ci-dessous pour créer et prévisualiser votre carte au format PDF."
+                  : "Voici vos directives anticipées prêtes à être générées. Cliquez sur le bouton ci-dessous pour créer et prévisualiser votre document PDF."
                 }
               </p>
             </div>

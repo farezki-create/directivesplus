@@ -68,11 +68,14 @@ export function usePDFGeneration(
               toast({
                 title: "Succès",
                 description: isCard 
-                  ? "Votre carte d'accès a été générée. Vous pouvez maintenant la prévisualiser."
-                  : "Vos directives ont été générées. Vous pouvez maintenant les prévisualiser.",
+                  ? "Votre carte d'accès a été générée. Cliquez sur Prévisualiser pour la voir."
+                  : "Vos directives ont été générées. Cliquez sur Prévisualiser pour les voir.",
               });
             },
-            () => {},
+            (showPreview) => {
+              // Cette fonction est appelée pour contrôler l'affichage de la prévisualisation
+              console.log("[PDFGenerator] setShowPreview called:", showPreview);
+            },
             isCard
           );
         } catch (error) {
