@@ -146,20 +146,20 @@ export function ResponsesSummary({ userId }: ResponsesSummaryProps) {
       {showPDFGenerator && (
         <div className="mt-8 p-4 border rounded-lg bg-slate-50">
           <h3 className="text-lg font-medium mb-4">Générer votre document</h3>
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-col gap-4">
             <PDFGenerator userId={userId} />
             <Button 
               onClick={() => navigate("/generate-pdf?format=card")}
               variant="outline"
-              className="flex items-center gap-3 h-auto py-4 transition-all shadow-sm hover:shadow-md hover:bg-purple-50"
+              className="flex items-center gap-3 h-auto py-4 transition-all hover:bg-purple-50"
             >
               <div className="bg-purple-100 p-2 rounded-full">
                 <CreditCard className="h-5 w-5 text-purple-600" />
               </div>
               <div className="text-left">
-                <div className="font-medium text-lg">Générer ma carte d'accès</div>
+                <div className="font-medium">Générer ma carte d'accès</div>
                 <div className="text-sm text-muted-foreground">
-                  Carte format bancaire contenant vos informations essentielles
+                  Format carte bancaire avec vos informations essentielles
                 </div>
               </div>
             </Button>
