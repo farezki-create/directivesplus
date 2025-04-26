@@ -27,8 +27,15 @@ export class PDFStorageService {
         blob = await response.blob();
       } else if (pdfData instanceof Blob) {
         blob = pdfData;
+      } else if (typeof pdfData === 'string') {
+        // For other string formats, attempt to create a blob from it
+        try {
+          blob = new Blob([pdfData], { type: 'application/pdf' });
+        } catch (e) {
+          throw new Error("Invalid PDF data format: unable to convert to Blob");
+        }
       } else {
-        throw new Error("Invalid PDF data format");
+        throw new Error("Invalid PDF data format: must be a data URL or a Blob");
       }
       
       // Upload using the storage provider

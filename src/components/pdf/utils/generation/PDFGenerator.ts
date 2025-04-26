@@ -28,7 +28,7 @@ export async function handlePDFGeneration(
   }
   
   try {
-    console.log("[PDFGenerator] Starting PDF generation process");
+    console.log("[PDFGenerator] Starting PDF generation process with isCard:", isCard);
     
     // Generate the PDF document
     const pdfDataUrl = await PDFDocumentGenerator.generate(

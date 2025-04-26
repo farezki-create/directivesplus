@@ -42,14 +42,19 @@ export function usePDFGenerationState() {
   const messageList = usePlayfulTheme ? funMessages : waitingMessages;
 
   useEffect(() => {
+    let messageInterval: NodeJS.Timeout | null = null;
+    let progressInterval: NodeJS.Timeout | null = null;
+    let firstSafetyTimeout: NodeJS.Timeout | null = null;
+    let secondSafetyTimeout: NodeJS.Timeout | null = null;
+
     if (isGenerating) {
       // Rotation des messages plus rapide - 800ms pour plus d'animation
-      const messageInterval = setInterval(() => {
+      messageInterval = setInterval(() => {
         setCurrentMessageIndex((prev) => (prev + 1) % messageList.length);
       }, 800);
 
       // Progression plus rapide pour les animations
-      const progressInterval = setInterval(() => {
+      progressInterval = setInterval(() => {
         setProgress((prev) => {
           // Progression plus dynamique avec des sauts irréguliers pour donner l'impression de travail
           if (prev < 25) {
@@ -65,7 +70,7 @@ export function usePDFGenerationState() {
       }, 250); // Intervalle plus court pour plus d'animations
 
       // Premier timeout de sécurité (10 secondes)
-      const firstSafetyTimeout = setTimeout(() => {
+      firstSafetyTimeout = setTimeout(() => {
         if (progress < 90) {
           console.log("[PDFGenerationState] Premier timeout de sécurité déclenché");
           setTimeoutCount(prev => prev + 1);
@@ -76,7 +81,7 @@ export function usePDFGenerationState() {
       }, 10000);
 
       // Second timeout de sécurité (20 secondes) - MAXIMUM temps d'attente
-      const secondSafetyTimeout = setTimeout(() => {
+      secondSafetyTimeout = setTimeout(() => {
         console.log("[PDFGenerationState] Deuxième timeout de sécurité déclenché");
         setTimeoutCount(prev => prev + 1);
         
@@ -90,10 +95,10 @@ export function usePDFGenerationState() {
       }, 20000);
 
       return () => {
-        clearInterval(messageInterval);
-        clearInterval(progressInterval);
-        clearTimeout(firstSafetyTimeout);
-        clearTimeout(secondSafetyTimeout);
+        if (messageInterval) clearInterval(messageInterval);
+        if (progressInterval) clearInterval(progressInterval);
+        if (firstSafetyTimeout) clearTimeout(firstSafetyTimeout);
+        if (secondSafetyTimeout) clearTimeout(secondSafetyTimeout);
       };
     } else {
       // Reset progress and message when not generating

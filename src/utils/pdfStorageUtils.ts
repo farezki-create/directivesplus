@@ -26,8 +26,21 @@ export async function uploadPDFToStorage(pdfDataUrl: string | Blob, userId: stri
     const sanitizedExternalId = externalId.replace(/[^a-zA-Z0-9_-]/g, '_');
     const fileName = `${sanitizedExternalId}.pdf`;
     
+    // Convert data URL to Blob if necessary
+    let pdfBlob: Blob;
+    if (typeof pdfDataUrl === 'string' && pdfDataUrl.startsWith('data:')) {
+      const response = await fetch(pdfDataUrl);
+      pdfBlob = await response.blob();
+    } else if (pdfDataUrl instanceof Blob) {
+      pdfBlob = pdfDataUrl;
+    } else if (typeof pdfDataUrl === 'string') {
+      throw new Error("Invalid PDF data format: must be a data URL");
+    } else {
+      throw new Error("Invalid PDF data format: must be a data URL or a Blob");
+    }
+    
     // Utiliser notre service de génération PDF pour télécharger vers le cloud
-    const documentId = await PDFGenerationService.uploadToCloud(pdfDataUrl, fileName, {
+    const documentId = await PDFGenerationService.uploadToCloud(pdfBlob, fileName, {
       userId,
       firstName,
       lastName,

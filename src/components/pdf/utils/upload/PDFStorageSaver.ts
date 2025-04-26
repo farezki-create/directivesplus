@@ -1,6 +1,7 @@
 
 import { uploadPDFToStorage } from './PDFUploader';
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 /**
  * Saves a PDF to storage with proper error handling
@@ -22,10 +23,14 @@ export async function savePDFToStorage(
     }
 
     // Get profile data
-    const { profile } = await import('@/components/pdf/usePDFData').then(m => m.usePDFData());
-    
-    if (!profile) {
-      console.error("[PDFStorageSaver] No profile data available");
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (profileError || !profile) {
+      console.error("[PDFStorageSaver] No profile data available:", profileError);
       toast({
         title: "Erreur",
         description: "Données de profil non disponibles. Veuillez compléter votre profil.",
