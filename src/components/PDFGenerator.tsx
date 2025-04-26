@@ -1,7 +1,10 @@
 
+import { Button } from "@/components/ui/button";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "./pdf/usePDFData";
 import { PDFMainGenerator } from "./pdf/PDFMainGenerator";
+import { Card } from "./ui/card";
+import { FileText, Ticket } from "lucide-react";
 
 interface PDFGeneratorProps {
   userId: string;
@@ -18,14 +21,9 @@ export function PDFGenerator({ userId, onPdfGenerated, synthesisText, isCard }: 
   const { responses, synthesis, isLoading } = useQuestionnairesResponses(userId);
   const { profile, trustedPersons, loading } = usePDFData();
 
-  console.log("[PDFGenerator] Current state:", {
-    hasProfile: !!profile,
-    hasTrustedPersons: trustedPersons.length,
-    hasResponses: !!responses,
-    isLoading: loading || isLoading,
-    synthesisText: synthesisText ? "Provided" : "Not provided",
-    dbSynthesis: synthesis?.free_text ? "Available" : "Not available"
-  });
+  const navigateToCardGeneration = () => {
+    window.location.href = "/generate-pdf?format=card";
+  };
 
   if (loading || isLoading) {
     console.log("[PDFGenerator] Still loading data...");
@@ -33,15 +31,43 @@ export function PDFGenerator({ userId, onPdfGenerated, synthesisText, isCard }: 
   }
 
   return (
-    <PDFMainGenerator
-      userId={userId}
-      onPdfGenerated={onPdfGenerated}
-      synthesisText={synthesisText}
-      profile={profile}
-      responses={responses}
-      trustedPersons={trustedPersons}
-      synthesis={synthesis}
-      isCard={isCard}
-    />
+    <div className="space-y-4">
+      <Card className="p-6">
+        <div className="grid gap-4 md:grid-cols-2">
+          <Button 
+            onClick={() => window.location.href = "/generate-pdf"}
+            className="flex items-center gap-2"
+            size="lg"
+          >
+            <FileText className="h-5 w-5" />
+            Générer mes directives
+          </Button>
+          
+          <Button 
+            onClick={navigateToCardGeneration}
+            variant="secondary"
+            className="flex items-center gap-2"
+            size="lg"
+          >
+            <Ticket className="h-5 w-5" />
+            Générer ma carte d'accès
+          </Button>
+        </div>
+      </Card>
+
+      {isCard !== undefined && (
+        <PDFMainGenerator
+          userId={userId}
+          onPdfGenerated={onPdfGenerated}
+          synthesisText={synthesisText}
+          profile={profile}
+          responses={responses}
+          trustedPersons={trustedPersons}
+          synthesis={synthesis}
+          isCard={isCard}
+        />
+      )}
+    </div>
   );
 }
+
