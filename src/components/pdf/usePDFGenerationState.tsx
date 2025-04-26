@@ -43,51 +43,51 @@ export function usePDFGenerationState() {
 
   useEffect(() => {
     if (isGenerating) {
-      // Rotation des messages plus rapide - 1200ms pour plus d'animation
+      // Rotation des messages plus rapide - 800ms pour plus d'animation
       const messageInterval = setInterval(() => {
         setCurrentMessageIndex((prev) => (prev + 1) % messageList.length);
-      }, 1200);
+      }, 800);
 
       // Progression plus rapide pour les animations
       const progressInterval = setInterval(() => {
         setProgress((prev) => {
-          // Au début, avancer rapidement, puis ralentir vers la fin
-          if (prev < 30) {
-            return Math.min(prev + 8, 30); // Démarrage rapide
-          } else if (prev < 60) {
-            return Math.min(prev + 5, 60); // Rythme moyen
-          } else if (prev < 85) {
-            return Math.min(prev + 2, 85); // Ralentissement
+          // Progression plus dynamique avec des sauts irréguliers pour donner l'impression de travail
+          if (prev < 25) {
+            return Math.min(prev + Math.random() * 10, 25); // Démarrage rapide avec variation
+          } else if (prev < 50) {
+            return Math.min(prev + Math.random() * 7, 50); // Rythme moyen avec variation
+          } else if (prev < 75) {
+            return Math.min(prev + Math.random() * 3, 75); // Ralentissement avec variation
           } else {
-            return Math.min(prev + 0.5, 95); // Très lent à la fin
+            return Math.min(prev + Math.random() * 1.5, 95); // Très lent à la fin avec variation
           }
         });
-      }, 300); // Intervalle plus court pour plus d'animations
+      }, 250); // Intervalle plus court pour plus d'animations
 
-      // Premier timeout de sécurité (15 secondes)
+      // Premier timeout de sécurité (10 secondes)
       const firstSafetyTimeout = setTimeout(() => {
         if (progress < 90) {
           console.log("[PDFGenerationState] Premier timeout de sécurité déclenché");
           setTimeoutCount(prev => prev + 1);
           
-          // Si la génération est toujours en cours après 15 secondes, on accélère
+          // Si la génération est toujours en cours après 10 secondes, on accélère
           setProgress(90);
         }
-      }, 15000);
+      }, 10000);
 
-      // Second timeout de sécurité (30 secondes) - MAXIMUM temps d'attente
+      // Second timeout de sécurité (20 secondes) - MAXIMUM temps d'attente
       const secondSafetyTimeout = setTimeout(() => {
         console.log("[PDFGenerationState] Deuxième timeout de sécurité déclenché");
         setTimeoutCount(prev => prev + 1);
         
-        // Si la génération est toujours en cours après 30 secondes, on force la fin
+        // Si la génération est toujours en cours après 20 secondes, on force la fin
         if (isGenerating && !pdfUrl) {
           console.log("[PDFGenerationState] Force reset génération bloquée");
           setIsGenerating(false);
           setProgress(0);
           setErrorCount(prev => prev + 1);
         }
-      }, 30000);
+      }, 20000);
 
       return () => {
         clearInterval(messageInterval);

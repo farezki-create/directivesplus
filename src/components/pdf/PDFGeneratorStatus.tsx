@@ -26,26 +26,57 @@ export function PDFGeneratorStatus({
   isCard
 }: PDFGeneratorStatusProps) {
   useEffect(() => {
-    if (!profile && isGenerating) {
+    let timeoutId: NodeJS.Timeout | null = null;
+
+    if (isGenerating && !profile) {
       console.error("[PDFGenerator] No profile data available");
       toast({
         title: "Erreur",
         description: "Données de profil non disponibles. Veuillez compléter votre profil.",
         variant: "destructive",
       });
+      
+      // Annuler la génération après un délai
+      timeoutId = setTimeout(() => {
+        toast({
+          title: "Génération annulée",
+          description: "La génération a été annulée en raison d'une erreur.",
+          variant: "destructive",
+        });
+      }, 1500);
     }
+
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
   }, [profile, isGenerating]);
 
+  // N'afficher l'overlay que si la génération est active ou si le PDF est prêt
   if (!isGenerating && !pdfUrl) {
     return null;
   }
 
   return (
-    <PDFGenerationOverlay 
-      isGenerating={isGenerating}
-      progress={progress}
-      waitingMessage={currentWaitingMessage}
-      isCard={isCard}
-    />
+    <div className="mb-6">
+      <PDFGenerationOverlay 
+        isGenerating={isGenerating}
+        progress={progress}
+        waitingMessage={currentWaitingMessage}
+        isCard={isCard}
+      />
+      
+      {!isGenerating && pdfUrl && (
+        <div className="p-4 bg-green-50 border border-green-200 rounded-lg mt-2 animate-fade-in">
+          <p className="text-green-700 text-sm">
+            {isCard 
+              ? "Votre carte d'accès a été générée avec succès et sauvegardée dans vos documents."
+              : "Vos directives ont été générées avec succès et sauvegardées dans vos documents."
+            }
+          </p>
+        </div>
+      )}
+    </div>
   );
 }

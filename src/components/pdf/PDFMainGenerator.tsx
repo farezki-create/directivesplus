@@ -68,7 +68,7 @@ export function PDFMainGenerator({
           });
           setProgress(95); // Show near completion
         }
-      }, 20000); // 20 secondes - timeout réduit pour une meilleure réactivité
+      }, 15000); // 15 secondes - timeout réduit pour une meilleure réactivité
       
       // Second safety timeout (force completion)
       const forceCompletionTimeout = setTimeout(() => {
@@ -83,7 +83,7 @@ export function PDFMainGenerator({
             variant: "destructive",
           });
         }
-      }, 30000); // 30 secondes maximum
+      }, 25000); // 25 secondes maximum
       
       return () => {
         if (safetyTimeout) clearTimeout(safetyTimeout);
@@ -122,43 +122,78 @@ export function PDFMainGenerator({
       // Démarrer la génération plus rapidement
       setTimeout(async () => {
         try {
-          handlePDFGeneration(
-            profile,
-            {
-              ...responses,
-              synthesis: { free_text: finalSynthesisText }
-            },
-            trustedPersons,
-            (url) => {
-              console.log("[PDFGenerator] Generation complete, URL received:", !!url);
-              setProgress(100);
-              setPdfUrl(url);
+          // Utiliser un système de tentatives multiples
+          let attempt = 0;
+          const maxAttempts = 3;
+          
+          const attemptGeneration = () => {
+            attempt++;
+            console.log(`[PDFGenerator] Attempt ${attempt} to generate PDF`);
+            
+            handlePDFGeneration(
+              profile,
+              {
+                ...responses,
+                synthesis: { free_text: finalSynthesisText }
+              },
+              trustedPersons,
+              (url) => {
+                console.log("[PDFGenerator] Generation complete, URL received:", !!url);
+                setProgress(100);
+                setPdfUrl(url);
+                
+                if (onPdfGenerated) {
+                  onPdfGenerated(url);
+                }
+                
+                setIsGenerating(false);
+                
+                // Save with the correct format designation
+                const saveFormat = isCard ? 'card' : 'full';
+                
+                // Redirection automatique après génération réussie
+                toast({
+                  title: "Succès",
+                  description: isCard 
+                    ? "Votre carte d'accès a été générée et sauvegardée. Redirection vers vos documents..." 
+                    : "Vos directives ont été générées et sauvegardées. Redirection vers vos documents...",
+                });
+                
+                // Courte attente avant redirection pour montrer le message de succès
+                setTimeout(() => {
+                  navigate("/my-documents");
+                }, 1500);
+              },
+              setShowPreview,
+              isCard
+            );
+          };
+          
+          // Première tentative
+          attemptGeneration();
+          
+          // Configurer les tentatives supplémentaires en cas d'échec
+          const retryTimeout = setTimeout(() => {
+            if (isGenerating && !pdfUrl && attempt < maxAttempts) {
+              console.log(`[PDFGenerator] First attempt timed out, trying again (${attempt + 1}/${maxAttempts})`);
+              attemptGeneration();
               
-              if (onPdfGenerated) {
-                onPdfGenerated(url);
+              // Dernière chance
+              if (attempt + 1 >= maxAttempts) {
+                const lastChanceTimeout = setTimeout(() => {
+                  if (isGenerating && !pdfUrl) {
+                    console.log(`[PDFGenerator] All attempts failed, final try (${attempt + 1}/${maxAttempts})`);
+                    attemptGeneration();
+                  }
+                }, 8000);
+                
+                return () => clearTimeout(lastChanceTimeout);
               }
-              
-              setIsGenerating(false);
-              
-              // Save with the correct format designation
-              const saveFormat = isCard ? 'card' : 'full';
-              
-              // Redirection automatique après génération réussie
-              toast({
-                title: "Succès",
-                description: isCard 
-                  ? "Votre carte d'accès a été générée et sauvegardée. Redirection vers vos documents..." 
-                  : "Vos directives ont été générées et sauvegardées. Redirection vers vos documents...",
-              });
-              
-              // Courte attente avant redirection pour montrer le message de succès
-              setTimeout(() => {
-                navigate("/my-documents");
-              }, 2000);
-            },
-            setShowPreview,
-            isCard
-          );
+            }
+          }, 12000);
+          
+          return () => clearTimeout(retryTimeout);
+          
         } catch (error) {
           console.error("[PDFGenerator] Inner error during PDF generation:", error);
           toast({
@@ -168,7 +203,7 @@ export function PDFMainGenerator({
           });
           setIsGenerating(false);
         }
-      }, 300); // Démarrer après 300ms au lieu de 500ms
+      }, 100); // Démarrer presque immédiatement
     } catch (error) {
       console.error("[PDFGenerator] Error during PDF generation:", error);
       toast({

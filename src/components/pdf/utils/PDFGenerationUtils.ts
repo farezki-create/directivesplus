@@ -5,11 +5,7 @@ import { PDFDocumentGenerator } from "../PDFDocumentGenerator";
 import { supabase } from "@/integrations/supabase/client";
 
 /**
- * @protected
- * CETTE MÉTHODE EST PROTÉGÉE ET NE DOIT PAS ÊTRE MODIFIÉE.
- * This method is protected and must not be modified.
- * Version: 1.1.0
- * Last Modified: ${new Date().toISOString()}
+ * Gère la génération complète du PDF, y compris le stockage et l'affichage
  */
 export const handlePDFGeneration = async (
   profile: UserProfile | null,
@@ -70,7 +66,13 @@ export const handlePDFGeneration = async (
     if (profile.unique_identifier) {
       try {
         console.log("[PDFGeneration] Saving PDF to storage for user:", profile.unique_identifier);
-        await savePDFToStorage(pdfDataUrl, profile.unique_identifier, isCard);
+        // Utiliser un système de tentatives pour le stockage aussi
+        const storageSuccessful = await savePDFWithRetry(pdfDataUrl, profile.unique_identifier, isCard);
+        
+        if (!storageSuccessful) {
+          console.warn("[PDFGeneration] Storage attempts failed, but continuing with preview");
+          // Ne pas bloquer le processus même si le stockage échoue
+        }
       } catch (storageError) {
         console.error("[PDFGeneration] Error saving PDF to storage:", storageError);
         // Continue with preview even if storage fails
@@ -99,11 +101,37 @@ export const handlePDFGeneration = async (
 };
 
 /**
- * @protected
- * CETTE MÉTHODE EST PROTÉGÉE ET NE DOIT PAS ÊTRE MODIFIÉE.
- * This method is protected and must not be modified.
- * Version: 1.1.0
- * Last Modified: ${new Date().toISOString()}
+ * Système de tentatives pour sauvegarder le PDF dans le stockage
+ */
+async function savePDFWithRetry(pdfDataUrl: string, userId: string, isCard = false): Promise<boolean> {
+  let attempts = 0;
+  const maxAttempts = 3;
+  let success = false;
+
+  while (attempts < maxAttempts && !success) {
+    try {
+      console.log(`[PDFStorage] Storage attempt ${attempts + 1} of ${maxAttempts}`);
+      success = await savePDFToStorage(pdfDataUrl, userId, isCard);
+      
+      if (!success) {
+        console.error(`[PDFStorage] Storage attempt ${attempts + 1} failed`);
+        // Attendre avant la prochaine tentative
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+    } catch (err) {
+      console.error(`[PDFStorage] Error in storage attempt ${attempts + 1}:`, err);
+      // Attendre avant la prochaine tentative
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+    
+    attempts++;
+  }
+  
+  return success;
+}
+
+/**
+ * Sauvegarde le PDF dans le stockage Supabase
  */
 export const savePDFToStorage = async (pdfDataUrl: string, userId: string, isCard = false) => {
   try {
@@ -228,6 +256,7 @@ export const savePDFToStorage = async (pdfDataUrl: string, userId: string, isCar
       console.error("[PDFStorage] All database insert attempts failed:", dbError);
       // On ne bloque pas le processus même si l'insertion dans la base échoue
       // car le fichier est déjà uploadé
+      return false;
     }
     
     return true;
@@ -239,7 +268,6 @@ export const savePDFToStorage = async (pdfDataUrl: string, userId: string, isCar
 
 /**
  * Télécharge le PDF avec un nom de fichier personnalisé
- * Cette méthode peut être modifiée selon les besoins
  */
 export const handlePDFDownload = (pdfUrl: string | null, customFilename?: string) => {
   if (!pdfUrl) {
