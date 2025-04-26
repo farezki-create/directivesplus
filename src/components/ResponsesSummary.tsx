@@ -3,12 +3,26 @@ import { useState } from "react";
 import { PDFGenerator } from "./pdf/PDFGenerator";
 import { Button } from "@/components/ui/button";
 import { CreditCard } from "lucide-react";
+import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
+import { ResponseSection } from "./responses/ResponseSection";
+import { FreeTextInput } from "./free-text/FreeTextInput";
+import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/hooks/useLanguage";
+import { usePDFData } from "./pdf/usePDFData";
+import { format, isValid, parseISO } from "date-fns";
+import { fr } from "date-fns/locale";
+import { useNavigate } from "react-router-dom";
+
+interface ResponsesSummaryProps {
+  userId: string;
+}
 
 export function ResponsesSummary({ userId }: ResponsesSummaryProps) {
   const { responses, isLoading, hasErrors } = useQuestionnairesResponses(userId);
   const { profile, loading: profileLoading } = usePDFData();
   const { toast } = useToast();
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const [hasSaved, setHasSaved] = useState(false);
   const [hasSigned, setHasSigned] = useState(false);
   const [showPDFGenerator, setShowPDFGenerator] = useState(false);
@@ -155,4 +169,3 @@ export function ResponsesSummary({ userId }: ResponsesSummaryProps) {
     </div>
   );
 }
-
