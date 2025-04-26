@@ -47,11 +47,11 @@ export function PDFMainGenerator({
     generatePDF
   } = usePDFGeneration(
     userId,
-    onPdfGenerated,
-    onGenerationStart,
     profile,
     responses,
     trustedPersons,
+    onPdfGenerated,
+    onGenerationStart,
     synthesisText,
     isCard
   );
