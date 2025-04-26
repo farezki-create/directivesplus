@@ -20,6 +20,9 @@ export class PDFDocumentGenerator {
   ): Promise<string | null> {
     try {
       console.log("[PDFDocumentGenerator] Generating PDF document", isCard ? "as card format" : "as full document");
+      console.log("[PDFDocumentGenerator] Profile:", profile);
+      console.log("[PDFDocumentGenerator] Responses:", responses);
+      console.log("[PDFDocumentGenerator] Trusted persons:", trustedPersons);
       
       // Create a new PDF document with appropriate format
       const doc = isCard 
@@ -67,14 +70,48 @@ export class PDFDocumentGenerator {
           
           let yPos = 90;
           trustedPersons.forEach((person, index) => {
-            doc.text(`${index + 1}. ${person.name}`, 25, yPos);
+            doc.text(`${index + 1}. ${person.name || "Non renseigné"}`, 25, yPos);
             yPos += 10;
+            
+            if (person.phone) {
+              doc.text(`   Tél: ${person.phone}`, 25, yPos);
+              yPos += 10;
+            }
+            
+            if (person.email) {
+              doc.text(`   Email: ${person.email}`, 25, yPos);
+              yPos += 10;
+            }
           });
+        }
+        
+        // Add synthesis if available
+        if (responses && responses.synthesis && responses.synthesis.free_text) {
+          doc.addPage();
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(14);
+          doc.text("Synthèse", 20, 20);
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(11);
+          
+          const synthesisText = responses.synthesis.free_text;
+          const splitText = doc.splitTextToSize(synthesisText, 170);
+          doc.text(splitText, 20, 30);
+        }
+        
+        // Add page numbers
+        const totalPages = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= totalPages; i++) {
+            doc.setPage(i);
+            doc.setFontSize(10);
+            doc.text(`Page ${i} / ${totalPages}`, doc.internal.pageSize.getWidth() - 30, doc.internal.pageSize.getHeight() - 10);
         }
       }
       
       // Return the PDF as a data URL
-      return doc.output('dataurlstring');
+      const output = doc.output('dataurlstring');
+      console.log("[PDFDocumentGenerator] PDF generated successfully, data URL length:", output.length);
+      return output;
     } catch (error) {
       console.error("[PDFDocumentGenerator] Error generating PDF:", error);
       return null;

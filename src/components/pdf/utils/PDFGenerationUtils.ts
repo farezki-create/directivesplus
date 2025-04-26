@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
  * @protected
  * CETTE MÉTHODE EST PROTÉGÉE ET NE DOIT PAS ÊTRE MODIFIÉE.
  * This method is protected and must not be modified.
- * Version: 1.0.0
+ * Version: 1.1.0
  * Last Modified: ${new Date().toISOString()}
  */
 export const handlePDFGeneration = async (
@@ -26,9 +26,17 @@ export const handlePDFGeneration = async (
       throw new Error("Les données du profil sont requises");
     }
 
-    console.log("[PDFGeneration] Profile data:", profile);
-    console.log("[PDFGeneration] Responses data:", responses);
-    console.log("[PDFGeneration] Synthesis data:", responses.synthesis);
+    console.log("[PDFGeneration] Profile data:", JSON.stringify(profile, null, 2));
+    console.log("[PDFGeneration] Responses data:", Object.keys(responses || {}));
+    
+    if (responses?.synthesis) {
+      const textLength = responses.synthesis.free_text ? responses.synthesis.free_text.length : 0;
+      console.log("[PDFGeneration] Synthesis text length:", textLength);
+      if (textLength > 0) {
+        console.log("[PDFGeneration] Synthesis text preview:", 
+          responses.synthesis.free_text?.substring(0, 100) + "...");
+      }
+    }
 
     // Generate PDF - Pass the isCard parameter
     const pdfDataUrl = await PDFDocumentGenerator.generate(profile, responses, trustedPersons, isCard);
@@ -37,6 +45,8 @@ export const handlePDFGeneration = async (
       console.error("[PDFGeneration] PDF generation failed - no data URL returned");
       throw new Error("La génération du PDF a échoué");
     }
+
+    console.log("[PDFGeneration] PDF generated with data URL length:", pdfDataUrl.length);
 
     // Save PDF to storage if user is logged in
     if (profile.unique_identifier) {
@@ -49,6 +59,7 @@ export const handlePDFGeneration = async (
       }
     }
 
+    // Return the generated PDF URL to the callback
     setPdfUrl(pdfDataUrl);
     setShowPreview(true);
 
@@ -57,6 +68,8 @@ export const handlePDFGeneration = async (
       title: "Succès",
       description: isCard ? "Votre carte d'accès a été générée avec succès." : "Le PDF a été généré avec succès.",
     });
+    
+    return pdfDataUrl;
   } catch (error) {
     console.error("[PDFGeneration] Error generating PDF:", error);
     toast({
@@ -64,6 +77,7 @@ export const handlePDFGeneration = async (
       description: "Impossible de générer le PDF. Veuillez vérifier que toutes vos informations sont remplies.",
       variant: "destructive",
     });
+    return null;
   }
 };
 
@@ -76,9 +90,21 @@ export const handlePDFGeneration = async (
  */
 export const savePDFToStorage = async (pdfDataUrl: string, userId: string, isCard = false) => {
   try {
+    // Validate data URL format
+    if (!pdfDataUrl.startsWith('data:application/pdf;base64,')) {
+      console.warn("[PDFStorage] Invalid PDF data URL format, attempting conversion");
+    }
+
     // Convert data URL to Blob
     const response = await fetch(pdfDataUrl);
     const blob = await response.blob();
+    
+    if (blob.size === 0) {
+      console.error("[PDFStorage] Generated PDF blob is empty");
+      throw new Error("PDF blob is empty");
+    }
+    
+    console.log("[PDFStorage] PDF blob size:", blob.size, "bytes");
     
     // Generate a unique filename with timestamp
     const timestamp = new Date().getTime();

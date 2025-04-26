@@ -58,44 +58,79 @@ export function PDFMainGenerator({
     try {
       console.log("[PDFGenerator] Generating PDF", isCard ? "as card format" : "as full document");
       
+      // Assurons-nous que la synthèse est correctement formatée
       const finalSynthesisText = synthesisText || synthesis?.free_text || "";
       
+      // Utilisons un timeout pour simuler le traitement et assurer la mise à jour de l'UI
       setTimeout(async () => {
-        handlePDFGeneration(
-          profile,
-          {
-            ...responses,
+        try {
+          // On vérifie que les données sont correctes
+          console.log("[PDFGenerator] Profile:", profile);
+          console.log("[PDFGenerator] Responses count:", 
+            Object.keys(responses || {}).length, 
+            "Synthesis text length:", finalSynthesisText.length);
+          console.log("[PDFGenerator] Trusted persons count:", trustedPersons?.length || 0);
+          
+          // Création d'une copie propre des données pour éviter des références circulaires
+          const cleanProfile = { 
+            ...profile,
+            unique_identifier: profile.unique_identifier || userId
+          };
+          
+          const cleanResponses = {
+            ...(responses || {}),
             synthesis: { free_text: finalSynthesisText }
-          },
-          trustedPersons,
-          async (url) => {
-            setProgress(100);
-            setPdfUrl(url);
-            if (onPdfGenerated) {
-              onPdfGenerated(url);
-            }
-            setIsGenerating(false);
-            
-            // Save with the correct format designation
-            const saveFormat = isCard ? 'card' : 'full';
-            
-            // Navigate to documents page after successful generation
-            toast({
-              title: "Succès",
-              description: isCard 
-                ? "Votre carte d'accès a été générée et sauvegardée. Redirection vers vos documents..." 
-                : "Vos directives ont été générées et sauvegardées. Redirection vers vos documents...",
-            });
-            
-            // Add a small delay before navigation to ensure the user sees the success message
-            setTimeout(() => {
-              navigate("/my-documents");
-            }, 2000);
-          },
-          setShowPreview,
-          isCard
-        );
-      }, 1000);
+          };
+          
+          handlePDFGeneration(
+            cleanProfile,
+            cleanResponses,
+            trustedPersons || [],
+            (url) => {
+              console.log("[PDFGenerator] PDF URL received:", url ? "URL length: " + url.length : "null");
+              setProgress(100);
+              setPdfUrl(url);
+              
+              if (onPdfGenerated && url) {
+                console.log("[PDFGenerator] Notifying parent component of PDF generation");
+                onPdfGenerated(url);
+              }
+              
+              setIsGenerating(false);
+              
+              if (url) {
+                // Save with the correct format designation
+                const saveFormat = isCard ? 'card' : 'full';
+                
+                // Notify user of success
+                toast({
+                  title: "Succès",
+                  description: isCard 
+                    ? "Votre carte d'accès a été générée et sauvegardée." 
+                    : "Vos directives ont été générées et sauvegardées.",
+                });
+              } else {
+                console.error("[PDFGenerator] PDF generation failed - no URL returned");
+                toast({
+                  title: "Erreur",
+                  description: "La génération du PDF a échoué. Veuillez réessayer.",
+                  variant: "destructive",
+                });
+              }
+            },
+            setShowPreview,
+            isCard
+          );
+        } catch (innerError) {
+          console.error("[PDFGenerator] Inner error during PDF generation:", innerError);
+          toast({
+            title: "Erreur",
+            description: "Une erreur est survenue lors de la génération du PDF.",
+            variant: "destructive",
+          });
+          setIsGenerating(false);
+        }
+      }, 500);
     } catch (error) {
       console.error("[PDFGenerator] Error during PDF generation:", error);
       toast({
