@@ -1,7 +1,7 @@
+
 import { useState } from "react";
 import { PDFGenerator } from "./pdf/PDFGenerator";
 import { Button } from "@/components/ui/button";
-import { CreditCard, FileText } from "lucide-react";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { ResponseSection } from "./responses/ResponseSection";
 import { FreeTextInput } from "./free-text/FreeTextInput";
@@ -50,6 +50,7 @@ export function ResponsesSummary({
 
   console.log("[ResponsesSummary] User ID:", userId);
   console.log("[ResponsesSummary] Profile data:", profile);
+  console.log("[ResponsesSummary] Showing PDF Generator:", showPDFGenerator);
 
   if (isLoading || profileLoading) {
     return <div className="p-4 text-center">Chargement de vos réponses...</div>;
@@ -128,9 +129,7 @@ export function ResponsesSummary({
       
       {showPDFGenerator && <div className="mt-8 p-4 border rounded-lg bg-slate-50">
           <h3 className="text-lg font-medium mb-4">Générer votre document</h3>
-          <div className="flex flex-col gap-4">
-            <PDFGenerator userId={userId} />
-          </div>
+          <PDFGenerator userId={userId} />
         </div>}
     </div>;
 }

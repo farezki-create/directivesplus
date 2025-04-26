@@ -9,6 +9,7 @@ import { useDirectives } from "@/hooks/useDirectives";
 import { Card } from "@/components/ui/card";
 import { Header } from "@/components/Header";
 import { useSynthesis } from "@/hooks/useSynthesis";
+import { Button } from "@/components/ui/button";
 
 export default function GeneratePDF() {
   const navigate = useNavigate();
@@ -59,6 +60,10 @@ export default function GeneratePDF() {
     }
   }, [userId, responses, profile, responsesLoading, profileLoading, synthesis, freeText]);
 
+  const handleBackToSummary = () => {
+    navigate("/");
+  };
+
   if (!userId) {
     return null;
   }
@@ -73,12 +78,13 @@ export default function GeneratePDF() {
             <h2 className="text-2xl font-bold">
               {isCard ? "Génération de ma carte d'accès" : "Génération de mes directives anticipées"}
             </h2>
-            <button 
-              onClick={() => navigate("/free-text")}
+            <Button 
+              variant="ghost" 
+              onClick={handleBackToSummary}
               className="text-blue-500 hover:text-blue-700"
             >
               Retour à la saisie
-            </button>
+            </Button>
           </div>
 
           <Card className="p-6">

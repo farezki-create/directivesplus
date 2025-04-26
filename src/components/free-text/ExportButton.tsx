@@ -4,6 +4,7 @@ import { FileText, CreditCard } from "lucide-react";
 import { useState } from "react";
 import { usePDFData } from "@/components/pdf/usePDFData";
 import { PDFGenerator } from "@/components/PDFGenerator";
+import { useNavigate } from "react-router-dom";
 
 interface ExportButtonProps {
   data: {
@@ -21,18 +22,15 @@ interface ExportButtonProps {
 }
 
 export function ExportButton({ data }: ExportButtonProps) {
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-  const [isCard, setIsCard] = useState<boolean>(false);
   const [showGenerator, setShowGenerator] = useState<boolean>(false);
+  const navigate = useNavigate();
 
   const handleDirectivesClick = () => {
-    setIsCard(false);
-    setShowGenerator(true);
+    navigate("/generate-pdf");
   };
 
   const handleCardClick = () => {
-    setIsCard(true);
-    setShowGenerator(true);
+    navigate("/generate-pdf?format=card");
   };
 
   return (
@@ -56,15 +54,6 @@ export function ExportButton({ data }: ExportButtonProps) {
         <CreditCard className="h-4 w-4" />
         Générer ma carte d'accès
       </Button>
-      
-      {showGenerator && data.userId && (
-        <PDFGenerator
-          userId={data.userId}
-          onPdfGenerated={setPdfUrl}
-          synthesisText={data.synthesis?.free_text}
-          isCard={isCard}
-        />
-      )}
     </div>
   );
 }

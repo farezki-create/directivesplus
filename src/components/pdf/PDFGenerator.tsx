@@ -24,14 +24,14 @@ export function PDFGenerator({
   };
   
   if (loading) {
-    return null;
+    return <div className="text-center p-4">Chargement des données...</div>;
   }
   
   return (
     <div className="flex flex-col sm:flex-row gap-3 w-full">
       <Button 
         onClick={() => navigateToPDFGeneration(false)} 
-        className="flex items-center gap-3 h-auto py-4 w-full transition-all mx-0 text-xs"
+        className="flex items-center gap-3 h-auto py-4 w-full transition-all"
       >
         <div className="bg-blue-100 p-2 rounded-full">
           <FileText className="h-5 w-5 text-blue-600" />
@@ -43,7 +43,7 @@ export function PDFGenerator({
       
       <Button 
         onClick={() => navigateToPDFGeneration(true)} 
-        className="flex items-center gap-3 h-auto py-4 w-full transition-all mx-0 text-xs"
+        className="flex items-center gap-3 h-auto py-4 w-full transition-all"
       >
         <div className="bg-purple-100 p-2 rounded-full">
           <CreditCard className="h-5 w-5 text-purple-600" />
