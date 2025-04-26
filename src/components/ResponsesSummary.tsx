@@ -11,9 +11,11 @@ import { usePDFData } from "./pdf/usePDFData";
 import { format, isValid, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
+
 interface ResponsesSummaryProps {
   userId: string;
 }
+
 export function ResponsesSummary({
   userId
 }: ResponsesSummaryProps) {
@@ -36,18 +38,23 @@ export function ResponsesSummary({
   const [hasSaved, setHasSaved] = useState(false);
   const [hasSigned, setHasSigned] = useState(false);
   const [showPDFGenerator, setShowPDFGenerator] = useState(false);
+
   const handleSaveComplete = () => {
     setHasSaved(true);
   };
+
   const handleSignComplete = () => {
     setHasSigned(true);
     setShowPDFGenerator(true);
   };
+
   console.log("[ResponsesSummary] User ID:", userId);
   console.log("[ResponsesSummary] Profile data:", profile);
+
   if (isLoading || profileLoading) {
     return <div className="p-4 text-center">Chargement de vos réponses...</div>;
   }
+
   if (hasErrors) {
     toast({
       title: "Erreur",
@@ -56,12 +63,12 @@ export function ResponsesSummary({
     });
     return <div className="p-4 text-center text-red-500">Une erreur est survenue lors du chargement des réponses.</div>;
   }
+
   if (!userId) {
     console.error("[ResponsesSummary] No user ID provided");
     return null;
   }
 
-  // Formater une date avec gestion des erreurs
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'Non renseignée';
     try {
@@ -78,7 +85,6 @@ export function ResponsesSummary({
     }
   };
 
-  // Formater l'adresse complète
   const formatAddress = () => {
     if (!profile) return 'Non renseignée';
     const addressParts = [];
@@ -89,7 +95,6 @@ export function ResponsesSummary({
     return addressParts.length > 0 ? addressParts.join(', ') : 'Non renseignée';
   };
 
-  // Display user profile information at the top
   const renderProfileInfo = () => {
     if (!profile) return null;
     return <div className="mb-8 p-4 bg-gray-50 rounded-lg border">
@@ -110,6 +115,7 @@ export function ResponsesSummary({
         </div>
       </div>;
   };
+
   return <div className="space-y-8">
       {renderProfileInfo()}
       
@@ -124,8 +130,6 @@ export function ResponsesSummary({
           <h3 className="text-lg font-medium mb-4">Générer votre document</h3>
           <div className="flex flex-col gap-4">
             <PDFGenerator userId={userId} />
-            
-            
           </div>
         </div>}
     </div>;
