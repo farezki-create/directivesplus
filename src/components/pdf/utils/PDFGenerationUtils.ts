@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
  * @protected
  * CETTE MÉTHODE EST PROTÉGÉE ET NE DOIT PAS ÊTRE MODIFIÉE.
  * This method is protected and must not be modified.
- * Version: 1.0.0
+ * Version: 1.1.0
  * Last Modified: ${new Date().toISOString()}
  */
 export const handlePDFGeneration = async (
@@ -30,12 +30,40 @@ export const handlePDFGeneration = async (
     console.log("[PDFGeneration] Responses data:", responses);
     console.log("[PDFGeneration] Synthesis data:", responses.synthesis);
 
-    // Generate PDF - Pass the isCard parameter
-    const pdfDataUrl = await PDFDocumentGenerator.generate(profile, responses, trustedPersons, isCard);
+    // Variable pour suivre les tentatives
+    let attempts = 0;
+    const maxAttempts = 2;
+    let pdfDataUrl: string | null = null;
+
+    // Boucle de tentatives avec un délai entre chaque tentative
+    while (attempts < maxAttempts && !pdfDataUrl) {
+      try {
+        console.log(`[PDFGeneration] Attempt ${attempts + 1} of ${maxAttempts}`);
+        // Generate PDF - Pass the isCard parameter
+        pdfDataUrl = await PDFDocumentGenerator.generate(profile, responses, trustedPersons, isCard);
+        
+        if (!pdfDataUrl) {
+          console.error(`[PDFGeneration] PDF generation attempt ${attempts + 1} failed - no data URL returned`);
+          
+          // Si ce n'est pas la dernière tentative, attendez un peu avant de réessayer
+          if (attempts < maxAttempts - 1) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+        }
+      } catch (genError) {
+        console.error(`[PDFGeneration] Error in generation attempt ${attempts + 1}:`, genError);
+        
+        // Si ce n'est pas la dernière tentative, attendez un peu avant de réessayer
+        if (attempts < maxAttempts - 1) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
+      
+      attempts++;
+    }
     
     if (!pdfDataUrl) {
-      console.error("[PDFGeneration] PDF generation failed - no data URL returned");
-      throw new Error("La génération du PDF a échoué");
+      throw new Error("La génération du PDF a échoué après plusieurs tentatives");
     }
 
     // Save PDF to storage if user is logged in
@@ -57,6 +85,8 @@ export const handlePDFGeneration = async (
       title: "Succès",
       description: isCard ? "Votre carte d'accès a été générée avec succès." : "Le PDF a été généré avec succès.",
     });
+    
+    return pdfDataUrl;
   } catch (error) {
     console.error("[PDFGeneration] Error generating PDF:", error);
     toast({
@@ -64,6 +94,7 @@ export const handlePDFGeneration = async (
       description: "Impossible de générer le PDF. Veuillez vérifier que toutes vos informations sont remplies.",
       variant: "destructive",
     });
+    throw error;
   }
 };
 
@@ -71,7 +102,7 @@ export const handlePDFGeneration = async (
  * @protected
  * CETTE MÉTHODE EST PROTÉGÉE ET NE DOIT PAS ÊTRE MODIFIÉE.
  * This method is protected and must not be modified.
- * Version: 1.0.0
+ * Version: 1.1.0
  * Last Modified: ${new Date().toISOString()}
  */
 export const savePDFToStorage = async (pdfDataUrl: string, userId: string, isCard = false) => {
@@ -105,39 +136,98 @@ export const savePDFToStorage = async (pdfDataUrl: string, userId: string, isCar
       }
     }
     
-    // Upload to storage
-    const { data, error } = await supabase
-      .storage
-      .from('directives_pdfs')
-      .upload(filepath, blob, {
-        contentType: 'application/pdf',
-        upsert: false
-      });
+    // Upload to storage with retry mechanism
+    let uploadSuccess = false;
+    let attempts = 0;
+    const maxAttempts = 3;
+    let uploadError = null;
+    let uploadData = null;
+    
+    while (!uploadSuccess && attempts < maxAttempts) {
+      try {
+        console.log(`[PDFStorage] Upload attempt ${attempts + 1} of ${maxAttempts}`);
+        
+        const { data, error } = await supabase
+          .storage
+          .from('directives_pdfs')
+          .upload(filepath, blob, {
+            contentType: 'application/pdf',
+            upsert: attempts > 0 // Utiliser upsert pour les tentatives après la première
+          });
+          
+        if (error) {
+          console.error(`[PDFStorage] Error in upload attempt ${attempts + 1}:`, error);
+          uploadError = error;
+          // Attendre avant la prochaine tentative
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        } else {
+          uploadSuccess = true;
+          uploadData = data;
+          console.log("[PDFStorage] PDF uploaded successfully on attempt", attempts + 1);
+        }
+      } catch (err) {
+        console.error(`[PDFStorage] Exception in upload attempt ${attempts + 1}:`, err);
+        uploadError = err;
+        // Attendre avant la prochaine tentative
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
       
-    if (error) {
-      console.error("[PDFStorage] Error uploading PDF:", error);
-      throw error;
+      attempts++;
     }
     
-    console.log("[PDFStorage] PDF uploaded successfully:", data);
+    if (!uploadSuccess) {
+      console.error("[PDFStorage] All upload attempts failed:", uploadError);
+      throw uploadError;
+    }
+    
+    console.log("[PDFStorage] PDF uploaded successfully:", uploadData);
     
     // Convert Date to ISO string for database compatibility
     const currentDate = new Date().toISOString();
     
-    // Also save reference in the database
-    const { error: dbError } = await supabase
-      .from('pdf_documents')
-      .insert({
-        user_id: userId,
-        file_name: filename,
-        file_path: filepath,
-        created_at: currentDate,
-        content_type: 'application/pdf',
-        description: isCard ? 'Carte d\'accès' : 'Directives anticipées générées'
-      });
+    // Save reference in database with retry mechanism
+    let dbSuccess = false;
+    attempts = 0;
+    let dbError = null;
+    
+    while (!dbSuccess && attempts < maxAttempts) {
+      try {
+        console.log(`[PDFStorage] Database insert attempt ${attempts + 1} of ${maxAttempts}`);
+        
+        const { error } = await supabase
+          .from('pdf_documents')
+          .insert({
+            user_id: userId,
+            file_name: filename,
+            file_path: filepath,
+            created_at: currentDate,
+            content_type: 'application/pdf',
+            description: isCard ? 'Carte d\'accès' : 'Directives anticipées générées'
+          });
+          
+        if (error) {
+          console.error(`[PDFStorage] Error in DB insert attempt ${attempts + 1}:`, error);
+          dbError = error;
+          // Attendre avant la prochaine tentative
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        } else {
+          dbSuccess = true;
+          console.log("[PDFStorage] PDF reference saved to database on attempt", attempts + 1);
+        }
+      } catch (err) {
+        console.error(`[PDFStorage] Exception in DB insert attempt ${attempts + 1}:`, err);
+        dbError = err;
+        // Attendre avant la prochaine tentative
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
       
-    if (dbError) {
-      console.error("[PDFStorage] Error saving PDF reference to database:", dbError);
+      attempts++;
+    }
+    
+    if (!dbSuccess) {
+      console.error("[PDFStorage] All database insert attempts failed:", dbError);
+      // On ne bloque pas le processus même si l'insertion dans la base échoue
+      // car le fichier est déjà uploadé
     }
     
     return true;

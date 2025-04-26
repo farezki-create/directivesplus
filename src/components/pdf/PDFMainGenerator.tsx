@@ -40,7 +40,8 @@ export function PDFMainGenerator({
     documentIdentifier, setDocumentIdentifier,
     isGenerating, setIsGenerating,
     progress, setProgress,
-    currentWaitingMessage 
+    currentWaitingMessage,
+    errorCount, setErrorCount
   } = usePDFGenerationState();
 
   // Effect to update local state when external generation state changes
@@ -50,7 +51,7 @@ export function PDFMainGenerator({
     } else if (generationState === 'idle' && isGenerating) {
       setIsGenerating(false);
     }
-  }, [generationState, isGenerating]);
+  }, [generationState, isGenerating, setIsGenerating]);
 
   // Safety timeout to prevent getting stuck in generating state
   useEffect(() => {
@@ -60,20 +61,38 @@ export function PDFMainGenerator({
       safetyTimeout = setTimeout(() => {
         console.log("[PDFMainGenerator] Safety timeout triggered - generation taking too long");
         if (!pdfUrl) {
-          // Retry generation or force completion
+          // Afficher un toast d'information
           toast({
             title: "Génération prolongée",
             description: "La génération prend plus de temps que prévu, veuillez patienter...",
           });
           setProgress(95); // Show near completion
         }
-      }, 30000); // 30 seconds safety timeout
+      }, 20000); // 20 secondes - timeout réduit pour une meilleure réactivité
+      
+      // Second safety timeout (force completion)
+      const forceCompletionTimeout = setTimeout(() => {
+        if (isGenerating && !pdfUrl) {
+          console.log("[PDFMainGenerator] Force timeout triggered - resetting generation state");
+          setIsGenerating(false);
+          setErrorCount(prev => prev + 1);
+          
+          toast({
+            title: "Problème de génération",
+            description: "La génération a pris trop de temps. Veuillez réessayer.",
+            variant: "destructive",
+          });
+        }
+      }, 30000); // 30 secondes maximum
+      
+      return () => {
+        if (safetyTimeout) clearTimeout(safetyTimeout);
+        clearTimeout(forceCompletionTimeout);
+      };
     }
     
-    return () => {
-      if (safetyTimeout) clearTimeout(safetyTimeout);
-    };
-  }, [isGenerating, pdfUrl, setProgress]);
+    return undefined;
+  }, [isGenerating, pdfUrl, setProgress, toast, setErrorCount, setIsGenerating]);
 
   const generatePDF = () => {
     console.log("[PDFGenerator] Button clicked - Starting PDF generation");
@@ -100,46 +119,56 @@ export function PDFMainGenerator({
       
       const finalSynthesisText = synthesisText || synthesis?.free_text || "";
       
-      // Use smaller timeout to start generation faster
+      // Démarrer la génération plus rapidement
       setTimeout(async () => {
-        handlePDFGeneration(
-          profile,
-          {
-            ...responses,
-            synthesis: { free_text: finalSynthesisText }
-          },
-          trustedPersons,
-          async (url) => {
-            console.log("[PDFGenerator] Generation complete, URL received:", !!url);
-            setProgress(100);
-            setPdfUrl(url);
-            
-            if (onPdfGenerated) {
-              onPdfGenerated(url);
-            }
-            
-            setIsGenerating(false);
-            
-            // Save with the correct format designation
-            const saveFormat = isCard ? 'card' : 'full';
-            
-            // Navigate to documents page after successful generation
-            toast({
-              title: "Succès",
-              description: isCard 
-                ? "Votre carte d'accès a été générée et sauvegardée. Redirection vers vos documents..." 
-                : "Vos directives ont été générées et sauvegardées. Redirection vers vos documents...",
-            });
-            
-            // Add a small delay before navigation to ensure the user sees the success message
-            setTimeout(() => {
-              navigate("/my-documents");
-            }, 2000);
-          },
-          setShowPreview,
-          isCard
-        );
-      }, 500); // Reduced from 1000ms to 500ms
+        try {
+          handlePDFGeneration(
+            profile,
+            {
+              ...responses,
+              synthesis: { free_text: finalSynthesisText }
+            },
+            trustedPersons,
+            (url) => {
+              console.log("[PDFGenerator] Generation complete, URL received:", !!url);
+              setProgress(100);
+              setPdfUrl(url);
+              
+              if (onPdfGenerated) {
+                onPdfGenerated(url);
+              }
+              
+              setIsGenerating(false);
+              
+              // Save with the correct format designation
+              const saveFormat = isCard ? 'card' : 'full';
+              
+              // Redirection automatique après génération réussie
+              toast({
+                title: "Succès",
+                description: isCard 
+                  ? "Votre carte d'accès a été générée et sauvegardée. Redirection vers vos documents..." 
+                  : "Vos directives ont été générées et sauvegardées. Redirection vers vos documents...",
+              });
+              
+              // Courte attente avant redirection pour montrer le message de succès
+              setTimeout(() => {
+                navigate("/my-documents");
+              }, 2000);
+            },
+            setShowPreview,
+            isCard
+          );
+        } catch (error) {
+          console.error("[PDFGenerator] Inner error during PDF generation:", error);
+          toast({
+            title: "Erreur",
+            description: "Une erreur est survenue lors de la génération du PDF.",
+            variant: "destructive",
+          });
+          setIsGenerating(false);
+        }
+      }, 300); // Démarrer après 300ms au lieu de 500ms
     } catch (error) {
       console.error("[PDFGenerator] Error during PDF generation:", error);
       toast({

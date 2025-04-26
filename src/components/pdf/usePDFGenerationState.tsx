@@ -33,49 +33,74 @@ export function usePDFGenerationState() {
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
-  // Set default to true to enable playful theme by default
+  // Toujours activé par défaut pour garantir l'animation ludique
   const [usePlayfulTheme, setUsePlayfulTheme] = useState(true);
+  const [errorCount, setErrorCount] = useState(0);
+  const [timeoutCount, setTimeoutCount] = useState(0);
 
-  // Select the appropriate message list based on theme
+  // Sélectionne la liste de messages appropriée en fonction du thème
   const messageList = usePlayfulTheme ? funMessages : waitingMessages;
 
   useEffect(() => {
     if (isGenerating) {
-      // Message rotation interval - faster for more animation
+      // Rotation des messages plus rapide - 1200ms pour plus d'animation
       const messageInterval = setInterval(() => {
         setCurrentMessageIndex((prev) => (prev + 1) % messageList.length);
-      }, 1500); // Reduced from 2000 to 1500ms for more animation
+      }, 1200);
 
-      // Progress bar animation with timeout safety
+      // Progression plus rapide pour les animations
       const progressInterval = setInterval(() => {
         setProgress((prev) => {
-          // Slow down as we approach 100%, but ensure we reach at least 95%
-          if (prev >= 90) {
-            return Math.min(prev + 0.5, 95);
+          // Au début, avancer rapidement, puis ralentir vers la fin
+          if (prev < 30) {
+            return Math.min(prev + 8, 30); // Démarrage rapide
+          } else if (prev < 60) {
+            return Math.min(prev + 5, 60); // Rythme moyen
+          } else if (prev < 85) {
+            return Math.min(prev + 2, 85); // Ralentissement
+          } else {
+            return Math.min(prev + 0.5, 95); // Très lent à la fin
           }
-          return Math.min(prev + 5, 90);
         });
-      }, 400); // Slightly faster progress updates (was 500ms)
+      }, 300); // Intervalle plus court pour plus d'animations
 
-      // Safety timeout to ensure process doesn't appear stuck
-      const safetyTimeout = setTimeout(() => {
-        if (progress < 95) {
-          console.log("Safety timeout triggered, ensuring progress continues");
-          setProgress(95); // Force progress to near completion if stuck
+      // Premier timeout de sécurité (15 secondes)
+      const firstSafetyTimeout = setTimeout(() => {
+        if (progress < 90) {
+          console.log("[PDFGenerationState] Premier timeout de sécurité déclenché");
+          setTimeoutCount(prev => prev + 1);
+          
+          // Si la génération est toujours en cours après 15 secondes, on accélère
+          setProgress(90);
         }
-      }, 15000); // 15 seconds safety
+      }, 15000);
+
+      // Second timeout de sécurité (30 secondes) - MAXIMUM temps d'attente
+      const secondSafetyTimeout = setTimeout(() => {
+        console.log("[PDFGenerationState] Deuxième timeout de sécurité déclenché");
+        setTimeoutCount(prev => prev + 1);
+        
+        // Si la génération est toujours en cours après 30 secondes, on force la fin
+        if (isGenerating && !pdfUrl) {
+          console.log("[PDFGenerationState] Force reset génération bloquée");
+          setIsGenerating(false);
+          setProgress(0);
+          setErrorCount(prev => prev + 1);
+        }
+      }, 30000);
 
       return () => {
         clearInterval(messageInterval);
         clearInterval(progressInterval);
-        clearTimeout(safetyTimeout);
+        clearTimeout(firstSafetyTimeout);
+        clearTimeout(secondSafetyTimeout);
       };
     } else {
-      // Reset progress when not generating
+      // Reset progress and message when not generating
       setProgress(0);
       setCurrentMessageIndex(0);
     }
-  }, [isGenerating, messageList.length, progress]);
+  }, [isGenerating, messageList.length, progress, pdfUrl]);
 
   return {
     pdfUrl,
@@ -91,6 +116,9 @@ export function usePDFGenerationState() {
     setProgress,
     usePlayfulTheme,
     setUsePlayfulTheme,
+    errorCount,
+    setErrorCount,
+    timeoutCount,
     currentWaitingMessage: messageList[currentMessageIndex],
     waitingMessages: messageList,
   };
