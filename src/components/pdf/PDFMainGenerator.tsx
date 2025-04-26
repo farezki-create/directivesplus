@@ -8,9 +8,8 @@ import { usePDFGeneration } from "./hooks/usePDFGeneration";
 import { PDFPreviewDialog } from "./PDFPreviewDialog";
 import { UserProfile, TrustedPerson } from "./types";
 import { Button } from "../ui/button";
-import { toast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
-import { FileText } from "lucide-react";
+import { FileText, Download, Save } from "lucide-react";
+import { handlePDFDownload } from "./utils/PDFGenerationUtils";
 
 interface PDFMainGeneratorProps {
   userId: string;
@@ -39,19 +38,18 @@ export function PDFMainGenerator({
 }: PDFMainGeneratorProps) {
   const [errorCount, setErrorCount] = useState(0);
   const [showPreview, setShowPreview] = useState(false);
-  const navigate = useNavigate();
   
   const { 
     currentWaitingMessage,
-    setIsGenerating,
-    documentIdentifier,
+    setIsGenerating: setStateIsGenerating
   } = usePDFGenerationState();
 
   const {
     isGenerating,
     progress,
     pdfUrl,
-    generatePDF
+    generatePDF,
+    saveToDocuments
   } = usePDFGeneration(
     userId,
     profile,
@@ -60,9 +58,6 @@ export function PDFMainGenerator({
     (url) => {
       if (onPdfGenerated) {
         onPdfGenerated(url);
-      }
-      if (url) {
-        setShowPreview(true);
       }
     },
     onGenerationStart,
@@ -73,23 +68,14 @@ export function PDFMainGenerator({
   // Effect to sync with external generation state
   useEffect(() => {
     if (generationState === 'generating' && !isGenerating) {
-      setIsGenerating(true);
+      setStateIsGenerating(true);
     } else if (generationState === 'idle' && isGenerating) {
-      setIsGenerating(false);
+      setStateIsGenerating(false);
     }
-  }, [generationState, isGenerating, setIsGenerating]);
+  }, [generationState, isGenerating, setStateIsGenerating]);
 
-  const handleSaveToDocuments = () => {
-    setShowPreview(false);
-    toast({
-      title: "Succès",
-      description: isCard 
-        ? "Votre carte d'accès a été sauvegardée. Redirection vers vos documents..."
-        : "Vos directives ont été sauvegardées. Redirection vers vos documents...",
-    });
-    setTimeout(() => {
-      navigate("/my-documents");
-    }, 1500);
+  const handleDownload = () => {
+    handlePDFDownload(pdfUrl);
   };
 
   return (
@@ -97,7 +83,7 @@ export function PDFMainGenerator({
       <PDFGenerationSafetyTimeout
         isGenerating={isGenerating}
         pdfUrl={pdfUrl}
-        setIsGenerating={setIsGenerating}
+        setIsGenerating={setStateIsGenerating}
         setErrorCount={setErrorCount}
       />
       
@@ -113,13 +99,45 @@ export function PDFMainGenerator({
       />
       
       {!pdfUrl && (
-        <PDFGenerationButtons 
-          pdfUrl={pdfUrl}
-          isGenerating={isGenerating}
-          onGenerateClick={generatePDF}
-          documentIdentifier={documentIdentifier}
-          isCard={isCard}
-        />
+        <Button 
+          onClick={generatePDF}
+          className="w-full mb-4 py-6 flex items-center justify-center gap-2"
+          disabled={isGenerating}
+        >
+          <FileText className="h-5 w-5 mr-2" />
+          {isCard ? 'Générer ma carte d\'accès' : 'Générer mes directives anticipées'}
+        </Button>
+      )}
+
+      {pdfUrl && (
+        <div className="space-y-4">
+          <Button 
+            onClick={() => setShowPreview(true)}
+            className="w-full"
+            variant="outline"
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            Prévisualiser {isCard ? "la carte" : "les directives"}
+          </Button>
+          
+          <Button 
+            onClick={handleDownload}
+            className="w-full"
+            variant="secondary"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Télécharger sur mon ordinateur
+          </Button>
+          
+          <Button 
+            onClick={saveToDocuments}
+            className="w-full"
+            variant="default"
+          >
+            <Save className="h-4 w-4 mr-2" />
+            Sauvegarder dans mes documents
+          </Button>
+        </div>
       )}
 
       {pdfUrl && showPreview && (
@@ -128,27 +146,6 @@ export function PDFMainGenerator({
           onOpenChange={setShowPreview}
           pdfUrl={pdfUrl}
         />
-      )}
-
-      {pdfUrl && (
-        <div className="mt-4">
-          <Button 
-            onClick={() => setShowPreview(true)}
-            className="w-full mb-2"
-            variant="outline"
-          >
-            <FileText className="h-4 w-4 mr-2" />
-            Prévisualiser {isCard ? "la carte" : "les directives"}
-          </Button>
-          
-          <Button 
-            onClick={handleSaveToDocuments}
-            className="w-full"
-            variant="default"
-          >
-            Sauvegarder dans mes documents
-          </Button>
-        </div>
       )}
     </>
   );

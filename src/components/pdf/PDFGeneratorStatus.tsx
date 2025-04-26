@@ -21,8 +21,6 @@ export function PDFGeneratorStatus({
   currentWaitingMessage,
   profile,
   pdfUrl,
-  responses,
-  synthesis,
   isCard
 }: PDFGeneratorStatusProps) {
   useEffect(() => {
@@ -69,8 +67,8 @@ export function PDFGeneratorStatus({
         <div className="p-4 bg-green-50 border border-green-200 rounded-lg mt-2 animate-fade-in">
           <p className="text-green-700 text-sm">
             {isCard 
-              ? "Votre carte d'accès a été générée avec succès."
-              : "Vos directives ont été générées avec succès."
+              ? "Votre carte d'accès a été générée avec succès. Cliquez sur Prévisualiser pour la voir."
+              : "Vos directives ont été générées avec succès. Cliquez sur Prévisualiser pour les voir."
             }
           </p>
         </div>

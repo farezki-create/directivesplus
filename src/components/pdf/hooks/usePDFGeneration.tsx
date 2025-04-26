@@ -1,9 +1,10 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { handlePDFGeneration } from "../utils/PDFGenerationUtils";
+import { PDFDocumentGenerator } from "../PDFDocumentGenerator";
 import { UserProfile, TrustedPerson } from "../types";
 import { toast } from "@/hooks/use-toast";
+import { savePDFToStorage } from "../utils/PDFGenerationUtils";
 
 export function usePDFGeneration(
   userId: string,
@@ -20,7 +21,7 @@ export function usePDFGeneration(
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const generatePDF = () => {
+  const generatePDF = async () => {
     console.log("[PDFGenerator] Button clicked - Starting PDF generation");
     setIsGenerating(true);
     setProgress(10);
@@ -45,40 +46,43 @@ export function usePDFGeneration(
       
       const finalSynthesisText = synthesisText || "";
       
+      // Simulate progress
+      const interval = setInterval(() => {
+        setProgress(prev => Math.min(prev + 10, 90));
+      }, 300);
+      
       setTimeout(async () => {
         try {
-          handlePDFGeneration(
+          // Generate PDF directly using PDFDocumentGenerator
+          const pdfDataUrl = await PDFDocumentGenerator.generate(
             profile,
             {
               ...responses,
               synthesis: { free_text: finalSynthesisText }
             },
             trustedPersons,
-            (url) => {
-              console.log("[PDFGenerator] Generation complete, URL received:", !!url);
-              setProgress(100);
-              setPdfUrl(url);
-              
-              if (onPdfGenerated) {
-                onPdfGenerated(url);
-              }
-              
-              setIsGenerating(false);
-              
-              toast({
-                title: "Succès",
-                description: isCard 
-                  ? "Votre carte d'accès a été générée. Cliquez sur Prévisualiser pour la voir."
-                  : "Vos directives ont été générées. Cliquez sur Prévisualiser pour les voir.",
-              });
-            },
-            (showPreview) => {
-              // Cette fonction est appelée pour contrôler l'affichage de la prévisualisation
-              console.log("[PDFGenerator] setShowPreview called:", showPreview);
-            },
             isCard
           );
+          
+          clearInterval(interval);
+          console.log("[PDFGenerator] Generation complete, URL received:", !!pdfDataUrl);
+          setProgress(100);
+          setPdfUrl(pdfDataUrl);
+          
+          if (onPdfGenerated) {
+            onPdfGenerated(pdfDataUrl);
+          }
+          
+          setIsGenerating(false);
+          
+          toast({
+            title: "Succès",
+            description: isCard 
+              ? "Votre carte d'accès a été générée. Cliquez sur Prévisualiser pour la voir."
+              : "Vos directives ont été générées. Cliquez sur Prévisualiser pour les voir.",
+          });
         } catch (error) {
+          clearInterval(interval);
           console.error("[PDFGenerator] Inner error during PDF generation:", error);
           toast({
             title: "Erreur",
@@ -87,7 +91,7 @@ export function usePDFGeneration(
           });
           setIsGenerating(false);
         }
-      }, 100);
+      }, 1000);
     } catch (error) {
       console.error("[PDFGenerator] Error during PDF generation:", error);
       toast({
@@ -99,10 +103,58 @@ export function usePDFGeneration(
     }
   };
 
+  const saveToDocuments = async () => {
+    if (!pdfUrl || !userId || !profile) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de sauvegarder le document. Veuillez d'abord générer le PDF.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setIsGenerating(true);
+      setProgress(50);
+      
+      // Save PDF to storage
+      const saveResult = await savePDFToStorage(pdfUrl, userId, isCard);
+      
+      setIsGenerating(false);
+      
+      if (saveResult) {
+        toast({
+          title: "Sauvegarde réussie",
+          description: "Votre document a été sauvegardé avec succès. Redirection vers vos documents...",
+        });
+        
+        // Navigate to documents page after successful save
+        setTimeout(() => {
+          navigate("/my-documents");
+        }, 1500);
+      } else {
+        toast({
+          title: "Erreur",
+          description: "Impossible de sauvegarder le document. Veuillez réessayer.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("[PDFGenerator] Error saving PDF:", error);
+      setIsGenerating(false);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la sauvegarde du PDF.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return {
     isGenerating,
     progress,
     pdfUrl,
-    generatePDF
+    generatePDF,
+    saveToDocuments
   };
 }
