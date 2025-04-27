@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { handlePDFGeneration } from "./utils/PDFGenerationUtils";
 import { UserProfile, TrustedPerson } from "./types";
@@ -108,10 +107,12 @@ export function PDFMainGenerator({
                 
                 // Notify user of success
                 toast({
-                  title: "Succès",
-                  description: isCard 
-                    ? "Votre carte d'accès a été générée et sauvegardée." 
-                    : "Vos directives ont été générées et sauvegardées.",
+                  title: isCard ? "Carte d'accès générée" : "Directives anticipées générées",
+                  description: "Vos documents sont maintenant disponibles dans 'Mes Documents'.",
+                  action: {
+                    label: "Voir mes documents",
+                    onClick: () => navigate("/documents")
+                  }
                 });
               } else {
                 console.error("[PDFGenerator] PDF generation failed - no URL returned");
