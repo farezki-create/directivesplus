@@ -1,10 +1,8 @@
 
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "./pdf/usePDFData";
-import { PDFMainGenerator } from "./pdf/PDFMainGenerator";
-import { Button } from "@/components/ui/button";
-import { FileText, CreditCard } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { DirectivePDFGenerator } from "./pdf/generators/DirectivePDFGenerator";
+import { AccessCardGenerator } from "./pdf/generators/AccessCardGenerator";
 
 interface PDFGeneratorProps {
   userId: string;
@@ -20,65 +18,38 @@ export function PDFGenerator({
   isCard = false
 }: PDFGeneratorProps) {
   console.log("[PDFGenerator] Initializing with userId:", userId);
-  console.log("[PDFGenerator] Synthesis text provided:", synthesisText ? "Yes" : "No");
-  console.log("[PDFGenerator] Generating card format:", isCard ? "Yes" : "No");
   
   const { responses, synthesis, isLoading } = useQuestionnairesResponses(userId);
   const { profile, trustedPersons, loading } = usePDFData();
-  const navigate = useNavigate();
-
-  // If we're in a context where we just need to show the buttons
-  if (!onPdfGenerated) {
-    // Return the PDF navigation buttons
-    const navigateToPDFGeneration = (isCard: boolean = false) => {
-      const url = isCard ? "/generate-pdf?format=card" : "/generate-pdf";
-      navigate(url);
-    };
-    
-    return (
-      <div className="flex flex-col sm:flex-row gap-3 w-full">
-        <Button 
-          onClick={() => navigateToPDFGeneration(false)} 
-          className="flex items-center gap-3 h-auto py-4 w-full transition-all"
-        >
-          <div className="bg-blue-100 p-2 rounded-full">
-            <FileText className="h-5 w-5 text-blue-600" />
-          </div>
-          <div className="text-left">
-            <div className="font-medium">Générer Mes directives anticipées</div>
-          </div>
-        </Button>
-        
-        <Button 
-          onClick={() => navigateToPDFGeneration(true)} 
-          className="flex items-center gap-3 h-auto py-4 w-full transition-all"
-        >
-          <div className="bg-green-100 p-2 rounded-full">
-            <CreditCard className="h-5 w-5 text-green-600" />
-          </div>
-          <div className="text-left">
-            <div className="font-medium">Générer Ma carte d'accès</div>
-          </div>
-        </Button>
-      </div>
-    );
-  }
 
   if (loading || isLoading) {
     console.log("[PDFGenerator] Still loading data...");
     return null;
   }
 
+  // Use the final synthesis text (passed or from database)
+  const finalSynthesisText = synthesisText || synthesis?.free_text || "";
+
+  if (isCard) {
+    return (
+      <AccessCardGenerator
+        userId={userId}
+        onPdfGenerated={onPdfGenerated}
+        synthesisText={finalSynthesisText}
+        profile={profile}
+        responses={responses}
+      />
+    );
+  }
+
   return (
-    <PDFMainGenerator 
-      userId={userId} 
-      onPdfGenerated={onPdfGenerated} 
-      synthesisText={synthesisText} 
-      profile={profile} 
-      responses={responses} 
-      trustedPersons={trustedPersons} 
-      synthesis={synthesis} 
-      isCard={isCard} 
+    <DirectivePDFGenerator
+      userId={userId}
+      onPdfGenerated={onPdfGenerated}
+      synthesisText={finalSynthesisText}
+      profile={profile}
+      responses={responses}
+      trustedPersons={trustedPersons || []}
     />
   );
 }
