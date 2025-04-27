@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/card";
 import { Header } from "@/components/Header";
 import { useSynthesis } from "@/hooks/useSynthesis";
 import { Button } from "@/components/ui/button";
-import { FileText } from "lucide-react";
+import { FileText, CreditCard } from "lucide-react";
 import { PDFGenerationOverlay } from "@/components/pdf/PDFGenerationOverlay";
 
 export default function GeneratePDF() {
@@ -18,6 +18,7 @@ export default function GeneratePDF() {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [currentDocument, setCurrentDocument] = useState<"directive" | "card" | null>(null);
 
   const { responses, synthesis, isLoading: responsesLoading } = useQuestionnairesResponses(userId || "");
   const { text: freeText } = useSynthesis(userId);
@@ -41,52 +42,64 @@ export default function GeneratePDF() {
     navigate("/");
   };
 
+  const generateDirectiveDocument = () => {
+    if (!userId || !profile) return;
+    
+    setCurrentDocument("directive");
+    setProgress(0);
+    
+    // Simulate starting progress
+    setTimeout(() => setProgress(10), 300);
+    setTimeout(() => setProgress(20), 800);
+    
+    return (
+      <FullPDFGenerator 
+        userId={userId} 
+        onPdfGenerated={(url) => {
+          setPdfUrl(url);
+          setProgress(50);
+          generateCardDocument();
+        }}
+        synthesisText={freeText || synthesis?.free_text || ""}
+        isCard={false}
+      />
+    );
+  };
+  
+  const generateCardDocument = () => {
+    if (!userId || !profile) return;
+    
+    setCurrentDocument("card");
+    
+    // Simulate continuing progress
+    setTimeout(() => setProgress(60), 300);
+    setTimeout(() => setProgress(70), 800);
+    
+    return (
+      <FullPDFGenerator 
+        userId={userId} 
+        onPdfGenerated={(url) => {
+          setPdfUrl(url);
+          setProgress(100);
+          
+          // Complete the process after a short delay
+          setTimeout(() => {
+            setGenerating(false);
+            setProgress(0);
+            setCurrentDocument(null);
+          }, 1000);
+        }}
+        synthesisText={freeText || synthesis?.free_text || ""}
+        isCard={true}
+      />
+    );
+  };
+
   const generateAllDocuments = async () => {
     if (!userId || generating) return;
     
     setGenerating(true);
-    setProgress(0);
-    
-    try {
-      // Generate directives first
-      await new Promise((resolve) => {
-        setProgress(25);
-        const directives = (
-          <FullPDFGenerator 
-            userId={userId} 
-            onPdfGenerated={(url) => {
-              setPdfUrl(url);
-              setProgress(50);
-              resolve(true);
-            }} 
-            synthesisText={freeText || synthesis?.free_text || ""}
-            isCard={false}
-          />
-        );
-      });
-
-      // Then generate card
-      await new Promise((resolve) => {
-        setProgress(75);
-        const card = (
-          <FullPDFGenerator 
-            userId={userId} 
-            onPdfGenerated={(url) => {
-              setPdfUrl(url);
-              setProgress(100);
-              resolve(true);
-            }} 
-            synthesisText={freeText || synthesis?.free_text || ""}
-            isCard={true}
-          />
-        );
-      });
-    } finally {
-      setTimeout(() => {
-        setGenerating(false);
-        setProgress(0);
-      }, 1000);
-    }
+    generateDirectiveDocument();
   };
 
   if (!userId) {
@@ -119,7 +132,7 @@ export default function GeneratePDF() {
               <PDFGenerationOverlay
                 isGenerating={generating}
                 progress={progress}
-                isCard={progress >= 50}
+                isCard={currentDocument === "card"}
               />
             )}
 
@@ -131,7 +144,10 @@ export default function GeneratePDF() {
                   disabled={generating}
                   className="flex items-center gap-2 w-full justify-center py-6"
                 >
-                  <FileText className="h-5 w-5" />
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-5 w-5" />
+                    <CreditCard className="h-5 w-5" />
+                  </div>
                   <span>Générer Mes directives anticipées et Ma carte d'accès</span>
                 </Button>
               </div>
