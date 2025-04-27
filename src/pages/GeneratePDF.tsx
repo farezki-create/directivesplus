@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Header } from "@/components/Header";
@@ -21,7 +21,8 @@ export default function GeneratePDF() {
     progress,
     stage,
     checkAuth,
-    startGeneration,
+    startDirectiveGeneration,
+    startCardGeneration,
     handleDirectiveGenerated,
     handleCardGenerated
   } = useGeneratePDF();
@@ -59,7 +60,7 @@ export default function GeneratePDF() {
 
           <Card className="p-6">
             <p className="text-gray-600 mb-4">
-              Vos documents sont prêts à être générés. Cliquez sur le bouton ci-dessous pour créer vos documents PDF.
+              Vos documents sont prêts à être générés. Cliquez sur les boutons ci-dessous pour créer vos documents PDF.
             </p>
             
             <PDFGenerationStatus stage={stage} progress={progress} />
@@ -67,18 +68,28 @@ export default function GeneratePDF() {
             {!isLoading && !generating && (
               <div>
                 <h3 className="text-lg font-semibold mb-3">Documents à générer</h3>
-                <Button
-                  onClick={startGeneration}
-                  disabled={generating}
-                  className="flex items-center gap-2 w-full justify-center py-6"
-                >
-                  <div className="flex items-center gap-2">
+                <div className="space-y-4">
+                  <Button
+                    onClick={startDirectiveGeneration}
+                    disabled={generating}
+                    className="flex items-center gap-2 w-full justify-center py-6"
+                  >
                     <FileText className="h-5 w-5" />
+                    <span>Générer Mes directives anticipées</span>
+                    <ChevronRight className="h-4 w-4 ml-2" />
+                  </Button>
+                  
+                  <Button
+                    onClick={startCardGeneration}
+                    disabled={generating}
+                    variant="outline"
+                    className="flex items-center gap-2 w-full justify-center py-6"
+                  >
                     <CreditCard className="h-5 w-5" />
-                  </div>
-                  <span>Générer Mes directives anticipées et Ma carte d'accès</span>
-                  <ChevronRight className="h-4 w-4 ml-2" />
-                </Button>
+                    <span>Générer Ma carte d'accès</span>
+                    <ChevronRight className="h-4 w-4 ml-2" />
+                  </Button>
+                </div>
               </div>
             )}
           </Card>

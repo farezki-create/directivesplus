@@ -90,7 +90,7 @@ export function useGeneratePDF() {
     }
     
     setPdfUrls(prev => ({ ...prev, directive: url }));
-    setProgress(25);
+    setProgress(50);
     setStage("saving-directive");
     
     const directiveId = await saveDocument(url, false);
@@ -107,9 +107,16 @@ export function useGeneratePDF() {
       return;
     }
     
-    setProgress(50);
-    setStage("generating-card");
-    console.log("[GeneratePDF] Starting card generation...");
+    setProgress(100);
+    
+    setTimeout(() => {
+      toast({
+        title: "Génération terminée",
+        description: "Vos directives anticipées ont été générées et sauvegardées avec succès"
+      });
+      setGenerating(false);
+      setStage("idle");
+    }, 1000);
   };
 
   // Handle the card PDF generation complete event
@@ -129,7 +136,7 @@ export function useGeneratePDF() {
     }
     
     setPdfUrls(prev => ({ ...prev, card: url }));
-    setProgress(75);
+    setProgress(50);
     setStage("saving-card");
     
     const cardId = await saveDocument(url, true);
@@ -141,33 +148,42 @@ export function useGeneratePDF() {
         description: "Impossible de sauvegarder la carte d'accès",
         variant: "destructive"
       });
+      setGenerating(false);
+      setStage("idle");
+      return;
     }
     
     setProgress(100);
-    setStage("complete");
     
     setTimeout(() => {
-      console.log("[GeneratePDF] Process complete, redirecting to documents page");
+      console.log("[GeneratePDF] Card generation complete");
       toast({
         title: "Génération terminée",
-        description: "Vos documents ont été générés et sauvegardés avec succès"
+        description: "Votre carte d'accès a été générée et sauvegardée avec succès"
       });
       setGenerating(false);
-      navigate("/my-documents");
-    }, 1500);
+      setStage("idle");
+    }, 1000);
   };
 
-  // Start generation process
-  const startGeneration = () => {
+  // Start directive generation process
+  const startDirectiveGeneration = () => {
     if (!userId || generating) return;
     
-    console.log("[GeneratePDF] Starting document generation process");
+    console.log("[GeneratePDF] Starting directive generation process");
     setGenerating(true);
     setStage("generating-directive");
-    setProgress(5);
+    setProgress(25);
+  };
+
+  // Start card generation process
+  const startCardGeneration = () => {
+    if (!userId || generating) return;
     
-    setTimeout(() => setProgress(10), 300);
-    setTimeout(() => setProgress(15), 800);
+    console.log("[GeneratePDF] Starting card generation process");
+    setGenerating(true);
+    setStage("generating-card");
+    setProgress(25);
   };
 
   return {
@@ -177,7 +193,8 @@ export function useGeneratePDF() {
     progress,
     stage,
     checkAuth,
-    startGeneration,
+    startDirectiveGeneration,
+    startCardGeneration,
     handleDirectiveGenerated,
     handleCardGenerated
   };
