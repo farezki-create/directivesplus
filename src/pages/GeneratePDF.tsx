@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { PDFGenerator as FullPDFGenerator } from "@/components/PDFGenerator";
+import { PDFGenerator } from "@/components/PDFGenerator";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "@/components/pdf/usePDFData";
@@ -10,7 +10,7 @@ import { Header } from "@/components/Header";
 import { useSynthesis } from "@/hooks/useSynthesis";
 import { Button } from "@/components/ui/button";
 import { FileText, CreditCard, ChevronRight, Loader2 } from "lucide-react";
-import { PDFGenerationOverlay } from "@/components/pdf/PDFGenerationOverlay";
+import { Progress } from "@/components/ui/progress";
 import { PDFStorageService } from "@/utils/storage/PDFStorageService";
 import { toast } from "@/components/ui/use-toast";
 
@@ -23,7 +23,7 @@ export default function GeneratePDF() {
   });
   const [generating, setGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [processingStep, setProcessingStep] = useState<
+  const [stage, setStage] = useState<
     "idle" | "generating-directive" | "saving-directive" | "generating-card" | "saving-card" | "complete"
   >("idle");
 
@@ -33,6 +33,7 @@ export default function GeneratePDF() {
 
   const isLoading = responsesLoading || profileLoading;
 
+  // Check authentication
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -49,143 +50,161 @@ export default function GeneratePDF() {
     navigate("/");
   };
 
-  const saveToDocuments = async (pdfDataUrl: string, isCard: boolean): Promise<string | null> => {
-    if (!profile || !userId) {
+  // Save PDF to documents
+  const saveDocument = async (pdfUrl: string | null, isCard: boolean): Promise<string | null> => {
+    if (!pdfUrl || !profile || !userId) {
+      console.error(`[GeneratePDF] Cannot save ${isCard ? "card" : "directive"}: missing data`);
       toast({
         title: "Erreur",
-        description: "Profil utilisateur non disponible",
+        description: `Impossible de sauvegarder ${isCard ? "la carte" : "les directives"}. Données manquantes.`,
         variant: "destructive"
       });
       return null;
     }
     
     try {
-      const stepName = isCard ? "Sauvegarde de la carte d'accès" : "Sauvegarde des directives anticipées";
-      console.log(`[GeneratePDF] ${stepName} en cours...`);
-      
-      const documentId = await PDFStorageService.uploadToCloud(
-        pdfDataUrl,
-        userId,
-        profile
-      );
+      console.log(`[GeneratePDF] Saving ${isCard ? "card" : "directive"} to documents...`);
+      const documentId = await PDFStorageService.uploadToCloud(pdfUrl, userId, profile);
       
       if (documentId) {
-        console.log(`[GeneratePDF] ${stepName} réussie avec ID: ${documentId}`);
+        console.log(`[GeneratePDF] Successfully saved ${isCard ? "card" : "directive"} with ID: ${documentId}`);
         toast({
-          title: "Document sauvegardé",
-          description: isCard ? "Votre carte d'accès a été sauvegardée" : "Vos directives anticipées ont été sauvegardées"
+          title: "Sauvegarde réussie",
+          description: isCard 
+            ? "Votre carte d'accès a été sauvegardée" 
+            : "Vos directives anticipées ont été sauvegardées"
         });
         return documentId;
       } else {
-        console.error(`[GeneratePDF] Échec de ${stepName.toLowerCase()}`);
+        console.error(`[GeneratePDF] Failed to save ${isCard ? "card" : "directive"}`);
+        toast({
+          title: "Erreur de sauvegarde",
+          description: `Impossible de sauvegarder ${isCard ? "la carte" : "les directives"}`,
+          variant: "destructive"
+        });
         return null;
       }
     } catch (error) {
-      console.error(`[GeneratePDF] Erreur lors de la sauvegarde ${isCard ? "de la carte" : "des directives"}:`, error);
+      console.error(`[GeneratePDF] Error saving ${isCard ? "card" : "directive"}:`, error);
       toast({
         title: "Erreur de sauvegarde",
-        description: `Impossible de sauvegarder ${isCard ? "la carte d'accès" : "les directives anticipées"}`,
+        description: `Une erreur est survenue lors de la sauvegarde ${isCard ? "de la carte" : "des directives"}`,
         variant: "destructive"
       });
       return null;
     }
   };
 
-  // Étape 1: Génération des directives anticipées
-  const startDirectiveGeneration = () => {
-    if (!userId || !profile || generating) return;
-    
-    console.log("[GeneratePDF] Début du processus de génération");
-    setGenerating(true);
-    setProcessingStep("generating-directive");
-    setProgress(5);
-    
-    setTimeout(() => setProgress(10), 300);
-    setTimeout(() => setProgress(15), 800);
-  };
-
-  // Étape 2: Sauvegarde des directives et démarrage de la génération de la carte
+  // Handle the directive PDF generation complete event
   const handleDirectiveGenerated = async (url: string | null) => {
+    console.log("[GeneratePDF] Directive generation completed, URL received:", url ? "Yes" : "No");
+    
     if (!url) {
-      console.error("[GeneratePDF] Pas d'URL générée pour les directives");
-      setGenerating(false);
-      setProcessingStep("idle");
+      console.error("[GeneratePDF] Directive generation failed - no URL returned");
       toast({
         title: "Erreur",
         description: "La génération des directives anticipées a échoué",
         variant: "destructive"
       });
+      setGenerating(false);
+      setStage("idle");
       return;
     }
     
-    console.log("[GeneratePDF] Directives générées avec succès");
+    // Store the URL
     setPdfUrls(prev => ({ ...prev, directive: url }));
     setProgress(25);
-    setProcessingStep("saving-directive");
+    setStage("saving-directive");
     
-    // Sauvegarde des directives
-    const directiveId = await saveToDocuments(url, false);
-    setProgress(40);
+    // Save the directive document
+    console.log("[GeneratePDF] Saving directive document...");
+    const directiveId = await saveDocument(url, false);
     
     if (!directiveId) {
-      console.warn("[GeneratePDF] Sauvegarde des directives échouée mais on continue");
-      // On continue quand même avec la génération de la carte
+      console.error("[GeneratePDF] Failed to save directive document");
+      toast({
+        title: "Erreur",
+        description: "Impossible de sauvegarder les directives anticipées",
+        variant: "destructive"
+      });
+      setGenerating(false);
+      setStage("idle");
+      return;
     }
     
-    // Démarrer la génération de la carte
-    console.log("[GeneratePDF] Démarrage de la génération de la carte");
-    setProcessingStep("generating-card");
+    // Move to card generation
     setProgress(50);
+    setStage("generating-card");
+    console.log("[GeneratePDF] Starting card generation...");
   };
 
-  // Étape 3: Traitement de la carte générée
+  // Handle the card PDF generation complete event
   const handleCardGenerated = async (url: string | null) => {
+    console.log("[GeneratePDF] Card generation completed, URL received:", url ? "Yes" : "No");
+    
     if (!url) {
-      console.error("[GeneratePDF] Pas d'URL générée pour la carte");
-      setGenerating(false);
-      setProcessingStep("idle");
+      console.error("[GeneratePDF] Card generation failed - no URL returned");
       toast({
         title: "Erreur",
         description: "La génération de la carte d'accès a échoué",
         variant: "destructive"
       });
+      setGenerating(false);
+      setStage("idle");
       return;
     }
     
-    console.log("[GeneratePDF] Carte générée avec succès");
+    // Store the URL
     setPdfUrls(prev => ({ ...prev, card: url }));
     setProgress(75);
-    setProcessingStep("saving-card");
+    setStage("saving-card");
     
-    // Sauvegarde de la carte
-    const cardId = await saveToDocuments(url, true);
-    setProgress(90);
+    // Save the card document
+    console.log("[GeneratePDF] Saving card document...");
+    const cardId = await saveDocument(url, true);
     
     if (!cardId) {
-      console.warn("[GeneratePDF] Sauvegarde de la carte échouée mais on finalise");
-      // On finalise quand même le processus
+      console.error("[GeneratePDF] Failed to save card document");
+      toast({
+        title: "Erreur",
+        description: "Impossible de sauvegarder la carte d'accès",
+        variant: "destructive"
+      });
     }
     
-    // Finalisation du processus
+    // Complete the process
     setProgress(100);
-    setProcessingStep("complete");
+    setStage("complete");
     
+    // Redirect to documents after a short delay
     setTimeout(() => {
-      console.log("[GeneratePDF] Processus complet, redirection vers les documents");
+      console.log("[GeneratePDF] Process complete, redirecting to documents page");
+      toast({
+        title: "Génération terminée",
+        description: "Vos documents ont été générés et sauvegardés avec succès"
+      });
       setGenerating(false);
-      setProcessingStep("idle");
-      setProgress(0);
       navigate("/my-documents");
-    }, 1000);
+    }, 1500);
   };
 
-  const generateAllDocuments = () => {
-    if (generating || !userId || !profile) return;
-    startDirectiveGeneration();
+  // Start generation process
+  const startGeneration = () => {
+    if (!userId || !profile || generating) return;
+    
+    console.log("[GeneratePDF] Starting document generation process");
+    setGenerating(true);
+    setStage("generating-directive");
+    setProgress(5);
+    
+    // Update progress to show it's working
+    setTimeout(() => setProgress(10), 300);
+    setTimeout(() => setProgress(15), 800);
   };
 
+  // Get current status message based on stage
   const getCurrentStatusMessage = () => {
-    switch (processingStep) {
+    switch (stage) {
       case "generating-directive":
         return "Génération de vos directives anticipées en cours...";
       case "saving-directive":
@@ -201,6 +220,7 @@ export default function GeneratePDF() {
     }
   };
 
+  // Render loading state or redirect if not authenticated
   if (!userId) {
     return null;
   }
@@ -230,12 +250,7 @@ export default function GeneratePDF() {
             {generating && (
               <div className="border rounded-lg p-4 mb-6 bg-gray-50">
                 <div className="space-y-4">
-                  <div className="w-full bg-gray-200 rounded-full h-2.5">
-                    <div 
-                      className="bg-blue-600 h-2.5 rounded-full transition-all duration-300" 
-                      style={{ width: `${progress}%` }}
-                    ></div>
-                  </div>
+                  <Progress value={progress} className="h-2" />
                   <div className="flex items-center gap-2 text-sm">
                     <Loader2 className="h-4 w-4 animate-spin" />
                     <span className="text-gray-600">{getCurrentStatusMessage()}</span>
@@ -248,7 +263,7 @@ export default function GeneratePDF() {
               <div>
                 <h3 className="text-lg font-semibold mb-3">Documents à générer</h3>
                 <Button
-                  onClick={generateAllDocuments}
+                  onClick={startGeneration}
                   disabled={generating}
                   className="flex items-center gap-2 w-full justify-center py-6"
                 >
@@ -265,10 +280,10 @@ export default function GeneratePDF() {
         </div>
       </main>
 
-      {/* Composants PDF Generator invisibles utilisés pour la génération */}
-      {processingStep === "generating-directive" && (
+      {/* PDFGenerator components - only render when needed */}
+      {stage === "generating-directive" && (
         <div className="hidden">
-          <FullPDFGenerator 
+          <PDFGenerator 
             userId={userId} 
             onPdfGenerated={handleDirectiveGenerated}
             synthesisText={freeText || synthesis?.free_text || ""}
@@ -277,9 +292,9 @@ export default function GeneratePDF() {
         </div>
       )}
       
-      {processingStep === "generating-card" && (
+      {stage === "generating-card" && (
         <div className="hidden">
-          <FullPDFGenerator 
+          <PDFGenerator 
             userId={userId} 
             onPdfGenerated={handleCardGenerated}
             synthesisText={freeText || synthesis?.free_text || ""}
