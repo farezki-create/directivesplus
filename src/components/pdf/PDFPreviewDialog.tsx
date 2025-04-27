@@ -2,8 +2,6 @@
 import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PDFViewer } from "./PDFViewer";
-import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
 
 interface PDFPreviewDialogProps {
   open: boolean;
@@ -20,13 +18,13 @@ const PDFPreviewDialog = ({
 }: PDFPreviewDialogProps) => {
   const [processedPdfUrl, setProcessedPdfUrl] = useState<string | null>(null);
   
-  // Lorsque le dialog s'ouvre ou que l'URL change, traiter l'URL
+  // Process PDF URL when dialog opens or URL changes
   useEffect(() => {
     if (open && pdfUrl) {
-      // Si c'est une URL de données ou une URL normale, utilisez-la directement
+      // Use the URL directly if it's a data URL or a normal URL
       setProcessedPdfUrl(pdfUrl);
     } else if (!open) {
-      // Révoquer l'URL Blob à la fermeture si nécessaire
+      // Revoke Blob URL when closing if necessary
       if (processedPdfUrl && processedPdfUrl.startsWith('blob:') && processedPdfUrl !== pdfUrl) {
         URL.revokeObjectURL(processedPdfUrl);
         setProcessedPdfUrl(null);
@@ -42,13 +40,7 @@ const PDFPreviewDialog = ({
             <DialogTitle>
               Document PDF {externalDocumentId ? `(ID: ${externalDocumentId})` : ''}
             </DialogTitle>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => onOpenChange(false)}
-            >
-              <X className="h-4 w-4" />
-            </Button>
+            {/* Close button is now handled by Shadcn UI Dialog component */}
           </div>
         </DialogHeader>
         <div className="flex-grow p-4 overflow-hidden">
