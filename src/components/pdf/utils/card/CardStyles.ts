@@ -18,7 +18,7 @@ export const cardStyles = {
     textColor: [31, 41, 55]
   },
   website: {
-    fontSize: 8,
+    fontSize: 10, // Increased font size
     textColor: [79, 70, 229] // Indigo
   },
   decorativeLine: {

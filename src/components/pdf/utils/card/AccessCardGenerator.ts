@@ -10,7 +10,6 @@ export class AccessCardGenerator {
     this.addHeader(doc);
     this.addUserInformation(doc, profile);
     this.addAccessCode(doc, profile);
-    this.addWebsiteLink(doc);
     this.addDecorativeElements(doc);
   }
 
@@ -31,8 +30,8 @@ export class AccessCardGenerator {
   }
 
   private static addUserInformation(doc: jsPDF, profile: UserProfile): void {
-    const { content } = cardStyles;
-    doc.setFontSize(content.fontSize);
+    const { content, website } = cardStyles;
+    doc.setFontSize(content.labelFontSize);
     doc.setTextColor(...content.textColor);
 
     const startY = content.startY;
@@ -55,6 +54,12 @@ export class AccessCardGenerator {
     doc.text("Date de naissance:", 6, startY + (lineHeight * 2));
     doc.setFont("helvetica", "normal");
     doc.text(profile.birth_date || "", 32, startY + (lineHeight * 2));
+
+    // Add website link right below birth date
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(website.fontSize);
+    doc.setTextColor(...website.textColor);
+    doc.text("www.directivesplus.fr", cardDimensions.width / 2, startY + (lineHeight * 3), { align: "center" });
   }
 
   private static addAccessCode(doc: jsPDF, profile: UserProfile): void {
@@ -71,14 +76,6 @@ export class AccessCardGenerator {
     
     doc.setFont("helvetica", "normal");
     doc.text(profile.unique_identifier || "", cardDimensions.width / 2, cardDimensions.height - 3, { align: "center" });
-  }
-
-  private static addWebsiteLink(doc: jsPDF): void {
-    const { website } = cardStyles;
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(website.fontSize);
-    doc.setTextColor(...website.textColor);
-    doc.text("www.directivesplus.fr", cardDimensions.width / 2, 48, { align: "center" });
   }
 
   private static addDecorativeElements(doc: jsPDF): void {
