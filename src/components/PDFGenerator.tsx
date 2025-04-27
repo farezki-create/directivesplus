@@ -1,3 +1,4 @@
+
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "./pdf/usePDFData";
 import { PDFMainGenerator } from "./pdf/PDFMainGenerator";
@@ -39,16 +40,24 @@ export function PDFGenerator({
       navigate(url);
     };
     return <div className="flex flex-col sm:flex-row gap-3 w-full">
-        <Button onClick={() => navigateToPDFGeneration(false)} className="flex items-center gap-3 h-auto py-4 w-full transition-all text-sm mx-0 px-[20px]">
-          <div className="bg-blue-100 p-2 rounded-full">
-            <FileText className="h-5 w-5 text-blue-600" />
+        <Button 
+          onClick={() => navigateToPDFGeneration(false)} 
+          className="flex items-center gap-3 h-auto py-4 w-full transition-all 
+            transform hover:scale-[1.02] hover:shadow-lg 
+            bg-gradient-to-r from-blue-500 to-blue-600 
+            text-white hover:from-blue-600 hover:to-blue-700 
+            focus:outline-none focus:ring-2 focus:ring-blue-300 
+            rounded-xl duration-300 ease-in-out"
+        >
+          <div className="bg-white/20 p-2 rounded-full">
+            <FileText className="h-5 w-5 text-white" />
           </div>
-          <div className="text-left">
-            <div className="font-medium">Générer Mes directives anticipées</div>
+          <div className="text-left flex-grow">
+            <div className="font-medium text-sm sm:text-base">
+              Générer mes directives anticipées et ma carte d'accès
+            </div>
           </div>
         </Button>
-        
-        
       </div>;
   }
   if (loading || isLoading) {
