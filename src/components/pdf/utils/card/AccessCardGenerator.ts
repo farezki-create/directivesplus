@@ -1,4 +1,3 @@
-
 import { jsPDF } from "jspdf";
 import { UserProfile } from "../../types";
 import { cardDimensions } from "../constants/cardDimensions";
@@ -55,11 +54,11 @@ export class AccessCardGenerator {
     doc.setFont("helvetica", "normal");
     doc.text(profile.birth_date || "", 32, startY + (lineHeight * 2));
 
-    // Add website link right below birth date
+    // Add website link below birth date with increased font size and adjusted position
     doc.setFont("helvetica", "normal");
     doc.setFontSize(website.fontSize);
     doc.setTextColor(...website.textColor);
-    doc.text("www.directivesplus.fr", cardDimensions.width / 2, startY + (lineHeight * 3), { align: "center" });
+    doc.text("www.directivesplus.fr", cardDimensions.width / 2, website.positionY, { align: "center" });
   }
 
   private static addAccessCode(doc: jsPDF, profile: UserProfile): void {
