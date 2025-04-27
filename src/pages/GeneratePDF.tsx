@@ -11,6 +11,7 @@ import { useSynthesis } from "@/hooks/useSynthesis";
 import { Button } from "@/components/ui/button";
 import { FileText, CreditCard } from "lucide-react";
 import { PDFGenerationOverlay } from "@/components/pdf/PDFGenerationOverlay";
+import { PDFStorageService } from "@/utils/storage/PDFStorageService";
 
 export default function GeneratePDF() {
   const navigate = useNavigate();
@@ -42,23 +43,42 @@ export default function GeneratePDF() {
     navigate("/");
   };
 
+  const saveToDocuments = async (pdfDataUrl: string, isCard: boolean) => {
+    if (!profile) return;
+    
+    try {
+      const documentId = await PDFStorageService.uploadToCloud(
+        pdfDataUrl,
+        userId || '',
+        profile
+      );
+      return documentId;
+    } catch (error) {
+      console.error("[GeneratePDF] Error saving document:", error);
+      return null;
+    }
+  };
+
   const generateDirectiveDocument = () => {
     if (!userId || !profile) return;
     
     setCurrentDocument("directive");
     setProgress(0);
     
-    // Simulate starting progress
     setTimeout(() => setProgress(10), 300);
     setTimeout(() => setProgress(20), 800);
     
     return (
       <FullPDFGenerator 
         userId={userId} 
-        onPdfGenerated={(url) => {
-          setPdfUrl(url);
-          setProgress(50);
-          generateCardDocument();
+        onPdfGenerated={async (url) => {
+          if (url) {
+            setPdfUrl(url);
+            setProgress(40);
+            await saveToDocuments(url, false);
+            setProgress(50);
+            generateCardDocument();
+          }
         }}
         synthesisText={freeText || synthesis?.free_text || ""}
         isCard={false}
@@ -71,23 +91,26 @@ export default function GeneratePDF() {
     
     setCurrentDocument("card");
     
-    // Simulate continuing progress
     setTimeout(() => setProgress(60), 300);
     setTimeout(() => setProgress(70), 800);
     
     return (
       <FullPDFGenerator 
         userId={userId} 
-        onPdfGenerated={(url) => {
-          setPdfUrl(url);
-          setProgress(100);
-          
-          // Complete the process after a short delay
-          setTimeout(() => {
-            setGenerating(false);
-            setProgress(0);
-            setCurrentDocument(null);
-          }, 1000);
+        onPdfGenerated={async (url) => {
+          if (url) {
+            setPdfUrl(url);
+            setProgress(90);
+            await saveToDocuments(url, true);
+            setProgress(100);
+            
+            setTimeout(() => {
+              setGenerating(false);
+              setProgress(0);
+              setCurrentDocument(null);
+              navigate("/my-documents");
+            }, 1000);
+          }
         }}
         synthesisText={freeText || synthesis?.free_text || ""}
         isCard={true}
