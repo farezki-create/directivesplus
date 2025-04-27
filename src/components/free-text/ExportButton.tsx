@@ -33,25 +33,20 @@ export function ExportButton({ data }: ExportButtonProps) {
     <div className="flex flex-col sm:flex-row gap-3 w-full">
       <Button 
         onClick={handleDirectivesClick} 
-        className="flex items-center gap-3 h-auto py-4 w-full transition-all"
+        className="flex items-center gap-3 h-auto py-4 w-full transition-all 
+        transform hover:scale-[1.02] hover:shadow-lg 
+        bg-gradient-to-r from-blue-500 to-blue-600 
+        text-white hover:from-blue-600 hover:to-blue-700 
+        focus:outline-none focus:ring-2 focus:ring-blue-300 
+        rounded-xl duration-300 ease-in-out"
       >
-        <div className="bg-blue-100 p-2 rounded-full">
-          <FileText className="h-5 w-5 text-blue-600" />
+        <div className="bg-white/20 p-2 rounded-full">
+          <FileText className="h-5 w-5 text-white" />
         </div>
-        <div className="text-left">
-          <div className="font-medium">Générer Mes directives anticipées</div>
-        </div>
-      </Button>
-
-      <Button 
-        onClick={handleCardClick}
-        className="flex items-center gap-3 h-auto py-4 w-full transition-all"
-      >
-        <div className="bg-green-100 p-2 rounded-full">
-          <CreditCard className="h-5 w-5 text-green-600" />
-        </div>
-        <div className="text-left">
-          <div className="font-medium">Générer Ma carte d'accès</div>
+        <div className="text-left flex-grow">
+          <div className="font-medium text-sm sm:text-base">
+            Générer mes directives anticipées et ma carte d'accès
+          </div>
         </div>
       </Button>
     </div>
