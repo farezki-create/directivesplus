@@ -10,26 +10,20 @@ import { Card } from "@/components/ui/card";
 import { Header } from "@/components/Header";
 import { useSynthesis } from "@/hooks/useSynthesis";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { FileText, CreditCard } from "lucide-react";
 
 export default function GeneratePDF() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const [userId, setUserId] = useState<string | null>(null);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-  const [isCard, setIsCard] = useState(false);
-  
-  // Check if this is a card generation based on URL search params
-  useEffect(() => {
-    const cardParam = searchParams.get('format');
-    setIsCard(cardParam === 'card');
-  }, [searchParams]);
-  
+  const [activeTab, setActiveTab] = useState<string>("directives");
+
   const { responses, synthesis, isLoading: responsesLoading } = useQuestionnairesResponses(userId || "");
   const { text: freeText } = useSynthesis(userId);
   const { profile, trustedPersons, loading: profileLoading } = usePDFData();
   const { directive, isLoading: directiveLoading, saveDirective } = useDirectives(userId || "");
 
-  // Combine all loading states
   const isLoading = responsesLoading || profileLoading || directiveLoading;
 
   useEffect(() => {
@@ -75,9 +69,7 @@ export default function GeneratePDF() {
       <main className="flex-1 container mx-auto py-8 px-4">
         <div className="max-w-4xl mx-auto space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold">
-              {isCard ? "Génération de ma carte d'accès" : "Génération de mes directives anticipées"}
-            </h2>
+            <h2 className="text-2xl font-bold">Génération de documents</h2>
             <Button 
               variant="ghost" 
               onClick={handleBackToSummary}
@@ -88,28 +80,52 @@ export default function GeneratePDF() {
           </div>
 
           <Card className="p-6">
-            <div className="flex gap-4 flex-wrap mb-6">
-              <p className="text-gray-600 mb-4">
-                {isCard 
-                  ? "Voici votre carte d'accès prête à être générée. Cliquez sur le bouton ci-dessous pour créer votre carte au format PDF."
-                  : "Voici vos directives anticipées prêtes à être générées. Cliquez sur le bouton ci-dessous pour créer votre document PDF."
-                }
-              </p>
-            </div>
-            
-            {!isLoading && (
-              <div>
-                <h3 className="text-lg font-semibold mb-3">
-                  {isCard ? "Carte d'accès" : "Document principal"}
-                </h3>
-                <FullPDFGenerator 
-                  userId={userId} 
-                  onPdfGenerated={setPdfUrl} 
-                  synthesisText={freeText || synthesis?.free_text || ""}
-                  isCard={isCard}
-                />
-              </div>
-            )}
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="directives" className="flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  Directives anticipées
+                </TabsTrigger>
+                <TabsTrigger value="card" className="flex items-center gap-2">
+                  <CreditCard className="h-4 w-4" />
+                  Carte d'accès
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="directives">
+                <p className="text-gray-600 mb-4">
+                  Voici vos directives anticipées prêtes à être générées. Cliquez sur le bouton ci-dessous pour créer votre document PDF.
+                </p>
+                {!isLoading && (
+                  <div>
+                    <h3 className="text-lg font-semibold mb-3">Document principal</h3>
+                    <FullPDFGenerator 
+                      userId={userId} 
+                      onPdfGenerated={setPdfUrl} 
+                      synthesisText={freeText || synthesis?.free_text || ""}
+                      isCard={false}
+                    />
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="card">
+                <p className="text-gray-600 mb-4">
+                  Voici votre carte d'accès prête à être générée. Cliquez sur le bouton ci-dessous pour créer votre carte au format PDF.
+                </p>
+                {!isLoading && (
+                  <div>
+                    <h3 className="text-lg font-semibold mb-3">Carte d'accès</h3>
+                    <FullPDFGenerator 
+                      userId={userId} 
+                      onPdfGenerated={setPdfUrl} 
+                      synthesisText={freeText || synthesis?.free_text || ""}
+                      isCard={true}
+                    />
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
           </Card>
         </div>
       </main>
