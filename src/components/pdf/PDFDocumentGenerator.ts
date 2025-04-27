@@ -26,26 +26,75 @@ export class PDFDocumentGenerator {
         : new jsPDF();
       
       if (isCard) {
-        // Generate card format
+        // Set background color for the card
+        doc.setFillColor(248, 250, 252); // Light gray background
+        doc.rect(0, 0, cardDimensions.width, cardDimensions.height, 'F');
+
+        // Add header with gradient background
+        doc.setFillColor(99, 102, 241); // Indigo color
+        doc.rect(0, 0, cardDimensions.width, 15, 'F');
+        
+        // Header text
         doc.setFont("helvetica", "bold");
         doc.setFontSize(11);
-        doc.text("CARTE D'ACCÈS AUX DIRECTIVES ANTICIPÉES", cardDimensions.width / 2, 10, { align: "center" });
+        doc.setTextColor(255, 255, 255); // White text
+        doc.text("CARTE D'ACCÈS AUX DIRECTIVES ANTICIPÉES", cardDimensions.width / 2, 8, { align: "center" });
         
-        // Add user information in card format
+        // Add user information in card format with better spacing
         doc.setFontSize(9);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(31, 41, 55); // Dark gray text
+        
+        const startY = 22;
+        const lineHeight = 5;
+        
+        // Labels and values in two columns
+        doc.text("Nom:", 6, startY);
         doc.setFont("helvetica", "normal");
-        doc.text(`Nom: ${profile.last_name || ""}`, 10, 20);
-        doc.text(`Prénom: ${profile.first_name || ""}`, 10, 25);
-        doc.text(`Date de naissance: ${profile.birth_date || ""}`, 10, 30);
+        doc.text(profile.last_name || "", 20, startY);
         
-        // Add access information
+        doc.setFont("helvetica", "bold");
+        doc.text("Prénom:", 6, startY + lineHeight);
+        doc.setFont("helvetica", "normal");
+        doc.text(profile.first_name || "", 20, startY + lineHeight);
+        
+        doc.setFont("helvetica", "bold");
+        doc.text("Date de naissance:", 6, startY + (lineHeight * 2));
+        doc.setFont("helvetica", "normal");
+        doc.text(profile.birth_date || "", 32, startY + (lineHeight * 2));
+        
+        // Add access information with improved styling
+        doc.setFillColor(243, 244, 246); // Light gray background
+        doc.roundedRect(6, 38, cardDimensions.width - 12, 10, 1, 1, 'F');
+        
+        doc.setFont("helvetica", "bold");
         doc.setFontSize(8);
-        doc.text("Accès à vos directives:", 10, 40);
-        doc.text("www.directivesplus.fr", cardDimensions.width / 2, 45, { align: "center" });
+        doc.setTextColor(31, 41, 55);
+        doc.text("Accès à vos directives:", cardDimensions.width / 2, 43, { align: "center" });
         
-        // Add access code at bottom
+        // Website URL with better styling
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.setTextColor(79, 70, 229); // Indigo color for URL
+        doc.text("www.directivesplus.fr", cardDimensions.width / 2, 48, { align: "center" });
+        
+        // Add professional access code at bottom with a subtle background
+        doc.setFillColor(243, 244, 246);
+        doc.roundedRect(4, cardDimensions.height - 10, cardDimensions.width - 8, 7, 1, 1, 'F');
+        
         doc.setFontSize(7);
-        doc.text(`Code d'accès professionnel: ${profile.unique_identifier || ""}`, cardDimensions.width / 2, cardDimensions.height - 5, { align: "center" });
+        doc.setTextColor(31, 41, 55);
+        doc.setFont("helvetica", "bold");
+        doc.text("Code d'accès professionnel:", 6, cardDimensions.height - 5);
+        doc.setFont("helvetica", "normal");
+        const accessCode = profile.unique_identifier || "";
+        doc.text(accessCode, 45, cardDimensions.height - 5);
+        
+        // Add decorative elements
+        doc.setDrawColor(99, 102, 241); // Indigo color
+        doc.setLineWidth(0.5);
+        doc.line(4, 35, cardDimensions.width - 4, 35);
+        
       } else {
         // Generate full document format
         doc.setFont("helvetica", "bold");
