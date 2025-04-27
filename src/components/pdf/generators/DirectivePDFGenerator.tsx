@@ -1,5 +1,6 @@
 
 import { UserProfile, TrustedPerson } from "../types";
+import { PDFMainGenerator } from "../PDFMainGenerator";
 
 interface DirectivePDFGeneratorProps {
   userId: string;

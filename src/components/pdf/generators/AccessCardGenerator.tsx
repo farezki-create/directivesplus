@@ -1,5 +1,6 @@
 
 import { UserProfile } from "../types";
+import { PDFMainGenerator } from "../PDFMainGenerator";
 
 interface AccessCardGeneratorProps {
   userId: string;
