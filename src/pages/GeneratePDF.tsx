@@ -1,40 +1,61 @@
 
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Header } from "@/components/Header";
-import { PDFGenerator } from "@/components/PDFGenerator";
-import { PDFGenerationStatus } from "@/components/pdf/PDFGenerationStatus";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { PDFGenerator as FullPDFGenerator } from "@/components/PDFGenerator";
+import { supabase } from "@/integrations/supabase/client";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "@/components/pdf/usePDFData";
+import { useDirectives } from "@/hooks/useDirectives";
+import { Card } from "@/components/ui/card";
+import { Header } from "@/components/Header";
 import { useSynthesis } from "@/hooks/useSynthesis";
-import { FileText, CreditCard, ChevronRight } from "lucide-react";
-import { useGeneratePDF } from "@/hooks/useGeneratePDF";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { FileText, CreditCard } from "lucide-react";
 
 export default function GeneratePDF() {
-  const { responses, synthesis, isLoading: responsesLoading } = useQuestionnairesResponses("");
-  const { profile, trustedPersons, loading: profileLoading } = usePDFData();
-  const { text: freeText } = useSynthesis(null);
-  const {
-    userId,
-    generating,
-    progress,
-    stage,
-    checkAuth,
-    startDirectiveGeneration,
-    startCardGeneration,
-    handleDirectiveGenerated,
-    handleCardGenerated
-  } = useGeneratePDF();
+  const navigate = useNavigate();
+  const [userId, setUserId] = useState<string | null>(null);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<string>("directives");
 
-  const isLoading = responsesLoading || profileLoading;
+  const { responses, synthesis, isLoading: responsesLoading } = useQuestionnairesResponses(userId || "");
+  const { text: freeText } = useSynthesis(userId);
+  const { profile, trustedPersons, loading: profileLoading } = usePDFData();
+  const { directive, isLoading: directiveLoading, saveDirective } = useDirectives(userId || "");
+
+  const isLoading = responsesLoading || profileLoading || directiveLoading;
 
   useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        navigate("/auth");
+        return;
+      }
+      setUserId(session.user.id);
+    };
     checkAuth();
-  }, []);
+  }, [navigate]);
+
+  useEffect(() => {
+    if (userId && responses && profile && !responsesLoading && !profileLoading) {
+      console.log("[GeneratePDF] Saving directives");
+      const synthesisContent = synthesis?.free_text || freeText || "";
+      saveDirective.mutate({
+        general: responses.general,
+        lifeSupport: responses.lifeSupport,
+        advancedIllness: responses.advancedIllness,
+        preferences: responses.preferences,
+        profile,
+        trustedPersons,
+        synthesis: { free_text: synthesisContent }
+      });
+    }
+  }, [userId, responses, profile, responsesLoading, profileLoading, synthesis, freeText]);
 
   const handleBackToSummary = () => {
-    window.history.back();
+    navigate("/");
   };
 
   if (!userId) {
@@ -59,64 +80,55 @@ export default function GeneratePDF() {
           </div>
 
           <Card className="p-6">
-            <p className="text-gray-600 mb-4">
-              Vos documents sont prêts à être générés. Cliquez sur les boutons ci-dessous pour créer vos documents PDF.
-            </p>
-            
-            <PDFGenerationStatus stage={stage} progress={progress} />
-            
-            {!isLoading && !generating && (
-              <div>
-                <h3 className="text-lg font-semibold mb-3">Documents à générer</h3>
-                <div className="space-y-4">
-                  <Button
-                    onClick={startDirectiveGeneration}
-                    disabled={generating}
-                    className="flex items-center gap-2 w-full justify-center py-6"
-                  >
-                    <FileText className="h-5 w-5" />
-                    <span>Générer Mes directives anticipées</span>
-                    <ChevronRight className="h-4 w-4 ml-2" />
-                  </Button>
-                  
-                  <Button
-                    onClick={startCardGeneration}
-                    disabled={generating}
-                    variant="outline"
-                    className="flex items-center gap-2 w-full justify-center py-6"
-                  >
-                    <CreditCard className="h-5 w-5" />
-                    <span>Générer Ma carte d'accès</span>
-                    <ChevronRight className="h-4 w-4 ml-2" />
-                  </Button>
-                </div>
-              </div>
-            )}
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="directives" className="flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  Directives anticipées
+                </TabsTrigger>
+                <TabsTrigger value="card" className="flex items-center gap-2">
+                  <CreditCard className="h-4 w-4" />
+                  Carte d'accès
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="directives">
+                <p className="text-gray-600 mb-4">
+                  Voici vos directives anticipées prêtes à être générées. Cliquez sur le bouton ci-dessous pour créer votre document PDF.
+                </p>
+                {!isLoading && (
+                  <div>
+                    <h3 className="text-lg font-semibold mb-3">Document principal</h3>
+                    <FullPDFGenerator 
+                      userId={userId} 
+                      onPdfGenerated={setPdfUrl} 
+                      synthesisText={freeText || synthesis?.free_text || ""}
+                      isCard={false}
+                    />
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="card">
+                <p className="text-gray-600 mb-4">
+                  Voici votre carte d'accès prête à être générée. Cliquez sur le bouton ci-dessous pour créer votre carte au format PDF.
+                </p>
+                {!isLoading && (
+                  <div>
+                    <h3 className="text-lg font-semibold mb-3">Carte d'accès</h3>
+                    <FullPDFGenerator 
+                      userId={userId} 
+                      onPdfGenerated={setPdfUrl} 
+                      synthesisText={freeText || synthesis?.free_text || ""}
+                      isCard={true}
+                    />
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
           </Card>
         </div>
       </main>
-
-      {stage === "generating-directive" && (
-        <div className="hidden">
-          <PDFGenerator 
-            userId={userId} 
-            onPdfGenerated={handleDirectiveGenerated}
-            synthesisText={freeText || synthesis?.free_text || ""}
-            isCard={false}
-          />
-        </div>
-      )}
-      
-      {stage === "generating-card" && (
-        <div className="hidden">
-          <PDFGenerator 
-            userId={userId} 
-            onPdfGenerated={handleCardGenerated}
-            synthesisText={freeText || synthesis?.free_text || ""}
-            isCard={true}
-          />
-        </div>
-      )}
     </div>
   );
 }
