@@ -114,7 +114,7 @@ export function PDFMainGenerator({
                   action: (
                     <ToastAction 
                       altText="Voir mes documents" 
-                      onClick={() => navigate("/documents")}
+                      onClick={() => navigate("/my-documents")}
                     >
                       Voir mes documents
                     </ToastAction>
