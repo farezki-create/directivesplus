@@ -38,9 +38,14 @@ export class PDFDocumentGenerator {
         doc.text(`Prénom: ${profile.first_name || ""}`, 10, 25);
         doc.text(`Date de naissance: ${profile.birth_date || ""}`, 10, 30);
         
-        // Add unique identifier at bottom
+        // Add access information
+        doc.setFontSize(8);
+        doc.text("Accès à vos directives:", 10, 40);
+        doc.text("www.directivesplus.fr", cardDimensions.width / 2, 45, { align: "center" });
+        
+        // Add access code at bottom
         doc.setFontSize(7);
-        doc.text(`ID: ${profile.unique_identifier || ""}`, cardDimensions.width / 2, cardDimensions.height - 5, { align: "center" });
+        doc.text(`Code d'accès professionnel: ${profile.unique_identifier || ""}`, cardDimensions.width / 2, cardDimensions.height - 5, { align: "center" });
       } else {
         // Generate full document format
         doc.setFont("helvetica", "bold");
