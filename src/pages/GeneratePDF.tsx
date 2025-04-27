@@ -22,9 +22,8 @@ export default function GeneratePDF() {
   const { responses, synthesis, isLoading: responsesLoading } = useQuestionnairesResponses(userId || "");
   const { text: freeText } = useSynthesis(userId);
   const { profile, trustedPersons, loading: profileLoading } = usePDFData();
-  const { directive, isLoading: directiveLoading, saveDirective } = useDirectives(userId || "");
 
-  const isLoading = responsesLoading || profileLoading || directiveLoading;
+  const isLoading = responsesLoading || profileLoading;
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -37,22 +36,6 @@ export default function GeneratePDF() {
     };
     checkAuth();
   }, [navigate]);
-
-  useEffect(() => {
-    if (userId && responses && profile && !responsesLoading && !profileLoading) {
-      console.log("[GeneratePDF] Saving directives");
-      const synthesisContent = synthesis?.free_text || freeText || "";
-      saveDirective.mutate({
-        general: responses.general,
-        lifeSupport: responses.lifeSupport,
-        advancedIllness: responses.advancedIllness,
-        preferences: responses.preferences,
-        profile,
-        trustedPersons,
-        synthesis: { free_text: synthesisContent }
-      });
-    }
-  }, [userId, responses, profile, responsesLoading, profileLoading, synthesis, freeText]);
 
   const handleBackToSummary = () => {
     navigate("/");
