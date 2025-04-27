@@ -10,6 +10,7 @@ export class AccessCardGenerator {
     this.addUserInformation(doc, profile);
     this.addAccessCode(doc, profile);
     this.addDecorativeElements(doc);
+    this.addWebsiteLink(doc);
   }
 
   private static setBackground(doc: jsPDF): void {
@@ -82,5 +83,13 @@ export class AccessCardGenerator {
     doc.setDrawColor(...decorativeLine.color);
     doc.setLineWidth(decorativeLine.width);
     doc.line(4, 35, cardDimensions.width - 4, 35);
+  }
+
+  private static addWebsiteLink(doc: jsPDF): void {
+    const { website } = cardStyles;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(website.fontSize);
+    doc.setTextColor(...website.textColor);
+    doc.text("www.directivesplus.fr", cardDimensions.width / 2, cardDimensions.height - 10, { align: "center" });
   }
 }

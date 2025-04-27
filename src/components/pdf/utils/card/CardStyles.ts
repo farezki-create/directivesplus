@@ -12,7 +12,7 @@ export const cardStyles = {
     startY: 22
   },
   website: {
-    fontSize: 11, // Increased from 10 to 11
+    fontSize: 11,
     textColor: [79, 70, 229], // Indigo color
     positionY: 50 // Slightly lower positioning
   },
