@@ -5,18 +5,19 @@ import { PDFGenerator as FullPDFGenerator } from "@/components/PDFGenerator";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
 import { usePDFData } from "@/components/pdf/usePDFData";
-import { useDirectives } from "@/hooks/useDirectives";
 import { Card } from "@/components/ui/card";
 import { Header } from "@/components/Header";
 import { useSynthesis } from "@/hooks/useSynthesis";
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
+import { PDFGenerationOverlay } from "@/components/pdf/PDFGenerationOverlay";
 
 export default function GeneratePDF() {
   const navigate = useNavigate();
   const [userId, setUserId] = useState<string | null>(null);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
+  const [progress, setProgress] = useState(0);
 
   const { responses, synthesis, isLoading: responsesLoading } = useQuestionnairesResponses(userId || "");
   const { text: freeText } = useSynthesis(userId);
@@ -61,14 +62,18 @@ export default function GeneratePDF() {
     if (!userId || generating) return;
     
     setGenerating(true);
+    setProgress(0);
+    
     try {
       // Generate directives first
       await new Promise((resolve) => {
+        setProgress(25);
         const directives = (
           <FullPDFGenerator 
             userId={userId} 
             onPdfGenerated={(url) => {
               setPdfUrl(url);
+              setProgress(50);
               resolve(true);
             }} 
             synthesisText={freeText || synthesis?.free_text || ""}
@@ -79,11 +84,13 @@ export default function GeneratePDF() {
 
       // Then generate card
       await new Promise((resolve) => {
+        setProgress(75);
         const card = (
           <FullPDFGenerator 
             userId={userId} 
             onPdfGenerated={(url) => {
               setPdfUrl(url);
+              setProgress(100);
               resolve(true);
             }} 
             synthesisText={freeText || synthesis?.free_text || ""}
@@ -92,7 +99,10 @@ export default function GeneratePDF() {
         );
       });
     } finally {
-      setGenerating(false);
+      setTimeout(() => {
+        setGenerating(false);
+        setProgress(0);
+      }, 1000);
     }
   };
 
@@ -121,7 +131,16 @@ export default function GeneratePDF() {
             <p className="text-gray-600 mb-4">
               Vos documents sont prêts à être générés. Cliquez sur le bouton ci-dessous pour créer vos documents PDF.
             </p>
-            {!isLoading && (
+            
+            {generating && (
+              <PDFGenerationOverlay
+                isGenerating={generating}
+                progress={progress}
+                isCard={progress >= 50}
+              />
+            )}
+
+            {!isLoading && !generating && (
               <div>
                 <h3 className="text-lg font-semibold mb-3">Documents à générer</h3>
                 <Button
