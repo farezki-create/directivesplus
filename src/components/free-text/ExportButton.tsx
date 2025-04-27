@@ -45,7 +45,6 @@ export function ExportButton({ data }: ExportButtonProps) {
 
       <Button 
         onClick={handleCardClick}
-
         className="flex items-center gap-3 h-auto py-4 w-full transition-all"
       >
         <div className="bg-green-100 p-2 rounded-full">

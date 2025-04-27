@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { PDFGenerator as FullPDFGenerator } from "@/components/PDFGenerator";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuestionnairesResponses } from "@/hooks/useQuestionnairesResponses";
@@ -13,16 +13,16 @@ import { Button } from "@/components/ui/button";
 
 export default function GeneratePDF() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [userId, setUserId] = useState<string | null>(null);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [isCard, setIsCard] = useState(false);
   
   // Check if this is a card generation based on URL search params
   useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search);
     const cardParam = searchParams.get('format');
     setIsCard(cardParam === 'card');
-  }, []);
+  }, [searchParams]);
   
   const { responses, synthesis, isLoading: responsesLoading } = useQuestionnairesResponses(userId || "");
   const { text: freeText } = useSynthesis(userId);

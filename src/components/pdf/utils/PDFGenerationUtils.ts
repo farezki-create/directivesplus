@@ -17,7 +17,7 @@ export const handlePDFGeneration = async (
   trustedPersons: TrustedPerson[],
   setPdfUrl: (url: string | null) => void,
   setShowPreview: (show: boolean) => void,
-  isCard?: boolean
+  isCard: boolean = false
 ) => {
   try {
     console.log("[PDFGeneration] Starting PDF generation", isCard ? "as card" : "as full document");
@@ -28,6 +28,7 @@ export const handlePDFGeneration = async (
 
     console.log("[PDFGeneration] Profile data:", JSON.stringify(profile, null, 2));
     console.log("[PDFGeneration] Responses data:", Object.keys(responses || {}));
+    console.log("[PDFGeneration] Is card format:", isCard);
     
     if (responses?.synthesis) {
       const textLength = responses.synthesis.free_text ? responses.synthesis.free_text.length : 0;

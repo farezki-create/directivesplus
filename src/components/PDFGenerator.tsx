@@ -17,7 +17,7 @@ export function PDFGenerator({
   userId,
   onPdfGenerated,
   synthesisText,
-  isCard
+  isCard = false
 }: PDFGeneratorProps) {
   console.log("[PDFGenerator] Initializing with userId:", userId);
   console.log("[PDFGenerator] Synthesis text provided:", synthesisText ? "Yes" : "No");

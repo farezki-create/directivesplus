@@ -27,7 +27,7 @@ export function PDFMainGenerator({
   responses,
   trustedPersons,
   synthesis,
-  isCard
+  isCard = false
 }: PDFMainGeneratorProps) {
   const navigate = useNavigate();
   const { 
@@ -41,6 +41,7 @@ export function PDFMainGenerator({
 
   const generatePDF = () => {
     console.log("[PDFGenerator] Button clicked - Starting PDF generation");
+    console.log("[PDFGenerator] Is card format:", isCard);
     setIsGenerating(true);
     setProgress(10);
     
