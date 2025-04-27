@@ -1,4 +1,3 @@
-
 import { jsPDF } from "jspdf";
 import { UserProfile, TrustedPerson } from "./types";
 import { cardDimensions } from "./utils/constants/cardDimensions";
@@ -34,9 +33,9 @@ export class PDFDocumentGenerator {
         doc.setFillColor(99, 102, 241); // Indigo color
         doc.rect(0, 0, cardDimensions.width, 15, 'F');
         
-        // Header text
+        // Ajuster le titre de la carte
         doc.setFont("helvetica", "bold");
-        doc.setFontSize(11);
+        doc.setFontSize(9); // Diminuer la taille de police
         doc.setTextColor(255, 255, 255); // White text
         doc.text("CARTE D'ACCÈS AUX DIRECTIVES ANTICIPÉES", cardDimensions.width / 2, 8, { align: "center" });
         
@@ -63,32 +62,24 @@ export class PDFDocumentGenerator {
         doc.setFont("helvetica", "normal");
         doc.text(profile.birth_date || "", 32, startY + (lineHeight * 2));
         
-        // Add access information with improved styling
-        doc.setFillColor(243, 244, 246); // Light gray background
-        doc.roundedRect(6, 38, cardDimensions.width - 12, 10, 1, 1, 'F');
-        
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(8);
-        doc.setTextColor(31, 41, 55);
-        doc.text("Accès à vos directives:", cardDimensions.width / 2, 43, { align: "center" });
-        
-        // Website URL with better styling
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(10);
-        doc.setTextColor(79, 70, 229); // Indigo color for URL
-        doc.text("www.directivesplus.fr", cardDimensions.width / 2, 48, { align: "center" });
-        
-        // Add professional access code at bottom with a subtle background
+        // Ajuster la section du code d'accès professionnel
         doc.setFillColor(243, 244, 246);
         doc.roundedRect(4, cardDimensions.height - 10, cardDimensions.width - 8, 7, 1, 1, 'F');
         
-        doc.setFontSize(7);
+        doc.setFontSize(9); // Augmenter la taille de police pour le code d'accès
         doc.setTextColor(31, 41, 55);
         doc.setFont("helvetica", "bold");
-        doc.text("Code d'accès professionnel:", 6, cardDimensions.height - 5);
+        doc.text("Code d'accès professionnel:", cardDimensions.width / 2, cardDimensions.height - 7, { align: "center" });
+        
         doc.setFont("helvetica", "normal");
         const accessCode = profile.unique_identifier || "";
-        doc.text(accessCode, 45, cardDimensions.height - 5);
+        doc.text(accessCode, cardDimensions.width / 2, cardDimensions.height - 3, { align: "center" });
+        
+        // Réajouter le lien www.directivesplus.fr
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8);
+        doc.setTextColor(79, 70, 229); // Indigo color for URL
+        doc.text("www.directivesplus.fr", cardDimensions.width / 2, 48, { align: "center" });
         
         // Add decorative elements
         doc.setDrawColor(99, 102, 241); // Indigo color
