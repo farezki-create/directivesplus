@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { handlePDFGeneration } from "./utils/PDFGenerationUtils";
 import { UserProfile, TrustedPerson } from "./types";
@@ -6,6 +7,7 @@ import { PDFGenerationButtons } from "./PDFGenerationButtons";
 import { PDFGeneratorStatus } from "./PDFGeneratorStatus";
 import { usePDFGenerationState } from "./usePDFGenerationState";
 import { useNavigate } from "react-router-dom";
+import { ToastAction } from "@/components/ui/toast";
 
 interface PDFMainGeneratorProps {
   userId: string;
@@ -109,10 +111,14 @@ export function PDFMainGenerator({
                 toast({
                   title: isCard ? "Carte d'accès générée" : "Directives anticipées générées",
                   description: "Vos documents sont maintenant disponibles dans 'Mes Documents'.",
-                  action: {
-                    label: "Voir mes documents",
-                    onClick: () => navigate("/documents")
-                  }
+                  action: (
+                    <ToastAction 
+                      altText="Voir mes documents" 
+                      onClick={() => navigate("/documents")}
+                    >
+                      Voir mes documents
+                    </ToastAction>
+                  )
                 });
               } else {
                 console.error("[PDFGenerator] PDF generation failed - no URL returned");
