@@ -1,3 +1,4 @@
+
 import { z } from "zod";
 
 /**
@@ -7,15 +8,21 @@ export const medicalQuestionnaireSchema = z.object({
   nom: z.string().optional(),
   prenom: z.string().optional(),
   date_naissance: z.string().optional(),
+  sexe: z.enum(["H", "F", "Autre"]).optional(),
+  secu: z.string().optional(),
   adresse: z.string().optional(),
   telephone: z.string().optional(),
+  personne_prevenir: z.string().optional(),
   motif: z.string().optional(),
   debut_symptomes: z.string().optional(),
   evolution: z.enum(["aggravation", "amelioration", "stable"]).optional(),
   symptomes: z.array(z.string()).optional(),
   autres_symptomes: z.string().optional(),
   pathologies: z.array(z.string()).optional(),
+  antecedents: z.string().optional(),
   chirurgies: z.array(z.string()).optional(),
+  autres_chirurgies: z.string().optional(),
+  hospitalisations: z.string().optional(),
   allergies: z.array(z.string()).optional(),
   autres_allergies: z.string().optional(),
   traitements: z.string().optional(),
@@ -59,4 +66,36 @@ export const allergiesList = [
   "Piqûres d'insectes",
   "Latex",
   "Autres",
+];
+
+/**
+ * List of possible pathologies
+ */
+export const pathologiesList = [
+  "Hypertension artérielle",
+  "Diabète",
+  "Asthme",
+  "Maladie cardiaque",
+  "Cancer",
+  "Maladie rénale",
+  "Maladie hépatique",
+  "Maladie auto-immune",
+  "Maladie neurologique",
+  "Dépression/Anxiété",
+  "Autres"
+];
+
+/**
+ * List of possible chirurgies
+ */
+export const chirurgiesList = [
+  "Appendicectomie",
+  "Amygdalectomie",
+  "Cholécystectomie",
+  "Chirurgie cardiaque",
+  "Chirurgie orthopédique",
+  "Césarienne",
+  "Chirurgie abdominale",
+  "Neurochirurgie",
+  "Autres"
 ];
