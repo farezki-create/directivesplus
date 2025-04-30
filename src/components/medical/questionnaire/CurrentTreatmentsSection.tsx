@@ -8,9 +8,11 @@ import {
   FormLabel,
   FormControl,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { MedicalQuestionnaireData } from "../schemas/medicalQuestionnaireSchema";
+import { ExternalLink } from "lucide-react";
 
 interface CurrentTreatmentsSectionProps {
   control: Control<MedicalQuestionnaireData>;
@@ -35,6 +37,17 @@ export function CurrentTreatmentsSection({ control }: CurrentTreatmentsSectionPr
           </FormItem>
         )}
       />
+      <div className="py-2">
+        <a 
+          href="https://www.directivesplus.fr" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
+        >
+          <span>Rédiger mes directives anticipées</span> 
+          <ExternalLink size={14} />
+        </a>
+      </div>
       <Separator />
     </div>
   );

@@ -8,6 +8,7 @@ import {
   FormLabel,
   FormControl,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
@@ -18,17 +19,22 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { MedicalQuestionnaireData } from "../schemas/medicalQuestionnaireSchema";
+import { ExternalLink } from "lucide-react";
 
 interface GeneralInformationSectionProps {
   control: Control<MedicalQuestionnaireData>;
+  isLoading?: boolean;
 }
 
-export function GeneralInformationSection({ control }: GeneralInformationSectionProps) {
+export function GeneralInformationSection({ control, isLoading = false }: GeneralInformationSectionProps) {
   return (
     <div className="space-y-4">
       <h2 className="text-lg font-bold py-2 px-4 bg-blue-500 text-white rounded-md">
         1. Informations générales
       </h2>
+      {isLoading ? (
+        <div className="text-sm italic text-gray-500 p-2">Chargement de vos informations...</div>
+      ) : null}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField
           control={control}
@@ -139,6 +145,17 @@ export function GeneralInformationSection({ control }: GeneralInformationSection
               <FormControl>
                 <Input placeholder="Nom et téléphone" {...field} />
               </FormControl>
+              <FormDescription>
+                <a 
+                  href="https://www.directivesplus.fr" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                >
+                  <span>Désigner une personne de confiance</span> 
+                  <ExternalLink size={14} />
+                </a>
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}

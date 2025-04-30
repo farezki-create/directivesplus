@@ -8,12 +8,14 @@ import {
   FormLabel,
   FormControl,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { MedicalQuestionnaireData, dispositifsList } from "../schemas/medicalQuestionnaireSchema";
 import { CheckboxGroup, CheckboxGroupItem } from "@/components/ui/checkbox-group";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { ExternalLink } from "lucide-react";
 
 interface SpecialFeaturesSectionProps {
   control: Control<MedicalQuestionnaireData>;
@@ -64,6 +66,17 @@ export function SpecialFeaturesSection({ control }: SpecialFeaturesSectionProps)
             <FormControl>
               <Textarea placeholder="Précisez vos directives ou personne de confiance" {...field} />
             </FormControl>
+            <FormDescription>
+              <a 
+                href="https://www.directivesplus.fr" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
+              >
+                <span>Rédiger mes directives anticipées en ligne</span> 
+                <ExternalLink size={14} />
+              </a>
+            </FormDescription>
             <FormMessage />
           </FormItem>
         )}

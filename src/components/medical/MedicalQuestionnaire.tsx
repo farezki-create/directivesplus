@@ -1,7 +1,5 @@
 
 import React from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
@@ -15,10 +13,9 @@ import { CurrentTreatmentsSection } from "./questionnaire/CurrentTreatmentsSecti
 import { FamilyHistorySection } from "./questionnaire/FamilyHistorySection";
 import { LifestyleSection } from "./questionnaire/LifestyleSection";
 import { SpecialFeaturesSection } from "./questionnaire/SpecialFeaturesSection";
-import { medicalQuestionnaireSchema } from "./schemas/medicalQuestionnaireSchema";
 
 export function MedicalQuestionnaire() {
-  const { form, onSubmit } = useMedicalQuestionnaire();
+  const { form, onSubmit, isLoading } = useMedicalQuestionnaire();
 
   return (
     <Card className="mb-8">
@@ -28,7 +25,7 @@ export function MedicalQuestionnaire() {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            <GeneralInformationSection control={form.control} />
+            <GeneralInformationSection control={form.control} isLoading={isLoading} />
             <ConsultationReasonSection control={form.control} />
             <SymptomsSection control={form.control} />
             <MedicalHistorySection control={form.control} />
@@ -36,7 +33,6 @@ export function MedicalQuestionnaire() {
             <CurrentTreatmentsSection control={form.control} />
             <FamilyHistorySection control={form.control} />
             <LifestyleSection control={form.control} />
-            {/* Removed SocialContextSection */}
             <SpecialFeaturesSection control={form.control} />
 
             <div className="flex justify-end pt-4">

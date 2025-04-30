@@ -16,7 +16,7 @@ export function useMedicalQuestionnaire() {
   const navigate = useNavigate();
   const { saveMedicalData } = useMedicalData(user?.id || "");
   const { toast } = useToast();
-  const { form } = useQuestionnaireForm();
+  const { form, isLoading } = useQuestionnaireForm();
   const { generatePDF } = usePDFGeneration();
   const { generateCSV } = useCSVGeneration();
 
@@ -66,5 +66,5 @@ export function useMedicalQuestionnaire() {
     }
   };
 
-  return { form, onSubmit };
+  return { form, onSubmit, isLoading };
 }
