@@ -116,3 +116,22 @@ export const dispositifsList = [
   "Cathéter veineux central implantable (chambre implantable, type Port-à-Cath)",
   "Pompe à insuline"
 ];
+
+// Liste des motifs de consultation pour le menu déroulant
+export const motifsList = [
+  "Douleur abdominale",
+  "Douleur thoracique",
+  "Fièvre",
+  "Dyspnée / gêne respiratoire",
+  "Toux",
+  "Douleurs ostéo-articulaires (dos, genou, épaule, etc.)",
+  "Céphalées / maux de tête",
+  "Vertiges / troubles de l'équilibre",
+  "Fatigue / asthénie",
+  "Palpitations",
+  "Plaies / traumatismes / chutes",
+  "Problèmes urinaires (brûlures, douleurs, infections)",
+  "Éruption cutanée / prurit / allergie",
+  "Troubles digestifs (nausées, vomissements, diarrhée, constipation)",
+  "Troubles neurologiques aigus (troubles de la parole, paralysie, confusion...)"
+];

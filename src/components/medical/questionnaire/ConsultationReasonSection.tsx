@@ -18,7 +18,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MedicalQuestionnaireData } from "../schemas/medicalQuestionnaireSchema";
+import { 
+  MedicalQuestionnaireData, 
+  motifsList 
+} from "../schemas/medicalQuestionnaireSchema";
 
 interface ConsultationReasonSectionProps {
   control: Control<MedicalQuestionnaireData>;
@@ -37,9 +40,23 @@ export function ConsultationReasonSection({ control }: ConsultationReasonSection
           render={({ field }) => (
             <FormItem>
               <FormLabel>Motif principal</FormLabel>
-              <FormControl>
-                <Textarea placeholder="Décrivez le motif principal de votre consultation" {...field} />
-              </FormControl>
+              <Select 
+                onValueChange={field.onChange}
+                defaultValue={field.value}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="-- Choisir un motif --" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {motifsList.map((motif) => (
+                    <SelectItem key={motif} value={motif}>
+                      {motif}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <FormMessage />
             </FormItem>
           )}

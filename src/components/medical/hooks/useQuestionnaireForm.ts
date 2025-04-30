@@ -8,12 +8,14 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 /**
  * Hook for creating and managing the medical questionnaire form
  */
 export function useQuestionnaireForm() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   
   const form = useForm<MedicalQuestionnaireData>({
@@ -36,34 +38,46 @@ export function useQuestionnaireForm() {
       setIsLoading(true);
       try {
         // Récupérer les données du profil
-        const { data: profileData } = await supabase
+        const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', user.id)
           .single();
 
-        if (profileData) {
+        if (profileError) {
+          console.error("Erreur lors de la récupération du profil:", profileError);
+        } else if (profileData) {
           form.setValue('nom', profileData.last_name || '');
           form.setValue('prenom', profileData.first_name || '');
           form.setValue('date_naissance', profileData.birth_date || '');
           form.setValue('adresse', profileData.address || '');
           form.setValue('telephone', profileData.phone_number || '');
+          
+          // Notification pour informer l'utilisateur
+          toast({
+            title: "Informations récupérées",
+            description: "Vos données personnelles ont été automatiquement remplies.",
+          });
         }
         
         // Récupérer les données médicales existantes
-        const { data: medicalData } = await supabase
+        const { data: medicalData, error: medicalError } = await supabase
           .from('medical_data')
           .select('*')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
           .limit(1);
         
-        // Si on a trouvé des données médicales précédentes, on peut les utiliser pour pré-remplir
-        if (medicalData && medicalData.length > 0) {
+        if (medicalError) {
+          console.error("Erreur lors de la récupération des données médicales:", medicalError);
+        } else if (medicalData && medicalData.length > 0) {
           const latestData = medicalData[0];
           // Les données sont cryptées, donc on ne peut pas les utiliser directement
           // Cette partie est juste pour illustration
           console.log("Données médicales existantes trouvées:", latestData.id);
+          
+          // Note: Pour utiliser réellement ces données, il faudrait les décrypter côté serveur
+          // et les renvoyer au client de manière sécurisée
         }
 
       } catch (error) {
@@ -74,7 +88,7 @@ export function useQuestionnaireForm() {
     };
     
     fetchUserData();
-  }, [user, form]);
+  }, [user, form, toast]);
 
   return { form, isLoading };
 }
