@@ -26,6 +26,7 @@ export function usePDFStorage(userId: string | null) {
 
       setIsTransferringToCloud(true);
       
+      // savePDFToStorage should return a string ID, not a boolean
       const externalId = await savePDFToStorage(pdfDataUrl, userId, profile);
       
       if (externalId) {
@@ -82,10 +83,10 @@ export function usePDFStorage(userId: string | null) {
         throw profileError;
       }
       
-      // Sync synthesis data
+      // Sync synthesis data - await the result but we don't need to store it
       await syncSynthesisToCloud(userId);
       
-      // Upload the PDF
+      // Upload the PDF - savePDFToStorage should return a string ID
       const externalId = await savePDFToStorage(pdfUrl, userId, profile);
       
       if (externalId) {
