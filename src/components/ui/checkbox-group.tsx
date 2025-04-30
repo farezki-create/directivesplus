@@ -11,28 +11,35 @@ export interface CheckboxGroupProps {
   className?: string
 }
 
-export const CheckboxGroup = ({ 
-  value = [], 
-  onValueChange,
-  children,
-  className
-}: CheckboxGroupProps) => {
-  const handleValueChange = (itemValue: string, checked: boolean) => {
-    if (!onValueChange) return;
-    
-    if (checked) {
-      onValueChange([...value, itemValue]);
-    } else {
-      onValueChange(value.filter(v => v !== itemValue));
-    }
-  };
-
-  return (
-    <div className={cn("flex flex-col space-y-2", className)}>
-      {children}
-    </div>
+export const CheckboxGroup = React.forwardRef<
+  HTMLDivElement,
+  CheckboxGroupProps
+>(({ value = [], onValueChange, children, className }, ref) => {
+  const groupContext = React.useMemo(
+    () => ({ value, onValueChange }),
+    [value, onValueChange]
   );
+  
+  return (
+    <CheckboxGroupContext.Provider value={groupContext}>
+      <div ref={ref} className={cn("flex flex-col space-y-2", className)}>
+        {children}
+      </div>
+    </CheckboxGroupContext.Provider>
+  );
+});
+
+CheckboxGroup.displayName = "CheckboxGroup";
+
+// Create context for checkbox group
+type CheckboxGroupContextType = {
+  value?: string[];
+  onValueChange?: (value: string[]) => void;
 };
+
+const CheckboxGroupContext = React.createContext<CheckboxGroupContextType>({});
+
+export const useCheckboxGroup = () => React.useContext(CheckboxGroupContext);
 
 export interface CheckboxGroupItemProps extends React.ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root> {
   value: string;
@@ -43,12 +50,20 @@ export const CheckboxGroupItem = React.forwardRef<
   CheckboxGroupItemProps
 >(({ className, value, ...props }, ref) => {
   
-  // Access parent context if needed
-  const parent = React.useContext(
-    React.createContext<{ value?: string[] }>({ value: [] })
-  );
+  // Access parent context
+  const { value: groupValue = [], onValueChange } = useCheckboxGroup();
   
-  const isChecked = parent.value?.includes(value);
+  const isChecked = groupValue.includes(value);
+  
+  const handleCheckedChange = (checked: boolean) => {
+    if (!onValueChange) return;
+    
+    if (checked) {
+      onValueChange([...groupValue, value]);
+    } else {
+      onValueChange(groupValue.filter(v => v !== value));
+    }
+  };
 
   return (
     <CheckboxPrimitive.Root
@@ -58,6 +73,7 @@ export const CheckboxGroupItem = React.forwardRef<
         className
       )}
       checked={isChecked}
+      onCheckedChange={handleCheckedChange}
       value={value}
       {...props}
     >

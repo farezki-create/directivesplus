@@ -14,7 +14,6 @@ import { AllergiesSection } from "./questionnaire/AllergiesSection";
 import { CurrentTreatmentsSection } from "./questionnaire/CurrentTreatmentsSection";
 import { FamilyHistorySection } from "./questionnaire/FamilyHistorySection";
 import { LifestyleSection } from "./questionnaire/LifestyleSection";
-import { SocialContextSection } from "./questionnaire/SocialContextSection";
 import { SpecialFeaturesSection } from "./questionnaire/SpecialFeaturesSection";
 import { medicalQuestionnaireSchema } from "./schemas/medicalQuestionnaireSchema";
 
@@ -37,7 +36,7 @@ export function MedicalQuestionnaire() {
             <CurrentTreatmentsSection control={form.control} />
             <FamilyHistorySection control={form.control} />
             <LifestyleSection control={form.control} />
-            <SocialContextSection control={form.control} />
+            {/* Removed SocialContextSection */}
             <SpecialFeaturesSection control={form.control} />
 
             <div className="flex justify-end pt-4">

@@ -18,6 +18,7 @@ export function useQuestionnaireForm() {
       pathologies: [],
       chirurgies: [],
       allergies: [],
+      dispositifs: [],
     },
   });
 

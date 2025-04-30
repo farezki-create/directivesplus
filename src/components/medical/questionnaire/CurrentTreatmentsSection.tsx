@@ -35,19 +35,6 @@ export function CurrentTreatmentsSection({ control }: CurrentTreatmentsSectionPr
           </FormItem>
         )}
       />
-      <FormField
-        control={control}
-        name="modif_traitements"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Modifications récentes</FormLabel>
-            <FormControl>
-              <Textarea placeholder="Indiquez les modifications récentes de traitement" {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
       <Separator />
     </div>
   );

@@ -11,8 +11,7 @@ import {
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { MedicalQuestionnaireData, allergiesList } from "../schemas/medicalQuestionnaireSchema";
-import { CheckboxGroup } from "@/components/ui/checkbox-group";
-import { CheckboxGroupItem } from "@/components/ui/checkbox-group";
+import { CheckboxGroup, CheckboxGroupItem } from "@/components/ui/checkbox-group";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -58,38 +57,12 @@ export function AllergiesSection({ control }: AllergiesSectionProps) {
       
       <FormField
         control={control}
-        name="allergies_medicaments"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Autres allergies médicamenteuses</FormLabel>
-            <FormControl>
-              <Textarea placeholder="Autres allergies aux médicaments non listées ci-dessus" {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-      <FormField
-        control={control}
-        name="allergies_aliments"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Autres allergies alimentaires</FormLabel>
-            <FormControl>
-              <Textarea placeholder="Autres allergies alimentaires non listées ci-dessus" {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-      <FormField
-        control={control}
         name="autres_allergies"
         render={({ field }) => (
           <FormItem>
             <FormLabel>Autres allergies</FormLabel>
             <FormControl>
-              <Textarea placeholder="Autres types d'allergies non listées ci-dessus" {...field} />
+              <Textarea placeholder="Autres allergies non listées ci-dessus" {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>

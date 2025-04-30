@@ -10,7 +10,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
-import { MedicalQuestionnaireData } from "../schemas/medicalQuestionnaireSchema";
+import { MedicalQuestionnaireData, dispositifsList } from "../schemas/medicalQuestionnaireSchema";
+import { CheckboxGroup, CheckboxGroupItem } from "@/components/ui/checkbox-group";
+import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface SpecialFeaturesSectionProps {
   control: Control<MedicalQuestionnaireData>;
@@ -20,21 +23,38 @@ export function SpecialFeaturesSection({ control }: SpecialFeaturesSectionProps)
   return (
     <div className="space-y-4">
       <h2 className="text-lg font-bold py-2 px-4 bg-blue-500 text-white rounded-md">
-        10. Particularités
+        9. Particularités
       </h2>
+      
       <FormField
         control={control}
         name="dispositifs"
         render={({ field }) => (
-          <FormItem>
-            <FormLabel>Dispositifs médicaux implantés</FormLabel>
+          <FormItem className="border rounded-md p-4 space-y-4">
+            <FormLabel className="text-base font-semibold">Dispositifs médicaux implantés</FormLabel>
             <FormControl>
-              <Textarea placeholder="Pacemaker, prothèses, etc." {...field} />
+              <ScrollArea className="h-60 border rounded-md p-2">
+                <CheckboxGroup 
+                  value={field.value || []}
+                  onValueChange={field.onChange}
+                  className="space-y-2"
+                >
+                  {dispositifsList.map((dispositif) => (
+                    <div key={dispositif} className="flex items-start space-x-2">
+                      <CheckboxGroupItem value={dispositif} id={`dispositif-${dispositif}`} />
+                      <Label htmlFor={`dispositif-${dispositif}`} className="text-sm leading-tight">
+                        {dispositif}
+                      </Label>
+                    </div>
+                  ))}
+                </CheckboxGroup>
+              </ScrollArea>
             </FormControl>
             <FormMessage />
           </FormItem>
         )}
       />
+      
       <FormField
         control={control}
         name="directives"

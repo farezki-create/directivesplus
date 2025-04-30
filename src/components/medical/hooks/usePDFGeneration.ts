@@ -68,10 +68,6 @@ export function usePDFGeneration() {
       pdfDoc.text(`Évolution: ${data.evolution}`, 25, y);
       y += 8;
     }
-    if (data.contexte) {
-      pdfDoc.text(`Contexte déclencheur: ${data.contexte}`, 25, y);
-      y += 8;
-    }
 
     y += 5;
 
@@ -141,14 +137,12 @@ export function usePDFGeneration() {
     pdfDoc.text("5. Allergies", 20, y);
     pdfDoc.setFont("helvetica", "normal");
     y += 10;
-    if (data.allergies_medicaments) {
-      pdfDoc.text(`Médicaments: ${data.allergies_medicaments}`, 25, y);
+    
+    if (data.allergies && data.allergies.length > 0) {
+      pdfDoc.text(`Allergies connues: ${data.allergies.join(', ')}`, 25, y);
       y += 8;
     }
-    if (data.allergies_aliments) {
-      pdfDoc.text(`Aliments: ${data.allergies_aliments}`, 25, y);
-      y += 8;
-    }
+    
     if (data.autres_allergies) {
       pdfDoc.text(`Autres allergies: ${data.autres_allergies}`, 25, y);
       y += 8;
@@ -164,10 +158,6 @@ export function usePDFGeneration() {
     y += 10;
     if (data.traitements) {
       pdfDoc.text(`Médicaments habituels: ${data.traitements}`, 25, y);
-      y += 8;
-    }
-    if (data.modif_traitements) {
-      pdfDoc.text(`Modifications récentes: ${data.modif_traitements}`, 25, y);
       y += 8;
     }
 
@@ -215,35 +205,17 @@ export function usePDFGeneration() {
 
     y += 5;
 
+    // Section 9 - Supprimé car contexte social est à supprimer
+
     // Check if we need a new page
     if (y > 250) {
       pdfDoc.addPage();
       y = 20;
     }
 
-    // Section 9
+    // Section 10 (maintenant Section 9 après suppression)
     pdfDoc.setFont("helvetica", "bold");
-    pdfDoc.text("9. Contexte social", 20, y);
-    pdfDoc.setFont("helvetica", "normal");
-    y += 10;
-    if (data.vie_seul) {
-      pdfDoc.text(`Vie seul(e): ${data.vie_seul}`, 25, y);
-      y += 8;
-    }
-    if (data.profession) {
-      pdfDoc.text(`Profession: ${data.profession}`, 25, y);
-      y += 8;
-    }
-    if (data.couverture) {
-      pdfDoc.text(`Couverture sociale: ${data.couverture}`, 25, y);
-      y += 8;
-    }
-
-    y += 5;
-
-    // Section 10
-    pdfDoc.setFont("helvetica", "bold");
-    pdfDoc.text("10. Particularités", 20, y);
+    pdfDoc.text("9. Particularités", 20, y);
     pdfDoc.setFont("helvetica", "normal");
     y += 10;
     if (data.dispositifs) {

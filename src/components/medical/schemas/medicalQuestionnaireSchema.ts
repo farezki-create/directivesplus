@@ -31,13 +31,12 @@ export const medicalQuestionnaireSchema = z.object({
 
   // Section 5: Allergies
   allergies: z.array(z.string()).optional().default([]),
-  allergies_medicaments: z.string().optional(),
-  allergies_aliments: z.string().optional(),
   autres_allergies: z.string().optional(),
+  // Suppression des champs allergies_medicaments et allergies_aliments
 
   // Section 6: Traitements en cours
   traitements: z.string().optional(),
-  modif_traitements: z.string().optional(),
+  // Suppression du champ modif_traitements
 
   // Section 7: Antécédents familiaux
   famille: z.array(z.string()).optional().default([]),
@@ -48,13 +47,8 @@ export const medicalQuestionnaireSchema = z.object({
   drogues: z.string().optional(),
   activite_physique: z.string().optional(),
 
-  // Section 9: Contexte social
-  vie_seul: z.string().optional(),
-  profession: z.string().optional(),
-  couverture: z.string().optional(),
-
-  // Section 10: Particularités
-  dispositifs: z.string().optional(),
+  // Section 9: Particularités (ancien Section 10, Section 9 contexte social a été supprimé)
+  dispositifs: z.array(z.string()).optional().default([]),
   directives: z.string().optional(),
 });
 
@@ -109,4 +103,16 @@ export const allergiesList = [
   "Allergie au pollen (rhume des foins)",
   "Allergie aux acariens",
   "Allergie aux piqûres d'insectes (guêpe, abeille…)"
+];
+
+// Liste des dispositifs médicaux pour le menu déroulant
+export const dispositifsList = [
+  "Pacemaker (stimulateur cardiaque)",
+  "Défibrillateur implantable (DAI ou ICD)",
+  "Prothèse totale de hanche (PTH)",
+  "Prothèse totale de genou (PTG)",
+  "Stents coronaires (ou autres stents vasculaires)",
+  "Valves cardiaques mécaniques ou biologiques",
+  "Cathéter veineux central implantable (chambre implantable, type Port-à-Cath)",
+  "Pompe à insuline"
 ];
