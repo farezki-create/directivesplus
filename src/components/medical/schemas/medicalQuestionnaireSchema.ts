@@ -16,7 +16,7 @@ export const medicalQuestionnaireSchema = z.object({
   motif: z.string().optional(),
   debut_symptomes: z.string().optional(),
   evolution: z.string().optional(),
-  contexte: z.string().optional(),
+  // Le champ contexte a été supprimé
 
   // Section 3: Symptômes associés
   symptomes: z.array(z.string()).optional().default([]),
@@ -30,6 +30,7 @@ export const medicalQuestionnaireSchema = z.object({
   hospitalisations: z.string().optional(),
 
   // Section 5: Allergies
+  allergies: z.array(z.string()).optional().default([]),
   allergies_medicaments: z.string().optional(),
   allergies_aliments: z.string().optional(),
   autres_allergies: z.string().optional(),
@@ -94,4 +95,18 @@ export const chirurgiesList = [
   "Chirurgie de fracture (ostéosynthèse)",
   "Tonsillectomie / adénoïdectomie (amygdales / végétations)",
   "Mastectomie ou chirurgie mammaire (cancer, reconstruction…)"
+];
+
+// Liste des allergies pour le menu déroulant
+export const allergiesList = [
+  "Allergie à la pénicilline (et autres antibiotiques bêta-lactamines)",
+  "Allergie à l'aspirine (AINS)",
+  "Allergie au latex",
+  "Allergie aux fruits à coque (arachides, noix, amandes…)",
+  "Allergie aux fruits de mer / crustacés",
+  "Allergie aux œufs",
+  "Allergie au lait de vache (protéines)",
+  "Allergie au pollen (rhume des foins)",
+  "Allergie aux acariens",
+  "Allergie aux piqûres d'insectes (guêpe, abeille…)"
 ];

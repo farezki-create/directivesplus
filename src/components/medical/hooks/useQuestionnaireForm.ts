@@ -17,6 +17,7 @@ export function useQuestionnaireForm() {
       famille: [],
       pathologies: [],
       chirurgies: [],
+      allergies: [],
     },
   });
 

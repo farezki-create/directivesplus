@@ -79,19 +79,6 @@ export function ConsultationReasonSection({ control }: ConsultationReasonSection
             </FormItem>
           )}
         />
-        <FormField
-          control={control}
-          name="contexte"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Contexte déclencheur</FormLabel>
-              <FormControl>
-                <Textarea placeholder="Décrivez les circonstances d'apparition des symptômes" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
       </div>
       <Separator />
     </div>
