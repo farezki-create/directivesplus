@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -89,6 +90,8 @@ export function usePDFStorage(userId: string | null) {
       const externalId = await savePDFToStorage(pdfUrl, userId, profile);
       
       if (externalId) {
+        setExternalDocumentId(externalId);
+        
         toast({
           title: "Synchronisation réussie",
           description: "Vos documents ont été synchronisés avec la base de données cloud.",

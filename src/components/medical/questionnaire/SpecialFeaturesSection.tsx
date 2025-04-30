@@ -1,44 +1,35 @@
 
-import React from "react";
-import { Control } from "react-hook-form";
-import { Separator } from "@/components/ui/separator";
-import {
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from "@/components/ui/form";
+import { FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { CheckboxGroup } from "@/components/ui/checkbox-group";
-import { MedicalQuestionnaireData, dispositifsList } from "../schemas/medicalQuestionnaireSchema";
-import { ExternalLink } from "lucide-react";
+import { Control } from "react-hook-form";
+import { MedicalQuestionnaireData } from "../schemas/medicalQuestionnaireSchema";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface SpecialFeaturesSectionProps {
   control: Control<MedicalQuestionnaireData>;
 }
 
+/**
+ * Special features section of the medical questionnaire form
+ */
 export function SpecialFeaturesSection({ control }: SpecialFeaturesSectionProps) {
   return (
-    <div className="space-y-4">
-      <h2 className="text-lg font-bold py-2 px-4 bg-blue-500 text-white rounded-md">
-        9. Particularités
-      </h2>
+    <div className="space-y-4 border p-4 rounded-md">
+      <h3 className="text-lg font-medium">Particularités</h3>
       
       <FormField
         control={control}
         name="dispositifs"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Dispositifs médicaux implantables</FormLabel>
+            <FormLabel>Dispositifs médicaux implantés</FormLabel>
             <FormControl>
-              <CheckboxGroup
-                options={dispositifsList}
-                selected={field.value || []}
-                onChange={field.onChange}
+              <Textarea 
+                placeholder="Pacemaker, pompe à insuline, prothèse, etc."
+                {...field}
               />
             </FormControl>
-            <FormMessage />
           </FormItem>
         )}
       />
@@ -48,31 +39,26 @@ export function SpecialFeaturesSection({ control }: SpecialFeaturesSectionProps)
         name="directives"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Directives anticipées</FormLabel>
+            <FormLabel>
+              Directives anticipées ou personne de confiance
+              <a 
+                href="https://www.directivesplus.fr" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="ml-2 text-blue-600 hover:underline"
+              >
+                www.directivesplus.fr
+              </a>
+            </FormLabel>
             <FormControl>
               <Textarea 
-                placeholder="Avez-vous rédigé des directives anticipées?" 
-                {...field} 
+                placeholder="Avez-vous rédigé des directives anticipées ou désigné une personne de confiance ?"
+                {...field}
               />
             </FormControl>
-            <FormMessage />
           </FormItem>
         )}
       />
-      
-      <div className="py-2">
-        <a 
-          href="https://www.directivesplus.fr" 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
-        >
-          <span>Désigner ma personne de confiance</span> 
-          <ExternalLink size={14} />
-        </a>
-      </div>
-      
-      <Separator />
     </div>
   );
 }

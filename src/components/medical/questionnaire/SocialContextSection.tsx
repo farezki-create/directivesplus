@@ -1,82 +1,98 @@
 
-import React from "react";
-import { Control } from "react-hook-form";
-import { Separator } from "@/components/ui/separator";
-import {
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from "@/components/ui/form";
+import { FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Control } from "react-hook-form";
 import { MedicalQuestionnaireData } from "../schemas/medicalQuestionnaireSchema";
 
 interface SocialContextSectionProps {
   control: Control<MedicalQuestionnaireData>;
 }
 
+/**
+ * Social context section of the medical questionnaire
+ * Note: This component is currently not used in the main form
+ */
 export function SocialContextSection({ control }: SocialContextSectionProps) {
+  const livingOptions = [
+    { value: "seul", label: "Seul(e)" },
+    { value: "famille", label: "En famille" },
+    { value: "couple", label: "En couple" },
+    { value: "autre", label: "Autre" }
+  ];
+
+  const insuranceOptions = [
+    { value: "securite_sociale", label: "Sécurité sociale" },
+    { value: "mutuelle", label: "Mutuelle complémentaire" },
+    { value: "ame", label: "AME" },
+    { value: "cmu", label: "CMU" },
+    { value: "aucune", label: "Aucune" }
+  ];
+
   return (
-    <div className="space-y-4">
-      <h2 className="text-lg font-bold py-2 px-4 bg-blue-500 text-white rounded-md">
-        9. Contexte social
-      </h2>
+    <div className="space-y-4 border p-4 rounded-md">
+      <h3 className="text-lg font-medium">Contexte social</h3>
+      
       <FormField
         control={control}
-        name="vie_seul"
+        name="contexte_social.vie" // Using nested object
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Vie seul(e) ?</FormLabel>
+            <FormLabel>Mode de vie</FormLabel>
             <Select onValueChange={field.onChange} defaultValue={field.value}>
               <FormControl>
                 <SelectTrigger>
-                  <SelectValue placeholder="--" />
+                  <SelectValue placeholder="Sélectionnez" />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                <SelectItem value="non">Non</SelectItem>
-                <SelectItem value="oui">Oui</SelectItem>
+                {livingOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
-            <FormMessage />
           </FormItem>
         )}
       />
+      
       <FormField
         control={control}
-        name="profession"
+        name="contexte_social.profession" // Using nested object
         render={({ field }) => (
           <FormItem>
             <FormLabel>Profession</FormLabel>
             <FormControl>
-              <Input placeholder="Votre profession" {...field} />
+              <Input placeholder="Profession actuelle" {...field} />
             </FormControl>
-            <FormMessage />
           </FormItem>
         )}
       />
+      
       <FormField
         control={control}
-        name="couverture"
+        name="contexte_social.couverture" // Using nested object
         render={({ field }) => (
           <FormItem>
             <FormLabel>Couverture sociale</FormLabel>
-            <FormControl>
-              <Input placeholder="Détails sur votre couverture sociale" {...field} />
-            </FormControl>
-            <FormMessage />
+            <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <FormControl>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sélectionnez" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                {insuranceOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </FormItem>
         )}
       />
-      <Separator />
     </div>
   );
 }
