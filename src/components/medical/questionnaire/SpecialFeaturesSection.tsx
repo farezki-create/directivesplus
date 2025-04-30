@@ -48,6 +48,7 @@ export function SpecialFeaturesSection({ control }: SpecialFeaturesSectionProps)
           </FormItem>
         )}
       />
+      <Separator />
     </div>
   );
 }

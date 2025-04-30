@@ -8,9 +8,11 @@ import {
   FormLabel,
   FormControl,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
-import { MedicalQuestionnaireData } from "../schemas/medicalQuestionnaireSchema";
+import { Checkbox } from "@/components/ui/checkbox";
+import { MedicalQuestionnaireData, pathologiesList } from "../schemas/medicalQuestionnaireSchema";
 
 interface MedicalHistorySectionProps {
   control: Control<MedicalQuestionnaireData>;
@@ -22,19 +24,70 @@ export function MedicalHistorySection({ control }: MedicalHistorySectionProps) {
       <h2 className="text-lg font-bold py-2 px-4 bg-blue-500 text-white rounded-md">
         4. Antécédents médicaux
       </h2>
+      
+      <FormField
+        control={control}
+        name="pathologies"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Pathologies connues</FormLabel>
+            <FormDescription>
+              Sélectionnez toutes les pathologies qui vous concernent
+            </FormDescription>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+              {pathologiesList.map((pathologie) => (
+                <FormField
+                  key={pathologie}
+                  control={control}
+                  name="pathologies"
+                  render={({ field }) => {
+                    return (
+                      <FormItem
+                        key={pathologie}
+                        className="flex flex-row items-start space-x-3 space-y-0"
+                      >
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value?.includes(pathologie)}
+                            onCheckedChange={(checked) => {
+                              return checked
+                                ? field.onChange([...(field.value || []), pathologie])
+                                : field.onChange(
+                                    field.value?.filter(
+                                      (value) => value !== pathologie
+                                    )
+                                  );
+                            }}
+                          />
+                        </FormControl>
+                        <FormLabel className="font-normal">
+                          {pathologie}
+                        </FormLabel>
+                      </FormItem>
+                    );
+                  }}
+                />
+              ))}
+            </div>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      
       <FormField
         control={control}
         name="antecedents"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Pathologies connues</FormLabel>
+            <FormLabel>Autres pathologies non listées</FormLabel>
             <FormControl>
-              <Textarea placeholder="Listez vos pathologies connues" {...field} />
+              <Textarea placeholder="Précisez vos autres pathologies ou antécédents médicaux" {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
         )}
       />
+
       <FormField
         control={control}
         name="chirurgies"
@@ -48,6 +101,7 @@ export function MedicalHistorySection({ control }: MedicalHistorySectionProps) {
           </FormItem>
         )}
       />
+
       <FormField
         control={control}
         name="hospitalisations"

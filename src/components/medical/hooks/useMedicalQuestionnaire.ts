@@ -1,4 +1,3 @@
-
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { jsPDF } from "jspdf";
@@ -22,6 +21,7 @@ export function useMedicalQuestionnaire() {
     defaultValues: {
       symptomes: [],
       famille: [],
+      pathologies: [],
     },
   });
 
@@ -131,14 +131,22 @@ export function useMedicalQuestionnaire() {
       pdfDoc.text("4. Antécédents médicaux", 20, y);
       pdfDoc.setFont("helvetica", "normal");
       y += 10;
-      if (data.antecedents) {
-        pdfDoc.text(`Pathologies connues: ${data.antecedents}`, 25, y);
+      
+      if (data.pathologies && data.pathologies.length > 0) {
+        pdfDoc.text(`Pathologies connues: ${data.pathologies.join(', ')}`, 25, y);
         y += 8;
       }
+      
+      if (data.antecedents) {
+        pdfDoc.text(`Autres pathologies: ${data.antecedents}`, 25, y);
+        y += 8;
+      }
+      
       if (data.chirurgies) {
         pdfDoc.text(`Chirurgies antérieures: ${data.chirurgies}`, 25, y);
         y += 8;
       }
+      
       if (data.hospitalisations) {
         pdfDoc.text(`Hospitalisations récentes: ${data.hospitalisations}`, 25, y);
         y += 8;

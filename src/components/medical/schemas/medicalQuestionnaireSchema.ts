@@ -23,6 +23,7 @@ export const medicalQuestionnaireSchema = z.object({
   autres_symptomes: z.string().optional(),
 
   // Section 4: Antécédents médicaux
+  pathologies: z.array(z.string()).optional().default([]),
   antecedents: z.string().optional(),
   chirurgies: z.string().optional(),
   hospitalisations: z.string().optional(),
@@ -56,3 +57,21 @@ export const medicalQuestionnaireSchema = z.object({
 });
 
 export type MedicalQuestionnaireData = z.infer<typeof medicalQuestionnaireSchema>;
+
+// Liste des pathologies pour le menu déroulant
+export const pathologiesList = [
+  "Hypertension artérielle (HTA)",
+  "Diabète",
+  "Hypercholestérolémie / dyslipidémie",
+  "Maladie coronaire (angine de poitrine, infarctus du myocarde)",
+  "Insuffisance cardiaque",
+  "Accident vasculaire cérébral (AVC) ou AIT",
+  "Asthme",
+  "Bronchopneumopathie chronique obstructive (BPCO)",
+  "Cancer (tout type)",
+  "Maladie rénale chronique",
+  "Hypothyroïdie ou hyperthyroïdie",
+  "Dépression, anxiété",
+  "Maladie de Parkinson ou autre trouble neurologique",
+  "Maladies auto-immunes (lupus, polyarthrite rhumatoïde, sclérose en plaques, etc.)"
+];
