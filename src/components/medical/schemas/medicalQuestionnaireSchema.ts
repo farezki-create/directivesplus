@@ -25,7 +25,8 @@ export const medicalQuestionnaireSchema = z.object({
   // Section 4: Antécédents médicaux
   pathologies: z.array(z.string()).optional().default([]),
   antecedents: z.string().optional(),
-  chirurgies: z.string().optional(),
+  chirurgies: z.array(z.string()).optional().default([]),
+  autres_chirurgies: z.string().optional(),
   hospitalisations: z.string().optional(),
 
   // Section 5: Allergies
@@ -74,4 +75,23 @@ export const pathologiesList = [
   "Dépression, anxiété",
   "Maladie de Parkinson ou autre trouble neurologique",
   "Maladies auto-immunes (lupus, polyarthrite rhumatoïde, sclérose en plaques, etc.)"
+];
+
+// Liste des chirurgies pour le menu déroulant
+export const chirurgiesList = [
+  "Appendicectomie (appendicite)",
+  "Cholécystectomie (ablation de la vésicule biliaire)",
+  "Césarienne",
+  "Hystérectomie (ablation de l'utérus)",
+  "Herniorraphie / cure de hernie inguinale ou ombilicale",
+  "Prostatectomie (partielle ou totale, souvent pour adénome ou cancer)",
+  "Résection intestinale (maladie de Crohn, diverticulite, cancer…)",
+  "By-pass ou sleeve gastrique (chirurgie de l'obésité)",
+  "Pontage coronarien (chirurgie cardiaque)",
+  "Pose de stents ou angioplastie coronaire (intervention endovasculaire)",
+  "Chirurgie de la cataracte",
+  "Arthroplastie de hanche ou de genou (prothèse totale)",
+  "Chirurgie de fracture (ostéosynthèse)",
+  "Tonsillectomie / adénoïdectomie (amygdales / végétations)",
+  "Mastectomie ou chirurgie mammaire (cancer, reconstruction…)"
 ];

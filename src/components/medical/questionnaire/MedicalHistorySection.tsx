@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { MedicalQuestionnaireData, pathologiesList } from "../schemas/medicalQuestionnaireSchema";
+import { MedicalQuestionnaireData, pathologiesList, chirurgiesList } from "../schemas/medicalQuestionnaireSchema";
 
 interface MedicalHistorySectionProps {
   control: Control<MedicalQuestionnaireData>;
@@ -94,8 +94,57 @@ export function MedicalHistorySection({ control }: MedicalHistorySectionProps) {
         render={({ field }) => (
           <FormItem>
             <FormLabel>Chirurgies antérieures</FormLabel>
+            <FormDescription>
+              Sélectionnez toutes les chirurgies que vous avez subies
+            </FormDescription>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+              {chirurgiesList.map((chirurgie) => (
+                <FormField
+                  key={chirurgie}
+                  control={control}
+                  name="chirurgies"
+                  render={({ field }) => {
+                    return (
+                      <FormItem
+                        key={chirurgie}
+                        className="flex flex-row items-start space-x-3 space-y-0"
+                      >
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value?.includes(chirurgie)}
+                            onCheckedChange={(checked) => {
+                              return checked
+                                ? field.onChange([...(field.value || []), chirurgie])
+                                : field.onChange(
+                                    field.value?.filter(
+                                      (value) => value !== chirurgie
+                                    )
+                                  );
+                            }}
+                          />
+                        </FormControl>
+                        <FormLabel className="font-normal">
+                          {chirurgie}
+                        </FormLabel>
+                      </FormItem>
+                    );
+                  }}
+                />
+              ))}
+            </div>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={control}
+        name="autres_chirurgies"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Autres chirurgies non listées</FormLabel>
             <FormControl>
-              <Textarea placeholder="Décrivez vos précédentes chirurgies" {...field} />
+              <Textarea placeholder="Précisez vos autres chirurgies non listées ci-dessus" {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
