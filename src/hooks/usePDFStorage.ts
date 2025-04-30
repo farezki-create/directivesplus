@@ -1,13 +1,12 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { UserProfile } from "@/components/pdf/types";
 import { 
-  uploadPDFToStorage, 
+  savePDFToStorage, 
   syncSynthesisToCloud, 
   retrievePDFFromStorage 
-} from "@/utils/pdfStorageUtils";
+} from "@/components/pdf/utils/PDFGenerationUtils";
 
 export function usePDFStorage(userId: string | null) {
   const [isTransferringToCloud, setIsTransferringToCloud] = useState(false);
@@ -27,7 +26,7 @@ export function usePDFStorage(userId: string | null) {
 
       setIsTransferringToCloud(true);
       
-      const externalId = await uploadPDFToStorage(pdfDataUrl, userId, profile);
+      const externalId = await savePDFToStorage(pdfDataUrl, userId, profile);
       
       if (externalId) {
         setExternalDocumentId(externalId);
@@ -87,7 +86,7 @@ export function usePDFStorage(userId: string | null) {
       const success = await syncSynthesisToCloud(userId);
       
       // Upload the PDF
-      const externalId = await uploadPDFToStorage(pdfUrl, userId, profile);
+      const externalId = await savePDFToStorage(pdfUrl, userId, profile);
       
       if (externalId) {
         toast({
