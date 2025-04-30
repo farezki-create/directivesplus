@@ -9,14 +9,10 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
-import { Textarea } from "@/components/ui/textarea";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  RadioGroup,
+  RadioGroupItem
+} from "@/components/ui/radio-group";
 import { MedicalQuestionnaireData } from "../schemas/medicalQuestionnaireSchema";
 
 interface LifestyleSectionProps {
@@ -35,17 +31,26 @@ export function LifestyleSection({ control }: LifestyleSectionProps) {
         render={({ field }) => (
           <FormItem>
             <FormLabel>Fumeur ?</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="--" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                <SelectItem value="non">Non</SelectItem>
-                <SelectItem value="oui">Oui</SelectItem>
-              </SelectContent>
-            </Select>
+            <FormControl>
+              <RadioGroup
+                onValueChange={field.onChange}
+                defaultValue={field.value}
+                className="flex space-x-6"
+              >
+                <FormItem className="flex items-center space-x-2 space-y-0">
+                  <FormControl>
+                    <RadioGroupItem value="oui" />
+                  </FormControl>
+                  <FormLabel className="font-normal">Oui</FormLabel>
+                </FormItem>
+                <FormItem className="flex items-center space-x-2 space-y-0">
+                  <FormControl>
+                    <RadioGroupItem value="non" />
+                  </FormControl>
+                  <FormLabel className="font-normal">Non</FormLabel>
+                </FormItem>
+              </RadioGroup>
+            </FormControl>
             <FormMessage />
           </FormItem>
         )}
@@ -55,9 +60,26 @@ export function LifestyleSection({ control }: LifestyleSectionProps) {
         name="alcool"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Alcool</FormLabel>
+            <FormLabel>Consommation d'alcool ?</FormLabel>
             <FormControl>
-              <Textarea placeholder="Décrivez votre consommation d'alcool" {...field} />
+              <RadioGroup
+                onValueChange={field.onChange}
+                defaultValue={field.value}
+                className="flex space-x-6"
+              >
+                <FormItem className="flex items-center space-x-2 space-y-0">
+                  <FormControl>
+                    <RadioGroupItem value="oui" />
+                  </FormControl>
+                  <FormLabel className="font-normal">Oui</FormLabel>
+                </FormItem>
+                <FormItem className="flex items-center space-x-2 space-y-0">
+                  <FormControl>
+                    <RadioGroupItem value="non" />
+                  </FormControl>
+                  <FormLabel className="font-normal">Non</FormLabel>
+                </FormItem>
+              </RadioGroup>
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -68,9 +90,26 @@ export function LifestyleSection({ control }: LifestyleSectionProps) {
         name="drogues"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Drogues</FormLabel>
+            <FormLabel>Consommation de drogues ?</FormLabel>
             <FormControl>
-              <Textarea placeholder="Décrivez votre consommation de drogues" {...field} />
+              <RadioGroup
+                onValueChange={field.onChange}
+                defaultValue={field.value}
+                className="flex space-x-6"
+              >
+                <FormItem className="flex items-center space-x-2 space-y-0">
+                  <FormControl>
+                    <RadioGroupItem value="oui" />
+                  </FormControl>
+                  <FormLabel className="font-normal">Oui</FormLabel>
+                </FormItem>
+                <FormItem className="flex items-center space-x-2 space-y-0">
+                  <FormControl>
+                    <RadioGroupItem value="non" />
+                  </FormControl>
+                  <FormLabel className="font-normal">Non</FormLabel>
+                </FormItem>
+              </RadioGroup>
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -81,9 +120,26 @@ export function LifestyleSection({ control }: LifestyleSectionProps) {
         name="activite_physique"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Activité physique</FormLabel>
+            <FormLabel>Activité physique régulière ?</FormLabel>
             <FormControl>
-              <Textarea placeholder="Décrivez votre activité physique" {...field} />
+              <RadioGroup
+                onValueChange={field.onChange}
+                defaultValue={field.value}
+                className="flex space-x-6"
+              >
+                <FormItem className="flex items-center space-x-2 space-y-0">
+                  <FormControl>
+                    <RadioGroupItem value="oui" />
+                  </FormControl>
+                  <FormLabel className="font-normal">Oui</FormLabel>
+                </FormItem>
+                <FormItem className="flex items-center space-x-2 space-y-0">
+                  <FormControl>
+                    <RadioGroupItem value="non" />
+                  </FormControl>
+                  <FormLabel className="font-normal">Non</FormLabel>
+                </FormItem>
+              </RadioGroup>
             </FormControl>
             <FormMessage />
           </FormItem>
