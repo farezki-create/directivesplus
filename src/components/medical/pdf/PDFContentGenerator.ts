@@ -4,172 +4,213 @@ import { MedicalQuestionnaireData } from "../schemas/medicalQuestionnaireSchema"
 import { PDFDocumentLayout } from "./PDFDocumentLayout";
 
 /**
- * Responsible for generating PDF content from medical data
+ * Utility class for generating PDF content from medical questionnaire data
  */
 export class PDFContentGenerator {
   /**
    * Generates the general information section of the PDF
    * @param pdfDoc - The jsPDF document instance
    * @param data - The medical questionnaire data
-   * @param y - The initial y position
+   * @param y - The starting y position
    * @returns The new y position after adding the section
    */
   static generateGeneralInfo(pdfDoc: jsPDF, data: MedicalQuestionnaireData, y: number): number {
-    y = PDFDocumentLayout.addSectionHeader(pdfDoc, "1. Informations générales", y);
+    y = PDFDocumentLayout.addSectionHeader(pdfDoc, "Informations générales", y);
     
-    if (data.nom) y = PDFDocumentLayout.addField(pdfDoc, "Nom", data.nom, y);
-    if (data.prenom) y = PDFDocumentLayout.addField(pdfDoc, "Prénom", data.prenom, y);
-    if (data.date_naissance) y = PDFDocumentLayout.addField(pdfDoc, "Date de naissance", data.date_naissance, y);
-    if (data.sexe) y = PDFDocumentLayout.addField(pdfDoc, "Sexe", data.sexe, y);
-    if (data.secu) y = PDFDocumentLayout.addField(pdfDoc, "Numéro de sécurité sociale", data.secu, y);
-    if (data.adresse) y = PDFDocumentLayout.addField(pdfDoc, "Adresse", data.adresse, y);
-    if (data.telephone) y = PDFDocumentLayout.addField(pdfDoc, "Téléphone", data.telephone, y);
-    if (data.personne_prevenir) y = PDFDocumentLayout.addField(pdfDoc, "Personne à prévenir", data.personne_prevenir, y);
+    if (data.nom) {
+      y = PDFDocumentLayout.addField(pdfDoc, "Nom", data.nom, y);
+    }
     
-    return y + 5;
+    if (data.prenom) {
+      y = PDFDocumentLayout.addField(pdfDoc, "Prénom", data.prenom, y);
+    }
+    
+    if (data.date_naissance) {
+      y = PDFDocumentLayout.addField(pdfDoc, "Date de naissance", data.date_naissance, y);
+    }
+    
+    if (data.adresse) {
+      y = PDFDocumentLayout.addField(pdfDoc, "Adresse", data.adresse, y);
+    }
+    
+    if (data.telephone) {
+      y = PDFDocumentLayout.addField(pdfDoc, "Téléphone", data.telephone, y);
+    }
+    
+    return PDFDocumentLayout.checkForNewPage(pdfDoc, y);
   }
-
+  
   /**
    * Generates the consultation reason section of the PDF
    * @param pdfDoc - The jsPDF document instance
    * @param data - The medical questionnaire data
-   * @param y - The initial y position
+   * @param y - The starting y position
    * @returns The new y position after adding the section
    */
   static generateConsultationReason(pdfDoc: jsPDF, data: MedicalQuestionnaireData, y: number): number {
-    y = PDFDocumentLayout.checkForNewPage(pdfDoc, y);
-    y = PDFDocumentLayout.addSectionHeader(pdfDoc, "2. Motif de consultation", y);
+    y = PDFDocumentLayout.addSectionHeader(pdfDoc, "Motif de consultation", y);
     
-    if (data.motif) y = PDFDocumentLayout.addField(pdfDoc, "Motif principal", data.motif, y);
-    if (data.debut_symptomes) y = PDFDocumentLayout.addField(pdfDoc, "Début des symptômes", data.debut_symptomes, y);
-    if (data.evolution) y = PDFDocumentLayout.addField(pdfDoc, "Évolution", data.evolution, y);
+    if (data.motif) {
+      y = PDFDocumentLayout.addField(pdfDoc, "Motif principal", data.motif, y);
+    }
     
-    return y + 5;
+    if (data.debut_symptomes) {
+      y = PDFDocumentLayout.addField(pdfDoc, "Début des symptômes", data.debut_symptomes, y);
+    }
+    
+    if (data.evolution) {
+      y = PDFDocumentLayout.addField(pdfDoc, "Évolution", data.evolution, y);
+    }
+    
+    return PDFDocumentLayout.checkForNewPage(pdfDoc, y);
   }
-
+  
   /**
    * Generates the symptoms section of the PDF
    * @param pdfDoc - The jsPDF document instance
    * @param data - The medical questionnaire data
-   * @param y - The initial y position
+   * @param y - The starting y position
    * @returns The new y position after adding the section
    */
   static generateSymptoms(pdfDoc: jsPDF, data: MedicalQuestionnaireData, y: number): number {
-    y = PDFDocumentLayout.checkForNewPage(pdfDoc, y);
-    y = PDFDocumentLayout.addSectionHeader(pdfDoc, "3. Symptômes associés", y);
+    y = PDFDocumentLayout.addSectionHeader(pdfDoc, "Symptômes", y);
     
     if (data.symptomes && data.symptomes.length > 0) {
-      y = PDFDocumentLayout.addField(pdfDoc, "Symptômes", data.symptomes.join(', '), y);
+      y = PDFDocumentLayout.addField(
+        pdfDoc, 
+        "Symptômes signalés", 
+        data.symptomes.join(", "), 
+        y
+      );
     }
+    
     if (data.autres_symptomes) {
       y = PDFDocumentLayout.addField(pdfDoc, "Autres symptômes", data.autres_symptomes, y);
     }
     
-    return y + 5;
+    return PDFDocumentLayout.checkForNewPage(pdfDoc, y);
   }
-
+  
   /**
    * Generates the medical history section of the PDF
    * @param pdfDoc - The jsPDF document instance
    * @param data - The medical questionnaire data
-   * @param y - The initial y position
+   * @param y - The starting y position
    * @returns The new y position after adding the section
    */
   static generateMedicalHistory(pdfDoc: jsPDF, data: MedicalQuestionnaireData, y: number): number {
-    y = PDFDocumentLayout.checkForNewPage(pdfDoc, y);
-    y = PDFDocumentLayout.addSectionHeader(pdfDoc, "4. Antécédents médicaux", y);
+    y = PDFDocumentLayout.addSectionHeader(pdfDoc, "Antécédents médicaux", y);
     
     if (data.pathologies && data.pathologies.length > 0) {
-      y = PDFDocumentLayout.addField(pdfDoc, "Pathologies connues", data.pathologies.join(', '), y);
-    }
-    if (data.antecedents) {
-      y = PDFDocumentLayout.addField(pdfDoc, "Autres pathologies", data.antecedents, y);
-    }
-    if (data.chirurgies && data.chirurgies.length > 0) {
-      y = PDFDocumentLayout.addField(pdfDoc, "Chirurgies antérieures", data.chirurgies.join(', '), y);
-    }
-    if (data.autres_chirurgies) {
-      y = PDFDocumentLayout.addField(pdfDoc, "Autres chirurgies", data.autres_chirurgies, y);
-    }
-    if (data.hospitalisations) {
-      y = PDFDocumentLayout.addField(pdfDoc, "Hospitalisations récentes", data.hospitalisations, y);
+      y = PDFDocumentLayout.addField(
+        pdfDoc, 
+        "Pathologies chroniques", 
+        data.pathologies.join(", "), 
+        y
+      );
     }
     
-    return y + 5;
+    if (data.chirurgies && data.chirurgies.length > 0) {
+      y = PDFDocumentLayout.addField(
+        pdfDoc, 
+        "Antécédents chirurgicaux", 
+        data.chirurgies.join(", "), 
+        y
+      );
+    }
+    
+    return PDFDocumentLayout.checkForNewPage(pdfDoc, y);
   }
-
+  
   /**
    * Generates the allergies section of the PDF
    * @param pdfDoc - The jsPDF document instance
    * @param data - The medical questionnaire data
-   * @param y - The initial y position
+   * @param y - The starting y position
    * @returns The new y position after adding the section
    */
   static generateAllergies(pdfDoc: jsPDF, data: MedicalQuestionnaireData, y: number): number {
-    y = PDFDocumentLayout.checkForNewPage(pdfDoc, y);
-    y = PDFDocumentLayout.addSectionHeader(pdfDoc, "5. Allergies", y);
+    y = PDFDocumentLayout.addSectionHeader(pdfDoc, "Allergies", y);
     
     if (data.allergies && data.allergies.length > 0) {
-      y = PDFDocumentLayout.addField(pdfDoc, "Allergies connues", data.allergies.join(', '), y);
+      y = PDFDocumentLayout.addField(
+        pdfDoc, 
+        "Allergies connues", 
+        data.allergies.join(", "), 
+        y
+      );
     }
+    
     if (data.autres_allergies) {
       y = PDFDocumentLayout.addField(pdfDoc, "Autres allergies", data.autres_allergies, y);
     }
     
-    return y + 5;
+    return PDFDocumentLayout.checkForNewPage(pdfDoc, y);
   }
-
+  
   /**
-   * Generates the additional PDF sections
+   * Generates additional sections of the PDF
    * @param pdfDoc - The jsPDF document instance
    * @param data - The medical questionnaire data
-   * @param y - The initial y position
-   * @returns The new y position after adding all sections
+   * @param y - The starting y position
+   * @returns The new y position after adding the sections
    */
   static generateAdditionalSections(pdfDoc: jsPDF, data: MedicalQuestionnaireData, y: number): number {
-    // Treatments section
-    y = PDFDocumentLayout.checkForNewPage(pdfDoc, y);
-    y = PDFDocumentLayout.addSectionHeader(pdfDoc, "6. Traitements en cours", y);
+    // Traitements
+    y = PDFDocumentLayout.addSectionHeader(pdfDoc, "Traitements en cours", y);
+    
     if (data.traitements) {
-      y = PDFDocumentLayout.addField(pdfDoc, "Médicaments habituels", data.traitements, y);
+      y = PDFDocumentLayout.addField(pdfDoc, "Médicaments", data.traitements, y);
     }
-    y += 5;
-
-    // Family history section
+    
     y = PDFDocumentLayout.checkForNewPage(pdfDoc, y);
-    y = PDFDocumentLayout.addSectionHeader(pdfDoc, "7. Antécédents familiaux", y);
+    
+    // Antécédents familiaux
+    y = PDFDocumentLayout.addSectionHeader(pdfDoc, "Antécédents familiaux", y);
+    
     if (data.famille && data.famille.length > 0) {
-      y = PDFDocumentLayout.addField(pdfDoc, "Antécédents familiaux", data.famille.join(', '), y);
+      y = PDFDocumentLayout.addField(
+        pdfDoc, 
+        "Maladies familiales", 
+        data.famille.join(", "), 
+        y
+      );
     }
-    y += 5;
-
-    // Lifestyle section
+    
     y = PDFDocumentLayout.checkForNewPage(pdfDoc, y);
-    y = PDFDocumentLayout.addSectionHeader(pdfDoc, "8. Mode de vie", y);
+    
+    // Mode de vie
+    y = PDFDocumentLayout.addSectionHeader(pdfDoc, "Mode de vie", y);
+    
     if (data.tabac) {
-      y = PDFDocumentLayout.addField(pdfDoc, "Fumeur", data.tabac, y);
+      y = PDFDocumentLayout.addField(pdfDoc, "Fumeur", data.tabac === "oui" ? "Oui" : "Non", y);
     }
+    
     if (data.alcool) {
-      y = PDFDocumentLayout.addField(pdfDoc, "Alcool", data.alcool, y);
+      y = PDFDocumentLayout.addField(pdfDoc, "Consommation d'alcool", data.alcool === "oui" ? "Oui" : "Non", y);
     }
+    
     if (data.drogues) {
-      y = PDFDocumentLayout.addField(pdfDoc, "Drogues", data.drogues, y);
+      y = PDFDocumentLayout.addField(pdfDoc, "Consommation de drogues", data.drogues === "oui" ? "Oui" : "Non", y);
     }
+    
     if (data.activite_physique) {
-      y = PDFDocumentLayout.addField(pdfDoc, "Activité physique", data.activite_physique, y);
+      y = PDFDocumentLayout.addField(pdfDoc, "Activité physique régulière", data.activite_physique === "oui" ? "Oui" : "Non", y);
     }
-    y += 5;
-
-    // Special features section
+    
     y = PDFDocumentLayout.checkForNewPage(pdfDoc, y);
-    y = PDFDocumentLayout.addSectionHeader(pdfDoc, "9. Particularités", y);
+    
+    // Particularités
+    y = PDFDocumentLayout.addSectionHeader(pdfDoc, "Particularités", y);
+    
     if (data.dispositifs) {
       y = PDFDocumentLayout.addField(pdfDoc, "Dispositifs médicaux implantés", data.dispositifs, y);
     }
+    
     if (data.directives) {
-      y = PDFDocumentLayout.addField(pdfDoc, "Directives anticipées ou personne de confiance", data.directives, y);
+      y = PDFDocumentLayout.addField(pdfDoc, "Directives anticipées", data.directives, y);
     }
     
-    return y;
+    return PDFDocumentLayout.checkForNewPage(pdfDoc, y);
   }
 }

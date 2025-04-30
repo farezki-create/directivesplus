@@ -35,11 +35,11 @@ export function SocialContextSection({ control }: SocialContextSectionProps) {
       
       <FormField
         control={control}
-        name="contexte_social.vie" // Using nested object
+        name="contexte_social_vie" // Changed from nested object to flat property
         render={({ field }) => (
           <FormItem>
             <FormLabel>Mode de vie</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
+            <Select onValueChange={field.onChange} value={field.value}>
               <FormControl>
                 <SelectTrigger>
                   <SelectValue placeholder="Sélectionnez" />
@@ -59,7 +59,7 @@ export function SocialContextSection({ control }: SocialContextSectionProps) {
       
       <FormField
         control={control}
-        name="contexte_social.profession" // Using nested object
+        name="contexte_social_profession" // Changed from nested object to flat property
         render={({ field }) => (
           <FormItem>
             <FormLabel>Profession</FormLabel>
@@ -72,11 +72,11 @@ export function SocialContextSection({ control }: SocialContextSectionProps) {
       
       <FormField
         control={control}
-        name="contexte_social.couverture" // Using nested object
+        name="contexte_social_couverture" // Changed from nested object to flat property
         render={({ field }) => (
           <FormItem>
             <FormLabel>Couverture sociale</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
+            <Select onValueChange={field.onChange} value={field.value}>
               <FormControl>
                 <SelectTrigger>
                   <SelectValue placeholder="Sélectionnez" />
