@@ -83,7 +83,7 @@ export function usePDFStorage(userId: string | null) {
       }
       
       // Sync synthesis data
-      const success = await syncSynthesisToCloud(userId);
+      await syncSynthesisToCloud(userId);
       
       // Upload the PDF
       const externalId = await savePDFToStorage(pdfUrl, userId, profile);
