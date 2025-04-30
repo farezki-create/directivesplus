@@ -4,7 +4,7 @@ import { Header } from "@/components/Header";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, X, UploadCloud, FileText } from "lucide-react";
+import { Plus, X, UploadCloud, FileText, ClipboardList } from "lucide-react";
 import { useMedicalData } from "@/hooks/useMedicalData";
 import { useAuth } from "@/hooks/useAuth";
 import { MedicalDataList } from "@/components/medical/MedicalDataList";
@@ -72,12 +72,18 @@ export default function MedicalData() {
           </div>
           
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3">
               <TabsTrigger value="data">Données médicales</TabsTrigger>
               <TabsTrigger value="questionnaire">
                 <span className="flex items-center gap-2">
                   <FileText className="h-4 w-4" />
                   Questionnaire médical
+                </span>
+              </TabsTrigger>
+              <TabsTrigger value="form" className="hidden sm:flex">
+                <span className="flex items-center gap-2">
+                  <ClipboardList className="h-4 w-4" />
+                  Formulaire préalable
                 </span>
               </TabsTrigger>
             </TabsList>

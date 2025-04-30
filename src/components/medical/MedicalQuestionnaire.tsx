@@ -348,13 +348,33 @@ export function MedicalQuestionnaire() {
       // Save PDF as data URL
       const pdfOutput = pdfDoc.output('dataurlstring');
       
+      // Generate CSV content in addition to PDF
+      const headers = Object.keys(data).filter(key => 
+        data[key as keyof MedicalQuestionnaireData] !== undefined && 
+        data[key as keyof MedicalQuestionnaireData] !== null && 
+        (Array.isArray(data[key as keyof MedicalQuestionnaireData]) ? 
+          data[key as keyof MedicalQuestionnaireData].length > 0 : 
+          data[key as keyof MedicalQuestionnaireData] !== '')
+      );
+      
+      const values = headers.map(header => {
+        const value = data[header as keyof MedicalQuestionnaireData];
+        if (Array.isArray(value)) {
+          return `"${value.join(' | ').replace(/"/g, '""')}"`;
+        }
+        return `"${String(value).replace(/"/g, '""')}"`;
+      });
+      
+      const csvContent = `${headers.join(",")}\n${values.join(",")}`;
+      
       // Save the data to the database
       const accessCode = await saveMedicalData({
         type: "medical_questionnaire",
         title: "Questionnaire médical préalable",
         date: new Date().toISOString(),
         data: data,
-        pdfUrl: pdfOutput
+        pdfUrl: pdfOutput,
+        csvContent: csvContent
       });
 
       if (accessCode) {
@@ -401,7 +421,7 @@ export function MedicalQuestionnaire() {
   return (
     <Card className="mb-8">
       <CardHeader>
-        <CardTitle className="text-2xl font-bold">Questionnaire médical préalable</CardTitle>
+        <CardTitle className="text-2xl font-bold text-center">Questionnaire médical préalable</CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -1011,7 +1031,7 @@ export function MedicalQuestionnaire() {
             </div>
 
             <div className="flex justify-end pt-4">
-              <Button type="submit" className="bg-green-600 hover:bg-green-700">
+              <Button type="submit" className="bg-green-600 hover:bg-green-700 w-full py-5 text-lg">
                 Enregistrer le questionnaire
               </Button>
             </div>
