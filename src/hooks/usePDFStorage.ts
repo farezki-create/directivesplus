@@ -26,10 +26,10 @@ export function usePDFStorage(userId: string | null) {
 
       setIsTransferringToCloud(true);
       
-      // savePDFToStorage should return a string ID, not a boolean
+      // Make sure savePDFToStorage returns a string ID
       const externalId = await savePDFToStorage(pdfDataUrl, userId, true);
       
-      if (externalId) {
+      if (typeof externalId === 'string') {
         setExternalDocumentId(externalId);
         
         toast({
@@ -86,10 +86,10 @@ export function usePDFStorage(userId: string | null) {
       // Sync synthesis data - await the result but we don't need to store it
       await syncSynthesisToCloud(userId);
       
-      // Upload the PDF - savePDFToStorage should return a string ID
+      // Upload the PDF - Make sure savePDFToStorage returns a string ID
       const externalId = await savePDFToStorage(pdfUrl, userId, true);
       
-      if (externalId) {
+      if (typeof externalId === 'string') {
         setExternalDocumentId(externalId);
         
         toast({
