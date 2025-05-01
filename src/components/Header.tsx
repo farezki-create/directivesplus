@@ -1,3 +1,4 @@
+
 import { Button } from "./ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -50,7 +51,14 @@ export const Header = () => {
     <header className="w-full border-b">
       <div className="container mx-auto px-4 py-4">
         <div className="flex flex-col items-center mb-4">
-          <h1 className="text-3xl md:text-4xl font-bold text-primary">DirectivesPlus</h1>
+          <div className="flex items-center gap-3">
+            <img 
+              src="/lovable-uploads/66947e7d-e70f-4cd3-9b75-46d0ff3ddd88.png" 
+              alt="DirectivesPlus Logo" 
+              className="h-12 w-12"
+            />
+            <h1 className="text-3xl md:text-4xl font-bold text-primary">DirectivesPlus</h1>
+          </div>
         </div>
         
         <div className="flex items-center justify-center space-x-3 flex-wrap">
