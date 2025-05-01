@@ -24,7 +24,6 @@ export const medicalQuestionnaireSchema = z.object({
   autres_chirurgies: z.string().optional(),
   hospitalisations: z.string().optional(),
   allergies: z.array(z.string()).optional(),
-  autres_allergies: z.string().optional(),
   traitements: z.string().optional(),
   famille: z.array(z.string()).optional(),
   tabac: z.enum(["oui", "non"]).optional(),
@@ -65,7 +64,6 @@ export const allergiesList = [
   "Animaux",
   "Piqûres d'insectes",
   "Latex",
-  "Autres",
 ];
 
 /**
@@ -98,4 +96,17 @@ export const chirurgiesList = [
   "Chirurgie abdominale",
   "Neurochirurgie",
   "Autres"
+];
+
+/**
+ * List of possible implanted medical devices
+ */
+export const dispositifsList = [
+  "Pacemaker (stimulateur cardiaque)",
+  "Défibrillateur implantable (DAI ou ICD)",
+  "Prothèse totale de hanche (PTH)",
+  "Prothèse totale de genou (PTG)",
+  "Stents coronaires (ou autres stents vasculaires)",
+  "Valves cardiaques mécaniques ou biologiques",
+  "Cathéter veineux central implantable (chambre implantable, type Port-à-Cath)"
 ];

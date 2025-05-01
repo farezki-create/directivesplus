@@ -3,7 +3,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { 
   medicalQuestionnaireSchema,
-  MedicalQuestionnaireData 
+  MedicalQuestionnaireData,
+  dispositifsList 
 } from "../schemas/medicalQuestionnaireSchema";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -80,6 +81,20 @@ export function useQuestionnaireForm() {
           // et les renvoyer au client de manière sécurisée
         }
 
+        // Check if storage bucket exists for voice recordings
+        const { data: buckets, error: bucketsError } = await supabase
+          .storage
+          .listBuckets();
+          
+        if (bucketsError) {
+          console.error("Erreur lors de la vérification des buckets:", bucketsError);
+        } else {
+          const voiceRecordingBucketExists = buckets?.some(bucket => bucket.name === 'voice-recordings');
+          
+          if (!voiceRecordingBucketExists) {
+            console.log("Le bucket 'voice-recordings' n'existe pas, il faudra le créer en base de données");
+          }
+        }
       } catch (error) {
         console.error("Erreur lors de la récupération des données utilisateur:", error);
       } finally {

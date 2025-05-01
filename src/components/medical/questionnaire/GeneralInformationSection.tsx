@@ -1,6 +1,7 @@
 
 import React from "react";
 import { Control } from "react-hook-form";
+import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import {
   FormField,
@@ -8,9 +9,7 @@ import {
   FormLabel,
   FormControl,
   FormMessage,
-  FormDescription,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -19,22 +18,24 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { MedicalQuestionnaireData } from "../schemas/medicalQuestionnaireSchema";
-import { ExternalLink } from "lucide-react";
+import { VoiceRecorder } from "@/components/VoiceRecorder";
 
 interface GeneralInformationSectionProps {
   control: Control<MedicalQuestionnaireData>;
-  isLoading?: boolean;
+  isLoading: boolean;
 }
 
-export function GeneralInformationSection({ control, isLoading = false }: GeneralInformationSectionProps) {
+export function GeneralInformationSection({
+  control,
+  isLoading,
+}: GeneralInformationSectionProps) {
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-bold py-2 px-4 bg-blue-500 text-white rounded-md">
-        1. Informations générales
+      <h2 className="text-lg font-bold py-2 px-4 bg-blue-500 text-white rounded-md flex items-center justify-between">
+        <span>1. Informations générales</span>
+        <VoiceRecorder section="informations-generales" className="text-white" />
       </h2>
-      {isLoading ? (
-        <div className="text-sm italic text-gray-500 p-2">Chargement de vos informations...</div>
-      ) : null}
+      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField
           control={control}
@@ -43,12 +44,18 @@ export function GeneralInformationSection({ control, isLoading = false }: Genera
             <FormItem>
               <FormLabel>Nom</FormLabel>
               <FormControl>
-                <Input placeholder="Entrez votre nom" {...field} />
+                <Input 
+                  placeholder="Votre nom" 
+                  {...field} 
+                  value={field.value || ""} 
+                  disabled={isLoading}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
+        
         <FormField
           control={control}
           name="prenom"
@@ -56,12 +63,18 @@ export function GeneralInformationSection({ control, isLoading = false }: Genera
             <FormItem>
               <FormLabel>Prénom</FormLabel>
               <FormControl>
-                <Input placeholder="Entrez votre prénom" {...field} />
+                <Input 
+                  placeholder="Votre prénom" 
+                  {...field} 
+                  value={field.value || ""} 
+                  disabled={isLoading}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
+        
         <FormField
           control={control}
           name="date_naissance"
@@ -69,22 +82,32 @@ export function GeneralInformationSection({ control, isLoading = false }: Genera
             <FormItem>
               <FormLabel>Date de naissance</FormLabel>
               <FormControl>
-                <Input type="date" {...field} />
+                <Input 
+                  type="date" 
+                  {...field} 
+                  value={field.value || ""} 
+                  disabled={isLoading}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
+        
         <FormField
           control={control}
           name="sexe"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Sexe</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
+              <Select 
+                onValueChange={field.onChange} 
+                defaultValue={field.value} 
+                disabled={isLoading}
+              >
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="-- Choisir --" />
+                    <SelectValue placeholder="Sélectionner" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -97,6 +120,7 @@ export function GeneralInformationSection({ control, isLoading = false }: Genera
             </FormItem>
           )}
         />
+        
         <FormField
           control={control}
           name="secu"
@@ -104,12 +128,18 @@ export function GeneralInformationSection({ control, isLoading = false }: Genera
             <FormItem>
               <FormLabel>Numéro de sécurité sociale</FormLabel>
               <FormControl>
-                <Input placeholder="Numéro de sécurité sociale" {...field} />
+                <Input 
+                  placeholder="Votre numéro de sécurité sociale" 
+                  {...field} 
+                  value={field.value || ""} 
+                  disabled={isLoading}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
+        
         <FormField
           control={control}
           name="adresse"
@@ -117,12 +147,18 @@ export function GeneralInformationSection({ control, isLoading = false }: Genera
             <FormItem>
               <FormLabel>Adresse</FormLabel>
               <FormControl>
-                <Input placeholder="Adresse" {...field} />
+                <Input 
+                  placeholder="Votre adresse" 
+                  {...field} 
+                  value={field.value || ""} 
+                  disabled={isLoading}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
+        
         <FormField
           control={control}
           name="telephone"
@@ -130,32 +166,33 @@ export function GeneralInformationSection({ control, isLoading = false }: Genera
             <FormItem>
               <FormLabel>Téléphone</FormLabel>
               <FormControl>
-                <Input type="tel" placeholder="Téléphone" {...field} />
+                <Input 
+                  type="tel" 
+                  placeholder="Votre numéro de téléphone" 
+                  {...field} 
+                  value={field.value || ""} 
+                  disabled={isLoading}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
+        
         <FormField
           control={control}
           name="personne_prevenir"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Personne à prévenir</FormLabel>
+              <FormLabel>Personne à prévenir en cas d'urgence</FormLabel>
               <FormControl>
-                <Input placeholder="Nom et téléphone" {...field} />
+                <Input 
+                  placeholder="Nom et numéro de téléphone" 
+                  {...field} 
+                  value={field.value || ""} 
+                  disabled={isLoading}
+                />
               </FormControl>
-              <FormDescription>
-                <a 
-                  href="https://www.directivesplus.fr" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
-                >
-                  <span>Désigner une personne de confiance</span> 
-                  <ExternalLink size={14} />
-                </a>
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}

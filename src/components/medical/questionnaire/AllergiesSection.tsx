@@ -9,11 +9,11 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
-import { Textarea } from "@/components/ui/textarea";
 import { MedicalQuestionnaireData, allergiesList } from "../schemas/medicalQuestionnaireSchema";
 import { CheckboxGroup, CheckboxGroupItem } from "@/components/ui/checkbox-group";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { VoiceRecorder } from "@/components/VoiceRecorder";
 
 interface AllergiesSectionProps {
   control: Control<MedicalQuestionnaireData>;
@@ -22,8 +22,9 @@ interface AllergiesSectionProps {
 export function AllergiesSection({ control }: AllergiesSectionProps) {
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-bold py-2 px-4 bg-blue-500 text-white rounded-md">
-        5. Allergies
+      <h2 className="text-lg font-bold py-2 px-4 bg-blue-500 text-white rounded-md flex items-center justify-between">
+        <span>5. Allergies</span>
+        <VoiceRecorder section="allergies" className="text-white" />
       </h2>
       
       <FormField
@@ -49,20 +50,6 @@ export function AllergiesSection({ control }: AllergiesSectionProps) {
                   ))}
                 </CheckboxGroup>
               </ScrollArea>
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-      
-      <FormField
-        control={control}
-        name="autres_allergies"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Autres allergies</FormLabel>
-            <FormControl>
-              <Textarea placeholder="Autres allergies non listées ci-dessus" {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
