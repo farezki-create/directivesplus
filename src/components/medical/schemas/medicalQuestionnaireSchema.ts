@@ -35,6 +35,7 @@ export const medicalQuestionnaireSchema = z.object({
   contexte_social_vie: z.string().optional(),
   contexte_social_profession: z.string().optional(),
   contexte_social_couverture: z.string().optional(),
+  details_motif: z.string().optional(), // Added field for consultation details
 });
 
 /**

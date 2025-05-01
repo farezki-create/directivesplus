@@ -1,4 +1,3 @@
-
 import { jsPDF } from "jspdf";
 import { MedicalQuestionnaireData } from "../schemas/medicalQuestionnaireSchema";
 import { PDFDocumentLayout } from "./PDFDocumentLayout";
@@ -144,8 +143,6 @@ export class PDFContentGenerator {
         y
       );
     }
-    
-    // Removed reference to autres_allergies as it doesn't exist in the schema
     
     return PDFDocumentLayout.checkForNewPage(pdfDoc, y);
   }
