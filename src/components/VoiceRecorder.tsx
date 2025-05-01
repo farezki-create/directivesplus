@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Mic, Stop, Loader2 } from "lucide-react";
+import { Mic, Square, Loader2 } from "lucide-react"; // Using Square icon instead of Stop
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -133,7 +133,7 @@ export function VoiceRecorder({ section, className }: VoiceRecorderProps) {
       {isProcessing ? (
         <Loader2 className="h-4 w-4 animate-spin" />
       ) : isRecording ? (
-        <Stop className="h-4 w-4 text-red-500" />
+        <Square className="h-4 w-4 text-red-500" /> // Using Square icon instead of Stop
       ) : (
         <Mic className="h-4 w-4" />
       )}

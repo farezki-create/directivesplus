@@ -141,9 +141,7 @@ export class PDFContentGenerator {
       );
     }
     
-    if (data.autres_allergies) {
-      y = PDFDocumentLayout.addField(pdfDoc, "Autres allergies", data.autres_allergies, y);
-    }
+    // Removed reference to autres_allergies as it doesn't exist in the schema
     
     return PDFDocumentLayout.checkForNewPage(pdfDoc, y);
   }
