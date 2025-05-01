@@ -6,7 +6,7 @@ export const AuthLogo = () => {
         <img 
           src="/lovable-uploads/771f6055-4284-4d79-8387-f78476393035.png" 
           alt="DirectivesPlus Logo" 
-          className="h-40 object-contain"
+          className="h-48 object-contain" // Increased from h-40 to h-48
         />
       </div>
     </div>

@@ -51,11 +51,13 @@ export const Header = () => {
     <header className="w-full border-b">
       <div className="container mx-auto px-4 py-4">
         <div className="flex flex-col items-center mb-4">
-          <img 
-            src="/lovable-uploads/771f6055-4284-4d79-8387-f78476393035.png" 
-            alt="DirectivesPlus Logo" 
-            className="h-24 object-contain"
-          />
+          <div className="bg-white rounded-2xl p-2 shadow-sm">
+            <img 
+              src="/lovable-uploads/771f6055-4284-4d79-8387-f78476393035.png" 
+              alt="DirectivesPlus Logo" 
+              className="h-32 object-contain" // Increased from h-24 to h-32
+            />
+          </div>
         </div>
         
         <div className="flex items-center justify-center space-x-3 flex-wrap">
