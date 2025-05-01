@@ -45,20 +45,17 @@ export const Header = () => {
   };
   
   const isHomePage = location.pathname === "/";
-  const navButtonClass = "text-sm px-3 py-1.5 rounded-md bg-white border border-purple-300 text-purple-700 hover:bg-purple-50 transition-all duration-200 shadow-sm";
+  const navButtonClass = "text-sm px-3 py-1.5 rounded-md bg-white border border-blue-300 text-blue-700 hover:bg-blue-50 transition-all duration-200 shadow-sm";
 
   return (
     <header className="w-full border-b">
       <div className="container mx-auto px-4 py-4">
         <div className="flex flex-col items-center mb-4">
-          <div className="flex items-center gap-3">
-            <img 
-              src="/lovable-uploads/66947e7d-e70f-4cd3-9b75-46d0ff3ddd88.png" 
-              alt="DirectivesPlus Logo" 
-              className="h-12 w-12"
-            />
-            <h1 className="text-3xl md:text-4xl font-bold text-primary">DirectivesPlus</h1>
-          </div>
+          <img 
+            src="/lovable-uploads/771f6055-4284-4d79-8387-f78476393035.png" 
+            alt="DirectivesPlus Logo" 
+            className="h-24 object-contain"
+          />
         </div>
         
         <div className="flex items-center justify-center space-x-3 flex-wrap">
