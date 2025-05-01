@@ -32,17 +32,31 @@ export function VoiceRecorder({ section, className }: VoiceRecorderProps) {
     }
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // Explicitly request access with constraints that work better across browsers
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        } 
+      });
+      
       const recorder = new MediaRecorder(stream);
       
       const chunks: BlobPart[] = [];
       recorder.ondataavailable = (e) => {
-        chunks.push(e.data);
+        if (e.data && e.data.size > 0) {
+          chunks.push(e.data);
+        }
       };
 
       recorder.onstop = async () => {
         setIsProcessing(true);
         try {
+          if (chunks.length === 0) {
+            throw new Error("No audio data recorded");
+          }
+          
           // Create a blob from the audio chunks
           const audioBlob = new Blob(chunks, { type: 'audio/webm' });
           
@@ -62,6 +76,7 @@ export function VoiceRecorder({ section, className }: VoiceRecorderProps) {
               });
 
             if (error) {
+              console.error("Supabase storage error:", error);
               throw error;
             }
             
@@ -83,7 +98,8 @@ export function VoiceRecorder({ section, className }: VoiceRecorderProps) {
         }
       };
 
-      recorder.start();
+      // Set a timeout to ensure the recorder starts properly
+      recorder.start(1000); // Record in 1-second chunks for better reliability
       setMediaRecorder(recorder);
       setAudioChunks([]);
       setIsRecording(true);
@@ -95,15 +111,15 @@ export function VoiceRecorder({ section, className }: VoiceRecorderProps) {
     } catch (error) {
       console.error("Error accessing microphone:", error);
       toast({
-        title: "Erreur",
-        description: "Impossible d'accéder au microphone",
+        title: "Erreur d'accès au microphone",
+        description: "Vérifiez que vous avez bien autorisé l'accès au microphone dans votre navigateur",
         variant: "destructive",
       });
     }
   };
 
   const stopRecording = () => {
-    if (mediaRecorder) {
+    if (mediaRecorder && mediaRecorder.state !== "inactive") {
       mediaRecorder.stop();
       // Stop all tracks
       mediaRecorder.stream.getTracks().forEach(track => track.stop());

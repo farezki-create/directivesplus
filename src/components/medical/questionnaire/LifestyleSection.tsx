@@ -9,15 +9,9 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { MedicalQuestionnaireData } from "../schemas/medicalQuestionnaireSchema";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface LifestyleSectionProps {
   control: Control<MedicalQuestionnaireData>;
@@ -31,27 +25,23 @@ export function LifestyleSection({ control }: LifestyleSectionProps) {
         <VoiceRecorder section="mode-de-vie" className="text-white" />
       </h2>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4">
         <FormField
           control={control}
           name="tabac"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Tabac</FormLabel>
-              <Select 
-                onValueChange={field.onChange} 
-                defaultValue={field.value}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="oui">Oui</SelectItem>
-                  <SelectItem value="non">Non</SelectItem>
-                </SelectContent>
-              </Select>
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+              <FormControl>
+                <Checkbox
+                  checked={field.value === 'oui'}
+                  onCheckedChange={(checked) => {
+                    field.onChange(checked ? 'oui' : 'non');
+                  }}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>Tabac</FormLabel>
+              </div>
               <FormMessage />
             </FormItem>
           )}
@@ -61,22 +51,18 @@ export function LifestyleSection({ control }: LifestyleSectionProps) {
           control={control}
           name="alcool"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Alcool</FormLabel>
-              <Select 
-                onValueChange={field.onChange} 
-                defaultValue={field.value}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="oui">Oui</SelectItem>
-                  <SelectItem value="non">Non</SelectItem>
-                </SelectContent>
-              </Select>
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+              <FormControl>
+                <Checkbox
+                  checked={field.value === 'oui'}
+                  onCheckedChange={(checked) => {
+                    field.onChange(checked ? 'oui' : 'non');
+                  }}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>Alcool</FormLabel>
+              </div>
               <FormMessage />
             </FormItem>
           )}
@@ -86,22 +72,18 @@ export function LifestyleSection({ control }: LifestyleSectionProps) {
           control={control}
           name="drogues"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Drogues</FormLabel>
-              <Select 
-                onValueChange={field.onChange} 
-                defaultValue={field.value}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="oui">Oui</SelectItem>
-                  <SelectItem value="non">Non</SelectItem>
-                </SelectContent>
-              </Select>
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+              <FormControl>
+                <Checkbox
+                  checked={field.value === 'oui'}
+                  onCheckedChange={(checked) => {
+                    field.onChange(checked ? 'oui' : 'non');
+                  }}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>Drogues</FormLabel>
+              </div>
               <FormMessage />
             </FormItem>
           )}
@@ -111,22 +93,18 @@ export function LifestyleSection({ control }: LifestyleSectionProps) {
           control={control}
           name="activite_physique"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Activité physique régulière</FormLabel>
-              <Select 
-                onValueChange={field.onChange} 
-                defaultValue={field.value}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="oui">Oui</SelectItem>
-                  <SelectItem value="non">Non</SelectItem>
-                </SelectContent>
-              </Select>
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+              <FormControl>
+                <Checkbox
+                  checked={field.value === 'oui'}
+                  onCheckedChange={(checked) => {
+                    field.onChange(checked ? 'oui' : 'non');
+                  }}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>Activité physique régulière</FormLabel>
+              </div>
               <FormMessage />
             </FormItem>
           )}

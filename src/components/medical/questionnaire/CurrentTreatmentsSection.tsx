@@ -29,8 +29,11 @@ export function CurrentTreatmentsSection({ control }: CurrentTreatmentsSectionPr
         control={control}
         name="traitements"
         render={({ field }) => (
-          <FormItem>
+          <FormItem className="border rounded-md p-4 relative">
             <FormLabel>Médicaments et traitements en cours</FormLabel>
+            <div className="absolute top-4 right-4">
+              <VoiceRecorder section="traitements-detail" />
+            </div>
             <FormControl>
               <Textarea 
                 placeholder="Liste de médicaments, dosage et fréquence" 

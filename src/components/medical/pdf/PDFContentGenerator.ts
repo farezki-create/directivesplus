@@ -62,6 +62,10 @@ export class PDFContentGenerator {
       y = PDFDocumentLayout.addField(pdfDoc, "Évolution", data.evolution, y);
     }
     
+    if (data.details_motif) {
+      y = PDFDocumentLayout.addField(pdfDoc, "Précisions", data.details_motif, y);
+    }
+    
     return PDFDocumentLayout.checkForNewPage(pdfDoc, y);
   }
   
@@ -199,14 +203,14 @@ export class PDFContentGenerator {
     y = PDFDocumentLayout.checkForNewPage(pdfDoc, y);
     
     // Particularités
-    y = PDFDocumentLayout.addSectionHeader(pdfDoc, "Particularités", y);
+    y = PDFDocumentLayout.addSectionHeader(pdfDoc, "Dispositifs médicaux et directives", y);
     
     if (data.dispositifs) {
       y = PDFDocumentLayout.addField(pdfDoc, "Dispositifs médicaux implantés", data.dispositifs, y);
     }
     
     if (data.directives) {
-      y = PDFDocumentLayout.addField(pdfDoc, "Directives anticipées", data.directives, y);
+      y = PDFDocumentLayout.addField(pdfDoc, "Directives anticipées et personne de confiance", data.directives, y);
     }
     
     return PDFDocumentLayout.checkForNewPage(pdfDoc, y);

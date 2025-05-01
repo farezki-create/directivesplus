@@ -3,6 +3,7 @@ import React from "react";
 import { Control } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 import {
   FormField,
   FormItem,
@@ -105,6 +106,26 @@ export function ConsultationReasonSection({ control }: ConsultationReasonSection
           )}
         />
       </div>
+
+      {/* New free text field for consultation reason */}
+      <FormField
+        control={control}
+        name="details_motif"
+        render={({ field }) => (
+          <FormItem className="border rounded-md p-4">
+            <FormLabel>Précisions sur le motif de consultation</FormLabel>
+            <FormControl>
+              <Textarea 
+                placeholder="Décrivez votre motif de consultation en détail..." 
+                className="min-h-[120px]"
+                {...field} 
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
       <Separator />
     </div>
   );
