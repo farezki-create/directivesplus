@@ -29,15 +29,17 @@ export function FrenchFlag() {
         animation: waving ? 'wave 1s ease-in-out' : 'none'
       }}
     >
-      <style jsx global>{`
-        @keyframes wave {
-          0% { transform: rotate(0deg); }
-          25% { transform: rotate(5deg); }
-          50% { transform: rotate(0deg); }
-          75% { transform: rotate(-5deg); }
-          100% { transform: rotate(0deg); }
-        }
-      `}</style>
+      <style>
+        {`
+          @keyframes wave {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(5deg); }
+            50% { transform: rotate(0deg); }
+            75% { transform: rotate(-5deg); }
+            100% { transform: rotate(0deg); }
+          }
+        `}
+      </style>
       <div className="absolute inset-y-0 left-0 w-1/3 bg-blue-700"></div>
       <div className="absolute inset-y-0 left-1/3 w-1/3 bg-white"></div>
       <div className="absolute inset-y-0 right-0 w-1/3 bg-red-600"></div>
