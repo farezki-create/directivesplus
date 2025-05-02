@@ -18,10 +18,12 @@ import AdvancedIllness from "./pages/AdvancedIllness";
 import Preferences from "./pages/Preferences";
 import MedicalAccess from "./pages/MedicalAccess";
 import MedicalData from "./pages/MedicalData";
-import MyDocuments from "./pages/MyDocuments";  // New import
+import MyDocuments from "./pages/MyDocuments";
+import RGPD from "./pages/RGPD";  // New import
 import { DialogStateProvider } from "./hooks/useDialogState";
 import { PDFStorageService } from './utils/storage/PDFStorageService';
 import { ScalingoHDSStorageProvider } from './utils/cloud/ScalingoHDSStorageProvider';
+import { CookieBanner } from "./components/ui/CookieBanner";  // New import
 
 function App() {
   PDFStorageService.setStorageProvider(new ScalingoHDSStorageProvider());
@@ -46,7 +48,8 @@ function App() {
             <Route path="/preferences" element={<Preferences />} />
             <Route path="/medical-access" element={<MedicalAccess />} />
             <Route path="/medical-data" element={<MedicalData />} />
-            <Route path="/my-documents" element={<MyDocuments />} />  {/* New route */}
+            <Route path="/my-documents" element={<MyDocuments />} />
+            <Route path="/rgpd" element={<RGPD />} />  {/* New route */}
             
             {/* Catch-all redirect for data URLs that might be clicked accidentally */}
             <Route 
@@ -57,6 +60,7 @@ function App() {
         </HashRouter>
         <Toaster />
         <Sonner position="top-center" />
+        <CookieBanner />  {/* Added cookie banner */}
       </DialogStateProvider>
     </LanguageProvider>
   );
