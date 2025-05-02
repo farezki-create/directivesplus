@@ -8,6 +8,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { FrenchFlag } from "@/components/ui/FrenchFlag";
 
 const Index = () => {
   const [showMoreInfo, setShowMoreInfo] = useState(false);
@@ -78,6 +79,18 @@ const Index = () => {
               isAuthenticated={isAuthenticated}
             />
             <FeatureHighlights />
+            
+            {/* Security info section */}
+            <div className="mt-12 text-center text-sm text-muted-foreground flex flex-col items-center">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="font-semibold">100% sécurisé</span>
+                <FrenchFlag />
+              </div>
+              <p>
+                Vos directives anticipées et documents de santé sont hébergés en France 
+                dans le serveur Scalingo, certifiés HDS par les autorités de santé.
+              </p>
+            </div>
           </>
         )}
       </main>

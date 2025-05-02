@@ -11,6 +11,7 @@ import { MedicalDataList } from "@/components/medical/MedicalDataList";
 import { MedicalDataForm } from "@/components/medical/MedicalDataForm";
 import { MedicalQuestionnaire } from "@/components/medical/MedicalQuestionnaire";
 import { DocumentScanner } from "@/components/DocumentScanner";
+import { FrenchFlag } from "@/components/ui/FrenchFlag";
 
 export default function MedicalData() {
   const { user } = useAuth();
@@ -108,6 +109,18 @@ export default function MedicalData() {
               <MedicalQuestionnaire />
             </TabsContent>
           </Tabs>
+          
+          {/* Security info section */}
+          <div className="mt-8 text-center text-sm text-muted-foreground flex flex-col items-center">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="font-semibold">100% sécurisé</span>
+              <FrenchFlag />
+            </div>
+            <p>
+              Vos directives anticipées et documents de santé sont hébergés en France 
+              dans le serveur Scalingo, certifiés HDS par les autorités de santé.
+            </p>
+          </div>
         </div>
       </main>
 
