@@ -1,15 +1,8 @@
 
 import { useLanguage } from "@/hooks/useLanguage";
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
 
 export function FeatureHighlights() {
   const { currentLanguage } = useLanguage();
-  const navigate = useNavigate();
-  
-  const handleRGPDClick = () => {
-    navigate("/rgpd");
-  };
   
   return (
     <div className="mt-12 grid gap-8 md:grid-cols-3">
@@ -28,13 +21,9 @@ export function FeatureHighlights() {
         <p className="text-muted-foreground">
           {currentLanguage === 'en' ? 'Your data is protected and hosted in France' : 'Vos données sont protégées et hébergées en France'}
         </p>
-        <Button 
-          variant="link" 
-          className="mt-2 text-sm" 
-          onClick={handleRGPDClick}
-        >
-          {currentLanguage === 'en' ? 'Privacy Policy' : 'Mentions légales'}
-        </Button>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {currentLanguage === 'en' ? 'See legal notices for details' : 'Voir mentions légales pour plus de détails'}
+        </p>
       </div>
       <div className="text-center">
         <h3 className="text-lg font-semibold mb-2">

@@ -15,23 +15,9 @@ export function NavigationButtons({ navButtonClass }: { navButtonClass: string }
     <>
       <Button
         className={navButtonClass}
-        onClick={navigateTo("/examples")}
-      >
-        Exemples
-      </Button>
-      
-      <Button
-        className={navButtonClass}
         onClick={navigateTo("/faq")}
       >
         FAQ
-      </Button>
-      
-      <Button
-        className={navButtonClass}
-        onClick={navigateTo("/rgpd")}
-      >
-        RGPD
       </Button>
     </>
   );

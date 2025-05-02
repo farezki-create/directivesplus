@@ -3,20 +3,17 @@ import { useEffect, useState } from "react";
 import { Header } from "@/components/Header";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, X, UploadCloud, FileText } from "lucide-react";
+import { Plus, X, UploadCloud } from "lucide-react";
 import { useMedicalData } from "@/hooks/useMedicalData";
 import { useAuth } from "@/hooks/useAuth";
 import { MedicalDataList } from "@/components/medical/MedicalDataList";
 import { MedicalDataForm } from "@/components/medical/MedicalDataForm";
-import { MedicalQuestionnaire } from "@/components/medical/MedicalQuestionnaire";
 import { DocumentScanner } from "@/components/DocumentScanner";
 import { FrenchFlag } from "@/components/ui/FrenchFlag";
 
 export default function MedicalData() {
   const { user } = useAuth();
   const { medicalData, isLoading, fetchMedicalData } = useMedicalData(user?.id || "");
-  const [activeTab, setActiveTab] = useState("data");
   const [showForm, setShowForm] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
 
@@ -28,7 +25,6 @@ export default function MedicalData() {
 
   const handleFormToggle = () => {
     setShowForm(!showForm);
-    setActiveTab("data");
   };
 
   const handleDataSaved = () => {
@@ -72,43 +68,25 @@ export default function MedicalData() {
             </div>
           </div>
           
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="data">Données médicales</TabsTrigger>
-              <TabsTrigger value="questionnaire">
-                <span className="flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
-                  Questionnaire médical
-                </span>
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="data">
-              {showForm && (
-                <MedicalDataForm onDataSaved={handleDataSaved} />
-              )}
-              
-              <Card className="p-6 mt-4">
-                {isLoading ? (
-                  <div className="text-center">Chargement...</div>
+          {showForm && (
+            <MedicalDataForm onDataSaved={handleDataSaved} />
+          )}
+          
+          <Card className="p-6 mt-4">
+            {isLoading ? (
+              <div className="text-center">Chargement...</div>
+            ) : (
+              <>
+                {medicalData.length > 0 ? (
+                  <MedicalDataList data={medicalData} />
                 ) : (
-                  <>
-                    {medicalData.length > 0 ? (
-                      <MedicalDataList data={medicalData} />
-                    ) : (
-                      <div className="text-center text-muted-foreground">
-                        Aucune donnée médicale enregistrée
-                      </div>
-                    )}
-                  </>
+                  <div className="text-center text-muted-foreground">
+                    Aucune donnée médicale enregistrée
+                  </div>
                 )}
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="questionnaire">
-              <MedicalQuestionnaire />
-            </TabsContent>
-          </Tabs>
+              </>
+            )}
+          </Card>
           
           {/* Security info section */}
           <div className="mt-8 text-center text-sm text-muted-foreground flex flex-col items-center">

@@ -1,7 +1,8 @@
+
 import React, { useRef, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Upload, FileUp } from "lucide-react";
+import { Camera, Upload, FileUp } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 interface DocumentScannerProps {
@@ -10,7 +11,7 @@ interface DocumentScannerProps {
 }
 
 export const DocumentScanner = ({ open, onClose }: DocumentScannerProps) => {
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const uploadInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const [scanning, setScanning] = useState(false);
@@ -46,7 +47,37 @@ export const DocumentScanner = ({ open, onClose }: DocumentScannerProps) => {
   };
 
   const handleScanClick = () => {
-    fileInputRef.current?.click();
+    // For mobile devices: try to use the document scanner API if available
+    if ('ScannerDetector' in window || 'scanner' in navigator) {
+      try {
+        // @ts-ignore - This is a custom API that might be available on some devices
+        const scanner = 'ScannerDetector' in window ? 
+          (window as any).ScannerDetector : 
+          (navigator as any).scanner;
+          
+        scanner.scan({
+          success: (result: any) => {
+            toast({
+              title: "Document scanné avec succès",
+              description: "Le document a été scanné et sauvegardé.",
+            });
+            onClose();
+          },
+          error: (error: any) => {
+            console.error("Scanner error:", error);
+            // Fallback to camera if scanner fails
+            cameraInputRef.current?.click();
+          }
+        });
+      } catch (error) {
+        console.error("Scanner API error:", error);
+        // Fallback to camera
+        cameraInputRef.current?.click();
+      }
+    } else {
+      // Fallback to camera input if scanner API is not available
+      cameraInputRef.current?.click();
+    }
   };
 
   const handleUploadClick = () => {
@@ -62,9 +93,10 @@ export const DocumentScanner = ({ open, onClose }: DocumentScannerProps) => {
         <div className="flex flex-col items-center justify-center space-y-4 p-6">
           <input
             type="file"
-            ref={fileInputRef}
+            ref={cameraInputRef}
             onChange={(e) => handleFileChange(e, false)}
-            accept="image/*,.pdf"
+            accept="image/*"
+            capture="environment"
             className="hidden"
           />
           <input
@@ -79,7 +111,7 @@ export const DocumentScanner = ({ open, onClose }: DocumentScannerProps) => {
             disabled={scanning || uploading}
             className="w-full"
           >
-            <Upload className="mr-2 h-4 w-4" />
+            <Camera className="mr-2 h-4 w-4" />
             {scanning ? "Scan en cours..." : "Scanner un document"}
           </Button>
           <Button
