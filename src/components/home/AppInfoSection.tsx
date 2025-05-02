@@ -1,5 +1,6 @@
 
 import { useLanguage } from "@/hooks/useLanguage";
+import { FrenchFlag } from "../ui/FrenchFlag";
 
 export function AppInfoSection() {
   const { currentLanguage } = useLanguage();
@@ -32,7 +33,14 @@ export function AppInfoSection() {
                   <li>Générer les directives anticipées en format PDF.</li>
                   <li>Télécharger, Partager.</li>
                 </ol>
-                <p className="text-sm italic mt-2">À la déconnexion, le document PDF est supprimé et non sauvegardé.</p>
+                <div className="flex items-center space-x-2 mt-3">
+                  <p className="text-sm font-semibold">100% sécurisé</p>
+                  <FrenchFlag />
+                </div>
+                <p className="text-sm mt-1">
+                  Vos directives anticipées et documents de santé sont hébergés en France 
+                  dans le serveur Scalingo, certifiés HDS par les autorités de santé.
+                </p>
               </>
             ) : (
               <>
@@ -48,7 +56,14 @@ export function AppInfoSection() {
                   <li>Generate advance directives in PDF format.</li>
                   <li>Download, Share.</li>
                 </ol>
-                <p className="text-sm italic mt-2">When you disconnect, the PDF document is deleted and not saved.</p>
+                <div className="flex items-center space-x-2 mt-3">
+                  <p className="text-sm font-semibold">100% secure</p>
+                  <FrenchFlag />
+                </div>
+                <p className="text-sm mt-1">
+                  Your advance directives and health documents are hosted in France
+                  on the Scalingo server, HDS certified by health authorities.
+                </p>
               </>
             )}
           </div>
@@ -67,13 +82,13 @@ export function AppInfoSection() {
         <div className="text-center space-y-2">
           <p className="text-base">
             {currentLanguage === 'fr' 
-              ? 'Cette application a été imaginée par le :'
+              ? 'Cette application a été imaginée par des :'
               : 'This application was designed by:'}
           </p>
           <p className="font-medium">
             {currentLanguage === 'fr'
-              ? 'Dr F. Arezki, médecin anesthésiste-réanimateur, diplômé en éthique médicale et en douleur chronique, au CH Robert Pax de Sarreguemines.'
-              : 'Dr F. Arezki, anesthesiologist-intensivist, qualified in medical ethics and chronic pain, at CH Robert Pax in Sarreguemines.'}
+              ? 'médecins anesthésistes-réanimateurs et en éthique médicale.'
+              : 'anesthesiologist-intensivists and medical ethics specialists.'}
           </p>
           <p className="mt-4">
             {currentLanguage === 'fr' ? 'Contact :' : 'Contact:'}{' '}

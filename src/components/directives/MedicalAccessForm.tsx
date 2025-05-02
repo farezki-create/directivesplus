@@ -13,9 +13,9 @@ interface MedicalAccessFormProps {
 }
 
 export function MedicalAccessForm({ type = "directive" }: MedicalAccessFormProps) {
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [birthdate, setBirthdate] = useState("");
-  const [accessCode, setAccessCode] = useState("");
   const [directiveId, setDirectiveId] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
   const { toast } = useToast();
@@ -24,7 +24,7 @@ export function MedicalAccessForm({ type = "directive" }: MedicalAccessFormProps
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!name || !birthdate || !accessCode || !directiveId) {
+    if (!firstName || !lastName || !birthdate || !directiveId) {
       toast({
         title: "Champs requis",
         description: "Veuillez remplir tous les champs obligatoires",
@@ -38,9 +38,9 @@ export function MedicalAccessForm({ type = "directive" }: MedicalAccessFormProps
       if (type === "directive") {
         const content = await requestAccess(
           directiveId,
-          name,
+          `${firstName} ${lastName}`,
           birthdate,
-          accessCode
+          "AUTO" // Le code d'accès n'est plus requis par l'utilisateur
         );
         
         if (content) {
@@ -70,17 +70,6 @@ export function MedicalAccessForm({ type = "directive" }: MedicalAccessFormProps
     <form onSubmit={handleFormSubmit}>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="access-code">Code d'accès</Label>
-          <Input
-            id="access-code"
-            placeholder="XXXX-XXXX"
-            value={accessCode}
-            onChange={(e) => setAccessCode(e.target.value)}
-            required
-          />
-        </div>
-        
-        <div className="space-y-2">
           <Label htmlFor="directive-id">Identifiant du document</Label>
           <Input
             id="directive-id"
@@ -92,12 +81,23 @@ export function MedicalAccessForm({ type = "directive" }: MedicalAccessFormProps
         </div>
         
         <div className="space-y-2">
+          <Label htmlFor="patient-firstname">Prénom du patient</Label>
+          <Input
+            id="patient-firstname"
+            placeholder="Prénom du patient"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            required
+          />
+        </div>
+        
+        <div className="space-y-2">
           <Label htmlFor="patient-name">Nom du patient</Label>
           <Input
             id="patient-name"
             placeholder="Nom du patient"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
             required
           />
         </div>
@@ -117,7 +117,7 @@ export function MedicalAccessForm({ type = "directive" }: MedicalAccessFormProps
       <CardFooter>
         <Button type="submit" disabled={isVerifying} className="w-full">
           {isVerifying && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Vérifier l'accès aux {formTitle}
+          Accéder aux {formTitle}
         </Button>
       </CardFooter>
     </form>

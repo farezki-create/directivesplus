@@ -4,6 +4,7 @@ import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/ca
 import { MedicalAccessForm } from "@/components/directives/MedicalAccessForm";
 import { FileText, Shield } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { FrenchFlag } from "@/components/ui/FrenchFlag";
 
 export default function MedicalAccess() {
   return (
@@ -26,10 +27,10 @@ export default function MedicalAccess() {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <FileText className="mr-2 h-5 w-5" />
-                  Consulter des directives anticipées
+                  Accès aux directives anticipées
                 </CardTitle>
                 <CardDescription>
-                  Entrez les informations du patient et le code d'accès fourni
+                  Entrez les informations du patient et l'identifiant du document
                 </CardDescription>
               </CardHeader>
               
@@ -41,10 +42,10 @@ export default function MedicalAccess() {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <FileText className="mr-2 h-5 w-5" />
-                  Consulter les données médicales
+                  Accès aux données médicales
                 </CardTitle>
                 <CardDescription>
-                  Accédez aux données médicales du patient avec son code d'accès
+                  Accédez aux données médicales du patient avec l'identifiant du document
                 </CardDescription>
               </CardHeader>
               
@@ -52,10 +53,14 @@ export default function MedicalAccess() {
             </Card>
           </div>
           
-          <div className="text-center text-sm text-muted-foreground">
+          <div className="text-center text-sm text-muted-foreground flex flex-col items-center">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="font-semibold">100% sécurisé</span>
+              <FrenchFlag />
+            </div>
             <p>
-              Conformément à la législation en vigueur, l'accès aux informations médicales
-              est strictement réservé aux professionnels de santé autorisés.
+              Vos directives anticipées et documents de santé sont hébergés en France 
+              dans le serveur Scalingo, certifiés HDS par les autorités de santé.
             </p>
           </div>
         </div>
