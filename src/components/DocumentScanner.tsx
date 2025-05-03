@@ -1,8 +1,8 @@
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Camera, Upload, FileUp } from "lucide-react";
+import { Camera, Upload, FileUp, ScanSearch } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 interface DocumentScannerProps {
@@ -16,6 +16,26 @@ export const DocumentScanner = ({ open, onClose }: DocumentScannerProps) => {
   const { toast } = useToast();
   const [scanning, setScanning] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [hasNativeScannerApp, setHasNativeScannerApp] = useState(false);
+
+  // Check if device supports native scanner app integration
+  useEffect(() => {
+    // Check for various scanner APIs
+    const checkScannerSupport = async () => {
+      // Check for various scanner capabilities
+      const hasMediaDevices = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+      
+      // Check for specific scanner APIs (these are not fully standardized)
+      const hasWebScanAPI = 'ScannerDetector' in window || 
+                           'scanner' in navigator || 
+                           'DocumentScanner' in window;
+      
+      // Set state based on checks
+      setHasNativeScannerApp(hasWebScanAPI || hasMediaDevices);
+    };
+    
+    checkScannerSupport();
+  }, []);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>, isUpload: boolean) => {
     const file = event.target.files?.[0];
@@ -46,42 +66,105 @@ export const DocumentScanner = ({ open, onClose }: DocumentScannerProps) => {
     }
   };
 
-  const handleScanClick = () => {
-    // For mobile devices: try to use the document scanner API if available
-    if ('ScannerDetector' in window || 'scanner' in navigator) {
-      try {
-        // @ts-ignore - This is a custom API that might be available on some devices
-        const scanner = 'ScannerDetector' in window ? 
-          (window as any).ScannerDetector : 
-          (navigator as any).scanner;
-          
-        scanner.scan({
-          success: (result: any) => {
-            toast({
-              title: "Document scanné avec succès",
-              description: "Le document a été scanné et sauvegardé.",
-            });
-            onClose();
-          },
-          error: (error: any) => {
-            console.error("Scanner error:", error);
-            // Fallback to camera if scanner fails
-            cameraInputRef.current?.click();
-          }
+  const launchNativeScannerApp = () => {
+    setScanning(true);
+    
+    // Try to use available scanner API
+    try {
+      // For WebScan API
+      if ('ScannerDetector' in window) {
+        (window as any).ScannerDetector.scan({
+          success: handleScanSuccess,
+          error: handleScanError,
+          // Prefer rear camera for document scanning
+          cameraDirection: 'environment'
         });
-      } catch (error) {
-        console.error("Scanner API error:", error);
-        // Fallback to camera
-        cameraInputRef.current?.click();
+      } 
+      // For navigator.scanner API
+      else if ('scanner' in navigator) {
+        (navigator as any).scanner.scan({
+          success: handleScanSuccess,
+          error: handleScanError,
+          // Options for better document scanning
+          quality: 'high',
+          cameraFacing: 'environment' // Rear camera
+        });
       }
+      // For Android Intent-based scanning
+      else if ('startActivity' in (window as any)) {
+        // Use Android Intent system to launch scanner app if available
+        (window as any).startActivity({
+          action: 'android.media.action.IMAGE_CAPTURE',
+          flags: ['FLAG_ACTIVITY_NEW_TASK'],
+          success: handleScanSuccess,
+          error: handleScanError
+        });
+      }
+      // For iOS Document Scanner
+      else if ('DocumentScanner' in window) {
+        (window as any).DocumentScanner.scanDoc({
+          sourceType: 1, // camera
+          fileName: "scan",
+          quality: 1.0,
+          returnBase64: true,
+          success: handleScanSuccess,
+          error: handleScanError
+        });
+      }
+      // Fallback to regular camera input with environment facing preference
+      else {
+        // Use a special input tag with "capture" attribute to try to invoke native camera app
+        if (cameraInputRef.current) {
+          cameraInputRef.current.click();
+        }
+      }
+    } catch (error) {
+      console.error("Error launching native scanner:", error);
+      handleScanError(error);
+    }
+  };
+
+  const handleScanSuccess = (result: any) => {
+    setScanning(false);
+    // Process scan result (could be Base64 data or file path)
+    toast({
+      title: "Document scanné avec succès",
+      description: "Le document a été scanné et sauvegardé.",
+    });
+    onClose();
+  };
+
+  const handleScanError = (error: any) => {
+    setScanning(false);
+    console.error("Scanner error:", error);
+    
+    // Fallback to camera
+    if (cameraInputRef.current) {
+      cameraInputRef.current.click();
+    }
+    
+    toast({
+      title: "Erreur lors du scan",
+      description: "Impossible d'utiliser l'application de scan. Utilisation de l'appareil photo à la place.",
+      variant: "destructive",
+    });
+  };
+
+  const handleScanClick = () => {
+    if (hasNativeScannerApp) {
+      launchNativeScannerApp();
     } else {
-      // Fallback to camera input if scanner API is not available
-      cameraInputRef.current?.click();
+      // Fallback to regular camera input
+      if (cameraInputRef.current) {
+        cameraInputRef.current.click();
+      }
     }
   };
 
   const handleUploadClick = () => {
-    uploadInputRef.current?.click();
+    if (uploadInputRef.current) {
+      uploadInputRef.current.click();
+    }
   };
 
   return (
@@ -111,7 +194,7 @@ export const DocumentScanner = ({ open, onClose }: DocumentScannerProps) => {
             disabled={scanning || uploading}
             className="w-full"
           >
-            <Camera className="mr-2 h-4 w-4" />
+            <ScanSearch className="mr-2 h-4 w-4" />
             {scanning ? "Scan en cours..." : "Scanner un document"}
           </Button>
           <Button

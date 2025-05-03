@@ -14,6 +14,7 @@ const Index = () => {
   const [showMoreInfo, setShowMoreInfo] = useState(false);
   const [showWritingSection, setShowWritingSection] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showLegalSection, setShowLegalSection] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -27,6 +28,14 @@ const Index = () => {
       // Check for the writing parameter in the URL
       const params = new URLSearchParams(location.search);
       const isWritingMode = params.get('writing') === 'true';
+      
+      // Check for showMoreInfo and showLegalSection from location state
+      if (location.state?.showMoreInfo) {
+        setShowMoreInfo(true);
+        if (location.state?.showLegalSection) {
+          setShowLegalSection(true);
+        }
+      }
       
       // Show writing section if:
       // 1. User is authenticated and writing mode is requested in URL
@@ -47,12 +56,28 @@ const Index = () => {
     checkAuth();
   }, [location, navigate]);
 
+  // Effect to scroll to the legal section if it should be shown
+  useEffect(() => {
+    if (showMoreInfo && showLegalSection) {
+      const legalSectionTimer = setTimeout(() => {
+        const legalButton = document.getElementById('legal-notices-button');
+        if (legalButton) {
+          legalButton.click();
+          legalButton.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 300);
+      
+      return () => clearTimeout(legalSectionTimer);
+    }
+  }, [showMoreInfo, showLegalSection]);
+
   const handleShowMoreInfo = () => {
     setShowMoreInfo(true);
   };
 
   const handleBackToHome = () => {
     setShowMoreInfo(false);
+    setShowLegalSection(false);
   };
 
   return (

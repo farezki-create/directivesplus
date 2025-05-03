@@ -53,9 +53,9 @@ export const Header = () => {
         <div className="flex flex-col items-center mb-4">
           <div className="bg-white rounded-2xl p-2 shadow-sm">
             <img 
-              src="/lovable-uploads/771f6055-4284-4d79-8387-f78476393035.png" 
+              src="/lovable-uploads/9dc463a0-3586-4bc4-800c-2c9c060adad4.png" 
               alt="DirectivesPlus Logo" 
-              className="h-32 object-contain" // Increased from h-24 to h-32
+              className="h-36 object-contain" 
             />
           </div>
         </div>

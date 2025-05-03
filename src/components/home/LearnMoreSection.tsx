@@ -5,6 +5,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { ArrowLeft } from "lucide-react";
 import { AdvanceDirectivesGuide } from "./AdvanceDirectivesGuide";
 import { AppInfoSection } from "./AppInfoSection";
+import { LegalNoticesSection } from "./LegalNoticesSection";
 import { useState } from "react";
 
 export function LearnMoreSection() {
@@ -12,6 +13,7 @@ export function LearnMoreSection() {
   const { currentLanguage } = useLanguage();
   const [showGuide, setShowGuide] = useState(false);
   const [showAppInfo, setShowAppInfo] = useState(false);
+  const [showLegalNotices, setShowLegalNotices] = useState(false);
 
   const navigateToFAQ = () => {
     navigate("/faq");
@@ -69,6 +71,18 @@ export function LearnMoreSection() {
         </Button>
         
         {showAppInfo && <AppInfoSection />}
+        
+        <Button
+          id="legal-notices-button"
+          variant="default"
+          size="lg"
+          onClick={() => setShowLegalNotices(!showLegalNotices)}
+          className="w-full max-w-2xl py-6 text-lg bg-blue-600 hover:bg-blue-700"
+        >
+          {currentLanguage === 'fr' ? 'Mentions légales' : 'Legal notices'}
+        </Button>
+        
+        {showLegalNotices && <LegalNoticesSection />}
       </div>
     </div>
   );

@@ -1,8 +1,14 @@
 
 import { useLanguage } from "@/hooks/useLanguage";
+import { useNavigate } from "react-router-dom";
 
 export function FeatureHighlights() {
   const { currentLanguage } = useLanguage();
+  const navigate = useNavigate();
+  
+  const handleLegalNoticesClick = () => {
+    navigate("/", { state: { showMoreInfo: true, showLegalSection: true } });
+  };
   
   return (
     <div className="mt-12 grid gap-8 md:grid-cols-3">
@@ -22,7 +28,12 @@ export function FeatureHighlights() {
           {currentLanguage === 'en' ? 'Your data is protected and hosted in France' : 'Vos données sont protégées et hébergées en France'}
         </p>
         <p className="mt-2 text-sm text-muted-foreground">
-          {currentLanguage === 'en' ? 'See legal notices for details' : 'Voir mentions légales pour plus de détails'}
+          <button 
+            className="text-blue-600 hover:underline focus:outline-none" 
+            onClick={handleLegalNoticesClick}
+          >
+            {currentLanguage === 'en' ? 'See legal notices for details' : 'Voir mentions légales pour plus de détails'}
+          </button>
         </p>
       </div>
       <div className="text-center">
