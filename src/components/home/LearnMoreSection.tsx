@@ -79,7 +79,7 @@ export function LearnMoreSection() {
           onClick={() => setShowLegalNotices(!showLegalNotices)}
           className="w-full max-w-2xl py-6 text-lg bg-blue-600 hover:bg-blue-700"
         >
-          {currentLanguage === 'fr' ? 'Mentions légales' : 'Legal notices'}
+          {currentLanguage === 'fr' ? 'Mentions légales et RGPD' : 'Legal notices and GDPR'}
         </Button>
         
         {showLegalNotices && <LegalNoticesSection />}

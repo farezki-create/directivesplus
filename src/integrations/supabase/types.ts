@@ -519,6 +519,120 @@ export type Database = {
         }
         Relationships: []
       }
+      questionnaire_medical: {
+        Row: {
+          activite_physique: boolean | null
+          adresse: string | null
+          alcool: boolean | null
+          allergies: string[] | null
+          antecedents: string | null
+          autres_chirurgies: string | null
+          autres_symptomes: string | null
+          chirurgies: string[] | null
+          contexte_social_couverture: string | null
+          contexte_social_profession: string | null
+          contexte_social_vie: string | null
+          created_at: string
+          date_naissance: string | null
+          debut_symptomes: string | null
+          details_motif: string | null
+          directives: string | null
+          dispositifs: string | null
+          drogues: boolean | null
+          evolution: string | null
+          famille: string[] | null
+          hospitalisations: string | null
+          id: string
+          motif: string | null
+          nom: string | null
+          pathologies: string[] | null
+          personne_prevenir: string | null
+          prenom: string | null
+          secu: string | null
+          sexe: string | null
+          symptomes: string[] | null
+          tabac: boolean | null
+          telephone: string | null
+          traitements: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          activite_physique?: boolean | null
+          adresse?: string | null
+          alcool?: boolean | null
+          allergies?: string[] | null
+          antecedents?: string | null
+          autres_chirurgies?: string | null
+          autres_symptomes?: string | null
+          chirurgies?: string[] | null
+          contexte_social_couverture?: string | null
+          contexte_social_profession?: string | null
+          contexte_social_vie?: string | null
+          created_at?: string
+          date_naissance?: string | null
+          debut_symptomes?: string | null
+          details_motif?: string | null
+          directives?: string | null
+          dispositifs?: string | null
+          drogues?: boolean | null
+          evolution?: string | null
+          famille?: string[] | null
+          hospitalisations?: string | null
+          id?: string
+          motif?: string | null
+          nom?: string | null
+          pathologies?: string[] | null
+          personne_prevenir?: string | null
+          prenom?: string | null
+          secu?: string | null
+          sexe?: string | null
+          symptomes?: string[] | null
+          tabac?: boolean | null
+          telephone?: string | null
+          traitements?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          activite_physique?: boolean | null
+          adresse?: string | null
+          alcool?: boolean | null
+          allergies?: string[] | null
+          antecedents?: string | null
+          autres_chirurgies?: string | null
+          autres_symptomes?: string | null
+          chirurgies?: string[] | null
+          contexte_social_couverture?: string | null
+          contexte_social_profession?: string | null
+          contexte_social_vie?: string | null
+          created_at?: string
+          date_naissance?: string | null
+          debut_symptomes?: string | null
+          details_motif?: string | null
+          directives?: string | null
+          dispositifs?: string | null
+          drogues?: boolean | null
+          evolution?: string | null
+          famille?: string[] | null
+          hospitalisations?: string | null
+          id?: string
+          motif?: string | null
+          nom?: string | null
+          pathologies?: string[] | null
+          personne_prevenir?: string | null
+          prenom?: string | null
+          secu?: string | null
+          sexe?: string | null
+          symptomes?: string[] | null
+          tabac?: boolean | null
+          telephone?: string | null
+          traitements?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       questionnaire_preferences_en: {
         Row: {
           created_at: string | null

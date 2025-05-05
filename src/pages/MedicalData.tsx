@@ -7,14 +7,14 @@ import { Plus, X, UploadCloud } from "lucide-react";
 import { useMedicalData } from "@/hooks/useMedicalData";
 import { useAuth } from "@/hooks/useAuth";
 import { MedicalDataList } from "@/components/medical/MedicalDataList";
-import { MedicalDataForm } from "@/components/medical/MedicalDataForm";
+import { MedicalQuestionnaire } from "@/components/medical/MedicalQuestionnaire";
 import { DocumentScanner } from "@/components/DocumentScanner";
 import { FrenchFlag } from "@/components/ui/FrenchFlag";
 
 export default function MedicalData() {
   const { user } = useAuth();
   const { medicalData, isLoading, fetchMedicalData } = useMedicalData(user?.id || "");
-  const [showForm, setShowForm] = useState(false);
+  const [showQuestionnaire, setShowQuestionnaire] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
 
   useEffect(() => {
@@ -23,12 +23,12 @@ export default function MedicalData() {
     }
   }, [user]);
 
-  const handleFormToggle = () => {
-    setShowForm(!showForm);
+  const handleQuestionnaireToggle = () => {
+    setShowQuestionnaire(!showQuestionnaire);
   };
 
   const handleDataSaved = () => {
-    setShowForm(false);
+    setShowQuestionnaire(false);
     fetchMedicalData();
   };
 
@@ -51,9 +51,9 @@ export default function MedicalData() {
               </Button>
               <Button 
                 className="flex items-center gap-2"
-                onClick={handleFormToggle}
+                onClick={handleQuestionnaireToggle}
               >
-                {showForm ? (
+                {showQuestionnaire ? (
                   <>
                     <X className="h-4 w-4" />
                     Annuler
@@ -61,15 +61,15 @@ export default function MedicalData() {
                 ) : (
                   <>
                     <Plus className="h-4 w-4" />
-                    Ajouter des données
+                    Questionnaire médical
                   </>
                 )}
               </Button>
             </div>
           </div>
           
-          {showForm && (
-            <MedicalDataForm onDataSaved={handleDataSaved} />
+          {showQuestionnaire && (
+            <MedicalQuestionnaire onDataSaved={handleDataSaved} />
           )}
           
           <Card className="p-6 mt-4">
