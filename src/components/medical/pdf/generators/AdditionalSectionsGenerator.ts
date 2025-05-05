@@ -41,20 +41,20 @@ export class AdditionalSectionsGenerator {
     // Mode de vie
     y = PDFDocumentLayout.addSectionHeader(pdfDoc, "Mode de vie", y);
     
-    if (data.tabac) {
-      y = PDFDocumentLayout.addField(pdfDoc, "Fumeur", data.tabac === "oui" ? "Oui" : "Non", y);
+    if (data.tabac !== undefined) {
+      y = PDFDocumentLayout.addField(pdfDoc, "Fumeur", data.tabac ? "Oui" : "Non", y);
     }
     
-    if (data.alcool) {
-      y = PDFDocumentLayout.addField(pdfDoc, "Consommation d'alcool", data.alcool === "oui" ? "Oui" : "Non", y);
+    if (data.alcool !== undefined) {
+      y = PDFDocumentLayout.addField(pdfDoc, "Consommation d'alcool", data.alcool ? "Oui" : "Non", y);
     }
     
-    if (data.drogues) {
-      y = PDFDocumentLayout.addField(pdfDoc, "Consommation de drogues", data.drogues === "oui" ? "Oui" : "Non", y);
+    if (data.drogues !== undefined) {
+      y = PDFDocumentLayout.addField(pdfDoc, "Consommation de drogues", data.drogues ? "Oui" : "Non", y);
     }
     
-    if (data.activite_physique) {
-      y = PDFDocumentLayout.addField(pdfDoc, "Activité physique régulière", data.activite_physique === "oui" ? "Oui" : "Non", y);
+    if (data.activite_physique !== undefined) {
+      y = PDFDocumentLayout.addField(pdfDoc, "Activité physique régulière", data.activite_physique ? "Oui" : "Non", y);
     }
     
     y = PDFDocumentLayout.checkForNewPage(pdfDoc, y);
