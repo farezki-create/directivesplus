@@ -2,8 +2,8 @@
 import React, { useRef, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Camera, Upload, FileUp } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { Camera, FileUp } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface DocumentScannerProps {
   open: boolean;

@@ -1,10 +1,10 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { FileText, Eye } from "lucide-react";
+import { FileText, Eye, CreditCard } from "lucide-react";
 import { format } from "date-fns";
 import { MedicalData } from "@/hooks/useMedicalData";
 import { 
@@ -17,20 +17,40 @@ import {
   DialogFooter,
   DialogClose
 } from "@/components/ui/dialog";
+import { useNavigate } from "react-router-dom";
 
 interface MedicalDataListProps {
   data: MedicalData[];
 }
 
 export function MedicalDataList({ data }: MedicalDataListProps) {
+  const navigate = useNavigate();
+  const [showGenerateDialog, setShowGenerateDialog] = useState(false);
+  
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return format(date, "dd/MM/yyyy à HH:mm");
   };
 
+  const handleGenerateAccessCard = () => {
+    navigate("/generate-pdf?format=card");
+    setShowGenerateDialog(false);
+  };
+
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-medium">Mes données enregistrées</h2>
+      <div className="flex justify-between items-center">
+        <h2 className="text-lg font-medium">Mes données enregistrées</h2>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="flex items-center gap-1"
+          onClick={() => setShowGenerateDialog(true)}
+        >
+          <CreditCard className="h-4 w-4" />
+          Générer une carte d'accès
+        </Button>
+      </div>
       
       {data.map((item) => (
         <Card key={item.id} className="overflow-hidden">
@@ -90,6 +110,38 @@ export function MedicalDataList({ data }: MedicalDataListProps) {
           </CardContent>
         </Card>
       ))}
+
+      {/* Access Card Generation Dialog */}
+      <Dialog open={showGenerateDialog} onOpenChange={setShowGenerateDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Générer une carte d'accès</DialogTitle>
+            <DialogDescription>
+              Cette carte permettra aux professionnels de santé d'accéder à vos informations médicales en cas d'urgence.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <p className="text-sm text-muted-foreground">
+              La carte d'accès contient un code unique que les professionnels de santé pourront utiliser pour accéder à vos données médicales, avec votre consentement.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowGenerateDialog(false)}>
+              Annuler
+            </Button>
+            <Button onClick={handleGenerateAccessCard} className="flex items-center gap-1">
+              <CreditCard className="h-4 w-4" />
+              Générer la carte
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {data.length === 0 && (
+        <div className="text-center py-6 text-muted-foreground">
+          Aucune donnée médicale enregistrée
+        </div>
+      )}
     </div>
   );
 }
