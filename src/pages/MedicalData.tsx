@@ -10,12 +10,27 @@ import { MedicalDataList } from "@/components/medical/MedicalDataList";
 import { MedicalQuestionnaire } from "@/components/medical/MedicalQuestionnaire";
 import { DocumentScanner } from "@/components/DocumentScanner";
 import { FrenchFlag } from "@/components/ui/FrenchFlag";
+import { useMedicalDocuments } from "@/hooks/useMedicalDocuments";
+import { MedicalDocumentsList } from "@/components/medical/MedicalDocumentsList";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function MedicalData() {
   const { user } = useAuth();
   const { medicalData, isLoading, fetchMedicalData } = useMedicalData(user?.id || "");
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>("data");
+  
+  const { 
+    documents, 
+    loading: documentsLoading, 
+    previewUrl,
+    previewOpen,
+    setPreviewOpen,
+    fetchDocuments,
+    previewDocument,
+    deleteDocument
+  } = useMedicalDocuments(user?.id || "");
 
   useEffect(() => {
     if (user) {
@@ -30,6 +45,11 @@ export default function MedicalData() {
   const handleDataSaved = () => {
     setShowQuestionnaire(false);
     fetchMedicalData();
+  };
+  
+  const handleDocumentAdded = () => {
+    fetchDocuments();
+    setActiveTab("documents");
   };
 
   return (
@@ -73,19 +93,48 @@ export default function MedicalData() {
           )}
           
           <Card className="p-6 mt-4">
-            {isLoading ? (
-              <div className="text-center">Chargement...</div>
-            ) : (
-              <>
-                {medicalData.length > 0 ? (
-                  <MedicalDataList data={medicalData} />
+            <Tabs
+              defaultValue="data"
+              value={activeTab}
+              onValueChange={setActiveTab}
+              className="w-full"
+            >
+              <TabsList className="grid w-full grid-cols-2 mb-4">
+                <TabsTrigger value="data">Questionnaire médical</TabsTrigger>
+                <TabsTrigger value="documents">Documents</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="data">
+                {isLoading ? (
+                  <div className="text-center">Chargement...</div>
                 ) : (
-                  <div className="text-center text-muted-foreground">
-                    Aucune donnée médicale enregistrée
-                  </div>
+                  <>
+                    {medicalData.length > 0 ? (
+                      <MedicalDataList data={medicalData} />
+                    ) : (
+                      <div className="text-center text-muted-foreground">
+                        Aucune donnée médicale enregistrée
+                      </div>
+                    )}
+                  </>
                 )}
-              </>
-            )}
+              </TabsContent>
+              
+              <TabsContent value="documents">
+                {documentsLoading ? (
+                  <div className="text-center">Chargement...</div>
+                ) : (
+                  <MedicalDocumentsList
+                    documents={documents}
+                    previewUrl={previewUrl}
+                    previewOpen={previewOpen}
+                    setPreviewOpen={setPreviewOpen}
+                    onPreview={previewDocument}
+                    onDelete={deleteDocument}
+                  />
+                )}
+              </TabsContent>
+            </Tabs>
           </Card>
           
           {/* Security info section */}
@@ -105,6 +154,7 @@ export default function MedicalData() {
       <DocumentScanner 
         open={showScanner}
         onClose={() => setShowScanner(false)}
+        onDocumentAdded={handleDocumentAdded}
       />
     </div>
   );

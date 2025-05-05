@@ -2,56 +2,79 @@
 import React, { useRef, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Camera, FileUp } from "lucide-react";
+import { FileUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface DocumentScannerProps {
   open: boolean;
   onClose: () => void;
+  onDocumentAdded?: () => void;
 }
 
-export const DocumentScanner = ({ open, onClose }: DocumentScannerProps) => {
-  const cameraInputRef = useRef<HTMLInputElement>(null);
+export const DocumentScanner = ({ open, onClose, onDocumentAdded }: DocumentScannerProps) => {
   const uploadInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>, isUpload: boolean) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     setUploading(true);
 
     try {
-      // Here you would typically upload the file to your backend
-      // For now, we'll just simulate a process with a timeout
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Get the current user
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error("Vous devez être connecté pour télécharger un document");
+      }
+      
+      const userId = session.user.id;
+      
+      // Upload file to Supabase Storage
+      const filePath = `medical_documents/${userId}/${Date.now()}_${file.name}`;
+      const { error: uploadError } = await supabase.storage
+        .from('medical_documents')
+        .upload(filePath, file);
+        
+      if (uploadError) throw uploadError;
+      
+      // Add file record to the database
+      const { error: dbError } = await supabase
+        .from('medical_documents')
+        .insert({
+          user_id: userId,
+          file_path: filePath,
+          file_name: file.name,
+          file_type: file.type,
+          file_size: file.size,
+          description: "Document médical"
+        });
+        
+      if (dbError) throw dbError;
       
       toast({
-        title: isUpload ? "Document téléchargé avec succès" : "Document scanné avec succès",
-        description: `Le document ${file.name} a été ${isUpload ? 'téléchargé' : 'scanné'} et sauvegardé.`,
+        title: "Document téléchargé avec succès",
+        description: `Le document ${file.name} a été téléchargé et sauvegardé.`,
       });
       
-      onClose();
-      
-      // Reset file inputs after successful upload
-      if (cameraInputRef.current) cameraInputRef.current.value = '';
+      // Reset the file input
       if (uploadInputRef.current) uploadInputRef.current.value = '';
       
+      // Notify parent component that a document was added
+      if (onDocumentAdded) onDocumentAdded();
+      
+      onClose();
     } catch (error) {
+      console.error("Upload error:", error);
       toast({
-        title: isUpload ? "Erreur lors du téléchargement" : "Erreur lors du scan",
+        title: "Erreur lors du téléchargement",
         description: "Une erreur est survenue lors du traitement du document.",
         variant: "destructive",
       });
     } finally {
       setUploading(false);
-    }
-  };
-
-  const handleCameraClick = () => {
-    if (cameraInputRef.current) {
-      cameraInputRef.current.click();
     }
   };
 
@@ -68,39 +91,18 @@ export const DocumentScanner = ({ open, onClose }: DocumentScannerProps) => {
           <DialogTitle>Ajouter un document de santé</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col items-center justify-center space-y-4 p-6">
-          {/* Séparons clairement les deux inputs pour éviter toute confusion */}
-          <input
-            type="file"
-            ref={cameraInputRef}
-            onChange={(e) => handleFileChange(e, false)}
-            accept="image/*"
-            capture="environment"
-            className="hidden"
-            id="camera-input"
-          />
-          
           <input
             type="file"
             ref={uploadInputRef}
-            onChange={(e) => handleFileChange(e, true)}
+            onChange={(e) => handleFileChange(e)}
             accept="image/*,.pdf"
             className="hidden"
             id="file-upload-input"
           />
           
           <Button
-            onClick={handleCameraClick}
-            disabled={uploading}
-            className="w-full"
-          >
-            <Camera className="mr-2 h-4 w-4" />
-            {uploading ? "Traitement en cours..." : "Prendre une photo"}
-          </Button>
-          
-          <Button
             onClick={handleUploadClick}
             disabled={uploading}
-            variant="outline"
             className="w-full"
           >
             <FileUp className="mr-2 h-4 w-4" />
