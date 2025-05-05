@@ -33,6 +33,11 @@ export const DocumentScanner = ({ open, onClose }: DocumentScannerProps) => {
       });
       
       onClose();
+      
+      // Reset file inputs after successful upload
+      if (cameraInputRef.current) cameraInputRef.current.value = '';
+      if (uploadInputRef.current) uploadInputRef.current.value = '';
+      
     } catch (error) {
       toast({
         title: isUpload ? "Erreur lors du téléchargement" : "Erreur lors du scan",
@@ -63,6 +68,7 @@ export const DocumentScanner = ({ open, onClose }: DocumentScannerProps) => {
           <DialogTitle>Ajouter un document de santé</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col items-center justify-center space-y-4 p-6">
+          {/* Séparons clairement les deux inputs pour éviter toute confusion */}
           <input
             type="file"
             ref={cameraInputRef}
@@ -70,14 +76,18 @@ export const DocumentScanner = ({ open, onClose }: DocumentScannerProps) => {
             accept="image/*"
             capture="environment"
             className="hidden"
+            id="camera-input"
           />
+          
           <input
             type="file"
             ref={uploadInputRef}
             onChange={(e) => handleFileChange(e, true)}
             accept="image/*,.pdf"
             className="hidden"
+            id="file-upload-input"
           />
+          
           <Button
             onClick={handleCameraClick}
             disabled={uploading}
@@ -86,6 +96,7 @@ export const DocumentScanner = ({ open, onClose }: DocumentScannerProps) => {
             <Camera className="mr-2 h-4 w-4" />
             {uploading ? "Traitement en cours..." : "Prendre une photo"}
           </Button>
+          
           <Button
             onClick={handleUploadClick}
             disabled={uploading}

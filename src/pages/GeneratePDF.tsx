@@ -15,9 +15,11 @@ import { FileText, CreditCard } from "lucide-react";
 
 export default function GeneratePDF() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const format = searchParams.get('format');
   const [userId, setUserId] = useState<string | null>(null);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<string>("directives");
+  const [activeTab, setActiveTab] = useState<string>(format === "card" ? "card" : "directives");
 
   const { responses, synthesis, isLoading: responsesLoading } = useQuestionnairesResponses(userId || "");
   const { text: freeText } = useSynthesis(userId);
