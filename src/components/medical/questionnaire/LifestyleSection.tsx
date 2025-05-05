@@ -33,9 +33,9 @@ export function LifestyleSection({ control }: LifestyleSectionProps) {
             <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
               <FormControl>
                 <Checkbox
-                  checked={field.value === 'oui'}
+                  checked={field.value === true}
                   onCheckedChange={(checked) => {
-                    field.onChange(checked ? 'oui' : 'non');
+                    field.onChange(checked);
                   }}
                 />
               </FormControl>
@@ -54,9 +54,9 @@ export function LifestyleSection({ control }: LifestyleSectionProps) {
             <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
               <FormControl>
                 <Checkbox
-                  checked={field.value === 'oui'}
+                  checked={field.value === true}
                   onCheckedChange={(checked) => {
-                    field.onChange(checked ? 'oui' : 'non');
+                    field.onChange(checked);
                   }}
                 />
               </FormControl>
@@ -75,9 +75,9 @@ export function LifestyleSection({ control }: LifestyleSectionProps) {
             <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
               <FormControl>
                 <Checkbox
-                  checked={field.value === 'oui'}
+                  checked={field.value === true}
                   onCheckedChange={(checked) => {
-                    field.onChange(checked ? 'oui' : 'non');
+                    field.onChange(checked);
                   }}
                 />
               </FormControl>
@@ -96,9 +96,9 @@ export function LifestyleSection({ control }: LifestyleSectionProps) {
             <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
               <FormControl>
                 <Checkbox
-                  checked={field.value === 'oui'}
+                  checked={field.value === true}
                   onCheckedChange={(checked) => {
-                    field.onChange(checked ? 'oui' : 'non');
+                    field.onChange(checked);
                   }}
                 />
               </FormControl>

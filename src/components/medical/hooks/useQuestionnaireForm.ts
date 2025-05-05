@@ -28,6 +28,10 @@ export function useQuestionnaireForm() {
       chirurgies: [],
       allergies: [],
       dispositifs: "",
+      tabac: false,
+      alcool: false,
+      drogues: false,
+      activite_physique: false
     },
   });
 
