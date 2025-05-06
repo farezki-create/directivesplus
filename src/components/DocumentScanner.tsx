@@ -32,13 +32,25 @@ export const DocumentScanner = ({ open, onClose, onDocumentAdded }: DocumentScan
       
       const userId = session.user.id;
       
+      // Correction du chemin de fichier pour éviter l'erreur "Invalid key"
+      // Utiliser un nom sanitisé pour le fichier (sans caractères spéciaux)
+      const timestamp = Date.now();
+      const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const filePath = `${userId}/${timestamp}_${sanitizedFileName}`;
+      
+      console.log("Tentative de téléchargement vers:", filePath);
+      
       // Upload file to Supabase Storage
-      const filePath = `${userId}/${Date.now()}_${file.name}`;
-      const { error: uploadError } = await supabase.storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
         .from('medical_documents')
         .upload(filePath, file);
         
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error("Erreur lors du téléchargement:", uploadError);
+        throw uploadError;
+      }
+      
+      console.log("Fichier téléchargé avec succès:", uploadData);
       
       // Add file record to the database
       const { error: dbError } = await supabase
@@ -52,7 +64,10 @@ export const DocumentScanner = ({ open, onClose, onDocumentAdded }: DocumentScan
           description: "Document médical"
         });
         
-      if (dbError) throw dbError;
+      if (dbError) {
+        console.error("Erreur lors de l'enregistrement en base de données:", dbError);
+        throw dbError;
+      }
       
       toast({
         title: "Document téléchargé avec succès",
@@ -95,7 +110,7 @@ export const DocumentScanner = ({ open, onClose, onDocumentAdded }: DocumentScan
             type="file"
             ref={uploadInputRef}
             onChange={(e) => handleFileChange(e)}
-            accept="image/*,.pdf"
+            accept="image/*,.pdf,.doc,.docx,.txt"
             className="hidden"
             id="file-upload-input"
           />
@@ -108,6 +123,10 @@ export const DocumentScanner = ({ open, onClose, onDocumentAdded }: DocumentScan
             <FileUp className="mr-2 h-4 w-4" />
             {uploading ? "Téléchargement en cours..." : "Télécharger un document"}
           </Button>
+          
+          <p className="text-sm text-muted-foreground text-center">
+            Formats acceptés : Images, PDF, Word, texte
+          </p>
         </div>
       </DialogContent>
     </Dialog>

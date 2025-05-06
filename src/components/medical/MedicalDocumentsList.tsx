@@ -2,7 +2,7 @@
 import React from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, Eye, Trash2 } from "lucide-react";
+import { FileText, Eye, Trash2, FileIcon, Image } from "lucide-react";
 import { format } from "date-fns";
 import { MedicalDocument } from "@/components/medical/types";
 import { PDFPreviewDialog } from "@/components/pdf/PDFPreviewDialog";
@@ -51,6 +51,19 @@ export function MedicalDocumentsList({
       setDocumentToDelete(null);
     }
   };
+  
+  const getDocumentIcon = (fileType: string) => {
+    if (fileType.startsWith('image/')) {
+      return <Image className="h-5 w-5 text-blue-500 mr-2" />;
+    }
+    if (fileType.includes('pdf')) {
+      return <FileText className="h-5 w-5 text-red-500 mr-2" />;
+    }
+    if (fileType.includes('word') || fileType.includes('doc')) {
+      return <FileText className="h-5 w-5 text-blue-700 mr-2" />;
+    }
+    return <FileIcon className="h-5 w-5 text-gray-500 mr-2" />;
+  };
 
   if (documents.length === 0) {
     return (
@@ -67,7 +80,7 @@ export function MedicalDocumentsList({
           <div className="p-4">
             <div className="flex justify-between items-center mb-2">
               <div className="flex items-center">
-                <FileText className="h-5 w-5 text-blue-500 mr-2" />
+                {getDocumentIcon(document.file_type)}
                 <span className="font-medium">{document.file_name}</span>
               </div>
             </div>
@@ -115,7 +128,7 @@ export function MedicalDocumentsList({
             <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
             <AlertDialogDescription>
               Êtes-vous sûr de vouloir supprimer ce document ? Cette action est irréversible.
-            </AlertDialogDescription>
+            </DialogDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Annuler</AlertDialogCancel>

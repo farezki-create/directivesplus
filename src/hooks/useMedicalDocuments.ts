@@ -23,6 +23,7 @@ export function useMedicalDocuments(userId: string) {
         .order('created_at', { ascending: false });
         
       if (error) throw error;
+      console.log("Documents récupérés:", data);
       setDocuments(data || []);
     } catch (error) {
       console.error("Error fetching medical documents:", error);
@@ -38,12 +39,14 @@ export function useMedicalDocuments(userId: string) {
   
   const previewDocument = async (document: MedicalDocument) => {
     try {
+      console.log("Génération de l'URL de prévisualisation pour:", document.file_path);
       const { data, error } = await supabase.storage
         .from('medical_documents')
         .createSignedUrl(document.file_path, 3600);
         
       if (error) throw error;
       
+      console.log("URL générée:", data.signedUrl);
       setPreviewUrl(data.signedUrl);
       setPreviewOpen(true);
     } catch (error) {
@@ -60,14 +63,26 @@ export function useMedicalDocuments(userId: string) {
     try {
       // First find the document to get the file path
       const documentToDelete = documents.find(doc => doc.id === documentId);
-      if (!documentToDelete) return;
+      if (!documentToDelete) {
+        toast({
+          title: "Erreur",
+          description: "Document introuvable",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      console.log("Suppression du document:", documentToDelete.file_path);
       
       // Delete the file from storage
       const { error: storageError } = await supabase.storage
         .from('medical_documents')
         .remove([documentToDelete.file_path]);
         
-      if (storageError) throw storageError;
+      if (storageError) {
+        console.error("Erreur lors de la suppression du fichier:", storageError);
+        throw storageError;
+      }
       
       // Delete the database record
       const { error: dbError } = await supabase
@@ -75,7 +90,10 @@ export function useMedicalDocuments(userId: string) {
         .delete()
         .eq('id', documentId);
         
-      if (dbError) throw dbError;
+      if (dbError) {
+        console.error("Erreur lors de la suppression de l'enregistrement:", dbError);
+        throw dbError;
+      }
       
       // Update the local state
       setDocuments(documents.filter(doc => doc.id !== documentId));
