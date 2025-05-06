@@ -18,7 +18,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { MedicalQuestionnaireData } from "../schemas/medicalQuestionnaireSchema";
-import { VoiceRecorder } from "@/components/VoiceRecorder";
 
 interface GeneralInformationSectionProps {
   control: Control<MedicalQuestionnaireData>;
@@ -31,9 +30,8 @@ export function GeneralInformationSection({
 }: GeneralInformationSectionProps) {
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-bold py-2 px-4 bg-blue-500 text-white rounded-md flex items-center justify-between">
-        <span>1. Informations générales</span>
-        <VoiceRecorder section="informations-generales" className="text-white" />
+      <h2 className="text-lg font-bold py-2 px-4 bg-blue-500 text-white rounded-md">
+        1. Informations générales
       </h2>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

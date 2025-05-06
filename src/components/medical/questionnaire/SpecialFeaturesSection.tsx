@@ -6,7 +6,6 @@ import { MedicalQuestionnaireData, dispositifsList } from "../schemas/medicalQue
 import { CheckboxGroup, CheckboxGroupItem } from "@/components/ui/checkbox-group";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { VoiceRecorder } from "@/components/VoiceRecorder";
 
 interface SpecialFeaturesSectionProps {
   control: Control<MedicalQuestionnaireData>;
@@ -18,9 +17,8 @@ interface SpecialFeaturesSectionProps {
 export function SpecialFeaturesSection({ control }: SpecialFeaturesSectionProps) {
   return (
     <div className="space-y-4 border p-4 rounded-md">
-      <h3 className="text-lg font-medium flex items-center justify-between">
-        <span>Particularités</span>
-        <VoiceRecorder section="particularites" />
+      <h3 className="text-lg font-medium">
+        Particularités
       </h3>
       
       <FormField

@@ -13,6 +13,7 @@ import { FrenchFlag } from "@/components/ui/FrenchFlag";
 import { useMedicalDocuments } from "@/hooks/useMedicalDocuments";
 import { MedicalDocumentsList } from "@/components/medical/MedicalDocumentsList";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MedicalCardGenerator } from "@/components/medical/MedicalCardGenerator";
 
 export default function MedicalData() {
   const { user } = useAuth();
@@ -93,6 +94,11 @@ export default function MedicalData() {
           )}
           
           <Card className="p-6 mt-4">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">Actions</h2>
+              <MedicalCardGenerator medicalData={medicalData} />
+            </div>
+            
             <Tabs
               defaultValue="data"
               value={activeTab}
