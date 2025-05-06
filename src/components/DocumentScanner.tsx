@@ -33,7 +33,7 @@ export const DocumentScanner = ({ open, onClose, onDocumentAdded }: DocumentScan
       const userId = session.user.id;
       
       // Upload file to Supabase Storage
-      const filePath = `medical_documents/${userId}/${Date.now()}_${file.name}`;
+      const filePath = `${userId}/${Date.now()}_${file.name}`;
       const { error: uploadError } = await supabase.storage
         .from('medical_documents')
         .upload(filePath, file);
