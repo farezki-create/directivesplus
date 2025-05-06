@@ -18,7 +18,7 @@ export class MedicalCardGenerator {
     this.addUserInformation(doc, profile);
     this.addMedicalInformation(doc, profile);
     this.addDecorativeElements(doc);
-    this.addFooter(doc);
+    this.addFooter(doc, profile);
   }
 
   private static setBackground(doc: jsPDF): void {
@@ -96,7 +96,7 @@ export class MedicalCardGenerator {
     doc.line(4, 35, cardDimensions.width - 4, 35);
   }
 
-  private static addFooter(doc: jsPDF): void {
+  private static addFooter(doc: jsPDF, profile: MedicalProfile): void {
     // Add access code section at the bottom
     doc.setFillColor(220, 38, 38, 0.1); // Light red background
     doc.roundedRect(4, cardDimensions.height - 10, cardDimensions.width - 8, 7, 1, 1, 'F');
