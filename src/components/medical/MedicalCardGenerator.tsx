@@ -33,11 +33,16 @@ export function MedicalCardGenerator({ medicalData }: MedicalCardGeneratorProps)
 
     try {
       // Récupérer les informations du profil
-      const { data: profileData } = await supabase
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
         .single();
+
+      if (profileError) {
+        console.error("Error fetching profile:", profileError);
+        throw new Error("Profil utilisateur non trouvé");
+      }
 
       if (!profileData) {
         throw new Error("Profil utilisateur non trouvé");
@@ -86,6 +91,7 @@ export function MedicalCardGenerator({ medicalData }: MedicalCardGeneratorProps)
           });
 
         if (uploadError) {
+          console.error("Error uploading PDF:", uploadError);
           throw uploadError;
         }
 
@@ -102,6 +108,7 @@ export function MedicalCardGenerator({ medicalData }: MedicalCardGeneratorProps)
           });
 
         if (dbError) {
+          console.error("Error saving document reference:", dbError);
           throw dbError;
         }
 
