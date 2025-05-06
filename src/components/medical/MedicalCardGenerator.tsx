@@ -144,7 +144,7 @@ export function MedicalCardGenerator({ medicalData }: MedicalCardGeneratorProps)
       className="bg-red-600 hover:bg-red-700 text-white flex items-center gap-2"
     >
       <CreditCard className="h-4 w-4" />
-      {isGenerating ? "Génération en cours..." : "Générer ma carte d'accès médicale"}
+      {isGenerating ? "Génération en cours..." : "Générer ma carte d'accès à mes données médicales"}
     </Button>
   );
 }
