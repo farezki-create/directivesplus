@@ -49,26 +49,28 @@ export function MedicalCardGenerator({ medicalData }: MedicalCardGeneratorProps)
       }
 
       // Préparer les données du profil médical
-      let latestData = {};
+      let latestData: Record<string, any> = {};
       let accessCode = "";
       let allergies: string[] = [];
 
       // Récupérer les données du questionnaire si disponibles
       if (medicalData && medicalData.length > 0) {
-        latestData = medicalData[0]?.data || {};
-        accessCode = medicalData[0]?.access_code || "";
-        
-        // Extraire les allergies (si disponibles)
-        if (latestData.allergies && Array.isArray(latestData.allergies)) {
-          allergies = latestData.allergies;
+        if (medicalData[0] && medicalData[0].data) {
+          latestData = medicalData[0].data;
+          accessCode = medicalData[0].access_code || "";
+          
+          // Extraire les allergies (si disponibles)
+          if (latestData.allergies && Array.isArray(latestData.allergies)) {
+            allergies = latestData.allergies;
+          }
         }
       }
 
       // Créer le profil médical
       const medicalProfile: MedicalProfile = {
-        last_name: profileData.last_name || latestData.nom || "",
-        first_name: profileData.first_name || latestData.prenom || "",
-        birth_date: profileData.birth_date || latestData.date_naissance || "",
+        last_name: profileData.last_name || (latestData.nom as string) || "",
+        first_name: profileData.first_name || (latestData.prenom as string) || "",
+        birth_date: profileData.birth_date || (latestData.date_naissance as string) || "",
         unique_identifier: accessCode || "Non défini",
         allergies: allergies
       };
@@ -86,48 +88,19 @@ export function MedicalCardGenerator({ medicalData }: MedicalCardGeneratorProps)
       // Obtenir le PDF sous forme de données URL
       const pdfDataUrl = doc.output('dataurlstring');
 
-      // Enregistrer le PDF dans Supabase Storage
+      // Enregistrer le PDF directement (sans stocker dans Supabase)
       if (pdfDataUrl) {
         const base64Data = pdfDataUrl.split(',')[1];
-        const fileName = `medical_cards/${user.id}_medical_card_${Date.now()}.pdf`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from('medical_documents')
-          .upload(fileName, decode(base64Data), {
-            contentType: 'application/pdf'
-          });
-
-        if (uploadError) {
-          console.error("Error uploading PDF:", uploadError);
-          throw uploadError;
-        }
-
-        // Ajouter le document à la table de documents
-        const { error: dbError } = await supabase
-          .from('medical_documents')
-          .insert({
-            user_id: user.id,
-            file_path: fileName,
-            file_name: 'Carte d\'accès médicale.pdf',
-            file_type: 'application/pdf',
-            file_size: Math.round(base64Data.length * 0.75),
-            description: 'Carte d\'accès aux données médicales'
-          });
-
-        if (dbError) {
-          console.error("Error saving document reference:", dbError);
-          throw dbError;
-        }
-
-        toast({
-          title: "Succès",
-          description: "La carte d'accès médicale a été générée et enregistrée avec succès"
-        });
         
         // Ouvrir le PDF dans un nouvel onglet
         window.open(URL.createObjectURL(
           new Blob([decode(base64Data)], { type: 'application/pdf' })
         ), '_blank');
+
+        toast({
+          title: "Succès",
+          description: "La carte d'accès médicale a été générée avec succès"
+        });
       }
     } catch (error) {
       console.error("Error generating medical card:", error);
