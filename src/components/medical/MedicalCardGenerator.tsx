@@ -20,10 +20,10 @@ export function MedicalCardGenerator({ medicalData }: MedicalCardGeneratorProps)
   const { user } = useAuth();
 
   const handleGenerateMedicalCard = async () => {
-    if (!user || !medicalData || medicalData.length === 0) {
+    if (!user) {
       toast({
         title: "Erreur",
-        description: "Aucune donnée médicale disponible pour générer la carte",
+        description: "Vous devez être connecté pour générer la carte d'accès",
         variant: "destructive"
       });
       return;
@@ -49,20 +49,27 @@ export function MedicalCardGenerator({ medicalData }: MedicalCardGeneratorProps)
       }
 
       // Préparer les données du profil médical
-      const latestData = medicalData[0]?.data || {};
-      
-      // Extraire les allergies (si disponibles)
+      let latestData = {};
+      let accessCode = "";
       let allergies: string[] = [];
-      if (latestData.allergies && Array.isArray(latestData.allergies)) {
-        allergies = latestData.allergies;
+
+      // Récupérer les données du questionnaire si disponibles
+      if (medicalData && medicalData.length > 0) {
+        latestData = medicalData[0]?.data || {};
+        accessCode = medicalData[0]?.access_code || "";
+        
+        // Extraire les allergies (si disponibles)
+        if (latestData.allergies && Array.isArray(latestData.allergies)) {
+          allergies = latestData.allergies;
+        }
       }
 
       // Créer le profil médical
       const medicalProfile: MedicalProfile = {
-        last_name: profileData.last_name || latestData.nom,
-        first_name: profileData.first_name || latestData.prenom,
-        birth_date: profileData.birth_date || latestData.date_naissance,
-        unique_identifier: medicalData[0]?.access_code,
+        last_name: profileData.last_name || latestData.nom || "",
+        first_name: profileData.first_name || latestData.prenom || "",
+        birth_date: profileData.birth_date || latestData.date_naissance || "",
+        unique_identifier: accessCode || "Non défini",
         allergies: allergies
       };
 
@@ -147,7 +154,7 @@ export function MedicalCardGenerator({ medicalData }: MedicalCardGeneratorProps)
   return (
     <Button
       onClick={handleGenerateMedicalCard}
-      disabled={isGenerating || !medicalData || medicalData.length === 0}
+      disabled={isGenerating || !user}
       className="bg-red-600 hover:bg-red-700 text-white flex items-center gap-2"
     >
       <CreditCard className="h-4 w-4" />
