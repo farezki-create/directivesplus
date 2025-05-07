@@ -181,6 +181,7 @@ export type Database = {
       medical_data: {
         Row: {
           access_code: string
+          blood_type: string | null
           created_at: string | null
           data: string
           id: string
@@ -189,6 +190,7 @@ export type Database = {
         }
         Insert: {
           access_code: string
+          blood_type?: string | null
           created_at?: string | null
           data: string
           id?: string
@@ -197,6 +199,7 @@ export type Database = {
         }
         Update: {
           access_code?: string
+          blood_type?: string | null
           created_at?: string | null
           data?: string
           id?: string

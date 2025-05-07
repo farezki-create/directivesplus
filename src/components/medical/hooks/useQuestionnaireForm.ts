@@ -22,11 +22,10 @@ export function useQuestionnaireForm() {
   const form = useForm<MedicalQuestionnaireData>({
     resolver: zodResolver(medicalQuestionnaireSchema),
     defaultValues: {
-      symptomes: [],
-      famille: [],
       pathologies: [],
       chirurgies: [],
       allergies: [],
+      famille: [],
       dispositifs: "",
       tabac: false,
       alcool: false,
@@ -52,16 +51,16 @@ export function useQuestionnaireForm() {
         if (profileError) {
           console.error("Erreur lors de la récupération du profil:", profileError);
         } else if (profileData) {
+          // Remplir automatiquement les données du profil
           form.setValue('nom', profileData.last_name || '');
           form.setValue('prenom', profileData.first_name || '');
           form.setValue('date_naissance', profileData.birth_date || '');
           form.setValue('adresse', profileData.address || '');
           form.setValue('telephone', profileData.phone_number || '');
           
-          // Notification pour informer l'utilisateur
           toast({
             title: "Informations récupérées",
-            description: "Vos données personnelles ont été automatiquement remplies.",
+            description: "Vos données personnelles ont été automatiquement remplies",
           });
         }
         
@@ -77,26 +76,34 @@ export function useQuestionnaireForm() {
           console.error("Erreur lors de la récupération des données médicales:", medicalError);
         } else if (medicalData && medicalData.length > 0) {
           const latestData = medicalData[0];
-          // Les données sont cryptées, donc on ne peut pas les utiliser directement
-          // Cette partie est juste pour illustration
-          console.log("Données médicales existantes trouvées:", latestData.id);
           
-          // Note: Pour utiliser réellement ces données, il faudrait les décrypter côté serveur
-          // et les renvoyer au client de manière sécurisée
-        }
-
-        // Check if storage bucket exists for voice recordings
-        const { data: buckets, error: bucketsError } = await supabase
-          .storage
-          .listBuckets();
-          
-        if (bucketsError) {
-          console.error("Erreur lors de la vérification des buckets:", bucketsError);
-        } else {
-          const voiceRecordingBucketExists = buckets?.some(bucket => bucket.name === 'voice-recordings');
-          
-          if (!voiceRecordingBucketExists) {
-            console.log("Le bucket 'voice-recordings' n'existe pas, il faudra le créer en base de données");
+          try {
+            // Essayer de parser les données JSON
+            if (latestData.data) {
+              const parsedData = typeof latestData.data === 'string' 
+                ? JSON.parse(latestData.data) 
+                : latestData.data;
+              
+              if (parsedData) {
+                // Remplir le formulaire avec les données médicales existantes
+                if (parsedData.allergies) form.setValue('allergies', parsedData.allergies);
+                if (parsedData.pathologies) form.setValue('pathologies', parsedData.pathologies);
+                if (parsedData.chirurgies) form.setValue('chirurgies', parsedData.chirurgies);
+                if (parsedData.famille) form.setValue('famille', parsedData.famille);
+                if (parsedData.dispositifs) form.setValue('dispositifs', parsedData.dispositifs);
+                if (parsedData.tabac !== undefined) form.setValue('tabac', parsedData.tabac);
+                if (parsedData.alcool !== undefined) form.setValue('alcool', parsedData.alcool);
+                if (parsedData.drogues !== undefined) form.setValue('drogues', parsedData.drogues);
+                if (parsedData.activite_physique !== undefined) form.setValue('activite_physique', parsedData.activite_physique);
+                
+                toast({
+                  title: "Données médicales récupérées",
+                  description: "Vos données médicales ont été automatiquement remplies",
+                });
+              }
+            }
+          } catch (parseError) {
+            console.error("Erreur lors du parsing des données médicales:", parseError);
           }
         }
       } catch (error) {

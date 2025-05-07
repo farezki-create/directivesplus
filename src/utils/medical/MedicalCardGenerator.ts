@@ -16,6 +16,7 @@ export class MedicalCardGenerator {
     this.setBackground(doc);
     this.addHeader(doc);
     this.addUserInformation(doc, profile);
+    this.addMedicalInformation(doc, profile);
     this.addAccessCode(doc, profile);
     this.addWebsite(doc);
   }
@@ -69,9 +70,26 @@ export class MedicalCardGenerator {
     doc.line(5, startY + (lineHeight * 2) + 3, cardDimensions.width - 5, startY + (lineHeight * 2) + 3);
   }
   
+  private static addMedicalInformation(doc: jsPDF, profile: MedicalProfile): void {
+    const startY = 38;
+    
+    // Add blood type if available
+    if (profile.blood_type) {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(0, 0, 0);
+      doc.text("Groupe sanguin:", 5, startY);
+      
+      doc.setFont("helvetica", "normal");
+      doc.setFillColor(245, 245, 245);
+      doc.roundedRect(35, startY - 4, 15, 5, 1, 1, 'F');
+      doc.text(profile.blood_type, 42.5, startY, { align: "center" });
+    }
+  }
+  
   private static addWebsite(doc: jsPDF): void {
     // Add website in the middle of the card
-    const websiteY = 42;
+    const websiteY = 50;
     doc.setFont("helvetica", "bold");
     doc.setFontSize(9);
     doc.setTextColor(138, 43, 226); // Purple text
@@ -79,7 +97,11 @@ export class MedicalCardGenerator {
   }
   
   private static addAccessCode(doc: jsPDF, profile: MedicalProfile): void {
-    const codeY = 47;
+    const codeY = 58;
+    
+    // Add a background rectangle for the access code
+    doc.setFillColor(245, 245, 245);
+    doc.roundedRect(5, codeY - 4, cardDimensions.width - 10, 10, 2, 2, 'F');
     
     // Add access code title
     doc.setFont("helvetica", "bold");
@@ -89,7 +111,7 @@ export class MedicalCardGenerator {
     
     // Add the actual code
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
+    doc.setFontSize(10);
     doc.setTextColor(0, 0, 0);
     doc.text(profile.unique_identifier || "Code non défini", cardDimensions.width / 2, codeY + 5, { align: "center" });
   }

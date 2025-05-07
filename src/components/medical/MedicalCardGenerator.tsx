@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { jsPDF } from "jspdf";
 import { Button } from "@/components/ui/button";
-import { CreditCard } from "lucide-react";
+import { CreditCard, FileMedical } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMedicalData } from "@/hooks/useMedicalData";
 import { useAuth } from "@/hooks/useAuth";
@@ -52,6 +52,7 @@ export function MedicalCardGenerator({ medicalData }: MedicalCardGeneratorProps)
       let latestData: Record<string, any> = {};
       let accessCode = "";
       let allergies: string[] = [];
+      let bloodType = "";
 
       // Récupérer les données du questionnaire si disponibles
       if (medicalData && medicalData.length > 0) {
@@ -63,6 +64,11 @@ export function MedicalCardGenerator({ medicalData }: MedicalCardGeneratorProps)
           if (latestData.allergies && Array.isArray(latestData.allergies)) {
             allergies = latestData.allergies;
           }
+          
+          // Récupérer le groupe sanguin s'il existe
+          if (medicalData[0].blood_type) {
+            bloodType = medicalData[0].blood_type;
+          }
         }
       }
 
@@ -72,6 +78,7 @@ export function MedicalCardGenerator({ medicalData }: MedicalCardGeneratorProps)
         first_name: profileData.first_name || (latestData.prenom as string) || "",
         birth_date: profileData.birth_date || (latestData.date_naissance as string) || "",
         unique_identifier: accessCode || "Non défini",
+        blood_type: bloodType || "",
         allergies: allergies
       };
 
@@ -87,51 +94,50 @@ export function MedicalCardGenerator({ medicalData }: MedicalCardGeneratorProps)
 
       // Obtenir le PDF sous forme de données URL
       const pdfDataUrl = doc.output('dataurlstring');
+      const fileName = `Carte_medicale_${medicalProfile.last_name}_${Date.now()}.pdf`;
 
       if (pdfDataUrl) {
         const base64Data = pdfDataUrl.split(',')[1];
-        const fileName = `medical_cards/${user.id}_medical_card_${Date.now()}.pdf`;
         
-        // Enregistrer dans le stockage Supabase
+        // Ouvrir le PDF dans un nouvel onglet
+        const pdfBlob = new Blob([decode(base64Data)], { type: 'application/pdf' });
+        window.open(URL.createObjectURL(pdfBlob), '_blank');
+        
+        // Enregistrer le document dans la table medical_documents
+        const filePath = `medical_cards/${user.id}_${Date.now()}.pdf`;
+        
+        // Upload du fichier dans le storage
         const { error: uploadError } = await supabase.storage
           .from('medical_documents')
-          .upload(fileName, decode(base64Data), {
+          .upload(filePath, decode(base64Data), {
             contentType: 'application/pdf'
           });
-
+          
         if (uploadError) {
           console.error("Error uploading PDF:", uploadError);
-          // Si le bucket n'existe pas ou n'est pas accessible, on continue quand même
-          // et on ouvre juste le PDF dans un nouvel onglet
-          window.open(URL.createObjectURL(
-            new Blob([decode(base64Data)], { type: 'application/pdf' })
-          ), '_blank');
-        } else {
-          // Ajouter le document à la table de documents médicaux
-          const { error: dbError } = await supabase
-            .from('medical_documents')
-            .insert({
-              user_id: user.id,
-              file_path: fileName,
-              file_name: 'Carte d\'accès médicale.pdf',
-              file_type: 'application/pdf',
-              file_size: Math.round(base64Data.length * 0.75),
-              description: 'Carte d\'accès aux données médicales'
-            });
-
-          if (dbError) {
-            console.error("Error saving document reference:", dbError);
-          }
+          throw new Error("Impossible d'enregistrer le fichier PDF");
+        }
+        
+        // Ajouter l'entrée dans la table des documents médicaux
+        const { error: dbError } = await supabase
+          .from('medical_documents')
+          .insert({
+            user_id: user.id,
+            file_path: filePath,
+            file_name: fileName,
+            file_type: 'application/pdf',
+            file_size: Math.round(base64Data.length * 0.75),
+            description: "Carte d'accès aux données médicales"
+          });
           
-          // Ouvrir le PDF dans un nouvel onglet même si sauvegardé
-          window.open(URL.createObjectURL(
-            new Blob([decode(base64Data)], { type: 'application/pdf' })
-          ), '_blank');
+        if (dbError) {
+          console.error("Error saving document reference:", dbError);
+          throw new Error("Impossible d'enregistrer la référence du document");
         }
 
         toast({
           title: "Succès",
-          description: "La carte d'accès médicale a été générée avec succès"
+          description: "La carte d'accès médicale a été générée et enregistrée dans vos documents"
         });
       }
     } catch (error) {
@@ -162,8 +168,14 @@ export function MedicalCardGenerator({ medicalData }: MedicalCardGeneratorProps)
       disabled={isGenerating || !user}
       className="bg-red-600 hover:bg-red-700 text-white flex items-center gap-2"
     >
-      <CreditCard className="h-4 w-4" />
-      {isGenerating ? "Génération en cours..." : "Générer ma carte d'accès à mes données médicales"}
+      {isGenerating ? (
+        <>Génération en cours...</>
+      ) : (
+        <>
+          <FileMedical className="h-4 w-4" />
+          Générer ma carte d'accès à mes données médicales
+        </>
+      )}
     </Button>
   );
 }

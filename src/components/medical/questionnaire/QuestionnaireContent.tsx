@@ -3,8 +3,6 @@ import React from "react";
 import { Control } from "react-hook-form";
 import { MedicalQuestionnaireData } from "../schemas/medicalQuestionnaireSchema";
 import { GeneralInformationSection } from "./GeneralInformationSection";
-import { ConsultationReasonSection } from "./ConsultationReasonSection";
-import { SymptomsSection } from "./SymptomsSection";
 import { MedicalHistorySection } from "./MedicalHistorySection";
 import { AllergiesSection } from "./AllergiesSection";
 import { CurrentTreatmentsSection } from "./CurrentTreatmentsSection";
@@ -21,8 +19,6 @@ export function QuestionnaireContent({ control, isLoading }: QuestionnaireConten
   return (
     <>
       <GeneralInformationSection control={control} isLoading={isLoading} />
-      <ConsultationReasonSection control={control} />
-      <SymptomsSection control={control} />
       <MedicalHistorySection control={control} />
       <AllergiesSection control={control} />
       <CurrentTreatmentsSection control={control} />
