@@ -88,14 +88,46 @@ export function MedicalCardGenerator({ medicalData }: MedicalCardGeneratorProps)
       // Obtenir le PDF sous forme de données URL
       const pdfDataUrl = doc.output('dataurlstring');
 
-      // Enregistrer le PDF directement (sans stocker dans Supabase)
       if (pdfDataUrl) {
         const base64Data = pdfDataUrl.split(',')[1];
+        const fileName = `medical_cards/${user.id}_medical_card_${Date.now()}.pdf`;
         
-        // Ouvrir le PDF dans un nouvel onglet
-        window.open(URL.createObjectURL(
-          new Blob([decode(base64Data)], { type: 'application/pdf' })
-        ), '_blank');
+        // Enregistrer dans le stockage Supabase
+        const { error: uploadError } = await supabase.storage
+          .from('medical_documents')
+          .upload(fileName, decode(base64Data), {
+            contentType: 'application/pdf'
+          });
+
+        if (uploadError) {
+          console.error("Error uploading PDF:", uploadError);
+          // Si le bucket n'existe pas ou n'est pas accessible, on continue quand même
+          // et on ouvre juste le PDF dans un nouvel onglet
+          window.open(URL.createObjectURL(
+            new Blob([decode(base64Data)], { type: 'application/pdf' })
+          ), '_blank');
+        } else {
+          // Ajouter le document à la table de documents médicaux
+          const { error: dbError } = await supabase
+            .from('medical_documents')
+            .insert({
+              user_id: user.id,
+              file_path: fileName,
+              file_name: 'Carte d\'accès médicale.pdf',
+              file_type: 'application/pdf',
+              file_size: Math.round(base64Data.length * 0.75),
+              description: 'Carte d\'accès aux données médicales'
+            });
+
+          if (dbError) {
+            console.error("Error saving document reference:", dbError);
+          }
+          
+          // Ouvrir le PDF dans un nouvel onglet même si sauvegardé
+          window.open(URL.createObjectURL(
+            new Blob([decode(base64Data)], { type: 'application/pdf' })
+          ), '_blank');
+        }
 
         toast({
           title: "Succès",
