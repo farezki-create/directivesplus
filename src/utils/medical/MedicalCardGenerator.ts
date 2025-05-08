@@ -13,7 +13,7 @@ export interface MedicalProfile {
   city?: string;
   postal_code?: string;
   phone_number?: string;
-  medical_access_code?: string; // Ajout du code d'accès médical
+  medical_access_code?: string; // Medical access code field
 }
 
 export class MedicalCardGenerator {
