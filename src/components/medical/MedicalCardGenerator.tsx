@@ -67,6 +67,24 @@ export function MedicalCardGenerator({ medicalData }: MedicalCardGeneratorProps)
         throw new Error("Profil utilisateur non trouvé");
       }
 
+      // Vérifier si le code d'accès médical existe
+      let medicalAccessCode = profileData.medical_access_code;
+      
+      // Si le code d'accès médical n'existe pas, en générer un nouveau
+      if (!medicalAccessCode) {
+        medicalAccessCode = generateRandomCode(8);
+        
+        // Sauvegarder le nouveau code dans le profil
+        await supabase
+          .from('profiles')
+          .update({ medical_access_code: medicalAccessCode })
+          .eq('id', user.id);
+          
+        console.log("Nouveau code d'accès médical généré:", medicalAccessCode);
+      } else {
+        console.log("Code d'accès médical existant:", medicalAccessCode);
+      }
+
       // Préparer les données du profil médical
       let latestData: Record<string, any> = {};
       let accessCode = profileData.medical_access_code || "";
@@ -94,17 +112,6 @@ export function MedicalCardGenerator({ medicalData }: MedicalCardGeneratorProps)
           }
         }
       }
-      
-      // Si le code d'accès médical n'existe toujours pas, en générer un nouveau
-      if (!accessCode) {
-        accessCode = generateRandomCode(8);
-        
-        // Sauvegarder le nouveau code dans le profil
-        await supabase
-          .from('profiles')
-          .update({ medical_access_code: accessCode })
-          .eq('id', user.id);
-      }
 
       // Créer le profil médical
       const medicalProfile: MedicalProfile = {
@@ -112,6 +119,7 @@ export function MedicalCardGenerator({ medicalData }: MedicalCardGeneratorProps)
         first_name: profileData.first_name || (latestData.prenom as string) || "",
         birth_date: profileData.birth_date || (latestData.date_naissance as string) || "",
         unique_identifier: accessCode,
+        medical_access_code: medicalAccessCode, // Utiliser le code d'accès médical
         blood_type: bloodType || "",
         allergies: allergies,
         address: profileData.address || "",
@@ -136,10 +144,6 @@ export function MedicalCardGenerator({ medicalData }: MedicalCardGeneratorProps)
 
       if (pdfDataUrl) {
         const base64Data = pdfDataUrl.split(',')[1];
-        
-        // Ouvrir le PDF dans un nouvel onglet
-        const pdfBlob = new Blob([decode(base64Data)], { type: 'application/pdf' });
-        window.open(URL.createObjectURL(pdfBlob), '_blank');
         
         // Enregistrer le document dans la table medical_documents
         const filePath = `medical_cards/${user.id}_${Date.now()}.pdf`;
@@ -175,7 +179,7 @@ export function MedicalCardGenerator({ medicalData }: MedicalCardGeneratorProps)
 
         toast({
           title: "Succès",
-          description: "La carte d'accès médicale a été générée et enregistrée dans vos documents"
+          description: "La carte d'accès médicale a été générée et enregistrée dans vos documents médicaux"
         });
       }
     } catch (error) {

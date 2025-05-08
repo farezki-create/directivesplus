@@ -13,6 +13,7 @@ export interface MedicalProfile {
   city?: string;
   postal_code?: string;
   phone_number?: string;
+  medical_access_code?: string; // Ajout du code d'accès médical
 }
 
 export class MedicalCardGenerator {
@@ -147,16 +148,27 @@ export class MedicalCardGenerator {
     doc.setFillColor(245, 245, 245);
     doc.roundedRect(5, codeY - 4, cardDimensions.width - 10, 10, 2, 2, 'F');
     
-    // Add access code title
+    // Add access code title and medical access code if available
     doc.setFont("helvetica", "bold");
     doc.setFontSize(9);
     doc.setTextColor(138, 43, 226); // Purple text
-    doc.text("Code d'accès professionnel:", cardDimensions.width / 2, codeY, { align: "center" });
     
-    // Add the actual code
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(10);
-    doc.setTextColor(0, 0, 0);
-    doc.text(profile.unique_identifier || "Code non défini", cardDimensions.width / 2, codeY + 5, { align: "center" });
+    // Display the medical access code if available, otherwise fallback to unique_identifier
+    if (profile.medical_access_code) {
+      doc.text("Code d'accès médical:", cardDimensions.width / 2, codeY, { align: "center" });
+      
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      doc.text(profile.medical_access_code, cardDimensions.width / 2, codeY + 5, { align: "center" });
+    } else {
+      // Fallback to professional access code
+      doc.text("Code d'accès professionnel:", cardDimensions.width / 2, codeY, { align: "center" });
+      
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      doc.text(profile.unique_identifier || "Code non défini", cardDimensions.width / 2, codeY + 5, { align: "center" });
+    }
   }
 }
