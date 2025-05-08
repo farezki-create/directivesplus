@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { jsPDF } from "jspdf";
 import { Button } from "@/components/ui/button";
-import { CreditCard, FileMedical } from "lucide-react";
+import { CreditCard, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMedicalData } from "@/hooks/useMedicalData";
 import { useAuth } from "@/hooks/useAuth";
@@ -172,7 +172,7 @@ export function MedicalCardGenerator({ medicalData }: MedicalCardGeneratorProps)
         <>Génération en cours...</>
       ) : (
         <>
-          <FileMedical className="h-4 w-4" />
+          <FileText className="h-4 w-4" />
           Générer ma carte d'accès à mes données médicales
         </>
       )}
