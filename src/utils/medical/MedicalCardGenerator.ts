@@ -9,6 +9,10 @@ export interface MedicalProfile {
   unique_identifier?: string;
   blood_type?: string;
   allergies?: string[];
+  address?: string;
+  city?: string;
+  postal_code?: string;
+  phone_number?: string;
 }
 
 export class MedicalCardGenerator {
@@ -35,7 +39,7 @@ export class MedicalCardGenerator {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
     doc.setTextColor(255, 255, 255);
-    doc.text("CARTE D'ACCÈS AUX DIRECTIVES ANTICIPÉES", cardDimensions.width / 2, 7, { align: "center" });
+    doc.text("CARTE D'ACCÈS AUX DONNÉES MÉDICALES", cardDimensions.width / 2, 7, { align: "center" });
   }
 
   private static addUserInformation(doc: jsPDF, profile: MedicalProfile): void {
@@ -43,31 +47,58 @@ export class MedicalCardGenerator {
     doc.setFontSize(9);
     doc.setTextColor(0, 0, 0);
 
-    const startY = 20;
-    const lineHeight = 6;
+    const startY = 18;
+    const lineHeight = 5;
+    const col1X = 5;
+    const col2X = cardDimensions.width / 2 + 5;
 
+    // Left column
     // Add name
     doc.setFont("helvetica", "bold");
-    doc.text("Nom:", 5, startY);
+    doc.text("Nom:", col1X, startY);
     doc.setFont("helvetica", "normal");
-    doc.text(profile.last_name?.toUpperCase() || "", 25, startY);
+    doc.text(profile.last_name?.toUpperCase() || "", col1X + 18, startY);
 
     // Add first name
     doc.setFont("helvetica", "bold");
-    doc.text("Prénom:", 5, startY + lineHeight);
+    doc.text("Prénom:", col1X, startY + lineHeight);
     doc.setFont("helvetica", "normal");
-    doc.text(profile.first_name || "", 25, startY + lineHeight);
+    doc.text(profile.first_name || "", col1X + 18, startY + lineHeight);
 
     // Add birth date
     doc.setFont("helvetica", "bold");
-    doc.text("Date de naissance:", 5, startY + (lineHeight * 2));
+    doc.text("Date naissance:", col1X, startY + (lineHeight * 2));
     doc.setFont("helvetica", "normal");
-    doc.text(profile.birth_date || "", 40, startY + (lineHeight * 2));
+    doc.text(profile.birth_date || "", col1X + 26, startY + (lineHeight * 2));
+
+    // Right column - Contact information
+    if (profile.phone_number) {
+      doc.setFont("helvetica", "bold");
+      doc.text("Tél:", col2X, startY);
+      doc.setFont("helvetica", "normal");
+      doc.text(profile.phone_number || "", col2X + 15, startY);
+    }
     
-    // Add underline below birth date
+    // Add address if available
+    if (profile.address || profile.city || profile.postal_code) {
+      doc.setFont("helvetica", "bold");
+      doc.text("Adresse:", col2X, startY + lineHeight);
+      doc.setFont("helvetica", "normal");
+      
+      if (profile.address) {
+        doc.text(profile.address, col2X + 15, startY + lineHeight);
+      }
+      
+      const cityPostalText = [profile.postal_code, profile.city].filter(Boolean).join(" ");
+      if (cityPostalText) {
+        doc.text(cityPostalText, col2X + 15, startY + (lineHeight * 2));
+      }
+    }
+    
+    // Add a line below personal info
     doc.setDrawColor(138, 43, 226); // Purple line
     doc.setLineWidth(0.5);
-    doc.line(5, startY + (lineHeight * 2) + 3, cardDimensions.width - 5, startY + (lineHeight * 2) + 3);
+    doc.line(5, startY + (lineHeight * 3) + 1, cardDimensions.width - 5, startY + (lineHeight * 3) + 1);
   }
   
   private static addMedicalInformation(doc: jsPDF, profile: MedicalProfile): void {
@@ -84,6 +115,19 @@ export class MedicalCardGenerator {
       doc.setFillColor(245, 245, 245);
       doc.roundedRect(35, startY - 4, 15, 5, 1, 1, 'F');
       doc.text(profile.blood_type, 42.5, startY, { align: "center" });
+    }
+    
+    // Add allergies if available
+    if (profile.allergies && profile.allergies.length > 0) {
+      const allergiesY = startY + (profile.blood_type ? 7 : 0);
+      
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.text("Allergies:", 5, allergiesY);
+      
+      doc.setFont("helvetica", "normal");
+      const allergiesText = profile.allergies.slice(0, 3).join(", ");
+      doc.text(allergiesText, 25, allergiesY);
     }
   }
   
@@ -110,7 +154,7 @@ export class MedicalCardGenerator {
     doc.text("Code d'accès professionnel:", cardDimensions.width / 2, codeY, { align: "center" });
     
     // Add the actual code
-    doc.setFont("helvetica", "normal");
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
     doc.setTextColor(0, 0, 0);
     doc.text(profile.unique_identifier || "Code non défini", cardDimensions.width / 2, codeY + 5, { align: "center" });

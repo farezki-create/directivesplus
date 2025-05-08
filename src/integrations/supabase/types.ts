@@ -373,6 +373,7 @@ export type Database = {
           first_name: string | null
           id: string
           last_name: string | null
+          medical_access_code: string | null
           phone_number: string | null
           postal_code: string | null
         }
@@ -385,6 +386,7 @@ export type Database = {
           first_name?: string | null
           id: string
           last_name?: string | null
+          medical_access_code?: string | null
           phone_number?: string | null
           postal_code?: string | null
         }
@@ -397,6 +399,7 @@ export type Database = {
           first_name?: string | null
           id?: string
           last_name?: string | null
+          medical_access_code?: string | null
           phone_number?: string | null
           postal_code?: string | null
         }
@@ -893,6 +896,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_random_code: {
+        Args: { length: number }
+        Returns: string
+      }
       verify_directive_access: {
         Args: {
           p_directive_id: string

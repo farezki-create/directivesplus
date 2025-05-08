@@ -2,13 +2,14 @@
 import React, { useState } from "react";
 import { jsPDF } from "jspdf";
 import { Button } from "@/components/ui/button";
-import { CreditCard, FileText } from "lucide-react";
+import { FileText, IdCard } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMedicalData } from "@/hooks/useMedicalData";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { cardDimensions } from "@/components/pdf/utils/constants/cardDimensions";
 import { MedicalCardGenerator as MedicalCardGeneratorUtil, MedicalProfile } from "@/utils/medical/MedicalCardGenerator";
+import { Progress } from "@/components/ui/progress";
 
 interface MedicalCardGeneratorProps {
   medicalData: any[];
@@ -16,8 +17,25 @@ interface MedicalCardGeneratorProps {
 
 export function MedicalCardGenerator({ medicalData }: MedicalCardGeneratorProps) {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [progress, setProgress] = useState(0);
   const { toast } = useToast();
   const { user } = useAuth();
+
+  const updateProgress = () => {
+    // Simulate progress updates
+    setProgress(0);
+    const interval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 95) {
+          clearInterval(interval);
+          return prev;
+        }
+        return prev + 5;
+      });
+    }, 200);
+    
+    return () => clearInterval(interval);
+  };
 
   const handleGenerateMedicalCard = async () => {
     if (!user) {
@@ -30,6 +48,7 @@ export function MedicalCardGenerator({ medicalData }: MedicalCardGeneratorProps)
     }
 
     setIsGenerating(true);
+    const cleanupProgress = updateProgress();
 
     try {
       // Récupérer les informations du profil
@@ -50,7 +69,7 @@ export function MedicalCardGenerator({ medicalData }: MedicalCardGeneratorProps)
 
       // Préparer les données du profil médical
       let latestData: Record<string, any> = {};
-      let accessCode = "";
+      let accessCode = profileData.medical_access_code || "";
       let allergies: string[] = [];
       let bloodType = "";
 
@@ -58,7 +77,11 @@ export function MedicalCardGenerator({ medicalData }: MedicalCardGeneratorProps)
       if (medicalData && medicalData.length > 0) {
         if (medicalData[0] && medicalData[0].data) {
           latestData = medicalData[0].data;
-          accessCode = medicalData[0].access_code || "";
+          
+          // Utiliser le code d'accès du profil en priorité
+          if (!accessCode) {
+            accessCode = medicalData[0].access_code || "";
+          }
           
           // Extraire les allergies (si disponibles)
           if (latestData.allergies && Array.isArray(latestData.allergies)) {
@@ -71,15 +94,30 @@ export function MedicalCardGenerator({ medicalData }: MedicalCardGeneratorProps)
           }
         }
       }
+      
+      // Si le code d'accès médical n'existe toujours pas, en générer un nouveau
+      if (!accessCode) {
+        accessCode = generateRandomCode(8);
+        
+        // Sauvegarder le nouveau code dans le profil
+        await supabase
+          .from('profiles')
+          .update({ medical_access_code: accessCode })
+          .eq('id', user.id);
+      }
 
       // Créer le profil médical
       const medicalProfile: MedicalProfile = {
         last_name: profileData.last_name || (latestData.nom as string) || "",
         first_name: profileData.first_name || (latestData.prenom as string) || "",
         birth_date: profileData.birth_date || (latestData.date_naissance as string) || "",
-        unique_identifier: accessCode || "Non défini",
+        unique_identifier: accessCode,
         blood_type: bloodType || "",
-        allergies: allergies
+        allergies: allergies,
+        address: profileData.address || "",
+        city: profileData.city || "",
+        postal_code: profileData.postal_code || "",
+        phone_number: profileData.phone_number || ""
       };
 
       // Créer le document PDF
@@ -148,9 +186,24 @@ export function MedicalCardGenerator({ medicalData }: MedicalCardGeneratorProps)
         variant: "destructive"
       });
     } finally {
-      setIsGenerating(false);
+      setProgress(100);
+      setTimeout(() => {
+        setIsGenerating(false);
+        setProgress(0);
+      }, 500);
+      cleanupProgress();
     }
   };
+  
+  // Fonction pour générer un code aléatoire
+  function generateRandomCode(length: number): string {
+    const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  }
 
   // Fonction pour décoder une chaîne base64
   function decode(base64: string): Uint8Array {
@@ -163,19 +216,30 @@ export function MedicalCardGenerator({ medicalData }: MedicalCardGeneratorProps)
   }
 
   return (
-    <Button
-      onClick={handleGenerateMedicalCard}
-      disabled={isGenerating || !user}
-      className="bg-red-600 hover:bg-red-700 text-white flex items-center gap-2"
-    >
-      {isGenerating ? (
-        <>Génération en cours...</>
-      ) : (
-        <>
-          <FileText className="h-4 w-4" />
-          Générer ma carte d'accès à mes données médicales
-        </>
+    <div className="space-y-2">
+      <Button
+        onClick={handleGenerateMedicalCard}
+        disabled={isGenerating || !user}
+        className="bg-red-600 hover:bg-red-700 text-white flex items-center gap-2 w-full"
+      >
+        {isGenerating ? (
+          <>Génération en cours...</>
+        ) : (
+          <>
+            <IdCard className="h-4 w-4" />
+            Générer ma carte d'accès à mes données médicales
+          </>
+        )}
+      </Button>
+      
+      {isGenerating && (
+        <div className="space-y-1">
+          <Progress value={progress} className="h-2" />
+          <p className="text-xs text-center text-muted-foreground">
+            Construction de votre carte d'accès médicale en cours...
+          </p>
+        </div>
       )}
-    </Button>
+    </div>
   );
 }
