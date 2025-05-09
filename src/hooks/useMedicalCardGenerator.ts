@@ -6,12 +6,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { cardDimensions } from "@/components/pdf/utils/constants/cardDimensions";
 import { MedicalCardGenerator as MedicalCardGeneratorUtil, MedicalProfile } from "@/utils/medical/MedicalCardGenerator";
+import { useNavigate } from "react-router-dom";
 
 export function useMedicalCardGenerator(medicalData: any[]) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
   const { toast } = useToast();
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const updateProgress = () => {
     // Simulate progress updates
@@ -53,6 +55,8 @@ export function useMedicalCardGenerator(medicalData: any[]) {
     const cleanupProgress = updateProgress();
 
     try {
+      console.log("Début de la génération de la carte médicale");
+      
       // Récupérer les informations du profil
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
@@ -99,6 +103,7 @@ export function useMedicalCardGenerator(medicalData: any[]) {
 
       // Récupérer les données du questionnaire si disponibles
       if (medicalData && medicalData.length > 0) {
+        console.log("Données médicales trouvées:", medicalData[0]);
         if (medicalData[0] && medicalData[0].data) {
           latestData = medicalData[0].data;
           
@@ -129,6 +134,8 @@ export function useMedicalCardGenerator(medicalData: any[]) {
         phone_number: profileData.phone_number || ""
       };
 
+      console.log("Profil médical préparé:", medicalProfile);
+
       // Créer le document PDF
       const doc = new jsPDF({
         orientation: "landscape",
@@ -149,12 +156,14 @@ export function useMedicalCardGenerator(medicalData: any[]) {
           const response = await fetch(pdfDataUrl);
           const blob = await response.blob();
           
-          // Upload du fichier directement sans vérifier/créer le bucket
-          // Car la création de bucket nécessite des droits administrateur
-          const filePath = `medical_cards/${user.id}_${Date.now()}.pdf`;
+          // Créer un chemin de fichier unique
+          const timestamp = new Date().getTime();
+          const filePath = `medical_cards/${user.id}_${timestamp}.pdf`;
           
-          // Tenter l'upload directement, en supposant que le bucket existe déjà
-          const { error: uploadError } = await supabase.storage
+          console.log("Téléchargement du PDF vers:", filePath);
+          
+          // Tenter l'upload du fichier
+          const { data: uploadData, error: uploadError } = await supabase.storage
             .from('medical_documents')
             .upload(filePath, blob, {
               contentType: 'application/pdf',
@@ -163,15 +172,17 @@ export function useMedicalCardGenerator(medicalData: any[]) {
             
           if (uploadError) {
             console.error("Error uploading PDF:", uploadError);
-            // Si le bucket n'existe pas, nous ne pouvons pas le créer ici
-            // Nous devons demander à l'administrateur de le faire
             throw new Error("Impossible d'uploader le fichier PDF. Vérifiez que le bucket 'medical_documents' existe dans Supabase Storage.");
           }
           
+          console.log("Fichier téléchargé avec succès:", uploadData);
+          
           // Obtenir une URL publique pour le fichier
-          const { data: publicUrlData } = await supabase.storage
+          const { data: urlData } = await supabase.storage
             .from('medical_documents')
-            .getPublicUrl(filePath);
+            .createSignedUrl(filePath, 3600);
+            
+          console.log("URL signée générée:", urlData?.signedUrl);
           
           // Ajouter l'entrée dans la table des documents médicaux
           const { error: dbError } = await supabase
@@ -194,6 +205,12 @@ export function useMedicalCardGenerator(medicalData: any[]) {
             title: "Succès",
             description: "La carte d'accès médicale a été générée et enregistrée dans vos documents médicaux"
           });
+          
+          // Rediriger vers l'onglet documents après un court délai
+          setTimeout(() => {
+            navigate("/medical-data");
+          }, 1000);
+          
         } catch (storageError: any) {
           console.error("Storage error:", storageError);
           // Même si le stockage échoue, nous pouvons proposer de télécharger le PDF

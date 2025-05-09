@@ -9,12 +9,14 @@ import { medicalQuestionnaireSchema } from "./schemas/medicalQuestionnaireSchema
 import { useQuestionnaireForm } from "./hooks/useQuestionnaireForm";
 import { jsPDF } from "jspdf";
 import { QuestionnaireForm } from "./questionnaire/QuestionnaireForm";
+import { useNavigate } from "react-router-dom";
 
 export function MedicalQuestionnaire({ onDataSaved }: { onDataSaved?: () => void }) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const { form, isLoading: formLoading } = useQuestionnaireForm();
+  const navigate = useNavigate();
   
   const onSubmit = async (data: any) => {
     if (!user) {
@@ -27,17 +29,24 @@ export function MedicalQuestionnaire({ onDataSaved }: { onDataSaved?: () => void
     }
 
     setIsLoading(true);
+    console.log("Soumission du questionnaire médical avec les données:", data);
 
     try {
       // Sauvegarder les données en base
-      const { error } = await supabase
+      const { data: savedData, error } = await supabase
         .from('questionnaire_medical')
         .insert({
           user_id: user.id,
           ...data
-        });
+        })
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Erreur lors de l'enregistrement du questionnaire:", error);
+        throw error;
+      }
+      
+      console.log("Données enregistrées avec succès:", savedData);
       
       // Générer le PDF
       const doc = new jsPDF();
@@ -101,36 +110,53 @@ export function MedicalQuestionnaire({ onDataSaved }: { onDataSaved?: () => void
       
       // Enregistrer le PDF dans les documents médicaux
       if (pdfOutput) {
-        const base64Data = pdfOutput.split(',')[1];
-        const filePath = `medical_docs/${user.id}_${Date.now()}.pdf`;
-        
-        // Upload du fichier dans le storage
-        const { error: uploadError } = await supabase.storage
-          .from('medical_documents')
-          .upload(filePath, base64ToArrayBuffer(base64Data), {
-            contentType: 'application/pdf'
-          });
-        
-        if (uploadError) {
-          console.error("Erreur lors de l'upload du PDF:", uploadError);
-          throw uploadError;
-        }
-        
-        // Enregistrer la référence dans la base de données
-        const { error: dbError } = await supabase
-          .from('medical_documents')
-          .insert({
-            user_id: user.id,
-            file_path: filePath,
-            file_name: fileName,
-            file_type: 'application/pdf',
-            file_size: Math.round(base64Data.length * 0.75),
-            description: "Questionnaire médical"
-          });
-        
-        if (dbError) {
-          console.error("Erreur lors de l'enregistrement de la référence du document:", dbError);
-          throw dbError;
+        try {
+          // Convertir le dataURL en Blob
+          const response = await fetch(pdfOutput);
+          const blob = await response.blob();
+          
+          // Créer un chemin de fichier unique
+          const timestamp = new Date().getTime();
+          const filePath = `medical_docs/${user.id}_${timestamp}.pdf`;
+          
+          console.log("Téléchargement du PDF vers:", filePath);
+          
+          // Upload du fichier dans le storage
+          const { error: uploadError } = await supabase.storage
+            .from('medical_documents')
+            .upload(filePath, blob, {
+              contentType: 'application/pdf',
+              upsert: true
+            });
+          
+          if (uploadError) {
+            console.error("Erreur lors de l'upload du PDF:", uploadError);
+            throw uploadError;
+          }
+          
+          console.log("PDF téléchargé avec succès");
+          
+          // Enregistrer la référence dans la base de données
+          const { error: dbError } = await supabase
+            .from('medical_documents')
+            .insert({
+              user_id: user.id,
+              file_path: filePath,
+              file_name: fileName,
+              file_type: 'application/pdf',
+              file_size: Math.round(blob.size),
+              description: "Questionnaire médical"
+            });
+          
+          if (dbError) {
+            console.error("Erreur lors de l'enregistrement de la référence du document:", dbError);
+            throw dbError;
+          }
+          
+          console.log("Référence du document enregistrée avec succès");
+        } catch (error) {
+          console.error("Erreur lors de la création du PDF:", error);
+          // Continuer sans empêcher la complétion du processus
         }
       }
 
@@ -140,6 +166,11 @@ export function MedicalQuestionnaire({ onDataSaved }: { onDataSaved?: () => void
       });
 
       if (onDataSaved) onDataSaved();
+      
+      // Rediriger vers la page des données médicales après un court délai
+      setTimeout(() => {
+        navigate("/medical-data");
+      }, 1000);
 
     } catch (error) {
       console.error("Error saving questionnaire:", error);
@@ -152,16 +183,6 @@ export function MedicalQuestionnaire({ onDataSaved }: { onDataSaved?: () => void
       setIsLoading(false);
     }
   };
-  
-  // Fonction pour convertir base64 en ArrayBuffer
-  function base64ToArrayBuffer(base64: string): Uint8Array {
-    const binaryString = atob(base64);
-    const bytes = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-    return bytes;
-  }
 
   return (
     <Card className="mt-4">
