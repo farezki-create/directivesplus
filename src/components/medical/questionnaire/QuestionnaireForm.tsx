@@ -23,7 +23,7 @@ export function QuestionnaireForm({ form, onSubmit, isLoading, children }: Quest
             className="bg-green-600 hover:bg-green-700 w-full py-5 text-lg"
             disabled={isLoading}
           >
-            Enregistrer le questionnaire
+            {isLoading ? "Enregistrement..." : "Enregistrer le questionnaire"}
           </Button>
         </div>
       </form>

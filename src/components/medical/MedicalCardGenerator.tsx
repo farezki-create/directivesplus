@@ -75,10 +75,15 @@ export function MedicalCardGenerator({ medicalData }: MedicalCardGeneratorProps)
         medicalAccessCode = generateRandomCode(8);
         
         // Sauvegarder le nouveau code dans le profil
-        await supabase
+        const { error: updateError } = await supabase
           .from('profiles')
           .update({ medical_access_code: medicalAccessCode })
           .eq('id', user.id);
+          
+        if (updateError) {
+          console.error("Error saving medical access code:", updateError);
+          throw new Error("Impossible de générer un code d'accès médical");
+        }
           
         console.log("Nouveau code d'accès médical généré:", medicalAccessCode);
       } else {
@@ -87,7 +92,6 @@ export function MedicalCardGenerator({ medicalData }: MedicalCardGeneratorProps)
 
       // Préparer les données du profil médical
       let latestData: Record<string, any> = {};
-      let accessCode = profileData.medical_access_code || "";
       let allergies: string[] = [];
       let bloodType = "";
 
@@ -95,11 +99,6 @@ export function MedicalCardGenerator({ medicalData }: MedicalCardGeneratorProps)
       if (medicalData && medicalData.length > 0) {
         if (medicalData[0] && medicalData[0].data) {
           latestData = medicalData[0].data;
-          
-          // Utiliser le code d'accès du profil en priorité
-          if (!accessCode) {
-            accessCode = medicalData[0].access_code || "";
-          }
           
           // Extraire les allergies (si disponibles)
           if (latestData.allergies && Array.isArray(latestData.allergies)) {
@@ -118,7 +117,7 @@ export function MedicalCardGenerator({ medicalData }: MedicalCardGeneratorProps)
         last_name: profileData.last_name || (latestData.nom as string) || "",
         first_name: profileData.first_name || (latestData.prenom as string) || "",
         birth_date: profileData.birth_date || (latestData.date_naissance as string) || "",
-        unique_identifier: accessCode,
+        unique_identifier: user.id,
         medical_access_code: medicalAccessCode, // Utiliser le code d'accès médical
         blood_type: bloodType || "",
         allergies: allergies,

@@ -18,12 +18,17 @@ export interface MedicalProfile {
 
 export class MedicalCardGenerator {
   static generate(doc: jsPDF, profile: MedicalProfile): void {
-    this.setBackground(doc);
-    this.addHeader(doc);
-    this.addUserInformation(doc, profile);
-    this.addMedicalInformation(doc, profile);
-    this.addAccessCode(doc, profile);
-    this.addWebsite(doc);
+    try {
+      this.setBackground(doc);
+      this.addHeader(doc);
+      this.addUserInformation(doc, profile);
+      this.addMedicalInformation(doc, profile);
+      this.addAccessCode(doc, profile);
+      this.addWebsite(doc);
+    } catch (error) {
+      console.error("Erreur lors de la génération de la carte médicale:", error);
+      throw new Error("Impossible de générer la carte d'accès médicale");
+    }
   }
 
   private static setBackground(doc: jsPDF): void {

@@ -121,25 +121,6 @@ export function GeneralInformationSection({
         
         <FormField
           control={control}
-          name="secu"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Numéro de sécurité sociale</FormLabel>
-              <FormControl>
-                <Input 
-                  placeholder="Votre numéro de sécurité sociale" 
-                  {...field} 
-                  value={field.value || ""} 
-                  disabled={isLoading}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={control}
           name="adresse"
           render={({ field }) => (
             <FormItem>
