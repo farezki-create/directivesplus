@@ -39,16 +39,6 @@ export function useMedicalCardGenerator(medicalData: any[]) {
     return result;
   };
 
-  // Function to decode a base64 string
-  const decode = (base64: string): Uint8Array => {
-    const binaryString = atob(base64);
-    const bytes = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-    return bytes;
-  };
-
   const handleGenerateMedicalCard = async () => {
     if (!user) {
       toast({
@@ -130,7 +120,7 @@ export function useMedicalCardGenerator(medicalData: any[]) {
         first_name: profileData.first_name || (latestData.prenom as string) || "",
         birth_date: profileData.birth_date || (latestData.date_naissance as string) || "",
         unique_identifier: user.id,
-        medical_access_code: medicalAccessCode, // Utiliser le code d'accès médical
+        medical_access_code: medicalAccessCode,
         blood_type: bloodType || "",
         allergies: allergies,
         address: profileData.address || "",
@@ -154,22 +144,48 @@ export function useMedicalCardGenerator(medicalData: any[]) {
       const fileName = `Carte_medicale_${medicalProfile.last_name}_${Date.now()}.pdf`;
 
       if (pdfDataUrl) {
-        const base64Data = pdfDataUrl.split(',')[1];
+        // Convertir le dataURL en Blob pour le stockage
+        const response = await fetch(pdfDataUrl);
+        const blob = await response.blob();
         
-        // Enregistrer le document dans la table medical_documents
+        // Upload du fichier dans le storage
         const filePath = `medical_cards/${user.id}_${Date.now()}.pdf`;
+        
+        // Vérifier que le bucket existe
+        const { data: buckets } = await supabase.storage.listBuckets();
+        const medicalDocumentsBucket = buckets?.find(bucket => bucket.name === 'medical_documents');
+        
+        if (!medicalDocumentsBucket) {
+          // Si le bucket n'existe pas, créer un nouveau bucket
+          const { data: newBucket, error: bucketError } = await supabase.storage
+            .createBucket('medical_documents', {
+              public: false,
+              fileSizeLimit: 5242880 // 5MB
+            });
+            
+          if (bucketError) {
+            console.error("Error creating bucket:", bucketError);
+            throw bucketError;
+          }
+        }
         
         // Upload du fichier dans le storage
         const { error: uploadError } = await supabase.storage
           .from('medical_documents')
-          .upload(filePath, decode(base64Data), {
-            contentType: 'application/pdf'
+          .upload(filePath, blob, {
+            contentType: 'application/pdf',
+            upsert: true
           });
           
         if (uploadError) {
           console.error("Error uploading PDF:", uploadError);
-          throw new Error("Impossible d'enregistrer le fichier PDF");
+          throw uploadError;
         }
+        
+        // Obtenir une URL publique pour le fichier
+        const { data: publicUrlData } = await supabase.storage
+          .from('medical_documents')
+          .getPublicUrl(filePath);
         
         // Ajouter l'entrée dans la table des documents médicaux
         const { error: dbError } = await supabase
@@ -179,13 +195,13 @@ export function useMedicalCardGenerator(medicalData: any[]) {
             file_path: filePath,
             file_name: fileName,
             file_type: 'application/pdf',
-            file_size: Math.round(base64Data.length * 0.75),
+            file_size: Math.round(blob.size),
             description: "Carte d'accès aux données médicales"
           });
           
         if (dbError) {
           console.error("Error saving document reference:", dbError);
-          throw new Error("Impossible d'enregistrer la référence du document");
+          throw dbError;
         }
 
         toast({
@@ -193,11 +209,11 @@ export function useMedicalCardGenerator(medicalData: any[]) {
           description: "La carte d'accès médicale a été générée et enregistrée dans vos documents médicaux"
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error generating medical card:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de générer la carte d'accès médicale",
+        description: error?.message || "Impossible de générer la carte d'accès médicale",
         variant: "destructive"
       });
     } finally {
