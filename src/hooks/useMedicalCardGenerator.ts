@@ -144,70 +144,69 @@ export function useMedicalCardGenerator(medicalData: any[]) {
       const fileName = `Carte_medicale_${medicalProfile.last_name}_${Date.now()}.pdf`;
 
       if (pdfDataUrl) {
-        // Convertir le dataURL en Blob pour le stockage
-        const response = await fetch(pdfDataUrl);
-        const blob = await response.blob();
-        
-        // Upload du fichier dans le storage
-        const filePath = `medical_cards/${user.id}_${Date.now()}.pdf`;
-        
-        // Vérifier que le bucket existe
-        const { data: buckets } = await supabase.storage.listBuckets();
-        const medicalDocumentsBucket = buckets?.find(bucket => bucket.name === 'medical_documents');
-        
-        if (!medicalDocumentsBucket) {
-          // Si le bucket n'existe pas, créer un nouveau bucket
-          const { data: newBucket, error: bucketError } = await supabase.storage
-            .createBucket('medical_documents', {
-              public: false,
-              fileSizeLimit: 5242880 // 5MB
+        try {
+          // Convertir le dataURL en Blob pour le stockage
+          const response = await fetch(pdfDataUrl);
+          const blob = await response.blob();
+          
+          // Upload du fichier directement sans vérifier/créer le bucket
+          // Car la création de bucket nécessite des droits administrateur
+          const filePath = `medical_cards/${user.id}_${Date.now()}.pdf`;
+          
+          // Tenter l'upload directement, en supposant que le bucket existe déjà
+          const { error: uploadError } = await supabase.storage
+            .from('medical_documents')
+            .upload(filePath, blob, {
+              contentType: 'application/pdf',
+              upsert: true
             });
             
-          if (bucketError) {
-            console.error("Error creating bucket:", bucketError);
-            throw bucketError;
+          if (uploadError) {
+            console.error("Error uploading PDF:", uploadError);
+            // Si le bucket n'existe pas, nous ne pouvons pas le créer ici
+            // Nous devons demander à l'administrateur de le faire
+            throw new Error("Impossible d'uploader le fichier PDF. Vérifiez que le bucket 'medical_documents' existe dans Supabase Storage.");
           }
-        }
-        
-        // Upload du fichier dans le storage
-        const { error: uploadError } = await supabase.storage
-          .from('medical_documents')
-          .upload(filePath, blob, {
-            contentType: 'application/pdf',
-            upsert: true
-          });
           
-        if (uploadError) {
-          console.error("Error uploading PDF:", uploadError);
-          throw uploadError;
-        }
-        
-        // Obtenir une URL publique pour le fichier
-        const { data: publicUrlData } = await supabase.storage
-          .from('medical_documents')
-          .getPublicUrl(filePath);
-        
-        // Ajouter l'entrée dans la table des documents médicaux
-        const { error: dbError } = await supabase
-          .from('medical_documents')
-          .insert({
-            user_id: user.id,
-            file_path: filePath,
-            file_name: fileName,
-            file_type: 'application/pdf',
-            file_size: Math.round(blob.size),
-            description: "Carte d'accès aux données médicales"
-          });
+          // Obtenir une URL publique pour le fichier
+          const { data: publicUrlData } = await supabase.storage
+            .from('medical_documents')
+            .getPublicUrl(filePath);
           
-        if (dbError) {
-          console.error("Error saving document reference:", dbError);
-          throw dbError;
-        }
+          // Ajouter l'entrée dans la table des documents médicaux
+          const { error: dbError } = await supabase
+            .from('medical_documents')
+            .insert({
+              user_id: user.id,
+              file_path: filePath,
+              file_name: fileName,
+              file_type: 'application/pdf',
+              file_size: Math.round(blob.size),
+              description: "Carte d'accès aux données médicales"
+            });
+            
+          if (dbError) {
+            console.error("Error saving document reference:", dbError);
+            throw new Error("Impossible d'enregistrer la référence du document dans la base de données");
+          }
 
-        toast({
-          title: "Succès",
-          description: "La carte d'accès médicale a été générée et enregistrée dans vos documents médicaux"
-        });
+          toast({
+            title: "Succès",
+            description: "La carte d'accès médicale a été générée et enregistrée dans vos documents médicaux"
+          });
+        } catch (storageError: any) {
+          console.error("Storage error:", storageError);
+          // Même si le stockage échoue, nous pouvons proposer de télécharger le PDF
+          const link = document.createElement('a');
+          link.href = pdfDataUrl;
+          link.download = fileName;
+          link.click();
+          
+          toast({
+            title: "Information",
+            description: "La carte d'accès a été générée mais n'a pas pu être sauvegardée. Elle a été téléchargée sur votre appareil."
+          });
+        }
       }
     } catch (error: any) {
       console.error("Error generating medical card:", error);
