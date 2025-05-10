@@ -1,4 +1,7 @@
 
+// Set this before all other imports to ensure Rollup uses JavaScript implementation
+globalThis.__ROLLUP_NO_NATIVE__ = true;
+
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 
