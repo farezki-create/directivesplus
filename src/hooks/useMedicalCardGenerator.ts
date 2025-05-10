@@ -1,17 +1,53 @@
 
 import { useState } from "react";
+import { jsPDF } from "jspdf";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useProgressTracker } from "@/hooks/useProgressTracker";
-import { MedicalCardService } from "@/services/medicalCardService";
+import { cardDimensions } from "@/components/pdf/utils/constants/cardDimensions";
+import { MedicalCardGenerator as MedicalCardGeneratorUtil, MedicalProfile } from "@/utils/medical/MedicalCardGenerator";
 
 export function useMedicalCardGenerator(medicalData: any[]) {
-  const { progress, isProcessing: isGenerating, startProgress, completeProgress } = useProgressTracker();
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [progress, setProgress] = useState(0);
   const { toast } = useToast();
   const { user } = useAuth();
-  const navigate = useNavigate();
+
+  const updateProgress = () => {
+    // Simulate progress updates
+    setProgress(0);
+    const interval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 95) {
+          clearInterval(interval);
+          return prev;
+        }
+        return prev + 5;
+      });
+    }, 200);
+    
+    return () => clearInterval(interval);
+  };
+
+  // Function to generate a random code
+  const generateRandomCode = (length: number): string => {
+    const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  };
+
+  // Function to decode a base64 string
+  const decode = (base64: string): Uint8Array => {
+    const binaryString = atob(base64);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes;
+  };
 
   const handleGenerateMedicalCard = async () => {
     if (!user) {
@@ -23,81 +59,153 @@ export function useMedicalCardGenerator(medicalData: any[]) {
       return;
     }
 
-    const cleanupProgress = startProgress();
+    setIsGenerating(true);
+    const cleanupProgress = updateProgress();
 
     try {
-      console.log("Début de la génération de la carte médicale");
-      
-      // Fetch profile information
+      // Récupérer les informations du profil
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
         .single();
 
-      if (profileError || !profileData) {
+      if (profileError) {
         console.error("Error fetching profile:", profileError);
         throw new Error("Profil utilisateur non trouvé");
       }
 
-      // Ensure the user has a medical access code
-      const medicalAccessCode = await MedicalCardService.ensureMedicalAccessCode(user.id, profileData);
-      
-      // Create the medical profile
-      const medicalProfile = MedicalCardService.createMedicalProfile(
-        user.id,
-        profileData,
-        medicalAccessCode,
-        medicalData
-      );
+      if (!profileData) {
+        throw new Error("Profil utilisateur non trouvé");
+      }
 
-      // Generate the PDF
-      const doc = MedicalCardService.generateMedicalCardPDF(medicalProfile);
+      // Vérifier si le code d'accès médical existe
+      let medicalAccessCode = profileData.medical_access_code;
       
-      // Get the PDF as a data URL
+      // Si le code d'accès médical n'existe pas, en générer un nouveau
+      if (!medicalAccessCode) {
+        medicalAccessCode = generateRandomCode(8);
+        
+        // Sauvegarder le nouveau code dans le profil
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ medical_access_code: medicalAccessCode })
+          .eq('id', user.id);
+          
+        if (updateError) {
+          console.error("Error saving medical access code:", updateError);
+          throw new Error("Impossible de générer un code d'accès médical");
+        }
+          
+        console.log("Nouveau code d'accès médical généré:", medicalAccessCode);
+      } else {
+        console.log("Code d'accès médical existant:", medicalAccessCode);
+      }
+
+      // Préparer les données du profil médical
+      let latestData: Record<string, any> = {};
+      let allergies: string[] = [];
+      let bloodType = "";
+
+      // Récupérer les données du questionnaire si disponibles
+      if (medicalData && medicalData.length > 0) {
+        if (medicalData[0] && medicalData[0].data) {
+          latestData = medicalData[0].data;
+          
+          // Extraire les allergies (si disponibles)
+          if (latestData.allergies && Array.isArray(latestData.allergies)) {
+            allergies = latestData.allergies;
+          }
+          
+          // Récupérer le groupe sanguin s'il existe
+          if (medicalData[0].blood_type) {
+            bloodType = medicalData[0].blood_type;
+          }
+        }
+      }
+
+      // Créer le profil médical
+      const medicalProfile: MedicalProfile = {
+        last_name: profileData.last_name || (latestData.nom as string) || "",
+        first_name: profileData.first_name || (latestData.prenom as string) || "",
+        birth_date: profileData.birth_date || (latestData.date_naissance as string) || "",
+        unique_identifier: user.id,
+        medical_access_code: medicalAccessCode, // Utiliser le code d'accès médical
+        blood_type: bloodType || "",
+        allergies: allergies,
+        address: profileData.address || "",
+        city: profileData.city || "",
+        postal_code: profileData.postal_code || "",
+        phone_number: profileData.phone_number || ""
+      };
+
+      // Créer le document PDF
+      const doc = new jsPDF({
+        orientation: "landscape",
+        unit: "mm",
+        format: [cardDimensions.width, cardDimensions.height]
+      });
+
+      // Générer la carte médicale
+      MedicalCardGeneratorUtil.generate(doc, medicalProfile);
+
+      // Obtenir le PDF sous forme de données URL
       const pdfDataUrl = doc.output('dataurlstring');
       const fileName = `Carte_medicale_${medicalProfile.last_name}_${Date.now()}.pdf`;
 
       if (pdfDataUrl) {
-        // Upload the medical card
-        const result = await MedicalCardService.uploadMedicalCard(
-          user.id,
-          pdfDataUrl,
-          fileName
-        );
-
-        if (result.success) {
-          toast({
-            title: "Succès",
-            description: "La carte d'accès médicale a été générée et enregistrée dans vos documents médicaux"
+        const base64Data = pdfDataUrl.split(',')[1];
+        
+        // Enregistrer le document dans la table medical_documents
+        const filePath = `medical_cards/${user.id}_${Date.now()}.pdf`;
+        
+        // Upload du fichier dans le storage
+        const { error: uploadError } = await supabase.storage
+          .from('medical_documents')
+          .upload(filePath, decode(base64Data), {
+            contentType: 'application/pdf'
           });
           
-          // Redirect to medical data page after a short delay
-          setTimeout(() => {
-            navigate("/medical-data");
-          }, 1000);
-        } else {
-          // Even if storage fails, we can offer to download the PDF
-          const link = document.createElement('a');
-          link.href = pdfDataUrl;
-          link.download = fileName;
-          link.click();
-          
-          toast({
-            title: "Information",
-            description: "La carte d'accès a été générée mais n'a pas pu être sauvegardée. Elle a été téléchargée sur votre appareil."
-          });
+        if (uploadError) {
+          console.error("Error uploading PDF:", uploadError);
+          throw new Error("Impossible d'enregistrer le fichier PDF");
         }
+        
+        // Ajouter l'entrée dans la table des documents médicaux
+        const { error: dbError } = await supabase
+          .from('medical_documents')
+          .insert({
+            user_id: user.id,
+            file_path: filePath,
+            file_name: fileName,
+            file_type: 'application/pdf',
+            file_size: Math.round(base64Data.length * 0.75),
+            description: "Carte d'accès aux données médicales"
+          });
+          
+        if (dbError) {
+          console.error("Error saving document reference:", dbError);
+          throw new Error("Impossible d'enregistrer la référence du document");
+        }
+
+        toast({
+          title: "Succès",
+          description: "La carte d'accès médicale a été générée et enregistrée dans vos documents médicaux"
+        });
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error generating medical card:", error);
       toast({
         title: "Erreur",
-        description: error?.message || "Impossible de générer la carte d'accès médicale",
+        description: "Impossible de générer la carte d'accès médicale",
         variant: "destructive"
       });
     } finally {
-      completeProgress();
+      setProgress(100);
+      setTimeout(() => {
+        setIsGenerating(false);
+        setProgress(0);
+      }, 500);
       cleanupProgress();
     }
   };

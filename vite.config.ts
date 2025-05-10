@@ -1,12 +1,4 @@
 
-// Import our monkey patch first before anything else gets loaded
-try {
-  require('./src/rollup-patch');
-  console.log('[vite.config] Rollup native module patch loaded successfully');
-} catch (error) {
-  console.error('[vite.config] Failed to load Rollup patch:', error);
-}
-
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
@@ -21,7 +13,7 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
-    mode === 'development' && 
+    mode === 'development' &&
     componentTagger(),
   ].filter(Boolean),
   resolve: {
@@ -29,22 +21,4 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  optimizeDeps: {
-    esbuildOptions: {
-      target: 'es2020'
-    }
-  },
-  build: {
-    target: 'es2020',
-    rollupOptions: {
-      context: 'globalThis',
-    }
-  },
-  define: {
-    '__ROLLUP_NO_NATIVE__': true,
-    'process.env.ROLLUP_NATIVE_DISABLE': '"true"',
-    'process.env.ROLLUP_DISABLE_NATIVE': '"true"',
-    'process.env.ROLLUP_NATIVE_DISABLED': '"true"',
-    'process.env.ROLLUP_FORCE_NODEJS': '"true"'
-  }
 }));

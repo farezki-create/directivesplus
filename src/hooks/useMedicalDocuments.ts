@@ -16,18 +16,14 @@ export function useMedicalDocuments(userId: string) {
     
     setLoading(true);
     try {
-      console.log("Fetching medical documents for user:", userId);
       const { data, error } = await supabase
         .from('medical_documents')
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
         
-      if (error) {
-        console.error("Error fetching medical documents:", error);
-        throw error;
-      }
-      console.log("Medical documents retrieved:", data);
+      if (error) throw error;
+      console.log("Documents récupérés:", data);
       setDocuments(data || []);
     } catch (error) {
       console.error("Error fetching medical documents:", error);
@@ -43,17 +39,14 @@ export function useMedicalDocuments(userId: string) {
   
   const previewDocument = async (document: MedicalDocument) => {
     try {
-      console.log("Creating preview URL for:", document.file_path);
+      console.log("Génération de l'URL de prévisualisation pour:", document.file_path);
       const { data, error } = await supabase.storage
         .from('medical_documents')
         .createSignedUrl(document.file_path, 3600);
         
-      if (error) {
-        console.error("Error creating signed URL:", error);
-        throw error;
-      }
+      if (error) throw error;
       
-      console.log("Generated signed URL:", data.signedUrl);
+      console.log("URL générée:", data.signedUrl);
       setPreviewUrl(data.signedUrl);
       setPreviewOpen(true);
     } catch (error) {
@@ -79,7 +72,7 @@ export function useMedicalDocuments(userId: string) {
         return;
       }
       
-      console.log("Deleting document:", documentToDelete.file_path);
+      console.log("Suppression du document:", documentToDelete.file_path);
       
       // Delete the file from storage
       const { error: storageError } = await supabase.storage
@@ -87,8 +80,8 @@ export function useMedicalDocuments(userId: string) {
         .remove([documentToDelete.file_path]);
         
       if (storageError) {
-        console.error("Error deleting file from storage:", storageError);
-        // Continue with database deletion even if storage deletion fails
+        console.error("Erreur lors de la suppression du fichier:", storageError);
+        throw storageError;
       }
       
       // Delete the database record
@@ -98,7 +91,7 @@ export function useMedicalDocuments(userId: string) {
         .eq('id', documentId);
         
       if (dbError) {
-        console.error("Error deleting document record:", dbError);
+        console.error("Erreur lors de la suppression de l'enregistrement:", dbError);
         throw dbError;
       }
       
@@ -119,10 +112,9 @@ export function useMedicalDocuments(userId: string) {
     }
   };
   
-  // Initial fetch when component mounts or userId changes
+  // Initial fetch when component mounts
   useEffect(() => {
     if (userId) {
-      console.log("UserId changed, fetching medical documents");
       fetchDocuments();
     }
   }, [userId]);

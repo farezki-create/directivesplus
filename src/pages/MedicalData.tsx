@@ -35,9 +35,7 @@ export default function MedicalData() {
 
   useEffect(() => {
     if (user) {
-      console.log("Loading medical data for user:", user.id);
       fetchMedicalData();
-      fetchDocuments();
     }
   }, [user]);
 
@@ -46,14 +44,11 @@ export default function MedicalData() {
   };
 
   const handleDataSaved = () => {
-    console.log("Data saved, refreshing...");
     setShowQuestionnaire(false);
     fetchMedicalData();
-    fetchDocuments();
   };
   
   const handleDocumentAdded = () => {
-    console.log("Document added, refreshing documents...");
     fetchDocuments();
     setActiveTab("documents");
   };
@@ -155,7 +150,7 @@ export default function MedicalData() {
               <FrenchFlag />
             </div>
             <p>
-              Vos données médicales sont hébergées en France 
+              Vos directives anticipées et documents de santé sont hébergés en France 
               dans le serveur Scalingo, certifiés HDS par les autorités de santé.
             </p>
           </div>

@@ -14,7 +14,7 @@ export function CardGenerationProgress({ isGenerating, progress }: CardGeneratio
     <div className="space-y-1">
       <Progress value={progress} className="h-2" />
       <p className="text-xs text-center text-muted-foreground">
-        Construction de votre carte d'accès médicale en cours...{progress === 100 ? " Terminé!" : ""}
+        Construction de votre carte d'accès médicale en cours...
       </p>
     </div>
   );
