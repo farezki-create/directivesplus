@@ -19,17 +19,33 @@ if (typeof global !== 'undefined') {
   global.__FORCE_JS_IMPLEMENTATION__ = true;
 }
 
-// Monkey patch the require function to handle native module imports
-// This is a more aggressive approach to prevent the native module loading
-if (typeof require !== 'undefined' && require.cache) {
-  const originalResolveFilename = require('module')._resolveFilename;
-  if (originalResolveFilename) {
-    require('module')._resolveFilename = function (request, parent, isMain, options) {
-      // Skip any @rollup/rollup-* native modules
+// Most aggressive approach: patch require.extensions to block native modules
+if (typeof require !== 'undefined') {
+  try {
+    // Completely override Module._load for native modules
+    const Module = require('module');
+    const originalLoad = Module._load;
+    
+    Module._load = function(request, parent, isMain) {
       if (request && request.includes('@rollup/rollup-')) {
-        throw new Error(`Native module '${request}' loading prevented by rollup-patch.js`);
+        // Force error for rollup native modules
+        throw new Error(`Native module '${request}' loading prevented`);
       }
-      return originalResolveFilename(request, parent, isMain, options);
+      return originalLoad.apply(this, arguments);
     };
+    
+    // Also patch _resolveFilename
+    const originalResolveFilename = Module._resolveFilename;
+    if (originalResolveFilename) {
+      Module._resolveFilename = function(request, parent, isMain, options) {
+        if (request && request.includes('@rollup/rollup-')) {
+          throw new Error(`Native module '${request}' resolution blocked`);
+        }
+        return originalResolveFilename.apply(this, arguments);
+      };
+    }
+  } catch (e) {
+    // If patching fails, at least we tried
+    console.warn('Failed to patch module loader:', e);
   }
 }

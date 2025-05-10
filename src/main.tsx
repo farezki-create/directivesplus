@@ -7,6 +7,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import App from './App.tsx'
 import './index.css'
 
+// Set a global indicator that we're using pure JS implementation
+window.__FORCE_JS_IMPLEMENTATION__ = true;
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

@@ -9,6 +9,11 @@ export default {
     file: 'dist/bundle.js',
     format: 'es'
   },
+  // Force pure JavaScript implementation
+  treeshake: {
+    moduleSideEffects: true,
+    propertyReadSideEffects: false,
+  },
   // Additional options to avoid native modules
   onwarn(warning, warn) {
     // Skip warnings related to native modules
@@ -16,5 +21,7 @@ export default {
       return;
     }
     warn(warning);
-  }
+  },
+  // Explicitly disable plugins that might use native code
+  plugins: []
 };

@@ -28,13 +28,17 @@ export default defineConfig(({ mode }) => ({
     esbuildOptions: {
       target: 'es2020',
     },
+    force: true, // Force re-optimization
   },
   // Explicitly configure rollup to use pure JS implementation
   build: {
+    target: 'es2020',
+    minify: 'terser',
     rollupOptions: {
       // Force rollup to use pure JavaScript implementation
       treeshake: {
         moduleSideEffects: true,
+        propertyReadSideEffects: false,
       },
       // Skip native modules
       onwarn(warning, warn) {
@@ -45,4 +49,12 @@ export default defineConfig(({ mode }) => ({
       }
     },
   },
+  // Override Vite's default rollup config
+  customRollupOptions: {
+    context: 'window',
+    treeshake: {
+      moduleSideEffects: true,
+      propertyReadSideEffects: false,
+    }
+  }
 }));
