@@ -16,10 +16,30 @@ const originalRequire = Module.prototype.require;
 if (!global.__ROLLUP_PATCHED__) {
   // Patch the require function to intercept native module loads
   Module.prototype.require = function(path) {
-    if (path && typeof path === 'string' && path.includes('@rollup/rollup-')) {
+    // Check if this is a Rollup native module and block it
+    if (path && typeof path === 'string' && 
+        (path.includes('@rollup/rollup-') || 
+         path.includes('rollup/dist/native'))) {
       console.log(`[Rollup Patch] Preventing load of native module: ${path}`);
+      
+      // If trying to load the native.js file directly, return a mock module
+      if (path.includes('rollup/dist/native')) {
+        return {
+          needsRebuilding: () => false,
+          loadBindings: () => {
+            throw new Error('Native bindings disabled by rollup-patch.js');
+          },
+          getDefaultNativeModuleName: () => null,
+          getDefaultNativeModuleNames: () => [],
+          getNativeModuleName: () => null
+        };
+      }
+      
+      // Otherwise throw an error to prevent loading
       throw new Error(`Native module loading disabled: ${path}`);
     }
+    
+    // Allow all other modules to load normally
     return originalRequire.apply(this, arguments);
   };
 
@@ -29,5 +49,9 @@ if (!global.__ROLLUP_PATCHED__) {
 
 // Export a dummy function to validate the patch is loaded
 module.exports = {
-  isPatched: () => global.__ROLLUP_PATCHED__ === true
+  isPatched: () => global.__ROLLUP_PATCHED__ === true,
+  getRollupSettings: () => ({
+    nativeModulesDisabled: true,
+    forceJavaScript: true
+  })
 };
