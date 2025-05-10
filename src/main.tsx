@@ -1,5 +1,5 @@
 
-// Apply the rollup patch
+// Apply the rollup patch first
 import './utils/rollup-patch.js';
 
 import { createRoot } from 'react-dom/client'
