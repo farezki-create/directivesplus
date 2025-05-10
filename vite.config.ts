@@ -33,7 +33,7 @@ export default defineConfig(({ mode }) => ({
   // Explicitly configure rollup to use pure JS implementation
   build: {
     target: 'es2020',
-    minify: 'terser',
+    minify: 'esbuild', // Change from terser to esbuild
     rollupOptions: {
       // Force rollup to use pure JavaScript implementation
       treeshake: {

@@ -4,6 +4,7 @@
 interface Window {
   webkitSpeechRecognition: any;
   SpeechRecognition: any;
+  __FORCE_JS_IMPLEMENTATION__?: boolean;
 }
 
 interface SpeechRecognitionEvent extends Event {
