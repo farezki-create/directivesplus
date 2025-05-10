@@ -1,6 +1,6 @@
 
-// Set this before all other imports to ensure Rollup uses JavaScript implementation
-globalThis.__ROLLUP_NO_NATIVE__ = true;
+// Import the Rollup config first to ensure it's applied before anything else
+import './src/rollup-config';
 
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";

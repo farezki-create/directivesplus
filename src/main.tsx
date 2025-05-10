@@ -13,7 +13,7 @@ import { Toaster as SonnerToaster } from "sonner"
 
 // Additional console log to verify the environment variable is set
 console.log('Rollup configuration:', { 
-  usingNativeModules: !globalThis.__ROLLUP_NO_NATIVE__,
+  usingNativeModules: !(globalThis as any).__ROLLUP_NO_NATIVE__,
   nodeVersion: process.version
 });
 

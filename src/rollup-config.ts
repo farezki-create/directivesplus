@@ -3,12 +3,12 @@
 // It should be imported at the very beginning of entry point files
 
 // Set the global flag to disable native modules
-globalThis.__ROLLUP_NO_NATIVE__ = true;
+(globalThis as any).__ROLLUP_NO_NATIVE__ = true;
 
 export const ensureJavaScriptRollup = () => {
-  if (!globalThis.__ROLLUP_NO_NATIVE__) {
+  if (!(globalThis as any).__ROLLUP_NO_NATIVE__) {
     console.warn('Warning: Rollup native modules were not properly disabled');
-    globalThis.__ROLLUP_NO_NATIVE__ = true;
+    (globalThis as any).__ROLLUP_NO_NATIVE__ = true;
   }
   return true;
 };
