@@ -6,6 +6,13 @@ declare global {
   var __ROLLUP_NO_NATIVE__: boolean;
 }
 
+// Ensure process.env types are available
+declare namespace NodeJS {
+  interface ProcessEnv {
+    ROLLUP_NATIVE_DISABLE?: string;
+  }
+}
+
 interface Window {
   webkitSpeechRecognition: any;
   SpeechRecognition: any;

@@ -1,5 +1,11 @@
 
-// Import our Rollup config helper first to ensure native modules are disabled
+// Force disable Rollup native modules BEFORE anything else loads
+(globalThis as any).__ROLLUP_NO_NATIVE__ = true;
+if (typeof process !== 'undefined' && process.env) {
+  process.env.ROLLUP_NATIVE_DISABLE = 'true';
+}
+
+// Import our Rollup config helper to ensure native modules are disabled
 import './rollup-config';
 
 import React from 'react'
@@ -12,10 +18,11 @@ import { Toaster } from "@/components/ui/toaster"
 import { Toaster as SonnerToaster } from "sonner"
 
 // Additional console log to verify the environment variable is set
-console.log('Rollup configuration:', { 
+console.log('Runtime Rollup configuration:', { 
   usingNativeModules: !(globalThis as any).__ROLLUP_NO_NATIVE__,
   nodeVersion: process.version,
-  rollupNoNativeSet: (globalThis as any).__ROLLUP_NO_NATIVE__ === true
+  rollupNoNativeSet: (globalThis as any).__ROLLUP_NO_NATIVE__ === true,
+  envDisable: typeof process !== 'undefined' ? process.env.ROLLUP_NATIVE_DISABLE : 'unavailable'
 });
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

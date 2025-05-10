@@ -1,11 +1,23 @@
 
-// Import the Rollup config first to ensure it's applied before anything else
+// Force disable Rollup native modules BEFORE anything else loads
+(globalThis as any).__ROLLUP_NO_NATIVE__ = true;
+if (typeof process !== 'undefined' && process.env) {
+  process.env.ROLLUP_NATIVE_DISABLE = 'true';
+}
+
+// Now load our proper configuration
 import './src/rollup-config';
 
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
+
+// Log verification that settings are applied
+console.log('Vite config - Rollup native modules disabled:', {
+  rollupNoNative: (globalThis as any).__ROLLUP_NO_NATIVE__,
+  envDisable: typeof process !== 'undefined' ? process.env.ROLLUP_NATIVE_DISABLE : 'unavailable'
+});
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -43,6 +55,7 @@ export default defineConfig(({ mode }) => ({
   },
   // Force JavaScript implementation of Rollup
   define: {
-    '__ROLLUP_NO_NATIVE__': true
+    '__ROLLUP_NO_NATIVE__': 'true',
+    'process.env.ROLLUP_NATIVE_DISABLE': '"true"'
   }
 }));
