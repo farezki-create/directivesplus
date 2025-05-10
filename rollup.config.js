@@ -8,5 +8,13 @@ export default {
   output: {
     file: 'dist/bundle.js',
     format: 'es'
+  },
+  // Additional options to avoid native modules
+  onwarn(warning, warn) {
+    // Skip warnings related to native modules
+    if (warning.code === 'MISSING_EXPORT' && warning.message.includes('@rollup/rollup-')) {
+      return;
+    }
+    warn(warning);
   }
 };

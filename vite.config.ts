@@ -29,13 +29,20 @@ export default defineConfig(({ mode }) => ({
       target: 'es2020',
     },
   },
-  // Disable rollup native modules
+  // Explicitly configure rollup to use pure JS implementation
   build: {
     rollupOptions: {
       // Force rollup to use pure JavaScript implementation
       treeshake: {
         moduleSideEffects: true,
       },
+      // Skip native modules
+      onwarn(warning, warn) {
+        if (warning.code === 'MISSING_EXPORT' && warning.message.includes('@rollup/rollup-')) {
+          return;
+        }
+        warn(warning);
+      }
     },
   },
 }));
