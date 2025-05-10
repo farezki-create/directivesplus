@@ -1,6 +1,6 @@
 
-// Set this before other imports to ensure Rollup uses JavaScript implementation
-globalThis.__ROLLUP_NO_NATIVE__ = true;
+// Import our Rollup config helper first to ensure native modules are disabled
+import './rollup-config';
 
 import React from 'react'
 import ReactDOM from 'react-dom/client'

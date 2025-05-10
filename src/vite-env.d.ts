@@ -1,6 +1,11 @@
 
 /// <reference types="vite/client" />
 
+// Add declaration for the Rollup native modules flag
+declare global {
+  var __ROLLUP_NO_NATIVE__: boolean;
+}
+
 interface Window {
   webkitSpeechRecognition: any;
   SpeechRecognition: any;
