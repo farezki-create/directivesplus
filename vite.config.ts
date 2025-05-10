@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
-    mode === 'development' &&
+    mode === 'development' && 
     componentTagger(),
   ].filter(Boolean),
   resolve: {
@@ -21,4 +21,18 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  optimizeDeps: {
+    // Désactiver certaines optimisations qui peuvent causer des problèmes avec rollup
+    esbuildOptions: {
+      target: 'es2020'
+    }
+  },
+  build: {
+    // Configuration plus sûre pour éviter les problèmes de compatibilité
+    target: 'es2020',
+    rollupOptions: {
+      // Éviter l'utilisation des modules natifs de rollup
+      context: 'globalThis'
+    }
+  }
 }));
