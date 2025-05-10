@@ -30,7 +30,7 @@ export default defineConfig(({ mode }) => ({
     target: 'es2020',
     rollupOptions: {
       context: 'globalThis',
-      // Désactiver complètement les plugins natifs de Rollup
+      // Disable Rollup native modules completely
       treeshake: {
         moduleSideEffects: 'no-external',
         propertyReadSideEffects: false,
@@ -38,8 +38,8 @@ export default defineConfig(({ mode }) => ({
       }
     }
   },
-  // Force l'utilisation de Rollup non-natif
+  // Force JavaScript implementation of Rollup
   define: {
-    '__ROLLUP_NO_NATIVE__': 'true'
+    '__ROLLUP_NO_NATIVE__': true
   }
 }));

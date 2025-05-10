@@ -13,8 +13,8 @@ export default defineConfig({
       target: 'es2020'
     }
   },
-  // Force l'utilisation de Rollup non-natif
+  // Force JavaScript implementation of Rollup
   define: {
-    '__ROLLUP_NO_NATIVE__': 'true'
+    '__ROLLUP_NO_NATIVE__': true
   }
 });

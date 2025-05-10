@@ -7,6 +7,7 @@ import ReactDOM from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 import { BrowserRouter } from 'react-router-dom'
+import { ThemeProvider } from "./components/ui/theme-provider"
 import { Toaster } from "@/components/ui/toaster"
 import { Toaster as SonnerToaster } from "sonner"
 
@@ -19,9 +20,11 @@ console.log('Rollup configuration:', {
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter>
-      <App />
-      <Toaster />
-      <SonnerToaster position="top-center" richColors />
+      <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+        <App />
+        <Toaster />
+        <SonnerToaster position="top-center" richColors />
+      </ThemeProvider>
     </BrowserRouter>
   </React.StrictMode>,
 )
