@@ -8,6 +8,7 @@ import App from './App.tsx'
 import './index.css'
 
 // Set a global indicator that we're using pure JS implementation
+// @ts-ignore - TypeScript may not know about this property, but we've added it to the Window interface
 window.__FORCE_JS_IMPLEMENTATION__ = true;
 
 const queryClient = new QueryClient({

@@ -29,11 +29,12 @@ export default defineConfig(({ mode }) => ({
       target: 'es2020',
     },
     force: true, // Force re-optimization
+    exclude: ['@rollup/rollup-linux-x64-gnu', 'rollup/dist/native'], // Explicitly exclude problematic native modules
   },
   // Explicitly configure rollup to use pure JS implementation
   build: {
     target: 'es2020',
-    minify: 'esbuild', // Change from terser to esbuild
+    minify: 'esbuild', // Use esbuild for minification instead of terser
     rollupOptions: {
       // Force rollup to use pure JavaScript implementation
       treeshake: {
