@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { jsPDF } from "jspdf";
 import { Button } from "@/components/ui/button";
-import { FileText, IdCard } from "lucide-react";
+import { IdCard } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMedicalData } from "@/hooks/useMedicalData";
 import { useAuth } from "@/hooks/useAuth";
@@ -136,10 +136,6 @@ export function MedicalCardGenerator({ medicalData }: MedicalCardGeneratorProps)
 
       if (pdfDataUrl) {
         const base64Data = pdfDataUrl.split(',')[1];
-        
-        // Ouvrir le PDF dans un nouvel onglet
-        const pdfBlob = new Blob([decode(base64Data)], { type: 'application/pdf' });
-        window.open(URL.createObjectURL(pdfBlob), '_blank');
         
         // Enregistrer le document dans la table medical_documents
         const filePath = `medical_cards/${user.id}_${Date.now()}.pdf`;
