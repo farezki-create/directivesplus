@@ -1,21 +1,14 @@
 
-// Force disable Rollup native modules BEFORE anything else loads
-globalThis.__ROLLUP_NO_NATIVE__ = true;
-if (typeof process !== 'undefined' && process.env) {
-  process.env.ROLLUP_NATIVE_DISABLE = 'true';
+// Import our monkey patch first before anything else gets loaded
+try {
+  require('./src/rollup-patch');
+  console.log('[vitest.config] Rollup native module patch loaded successfully');
+} catch (error) {
+  console.error('[vitest.config] Failed to load Rollup patch:', error);
 }
-
-// Import the Rollup config to ensure it's applied
-import './src/rollup-config';
 
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
-
-// Log verification
-console.log('Vitest config - Rollup native modules disabled:', {
-  rollupNoNative: globalThis.__ROLLUP_NO_NATIVE__,
-  envDisable: typeof process !== 'undefined' ? process.env.ROLLUP_NATIVE_DISABLE : 'unavailable'
-});
 
 export default defineConfig({
   plugins: [react()],
@@ -28,9 +21,11 @@ export default defineConfig({
       target: 'es2020'
     }
   },
-  // Force JavaScript implementation of Rollup
   define: {
-    '__ROLLUP_NO_NATIVE__': 'true',
-    'process.env.ROLLUP_NATIVE_DISABLE': '"true"'
+    '__ROLLUP_NO_NATIVE__': true,
+    'process.env.ROLLUP_NATIVE_DISABLE': '"true"',
+    'process.env.ROLLUP_DISABLE_NATIVE': '"true"',
+    'process.env.ROLLUP_NATIVE_DISABLED': '"true"',
+    'process.env.ROLLUP_FORCE_NODEJS': '"true"'
   }
 });
