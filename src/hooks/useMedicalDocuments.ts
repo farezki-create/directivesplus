@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { MedicalDocument } from "@/components/medical/types";
@@ -11,7 +11,7 @@ export function useMedicalDocuments(userId: string) {
   const [previewOpen, setPreviewOpen] = useState(false);
   const { toast } = useToast();
 
-  const fetchDocuments = useCallback(async () => {
+  const fetchDocuments = async () => {
     if (!userId) return;
     
     setLoading(true);
@@ -35,9 +35,9 @@ export function useMedicalDocuments(userId: string) {
     } finally {
       setLoading(false);
     }
-  }, [userId, toast]);
+  };
   
-  const previewDocument = useCallback(async (document: MedicalDocument) => {
+  const previewDocument = async (document: MedicalDocument) => {
     try {
       console.log("Génération de l'URL de prévisualisation pour:", document.file_path);
       const { data, error } = await supabase.storage
@@ -57,9 +57,9 @@ export function useMedicalDocuments(userId: string) {
         variant: "destructive"
       });
     }
-  }, [toast]);
+  };
   
-  const deleteDocument = useCallback(async (documentId: string) => {
+  const deleteDocument = async (documentId: string) => {
     try {
       // First find the document to get the file path
       const documentToDelete = documents.find(doc => doc.id === documentId);
@@ -110,14 +110,14 @@ export function useMedicalDocuments(userId: string) {
         variant: "destructive"
       });
     }
-  }, [documents, toast]);
+  };
   
   // Initial fetch when component mounts
   useEffect(() => {
     if (userId) {
       fetchDocuments();
     }
-  }, [userId, fetchDocuments]);
+  }, [userId]);
 
   return {
     documents,

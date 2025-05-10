@@ -1,7 +1,3 @@
-
-// Apply Rollup patch before anything else
-process.env.ROLLUP_NATIVE_DISABLED = 'true';
-
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 
