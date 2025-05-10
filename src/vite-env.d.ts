@@ -4,7 +4,8 @@
 interface Window {
   webkitSpeechRecognition: any;
   SpeechRecognition: any;
-  __FORCE_JS_IMPLEMENTATION__?: boolean;
+  __FORCE_JS_IMPLEMENTATION__: boolean;
+  __ROLLUP_NO_NATIVE__: boolean;
 }
 
 interface SpeechRecognitionEvent extends Event {
@@ -24,4 +25,10 @@ interface SpeechRecognition extends EventTarget {
   onresult: ((event: SpeechRecognitionEvent) => void) | null;
   onerror: ((event: SpeechRecognitionEvent) => void) | null;
   onend: (() => void) | null;
+}
+
+// Add global declarations for our rollup flags
+declare global {
+  var __ROLLUP_NO_NATIVE__: boolean;
+  var __FORCE_JS_IMPLEMENTATION__: boolean;
 }

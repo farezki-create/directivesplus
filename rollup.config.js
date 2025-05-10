@@ -1,5 +1,5 @@
 
-// Apply the rollup patch
+// Apply the rollup patch before doing anything
 import './src/utils/rollup-patch.js';
 
 export default {
@@ -14,6 +14,7 @@ export default {
     moduleSideEffects: true,
     propertyReadSideEffects: false,
   },
+  context: 'window', // Set context to window
   // Additional options to avoid native modules
   onwarn(warning, warn) {
     // Skip warnings related to native modules

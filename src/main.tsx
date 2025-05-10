@@ -7,9 +7,13 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import App from './App.tsx'
 import './index.css'
 
-// Set a global indicator that we're using pure JS implementation
-// @ts-ignore - TypeScript may not know about this property, but we've added it to the Window interface
-window.__FORCE_JS_IMPLEMENTATION__ = true;
+// Set global variables to force pure JS implementation
+if (typeof window !== 'undefined') {
+  // @ts-ignore - We're adding this property
+  window.__ROLLUP_NO_NATIVE__ = true;
+  // @ts-ignore - We're adding this property
+  window.__FORCE_JS_IMPLEMENTATION__ = true;
+}
 
 const queryClient = new QueryClient({
   defaultOptions: {
