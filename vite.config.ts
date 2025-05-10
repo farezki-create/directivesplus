@@ -22,17 +22,24 @@ export default defineConfig(({ mode }) => ({
     },
   },
   optimizeDeps: {
-    // Désactiver certaines optimisations qui peuvent causer des problèmes avec rollup
     esbuildOptions: {
       target: 'es2020'
     }
   },
   build: {
-    // Configuration plus sûre pour éviter les problèmes de compatibilité
     target: 'es2020',
     rollupOptions: {
-      // Éviter l'utilisation des modules natifs de rollup
-      context: 'globalThis'
+      context: 'globalThis',
+      // Désactiver complètement les plugins natifs de Rollup
+      treeshake: {
+        moduleSideEffects: 'no-external',
+        propertyReadSideEffects: false,
+        tryCatchDeoptimization: false
+      }
     }
+  },
+  // Force l'utilisation de Rollup non-natif
+  define: {
+    '__ROLLUP_NO_NATIVE__': 'true'
   }
 }));

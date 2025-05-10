@@ -12,5 +12,9 @@ export default defineConfig({
     esbuildOptions: {
       target: 'es2020'
     }
+  },
+  // Force l'utilisation de Rollup non-natif
+  define: {
+    '__ROLLUP_NO_NATIVE__': 'true'
   }
 });
