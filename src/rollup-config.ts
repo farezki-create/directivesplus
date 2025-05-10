@@ -10,6 +10,11 @@ export const ensureJavaScriptRollup = () => {
     console.warn('Warning: Rollup native modules were not properly disabled');
     (globalThis as any).__ROLLUP_NO_NATIVE__ = true;
   }
+  // Log confirmation that the setting was applied
+  console.log('Rollup JavaScript implementation flag set:', { 
+    rollupNoNative: (globalThis as any).__ROLLUP_NO_NATIVE__,
+    usingJSImplementation: (globalThis as any).__ROLLUP_NO_NATIVE__ === true
+  });
   return true;
 };
 
