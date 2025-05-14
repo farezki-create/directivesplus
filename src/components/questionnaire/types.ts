@@ -43,6 +43,7 @@ export type ResponseToSave = {
   question_id: string;
   response: string;
   questionnaire_type: string;
+  user_id: string;
   question_text: string;
 };
 

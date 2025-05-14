@@ -13,6 +13,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./contexts/AuthContext";
 import Dashboard from "./pages/Dashboard";
 import PlaceholderPage from "./pages/PlaceholderPage";
+import QuestionnaireSection from "./components/QuestionnaireSection";
 import Rediger from "./pages/Rediger";
 
 const queryClient = new QueryClient();
@@ -69,7 +70,7 @@ const AppContent = () => (
     {/* Routes for directive sections */}
     <Route path="/avis-general" element={
       <ProtectedRoute>
-        <PlaceholderPage />
+        <QuestionnaireSection />
       </ProtectedRoute>
     } />
     <Route path="/maintien-vie" element={

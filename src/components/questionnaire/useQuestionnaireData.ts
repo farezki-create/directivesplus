@@ -3,7 +3,8 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getSectionTable, getResponseTable } from "./utils";
 import { Question, QuestionResponse, Responses, StandardQuestion, LifeSupportQuestion, ResponseToSave } from "./types";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 export const useQuestionnaireData = (pageId: string | undefined) => {
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -11,6 +12,7 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
   const [error, setError] = useState<string | null>(null);
   const [responses, setResponses] = useState<Responses>({});
   const [saving, setSaving] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -65,27 +67,29 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
         
         setQuestions(formattedQuestions);
         
-        // Fetch existing responses
-        const responseTable = getResponseTable(pageId);
-        const { data: responsesData, error: responsesError } = await supabase
-          .from(responseTable as any)
-          .select('question_id, response')
-          .eq('questionnaire_type', pageId);
-        
-        if (responsesError) throw responsesError;
-        
-        // Convert responses array to object
-        const responsesObj: Responses = {};
-        if (responsesData) {
-          // Type assertion to handle the conversion safely
-          const responsesList = responsesData as unknown as QuestionResponse[];
-          responsesList.forEach((r: QuestionResponse) => {
-            responsesObj[r.question_id] = r.response;
-          });
+        if (user) {
+          // Fetch existing responses
+          const responseTable = getResponseTable(pageId);
+          const { data: responsesData, error: responsesError } = await supabase
+            .from(responseTable as any)
+            .select('question_id, response')
+            .eq('questionnaire_type', pageId)
+            .eq('user_id', user.id);
+          
+          if (responsesError) throw responsesError;
+          
+          // Convert responses array to object
+          const responsesObj: Responses = {};
+          if (responsesData) {
+            // Type assertion to handle the conversion safely
+            const responsesList = responsesData as unknown as QuestionResponse[];
+            responsesList.forEach((r: QuestionResponse) => {
+              responsesObj[r.question_id] = r.response;
+            });
+          }
+          
+          setResponses(responsesObj);
         }
-        
-        setResponses(responsesObj);
-        
       } catch (err) {
         console.error('Error fetching questionnaire data:', err);
         setError('Erreur lors du chargement des questions. Veuillez réessayer.');
@@ -95,7 +99,7 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
     };
     
     fetchQuestions();
-  }, [pageId]);
+  }, [pageId, user]);
 
   const handleResponseChange = (questionId: string, value: string) => {
     setResponses(prev => ({
@@ -105,7 +109,7 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
   };
   
   const handleSave = async () => {
-    if (!pageId) return;
+    if (!pageId || !user) return;
     
     setSaving(true);
     
@@ -117,6 +121,7 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
         question_id: questionId,
         response,
         questionnaire_type: pageId,
+        user_id: user.id,
         question_text: questions.find(q => q.id === questionId)?.question || ''
       }));
       
@@ -124,7 +129,8 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
       const { error: deleteError } = await supabase
         .from(responseTable as any)
         .delete()
-        .eq('questionnaire_type', pageId);
+        .eq('questionnaire_type', pageId)
+        .eq('user_id', user.id);
       
       if (deleteError) throw deleteError;
       
