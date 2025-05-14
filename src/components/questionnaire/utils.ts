@@ -1,6 +1,7 @@
 
 // Utility functions for questionnaire
 export const getSectionTable = (sectionId: string): string => {
+  console.log('Getting section table for:', sectionId);
   switch(sectionId) {
     case 'avis-general':
       return 'questionnaire_general_fr';
@@ -11,11 +12,13 @@ export const getSectionTable = (sectionId: string): string => {
     case 'gouts-peurs':
       return 'questionnaire_preferences_fr';
     default:
+      console.warn(`No table found for section: ${sectionId}`);
       return '';
   }
 };
 
 export const getResponseTable = (sectionId: string): string => {
+  console.log('Getting response table for:', sectionId);
   if (sectionId === 'gouts-peurs') {
     return 'questionnaire_preferences_responses';
   }
@@ -23,6 +26,7 @@ export const getResponseTable = (sectionId: string): string => {
 };
 
 export const getSectionTitle = (pageId: string | undefined): string => {
+  console.log('Getting section title for:', pageId);
   switch(pageId) {
     case 'avis-general': 
       return "Avis Général";
@@ -37,6 +41,7 @@ export const getSectionTitle = (pageId: string | undefined): string => {
     case 'exemples-phrases': 
       return "Exemples de Phrases";
     default:
+      console.warn(`No title found for page: ${pageId}`);
       return "";
   }
 };

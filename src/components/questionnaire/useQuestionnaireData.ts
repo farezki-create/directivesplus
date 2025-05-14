@@ -29,13 +29,21 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
       }
       
       try {
+        // Debug logs
+        console.log(`Fetching questions from table: ${tableName}`);
+        
         // Fetching questions
         const { data: questionsData, error: questionsError } = await supabase
-          .from(tableName as any)
+          .from(tableName)
           .select('*')
           .order('display_order', { ascending: true });
         
-        if (questionsError) throw questionsError;
+        if (questionsError) {
+          console.error('Error fetching questions:', questionsError);
+          throw questionsError;
+        }
+
+        console.log('Questions data fetched:', questionsData);
         
         // Format questions based on table structure
         let formattedQuestions: Question[] = [];
@@ -65,18 +73,26 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
           }));
         }
         
+        console.log('Formatted questions:', formattedQuestions);
         setQuestions(formattedQuestions);
         
         if (user) {
           // Fetch existing responses
           const responseTable = getResponseTable(pageId);
+          console.log(`Fetching responses from table: ${responseTable}`);
+          
           const { data: responsesData, error: responsesError } = await supabase
-            .from(responseTable as any)
+            .from(responseTable)
             .select('question_id, response')
             .eq('questionnaire_type', pageId)
             .eq('user_id', user.id);
           
-          if (responsesError) throw responsesError;
+          if (responsesError) {
+            console.error('Error fetching responses:', responsesError);
+            throw responsesError;
+          }
+          
+          console.log('Responses data fetched:', responsesData);
           
           // Convert responses array to object
           const responsesObj: Responses = {};
@@ -88,6 +104,7 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
             });
           }
           
+          console.log('Responses object created:', responsesObj);
           setResponses(responsesObj);
         }
       } catch (err) {
@@ -102,6 +119,7 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
   }, [pageId, user]);
 
   const handleResponseChange = (questionId: string, value: string) => {
+    console.log('Response changed:', questionId, value);
     setResponses(prev => ({
       ...prev,
       [questionId]: value
@@ -109,9 +127,13 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
   };
   
   const handleSave = async () => {
-    if (!pageId || !user) return;
+    if (!pageId || !user) {
+      console.error('Cannot save: missing pageId or user');
+      return;
+    }
     
     setSaving(true);
+    console.log('Saving responses for pageId:', pageId);
     
     try {
       const responseTable = getResponseTable(pageId);
@@ -125,22 +147,30 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
         question_text: questions.find(q => q.id === questionId)?.question || ''
       }));
       
+      console.log('Responses to save:', responsesToSave);
+      
       // Delete existing responses
       const { error: deleteError } = await supabase
-        .from(responseTable as any)
+        .from(responseTable)
         .delete()
         .eq('questionnaire_type', pageId)
         .eq('user_id', user.id);
       
-      if (deleteError) throw deleteError;
+      if (deleteError) {
+        console.error('Error deleting existing responses:', deleteError);
+        throw deleteError;
+      }
       
-      // Insert new responses
+      // Only insert if there are responses to save
       if (responsesToSave.length > 0) {
         const { error: insertError } = await supabase
-          .from(responseTable as any)
+          .from(responseTable)
           .insert(responsesToSave);
         
-        if (insertError) throw insertError;
+        if (insertError) {
+          console.error('Error inserting responses:', insertError);
+          throw insertError;
+        }
       }
       
       toast({
