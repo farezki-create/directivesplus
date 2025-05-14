@@ -10,6 +10,25 @@ import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { ArrowLeft, ArrowRight, Save } from "lucide-react";
 
+type BaseQuestion = {
+  id: string;
+  explanation?: string | null;
+  display_order?: number | null;
+};
+
+type StandardQuestion = BaseQuestion & {
+  question: string;
+};
+
+type LifeSupportQuestion = BaseQuestion & {
+  id: string | number;
+  question_text: string;
+  question_order: number;
+  option_yes: string;
+  option_no: string;
+  option_unsure: string;
+};
+
 type Question = {
   id: string;
   question: string;
@@ -79,8 +98,9 @@ const QuestionnaireSection = () => {
         let formattedQuestions: Question[] = [];
         
         if (tableName === 'questionnaire_life_support_fr') {
-          // Special handling for life support questions
-          formattedQuestions = (questionsData || []).map(q => ({
+          // Handle life support questions which have a different structure
+          const lifeSupportQuestions = questionsData as unknown as LifeSupportQuestion[];
+          formattedQuestions = lifeSupportQuestions.map(q => ({
             id: q.id.toString(),
             question: q.question_text,
             explanation: q.explanation,
@@ -92,7 +112,14 @@ const QuestionnaireSection = () => {
             }
           }));
         } else {
-          formattedQuestions = questionsData || [];
+          // Handle standard questions
+          const standardQuestions = questionsData as unknown as StandardQuestion[];
+          formattedQuestions = standardQuestions.map(q => ({
+            id: q.id.toString(),
+            question: q.question,
+            explanation: q.explanation,
+            display_order: q.display_order
+          }));
         }
         
         setQuestions(formattedQuestions);
