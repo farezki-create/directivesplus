@@ -1,7 +1,14 @@
 
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const Hero = () => {
+  const navigate = useNavigate();
+
+  const handleGetStarted = () => {
+    navigate("/auth");
+  };
+
   return (
     <section className="bg-gradient-to-b from-white to-directiveplus-50 section-padding">
       <div className="container mx-auto container-padding">
@@ -25,10 +32,17 @@ const Hero = () => {
               en toute simplicité. Sécurisez vos données et améliorez votre conformité.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button className="bg-directiveplus-600 hover:bg-directiveplus-700 text-lg py-6 px-8">
+              <Button 
+                onClick={handleGetStarted}
+                className="bg-directiveplus-600 hover:bg-directiveplus-700 text-lg py-6 px-8"
+              >
                 Commencer
               </Button>
-              <Button variant="outline" className="text-directiveplus-600 border-directiveplus-200 hover:bg-directiveplus-50 text-lg py-6 px-8">
+              <Button 
+                variant="outline" 
+                onClick={() => navigate("/#features")}
+                className="text-directiveplus-600 border-directiveplus-200 hover:bg-directiveplus-50 text-lg py-6 px-8"
+              >
                 En savoir plus
               </Button>
             </div>
