@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Question, QuestionnaireTableName, ResponseTableName, Responses, LifeSupportQuestion, StandardQuestion } from "./types";
+import { Question, QuestionnaireTableName, ResponseTableName, Responses } from "./types";
 
 // Helper function to get the right table name for questionnaire sections
 export const getSectionTable = (sectionId: string): QuestionnaireTableName => {
@@ -49,7 +49,7 @@ export const fetchQuestions = async (tableName: QuestionnaireTableName): Promise
     // Transform the questions based on the table type
     if (tableName === "questionnaire_life_support_fr") {
       // Handle life support questions specifically
-      return data.map((item: LifeSupportQuestion) => ({
+      return data.map((item) => ({
         id: String(item.id),
         question: item.question_text,
         explanation: item.explanation,
@@ -62,7 +62,7 @@ export const fetchQuestions = async (tableName: QuestionnaireTableName): Promise
       }));
     } else {
       // Handle standard questions
-      return data.map((item: StandardQuestion) => ({
+      return data.map((item) => ({
         id: String(item.id),
         question: item.question,
         explanation: item.explanation,
