@@ -49,25 +49,48 @@ export const fetchQuestions = async (tableName: QuestionnaireTableName): Promise
     // Transform the questions based on the table type
     if (tableName === "questionnaire_life_support_fr") {
       // Handle life support questions specifically
-      return data.map((item) => ({
-        id: String(item.id),
-        question: item.question_text,
-        explanation: item.explanation,
-        display_order: item.question_order,
-        options: {
-          yes: item.option_yes,
-          no: item.option_no,
-          unsure: item.option_unsure
-        }
-      }));
+      return data.map(item => {
+        // Type assertion here to help TypeScript understand the structure
+        const lifeSupportItem = item as unknown as {
+          id: number;
+          question_text: string;
+          explanation?: string;
+          question_order: number;
+          option_yes: string;
+          option_no: string;
+          option_unsure: string;
+        };
+        
+        return {
+          id: String(lifeSupportItem.id),
+          question: lifeSupportItem.question_text,
+          explanation: lifeSupportItem.explanation,
+          display_order: lifeSupportItem.question_order,
+          options: {
+            yes: lifeSupportItem.option_yes,
+            no: lifeSupportItem.option_no,
+            unsure: lifeSupportItem.option_unsure
+          }
+        };
+      });
     } else {
       // Handle standard questions
-      return data.map((item) => ({
-        id: String(item.id),
-        question: item.question,
-        explanation: item.explanation,
-        display_order: item.display_order
-      }));
+      return data.map(item => {
+        // Type assertion for standard question format
+        const standardItem = item as unknown as {
+          id: string;
+          question: string;
+          explanation?: string;
+          display_order?: number;
+        };
+        
+        return {
+          id: String(standardItem.id),
+          question: standardItem.question,
+          explanation: standardItem.explanation,
+          display_order: standardItem.display_order
+        };
+      });
     }
   } catch (err) {
     console.error("Failed to fetch questions:", err);
