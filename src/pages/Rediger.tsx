@@ -1,9 +1,9 @@
 
 import { useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import AppNavigation from "@/components/AppNavigation";
-import { Button } from "@/components/ui/button";
+import DirectivesGrid from "@/components/DirectivesGrid";
 import { toast } from "@/hooks/use-toast";
 
 const Rediger = () => {
@@ -54,56 +54,7 @@ const Rediger = () => {
           </p>
         </div>
         
-        <div className="space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Link to="/avis-general">
-              <div className="bg-blue-900 text-white rounded-lg p-6 text-center hover:bg-blue-800 transition-colors">
-                <h3 className="text-xl font-medium">Avis général</h3>
-              </div>
-            </Link>
-            
-            <Link to="/maintien-vie">
-              <div className="bg-blue-900 text-white rounded-lg p-6 text-center hover:bg-blue-800 transition-colors">
-                <h3 className="text-xl font-medium">Maintien de la vie</h3>
-              </div>
-            </Link>
-            
-            <Link to="/maladie-avancee">
-              <div className="bg-blue-900 text-white rounded-lg p-6 text-center hover:bg-blue-800 transition-colors">
-                <h3 className="text-xl font-medium">Maladie avancée</h3>
-              </div>
-            </Link>
-            
-            <Link to="/gouts-peurs">
-              <div className="bg-blue-900 text-white rounded-lg p-6 text-center hover:bg-blue-800 transition-colors">
-                <h3 className="text-xl font-medium">Mes goûts et mes peurs</h3>
-              </div>
-            </Link>
-            
-            <Link to="/personne-confiance">
-              <div className="bg-blue-900 text-white rounded-lg p-6 text-center hover:bg-blue-800 transition-colors">
-                <h3 className="text-xl font-medium">Personne de confiance</h3>
-              </div>
-            </Link>
-            
-            <Link to="/exemples-phrases">
-              <div className="bg-blue-900 text-white rounded-lg p-6 text-center hover:bg-blue-800 transition-colors">
-                <h3 className="text-xl font-medium">Exemples de phrases à utiliser</h3>
-              </div>
-            </Link>
-          </div>
-          
-          <div className="flex justify-center pt-6">
-            <Button 
-              className="bg-blue-900 hover:bg-blue-800 px-8 py-6 text-lg rounded-lg"
-              asChild
-            >
-              <Link to="/synthese">
-                Synthèse
-              </Link>
-            </Button>
-          </div>
-        </div>
+        <DirectivesGrid />
       </main>
       
       <footer className="bg-white py-6 border-t">
