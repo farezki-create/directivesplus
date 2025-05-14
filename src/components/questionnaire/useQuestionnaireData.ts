@@ -1,22 +1,10 @@
 
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { getSectionTable, getResponseTable } from "./utils";
-import { Question, QuestionResponse, Responses, StandardQuestion, LifeSupportQuestion } from "./types";
+import { Question, Responses } from "./types";
 import { toast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-
-// Liste des tables de questionnaires autorisées pour le typage
-type QuestionnaireTable = 
-  | "questionnaire_general_fr" 
-  | "questionnaire_life_support_fr"
-  | "questionnaire_advanced_illness_fr" 
-  | "questionnaire_preferences_fr";
-
-// Liste des tables de réponses autorisées pour le typage
-type ResponseTable = 
-  | "questionnaire_responses"
-  | "questionnaire_preferences_responses";
+import { fetchQuestions, fetchResponses, getSectionTable } from "./dataFetchers";
+import { saveResponses } from "./dataSavers";
 
 export const useQuestionnaireData = (pageId: string | undefined) => {
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -27,7 +15,7 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
   const { user } = useAuth();
 
   useEffect(() => {
-    const fetchQuestions = async () => {
+    const loadQuestionnaireData = async () => {
       if (!pageId) return;
       
       setLoading(true);
@@ -41,96 +29,13 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
       }
       
       try {
-        // Debug logs
-        console.log(`Fetching questions from table: ${tableName}`);
-        
-        // Vérification que la table est valide pour le typage
-        if (!isValidQuestionnaireTable(tableName)) {
-          throw new Error(`Table "${tableName}" non reconnue dans le système`);
-        }
-        
-        // Fetching questions avec type casting pour satisfaire TypeScript
-        const { data: questionsData, error: questionsError } = await supabase
-          .from(tableName as QuestionnaireTable)
-          .select('*')
-          .order('display_order', { ascending: true });
-        
-        if (questionsError) {
-          console.error('Error fetching questions:', questionsError);
-          throw questionsError;
-        }
-
-        console.log('Questions data fetched:', questionsData);
-        
-        // Format questions based on table structure
-        let formattedQuestions: Question[] = [];
-        
-        if (tableName === 'questionnaire_life_support_fr') {
-          // Handle life support questions which have a different structure
-          const lifeSupportQuestions = questionsData as unknown as LifeSupportQuestion[];
-          formattedQuestions = lifeSupportQuestions.map(q => ({
-            id: String(q.id), // Ensure id is string
-            question: q.question_text,
-            explanation: q.explanation,
-            display_order: q.question_order,
-            options: {
-              yes: q.option_yes,
-              no: q.option_no,
-              unsure: q.option_unsure
-            }
-          }));
-        } else {
-          // Handle standard questions
-          const standardQuestions = questionsData as unknown as StandardQuestion[];
-          formattedQuestions = standardQuestions.map(q => ({
-            id: String(q.id), // Ensure id is string
-            question: q.question,
-            explanation: q.explanation,
-            display_order: q.display_order,
-            options: {
-              yes: "Oui",
-              no: "Non",
-              unsure: "Je ne sais pas"
-            }
-          }));
-        }
-        
-        console.log('Formatted questions:', formattedQuestions);
+        // Fetch questions
+        const formattedQuestions = await fetchQuestions(tableName);
         setQuestions(formattedQuestions);
         
+        // Fetch responses if user is logged in
         if (user) {
-          // Fetch existing responses
-          const responseTable = getResponseTable(pageId);
-          console.log(`Fetching responses from table: ${responseTable}`);
-          
-          if (!isValidResponseTable(responseTable)) {
-            throw new Error(`Table de réponses "${responseTable}" non reconnue dans le système`);
-          }
-          
-          const { data: responsesData, error: responsesError } = await supabase
-            .from(responseTable as ResponseTable)
-            .select('question_id, response')
-            .eq('questionnaire_type', pageId)
-            .eq('user_id', user.id);
-          
-          if (responsesError) {
-            console.error('Error fetching responses:', responsesError);
-            throw responsesError;
-          }
-          
-          console.log('Responses data fetched:', responsesData);
-          
-          // Convert responses array to object
-          const responsesObj: Responses = {};
-          if (responsesData) {
-            // Type assertion to handle the conversion safely
-            const responsesList = responsesData as unknown as QuestionResponse[];
-            responsesList.forEach((r: QuestionResponse) => {
-              responsesObj[r.question_id] = r.response;
-            });
-          }
-          
-          console.log('Responses object created:', responsesObj);
+          const responsesObj = await fetchResponses(pageId, user.id);
           setResponses(responsesObj);
         }
       } catch (err) {
@@ -141,7 +46,7 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
       }
     };
     
-    fetchQuestions();
+    loadQuestionnaireData();
   }, [pageId, user]);
 
   const handleResponseChange = (questionId: string, value: string) => {
@@ -159,62 +64,9 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
     }
     
     setSaving(true);
-    console.log('Saving responses for pageId:', pageId);
     
     try {
-      const responseTable = getResponseTable(pageId);
-      
-      if (!isValidResponseTable(responseTable)) {
-        throw new Error(`Table de réponses "${responseTable}" non reconnue dans le système`);
-      }
-      
-      // Using a simplified approach to avoid the deep instantiation error
-      // Define a simple array to hold our response objects
-      const responsesToSave = [];
-      
-      // Manually build the response objects without complex type inference
-      for (const [questionId, response] of Object.entries(responses)) {
-        const questionText = questions.find(q => q.id === questionId)?.question || '';
-        responsesToSave.push({
-          question_id: questionId,
-          response: response,
-          questionnaire_type: pageId,
-          user_id: user.id,
-          question_text: questionText
-        });
-      }
-      
-      console.log('Responses to save:', responsesToSave);
-      
-      // Delete existing responses
-      const { error: deleteError } = await supabase
-        .from(responseTable as ResponseTable)
-        .delete()
-        .eq('questionnaire_type', pageId)
-        .eq('user_id', user.id);
-      
-      if (deleteError) {
-        console.error('Error deleting existing responses:', deleteError);
-        throw deleteError;
-      }
-      
-      // Only insert if there are responses to save
-      if (responsesToSave.length > 0) {
-        const { error: insertError } = await supabase
-          .from(responseTable as ResponseTable)
-          .insert(responsesToSave);
-        
-        if (insertError) {
-          console.error('Error inserting responses:', insertError);
-          throw insertError;
-        }
-      }
-      
-      toast({
-        title: "Réponses enregistrées",
-        description: "Vos réponses ont été sauvegardées avec succès."
-      });
-      
+      await saveResponses(pageId, user.id, responses, questions);
     } catch (err) {
       console.error('Error saving responses:', err);
       toast({
@@ -226,24 +78,6 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
       setSaving(false);
     }
   };
-
-  // Fonction helper pour vérifier si une table de questionnaire est valide
-  function isValidQuestionnaireTable(tableName: string): tableName is QuestionnaireTable {
-    return [
-      'questionnaire_general_fr',
-      'questionnaire_life_support_fr',
-      'questionnaire_advanced_illness_fr',
-      'questionnaire_preferences_fr'
-    ].includes(tableName);
-  }
-
-  // Fonction helper pour vérifier si une table de réponses est valide
-  function isValidResponseTable(tableName: string): tableName is ResponseTable {
-    return [
-      'questionnaire_responses',
-      'questionnaire_preferences_responses'
-    ].includes(tableName);
-  }
 
   return {
     questions,

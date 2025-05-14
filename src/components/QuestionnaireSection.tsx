@@ -1,6 +1,5 @@
 
 import { useParams } from "react-router-dom";
-import { getSectionTitle } from "./questionnaire/utils";
 import { useQuestionnaireData } from "./questionnaire/useQuestionnaireData";
 import LoadingState from "./questionnaire/LoadingState";
 import ErrorState from "./questionnaire/ErrorState";
@@ -10,6 +9,7 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
+import { getSectionTable } from "./questionnaire/dataFetchers";
 
 const QuestionnaireSection = () => {
   const { pageId } = useParams<{ pageId: string }>();
@@ -83,5 +83,27 @@ const QuestionnaireSection = () => {
     </div>
   );
 };
+
+// Get the title for the section
+function getSectionTitle(pageId: string | undefined): string {
+  console.log('Getting section title for:', pageId);
+  switch(pageId) {
+    case 'avis-general': 
+      return "Avis Général";
+    case 'maintien-vie': 
+      return "Maintien de la Vie";
+    case 'maladie-avancee': 
+      return "Maladie Avancée";
+    case 'gouts-peurs': 
+      return "Mes Goûts et Mes Peurs";
+    case 'personne-confiance': 
+      return "Personne de Confiance";
+    case 'exemples-phrases': 
+      return "Exemples de Phrases";
+    default:
+      console.warn(`No title found for page: ${pageId}`);
+      return "";
+  }
+}
 
 export default QuestionnaireSection;
