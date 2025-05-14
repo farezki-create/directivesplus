@@ -10,13 +10,14 @@ export type StandardQuestion = BaseQuestion & {
   question: string;
 };
 
-export type LifeSupportQuestion = BaseQuestion & {
-  id: string | number;
+export type LifeSupportQuestion = {
+  id: number;
   question_text: string;
   question_order: number;
   option_yes: string;
   option_no: string;
   option_unsure: string;
+  explanation?: string | null;
 };
 
 // Define our unified Question type
@@ -48,15 +49,6 @@ export type ResponseData = {
 };
 
 export type Responses = Record<string, string>;
-
-// User response type
-export type UserResponse = {
-  id: string;
-  questionId: string;
-  response: string;
-  createdAt: string;
-  updatedAt: string;
-};
 
 // Add table name types to help with typesafety
 export type QuestionnaireTableName = 

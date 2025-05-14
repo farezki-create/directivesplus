@@ -15,7 +15,7 @@ export async function saveResponses(
   
   const responseTable = getResponseTable(pageId);
   
-  // Using a simplified approach to avoid the deep instantiation error
+  // Using a simplified approach to avoid type inference issues
   const responsesToSave = [];
   
   // Manually build each response object to avoid type inference issues
