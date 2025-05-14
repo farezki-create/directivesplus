@@ -11,9 +11,9 @@ export async function fetchQuestions(tableName: string): Promise<Question[]> {
     throw new Error(`Table "${tableName}" non reconnue dans le système`);
   }
   
-  // Fetching questions avec type casting pour satisfaire TypeScript
+  // Fetching questions
   const { data: questionsData, error: questionsError } = await supabase
-    .from(tableName as QuestionnaireTable)
+    .from(tableName)
     .select('*')
     .order('display_order', { ascending: true });
   
@@ -29,8 +29,7 @@ export async function fetchQuestions(tableName: string): Promise<Question[]> {
   
   if (tableName === 'questionnaire_life_support_fr') {
     // Handle life support questions which have a different structure
-    const lifeSupportQuestions = questionsData as unknown as LifeSupportQuestion[];
-    formattedQuestions = lifeSupportQuestions.map(q => ({
+    formattedQuestions = (questionsData as any[]).map(q => ({
       id: String(q.id), // Ensure id is string
       question: q.question_text,
       explanation: q.explanation,
@@ -43,8 +42,7 @@ export async function fetchQuestions(tableName: string): Promise<Question[]> {
     }));
   } else {
     // Handle standard questions
-    const standardQuestions = questionsData as unknown as StandardQuestion[];
-    formattedQuestions = standardQuestions.map(q => ({
+    formattedQuestions = (questionsData as any[]).map(q => ({
       id: String(q.id), // Ensure id is string
       question: q.question,
       explanation: q.explanation,
@@ -71,7 +69,7 @@ export async function fetchResponses(pageId: string, userId: string): Promise<Re
   }
   
   const { data: responsesData, error: responsesError } = await supabase
-    .from(responseTable as ResponseTable)
+    .from(responseTable)
     .select('question_id, response')
     .eq('questionnaire_type', pageId)
     .eq('user_id', userId);
@@ -83,14 +81,13 @@ export async function fetchResponses(pageId: string, userId: string): Promise<Re
   
   console.log('Responses data fetched:', responsesData);
   
-  // Convert responses array to object
+  // Convert responses array to object using a simpler approach
   const responsesObj: Responses = {};
-  if (responsesData) {
-    // Type assertion to handle the conversion safely
-    const responsesList = responsesData as unknown as QuestionResponse[];
-    responsesList.forEach((r: QuestionResponse) => {
-      responsesObj[r.question_id] = r.response;
-    });
+  
+  if (responsesData && Array.isArray(responsesData)) {
+    for (const item of responsesData) {
+      responsesObj[item.question_id] = item.response;
+    }
   }
   
   console.log('Responses object created:', responsesObj);
