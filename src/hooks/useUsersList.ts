@@ -55,7 +55,7 @@ export const useUsersList = () => {
       }
 
       // Map the profiles with auth data
-      const mappedUsers = profiles.map((profile) => {
+      const mappedUsers = (profiles as SupabaseProfile[]).map((profile) => {
         // Find the matching auth user
         const authUser = authData.users.find(user => user.id === profile.id);
         
