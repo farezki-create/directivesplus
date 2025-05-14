@@ -26,6 +26,23 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+// Helper function to clean up auth state
+const cleanupAuthState = () => {
+  // Remove all Supabase auth keys from localStorage
+  Object.keys(localStorage).forEach((key) => {
+    if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+      localStorage.removeItem(key);
+    }
+  });
+  
+  // Also clean sessionStorage if used
+  Object.keys(sessionStorage || {}).forEach((key) => {
+    if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+      sessionStorage.removeItem(key);
+    }
+  });
+};
+
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -37,6 +54,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log("Auth state change event:", event);
         setUser(session?.user ?? null);
         setSession(session);
         setIsLoading(false);
@@ -88,23 +106,32 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
-  // Sign out
+  // Sign out with improved clean up
   const signOut = async () => {
-    // Clean up auth state
-    Object.keys(localStorage).forEach((key) => {
-      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-        localStorage.removeItem(key);
-      }
-    });
-    
-    // Sign out from Supabase
-    await supabase.auth.signOut({ scope: 'global' });
-    setUser(null);
-    setSession(null);
-    setProfile(null);
-    
-    // Navigate to login
-    navigate("/auth");
+    try {
+      setIsLoading(true);
+      
+      // Clean up auth state first to prevent inconsistent state
+      cleanupAuthState();
+      
+      // Sign out from Supabase with global scope
+      await supabase.auth.signOut({ scope: 'global' });
+      
+      // Reset all auth state
+      setUser(null);
+      setSession(null);
+      setProfile(null);
+      
+      // Navigate to login with a complete page reload for clean state
+      window.location.href = "/auth";
+    } catch (error) {
+      console.error("Error during sign out:", error);
+      // Even if there's an error, we should clean up and redirect
+      cleanupAuthState();
+      window.location.href = "/auth";
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

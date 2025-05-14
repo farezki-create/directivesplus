@@ -72,28 +72,27 @@ export async function fetchResponses(pageId: string, userId: string): Promise<Re
   const responsesObj: Record<string, string> = {};
   
   try {
-    // Use type assertion for the data to avoid complex type inference
-    const result = await supabase
+    // Avoid complex type inference by using simpler approach
+    const { data, error } = await supabase
       .from(responseTable)
       .select('question_id, response')
       .eq('questionnaire_type', pageId)
       .eq('user_id', userId);
     
-    if (result.error) {
-      console.error('Error fetching responses:', result.error);
-      throw result.error;
+    if (error) {
+      console.error('Error fetching responses:', error);
+      throw error;
     }
     
-    console.log('Responses data fetched:', result.data);
+    console.log('Responses data fetched:', data);
     
-    // Process result data without complex type inference
-    if (result.data) {
-      for (let i = 0; i < result.data.length; i++) {
-        const item = result.data[i];
-        if (item && item.question_id) {
+    // Process data safely with simple iteration
+    if (data && Array.isArray(data)) {
+      data.forEach(item => {
+        if (item && typeof item.question_id === 'string') {
           responsesObj[item.question_id] = item.response || '';
         }
-      }
+      });
     }
   } catch (err) {
     console.error('Error in Supabase query:', err);

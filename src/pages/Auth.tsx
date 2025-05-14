@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +9,16 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import Header from "@/components/Header";
+
+// Helper function to clean up auth state
+const cleanupAuthState = () => {
+  // Remove all Supabase auth keys from localStorage
+  Object.keys(localStorage).forEach((key) => {
+    if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+      localStorage.removeItem(key);
+    }
+  });
+};
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -33,6 +44,16 @@ const Auth = () => {
     setLoading(true);
     
     try {
+      // Clean up auth state before signing in to prevent conflicts
+      cleanupAuthState();
+      
+      // Attempt to sign out any existing session
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+      } catch (err) {
+        // Continue even if this fails
+      }
+      
       console.log("Attempting to sign in...");
       const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -47,7 +68,8 @@ const Auth = () => {
       });
       
       console.log("Sign in successful, redirecting to:", from);
-      navigate(from);
+      // Force a page reload to ensure clean state
+      window.location.href = from;
     } catch (error: any) {
       console.error("Sign in error:", error);
       toast({
@@ -65,6 +87,9 @@ const Auth = () => {
     setLoading(true);
     
     try {
+      // Clean up auth state before signing up
+      cleanupAuthState();
+      
       console.log("Attempting to sign up...");
       const { error } = await supabase.auth.signUp({
         email,
@@ -78,10 +103,10 @@ const Auth = () => {
         description: "Veuillez vérifier votre email pour confirmer votre compte.",
       });
       
-      // Wait briefly then redirect to redirect path
+      // Wait briefly then use page reload for redirection
       setTimeout(() => {
         console.log("Sign up successful, redirecting to:", from);
-        navigate(from);
+        window.location.href = from;
       }, 1500);
     } catch (error: any) {
       console.error("Sign up error:", error);

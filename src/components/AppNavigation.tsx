@@ -1,16 +1,15 @@
 
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Globe, LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const AppNavigation = () => {
   const { signOut } = useAuth();
-  const navigate = useNavigate();
 
   const handleLogout = async () => {
     await signOut();
-    navigate('/auth');
+    // Note: No need for navigate here as signOut already handles it
   };
 
   return (
