@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getSectionTable, getResponseTable } from "./utils";
-import { Question, QuestionResponse, Responses, StandardQuestion, LifeSupportQuestion, ResponseToSave } from "./types";
+import { Question, QuestionResponse, Responses, StandardQuestion, LifeSupportQuestion } from "./types";
 import { toast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 
