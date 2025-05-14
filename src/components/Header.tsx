@@ -1,13 +1,21 @@
 
 import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, User, UserPlus, LogOut } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { isAuthenticated, signOut, profile, isLoading } = useAuth();
+  const navigate = useNavigate();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  const handleLoginClick = () => {
+    navigate('/auth');
   };
 
   return (
@@ -16,14 +24,16 @@ const Header = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center">
-            <h1 className="text-xl font-bold text-directiveplus-700">DirectivePlus</h1>
+            <Link to="/">
+              <h1 className="text-xl font-bold text-directiveplus-700">DirectivePlus</h1>
+            </Link>
           </div>
           
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8">
-            <a href="#" className="text-gray-700 hover:text-directiveplus-600 px-3 py-2 font-medium">
+            <Link to="/" className="text-gray-700 hover:text-directiveplus-600 px-3 py-2 font-medium">
               Accueil
-            </a>
+            </Link>
             <a href="#features" className="text-gray-700 hover:text-directiveplus-600 px-3 py-2 font-medium">
               Fonctionnalités
             </a>
@@ -33,16 +43,55 @@ const Header = () => {
             <a href="#" className="text-gray-700 hover:text-directiveplus-600 px-3 py-2 font-medium">
               Contact
             </a>
+            {profile?.role === "institution" && (
+              <Link to="/admin" className="text-directiveplus-600 hover:text-directiveplus-700 px-3 py-2 font-medium">
+                Administration
+              </Link>
+            )}
           </nav>
           
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            <Button variant="outline" className="border-directiveplus-200 text-directiveplus-700 hover:bg-directiveplus-50">
-              Se connecter
-            </Button>
-            <Button className="bg-directiveplus-600 hover:bg-directiveplus-700">
-              Essai gratuit
-            </Button>
+            {!isLoading && (
+              <>
+                {isAuthenticated ? (
+                  <div className="flex items-center space-x-4">
+                    <Button 
+                      variant="outline" 
+                      className="border-directiveplus-200 text-directiveplus-700 hover:bg-directiveplus-50"
+                      onClick={() => navigate('/profile')}
+                    >
+                      <User size={18} className="mr-2" />
+                      {profile?.first_name || 'Profil'}
+                    </Button>
+                    <Button 
+                      className="bg-directiveplus-600 hover:bg-directiveplus-700"
+                      onClick={signOut}
+                    >
+                      <LogOut size={18} className="mr-2" />
+                      Déconnexion
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center space-x-4">
+                    <Button 
+                      variant="outline" 
+                      className="border-directiveplus-200 text-directiveplus-700 hover:bg-directiveplus-50"
+                      onClick={handleLoginClick}
+                    >
+                      Se connecter
+                    </Button>
+                    <Button 
+                      className="bg-directiveplus-600 hover:bg-directiveplus-700"
+                      onClick={handleLoginClick}
+                    >
+                      <UserPlus size={18} className="mr-2" />
+                      Inscription
+                    </Button>
+                  </div>
+                )}
+              </>
+            )}
           </div>
           
           {/* Mobile Menu Button */}
@@ -62,25 +111,93 @@ const Header = () => {
       {isMenuOpen && (
         <div className="md:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white shadow-md">
-            <a href="#" className="block px-3 py-2 text-gray-700 hover:text-directiveplus-600 font-medium">
+            <Link 
+              to="/" 
+              className="block px-3 py-2 text-gray-700 hover:text-directiveplus-600 font-medium"
+              onClick={() => setIsMenuOpen(false)}
+            >
               Accueil
-            </a>
-            <a href="#features" className="block px-3 py-2 text-gray-700 hover:text-directiveplus-600 font-medium">
+            </Link>
+            <a 
+              href="#features" 
+              className="block px-3 py-2 text-gray-700 hover:text-directiveplus-600 font-medium"
+              onClick={() => setIsMenuOpen(false)}
+            >
               Fonctionnalités
             </a>
-            <a href="#testimonials" className="block px-3 py-2 text-gray-700 hover:text-directiveplus-600 font-medium">
+            <a 
+              href="#testimonials" 
+              className="block px-3 py-2 text-gray-700 hover:text-directiveplus-600 font-medium"
+              onClick={() => setIsMenuOpen(false)}
+            >
               Témoignages
             </a>
-            <a href="#" className="block px-3 py-2 text-gray-700 hover:text-directiveplus-600 font-medium">
+            <a 
+              href="#" 
+              className="block px-3 py-2 text-gray-700 hover:text-directiveplus-600 font-medium"
+              onClick={() => setIsMenuOpen(false)}
+            >
               Contact
             </a>
+            {profile?.role === "institution" && (
+              <Link 
+                to="/admin" 
+                className="block px-3 py-2 text-directiveplus-600 hover:text-directiveplus-700 font-medium"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Administration
+              </Link>
+            )}
             <div className="mt-4 flex flex-col space-y-2">
-              <Button variant="outline" className="border-directiveplus-200 text-directiveplus-700 hover:bg-directiveplus-50 w-full">
-                Se connecter
-              </Button>
-              <Button className="bg-directiveplus-600 hover:bg-directiveplus-700 w-full">
-                Essai gratuit
-              </Button>
+              {!isLoading && (
+                <>
+                  {isAuthenticated ? (
+                    <>
+                      <Button 
+                        variant="outline" 
+                        className="border-directiveplus-200 text-directiveplus-700 hover:bg-directiveplus-50 w-full"
+                        onClick={() => {
+                          navigate('/profile');
+                          setIsMenuOpen(false);
+                        }}
+                      >
+                        <User size={18} className="mr-2" />
+                        Profil
+                      </Button>
+                      <Button 
+                        className="bg-directiveplus-600 hover:bg-directiveplus-700 w-full"
+                        onClick={signOut}
+                      >
+                        <LogOut size={18} className="mr-2" />
+                        Déconnexion
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button 
+                        variant="outline" 
+                        className="border-directiveplus-200 text-directiveplus-700 hover:bg-directiveplus-50 w-full"
+                        onClick={() => {
+                          navigate('/auth');
+                          setIsMenuOpen(false);
+                        }}
+                      >
+                        Se connecter
+                      </Button>
+                      <Button 
+                        className="bg-directiveplus-600 hover:bg-directiveplus-700 w-full"
+                        onClick={() => {
+                          navigate('/auth');
+                          setIsMenuOpen(false);
+                        }}
+                      >
+                        <UserPlus size={18} className="mr-2" />
+                        Inscription
+                      </Button>
+                    </>
+                  )}
+                </>
+              )}
             </div>
           </div>
         </div>
