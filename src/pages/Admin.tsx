@@ -11,6 +11,22 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
+// Define a type for what Supabase actually returns from the profiles table
+type SupabaseProfile = {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  created_at: string | null;
+  address: string | null;
+  birth_date: string | null;
+  city: string | null;
+  country: string | null;
+  medical_access_code: string | null;
+  phone_number: string | null;
+  postal_code: string | null;
+}
+
+// Our app's user profile type with additional fields we need
 type UserProfile = {
   id: string;
   first_name: string | null;
@@ -66,17 +82,23 @@ export default function AdminDashboard() {
         }
 
         // Map profiles with auth data
-        const enrichedUsers: UserProfile[] = profilesData.map(profile => {
+        // Specify the type for profilesData as SupabaseProfile[]
+        const typedProfilesData = profilesData as SupabaseProfile[];
+        const enrichedUsers: UserProfile[] = typedProfilesData.map(profile => {
           // Find matching auth user
           const authUser = authData?.users?.find(user => user.id === profile.id);
           
           return {
-            ...profile,
+            id: profile.id,
+            first_name: profile.first_name,
+            last_name: profile.last_name,
+            created_at: profile.created_at,
             email: authUser?.email || "Email inconnu",
-            role: profile.role as "patient" | "medecin" | "institution" || "patient",
+            // Since role might not be in the profile, provide a default
+            role: (authUser?.user_metadata?.role as "patient" | "medecin" | "institution") || "patient",
             email_verified: authUser?.email_confirmed_at !== null || false,
-            terms_accepted: !!profile.terms_accepted || false
-          } as UserProfile;
+            terms_accepted: false // Default value as terms_accepted might not exist yet in profiles
+          };
         });
 
         setUsers(enrichedUsers);
