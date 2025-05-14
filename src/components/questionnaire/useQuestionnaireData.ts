@@ -6,6 +6,18 @@ import { Question, QuestionResponse, Responses, StandardQuestion, LifeSupportQue
 import { toast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 
+// Liste des tables de questionnaires autorisées pour le typage
+type QuestionnaireTable = 
+  | "questionnaire_general_fr" 
+  | "questionnaire_life_support_fr"
+  | "questionnaire_advanced_illness_fr" 
+  | "questionnaire_preferences_fr";
+
+// Liste des tables de réponses autorisées pour le typage
+type ResponseTable = 
+  | "questionnaire_responses"
+  | "questionnaire_preferences_responses";
+
 export const useQuestionnaireData = (pageId: string | undefined) => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,9 +44,14 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
         // Debug logs
         console.log(`Fetching questions from table: ${tableName}`);
         
-        // Fetching questions
+        // Vérification que la table est valide pour le typage
+        if (!isValidQuestionnaireTable(tableName)) {
+          throw new Error(`Table "${tableName}" non reconnue dans le système`);
+        }
+        
+        // Fetching questions avec type casting pour satisfaire TypeScript
         const { data: questionsData, error: questionsError } = await supabase
-          .from(tableName)
+          .from(tableName as QuestionnaireTable)
           .select('*')
           .order('display_order', { ascending: true });
         
@@ -81,8 +98,12 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
           const responseTable = getResponseTable(pageId);
           console.log(`Fetching responses from table: ${responseTable}`);
           
+          if (!isValidResponseTable(responseTable)) {
+            throw new Error(`Table de réponses "${responseTable}" non reconnue dans le système`);
+          }
+          
           const { data: responsesData, error: responsesError } = await supabase
-            .from(responseTable)
+            .from(responseTable as ResponseTable)
             .select('question_id, response')
             .eq('questionnaire_type', pageId)
             .eq('user_id', user.id);
@@ -138,6 +159,10 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
     try {
       const responseTable = getResponseTable(pageId);
       
+      if (!isValidResponseTable(responseTable)) {
+        throw new Error(`Table de réponses "${responseTable}" non reconnue dans le système`);
+      }
+      
       // Define a properly typed array for our responses to save
       const responsesToSave: ResponseToSave[] = Object.entries(responses).map(([questionId, response]) => ({
         question_id: questionId,
@@ -151,7 +176,7 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
       
       // Delete existing responses
       const { error: deleteError } = await supabase
-        .from(responseTable)
+        .from(responseTable as ResponseTable)
         .delete()
         .eq('questionnaire_type', pageId)
         .eq('user_id', user.id);
@@ -164,7 +189,7 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
       // Only insert if there are responses to save
       if (responsesToSave.length > 0) {
         const { error: insertError } = await supabase
-          .from(responseTable)
+          .from(responseTable as ResponseTable)
           .insert(responsesToSave);
         
         if (insertError) {
@@ -189,6 +214,24 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
       setSaving(false);
     }
   };
+
+  // Fonction helper pour vérifier si une table de questionnaire est valide
+  function isValidQuestionnaireTable(tableName: string): tableName is QuestionnaireTable {
+    return [
+      'questionnaire_general_fr',
+      'questionnaire_life_support_fr',
+      'questionnaire_advanced_illness_fr',
+      'questionnaire_preferences_fr'
+    ].includes(tableName);
+  }
+
+  // Fonction helper pour vérifier si une table de réponses est valide
+  function isValidResponseTable(tableName: string): tableName is ResponseTable {
+    return [
+      'questionnaire_responses',
+      'questionnaire_preferences_responses'
+    ].includes(tableName);
+  }
 
   return {
     questions,

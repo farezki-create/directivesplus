@@ -24,10 +24,11 @@ const QuestionnaireSection = () => {
   // Debug logs
   useEffect(() => {
     console.log('QuestionnaireSection rendered with pageId:', pageId);
-    console.log('Questions loaded:', questions.length);
+    console.log('Questions loaded:', questions?.length || 0);
     console.log('Loading state:', loading);
     console.log('Error state:', error);
-  }, [pageId, questions, loading, error]);
+    console.log('Current responses:', responses);
+  }, [pageId, questions, loading, error, responses]);
   
   if (loading) {
     return <LoadingState loading={loading} />;
