@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getSectionTable, getResponseTable } from "./utils";
-import { Question, QuestionResponse, Responses, StandardQuestion, LifeSupportQuestion } from "./types";
+import { Question, QuestionResponse, Responses, StandardQuestion, LifeSupportQuestion, ResponseToSave } from "./types";
 import { toast } from "@/hooks/use-toast";
 
 export const useQuestionnaireData = (pageId: string | undefined) => {
@@ -29,7 +29,7 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
       try {
         // Fetching questions
         const { data: questionsData, error: questionsError } = await supabase
-          .from(tableName)
+          .from(tableName as any)
           .select('*')
           .order('display_order', { ascending: true });
         
@@ -68,7 +68,7 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
         // Fetch existing responses
         const responseTable = getResponseTable(pageId);
         const { data: responsesData, error: responsesError } = await supabase
-          .from(responseTable)
+          .from(responseTable as any)
           .select('question_id, response')
           .eq('questionnaire_type', pageId);
         
@@ -77,7 +77,9 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
         // Convert responses array to object
         const responsesObj: Responses = {};
         if (responsesData) {
-          (responsesData as QuestionResponse[]).forEach((r: QuestionResponse) => {
+          // Type assertion to handle the conversion safely
+          const responsesList = responsesData as unknown as QuestionResponse[];
+          responsesList.forEach((r: QuestionResponse) => {
             responsesObj[r.question_id] = r.response;
           });
         }
@@ -109,7 +111,9 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
     
     try {
       const responseTable = getResponseTable(pageId);
-      const responsesToSave = Object.entries(responses).map(([questionId, response]) => ({
+      
+      // Define a properly typed array for our responses to save
+      const responsesToSave: ResponseToSave[] = Object.entries(responses).map(([questionId, response]) => ({
         question_id: questionId,
         response,
         questionnaire_type: pageId,
@@ -118,7 +122,7 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
       
       // Delete existing responses
       const { error: deleteError } = await supabase
-        .from(responseTable)
+        .from(responseTable as any)
         .delete()
         .eq('questionnaire_type', pageId);
       
@@ -127,7 +131,7 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
       // Insert new responses
       if (responsesToSave.length > 0) {
         const { error: insertError } = await supabase
-          .from(responseTable)
+          .from(responseTable as any)
           .insert(responsesToSave);
         
         if (insertError) throw insertError;
