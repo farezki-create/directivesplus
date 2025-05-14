@@ -168,16 +168,21 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
         throw new Error(`Table de réponses "${responseTable}" non reconnue dans le système`);
       }
       
-      // Simple plain object without complex type references to avoid deep instantiation
-      const responsesToSave = Object.entries(responses).map(([questionId, response]) => {
-        return {
+      // Using a simpler approach to avoid the deep instantiation error
+      // Define the responsesToSave array with just the basic JSON structure
+      const responsesToSave = [];
+      
+      // Populate the array manually to avoid complex type inference
+      for (const [questionId, response] of Object.entries(responses)) {
+        const questionText = questions.find(q => q.id === questionId)?.question || '';
+        responsesToSave.push({
           question_id: questionId,
           response: response,
           questionnaire_type: pageId,
           user_id: user.id,
-          question_text: questions.find(q => q.id === questionId)?.question || ''
-        };
-      });
+          question_text: questionText
+        });
+      }
       
       console.log('Responses to save:', responsesToSave);
       
