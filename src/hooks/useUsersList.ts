@@ -1,89 +1,103 @@
 
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/components/ui/sonner";
-import type { UserProfile } from "@/components/admin/UsersTable";
+import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/components/ui/sonner';
 
-// Define a type for what Supabase actually returns from the profiles table
-type SupabaseProfile = {
+export interface SupabaseProfile {
   id: string;
-  first_name: string | null;
-  last_name: string | null;
-  created_at: string | null;
-  address: string | null;
-  birth_date: string | null;
-  city: string | null;
-  country: string | null;
-  medical_access_code: string | null;
-  phone_number: string | null;
-  postal_code: string | null;
+  first_name: string;
+  last_name: string;
+  birth_date: string;
+  address: string;
+  city: string;
+  country: string;
+  created_at: string;
+  phone_number: string;
+  postal_code: string;
+  medical_access_code: string;
 }
 
-export function useUsersList() {
-  const [users, setUsers] = useState<UserProfile[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export interface UserProfile {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+  birthDate: string;
+  createdAt: string;
+  address: string;
+  city: string;
+  country: string;
+  phoneNumber: string;
+  postalCode: string;
+  emailVerified: boolean;
+  termsAccepted: boolean;
+}
 
-  const fetchUsers = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      
-      // Get profiles
-      const { data: profilesData, error: profilesError } = await supabase
-        .from("profiles")
-        .select("*")
-        .order("created_at", { ascending: false });
+export const useUsersList = () => {
+  const [userProfiles, setUserProfiles] = useState<UserProfile[]>([]);
 
-      if (profilesError) {
-        toast.error("Erreur lors du chargement des utilisateurs", {
-          description: profilesError.message,
-        });
-        setError(profilesError.message);
-        return;
+  const { data: profiles, isLoading, error } = useQuery({
+    queryKey: ['profiles'],
+    queryFn: async () => {
+      const { data: profiles, error } = await supabase
+        .from('profiles')
+        .select('*');
+
+      if (error) {
+        throw new Error(error.message);
       }
 
-      // Get auth users to get emails and supplement data
-      const { data: authData, error: authError } = await supabase.auth.admin.listUsers();
-      
-      if (authError) {
-        console.error("Error fetching auth users:", authError);
-      }
+      return profiles as SupabaseProfile[];
+    },
+  });
 
-      // Map profiles with auth data
-      const typedProfilesData = profilesData as SupabaseProfile[];
-      const enrichedUsers: UserProfile[] = typedProfilesData.map(profile => {
-        // Find matching auth user
-        const authUser = authData?.users?.find(user => user.id === profile.id);
-        
-        return {
-          id: profile.id,
-          first_name: profile.first_name,
-          last_name: profile.last_name,
-          created_at: profile.created_at,
-          email: authUser?.email || "Email inconnu",
-          // Since role might not be in the profile, provide a default
-          role: (authUser?.user_metadata?.role as "patient" | "medecin" | "institution") || "patient",
-          email_verified: !!authUser?.email_confirmed_at,
-          terms_accepted: false // Default value as terms_accepted might not exist yet in profiles
-        };
-      });
+  useEffect(() => {
+    if (profiles) {
+      // Fetch auth users to get additional data like email
+      const fetchAuthData = async () => {
+        try {
+          const { data: authData, error } = await supabase.auth.admin.listUsers();
+          
+          if (error) {
+            throw error;
+          }
 
-      setUsers(enrichedUsers);
-    } catch (error: any) {
-      setError(error.message || "Une erreur est survenue");
-      toast.error("Une erreur est survenue", {
-        description: error.message || "Veuillez réessayer plus tard",
-      });
-    } finally {
-      setIsLoading(false);
+          // Map the profiles with auth data
+          const mappedUsers = profiles.map((profile) => {
+            // Find the matching auth user
+            const authUser = authData.users.find(user => user.id === profile.id);
+            
+            return {
+              id: profile.id,
+              email: authUser?.email || '',
+              firstName: profile.first_name || '',
+              lastName: profile.last_name || '',
+              role: authUser?.user_metadata?.role || '',
+              birthDate: profile.birth_date || '',
+              createdAt: profile.created_at,
+              address: profile.address || '',
+              city: profile.city || '',
+              country: profile.country || '',
+              phoneNumber: profile.phone_number || '',
+              postalCode: profile.postal_code || '',
+              emailVerified: authUser?.email_confirmed_at ? true : false,
+              termsAccepted: false, // Default value if not found
+            };
+          });
+
+          setUserProfiles(mappedUsers);
+        } catch (error: any) {
+          toast.error("Erreur lors du chargement des données utilisateur", {
+            description: error.message,
+          });
+        }
+      };
+
+      fetchAuthData();
     }
-  };
+  }, [profiles]);
 
-  return {
-    users,
-    isLoading,
-    error,
-    fetchUsers
-  };
-}
+  return { userProfiles, isLoading, error };
+};

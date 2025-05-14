@@ -11,6 +11,8 @@ import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./contexts/AuthContext";
+import Dashboard from "./pages/Dashboard";
+import PlaceholderPage from "./pages/PlaceholderPage";
 
 const queryClient = new QueryClient();
 
@@ -18,6 +20,14 @@ const AppContent = () => (
   <Routes>
     <Route path="/" element={<Index />} />
     <Route path="/auth" element={<Auth />} />
+    <Route 
+      path="/dashboard" 
+      element={
+        <ProtectedRoute>
+          <Dashboard />
+        </ProtectedRoute>
+      } 
+    />
     <Route 
       path="/profile" 
       element={
@@ -34,6 +44,27 @@ const AppContent = () => (
         </ProtectedRoute>
       } 
     />
+    {/* Routes pour les sections des directives */}
+    <Route path="/:pageId" element={
+      <ProtectedRoute>
+        <PlaceholderPage />
+      </ProtectedRoute>
+    } />
+    <Route path="/rediger" element={
+      <ProtectedRoute>
+        <PlaceholderPage />
+      </ProtectedRoute>
+    } />
+    <Route path="/mes-directives" element={
+      <ProtectedRoute>
+        <PlaceholderPage />
+      </ProtectedRoute>
+    } />
+    <Route path="/avis" element={
+      <ProtectedRoute>
+        <PlaceholderPage />
+      </ProtectedRoute>
+    } />
     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
     <Route path="*" element={<NotFound />} />
   </Routes>
