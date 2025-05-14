@@ -68,27 +68,36 @@ export async function fetchResponses(pageId: string, userId: string): Promise<Re
     throw new Error(`Table de réponses "${responseTable}" non reconnue dans le système`);
   }
   
-  // Simplified type handling to avoid excessive type instantiation
-  const response = await supabase
-    .from(responseTable)
-    .select('question_id, response')
-    .eq('questionnaire_type', pageId)
-    .eq('user_id', userId);
+  // Avoid complex type inference by using any for intermediate data
+  let data: any[] = [];
+  let error = null;
   
-  if (response.error) {
-    console.error('Error fetching responses:', response.error);
-    throw response.error;
+  try {
+    const result = await supabase
+      .from(responseTable)
+      .select('question_id, response')
+      .eq('questionnaire_type', pageId)
+      .eq('user_id', userId);
+    
+    data = result.data || [];
+    error = result.error;
+  } catch (err) {
+    console.error('Error in Supabase query:', err);
+    throw err;
   }
   
-  console.log('Responses data fetched:', response.data);
+  if (error) {
+    console.error('Error fetching responses:', error);
+    throw error;
+  }
   
-  // Convert responses array to object using a simpler approach
+  console.log('Responses data fetched:', data);
+  
+  // Convert responses array to object
   const responsesObj: Responses = {};
   
-  if (response.data) {
-    for (const item of response.data) {
-      responsesObj[item.question_id] = item.response;
-    }
+  for (const item of data) {
+    responsesObj[item.question_id] = item.response;
   }
   
   console.log('Responses object created:', responsesObj);
