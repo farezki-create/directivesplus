@@ -1,7 +1,8 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
-import { UsersTable, type UserProfile } from "./UsersTable";
+import { UsersTable } from "./UsersTable";
+import { type UserProfile } from "@/hooks/useUsersList";
 
 type AdminDashboardProps = {
   users: UserProfile[];

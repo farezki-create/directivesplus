@@ -2,7 +2,7 @@
 import { Badge } from "@/components/ui/badge";
 
 type UserRoleProps = {
-  role: "patient" | "medecin" | "institution";
+  role: string;
 };
 
 export function UserRoleBadge({ role }: UserRoleProps) {
@@ -26,6 +26,6 @@ export function UserRoleBadge({ role }: UserRoleProps) {
         </Badge>
       );
     default:
-      return <Badge variant="outline">{role}</Badge>;
+      return <Badge variant="outline">{role || "Non défini"}</Badge>;
   }
 }

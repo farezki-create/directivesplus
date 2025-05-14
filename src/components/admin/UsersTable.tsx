@@ -3,18 +3,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { UserRoleBadge } from "./UserRoleBadge";
 import { StatusBadge } from "./StatusBadge";
-
-// Define our UserProfile type
-export type UserProfile = {
-  id: string;
-  first_name: string | null;
-  last_name: string | null;
-  created_at: string | null;
-  email: string;
-  role: "patient" | "medecin" | "institution";
-  email_verified: boolean;
-  terms_accepted: boolean;
-};
+import { type UserProfile } from "@/hooks/useUsersList";
 
 type UsersTableProps = {
   users: UserProfile[];
@@ -46,20 +35,20 @@ export function UsersTable({ users, onViewDetails }: UsersTableProps) {
           users.map((user) => (
             <TableRow key={user.id}>
               <TableCell>
-                {user.first_name} {user.last_name}
+                {user.firstName} {user.lastName}
               </TableCell>
               <TableCell>{user.email}</TableCell>
               <TableCell>
                 <UserRoleBadge role={user.role} />
               </TableCell>
               <TableCell>
-                <StatusBadge status={user.email_verified} />
+                <StatusBadge status={user.emailVerified} />
               </TableCell>
               <TableCell>
-                <StatusBadge status={user.terms_accepted} />
+                <StatusBadge status={user.termsAccepted} />
               </TableCell>
               <TableCell>
-                {user.created_at ? new Date(user.created_at).toLocaleDateString() : "N/A"}
+                {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "N/A"}
               </TableCell>
               <TableCell className="text-right">
                 <Button
