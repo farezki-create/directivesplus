@@ -68,6 +68,7 @@ export async function fetchResponses(pageId: string, userId: string): Promise<Re
     throw new Error(`Table de réponses "${responseTable}" non reconnue dans le système`);
   }
   
+  // Remove the type casting that was causing the error
   const { data: responsesData, error: responsesError } = await supabase
     .from(responseTable)
     .select('question_id, response')
