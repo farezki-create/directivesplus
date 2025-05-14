@@ -4,23 +4,40 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import AppNavigation from "@/components/AppNavigation";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/hooks/use-toast";
 
 const Rediger = () => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Check if the auth state is loaded and user is not authenticated
     if (!isLoading && !isAuthenticated) {
+      console.log("User not authenticated, redirecting to auth page");
       navigate("/auth", { state: { from: "/rediger" } });
+    } else if (!isLoading && isAuthenticated) {
+      console.log("User authenticated:", user?.id);
+      // Show a welcome toast when authenticated user arrives
+      toast({
+        title: "Bienvenue sur la page de rédaction",
+        description: "Vous pouvez commencer à rédiger vos directives.",
+      });
     }
-  }, [isAuthenticated, isLoading, navigate]);
+  }, [isAuthenticated, isLoading, navigate, user]);
 
+  // Show loading indicator while checking auth
   if (isLoading) {
     return (
       <div className="h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-directiveplus-600"></div>
       </div>
     );
+  }
+
+  // Important: Only render page content if authenticated
+  // This prevents flash of content before redirect
+  if (!isAuthenticated) {
+    return null;
   }
 
   return (
