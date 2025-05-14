@@ -164,7 +164,13 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
       }
       
       // Define a properly typed array for our responses to save
-      const responsesToSave: ResponseToSave[] = Object.entries(responses).map(([questionId, response]) => ({
+      const responsesToSave: {
+        question_id: string;
+        response: string;
+        questionnaire_type: string;
+        user_id: string;
+        question_text: string;
+      }[] = Object.entries(responses).map(([questionId, response]) => ({
         question_id: questionId,
         response,
         questionnaire_type: pageId,
