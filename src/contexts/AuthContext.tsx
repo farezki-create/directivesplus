@@ -51,38 +51,47 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Set up auth state listener
+    console.log("Setting up auth state listener");
+    setIsLoading(true);
+    
+    // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      (event, newSession) => {
         console.log("Auth state change event:", event);
-        setUser(session?.user ?? null);
-        setSession(session);
-        setIsLoading(false);
-
-        // Defer profile fetch to prevent auth deadlocks
-        if (session?.user) {
+        
+        // Update authentication state synchronously
+        setSession(newSession);
+        setUser(newSession?.user ?? null);
+        
+        // If session exists, defer profile fetch to prevent auth deadlocks
+        if (newSession?.user) {
           setTimeout(() => {
-            fetchProfile(session.user.id);
+            fetchProfile(newSession.user.id);
           }, 0);
         } else {
           setProfile(null);
         }
+        
+        // Always ensure loading state is updated
+        setIsLoading(false);
       }
     );
 
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setSession(session);
+    // Then check for initial session
+    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
+      setSession(initialSession);
+      setUser(initialSession?.user ?? null);
       setIsLoading(false);
 
-      if (session?.user) {
-        fetchProfile(session.user.id);
+      if (initialSession?.user) {
+        setTimeout(() => {
+          fetchProfile(initialSession.user.id);
+        }, 0);
       }
     });
 
     return () => {
-      subscription.unsubscribe();
+      subscription?.unsubscribe();
     };
   }, []);
 
@@ -117,13 +126,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       // Sign out from Supabase with global scope
       await supabase.auth.signOut({ scope: 'global' });
       
-      // Reset all auth state
+      // Reset all auth state immediately
       setUser(null);
       setSession(null);
       setProfile(null);
       
       // Navigate to login with a complete page reload for clean state
-      window.location.href = "/auth";
+      setTimeout(() => {
+        window.location.href = "/auth";
+      }, 100);
     } catch (error) {
       console.error("Error during sign out:", error);
       // Even if there's an error, we should clean up and redirect

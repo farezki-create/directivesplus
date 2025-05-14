@@ -1,131 +1,102 @@
-
 import { supabase } from "@/integrations/supabase/client";
-import { Question, StandardQuestion, LifeSupportQuestion, QuestionResponse, Responses } from "./types";
-import { QuestionnaireTable, ResponseTable, isValidQuestionnaireTable, isValidResponseTable } from "./typeValidators";
+import { UserResponse } from "./types";
 
-// Fetch questions from the appropriate table
-export async function fetchQuestions(tableName: string): Promise<Question[]> {
-  console.log(`Fetching questions from table: ${tableName}`);
-  
-  if (!isValidQuestionnaireTable(tableName)) {
-    throw new Error(`Table "${tableName}" non reconnue dans le système`);
-  }
-  
-  // Fetching questions
-  const { data: questionsData, error: questionsError } = await supabase
-    .from(tableName)
-    .select('*')
-    .order('display_order', { ascending: true });
-  
-  if (questionsError) {
-    console.error('Error fetching questions:', questionsError);
-    throw questionsError;
-  }
-
-  console.log('Questions data fetched:', questionsData);
-  
-  // Format questions based on table structure
-  let formattedQuestions: Question[] = [];
-  
-  if (tableName === 'questionnaire_life_support_fr') {
-    // Handle life support questions which have a different structure
-    formattedQuestions = (questionsData as any[]).map(q => ({
-      id: String(q.id), // Ensure id is string
-      question: q.question_text,
-      explanation: q.explanation,
-      display_order: q.question_order,
-      options: {
-        yes: q.option_yes,
-        no: q.option_no,
-        unsure: q.option_unsure
-      }
-    }));
-  } else {
-    // Handle standard questions
-    formattedQuestions = (questionsData as any[]).map(q => ({
-      id: String(q.id), // Ensure id is string
-      question: q.question,
-      explanation: q.explanation,
-      display_order: q.display_order,
-      options: {
-        yes: "Oui",
-        no: "Non",
-        unsure: "Je ne sais pas"
-      }
-    }));
-  }
-  
-  console.log('Formatted questions:', formattedQuestions);
-  return formattedQuestions;
-}
-
-// Fetch existing user responses
-export async function fetchResponses(pageId: string, userId: string): Promise<Responses> {
-  const responseTable = getResponseTable(pageId);
-  console.log(`Fetching responses from table: ${responseTable}`);
-  
-  if (!isValidResponseTable(responseTable)) {
-    throw new Error(`Table de réponses "${responseTable}" non reconnue dans le système`);
-  }
-  
-  // Initialize an empty response object
-  const responsesObj: Record<string, string> = {};
-  
+// Fetch questionnaire responses for a specific user
+export const fetchResponses = async (questionnaireId: string, userId: string): Promise<Record<string, UserResponse>> => {
   try {
-    // Avoid complex type inference by using simpler approach
+    // Use a simpler approach with explicit type annotations to avoid excessive type instantiation
     const { data, error } = await supabase
-      .from(responseTable)
-      .select('question_id, response')
-      .eq('questionnaire_type', pageId)
-      .eq('user_id', userId);
-    
+      .from("user_responses")
+      .select("*")
+      .eq("questionnaire_id", questionnaireId)
+      .eq("user_id", userId);
+
     if (error) {
-      console.error('Error fetching responses:', error);
+      console.error("Error fetching responses:", error);
       throw error;
     }
-    
-    console.log('Responses data fetched:', data);
-    
-    // Process data safely with simple iteration
-    if (data && Array.isArray(data)) {
-      data.forEach(item => {
-        if (item && typeof item.question_id === 'string') {
-          responsesObj[item.question_id] = item.response || '';
-        }
-      });
-    }
-  } catch (err) {
-    console.error('Error in Supabase query:', err);
-    throw err;
-  }
-  
-  console.log('Responses object created:', responsesObj);
-  return responsesObj;
-}
 
-// Get the appropriate table name for the questionnaire
-export function getSectionTable(sectionId: string): string {
-  console.log('Getting section table for:', sectionId);
-  switch(sectionId) {
-    case 'avis-general':
-      return 'questionnaire_general_fr';
-    case 'maintien-vie':
-      return 'questionnaire_life_support_fr';
-    case 'maladie-avancee':
-      return 'questionnaire_advanced_illness_fr';
-    case 'gouts-peurs':
-      return 'questionnaire_preferences_fr';
-    default:
-      console.warn(`No table found for section: ${sectionId}`);
-      return '';
+    if (!data || data.length === 0) {
+      return {};
+    }
+
+    // Create a simple response map with explicit typing
+    const responseMap: Record<string, UserResponse> = {};
+    
+    // Use a normal for loop instead of complex type inference
+    for (let i = 0; i < data.length; i++) {
+      const item = data[i];
+      if (item && item.question_id) {
+        responseMap[item.question_id] = {
+          id: item.id,
+          questionId: item.question_id,
+          response: item.response,
+          createdAt: item.created_at,
+          updatedAt: item.updated_at,
+        };
+      }
+    }
+
+    return responseMap;
+  } catch (err) {
+    console.error("Failed to fetch responses:", err);
+    throw err;
   }
 };
 
-// Get the appropriate response table name
-export function getResponseTable(sectionId: string): string {
-  console.log('Getting response table for:', sectionId);
-  if (sectionId === 'gouts-peurs') {
-    return 'questionnaire_preferences_responses';
+// Save a user's response to a questionnaire
+export const saveResponse = async (
+  questionnaireId: string,
+  questionId: string,
+  userId: string,
+  response: string
+): Promise<UserResponse | null> => {
+  try {
+    const { data: existingResponse, error: existingError } = await supabase
+      .from("user_responses")
+      .select("*")
+      .eq("questionnaire_id", questionnaireId)
+      .eq("question_id", questionId)
+      .eq("user_id", userId)
+      .single();
+
+    if (existingError && existingError.code !== 'PGRST116') {
+      console.error("Error checking existing response:", existingError);
+      throw existingError;
+    }
+
+    if (existingResponse) {
+      // Update existing response
+      const { data, error } = await supabase
+        .from("user_responses")
+        .update({ response, updated_at: new Date() })
+        .eq("id", existingResponse.id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error updating response:", error);
+        throw error;
+      }
+
+      return data as UserResponse;
+    } else {
+      // Create new response
+      const { data, error } = await supabase
+        .from("user_responses")
+        .insert([{ questionnaire_id: questionnaireId, question_id: questionId, user_id: userId, response }])
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error creating response:", error);
+        throw error;
+      }
+
+      return data as UserResponse;
+    }
+  } catch (err) {
+    console.error("Failed to save response:", err);
+    throw err;
   }
-  return 'questionnaire_responses';
 };
