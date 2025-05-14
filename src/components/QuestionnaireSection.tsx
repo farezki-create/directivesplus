@@ -7,6 +7,9 @@ import ErrorState from "./questionnaire/ErrorState";
 import QuestionsContainer from "./questionnaire/QuestionsContainer";
 import NavigationButtons from "./questionnaire/NavigationButtons";
 import { useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const QuestionnaireSection = () => {
   const { pageId } = useParams<{ pageId: string }>();
@@ -43,6 +46,20 @@ const QuestionnaireSection = () => {
   
   return (
     <div className="space-y-8 max-w-3xl mx-auto">
+      {/* Top back button */}
+      <div className="flex justify-start mb-2">
+        <Button 
+          variant="outline" 
+          asChild
+          className="flex items-center"
+        >
+          <Link to="/rediger">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Retour
+          </Link>
+        </Button>
+      </div>
+      
       <h1 className="text-2xl font-bold text-center mb-6">
         {sectionTitle || 'Questionnaire'}
       </h1>

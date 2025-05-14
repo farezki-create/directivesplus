@@ -1,6 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Save } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface NavigationButtonsProps {
   onSave: () => void;
@@ -12,11 +13,13 @@ const NavigationButtons = ({ onSave, saving }: NavigationButtonsProps) => {
     <div className="flex justify-between pt-4">
       <Button 
         variant="outline" 
-        onClick={() => window.history.back()}
+        asChild
         className="flex items-center"
       >
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Retour
+        <Link to="/rediger">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Retour
+        </Link>
       </Button>
       
       <Button
