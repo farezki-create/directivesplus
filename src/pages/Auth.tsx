@@ -30,7 +30,7 @@ const registerSchema = z.object({
   role: z.enum(["patient", "medecin", "institution"], {
     required_error: "Veuillez sélectionner un rôle",
   }),
-  termsAccepted: z.literal(true, {
+  termsAccepted: z.literal<boolean>(true, {
     errorMap: () => ({ message: "Vous devez accepter les conditions d'utilisation" }),
   }),
 });

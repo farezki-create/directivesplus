@@ -13,6 +13,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Profile schema
 const profileSchema = z.object({
@@ -23,16 +24,17 @@ const profileSchema = z.object({
 
 type Profile = {
   id: string;
-  email: string;
   first_name: string | null;
   last_name: string | null;
-  role: "patient" | "medecin" | "institution";
+  email: string; // We'll get this from auth
+  role: "patient" | "medecin" | "institution"; // We'll get this from auth context
 };
 
 export default function Profile() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const { user, session } = useAuth();
 
   const form = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
@@ -73,11 +75,19 @@ export default function Profile() {
         }
 
         if (data) {
-          setProfile(data as Profile);
+          // Combine data with user email and role
+          const userRole = user.user_metadata?.role || "patient";
+          const enrichedProfile = {
+            ...data,
+            email: user.email || "",
+            role: userRole as "patient" | "medecin" | "institution"
+          };
+          
+          setProfile(enrichedProfile as Profile);
           form.reset({
             firstName: data.first_name || "",
             lastName: data.last_name || "",
-            email: data.email || "",
+            email: user.email || "",
           });
         }
       } catch (error: any) {

@@ -13,13 +13,14 @@ import { Loader2 } from "lucide-react";
 
 type UserProfile = {
   id: string;
-  email: string;
   first_name: string | null;
   last_name: string | null;
-  role: "patient" | "medecin" | "institution";
-  email_verified: boolean;
-  terms_accepted: boolean;
-  created_at: string;
+  created_at: string | null;
+  // Fields missing from Supabase but needed in our interface
+  email: string; // We'll populate this from auth context
+  role: "patient" | "medecin" | "institution"; // We'll get this from auth context
+  email_verified: boolean; // We'll determine this with helper function
+  terms_accepted: boolean; // We'll assume false if not present
 };
 
 export default function AdminDashboard() {
@@ -43,19 +44,42 @@ export default function AdminDashboard() {
     const fetchUsers = async () => {
       try {
         setIsLoading(true);
-        const { data, error } = await supabase
+        
+        // Get profiles
+        const { data: profilesData, error: profilesError } = await supabase
           .from("profiles")
           .select("*")
           .order("created_at", { ascending: false });
 
-        if (error) {
+        if (profilesError) {
           toast.error("Erreur lors du chargement des utilisateurs", {
-            description: error.message,
+            description: profilesError.message,
           });
           return;
         }
 
-        setUsers(data as UserProfile[]);
+        // Get auth users to get emails and supplement data
+        const { data: authData, error: authError } = await supabase.auth.admin.listUsers();
+        
+        if (authError) {
+          console.error("Error fetching auth users:", authError);
+        }
+
+        // Map profiles with auth data
+        const enrichedUsers: UserProfile[] = profilesData.map(profile => {
+          // Find matching auth user
+          const authUser = authData?.users?.find(user => user.id === profile.id);
+          
+          return {
+            ...profile,
+            email: authUser?.email || "Email inconnu",
+            role: profile.role as "patient" | "medecin" | "institution" || "patient",
+            email_verified: authUser?.email_confirmed_at !== null || false,
+            terms_accepted: !!profile.terms_accepted || false
+          } as UserProfile;
+        });
+
+        setUsers(enrichedUsers);
       } catch (error: any) {
         toast.error("Une erreur est survenue", {
           description: error.message || "Veuillez réessayer plus tard",
@@ -158,7 +182,7 @@ export default function AdminDashboard() {
                       )}
                     </TableCell>
                     <TableCell>
-                      {new Date(user.created_at).toLocaleDateString()}
+                      {user.created_at ? new Date(user.created_at).toLocaleDateString() : "N/A"}
                     </TableCell>
                     <TableCell className="text-right">
                       <Button
