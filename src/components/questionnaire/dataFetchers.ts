@@ -68,36 +68,34 @@ export async function fetchResponses(pageId: string, userId: string): Promise<Re
     throw new Error(`Table de réponses "${responseTable}" non reconnue dans le système`);
   }
   
-  // Avoid complex type inference by using any for intermediate data
-  let data: any[] = [];
-  let error = null;
+  // Skip type inference completely and use explicit casting
+  let responsesObj: Responses = {};
   
   try {
-    const result = await supabase
+    const { data, error } = await supabase
       .from(responseTable)
       .select('question_id, response')
       .eq('questionnaire_type', pageId)
       .eq('user_id', userId);
     
-    data = result.data || [];
-    error = result.error;
+    if (error) {
+      console.error('Error fetching responses:', error);
+      throw error;
+    }
+    
+    console.log('Responses data fetched:', data);
+    
+    // Manually build the responses object
+    if (data && Array.isArray(data)) {
+      data.forEach(item => {
+        if (item && typeof item.question_id === 'string') {
+          responsesObj[item.question_id] = item.response || '';
+        }
+      });
+    }
   } catch (err) {
     console.error('Error in Supabase query:', err);
     throw err;
-  }
-  
-  if (error) {
-    console.error('Error fetching responses:', error);
-    throw error;
-  }
-  
-  console.log('Responses data fetched:', data);
-  
-  // Convert responses array to object
-  const responsesObj: Responses = {};
-  
-  for (const item of data) {
-    responsesObj[item.question_id] = item.response;
   }
   
   console.log('Responses object created:', responsesObj);
