@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -39,6 +39,10 @@ export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get return URL from location state or default to rédiger page
+  const from = location.state?.from || "/rediger";
 
   // Login form
   const loginForm = useForm<z.infer<typeof loginSchema>>({
@@ -106,8 +110,8 @@ export default function Auth() {
 
       if (data.user) {
         toast.success("Connexion réussie");
-        // Navigate to home page
-        navigate("/");
+        // Navigate to rédiger page or requested page
+        navigate(from);
       }
     } catch (error) {
       toast.error("Une erreur est survenue", {
