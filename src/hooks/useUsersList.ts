@@ -61,7 +61,8 @@ export const useUsersList = () => {
       // Explicitly type the profile parameter to SupabaseProfile
       const mappedUsers = profiles.map((profile: SupabaseProfile) => {
         // Find the matching auth user
-        const authUser = authData.users.find(user => user.id === profile.id);
+        // Explicitly type the user parameter to avoid the 'never' type issue
+        const authUser = authData.users.find((user: any) => user.id === profile.id);
         
         return {
           id: profile.id,
