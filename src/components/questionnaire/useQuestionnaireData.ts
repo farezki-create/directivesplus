@@ -86,7 +86,12 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
             id: String(q.id), // Ensure id is string
             question: q.question,
             explanation: q.explanation,
-            display_order: q.display_order
+            display_order: q.display_order,
+            options: {
+              yes: "Oui",
+              no: "Non",
+              unsure: "Je ne sais pas"
+            }
           }));
         }
         
@@ -163,14 +168,17 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
         throw new Error(`Table de réponses "${responseTable}" non reconnue dans le système`);
       }
       
-      // Define a properly typed array for our responses to save
-      const responsesToSave: {
+      // Define type for responses to save directly here to avoid the deep instantiation error
+      type ResponseToSave = {
         question_id: string;
         response: string;
         questionnaire_type: string;
         user_id: string;
         question_text: string;
-      }[] = Object.entries(responses).map(([questionId, response]) => ({
+      };
+      
+      // Create the responses array with the defined type
+      const responsesToSave: ResponseToSave[] = Object.entries(responses).map(([questionId, response]) => ({
         question_id: questionId,
         response,
         questionnaire_type: pageId,

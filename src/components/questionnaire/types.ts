@@ -38,8 +38,8 @@ export type QuestionResponse = {
   response: string;
 };
 
-// Define the save response type
-export type ResponseToSave = {
+// Define the response type for saving to database
+export type ResponseData = {
   question_id: string;
   response: string;
   questionnaire_type: string;
