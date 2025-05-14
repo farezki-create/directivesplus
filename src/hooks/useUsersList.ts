@@ -46,7 +46,7 @@ export const useUsersList = () => {
         throw authError;
       }
 
-      const { data: profiles, error: profilesError } = await supabase
+      const { data, error: profilesError } = await supabase
         .from('profiles')
         .select('*');
 
@@ -54,8 +54,11 @@ export const useUsersList = () => {
         throw profilesError;
       }
 
+      // Explicitly type the profiles data to avoid the 'never' type issue
+      const profiles = data as SupabaseProfile[];
+
       // Map the profiles with auth data
-      const mappedUsers = (profiles as SupabaseProfile[]).map((profile) => {
+      const mappedUsers = profiles.map((profile) => {
         // Find the matching auth user
         const authUser = authData.users.find(user => user.id === profile.id);
         
