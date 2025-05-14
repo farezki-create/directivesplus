@@ -85,7 +85,7 @@ const QuestionnaireSection = () => {
 };
 
 // Get the title for the section
-function getSectionTitle(pageId: string | undefined): string {
+function getSectionTitle(pageId: string): string {
   console.log('Getting section title for:', pageId);
   switch(pageId) {
     case 'avis-general': 

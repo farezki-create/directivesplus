@@ -1,9 +1,9 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Question, UserResponse } from "./types";
+import { Question, QuestionnaireTableName, ResponseTableName, Responses } from "./types";
 
 // Helper function to get the right table name for questionnaire sections
-export const getSectionTable = (sectionId: string): string => {
+export const getSectionTable = (sectionId: string): QuestionnaireTableName => {
   switch(sectionId) {
     case 'avis-general': 
       return "questionnaire_general_fr";
@@ -11,19 +11,17 @@ export const getSectionTable = (sectionId: string): string => {
       return "questionnaire_life_support_fr";
     case 'maladie-avancee': 
       return "questionnaire_advanced_illness_fr";
-    case 'gouts-peurs': 
-      return "questionnaire_preferences_fr";
-    case 'personne-confiance': 
-      return "questionnaire_preferences_fr"; // Using the same table
+    case 'gouts-peurs':
+    case 'personne-confiance':
     case 'exemples-phrases': 
-      return "questionnaire_preferences_fr"; // Using the same table
+      return "questionnaire_preferences_fr";
     default:
-      return "";
+      throw new Error(`Unknown section ID: ${sectionId}`);
   }
 };
 
 // Helper function to get the response table name
-export const getResponseTable = (sectionId: string): string => {
+export const getResponseTable = (sectionId: string): ResponseTableName => {
   // Some sections use a different table for responses
   if (['gouts-peurs', 'personne-confiance', 'exemples-phrases'].includes(sectionId)) {
     return "questionnaire_preferences_responses";
@@ -32,7 +30,7 @@ export const getResponseTable = (sectionId: string): string => {
 };
 
 // Fetch questions from the database
-export const fetchQuestions = async (tableName: string): Promise<Question[]> => {
+export const fetchQuestions = async (tableName: QuestionnaireTableName): Promise<Question[]> => {
   try {
     const { data, error } = await supabase
       .from(tableName)
@@ -50,6 +48,7 @@ export const fetchQuestions = async (tableName: string): Promise<Question[]> => 
     
     // Transform the questions based on the table type
     if (tableName === "questionnaire_life_support_fr") {
+      // Handle life support questions specifically
       return data.map(item => ({
         id: String(item.id),
         question: item.question_text || "",
@@ -62,8 +61,9 @@ export const fetchQuestions = async (tableName: string): Promise<Question[]> => 
         }
       }));
     } else {
+      // Handle standard questions
       return data.map(item => ({
-        id: item.id,
+        id: String(item.id),
         question: item.question || "",
         explanation: item.explanation,
         display_order: item.display_order
@@ -76,7 +76,7 @@ export const fetchQuestions = async (tableName: string): Promise<Question[]> => 
 };
 
 // Fetch questionnaire responses for a specific user
-export const fetchResponses = async (questionnaireId: string, userId: string): Promise<Record<string, string>> => {
+export const fetchResponses = async (questionnaireId: string, userId: string): Promise<Responses> => {
   try {
     const tableName = getResponseTable(questionnaireId);
     
@@ -97,7 +97,7 @@ export const fetchResponses = async (questionnaireId: string, userId: string): P
     }
 
     // Create a simple response map
-    const responseMap: Record<string, string> = {};
+    const responseMap: Responses = {};
     
     // Use a normal for loop to simplify type handling
     for (let i = 0; i < data.length; i++) {
@@ -124,13 +124,14 @@ export const saveResponse = async (
   try {
     const tableName = getResponseTable(questionnaireId);
     
+    // Check if response already exists
     const { data: existingResponse, error: existingError } = await supabase
       .from(tableName)
-      .select('*')
+      .select('id')
       .eq('questionnaire_type', questionnaireId)
       .eq('question_id', questionId)
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
 
     if (existingError && existingError.code !== 'PGRST116') {
       console.error("Error checking existing response:", existingError);

@@ -32,7 +32,7 @@ export type Question = {
   };
 };
 
-// Define specific response type
+// Define response types
 export type QuestionResponse = {
   question_id: string;
   response: string;
@@ -49,7 +49,7 @@ export type ResponseData = {
 
 export type Responses = Record<string, string>;
 
-// Add UserResponse type that was missing
+// User response type
 export type UserResponse = {
   id: string;
   questionId: string;
@@ -57,3 +57,14 @@ export type UserResponse = {
   createdAt: string;
   updatedAt: string;
 };
+
+// Add table name types to help with typesafety
+export type QuestionnaireTableName = 
+  | "questionnaire_general_fr" 
+  | "questionnaire_life_support_fr"
+  | "questionnaire_advanced_illness_fr" 
+  | "questionnaire_preferences_fr";
+
+export type ResponseTableName = 
+  | "questionnaire_responses"
+  | "questionnaire_preferences_responses";

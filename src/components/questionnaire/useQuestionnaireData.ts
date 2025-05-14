@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { fetchQuestions, fetchResponses, getSectionTable } from "./dataFetchers";
 import { saveResponses } from "./dataSavers";
 
-export const useQuestionnaireData = (pageId: string | undefined) => {
+export const useQuestionnaireData = (pageId: string) => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -21,14 +21,10 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
       setLoading(true);
       setError(null);
       
-      const tableName = getSectionTable(pageId);
-      if (!tableName) {
-        setError(`Section "${pageId}" non trouvée`);
-        setLoading(false);
-        return;
-      }
-      
       try {
+        // Get the appropriate table name for this section
+        const tableName = getSectionTable(pageId);
+        
         // Fetch questions
         const formattedQuestions = await fetchQuestions(tableName);
         setQuestions(formattedQuestions);

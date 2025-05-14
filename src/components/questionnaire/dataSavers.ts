@@ -15,10 +15,6 @@ export async function saveResponses(
   
   const responseTable = getResponseTable(pageId);
   
-  if (!responseTable) {
-    throw new Error(`Table de réponses non reconnue dans le système`);
-  }
-  
   // Using a simplified approach to avoid the deep instantiation error
   const responsesToSave = [];
   
