@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { ArrowLeft, ArrowRight, Save } from "lucide-react";
 
+// Define specific types for each question format
 type BaseQuestion = {
   id: string;
   explanation?: string | null;
@@ -29,6 +30,7 @@ type LifeSupportQuestion = BaseQuestion & {
   option_unsure: string;
 };
 
+// Define our unified Question type
 type Question = {
   id: string;
   question: string;
@@ -39,6 +41,12 @@ type Question = {
     no: string;
     unsure: string;
   };
+};
+
+// Define specific response type
+type QuestionResponse = {
+  question_id: string;
+  response: string;
 };
 
 const getSectionTable = (sectionId: string) => {
@@ -87,7 +95,7 @@ const QuestionnaireSection = () => {
       
       try {
         // Fetching questions
-        let { data: questionsData, error: questionsError } = await supabase
+        const { data: questionsData, error: questionsError } = await supabase
           .from(tableName)
           .select('*')
           .order('display_order', { ascending: true });
@@ -101,7 +109,7 @@ const QuestionnaireSection = () => {
           // Handle life support questions which have a different structure
           const lifeSupportQuestions = questionsData as unknown as LifeSupportQuestion[];
           formattedQuestions = lifeSupportQuestions.map(q => ({
-            id: q.id.toString(),
+            id: String(q.id), // Ensure id is string
             question: q.question_text,
             explanation: q.explanation,
             display_order: q.question_order,
@@ -115,7 +123,7 @@ const QuestionnaireSection = () => {
           // Handle standard questions
           const standardQuestions = questionsData as unknown as StandardQuestion[];
           formattedQuestions = standardQuestions.map(q => ({
-            id: q.id.toString(),
+            id: String(q.id), // Ensure id is string
             question: q.question,
             explanation: q.explanation,
             display_order: q.display_order
@@ -136,7 +144,7 @@ const QuestionnaireSection = () => {
         // Convert responses array to object
         const responsesObj: Record<string, string> = {};
         if (responsesData) {
-          responsesData.forEach(r => {
+          responsesData.forEach((r: QuestionResponse) => {
             responsesObj[r.question_id] = r.response;
           });
         }
@@ -184,11 +192,13 @@ const QuestionnaireSection = () => {
       if (deleteError) throw deleteError;
       
       // Insert new responses
-      const { error: insertError } = await supabase
-        .from(responseTable)
-        .insert(responsesToSave);
-      
-      if (insertError) throw insertError;
+      if (responsesToSave.length > 0) {
+        const { error: insertError } = await supabase
+          .from(responseTable)
+          .insert(responsesToSave);
+        
+        if (insertError) throw insertError;
+      }
       
       toast({
         title: "Réponses enregistrées",
