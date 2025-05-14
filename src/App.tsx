@@ -13,6 +13,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./contexts/AuthContext";
 import Dashboard from "./pages/Dashboard";
 import PlaceholderPage from "./pages/PlaceholderPage";
+import Rediger from "./pages/Rediger";
 
 const queryClient = new QueryClient();
 
@@ -45,12 +46,12 @@ const AppContent = () => (
       } 
     />
     {/* Routes pour les sections des directives */}
-    <Route path="/:pageId" element={
+    <Route path="/rediger" element={
       <ProtectedRoute>
-        <PlaceholderPage />
+        <Rediger />
       </ProtectedRoute>
     } />
-    <Route path="/rediger" element={
+    <Route path="/:pageId" element={
       <ProtectedRoute>
         <PlaceholderPage />
       </ProtectedRoute>
@@ -61,6 +62,42 @@ const AppContent = () => (
       </ProtectedRoute>
     } />
     <Route path="/avis" element={
+      <ProtectedRoute>
+        <PlaceholderPage />
+      </ProtectedRoute>
+    } />
+    {/* Routes for directive sections */}
+    <Route path="/avis-general" element={
+      <ProtectedRoute>
+        <PlaceholderPage />
+      </ProtectedRoute>
+    } />
+    <Route path="/maintien-vie" element={
+      <ProtectedRoute>
+        <PlaceholderPage />
+      </ProtectedRoute>
+    } />
+    <Route path="/maladie-avancee" element={
+      <ProtectedRoute>
+        <PlaceholderPage />
+      </ProtectedRoute>
+    } />
+    <Route path="/gouts-peurs" element={
+      <ProtectedRoute>
+        <PlaceholderPage />
+      </ProtectedRoute>
+    } />
+    <Route path="/personne-confiance" element={
+      <ProtectedRoute>
+        <PlaceholderPage />
+      </ProtectedRoute>
+    } />
+    <Route path="/exemples-phrases" element={
+      <ProtectedRoute>
+        <PlaceholderPage />
+      </ProtectedRoute>
+    } />
+    <Route path="/synthese" element={
       <ProtectedRoute>
         <PlaceholderPage />
       </ProtectedRoute>
