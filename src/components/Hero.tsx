@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import Logo from "./Logo";
 
 const Hero = () => {
   const { isAuthenticated } = useAuth();
@@ -9,11 +10,12 @@ const Hero = () => {
   return (
     <section className="bg-gradient-to-b from-white to-directiveplus-50 section-padding">
       <div className="container mx-auto container-padding">
-        <div className="text-center max-w-4xl mx-auto mb-10">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4 leading-tight">
+        <div className="flex flex-col items-center max-w-4xl mx-auto mb-8">
+          <Logo className="mb-8 scale-150" />
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4 leading-tight text-center">
             Vos directives anticipées en toute simplicité
           </h1>
-          <p className="text-lg md:text-xl text-gray-600 mb-8">
+          <p className="text-lg md:text-xl text-gray-600 mb-8 text-center">
             Rédigez vos directives anticipées et désignez vos personnes de confiance 
             en quelques étapes simples et sécurisées.
           </p>
