@@ -49,6 +49,14 @@ type QuestionResponse = {
   response: string;
 };
 
+// Define the save response type
+type ResponseToSave = {
+  question_id: string;
+  response: string;
+  questionnaire_type: string;
+  question_text: string;
+};
+
 const getSectionTable = (sectionId: string) => {
   switch(sectionId) {
     case 'avis-general':
@@ -176,7 +184,7 @@ const QuestionnaireSection = () => {
     
     try {
       const responseTable = getResponseTable(pageId);
-      const responsesToSave = Object.entries(responses).map(([questionId, response]) => ({
+      const responsesToSave: ResponseToSave[] = Object.entries(responses).map(([questionId, response]) => ({
         question_id: questionId,
         response,
         questionnaire_type: pageId,
