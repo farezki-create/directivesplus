@@ -68,25 +68,25 @@ export async function fetchResponses(pageId: string, userId: string): Promise<Re
     throw new Error(`Table de réponses "${responseTable}" non reconnue dans le système`);
   }
   
-  // Remove the type casting that was causing the error
-  const { data: responsesData, error: responsesError } = await supabase
+  // Use a more direct approach without complex type instantiations
+  const { data, error } = await supabase
     .from(responseTable)
     .select('question_id, response')
     .eq('questionnaire_type', pageId)
     .eq('user_id', userId);
   
-  if (responsesError) {
-    console.error('Error fetching responses:', responsesError);
-    throw responsesError;
+  if (error) {
+    console.error('Error fetching responses:', error);
+    throw error;
   }
   
-  console.log('Responses data fetched:', responsesData);
+  console.log('Responses data fetched:', data);
   
   // Convert responses array to object using a simpler approach
   const responsesObj: Responses = {};
   
-  if (responsesData && Array.isArray(responsesData)) {
-    for (const item of responsesData) {
+  if (data && Array.isArray(data)) {
+    for (const item of data) {
       responsesObj[item.question_id] = item.response;
     }
   }
