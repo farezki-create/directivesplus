@@ -8,12 +8,11 @@ type LogoProps = {
 const Logo = ({ className = "" }: LogoProps) => {
   return (
     <Link to="/" className={`flex items-center ${className}`}>
-      <div className="relative">
-        <div className="w-12 h-12 rounded-full bg-gradient-to-r from-cyan-500 via-transparent to-purple-600 flex items-center justify-center">
-          <div className="text-3xl font-bold italic text-black">D</div>
-        </div>
-      </div>
-      <span className="ml-2 text-xl font-bold text-blue-600">DIRECTIVESPLUS</span>
+      <img 
+        src="/lovable-uploads/a1404492-f7a0-4402-94ef-36c06c2106e1.png" 
+        alt="DirectivesPlus Logo" 
+        className="h-12 w-auto"
+      />
     </Link>
   );
 };
