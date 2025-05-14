@@ -135,9 +135,11 @@ const QuestionnaireSection = () => {
         
         // Convert responses array to object
         const responsesObj: Record<string, string> = {};
-        (responsesData || []).forEach(r => {
-          responsesObj[r.question_id] = r.response;
-        });
+        if (responsesData) {
+          responsesData.forEach(r => {
+            responsesObj[r.question_id] = r.response;
+          });
+        }
         
         setResponses(responsesObj);
         
