@@ -1,9 +1,8 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Question, Responses } from "./types";
-import { ResponseTable, isValidResponseTable } from "./typeValidators";
-import { getResponseTable } from "./dataFetchers";
 import { toast } from "@/components/ui/use-toast";
+import { getResponseTable } from "./dataFetchers";
 
 // Save user responses to the database
 export async function saveResponses(
@@ -16,8 +15,8 @@ export async function saveResponses(
   
   const responseTable = getResponseTable(pageId);
   
-  if (!isValidResponseTable(responseTable)) {
-    throw new Error(`Table de réponses "${responseTable}" non reconnue dans le système`);
+  if (!responseTable) {
+    throw new Error(`Table de réponses non reconnue dans le système`);
   }
   
   // Using a simplified approach to avoid the deep instantiation error
@@ -39,7 +38,7 @@ export async function saveResponses(
   
   // Delete existing responses
   const { error: deleteError } = await supabase
-    .from(responseTable as ResponseTable)
+    .from(responseTable)
     .delete()
     .eq('questionnaire_type', pageId)
     .eq('user_id', userId);
@@ -52,7 +51,7 @@ export async function saveResponses(
   // Only insert if there are responses to save
   if (responsesToSave.length > 0) {
     const { error: insertError } = await supabase
-      .from(responseTable as ResponseTable)
+      .from(responseTable)
       .insert(responsesToSave);
     
     if (insertError) {

@@ -48,3 +48,12 @@ export type ResponseData = {
 };
 
 export type Responses = Record<string, string>;
+
+// Add UserResponse type that was missing
+export type UserResponse = {
+  id: string;
+  questionId: string;
+  response: string;
+  createdAt: string;
+  updatedAt: string;
+};

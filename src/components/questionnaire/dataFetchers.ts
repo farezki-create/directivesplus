@@ -1,15 +1,91 @@
+
 import { supabase } from "@/integrations/supabase/client";
-import { UserResponse } from "./types";
+import { Question, UserResponse } from "./types";
+
+// Helper function to get the right table name for questionnaire sections
+export const getSectionTable = (sectionId: string): string => {
+  switch(sectionId) {
+    case 'avis-general': 
+      return "questionnaire_general_fr";
+    case 'maintien-vie': 
+      return "questionnaire_life_support_fr";
+    case 'maladie-avancee': 
+      return "questionnaire_advanced_illness_fr";
+    case 'gouts-peurs': 
+      return "questionnaire_preferences_fr";
+    case 'personne-confiance': 
+      return "questionnaire_preferences_fr"; // Using the same table
+    case 'exemples-phrases': 
+      return "questionnaire_preferences_fr"; // Using the same table
+    default:
+      return "";
+  }
+};
+
+// Helper function to get the response table name
+export const getResponseTable = (sectionId: string): string => {
+  // Some sections use a different table for responses
+  if (['gouts-peurs', 'personne-confiance', 'exemples-phrases'].includes(sectionId)) {
+    return "questionnaire_preferences_responses";
+  }
+  return "questionnaire_responses";
+};
+
+// Fetch questions from the database
+export const fetchQuestions = async (tableName: string): Promise<Question[]> => {
+  try {
+    const { data, error } = await supabase
+      .from(tableName)
+      .select('*')
+      .order('display_order', { ascending: true });
+    
+    if (error) {
+      console.error("Error fetching questions:", error);
+      throw error;
+    }
+    
+    if (!data) {
+      return [];
+    }
+    
+    // Transform the questions based on the table type
+    if (tableName === "questionnaire_life_support_fr") {
+      return data.map(item => ({
+        id: String(item.id),
+        question: item.question_text || "",
+        explanation: item.explanation,
+        display_order: item.question_order,
+        options: {
+          yes: item.option_yes,
+          no: item.option_no,
+          unsure: item.option_unsure
+        }
+      }));
+    } else {
+      return data.map(item => ({
+        id: item.id,
+        question: item.question || "",
+        explanation: item.explanation,
+        display_order: item.display_order
+      }));
+    }
+  } catch (err) {
+    console.error("Failed to fetch questions:", err);
+    throw err;
+  }
+};
 
 // Fetch questionnaire responses for a specific user
-export const fetchResponses = async (questionnaireId: string, userId: string): Promise<Record<string, UserResponse>> => {
+export const fetchResponses = async (questionnaireId: string, userId: string): Promise<Record<string, string>> => {
   try {
-    // Use a simpler approach with explicit type annotations to avoid excessive type instantiation
+    const tableName = getResponseTable(questionnaireId);
+    
+    // Use a simpler approach to avoid excessive type instantiation
     const { data, error } = await supabase
-      .from("user_responses")
-      .select("*")
-      .eq("questionnaire_id", questionnaireId)
-      .eq("user_id", userId);
+      .from(tableName)
+      .select('question_id, response')
+      .eq('user_id', userId)
+      .eq('questionnaire_type', questionnaireId);
 
     if (error) {
       console.error("Error fetching responses:", error);
@@ -20,20 +96,14 @@ export const fetchResponses = async (questionnaireId: string, userId: string): P
       return {};
     }
 
-    // Create a simple response map with explicit typing
-    const responseMap: Record<string, UserResponse> = {};
+    // Create a simple response map
+    const responseMap: Record<string, string> = {};
     
-    // Use a normal for loop instead of complex type inference
+    // Use a normal for loop to simplify type handling
     for (let i = 0; i < data.length; i++) {
       const item = data[i];
       if (item && item.question_id) {
-        responseMap[item.question_id] = {
-          id: item.id,
-          questionId: item.question_id,
-          response: item.response,
-          createdAt: item.created_at,
-          updatedAt: item.updated_at,
-        };
+        responseMap[item.question_id] = item.response || '';
       }
     }
 
@@ -50,14 +120,16 @@ export const saveResponse = async (
   questionId: string,
   userId: string,
   response: string
-): Promise<UserResponse | null> => {
+): Promise<void> => {
   try {
+    const tableName = getResponseTable(questionnaireId);
+    
     const { data: existingResponse, error: existingError } = await supabase
-      .from("user_responses")
-      .select("*")
-      .eq("questionnaire_id", questionnaireId)
-      .eq("question_id", questionId)
-      .eq("user_id", userId)
+      .from(tableName)
+      .select('*')
+      .eq('questionnaire_type', questionnaireId)
+      .eq('question_id', questionId)
+      .eq('user_id', userId)
       .single();
 
     if (existingError && existingError.code !== 'PGRST116') {
@@ -67,33 +139,30 @@ export const saveResponse = async (
 
     if (existingResponse) {
       // Update existing response
-      const { data, error } = await supabase
-        .from("user_responses")
-        .update({ response, updated_at: new Date() })
-        .eq("id", existingResponse.id)
-        .select()
-        .single();
+      const { error } = await supabase
+        .from(tableName)
+        .update({ response })
+        .eq('id', existingResponse.id);
 
       if (error) {
         console.error("Error updating response:", error);
         throw error;
       }
-
-      return data as UserResponse;
     } else {
       // Create new response
-      const { data, error } = await supabase
-        .from("user_responses")
-        .insert([{ questionnaire_id: questionnaireId, question_id: questionId, user_id: userId, response }])
-        .select()
-        .single();
+      const { error } = await supabase
+        .from(tableName)
+        .insert([{ 
+          questionnaire_type: questionnaireId, 
+          question_id: questionId, 
+          user_id: userId, 
+          response 
+        }]);
 
       if (error) {
         console.error("Error creating response:", error);
         throw error;
       }
-
-      return data as UserResponse;
     }
   } catch (err) {
     console.error("Failed to save response:", err);
