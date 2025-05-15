@@ -28,7 +28,7 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
     if (pageId) {
       fetchResponses();
     }
-  }, [pageId]);
+  }, [pageId, fetchResponses]);
   
   const handleResponseChange = (questionId: string, value: string) => {
     setResponses(prev => ({

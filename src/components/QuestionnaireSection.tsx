@@ -26,13 +26,15 @@ const QuestionnaireSection = () => {
     handleSave
   } = useQuestionnaireData(pageId);
   
-  // Ajouter des logs pour le débogage
+  // Add debug logs
   useEffect(() => {
-    console.log("QuestionnaireSection - pageId:", pageId);
-    console.log("QuestionnaireSection - table:", getSectionTable(pageId));
-    console.log("QuestionnaireSection - questions:", questions);
-    console.log("QuestionnaireSection - loading:", loading);
-    console.log("QuestionnaireSection - error:", error);
+    if (pageId) {
+      console.log("QuestionnaireSection - pageId:", pageId);
+      console.log("QuestionnaireSection - table:", getSectionTable(pageId));
+      console.log("QuestionnaireSection - questions:", questions);
+      console.log("QuestionnaireSection - loading:", loading);
+      console.log("QuestionnaireSection - error:", error);
+    }
   }, [pageId, questions, loading, error]);
   
   if (loading) {
@@ -40,7 +42,7 @@ const QuestionnaireSection = () => {
   }
   
   if (error) {
-    // Afficher une notification toast pour les erreurs
+    // Display a toast notification for errors
     toast({
       title: "Erreur",
       description: error,
@@ -49,7 +51,7 @@ const QuestionnaireSection = () => {
     return <ErrorState error={error} />;
   }
   
-  // Vérifier si nous avons des questions après le chargement
+  // Check if we have questions after loading
   if (!questions || questions.length === 0) {
     return (
       <div className="space-y-8 max-w-3xl mx-auto">
