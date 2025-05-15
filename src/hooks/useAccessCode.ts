@@ -25,41 +25,70 @@ export const useAccessCode = (user: User | null, type: "directive" | "medical") 
     if (!user) return;
     
     try {
-      const tableField = type === "directive" ? "is_directive_access" : "is_medical_access";
-      
-      // Check if user already has an access code of the requested type
-      const { data, error } = await supabase
-        .from('document_access_codes')
-        .select('access_code')
-        .eq('user_id', user.id)
-        .eq(tableField, true);
+      if (type === "medical") {
+        // For medical access, check the user's profile
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('medical_access_code')
+          .eq('id', user.id);
+          
+        if (profileError) {
+          throw profileError;
+        }
         
-      if (error) {
-        throw error;
+        // If user has a medical access code, use it
+        if (profileData && profileData.length > 0 && profileData[0].medical_access_code) {
+          setAccessCode(profileData[0].medical_access_code);
+          return;
+        }
+        
+        // Generate a new access code
+        const newAccessCode = generateRandomCode(8);
+        
+        // Update the profile with the new access code
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ medical_access_code: newAccessCode })
+          .eq('id', user.id);
+          
+        if (updateError) throw updateError;
+        
+        setAccessCode(newAccessCode);
+      } else {
+        // For directive access, use document_access_codes table
+        // Check if there's an existing code for this user
+        const { data, error } = await supabase
+          .from('document_access_codes')
+          .select('access_code')
+          .eq('user_id', user.id)
+          .is('document_id', null); // Only get general access codes, not document-specific ones
+          
+        if (error) {
+          throw error;
+        }
+          
+        // If we have an access code, use it
+        if (data && data.length > 0 && data[0].access_code) {
+          setAccessCode(data[0].access_code);
+          return;
+        }
+        
+        // Generate a new access code
+        const newAccessCode = generateRandomCode(8);
+        
+        // Create a record in document_access_codes
+        const { error: insertError } = await supabase
+          .from('document_access_codes')
+          .insert({
+            user_id: user.id,
+            access_code: newAccessCode,
+            is_full_access: true,
+          });
+          
+        if (insertError) throw insertError;
+        
+        setAccessCode(newAccessCode);
       }
-        
-      // If we have a matching access code, use it
-      if (data && data.length > 0 && data[0].access_code) {
-        setAccessCode(data[0].access_code);
-        return;
-      }
-      
-      // Generate a new access code if none exists
-      const newAccessCode = generateRandomCode(8);
-      
-      // Create a record in document_access_codes
-      const { error: insertError } = await supabase
-        .from('document_access_codes')
-        .insert({
-          user_id: user.id,
-          access_code: newAccessCode,
-          is_directive_access: type === "directive",
-          is_medical_access: type === "medical",
-        });
-        
-      if (insertError) throw insertError;
-      
-      setAccessCode(newAccessCode);
     } catch (error) {
       console.error(`Error retrieving access code for ${type}:`, error);
     }
