@@ -1,36 +1,51 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { 
+  FormControl, 
+  FormField as HookFormField, 
+  FormItem, 
+  FormLabel, 
+  FormMessage 
+} from "@/components/ui/form";
+import { Control } from "react-hook-form";
 
 type FormFieldProps = {
   id: string;
   label: string;
   type?: string;
   placeholder?: string;
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  control: Control<any>;
+  disabled?: boolean;
 };
 
 const FormField = ({ 
   id, 
   label, 
   type = "text", 
-  placeholder = "", 
-  value, 
-  onChange 
+  placeholder = "",
+  control,
+  disabled = false
 }: FormFieldProps) => {
   return (
-    <div className="space-y-2">
-      <Label htmlFor={id}>{label}</Label>
-      <Input 
-        id={id} 
-        name={id}
-        type={type}
-        placeholder={placeholder}
-        value={value}
-        onChange={onChange}
-      />
-    </div>
+    <HookFormField
+      control={control}
+      name={id}
+      render={({ field }) => (
+        <FormItem className="space-y-2">
+          <FormLabel>{label}</FormLabel>
+          <FormControl>
+            <Input 
+              type={type}
+              placeholder={placeholder}
+              {...field}
+              disabled={disabled}
+            />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
   );
 };
 

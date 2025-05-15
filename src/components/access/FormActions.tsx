@@ -15,6 +15,7 @@ const FormActions = ({ loading, onAccessDirectives, onAccessMedicalData }: FormA
         className="w-full flex items-center gap-2" 
         onClick={onAccessDirectives}
         disabled={loading}
+        type="button"
       >
         <FileText size={18} />
         Accéder aux directives anticipées
@@ -24,6 +25,7 @@ const FormActions = ({ loading, onAccessDirectives, onAccessMedicalData }: FormA
         className="w-full flex items-center gap-2 bg-blue-600 hover:bg-blue-700" 
         onClick={onAccessMedicalData}
         disabled={loading}
+        type="button"
       >
         <FileSearch size={18} />
         Accéder aux données médicales

@@ -3,12 +3,12 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import FormField from "./FormField";
 import FormActions from "./FormActions";
 import { useAccessDocumentForm } from "@/hooks/useAccessDocumentForm";
+import { Form } from "@/components/ui/form";
 
 const AccessDocumentForm = () => {
   const { 
-    formData, 
+    form, 
     loading, 
-    handleChange, 
     accessDirectives, 
     accessMedicalData 
   } = useAccessDocumentForm();
@@ -26,46 +26,52 @@ const AccessDocumentForm = () => {
             Accédez aux directives anticipées ou aux données médicales d'un patient à l'aide du code d'accès unique
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <FormField 
-            id="lastName"
-            label="Nom"
-            placeholder="Nom de famille"
-            value={formData.lastName}
-            onChange={handleChange}
-          />
-          
-          <FormField 
-            id="firstName"
-            label="Prénom"
-            placeholder="Prénom"
-            value={formData.firstName}
-            onChange={handleChange}
-          />
-          
-          <FormField 
-            id="birthDate"
-            label="Date de naissance"
-            type="date"
-            value={formData.birthDate}
-            onChange={handleChange}
-          />
-          
-          <FormField 
-            id="accessCode"
-            label="Code d'accès"
-            placeholder="Code d'accès unique"
-            value={formData.accessCode}
-            onChange={handleChange}
-          />
-        </CardContent>
-        <CardFooter>
-          <FormActions 
-            loading={loading}
-            onAccessDirectives={accessDirectives}
-            onAccessMedicalData={accessMedicalData}
-          />
-        </CardFooter>
+
+        <Form {...form}>
+          <form>
+            <CardContent className="space-y-4">
+              <FormField 
+                id="lastName"
+                label="Nom"
+                placeholder="Nom de famille"
+                control={form.control}
+                disabled={loading}
+              />
+              
+              <FormField 
+                id="firstName"
+                label="Prénom"
+                placeholder="Prénom"
+                control={form.control}
+                disabled={loading}
+              />
+              
+              <FormField 
+                id="birthDate"
+                label="Date de naissance"
+                type="date"
+                control={form.control}
+                disabled={loading}
+              />
+              
+              <FormField 
+                id="accessCode"
+                label="Code d'accès"
+                placeholder="Code d'accès unique"
+                control={form.control}
+                disabled={loading}
+              />
+            </CardContent>
+
+            <CardFooter>
+              <FormActions 
+                loading={loading}
+                onAccessDirectives={accessDirectives}
+                onAccessMedicalData={accessMedicalData}
+              />
+            </CardFooter>
+          </form>
+        </Form>
       </Card>
     </div>
   );

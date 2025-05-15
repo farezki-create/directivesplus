@@ -3,64 +3,40 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 
-export type FormDataType = {
-  firstName: string;
-  lastName: string;
-  birthDate: string;
-  accessCode: string;
-};
+// Define zod schema for form validation
+const formSchema = z.object({
+  firstName: z.string().min(1, "Le prénom est requis"),
+  lastName: z.string().min(1, "Le nom est requis"),
+  birthDate: z.string().optional(),
+  accessCode: z.string().min(1, "Le code d'accès est requis")
+});
+
+export type FormData = z.infer<typeof formSchema>;
 
 export const useAccessDocumentForm = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState<FormDataType>({
-    firstName: "",
-    lastName: "",
-    birthDate: "",
-    accessCode: ""
+  
+  // Initialize react-hook-form with zod resolver
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      birthDate: "",
+      accessCode: ""
+    }
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
-
-  const validateForm = () => {
-    if (!formData.firstName.trim()) {
-      toast({
-        title: "Erreur de validation",
-        description: "Le prénom est requis",
-        variant: "destructive"
-      });
-      return false;
-    }
-    
-    if (!formData.lastName.trim()) {
-      toast({
-        title: "Erreur de validation",
-        description: "Le nom est requis",
-        variant: "destructive"
-      });
-      return false;
-    }
-    
-    if (!formData.accessCode.trim()) {
-      toast({
-        title: "Erreur de validation",
-        description: "Le code d'accès est requis",
-        variant: "destructive"
-      });
-      return false;
-    }
-    
-    return true;
-  };
-
   const accessDirectives = async () => {
-    if (!validateForm()) return;
+    const isValid = await form.trigger();
+    if (!isValid) return;
+    
+    const formData = form.getValues();
     
     setLoading(true);
     try {
@@ -139,7 +115,10 @@ export const useAccessDocumentForm = () => {
   };
 
   const accessMedicalData = async () => {
-    if (!validateForm()) return;
+    const isValid = await form.trigger();
+    if (!isValid) return;
+    
+    const formData = form.getValues();
     
     setLoading(true);
     try {
@@ -199,9 +178,8 @@ export const useAccessDocumentForm = () => {
   };
 
   return {
-    formData,
+    form,
     loading,
-    handleChange,
     accessDirectives,
     accessMedicalData
   };
