@@ -1,6 +1,8 @@
 
 // Utility functions for questionnaire
 export const getSectionTable = (sectionId: string): string => {
+  console.log("Getting section table for:", sectionId);
+  
   switch(sectionId) {
     case 'avis-general':
       return 'questionnaire_general_fr';
@@ -11,6 +13,7 @@ export const getSectionTable = (sectionId: string): string => {
     case 'gouts-peurs':
       return 'questionnaire_preferences_fr';
     default:
+      console.warn(`No table mapping found for section: ${sectionId}`);
       return '';
   }
 };

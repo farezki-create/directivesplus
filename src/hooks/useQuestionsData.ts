@@ -35,10 +35,10 @@ export const useQuestionsData = (questionnaireType: string | undefined) => {
         return;
       }
       
-      console.log(`Fetching questions from table: ${tableName}`);
+      console.log(`Fetching questions from table: ${tableName} for type: ${questionnaireType}`);
       
       try {
-        // Fetching questions
+        // Fetching questions with detailed error logging
         const { data: questionsData, error: questionsError } = await supabase
           .from(tableName as any)
           .select('*')
@@ -50,6 +50,13 @@ export const useQuestionsData = (questionnaireType: string | undefined) => {
         }
         
         console.log(`Questions data received (${questionsData?.length || 0} records):`, questionsData);
+        
+        if (!questionsData || questionsData.length === 0) {
+          console.warn(`No questions found in table: ${tableName}`);
+          setQuestions([]);
+          setLoading(false);
+          return;
+        }
         
         // Format questions based on table structure
         let formattedQuestions: Question[] = [];
