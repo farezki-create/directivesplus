@@ -4,7 +4,7 @@ import { Question } from "./types";
 import { toast } from "@/hooks/use-toast";
 import { getResponseTable } from "./dataFetchers";
 
-// Define a simple response object type to avoid complex type inference
+// Define a simple response object type with explicit primitive types
 type SimpleResponseObject = {
   question_id: string;
   response: string;
@@ -24,16 +24,18 @@ export async function saveResponses(
   
   const responseTable = getResponseTable(pageId);
   
-  // Create a basic array with explicit typing
+  // Create array with explicit typing
   const responsesToSave: SimpleResponseObject[] = [];
   
-  // Process responses using a traditional for loop with Object.keys
+  // Get all question IDs as an array
   const questionIds = Object.keys(responses);
+  
+  // Process each question ID using a standard for loop
   for (let i = 0; i < questionIds.length; i++) {
     const questionId = questionIds[i];
     const responseValue = responses[questionId];
     
-    // Find question text using simple loop
+    // Find the matching question to get its text
     let questionText = '';
     for (let j = 0; j < questions.length; j++) {
       if (questions[j].id === questionId) {
@@ -42,14 +44,16 @@ export async function saveResponses(
       }
     }
     
-    // Create a simple object and add it to the array
-    responsesToSave.push({
+    // Create a response object with explicit types for each field
+    const responseObj: SimpleResponseObject = {
       question_id: questionId,
       response: responseValue,
       questionnaire_type: pageId,
       user_id: userId,
       question_text: questionText
-    });
+    };
+    
+    responsesToSave.push(responseObj);
   }
   
   console.log('Responses to save:', responsesToSave);
