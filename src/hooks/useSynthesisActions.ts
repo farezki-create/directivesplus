@@ -9,16 +9,24 @@ import { useSignature } from "@/hooks/useSignature";
 export const useSynthesisActions = (userId?: string) => {
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
-  const [generating, setGenerating] = useState(false);
   const { signature, setSignature, saveSignature } = useSignature(userId);
 
-  const handleSaveSynthesis = async (freeText: string) => {
+  const handleSaveAndGeneratePDF = async (
+    freeText: string,
+    data: {
+      profileData: any;
+      responses: Record<string, any>;
+      examplePhrases: string[];
+      customPhrases: string[];
+      trustedPersons: any[];
+    }
+  ) => {
     if (!userId) return;
     
     try {
       setSaving(true);
       
-      // 1. Enregistrer la signature d'abord
+      // 1. Vérifier la signature
       if (!signature) {
         toast({
           title: "Attention",
@@ -29,10 +37,11 @@ export const useSynthesisActions = (userId?: string) => {
         return;
       }
       
+      // 2. Enregistrer la signature
       await saveSignature();
       
-      // 2. Enregistrer ou mettre à jour l'enregistrement de synthèse
-      const { data, error } = await supabase
+      // 3. Enregistrer la synthèse
+      const { data: synthData, error } = await supabase
         .from('questionnaire_synthesis')
         .upsert({
           user_id: userId,
@@ -49,44 +58,15 @@ export const useSynthesisActions = (userId?: string) => {
         description: "Votre synthèse a été enregistrée avec succès"
       });
       
-      console.log("Synthèse enregistrée:", data);
-      
-    } catch (error: any) {
-      console.error("Erreur lors de l'enregistrement de la synthèse:", error);
+      // 4. Générer le PDF
       toast({
-        title: "Erreur",
-        description: "Impossible d'enregistrer la synthèse",
-        variant: "destructive"
+        title: "Génération en cours",
+        description: "Votre document PDF est en cours de création..."
       });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleGeneratePDF = async (data: {
-    profileData: any;
-    responses: Record<string, any>;
-    examplePhrases: string[];
-    customPhrases: string[];
-    trustedPersons: any[];
-    freeText: string;
-  }) => {
-    try {
-      setGenerating(true);
       
-      if (!signature) {
-        toast({
-          title: "Signature requise",
-          description: "Veuillez signer le document avant de générer le PDF",
-          variant: "destructive"
-        });
-        setGenerating(false);
-        return;
-      }
-      
-      // Appeler la fonction de génération de PDF
       const pdfRecord = await generatePDF({
         ...data,
+        freeText,
         signature,
         userId
       });
@@ -104,23 +84,21 @@ export const useSynthesisActions = (userId?: string) => {
       }
       
     } catch (error: any) {
-      console.error("Erreur lors de la génération du PDF:", error);
+      console.error("Erreur lors de l'enregistrement ou la génération:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de générer le PDF",
+        description: "Impossible d'enregistrer la synthèse ou de générer le PDF",
         variant: "destructive"
       });
     } finally {
-      setGenerating(false);
+      setSaving(false);
     }
   };
 
   return {
     saving,
-    generating,
     signature,
     setSignature,
-    handleSaveSynthesis,
-    handleGeneratePDF
+    handleSaveAndGeneratePDF
   };
 };

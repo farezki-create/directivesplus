@@ -1,19 +1,15 @@
 
 import { Button } from "@/components/ui/button";
-import { Save, Download } from "lucide-react";
+import { Save } from "lucide-react";
 
 interface ActionButtonsProps {
   onSave: () => Promise<void>;
-  onGenerate: () => Promise<void>;
   saving: boolean;
-  generating: boolean;
 }
 
 const ActionButtons = ({ 
   onSave, 
-  onGenerate, 
-  saving, 
-  generating 
+  saving 
 }: ActionButtonsProps) => {
   return (
     <div className="flex flex-wrap justify-center gap-4 pt-4">
@@ -28,21 +24,7 @@ const ActionButtons = ({
         ) : (
           <Save size={16} />
         )}
-        Enregistrer
-      </Button>
-      
-      <Button
-        variant="outline"
-        onClick={onGenerate}
-        className="flex items-center gap-2"
-        disabled={generating}
-      >
-        {generating ? (
-          <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-directiveplus-600"></div>
-        ) : (
-          <Download size={16} />
-        )}
-        Générer PDF
+        Enregistrer et générer PDF
       </Button>
     </div>
   );

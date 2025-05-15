@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import AppNavigation from "@/components/AppNavigation";
-import { Button } from "@/components/ui/button";
 import SynthesisContent from "@/components/synthesis/SynthesisContent";
 import { toast } from "@/hooks/use-toast";
 
@@ -38,7 +37,7 @@ const Synthesis = () => {
         
         setProfileData(profile);
       } catch (error: any) {
-        console.error("Error fetching profile:", error.message);
+        console.error("Erreur lors du chargement du profil:", error.message);
         toast({
           title: "Erreur",
           description: "Impossible de charger les données de votre profil",

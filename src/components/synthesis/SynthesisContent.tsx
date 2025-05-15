@@ -24,7 +24,7 @@ const SynthesisContent = ({ profileData, userId }: SynthesisContentProps) => {
   const navigate = useNavigate();
   const signatureRef = useRef<HTMLDivElement>(null);
   
-  // Utilisation de nos nouveaux hooks
+  // Utilisation de nos hooks
   const { 
     loading, 
     responses, 
@@ -37,11 +37,9 @@ const SynthesisContent = ({ profileData, userId }: SynthesisContentProps) => {
   
   const {
     saving,
-    generating,
     signature,
     setSignature,
-    handleSaveSynthesis,
-    handleGeneratePDF
+    handleSaveAndGeneratePDF
   } = useSynthesisActions(userId);
 
   if (loading) {
@@ -53,18 +51,16 @@ const SynthesisContent = ({ profileData, userId }: SynthesisContentProps) => {
   }
 
   const onSave = async () => {
-    await handleSaveSynthesis(freeText);
-  };
-
-  const onGenerate = async () => {
-    await handleGeneratePDF({
-      profileData,
-      responses,
-      examplePhrases,
-      customPhrases,
-      trustedPersons,
-      freeText
-    });
+    await handleSaveAndGeneratePDF(
+      freeText, 
+      {
+        profileData,
+        responses,
+        examplePhrases,
+        customPhrases,
+        trustedPersons
+      }
+    );
   };
 
   return (
@@ -132,9 +128,7 @@ const SynthesisContent = ({ profileData, userId }: SynthesisContentProps) => {
       
       <ActionButtons 
         onSave={onSave}
-        onGenerate={onGenerate}
         saving={saving}
-        generating={generating}
       />
     </div>
   );
