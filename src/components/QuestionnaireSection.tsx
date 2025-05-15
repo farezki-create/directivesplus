@@ -7,6 +7,7 @@ import ErrorState from "./questionnaire/ErrorState";
 import QuestionsContainer from "./questionnaire/QuestionsContainer";
 import NavigationButtons from "./questionnaire/NavigationButtons";
 import { toast } from "@/hooks/use-toast";
+import { useEffect } from "react";
 
 const QuestionnaireSection = () => {
   const location = useLocation();
@@ -23,11 +24,13 @@ const QuestionnaireSection = () => {
   } = useQuestionnaireData(pageId);
   
   // Ajouter des logs pour le débogage
-  console.log("QuestionnaireSection - pageId:", pageId);
-  console.log("QuestionnaireSection - table:", getSectionTable(pageId));
-  console.log("QuestionnaireSection - questions:", questions);
-  console.log("QuestionnaireSection - loading:", loading);
-  console.log("QuestionnaireSection - error:", error);
+  useEffect(() => {
+    console.log("QuestionnaireSection - pageId:", pageId);
+    console.log("QuestionnaireSection - table:", getSectionTable(pageId));
+    console.log("QuestionnaireSection - questions:", questions);
+    console.log("QuestionnaireSection - loading:", loading);
+    console.log("QuestionnaireSection - error:", error);
+  }, [pageId, questions, loading, error]);
   
   if (loading) {
     return <LoadingState loading={loading} />;

@@ -28,10 +28,19 @@ export const useQuestionnaireResponses = (questionnaireType: string | undefined)
     try {
       const responseTable = getResponseTable(questionnaireType);
       
+      // Récupérer l'utilisateur authentifié
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        console.log("Aucun utilisateur authentifié trouvé");
+        return;
+      }
+      
       const { data, error: responsesError } = await supabase
         .from(responseTable as any)
         .select('question_id, response')
-        .eq('questionnaire_type', questionnaireType);
+        .eq('questionnaire_type', questionnaireType)
+        .eq('user_id', user.id);
       
       if (responsesError) throw responsesError;
       
@@ -77,15 +86,31 @@ export const useQuestionnaireResponses = (questionnaireType: string | undefined)
     try {
       const responseTable = getResponseTable(questionnaireType);
       
-      // Delete existing responses for this questionnaire type
+      // Récupérer l'utilisateur authentifié
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        console.error("Aucun utilisateur authentifié pour enregistrer les réponses");
+        toast({
+          title: "Erreur",
+          description: "Vous devez être connecté pour enregistrer vos réponses.",
+          variant: "destructive"
+        });
+        return false;
+      }
+      
+      console.log("Utilisateur authentifié:", user.id);
+      
+      // Delete existing responses for this questionnaire type and user
       const { error: deleteError } = await supabase
         .from(responseTable as any)
         .delete()
-        .eq('questionnaire_type', questionnaireType);
+        .eq('questionnaire_type', questionnaireType)
+        .eq('user_id', user.id);
       
       if (deleteError) throw deleteError;
       
-      // Prepare responses to save - use 'any' to avoid TypeScript errors
+      // Prepare responses to save
       const responsesToSave: any[] = [];
       
       // Create properly typed response objects
@@ -98,10 +123,14 @@ export const useQuestionnaireResponses = (questionnaireType: string | undefined)
             question_id: questionId,
             response,
             questionnaire_type: questionnaireType,
-            question_text: questionText
+            question_text: questionText,
+            user_id: user.id
           });
         }
       });
+      
+      // Debug info
+      console.log("Réponses à enregistrer:", responsesToSave);
       
       // Insert new responses if there are any to save
       if (responsesToSave.length > 0) {
