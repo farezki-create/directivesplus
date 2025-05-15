@@ -8,9 +8,10 @@ import { supabase } from "@/integrations/supabase/client";
 interface DocumentUploaderProps {
   userId: string;
   onUploadComplete: (url: string, fileName: string) => void;
+  documentType?: "directive" | "medical";
 }
 
-const DocumentUploader = ({ userId, onUploadComplete }: DocumentUploaderProps) => {
+const DocumentUploader = ({ userId, onUploadComplete, documentType = "directive" }: DocumentUploaderProps) => {
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -62,16 +63,20 @@ const DocumentUploader = ({ userId, onUploadComplete }: DocumentUploaderProps) =
       reader.readAsDataURL(file);
       reader.onloadend = async () => {
         const base64data = reader.result as string;
+        const table = documentType === 'medical' ? 'medical_documents' : 'pdf_documents';
         
-        // Créer un nouvel enregistrement dans pdf_documents
+        // Créer un nouvel enregistrement dans la table appropriée
         const { data, error } = await supabase
-          .from('pdf_documents')
+          .from(table)
           .insert({
             user_id: userId,
             file_name: file.name,
             file_path: base64data, // Stocker directement en base64 data URI
             content_type: file.type,
-            description: 'Document importé le ' + new Date().toLocaleDateString('fr-FR'),
+            file_size: file.size,
+            description: documentType === 'medical' 
+              ? 'Document médical importé le ' + new Date().toLocaleDateString('fr-FR')
+              : 'Document importé le ' + new Date().toLocaleDateString('fr-FR'),
             created_at: new Date().toISOString()
           })
           .select();
@@ -105,7 +110,9 @@ const DocumentUploader = ({ userId, onUploadComplete }: DocumentUploaderProps) =
 
   return (
     <div className="p-4 border rounded-lg mb-6 bg-white">
-      <h3 className="font-medium text-lg mb-4">Importer un document</h3>
+      <h3 className="font-medium text-lg mb-4">
+        Importer un {documentType === 'medical' ? 'document médical' : 'document'}
+      </h3>
       
       <div className="flex flex-col space-y-4">
         <input

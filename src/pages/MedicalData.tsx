@@ -5,6 +5,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import AppNavigation from "@/components/AppNavigation";
 import { toast } from "@/hooks/use-toast";
+import DocumentCard from "@/components/documents/DocumentCard";
+import EmptyDocumentsState from "@/components/documents/EmptyDocumentsState";
+import DocumentUploader from "@/components/documents/DocumentUploader";
+import AccessCodeDisplay from "@/components/documents/AccessCodeDisplay";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,18 +26,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import DocumentCard from "@/components/documents/DocumentCard";
-import EmptyDocumentsState from "@/components/documents/EmptyDocumentsState";
-import AudioRecorder from "@/components/documents/AudioRecorder";
-import DocumentUploader from "@/components/documents/DocumentUploader";
-import AccessCodeDisplay from "@/components/documents/AccessCodeDisplay";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
@@ -40,7 +39,7 @@ interface Document {
   user_id: string;
 }
 
-const DirectivesDocs = () => {
+const MedicalData = () => {
   const { user, isAuthenticated, isLoading, profile } = useAuth();
   const navigate = useNavigate();
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -52,43 +51,35 @@ const DirectivesDocs = () => {
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      navigate("/auth", { state: { from: "/mes-directives" } });
+      navigate("/auth", { state: { from: "/donnees-medicales" } });
     } else if (isAuthenticated && user) {
       fetchDocuments();
-      generateAccessCode();
+      fetchAccessCode();
     }
   }, [isAuthenticated, isLoading, user]);
 
-  const generateAccessCode = async () => {
+  const fetchAccessCode = async () => {
     if (!user) return;
     
     try {
-      // Vérifier si l'utilisateur a déjà un code d'accès pour les directives
-      const { data, error } = await supabase
-        .from('document_access_codes')
-        .select('access_code')
-        .eq('user_id', user.id)
-        .is('document_id', null)
-        .single();
-        
-      if (data?.access_code) {
-        setAccessCode(data.access_code);
+      // Check if user profile has a medical access code
+      if (profile?.medical_access_code) {
+        setAccessCode(profile.medical_access_code);
         return;
       }
       
-      // Générer un nouveau code d'accès si aucun n'existe
-      const newAccessCode = generateRandomCode(8);
+      // Generate a new access code if none exists
+      const accessCode = generateRandomCode(8);
       
-      // Créer un enregistrement dans document_access_codes
-      await supabase
-        .from('document_access_codes')
-        .insert({
-          user_id: user.id,
-          access_code: newAccessCode,
-          is_full_access: true,
-        });
-        
-      setAccessCode(newAccessCode);
+      // Update the profile with the new access code
+      const { error } = await supabase
+        .from('profiles')
+        .update({ medical_access_code: accessCode })
+        .eq('id', user.id);
+      
+      if (error) throw error;
+      
+      setAccessCode(accessCode);
     } catch (error) {
       console.error("Erreur lors de la récupération du code d'accès:", error);
     }
@@ -109,7 +100,7 @@ const DirectivesDocs = () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('pdf_documents')
+        .from('medical_documents')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
@@ -121,7 +112,7 @@ const DirectivesDocs = () => {
       console.error("Erreur lors de la récupération des documents:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de charger vos documents",
+        description: "Impossible de charger vos documents médicaux",
         variant: "destructive"
       });
     } finally {
@@ -215,7 +206,7 @@ const DirectivesDocs = () => {
     
     try {
       const { error } = await supabase
-        .from('pdf_documents')
+        .from('medical_documents')
         .delete()
         .eq('id', documentToDelete);
       
@@ -240,7 +231,7 @@ const DirectivesDocs = () => {
     }
   };
 
-  const handleUploadComplete = (url: string, fileName: string) => {
+  const handleUploadComplete = () => {
     fetchDocuments();
   };
 
@@ -263,7 +254,7 @@ const DirectivesDocs = () => {
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bold">Mes Directives</h1>
+            <h1 className="text-3xl font-bold">Données Médicales</h1>
             <Button
               onClick={() => setShowAddOptions(!showAddOptions)}
               className="flex items-center gap-2"
@@ -279,25 +270,22 @@ const DirectivesDocs = () => {
               firstName={profile.first_name || ""}
               lastName={profile.last_name || ""}
               birthDate={profile.birth_date || ""}
-              type="directive"
+              type="medical"
             />
           )}
 
           {showAddOptions && user && (
             <div className="mb-8">
-              <AudioRecorder 
-                userId={user.id}
-                onRecordingComplete={handleUploadComplete}
-              />
               <DocumentUploader 
                 userId={user.id}
                 onUploadComplete={handleUploadComplete}
+                documentType="medical"
               />
             </div>
           )}
           
           {documents.length === 0 ? (
-            <EmptyDocumentsState />
+            <EmptyDocumentsState message="Vous n'avez pas encore ajouté de données médicales" />
           ) : (
             <div className="grid gap-6">
               {documents.map((doc) => (
@@ -356,4 +344,4 @@ const DirectivesDocs = () => {
   );
 };
 
-export default DirectivesDocs;
+export default MedicalData;
