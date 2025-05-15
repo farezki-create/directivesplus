@@ -9,7 +9,7 @@ const sectionTableMap: Record<string, QuestionnaireTableName> = {
   "maladie-avancee": "questionnaire_advanced_illness_fr",
   "gouts-peurs": "questionnaire_preferences_fr",
   "personne-confiance": "trusted_persons", 
-  "exemples-phrases": "questionnaire_examples_fr",
+  "exemples-phrases": "questionnaire_examples_fr", // Make sure this matches a valid table in types.ts
   "synthese": "questionnaire_synthesis"
 };
 
@@ -28,7 +28,7 @@ const responseTableMap: Record<string, ResponseTableName> = {
 export function getSectionTable(sectionId: string): QuestionnaireTableName {
   if (!sectionTableMap[sectionId]) {
     console.warn(`No table mapping found for section: ${sectionId}, defaulting to general`);
-    return sectionTableMap["avis-general"];
+    return "questionnaire_general_fr";
   }
   return sectionTableMap[sectionId];
 }
@@ -37,7 +37,7 @@ export function getSectionTable(sectionId: string): QuestionnaireTableName {
 export function getResponseTable(sectionId: string): ResponseTableName {
   if (!responseTableMap[sectionId]) {
     console.warn(`No response table mapping found for section: ${sectionId}, defaulting to general`);
-    return responseTableMap["avis-general"];
+    return "questionnaire_responses";
   }
   return responseTableMap[sectionId];
 }
@@ -48,8 +48,9 @@ export async function fetchQuestions(sectionId: string): Promise<Question[]> {
     const tableName = getSectionTable(sectionId);
     console.log(`Fetching questions from table: ${tableName}`);
 
+    // Use type assertion to tell TypeScript this is a valid table name
     const { data, error } = await supabase
-      .from(tableName)
+      .from(tableName as any)
       .select("*")
       .order("display_order", { ascending: true });
 
@@ -128,7 +129,7 @@ export async function fetchQuestions(sectionId: string): Promise<Question[]> {
   }
 }
 
-// Fetch saved responses for a user
+// Fetch saved responses for a user - fixing the infinite recursion issue
 export async function fetchResponses(
   sectionId: string,
   userId: string | undefined
@@ -143,8 +144,9 @@ export async function fetchResponses(
     
     console.log(`Fetching responses for user ${userId} and section ${sectionId}`);
     
+    // Use type assertion here as well to avoid type issues with Supabase
     const { data, error } = await supabase
-      .from(responseTable)
+      .from(responseTable as any)
       .select("question_id, response")
       .eq("user_id", userId)
       .eq("questionnaire_type", sectionId);
@@ -153,11 +155,12 @@ export async function fetchResponses(
       throw error;
     }
 
-    // Using a simple object to store responses
+    // Create a simple object to store responses to avoid recursion issues
     const responses: Record<string, string> = {};
     
     if (data && data.length > 0) {
-      for (const item of data) {
+      for (let i = 0; i < data.length; i++) {
+        const item = data[i];
         responses[item.question_id] = item.response;
       }
     }
