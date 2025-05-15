@@ -1,10 +1,28 @@
 
+import { useEffect, useState } from "react";
+
 interface LoadingStateProps {
   loading: boolean;
 }
 
 const LoadingState = ({ loading }: LoadingStateProps) => {
-  if (!loading) return null;
+  const [showSpinner, setShowSpinner] = useState(false);
+  
+  // Only show the loading spinner after a short delay
+  // This prevents flickering for fast loads
+  useEffect(() => {
+    if (loading) {
+      const timer = setTimeout(() => {
+        setShowSpinner(true);
+      }, 300);
+      
+      return () => clearTimeout(timer);
+    } else {
+      setShowSpinner(false);
+    }
+  }, [loading]);
+  
+  if (!loading || !showSpinner) return null;
   
   return (
     <div className="flex justify-center my-12">

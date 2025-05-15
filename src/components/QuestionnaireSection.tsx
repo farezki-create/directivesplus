@@ -7,7 +7,7 @@ import ErrorState from "./questionnaire/ErrorState";
 import QuestionsContainer from "./questionnaire/QuestionsContainer";
 import NavigationButtons from "./questionnaire/NavigationButtons";
 import { toast } from "@/hooks/use-toast";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 
@@ -15,6 +15,8 @@ const QuestionnaireSection = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const pageId = location.pathname.split('/').pop() || '';
+  // Add a flag to prevent repeated renders during initial load
+  const [hasInitialized, setHasInitialized] = useState(false);
   
   const {
     questions,
@@ -28,17 +30,22 @@ const QuestionnaireSection = () => {
   
   // Add debug logs
   useEffect(() => {
-    if (pageId) {
+    if (pageId && !hasInitialized) {
       console.log("QuestionnaireSection - pageId:", pageId);
       console.log("QuestionnaireSection - table:", getSectionTable(pageId));
       console.log("QuestionnaireSection - questions:", questions);
       console.log("QuestionnaireSection - loading:", loading);
       console.log("QuestionnaireSection - error:", error);
+      
+      if (!loading) {
+        setHasInitialized(true);
+      }
     }
-  }, [pageId, questions, loading, error]);
+  }, [pageId, questions, loading, error, hasInitialized]);
   
-  if (loading) {
-    console.log("QuestionnaireSection - showing loading state");
+  // Prevent showing loading state after the component has initialized
+  if (loading && !hasInitialized) {
+    console.log("QuestionnaireSection - showing initial loading state");
     return <LoadingState loading={loading} />;
   }
   

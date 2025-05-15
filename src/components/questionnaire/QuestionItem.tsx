@@ -1,4 +1,5 @@
 
+import { memo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
@@ -10,7 +11,7 @@ interface QuestionItemProps {
   onResponseChange: (questionId: string, value: string) => void;
 }
 
-const QuestionItem = ({ question, response, onResponseChange }: QuestionItemProps) => {
+const QuestionItem = memo(({ question, response, onResponseChange }: QuestionItemProps) => {
   // Use question options if available, otherwise use default options
   const options = question.options || {
     yes: 'Oui',
@@ -47,6 +48,8 @@ const QuestionItem = ({ question, response, onResponseChange }: QuestionItemProp
       </CardContent>
     </Card>
   );
-};
+});
+
+QuestionItem.displayName = "QuestionItem";
 
 export default QuestionItem;

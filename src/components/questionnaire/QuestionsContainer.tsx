@@ -1,4 +1,5 @@
 
+import { memo } from "react";
 import { Question, Responses } from "./types";
 import QuestionItem from "./QuestionItem";
 
@@ -8,7 +9,7 @@ interface QuestionsContainerProps {
   onResponseChange: (questionId: string, value: string) => void;
 }
 
-const QuestionsContainer = ({ questions, responses, onResponseChange }: QuestionsContainerProps) => {
+const QuestionsContainer = memo(({ questions, responses, onResponseChange }: QuestionsContainerProps) => {
   if (questions.length === 0) {
     return (
       <div className="text-center p-4">
@@ -29,6 +30,8 @@ const QuestionsContainer = ({ questions, responses, onResponseChange }: Question
       ))}
     </div>
   );
-};
+});
+
+QuestionsContainer.displayName = "QuestionsContainer";
 
 export default QuestionsContainer;

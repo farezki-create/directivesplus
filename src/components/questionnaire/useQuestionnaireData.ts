@@ -1,8 +1,7 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useQuestionsData } from "@/hooks/useQuestionsData";
 import { useQuestionnaireResponses } from "@/hooks/useQuestionnaireResponses";
-import { Question } from "./types";
 
 export const useQuestionnaireData = (pageId: string | undefined) => {
   const [saving, setSaving] = useState(false);
@@ -23,12 +22,18 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
     setResponses
   } = useQuestionnaireResponses(pageId);
   
-  // Load initial responses
+  // Memoize fetchResponses to prevent infinite loops
+  const memoizedFetchResponses = useCallback(() => {
+    console.log("Fetching responses for pageId:", pageId);
+    return fetchResponses();
+  }, [pageId, fetchResponses]);
+  
+  // Load initial responses only when pageId changes or component mounts
   useEffect(() => {
     if (pageId) {
-      fetchResponses();
+      memoizedFetchResponses();
     }
-  }, [pageId, fetchResponses]);
+  }, [pageId, memoizedFetchResponses]);
   
   const handleResponseChange = (questionId: string, value: string) => {
     setResponses(prev => ({
