@@ -1,12 +1,15 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Plus } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import ExamplePhraseCard from "./ExamplePhraseCard";
+import { Textarea } from "@/components/ui/textarea";
+import { Form, FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { Input } from "@/components/ui/input";
 
 type ExamplePhrase = {
   id: string;
@@ -38,6 +41,10 @@ const exampleCategories = [
   "Convictions personnelles"
 ];
 
+type CustomPhraseFormValues = {
+  content: string;
+};
+
 const ExamplesSection = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -45,6 +52,14 @@ const ExamplesSection = () => {
   const [categories, setCategories] = useState<string[]>(exampleCategories);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [addedPhrases, setAddedPhrases] = useState<string[]>([]);
+  const [customPhrases, setCustomPhrases] = useState<string[]>([]);
+  const [editingPhrase, setEditingPhrase] = useState<{index: number, content: string} | null>(null);
+  
+  const form = useForm<CustomPhraseFormValues>({
+    defaultValues: {
+      content: "",
+    },
+  });
   
   // Fetch example phrases from database or use predefined ones
   useEffect(() => {
@@ -121,6 +136,54 @@ const ExamplesSection = () => {
     // Here we would normally remove from database
   };
   
+  const handleAddCustomPhrase = (values: CustomPhraseFormValues) => {
+    if (values.content.trim()) {
+      setCustomPhrases([...customPhrases, values.content]);
+      toast({
+        title: "Phrase personnalisée ajoutée",
+        description: "Votre phrase a été ajoutée à la liste"
+      });
+      form.reset({ content: "" });
+    }
+  };
+  
+  const handleEditCustomPhrase = (index: number) => {
+    setEditingPhrase({
+      index,
+      content: customPhrases[index]
+    });
+    form.setValue("content", customPhrases[index]);
+  };
+  
+  const handleUpdateCustomPhrase = () => {
+    if (editingPhrase && form.getValues().content.trim()) {
+      const updatedPhrases = [...customPhrases];
+      updatedPhrases[editingPhrase.index] = form.getValues().content;
+      setCustomPhrases(updatedPhrases);
+      setEditingPhrase(null);
+      form.reset({ content: "" });
+      toast({
+        title: "Phrase mise à jour",
+        description: "Votre phrase personnalisée a été modifiée"
+      });
+    }
+  };
+  
+  const handleCancelEdit = () => {
+    setEditingPhrase(null);
+    form.reset({ content: "" });
+  };
+  
+  const handleDeleteCustomPhrase = (index: number) => {
+    const updatedPhrases = [...customPhrases];
+    updatedPhrases.splice(index, 1);
+    setCustomPhrases(updatedPhrases);
+    toast({
+      title: "Phrase supprimée",
+      description: "Votre phrase personnalisée a été supprimée"
+    });
+  };
+  
   const filteredExamples = selectedCategory
     ? examples.filter(example => example.category === selectedCategory)
     : examples;
@@ -142,12 +205,107 @@ const ExamplesSection = () => {
         Exemples de Phrases
       </h1>
       
+      {/* Custom Phrase Form */}
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle className="text-xl">Ajouter une phrase personnalisée</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form 
+              onSubmit={form.handleSubmit(
+                editingPhrase ? handleUpdateCustomPhrase : handleAddCustomPhrase
+              )}
+              className="space-y-4"
+            >
+              <FormField
+                control={form.control}
+                name="content"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Votre phrase</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Écrivez votre phrase ici..." 
+                        className="min-h-[120px]"
+                        {...field}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <div className="flex justify-end gap-2">
+                {editingPhrase ? (
+                  <>
+                    <Button type="button" variant="outline" onClick={handleCancelEdit}>
+                      Annuler
+                    </Button>
+                    <Button type="submit">
+                      Mettre à jour
+                    </Button>
+                  </>
+                ) : (
+                  <Button type="submit" className="flex items-center gap-2">
+                    <Plus size={16} />
+                    Ajouter
+                  </Button>
+                )}
+              </div>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+      
+      {/* Custom Phrases List */}
+      {customPhrases.length > 0 && (
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold mb-4">Mes phrases personnalisées</h2>
+          <div className="grid gap-4">
+            {customPhrases.map((phrase, index) => (
+              <Card key={`custom-${index}`} className="relative">
+                <CardContent className="pt-6">
+                  <div className="prose max-w-none mb-4">
+                    <p>{phrase}</p>
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => handleEditCustomPhrase(index)}
+                      className="flex items-center gap-2"
+                    >
+                      Modifier
+                    </Button>
+                    <Button 
+                      variant="destructive" 
+                      onClick={() => handleDeleteCustomPhrase(index)}
+                      className="flex items-center gap-2"
+                    >
+                      Supprimer
+                    </Button>
+                    <Button
+                      onClick={() => handleAddPhrase(phrase)}
+                      variant="default"
+                      className="flex items-center gap-2"
+                    >
+                      <Plus size={16} />
+                      Ajouter à mes directives
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+      
       {loading ? (
         <div className="flex justify-center p-8">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-directiveplus-600"></div>
         </div>
       ) : (
         <div className="space-y-8">
+          <h2 className="text-xl font-semibold">Exemples prédéfinis</h2>
+          
           {categories.length > 0 && (
             <div className="flex flex-wrap gap-2 justify-center">
               {categories.map(category => (
