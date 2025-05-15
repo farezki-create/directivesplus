@@ -19,106 +19,108 @@ import QuestionnaireSection from "./components/QuestionnaireSection";
 const queryClient = new QueryClient();
 
 const AppContent = () => (
-  <Routes>
-    <Route path="/" element={<Index />} />
-    <Route path="/auth" element={<Auth />} />
-    <Route 
-      path="/dashboard" 
-      element={
+  <TooltipProvider>
+    <Routes>
+      <Route path="/" element={<Index />} />
+      <Route path="/auth" element={<Auth />} />
+      <Route 
+        path="/dashboard" 
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/profile" 
+        element={
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/admin" 
+        element={
+          <ProtectedRoute>
+            <Admin />
+          </ProtectedRoute>
+        } 
+      />
+      {/* Routes pour les sections des directives */}
+      <Route path="/rediger" element={
         <ProtectedRoute>
-          <Dashboard />
+          <Rediger />
         </ProtectedRoute>
-      } 
-    />
-    <Route 
-      path="/profile" 
-      element={
+      } />
+      <Route path="/:pageId" element={
         <ProtectedRoute>
-          <Profile />
+          <PlaceholderPage />
         </ProtectedRoute>
-      } 
-    />
-    <Route 
-      path="/admin" 
-      element={
+      } />
+      <Route path="/mes-directives" element={
         <ProtectedRoute>
-          <Admin />
+          <PlaceholderPage />
         </ProtectedRoute>
-      } 
-    />
-    {/* Routes pour les sections des directives */}
-    <Route path="/rediger" element={
-      <ProtectedRoute>
-        <Rediger />
-      </ProtectedRoute>
-    } />
-    <Route path="/:pageId" element={
-      <ProtectedRoute>
-        <PlaceholderPage />
-      </ProtectedRoute>
-    } />
-    <Route path="/mes-directives" element={
-      <ProtectedRoute>
-        <PlaceholderPage />
-      </ProtectedRoute>
-    } />
-    <Route path="/avis" element={
-      <ProtectedRoute>
-        <PlaceholderPage />
-      </ProtectedRoute>
-    } />
-    {/* Routes for directive sections */}
-    <Route path="/avis-general" element={
-      <ProtectedRoute>
-        <QuestionnaireSection />
-      </ProtectedRoute>
-    } />
-    <Route path="/maintien-vie" element={
-      <ProtectedRoute>
-        <QuestionnaireSection />
-      </ProtectedRoute>
-    } />
-    <Route path="/maladie-avancee" element={
-      <ProtectedRoute>
-        <QuestionnaireSection />
-      </ProtectedRoute>
-    } />
-    <Route path="/gouts-peurs" element={
-      <ProtectedRoute>
-        <QuestionnaireSection />
-      </ProtectedRoute>
-    } />
-    <Route path="/personne-confiance" element={
-      <ProtectedRoute>
-        <PlaceholderPage />
-      </ProtectedRoute>
-    } />
-    <Route path="/exemples-phrases" element={
-      <ProtectedRoute>
-        <PlaceholderPage />
-      </ProtectedRoute>
-    } />
-    <Route path="/synthese" element={
-      <ProtectedRoute>
-        <PlaceholderPage />
-      </ProtectedRoute>
-    } />
-    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-    <Route path="*" element={<NotFound />} />
-  </Routes>
+      } />
+      <Route path="/avis" element={
+        <ProtectedRoute>
+          <PlaceholderPage />
+        </ProtectedRoute>
+      } />
+      {/* Routes for directive sections */}
+      <Route path="/avis-general" element={
+        <ProtectedRoute>
+          <QuestionnaireSection />
+        </ProtectedRoute>
+      } />
+      <Route path="/maintien-vie" element={
+        <ProtectedRoute>
+          <QuestionnaireSection />
+        </ProtectedRoute>
+      } />
+      <Route path="/maladie-avancee" element={
+        <ProtectedRoute>
+          <QuestionnaireSection />
+        </ProtectedRoute>
+      } />
+      <Route path="/gouts-peurs" element={
+        <ProtectedRoute>
+          <QuestionnaireSection />
+        </ProtectedRoute>
+      } />
+      <Route path="/personne-confiance" element={
+        <ProtectedRoute>
+          <PlaceholderPage />
+        </ProtectedRoute>
+      } />
+      <Route path="/exemples-phrases" element={
+        <ProtectedRoute>
+          <PlaceholderPage />
+        </ProtectedRoute>
+      } />
+      <Route path="/synthese" element={
+        <ProtectedRoute>
+          <PlaceholderPage />
+        </ProtectedRoute>
+      } />
+      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  </TooltipProvider>
 );
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
+    <BrowserRouter>
+      <AuthProvider>
+        <TooltipProvider>
           <AppContent />
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
+          <Toaster />
+          <Sonner />
+        </TooltipProvider>
+      </AuthProvider>
+    </BrowserRouter>
   </QueryClientProvider>
 );
 
