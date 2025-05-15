@@ -1,0 +1,137 @@
+
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2, EyeIcon, EyeOffIcon } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/components/ui/use-toast";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { loginFormSchema, type LoginFormValues } from "./schemas";
+import { cleanupAuthState } from "@/utils/authUtils";
+
+interface LoginFormProps {
+  onVerificationSent: (email: string) => void;
+  redirectPath: string;
+  setRedirectInProgress: (value: boolean) => void;
+}
+
+export const LoginForm = ({ onVerificationSent, redirectPath, setRedirectInProgress }: LoginFormProps) => {
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  
+  const form = useForm<LoginFormValues>({
+    resolver: zodResolver(loginFormSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
+  const handleSignIn = async (values: LoginFormValues) => {
+    setLoading(true);
+    
+    try {
+      console.log("Attempting to sign in...");
+      
+      // Clean up existing auth state first
+      cleanupAuthState();
+      
+      // Try to sign out any existing session
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+      } catch (error) {
+        // Continue even if this fails
+      }
+      
+      // Now sign in
+      const { error } = await supabase.auth.signInWithPassword({
+        email: values.email,
+        password: values.password,
+      });
+
+      if (error) throw error;
+      
+      toast({
+        title: "Connexion réussie",
+        description: "Vous êtes maintenant connecté.",
+      });
+      
+      console.log("Sign in successful, redirecting to:", redirectPath);
+      // Use replace: true to prevent back button from going to login again
+      setRedirectInProgress(true);
+      window.location.href = redirectPath;
+    } catch (error: any) {
+      console.error("Sign in error:", error);
+      
+      // Handle specific error cases
+      if (error.message.includes("Email not confirmed")) {
+        toast({
+          title: "Email non vérifié",
+          description: "Veuillez vérifier votre email pour confirmer votre compte.",
+          variant: "destructive",
+        });
+        onVerificationSent(values.email);
+      } else {
+        toast({
+          title: "Erreur de connexion",
+          description: error.message || "Une erreur est survenue lors de la connexion.",
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleSignIn)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input placeholder="votre@email.com" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Mot de passe</FormLabel>
+              <FormControl>
+                <div className="relative">
+                  <Input 
+                    type={showPassword ? "text" : "password"} 
+                    placeholder="••••••••" 
+                    {...field} 
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <EyeOffIcon size={18} /> : <EyeIcon size={18} />}
+                  </button>
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button disabled={loading} type="submit" className="w-full">
+          {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+          {loading ? "Connexion..." : "Se connecter"}
+        </Button>
+      </form>
+    </Form>
+  );
+};
