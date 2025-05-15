@@ -2,7 +2,16 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { getResponseTable } from "./utils";
-import { ResponseToSave } from "./types";
+
+/**
+ * Type for responses to save to the database
+ */
+type ResponseToSave = {
+  question_id: string;
+  response: string;
+  questionnaire_type: string;
+  question_text: string;
+};
 
 /**
  * Save responses to the database
@@ -28,7 +37,7 @@ export const saveResponses = async (
     if (deleteError) throw deleteError;
     
     // Prepare responses to save
-    const responsesToSave: any[] = [];
+    const responsesToSave: ResponseToSave[] = [];
     
     // Create properly typed response objects
     Object.entries(responses).forEach(([questionId, response]) => {
