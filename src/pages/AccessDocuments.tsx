@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { FileText, FileMedical } from "lucide-react";
+import { FileText, FileSearch } from "lucide-react";
 
 const AccessDocuments = () => {
   const navigate = useNavigate();
@@ -274,7 +274,7 @@ const AccessDocuments = () => {
                 onClick={accessMedicalData}
                 disabled={loading}
               >
-                <FileMedical size={18} />
+                <FileSearch size={18} />
                 Accéder aux données médicales
               </Button>
             </CardFooter>
