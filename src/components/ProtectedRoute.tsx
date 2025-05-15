@@ -6,15 +6,16 @@ import { useAuth } from "@/contexts/AuthContext";
 
 interface ProtectedRouteProps {
   children: ReactNode;
+  requiredRole?: string;
 }
 
-const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { isAuthenticated, isLoading } = useAuth();
+const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
+  const { isAuthenticated, isLoading, profile } = useAuth();
   const location = useLocation();
   
   useEffect(() => {
-    console.log("ProtectedRoute: isAuthenticated =", isAuthenticated, "isLoading =", isLoading);
-  }, [isAuthenticated, isLoading]);
+    console.log("ProtectedRoute: isAuthenticated =", isAuthenticated, "isLoading =", isLoading, "requiredRole =", requiredRole);
+  }, [isAuthenticated, isLoading, requiredRole]);
 
   // Use the auth context to check authentication state
   if (isLoading) {
@@ -29,6 +30,19 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     // Store the current path to redirect back after login
     console.log("Not authenticated, redirecting to auth from:", location.pathname);
     return <Navigate to="/auth" state={{ from: location.pathname }} replace />;
+  }
+
+  // Check for role-based access if requiredRole is provided
+  if (requiredRole && profile) {
+    const userRoles = profile.roles || [];
+    const hasRequiredRole = Array.isArray(userRoles) 
+      ? userRoles.includes(requiredRole)
+      : userRoles === requiredRole;
+    
+    if (!hasRequiredRole) {
+      console.log(`User does not have required role: ${requiredRole}`);
+      return <Navigate to="/dashboard" state={{ from: location.pathname }} replace />;
+    }
   }
 
   console.log("Authenticated, rendering protected content");
