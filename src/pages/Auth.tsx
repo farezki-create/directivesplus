@@ -58,9 +58,10 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { isAuthenticated, isLoading } = useAuth();
+  const [redirectInProgress, setRedirectInProgress] = useState(false);
   
-  // Get the redirect path from location state or default to /rediger
-  const from = location.state?.from || "/rediger";
+  // Get the redirect path from location state or default to /dashboard instead of /rediger
+  const from = location.state?.from || "/dashboard";
 
   // Formulaire de connexion avec React Hook Form
   const loginForm = useForm({
@@ -87,12 +88,14 @@ const Auth = () => {
   });
 
   // Redirect if already authenticated, but only after the auth state has loaded
+  // and prevent redirect loops with a flag
   useEffect(() => {
-    if (!isLoading && isAuthenticated) {
+    if (!isLoading && isAuthenticated && !redirectInProgress) {
       console.log("Auth page: Already authenticated, redirecting to:", from);
+      setRedirectInProgress(true);
       navigate(from, { replace: true });
     }
-  }, [isAuthenticated, isLoading, navigate, from]);
+  }, [isAuthenticated, isLoading, navigate, from, redirectInProgress]);
 
   const handleSignIn = async (values: z.infer<typeof loginFormSchema>) => {
     setLoading(true);
@@ -111,7 +114,7 @@ const Auth = () => {
       }
       
       // Now sign in
-      const { error, data } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email: values.email,
         password: values.password,
       });
@@ -125,6 +128,7 @@ const Auth = () => {
       
       console.log("Sign in successful, redirecting to:", from);
       // Use replace: true to prevent back button from going to login again
+      setRedirectInProgress(true);
       navigate(from, { replace: true });
     } catch (error: any) {
       console.error("Sign in error:", error);
@@ -249,9 +253,14 @@ const Auth = () => {
     );
   }
 
-  // Don't render auth page if already authenticated
-  if (isAuthenticated) {
-    return null;
+  // Don't render auth page if already authenticated and redirecting
+  if (isAuthenticated && redirectInProgress) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-directiveplus-600"></div>
+        <p className="ml-3">Redirection en cours...</p>
+      </div>
+    );
   }
 
   return (

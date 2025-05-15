@@ -1,6 +1,6 @@
 
 import { createContext, useState, useEffect, useContext, ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Session, User } from "@supabase/supabase-js";
 
@@ -43,6 +43,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [profile, setProfile] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Helper function to clean up auth state
   const cleanupAuthState = () => {
@@ -52,61 +53,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       }
     });
   };
-
-  useEffect(() => {
-    console.log("Setting up auth state listener");
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event: AuthEvent, session) => {
-        console.log("Auth state changed:", event, session?.user?.id);
-        
-        // Handle specific auth events
-        if (event === 'SIGNED_IN') {
-          console.log("User signed in, updating state");
-        } else if (event === 'SIGNED_OUT') {
-          console.log("User signed out, clearing state");
-        } else if (event === 'USER_UPDATED') {
-          console.log("User details updated");
-        } else if (event === 'PASSWORD_RECOVERY') {
-          console.log("Password recovery initiated");
-        } else if (event === 'TOKEN_REFRESHED') {
-          console.log("Auth token refreshed");
-        } else if (event === 'EMAIL_CONFIRMED') {
-          console.log("Email confirmed successfully");
-          // Notify user that their email was confirmed
-        }
-        
-        setUser(session?.user ?? null);
-        setSession(session);
-        setIsLoading(false);
-
-        // Defer profile fetch to prevent auth deadlocks
-        if (session?.user) {
-          setTimeout(() => {
-            fetchProfile(session.user.id);
-          }, 0);
-        } else {
-          setProfile(null);
-        }
-      }
-    );
-
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log("Initial session check:", session?.user?.id || "No session");
-      setUser(session?.user ?? null);
-      setSession(session);
-      setIsLoading(false);
-
-      if (session?.user) {
-        fetchProfile(session.user.id);
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
 
   // Fetch user profile
   const fetchProfile = async (userId: string) => {
@@ -130,6 +76,69 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
+  useEffect(() => {
+    console.log("Setting up auth state listener");
+    let isMounted = true;
+    
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event: AuthEvent, session) => {
+        console.log("Auth state changed:", event, session?.user?.id);
+        
+        if (!isMounted) return;
+        
+        // Handle specific auth events
+        if (event === 'SIGNED_IN') {
+          console.log("User signed in, updating state");
+        } else if (event === 'SIGNED_OUT') {
+          console.log("User signed out, clearing state");
+          // Don't automatically redirect on sign-out here
+          // to avoid redirect loops
+        } else if (event === 'USER_UPDATED') {
+          console.log("User details updated");
+        } else if (event === 'PASSWORD_RECOVERY') {
+          console.log("Password recovery initiated");
+        } else if (event === 'TOKEN_REFRESHED') {
+          console.log("Auth token refreshed");
+        } else if (event === 'EMAIL_CONFIRMED') {
+          console.log("Email confirmed successfully");
+        }
+        
+        setUser(session?.user ?? null);
+        setSession(session);
+        setIsLoading(false);
+
+        // Defer profile fetch to prevent auth deadlocks
+        if (session?.user) {
+          setTimeout(() => {
+            if (isMounted) fetchProfile(session.user.id);
+          }, 0);
+        } else {
+          setProfile(null);
+        }
+      }
+    );
+
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!isMounted) return;
+      
+      console.log("Initial session check:", session?.user?.id || "No session");
+      setUser(session?.user ?? null);
+      setSession(session);
+      setIsLoading(false);
+
+      if (session?.user) {
+        fetchProfile(session.user.id);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
   // Sign out
   const signOut = async () => {
     try {
@@ -147,8 +156,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setProfile(null);
       
       console.log("Sign out successful, navigating to /auth");
-      // Force navigation to login
-      navigate("/auth");
+      // Use replace to avoid adding to history stack
+      window.location.href = "/auth";
     } catch (error) {
       console.error("Sign out error:", error);
     }
