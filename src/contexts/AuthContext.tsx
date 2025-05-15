@@ -48,6 +48,20 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         console.log("Auth state changed:", event, session?.user?.id);
+        
+        // Handle specific auth events
+        if (event === 'SIGNED_IN') {
+          console.log("User signed in, updating state");
+        } else if (event === 'SIGNED_OUT') {
+          console.log("User signed out, clearing state");
+        } else if (event === 'USER_UPDATED') {
+          console.log("User details updated");
+        } else if (event === 'PASSWORD_RECOVERY') {
+          console.log("Password recovery initiated");
+        } else if (event === 'TOKEN_REFRESHED') {
+          console.log("Auth token refreshed");
+        }
+        
         setUser(session?.user ?? null);
         setSession(session);
         setIsLoading(false);
@@ -83,6 +97,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   // Fetch user profile
   const fetchProfile = async (userId: string) => {
     try {
+      console.log("Fetching profile for user:", userId);
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
@@ -94,6 +109,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         return;
       }
 
+      console.log("Profile fetched successfully:", data);
       setProfile(data);
     } catch (error) {
       console.error("Error in profile fetch:", error);
