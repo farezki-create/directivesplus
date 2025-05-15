@@ -48,7 +48,17 @@ const DocumentCard: FC<DocumentCardProps> = ({
         <Button 
           variant="outline"
           className="flex items-center gap-2"
-          onClick={() => onView(document.file_path)}
+          onClick={() => {
+            // Vérifier si le chemin du document est valide avant d'appeler onView
+            if (document.file_path) {
+              // Ouvrir directement le document dans un nouvel onglet si c'est une URL complète
+              if (document.file_path.startsWith('http')) {
+                window.open(document.file_path, '_blank');
+              } else {
+                onView(document.file_path);
+              }
+            }
+          }}
         >
           <Eye size={16} />
           Visualiser

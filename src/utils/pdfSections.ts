@@ -293,18 +293,37 @@ export const renderTrustedPersons = (pdf: jsPDF, layout: PdfLayout, yPosition: n
   
   trustedPersons.forEach((person, index) => {
     pdf.setFont("helvetica", "bold");
-    pdf.text(`Personne ${index + 1}: ${person.first_name} ${person.last_name}`, 20, yPosition);
+    
+    // Utiliser name si disponible, sinon utiliser first_name et last_name
+    let personName = person.name || '';
+    if (!personName && (person.first_name || person.last_name)) {
+      personName = `${person.first_name || ''} ${person.last_name || ''}`.trim();
+    }
+    
+    pdf.text(`Personne ${index + 1}: ${personName}`, 20, yPosition);
     yPosition += layout.lineHeight;
     
     pdf.setFont("helvetica", "normal");
-    pdf.text(`Lien: ${person.relationship || 'Non renseigné'}`, 30, yPosition);
+    pdf.text(`Lien: ${person.relation || person.relationship || 'Non renseigné'}`, 30, yPosition);
     yPosition += layout.lineHeight;
     
     pdf.text(`Téléphone: ${person.phone || 'Non renseigné'}`, 30, yPosition);
     yPosition += layout.lineHeight;
     
     pdf.text(`Email: ${person.email || 'Non renseigné'}`, 30, yPosition);
-    yPosition += layout.lineHeight * 1.5;
+    yPosition += layout.lineHeight;
+    
+    if (person.address) {
+      pdf.text(`Adresse: ${person.address}`, 30, yPosition);
+      yPosition += layout.lineHeight;
+      
+      if (person.city || person.postal_code) {
+        pdf.text(`${person.postal_code || ''} ${person.city || ''}`.trim(), 30, yPosition);
+        yPosition += layout.lineHeight;
+      }
+    }
+    
+    yPosition += layout.lineHeight * 0.5;
   });
   
   return yPosition;
@@ -482,6 +501,11 @@ export const addSignatureFooter = (pdf: jsPDF, layout: PdfLayout, signature: str
     pdf.setFontSize(8);
     pdf.setFont("helvetica", "normal");
     pdf.text(`Document signé le ${new Date().toLocaleDateString('fr-FR')}`, 55, footerY + 10);
+    
+    // Add page numbers
+    const pageNumber = pdf.getCurrentPageInfo().pageNumber;
+    const totalPages = pdf.getNumberOfPages();
+    pdf.text(`Page ${pageNumber}/${totalPages}`, layout.pageWidth - 40, footerY + 10);
   } catch (error) {
     console.error("Erreur lors de l'ajout de la signature au pied de page:", error);
   }

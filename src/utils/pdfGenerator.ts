@@ -80,12 +80,6 @@ export const generatePDF = async (data: PdfData): Promise<any> => {
     yPosition = checkPageBreak(pdf, layout, yPosition, layout.lineHeight * 10);
     yPosition = renderTrustedPersons(pdf, layout, yPosition, data.trustedPersons);
     
-    // Add signature after trusted persons section if available
-    if (data.signature) {
-      yPosition = checkPageBreak(pdf, layout, yPosition, 30);
-      yPosition = renderSignature(pdf, layout, yPosition, data.signature);
-    }
-    
     // Render questionnaire responses
     yPosition = checkPageBreak(pdf, layout, yPosition, layout.lineHeight * 10);
     yPosition = renderQuestionnaires(pdf, layout, yPosition, data.responses, translateResponse);
@@ -108,8 +102,18 @@ export const generatePDF = async (data: PdfData): Promise<any> => {
       yPosition = renderFreeText(pdf, layout, yPosition, data.freeText);
     }
     
-    // Add signature footer on the last page
-    addSignatureFooter(pdf, layout, data.signature);
+    // Add signature after all content
+    if (data.signature) {
+      yPosition = checkPageBreak(pdf, layout, yPosition, 30);
+      yPosition = renderSignature(pdf, layout, yPosition, data.signature);
+    }
+    
+    // Add signature footer on all pages
+    const totalPages = pdf.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      pdf.setPage(i);
+      addSignatureFooter(pdf, layout, data.signature);
+    }
     
     // Generate PDF output
     const pdfOutput = pdf.output("datauristring");

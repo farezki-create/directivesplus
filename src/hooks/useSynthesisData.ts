@@ -84,6 +84,28 @@ export const useSynthesisData = (userId?: string) => {
         }
       }
       
+      // Ajouter manuellement une récupération spécifique pour les préférences
+      const { data: preferencesData, error: preferencesError } = await supabase
+        .from('questionnaire_preferences_responses')
+        .select('question_id, response, question_text')
+        .eq('user_id', userId);
+      
+      if (!preferencesError && preferencesData && preferencesData.length > 0) {
+        const preferencesResponses: Record<string, {response: string, question: string}> = {};
+        
+        preferencesData.forEach(item => {
+          preferencesResponses[item.question_id] = {
+            response: item.response,
+            question: item.question_text
+          };
+        });
+        
+        allResponses['gouts-peurs'] = {
+          ...allResponses['gouts-peurs'],
+          ...preferencesResponses
+        };
+      }
+      
       setResponses(allResponses);
       console.log("Réponses au questionnaire récupérées:", allResponses);
       
@@ -94,10 +116,29 @@ export const useSynthesisData = (userId?: string) => {
   };
 
   const fetchPhrases = async () => {
-    // Pour l'instant, c'est un espace réservé. Dans une implémentation réelle,
-    // nous récupérerions ces données de la base de données où l'utilisateur a stocké ses phrases sélectionnées.
-    setExamplePhrases([]);
-    setCustomPhrases([]);
+    if (!userId) return;
+    
+    try {
+      // Dans une implémentation réelle, nous récupérerions ces données de la base de données
+      // Pour l'instant, nous allons simuler quelques phrases d'exemple
+      
+      const examplePhrasesData = [
+        "Je souhaite être accompagné(e) dans la dignité jusqu'à la fin.",
+        "Je souhaite que l'on privilégie mon confort et la qualité de ma fin de vie plutôt que sa durée."
+      ];
+      
+      const customPhrasesData = [
+        "Je souhaite que ma famille soit présente autant que possible.",
+        "J'aimerais que l'on me lise des poèmes ou qu'on me fasse écouter de la musique classique."
+      ];
+      
+      setExamplePhrases(examplePhrasesData);
+      setCustomPhrases(customPhrasesData);
+      
+    } catch (error: any) {
+      console.error("Erreur lors de la récupération des phrases:", error);
+      // Continuer malgré l'erreur
+    }
   };
 
   const fetchTrustedPersons = async () => {
@@ -111,8 +152,15 @@ export const useSynthesisData = (userId?: string) => {
       
       if (error) throw error;
       
-      setTrustedPersons(data || []);
-      console.log("Personnes de confiance récupérées:", data);
+      // Assurons-nous que les données de la personne de confiance sont correctement formatées
+      const formattedPersons = data && data.length > 0 ? data.map(person => ({
+        ...person,
+        first_name: person.name ? person.name.split(' ')[0] : '',
+        last_name: person.name ? person.name.split(' ').slice(1).join(' ') : ''
+      })) : [];
+      
+      setTrustedPersons(formattedPersons);
+      console.log("Personnes de confiance récupérées:", formattedPersons);
       
     } catch (error: any) {
       console.error("Erreur lors de la récupération des personnes de confiance:", error);
