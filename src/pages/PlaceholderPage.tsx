@@ -50,12 +50,15 @@ const PlaceholderPage = () => {
   console.log('Current pageId:', pageId);
   console.log('Is trusted persons page:', isTrustedPersonsPage);
   
-  if (isTrustedPersonsPage) {
-    toast({
-      title: "Page personne de confiance",
-      description: "Vous pouvez ajouter vos personnes de confiance ici."
-    });
-  }
+  // Now that we can identify the page correctly, show appropriate toast notifications
+  useEffect(() => {
+    if (isTrustedPersonsPage) {
+      toast({
+        title: "Page personne de confiance",
+        description: "Vous pouvez ajouter vos personnes de confiance ici."
+      });
+    }
+  }, [isTrustedPersonsPage]);
 
   return (
     <div className="min-h-screen flex flex-col">
