@@ -1,6 +1,5 @@
 
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { 
   FormControl, 
   FormField as HookFormField, 
@@ -40,9 +39,10 @@ const FormField = ({
               placeholder={placeholder}
               {...field}
               disabled={disabled}
+              className="focus:ring-2 focus:ring-directiveplus-500"
             />
           </FormControl>
-          <FormMessage />
+          <FormMessage className="text-red-500" />
         </FormItem>
       )}
     />

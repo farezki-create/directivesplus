@@ -10,7 +10,7 @@ type FormActionsProps = {
 
 const FormActions = ({ loading, onAccessDirectives, onAccessMedicalData }: FormActionsProps) => {
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 w-full">
       <Button 
         className="w-full flex items-center gap-2" 
         onClick={onAccessDirectives}
@@ -18,7 +18,7 @@ const FormActions = ({ loading, onAccessDirectives, onAccessMedicalData }: FormA
         type="button"
       >
         <FileText size={18} />
-        Accéder aux directives anticipées
+        {loading ? "Vérification en cours..." : "Accéder aux directives anticipées"}
       </Button>
       
       <Button 
@@ -28,7 +28,7 @@ const FormActions = ({ loading, onAccessDirectives, onAccessMedicalData }: FormA
         type="button"
       >
         <FileSearch size={18} />
-        Accéder aux données médicales
+        {loading ? "Vérification en cours..." : "Accéder aux données médicales"}
       </Button>
     </div>
   );

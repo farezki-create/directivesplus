@@ -4,6 +4,7 @@ import FormField from "./FormField";
 import FormActions from "./FormActions";
 import { useAccessDocumentForm } from "@/hooks/useAccessDocumentForm";
 import { Form } from "@/components/ui/form";
+import { useEffect } from "react";
 
 const AccessDocumentForm = () => {
   const { 
@@ -12,6 +13,17 @@ const AccessDocumentForm = () => {
     accessDirectives, 
     accessMedicalData 
   } = useAccessDocumentForm();
+
+  // Ajout d'un effet pour surveiller les erreurs de formulaire
+  useEffect(() => {
+    const subscription = form.formState.subscribe(() => {
+      if (Object.keys(form.formState.errors).length > 0) {
+        console.log("Erreurs du formulaire:", form.formState.errors);
+      }
+    });
+    
+    return () => subscription.unsubscribe();
+  }, [form.formState]);
 
   return (
     <div className="max-w-md mx-auto">
@@ -28,7 +40,10 @@ const AccessDocumentForm = () => {
         </CardHeader>
 
         <Form {...form}>
-          <form>
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            console.log("Formulaire soumis");
+          }}>
             <CardContent className="space-y-4">
               <FormField 
                 id="lastName"
