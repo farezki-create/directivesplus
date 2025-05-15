@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
@@ -10,9 +9,14 @@ export const useTrustedPersons = (userId: string | undefined) => {
   const [saving, setSaving] = useState(false);
 
   const fetchTrustedPersons = async () => {
-    if (!userId) return;
+    if (!userId) {
+      console.log("No user ID provided, cannot fetch trusted persons");
+      setLoading(false);
+      return;
+    }
 
     try {
+      console.log("Fetching trusted persons for user:", userId);
       setLoading(true);
       const { data, error } = await supabase
         .from("trusted_persons")
@@ -67,9 +71,13 @@ export const useTrustedPersons = (userId: string | undefined) => {
   };
 
   const handleSave = async () => {
-    if (!userId) return;
+    if (!userId) {
+      console.log("No user ID provided, cannot save trusted persons");
+      return;
+    }
 
     try {
+      console.log("Saving trusted persons for user:", userId);
       setSaving(true);
 
       // Filter out invalid entries (must have at least a name)
@@ -128,6 +136,7 @@ export const useTrustedPersons = (userId: string | undefined) => {
 
   // Fetch trusted persons on component mount
   useEffect(() => {
+    console.log("useTrustedPersons hook initialized with userId:", userId);
     fetchTrustedPersons();
   }, [userId]);
 

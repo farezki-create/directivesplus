@@ -67,8 +67,13 @@ const PlaceholderPage = () => {
       
       <main className="flex-grow container mx-auto px-4 py-8">
         {isQuestionnairePage && <QuestionnaireSection />}
-        {isTrustedPersonsPage && <TrustedPersonsManager />}
+        
+        {isTrustedPersonsPage && (
+          <TrustedPersonsManager />
+        )}
+        
         {isExamplesPage && <ExamplesSection />}
+        
         {!isQuestionnairePage && !isTrustedPersonsPage && !isExamplesPage && (
           <div>
             <div className="mb-6">
