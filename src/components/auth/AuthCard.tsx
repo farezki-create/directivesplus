@@ -7,42 +7,33 @@ import SignupForm from "./SignupForm";
 
 interface AuthCardProps {
   redirectPath: string;
-  onLoginSuccess: () => void;
-  onSignupSuccess: () => void;
+  onLoginSuccess?: () => void;
+  onSignupSuccess?: () => void;
 }
 
 const AuthCard = ({ redirectPath, onLoginSuccess, onSignupSuccess }: AuthCardProps) => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
   return (
-    <Card className="w-[350px]">
+    <Card className="w-[450px] max-w-[95vw]">
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl">Authentification</CardTitle>
-        <CardDescription>Entrez votre email et mot de passe pour vous connecter.</CardDescription>
+        <CardDescription>Entrez vos informations pour vous connecter ou créer un compte.</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4">
-        <Tabs defaultValue="login" className="w-[300px]">
-          <TabsList>
+        <Tabs defaultValue="login" className="w-full">
+          <TabsList className="grid grid-cols-2">
             <TabsTrigger value="login">Connexion</TabsTrigger>
             <TabsTrigger value="register">Inscription</TabsTrigger>
           </TabsList>
           <TabsContent value="login">
             <LoginForm 
-              email={email} 
-              setEmail={setEmail} 
-              password={password} 
-              setPassword={setPassword}
               redirectPath={redirectPath}
+              onLoginSuccess={onLoginSuccess}
             />
           </TabsContent>
           <TabsContent value="register">
             <SignupForm 
-              email={email} 
-              setEmail={setEmail} 
-              password={password} 
-              setPassword={setPassword}
               redirectPath={redirectPath}
+              onSignupSuccess={onSignupSuccess}
             />
           </TabsContent>
         </Tabs>

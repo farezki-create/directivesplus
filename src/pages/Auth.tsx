@@ -8,7 +8,6 @@ import AuthCard from "@/components/auth/AuthCard";
 const Auth = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [loading, setLoading] = useState(false);
   const { isAuthenticated, isLoading } = useAuth();
   const redirectAttempted = useRef(false);
   
@@ -53,7 +52,7 @@ const Auth = () => {
   return (
     <>
       <Header />
-      <div className="grid h-screen place-items-center">
+      <div className="flex min-h-screen items-center justify-center py-12 px-4">
         <AuthCard 
           redirectPath={from} 
           onLoginSuccess={handleLoginSuccess}
