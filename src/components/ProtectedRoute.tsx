@@ -1,6 +1,6 @@
-import { ReactNode, useEffect, useState } from "react";
+
+import { ReactNode, useEffect } from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -11,10 +11,19 @@ interface ProtectedRouteProps {
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
-
-  // Use the auth context instead of maintaining local state
-  // This ensures consistent auth state across the application
   
+  // Log authentication state for debugging
+  useEffect(() => {
+    if (!isLoading) {
+      console.log(
+        isAuthenticated 
+          ? "Protected route: User authenticated, rendering content" 
+          : "Protected route: User not authenticated, will redirect"
+      );
+    }
+  }, [isAuthenticated, isLoading]);
+
+  // Show loading indicator while checking auth
   if (isLoading) {
     return (
       <div className="h-screen flex items-center justify-center">
@@ -23,13 +32,18 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     );
   }
 
+  // If not authenticated, redirect to auth page with current location
   if (!isAuthenticated) {
-    // Store the current path to redirect back after login
-    console.log("Not authenticated, redirecting to auth from:", location.pathname);
-    return <Navigate to="/auth" state={{ from: location.pathname }} replace />;
+    return (
+      <Navigate 
+        to="/auth" 
+        state={{ from: location.pathname }} 
+        replace 
+      />
+    );
   }
 
-  console.log("Authenticated, rendering protected content");
+  // User is authenticated, render protected content
   return <>{children}</>;
 };
 

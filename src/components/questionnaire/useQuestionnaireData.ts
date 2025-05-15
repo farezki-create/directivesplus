@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { Question, Responses } from "./types";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { fetchQuestions, fetchResponses, getSectionTable } from "./dataFetchers";
 import { saveResponses } from "./dataSavers";

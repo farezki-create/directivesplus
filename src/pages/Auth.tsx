@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -27,20 +27,24 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { isAuthenticated, isLoading } = useAuth();
+  const redirectAttempted = useRef(false);
   
-  // Get the redirect path from location state or default to /dashboard
+  // Get the redirect path from location state or default to /rediger
   const from = location.state?.from || "/rediger";
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated - only once to avoid loops
   useEffect(() => {
-    if (!isLoading && isAuthenticated) {
+    if (!isLoading && isAuthenticated && !redirectAttempted.current) {
       console.log("Auth page: Already authenticated, redirecting to:", from);
-      navigate(from);
+      redirectAttempted.current = true;
+      navigate(from, { replace: true });
     }
   }, [isAuthenticated, isLoading, navigate, from]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
+    
     setLoading(true);
     
     try {
@@ -68,8 +72,9 @@ const Auth = () => {
       });
       
       console.log("Sign in successful, redirecting to:", from);
-      // Force a page reload to ensure clean state
-      window.location.href = from;
+      // Use navigate with replace to avoid history stack issues
+      redirectAttempted.current = true;
+      navigate(from, { replace: true });
     } catch (error: any) {
       console.error("Sign in error:", error);
       toast({
@@ -84,6 +89,8 @@ const Auth = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
+    
     setLoading(true);
     
     try {
@@ -103,10 +110,11 @@ const Auth = () => {
         description: "Veuillez vérifier votre email pour confirmer votre compte.",
       });
       
-      // Wait briefly then use page reload for redirection
+      // Wait briefly then redirect
       setTimeout(() => {
         console.log("Sign up successful, redirecting to:", from);
-        window.location.href = from;
+        redirectAttempted.current = true;
+        navigate(from, { replace: true });
       }, 1500);
     } catch (error: any) {
       console.error("Sign up error:", error);
@@ -120,8 +128,8 @@ const Auth = () => {
     }
   };
 
-  // Show loading while checking auth status
-  if (isLoading) {
+  // Show loading only during initial auth check
+  if (isLoading && !redirectAttempted.current) {
     return (
       <div className="h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-directiveplus-600"></div>
@@ -129,8 +137,8 @@ const Auth = () => {
     );
   }
 
-  // Don't render auth page if already authenticated
-  if (isAuthenticated) {
+  // Don't render auth page if redirecting after authentication
+  if (isAuthenticated && redirectAttempted.current) {
     return null;
   }
 
@@ -158,6 +166,7 @@ const Auth = () => {
                         placeholder="Email" 
                         value={email} 
                         onChange={(e) => setEmail(e.target.value)} 
+                        disabled={loading}
                       />
                     </div>
                     <div className="grid gap-1">
@@ -166,6 +175,7 @@ const Auth = () => {
                         placeholder="Mot de passe" 
                         value={password} 
                         onChange={(e) => setPassword(e.target.value)} 
+                        disabled={loading}
                       />
                     </div>
                     <Button disabled={loading} type="submit">
@@ -183,6 +193,7 @@ const Auth = () => {
                         placeholder="Email" 
                         value={email} 
                         onChange={(e) => setEmail(e.target.value)} 
+                        disabled={loading}
                       />
                     </div>
                     <div className="grid gap-1">
@@ -191,6 +202,7 @@ const Auth = () => {
                         placeholder="Mot de passe" 
                         value={password} 
                         onChange={(e) => setPassword(e.target.value)} 
+                        disabled={loading}
                       />
                     </div>
                     <Button disabled={loading} type="submit">
