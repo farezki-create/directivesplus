@@ -150,6 +150,17 @@ export const useQuestionnaireResponses = (questionnaireType: string | undefined)
       // Debug info
       console.log("Réponses à enregistrer:", responsesToSave);
       
+      // Ensure all question_id values are UUIDs for questionnaire_responses table
+      if (responseTable === 'questionnaire_responses') {
+        for (const response of responsesToSave) {
+          // If the question_id is numeric, convert it to string to avoid PostgreSQL UUID type errors
+          if (!isNaN(response.question_id)) {
+            // Create a UUID format for numeric IDs to satisfy PostgreSQL's UUID requirements
+            response.question_id = `00000000-0000-0000-0000-${response.question_id.toString().padStart(12, '0')}`;
+          }
+        }
+      }
+      
       // Insert new responses if there are any to save
       if (responsesToSave.length > 0) {
         const { error: insertError } = await supabase
