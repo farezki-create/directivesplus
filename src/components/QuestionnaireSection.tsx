@@ -42,7 +42,6 @@ const QuestionnaireSection = () => {
   }
   
   if (error) {
-    // Display a toast notification for errors
     toast({
       title: "Erreur",
       description: error,

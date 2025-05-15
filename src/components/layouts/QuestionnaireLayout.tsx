@@ -22,7 +22,7 @@ const QuestionnaireLayout = ({ children, title }: QuestionnaireLayoutProps) => {
     }
   }, [isAuthenticated, isLoading, navigate]);
 
-  // Render nothing during the initial authentication check to prevent flickering
+  // Render a loading skeleton during the authentication check
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col bg-gray-50">
@@ -31,7 +31,9 @@ const QuestionnaireLayout = ({ children, title }: QuestionnaireLayoutProps) => {
         <main className="flex-grow container mx-auto px-4 py-8">
           <div className="max-w-3xl mx-auto">
             <Skeleton className="h-10 w-2/3 mb-6" />
-            <Skeleton className="h-40 w-full" />
+            <Skeleton className="h-40 w-full mb-4" />
+            <Skeleton className="h-32 w-full mb-4" />
+            <Skeleton className="h-20 w-2/3" />
           </div>
         </main>
         
