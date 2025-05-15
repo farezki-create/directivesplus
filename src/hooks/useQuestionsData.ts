@@ -39,10 +39,19 @@ export const useQuestionsData = (questionnaireType: string | undefined) => {
       
       try {
         // Fetching questions with detailed error logging
-        const { data: questionsData, error: questionsError } = await supabase
+        let query = supabase
           .from(tableName as any) // Type assertion needed for dynamic table name
-          .select('*')
-          .order('display_order', { ascending: true });
+          .select('*');
+        
+        // Add order clause only for tables that have display_order
+        if (tableName !== 'questionnaire_life_support_fr') {
+          query = query.order('display_order', { ascending: true });
+        } else {
+          // For life_support, use question_order instead
+          query = query.order('question_order', { ascending: true });
+        }
+        
+        const { data: questionsData, error: questionsError } = await query;
         
         if (questionsError) {
           console.error('Error fetching questions data:', questionsError);

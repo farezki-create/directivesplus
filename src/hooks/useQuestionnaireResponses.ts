@@ -36,11 +36,17 @@ export const useQuestionnaireResponses = (questionnaireType: string | undefined)
         return;
       }
       
-      const { data, error: responsesError } = await supabase
+      let query = supabase
         .from(responseTable as any)
         .select('question_id, response')
-        .eq('questionnaire_type', questionnaireType)
         .eq('user_id', user.id);
+      
+      // Ajouter le filtre questionnaire_type uniquement pour la table qui a cette colonne
+      if (responseTable === 'questionnaire_responses') {
+        query = query.eq('questionnaire_type', questionnaireType);
+      }
+      
+      const { data, error: responsesError } = await query;
       
       if (responsesError) throw responsesError;
       
@@ -101,12 +107,18 @@ export const useQuestionnaireResponses = (questionnaireType: string | undefined)
       
       console.log("Utilisateur authentifié:", user.id);
       
-      // Delete existing responses for this questionnaire type and user
-      const { error: deleteError } = await supabase
+      // Delete existing responses for this user
+      let deleteQuery = supabase
         .from(responseTable as any)
         .delete()
-        .eq('questionnaire_type', questionnaireType)
         .eq('user_id', user.id);
+        
+      // Ajouter le filtre questionnaire_type uniquement pour la table qui a cette colonne
+      if (responseTable === 'questionnaire_responses') {
+        deleteQuery = deleteQuery.eq('questionnaire_type', questionnaireType);
+      }
+      
+      const { error: deleteError } = await deleteQuery;
       
       if (deleteError) throw deleteError;
       
@@ -119,13 +131,19 @@ export const useQuestionnaireResponses = (questionnaireType: string | undefined)
           const question = questions.find(q => q.id === questionId);
           const questionText = question ? question.question : '';
           
-          responsesToSave.push({
+          const responseObject: any = {
             question_id: questionId,
             response,
-            questionnaire_type: questionnaireType,
             question_text: questionText,
             user_id: user.id
-          });
+          };
+          
+          // Add questionnaire_type field only for the table that needs it
+          if (responseTable === 'questionnaire_responses') {
+            responseObject.questionnaire_type = questionnaireType;
+          }
+          
+          responsesToSave.push(responseObject);
         }
       });
       
