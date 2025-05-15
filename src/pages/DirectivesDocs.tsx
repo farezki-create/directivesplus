@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -84,33 +83,29 @@ const DirectivesDocs = () => {
 
   const handleDownload = (filePath: string, fileName: string) => {
     try {
-      // Pour les data URI (base64)
-      if (filePath.startsWith('data:')) {
-        const link = document.createElement('a');
-        link.href = filePath;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      } else {
-        // Pour les URL normales
-        const link = document.createElement('a');
-        link.href = filePath;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+      // Pour les fichiers audio, afficher dans une boîte de dialogue
+      if (filePath.includes('audio')) {
+        setPreviewDocument(filePath);
+        return;
       }
       
+      // Pour les PDF et autres documents, télécharger et ouvrir
+      const link = document.createElement('a');
+      link.href = filePath;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
       toast({
-        title: "Téléchargement réussi",
-        description: "Votre document a été téléchargé"
+        title: "Document ouvert",
+        description: "Votre document a été ouvert dans un nouvel onglet"
       });
     } catch (error) {
-      console.error("Erreur lors du téléchargement:", error);
+      console.error("Erreur lors de l'ouverture du document:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de télécharger le document",
+        description: "Impossible d'ouvrir le document",
         variant: "destructive"
       });
     }
@@ -160,22 +155,7 @@ const DirectivesDocs = () => {
   };
   
   const handleView = (filePath: string, contentType: string = "application/pdf") => {
-    try {
-      if (contentType && contentType.includes('audio')) {
-        // Pour les fichiers audio, afficher dans une boîte de dialogue
-        setPreviewDocument(filePath);
-      } else {
-        // Pour les PDF et images, ouvrir dans une nouvelle fenêtre
-        window.open(filePath, '_blank');
-      }
-    } catch (error) {
-      console.error("Erreur lors de l'ouverture du document:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible d'ouvrir le document",
-        variant: "destructive"
-      });
-    }
+    handleDownload(filePath, "document");
   };
   
   const confirmDelete = (documentId: string) => {
@@ -269,7 +249,7 @@ const DirectivesDocs = () => {
                   onDownload={handleDownload}
                   onPrint={() => handlePrint(doc.file_path, doc.content_type)}
                   onShare={handleShare}
-                  onView={() => handleView(doc.file_path, doc.content_type)}
+                  onView={handleView}
                   onDelete={confirmDelete}
                 />
               ))}

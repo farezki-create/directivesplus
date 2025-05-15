@@ -6,7 +6,6 @@ import {
   renderPersonalInfo, 
   renderTrustedPersons, 
   renderQuestionnaires, 
-  renderPhrases, 
   renderFreeText, 
   renderSignature, 
   addSignatureFooter, 
@@ -84,18 +83,8 @@ export const generatePDF = async (data: PdfData): Promise<any> => {
     yPosition = checkPageBreak(pdf, layout, yPosition);
     yPosition = renderQuestionnaires(pdf, layout, yPosition, data.responses, translateResponse);
     
-    // Render example phrases if available
-    if (data.examplePhrases && data.examplePhrases.length > 0) {
-      yPosition = checkPageBreak(pdf, layout, yPosition);
-      yPosition = renderPhrases(pdf, layout, yPosition, data.examplePhrases, "Phrases d'exemples sélectionnées");
-    }
-    
-    // Render custom phrases if available
-    if (data.customPhrases && data.customPhrases.length > 0) {
-      yPosition = checkPageBreak(pdf, layout, yPosition);
-      yPosition = renderPhrases(pdf, layout, yPosition, data.customPhrases, "Phrases personnalisées");
-    }
-    
+    // Removed example phrases and custom phrases sections
+
     // Render free text section if available
     if (data.freeText) {
       yPosition = checkPageBreak(pdf, layout, yPosition);

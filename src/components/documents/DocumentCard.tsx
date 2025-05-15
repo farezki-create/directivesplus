@@ -62,7 +62,7 @@ const DocumentCard: FC<DocumentCardProps> = ({
         <Button 
           variant="outline"
           className="flex items-center gap-2"
-          onClick={() => onView(document.file_path, document.content_type)}
+          onClick={() => onDownload(document.file_path, document.file_name)}
         >
           <Eye size={16} />
           {isAudio ? "Écouter" : "Visualiser"}
