@@ -1,8 +1,17 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Question, ResponseData } from "./types";
+import { Question } from "./types";
 import { toast } from "@/hooks/use-toast";
 import { getResponseTable } from "./dataFetchers";
+
+// Define a simple response object type to avoid complex type inference
+type SimpleResponseObject = {
+  question_id: string;
+  response: string;
+  questionnaire_type: string;
+  user_id: string;
+  question_text: string;
+};
 
 // Save user responses to the database
 export async function saveResponses(
@@ -15,33 +24,32 @@ export async function saveResponses(
   
   const responseTable = getResponseTable(pageId);
   
-  // Create a basic array without complex typing
-  const responsesToSave = [];
+  // Create a basic array with explicit typing
+  const responsesToSave: SimpleResponseObject[] = [];
   
-  // Process each response entry with minimal type complexity
-  for (const questionId in responses) {
-    // Only process if the response has own property to avoid prototype chain issues
-    if (Object.prototype.hasOwnProperty.call(responses, questionId)) {
-      const responseValue = responses[questionId];
-      
-      // Find question text using simple loop
-      let questionText = '';
-      for (let i = 0; i < questions.length; i++) {
-        if (questions[i].id === questionId) {
-          questionText = questions[i].question;
-          break;
-        }
+  // Process responses using a traditional for-in loop with Object.keys
+  const keys = Object.keys(responses);
+  for (let i = 0; i < keys.length; i++) {
+    const questionId = keys[i];
+    const responseValue = responses[questionId];
+    
+    // Find question text using simple loop
+    let questionText = '';
+    for (let j = 0; j < questions.length; j++) {
+      if (questions[j].id === questionId) {
+        questionText = questions[j].question;
+        break;
       }
-      
-      // Add response as a plain object
-      responsesToSave.push({
-        question_id: questionId,
-        response: responseValue,
-        questionnaire_type: pageId,
-        user_id: userId,
-        question_text: questionText
-      });
     }
+    
+    // Create a simple object and add it to the array
+    responsesToSave.push({
+      question_id: questionId,
+      response: responseValue,
+      questionnaire_type: pageId,
+      user_id: userId,
+      question_text: questionText
+    });
   }
   
   console.log('Responses to save:', responsesToSave);
