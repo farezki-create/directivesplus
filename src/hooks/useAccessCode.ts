@@ -32,15 +32,15 @@ export const useAccessCode = (user: User | null, type: "directive" | "medical") 
         .from('document_access_codes')
         .select('access_code')
         .eq('user_id', user.id)
-        .eq(tableField, true)
-        .single();
+        .eq(tableField, true);
         
-      if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows returned" error
+      if (error) {
         throw error;
       }
         
-      if (data?.access_code) {
-        setAccessCode(data.access_code);
+      // If we have a matching access code, use it
+      if (data && data.length > 0 && data[0].access_code) {
+        setAccessCode(data[0].access_code);
         return;
       }
       
