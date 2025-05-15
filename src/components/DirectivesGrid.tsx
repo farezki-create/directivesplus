@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, BookOpenCheck, UserCog, FileText } from "lucide-react";
+import { ShieldCheck, BookOpenCheck, UserCog, FileText, Hospital } from "lucide-react";
 
 const DirectivesGrid = () => {
   return (
@@ -11,7 +11,10 @@ const DirectivesGrid = () => {
           <div className="bg-blue-100 p-3 rounded-full mb-4">
             <ShieldCheck className="h-6 w-6 text-blue-600" />
           </div>
-          <h3 className="font-semibold text-lg mb-2">Avis Général</h3>
+          <h3 className="font-semibold text-lg mb-2">
+            <span className="inline-flex items-center justify-center bg-blue-600 text-white rounded-full h-6 w-6 mr-2 text-sm">1</span>
+            Avis Général
+          </h3>
           <p className="text-gray-600 text-sm">
             Exprimez vos préférences générales concernant votre santé et vos soins.
           </p>
@@ -23,7 +26,10 @@ const DirectivesGrid = () => {
           <div className="bg-green-100 p-3 rounded-full mb-4">
             <BookOpenCheck className="h-6 w-6 text-green-600" />
           </div>
-          <h3 className="font-semibold text-lg mb-2">Maintien en Vie</h3>
+          <h3 className="font-semibold text-lg mb-2">
+            <span className="inline-flex items-center justify-center bg-green-600 text-white rounded-full h-6 w-6 mr-2 text-sm">2</span>
+            Maintien en Vie
+          </h3>
           <p className="text-gray-600 text-sm">
             Spécifiez vos souhaits concernant les traitements de maintien en vie.
           </p>
@@ -35,7 +41,10 @@ const DirectivesGrid = () => {
           <div className="bg-yellow-100 p-3 rounded-full mb-4">
             <UserCog className="h-6 w-6 text-yellow-600" />
           </div>
-          <h3 className="font-semibold text-lg mb-2">Maladie Avancée</h3>
+          <h3 className="font-semibold text-lg mb-2">
+            <span className="inline-flex items-center justify-center bg-yellow-600 text-white rounded-full h-6 w-6 mr-2 text-sm">3</span>
+            Maladie Avancée
+          </h3>
           <p className="text-gray-600 text-sm">
             Indiquez vos préférences pour les soins en cas de maladie grave.
           </p>
@@ -47,21 +56,12 @@ const DirectivesGrid = () => {
           <div className="bg-indigo-100 p-3 rounded-full mb-4">
             <UserCog className="h-6 w-6 text-indigo-600" />
           </div>
-          <h3 className="font-semibold text-lg mb-2">Goûts et Peurs</h3>
+          <h3 className="font-semibold text-lg mb-2">
+            <span className="inline-flex items-center justify-center bg-indigo-600 text-white rounded-full h-6 w-6 mr-2 text-sm">4</span>
+            Goûts et Peurs
+          </h3>
           <p className="text-gray-600 text-sm">
             Partagez vos préférences personnelles et vos craintes concernant les soins.
-          </p>
-        </div>
-      </Link>
-
-      <Link to="/personne-confiance" className="group">
-        <div className="bg-white border rounded-lg p-6 shadow-sm transition-all hover:shadow-md flex flex-col items-center justify-center text-center h-full">
-          <div className="bg-purple-100 p-3 rounded-full mb-4">
-            <UserCog className="h-6 w-6 text-purple-600" />
-          </div>
-          <h3 className="font-semibold text-lg mb-2">Personne de Confiance</h3>
-          <p className="text-gray-600 text-sm">
-            Désignez une personne de confiance pour vous représenter.
           </p>
         </div>
       </Link>
@@ -71,21 +71,27 @@ const DirectivesGrid = () => {
           <div className="bg-teal-100 p-3 rounded-full mb-4">
             <UserCog className="h-6 w-6 text-teal-600" />
           </div>
-          <h3 className="font-semibold text-lg mb-2">Exemples de Phrases</h3>
+          <h3 className="font-semibold text-lg mb-2">
+            <span className="inline-flex items-center justify-center bg-teal-600 text-white rounded-full h-6 w-6 mr-2 text-sm">5</span>
+            Exemples de Phrases
+          </h3>
           <p className="text-gray-600 text-sm">
             Inspirez-vous d'exemples pour rédiger vos directives.
           </p>
         </div>
       </Link>
-      
-      <Link to="/synthese" className="group">
+
+      <Link to="/personne-confiance" className="group">
         <div className="bg-white border rounded-lg p-6 shadow-sm transition-all hover:shadow-md flex flex-col items-center justify-center text-center h-full">
-          <div className="bg-blue-100 p-3 rounded-full mb-4">
-            <FileText className="h-6 w-6 text-blue-600" />
+          <div className="bg-purple-100 p-3 rounded-full mb-4">
+            <UserCog className="h-6 w-6 text-purple-600" />
           </div>
-          <h3 className="font-semibold text-lg mb-2">Synthèse</h3>
+          <h3 className="font-semibold text-lg mb-2">
+            <span className="inline-flex items-center justify-center bg-purple-600 text-white rounded-full h-6 w-6 mr-2 text-sm">6</span>
+            Personne de Confiance
+          </h3>
           <p className="text-gray-600 text-sm">
-            Générer une synthèse complète de vos directives et la télécharger au format PDF.
+            Désignez une personne de confiance pour vous représenter.
           </p>
         </div>
       </Link>
@@ -95,9 +101,40 @@ const DirectivesGrid = () => {
           <div className="bg-orange-100 p-3 rounded-full mb-4">
             <FileText className="h-6 w-6 text-orange-600" />
           </div>
-          <h3 className="font-semibold text-lg mb-2">Mes Directives</h3>
+          <h3 className="font-semibold text-lg mb-2">
+            Mes Directives
+          </h3>
           <p className="text-gray-600 text-sm">
             Visualisez, imprimez et partagez vos directives anticipées.
+          </p>
+        </div>
+      </Link>
+
+      <Link to="/donnees-medicales" className="group">
+        <div className="bg-white border rounded-lg p-6 shadow-sm transition-all hover:shadow-md flex flex-col items-center justify-center text-center h-full">
+          <div className="bg-red-100 p-3 rounded-full mb-4">
+            <Hospital className="h-6 w-6 text-red-600" />
+          </div>
+          <h3 className="font-semibold text-lg mb-2">
+            Données Médicales
+          </h3>
+          <p className="text-gray-600 text-sm">
+            Gérez vos documents médicaux importants et informations de santé.
+          </p>
+        </div>
+      </Link>
+      
+      <Link to="/synthese" className="group">
+        <div className="bg-white border rounded-lg p-6 shadow-sm transition-all hover:shadow-md flex flex-col items-center justify-center text-center h-full">
+          <div className="bg-blue-100 p-3 rounded-full mb-4">
+            <FileText className="h-6 w-6 text-blue-600" />
+          </div>
+          <h3 className="font-semibold text-lg mb-2">
+            <span className="inline-flex items-center justify-center bg-blue-600 text-white rounded-full h-6 w-6 mr-2 text-sm">7</span>
+            Synthèse
+          </h3>
+          <p className="text-gray-600 text-sm">
+            Générer une synthèse complète de vos directives et la télécharger au format PDF.
           </p>
         </div>
       </Link>

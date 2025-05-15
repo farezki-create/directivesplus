@@ -5,30 +5,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import AppNavigation from "@/components/AppNavigation";
 import { toast } from "@/hooks/use-toast";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import DocumentCard from "@/components/documents/DocumentCard";
-import EmptyDocumentsState from "@/components/documents/EmptyDocumentsState";
-import AudioRecorder from "@/components/documents/AudioRecorder";
-import DocumentUploader from "@/components/documents/DocumentUploader";
+
+// Import refactored components
+import DirectivesPageHeader from "@/components/documents/DirectivesPageHeader";
+import DirectivesDocumentList from "@/components/documents/DirectivesDocumentList";
+import DirectivesAddDocumentSection from "@/components/documents/DirectivesAddDocumentSection";
+import DocumentPreviewDialog from "@/components/documents/DocumentPreviewDialog";
+import DeleteConfirmationDialog from "@/components/documents/DeleteConfirmationDialog";
 import AccessCodeDisplay from "@/components/documents/AccessCodeDisplay";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+
+// Import custom hooks
+import { useDocumentOperations } from "@/hooks/useDocumentOperations";
+import { useAccessCode } from "@/hooks/useAccessCode";
 
 interface Document {
   id: string;
@@ -45,65 +33,32 @@ const DirectivesDocs = () => {
   const navigate = useNavigate();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
-  const [documentToDelete, setDocumentToDelete] = useState<string | null>(null);
   const [showAddOptions, setShowAddOptions] = useState(false);
-  const [previewDocument, setPreviewDocument] = useState<string | null>(null);
-  const [accessCode, setAccessCode] = useState<string | null>(null);
+
+  // Custom hooks
+  const accessCode = useAccessCode(user, "directive");
+  const {
+    previewDocument,
+    setPreviewDocument,
+    documentToDelete,
+    setDocumentToDelete,
+    handleDownload,
+    handlePrint,
+    handleShare,
+    handleView,
+    confirmDelete,
+    handleDelete
+  } = useDocumentOperations(fetchDocuments);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       navigate("/auth", { state: { from: "/mes-directives" } });
     } else if (isAuthenticated && user) {
       fetchDocuments();
-      generateAccessCode();
     }
   }, [isAuthenticated, isLoading, user]);
 
-  const generateAccessCode = async () => {
-    if (!user) return;
-    
-    try {
-      // Vérifier si l'utilisateur a déjà un code d'accès pour les directives
-      const { data, error } = await supabase
-        .from('document_access_codes')
-        .select('access_code')
-        .eq('user_id', user.id)
-        .is('document_id', null)
-        .single();
-        
-      if (data?.access_code) {
-        setAccessCode(data.access_code);
-        return;
-      }
-      
-      // Générer un nouveau code d'accès si aucun n'existe
-      const newAccessCode = generateRandomCode(8);
-      
-      // Créer un enregistrement dans document_access_codes
-      await supabase
-        .from('document_access_codes')
-        .insert({
-          user_id: user.id,
-          access_code: newAccessCode,
-          is_full_access: true,
-        });
-        
-      setAccessCode(newAccessCode);
-    } catch (error) {
-      console.error("Erreur lors de la récupération du code d'accès:", error);
-    }
-  };
-  
-  const generateRandomCode = (length: number) => {
-    const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    let result = '';
-    for (let i = 0; i < length; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return result;
-  };
-
-  const fetchDocuments = async () => {
+  async function fetchDocuments() {
     if (!user) return;
     
     try {
@@ -127,118 +82,7 @@ const DirectivesDocs = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleDownload = (filePath: string, fileName: string) => {
-    try {
-      // Pour les fichiers audio, afficher dans une boîte de dialogue
-      if (filePath.includes('audio')) {
-        setPreviewDocument(filePath);
-        return;
-      }
-      
-      // Pour les PDF et autres documents, télécharger et ouvrir
-      const link = document.createElement('a');
-      link.href = filePath;
-      link.target = '_blank';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      toast({
-        title: "Document ouvert",
-        description: "Votre document a été ouvert dans un nouvel onglet"
-      });
-    } catch (error) {
-      console.error("Erreur lors de l'ouverture du document:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible d'ouvrir le document",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handlePrint = (filePath: string, contentType: string = "application/pdf") => {
-    try {
-      if (filePath.startsWith('data:') && filePath.includes('audio')) {
-        toast({
-          title: "Information",
-          description: "L'impression n'est pas disponible pour les fichiers audio."
-        });
-        return;
-      }
-      
-      // Ouvrir le document dans un nouvel onglet pour impression
-      const printWindow = window.open(filePath, '_blank');
-      if (printWindow) {
-        printWindow.focus();
-        // Attendre que le contenu soit chargé avant d'imprimer
-        printWindow.onload = () => {
-          try {
-            printWindow.print();
-          } catch (err) {
-            console.error("Erreur lors de l'impression:", err);
-          }
-        };
-      } else {
-        throw new Error("Impossible d'ouvrir une nouvelle fenêtre");
-      }
-    } catch (error) {
-      console.error("Erreur lors de l'impression:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible d'imprimer le document",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleShare = (documentId: string) => {
-    // À implémenter: fonctionnalité pour partager le document
-    toast({
-      title: "Fonctionnalité en développement",
-      description: "Le partage de document sera bientôt disponible"
-    });
-  };
-  
-  const handleView = (filePath: string, contentType: string = "application/pdf") => {
-    handleDownload(filePath, "document");
-  };
-  
-  const confirmDelete = (documentId: string) => {
-    setDocumentToDelete(documentId);
-  };
-  
-  const handleDelete = async () => {
-    if (!documentToDelete) return;
-    
-    try {
-      const { error } = await supabase
-        .from('pdf_documents')
-        .delete()
-        .eq('id', documentToDelete);
-      
-      if (error) throw error;
-      
-      toast({
-        title: "Document supprimé",
-        description: "Le document a été supprimé avec succès"
-      });
-      
-      // Rafraîchir la liste des documents
-      fetchDocuments();
-    } catch (error: any) {
-      console.error("Erreur lors de la suppression du document:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de supprimer le document",
-        variant: "destructive"
-      });
-    } finally {
-      setDocumentToDelete(null);
-    }
-  };
+  }
 
   const handleUploadComplete = (url: string, fileName: string) => {
     fetchDocuments();
@@ -262,16 +106,9 @@ const DirectivesDocs = () => {
       
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bold">Mes Directives</h1>
-            <Button
-              onClick={() => setShowAddOptions(!showAddOptions)}
-              className="flex items-center gap-2"
-            >
-              <Plus size={16} />
-              Ajouter un document
-            </Button>
-          </div>
+          <DirectivesPageHeader 
+            onAddDocument={() => setShowAddOptions(!showAddOptions)} 
+          />
 
           {accessCode && profile && (
             <AccessCodeDisplay 
@@ -284,68 +121,33 @@ const DirectivesDocs = () => {
           )}
 
           {showAddOptions && user && (
-            <div className="mb-8">
-              <AudioRecorder 
-                userId={user.id}
-                onRecordingComplete={handleUploadComplete}
-              />
-              <DocumentUploader 
-                userId={user.id}
-                onUploadComplete={handleUploadComplete}
-              />
-            </div>
+            <DirectivesAddDocumentSection 
+              userId={user.id}
+              onUploadComplete={handleUploadComplete}
+            />
           )}
           
-          {documents.length === 0 ? (
-            <EmptyDocumentsState />
-          ) : (
-            <div className="grid gap-6">
-              {documents.map((doc) => (
-                <DocumentCard 
-                  key={doc.id}
-                  document={doc}
-                  onDownload={handleDownload}
-                  onPrint={() => handlePrint(doc.file_path, doc.content_type)}
-                  onShare={handleShare}
-                  onView={handleView}
-                  onDelete={confirmDelete}
-                />
-              ))}
-            </div>
-          )}
+          <DirectivesDocumentList 
+            documents={documents}
+            onDownload={handleDownload}
+            onPrint={handlePrint}
+            onShare={handleShare}
+            onView={handleView}
+            onDelete={confirmDelete}
+          />
         </div>
       </main>
       
-      <AlertDialog open={!!documentToDelete} onOpenChange={() => setDocumentToDelete(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
-            <AlertDialogDescription>
-              Êtes-vous sûr de vouloir supprimer ce document ? Cette action est irréversible.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
-              Supprimer
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteConfirmationDialog
+        documentId={documentToDelete}
+        onOpenChange={() => setDocumentToDelete(null)}
+        onConfirmDelete={handleDelete}
+      />
 
-      <Dialog open={!!previewDocument} onOpenChange={() => setPreviewDocument(null)}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Prévisualisation audio</DialogTitle>
-            <DialogDescription>
-              Écoutez votre enregistrement audio
-            </DialogDescription>
-          </DialogHeader>
-          {previewDocument && previewDocument.includes('audio') && (
-            <audio className="w-full" controls src={previewDocument} />
-          )}
-        </DialogContent>
-      </Dialog>
+      <DocumentPreviewDialog
+        filePath={previewDocument}
+        onOpenChange={() => setPreviewDocument(null)}
+      />
       
       <footer className="bg-white py-6 border-t mt-auto">
         <div className="container mx-auto px-4 text-center text-gray-500">

@@ -15,14 +15,12 @@ import PlaceholderPage from "@/pages/PlaceholderPage";
 import DirectivesDocs from "@/pages/DirectivesDocs";
 import MedicalData from "@/pages/MedicalData";
 import AccessDocuments from "@/pages/AccessDocuments";
-
-// Import questionnaire pages
-import AvisGeneral from "@/pages/questionnaire/AvisGeneral";
-import MaintienVie from "@/pages/questionnaire/MaintienVie";
-import MaladieAvancee from "@/pages/questionnaire/MaladieAvancee";
-import GoutsPeurs from "@/pages/questionnaire/GoutsPeurs";
-import PersonneConfiance from "@/pages/questionnaire/PersonneConfiance";
-import ExemplesPhrases from "@/pages/questionnaire/ExemplesPhrases";
+import AvisGeneral from "@/pages/AvisGeneral";
+import MaintienVie from "@/pages/MaintienVie";
+import MaladieAvancee from "@/pages/MaladieAvancee";
+import GoutsPeurs from "@/pages/GoutsPeurs";
+import ExemplesPhrases from "@/pages/ExemplesPhrases";
+import PersonneConfiance from "@/pages/PersonneConfiance";
 
 import "./App.css";
 
@@ -42,13 +40,14 @@ const App = () => {
           <Route path="/acces-document" element={<AccessDocuments />} />
           <Route path="/admin" element={<Admin />} />
           
-          {/* Questionnaire section routes */}
+          {/* New routes for directive sections */}
           <Route path="/avis-general" element={<AvisGeneral />} />
           <Route path="/maintien-vie" element={<MaintienVie />} />
           <Route path="/maladie-avancee" element={<MaladieAvancee />} />
           <Route path="/gouts-peurs" element={<GoutsPeurs />} />
-          <Route path="/personne-confiance" element={<PersonneConfiance />} />
           <Route path="/exemples-phrases" element={<ExemplesPhrases />} />
+          <Route path="/personne-confiance" element={<PersonneConfiance />} />
+          <Route path="/synthese" element={<Synthesis />} />
           
           <Route path="*" element={<NotFound />} />
         </Routes>
