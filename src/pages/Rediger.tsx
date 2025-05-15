@@ -1,6 +1,6 @@
 
 import { useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import AppNavigation from "@/components/AppNavigation";
 import DirectivesGrid from "@/components/DirectivesGrid";
@@ -9,19 +9,13 @@ import { toast } from "@/components/ui/use-toast";
 const Rediger = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
 
   useEffect(() => {
     // Only redirect if authentication state is loaded and user is not authenticated
     if (!isLoading && !isAuthenticated) {
       console.log("User not authenticated, redirecting to auth page");
-      // Pass the current location as state to redirect back after login
-      navigate("/auth", { state: { from: location.pathname }, replace: true });
-      return;
-    }
-    
-    // Only show welcome toast if user is authenticated and loaded
-    if (!isLoading && isAuthenticated && user) {
+      navigate("/auth", { state: { from: "/rediger" } });
+    } else if (!isLoading && isAuthenticated && user) {
       console.log("User authenticated:", user.id);
       // Show a welcome toast when authenticated user arrives
       toast({
@@ -29,7 +23,7 @@ const Rediger = () => {
         description: "Vous pouvez commencer à rédiger vos directives.",
       });
     }
-  }, [isAuthenticated, isLoading, navigate, user, location.pathname]);
+  }, [isAuthenticated, isLoading, navigate, user]);
 
   // Show loading indicator while checking auth
   if (isLoading) {

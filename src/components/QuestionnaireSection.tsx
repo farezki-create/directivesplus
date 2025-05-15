@@ -38,12 +38,11 @@ const QuestionnaireSection = () => {
   }, [pageId, questions, loading, error]);
   
   if (loading) {
-    console.log("QuestionnaireSection - showing loading state");
     return <LoadingState loading={loading} />;
   }
   
   if (error) {
-    console.log("QuestionnaireSection - showing error state:", error);
+    // Display a toast notification for errors
     toast({
       title: "Erreur",
       description: error,
@@ -54,7 +53,6 @@ const QuestionnaireSection = () => {
   
   // Check if we have questions after loading
   if (!questions || questions.length === 0) {
-    console.log("QuestionnaireSection - no questions available");
     return (
       <div className="space-y-8 max-w-3xl mx-auto">
         <div className="mb-6">

@@ -1,12 +1,11 @@
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import AppNavigation from "@/components/AppNavigation";
 import SynthesisContent from "@/components/synthesis/SynthesisContent";
 import { toast } from "@/hooks/use-toast";
-import { Skeleton } from "@/components/ui/skeleton";
-import { supabase } from "@/integrations/supabase/client";
 
 const Synthesis = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -52,24 +51,11 @@ const Synthesis = () => {
     fetchProfileData();
   }, [user]);
 
-  // Show loading indicator for both auth and profile data
+  // Show loading indicator while checking auth
   if (isLoading || loading) {
     return (
-      <div className="min-h-screen flex flex-col">
-        <AppNavigation />
-        
-        <main className="flex-grow container mx-auto px-4 py-8">
-          <div className="space-y-8 max-w-4xl mx-auto">
-            <Skeleton className="h-10 w-2/3 mx-auto" />
-            <Skeleton className="h-[500px] w-full" />
-          </div>
-        </main>
-        
-        <footer className="bg-white py-6 border-t mt-auto">
-          <div className="container mx-auto px-4 text-center text-gray-500">
-            <p>© 2025 DirectivesPlus. Tous droits réservés.</p>
-          </div>
-        </footer>
+      <div className="h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-directiveplus-600"></div>
       </div>
     );
   }

@@ -1,5 +1,4 @@
-
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,7 +11,6 @@ interface ProtectedRouteProps {
 const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   const { isAuthenticated, isLoading, profile } = useAuth();
   const location = useLocation();
-  const [isRedirecting, setIsRedirecting] = useState(false);
   
   useEffect(() => {
     console.log("ProtectedRoute: isAuthenticated =", isAuthenticated, "isLoading =", isLoading, "requiredRole =", requiredRole);
@@ -26,11 +24,9 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     );
   }
 
-  // Prevent navigation loop by checking if we're already redirecting
-  if (!isAuthenticated && !isRedirecting) {
+  if (!isAuthenticated) {
     // Store the current path to redirect back after login
     console.log("Not authenticated, redirecting to auth from:", location.pathname);
-    setIsRedirecting(true);
     return <Navigate to="/auth" state={{ from: location.pathname }} replace />;
   }
 
@@ -41,9 +37,8 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
       ? userRoles.includes(requiredRole)
       : userRoles === requiredRole;
     
-    if (!hasRequiredRole && !isRedirecting) {
+    if (!hasRequiredRole) {
       console.log(`User does not have required role: ${requiredRole}`);
-      setIsRedirecting(true);
       return <Navigate to="/dashboard" state={{ from: location.pathname }} replace />;
     }
   }
@@ -52,5 +47,4 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   return <>{children}</>;
 };
 
-export { ProtectedRoute };
 export default ProtectedRoute;
