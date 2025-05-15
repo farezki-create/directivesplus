@@ -37,10 +37,10 @@ const AccessDocumentForm = () => {
         </CardHeader>
 
         <Form {...form}>
-          <form onSubmit={(e) => {
-            e.preventDefault();
-            console.log("Formulaire soumis");
-          }}>
+          <form onSubmit={form.handleSubmit((data) => {
+            console.log("Formulaire soumis avec données:", data);
+            // Don't take any action here - actions are handled by FormActions component
+          })}>
             <CardContent className="space-y-4">
               <FormField 
                 id="lastName"
