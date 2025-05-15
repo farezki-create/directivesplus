@@ -50,7 +50,7 @@ const PlaceholderPage = () => {
   console.log('Current pageId:', pageId);
   console.log('Is trusted persons page:', isTrustedPersonsPage);
   
-  // Now that we can identify the page correctly, show appropriate toast notifications
+  // Show toast notification for the trusted persons page
   useEffect(() => {
     if (isTrustedPersonsPage) {
       toast({
@@ -65,19 +65,6 @@ const PlaceholderPage = () => {
       <AppNavigation />
       
       <main className="flex-grow container mx-auto px-4 py-8">
-        {!isQuestionnairePage && !isTrustedPersonsPage && !isExamplesPage && (
-          <div className="mb-6">
-            <Button
-              variant="outline"
-              onClick={() => navigate("/rediger")}
-              className="flex items-center gap-2"
-            >
-              <ArrowLeft size={16} />
-              Retour à la rédaction
-            </Button>
-          </div>
-        )}
-
         {isQuestionnairePage ? (
           <QuestionnaireSection />
         ) : isTrustedPersonsPage ? (
@@ -85,13 +72,26 @@ const PlaceholderPage = () => {
         ) : isExamplesPage ? (
           <ExamplesSection />
         ) : (
-          <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-3xl font-bold mb-4">
-              Page en construction
-            </h1>
-            <p className="text-gray-600">
-              Cette section sera disponible prochainement.
-            </p>
+          <div>
+            <div className="mb-6">
+              <Button
+                variant="outline"
+                onClick={() => navigate("/rediger")}
+                className="flex items-center gap-2"
+              >
+                <ArrowLeft size={16} />
+                Retour à la rédaction
+              </Button>
+            </div>
+            
+            <div className="max-w-3xl mx-auto text-center">
+              <h1 className="text-3xl font-bold mb-4">
+                Page en construction
+              </h1>
+              <p className="text-gray-600">
+                Cette section sera disponible prochainement.
+              </p>
+            </div>
           </div>
         )}
       </main>
