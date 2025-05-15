@@ -13,49 +13,54 @@ interface PdfData {
   userId?: string;
 }
 
-// This function would normally use a PDF generation library like jsPDF
-// For now we'll create a placeholder that downloads the signature as an image
-export const generatePDF = async (data: PdfData): Promise<void> => {
+// Cette fonction utiliserait normalement une bibliothèque de génération de PDF comme jsPDF
+// Pour l'instant, nous allons créer un espace réservé qui télécharge la signature en tant qu'image
+export const generatePDF = async (data: PdfData): Promise<any> => {
   try {
-    console.log("Generating PDF with data:", data);
+    console.log("Génération du PDF avec les données:", data);
     
-    // For demonstration purposes, we're just downloading the signature
-    // In a real implementation, you would use jsPDF or similar to create a full PDF
+    // Pour les besoins de la démonstration, nous téléchargeons simplement la signature
+    // Dans une implémentation réelle, vous utiliseriez jsPDF ou similaire pour créer un PDF complet
     
-    // Create a temporary link element
+    // Créer un élément de lien temporaire
     const link = document.createElement('a');
     link.href = data.signature;
     link.download = `directives-anticipees-${new Date().toISOString().split('T')[0]}.png`;
     
-    // Append to the document, click it and remove it
+    // Ajouter au document, cliquer dessus et le supprimer
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     
-    // Store information about the PDF generation in the database
+    // Stocker des informations sur la génération du PDF dans la base de données
     if (data.userId) {
+      const fileName = `directives-anticipees-${new Date().toISOString().split('T')[0]}.pdf`;
       const pdfRecord = {
         user_id: data.userId,
-        file_name: `directives-anticipees-${new Date().toISOString().split('T')[0]}.pdf`,
-        file_path: data.signature, // In a real implementation, this would be the URL to the stored PDF
+        file_name: fileName,
+        file_path: data.signature, // Dans une implémentation réelle, ce serait l'URL vers le PDF stocké
         content_type: "application/pdf",
-        file_size: 0, // In a real implementation, this would be the actual file size
+        file_size: 0, // Dans une implémentation réelle, ce serait la taille réelle du fichier
         description: "Directives anticipées générées",
         created_at: new Date().toISOString()
       };
       
-      const { error } = await supabase
+      const { data: insertedData, error } = await supabase
         .from('pdf_documents')
-        .insert(pdfRecord);
+        .insert(pdfRecord)
+        .select();
       
       if (error) {
-        console.error("Error saving PDF record:", error);
+        console.error("Erreur lors de l'enregistrement du PDF:", error);
+        throw error;
       }
+      
+      return insertedData;
     }
     
-    return Promise.resolve();
+    return Promise.resolve(null);
   } catch (error) {
-    console.error("Error in PDF generation:", error);
+    console.error("Erreur dans la génération du PDF:", error);
     return Promise.reject(error);
   }
 };

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ShieldCheck, BookOpenCheck, UserCog, FileText } from "lucide-react";
@@ -85,6 +86,18 @@ const DirectivesGrid = () => {
           <h3 className="font-semibold text-lg mb-2">Synthèse</h3>
           <p className="text-gray-600 text-sm">
             Générer une synthèse complète de vos directives et la télécharger au format PDF.
+          </p>
+        </div>
+      </Link>
+
+      <Link to="/mes-directives" className="group">
+        <div className="bg-white border rounded-lg p-6 shadow-sm transition-all hover:shadow-md flex flex-col items-center justify-center text-center h-full">
+          <div className="bg-orange-100 p-3 rounded-full mb-4">
+            <FileText className="h-6 w-6 text-orange-600" />
+          </div>
+          <h3 className="font-semibold text-lg mb-2">Mes Directives</h3>
+          <p className="text-gray-600 text-sm">
+            Visualisez, imprimez et partagez vos directives anticipées.
           </p>
         </div>
       </Link>

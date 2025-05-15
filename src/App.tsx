@@ -12,6 +12,7 @@ import Auth from '@/pages/Auth';
 import NotFound from '@/pages/NotFound';
 import PlaceholderPage from '@/pages/PlaceholderPage';
 import Synthesis from '@/pages/Synthesis';
+import DirectivesDocs from '@/pages/DirectivesDocs';
 import { AuthProvider } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
@@ -20,15 +21,15 @@ const queryClient = new QueryClient();
 
 const App = () => {
   return (
-    <QueryClientProvider client={queryClient}>
+    <BrowserRouter>
       <ThemeProvider
         attribute="class"
         defaultTheme="system"
         enableSystem
         disableTransitionOnChange
       >
-        <BrowserRouter>
-          <AuthProvider>
+        <AuthProvider>
+          <QueryClientProvider client={queryClient}>
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><Admin /></ProtectedRoute>} />
@@ -37,14 +38,15 @@ const App = () => {
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/synthese" element={<Synthesis />} />
+              <Route path="/mes-directives" element={<DirectivesDocs />} />
               <Route path="/:pageId" element={<PlaceholderPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <Toaster />
-          </AuthProvider>
-        </BrowserRouter>
+          </QueryClientProvider>
+        </AuthProvider>
       </ThemeProvider>
-    </QueryClientProvider>
+    </BrowserRouter>
   );
 }
 

@@ -23,6 +23,7 @@ const SynthesisContent = ({ profileData, userId }: SynthesisContentProps) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const [responses, setResponses] = useState<Record<string, any>>({});
   const [customPhrases, setCustomPhrases] = useState<string[]>([]);
   const [examplePhrases, setExamplePhrases] = useState<string[]>([]);
@@ -107,9 +108,8 @@ const SynthesisContent = ({ profileData, userId }: SynthesisContentProps) => {
   };
 
   const fetchPhrases = async () => {
-    // For now, this is a placeholder. In a real implementation,
-    // we would fetch this data from the database where the user has stored their selected phrases.
-    // Currently, the example doesn't have a database table for this.
+    // Pour l'instant, c'est un espace réservé. Dans une implémentation réelle,
+    // nous récupérerions ces données de la base de données où l'utilisateur a stocké ses phrases sélectionnées.
     setExamplePhrases([]);
     setCustomPhrases([]);
   };
@@ -148,7 +148,7 @@ const SynthesisContent = ({ profileData, userId }: SynthesisContentProps) => {
       
       if (data) {
         setFreeText(data.free_text || "");
-        // Don't override the signature from useSignature hook
+        // Ne pas écraser la signature du hook useSignature
         console.log("Loaded existing synthesis:", data);
       }
       
@@ -164,10 +164,20 @@ const SynthesisContent = ({ profileData, userId }: SynthesisContentProps) => {
     try {
       setSaving(true);
       
-      // 1. Save the signature first
+      // 1. Enregistrer la signature d'abord
+      if (!signature) {
+        toast({
+          title: "Attention",
+          description: "Veuillez signer le document avant de l'enregistrer",
+          variant: "default"
+        });
+        setSaving(false);
+        return;
+      }
+      
       await saveSignature();
       
-      // 2. Save or update the synthesis record
+      // 2. Enregistrer ou mettre à jour l'enregistrement de synthèse
       const { data, error } = await supabase
         .from('questionnaire_synthesis')
         .upsert({
@@ -201,19 +211,22 @@ const SynthesisContent = ({ profileData, userId }: SynthesisContentProps) => {
 
   const handleGeneratePDF = async () => {
     try {
+      setGenerating(true);
+      
       if (!signature) {
         toast({
           title: "Signature requise",
           description: "Veuillez signer le document avant de générer le PDF",
           variant: "destructive"
         });
+        setGenerating(false);
         return;
       }
       
-      // Capture the HTML content for PDF generation
+      // Capturer le contenu HTML pour la génération de PDF
       if (signatureRef.current) {
-        // Call the PDF generation function
-        await generatePDF({
+        // Appeler la fonction de génération de PDF
+        const pdfRecord = await generatePDF({
           profileData,
           responses,
           examplePhrases,
@@ -224,10 +237,17 @@ const SynthesisContent = ({ profileData, userId }: SynthesisContentProps) => {
           userId
         });
         
-        toast({
-          title: "PDF généré",
-          description: "Votre document PDF a été généré et téléchargé"
-        });
+        if (pdfRecord) {
+          toast({
+            title: "PDF généré",
+            description: "Votre document PDF a été généré et enregistré dans 'Mes Directives'"
+          });
+          
+          // Optionnel: Rediriger vers la page des directives après un court délai
+          setTimeout(() => {
+            navigate("/mes-directives");
+          }, 2000);
+        }
       }
     } catch (error: any) {
       console.error("Error generating PDF:", error);
@@ -236,6 +256,8 @@ const SynthesisContent = ({ profileData, userId }: SynthesisContentProps) => {
         description: "Impossible de générer le PDF",
         variant: "destructive"
       });
+    } finally {
+      setGenerating(false);
     }
   };
 
@@ -266,22 +288,22 @@ const SynthesisContent = ({ profileData, userId }: SynthesisContentProps) => {
       
       <div className="bg-white p-6 rounded-lg shadow">
         <div id="synthesis-document" className="space-y-8">
-          {/* Profile information */}
+          {/* Informations du profil */}
           <ProfileSection profileData={profileData} />
           
-          {/* Trusted persons */}
+          {/* Personnes de confiance */}
           <TrustedPersonsSection trustedPersons={trustedPersons} />
           
-          {/* Questionnaire responses */}
+          {/* Réponses aux questionnaires */}
           <QuestionnairesSection responses={responses} />
           
-          {/* Example phrases and custom phrases */}
+          {/* Phrases d'exemples et phrases personnalisées */}
           <ExamplesSection 
             examplePhrases={examplePhrases} 
             customPhrases={customPhrases} 
           />
           
-          {/* Free text section */}
+          {/* Section de texte libre */}
           <div className="space-y-2">
             <h3 className="text-lg font-medium">Précisions complémentaires</h3>
             <textarea
@@ -292,7 +314,7 @@ const SynthesisContent = ({ profileData, userId }: SynthesisContentProps) => {
             />
           </div>
           
-          {/* Signature section */}
+          {/* Section de signature */}
           <div className="space-y-4" ref={signatureRef}>
             <h3 className="text-lg font-medium">Signature</h3>
             <p className="text-sm text-gray-600">
@@ -303,7 +325,13 @@ const SynthesisContent = ({ profileData, userId }: SynthesisContentProps) => {
             </div>
             <SignatureCanvas 
               initialSignature={signature} 
-              onSave={setSignature}
+              onSave={(sig) => {
+                setSignature(sig);
+                toast({
+                  title: "Signature enregistrée",
+                  description: "Votre signature a été capturée avec succès"
+                });
+              }}
             />
           </div>
         </div>
@@ -328,8 +356,13 @@ const SynthesisContent = ({ profileData, userId }: SynthesisContentProps) => {
           variant="outline"
           onClick={handleGeneratePDF}
           className="flex items-center gap-2"
+          disabled={generating}
         >
-          <Download size={16} />
+          {generating ? (
+            <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-directiveplus-600"></div>
+          ) : (
+            <Download size={16} />
+          )}
           Générer PDF
         </Button>
       </div>
