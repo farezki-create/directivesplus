@@ -4,6 +4,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import AppNavigation from "@/components/AppNavigation";
 import { useAuth } from "@/contexts/AuthContext";
 import QuestionnaireSection from "@/components/QuestionnaireSection";
+import TrustedPersonsSection from "@/components/questionnaire/TrustedPersonsSection";
+import ExamplesSection from "@/components/questionnaire/ExamplesSection";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 
@@ -33,34 +35,41 @@ const PlaceholderPage = () => {
   }
 
   // Check if the current page is a questionnaire page
-  const isQuestionnairePage = [
+  const questionnaireSections = [
     'avis-general',
     'maintien-vie',
     'maladie-avancee',
-    'gouts-peurs',
-    'personne-confiance',
-    'exemples-phrases'
-  ].includes(pageId || '');
+    'gouts-peurs'
+  ];
+  
+  const isQuestionnairePage = questionnaireSections.includes(pageId || '');
+  const isTrustedPersonsPage = pageId === 'personne-confiance';
+  const isExamplesPage = pageId === 'exemples-phrases';
 
   return (
     <div className="min-h-screen flex flex-col">
       <AppNavigation />
       
       <main className="flex-grow container mx-auto px-4 py-8">
-        {/* Back button at the top */}
-        <div className="mb-6">
-          <Button
-            variant="outline"
-            onClick={() => navigate("/rediger")}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft size={16} />
-            Retour à la rédaction
-          </Button>
-        </div>
+        {!isQuestionnairePage && !isTrustedPersonsPage && !isExamplesPage && (
+          <div className="mb-6">
+            <Button
+              variant="outline"
+              onClick={() => navigate("/rediger")}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft size={16} />
+              Retour à la rédaction
+            </Button>
+          </div>
+        )}
 
         {isQuestionnairePage ? (
           <QuestionnaireSection />
+        ) : isTrustedPersonsPage ? (
+          <TrustedPersonsSection />
+        ) : isExamplesPage ? (
+          <ExamplesSection />
         ) : (
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-3xl font-bold mb-4">

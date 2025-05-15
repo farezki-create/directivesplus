@@ -13,7 +13,9 @@ export const getSectionTable = (sectionId: string): string => {
     case 'gouts-peurs':
       return 'questionnaire_preferences_fr';
     case 'personne-confiance':
-      return 'questionnaire_trusted_persons_fr';
+      return 'trusted_persons';
+    case 'exemples-phrases':
+      return 'articles'; // Assuming example phrases are stored in articles table
     default:
       console.warn(`No table mapping found for section: ${sectionId}`);
       return '';
