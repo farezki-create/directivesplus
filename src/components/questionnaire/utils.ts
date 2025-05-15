@@ -1,12 +1,28 @@
 
-// This file is now a re-export of functions from our new modules
-// to maintain backward compatibility
-import { getSectionTable, getResponseTable } from "./dataFetchers";
+// Utility functions for questionnaire
+export const getSectionTable = (sectionId: string): string => {
+  switch(sectionId) {
+    case 'avis-general':
+      return 'questionnaire_general_fr';
+    case 'maintien-vie':
+      return 'questionnaire_life_support_fr';
+    case 'maladie-avancee':
+      return 'questionnaire_advanced_illness_fr';
+    case 'gouts-peurs':
+      return 'questionnaire_preferences_fr';
+    default:
+      return '';
+  }
+};
 
-export { getSectionTable, getResponseTable };
+export const getResponseTable = (sectionId: string): string => {
+  if (sectionId === 'gouts-peurs') {
+    return 'questionnaire_preferences_responses';
+  }
+  return 'questionnaire_responses';
+};
 
 export const getSectionTitle = (pageId: string | undefined): string => {
-  console.log('Getting section title for:', pageId);
   switch(pageId) {
     case 'avis-general': 
       return "Avis Général";
@@ -21,7 +37,6 @@ export const getSectionTitle = (pageId: string | undefined): string => {
     case 'exemples-phrases': 
       return "Exemples de Phrases";
     default:
-      console.warn(`No title found for page: ${pageId}`);
       return "";
   }
 };

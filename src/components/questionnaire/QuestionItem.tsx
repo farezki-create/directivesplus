@@ -1,8 +1,9 @@
 
-import { Question } from "./types";
 import { Card, CardContent } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Question } from "./types";
 
 interface QuestionItemProps {
   question: Question;
@@ -11,40 +12,44 @@ interface QuestionItemProps {
 }
 
 const QuestionItem = ({ question, response, onResponseChange }: QuestionItemProps) => {
-  // Get the default options if no specific options are provided
-  const options = question.options || {
-    yes: "Oui",
-    no: "Non",
-    unsure: "Je ne sais pas"
-  };
-
   return (
-    <Card>
+    <Card className="mb-6">
       <CardContent className="p-6">
-        <div>
-          <h3 className="font-medium text-lg">{question.question}</h3>
-          {question.explanation && (
-            <p className="text-gray-600 text-sm mt-2">{question.explanation}</p>
-          )}
-          <RadioGroup
-            value={response}
+        <h3 className="text-lg font-medium mb-2">{question.question}</h3>
+        {question.explanation && (
+          <p className="text-gray-600 mb-4 text-sm">{question.explanation}</p>
+        )}
+        
+        {question.options ? (
+          // Display radio buttons for questions with predefined options
+          <RadioGroup 
+            value={response || ''} 
             onValueChange={(value) => onResponseChange(question.id, value)}
-            className="flex flex-col space-y-2 mt-4"
+            className="space-y-2 mt-2"
           >
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="yes" id={`${question.id}-yes`} />
-              <Label htmlFor={`${question.id}-yes`}>{options.yes}</Label>
+              <Label htmlFor={`${question.id}-yes`}>{question.options.yes}</Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="no" id={`${question.id}-no`} />
-              <Label htmlFor={`${question.id}-no`}>{options.no}</Label>
+              <Label htmlFor={`${question.id}-no`}>{question.options.no}</Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="unsure" id={`${question.id}-unsure`} />
-              <Label htmlFor={`${question.id}-unsure`}>{options.unsure}</Label>
+              <Label htmlFor={`${question.id}-unsure`}>{question.options.unsure}</Label>
             </div>
           </RadioGroup>
-        </div>
+        ) : (
+          // Display textarea for free text answers
+          <Textarea 
+            placeholder="Votre réponse..."
+            value={response || ''}
+            onChange={(e) => onResponseChange(question.id, e.target.value)}
+            className="mt-2"
+            rows={4}
+          />
+        )}
       </CardContent>
     </Card>
   );
