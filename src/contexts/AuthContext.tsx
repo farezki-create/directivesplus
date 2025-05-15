@@ -2,7 +2,18 @@
 import { createContext, useState, useEffect, useContext, ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Session, User, AuthChangeEvent } from "@supabase/supabase-js";
+import { Session, User } from "@supabase/supabase-js";
+
+// Define the specific auth event type that includes all possible values
+type AuthEvent = 
+  | 'INITIAL_SESSION'
+  | 'SIGNED_IN'
+  | 'SIGNED_OUT'
+  | 'USER_UPDATED'
+  | 'PASSWORD_RECOVERY'
+  | 'TOKEN_REFRESHED'
+  | 'EMAIL_CONFIRMED'
+  | 'MFA_CHALLENGE_VERIFIED';
 
 interface AuthContextProps {
   user: User | null;
@@ -46,7 +57,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     console.log("Setting up auth state listener");
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event: AuthChangeEvent, session) => {
+      (event: AuthEvent, session) => {
         console.log("Auth state changed:", event, session?.user?.id);
         
         // Handle specific auth events
