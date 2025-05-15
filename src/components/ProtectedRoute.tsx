@@ -15,10 +15,16 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   const [isRedirecting, setIsRedirecting] = useState(false);
   
   useEffect(() => {
-    console.log("ProtectedRoute: isAuthenticated =", isAuthenticated, "isLoading =", isLoading, "requiredRole =", requiredRole);
-  }, [isAuthenticated, isLoading, requiredRole]);
+    console.log("ProtectedRoute for", location.pathname, "- Auth status:", isAuthenticated ? "Authenticated" : "Not authenticated", "Loading:", isLoading);
+    
+    // Reset redirecting state if authentication succeeds
+    if (isAuthenticated && isRedirecting) {
+      setIsRedirecting(false);
+    }
+  }, [isAuthenticated, isLoading, location.pathname, isRedirecting]);
 
   if (isLoading) {
+    console.log("ProtectedRoute: Loading auth state...");
     return (
       <div className="h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-directiveplus-600" />
@@ -29,7 +35,7 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   // Prevent navigation loop by checking if we're already redirecting
   if (!isAuthenticated && !isRedirecting) {
     // Store the current path to redirect back after login
-    console.log("Not authenticated, redirecting to auth from:", location.pathname);
+    console.log("ProtectedRoute: Not authenticated, redirecting to auth from:", location.pathname);
     setIsRedirecting(true);
     return <Navigate to="/auth" state={{ from: location.pathname }} replace />;
   }
@@ -42,13 +48,13 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
       : userRoles === requiredRole;
     
     if (!hasRequiredRole && !isRedirecting) {
-      console.log(`User does not have required role: ${requiredRole}`);
+      console.log(`ProtectedRoute: User does not have required role: ${requiredRole}`);
       setIsRedirecting(true);
       return <Navigate to="/dashboard" state={{ from: location.pathname }} replace />;
     }
   }
 
-  console.log("Authenticated, rendering protected content");
+  console.log("ProtectedRoute: Authenticated, rendering protected content for", location.pathname);
   return <>{children}</>;
 };
 

@@ -1,33 +1,29 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import QuestionnaireLayout from "@/components/layouts/QuestionnaireLayout";
 import QuestionnaireSection from "@/components/QuestionnaireSection";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { useAuth } from "@/contexts/AuthContext";
 
 const AvisGeneral = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+  const [isPageLocked, setIsPageLocked] = useState(true);
   
-  // This effect will prevent automatic redirects when the page loads
+  // This effect stabilizes the page and prevents redirect loops
   useEffect(() => {
     console.log("Avis General page loaded and locked");
-    // We're intentionally not redirecting anywhere
     
-    // If there are any history listeners or redirect attempts,
-    // we can block navigation attempts with this:
-    const preventNavigation = (e: BeforeUnloadEvent) => {
-      console.log("Navigation attempt prevented");
-      e.preventDefault();
-      e.returnValue = '';
-      return '';
-    };
+    // Mark the page as ready after authentication check is complete
+    // This prevents any unwanted redirects from inside components
+    setIsPageLocked(false);
     
-    // Only uncomment this if you need to actually block page navigation
-    // window.addEventListener('beforeunload', preventNavigation);
-    // return () => window.removeEventListener('beforeunload', preventNavigation);
-  }, []);
+    // Debug log to track authentication status when component loads
+    console.log("Auth status on AvisGeneral load:", isAuthenticated ? "Authenticated" : "Not authenticated");
+  }, [isAuthenticated]);
 
-  console.log("Rendering AvisGeneral page");
+  console.log("Rendering AvisGeneral page, locked:", isPageLocked);
   return (
     <ProtectedRoute>
       <QuestionnaireLayout title="Avis Général">

@@ -1,6 +1,5 @@
-
 import { ReactNode, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import AppNavigation from "@/components/AppNavigation";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -13,15 +12,20 @@ interface QuestionnaireLayoutProps {
 const QuestionnaireLayout = ({ children, title }: QuestionnaireLayoutProps) => {
   const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Check if we're already inside a ProtectedRoute component
+  // This prevents double auth checks and redirect loops
+  const isWrappedInProtectedRoute = location.pathname === "/avis-general"; // Add other protected paths as needed
 
   // Move useEffect hook to the top level - must be called unconditionally
   useEffect(() => {
-    // Only redirect if authentication state is loaded and user is not authenticated
-    if (!isLoading && !isAuthenticated) {
+    // Only redirect if not wrapped in ProtectedRoute and authentication state is loaded and user is not authenticated
+    if (!isWrappedInProtectedRoute && !isLoading && !isAuthenticated) {
       console.log("QuestionnaireLayout: Redirecting to auth page - user not authenticated");
       navigate("/auth", { state: { from: window.location.pathname } });
     }
-  }, [isAuthenticated, isLoading, navigate]);
+  }, [isAuthenticated, isLoading, navigate, isWrappedInProtectedRoute]);
 
   // Render a loading skeleton during the authentication check
   if (isLoading) {
@@ -47,14 +51,13 @@ const QuestionnaireLayout = ({ children, title }: QuestionnaireLayoutProps) => {
     );
   }
 
-  // Important: Only render page content if authenticated
-  // This prevents flash of content before redirect
-  if (!isAuthenticated) {
+  // When wrapped in ProtectedRoute, don't check authentication status again
+  if (!isWrappedInProtectedRoute && !isAuthenticated) {
     console.log("QuestionnaireLayout: Not rendering content - user not authenticated");
     return null;
   }
 
-  console.log("QuestionnaireLayout: Rendering authenticated content");
+  console.log("QuestionnaireLayout: Rendering content");
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <AppNavigation />
