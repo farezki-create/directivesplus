@@ -26,15 +26,17 @@ const LoginForm = ({ redirectPath, onLoginSuccess }: LoginFormProps) => {
       // Clean up auth state before signing in to prevent conflicts
       cleanupAuthState();
       
-      // Attempt to sign out any existing session
+      console.log("Attempting to sign in...");
+      
+      // First attempt to sign out any existing session
       try {
         await supabase.auth.signOut({ scope: 'global' });
       } catch (err) {
         // Continue even if this fails
+        console.log("Pre-signin signout failed, continuing anyway");
       }
       
-      console.log("Attempting to sign in...");
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -47,9 +49,12 @@ const LoginForm = ({ redirectPath, onLoginSuccess }: LoginFormProps) => {
       });
       
       console.log("Sign in successful, redirecting to:", redirectPath);
+      
       // Call onLoginSuccess callback if provided
       if (onLoginSuccess) {
-        onLoginSuccess();
+        setTimeout(() => {
+          onLoginSuccess();
+        }, 0);
       }
     } catch (error: any) {
       console.error("Sign in error:", error);
