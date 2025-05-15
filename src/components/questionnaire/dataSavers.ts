@@ -21,13 +21,17 @@ export async function saveResponses(
   // Manually build each response object to avoid type inference issues
   for (const [questionId, response] of Object.entries(responses)) {
     const questionText = questions.find(q => q.id === questionId)?.question || '';
-    responsesToSave.push({
+    
+    // Explicitly create a properly typed object
+    const responseData: ResponseData = {
       question_id: questionId,
       response: response,
       questionnaire_type: pageId,
       user_id: userId,
       question_text: questionText
-    });
+    };
+    
+    responsesToSave.push(responseData);
   }
   
   console.log('Responses to save:', responsesToSave);
