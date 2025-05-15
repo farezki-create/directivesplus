@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, BookOpenCheck, UserCog, FileText } from "lucide-react";
+import { ShieldCheck, BookOpenCheck, UserCog, FileText, Hospital } from "lucide-react";
 
 const DirectivesGrid = () => {
   return (
@@ -62,6 +62,18 @@ const DirectivesGrid = () => {
           <h3 className="font-semibold text-lg mb-2">Personne de Confiance</h3>
           <p className="text-gray-600 text-sm">
             Désignez une personne de confiance pour vous représenter.
+          </p>
+        </div>
+      </Link>
+
+      <Link to="/donnees-medicales" className="group">
+        <div className="bg-white border rounded-lg p-6 shadow-sm transition-all hover:shadow-md flex flex-col items-center justify-center text-center h-full">
+          <div className="bg-red-100 p-3 rounded-full mb-4">
+            <Hospital className="h-6 w-6 text-red-600" />
+          </div>
+          <h3 className="font-semibold text-lg mb-2">Données Médicales</h3>
+          <p className="text-gray-600 text-sm">
+            Gérez vos documents médicaux importants et informations de santé.
           </p>
         </div>
       </Link>
