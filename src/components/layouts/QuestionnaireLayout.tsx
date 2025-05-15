@@ -18,6 +18,7 @@ const QuestionnaireLayout = ({ children, title }: QuestionnaireLayoutProps) => {
   useEffect(() => {
     // Only redirect if authentication state is loaded and user is not authenticated
     if (!isLoading && !isAuthenticated) {
+      console.log("QuestionnaireLayout: Redirecting to auth page - user not authenticated");
       navigate("/auth", { state: { from: window.location.pathname } });
     }
   }, [isAuthenticated, isLoading, navigate]);
@@ -49,9 +50,11 @@ const QuestionnaireLayout = ({ children, title }: QuestionnaireLayoutProps) => {
   // Important: Only render page content if authenticated
   // This prevents flash of content before redirect
   if (!isAuthenticated) {
+    console.log("QuestionnaireLayout: Not rendering content - user not authenticated");
     return null;
   }
 
+  console.log("QuestionnaireLayout: Rendering authenticated content");
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <AppNavigation />
