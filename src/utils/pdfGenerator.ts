@@ -1,9 +1,13 @@
 
-import { supabase } from "@/integrations/supabase/client";
-import jspdf from "jspdf";
+import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
+import { PdfLayout, renderHeader, renderPersonalInfo, renderTrustedPersons, 
+  renderQuestionnaires, renderPhrases, renderFreeText, renderSignature, 
+  addSignatureFooter } from "./pdfSections";
+import { savePdfToDatabase } from "./pdfStorage";
 
-interface PdfData {
+// Interface for PDF generation data
+export interface PdfData {
   profileData: any;
   responses: Record<string, any>;
   examplePhrases: string[];
@@ -14,337 +18,129 @@ interface PdfData {
   userId?: string;
 }
 
+// Function to translate response strings from English to French
+const translateResponse = (response: string): string => {
+  if (!response) return 'Pas de réponse';
+  
+  const lowerResponse = response.toLowerCase().trim();
+  
+  switch (lowerResponse) {
+    case 'yes':
+      return 'Oui';
+    case 'no':
+      return 'Non';
+    case 'unsure':
+      return 'Incertain';
+    default:
+      return response;
+  }
+};
+
+// Check if a page break is needed and add a new page if so
+const checkPageBreak = (
+  pdf: jsPDF, 
+  layout: PdfLayout, 
+  yPosition: number, 
+  heightNeeded: number = layout.lineHeight * 5,
+  signature?: string
+): number => {
+  if (yPosition + heightNeeded > layout.pageHeight - (layout.margin + layout.footerHeight)) {
+    // Add footer signature before page break
+    if (signature) {
+      addSignatureFooter(pdf, layout, signature);
+    }
+    
+    pdf.addPage();
+    return layout.margin;
+  }
+  return yPosition;
+};
+
+// Main PDF generation function
 export const generatePDF = async (data: PdfData): Promise<any> => {
   try {
     console.log("Génération du PDF avec les données:", data);
     
-    // Créer un nouvel objet PDF
-    const pdf = new jspdf({
+    // Create new PDF document
+    const pdf = new jsPDF({
       orientation: "portrait",
       unit: "mm",
       format: "a4",
     });
     
-    // Variables pour gérer la position et mise en page
+    // Define layout parameters
+    const layout: PdfLayout = {
+      margin: 20,
+      pageWidth: pdf.internal.pageSize.getWidth(),
+      pageHeight: pdf.internal.pageSize.getHeight(),
+      lineHeight: 7,
+      contentWidth: pdf.internal.pageSize.getWidth() - 40, // 2x margins
+      footerHeight: 20
+    };
+    
+    // Start position for content
     let yPosition = 20;
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
-    const lineHeight = 7;
-    const margin = 20;
-    const contentWidth = pageWidth - (margin * 2);
-    const footerHeight = 20;
     
-    // Fonction pour ajouter la signature au bas de chaque page
-    const addSignatureFooter = () => {
-      if (!data.signature) return;
-      
-      try {
-        const currentPosition = yPosition;
-        
-        // Aller en bas de page pour le pied de page
-        yPosition = pageHeight - footerHeight;
-        
-        // Ajouter une ligne horizontale
-        pdf.setDrawColor(200, 200, 200);
-        pdf.line(margin, yPosition - 5, pageWidth - margin, yPosition - 5);
-        
-        // Ajouter un texte de signature
-        pdf.setFont("helvetica", "italic");
-        pdf.setFontSize(8);
-        pdf.setTextColor(100, 100, 100);
-        pdf.text("Document signé électroniquement", margin, yPosition);
-        
-        // Ajouter la signature comme image (version miniature)
-        const imgWidth = 20;
-        const imgHeight = 10;
-        pdf.addImage(data.signature, 'PNG', pageWidth - margin - imgWidth, yPosition - imgHeight, imgWidth, imgHeight);
-        
-        // Rétablir la position pour continuer à écrire
-        yPosition = currentPosition;
-      } catch (error) {
-        console.error("Erreur lors de l'ajout du pied de page:", error);
-      }
-    };
+    // Render document header
+    yPosition = renderHeader(pdf, layout, yPosition);
     
-    // Fonctions utilitaires
-    const addTitle = (text: string) => {
-      pdf.setFont("helvetica", "bold");
-      pdf.setFontSize(16);
-      pdf.setTextColor(41, 82, 155);
-      pdf.text(text, pageWidth / 2, yPosition, { align: "center" });
-      yPosition += lineHeight * 1.5;
-      pdf.setFont("helvetica", "normal");
-      pdf.setFontSize(11);
-      pdf.setTextColor(0, 0, 0);
-    };
+    // Render personal information section
+    yPosition = checkPageBreak(pdf, layout, yPosition, layout.lineHeight * 10, data.signature);
+    yPosition = renderPersonalInfo(pdf, layout, yPosition, data.profileData);
     
-    const addSubtitle = (text: string) => {
-      pdf.setFont("helvetica", "bold");
-      pdf.setFontSize(12);
-      pdf.setTextColor(70, 70, 70);
-      pdf.text(text, margin, yPosition);
-      yPosition += lineHeight;
-      pdf.setFont("helvetica", "normal");
-      pdf.setFontSize(11);
-      pdf.setTextColor(0, 0, 0);
-    };
+    // Render trusted persons section
+    yPosition = checkPageBreak(pdf, layout, yPosition, layout.lineHeight * 10, data.signature);
+    yPosition = renderTrustedPersons(pdf, layout, yPosition, data.trustedPersons);
     
-    const addParagraph = (text: string) => {
-      const splitText = pdf.splitTextToSize(text, contentWidth);
-      pdf.text(splitText, margin, yPosition);
-      yPosition += (splitText.length * lineHeight);
-    };
-    
-    const checkPageBreak = (heightNeeded: number = lineHeight * 5) => {
-      if (yPosition + heightNeeded > pageHeight - (margin + footerHeight)) {
-        addSignatureFooter(); // Ajouter signature avant de changer de page
-        pdf.addPage();
-        yPosition = margin;
-      }
-    };
-    
-    // Entête du document
-    pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(20);
-    pdf.setTextColor(41, 82, 155);
-    pdf.text("DIRECTIVES ANTICIPÉES", pageWidth / 2, yPosition, { align: "center" });
-    yPosition += lineHeight * 2;
-    
-    pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(11);
-    pdf.setTextColor(0, 0, 0);
-    
-    // Ajouter la date
-    const dateStr = new Date().toLocaleDateString('fr-FR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-    pdf.text(`Document généré le ${dateStr}`, pageWidth / 2, yPosition, { align: "center" });
-    yPosition += lineHeight * 2;
-    
-    // Informations personnelles
-    checkPageBreak();
-    addTitle("Informations Personnelles");
-    
-    if (data.profileData) {
-      const { first_name, last_name, birth_date, address } = data.profileData;
-      const birthDateFormatted = birth_date ? new Date(birth_date).toLocaleDateString('fr-FR') : 'Non spécifié';
-      
-      addParagraph(`Nom: ${last_name || 'Non spécifié'}`);
-      addParagraph(`Prénom: ${first_name || 'Non spécifié'}`);
-      addParagraph(`Date de naissance: ${birthDateFormatted}`);
-      
-      if (address) {
-        addParagraph(`Adresse: ${address}`);
-      }
-      
-      yPosition += lineHeight;
-    } else {
-      addParagraph("Aucune information personnelle disponible");
+    // Add signature after trusted persons section if available
+    if (data.signature) {
+      yPosition = checkPageBreak(pdf, layout, yPosition, 30, data.signature);
+      yPosition = renderSignature(pdf, layout, yPosition, data.signature);
     }
     
-    // Personnes de confiance
-    checkPageBreak();
-    addTitle("Personnes de Confiance");
+    // Render questionnaire responses
+    yPosition = checkPageBreak(pdf, layout, yPosition, layout.lineHeight * 10, data.signature);
+    yPosition = renderQuestionnaires(pdf, layout, yPosition, data.responses, translateResponse);
     
-    if (data.trustedPersons && data.trustedPersons.length > 0) {
-      data.trustedPersons.forEach((person, index) => {
-        checkPageBreak();
-        addSubtitle(`Personne de confiance ${index + 1}`);
-        
-        addParagraph(`Nom: ${person.last_name || 'Non spécifié'}`);
-        addParagraph(`Prénom: ${person.first_name || 'Non spécifié'}`);
-        addParagraph(`Relation: ${person.relationship || 'Non spécifiée'}`);
-        addParagraph(`Téléphone: ${person.phone || 'Non spécifié'}`);
-        addParagraph(`Email: ${person.email || 'Non spécifié'}`);
-        
-        yPosition += lineHeight;
-      });
-      
-      // Ajouter la signature juste après la section des personnes de confiance
-      if (data.signature) {
-        try {
-          checkPageBreak(30); // S'assurer qu'il y a assez d'espace
-          
-          addTitle("Signature");
-          pdf.text(`Date: ${dateStr}`, margin, yPosition);
-          yPosition += lineHeight * 2;
-          
-          // Ajouter la signature comme image
-          const imgWidth = 50;
-          pdf.addImage(data.signature, 'PNG', margin, yPosition, imgWidth, 20);
-          yPosition += 20 + lineHeight;
-        } catch (error) {
-          console.error("Erreur lors de l'ajout de la signature:", error);
-          addParagraph("Signature non disponible");
-        }
-      }
-    } else {
-      addParagraph("Aucune personne de confiance désignée");
-      
-      // Ajouter la signature même si pas de personnes de confiance
-      if (data.signature) {
-        try {
-          checkPageBreak(30);
-          
-          addTitle("Signature");
-          pdf.text(`Date: ${dateStr}`, margin, yPosition);
-          yPosition += lineHeight * 2;
-          
-          const imgWidth = 50;
-          pdf.addImage(data.signature, 'PNG', margin, yPosition, imgWidth, 20);
-          yPosition += 20 + lineHeight;
-        } catch (error) {
-          console.error("Erreur lors de l'ajout de la signature:", error);
-          addParagraph("Signature non disponible");
-        }
-      }
-    }
-    
-    // Réponses aux questionnaires
-    checkPageBreak();
-    addTitle("Mes Souhaits et Préférences");
-    
-    // Fonction pour traduire les réponses anglaises en français
-    const translateResponse = (response: string): string => {
-      if (!response) return 'Pas de réponse';
-      
-      const lowerResponse = response.toLowerCase().trim();
-      
-      switch (lowerResponse) {
-        case 'yes':
-          return 'Oui';
-        case 'no':
-          return 'Non';
-        case 'unsure':
-          return 'Incertain';
-        default:
-          return response;
-      }
-    };
-    
-    if (data.responses && Object.keys(data.responses).length > 0) {
-      Object.entries(data.responses).forEach(([questionnaireType, questions]) => {
-        checkPageBreak();
-        
-        let title = questionnaireType;
-        switch (questionnaireType) {
-          case 'avis-general':
-            title = "Avis Général";
-            break;
-          case 'maintien-vie':
-            title = "Maintien en Vie";
-            break;
-          case 'maladie-avancee':
-            title = "Maladie Avancée";
-            break;
-          case 'gouts-peurs':
-            title = "Goûts et Peurs";
-            break;
-          default:
-            title = questionnaireType;
-        }
-        
-        addSubtitle(title);
-        
-        Object.entries(questions).forEach(([_, questionData]: [string, any]) => {
-          checkPageBreak(lineHeight * 4);
-          
-          const question = questionData.question || "Question non définie";
-          const response = translateResponse(questionData.response || "Pas de réponse");
-          
-          pdf.setFont("helvetica", "bold");
-          addParagraph(question);
-          pdf.setFont("helvetica", "normal");
-          addParagraph(`Réponse: ${response}`);
-          
-          yPosition += lineHeight / 2;
-        });
-        
-        yPosition += lineHeight;
-      });
-    } else {
-      addParagraph("Aucune réponse au questionnaire");
-    }
-    
-    // Phrases d'exemples sélectionnées
+    // Render example phrases if available
     if (data.examplePhrases && data.examplePhrases.length > 0) {
-      checkPageBreak();
-      addTitle("Phrases d'exemples sélectionnées");
-      
-      data.examplePhrases.forEach((phrase) => {
-        checkPageBreak();
-        addParagraph(`• ${phrase}`);
-      });
-      
-      yPosition += lineHeight;
+      yPosition = checkPageBreak(pdf, layout, yPosition, layout.lineHeight * 10, data.signature);
+      yPosition = renderPhrases(pdf, layout, yPosition, data.examplePhrases, "Phrases d'exemples sélectionnées");
     }
     
-    // Phrases personnalisées
+    // Render custom phrases if available
     if (data.customPhrases && data.customPhrases.length > 0) {
-      checkPageBreak();
-      addTitle("Phrases personnalisées");
-      
-      data.customPhrases.forEach((phrase) => {
-        checkPageBreak();
-        addParagraph(`• ${phrase}`);
-      });
-      
-      yPosition += lineHeight;
+      yPosition = checkPageBreak(pdf, layout, yPosition, layout.lineHeight * 10, data.signature);
+      yPosition = renderPhrases(pdf, layout, yPosition, data.customPhrases, "Phrases personnalisées");
     }
     
-    // Texte libre
+    // Render free text section if available
     if (data.freeText) {
-      checkPageBreak();
-      addTitle("Expression libre");
-      addParagraph(data.freeText);
-      yPosition += lineHeight;
+      yPosition = checkPageBreak(pdf, layout, yPosition, layout.lineHeight * 10, data.signature);
+      yPosition = renderFreeText(pdf, layout, yPosition, data.freeText);
     }
     
-    // Ajouter la signature sur la dernière page
-    addSignatureFooter();
+    // Add signature footer on the last page
+    addSignatureFooter(pdf, layout, data.signature);
     
-    // Générer le PDF
+    // Generate PDF output
     const pdfOutput = pdf.output("datauristring");
     
-    // Stocker des informations sur le PDF généré dans la base de données
+    // Store PDF in database if userId is provided
     if (data.userId) {
-      const fileName = `directives-anticipees-${new Date().toLocaleDateString('fr-FR', {
+      const description = "Directives anticipées générées le " + new Date().toLocaleDateString('fr-FR', {
         year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
-      }).replace(/\//g, '-')}.pdf`;
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
       
-      const currentDateString = new Date().toISOString();
-      
-      const pdfRecord = {
-        user_id: data.userId,
-        file_name: fileName,
-        file_path: pdfOutput, // Stocke le PDF comme data URI
-        content_type: "application/pdf",
-        file_size: Math.floor(pdfOutput.length / 1.33), // Estimation approximative de la taille
-        description: "Directives anticipées générées le " + new Date().toLocaleDateString('fr-FR', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        }),
-        created_at: currentDateString
-      };
-      
-      const { data: insertedData, error } = await supabase
-        .from('pdf_documents')
-        .insert(pdfRecord)
-        .select();
-      
-      if (error) {
-        console.error("Erreur lors de l'enregistrement du PDF:", error);
-        throw error;
-      }
-      
-      return insertedData;
+      return await savePdfToDatabase({
+        userId: data.userId,
+        pdfOutput,
+        description
+      });
     }
     
     return Promise.resolve(null);

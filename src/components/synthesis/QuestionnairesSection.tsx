@@ -1,16 +1,11 @@
 
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-
-const QUESTIONNAIRE_LABELS = {
-  'avis-general': 'Avis Général',
-  'maintien-vie': 'Maintien en Vie',
-  'maladie-avancee': 'Maladie Avancée',
-  'gouts-peurs': 'Goûts et Peurs'
-};
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 // Fonction pour traduire les réponses anglaises en français
 const translateResponse = (response: string): string => {
-  if (!response) return '';
+  if (!response) return 'Pas de réponse';
   
   const lowerResponse = response.toLowerCase().trim();
   
@@ -26,49 +21,58 @@ const translateResponse = (response: string): string => {
   }
 };
 
-interface QuestionnairesSectionProps {
-  responses: Record<string, any>;
-}
+const QuestionnairesSection = ({ 
+  responses 
+}: { 
+  responses: Record<string, any>
+}) => {
+  // Fonction pour obtenir le titre français du questionnaire
+  const getQuestionnaireTitle = (type: string) => {
+    switch (type) {
+      case 'avis-general':
+        return "Avis Général";
+      case 'maintien-vie':
+        return "Maintien en Vie";
+      case 'maladie-avancee':
+        return "Maladie Avancée";
+      case 'gouts-peurs':
+        return "Goûts et Peurs";
+      default:
+        return type;
+    }
+  };
 
-const QuestionnairesSection = ({ responses }: QuestionnairesSectionProps) => {
-  const hasResponses = Object.keys(responses).some(key => 
-    responses[key] && Object.keys(responses[key]).length > 0
-  );
-  
-  if (!hasResponses) return null;
-  
   return (
     <Card className="mb-6">
-      <CardHeader className="pb-2">
-        <CardTitle>Réponses aux questionnaires</CardTitle>
+      <CardHeader>
+        <CardTitle>Vos Réponses aux Questionnaires</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-6">
-          {Object.entries(responses).map(([type, typeResponses]) => {
-            // Skip if no responses for this type
-            if (!typeResponses || Object.keys(typeResponses).length === 0) return null;
-            
-            return (
-              <div key={type} className="space-y-2">
-                <h3 className="text-lg font-medium">{QUESTIONNAIRE_LABELS[type as keyof typeof QUESTIONNAIRE_LABELS] || type}</h3>
-                
-                <div className="pl-4">
-                  {Object.entries(typeResponses).map(([questionId, data]) => {
-                    const { question, response } = data as { question: string, response: string };
-                    const translatedResponse = translateResponse(response);
-                    
-                    return (
-                      <div key={questionId} className="mb-2">
-                        <p className="font-medium text-sm">{question}</p>
-                        <p className="text-gray-700">{translatedResponse}</p>
+        {Object.keys(responses).length > 0 ? (
+          <Accordion type="single" collapsible className="w-full">
+            {Object.entries(responses).map(([questionnaireType, questions], index) => (
+              <AccordionItem key={index} value={`item-${index}`}>
+                <AccordionTrigger className="text-lg font-medium">
+                  {getQuestionnaireTitle(questionnaireType)}
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-4 mt-2">
+                    {Object.entries(questions).map(([questionId, questionData]: [string, any]) => (
+                      <div key={questionId} className="p-4 bg-gray-50 rounded-md">
+                        <p className="font-medium mb-2">{questionData.question}</p>
+                        <p className="text-gray-700">
+                          <span className="font-medium">Réponse:</span> {translateResponse(questionData.response || "Pas de réponse")}
+                        </p>
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        ) : (
+          <p className="text-center text-gray-500 my-4">Aucune réponse enregistrée</p>
+        )}
       </CardContent>
     </Card>
   );
