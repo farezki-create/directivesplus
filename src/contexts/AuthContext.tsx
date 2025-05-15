@@ -33,10 +33,21 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
+  // Helper function to clean up auth state
+  const cleanupAuthState = () => {
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+        localStorage.removeItem(key);
+      }
+    });
+  };
+
   useEffect(() => {
+    console.log("Setting up auth state listener");
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log("Auth state changed:", event, session?.user?.id);
         setUser(session?.user ?? null);
         setSession(session);
         setIsLoading(false);
@@ -54,6 +65,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("Initial session check:", session?.user?.id || "No session");
       setUser(session?.user ?? null);
       setSession(session);
       setIsLoading(false);
@@ -90,21 +102,26 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   // Sign out
   const signOut = async () => {
-    // Clean up auth state
-    Object.keys(localStorage).forEach((key) => {
-      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-        localStorage.removeItem(key);
-      }
-    });
-    
-    // Sign out from Supabase
-    await supabase.auth.signOut({ scope: 'global' });
-    setUser(null);
-    setSession(null);
-    setProfile(null);
-    
-    // Navigate to login
-    navigate("/auth");
+    try {
+      console.log("Signing out...");
+      
+      // Clean up auth state before signing out
+      cleanupAuthState();
+      
+      // Sign out from Supabase
+      await supabase.auth.signOut({ scope: 'global' });
+      
+      // Reset state
+      setUser(null);
+      setSession(null);
+      setProfile(null);
+      
+      console.log("Sign out successful, navigating to /auth");
+      // Force navigation to login
+      navigate("/auth");
+    } catch (error) {
+      console.error("Sign out error:", error);
+    }
   };
 
   return (

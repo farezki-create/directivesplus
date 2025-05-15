@@ -1,6 +1,6 @@
-import { ReactNode, useEffect, useState } from "react";
+
+import { ReactNode, useEffect } from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -11,10 +11,12 @@ interface ProtectedRouteProps {
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
-
-  // Use the auth context instead of maintaining local state
-  // This ensures consistent auth state across the application
   
+  useEffect(() => {
+    console.log("ProtectedRoute: isAuthenticated =", isAuthenticated, "isLoading =", isLoading);
+  }, [isAuthenticated, isLoading]);
+
+  // Use the auth context to check authentication state
   if (isLoading) {
     return (
       <div className="h-screen flex items-center justify-center">

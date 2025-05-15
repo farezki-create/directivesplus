@@ -1,13 +1,23 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import Header from "@/components/Header";
+
+// Helper function to clean up Supabase auth state
+const cleanupAuthState = () => {
+  Object.keys(localStorage).forEach((key) => {
+    if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+      localStorage.removeItem(key);
+    }
+  });
+};
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -17,14 +27,14 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const { isAuthenticated, isLoading } = useAuth();
   
-  // Get the redirect path from location state or default to /dashboard
+  // Get the redirect path from location state or default to /rediger
   const from = location.state?.from || "/rediger";
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated, but only after the auth state has loaded
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
       console.log("Auth page: Already authenticated, redirecting to:", from);
-      navigate(from);
+      navigate(from, { replace: true });
     }
   }, [isAuthenticated, isLoading, navigate, from]);
 
@@ -34,6 +44,18 @@ const Auth = () => {
     
     try {
       console.log("Attempting to sign in...");
+      
+      // Clean up existing auth state first
+      cleanupAuthState();
+      
+      // Try to sign out any existing session
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+      } catch (error) {
+        // Continue even if this fails
+      }
+      
+      // Now sign in
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -47,7 +69,8 @@ const Auth = () => {
       });
       
       console.log("Sign in successful, redirecting to:", from);
-      navigate(from);
+      // Use replace: true to prevent back button from going to login again
+      navigate(from, { replace: true });
     } catch (error: any) {
       console.error("Sign in error:", error);
       toast({
@@ -66,6 +89,18 @@ const Auth = () => {
     
     try {
       console.log("Attempting to sign up...");
+      
+      // Clean up existing auth state first
+      cleanupAuthState();
+      
+      // Try to sign out any existing session
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+      } catch (error) {
+        // Continue even if this fails
+      }
+      
+      // Now sign up
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -78,11 +113,8 @@ const Auth = () => {
         description: "Veuillez vérifier votre email pour confirmer votre compte.",
       });
       
-      // Wait briefly then redirect to redirect path
-      setTimeout(() => {
-        console.log("Sign up successful, redirecting to:", from);
-        navigate(from);
-      }, 1500);
+      // Use replace: true to prevent back button from going to login again
+      navigate(from, { replace: true });
     } catch (error: any) {
       console.error("Sign up error:", error);
       toast({
