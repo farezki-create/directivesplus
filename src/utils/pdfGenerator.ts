@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import jsPDF from "jspdf";
+import jspdf from "jspdf";
 import html2canvas from "html2canvas";
 
 interface PdfData {
@@ -19,7 +19,7 @@ export const generatePDF = async (data: PdfData): Promise<any> => {
     console.log("Génération du PDF avec les données:", data);
     
     // Créer un nouvel objet PDF
-    const pdf = new jsPDF({
+    const pdf = new jspdf({
       orientation: "portrait",
       unit: "mm",
       format: "a4",
@@ -28,9 +28,43 @@ export const generatePDF = async (data: PdfData): Promise<any> => {
     // Variables pour gérer la position et mise en page
     let yPosition = 20;
     const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
     const lineHeight = 7;
     const margin = 20;
     const contentWidth = pageWidth - (margin * 2);
+    const footerHeight = 20;
+    
+    // Fonction pour ajouter la signature au bas de chaque page
+    const addSignatureFooter = () => {
+      if (!data.signature) return;
+      
+      try {
+        const currentPosition = yPosition;
+        
+        // Aller en bas de page pour le pied de page
+        yPosition = pageHeight - footerHeight;
+        
+        // Ajouter une ligne horizontale
+        pdf.setDrawColor(200, 200, 200);
+        pdf.line(margin, yPosition - 5, pageWidth - margin, yPosition - 5);
+        
+        // Ajouter un texte de signature
+        pdf.setFont("helvetica", "italic");
+        pdf.setFontSize(8);
+        pdf.setTextColor(100, 100, 100);
+        pdf.text("Document signé électroniquement", margin, yPosition);
+        
+        // Ajouter la signature comme image (version miniature)
+        const imgWidth = 20;
+        const imgHeight = 10;
+        pdf.addImage(data.signature, 'PNG', pageWidth - margin - imgWidth, yPosition - imgHeight, imgWidth, imgHeight);
+        
+        // Rétablir la position pour continuer à écrire
+        yPosition = currentPosition;
+      } catch (error) {
+        console.error("Erreur lors de l'ajout du pied de page:", error);
+      }
+    };
     
     // Fonctions utilitaires
     const addTitle = (text: string) => {
@@ -62,7 +96,8 @@ export const generatePDF = async (data: PdfData): Promise<any> => {
     };
     
     const checkPageBreak = (heightNeeded: number = lineHeight * 5) => {
-      if (yPosition + heightNeeded > pdf.internal.pageSize.getHeight() - margin) {
+      if (yPosition + heightNeeded > pageHeight - (margin + footerHeight)) {
+        addSignatureFooter(); // Ajouter signature avant de changer de page
         pdf.addPage();
         yPosition = margin;
       }
@@ -126,13 +161,68 @@ export const generatePDF = async (data: PdfData): Promise<any> => {
         
         yPosition += lineHeight;
       });
+      
+      // Ajouter la signature juste après la section des personnes de confiance
+      if (data.signature) {
+        try {
+          checkPageBreak(30); // S'assurer qu'il y a assez d'espace
+          
+          addTitle("Signature");
+          pdf.text(`Date: ${dateStr}`, margin, yPosition);
+          yPosition += lineHeight * 2;
+          
+          // Ajouter la signature comme image
+          const imgWidth = 50;
+          pdf.addImage(data.signature, 'PNG', margin, yPosition, imgWidth, 20);
+          yPosition += 20 + lineHeight;
+        } catch (error) {
+          console.error("Erreur lors de l'ajout de la signature:", error);
+          addParagraph("Signature non disponible");
+        }
+      }
     } else {
       addParagraph("Aucune personne de confiance désignée");
+      
+      // Ajouter la signature même si pas de personnes de confiance
+      if (data.signature) {
+        try {
+          checkPageBreak(30);
+          
+          addTitle("Signature");
+          pdf.text(`Date: ${dateStr}`, margin, yPosition);
+          yPosition += lineHeight * 2;
+          
+          const imgWidth = 50;
+          pdf.addImage(data.signature, 'PNG', margin, yPosition, imgWidth, 20);
+          yPosition += 20 + lineHeight;
+        } catch (error) {
+          console.error("Erreur lors de l'ajout de la signature:", error);
+          addParagraph("Signature non disponible");
+        }
+      }
     }
     
     // Réponses aux questionnaires
     checkPageBreak();
     addTitle("Mes Souhaits et Préférences");
+    
+    // Fonction pour traduire les réponses anglaises en français
+    const translateResponse = (response: string): string => {
+      if (!response) return 'Pas de réponse';
+      
+      const lowerResponse = response.toLowerCase().trim();
+      
+      switch (lowerResponse) {
+        case 'yes':
+          return 'Oui';
+        case 'no':
+          return 'Non';
+        case 'unsure':
+          return 'Incertain';
+        default:
+          return response;
+      }
+    };
     
     if (data.responses && Object.keys(data.responses).length > 0) {
       Object.entries(data.responses).forEach(([questionnaireType, questions]) => {
@@ -162,7 +252,7 @@ export const generatePDF = async (data: PdfData): Promise<any> => {
           checkPageBreak(lineHeight * 4);
           
           const question = questionData.question || "Question non définie";
-          const response = questionData.response || "Pas de réponse";
+          const response = translateResponse(questionData.response || "Pas de réponse");
           
           pdf.setFont("helvetica", "bold");
           addParagraph(question);
@@ -212,26 +302,8 @@ export const generatePDF = async (data: PdfData): Promise<any> => {
       yPosition += lineHeight;
     }
     
-    // Signature et date
-    checkPageBreak(lineHeight * 10);
-    addTitle("Signature");
-    
-    pdf.text(`Date: ${dateStr}`, margin, yPosition);
-    yPosition += lineHeight * 2;
-    
-    if (data.signature) {
-      try {
-        // Ajouter la signature comme image
-        const imgWidth = 50;
-        pdf.addImage(data.signature, 'PNG', margin, yPosition, imgWidth, 20);
-        yPosition += 20 + lineHeight;
-      } catch (error) {
-        console.error("Erreur lors de l'ajout de la signature:", error);
-        addParagraph("Signature non disponible");
-      }
-    } else {
-      addParagraph("Signature non fournie");
-    }
+    // Ajouter la signature sur la dernière page
+    addSignatureFooter();
     
     // Générer le PDF
     const pdfOutput = pdf.output("datauristring");

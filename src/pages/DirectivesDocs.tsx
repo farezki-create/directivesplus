@@ -7,13 +7,31 @@ import AppNavigation from "@/components/AppNavigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
-import { Download, Printer, Send, FileText } from "lucide-react";
+import { 
+  Download, 
+  Printer, 
+  Send, 
+  FileText, 
+  Eye,
+  Trash2
+} from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const DirectivesDocs = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
   const [documents, setDocuments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [documentToDelete, setDocumentToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -121,6 +139,53 @@ const DirectivesDocs = () => {
       description: "Le partage de document sera bientôt disponible"
     });
   };
+  
+  const handleView = (filePath: string) => {
+    try {
+      window.open(filePath, '_blank');
+    } catch (error) {
+      console.error("Erreur lors de l'ouverture du document:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'ouvrir le document",
+        variant: "destructive"
+      });
+    }
+  };
+  
+  const confirmDelete = (documentId: string) => {
+    setDocumentToDelete(documentId);
+  };
+  
+  const handleDelete = async () => {
+    if (!documentToDelete) return;
+    
+    try {
+      const { error } = await supabase
+        .from('pdf_documents')
+        .delete()
+        .eq('id', documentToDelete);
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Document supprimé",
+        description: "Le document a été supprimé avec succès"
+      });
+      
+      // Rafraîchir la liste des documents
+      fetchDocuments();
+    } catch (error: any) {
+      console.error("Erreur lors de la suppression du document:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer le document",
+        variant: "destructive"
+      });
+    } finally {
+      setDocumentToDelete(null);
+    }
+  };
 
   if (isLoading || loading) {
     return (
@@ -174,6 +239,14 @@ const DirectivesDocs = () => {
                     <Button 
                       variant="outline"
                       className="flex items-center gap-2"
+                      onClick={() => handleView(doc.file_path)}
+                    >
+                      <Eye size={16} />
+                      Visualiser
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      className="flex items-center gap-2"
                       onClick={() => handleDownload(doc.file_path, doc.file_name)}
                     >
                       <Download size={16} />
@@ -195,6 +268,14 @@ const DirectivesDocs = () => {
                       <Send size={16} />
                       Partager
                     </Button>
+                    <Button 
+                      variant="outline"
+                      className="flex items-center gap-2 text-red-500 hover:bg-red-50 hover:text-red-600"
+                      onClick={() => confirmDelete(doc.id)}
+                    >
+                      <Trash2 size={16} />
+                      Supprimer
+                    </Button>
                   </CardFooter>
                 </Card>
               ))}
@@ -202,6 +283,23 @@ const DirectivesDocs = () => {
           )}
         </div>
       </main>
+      
+      <AlertDialog open={!!documentToDelete} onOpenChange={() => setDocumentToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir supprimer ce document ? Cette action est irréversible.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       
       <footer className="bg-white py-6 border-t mt-auto">
         <div className="container mx-auto px-4 text-center text-gray-500">

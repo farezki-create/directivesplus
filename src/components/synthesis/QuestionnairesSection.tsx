@@ -8,6 +8,24 @@ const QUESTIONNAIRE_LABELS = {
   'gouts-peurs': 'Goûts et Peurs'
 };
 
+// Fonction pour traduire les réponses anglaises en français
+const translateResponse = (response: string): string => {
+  if (!response) return '';
+  
+  const lowerResponse = response.toLowerCase().trim();
+  
+  switch (lowerResponse) {
+    case 'yes':
+      return 'Oui';
+    case 'no':
+      return 'Non';
+    case 'unsure':
+      return 'Incertain';
+    default:
+      return response;
+  }
+};
+
 interface QuestionnairesSectionProps {
   responses: Record<string, any>;
 }
@@ -37,11 +55,12 @@ const QuestionnairesSection = ({ responses }: QuestionnairesSectionProps) => {
                 <div className="pl-4">
                   {Object.entries(typeResponses).map(([questionId, data]) => {
                     const { question, response } = data as { question: string, response: string };
+                    const translatedResponse = translateResponse(response);
                     
                     return (
                       <div key={questionId} className="mb-2">
                         <p className="font-medium text-sm">{question}</p>
-                        <p className="text-gray-700">{response}</p>
+                        <p className="text-gray-700">{translatedResponse}</p>
                       </div>
                     );
                   })}
