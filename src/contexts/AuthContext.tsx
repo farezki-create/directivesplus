@@ -1,28 +1,9 @@
 
-import { createContext, useState, useEffect, useContext, ReactNode } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { createContext, useState, useEffect, useContext } from "react";
 import { Session, User } from "@supabase/supabase-js";
-
-// Define the specific auth event type that includes all possible values
-type AuthEvent = 
-  | 'INITIAL_SESSION'
-  | 'SIGNED_IN'
-  | 'SIGNED_OUT'
-  | 'USER_UPDATED'
-  | 'PASSWORD_RECOVERY'
-  | 'TOKEN_REFRESHED'
-  | 'EMAIL_CONFIRMED'
-  | 'MFA_CHALLENGE_VERIFIED';
-
-interface AuthContextProps {
-  user: User | null;
-  session: Session | null;
-  isLoading: boolean;
-  isAuthenticated: boolean;
-  signOut: () => Promise<void>;
-  profile: any | null;
-}
+import { supabase } from "@/integrations/supabase/client";
+import { cleanupAuthState, fetchUserProfile, safeNavigate } from "@/utils/authUtils";
+import { AuthContextProps, AuthProviderProps, AuthEvent } from "./AuthContextTypes";
 
 const AuthContext = createContext<AuthContextProps>({
   user: null,
@@ -33,48 +14,11 @@ const AuthContext = createContext<AuthContextProps>({
   profile: null,
 });
 
-interface AuthProviderProps {
-  children: ReactNode;
-}
-
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  // Helper function to clean up auth state
-  const cleanupAuthState = () => {
-    Object.keys(localStorage).forEach((key) => {
-      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-        localStorage.removeItem(key);
-      }
-    });
-  };
-
-  // Fetch user profile
-  const fetchProfile = async (userId: string) => {
-    try {
-      console.log("Fetching profile for user:", userId);
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", userId)
-        .single();
-
-      if (error) {
-        console.error("Error fetching profile:", error);
-        return;
-      }
-
-      console.log("Profile fetched successfully:", data);
-      setProfile(data);
-    } catch (error) {
-      console.error("Error in profile fetch:", error);
-    }
-  };
 
   useEffect(() => {
     console.log("Setting up auth state listener");
@@ -82,36 +26,21 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event: AuthEvent, session) => {
-        console.log("Auth state changed:", event, session?.user?.id);
+      (event: AuthEvent, currentSession) => {
+        console.log("Auth state changed:", event, currentSession?.user?.id);
         
         if (!isMounted) return;
         
-        // Handle specific auth events
-        if (event === 'SIGNED_IN') {
-          console.log("User signed in, updating state");
-        } else if (event === 'SIGNED_OUT') {
-          console.log("User signed out, clearing state");
-          // Don't automatically redirect on sign-out here
-          // to avoid redirect loops
-        } else if (event === 'USER_UPDATED') {
-          console.log("User details updated");
-        } else if (event === 'PASSWORD_RECOVERY') {
-          console.log("Password recovery initiated");
-        } else if (event === 'TOKEN_REFRESHED') {
-          console.log("Auth token refreshed");
-        } else if (event === 'EMAIL_CONFIRMED') {
-          console.log("Email confirmed successfully");
-        }
+        handleAuthEvent(event, currentSession);
         
-        setUser(session?.user ?? null);
-        setSession(session);
+        setUser(currentSession?.user ?? null);
+        setSession(currentSession);
         setIsLoading(false);
 
         // Defer profile fetch to prevent auth deadlocks
-        if (session?.user) {
+        if (currentSession?.user) {
           setTimeout(() => {
-            if (isMounted) fetchProfile(session.user.id);
+            if (isMounted) loadUserProfile(currentSession.user.id);
           }, 0);
         } else {
           setProfile(null);
@@ -120,16 +49,16 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     );
 
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
       if (!isMounted) return;
       
-      console.log("Initial session check:", session?.user?.id || "No session");
-      setUser(session?.user ?? null);
-      setSession(session);
+      console.log("Initial session check:", initialSession?.user?.id || "No session");
+      setUser(initialSession?.user ?? null);
+      setSession(initialSession);
       setIsLoading(false);
 
-      if (session?.user) {
-        fetchProfile(session.user.id);
+      if (initialSession?.user) {
+        loadUserProfile(initialSession.user.id);
       }
     });
 
@@ -139,7 +68,51 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     };
   }, []);
 
-  // Sign out
+  /**
+   * Handle different authentication events
+   */
+  const handleAuthEvent = (event: AuthEvent, session: Session | null) => {
+    switch(event) {
+      case 'SIGNED_IN':
+        console.log("User signed in, updating state");
+        break;
+      case 'SIGNED_OUT':
+        console.log("User signed out, clearing state");
+        break;
+      case 'USER_UPDATED':
+        console.log("User details updated");
+        break;
+      case 'PASSWORD_RECOVERY':
+        console.log("Password recovery initiated");
+        break;
+      case 'TOKEN_REFRESHED':
+        console.log("Auth token refreshed");
+        break;
+      case 'EMAIL_CONFIRMED':
+        console.log("Email confirmed successfully");
+        break;
+      case 'MFA_CHALLENGE_VERIFIED':
+        console.log("MFA challenge verified");
+        break;
+      case 'INITIAL_SESSION':
+        console.log("Initial session loaded");
+        break;
+    }
+  };
+
+  /**
+   * Load user profile from Supabase
+   */
+  const loadUserProfile = async (userId: string) => {
+    const profileData = await fetchUserProfile(userId, supabase);
+    if (profileData) {
+      setProfile(profileData);
+    }
+  };
+
+  /**
+   * Sign out the current user
+   */
   const signOut = async () => {
     try {
       console.log("Signing out...");
@@ -156,8 +129,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setProfile(null);
       
       console.log("Sign out successful, navigating to /auth");
-      // Use replace to avoid adding to history stack
-      window.location.href = "/auth";
+      // Navigate to auth page with full page refresh
+      safeNavigate("/auth");
     } catch (error) {
       console.error("Sign out error:", error);
     }
