@@ -10,6 +10,9 @@ const TrustedPersonsManager = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   
+  // Pass user?.id explicitly and log it for debugging
+  console.log("TrustedPersonsManager - userId:", user?.id);
+  
   const {
     trustedPersons,
     loading,

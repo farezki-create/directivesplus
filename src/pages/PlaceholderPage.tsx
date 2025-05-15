@@ -43,12 +43,14 @@ const PlaceholderPage = () => {
     'gouts-peurs'
   ];
   
+  // Explicitly check the pageId value
+  console.log("Current pageId:", pageId);
+  
   // Explicitly check if pageId is 'personne-confiance'
   const isTrustedPersonsPage = pageId === 'personne-confiance';
   const isQuestionnairePage = questionnaireSections.includes(pageId || '');
   const isExamplesPage = pageId === 'exemples-phrases';
 
-  console.log('Current pageId:', pageId);
   console.log('Is trusted persons page:', isTrustedPersonsPage);
   
   // Show toast notification for the trusted persons page
@@ -69,7 +71,9 @@ const PlaceholderPage = () => {
         {isQuestionnairePage && <QuestionnaireSection />}
         
         {isTrustedPersonsPage && (
-          <TrustedPersonsManager />
+          <div className="w-full">
+            <TrustedPersonsManager />
+          </div>
         )}
         
         {isExamplesPage && <ExamplesSection />}
