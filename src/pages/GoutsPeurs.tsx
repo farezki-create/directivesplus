@@ -6,7 +6,9 @@ const GoutsPeurs = () => {
   console.log("Rendering GoutsPeurs page");
   return (
     <QuestionnaireLayout title="Goûts et Peurs">
-      <QuestionnaireSection />
+      <div className="w-full">
+        <QuestionnaireSection />
+      </div>
     </QuestionnaireLayout>
   );
 };

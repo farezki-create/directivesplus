@@ -6,7 +6,9 @@ const MaintienVie = () => {
   console.log("Rendering MaintienVie page");
   return (
     <QuestionnaireLayout title="Maintien en Vie">
-      <QuestionnaireSection />
+      <div className="w-full">
+        <QuestionnaireSection />
+      </div>
     </QuestionnaireLayout>
   );
 };

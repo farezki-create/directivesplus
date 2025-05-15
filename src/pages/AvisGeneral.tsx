@@ -6,7 +6,9 @@ const AvisGeneral = () => {
   console.log("Rendering AvisGeneral page");
   return (
     <QuestionnaireLayout title="Avis Général">
-      <QuestionnaireSection />
+      <div className="w-full">
+        <QuestionnaireSection />
+      </div>
     </QuestionnaireLayout>
   );
 };
