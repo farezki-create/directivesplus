@@ -1,20 +1,31 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { QuestionType, ResponseType } from "./types";
+import { Question, Responses, QuestionnaireTableName, ResponseTableName } from "./types";
 
 // Tables mapping for different questionnaire types
-const sectionTableMap: Record<string, string> = {
+const sectionTableMap: Record<string, QuestionnaireTableName> = {
   "avis-general": "questionnaire_general_fr",
   "maintien-vie": "questionnaire_life_support_fr",
   "maladie-avancee": "questionnaire_advanced_illness_fr",
   "gouts-peurs": "questionnaire_preferences_fr",
-  "personne-confiance": "trusted_persons", // This would need specific handling
-  "exemples-phrases": "questionnaire_examples_fr", // Verify this table exists
+  "personne-confiance": "trusted_persons", 
+  "exemples-phrases": "questionnaire_examples_fr",
   "synthese": "questionnaire_synthesis"
 };
 
+// Response tables mapping
+const responseTableMap: Record<string, ResponseTableName> = {
+  "avis-general": "questionnaire_responses",
+  "maintien-vie": "questionnaire_responses",
+  "maladie-avancee": "questionnaire_responses",
+  "gouts-peurs": "questionnaire_preferences_responses",
+  "personne-confiance": "questionnaire_responses",
+  "exemples-phrases": "questionnaire_responses",
+  "synthese": "questionnaire_responses"
+};
+
 // Get the appropriate table name based on the section ID
-export function getSectionTable(sectionId: string): string {
+export function getSectionTable(sectionId: string): QuestionnaireTableName {
   if (!sectionTableMap[sectionId]) {
     console.warn(`No table mapping found for section: ${sectionId}, defaulting to general`);
     return sectionTableMap["avis-general"];
@@ -22,8 +33,17 @@ export function getSectionTable(sectionId: string): string {
   return sectionTableMap[sectionId];
 }
 
+// Get the appropriate response table name based on the section ID
+export function getResponseTable(sectionId: string): ResponseTableName {
+  if (!responseTableMap[sectionId]) {
+    console.warn(`No response table mapping found for section: ${sectionId}, defaulting to general`);
+    return responseTableMap["avis-general"];
+  }
+  return responseTableMap[sectionId];
+}
+
 // Fetch questions from the appropriate table
-export async function fetchQuestions(sectionId: string): Promise<QuestionType[]> {
+export async function fetchQuestions(sectionId: string): Promise<Question[]> {
   try {
     const tableName = getSectionTable(sectionId);
     console.log(`Fetching questions from table: ${tableName}`);
@@ -47,19 +67,29 @@ export async function fetchQuestions(sectionId: string): Promise<QuestionType[]>
     // Transform the questions based on the table type
     if (tableName === "questionnaire_life_support_fr") {
       // Handle life support questions specifically
-      const result: QuestionType[] = [];
+      const result: Question[] = [];
       
       for (const item of data) {
         // Explicitly type the item for life support questions
-        const question: QuestionType = {
-          id: String(item.id),
-          question: item.question_text,
-          explanation: item.explanation || "",
-          display_order: item.question_order || 0,
+        const typedItem = item as {
+          id: number;
+          question_text: string;
+          question_order: number;
+          option_yes: string;
+          option_no: string;
+          option_unsure: string;
+          explanation?: string;
+        };
+        
+        const question: Question = {
+          id: String(typedItem.id),
+          question: typedItem.question_text,
+          explanation: typedItem.explanation || "",
+          display_order: typedItem.question_order || 0,
           options: {
-            yes: item.option_yes,
-            no: item.option_no,
-            unsure: item.option_unsure
+            yes: typedItem.option_yes,
+            no: typedItem.option_no,
+            unsure: typedItem.option_unsure
           }
         };
         
@@ -69,15 +99,22 @@ export async function fetchQuestions(sectionId: string): Promise<QuestionType[]>
       return result;
     } else {
       // Handle standard questions
-      const result: QuestionType[] = [];
+      const result: Question[] = [];
       
       for (const item of data) {
         // Explicitly type the item for standard questions
-        const question: QuestionType = {
-          id: String(item.id),
-          question: item.question,
-          explanation: item.explanation || "",
-          display_order: item.display_order || 0
+        const typedItem = item as {
+          id: string;
+          question: string;
+          explanation?: string;
+          display_order?: number;
+        };
+        
+        const question: Question = {
+          id: String(typedItem.id),
+          question: typedItem.question,
+          explanation: typedItem.explanation || "",
+          display_order: typedItem.display_order || 0
         };
         
         result.push(question);
@@ -102,22 +139,21 @@ export async function fetchResponses(
   }
 
   try {
-    const tableName = getSectionTable(sectionId);
-    const questionnaire_type = sectionId;
+    const responseTable = getResponseTable(sectionId);
     
     console.log(`Fetching responses for user ${userId} and section ${sectionId}`);
     
     const { data, error } = await supabase
-      .from("questionnaire_responses")
+      .from(responseTable)
       .select("question_id, response")
       .eq("user_id", userId)
-      .eq("questionnaire_type", questionnaire_type);
+      .eq("questionnaire_type", sectionId);
 
     if (error) {
       throw error;
     }
 
-    // Using a simple object to store responses instead of complex array operations
+    // Using a simple object to store responses
     const responses: Record<string, string> = {};
     
     if (data && data.length > 0) {

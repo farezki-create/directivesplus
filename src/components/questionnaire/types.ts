@@ -55,7 +55,10 @@ export type QuestionnaireTableName =
   | "questionnaire_general_fr" 
   | "questionnaire_life_support_fr"
   | "questionnaire_advanced_illness_fr" 
-  | "questionnaire_preferences_fr";
+  | "questionnaire_preferences_fr"
+  | "trusted_persons"
+  | "questionnaire_examples_fr"
+  | "questionnaire_synthesis";
 
 export type ResponseTableName = 
   | "questionnaire_responses"
