@@ -16,6 +16,14 @@ import DirectivesDocs from "@/pages/DirectivesDocs";
 import MedicalData from "@/pages/MedicalData";
 import AccessDocuments from "@/pages/AccessDocuments";
 
+// Import questionnaire pages
+import AvisGeneral from "@/pages/questionnaire/AvisGeneral";
+import MaintienVie from "@/pages/questionnaire/MaintienVie";
+import MaladieAvancee from "@/pages/questionnaire/MaladieAvancee";
+import GoutsPeurs from "@/pages/questionnaire/GoutsPeurs";
+import PersonneConfiance from "@/pages/questionnaire/PersonneConfiance";
+import ExemplesPhrases from "@/pages/questionnaire/ExemplesPhrases";
+
 import "./App.css";
 
 const App = () => {
@@ -33,6 +41,15 @@ const App = () => {
           <Route path="/donnees-medicales" element={<MedicalData />} />
           <Route path="/acces-document" element={<AccessDocuments />} />
           <Route path="/admin" element={<Admin />} />
+          
+          {/* Questionnaire section routes */}
+          <Route path="/avis-general" element={<AvisGeneral />} />
+          <Route path="/maintien-vie" element={<MaintienVie />} />
+          <Route path="/maladie-avancee" element={<MaladieAvancee />} />
+          <Route path="/gouts-peurs" element={<GoutsPeurs />} />
+          <Route path="/personne-confiance" element={<PersonneConfiance />} />
+          <Route path="/exemples-phrases" element={<ExemplesPhrases />} />
+          
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Toaster />
