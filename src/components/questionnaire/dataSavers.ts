@@ -72,10 +72,19 @@ export async function saveResponses(
   
   // Only insert if there are responses to save
   if (responsesToSave.length > 0) {
-    // Use a specific type annotation for the insert operation to prevent excessive type instantiation
+    // Convert the strongly typed array to a plain array of objects before insertion
+    const plainResponsesArray = responsesToSave.map(item => ({
+      question_id: item.question_id,
+      response: item.response,
+      questionnaire_type: item.questionnaire_type,
+      user_id: item.user_id,
+      question_text: item.question_text
+    }));
+    
+    // Use the plain array for the insert operation
     const { error: insertError } = await supabase
       .from(responseTable)
-      .insert(responsesToSave as any[]);  // Using 'any[]' here to avoid TypeScript going too deep with type inference
+      .insert(plainResponsesArray);
     
     if (insertError) {
       console.error('Error inserting responses:', insertError);
