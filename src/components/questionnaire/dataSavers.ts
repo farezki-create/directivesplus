@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Question, Responses } from "./types";
+import { Question, Responses, ResponseData } from "./types";
 import { toast } from "@/hooks/use-toast";
 import { getResponseTable } from "./dataFetchers";
 
@@ -16,7 +16,7 @@ export async function saveResponses(
   const responseTable = getResponseTable(pageId);
   
   // Using a simplified approach to avoid type inference issues
-  const responsesToSave = [];
+  const responsesToSave: ResponseData[] = [];
   
   // Manually build each response object to avoid type inference issues
   for (const [questionId, response] of Object.entries(responses)) {
