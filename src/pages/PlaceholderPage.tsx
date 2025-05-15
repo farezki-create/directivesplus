@@ -43,13 +43,19 @@ const PlaceholderPage = () => {
     'gouts-peurs'
   ];
   
-  const isQuestionnairePage = questionnaireSections.includes(pageId || '');
   const isTrustedPersonsPage = pageId === 'personne-confiance';
+  const isQuestionnairePage = questionnaireSections.includes(pageId || '');
   const isExamplesPage = pageId === 'exemples-phrases';
 
-  // For debugging
   console.log('Current pageId:', pageId);
   console.log('Is trusted persons page:', isTrustedPersonsPage);
+  
+  if (isTrustedPersonsPage) {
+    toast({
+      title: "Page personne de confiance",
+      description: "Vous pouvez ajouter vos personnes de confiance ici."
+    });
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
