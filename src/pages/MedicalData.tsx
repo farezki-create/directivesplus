@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,6 +8,7 @@ import DocumentCard from "@/components/documents/DocumentCard";
 import EmptyDocumentsState from "@/components/documents/EmptyDocumentsState";
 import DocumentUploader from "@/components/documents/DocumentUploader";
 import AccessCodeDisplay from "@/components/documents/AccessCodeDisplay";
+import { useAccessCode } from "@/hooks/useAccessCode";
 import {
   Dialog,
   DialogContent,
@@ -47,52 +47,15 @@ const MedicalData = () => {
   const [documentToDelete, setDocumentToDelete] = useState<string | null>(null);
   const [showAddOptions, setShowAddOptions] = useState(false);
   const [previewDocument, setPreviewDocument] = useState<string | null>(null);
-  const [accessCode, setAccessCode] = useState<string | null>(null);
+  const accessCode = useAccessCode(user, "medical");
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       navigate("/auth", { state: { from: "/donnees-medicales" } });
     } else if (isAuthenticated && user) {
       fetchDocuments();
-      fetchAccessCode();
     }
   }, [isAuthenticated, isLoading, user]);
-
-  const fetchAccessCode = async () => {
-    if (!user) return;
-    
-    try {
-      // Check if user profile has a medical access code
-      if (profile?.medical_access_code) {
-        setAccessCode(profile.medical_access_code);
-        return;
-      }
-      
-      // Generate a new access code if none exists
-      const accessCode = generateRandomCode(8);
-      
-      // Update the profile with the new access code
-      const { error } = await supabase
-        .from('profiles')
-        .update({ medical_access_code: accessCode })
-        .eq('id', user.id);
-      
-      if (error) throw error;
-      
-      setAccessCode(accessCode);
-    } catch (error) {
-      console.error("Erreur lors de la récupération du code d'accès:", error);
-    }
-  };
-  
-  const generateRandomCode = (length: number) => {
-    const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    let result = '';
-    for (let i = 0; i < length; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return result;
-  };
 
   const fetchDocuments = async () => {
     if (!user) return;
@@ -231,7 +194,7 @@ const MedicalData = () => {
     }
   };
 
-  const handleUploadComplete = () => {
+  const handleUploadComplete = (url: string, fileName: string) => {
     fetchDocuments();
   };
 

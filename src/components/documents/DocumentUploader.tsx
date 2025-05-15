@@ -85,7 +85,10 @@ const DocumentUploader = ({ userId, onUploadComplete, documentType = "directive"
           throw error;
         }
         
+        // Appeler onUploadComplete avec le chemin du fichier et le nom
         onUploadComplete(base64data, file.name);
+        
+        // Réinitialiser le state du composant
         setFile(null);
         if (fileInputRef.current) {
           fileInputRef.current.value = '';

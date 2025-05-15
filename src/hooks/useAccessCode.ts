@@ -26,7 +26,7 @@ export const useAccessCode = (user: User | null, type: "directive" | "medical") 
     
     try {
       if (type === "medical") {
-        // For medical access, check the user's profile
+        // Pour l'accès médical, vérifier le profil de l'utilisateur
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('medical_access_code')
@@ -36,16 +36,16 @@ export const useAccessCode = (user: User | null, type: "directive" | "medical") 
           throw profileError;
         }
         
-        // If user has a medical access code, use it
+        // Si l'utilisateur a un code d'accès médical, l'utiliser
         if (profileData && profileData.length > 0 && profileData[0].medical_access_code) {
           setAccessCode(profileData[0].medical_access_code);
           return;
         }
         
-        // Generate a new access code
+        // Générer un nouveau code d'accès
         const newAccessCode = generateRandomCode(8);
         
-        // Update the profile with the new access code
+        // Mettre à jour le profil avec le nouveau code d'accès
         const { error: updateError } = await supabase
           .from('profiles')
           .update({ medical_access_code: newAccessCode })
@@ -55,28 +55,28 @@ export const useAccessCode = (user: User | null, type: "directive" | "medical") 
         
         setAccessCode(newAccessCode);
       } else {
-        // For directive access, use document_access_codes table
-        // Check if there's an existing code for this user
+        // Pour l'accès aux directives, utiliser la table document_access_codes
+        // Vérifier s'il existe un code pour cet utilisateur
         const { data, error } = await supabase
           .from('document_access_codes')
           .select('access_code')
           .eq('user_id', user.id)
-          .is('document_id', null); // Only get general access codes, not document-specific ones
+          .is('document_id', null); // Ne récupérer que les codes d'accès généraux, pas les codes spécifiques à un document
           
         if (error) {
           throw error;
         }
           
-        // If we have an access code, use it
+        // Si nous avons un code d'accès, l'utiliser
         if (data && data.length > 0 && data[0].access_code) {
           setAccessCode(data[0].access_code);
           return;
         }
         
-        // Generate a new access code
+        // Générer un nouveau code d'accès
         const newAccessCode = generateRandomCode(8);
         
-        // Create a record in document_access_codes
+        // Créer un enregistrement dans document_access_codes
         const { error: insertError } = await supabase
           .from('document_access_codes')
           .insert({
