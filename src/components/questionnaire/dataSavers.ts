@@ -72,9 +72,10 @@ export async function saveResponses(
   
   // Only insert if there are responses to save
   if (responsesToSave.length > 0) {
+    // Use a specific type annotation for the insert operation to prevent excessive type instantiation
     const { error: insertError } = await supabase
       .from(responseTable)
-      .insert(responsesToSave);
+      .insert(responsesToSave as any[]);  // Using 'any[]' here to avoid TypeScript going too deep with type inference
     
     if (insertError) {
       console.error('Error inserting responses:', insertError);
