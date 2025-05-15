@@ -85,10 +85,13 @@ const SignupForm = ({ redirectPath, onSignupSuccess }: SignupFormProps) => {
       
       // If signup successful, update additional profile information
       if (data.user) {
+        // Convert Date to ISO string for Postgres compatibility
+        const formattedBirthDate = values.birthDate.toISOString().split('T')[0];
+        
         const { error: profileError } = await supabase
           .from('profiles')
           .update({
-            birth_date: values.birthDate,
+            birth_date: formattedBirthDate,
             address: values.address,
             phone_number: values.phoneNumber,
           })
@@ -209,13 +212,14 @@ const SignupForm = ({ redirectPath, onSignupSuccess }: SignupFormProps) => {
                     </Button>
                   </FormControl>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
                   <Calendar
                     mode="single"
                     selected={field.value}
                     onSelect={field.onChange}
                     disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
                     initialFocus
+                    className="p-3 pointer-events-auto"
                   />
                 </PopoverContent>
               </Popover>

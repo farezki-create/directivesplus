@@ -7,14 +7,13 @@ import { Input } from "@/components/ui/input";
 import { cleanupAuthState } from "@/utils/authUtils";
 
 interface LoginFormProps {
-  email: string;
-  setEmail: (email: string) => void;
-  password: string;
-  setPassword: (password: string) => void;
   redirectPath: string;
+  onLoginSuccess?: () => void;
 }
 
-const LoginForm = ({ email, setEmail, password, setPassword, redirectPath }: LoginFormProps) => {
+const LoginForm = ({ redirectPath, onLoginSuccess }: LoginFormProps) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -48,7 +47,10 @@ const LoginForm = ({ email, setEmail, password, setPassword, redirectPath }: Log
       });
       
       console.log("Sign in successful, redirecting to:", redirectPath);
-      // Navigate is handled by the parent component
+      // Call onLoginSuccess callback if provided
+      if (onLoginSuccess) {
+        onLoginSuccess();
+      }
     } catch (error: any) {
       console.error("Sign in error:", error);
       toast({

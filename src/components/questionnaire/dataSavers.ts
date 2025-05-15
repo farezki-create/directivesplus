@@ -27,10 +27,10 @@ export async function saveResponses(
   // Create a basic array with explicit typing
   const responsesToSave: SimpleResponseObject[] = [];
   
-  // Process responses using a traditional for-in loop with Object.keys
-  const keys = Object.keys(responses);
-  for (let i = 0; i < keys.length; i++) {
-    const questionId = keys[i];
+  // Process responses using a traditional for loop with Object.keys
+  const questionIds = Object.keys(responses);
+  for (let i = 0; i < questionIds.length; i++) {
+    const questionId = questionIds[i];
     const responseValue = responses[questionId];
     
     // Find question text using simple loop
