@@ -10,19 +10,23 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
-  const { isAuthenticated, isLoading, profile } = useAuth();
+  const { isAuthenticated, isLoading, profile, session } = useAuth();
   const location = useLocation();
   const [isRedirecting, setIsRedirecting] = useState(false);
   
   useEffect(() => {
-    console.log("ProtectedRoute for", location.pathname, "- Auth status:", isAuthenticated ? "Authenticated" : "Not authenticated", "Loading:", isLoading);
+    console.log("ProtectedRoute for", location.pathname);
+    console.log("- Auth status:", isAuthenticated ? "Authenticated" : "Not authenticated");
+    console.log("- Loading:", isLoading);
+    console.log("- Session:", session ? "Present" : "None");
     
     // Reset redirecting state if authentication succeeds
     if (isAuthenticated && isRedirecting) {
       setIsRedirecting(false);
     }
-  }, [isAuthenticated, isLoading, location.pathname, isRedirecting]);
+  }, [isAuthenticated, isLoading, location.pathname, isRedirecting, session]);
 
+  // Show loading indicator while checking auth state
   if (isLoading) {
     console.log("ProtectedRoute: Loading auth state...");
     return (

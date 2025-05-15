@@ -1,3 +1,4 @@
+
 import { ReactNode, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,16 +17,29 @@ const QuestionnaireLayout = ({ children, title }: QuestionnaireLayoutProps) => {
   
   // Check if we're already inside a ProtectedRoute component
   // This prevents double auth checks and redirect loops
-  const isWrappedInProtectedRoute = location.pathname === "/avis-general"; // Add other protected paths as needed
+  const isWrappedInProtectedRoute = location.pathname === "/avis-general" || 
+                                   location.pathname === "/maintien-vie" || 
+                                   location.pathname === "/maladie-avancee" ||
+                                   location.pathname === "/gouts-peurs" ||
+                                   location.pathname === "/personne-confiance" ||
+                                   location.pathname === "/exemples-phrases";
 
+  // Debug the authentication state
+  useEffect(() => {
+    console.log("QuestionnaireLayout - route:", location.pathname);
+    console.log("QuestionnaireLayout - isWrappedInProtectedRoute:", isWrappedInProtectedRoute);
+    console.log("QuestionnaireLayout - isAuthenticated:", isAuthenticated, "isLoading:", isLoading);
+  }, [isAuthenticated, isLoading, location.pathname, isWrappedInProtectedRoute]);
+  
   // Move useEffect hook to the top level - must be called unconditionally
   useEffect(() => {
     // Only redirect if not wrapped in ProtectedRoute and authentication state is loaded and user is not authenticated
+    // This prevents redirect loops with ProtectedRoute components
     if (!isWrappedInProtectedRoute && !isLoading && !isAuthenticated) {
       console.log("QuestionnaireLayout: Redirecting to auth page - user not authenticated");
-      navigate("/auth", { state: { from: window.location.pathname } });
+      navigate("/auth", { state: { from: location.pathname }, replace: true });
     }
-  }, [isAuthenticated, isLoading, navigate, isWrappedInProtectedRoute]);
+  }, [isAuthenticated, isLoading, navigate, location.pathname, isWrappedInProtectedRoute]);
 
   // Render a loading skeleton during the authentication check
   if (isLoading) {
