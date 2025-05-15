@@ -1,4 +1,3 @@
-
 import jsPDF from 'jspdf';
 
 // Define the PDF layout interface
