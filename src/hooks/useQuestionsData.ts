@@ -40,7 +40,7 @@ export const useQuestionsData = (questionnaireType: string | undefined) => {
       try {
         // Fetching questions with detailed error logging
         const { data: questionsData, error: questionsError } = await supabase
-          .from(tableName)
+          .from(tableName as any) // Type assertion needed for dynamic table name
           .select('*')
           .order('display_order', { ascending: true });
         
@@ -70,19 +70,24 @@ export const useQuestionsData = (questionnaireType: string | undefined) => {
             explanation: q.explanation,
             display_order: q.question_order,
             options: {
-              yes: q.option_yes,
-              no: q.option_no,
-              unsure: q.option_unsure
+              yes: q.option_yes || 'Oui',
+              no: q.option_no || 'Non',
+              unsure: q.option_unsure || 'Je ne sais pas'
             }
           }));
         } else {
-          // Handle standard questions
+          // Handle standard questions - add default options
           const standardQuestions = questionsData as unknown as StandardQuestion[];
           formattedQuestions = standardQuestions.map(q => ({
             id: String(q.id), // Ensure id is string
             question: q.question,
             explanation: q.explanation,
-            display_order: q.display_order
+            display_order: q.display_order,
+            options: {
+              yes: 'Oui',
+              no: 'Non',
+              unsure: 'Je ne sais pas'
+            }
           }));
         }
         
