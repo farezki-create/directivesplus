@@ -15,11 +15,8 @@ const AvisGeneral = () => {
               Avis Général
             </h1>
             
-            <QuestionnaireSection 
-              type="general_opinion"
-              title="Exprimez vos préférences générales concernant votre santé et vos soins"
-              description="Dans cette section, vous pouvez indiquer vos préférences générales concernant votre santé et les soins que vous souhaitez recevoir."
-            />
+            {/* QuestionnaireSection uses the page pathname to determine the section type */}
+            <QuestionnaireSection />
           </div>
         </main>
         

@@ -15,11 +15,8 @@ const MaladieAvancee = () => {
               Maladie Avancée
             </h1>
             
-            <QuestionnaireSection 
-              type="advanced_illness"
-              title="Indiquez vos préférences pour les soins en cas de maladie grave"
-              description="Dans cette section, vous pouvez spécifier vos souhaits concernant les soins que vous aimeriez recevoir en cas de maladie avancée."
-            />
+            {/* QuestionnaireSection uses the page pathname to determine the section type */}
+            <QuestionnaireSection />
           </div>
         </main>
         

@@ -15,11 +15,8 @@ const GoutsPeurs = () => {
               Goûts et Peurs
             </h1>
             
-            <QuestionnaireSection 
-              type="preferences_fears"
-              title="Partagez vos préférences personnelles et vos craintes concernant les soins"
-              description="Dans cette section, vous pouvez indiquer vos préférences personnelles, vos goûts et vos peurs concernant les soins médicaux."
-            />
+            {/* QuestionnaireSection uses the page pathname to determine the section type */}
+            <QuestionnaireSection />
           </div>
         </main>
         

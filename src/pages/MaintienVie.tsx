@@ -15,11 +15,8 @@ const MaintienVie = () => {
               Maintien en Vie
             </h1>
             
-            <QuestionnaireSection 
-              type="life_support"
-              title="Spécifiez vos souhaits concernant les traitements de maintien en vie"
-              description="Dans cette section, vous pouvez indiquer vos préférences concernant les traitements de maintien en vie dans différentes situations médicales."
-            />
+            {/* QuestionnaireSection uses the page pathname to determine the section type */}
+            <QuestionnaireSection />
           </div>
         </main>
         
