@@ -1,4 +1,3 @@
-
 import { ReactNode, useEffect } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { Loader2 } from "lucide-react";
@@ -17,7 +16,6 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     console.log("ProtectedRoute: isAuthenticated =", isAuthenticated, "isLoading =", isLoading, "requiredRole =", requiredRole);
   }, [isAuthenticated, isLoading, requiredRole]);
 
-  // Use the auth context to check authentication state
   if (isLoading) {
     return (
       <div className="h-screen flex items-center justify-center">

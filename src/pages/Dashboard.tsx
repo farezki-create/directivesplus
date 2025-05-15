@@ -9,18 +9,27 @@ const Dashboard = () => {
   const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
 
+  // Move useEffect hook to the top level - must be called unconditionally
   useEffect(() => {
+    // Only redirect if authentication state is loaded and user is not authenticated
     if (!isLoading && !isAuthenticated) {
       navigate("/auth");
     }
   }, [isAuthenticated, isLoading, navigate]);
 
+  // Render loading state
   if (isLoading) {
     return (
       <div className="h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-directiveplus-600"></div>
       </div>
     );
+  }
+
+  // Only render the main content if the user is authenticated
+  // This prevents a flash of content before redirect
+  if (!isAuthenticated) {
+    return null;
   }
 
   return (
