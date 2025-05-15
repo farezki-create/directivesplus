@@ -1,3 +1,4 @@
+
 import { ReactNode, useEffect } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { Loader2 } from "lucide-react";
@@ -47,4 +48,5 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   return <>{children}</>;
 };
 
+export { ProtectedRoute };
 export default ProtectedRoute;
