@@ -14,16 +14,13 @@ const AccessDocumentForm = () => {
     accessMedicalData 
   } = useAccessDocumentForm();
 
-  // Ajout d'un effet pour surveiller les erreurs de formulaire
+  // Using useEffect to watch for form errors
   useEffect(() => {
-    const subscription = form.formState.subscribe(() => {
-      if (Object.keys(form.formState.errors).length > 0) {
-        console.log("Erreurs du formulaire:", form.formState.errors);
-      }
-    });
-    
-    return () => subscription.unsubscribe();
-  }, [form.formState]);
+    // Log any form errors when they change
+    if (Object.keys(form.formState.errors).length > 0) {
+      console.log("Erreurs du formulaire:", form.formState.errors);
+    }
+  }, [form.formState.errors]); // Watch for changes in the errors object
 
   return (
     <div className="max-w-md mx-auto">
