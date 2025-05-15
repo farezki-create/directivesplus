@@ -6,7 +6,7 @@ const GoutsPeurs = () => {
   console.log("Rendering GoutsPeurs page");
   return (
     <QuestionnaireLayout title="Goûts et Peurs">
-      <div className="w-full">
+      <div className="w-full max-w-full flex flex-col">
         <QuestionnaireSection />
       </div>
     </QuestionnaireLayout>

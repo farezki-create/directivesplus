@@ -6,7 +6,7 @@ const MaladieAvancee = () => {
   console.log("Rendering MaladieAvancee page");
   return (
     <QuestionnaireLayout title="Maladie Avancée">
-      <div className="w-full">
+      <div className="w-full max-w-full flex flex-col">
         <QuestionnaireSection />
       </div>
     </QuestionnaireLayout>
