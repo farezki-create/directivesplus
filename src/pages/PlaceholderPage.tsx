@@ -8,6 +8,7 @@ import TrustedPersonsManager from "@/components/trusted-persons/TrustedPersonsMa
 import ExamplesSection from "@/components/questionnaire/ExamplesSection";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 const PlaceholderPage = () => {
   const { pageId } = useParams<{ pageId: string }>();
@@ -45,6 +46,10 @@ const PlaceholderPage = () => {
   const isQuestionnairePage = questionnaireSections.includes(pageId || '');
   const isTrustedPersonsPage = pageId === 'personne-confiance';
   const isExamplesPage = pageId === 'exemples-phrases';
+
+  // For debugging
+  console.log('Current pageId:', pageId);
+  console.log('Is trusted persons page:', isTrustedPersonsPage);
 
   return (
     <div className="min-h-screen flex flex-col">
