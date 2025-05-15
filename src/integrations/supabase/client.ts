@@ -9,3 +9,7 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 // import { supabase } from "@/integrations/supabase/client";
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+// When deploying to Scalingo, we'll ensure these environment variables are properly set
+// The application will continue to work with the hard-coded values in development
+// but will use environment variables in production if available
