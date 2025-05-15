@@ -1,9 +1,8 @@
 
 import { jsPDF } from "jspdf";
-import html2canvas from "html2canvas";
 import { PdfLayout, renderHeader, renderPersonalInfo, renderTrustedPersons, 
   renderQuestionnaires, renderPhrases, renderFreeText, renderSignature, 
-  addSignatureFooter } from "./pdfSections";
+  addSignatureFooter, checkPageBreak } from "./pdfSections";
 import { savePdfToDatabase } from "./pdfStorage";
 
 // Interface for PDF generation data
@@ -34,26 +33,6 @@ const translateResponse = (response: string): string => {
     default:
       return response;
   }
-};
-
-// Check if a page break is needed and add a new page if so
-const checkPageBreak = (
-  pdf: jsPDF, 
-  layout: PdfLayout, 
-  yPosition: number, 
-  heightNeeded: number = layout.lineHeight * 5,
-  signature?: string
-): number => {
-  if (yPosition + heightNeeded > layout.pageHeight - (layout.margin + layout.footerHeight)) {
-    // Add footer signature before page break
-    if (signature) {
-      addSignatureFooter(pdf, layout, signature);
-    }
-    
-    pdf.addPage();
-    return layout.margin;
-  }
-  return yPosition;
 };
 
 // Main PDF generation function
