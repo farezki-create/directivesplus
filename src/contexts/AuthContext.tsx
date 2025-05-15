@@ -60,6 +60,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           console.log("Password recovery initiated");
         } else if (event === 'TOKEN_REFRESHED') {
           console.log("Auth token refreshed");
+        } else if (event === 'EMAIL_CONFIRMED') {
+          console.log("Email confirmed successfully");
+          // Notify user that their email was confirmed
         }
         
         setUser(session?.user ?? null);
