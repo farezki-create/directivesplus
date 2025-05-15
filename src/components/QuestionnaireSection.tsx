@@ -6,6 +6,7 @@ import LoadingState from "./questionnaire/LoadingState";
 import ErrorState from "./questionnaire/ErrorState";
 import QuestionsContainer from "./questionnaire/QuestionsContainer";
 import NavigationButtons from "./questionnaire/NavigationButtons";
+import { toast } from "@/hooks/use-toast";
 
 const QuestionnaireSection = () => {
   const { pageId } = useParams<{ pageId: string }>();
@@ -19,12 +20,41 @@ const QuestionnaireSection = () => {
     handleSave
   } = useQuestionnaireData(pageId);
   
+  // Ajouter des logs pour le débogage
+  console.log("QuestionnaireSection - pageId:", pageId);
+  console.log("QuestionnaireSection - questions:", questions);
+  console.log("QuestionnaireSection - loading:", loading);
+  console.log("QuestionnaireSection - error:", error);
+  
   if (loading) {
     return <LoadingState loading={loading} />;
   }
   
   if (error) {
+    // Afficher une notification toast pour les erreurs
+    toast({
+      title: "Erreur",
+      description: error,
+      variant: "destructive"
+    });
     return <ErrorState error={error} />;
+  }
+  
+  // Vérifier si nous avons des questions après le chargement
+  if (!questions || questions.length === 0) {
+    return (
+      <div className="space-y-8 max-w-3xl mx-auto">
+        <h1 className="text-2xl font-bold text-center mb-6">
+          {getSectionTitle(pageId)}
+        </h1>
+        <div className="text-center p-6 bg-gray-50 rounded-lg">
+          <p>Aucune question n'est disponible pour cette section.</p>
+          <p className="text-sm text-gray-500 mt-2">
+            Veuillez revenir ultérieurement ou contacter l'assistance.
+          </p>
+        </div>
+      </div>
+    );
   }
   
   return (

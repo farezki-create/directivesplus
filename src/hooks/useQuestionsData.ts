@@ -17,17 +17,25 @@ export const useQuestionsData = (questionnaireType: string | undefined) => {
   
   useEffect(() => {
     const fetchQuestions = async () => {
-      if (!questionnaireType) return;
+      if (!questionnaireType) {
+        console.error('No questionnaire type provided');
+        setError('Type de questionnaire non spécifié');
+        setLoading(false);
+        return;
+      }
       
       setLoading(true);
       setError(null);
       
       const tableName = getSectionTable(questionnaireType);
       if (!tableName) {
+        console.error(`Section "${questionnaireType}" non trouvée`);
         setError(`Section "${questionnaireType}" non trouvée`);
         setLoading(false);
         return;
       }
+      
+      console.log(`Fetching questions from table: ${tableName}`);
       
       try {
         // Fetching questions
@@ -36,7 +44,12 @@ export const useQuestionsData = (questionnaireType: string | undefined) => {
           .select('*')
           .order('display_order', { ascending: true });
         
-        if (questionsError) throw questionsError;
+        if (questionsError) {
+          console.error('Error fetching questions data:', questionsError);
+          throw questionsError;
+        }
+        
+        console.log(`Questions data received (${questionsData?.length || 0} records):`, questionsData);
         
         // Format questions based on table structure
         let formattedQuestions: Question[] = [];
@@ -66,9 +79,10 @@ export const useQuestionsData = (questionnaireType: string | undefined) => {
           }));
         }
         
+        console.log('Formatted questions:', formattedQuestions);
         setQuestions(formattedQuestions);
         
-      } catch (err) {
+      } catch (err: any) {
         console.error('Error fetching questions data:', err);
         setError('Erreur lors du chargement des questions. Veuillez réessayer.');
         toast({
