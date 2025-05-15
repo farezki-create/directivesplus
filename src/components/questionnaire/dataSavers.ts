@@ -82,7 +82,6 @@ export const getSavedResponses = async (
   try {
     const responseTable = getResponseTable(questionnaireType);
     
-    // Cast the response data to an explicit type to avoid type inference issues
     const { data, error: responsesError } = await supabase
       .from(responseTable as any)
       .select('question_id, response')
@@ -93,12 +92,13 @@ export const getSavedResponses = async (
     // Convert responses array to object
     const responsesObj: Record<string, string> = {};
     
-    // Use type assertion to inform TypeScript about the actual structure
-    const responsesData = data as Array<{ question_id: string; response: string }>;
-    
-    if (responsesData && Array.isArray(responsesData)) {
-      responsesData.forEach((r: { question_id: string; response: string }) => {
-        responsesObj[r.question_id] = r.response;
+    // First check if data exists and is an array
+    if (data && Array.isArray(data)) {
+      // Then check if each item in the array has the expected properties
+      data.forEach((item: any) => {
+        if (item && typeof item === 'object' && 'question_id' in item && 'response' in item) {
+          responsesObj[item.question_id] = item.response;
+        }
       });
     }
     
