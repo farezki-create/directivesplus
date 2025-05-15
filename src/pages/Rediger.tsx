@@ -1,13 +1,10 @@
 
 import { useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import AppNavigation from "@/components/AppNavigation";
 import DirectivesGrid from "@/components/DirectivesGrid";
 import { toast } from "@/components/ui/use-toast";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { FileText, PlusCircle, HeartPulse } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 const Rediger = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -58,78 +55,6 @@ const Rediger = () => {
         </div>
         
         <DirectivesGrid />
-        
-        {/* Additional Section for Medical Data and Examples */}
-        <div className="grid md:grid-cols-2 gap-6 mt-12">
-          {/* Directives Links */}
-          <Card className="shadow hover:shadow-md transition-shadow">
-            <CardHeader className="bg-directiveplus-50 border-b">
-              <CardTitle className="flex items-center text-directiveplus-800">
-                <FileText className="mr-2 text-directiveplus-600" size={20} />
-                Mes Directives
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <p className="text-gray-600 mb-4">
-                Consultez et gérez l'ensemble de vos documents de directives anticipées.
-              </p>
-              <Button asChild variant="outline" className="w-full">
-                <Link to="/mes-directives" className="flex items-center justify-center gap-2">
-                  <PlusCircle size={16} />
-                  Accéder à mes documents
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
-          
-          {/* Medical Data */}
-          <Card className="shadow hover:shadow-md transition-shadow">
-            <CardHeader className="bg-directiveplus-50 border-b">
-              <CardTitle className="flex items-center text-directiveplus-800">
-                <HeartPulse className="mr-2 text-directiveplus-600" size={20} />
-                Données Médicales
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <p className="text-gray-600 mb-4">
-                Ajoutez et gérez vos données médicales importantes accessibles en cas d'urgence.
-              </p>
-              <Button asChild variant="outline" className="w-full">
-                <Link to="/donnees-medicales" className="flex items-center justify-center gap-2">
-                  <PlusCircle size={16} />
-                  Gérer mes données médicales
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-        
-        {/* Example Phrases Section */}
-        <div className="mt-12">
-          <Card className="shadow hover:shadow-md transition-shadow">
-            <CardHeader className="bg-directiveplus-50 border-b">
-              <CardTitle className="flex items-center text-directiveplus-800">
-                <FileText className="mr-2 text-directiveplus-600" size={20} />
-                Exemples de Phrases
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <p className="text-gray-600 mb-4">
-                Consultez des exemples de phrases pour vous aider à rédiger vos directives anticipées.
-              </p>
-              <Button 
-                asChild 
-                variant="outline" 
-                className="w-full md:w-auto"
-              >
-                <Link to="/exemples-phrases" className="flex items-center justify-center gap-2">
-                  <PlusCircle size={16} />
-                  Voir les exemples
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
       </main>
       
       <footer className="bg-white py-6 border-t">
