@@ -4,7 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import AppNavigation from "@/components/AppNavigation";
 import { useAuth } from "@/contexts/AuthContext";
 import QuestionnaireSection from "@/components/QuestionnaireSection";
-import TrustedPersonsSection from "@/components/questionnaire/TrustedPersonsSection";
+import TrustedPersonsManager from "@/components/trusted-persons/TrustedPersonsManager";
 import ExamplesSection from "@/components/questionnaire/ExamplesSection";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
@@ -67,7 +67,7 @@ const PlaceholderPage = () => {
         {isQuestionnairePage ? (
           <QuestionnaireSection />
         ) : isTrustedPersonsPage ? (
-          <TrustedPersonsSection />
+          <TrustedPersonsManager />
         ) : isExamplesPage ? (
           <ExamplesSection />
         ) : (
