@@ -27,8 +27,8 @@ const App = () => {
         enableSystem
         disableTransitionOnChange
       >
-        <AuthProvider>
-          <BrowserRouter>
+        <BrowserRouter>
+          <AuthProvider>
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><Admin /></ProtectedRoute>} />
@@ -41,8 +41,8 @@ const App = () => {
               <Route path="*" element={<NotFound />} />
             </Routes>
             <Toaster />
-          </BrowserRouter>
-        </AuthProvider>
+          </AuthProvider>
+        </BrowserRouter>
       </ThemeProvider>
     </QueryClientProvider>
   );
