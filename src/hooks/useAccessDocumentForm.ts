@@ -17,6 +17,68 @@ const formSchema = z.object({
 
 export type FormData = z.infer<typeof formSchema>;
 
+// Extracted function for checking access code in document_access_codes
+const checkDirectivesAccessCode = async (accessCode: string) => {
+  const { data, error } = await supabase
+    .from('document_access_codes')
+    .select('user_id')
+    .eq('access_code', accessCode.trim());
+    
+  if (error) throw error;
+  return data;
+};
+
+// Extracted function for checking user profile match
+const checkProfileMatch = async (userId: string, formData: FormData) => {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', userId);
+  
+  if (error) throw error;
+  
+  if (!data || data.length === 0) {
+    throw new Error("Profil utilisateur introuvable");
+  }
+  
+  const profile = data[0];
+  const birthDateMatch = formData.birthDate ? 
+    new Date(profile.birth_date).toISOString().split('T')[0] === formData.birthDate : true;
+  
+  const isMatch = profile.first_name.toLowerCase() === formData.firstName.toLowerCase() && 
+                  profile.last_name.toLowerCase() === formData.lastName.toLowerCase() &&
+                  birthDateMatch;
+                  
+  return { isMatch, profile };
+};
+
+// Extracted function for checking medical access code
+const checkMedicalAccessCode = async (accessCode: string) => {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('medical_access_code', accessCode.trim());
+  
+  if (error) throw error;
+  return data;
+};
+
+// Toast notification handlers
+const showErrorToast = (title: string, description: string) => {
+  toast({
+    title,
+    description,
+    variant: "destructive"
+  });
+};
+
+const showSuccessToast = (title: string, description: string) => {
+  toast({
+    title,
+    description,
+  });
+};
+
 export const useAccessDocumentForm = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -32,110 +94,67 @@ export const useAccessDocumentForm = () => {
     }
   });
 
-  const accessDirectives = async () => {
+  const handleFormValidation = async () => {
     const isValid = await form.trigger();
-    if (!isValid) return;
+    if (!isValid) return false;
+    return true;
+  };
+
+  const accessDirectives = async () => {
+    if (!await handleFormValidation()) return;
     
     const formData = form.getValues();
     
     setLoading(true);
     try {
-      // Vérifier si le code d'accès existe dans document_access_codes
-      const { data: accessData, error: accessError } = await supabase
-        .from('document_access_codes')
-        .select('user_id')
-        .eq('access_code', formData.accessCode.trim());
-      
-      if (accessError) throw accessError;
+      // Check if access code exists
+      const accessData = await checkDirectivesAccessCode(formData.accessCode);
       
       if (!accessData || accessData.length === 0) {
-        toast({
-          title: "Accès refusé",
-          description: "Code d'accès invalide",
-          variant: "destructive"
-        });
+        showErrorToast("Accès refusé", "Code d'accès invalide");
         return;
       }
       
       const userId = accessData[0].user_id;
       
-      // Vérifier si les informations du profil correspondent
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId);
+      // Check if profile info matches
+      const { isMatch } = await checkProfileMatch(userId, formData);
       
-      if (profileError) throw profileError;
-      
-      if (!profileData || profileData.length === 0) {
-        toast({
-          title: "Erreur",
-          description: "Profil utilisateur introuvable",
-          variant: "destructive"
-        });
+      if (!isMatch) {
+        showErrorToast("Accès refusé", "Informations personnelles incorrectes");
         return;
       }
       
-      const profile = profileData[0];
-      const birthDateMatch = formData.birthDate ? 
-        new Date(profile.birth_date).toISOString().split('T')[0] === formData.birthDate : true;
+      // Access granted
+      showSuccessToast("Accès autorisé", "Chargement des directives anticipées...");
       
-      if (profile.first_name.toLowerCase() !== formData.firstName.toLowerCase() || 
-          profile.last_name.toLowerCase() !== formData.lastName.toLowerCase() ||
-          !birthDateMatch) {
-        toast({
-          title: "Accès refusé",
-          description: "Informations personnelles incorrectes",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      // Access granted - would normally fetch and display directives
-      toast({
-        title: "Accès autorisé",
-        description: "Chargement des directives anticipées...",
-      });
-      
-      // Here we would fetch and display the directives
-      // For now, just mock the success
+      // Navigate to directives page after a short delay
       setTimeout(() => {
         navigate('/mes-directives');
       }, 1000);
     } catch (error: any) {
       console.error("Erreur d'accès aux directives:", error);
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la vérification de l'accès",
-        variant: "destructive"
-      });
+      showErrorToast(
+        "Erreur", 
+        "Une erreur est survenue lors de la vérification de l'accès"
+      );
     } finally {
       setLoading(false);
     }
   };
 
   const accessMedicalData = async () => {
-    const isValid = await form.trigger();
-    if (!isValid) return;
+    if (!await handleFormValidation()) return;
     
     const formData = form.getValues();
     
     setLoading(true);
     try {
-      // Vérifier si le code d'accès existe dans profiles (medical_access_code)
-      const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('medical_access_code', formData.accessCode.trim());
-      
-      if (profilesError) throw profilesError;
+      // Check if medical access code exists
+      const profilesData = await checkMedicalAccessCode(formData.accessCode);
       
       if (!profilesData || profilesData.length === 0) {
-        toast({
-          title: "Accès refusé",
-          description: "Code d'accès médical invalide",
-          variant: "destructive"
-        });
+        showErrorToast("Accès refusé", "Code d'accès médical invalide");
         return;
       }
       
@@ -146,32 +165,23 @@ export const useAccessDocumentForm = () => {
       if (profile.first_name.toLowerCase() !== formData.firstName.toLowerCase() || 
           profile.last_name.toLowerCase() !== formData.lastName.toLowerCase() ||
           !birthDateMatch) {
-        toast({
-          title: "Accès refusé",
-          description: "Informations personnelles incorrectes",
-          variant: "destructive"
-        });
+        showErrorToast("Accès refusé", "Informations personnelles incorrectes");
         return;
       }
       
-      // Access granted - would normally fetch and display medical data
-      toast({
-        title: "Accès autorisé",
-        description: "Chargement des données médicales...",
-      });
+      // Access granted
+      showSuccessToast("Accès autorisé", "Chargement des données médicales...");
       
-      // Here we would fetch and display the medical data
-      // For now, just mock the success
+      // Navigate to medical data page after a short delay
       setTimeout(() => {
         navigate('/donnees-medicales');
       }, 1000);
     } catch (error: any) {
       console.error("Erreur d'accès aux données médicales:", error);
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la vérification de l'accès",
-        variant: "destructive"
-      });
+      showErrorToast(
+        "Erreur", 
+        "Une erreur est survenue lors de la vérification de l'accès"
+      );
     } finally {
       setLoading(false);
     }
