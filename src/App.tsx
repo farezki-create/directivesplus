@@ -14,6 +14,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import Dashboard from "./pages/Dashboard";
 import PlaceholderPage from "./pages/PlaceholderPage";
 import Rediger from "./pages/Rediger";
+import QuestionnaireSection from "./components/QuestionnaireSection";
 
 const queryClient = new QueryClient();
 
@@ -69,22 +70,22 @@ const AppContent = () => (
     {/* Routes for directive sections */}
     <Route path="/avis-general" element={
       <ProtectedRoute>
-        <PlaceholderPage />
+        <QuestionnaireSection />
       </ProtectedRoute>
     } />
     <Route path="/maintien-vie" element={
       <ProtectedRoute>
-        <PlaceholderPage />
+        <QuestionnaireSection />
       </ProtectedRoute>
     } />
     <Route path="/maladie-avancee" element={
       <ProtectedRoute>
-        <PlaceholderPage />
+        <QuestionnaireSection />
       </ProtectedRoute>
     } />
     <Route path="/gouts-peurs" element={
       <ProtectedRoute>
-        <PlaceholderPage />
+        <QuestionnaireSection />
       </ProtectedRoute>
     } />
     <Route path="/personne-confiance" element={

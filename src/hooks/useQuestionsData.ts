@@ -40,7 +40,7 @@ export const useQuestionsData = (questionnaireType: string | undefined) => {
       try {
         // Fetching questions with detailed error logging
         const { data: questionsData, error: questionsError } = await supabase
-          .from(tableName as any)
+          .from(tableName)
           .select('*')
           .order('display_order', { ascending: true });
         

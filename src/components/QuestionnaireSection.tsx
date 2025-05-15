@@ -1,6 +1,6 @@
 
-import { useParams } from "react-router-dom";
-import { getSectionTitle } from "./questionnaire/utils";
+import { useLocation } from "react-router-dom";
+import { getSectionTitle, getSectionTable } from "./questionnaire/utils";
 import { useQuestionnaireData } from "./questionnaire/useQuestionnaireData";
 import LoadingState from "./questionnaire/LoadingState";
 import ErrorState from "./questionnaire/ErrorState";
@@ -9,7 +9,9 @@ import NavigationButtons from "./questionnaire/NavigationButtons";
 import { toast } from "@/hooks/use-toast";
 
 const QuestionnaireSection = () => {
-  const { pageId } = useParams<{ pageId: string }>();
+  const location = useLocation();
+  const pageId = location.pathname.split('/').pop() || '';
+  
   const {
     questions,
     loading,
@@ -22,6 +24,7 @@ const QuestionnaireSection = () => {
   
   // Ajouter des logs pour le débogage
   console.log("QuestionnaireSection - pageId:", pageId);
+  console.log("QuestionnaireSection - table:", getSectionTable(pageId));
   console.log("QuestionnaireSection - questions:", questions);
   console.log("QuestionnaireSection - loading:", loading);
   console.log("QuestionnaireSection - error:", error);
