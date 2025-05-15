@@ -2,14 +2,9 @@
 import { FC } from "react";
 import AudioRecorder from "@/components/documents/AudioRecorder";
 import DocumentUploader from "@/components/documents/DocumentUploader";
+import { DocumentUploaderProps } from "./types";
 
-interface DirectivesAddDocumentSectionProps {
-  userId: string;
-  onUploadComplete: (url: string, fileName: string) => void;
-  documentType?: "directive" | "medical";
-}
-
-const DirectivesAddDocumentSection: FC<DirectivesAddDocumentSectionProps> = ({
+const DirectivesAddDocumentSection: FC<DocumentUploaderProps> = ({
   userId,
   onUploadComplete,
   documentType = "directive"
