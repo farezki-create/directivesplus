@@ -11,7 +11,7 @@ import {
   renderSignature, 
   addSignatureFooter, 
   checkPageBreak 
-} from "./pdfSections";
+} from "./pdf";
 import { savePdfToDatabase } from "./pdfStorage";
 
 // Interface for PDF generation data
@@ -73,38 +73,38 @@ export const generatePDF = async (data: PdfData): Promise<any> => {
     yPosition = renderHeader(pdf, layout, yPosition);
     
     // Render personal information section
-    yPosition = checkPageBreak(pdf, layout, yPosition, layout.lineHeight * 10);
+    yPosition = checkPageBreak(pdf, layout, yPosition);
     yPosition = renderPersonalInfo(pdf, layout, yPosition, data.profileData);
     
     // Render trusted persons section
-    yPosition = checkPageBreak(pdf, layout, yPosition, layout.lineHeight * 10);
+    yPosition = checkPageBreak(pdf, layout, yPosition);
     yPosition = renderTrustedPersons(pdf, layout, yPosition, data.trustedPersons);
     
     // Render questionnaire responses
-    yPosition = checkPageBreak(pdf, layout, yPosition, layout.lineHeight * 10);
+    yPosition = checkPageBreak(pdf, layout, yPosition);
     yPosition = renderQuestionnaires(pdf, layout, yPosition, data.responses, translateResponse);
     
     // Render example phrases if available
     if (data.examplePhrases && data.examplePhrases.length > 0) {
-      yPosition = checkPageBreak(pdf, layout, yPosition, layout.lineHeight * 10);
+      yPosition = checkPageBreak(pdf, layout, yPosition);
       yPosition = renderPhrases(pdf, layout, yPosition, data.examplePhrases, "Phrases d'exemples sélectionnées");
     }
     
     // Render custom phrases if available
     if (data.customPhrases && data.customPhrases.length > 0) {
-      yPosition = checkPageBreak(pdf, layout, yPosition, layout.lineHeight * 10);
+      yPosition = checkPageBreak(pdf, layout, yPosition);
       yPosition = renderPhrases(pdf, layout, yPosition, data.customPhrases, "Phrases personnalisées");
     }
     
     // Render free text section if available
     if (data.freeText) {
-      yPosition = checkPageBreak(pdf, layout, yPosition, layout.lineHeight * 10);
+      yPosition = checkPageBreak(pdf, layout, yPosition);
       yPosition = renderFreeText(pdf, layout, yPosition, data.freeText);
     }
     
     // Add signature after all content
     if (data.signature) {
-      yPosition = checkPageBreak(pdf, layout, yPosition, 30);
+      yPosition = checkPageBreak(pdf, layout, yPosition);
       yPosition = renderSignature(pdf, layout, yPosition, data.signature);
     }
     
