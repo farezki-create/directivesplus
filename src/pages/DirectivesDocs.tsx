@@ -74,12 +74,36 @@ const DirectivesDocs = () => {
 
   const handlePrint = (filePath: string) => {
     try {
-      const printWindow = window.open(filePath, '_blank');
-      if (printWindow) {
-        printWindow.onload = () => {
-          printWindow.print();
-        };
-      }
+      // Créer un iframe temporaire pour l'impression
+      const printFrame = document.createElement('iframe');
+      printFrame.style.display = 'none';
+      document.body.appendChild(printFrame);
+      
+      printFrame.onload = () => {
+        try {
+          // Déclencher l'impression une fois l'iframe chargé
+          setTimeout(() => {
+            printFrame.contentWindow?.focus();
+            printFrame.contentWindow?.print();
+            
+            // Supprimer l'iframe après l'impression
+            setTimeout(() => {
+              document.body.removeChild(printFrame);
+            }, 1000);
+          }, 500);
+        } catch (err) {
+          console.error("Erreur lors de l'impression:", err);
+          document.body.removeChild(printFrame);
+          toast({
+            title: "Erreur",
+            description: "Impossible d'imprimer le document",
+            variant: "destructive"
+          });
+        }
+      };
+      
+      // Charger le PDF dans l'iframe
+      printFrame.src = filePath;
     } catch (error) {
       console.error("Erreur lors de l'impression:", error);
       toast({
