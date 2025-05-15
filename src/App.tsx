@@ -15,6 +15,12 @@ import PlaceholderPage from "@/pages/PlaceholderPage";
 import DirectivesDocs from "@/pages/DirectivesDocs";
 import MedicalData from "@/pages/MedicalData";
 import AccessDocuments from "@/pages/AccessDocuments";
+import AvisGeneral from "@/pages/AvisGeneral";
+import MaintienVie from "@/pages/MaintienVie";
+import MaladieAvancee from "@/pages/MaladieAvancee";
+import GoutsPeurs from "@/pages/GoutsPeurs";
+import ExemplesPhrases from "@/pages/ExemplesPhrases";
+import PersonneConfiance from "@/pages/PersonneConfiance";
 
 import "./App.css";
 
@@ -33,6 +39,16 @@ const App = () => {
           <Route path="/donnees-medicales" element={<MedicalData />} />
           <Route path="/acces-document" element={<AccessDocuments />} />
           <Route path="/admin" element={<Admin />} />
+          
+          {/* New routes for directive sections */}
+          <Route path="/avis-general" element={<AvisGeneral />} />
+          <Route path="/maintien-vie" element={<MaintienVie />} />
+          <Route path="/maladie-avancee" element={<MaladieAvancee />} />
+          <Route path="/gouts-peurs" element={<GoutsPeurs />} />
+          <Route path="/exemples-phrases" element={<ExemplesPhrases />} />
+          <Route path="/personne-confiance" element={<PersonneConfiance />} />
+          <Route path="/synthese" element={<Synthesis />} />
+          
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Toaster />
