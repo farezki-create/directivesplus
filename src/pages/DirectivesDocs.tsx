@@ -4,17 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import AppNavigation from "@/components/AppNavigation";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
-import { 
-  Download, 
-  Printer, 
-  Send, 
-  FileText, 
-  Eye,
-  Trash2
-} from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,11 +15,22 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import DocumentCard from "@/components/documents/DocumentCard";
+import EmptyDocumentsState from "@/components/documents/EmptyDocumentsState";
+
+interface Document {
+  id: string;
+  file_name: string;
+  file_path: string;
+  created_at: string;
+  description?: string;
+  user_id: string;
+}
 
 const DirectivesDocs = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
-  const [documents, setDocuments] = useState<any[]>([]);
+  const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [documentToDelete, setDocumentToDelete] = useState<string | null>(null);
 
@@ -208,76 +209,19 @@ const DirectivesDocs = () => {
           <h1 className="text-3xl font-bold text-center mb-8">Mes Directives</h1>
           
           {documents.length === 0 ? (
-            <Card className="text-center p-6">
-              <CardContent className="pt-6">
-                <FileText className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                <h3 className="text-xl font-medium mb-2">Aucun document</h3>
-                <p className="text-gray-500">
-                  Vous n'avez pas encore généré de directives anticipées.
-                </p>
-              </CardContent>
-              <CardFooter className="flex justify-center">
-                <Button onClick={() => navigate("/synthese")}>
-                  Créer mes directives
-                </Button>
-              </CardFooter>
-            </Card>
+            <EmptyDocumentsState />
           ) : (
             <div className="grid gap-6">
               {documents.map((doc) => (
-                <Card key={doc.id} className="overflow-hidden">
-                  <CardHeader>
-                    <CardTitle>{doc.file_name}</CardTitle>
-                    <CardDescription>
-                      Créé le {new Date(doc.created_at).toLocaleDateString('fr-FR')}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600">{doc.description || "Directives anticipées"}</p>
-                  </CardContent>
-                  <CardFooter className="flex flex-wrap gap-2">
-                    <Button 
-                      variant="outline"
-                      className="flex items-center gap-2"
-                      onClick={() => handleView(doc.file_path)}
-                    >
-                      <Eye size={16} />
-                      Visualiser
-                    </Button>
-                    <Button 
-                      variant="outline"
-                      className="flex items-center gap-2"
-                      onClick={() => handleDownload(doc.file_path, doc.file_name)}
-                    >
-                      <Download size={16} />
-                      Télécharger
-                    </Button>
-                    <Button 
-                      variant="outline"
-                      className="flex items-center gap-2"
-                      onClick={() => handlePrint(doc.file_path)}
-                    >
-                      <Printer size={16} />
-                      Imprimer
-                    </Button>
-                    <Button 
-                      variant="outline"
-                      className="flex items-center gap-2"
-                      onClick={() => handleShare(doc.id)}
-                    >
-                      <Send size={16} />
-                      Partager
-                    </Button>
-                    <Button 
-                      variant="outline"
-                      className="flex items-center gap-2 text-red-500 hover:bg-red-50 hover:text-red-600"
-                      onClick={() => confirmDelete(doc.id)}
-                    >
-                      <Trash2 size={16} />
-                      Supprimer
-                    </Button>
-                  </CardFooter>
-                </Card>
+                <DocumentCard 
+                  key={doc.id}
+                  document={doc}
+                  onDownload={handleDownload}
+                  onPrint={handlePrint}
+                  onShare={handleShare}
+                  onView={handleView}
+                  onDelete={confirmDelete}
+                />
               ))}
             </div>
           )}

@@ -1,417 +1,215 @@
+import jsPDF from 'jspdf';
 
-import { jsPDF } from "jspdf";
-import { formatText, addFormattedText } from "./pdfFormatters";
-
-// Interface for PDF layout configuration
-export interface PdfLayout {
-  margin: number;
-  contentWidth: number;
-  lineHeight: number;
-  pageWidth: number;
-  pageHeight: number;
-  footerHeight: number;
+interface SectionData {
+  title: string;
+  content: string | string[];
 }
 
-// Render the header section of the PDF
-export const renderHeader = (
-  pdf: jsPDF, 
-  layout: PdfLayout,
-  yPosition: number
-): number => {
-  const { pageWidth } = layout;
-  
-  // Title
-  let currentY = addFormattedText(
-    pdf, 
-    "DIRECTIVES ANTICIPÉES", 
-    pageWidth / 2, 
-    yPosition, 
-    { 
-      color: [41, 82, 155], 
-      fontStyle: "bold", 
-      fontSize: 20, 
-      align: "center" 
-    }
-  );
-  
-  currentY += layout.lineHeight * 2;
-  
-  // Date
-  const dateStr = new Date().toLocaleDateString('fr-FR', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
+interface ContactPerson {
+  firstName: string;
+  lastName: string;
+  relationship: string;
+  phone: string;
+  email: string;
+}
+
+interface HealthcareDirective {
+  directive: string;
+}
+
+interface QuestionResponse {
+  question: string;
+  response: string;
+}
+
+export const addHeader = (doc: jsPDF, text: string) => {
+  doc.setFontSize(10);
+  doc.setTextColor(150);
+  doc.text(text, 20, 15);
+};
+
+export const addFooter = (doc: jsPDF, pageNumber: number, totalPages: number) => {
+  doc.setFontSize(10);
+  doc.setTextColor(150);
+  const footerText = `Page ${pageNumber} / ${totalPages}`;
+  const xPosition = doc.internal.pageSize.getWidth() - 45;
+  doc.text(footerText, xPosition, doc.internal.pageSize.getHeight() - 10);
+};
+
+export const addTitle = (doc: jsPDF, title: string) => {
+  doc.setFontSize(24);
+  doc.setTextColor(40);
+  doc.setFont("helvetica", "bold");
+  doc.text(title, 20, 40);
+};
+
+export const addSectionTitle = (doc: jsPDF, title: string, startY: number) => {
+  doc.setFontSize(16);
+  doc.setFont("helvetica", "bold");
+  doc.text(title, 20, startY);
+  return startY + 10;
+};
+
+export const addSectionContent = (doc: jsPDF, content: string | string[], startY: number) => {
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(0);
+
+  if (typeof content === 'string') {
+    const textLines = doc.splitTextToSize(content, doc.internal.pageSize.getWidth() - 40);
+    doc.text(textLines, 20, startY);
+    return startY + (textLines.length * 7);
+  } else if (Array.isArray(content)) {
+    let currentY = startY;
+    content.forEach(item => {
+      const textLines = doc.splitTextToSize(item, doc.internal.pageSize.getWidth() - 40);
+      doc.text(textLines, 20, currentY);
+      currentY += (textLines.length * 7) + 5;
+    });
+    return currentY;
+  }
+
+  return startY;
+};
+
+export const formatDate = (date: Date): string => {
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+  const year = date.getFullYear();
+
+  return `${day}/${month}/${year}`;
+};
+
+export const addSignature = (doc: jsPDF, name: string, date: Date, startY: number) => {
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "normal");
+  doc.text(`Signé par: ${name}`, 20, startY);
+  doc.text(`Date: ${formatDate(date)}`, 20, startY + 10);
+  return startY + 20;
+};
+
+export const addSections = (doc: jsPDF, sections: SectionData[], startY: number) => {
+  let currentY = startY;
+  sections.forEach(section => {
+    currentY = addSectionTitle(doc, section.title, currentY);
+    currentY = addSectionContent(doc, section.content, currentY);
   });
-  
-  currentY = addFormattedText(
-    pdf, 
-    `Document généré le ${dateStr}`, 
-    pageWidth / 2, 
-    currentY, 
-    { 
-      fontSize: 11, 
-      align: "center" 
-    }
-  );
-  
-  return currentY + layout.lineHeight * 2;
+  return currentY;
 };
 
-// Render personal information section
-export const renderPersonalInfo = (
-  pdf: jsPDF, 
-  layout: PdfLayout,
-  yPosition: number,
-  profileData: any
-): number => {
-  const { margin, contentWidth, lineHeight } = layout;
-  
-  // Section title
-  let currentY = addFormattedText(
-    pdf, 
-    "Informations Personnelles", 
-    layout.pageWidth / 2, 
-    yPosition, 
-    { 
-      color: [41, 82, 155], 
-      fontStyle: "bold", 
-      fontSize: 16, 
-      align: "center" 
-    }
-  );
-  
-  currentY += lineHeight * 1.5;
-  
-  // Reset text format
-  formatText(pdf);
-  
-  if (profileData) {
-    const { first_name, last_name, birth_date, address } = profileData;
-    const birthDateFormatted = birth_date 
-      ? new Date(birth_date).toLocaleDateString('fr-FR') 
-      : 'Non spécifié';
-    
-    // Add profile information
-    const texts = [
-      `Nom: ${last_name || 'Non spécifié'}`,
-      `Prénom: ${first_name || 'Non spécifié'}`,
-      `Date de naissance: ${birthDateFormatted}`
-    ];
-    
-    if (address) {
-      texts.push(`Adresse: ${address}`);
-    }
-    
-    // Render each line of text
-    for (const text of texts) {
-      const splitText = pdf.splitTextToSize(text, contentWidth);
-      pdf.text(splitText, margin, currentY);
-      currentY += splitText.length * lineHeight;
-    }
-  } else {
-    const text = "Aucune information personnelle disponible";
-    const splitText = pdf.splitTextToSize(text, contentWidth);
-    pdf.text(splitText, margin, currentY);
-    currentY += splitText.length * lineHeight;
+export const formatContactPersonsSection = (doc: jsPDF, contactPersons: ContactPerson[], startY: number): number => {
+  let currentY = startY;
+
+  if (!contactPersons || contactPersons.length === 0) {
+    return currentY;
   }
-  
-  return currentY + lineHeight;
+
+  // Add section title
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.text("Personnes à contacter", 20, currentY);
+  currentY += 10;
+
+  // Reset to normal text
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "normal");
+
+  // Add each contact person
+  contactPersons.forEach((person) => {
+    // Check available space
+    if (currentY > 260) {
+      doc.addPage();
+      currentY = 20;
+    }
+
+    // Add contact person details
+    doc.setFont("helvetica", "bold");
+    doc.text(`${person.firstName} ${person.lastName} (${person.relationship})`, 20, currentY);
+    currentY += 8;
+
+    doc.setFont("helvetica", "normal");
+    doc.text(`Téléphone: ${person.phone}`, 20, currentY);
+    currentY += 7;
+    doc.text(`Email: ${person.email}`, 20, currentY);
+    currentY += 12;
+  });
+
+  return currentY;
 };
 
-// Render trusted persons section
-export const renderTrustedPersons = (
-  pdf: jsPDF, 
-  layout: PdfLayout,
-  yPosition: number,
-  trustedPersons: any[]
-): number => {
-  const { margin, contentWidth, lineHeight } = layout;
-  
-  // Section title
-  let currentY = addFormattedText(
-    pdf, 
-    "Personnes de Confiance", 
-    layout.pageWidth / 2, 
-    yPosition, 
-    { 
-      color: [41, 82, 155], 
-      fontStyle: "bold", 
-      fontSize: 16, 
-      align: "center" 
-    }
-  );
-  
-  currentY += lineHeight * 1.5;
-  
-  // Reset text format
-  formatText(pdf);
-  
-  if (trustedPersons && trustedPersons.length > 0) {
-    for (let i = 0; i < trustedPersons.length; i++) {
-      const person = trustedPersons[i];
-      
-      // Add subtitle for each trusted person
-      formatText(pdf, { fontStyle: "bold", fontSize: 12, color: [70, 70, 70] });
-      pdf.text(`Personne de confiance ${i + 1}`, margin, currentY);
-      currentY += lineHeight;
-      
-      // Reset text format
-      formatText(pdf);
-      
-      // Add person details
-      const details = [
-        `Nom: ${person.last_name || 'Non spécifié'}`,
-        `Prénom: ${person.first_name || 'Non spécifié'}`,
-        `Relation: ${person.relationship || 'Non spécifiée'}`,
-        `Téléphone: ${person.phone || 'Non spécifié'}`,
-        `Email: ${person.email || 'Non spécifié'}`
-      ];
-      
-      for (const detail of details) {
-        const splitText = pdf.splitTextToSize(detail, contentWidth);
-        pdf.text(splitText, margin, currentY);
-        currentY += splitText.length * lineHeight;
-      }
-      
-      currentY += lineHeight;
-    }
-  } else {
-    const text = "Aucune personne de confiance désignée";
-    const splitText = pdf.splitTextToSize(text, contentWidth);
-    pdf.text(splitText, margin, currentY);
-    currentY += splitText.length * lineHeight;
+export const formatHealthcareDirectivesSection = (doc: jsPDF, healthcareDirectives: HealthcareDirective[], startY: number): number => {
+  let currentY = startY;
+
+  if (!healthcareDirectives || healthcareDirectives.length === 0) {
+    return currentY;
   }
-  
-  return currentY + lineHeight;
+
+  // Add section title
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.text("Mes directives de soins", 20, currentY);
+  currentY += 10;
+
+  // Reset to normal text
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "normal");
+
+  // Add each healthcare directive
+  healthcareDirectives.forEach((directive) => {
+    // Check available space
+    if (currentY > 260) {
+      doc.addPage();
+      currentY = 20;
+    }
+
+    // Add directive text
+    const directiveLines = doc.splitTextToSize(directive.directive, 170);
+    doc.text(directiveLines, 20, currentY);
+    currentY += directiveLines.length * 7 + 5;
+  });
+
+  return currentY;
 };
 
-// Render questionnaire responses section
-export const renderQuestionnaires = (
-  pdf: jsPDF, 
-  layout: PdfLayout,
-  yPosition: number,
-  responses: Record<string, any>,
-  translateResponse: (response: string) => string
-): number => {
-  const { margin, contentWidth, lineHeight } = layout;
+export const formatQuestionnairesSection = (doc: jsPDF, questionnairesData: QuestionResponse[], startY: number): number => {
+  let currentY = startY;
   
-  // Section title
-  let currentY = addFormattedText(
-    pdf, 
-    "Mes Souhaits et Préférences", 
-    layout.pageWidth / 2, 
-    yPosition, 
-    { 
-      color: [41, 82, 155], 
-      fontStyle: "bold", 
-      fontSize: 16, 
-      align: "center" 
-    }
-  );
-  
-  currentY += lineHeight * 1.5;
-  
-  // Reset text format
-  formatText(pdf);
-  
-  if (responses && Object.keys(responses).length > 0) {
-    for (const [questionnaireType, questions] of Object.entries(responses)) {
-      // Get the section title based on the questionnaire type
-      let title = questionnaireType;
-      switch (questionnaireType) {
-        case 'avis-general':
-          title = "Avis Général";
-          break;
-        case 'maintien-vie':
-          title = "Maintien en Vie";
-          break;
-        case 'maladie-avancee':
-          title = "Maladie Avancée";
-          break;
-        case 'gouts-peurs':
-          title = "Goûts et Peurs";
-          break;
-      }
-      
-      // Add subtitle for the questionnaire type
-      formatText(pdf, { fontStyle: "bold", fontSize: 12, color: [70, 70, 70] });
-      pdf.text(title, margin, currentY);
-      currentY += lineHeight;
-      
-      // Reset text format
-      formatText(pdf);
-      
-      // Add each question and response
-      for (const [_, questionData] of Object.entries(questions)) {
-        const question = questionData.question || "Question non définie";
-        const response = translateResponse(questionData.response || "Pas de réponse");
-        
-        // Format and add the question
-        formatText(pdf, { fontStyle: "bold" });
-        const questionSplit = pdf.splitTextToSize(question, contentWidth);
-        pdf.text(questionSplit, margin, currentY);
-        currentY += questionSplit.length * lineHeight;
-        
-        // Format and add the response
-        formatText(pdf);
-        const responseSplit = pdf.splitTextToSize(`Réponse: ${response}`, contentWidth);
-        pdf.text(responseSplit, margin, currentY);
-        currentY += responseSplit.length * lineHeight;
-        
-        currentY += lineHeight / 2;
-      }
-      
-      currentY += lineHeight;
-    }
-  } else {
-    const text = "Aucune réponse au questionnaire";
-    const splitText = pdf.splitTextToSize(text, contentWidth);
-    pdf.text(splitText, margin, currentY);
-    currentY += splitText.length * lineHeight;
+  if (!questionnairesData || questionnairesData.length === 0) {
+    return currentY;
   }
-  
-  return currentY + lineHeight;
-};
 
-// Render phrases sections (examples and custom)
-export const renderPhrases = (
-  pdf: jsPDF, 
-  layout: PdfLayout,
-  yPosition: number,
-  phrases: string[],
-  title: string
-): number => {
-  const { margin, contentWidth, lineHeight } = layout;
-  
-  if (!phrases || phrases.length === 0) {
-    return yPosition;
-  }
-  
-  // Section title
-  let currentY = addFormattedText(
-    pdf, 
-    title, 
-    layout.pageWidth / 2, 
-    yPosition, 
-    { 
-      color: [41, 82, 155], 
-      fontStyle: "bold", 
-      fontSize: 16, 
-      align: "center" 
+  // Add section title
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.text("Mes réponses au questionnaire", 20, currentY);
+  currentY += 10;
+
+  // Reset to normal text
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "normal");
+
+  // Add each question and response
+  questionnairesData.forEach((item) => {
+    // Type assertion to address the error
+    const questionItem = item as QuestionResponse;
+    
+    // Check available space
+    if (currentY > 260) {
+      doc.addPage();
+      currentY = 20;
     }
-  );
-  
-  currentY += lineHeight * 1.5;
-  
-  // Reset text format
-  formatText(pdf);
-  
-  // Add each phrase
-  for (const phrase of phrases) {
-    const text = `• ${phrase}`;
-    const splitText = pdf.splitTextToSize(text, contentWidth);
-    pdf.text(splitText, margin, currentY);
-    currentY += splitText.length * lineHeight;
-  }
-  
-  return currentY + lineHeight;
-};
+    
+    // Add question
+    doc.setFont("helvetica", "bold");
+    doc.text(questionItem.question, 20, currentY);
+    currentY += 8;
+    
+    // Add response
+    doc.setFont("helvetica", "normal");
+    const responseLines = doc.splitTextToSize(questionItem.response, 170);
+    doc.text(responseLines, 20, currentY);
+    currentY += responseLines.length * 7 + 5;
+  });
 
-// Render free text section
-export const renderFreeText = (
-  pdf: jsPDF, 
-  layout: PdfLayout,
-  yPosition: number,
-  freeText: string
-): number => {
-  const { margin, contentWidth, lineHeight } = layout;
-  
-  if (!freeText) {
-    return yPosition;
-  }
-  
-  // Section title
-  let currentY = addFormattedText(
-    pdf, 
-    "Expression libre", 
-    layout.pageWidth / 2, 
-    yPosition, 
-    { 
-      color: [41, 82, 155], 
-      fontStyle: "bold", 
-      fontSize: 16, 
-      align: "center" 
-    }
-  );
-  
-  currentY += lineHeight * 1.5;
-  
-  // Reset text format
-  formatText(pdf);
-  
-  // Add free text
-  const splitText = pdf.splitTextToSize(freeText, contentWidth);
-  pdf.text(splitText, margin, currentY);
-  currentY += splitText.length * lineHeight;
-  
-  return currentY + lineHeight;
-};
-
-// Render signature section
-export const renderSignature = (
-  pdf: jsPDF, 
-  layout: PdfLayout,
-  yPosition: number,
-  signature: string
-): number => {
-  const { margin, lineHeight } = layout;
-  
-  if (!signature) {
-    return yPosition;
-  }
-  
-  try {
-    // Add signature as image
-    const imgWidth = 50;
-    pdf.addImage(signature, 'PNG', margin, yPosition, imgWidth, 20);
-    return yPosition + 20 + lineHeight;
-  } catch (error) {
-    console.error("Erreur lors de l'ajout de la signature:", error);
-    
-    // If signature fails, add text instead
-    formatText(pdf);
-    pdf.text("Signature non disponible", margin, yPosition);
-    return yPosition + lineHeight;
-  }
-};
-
-// Add signature to the bottom of page
-export const addSignatureFooter = (
-  pdf: jsPDF,
-  layout: PdfLayout,
-  signature: string
-): void => {
-  if (!signature) return;
-  
-  try {
-    const { margin, pageHeight, footerHeight, pageWidth } = layout;
-    
-    // Position at the bottom of the page minus footer height
-    const footerY = pageHeight - footerHeight;
-    
-    // Add a horizontal line
-    pdf.setDrawColor(200, 200, 200);
-    pdf.line(margin, footerY - 5, pageWidth - margin, footerY - 5);
-    
-    // Add signature text
-    formatText(pdf, { fontStyle: "italic", fontSize: 8, color: [100, 100, 100] });
-    pdf.text("Document signé électroniquement", margin, footerY);
-    
-    // Add signature as small image
-    const imgWidth = 20;
-    const imgHeight = 10;
-    pdf.addImage(signature, 'PNG', pageWidth - margin - imgWidth, footerY - imgHeight, imgWidth, imgHeight);
-  } catch (error) {
-    console.error("Erreur lors de l'ajout du pied de page:", error);
-  }
+  return currentY;
 };
