@@ -70,10 +70,12 @@ export async function saveResponses(
   
   // Only insert if there are responses to save
   if (responsesToSave.length > 0) {
-    // Explicitly cast to a simple array type to prevent deep type inference
+    // Use simple array cast to prevent TypeScript from deep analysis
+    const plainResponses = responsesToSave as any[];
+    
     const { error: insertError } = await supabase
       .from(responseTable)
-      .insert(responsesToSave as any[]);
+      .insert(plainResponses);
     
     if (insertError) {
       console.error('Error inserting responses:', insertError);
