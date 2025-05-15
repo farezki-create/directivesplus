@@ -5,7 +5,9 @@ import {
   Printer, 
   Send, 
   Eye,
-  Trash2
+  Trash2,
+  FileText,
+  Music
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,11 +19,12 @@ interface DocumentCardProps {
     file_path: string;
     created_at: string;
     description?: string;
+    content_type?: string;
   };
   onDownload: (filePath: string, fileName: string) => void;
-  onPrint: (filePath: string) => void;
+  onPrint: (filePath: string, contentType?: string) => void;
   onShare: (documentId: string) => void;
-  onView: (filePath: string) => void;
+  onView: (filePath: string, contentType?: string) => void;
   onDelete: (documentId: string) => void;
 }
 
@@ -33,13 +36,24 @@ const DocumentCard: FC<DocumentCardProps> = ({
   onView,
   onDelete
 }) => {
+  const isAudio = document.content_type?.includes('audio');
+
   return (
     <Card key={document.id} className="overflow-hidden">
       <CardHeader>
-        <CardTitle>{document.file_name}</CardTitle>
-        <CardDescription>
-          Créé le {new Date(document.created_at).toLocaleDateString('fr-FR')}
-        </CardDescription>
+        <div className="flex items-start gap-2">
+          {isAudio ? (
+            <Music size={18} className="mt-1 text-blue-500" />
+          ) : (
+            <FileText size={18} className="mt-1 text-gray-500" />
+          )}
+          <div className="flex-1">
+            <CardTitle>{document.file_name}</CardTitle>
+            <CardDescription>
+              Créé le {new Date(document.created_at).toLocaleDateString('fr-FR')}
+            </CardDescription>
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
         <p className="text-gray-600">{document.description || "Directives anticipées"}</p>
@@ -48,21 +62,12 @@ const DocumentCard: FC<DocumentCardProps> = ({
         <Button 
           variant="outline"
           className="flex items-center gap-2"
-          onClick={() => {
-            // Vérifier si le chemin du document est valide avant d'appeler onView
-            if (document.file_path) {
-              // Ouvrir directement le document dans un nouvel onglet si c'est une URL complète
-              if (document.file_path.startsWith('http')) {
-                window.open(document.file_path, '_blank');
-              } else {
-                onView(document.file_path);
-              }
-            }
-          }}
+          onClick={() => onView(document.file_path, document.content_type)}
         >
           <Eye size={16} />
-          Visualiser
+          {isAudio ? "Écouter" : "Visualiser"}
         </Button>
+        
         <Button 
           variant="outline"
           className="flex items-center gap-2"
@@ -71,14 +76,18 @@ const DocumentCard: FC<DocumentCardProps> = ({
           <Download size={16} />
           Télécharger
         </Button>
-        <Button 
-          variant="outline"
-          className="flex items-center gap-2"
-          onClick={() => onPrint(document.file_path)}
-        >
-          <Printer size={16} />
-          Imprimer
-        </Button>
+        
+        {!isAudio && (
+          <Button 
+            variant="outline"
+            className="flex items-center gap-2"
+            onClick={() => onPrint(document.file_path, document.content_type)}
+          >
+            <Printer size={16} />
+            Imprimer
+          </Button>
+        )}
+        
         <Button 
           variant="outline"
           className="flex items-center gap-2"
@@ -87,6 +96,7 @@ const DocumentCard: FC<DocumentCardProps> = ({
           <Send size={16} />
           Partager
         </Button>
+        
         <Button 
           variant="outline"
           className="flex items-center gap-2 text-red-500 hover:bg-red-50 hover:text-red-600"

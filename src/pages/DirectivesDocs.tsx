@@ -15,8 +15,19 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import DocumentCard from "@/components/documents/DocumentCard";
 import EmptyDocumentsState from "@/components/documents/EmptyDocumentsState";
+import AudioRecorder from "@/components/documents/AudioRecorder";
+import DocumentUploader from "@/components/documents/DocumentUploader";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 interface Document {
   id: string;
@@ -24,6 +35,7 @@ interface Document {
   file_path: string;
   created_at: string;
   description?: string;
+  content_type?: string;
   user_id: string;
 }
 
@@ -33,6 +45,8 @@ const DirectivesDocs = () => {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [documentToDelete, setDocumentToDelete] = useState<string | null>(null);
+  const [showAddOptions, setShowAddOptions] = useState(false);
+  const [previewDocument, setPreviewDocument] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -70,12 +84,23 @@ const DirectivesDocs = () => {
 
   const handleDownload = (filePath: string, fileName: string) => {
     try {
-      const link = document.createElement('a');
-      link.href = filePath;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      // Pour les data URI (base64)
+      if (filePath.startsWith('data:')) {
+        const link = document.createElement('a');
+        link.href = filePath;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        // Pour les URL normales
+        const link = document.createElement('a');
+        link.href = filePath;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
       
       toast({
         title: "Téléchargement réussi",
@@ -91,38 +116,31 @@ const DirectivesDocs = () => {
     }
   };
 
-  const handlePrint = (filePath: string) => {
+  const handlePrint = (filePath: string, contentType: string = "application/pdf") => {
     try {
-      // Créer un iframe temporaire pour l'impression
-      const printFrame = document.createElement('iframe');
-      printFrame.style.display = 'none';
-      document.body.appendChild(printFrame);
+      if (filePath.startsWith('data:') && filePath.includes('audio')) {
+        toast({
+          title: "Information",
+          description: "L'impression n'est pas disponible pour les fichiers audio."
+        });
+        return;
+      }
       
-      printFrame.onload = () => {
-        try {
-          // Déclencher l'impression une fois l'iframe chargé
-          setTimeout(() => {
-            printFrame.contentWindow?.focus();
-            printFrame.contentWindow?.print();
-            
-            // Supprimer l'iframe après l'impression
-            setTimeout(() => {
-              document.body.removeChild(printFrame);
-            }, 1000);
-          }, 500);
-        } catch (err) {
-          console.error("Erreur lors de l'impression:", err);
-          document.body.removeChild(printFrame);
-          toast({
-            title: "Erreur",
-            description: "Impossible d'imprimer le document",
-            variant: "destructive"
-          });
-        }
-      };
-      
-      // Charger le PDF dans l'iframe
-      printFrame.src = filePath;
+      // Ouvrir le document dans un nouvel onglet pour impression
+      const printWindow = window.open(filePath, '_blank');
+      if (printWindow) {
+        printWindow.focus();
+        // Attendre que le contenu soit chargé avant d'imprimer
+        printWindow.onload = () => {
+          try {
+            printWindow.print();
+          } catch (err) {
+            console.error("Erreur lors de l'impression:", err);
+          }
+        };
+      } else {
+        throw new Error("Impossible d'ouvrir une nouvelle fenêtre");
+      }
     } catch (error) {
       console.error("Erreur lors de l'impression:", error);
       toast({
@@ -141,9 +159,15 @@ const DirectivesDocs = () => {
     });
   };
   
-  const handleView = (filePath: string) => {
+  const handleView = (filePath: string, contentType: string = "application/pdf") => {
     try {
-      window.open(filePath, '_blank');
+      if (contentType && contentType.includes('audio')) {
+        // Pour les fichiers audio, afficher dans une boîte de dialogue
+        setPreviewDocument(filePath);
+      } else {
+        // Pour les PDF et images, ouvrir dans une nouvelle fenêtre
+        window.open(filePath, '_blank');
+      }
     } catch (error) {
       console.error("Erreur lors de l'ouverture du document:", error);
       toast({
@@ -188,6 +212,10 @@ const DirectivesDocs = () => {
     }
   };
 
+  const handleUploadComplete = (url: string, fileName: string) => {
+    fetchDocuments();
+  };
+
   if (isLoading || loading) {
     return (
       <div className="h-screen flex items-center justify-center">
@@ -206,7 +234,29 @@ const DirectivesDocs = () => {
       
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold text-center mb-8">Mes Directives</h1>
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-3xl font-bold">Mes Directives</h1>
+            <Button
+              onClick={() => setShowAddOptions(!showAddOptions)}
+              className="flex items-center gap-2"
+            >
+              <Plus size={16} />
+              Ajouter un document
+            </Button>
+          </div>
+
+          {showAddOptions && user && (
+            <div className="mb-8">
+              <AudioRecorder 
+                userId={user.id}
+                onRecordingComplete={handleUploadComplete}
+              />
+              <DocumentUploader 
+                userId={user.id}
+                onUploadComplete={handleUploadComplete}
+              />
+            </div>
+          )}
           
           {documents.length === 0 ? (
             <EmptyDocumentsState />
@@ -217,9 +267,9 @@ const DirectivesDocs = () => {
                   key={doc.id}
                   document={doc}
                   onDownload={handleDownload}
-                  onPrint={handlePrint}
+                  onPrint={() => handlePrint(doc.file_path, doc.content_type)}
                   onShare={handleShare}
-                  onView={handleView}
+                  onView={() => handleView(doc.file_path, doc.content_type)}
                   onDelete={confirmDelete}
                 />
               ))}
@@ -244,6 +294,20 @@ const DirectivesDocs = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={!!previewDocument} onOpenChange={() => setPreviewDocument(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Prévisualisation audio</DialogTitle>
+            <DialogDescription>
+              Écoutez votre enregistrement audio
+            </DialogDescription>
+          </DialogHeader>
+          {previewDocument && previewDocument.includes('audio') && (
+            <audio className="w-full" controls src={previewDocument} />
+          )}
+        </DialogContent>
+      </Dialog>
       
       <footer className="bg-white py-6 border-t mt-auto">
         <div className="container mx-auto px-4 text-center text-gray-500">
