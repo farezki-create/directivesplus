@@ -11,6 +11,7 @@ interface QuestionItemProps {
 }
 
 const QuestionItem = ({ question, response, onResponseChange }: QuestionItemProps) => {
+  // Use question options if available, otherwise use default options
   const options = question.options || {
     yes: 'Oui',
     no: 'Non',

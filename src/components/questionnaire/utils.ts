@@ -12,6 +12,8 @@ export const getSectionTable = (sectionId: string): string => {
       return 'questionnaire_advanced_illness_fr';
     case 'gouts-peurs':
       return 'questionnaire_preferences_fr';
+    case 'personne-confiance':
+      return 'questionnaire_trusted_persons_fr';
     default:
       console.warn(`No table mapping found for section: ${sectionId}`);
       return '';

@@ -76,7 +76,7 @@ export const useQuestionsData = (questionnaireType: string | undefined) => {
             }
           }));
         } else {
-          // Handle standard questions - add default options
+          // Handle standard questions for other questionnaires
           const standardQuestions = questionsData as unknown as StandardQuestion[];
           formattedQuestions = standardQuestions.map(q => ({
             id: String(q.id), // Ensure id is string
