@@ -24,13 +24,13 @@ export async function saveResponses(
   
   const responseTable = getResponseTable(pageId);
   
-  // Create array with explicit typing
+  // Create an array of response objects
   const responsesToSave: SimpleResponseObject[] = [];
   
   // Get all question IDs as an array
   const questionIds = Object.keys(responses);
   
-  // Process each question ID using a standard for loop
+  // Process each question ID
   for (let i = 0; i < questionIds.length; i++) {
     const questionId = questionIds[i];
     const responseValue = responses[questionId];
@@ -44,16 +44,14 @@ export async function saveResponses(
       }
     }
     
-    // Create a response object with explicit types for each field
-    const responseObj: SimpleResponseObject = {
+    // Add response to the array
+    responsesToSave.push({
       question_id: questionId,
       response: responseValue,
       questionnaire_type: pageId,
       user_id: userId,
       question_text: questionText
-    };
-    
-    responsesToSave.push(responseObj);
+    });
   }
   
   console.log('Responses to save:', responsesToSave);
@@ -72,10 +70,19 @@ export async function saveResponses(
   
   // Only insert if there are responses to save
   if (responsesToSave.length > 0) {
-    // Explicitly type the insert operation with any to avoid deep type inference
+    // Convert to plain JavaScript objects before inserting
+    const plainResponses = responsesToSave.map(r => ({
+      question_id: r.question_id,
+      response: r.response,
+      questionnaire_type: r.questionnaire_type,
+      user_id: r.user_id,
+      question_text: r.question_text
+    }));
+    
+    // Use the plain array for insert operation
     const { error: insertError } = await supabase
       .from(responseTable)
-      .insert(responsesToSave as any);
+      .insert(plainResponses);
     
     if (insertError) {
       console.error('Error inserting responses:', insertError);
