@@ -121,9 +121,8 @@ const Rediger = () => {
                 asChild 
                 variant="outline" 
                 className="w-full md:w-auto"
-                onClick={() => navigate("/examples")}
               >
-                <Link to="/examples" className="flex items-center justify-center gap-2">
+                <Link to="/exemples-phrases" className="flex items-center justify-center gap-2">
                   <PlusCircle size={16} />
                   Voir les exemples
                 </Link>
