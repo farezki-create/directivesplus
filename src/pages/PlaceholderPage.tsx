@@ -47,6 +47,7 @@ const PlaceholderPage = () => {
   const isQuestionnairePage = questionnaireSections.includes(pageId || '');
   const isExamplesPage = pageId === 'exemples-phrases';
 
+  // Add specific logging to debug
   console.log('Current pageId:', pageId);
   console.log('Is trusted persons page:', isTrustedPersonsPage);
   
