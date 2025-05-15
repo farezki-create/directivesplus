@@ -4,6 +4,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import AppNavigation from "@/components/AppNavigation";
 import { useAuth } from "@/contexts/AuthContext";
 import QuestionnaireSection from "@/components/QuestionnaireSection";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 const PlaceholderPage = () => {
   const { pageId } = useParams<{ pageId: string }>();
@@ -45,6 +47,18 @@ const PlaceholderPage = () => {
       <AppNavigation />
       
       <main className="flex-grow container mx-auto px-4 py-8">
+        {/* Back button at the top */}
+        <div className="mb-6">
+          <Button
+            variant="outline"
+            onClick={() => navigate("/rediger")}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft size={16} />
+            Retour à la rédaction
+          </Button>
+        </div>
+
         {isQuestionnairePage ? (
           <QuestionnaireSection />
         ) : (

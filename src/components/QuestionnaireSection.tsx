@@ -1,5 +1,5 @@
 
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { getSectionTitle, getSectionTable } from "./questionnaire/utils";
 import { useQuestionnaireData } from "./questionnaire/useQuestionnaireData";
 import LoadingState from "./questionnaire/LoadingState";
@@ -8,9 +8,12 @@ import QuestionsContainer from "./questionnaire/QuestionsContainer";
 import NavigationButtons from "./questionnaire/NavigationButtons";
 import { toast } from "@/hooks/use-toast";
 import { useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 const QuestionnaireSection = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const pageId = location.pathname.split('/').pop() || '';
   
   const {
@@ -50,6 +53,17 @@ const QuestionnaireSection = () => {
   if (!questions || questions.length === 0) {
     return (
       <div className="space-y-8 max-w-3xl mx-auto">
+        <div className="mb-6">
+          <Button
+            variant="outline"
+            onClick={() => navigate("/rediger")}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft size={16} />
+            Retour à la rédaction
+          </Button>
+        </div>
+
         <h1 className="text-2xl font-bold text-center mb-6">
           {getSectionTitle(pageId)}
         </h1>
@@ -65,6 +79,17 @@ const QuestionnaireSection = () => {
   
   return (
     <div className="space-y-8 max-w-3xl mx-auto">
+      <div className="mb-6">
+        <Button
+          variant="outline"
+          onClick={() => navigate("/rediger")}
+          className="flex items-center gap-2"
+        >
+          <ArrowLeft size={16} />
+          Retour à la rédaction
+        </Button>
+      </div>
+      
       <h1 className="text-2xl font-bold text-center mb-6">
         {getSectionTitle(pageId)}
       </h1>
