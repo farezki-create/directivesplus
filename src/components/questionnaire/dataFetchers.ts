@@ -1,195 +1,135 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Question, QuestionnaireTableName, ResponseTableName, Responses } from "./types";
+import { QuestionType, ResponseType } from "./types";
 
-// Helper function to get the right table name for questionnaire sections
-export const getSectionTable = (sectionId: string): QuestionnaireTableName => {
-  switch(sectionId) {
-    case 'avis-general': 
-      return "questionnaire_general_fr";
-    case 'maintien-vie': 
-      return "questionnaire_life_support_fr";
-    case 'maladie-avancee': 
-      return "questionnaire_advanced_illness_fr";
-    case 'gouts-peurs':
-    case 'personne-confiance':
-    case 'exemples-phrases': 
-      return "questionnaire_preferences_fr";
-    default:
-      throw new Error(`Unknown section ID: ${sectionId}`);
-  }
+// Tables mapping for different questionnaire types
+const sectionTableMap: Record<string, string> = {
+  "avis-general": "questionnaire_general_fr",
+  "maintien-vie": "questionnaire_life_support_fr",
+  "maladie-avancee": "questionnaire_advanced_illness_fr",
+  "gouts-peurs": "questionnaire_preferences_fr",
+  "personne-confiance": "trusted_persons", // This would need specific handling
+  "exemples-phrases": "questionnaire_examples_fr", // Verify this table exists
+  "synthese": "questionnaire_synthesis"
 };
 
-// Helper function to get the response table name
-export const getResponseTable = (sectionId: string): ResponseTableName => {
-  // Some sections use a different table for responses
-  if (['gouts-peurs', 'personne-confiance', 'exemples-phrases'].includes(sectionId)) {
-    return "questionnaire_preferences_responses";
+// Get the appropriate table name based on the section ID
+export function getSectionTable(sectionId: string): string {
+  if (!sectionTableMap[sectionId]) {
+    console.warn(`No table mapping found for section: ${sectionId}, defaulting to general`);
+    return sectionTableMap["avis-general"];
   }
-  return "questionnaire_responses";
-};
+  return sectionTableMap[sectionId];
+}
 
-// Fetch questions from the database
-export const fetchQuestions = async (tableName: QuestionnaireTableName): Promise<Question[]> => {
+// Fetch questions from the appropriate table
+export async function fetchQuestions(sectionId: string): Promise<QuestionType[]> {
   try {
+    const tableName = getSectionTable(sectionId);
+    console.log(`Fetching questions from table: ${tableName}`);
+
     const { data, error } = await supabase
       .from(tableName)
-      .select('*')
-      .order('display_order', { ascending: true });
-    
-    if (error) {
-      console.error("Error fetching questions:", error);
-      throw error;
-    }
-    
-    if (!data) {
-      return [];
-    }
-    
-    // Transform the questions based on the table type
-    if (tableName === "questionnaire_life_support_fr") {
-      // Handle life support questions specifically
-      return data.map(item => {
-        // Type assertion here to help TypeScript understand the structure
-        const lifeSupportItem = item as unknown as {
-          id: number;
-          question_text: string;
-          explanation?: string;
-          question_order: number;
-          option_yes: string;
-          option_no: string;
-          option_unsure: string;
-        };
-        
-        return {
-          id: String(lifeSupportItem.id),
-          question: lifeSupportItem.question_text,
-          explanation: lifeSupportItem.explanation,
-          display_order: lifeSupportItem.question_order,
-          options: {
-            yes: lifeSupportItem.option_yes,
-            no: lifeSupportItem.option_no,
-            unsure: lifeSupportItem.option_unsure
-          }
-        };
-      });
-    } else {
-      // Handle standard questions
-      return data.map(item => {
-        // Type assertion for standard question format
-        const standardItem = item as unknown as {
-          id: string;
-          question: string;
-          explanation?: string;
-          display_order?: number;
-        };
-        
-        return {
-          id: String(standardItem.id),
-          question: standardItem.question,
-          explanation: standardItem.explanation,
-          display_order: standardItem.display_order
-        };
-      });
-    }
-  } catch (err) {
-    console.error("Failed to fetch questions:", err);
-    throw err;
-  }
-};
-
-// Fetch questionnaire responses for a specific user
-export const fetchResponses = async (questionnaireId: string, userId: string): Promise<Responses> => {
-  try {
-    const tableName = getResponseTable(questionnaireId);
-    
-    // Use a simpler approach to avoid excessive type instantiation
-    const { data, error } = await supabase
-      .from(tableName)
-      .select('question_id, response')
-      .eq('user_id', userId)
-      .eq('questionnaire_type', questionnaireId);
+      .select("*")
+      .order("display_order", { ascending: true });
 
     if (error) {
-      console.error("Error fetching responses:", error);
       throw error;
     }
 
     if (!data || data.length === 0) {
-      return {};
+      console.warn(`No questions found for section ${sectionId}`);
+      return [];
     }
 
-    // Create a simple response map
-    const responseMap: Responses = {};
+    console.log(`Found ${data.length} questions for section ${sectionId}`);
+
+    // Transform the questions based on the table type
+    if (tableName === "questionnaire_life_support_fr") {
+      // Handle life support questions specifically
+      const result: QuestionType[] = [];
+      
+      for (const item of data) {
+        // Explicitly type the item for life support questions
+        const question: QuestionType = {
+          id: String(item.id),
+          question: item.question_text,
+          explanation: item.explanation || "",
+          display_order: item.question_order || 0,
+          options: {
+            yes: item.option_yes,
+            no: item.option_no,
+            unsure: item.option_unsure
+          }
+        };
+        
+        result.push(question);
+      }
+      
+      return result;
+    } else {
+      // Handle standard questions
+      const result: QuestionType[] = [];
+      
+      for (const item of data) {
+        // Explicitly type the item for standard questions
+        const question: QuestionType = {
+          id: String(item.id),
+          question: item.question,
+          explanation: item.explanation || "",
+          display_order: item.display_order || 0
+        };
+        
+        result.push(question);
+      }
+      
+      return result;
+    }
+  } catch (err) {
+    console.error("Failed to fetch questions:", err);
+    throw new Error(`Failed to fetch questions: ${err instanceof Error ? err.message : String(err)}`);
+  }
+}
+
+// Fetch saved responses for a user
+export async function fetchResponses(
+  sectionId: string,
+  userId: string | undefined
+): Promise<Record<string, string>> {
+  if (!userId) {
+    console.warn("No user ID provided for fetching responses");
+    return {};
+  }
+
+  try {
+    const tableName = getSectionTable(sectionId);
+    const questionnaire_type = sectionId;
     
-    // Use a normal for loop to simplify type handling
-    for (let i = 0; i < data.length; i++) {
-      const item = data[i];
-      if (item && item.question_id) {
-        responseMap[item.question_id] = item.response || '';
+    console.log(`Fetching responses for user ${userId} and section ${sectionId}`);
+    
+    const { data, error } = await supabase
+      .from("questionnaire_responses")
+      .select("question_id, response")
+      .eq("user_id", userId)
+      .eq("questionnaire_type", questionnaire_type);
+
+    if (error) {
+      throw error;
+    }
+
+    // Using a simple object to store responses instead of complex array operations
+    const responses: Record<string, string> = {};
+    
+    if (data && data.length > 0) {
+      for (const item of data) {
+        responses[item.question_id] = item.response;
       }
     }
-
-    return responseMap;
+    
+    console.log(`Found ${Object.keys(responses).length} saved responses`);
+    return responses;
   } catch (err) {
     console.error("Failed to fetch responses:", err);
-    throw err;
+    return {};
   }
-};
-
-// Save a user's response to a questionnaire
-export const saveResponse = async (
-  questionnaireId: string,
-  questionId: string,
-  userId: string,
-  response: string
-): Promise<void> => {
-  try {
-    const tableName = getResponseTable(questionnaireId);
-    
-    // Check if response already exists
-    const { data: existingResponse, error: existingError } = await supabase
-      .from(tableName)
-      .select('id')
-      .eq('questionnaire_type', questionnaireId)
-      .eq('question_id', questionId)
-      .eq('user_id', userId)
-      .maybeSingle();
-
-    if (existingError && existingError.code !== 'PGRST116') {
-      console.error("Error checking existing response:", existingError);
-      throw existingError;
-    }
-
-    if (existingResponse) {
-      // Update existing response
-      const { error } = await supabase
-        .from(tableName)
-        .update({ response })
-        .eq('id', existingResponse.id);
-
-      if (error) {
-        console.error("Error updating response:", error);
-        throw error;
-      }
-    } else {
-      // Create new response
-      const { error } = await supabase
-        .from(tableName)
-        .insert([{ 
-          questionnaire_type: questionnaireId, 
-          question_id: questionId, 
-          user_id: userId, 
-          response 
-        }]);
-
-      if (error) {
-        console.error("Error creating response:", error);
-        throw error;
-      }
-    }
-  } catch (err) {
-    console.error("Failed to save response:", err);
-    throw err;
-  }
-};
+}

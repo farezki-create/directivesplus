@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
@@ -16,47 +16,57 @@ import PlaceholderPage from "./pages/PlaceholderPage";
 import QuestionnaireSection from "./components/QuestionnaireSection";
 import Rediger from "./pages/Rediger";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const AppContent = () => (
   <Routes>
+    {/* Public routes */}
     <Route path="/" element={<Index />} />
     <Route path="/auth" element={<Auth />} />
-    <Route 
-      path="/dashboard" 
-      element={
-        <ProtectedRoute>
-          <Dashboard />
-        </ProtectedRoute>
-      } 
-    />
-    <Route 
-      path="/profile" 
-      element={
-        <ProtectedRoute>
-          <Profile />
-        </ProtectedRoute>
-      } 
-    />
-    <Route 
-      path="/admin" 
-      element={
-        <ProtectedRoute>
-          <Admin />
-        </ProtectedRoute>
-      } 
-    />
-    {/* Routes pour les sections des directives */}
+    
+    {/* Protected routes - Dashboard section */}
+    <Route path="/dashboard" element={
+      <ProtectedRoute>
+        <Dashboard />
+      </ProtectedRoute>
+    } />
+    
+    {/* Protected routes - User profile */}
+    <Route path="/profile" element={
+      <ProtectedRoute>
+        <Profile />
+      </ProtectedRoute>
+    } />
+    
+    {/* Protected routes - Admin section */}
+    <Route path="/admin" element={
+      <ProtectedRoute>
+        <Admin />
+      </ProtectedRoute>
+    } />
+    
+    {/* Protected routes - Directive sections */}
     <Route path="/rediger" element={
       <ProtectedRoute>
         <Rediger />
       </ProtectedRoute>
     } />
+    
+    {/* Questionnaire sections with dynamic routing */}
     <Route path="/:pageId" element={
       <ProtectedRoute>
-        <PlaceholderPage />
+        <QuestionnaireSection />
       </ProtectedRoute>
     } />
+    
+    {/* Legacy routes - will be refactored */}
     <Route path="/mes-directives" element={
       <ProtectedRoute>
         <PlaceholderPage />
@@ -67,7 +77,8 @@ const AppContent = () => (
         <PlaceholderPage />
       </ProtectedRoute>
     } />
-    {/* Routes for directive sections */}
+    
+    {/* Specific questionnaire routes - these can be handled by the dynamic route above */}
     <Route path="/avis-general" element={
       <ProtectedRoute>
         <QuestionnaireSection />
@@ -75,35 +86,36 @@ const AppContent = () => (
     } />
     <Route path="/maintien-vie" element={
       <ProtectedRoute>
-        <PlaceholderPage />
+        <Navigate to="/maintien-vie" replace />
       </ProtectedRoute>
     } />
     <Route path="/maladie-avancee" element={
       <ProtectedRoute>
-        <PlaceholderPage />
+        <Navigate to="/maladie-avancee" replace />
       </ProtectedRoute>
     } />
     <Route path="/gouts-peurs" element={
       <ProtectedRoute>
-        <PlaceholderPage />
+        <Navigate to="/gouts-peurs" replace />
       </ProtectedRoute>
     } />
     <Route path="/personne-confiance" element={
       <ProtectedRoute>
-        <PlaceholderPage />
+        <Navigate to="/personne-confiance" replace />
       </ProtectedRoute>
     } />
     <Route path="/exemples-phrases" element={
       <ProtectedRoute>
-        <PlaceholderPage />
+        <Navigate to="/exemples-phrases" replace />
       </ProtectedRoute>
     } />
     <Route path="/synthese" element={
       <ProtectedRoute>
-        <PlaceholderPage />
+        <Navigate to="/synthese" replace />
       </ProtectedRoute>
     } />
-    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+    
+    {/* Catch-all route */}
     <Route path="*" element={<NotFound />} />
   </Routes>
 );
