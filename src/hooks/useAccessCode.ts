@@ -27,24 +27,28 @@ export const useAccessCode = (user: User | null, type: "directive" | "medical") 
     try {
       const tableField = type === "directive" ? "is_directive_access" : "is_medical_access";
       
-      // Vérifier si l'utilisateur a déjà un code d'accès du type demandé
+      // Check if user already has an access code of the requested type
       const { data, error } = await supabase
         .from('document_access_codes')
         .select('access_code')
         .eq('user_id', user.id)
         .eq(tableField, true)
-        .maybeSingle();
+        .single();
+        
+      if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows returned" error
+        throw error;
+      }
         
       if (data?.access_code) {
         setAccessCode(data.access_code);
         return;
       }
       
-      // Générer un nouveau code d'accès si aucun n'existe
+      // Generate a new access code if none exists
       const newAccessCode = generateRandomCode(8);
       
-      // Créer un enregistrement dans document_access_codes
-      await supabase
+      // Create a record in document_access_codes
+      const { error: insertError } = await supabase
         .from('document_access_codes')
         .insert({
           user_id: user.id,
@@ -53,9 +57,11 @@ export const useAccessCode = (user: User | null, type: "directive" | "medical") 
           is_medical_access: type === "medical",
         });
         
+      if (insertError) throw insertError;
+      
       setAccessCode(newAccessCode);
     } catch (error) {
-      console.error(`Erreur lors de la récupération du code d'accès pour ${type}:`, error);
+      console.error(`Error retrieving access code for ${type}:`, error);
     }
   };
 
