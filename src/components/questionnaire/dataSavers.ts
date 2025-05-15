@@ -15,22 +15,27 @@ export async function saveResponses(
   
   const responseTable = getResponseTable(pageId);
   
-  // Create an empty array with explicit type
-  const responsesToSave: ResponseData[] = [];
+  // Create an array to store our response data objects
+  const responsesToSave: Array<ResponseData> = [];
   
-  // Process each response and explicitly construct objects with proper typing
-  Object.entries(responses).forEach(([questionId, responseValue]) => {
-    const questionText = questions.find(q => q.id === questionId)?.question || '';
+  // Convert responses to array of objects with explicit typing
+  const entries = Object.entries(responses);
+  for (let i = 0; i < entries.length; i++) {
+    const [questionId, responseValue] = entries[i];
+    const question = questions.find(q => q.id === questionId);
+    const questionText = question ? question.question : '';
     
-    // Add the typed object to our array
-    responsesToSave.push({
+    // Construct a new object with explicit type annotation
+    const responseData: ResponseData = {
       question_id: questionId,
       response: responseValue,
       questionnaire_type: pageId,
       user_id: userId,
       question_text: questionText
-    });
-  });
+    };
+    
+    responsesToSave.push(responseData);
+  }
   
   console.log('Responses to save:', responsesToSave);
   
