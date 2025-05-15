@@ -8,11 +8,11 @@ import TrustedPersonsManager from "@/components/trusted-persons/TrustedPersonsMa
 import ExamplesSection from "@/components/questionnaire/ExamplesSection";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 
 const PlaceholderPage = () => {
   const { pageId } = useParams<{ pageId: string }>();
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -52,10 +52,12 @@ const PlaceholderPage = () => {
   const isExamplesPage = pageId === 'exemples-phrases';
 
   console.log('Is trusted persons page:', isTrustedPersonsPage);
+  console.log('User ID available:', user?.id);
   
   // Show toast notification for the trusted persons page
   useEffect(() => {
     if (isTrustedPersonsPage) {
+      console.log("Displaying toast for personne-confiance page");
       toast({
         title: "Page personne de confiance",
         description: "Vous pouvez ajouter vos personnes de confiance ici."
@@ -70,7 +72,7 @@ const PlaceholderPage = () => {
       <main className="flex-grow container mx-auto px-4 py-8">
         {isQuestionnairePage && <QuestionnaireSection />}
         
-        {isTrustedPersonsPage && (
+        {isTrustedPersonsPage && user && (
           <div className="w-full">
             <TrustedPersonsManager />
           </div>

@@ -23,6 +23,15 @@ const TrustedPersonsManager = () => {
     handleSave
   } = useTrustedPersons(user?.id);
 
+  if (!user) {
+    console.error("No user found in TrustedPersonsManager");
+    return (
+      <div className="text-center p-8">
+        <p>Utilisateur non connecté. Veuillez vous connecter pour gérer vos personnes de confiance.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8 max-w-3xl mx-auto">
       <div className="mb-6">

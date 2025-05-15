@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -54,52 +53,6 @@ const AppContent = () => (
         </ProtectedRoute>
       } />
       <Route path="/:pageId" element={
-        <ProtectedRoute>
-          <PlaceholderPage />
-        </ProtectedRoute>
-      } />
-      <Route path="/mes-directives" element={
-        <ProtectedRoute>
-          <PlaceholderPage />
-        </ProtectedRoute>
-      } />
-      <Route path="/avis" element={
-        <ProtectedRoute>
-          <PlaceholderPage />
-        </ProtectedRoute>
-      } />
-      {/* Routes for directive sections */}
-      <Route path="/avis-general" element={
-        <ProtectedRoute>
-          <QuestionnaireSection />
-        </ProtectedRoute>
-      } />
-      <Route path="/maintien-vie" element={
-        <ProtectedRoute>
-          <QuestionnaireSection />
-        </ProtectedRoute>
-      } />
-      <Route path="/maladie-avancee" element={
-        <ProtectedRoute>
-          <QuestionnaireSection />
-        </ProtectedRoute>
-      } />
-      <Route path="/gouts-peurs" element={
-        <ProtectedRoute>
-          <QuestionnaireSection />
-        </ProtectedRoute>
-      } />
-      <Route path="/personne-confiance" element={
-        <ProtectedRoute>
-          <PlaceholderPage />
-        </ProtectedRoute>
-      } />
-      <Route path="/exemples-phrases" element={
-        <ProtectedRoute>
-          <PlaceholderPage />
-        </ProtectedRoute>
-      } />
-      <Route path="/synthese" element={
         <ProtectedRoute>
           <PlaceholderPage />
         </ProtectedRoute>

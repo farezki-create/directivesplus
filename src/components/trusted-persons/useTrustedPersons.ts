@@ -1,6 +1,7 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast"; // Update import to use the correct path
 import { TrustedPerson } from "./types";
 
 export const useTrustedPersons = (userId: string | undefined) => {
