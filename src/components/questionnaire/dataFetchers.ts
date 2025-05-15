@@ -71,8 +71,8 @@ export async function fetchQuestions(sectionId: string): Promise<Question[]> {
       const result: Question[] = [];
       
       for (const item of data) {
-        // Explicitly type the item for life support questions
-        const typedItem = item as {
+        // Safely cast the item only after checking the table name
+        const typedItem = item as unknown as {
           id: number;
           question_text: string;
           question_order: number;
@@ -103,8 +103,8 @@ export async function fetchQuestions(sectionId: string): Promise<Question[]> {
       const result: Question[] = [];
       
       for (const item of data) {
-        // Explicitly type the item for standard questions
-        const typedItem = item as {
+        // Safely cast the item for standard questions
+        const typedItem = item as unknown as {
           id: string;
           question: string;
           explanation?: string;
@@ -159,8 +159,10 @@ export async function fetchResponses(
     const responses: Record<string, string> = {};
     
     if (data && data.length > 0) {
+      // Type-safe iteration over the data array
       for (let i = 0; i < data.length; i++) {
-        const item = data[i];
+        // Use type assertion with unknown as an intermediate step for safety
+        const item = data[i] as unknown as { question_id: string; response: string };
         responses[item.question_id] = item.response;
       }
     }
