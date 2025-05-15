@@ -23,6 +23,7 @@ import ExemplesPhrases from "@/pages/ExemplesPhrases";
 import PersonneConfiance from "@/pages/PersonneConfiance";
 
 import "./App.css";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 const App = () => {
   return (
@@ -40,7 +41,7 @@ const App = () => {
           <Route path="/acces-document" element={<AccessDocuments />} />
           <Route path="/admin" element={<Admin />} />
           
-          {/* New routes for directive sections */}
+          {/* Questionnaire section routes with proper protection */}
           <Route path="/avis-general" element={<AvisGeneral />} />
           <Route path="/maintien-vie" element={<MaintienVie />} />
           <Route path="/maladie-avancee" element={<MaladieAvancee />} />
