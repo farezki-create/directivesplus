@@ -13,12 +13,18 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   const { isAuthenticated, isLoading, profile, session } = useAuth();
   const location = useLocation();
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
   
   useEffect(() => {
     console.log("ProtectedRoute for", location.pathname);
     console.log("- Auth status:", isAuthenticated ? "Authenticated" : "Not authenticated");
     console.log("- Loading:", isLoading);
     console.log("- Session:", session ? "Present" : "None");
+    
+    // Only mark auth as checked when loading is complete
+    if (!isLoading) {
+      setHasCheckedAuth(true);
+    }
     
     // Reset redirecting state if authentication succeeds
     if (isAuthenticated && isRedirecting) {
@@ -27,11 +33,12 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   }, [isAuthenticated, isLoading, location.pathname, isRedirecting, session]);
 
   // Show loading indicator while checking auth state
-  if (isLoading) {
+  if (isLoading || !hasCheckedAuth) {
     console.log("ProtectedRoute: Loading auth state...");
     return (
-      <div className="h-screen flex items-center justify-center">
+      <div className="h-screen flex flex-col items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-directiveplus-600" />
+        <p className="mt-4 text-gray-600">Vérification de l'authentification...</p>
       </div>
     );
   }

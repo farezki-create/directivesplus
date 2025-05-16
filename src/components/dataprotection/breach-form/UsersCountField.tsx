@@ -20,8 +20,14 @@ export const UsersCountField: React.FC<UsersCountFieldProps> = ({ form }) => {
           <FormControl>
             <Input 
               type="number" 
-              placeholder="Ex: 100" 
-              {...field} 
+              placeholder="Ex: 100"
+              min="0" // Prevent negative values
+              {...field}
+              // Convert string to number
+              onChange={(e) => {
+                const value = e.target.value ? parseInt(e.target.value) : '';
+                field.onChange(value);
+              }}
             />
           </FormControl>
           <FormMessage />

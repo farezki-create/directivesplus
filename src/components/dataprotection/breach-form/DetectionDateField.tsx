@@ -10,6 +10,9 @@ interface DetectionDateFieldProps {
 }
 
 export const DetectionDateField: React.FC<DetectionDateFieldProps> = ({ form }) => {
+  // Get today's date in YYYY-MM-DD format for max date constraint
+  const today = new Date().toISOString().split('T')[0];
+
   return (
     <FormField
       control={form.control}
@@ -20,6 +23,7 @@ export const DetectionDateField: React.FC<DetectionDateFieldProps> = ({ form }) 
           <FormControl>
             <Input 
               type="date" 
+              max={today} // Prevent selecting future dates
               {...field} 
             />
           </FormControl>

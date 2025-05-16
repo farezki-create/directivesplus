@@ -33,15 +33,20 @@ const Auth = () => {
     if (!isLoading && isAuthenticated && !redirectInProgress) {
       console.log("Auth page: Already authenticated, redirecting to:", from);
       setRedirectInProgress(true);
-      navigate(from, { replace: true });
+      
+      // Use setTimeout to avoid race conditions with React rendering
+      setTimeout(() => {
+        navigate(from, { replace: true });
+      }, 100);
     }
   }, [isAuthenticated, isLoading, navigate, from, redirectInProgress]);
 
   // Show loading while checking auth status
   if (isLoading) {
     return (
-      <div className="h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-directiveplus-600"></div>
+      <div className="h-screen flex flex-col items-center justify-center">
+        <Loader2 className="h-12 w-12 animate-spin text-directiveplus-600" />
+        <p className="mt-4 text-gray-600">Vérification de l'authentification...</p>
       </div>
     );
   }
@@ -49,9 +54,9 @@ const Auth = () => {
   // Don't render auth page if already authenticated and redirecting
   if (isAuthenticated && redirectInProgress) {
     return (
-      <div className="h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-directiveplus-600"></div>
-        <p className="ml-3">Redirection en cours...</p>
+      <div className="h-screen flex flex-col items-center justify-center">
+        <Loader2 className="h-12 w-12 animate-spin text-directiveplus-600" />
+        <p className="mt-4 text-gray-600">Redirection en cours...</p>
       </div>
     );
   }
