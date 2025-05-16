@@ -33,7 +33,7 @@ export const logAccessEvent = async (options: LogAccessOptions) => {
     const ipAddress = "client_side";
 
     // Format combiné pour stocker les métadonnées de ressource jusqu'à la mise à jour des types
-    const enhancedUserAgent = `${userAgent} | ResourceType: ${resourceType} | Action: ${action}`;
+    const enhancedUserAgent = `${userAgent} | ResourceType: ${resourceType} | Action: ${action} | ResourceID: ${resourceId || "general_access"}`;
 
     // Enregistrer l'événement d'accès dans la table document_access_logs
     // IMPORTANT: Nous utilisons uniquement les champs reconnus par TypeScript
@@ -75,12 +75,15 @@ export const notifyAccessLogged = (action: string, success: boolean) => {
 // Fonction pour journaliser une erreur d'accès
 export const logAccessError = async (userId: string, error: any, resourceType: string) => {
   try {
+    const userAgent = navigator.userAgent;
+    const enhancedUserAgent = `Error logging | ResourceType: ${resourceType} | Error: ${JSON.stringify(error).slice(0, 500)}`;
+    
     const { error: logError } = await supabase
       .from('document_access_logs')
       .insert({
         user_id: userId,
         ip_address: "client_side",
-        user_agent: `Error logging | ResourceType: ${resourceType} | Error: ${JSON.stringify(error).slice(0, 500)}`,
+        user_agent: enhancedUserAgent,
         // Nous ne pouvons pas utiliser les nouveaux champs tant que les types ne sont pas mis à jour
         access_code_id: "error_log" // Pour respecter la contrainte non-null
       });

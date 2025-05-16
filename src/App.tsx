@@ -23,6 +23,10 @@ import ExemplesPhrases from "@/pages/ExemplesPhrases";
 import PersonneConfiance from "@/pages/PersonneConfiance";
 import AccessCardPage from "./pages/AccessCard";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import DataProtectionImpact from "./pages/DataProtectionImpact";
+import BackupPolicy from "./pages/BackupPolicy";
+import DataBreachProcedure from "./pages/DataBreachProcedure";
+import ReportDataBreach from "./pages/ReportDataBreach";
 
 import "./App.css";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
@@ -43,6 +47,10 @@ const App = () => {
           <Route path="/acces-document" element={<AccessDocuments />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/politique-confidentialite" element={<PrivacyPolicy />} />
+          <Route path="/analyse-impact-protection-donnees" element={<DataProtectionImpact />} />
+          <Route path="/politique-sauvegarde" element={<BackupPolicy />} />
+          <Route path="/procedure-violation-donnees" element={<DataBreachProcedure />} />
+          <Route path="/signaler-violation" element={<ReportDataBreach />} />
           
           {/* Questionnaire section routes with proper protection */}
           <Route path="/avis-general" element={<AvisGeneral />} />
