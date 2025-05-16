@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useAccessCode } from "@/hooks/useAccessCode";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { FileText, Activity, Download, Share2, Printer } from "lucide-react";
+import { FileText, Activity, Download, Share2, Printer, Link } from "lucide-react";
 import html2canvas from "html2canvas";
 import { toast } from "@/hooks/use-toast";
 import { logAccessEvent, notifyAccessLogged } from "@/utils/accessLoggingUtils";
@@ -281,46 +281,56 @@ const AccessCard: React.FC<AccessCardProps> = ({ firstName, lastName, birthDate 
       <div className="flex flex-col items-center">
         <div 
           ref={cardRef} 
-          className="w-[340px] h-[215px] rounded-xl bg-gradient-to-r from-directiveplus-600 to-directiveplus-700 text-white shadow-lg overflow-hidden"
+          className="w-[340px] h-[240px] rounded-xl bg-gradient-to-r from-directiveplus-600 to-directiveplus-700 text-white shadow-lg overflow-hidden"
         >
-          <div className="p-4">
-            <div className="flex justify-between items-start">
-              <div>
-                <h3 className="font-bold text-lg">DirectivesPlus</h3>
-                <p className="text-xs opacity-75">Carte d'accès personnelle</p>
+          <div className="p-4 flex flex-col justify-between h-full">
+            <div>
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="font-bold text-lg">DirectivesPlus</h3>
+                  <p className="text-xs opacity-75">Carte d'accès personnelle</p>
+                </div>
+                <img 
+                  src="/lovable-uploads/41199219-9056-4e5f-bae3-17439ecbb194.png" 
+                  alt="Logo" 
+                  className="w-10 h-10 rounded-full bg-white p-1"
+                />
               </div>
-              <img 
-                src="/lovable-uploads/41199219-9056-4e5f-bae3-17439ecbb194.png" 
-                alt="Logo" 
-                className="w-10 h-10 rounded-full bg-white p-1"
-              />
+              
+              <div className="mt-4 mb-3">
+                <p className="font-semibold uppercase">{lastName} {firstName}</p>
+                <p className="text-xs opacity-80">Né(e) le: {formatDate(birthDate)}</p>
+              </div>
             </div>
             
-            <div className="mt-6 mb-4">
-              <p className="font-semibold uppercase">{lastName} {firstName}</p>
-              <p className="text-xs opacity-80">Né(e) le: {formatDate(birthDate)}</p>
-            </div>
-            
-            <div className="grid gap-2">
+            <div className="space-y-2">
               {includeDirective && directiveCode && (
                 <div className="flex items-center gap-2 bg-white/20 rounded p-1.5">
-                  <FileText size={18} className="shrink-0" />
+                  <FileText size={16} className="shrink-0" />
                   <div>
                     <p className="text-xs font-semibold">Directives anticipées:</p>
-                    <p className="font-mono font-bold tracking-wider">{directiveCode}</p>
+                    <p className="font-mono font-bold tracking-wider text-sm">{directiveCode}</p>
                   </div>
                 </div>
               )}
               
               {includeMedical && medicalCode && (
                 <div className="flex items-center gap-2 bg-white/20 rounded p-1.5">
-                  <Activity size={18} className="shrink-0" />
+                  <Activity size={16} className="shrink-0" />
                   <div>
                     <p className="text-xs font-semibold">Données médicales:</p>
-                    <p className="font-mono font-bold tracking-wider">{medicalCode}</p>
+                    <p className="font-mono font-bold tracking-wider text-sm">{medicalCode}</p>
                   </div>
                 </div>
               )}
+              
+              <div className="flex items-center gap-2 bg-white/20 rounded p-1.5">
+                <Link size={16} className="shrink-0" />
+                <div>
+                  <p className="text-xs font-semibold">Site web:</p>
+                  <p className="font-mono font-bold tracking-wider text-sm">directivesplus.fr</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>

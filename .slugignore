@@ -1,20 +1,13 @@
 
 # Development files
 *.log
-.git
-.github
-.vscode
-.idea
-*.md
 node_modules
-tests/
-test/
-__tests__/
 coverage/
 
 # Source maps
 *.map
 
-# Source files that aren't needed in production
-src/
-public/assets/dev/
+# Documentation
+*.md
+
+# Source files will be built and included in dist
