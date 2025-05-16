@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, BookOpenCheck, UserCog, FileText, Hospital } from "lucide-react";
+import { ShieldCheck, BookOpenCheck, UserCog, FileText, Hospital, CreditCard } from "lucide-react";
 
 const DirectivesGrid = () => {
   return (
@@ -120,6 +120,20 @@ const DirectivesGrid = () => {
           </h3>
           <p className="text-gray-600 text-sm">
             Gérez vos documents médicaux importants et informations de santé.
+          </p>
+        </div>
+      </Link>
+
+      <Link to="/carte-acces" className="group">
+        <div className="bg-white border rounded-lg p-6 shadow-sm transition-all hover:shadow-md flex flex-col items-center justify-center text-center h-full">
+          <div className="bg-blue-100 p-3 rounded-full mb-4">
+            <CreditCard className="h-6 w-6 text-blue-600" />
+          </div>
+          <h3 className="font-semibold text-lg mb-2">
+            Carte d'Accès
+          </h3>
+          <p className="text-gray-600 text-sm">
+            Générez votre carte d'accès au format carte bancaire pour partager vos codes.
           </p>
         </div>
       </Link>
