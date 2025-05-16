@@ -5,6 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import AppNavigation from "@/components/AppNavigation";
 import { toast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 // Import refactored components
 import DirectivesPageHeader from "@/components/documents/DirectivesPageHeader";
@@ -106,6 +108,17 @@ const DirectivesDocs = () => {
       
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
+          <div className="mb-6">
+            <Button
+              variant="outline"
+              onClick={() => navigate("/dashboard")}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft size={16} />
+              Retour au tableau de bord
+            </Button>
+          </div>
+          
           <DirectivesPageHeader 
             onAddDocument={() => setShowAddOptions(!showAddOptions)} 
           />

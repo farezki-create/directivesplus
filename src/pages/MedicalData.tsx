@@ -10,6 +10,8 @@ import MedicalHeader from "@/components/medical/MedicalHeader";
 import MedicalDocumentList from "@/components/medical/MedicalDocumentList";
 import MedicalDocumentActions, { useMedicalDocumentActions } from "@/components/medical/MedicalDocumentActions";
 import { useMedicalDocuments } from "@/hooks/useMedicalDocuments";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 const MedicalData = () => {
   const { user, isAuthenticated, isLoading, profile } = useAuth();
@@ -48,6 +50,17 @@ const MedicalData = () => {
       
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
+          <div className="mb-6">
+            <Button
+              variant="outline"
+              onClick={() => navigate("/dashboard")}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft size={16} />
+              Retour au tableau de bord
+            </Button>
+          </div>
+          
           <MedicalHeader onAddDocument={() => setShowAddOptions(!showAddOptions)} />
 
           {accessCode && profile && (
