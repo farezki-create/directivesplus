@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -126,9 +125,20 @@ const DataBreachForm = () => {
       const affectedUsersCount = values.affected_users_count ? 
         parseInt(values.affected_users_count, 10) : undefined;
       
+      // Create a notification object with all required properties explicitly assigned
       const notificationData = {
-        ...values,
-        affected_users_count: affectedUsersCount
+        breach_type: values.breach_type, // Required field
+        description: values.description, // Required field
+        affected_data_types: values.affected_data_types, // Required field
+        affected_users_count: affectedUsersCount,
+        detection_date: values.detection_date, // Required field
+        remediation_measures: values.remediation_measures, // Required field
+        is_notified_to_authorities: values.is_notified_to_authorities, // Required field
+        is_notified_to_users: values.is_notified_to_users, // Required field
+        reporter_name: values.reporter_name, // Required field
+        reporter_email: values.reporter_email, // Required field
+        risk_level: values.risk_level, // Required field
+        is_data_encrypted: values.is_data_encrypted
       };
       
       const success = await reportDataBreach(notificationData);

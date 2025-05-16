@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
@@ -17,6 +16,7 @@ export interface DataBreachNotification {
   reporter_name: string;
   reporter_email: string;
   risk_level: "low" | "medium" | "high" | "critical";
+  is_data_encrypted?: boolean;
 }
 
 /**
