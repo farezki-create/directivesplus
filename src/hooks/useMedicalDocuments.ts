@@ -50,8 +50,12 @@ export const useMedicalDocuments = (user: User | null) => {
     }
   }, [user]);
 
-  const handleUploadComplete = (url: string, fileName: string) => {
+  const handleUploadComplete = () => {
     fetchDocuments();
+    toast({
+      title: "Document téléchargé",
+      description: "Votre document a été importé avec succès"
+    });
   };
 
   return {
