@@ -74,16 +74,7 @@ const Hero = () => {
             </div>
           </div>
           
-          {/* Trusted By Section */}
-          <div className="mt-20 text-center w-full">
-            <p className="text-gray-500 mb-6">Utilisé par des organisations de confiance</p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-              <div className="h-12 flex items-center justify-center text-gray-400 font-bold text-xl">LOGO</div>
-              <div className="h-12 flex items-center justify-center text-gray-400 font-bold text-xl">LOGO</div>
-              <div className="h-12 flex items-center justify-center text-gray-400 font-bold text-xl">LOGO</div>
-              <div className="h-12 flex items-center justify-center text-gray-400 font-bold text-xl">LOGO</div>
-            </div>
-          </div>
+          {/* La section "Trusted By" a été supprimée */}
         </div>
       </div>
     </section>
