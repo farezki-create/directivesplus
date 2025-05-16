@@ -7,6 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { FileText, Activity, Download, Share2, Printer } from "lucide-react";
 import html2canvas from "html2canvas";
 import { toast } from "@/hooks/use-toast";
+import { logAccessEvent, notifyAccessLogged } from "@/utils/accessLoggingUtils";
 
 interface AccessCardProps {
   firstName: string;
@@ -34,7 +35,7 @@ const AccessCard: React.FC<AccessCardProps> = ({ firstName, lastName, birthDate 
   };
   
   const downloadCard = async () => {
-    if (!cardRef.current) return;
+    if (!cardRef.current || !user) return;
     
     try {
       const canvas = await html2canvas(cardRef.current, {
@@ -51,6 +52,29 @@ const AccessCard: React.FC<AccessCardProps> = ({ firstName, lastName, birthDate 
       link.download = `carte-access-${lastName.toLowerCase()}-${firstName.toLowerCase()}.png`;
       link.click();
       
+      // Journal d'accès pour téléchargement
+      let logged = false;
+      
+      if (includeDirective && directiveCode) {
+        logged = await logAccessEvent({
+          userId: user.id,
+          accessCodeId: directiveCode, // Utilise le code comme ID pour simplifier
+          resourceType: "directive",
+          action: "download"
+        });
+      }
+      
+      if (includeMedical && medicalCode) {
+        logged = await logAccessEvent({
+          userId: user.id,
+          accessCodeId: medicalCode, // Utilise le code comme ID pour simplifier
+          resourceType: "medical",
+          action: "download"
+        });
+      }
+      
+      notifyAccessLogged("téléchargement", logged);
+      
       toast({
         title: "Carte téléchargée",
         description: "La carte d'accès a été téléchargée avec succès",
@@ -66,7 +90,7 @@ const AccessCard: React.FC<AccessCardProps> = ({ firstName, lastName, birthDate 
   };
   
   const printCard = async () => {
-    if (!cardRef.current) return;
+    if (!cardRef.current || !user) return;
     
     try {
       const canvas = await html2canvas(cardRef.current, {
@@ -119,6 +143,29 @@ const AccessCard: React.FC<AccessCardProps> = ({ firstName, lastName, birthDate 
       `);
       
       printWindow.document.close();
+      
+      // Journal d'accès pour impression
+      let logged = false;
+      
+      if (includeDirective && directiveCode) {
+        logged = await logAccessEvent({
+          userId: user.id,
+          accessCodeId: directiveCode,
+          resourceType: "directive",
+          action: "print"
+        });
+      }
+      
+      if (includeMedical && medicalCode) {
+        logged = await logAccessEvent({
+          userId: user.id,
+          accessCodeId: medicalCode,
+          resourceType: "medical",
+          action: "print"
+        });
+      }
+      
+      notifyAccessLogged("impression", logged);
     } catch (error) {
       console.error("Erreur lors de l'impression de la carte:", error);
       toast({
@@ -130,7 +177,7 @@ const AccessCard: React.FC<AccessCardProps> = ({ firstName, lastName, birthDate 
   };
   
   const shareCard = async () => {
-    if (!cardRef.current) return;
+    if (!cardRef.current || !user) return;
     
     try {
       const canvas = await html2canvas(cardRef.current, {
@@ -151,6 +198,29 @@ const AccessCard: React.FC<AccessCardProps> = ({ firstName, lastName, birthDate 
           text: "Carte d'accès pour directives anticipées et données médicales",
           files: [file]
         });
+        
+        // Journal d'accès pour partage
+        let logged = false;
+        
+        if (includeDirective && directiveCode) {
+          logged = await logAccessEvent({
+            userId: user.id,
+            accessCodeId: directiveCode,
+            resourceType: "directive",
+            action: "share"
+          });
+        }
+        
+        if (includeMedical && medicalCode) {
+          logged = await logAccessEvent({
+            userId: user.id,
+            accessCodeId: medicalCode,
+            resourceType: "medical",
+            action: "share"
+          });
+        }
+        
+        notifyAccessLogged("partage", logged);
       } else {
         // Fallback if Web Share API is not available
         toast({

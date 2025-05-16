@@ -10,6 +10,7 @@ import {
   Settings,
   LogOut,
   IdCard,
+  Shield,
 } from "lucide-react";
 import {
   Sheet,
@@ -61,6 +62,11 @@ const AppNavigation = () => {
       path: "/settings",
       icon: "settings",
     },
+    {
+      name: "Politique de confidentialité",
+      path: "/politique-confidentialite",
+      icon: "shield",
+    },
   ];
 
   const handleLogout = async () => {
@@ -80,8 +86,10 @@ const AppNavigation = () => {
         return <User className="h-4 w-4 mr-2" />;
       case "settings":
         return <Settings className="h-4 w-4 mr-2" />;
-        case "id-card":
-          return <IdCard className="h-4 w-4 mr-2" />;
+      case "id-card":
+        return <IdCard className="h-4 w-4 mr-2" />;
+      case "shield":
+        return <Shield className="h-4 w-4 mr-2" />;
       default:
         return null;
     }

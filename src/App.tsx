@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { Toaster } from "@/components/ui/toaster";
@@ -21,6 +22,7 @@ import GoutsPeurs from "@/pages/GoutsPeurs";
 import ExemplesPhrases from "@/pages/ExemplesPhrases";
 import PersonneConfiance from "@/pages/PersonneConfiance";
 import AccessCardPage from "./pages/AccessCard";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 import "./App.css";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
@@ -40,6 +42,7 @@ const App = () => {
           <Route path="/donnees-medicales" element={<MedicalData />} />
           <Route path="/acces-document" element={<AccessDocuments />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/politique-confidentialite" element={<PrivacyPolicy />} />
           
           {/* Questionnaire section routes with proper protection */}
           <Route path="/avis-general" element={<AvisGeneral />} />
