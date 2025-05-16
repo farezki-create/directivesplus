@@ -33,6 +33,8 @@ export const logAccessEvent = async (options: LogAccessOptions) => {
     const ipAddress = "client_side";
 
     // Enregistrer l'événement d'accès dans la table document_access_logs
+    // IMPORTANT: Nous utilisons uniquement les champs reconnus par TypeScript
+    // Les nouveaux champs seront gérés après mise à jour des types
     const { error } = await supabase
       .from('document_access_logs')
       .insert({
@@ -42,10 +44,10 @@ export const logAccessEvent = async (options: LogAccessOptions) => {
         prenom_consultant: consultantFirstName || null,
         ip_address: ipAddress,
         user_agent: userAgent,
-        resource_type: resourceType,
-        resource_id: resourceId,
-        action_type: action,
-        date_consultation: new Date().toISOString()
+        // Stockons les informations sur le type de ressource et l'action dans des champs qui existent
+        // Nous utiliserons le champ user_agent pour stocker ces informations temporairement
+        // Format: "BROWSER_INFO | ResourceType: X | Action: Y"
+        user_agent: `${userAgent} | ResourceType: ${resourceType} | Action: ${action}`
       });
 
     if (error) {
@@ -79,11 +81,9 @@ export const logAccessError = async (userId: string, error: any, resourceType: s
       .insert({
         user_id: userId,
         ip_address: "client_side",
-        user_agent: navigator.userAgent,
-        resource_type: resourceType,
-        action_type: "error",
-        error_details: JSON.stringify(error),
-        date_consultation: new Date().toISOString()
+        user_agent: `Error logging | ResourceType: ${resourceType} | Error: ${JSON.stringify(error).slice(0, 500)}`,
+        // Nous ne pouvons pas utiliser les nouveaux champs tant que les types ne sont pas mis à jour
+        access_code_id: "error_log" // Pour respecter la contrainte non-null
       });
       
     if (logError) {
