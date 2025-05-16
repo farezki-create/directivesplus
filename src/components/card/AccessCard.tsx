@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useAccessCode } from "@/hooks/useAccessCode";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { FileText, FileMedical, Download, Share2, Printer } from "lucide-react";
+import { FileText, Activity, Download, Share2, Printer } from "lucide-react";
 import html2canvas from "html2canvas";
 import { toast } from "@/hooks/use-toast";
 
@@ -244,7 +244,7 @@ const AccessCard: React.FC<AccessCardProps> = ({ firstName, lastName, birthDate 
               
               {includeMedical && medicalCode && (
                 <div className="flex items-center gap-2 bg-white/20 rounded p-1.5">
-                  <FileMedical size={18} className="shrink-0" />
+                  <Activity size={18} className="shrink-0" />
                   <div>
                     <p className="text-xs font-semibold">Données médicales:</p>
                     <p className="font-mono font-bold tracking-wider">{medicalCode}</p>
