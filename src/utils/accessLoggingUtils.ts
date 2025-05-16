@@ -32,6 +32,9 @@ export const logAccessEvent = async (options: LogAccessOptions) => {
     // Dans un environnement de production, cela devrait être remplacé par une fonction Edge
     const ipAddress = "client_side";
 
+    // Format combiné pour stocker les métadonnées de ressource jusqu'à la mise à jour des types
+    const enhancedUserAgent = `${userAgent} | ResourceType: ${resourceType} | Action: ${action}`;
+
     // Enregistrer l'événement d'accès dans la table document_access_logs
     // IMPORTANT: Nous utilisons uniquement les champs reconnus par TypeScript
     // Les nouveaux champs seront gérés après mise à jour des types
@@ -43,11 +46,7 @@ export const logAccessEvent = async (options: LogAccessOptions) => {
         nom_consultant: consultantName || null,
         prenom_consultant: consultantFirstName || null,
         ip_address: ipAddress,
-        user_agent: userAgent,
-        // Stockons les informations sur le type de ressource et l'action dans des champs qui existent
-        // Nous utiliserons le champ user_agent pour stocker ces informations temporairement
-        // Format: "BROWSER_INFO | ResourceType: X | Action: Y"
-        user_agent: `${userAgent} | ResourceType: ${resourceType} | Action: ${action}`
+        user_agent: enhancedUserAgent
       });
 
     if (error) {
