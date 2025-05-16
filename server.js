@@ -4,7 +4,7 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-// Health check endpoint
+// Health check endpoint for Scalingo
 app.get('/health', (req, res) => {
   res.status(200).send('OK');
 });
@@ -12,7 +12,7 @@ app.get('/health', (req, res) => {
 // Serve static files
 app.use(express.static(path.join(__dirname, 'dist')));
 
-// Handle SPA routing
+// Handle SPA routing - send all requests to index.html
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
