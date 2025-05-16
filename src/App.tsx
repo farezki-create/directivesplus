@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { Toaster } from "@/components/ui/toaster";
@@ -21,6 +20,7 @@ import MaladieAvancee from "@/pages/MaladieAvancee";
 import GoutsPeurs from "@/pages/GoutsPeurs";
 import ExemplesPhrases from "@/pages/ExemplesPhrases";
 import PersonneConfiance from "@/pages/PersonneConfiance";
+import AccessCardPage from "./pages/AccessCard";
 
 import "./App.css";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
@@ -49,6 +49,8 @@ const App = () => {
           <Route path="/exemples-phrases" element={<ExemplesPhrases />} />
           <Route path="/personne-confiance" element={<PersonneConfiance />} />
           <Route path="/synthese" element={<Synthesis />} />
+          
+          <Route path="/carte-acces" element={<AccessCardPage />} />
           
           <Route path="*" element={<NotFound />} />
         </Routes>
