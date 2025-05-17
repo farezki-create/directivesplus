@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import AppNavigation from "@/components/AppNavigation";
 import DirectivesGrid from "@/components/DirectivesGrid";
+import { Button } from "@/components/ui/button";
+import { Home } from "lucide-react";
 
 const Dashboard = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -37,6 +39,17 @@ const Dashboard = () => {
       <AppNavigation />
       
       <main className="flex-grow container mx-auto px-4 py-8">
+        <div className="mb-6">
+          <Button
+            variant="outline"
+            onClick={() => navigate("/")}
+            className="flex items-center gap-2"
+          >
+            <Home size={16} />
+            Retour à l'accueil
+          </Button>
+        </div>
+        
         <div className="max-w-3xl mx-auto text-center mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-directiveplus-800 mb-4">
             Vos directives anticipées en toute simplicité

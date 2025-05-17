@@ -37,7 +37,7 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
               <p className="text-xs opacity-75">Carte d'accès personnelle</p>
             </div>
             <img 
-              src="/lovable-uploads/abf0ddf7-3dc9-4888-a686-76305831172b.png" 
+              src="/lovable-uploads/0a786ed1-a905-4b29-be3a-ca3b24d3efae.png" 
               alt="Logo" 
               className="w-10 h-10"
             />

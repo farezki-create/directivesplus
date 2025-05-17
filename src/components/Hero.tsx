@@ -16,7 +16,7 @@ const Hero = () => {
           {/* Logo */}
           <div className="mb-8 w-full flex justify-center">
             <img 
-              src="/lovable-uploads/41199219-9056-4e5f-bae3-17439ecbb194.png" 
+              src="/lovable-uploads/0a786ed1-a905-4b29-be3a-ca3b24d3efae.png" 
               alt="DirectivesPlus Logo" 
               className="w-64 h-auto"
             />
@@ -73,8 +73,6 @@ const Hero = () => {
               </div>
             </div>
           </div>
-          
-          {/* La section "Trusted By" a été supprimée */}
         </div>
       </div>
     </section>
