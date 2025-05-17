@@ -43,13 +43,13 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
             />
           </div>
           
-          <div className="mt-4 mb-3">
+          <div className="mt-4 mb-2">
             <p className="font-semibold uppercase">{lastName} {firstName}</p>
             <p className="text-xs opacity-80">Né(e) le: {formatDate(birthDate)}</p>
           </div>
         </div>
         
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           {includeDirective && directiveCode && (
             <div className="flex items-center gap-2 bg-white/20 rounded p-1.5">
               <FileText size={16} className="shrink-0" />

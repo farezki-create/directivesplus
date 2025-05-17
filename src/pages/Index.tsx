@@ -5,6 +5,7 @@ import Header from "../components/Header";
 import Hero from "../components/Hero";
 import Features from "../components/Features";
 import Footer from "../components/Footer";
+import DirectivesInfo from "../components/DirectivesInfo";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -30,6 +31,9 @@ const Index = () => {
             Accédez aux directives anticipées ou aux données médicales avec un code d'accès
           </p>
         </div>
+        <section id="en-savoir-plus" className="bg-gray-50 py-16">
+          <DirectivesInfo />
+        </section>
         <Features />
         {/* La section Testimonials a été supprimée */}
       </main>

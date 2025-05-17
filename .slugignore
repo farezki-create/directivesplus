@@ -1,13 +1,5 @@
 
 # Development files
-*.log
-node_modules
-coverage/
-
-# Source maps
-*.map
-
-# Documentation
 *.md
-
-# Source files will be built and included in dist
+node_modules
+src
