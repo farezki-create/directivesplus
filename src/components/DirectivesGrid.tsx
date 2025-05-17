@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, BookOpenCheck, UserCog, FileText, CreditCard } from "lucide-react";
+import { ShieldCheck, BookOpenCheck, UserCog, FileText, CreditCard, Activity } from "lucide-react";
 
 const DirectivesGrid = () => {
   return (
@@ -99,22 +99,8 @@ const DirectivesGrid = () => {
         </Link>
       </div>
       
-      {/* Ligne des 3 éléments spécifiques */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Link to="/mes-directives" className="group">
-          <div className="bg-white border rounded-lg p-6 shadow-sm transition-all hover:shadow-md flex flex-col items-center justify-center text-center h-full">
-            <div className="bg-orange-100 p-3 rounded-full mb-4">
-              <FileText className="h-6 w-6 text-orange-600" />
-            </div>
-            <h3 className="font-semibold text-lg mb-2">
-              Mes Directives
-            </h3>
-            <p className="text-gray-600 text-sm">
-              Visualisez, imprimez et partagez vos directives anticipées.
-            </p>
-          </div>
-        </Link>
-
+      {/* Ligne de Synthèse */}
+      <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
         <Link to="/synthese" className="group">
           <div className="bg-white border rounded-lg p-6 shadow-sm transition-all hover:shadow-md flex flex-col items-center justify-center text-center h-full">
             <div className="bg-blue-100 p-3 rounded-full mb-4">
@@ -126,6 +112,40 @@ const DirectivesGrid = () => {
             </h3>
             <p className="text-gray-600 text-sm">
               Générer une synthèse complète de vos directives et la télécharger au format PDF.
+            </p>
+          </div>
+        </Link>
+      </div>
+      
+      {/* Ligne de Données Médicales */}
+      <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+        <Link to="/donnees-medicales" className="group">
+          <div className="bg-white border rounded-lg p-6 shadow-sm transition-all hover:shadow-md flex flex-col items-center justify-center text-center h-full">
+            <div className="bg-green-100 p-3 rounded-full mb-4">
+              <Activity className="h-6 w-6 text-green-600" />
+            </div>
+            <h3 className="font-semibold text-lg mb-2">
+              Mes Données Médicales
+            </h3>
+            <p className="text-gray-600 text-sm">
+              Gérez et partagez vos données médicales essentielles en toute sécurité.
+            </p>
+          </div>
+        </Link>
+      </div>
+      
+      {/* Ligne des documents et carte d'accès */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Link to="/mes-directives" className="group">
+          <div className="bg-white border rounded-lg p-6 shadow-sm transition-all hover:shadow-md flex flex-col items-center justify-center text-center h-full">
+            <div className="bg-orange-100 p-3 rounded-full mb-4">
+              <FileText className="h-6 w-6 text-orange-600" />
+            </div>
+            <h3 className="font-semibold text-lg mb-2">
+              Mes Directives
+            </h3>
+            <p className="text-gray-600 text-sm">
+              Visualisez, imprimez et partagez vos directives anticipées.
             </p>
           </div>
         </Link>
