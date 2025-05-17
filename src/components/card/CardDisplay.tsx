@@ -37,9 +37,9 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
               <p className="text-xs opacity-75">Carte d'accès personnelle</p>
             </div>
             <img 
-              src="/lovable-uploads/41199219-9056-4e5f-bae3-17439ecbb194.png" 
+              src="/lovable-uploads/abf0ddf7-3dc9-4888-a686-76305831172b.png" 
               alt="Logo" 
-              className="w-10 h-10 rounded-full bg-white p-1"
+              className="w-10 h-10"
             />
           </div>
           
@@ -49,7 +49,7 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
           </div>
         </div>
         
-        <div className="space-y-1.5">
+        <div className="space-y-1.5 mb-1">
           {includeDirective && directiveCode && (
             <div className="flex items-center gap-2 bg-white/20 rounded p-1.5">
               <FileText size={16} className="shrink-0" />

@@ -6,6 +6,7 @@ import Hero from "../components/Hero";
 import Features from "../components/Features";
 import Footer from "../components/Footer";
 import DirectivesInfo from "../components/DirectivesInfo";
+import { FileText } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -23,8 +24,9 @@ const Index = () => {
         <div className="container mx-auto py-8 text-center">
           <Button 
             onClick={handleAccessDocuments}
-            className="bg-blue-600 hover:bg-blue-700 text-lg py-6 px-8"
+            className="bg-directiveplus-600 hover:bg-directiveplus-700 text-lg py-6 px-8"
           >
+            <FileText className="mr-2" size={20} />
             Accès documents sans connexion
           </Button>
           <p className="mt-3 text-sm text-gray-600">
