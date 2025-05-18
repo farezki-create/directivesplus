@@ -36,7 +36,7 @@ const DocumentActions = ({
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          console.log("[DocumentActions] Bouton Voir et imprimer cliqué");
+          console.log("[DocumentActions] Bouton Voir cliqué");
           onView();
         }}
         size="sm"
@@ -44,7 +44,7 @@ const DocumentActions = ({
         className="text-xs"
       >
         <Eye className="h-3 w-3 mr-1" />
-        Voir et imprimer
+        Voir
       </Button>
       <Button
         onClick={(e) => {

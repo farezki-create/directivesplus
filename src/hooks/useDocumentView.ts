@@ -19,7 +19,7 @@ export const useDocumentView = () => {
         return;
       }
 
-      // Directement mettre à jour le state pour afficher le document
+      // Mettre à jour le state pour afficher le document en prévisualisation
       setPreviewDocument(filePath);
       console.log("[useDocumentView] Document mis en prévisualisation:", filePath);
     } catch (error) {
