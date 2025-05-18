@@ -1,7 +1,7 @@
 
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { DayPicker } from "react-day-picker";
+import { DayPicker, CaptionProps } from "react-day-picker";
 
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
@@ -25,18 +25,18 @@ function Calendar({
   const toYear = new Date().getFullYear();
   const years = Array.from({ length: toYear - fromYear + 1 }, (_, i) => toYear - i);
 
-  function CustomCaption(props: { 
-    displayMonth: Date; 
-    onClick?: React.MouseEventHandler<HTMLElement>;
-    onYearSelect?: (year: number) => void;
-  }) {
-    const { displayMonth, onYearSelect } = props;
+  function CustomCaption({ 
+    displayMonth,
+    onMonthChange,
+  }: CaptionProps) {
     const month = displayMonth.toLocaleString('default', { month: 'long' });
     const year = displayMonth.getFullYear();
 
     const handleYearChange = (value: string) => {
-      if (onYearSelect) {
-        onYearSelect(parseInt(value));
+      if (onMonthChange) {
+        const newDate = new Date(displayMonth);
+        newDate.setFullYear(parseInt(value));
+        onMonthChange(newDate);
       }
     };
 
@@ -104,14 +104,7 @@ function Calendar({
       components={{
         IconLeft: ({ ..._props }) => <ChevronLeft className="h-4 w-4" />,
         IconRight: ({ ..._props }) => <ChevronRight className="h-4 w-4" />,
-        Caption: (captionProps) => {
-          const onYearSelect = (year: number) => {
-            const newDate = new Date(captionProps.displayMonth);
-            newDate.setFullYear(year);
-            captionProps.goToMonth(newDate);
-          };
-          return <CustomCaption {...captionProps} onYearSelect={onYearSelect} />;
-        },
+        Caption: CustomCaption
       }}
       {...props}
     />
