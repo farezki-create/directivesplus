@@ -27,72 +27,82 @@ const InfoSteps = () => {
     <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
       <h2 className="text-xl font-semibold text-directiveplus-700 mb-4">Comment utiliser DirectivesPlus</h2>
       
-      {/* Desktop Wheel View */}
+      {/* Simple Diagram - Desktop */}
       <div className="hidden md:block relative">
-        <div className="w-64 h-64 rounded-full bg-directiveplus-50 mx-auto relative">
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-directiveplus-600 font-bold text-lg">DirectivesPlus</span>
+        <div className="max-w-4xl mx-auto bg-directiveplus-50 p-6 rounded-lg">
+          <div className="flex justify-between items-center">
+            <div className="w-1/3 text-center">
+              <h3 className="text-directiveplus-700 font-medium mb-4">Préparation</h3>
+              <div className="flex flex-col space-y-4">
+                {steps.slice(0, 3).map((step) => (
+                  <div key={step.id} className="flex items-center bg-white p-3 rounded-md shadow-sm">
+                    <div className="bg-directiveplus-100 p-2 rounded-full mr-3 text-directiveplus-600">
+                      {step.icon}
+                    </div>
+                    <span className="text-sm">
+                      <span className="inline-flex items-center justify-center bg-directiveplus-600 text-white rounded-full h-5 w-5 mr-1.5 text-xs">
+                        {step.id}
+                      </span>
+                      {step.text}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div className="w-1/3 text-center">
+              <h3 className="text-directiveplus-700 font-medium mb-4">Finalisation</h3>
+              <div className="flex flex-col space-y-4">
+                {steps.slice(3, 6).map((step) => (
+                  <div key={step.id} className="flex items-center bg-white p-3 rounded-md shadow-sm">
+                    <div className="bg-directiveplus-100 p-2 rounded-full mr-3 text-directiveplus-600">
+                      {step.icon}
+                    </div>
+                    <span className="text-sm">
+                      <span className="inline-flex items-center justify-center bg-directiveplus-600 text-white rounded-full h-5 w-5 mr-1.5 text-xs">
+                        {step.id}
+                      </span>
+                      {step.text}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div className="w-1/3 text-center">
+              <h3 className="text-directiveplus-700 font-medium mb-4">Distribution</h3>
+              <div className="flex flex-col space-y-4">
+                {steps.slice(6).map((step) => (
+                  <div key={step.id} className="flex items-center bg-white p-3 rounded-md shadow-sm">
+                    <div className="bg-directiveplus-100 p-2 rounded-full mr-3 text-directiveplus-600">
+                      {step.icon}
+                    </div>
+                    <span className="text-sm">
+                      <span className="inline-flex items-center justify-center bg-directiveplus-600 text-white rounded-full h-5 w-5 mr-1.5 text-xs">
+                        {step.id}
+                      </span>
+                      {step.text}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
           
-          {steps.map((step, index) => {
-            // Calculate position around the circle
-            const angle = ((Math.PI * 2) / steps.length) * index - Math.PI / 2;
-            const radius = 150; // Radius of the circle in px
-            const x = Math.cos(angle) * radius + 180; // Position X (180 is to center)
-            const y = Math.sin(angle) * radius + 180; // Position Y
-            
-            return (
-              <div 
-                key={step.id} 
-                className="absolute transform -translate-x-1/2 -translate-y-1/2 bg-white p-2 rounded-full shadow-md border border-directiveplus-100 flex flex-col items-center w-16 h-16"
-                style={{ left: `${x}px`, top: `${y}px` }}
-              >
-                <div className="text-directiveplus-600">
-                  {step.icon}
-                </div>
-                <span className="text-xs font-medium">{step.id >= 8 ? "" : step.id}</span>
-              </div>
-            );
-          })}
-          
-          {/* Connecting lines */}
-          {steps.map((step, index) => {
-            const nextIndex = (index + 1) % steps.length;
-            const angle1 = ((Math.PI * 2) / steps.length) * index - Math.PI / 2;
-            const angle2 = ((Math.PI * 2) / steps.length) * nextIndex - Math.PI / 2;
-            
-            const innerRadius = 50;
-            const x1 = Math.cos(angle1) * innerRadius + 180;
-            const y1 = Math.sin(angle1) * innerRadius + 180;
-            const x2 = Math.cos(angle2) * innerRadius + 180;
-            const y2 = Math.sin(angle2) * innerRadius + 180;
-            
-            return (
-              <svg key={`line-${index}`} className="absolute top-0 left-0 w-full h-full pointer-events-none">
-                <line
-                  x1={x1}
-                  y1={y1}
-                  x2={x2}
-                  y2={y2}
-                  stroke="#e5deff"
-                  strokeWidth="2"
-                  strokeDasharray="4"
-                />
+          {/* Process Arrows */}
+          <div className="flex justify-center mt-6">
+            <div className="flex items-center text-directiveplus-600">
+              <span>Préparation</span>
+              <svg className="w-12 h-6 mx-2" viewBox="0 0 24 12">
+                <path d="M0,6 H20 M16,1 L22,6 L16,11" fill="none" stroke="currentColor" strokeWidth="2"/>
               </svg>
-            );
-          })}
-        </div>
-        
-        {/* Legend */}
-        <div className="grid grid-cols-4 gap-4 mt-8 max-w-2xl mx-auto">
-          {steps.map((step) => (
-            <div key={step.id} className="flex items-center gap-2">
-              <div className="bg-directiveplus-100 p-1.5 rounded-full text-directiveplus-600">
-                {step.icon}
-              </div>
-              <span className="text-sm text-gray-700">{step.text}</span>
+              <span>Finalisation</span>
+              <svg className="w-12 h-6 mx-2" viewBox="0 0 24 12">
+                <path d="M0,6 H20 M16,1 L22,6 L16,11" fill="none" stroke="currentColor" strokeWidth="2"/>
+              </svg>
+              <span>Distribution</span>
             </div>
-          ))}
+          </div>
         </div>
       </div>
       
@@ -106,11 +116,9 @@ const InfoSteps = () => {
                 {step.icon}
               </div>
               <span className="text-sm">
-                {step.id <= 7 && (
-                  <span className="inline-flex items-center justify-center bg-directiveplus-600 text-white rounded-full h-5 w-5 mr-1.5 text-xs">
-                    {step.id}
-                  </span>
-                )}
+                <span className="inline-flex items-center justify-center bg-directiveplus-600 text-white rounded-full h-5 w-5 mr-1.5 text-xs">
+                  {step.id}
+                </span>
                 {step.text}
               </span>
             </li>

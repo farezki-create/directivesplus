@@ -117,23 +117,6 @@ const DirectivesGrid = () => {
         </Link>
       </div>
       
-      {/* Ligne de Données Médicales */}
-      <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
-        <Link to="/donnees-medicales" className="group">
-          <div className="bg-white border rounded-lg p-6 shadow-sm transition-all hover:shadow-md flex flex-col items-center justify-center text-center h-full">
-            <div className="bg-green-100 p-3 rounded-full mb-4">
-              <Activity className="h-6 w-6 text-green-600" />
-            </div>
-            <h3 className="font-semibold text-lg mb-2">
-              Mes Données Médicales
-            </h3>
-            <p className="text-gray-600 text-sm">
-              Gérez et partagez vos données médicales essentielles en toute sécurité.
-            </p>
-          </div>
-        </Link>
-      </div>
-      
       {/* Ligne des documents et carte d'accès */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Link to="/mes-directives" className="group">
@@ -160,6 +143,23 @@ const DirectivesGrid = () => {
             </h3>
             <p className="text-gray-600 text-sm">
               Générez votre carte d'accès au format carte bancaire pour partager vos codes.
+            </p>
+          </div>
+        </Link>
+      </div>
+      
+      {/* Ligne de Données Médicales */}
+      <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+        <Link to="/donnees-medicales" className="group">
+          <div className="bg-white border rounded-lg p-6 shadow-sm transition-all hover:shadow-md flex flex-col items-center justify-center text-center h-full">
+            <div className="bg-green-100 p-3 rounded-full mb-4">
+              <Activity className="h-6 w-6 text-green-600" />
+            </div>
+            <h3 className="font-semibold text-lg mb-2">
+              Mes Données Médicales
+            </h3>
+            <p className="text-gray-600 text-sm">
+              Gérez et partagez vos données médicales essentielles en toute sécurité.
             </p>
           </div>
         </Link>

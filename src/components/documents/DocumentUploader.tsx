@@ -50,7 +50,7 @@ const DocumentUploader = ({ userId, onUploadComplete, documentType = "directive"
             ) : (
               <>
                 <Upload size={16} /> 
-                Télécharger le document
+                Téléverser le document
               </>
             )}
           </Button>
