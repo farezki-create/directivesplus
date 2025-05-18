@@ -21,6 +21,7 @@ interface MedicalDocumentListProps {
   onShare: (documentId: string) => void;
   onView: (filePath: string, fileType?: string) => void;
   onDelete: (documentId: string) => void;
+  onVisibilityChange?: (documentId: string, isPrivate: boolean) => void;
 }
 
 const MedicalDocumentList = ({
@@ -29,7 +30,8 @@ const MedicalDocumentList = ({
   onPrint,
   onShare,
   onView,
-  onDelete
+  onDelete,
+  onVisibilityChange
 }: MedicalDocumentListProps) => {
   if (documents.length === 0) {
     return <EmptyDocumentsState message="Vous n'avez pas encore ajouté de données médicales" />;
@@ -46,6 +48,7 @@ const MedicalDocumentList = ({
           onShare={onShare}
           onView={onView}
           onDelete={onDelete}
+          onVisibilityChange={onVisibilityChange}
         />
       ))}
     </div>

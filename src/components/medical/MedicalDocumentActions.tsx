@@ -1,3 +1,4 @@
+
 import { toast } from "@/hooks/use-toast";
 import DocumentPreviewDialog from "@/components/documents/DocumentPreviewDialog";
 import {
@@ -19,7 +20,7 @@ interface Document {
   file_path: string;
   created_at: string;
   description?: string;
-  content_type?: string;
+  file_type?: string;
   user_id: string;
 }
 
@@ -78,7 +79,7 @@ export const useMedicalDocumentActions = ({ onDeleteComplete }: MedicalDocumentA
     }
   };
 
-  const handlePrint = (filePath: string, contentType: string = "application/pdf") => {
+  const handlePrint = (filePath: string, fileType: string = "application/pdf") => {
     try {
       if (filePath.startsWith('data:') && filePath.includes('audio')) {
         toast({
@@ -87,22 +88,69 @@ export const useMedicalDocumentActions = ({ onDeleteComplete }: MedicalDocumentA
         });
         return;
       }
+
+      // Création d'une iframe invisible pour l'impression
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      document.body.appendChild(iframe);
       
-      // Ouvrir le document dans un nouvel onglet pour impression
-      const printWindow = window.open(filePath, '_blank');
-      if (printWindow) {
-        printWindow.focus();
-        // Attendre que le contenu soit chargé avant d'imprimer
-        printWindow.onload = () => {
-          try {
-            printWindow.print();
-          } catch (err) {
-            console.error("Erreur lors de l'impression:", err);
-          }
-        };
-      } else {
-        throw new Error("Impossible d'ouvrir une nouvelle fenêtre");
+      // Si c'est une image, on l'enveloppe dans du HTML pour une meilleure impression
+      if (fileType && fileType.includes('image')) {
+        const doc = iframe.contentWindow?.document;
+        if (doc) {
+          doc.open();
+          doc.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <title>Impression document</title>
+              <style>
+                body { margin: 0; display: flex; justify-content: center; }
+                img { max-width: 100%; max-height: 100vh; object-fit: contain; }
+              </style>
+            </head>
+            <body>
+              <img src="${filePath}" />
+            </body>
+            </html>
+          `);
+          doc.close();
+          
+          iframe.onload = () => {
+            try {
+              iframe.contentWindow?.print();
+              setTimeout(() => {
+                document.body.removeChild(iframe);
+              }, 1000);
+            } catch (err) {
+              console.error("Erreur lors de l'impression:", err);
+              document.body.removeChild(iframe);
+            }
+          };
+          return;
+        }
       }
+
+      // Pour les PDF et autres documents
+      iframe.src = filePath;
+      iframe.onload = () => {
+        try {
+          iframe.contentWindow?.print();
+          setTimeout(() => {
+            document.body.removeChild(iframe);
+          }, 1000);
+        } catch (err) {
+          console.error("Erreur lors de l'impression:", err);
+          document.body.removeChild(iframe);
+          
+          // Fallback - ouvrir dans un nouvel onglet pour impression
+          const printWindow = window.open(filePath, '_blank');
+          if (printWindow) {
+            printWindow.focus();
+            printWindow.onload = () => printWindow.print();
+          }
+        }
+      };
     } catch (error) {
       console.error("Erreur lors de l'impression:", error);
       toast({
@@ -114,14 +162,32 @@ export const useMedicalDocumentActions = ({ onDeleteComplete }: MedicalDocumentA
   };
 
   const handleShare = (documentId: string) => {
-    toast({
-      title: "Fonctionnalité en développement",
-      description: "Le partage de document sera bientôt disponible"
-    });
+    // Cette fonction sera appelée par le DocumentCard
+    console.log("Partage du document:", documentId);
   };
   
-  const handleView = (filePath: string, contentType: string = "application/pdf") => {
-    handleDownload(filePath, "document");
+  const handleView = (filePath: string, fileType: string = "application/pdf") => {
+    // Télécharger et ouvrir automatiquement le document
+    try {
+      const link = document.createElement('a');
+      link.href = filePath;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast({
+        title: "Document ouvert",
+        description: "Votre document a été ouvert dans un nouvel onglet"
+      });
+    } catch (error) {
+      console.error("Erreur lors de l'ouverture du document:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'ouvrir le document",
+        variant: "destructive"
+      });
+    }
   };
   
   const confirmDelete = (documentId: string) => {
@@ -158,6 +224,12 @@ export const useMedicalDocumentActions = ({ onDeleteComplete }: MedicalDocumentA
     }
   };
 
+  const handleVisibilityChange = async (documentId: string, isPrivate: boolean) => {
+    // Pour cette démonstration, nous gérons la visibilité uniquement côté client
+    // dans une application réelle, nous mettrions à jour la base de données
+    console.log(`Document ${documentId} est maintenant ${isPrivate ? 'privé' : 'visible avec code'}`);
+  };
+
   return {
     documentToDelete,
     setDocumentToDelete,
@@ -168,7 +240,8 @@ export const useMedicalDocumentActions = ({ onDeleteComplete }: MedicalDocumentA
     handleShare,
     handleView,
     confirmDelete,
-    handleDelete
+    handleDelete,
+    handleVisibilityChange
   };
 };
 

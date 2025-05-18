@@ -17,10 +17,11 @@ const DocumentUploader = ({ userId, onUploadComplete, documentType = "directive"
     cameraInputRef,
     handleFileChange,
     clearFile,
-    uploadFile,
+    initiateUpload,
     previewFile,
     setIsPrivate,
-    isPrivate
+    isPrivate,
+    RenameDialog
   } = useFileUpload(userId, onUploadComplete, documentType);
 
   return (
@@ -95,7 +96,7 @@ const DocumentUploader = ({ userId, onUploadComplete, documentType = "directive"
             
             <div className="flex justify-end">
               <Button 
-                onClick={uploadFile} 
+                onClick={initiateUpload} 
                 disabled={uploading}
                 className="flex items-center gap-2"
               >
@@ -112,6 +113,8 @@ const DocumentUploader = ({ userId, onUploadComplete, documentType = "directive"
           )}
         </div>
       </div>
+
+      <RenameDialog />
     </div>
   );
 };
