@@ -5,9 +5,16 @@ const Footer = () => {
   return (
     <footer className="bg-gray-900 text-gray-300 pt-12 pb-8">
       <div className="container mx-auto container-padding">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           {/* Company Info */}
           <div className="md:col-span-1">
+            <div className="mb-4">
+              <img 
+                src="/lovable-uploads/0a786ed1-a905-4b29-be3a-ca3b24d3efae.png" 
+                alt="DirectivesPlus Logo" 
+                className="h-12 w-auto"
+              />
+            </div>
             <h3 className="text-xl font-bold text-white mb-4">DirectivePlus</h3>
             <p className="mb-4">
               Simplifiez la gestion de vos obligations réglementaires avec notre solution complète.
@@ -40,23 +47,21 @@ const Footer = () => {
           <div>
             <h3 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Produit</h3>
             <ul className="space-y-2">
-              <li><a href="#" className="hover:text-white transition-colors">Fonctionnalités</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Tarifs</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Témoignages</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Guide d'utilisation</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Mises à jour</a></li>
-            </ul>
-          </div>
-          
-          {/* Company */}
-          <div>
-            <h3 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Entreprise</h3>
-            <ul className="space-y-2">
-              <li><a href="#" className="hover:text-white transition-colors">À propos</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Carrières</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Presse</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Partenaires</a></li>
+              <li>
+                <Link to="/commentaires" className="hover:text-white transition-colors">
+                  Commentaires
+                </Link>
+              </li>
+              <li>
+                <a href="#en-savoir-plus" className="hover:text-white transition-colors">
+                  Guide d'utilisation
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-white transition-colors">
+                  Mises à jour
+                </a>
+              </li>
             </ul>
           </div>
           
@@ -64,10 +69,11 @@ const Footer = () => {
           <div>
             <h3 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Support</h3>
             <ul className="space-y-2">
-              <li><a href="#" className="hover:text-white transition-colors">Aide</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Documentation</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Statut système</a></li>
+              <li>
+                <a href="mailto:directives@directivesplus.fr" className="hover:text-white transition-colors">
+                  Contact
+                </a>
+              </li>
             </ul>
             <div className="mt-6">
               <h3 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Légal</h3>
@@ -96,7 +102,7 @@ const Footer = () => {
               <option>English</option>
             </select>
             <span className="text-sm">
-              Contact: <a href="mailto:mesdirectives@directivesplus.fr" className="hover:text-white">mesdirectives@directivesplus.fr</a>
+              Contact: <a href="mailto:directives@directivesplus.fr" className="hover:text-white">directives@directivesplus.fr</a>
             </span>
           </div>
         </div>
