@@ -5,9 +5,10 @@ import { toast } from "@/hooks/use-toast";
 
 interface UseDocumentDeletionProps {
   onDeleteComplete: () => void;
+  tableName?: string; // Allow specifying different tables
 }
 
-export const useDocumentDeletion = ({ onDeleteComplete }: UseDocumentDeletionProps) => {
+export const useDocumentDeletion = ({ onDeleteComplete, tableName = 'pdf_documents' }: UseDocumentDeletionProps) => {
   const [documentToDelete, setDocumentToDelete] = useState<string | null>(null);
   
   const confirmDelete = (documentId: string) => {
@@ -19,7 +20,7 @@ export const useDocumentDeletion = ({ onDeleteComplete }: UseDocumentDeletionPro
     
     try {
       const { error } = await supabase
-        .from('medical_documents')
+        .from(tableName)
         .delete()
         .eq('id', documentToDelete);
       
@@ -30,10 +31,10 @@ export const useDocumentDeletion = ({ onDeleteComplete }: UseDocumentDeletionPro
         description: "Le document a été supprimé avec succès"
       });
       
-      // Rafraîchir la liste des documents
+      // Refresh the documents list
       onDeleteComplete();
     } catch (error: any) {
-      console.error("Erreur lors de la suppression du document:", error);
+      console.error(`Erreur lors de la suppression du document (${tableName}):`, error);
       toast({
         title: "Erreur",
         description: "Impossible de supprimer le document",
