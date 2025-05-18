@@ -17,21 +17,21 @@ interface Document {
 interface MedicalDocumentListProps {
   documents: Document[];
   onDownload: (filePath: string, fileName: string) => void;
+  onPrint: (filePath: string, fileType?: string) => void;
+  onShare: (documentId: string) => void;
   onView: (filePath: string, fileType?: string) => void;
   onDelete: (documentId: string) => void;
   onVisibilityChange?: (documentId: string, isPrivate: boolean) => void;
-  onPrint?: (filePath: string, fileType?: string) => void; // Added onPrint prop
-  onShare?: (documentId: string) => void; // Added onShare prop
 }
 
 const MedicalDocumentList = ({
   documents,
   onDownload,
+  onPrint,
+  onShare,
   onView,
   onDelete,
-  onVisibilityChange,
-  onPrint,
-  onShare
+  onVisibilityChange
 }: MedicalDocumentListProps) => {
   if (documents.length === 0) {
     return <EmptyDocumentsState message="Vous n'avez pas encore ajouté de données médicales" />;
@@ -44,11 +44,11 @@ const MedicalDocumentList = ({
           key={doc.id}
           document={doc}
           onDownload={onDownload}
+          onPrint={onPrint}
+          onShare={onShare}
           onView={onView}
           onDelete={onDelete}
           onVisibilityChange={onVisibilityChange}
-          onPrint={onPrint}  // Pass the prop if it exists
-          onShare={onShare}  // Pass the prop if it exists
         />
       ))}
     </div>

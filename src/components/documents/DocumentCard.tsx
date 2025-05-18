@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import DocumentHeader from "./card/DocumentHeader";
 import DocumentActions from "./card/DocumentActions";
+import ShareDialog from "./card/ShareDialog";
 
 interface Document {
   id: string;
@@ -16,23 +17,24 @@ interface Document {
 interface DocumentCardProps {
   document: Document;
   onDownload: (filePath: string, fileName: string) => void;
+  onPrint: (filePath: string, fileType?: string) => void;
+  onShare: (documentId: string) => void;
   onView: (filePath: string, fileType?: string) => void;
   onDelete: (documentId: string) => void;
   onVisibilityChange?: (documentId: string, isPrivate: boolean) => void;
-  onPrint?: (filePath: string, fileType?: string) => void; // Added onPrint prop
-  onShare?: (documentId: string) => void; // Added onShare prop
 }
 
 const DocumentCard = ({
   document,
   onDownload,
+  onPrint,
+  onShare,
   onView,
   onDelete,
-  onVisibilityChange,
-  onPrint,
-  onShare
+  onVisibilityChange
 }: DocumentCardProps) => {
   const [isPrivate, setIsPrivate] = useState(document.is_private || false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
   
   const handleVisibilityChange = (documentId: string, checked: boolean) => {
     setIsPrivate(checked);
@@ -43,6 +45,10 @@ const DocumentCard = ({
 
   const handleViewClick = () => {
     onView(document.file_path, document.file_type);
+  };
+
+  const handleShareClick = () => {
+    setShowShareDialog(true);
   };
 
   return (
@@ -57,11 +63,17 @@ const DocumentCard = ({
         <DocumentActions
           onView={handleViewClick}
           onDownload={() => onDownload(document.file_path, document.file_name)}
+          onPrint={() => onPrint(document.file_path, document.file_type)}
+          onShare={handleShareClick}
           onDelete={() => onDelete(document.id)}
-          onPrint={onPrint ? () => onPrint(document.file_path, document.file_type) : undefined}
-          onShare={onShare ? () => onShare(document.id) : undefined}
         />
       </div>
+
+      <ShareDialog
+        open={showShareDialog}
+        documentId={document.id}
+        onOpenChange={setShowShareDialog}
+      />
     </div>
   );
 };

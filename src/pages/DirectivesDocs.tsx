@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -47,6 +46,8 @@ const DirectivesDocs = () => {
     documentToDelete,
     setDocumentToDelete,
     handleDownload,
+    handlePrint,
+    handleShare,
     handleView,
     confirmDelete,
     handleDelete
@@ -172,6 +173,8 @@ const DirectivesDocs = () => {
           <DirectivesDocumentList 
             documents={documents}
             onDownload={handleDownload}
+            onPrint={handlePrint}
+            onShare={handleShare}
             onView={handleView}
             onDelete={confirmDelete}
           />
