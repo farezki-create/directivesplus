@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Upload, Eye, Lock, Unlock, Save } from "lucide-react";
+import { Upload, Eye, Lock, Unlock, Save, Camera } from "lucide-react";
 import FilePreview from "./FilePreview";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import { DocumentUploaderProps } from "./types";
@@ -21,7 +21,9 @@ const DocumentUploader = ({ userId, onUploadComplete, documentType = "directive"
     previewFile,
     setIsPrivate,
     isPrivate,
-    RenameDialog
+    RenameDialog,
+    PreviewDialog,
+    activateCamera
   } = useFileUpload(userId, onUploadComplete, documentType);
 
   return (
@@ -62,6 +64,17 @@ const DocumentUploader = ({ userId, onUploadComplete, documentType = "directive"
               </div>
             )}
           </div>
+          
+          <Button
+            onClick={activateCamera}
+            variant="outline"
+            type="button"
+            disabled={uploading}
+            className="flex items-center gap-2"
+          >
+            <Camera size={16} />
+            Photo
+          </Button>
         </div>
         
         {file && (
@@ -115,6 +128,7 @@ const DocumentUploader = ({ userId, onUploadComplete, documentType = "directive"
       </div>
 
       <RenameDialog />
+      <PreviewDialog />
     </div>
   );
 };

@@ -20,6 +20,8 @@ export const useFileUpload = (userId: string, onUploadComplete: (url: string, fi
   const [isPrivate, setIsPrivate] = useState(false);
   const [showRenameDialog, setShowRenameDialog] = useState(false);
   const [customFileName, setCustomFileName] = useState("");
+  const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -32,6 +34,12 @@ export const useFileUpload = (userId: string, onUploadComplete: (url: string, fi
       const fileName = selectedFile.name;
       const fileNameWithoutExtension = fileName.substring(0, fileName.lastIndexOf('.')) || fileName;
       setCustomFileName(fileNameWithoutExtension);
+    }
+  };
+
+  const activateCamera = () => {
+    if (cameraInputRef.current) {
+      cameraInputRef.current.click();
     }
   };
 
@@ -139,8 +147,10 @@ export const useFileUpload = (userId: string, onUploadComplete: (url: string, fi
 
   const previewFile = () => {
     if (file) {
+      // Créer une URL pour prévisualiser le fichier
       const url = URL.createObjectURL(file);
-      window.open(url, '_blank');
+      setPreviewUrl(url);
+      setPreviewDialogOpen(true);
     }
   };
 
@@ -170,6 +180,45 @@ export const useFileUpload = (userId: string, onUploadComplete: (url: string, fi
     </Dialog>
   );
 
+  const PreviewDialog = () => (
+    <Dialog open={previewDialogOpen} onOpenChange={setPreviewDialogOpen}>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Prévisualisation du document</DialogTitle>
+          <DialogDescription>
+            {file && file.type.includes('image') && "Prévisualisation de l'image"}
+            {file && file.type.includes('pdf') && "Prévisualisation du PDF"}
+            {file && !file.type.includes('image') && !file.type.includes('pdf') && "Prévisualisation du document"}
+          </DialogDescription>
+        </DialogHeader>
+        
+        {previewUrl && file && file.type.includes('image') && (
+          <div className="flex justify-center">
+            <img 
+              src={previewUrl} 
+              alt="Prévisualisation" 
+              className="max-h-[70vh] object-contain" 
+            />
+          </div>
+        )}
+        
+        {previewUrl && file && file.type.includes('pdf') && (
+          <iframe 
+            src={previewUrl} 
+            className="w-full h-[70vh]" 
+            title="Prévisualisation PDF"
+          />
+        )}
+        
+        {previewUrl && file && !file.type.includes('image') && !file.type.includes('pdf') && (
+          <div className="flex justify-center p-4 border rounded bg-gray-50">
+            <p>Le type de fichier ({file.type}) ne peut pas être prévisualisé directement.</p>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+
   return {
     file,
     uploading,
@@ -181,6 +230,8 @@ export const useFileUpload = (userId: string, onUploadComplete: (url: string, fi
     previewFile,
     setIsPrivate,
     isPrivate,
-    RenameDialog
+    RenameDialog,
+    PreviewDialog,
+    activateCamera
   };
 };
