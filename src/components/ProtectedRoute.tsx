@@ -1,5 +1,5 @@
 
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useState, useRef } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -14,6 +14,7 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   const location = useLocation();
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
+  const redirectAttempted = useRef(false);
   
   useEffect(() => {
     console.log("ProtectedRoute for", location.pathname);
@@ -29,6 +30,7 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     // Reset redirecting state if authentication succeeds
     if (isAuthenticated && isRedirecting) {
       setIsRedirecting(false);
+      redirectAttempted.current = false;
     }
   }, [isAuthenticated, isLoading, location.pathname, isRedirecting, session]);
 
@@ -44,10 +46,11 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   }
 
   // Prevent navigation loop by checking if we're already redirecting
-  if (!isAuthenticated && !isRedirecting) {
+  if (!isAuthenticated && !isRedirecting && !redirectAttempted.current) {
     // Store the current path to redirect back after login
     console.log("ProtectedRoute: Not authenticated, redirecting to auth from:", location.pathname);
     setIsRedirecting(true);
+    redirectAttempted.current = true;
     return <Navigate to="/auth" state={{ from: location.pathname }} replace />;
   }
 
@@ -58,11 +61,17 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
       ? userRoles.includes(requiredRole)
       : userRoles === requiredRole;
     
-    if (!hasRequiredRole && !isRedirecting) {
+    if (!hasRequiredRole && !isRedirecting && !redirectAttempted.current) {
       console.log(`ProtectedRoute: User does not have required role: ${requiredRole}`);
       setIsRedirecting(true);
+      redirectAttempted.current = true;
       return <Navigate to="/dashboard" state={{ from: location.pathname }} replace />;
     }
+  }
+
+  // If we're trying to redirect but the user is not authenticated, continue with the redirect
+  if (isRedirecting && !isAuthenticated) {
+    return <Navigate to="/auth" state={{ from: location.pathname }} replace />;
   }
 
   console.log("ProtectedRoute: Authenticated, rendering protected content for", location.pathname);

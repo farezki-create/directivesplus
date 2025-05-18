@@ -26,13 +26,20 @@ export const cleanupAuthState = () => {
 };
 
 /**
- * Safe navigation to a URL with prevent of navigation loops
+ * Safe navigation to a URL with prevention of navigation loops
  * @param url The URL to navigate to
  */
 export const safeNavigate = (url: string) => {
   console.log(`Safe navigating to: ${url}`);
-  // Use window.location.href for a full page refresh to ensure clean state
-  window.location.href = url;
+  
+  // Add timestamp to prevent caching issues
+  const timestamp = new Date().getTime();
+  const navigateUrl = url.includes('?') 
+    ? `${url}&_=${timestamp}` 
+    : `${url}?_=${timestamp}`;
+  
+  // Use window.location.replace to prevent back button from going to auth again
+  window.location.replace(navigateUrl);
 };
 
 /**

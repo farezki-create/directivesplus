@@ -1,5 +1,5 @@
 
-import React, { createContext, useState, useEffect, useContext } from "react";
+import React, { createContext, useState, useEffect, useContext, useRef } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { cleanupAuthState, fetchUserProfile, safeNavigate } from "@/utils/authUtils";
@@ -19,6 +19,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Use refs to track auth state and prevent duplicate operations
+  const authInitialized = useRef(false);
+  const redirectInProgress = useRef(false);
+  const profileFetchInProgress = useRef(false);
 
   useEffect(() => {
     console.log("Setting up auth state listener");
@@ -29,7 +34,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       (event: AuthEvent, currentSession) => {
         console.log("Auth state changed:", event, currentSession?.user?.id);
         
-        if (!isMounted) return;
+        if (!isMounted) {
+          console.log("Component unmounted, ignoring auth state change");
+          return;
+        }
         
         // Process the auth event
         handleAuthEvent(event, currentSession);
@@ -37,44 +45,55 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // Update state with new auth information
         setUser(currentSession?.user ?? null);
         setSession(currentSession);
-        setIsLoading(false);
+        
+        // Only mark as not loading after we have checked at least once
+        if (!authInitialized.current) {
+          setIsLoading(false);
+          authInitialized.current = true;
+        }
 
-        // Only fetch profile if we have a user and using setTimeout to avoid potential auth deadlocks
-        if (currentSession?.user) {
-          setTimeout(() => {
-            if (isMounted) loadUserProfile(currentSession.user.id);
-          }, 0);
-        } else {
+        // Only fetch profile if we have a user and not already fetching
+        if (currentSession?.user && !profileFetchInProgress.current) {
+          loadUserProfile(currentSession.user.id);
+        } else if (!currentSession?.user) {
           setProfile(null);
         }
       }
     );
 
-    // Then get initial session
-    const initSession = async () => {
-      try {
-        const { data: { session: initialSession } } = await supabase.auth.getSession();
-        
-        if (!isMounted) return;
-        
-        console.log("Initial session check:", initialSession?.user?.id || "No session");
-        
-        setUser(initialSession?.user ?? null);
-        setSession(initialSession);
-        setIsLoading(false);
-
-        if (initialSession?.user) {
-          loadUserProfile(initialSession.user.id);
-        }
-      } catch (error) {
-        console.error("Error getting initial session:", error);
-        if (isMounted) {
+    // Then get initial session if not already initialized
+    if (!authInitialized.current) {
+      const initSession = async () => {
+        try {
+          console.log("Getting initial session");
+          const { data: { session: initialSession } } = await supabase.auth.getSession();
+          
+          if (!isMounted) {
+            console.log("Component unmounted, ignoring initial session");
+            return;
+          }
+          
+          console.log("Initial session check:", initialSession?.user?.id || "No session");
+          
+          setUser(initialSession?.user ?? null);
+          setSession(initialSession);
           setIsLoading(false);
-        }
-      }
-    };
+          authInitialized.current = true;
 
-    initSession();
+          if (initialSession?.user && !profileFetchInProgress.current) {
+            loadUserProfile(initialSession.user.id);
+          }
+        } catch (error) {
+          console.error("Error getting initial session:", error);
+          if (isMounted) {
+            setIsLoading(false);
+            authInitialized.current = true;
+          }
+        }
+      };
+
+      initSession();
+    }
 
     return () => {
       isMounted = false;
@@ -92,6 +111,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         break;
       case 'SIGNED_OUT':
         console.log("User signed out, clearing state");
+        redirectInProgress.current = false;
         break;
       case 'USER_UPDATED':
         console.log("User details updated");
@@ -118,6 +138,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
    * Load user profile from Supabase
    */
   const loadUserProfile = async (userId: string) => {
+    if (profileFetchInProgress.current) {
+      console.log("Profile fetch already in progress, skipping");
+      return;
+    }
+    
+    profileFetchInProgress.current = true;
     try {
       const profileData = await fetchUserProfile(userId, supabase);
       if (profileData) {
@@ -125,6 +151,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     } catch (error) {
       console.error("Error loading user profile:", error);
+    } finally {
+      profileFetchInProgress.current = false;
     }
   };
 
@@ -132,6 +160,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
    * Sign out the current user
    */
   const signOut = async () => {
+    if (redirectInProgress.current) {
+      console.log("Redirect already in progress, ignoring sign out");
+      return;
+    }
+    
+    redirectInProgress.current = true;
     try {
       console.log("Signing out...");
       
@@ -151,6 +185,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       safeNavigate("/auth");
     } catch (error) {
       console.error("Sign out error:", error);
+      redirectInProgress.current = false;
     }
   };
 

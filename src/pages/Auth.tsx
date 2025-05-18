@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
@@ -25,6 +25,9 @@ const Auth = () => {
   const [redirectInProgress, setRedirectInProgress] = useState(false);
   const [isPasswordReset, setIsPasswordReset] = useState(false);
   const [resetToken, setResetToken] = useState("");
+  
+  // Ref to track if we've already attempted to redirect
+  const hasAttemptedRedirect = useRef(false);
   
   // Get the redirect path from location state or default to /dashboard
   const from = location.state?.from || "/dashboard";
@@ -62,9 +65,10 @@ const Auth = () => {
   // Redirect if already authenticated, but only after the auth state has loaded
   // and prevent redirect loops with a flag
   useEffect(() => {
-    if (!isLoading && isAuthenticated && !redirectInProgress && !isPasswordReset) {
+    if (!isLoading && isAuthenticated && !redirectInProgress && !isPasswordReset && !hasAttemptedRedirect.current) {
       console.log("Auth page: Already authenticated, redirecting to:", from);
       setRedirectInProgress(true);
+      hasAttemptedRedirect.current = true;
       
       // Use setTimeout to avoid race conditions with React rendering
       setTimeout(() => {
