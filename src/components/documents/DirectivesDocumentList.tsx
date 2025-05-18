@@ -16,7 +16,7 @@ interface Document {
 interface DirectivesDocumentListProps {
   documents: Document[];
   onDownload: (filePath: string, fileName: string) => void;
-  onPrint: (documentId: string, contentType?: string) => void;
+  onPrint: (filePath: string, contentType?: string) => void;
   onShare: (documentId: string) => void;
   onView: (filePath: string, contentType?: string) => void;
   onDelete: (documentId: string) => void;
@@ -41,7 +41,7 @@ const DirectivesDocumentList: FC<DirectivesDocumentListProps> = ({
           key={doc.id}
           document={doc}
           onDownload={onDownload}
-          onPrint={(filePath, contentType) => onPrint(doc.id, doc.content_type)}
+          onPrint={() => onPrint(doc.file_path, doc.content_type)}
           onShare={onShare}
           onView={onView}
           onDelete={onDelete}

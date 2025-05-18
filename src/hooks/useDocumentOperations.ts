@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -90,7 +91,28 @@ export const useDocumentOperations = (refreshDocuments: () => void) => {
   };
   
   const handleView = (filePath: string, fileType: string = "application/pdf") => {
-    handleDownload(filePath, "document");
+    try {
+      // Pour les fichiers audio et images, utiliser la prévisualisation
+      if (filePath.includes('audio') || 
+          (fileType && (fileType.includes('image') || 
+                        filePath.includes('image')))) {
+        setPreviewDocument(filePath);
+        return;
+      }
+      
+      // Pour les PDF et autres documents, ouvrir dans un nouvel onglet
+      const viewWindow = window.open(filePath, '_blank');
+      if (!viewWindow) {
+        throw new Error("Impossible d'ouvrir une nouvelle fenêtre");
+      }
+    } catch (error) {
+      console.error("Erreur lors de l'affichage du document:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'afficher le document",
+        variant: "destructive"
+      });
+    }
   };
   
   const confirmDelete = (documentId: string) => {
