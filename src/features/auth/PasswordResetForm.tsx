@@ -52,12 +52,13 @@ export const PasswordResetForm = ({ token, onSuccess }: PasswordResetFormProps) 
       
       if (!sessionData.session) {
         console.log("No session found, attempting to use token directly");
-        // Si pas de session, essayez d'abord de vous authentifier avec le token
-        // Ce n'est peut-être pas nécessaire si le lien de redirection a déjà créé une session
+        // Si pas de session, essayez de vous authentifier avec le token
+        // En utilisant la méthode correcte avec les bons paramètres
         try {
+          // La méthode correcte pour vérifier un token de récupération
           await supabase.auth.verifyOtp({
+            token_hash: token,
             type: 'recovery',
-            token: token,
           });
           console.log("Token verified successfully");
         } catch (tokenError) {
