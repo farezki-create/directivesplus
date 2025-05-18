@@ -2,8 +2,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import PageHeader from "@/components/layout/PageHeader";
 import PageFooter from "@/components/layout/PageFooter";
 import DataProtectionLinks from "@/components/DataProtectionLinks";
 import { Button } from "@/components/ui/button";
@@ -122,7 +120,16 @@ const LegalMentions = () => {
                 Conformément au Règlement Général sur la Protection des Données (RGPD) et à la loi Informatique et Libertés, vous disposez d'un droit d'accès, de rectification, d'effacement et de portabilité de vos données personnelles.
               </p>
               <p>
-                Pour exercer ces droits ou pour toute question relative au traitement de vos données, vous pouvez contacter notre Délégué à la Protection des Données à l'adresse : <a href="mailto:dpo@directivesplus.fr" className="text-directiveplus-600 hover:underline">dpo@directivesplus.fr</a>
+                Pour exercer ces droits ou pour toute question relative au traitement de vos données, vous pouvez contacter notre Délégué à la Protection des Données :
+              </p>
+              <p>
+                Délégué à la Protection des Données<br />
+                Email : dpo@directivesplus.fr<br />
+                Téléphone : 01 XX XX XX XX<br />
+                Adresse : XX rue XXXXX, XXXXX, France
+              </p>
+              <p>
+                Contact : <a href="mailto:mesdirectives@directivesplus.fr" className="text-directiveplus-600 hover:underline">mesdirectives@directivesplus.fr</a>
               </p>
               
               <h3 className="text-lg font-medium mt-6 mb-2">Propriété intellectuelle</h3>
