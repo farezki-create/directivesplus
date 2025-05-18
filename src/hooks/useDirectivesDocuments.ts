@@ -27,6 +27,7 @@ export const useDirectivesDocuments = () => {
   const [loading, setLoading] = useState(true);
   const [showAddOptions, setShowAddOptions] = useState(false);
 
+  // Use the combined document operations hook
   const {
     previewDocument,
     setPreviewDocument,
