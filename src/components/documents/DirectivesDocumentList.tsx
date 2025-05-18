@@ -40,11 +40,11 @@ const DirectivesDocumentList: FC<DirectivesDocumentListProps> = ({
         <DocumentCard 
           key={doc.id}
           document={doc}
-          onDownload={onDownload}
+          onDownload={() => onDownload(doc.file_path, doc.file_name)}
           onPrint={() => onPrint(doc.file_path, doc.content_type)}
-          onShare={onShare}
-          onView={onView}
-          onDelete={onDelete}
+          onShare={() => onShare(doc.id)}
+          onView={() => onView(doc.file_path, doc.content_type)}
+          onDelete={() => onDelete(doc.id)}
         />
       ))}
     </div>

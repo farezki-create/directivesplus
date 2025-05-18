@@ -20,6 +20,8 @@ export const useDocumentOperations = (refreshDocuments: () => void) => {
 
   const handleDownload = (filePath: string, fileName: string) => {
     try {
+      console.log("Téléchargement du fichier:", filePath);
+      
       // Pour les fichiers audio, afficher dans une boîte de dialogue
       if (filePath.includes('audio')) {
         setPreviewDocument(filePath);
@@ -30,13 +32,14 @@ export const useDocumentOperations = (refreshDocuments: () => void) => {
       const link = document.createElement('a');
       link.href = filePath;
       link.download = fileName; // Spécifier le nom du fichier pour téléchargement
+      link.target = "_blank"; // Assurer que le téléchargement s'ouvre dans un nouvel onglet
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       
       toast({
-        title: "Téléchargement réussi",
-        description: "Votre document a été téléchargé avec succès"
+        title: "Téléchargement initié",
+        description: "Votre document est en cours de téléchargement"
       });
     } catch (error) {
       console.error("Erreur lors du téléchargement du document:", error);
@@ -50,7 +53,10 @@ export const useDocumentOperations = (refreshDocuments: () => void) => {
 
   const handlePrint = (filePath: string, fileType: string = "application/pdf") => {
     try {
-      if (filePath.startsWith('data:') && filePath.includes('audio')) {
+      console.log("Impression du fichier:", filePath, "type:", fileType);
+      
+      // Vérifier si c'est un fichier audio
+      if (filePath.includes('audio') || (fileType && fileType.includes('audio'))) {
         toast({
           title: "Information",
           description: "L'impression n'est pas disponible pour les fichiers audio."
@@ -58,26 +64,68 @@ export const useDocumentOperations = (refreshDocuments: () => void) => {
         return;
       }
       
-      // Ouvrir le document dans un nouvel onglet pour impression
+      // Pour les images, afficher d'abord puis imprimer
+      if (fileType && fileType.includes('image') || 
+          filePath.includes('image') || 
+          filePath.endsWith('.jpg') || 
+          filePath.endsWith('.png') || 
+          filePath.endsWith('.jpeg')) {
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+          printWindow.document.write(`
+            <html>
+              <head>
+                <title>Impression d'image</title>
+                <style>
+                  body { 
+                    margin: 0; 
+                    display: flex; 
+                    justify-content: center;
+                    align-items: center;
+                    height: 100vh;
+                  }
+                  img { max-width: 100%; max-height: 100vh; }
+                </style>
+              </head>
+              <body>
+                <img src="${filePath}" alt="Document à imprimer" />
+                <script>
+                  window.onload = function() {
+                    setTimeout(function() {
+                      window.print();
+                    }, 1000);
+                  }
+                </script>
+              </body>
+            </html>
+          `);
+          printWindow.document.close();
+          return;
+        }
+      }
+      
+      // Pour les PDF et autres documents
       const printWindow = window.open(filePath, '_blank');
       if (printWindow) {
         printWindow.focus();
         // Attendre que le contenu soit chargé avant d'imprimer
         printWindow.onload = () => {
           try {
-            printWindow.print();
+            setTimeout(() => {
+              printWindow.print();
+            }, 1000);
           } catch (err) {
             console.error("Erreur lors de l'impression:", err);
           }
         };
       } else {
-        throw new Error("Impossible d'ouvrir une nouvelle fenêtre");
+        throw new Error("Impossible d'ouvrir une nouvelle fenêtre. Vérifiez que les popups sont autorisés.");
       }
     } catch (error) {
       console.error("Erreur lors de l'impression:", error);
       toast({
         title: "Erreur",
-        description: "Impossible d'imprimer le document",
+        description: "Impossible d'imprimer le document. Vérifiez que les popups sont autorisés.",
         variant: "destructive"
       });
     }
@@ -92,24 +140,42 @@ export const useDocumentOperations = (refreshDocuments: () => void) => {
   
   const handleView = (filePath: string, fileType: string = "application/pdf") => {
     try {
-      // Pour les fichiers audio et images, utiliser la prévisualisation
-      if (filePath.includes('audio') || 
-          (fileType && (fileType.includes('image') || 
-                        filePath.includes('image')))) {
+      console.log("Visualisation du fichier:", filePath, "type:", fileType);
+      
+      // Pour les fichiers audio, utiliser la prévisualisation
+      if (filePath.includes('audio') || (fileType && fileType.includes('audio'))) {
         setPreviewDocument(filePath);
         return;
       }
       
-      // Pour les PDF et autres documents, ouvrir dans un nouvel onglet
+      // Pour les images, utiliser la prévisualisation
+      if (fileType && fileType.includes('image') || 
+          filePath.includes('image') || 
+          filePath.endsWith('.jpg') || 
+          filePath.endsWith('.png') || 
+          filePath.endsWith('.jpeg')) {
+        setPreviewDocument(filePath);
+        return;
+      }
+      
+      // Pour les PDF, ouvrir dans un nouvel onglet avec prévisualisation PDF
+      if (fileType && fileType.includes('pdf') || 
+          filePath.includes('pdf') || 
+          filePath.endsWith('.pdf')) {
+        setPreviewDocument(filePath);
+        return;
+      }
+      
+      // Pour les autres types de documents
       const viewWindow = window.open(filePath, '_blank');
       if (!viewWindow) {
-        throw new Error("Impossible d'ouvrir une nouvelle fenêtre");
+        throw new Error("Impossible d'ouvrir une nouvelle fenêtre. Vérifiez que les popups sont autorisés.");
       }
     } catch (error) {
       console.error("Erreur lors de l'affichage du document:", error);
       toast({
         title: "Erreur",
-        description: "Impossible d'afficher le document",
+        description: "Impossible d'afficher le document. Vérifiez que les popups sont autorisés.",
         variant: "destructive"
       });
     }

@@ -90,6 +90,21 @@ const DirectivesDocs = () => {
   const handleUploadComplete = (url: string, fileName: string, isPrivate: boolean) => {
     fetchDocuments();
   };
+  
+  // Fonctions spécifiques pour le dialogue de prévisualisation
+  const handlePreviewDownload = (filePath: string) => {
+    const fileName = filePath.split('/').pop() || 'document';
+    handleDownload(filePath, fileName);
+  };
+
+  const handlePreviewPrint = (filePath: string) => {
+    // Déterminer le type de contenu basé sur l'extension du fichier
+    let contentType = "application/pdf";
+    if (filePath.includes('.jpg') || filePath.includes('.jpeg') || filePath.includes('.png')) {
+      contentType = "image/jpeg";
+    }
+    handlePrint(filePath, contentType);
+  };
 
   if (isLoading || loading) {
     return (
@@ -161,6 +176,8 @@ const DirectivesDocs = () => {
       <DocumentPreviewDialog
         filePath={previewDocument}
         onOpenChange={() => setPreviewDocument(null)}
+        onDownload={handlePreviewDownload}
+        onPrint={handlePreviewPrint}
       />
       
       <footer className="bg-white py-6 border-t mt-auto">
