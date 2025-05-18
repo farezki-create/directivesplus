@@ -10,9 +10,9 @@ interface Document {
   file_path: string;
   created_at: string;
   description?: string;
-  file_type?: string;  // Changed from content_type to file_type
+  file_type?: string;
   user_id: string;
-  is_private?: boolean;
+  is_private?: boolean; // This is for UI purposes only, not stored in DB
 }
 
 export const useMedicalDocuments = (user: User | null) => {
@@ -38,7 +38,14 @@ export const useMedicalDocuments = (user: User | null) => {
       }
       
       console.log("Retrieved documents:", data?.length || 0);
-      setDocuments(data || []);
+      
+      // Set is_private to false by default for all documents since it's not in the DB
+      const processedDocuments = (data || []).map(doc => ({
+        ...doc,
+        is_private: false // Default value since it's not stored in DB
+      }));
+      
+      setDocuments(processedDocuments);
     } catch (error: any) {
       console.error("Erreur lors de la récupération des documents:", error);
       toast({

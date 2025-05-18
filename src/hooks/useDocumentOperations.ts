@@ -9,8 +9,9 @@ interface Document {
   file_path: string;
   created_at: string;
   description?: string;
-  file_type?: string;  // Changed from content_type to file_type
+  file_type?: string;
   user_id: string;
+  is_private?: boolean;
 }
 
 export const useDocumentOperations = (refreshDocuments: () => void) => {

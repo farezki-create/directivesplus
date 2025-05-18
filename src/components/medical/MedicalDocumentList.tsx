@@ -9,17 +9,17 @@ interface Document {
   file_path: string;
   created_at: string;
   description?: string;
-  file_type?: string;  // Changed from content_type to file_type
+  file_type?: string;
   user_id: string;
-  is_private?: boolean;
+  is_private?: boolean; // This is for UI purposes only
 }
 
 interface MedicalDocumentListProps {
   documents: Document[];
   onDownload: (filePath: string, fileName: string) => void;
-  onPrint: (filePath: string, fileType?: string) => void; // Changed from contentType
+  onPrint: (filePath: string, fileType?: string) => void;
   onShare: (documentId: string) => void;
-  onView: (filePath: string, fileType?: string) => void; // Changed from contentType
+  onView: (filePath: string, fileType?: string) => void;
   onDelete: (documentId: string) => void;
 }
 

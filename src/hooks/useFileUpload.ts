@@ -57,19 +57,19 @@ export const useFileUpload = (userId: string, onUploadComplete: (url: string, fi
         console.log(`Type du document: ${fileType}`);
         
         try {
+          // Create document record without the is_private field for medical_documents
+          const documentData = {
+            file_name: file.name,
+            file_path: dataUrl,
+            description: `Document ${documentType === 'medical' ? 'médical' : ''} (${new Date().toLocaleString('fr-FR')})`,
+            file_type: fileType,
+            file_size: file.size,
+            user_id: userId
+          };
+          
           const { data, error } = await supabase
             .from(tableName)
-            .insert([
-              {
-                file_name: file.name,
-                file_path: dataUrl,
-                description: `Document ${documentType === 'medical' ? 'médical' : ''} (${new Date().toLocaleString('fr-FR')})`,
-                file_type: fileType,  // Changed from content_type to file_type for medical_documents table
-                file_size: file.size,
-                user_id: userId,
-                is_private: isPrivate
-              }
-            ])
+            .insert([documentData])
             .select();
 
           if (error) {
@@ -78,6 +78,8 @@ export const useFileUpload = (userId: string, onUploadComplete: (url: string, fi
 
           clearFile();
           if (data && data[0]) {
+            // Still pass isPrivate to the callback for UI display purposes
+            // even though it's not stored in the database
             onUploadComplete(dataUrl, file.name, isPrivate);
           }
         } catch (error) {
