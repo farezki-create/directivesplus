@@ -1,18 +1,86 @@
 
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { toast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Heart, DollarSign, Users } from "lucide-react";
+import { createDonationSession } from "@/utils/stripeService";
 
 const Soutenir = () => {
   const [selectedAmount, setSelectedAmount] = useState<string | null>(null);
+  const [customAmount, setCustomAmount] = useState<string>("");
+  const [isProcessing, setIsProcessing] = useState(false);
   
   const handleAmountClick = (amount: string) => {
     setSelectedAmount(amount);
+    setCustomAmount("");
+  };
+
+  const handleCustomAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCustomAmount(e.target.value);
+    setSelectedAmount(null);
+  };
+
+  const handleDonation = async (isRecurring: boolean) => {
+    try {
+      setIsProcessing(true);
+      
+      // Get the amount in cents (Stripe requires amounts in cents)
+      const amount = selectedAmount 
+        ? parseInt(selectedAmount) * 100 
+        : customAmount 
+          ? parseFloat(customAmount) * 100 
+          : 0;
+      
+      if (!amount || amount <= 0) {
+        toast({
+          title: "Montant invalide",
+          description: "Veuillez sélectionner ou saisir un montant valide.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // For demo purposes, show a success message instead of actually processing payment
+      // In a real implementation, you'd use the createDonationSession function
+      toast({
+        title: "Démo de don",
+        description: `Cette démo simule un don ${isRecurring ? 'mensuel' : 'ponctuel'} de ${amount/100}€. En production, vous seriez redirigé vers la page de paiement Stripe.`,
+      });
+      
+      // Simulate processing delay
+      setTimeout(() => {
+        setIsProcessing(false);
+        setSelectedAmount(null);
+        setCustomAmount("");
+      }, 1500);
+      
+      // In a real implementation with Stripe backend:
+      // const result = await createDonationSession({ 
+      //   amount, 
+      //   isRecurring 
+      // });
+      // 
+      // if (!result.success) {
+      //   toast({
+      //     title: "Erreur",
+      //     description: result.error || "Une erreur est survenue lors du traitement de votre don.",
+      //     variant: "destructive"
+      //   });
+      // }
+    } catch (error) {
+      console.error("Error processing donation:", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors du traitement de votre don.",
+        variant: "destructive"
+      });
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -30,21 +98,25 @@ const Soutenir = () => {
                 Votre soutien nous permet de continuer notre mission : rendre accessible à tous la gestion des directives anticipées.
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <Button 
-                  size="lg"
-                  className="bg-directiveplus-600 hover:bg-directiveplus-700 text-lg flex items-center gap-2"
-                >
-                  <Heart className="h-5 w-5" />
-                  Je fais un don
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="lg"
-                  className="border-directiveplus-200 text-directiveplus-700 hover:bg-directiveplus-50 text-lg flex items-center gap-2"
-                >
-                  <Users className="h-5 w-5" />
-                  Devenir membre
-                </Button>
+                <a href="#faire-un-don">
+                  <Button 
+                    size="lg"
+                    className="bg-directiveplus-600 hover:bg-directiveplus-700 text-lg flex items-center gap-2"
+                  >
+                    <Heart className="h-5 w-5" />
+                    Je fais un don
+                  </Button>
+                </a>
+                <a href="#devenir-membre">
+                  <Button 
+                    variant="outline" 
+                    size="lg"
+                    className="border-directiveplus-200 text-directiveplus-700 hover:bg-directiveplus-50 text-lg flex items-center gap-2"
+                  >
+                    <Users className="h-5 w-5" />
+                    Devenir membre
+                  </Button>
+                </a>
               </div>
               <p className="mt-4 text-sm text-gray-600">
                 Vos dons sont déductibles des impôts à hauteur de 66%
@@ -54,7 +126,7 @@ const Soutenir = () => {
         </section>
         
         {/* Donation Section */}
-        <section className="py-16">
+        <section id="faire-un-don" className="py-16">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto">
               <Tabs defaultValue="ponctuel" className="w-full">
@@ -98,6 +170,9 @@ const Soutenir = () => {
                             <input
                               type="number"
                               min="1"
+                              step="1"
+                              value={customAmount}
+                              onChange={handleCustomAmountChange}
                               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                               placeholder="Montant"
                             />
@@ -109,9 +184,11 @@ const Soutenir = () => {
                     <CardFooter>
                       <Button 
                         className="w-full bg-directiveplus-600 hover:bg-directiveplus-700 flex items-center gap-2"
+                        onClick={() => handleDonation(false)}
+                        disabled={isProcessing}
                       >
                         <DollarSign className="h-5 w-5" />
-                        Continuer vers le paiement
+                        {isProcessing ? "Traitement en cours..." : "Faire un don maintenant"}
                       </Button>
                     </CardFooter>
                   </Card>
@@ -152,6 +229,9 @@ const Soutenir = () => {
                             <input
                               type="number"
                               min="1"
+                              step="1"
+                              value={customAmount}
+                              onChange={handleCustomAmountChange}
                               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                               placeholder="Montant"
                             />
@@ -163,9 +243,11 @@ const Soutenir = () => {
                     <CardFooter>
                       <Button 
                         className="w-full bg-directiveplus-600 hover:bg-directiveplus-700 flex items-center gap-2"
+                        onClick={() => handleDonation(true)}
+                        disabled={isProcessing}
                       >
                         <DollarSign className="h-5 w-5" />
-                        Continuer vers le paiement
+                        {isProcessing ? "Traitement en cours..." : "Devenir donateur mensuel"}
                       </Button>
                     </CardFooter>
                   </Card>
