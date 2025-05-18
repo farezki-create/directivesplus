@@ -3,26 +3,20 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import {
   Download,
-  Share2,
   Eye,
   Trash,
-  Printer
 } from "lucide-react";
 
 interface DocumentActionsProps {
   onView: () => void;
   onDownload: () => void;
-  onShare: () => void;
   onDelete: () => void;
-  onPrint?: () => void; // Added onPrint prop
 }
 
 const DocumentActions = ({
   onView,
   onDownload,
-  onShare,
   onDelete,
-  onPrint
 }: DocumentActionsProps) => {
   return (
     <div className="flex flex-wrap justify-end gap-2">
@@ -33,7 +27,7 @@ const DocumentActions = ({
         className="text-xs"
       >
         <Eye className="h-3 w-3 mr-1" />
-        Voir
+        Voir et imprimer
       </Button>
       <Button
         onClick={onDownload}
@@ -43,26 +37,6 @@ const DocumentActions = ({
       >
         <Download className="h-3 w-3 mr-1" />
         Télécharger
-      </Button>
-      {onPrint && (
-        <Button
-          onClick={onPrint}
-          size="sm"
-          variant="outline"
-          className="text-xs"
-        >
-          <Printer className="h-3 w-3 mr-1" />
-          Imprimer
-        </Button>
-      )}
-      <Button
-        onClick={onShare}
-        size="sm"
-        variant="outline"
-        className="text-xs"
-      >
-        <Share2 className="h-3 w-3 mr-1" />
-        Partager
       </Button>
       <Button
         onClick={onDelete}
