@@ -1,7 +1,6 @@
 
 import { useCallback } from "react";
 import { useDocumentPreview } from "./useDocumentPreview";
-import { viewDocument } from "@/utils/document-operations";
 import { toast } from "@/hooks/use-toast";
 
 /**
