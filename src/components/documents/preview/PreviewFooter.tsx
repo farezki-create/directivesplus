@@ -9,13 +9,15 @@ interface PreviewFooterProps {
   onOpenChange: (open: boolean) => void;
   onDownload: () => void;
   onPrint: () => void;
+  showPrint?: boolean;
 }
 
 const PreviewFooter = ({ 
   filePath, 
   onOpenChange, 
   onDownload, 
-  onPrint 
+  onPrint,
+  showPrint = true
 }: PreviewFooterProps) => {
   console.log("PreviewFooter - rendu avec filePath:", filePath);
   const fileInfo = filePath ? detectDocumentType(filePath) : { isAudio: false };
@@ -40,7 +42,7 @@ const PreviewFooter = ({
       <div>
         {filePath && (
           <>
-            {!isAudio && (
+            {!isAudio && showPrint && (
               <Button 
                 onClick={handlePrint} 
                 variant="outline" 

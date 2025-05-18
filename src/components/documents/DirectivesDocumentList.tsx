@@ -49,6 +49,7 @@ const DirectivesDocumentList: FC<DirectivesDocumentListProps> = ({
           onView={onView}
           onDelete={onDelete}
           onVisibilityChange={onVisibilityChange}
+          showPrint={false} // Désactiver l'affichage du bouton imprimer dans les directives
         />
       ))}
     </div>

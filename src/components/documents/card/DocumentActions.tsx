@@ -13,13 +13,15 @@ interface DocumentActionsProps {
   onDownload: () => void;
   onDelete: () => void;
   onPrint?: () => void;
+  showPrint?: boolean;
 }
 
 const DocumentActions = ({
   onView,
   onDownload,
   onDelete,
-  onPrint
+  onPrint,
+  showPrint = true
 }: DocumentActionsProps) => {
   console.log("DocumentActions - Handlers disponibles:", { 
     onView: !!onView, 
@@ -58,7 +60,7 @@ const DocumentActions = ({
         <Download className="h-3 w-3 mr-1" />
         Télécharger
       </Button>
-      {onPrint && (
+      {onPrint && showPrint && (
         <Button
           onClick={(e) => {
             e.preventDefault();

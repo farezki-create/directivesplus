@@ -15,6 +15,7 @@ interface DocumentPreviewDialogProps {
   onOpenChange: (open: boolean) => void;
   onDownload?: (filePath: string) => void;
   onPrint?: (filePath: string) => void;
+  showPrint?: boolean;
 }
 
 const DocumentPreviewDialog: FC<DocumentPreviewDialogProps> = ({
@@ -22,6 +23,7 @@ const DocumentPreviewDialog: FC<DocumentPreviewDialogProps> = ({
   onOpenChange,
   onDownload,
   onPrint,
+  showPrint = true
 }) => {
   console.log("DocumentPreviewDialog - rendu avec filePath:", filePath);
   const isOpen = !!filePath;
@@ -62,6 +64,7 @@ const DocumentPreviewDialog: FC<DocumentPreviewDialogProps> = ({
           onOpenChange={onOpenChange}
           onDownload={handleDownload}
           onPrint={handlePrint}
+          showPrint={showPrint}
         />
       </DialogContent>
     </Dialog>

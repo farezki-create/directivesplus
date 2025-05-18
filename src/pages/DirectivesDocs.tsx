@@ -75,6 +75,7 @@ const DirectivesDocs = () => {
         onOpenChange={() => setPreviewDocument(null)}
         onDownload={handlePreviewDownload}
         onPrint={handlePreviewPrint}
+        showPrint={false} // Masquer le bouton imprimer dans la prévisualisation des directives
       />
       
       <footer className="bg-white py-6 border-t mt-auto">

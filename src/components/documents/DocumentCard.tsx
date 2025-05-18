@@ -21,6 +21,7 @@ interface DocumentCardProps {
   onView: (filePath: string, fileType?: string) => void;
   onDelete: (documentId: string) => void;
   onVisibilityChange?: (documentId: string, isPrivate: boolean) => void;
+  showPrint?: boolean;
 }
 
 const DocumentCard = ({
@@ -29,7 +30,8 @@ const DocumentCard = ({
   onPrint,
   onView,
   onDelete,
-  onVisibilityChange
+  onVisibilityChange,
+  showPrint = true
 }: DocumentCardProps) => {
   const [isPrivate, setIsPrivate] = useState(document.is_private || false);
   
@@ -71,6 +73,7 @@ const DocumentCard = ({
             console.log("DocumentCard - onDelete appelé pour ID:", document.id);
             onDelete(document.id);
           }}
+          showPrint={showPrint}
         />
       </div>
     </div>
