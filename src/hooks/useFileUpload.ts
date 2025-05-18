@@ -13,6 +13,7 @@ export const useFileUpload = (
   const [isScanning, setIsScanning] = useState(false);
   const [isPrivate, setIsPrivate] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -49,6 +50,9 @@ export const useFileUpload = (
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+    if (cameraInputRef.current) {
+      cameraInputRef.current.value = '';
+    }
   };
 
   const previewFile = () => {
@@ -62,44 +66,25 @@ export const useFileUpload = (
     reader.readAsDataURL(file);
   };
 
-  // Implémentation simplifiée du scan de document
-  const scanDocument = async () => {
+  // Remplace l'implémentation du scan par l'accès à l'appareil photo
+  const openCamera = async () => {
     setIsScanning(true);
     
     try {
-      // Simulation d'une intégration avec un scanner
-      toast({
-        title: "Scanner en cours d'initialisation",
-        description: "Veuillez patienter..."
-      });
-      
-      // Simule l'attente d'une opération de scan
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Ouvre l'appareil photo via l'input file avec capture=camera
+      if (cameraInputRef.current) {
+        cameraInputRef.current.click();
+      }
       
       toast({
-        title: "Scanner prêt",
-        description: "Veuillez numériser votre document"
-      });
-      
-      // Simule un scan terminé après quelques secondes (à remplacer par l'API réelle)
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
-      // Dans un cas réel, l'image scannée serait récupérée depuis l'API du scanner
-      // et convertie en File ou Blob
-      const response = await fetch('/placeholder.svg');
-      const blob = await response.blob();
-      const scannedFile = new File([blob], 'document-scanné.png', { type: 'image/png' });
-      
-      setFile(scannedFile);
-      toast({
-        title: "Document numérisé avec succès",
-        description: "Vous pouvez maintenant l'enregistrer"
+        title: "Appareil photo",
+        description: "Veuillez prendre une photo de votre document"
       });
     } catch (error) {
-      console.error("Erreur lors du scan:", error);
+      console.error("Erreur lors de l'accès à l'appareil photo:", error);
       toast({
-        title: "Erreur de numérisation",
-        description: "Impossible de numériser le document",
+        title: "Erreur",
+        description: "Impossible d'accéder à l'appareil photo",
         variant: "destructive"
       });
     } finally {
@@ -148,6 +133,9 @@ export const useFileUpload = (
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
         }
+        if (cameraInputRef.current) {
+          cameraInputRef.current.value = '';
+        }
         
         toast({
           title: "Document téléchargé",
@@ -171,12 +159,13 @@ export const useFileUpload = (
     uploading,
     isScanning,
     fileInputRef,
+    cameraInputRef,
     isPrivate,
     setIsPrivate,
     handleFileChange,
     clearFile,
     uploadFile,
     previewFile,
-    scanDocument
+    openCamera // Remplace scanDocument par openCamera
   };
 };

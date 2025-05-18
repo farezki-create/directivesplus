@@ -7,7 +7,6 @@ import Features from "../components/Features";
 import Footer from "../components/Footer";
 import DirectivesInfo from "../components/DirectivesInfo";
 import { FileText, MessageSquare } from "lucide-react";
-import Testimonials from "../components/Testimonials";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -49,7 +48,6 @@ const Index = () => {
           <DirectivesInfo />
         </section>
         <Features />
-        <Testimonials />
       </main>
       <Footer />
     </div>
