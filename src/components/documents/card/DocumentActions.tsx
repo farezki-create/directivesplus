@@ -5,18 +5,24 @@ import {
   Download,
   Eye,
   Trash,
+  Share2,  // Added Share2 icon
+  Printer, // Added Printer icon
 } from "lucide-react";
 
 interface DocumentActionsProps {
   onView: () => void;
   onDownload: () => void;
   onDelete: () => void;
+  onPrint?: () => void;  // Added optional onPrint
+  onShare?: () => void;  // Added optional onShare
 }
 
 const DocumentActions = ({
   onView,
   onDownload,
   onDelete,
+  onPrint,
+  onShare,
 }: DocumentActionsProps) => {
   return (
     <div className="flex flex-wrap justify-end gap-2">

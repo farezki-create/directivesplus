@@ -19,6 +19,8 @@ interface DocumentCardProps {
   onView: (filePath: string, fileType?: string) => void;
   onDelete: (documentId: string) => void;
   onVisibilityChange?: (documentId: string, isPrivate: boolean) => void;
+  onPrint?: (filePath: string, fileType?: string) => void; // Added onPrint prop
+  onShare?: (documentId: string) => void; // Added onShare prop
 }
 
 const DocumentCard = ({
@@ -26,7 +28,9 @@ const DocumentCard = ({
   onDownload,
   onView,
   onDelete,
-  onVisibilityChange
+  onVisibilityChange,
+  onPrint,
+  onShare
 }: DocumentCardProps) => {
   const [isPrivate, setIsPrivate] = useState(document.is_private || false);
   
@@ -54,6 +58,8 @@ const DocumentCard = ({
           onView={handleViewClick}
           onDownload={() => onDownload(document.file_path, document.file_name)}
           onDelete={() => onDelete(document.id)}
+          onPrint={onPrint ? () => onPrint(document.file_path, document.file_type) : undefined}
+          onShare={onShare ? () => onShare(document.id) : undefined}
         />
       </div>
     </div>

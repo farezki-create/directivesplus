@@ -18,6 +18,8 @@ interface DirectivesDocumentListProps {
   onDownload: (filePath: string, fileName: string) => void;
   onView: (filePath: string, contentType?: string) => void;
   onDelete: (documentId: string) => void;
+  onPrint?: (filePath: string, fileType?: string) => void; // Added onPrint prop
+  onShare?: (documentId: string) => void; // Added onShare prop
 }
 
 const DirectivesDocumentList: FC<DirectivesDocumentListProps> = ({
@@ -25,6 +27,8 @@ const DirectivesDocumentList: FC<DirectivesDocumentListProps> = ({
   onDownload,
   onView,
   onDelete,
+  onPrint,
+  onShare
 }) => {
   if (documents.length === 0) {
     return <EmptyDocumentsState />;
@@ -39,6 +43,8 @@ const DirectivesDocumentList: FC<DirectivesDocumentListProps> = ({
           onDownload={onDownload}
           onView={onView}
           onDelete={onDelete}
+          onPrint={onPrint}
+          onShare={onShare}
         />
       ))}
     </div>

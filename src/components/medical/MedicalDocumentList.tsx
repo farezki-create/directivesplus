@@ -20,6 +20,8 @@ interface MedicalDocumentListProps {
   onView: (filePath: string, fileType?: string) => void;
   onDelete: (documentId: string) => void;
   onVisibilityChange?: (documentId: string, isPrivate: boolean) => void;
+  onPrint?: (filePath: string, fileType?: string) => void; // Added onPrint prop
+  onShare?: (documentId: string) => void; // Added onShare prop
 }
 
 const MedicalDocumentList = ({
@@ -27,7 +29,9 @@ const MedicalDocumentList = ({
   onDownload,
   onView,
   onDelete,
-  onVisibilityChange
+  onVisibilityChange,
+  onPrint,
+  onShare
 }: MedicalDocumentListProps) => {
   if (documents.length === 0) {
     return <EmptyDocumentsState message="Vous n'avez pas encore ajouté de données médicales" />;
@@ -43,6 +47,8 @@ const MedicalDocumentList = ({
           onView={onView}
           onDelete={onDelete}
           onVisibilityChange={onVisibilityChange}
+          onPrint={onPrint}  // Pass the prop if it exists
+          onShare={onShare}  // Pass the prop if it exists
         />
       ))}
     </div>
