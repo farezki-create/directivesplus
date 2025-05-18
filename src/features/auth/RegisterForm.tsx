@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -136,7 +135,12 @@ export const RegisterForm = ({ onVerificationSent }: RegisterFormProps) => {
             <FormItem>
               <FormLabel>Date de naissance*</FormLabel>
               <FormControl>
-                <Input type="date" {...field} />
+                <Input 
+                  type="date" 
+                  max={new Date().toISOString().split('T')[0]}
+                  min="1900-01-01"
+                  {...field} 
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
