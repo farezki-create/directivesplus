@@ -65,8 +65,8 @@ const Hero = () => {
               <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
                 <div className="flex flex-col items-center mb-3">
                   <img 
-                    src="/placeholder.svg" 
-                    alt="Processus guidé" 
+                    src="/lovable-uploads/0a786ed1-a905-4b29-be3a-ca3b24d3efae.png" 
+                    alt="Logo DirectivesPlus" 
                     className="w-20 h-20 mb-3 object-cover"
                   />
                   <h3 className="font-semibold text-lg text-directiveplus-700">Simple et guidé</h3>
@@ -97,8 +97,8 @@ const Hero = () => {
               <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
                 <div className="flex flex-col items-center mb-3">
                   <img 
-                    src="/placeholder.svg" 
-                    alt="Partage facile" 
+                    src="/lovable-uploads/0a786ed1-a905-4b29-be3a-ca3b24d3efae.png" 
+                    alt="Logo DirectivesPlus" 
                     className="w-20 h-20 mb-3 object-cover"
                   />
                   <h3 className="font-semibold text-lg text-directiveplus-700">Facilement partageable</h3>

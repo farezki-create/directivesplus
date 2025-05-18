@@ -19,6 +19,7 @@ import AccessCodeDisplay from "@/components/documents/AccessCodeDisplay";
 // Import custom hooks
 import { useDocumentOperations } from "@/hooks/useDocumentOperations";
 import { useAccessCode } from "@/hooks/useAccessCode";
+import { downloadDocument, printDocument } from "@/utils/documentOperations";
 
 interface Document {
   id: string;
@@ -94,16 +95,37 @@ const DirectivesDocs = () => {
   // Fonctions spécifiques pour le dialogue de prévisualisation
   const handlePreviewDownload = (filePath: string) => {
     const fileName = filePath.split('/').pop() || 'document';
-    handleDownload(filePath, fileName);
+    downloadDocument(filePath, fileName);
   };
 
   const handlePreviewPrint = (filePath: string) => {
-    // Déterminer le type de contenu basé sur l'extension du fichier
-    let contentType = "application/pdf";
-    if (filePath.includes('.jpg') || filePath.includes('.jpeg') || filePath.includes('.png')) {
-      contentType = "image/jpeg";
-    }
-    handlePrint(filePath, contentType);
+    const { isImage } = detectDocumentType(filePath);
+    printDocument(filePath, isImage ? "image/jpeg" : "application/pdf");
+  };
+  
+  // Helper function to detect document type
+  const detectDocumentType = (filePath: string) => {
+    const isAudio = 
+      filePath.includes('audio') || 
+      filePath.endsWith('.mp3') || 
+      filePath.endsWith('.wav') || 
+      filePath.endsWith('.ogg');
+    
+    const isPdf = 
+      filePath.includes('pdf') || 
+      filePath.endsWith('.pdf') || 
+      filePath.includes('application/pdf');
+    
+    const isImage = 
+      filePath.includes('image') || 
+      filePath.endsWith('.jpg') || 
+      filePath.endsWith('.jpeg') || 
+      filePath.endsWith('.png') || 
+      filePath.endsWith('.gif') || 
+      filePath.includes('image/jpeg') || 
+      filePath.includes('image/png');
+
+    return { isAudio, isPdf, isImage };
   };
 
   if (isLoading || loading) {

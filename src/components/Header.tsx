@@ -31,9 +31,6 @@ const Header = () => {
           
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8">
-            <Link to="/" className="text-gray-700 hover:text-directiveplus-600 px-3 py-2 font-medium">
-              Accueil
-            </Link>
             {profile?.role === "institution" && (
               <Link to="/admin" className="text-directiveplus-600 hover:text-directiveplus-700 px-3 py-2 font-medium">
                 Administration
@@ -102,13 +99,6 @@ const Header = () => {
       {isMenuOpen && (
         <div className="md:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white shadow-md">
-            <Link 
-              to="/" 
-              className="block px-3 py-2 text-gray-700 hover:text-directiveplus-600 font-medium"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Accueil
-            </Link>
             {profile?.role === "institution" && (
               <Link 
                 to="/admin" 
