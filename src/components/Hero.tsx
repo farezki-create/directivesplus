@@ -1,32 +1,24 @@
-
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-
 const Hero = () => {
   const navigate = useNavigate();
-
   const handleGetStarted = () => {
     navigate("/auth");
   };
-  
   const scrollToInfo = () => {
     const infoSection = document.getElementById('en-savoir-plus');
     if (infoSection) {
-      infoSection.scrollIntoView({ behavior: 'smooth' });
+      infoSection.scrollIntoView({
+        behavior: 'smooth'
+      });
     }
   };
-
-  return (
-    <section className="bg-gradient-to-b from-white to-directiveplus-50 section-padding">
+  return <section className="bg-gradient-to-b from-white to-directiveplus-50 section-padding">
       <div className="container mx-auto container-padding">
         <div className="flex flex-col items-center text-center">
           {/* Logo */}
           <div className="mb-8 w-full flex justify-center">
-            <img 
-              src="/lovable-uploads/0a786ed1-a905-4b29-be3a-ca3b24d3efae.png" 
-              alt="DirectivesPlus Logo" 
-              className="w-64 h-auto"
-            />
+            <img src="/lovable-uploads/0a786ed1-a905-4b29-be3a-ca3b24d3efae.png" alt="DirectivesPlus Logo" className="w-64 h-auto" />
           </div>
           
           {/* Text Content */}
@@ -39,17 +31,10 @@ const Hero = () => {
               en toute simplicité. Sécurisez vos données et améliorez votre conformité.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button 
-                onClick={handleGetStarted}
-                className="bg-directiveplus-600 hover:bg-directiveplus-700 text-lg py-6 px-8"
-              >
+              <Button onClick={handleGetStarted} className="bg-directiveplus-600 hover:bg-directiveplus-700 text-lg py-6 px-8">
                 Commencer
               </Button>
-              <Button 
-                variant="outline" 
-                onClick={scrollToInfo}
-                className="text-directiveplus-600 border-directiveplus-200 hover:bg-directiveplus-50 text-lg py-6 px-8"
-              >
+              <Button variant="outline" onClick={scrollToInfo} className="text-directiveplus-600 border-directiveplus-200 hover:bg-directiveplus-50 text-lg py-6 px-8">
                 En savoir plus
               </Button>
             </div>
@@ -64,11 +49,7 @@ const Hero = () => {
               {/* Feature 1 - Simple et guidé with image */}
               <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
                 <div className="flex flex-col items-center mb-3">
-                  <img 
-                    src="/lovable-uploads/0a786ed1-a905-4b29-be3a-ca3b24d3efae.png" 
-                    alt="Logo DirectivesPlus" 
-                    className="w-20 h-20 mb-3 object-cover"
-                  />
+                  <img src="/lovable-uploads/0a786ed1-a905-4b29-be3a-ca3b24d3efae.png" alt="Logo DirectivesPlus" className="w-20 h-20 mb-3 object-scale-down" />
                   <h3 className="font-semibold text-lg text-directiveplus-700">Simple et guidé</h3>
                 </div>
                 <p className="text-gray-600">Un processus pas à pas pour vous accompagner dans la rédaction.</p>
@@ -96,11 +77,7 @@ const Hero = () => {
               {/* Feature 3 - Facilement partageable with image */}
               <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
                 <div className="flex flex-col items-center mb-3">
-                  <img 
-                    src="/lovable-uploads/0a786ed1-a905-4b29-be3a-ca3b24d3efae.png" 
-                    alt="Logo DirectivesPlus" 
-                    className="w-20 h-20 mb-3 object-cover"
-                  />
+                  <img src="/lovable-uploads/0a786ed1-a905-4b29-be3a-ca3b24d3efae.png" alt="Logo DirectivesPlus" className="w-20 h-20 mb-3 object-cover" />
                   <h3 className="font-semibold text-lg text-directiveplus-700">Facilement partageable</h3>
                 </div>
                 <p className="text-gray-600">Télécharger, partager, imprimer: gérez vos directives comme vous le souhaitez.</p>
@@ -109,8 +86,6 @@ const Hero = () => {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default Hero;
