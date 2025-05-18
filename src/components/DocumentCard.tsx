@@ -1,8 +1,8 @@
 
 import React, { useState } from "react";
-import DocumentHeader from "./card/DocumentHeader";
-import DocumentActions from "./card/DocumentActions";
-import ShareDialog from "./card/ShareDialog";
+import DocumentHeader from "@/components/documents/card/DocumentHeader";
+import DocumentActions from "@/components/documents/card/DocumentActions";
+import ShareDialog from "@/components/documents/card/ShareDialog";
 
 interface Document {
   id: string;
@@ -43,7 +43,7 @@ const DocumentCard = ({
     }
   };
 
-  console.log("DocumentCard - rendu avec document:", document);
+  console.log("DocumentCard rendu avec document:", document);
 
   return (
     <div className="bg-white rounded-lg border p-4 shadow-sm">
