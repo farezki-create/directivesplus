@@ -24,20 +24,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     console.log("Setting up auth state listener");
     let isMounted = true;
     
-    // Set up auth state listener
+    // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event: AuthEvent, currentSession) => {
         console.log("Auth state changed:", event, currentSession?.user?.id);
         
         if (!isMounted) return;
         
+        // Process the auth event
         handleAuthEvent(event, currentSession);
         
+        // Update state with new auth information
         setUser(currentSession?.user ?? null);
         setSession(currentSession);
         setIsLoading(false);
 
-        // Defer profile fetch to prevent auth deadlocks
+        // Only fetch profile if we have a user and using setTimeout to avoid potential auth deadlocks
         if (currentSession?.user) {
           setTimeout(() => {
             if (isMounted) loadUserProfile(currentSession.user.id);
@@ -48,19 +50,31 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     );
 
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
-      if (!isMounted) return;
-      
-      console.log("Initial session check:", initialSession?.user?.id || "No session");
-      setUser(initialSession?.user ?? null);
-      setSession(initialSession);
-      setIsLoading(false);
+    // Then get initial session
+    const initSession = async () => {
+      try {
+        const { data: { session: initialSession } } = await supabase.auth.getSession();
+        
+        if (!isMounted) return;
+        
+        console.log("Initial session check:", initialSession?.user?.id || "No session");
+        
+        setUser(initialSession?.user ?? null);
+        setSession(initialSession);
+        setIsLoading(false);
 
-      if (initialSession?.user) {
-        loadUserProfile(initialSession.user.id);
+        if (initialSession?.user) {
+          loadUserProfile(initialSession.user.id);
+        }
+      } catch (error) {
+        console.error("Error getting initial session:", error);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
-    });
+    };
+
+    initSession();
 
     return () => {
       isMounted = false;
@@ -104,9 +118,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
    * Load user profile from Supabase
    */
   const loadUserProfile = async (userId: string) => {
-    const profileData = await fetchUserProfile(userId, supabase);
-    if (profileData) {
-      setProfile(profileData);
+    try {
+      const profileData = await fetchUserProfile(userId, supabase);
+      if (profileData) {
+        setProfile(profileData);
+      }
+    } catch (error) {
+      console.error("Error loading user profile:", error);
     }
   };
 
@@ -136,17 +154,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const contextValue: AuthContextProps = {
+    user,
+    session,
+    isLoading,
+    isAuthenticated: !!user,
+    signOut,
+    profile,
+  };
+
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        session,
-        isLoading,
-        isAuthenticated: !!user,
-        signOut,
-        profile,
-      }}
-    >
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );

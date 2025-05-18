@@ -1,5 +1,5 @@
 
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -31,51 +31,48 @@ import Comments from "./pages/Comments";
 import LegalMentions from "./pages/LegalMentions";
 import Soutenir from "./pages/Soutenir";
 import CookieBanner from "./components/CookieBanner";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 import "./App.css";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
+
+// Create the router outside of the component to avoid recreation on each render
+const router = createBrowserRouter([
+  { path: "/", element: <Index /> },
+  { path: "/auth", element: <Auth /> },
+  { path: "/dashboard", element: <Dashboard /> },
+  { path: "/rediger", element: <Rediger /> },
+  { path: "/synthesis", element: <Synthesis /> },
+  { path: "/profile", element: <Profile /> },
+  { path: "/mes-directives", element: <DirectivesDocs /> },
+  { path: "/donnees-medicales", element: <MedicalData /> },
+  { path: "/acces-document", element: <AccessDocuments /> },
+  { path: "/admin", element: <Admin /> },
+  { path: "/politique-confidentialite", element: <PrivacyPolicy /> },
+  { path: "/analyse-impact-protection-donnees", element: <DataProtectionImpact /> },
+  { path: "/politique-sauvegarde", element: <BackupPolicy /> },
+  { path: "/procedure-violation-donnees", element: <DataBreachProcedure /> },
+  { path: "/signaler-violation", element: <ReportDataBreach /> },
+  { path: "/commentaires", element: <Comments /> },
+  { path: "/mentions-legales", element: <LegalMentions /> },
+  { path: "/soutenir", element: <Soutenir /> },
+  { path: "/avis-general", element: <AvisGeneral /> },
+  { path: "/maintien-vie", element: <MaintienVie /> },
+  { path: "/maladie-avancee", element: <MaladieAvancee /> },
+  { path: "/gouts-peurs", element: <GoutsPeurs /> },
+  { path: "/exemples-phrases", element: <ExemplesPhrases /> },
+  { path: "/personne-confiance", element: <PersonneConfiance /> },
+  { path: "/synthese", element: <Synthesis /> },
+  { path: "/carte-acces", element: <AccessCardPage /> },
+  { path: "*", element: <NotFound /> },
+]);
 
 const App = () => {
   return (
-    <Router>
-      <AuthProvider>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/rediger" element={<Rediger />} />
-          <Route path="/synthesis" element={<Synthesis />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/mes-directives" element={<DirectivesDocs />} />
-          <Route path="/donnees-medicales" element={<MedicalData />} />
-          <Route path="/acces-document" element={<AccessDocuments />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="/politique-confidentialite" element={<PrivacyPolicy />} />
-          <Route path="/analyse-impact-protection-donnees" element={<DataProtectionImpact />} />
-          <Route path="/politique-sauvegarde" element={<BackupPolicy />} />
-          <Route path="/procedure-violation-donnees" element={<DataBreachProcedure />} />
-          <Route path="/signaler-violation" element={<ReportDataBreach />} />
-          <Route path="/commentaires" element={<Comments />} />
-          <Route path="/mentions-legales" element={<LegalMentions />} />
-          <Route path="/soutenir" element={<Soutenir />} />
-          
-          {/* Questionnaire section routes with proper protection */}
-          <Route path="/avis-general" element={<AvisGeneral />} />
-          <Route path="/maintien-vie" element={<MaintienVie />} />
-          <Route path="/maladie-avancee" element={<MaladieAvancee />} />
-          <Route path="/gouts-peurs" element={<GoutsPeurs />} />
-          <Route path="/exemples-phrases" element={<ExemplesPhrases />} />
-          <Route path="/personne-confiance" element={<PersonneConfiance />} />
-          <Route path="/synthese" element={<Synthesis />} />
-          
-          <Route path="/carte-acces" element={<AccessCardPage />} />
-          
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-        <CookieBanner />
-        <Toaster />
-      </AuthProvider>
-    </Router>
+    <AuthProvider>
+      <RouterProvider router={router} />
+      <CookieBanner />
+      <Toaster />
+    </AuthProvider>
   );
 };
 

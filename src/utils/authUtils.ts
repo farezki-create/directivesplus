@@ -4,9 +4,12 @@
  * Removes all auth-related localStorage and sessionStorage items
  */
 export const cleanupAuthState = () => {
+  console.log("Cleaning up auth state...");
+  
   // Clean localStorage items
   Object.keys(localStorage).forEach((key) => {
     if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+      console.log(`Removing localStorage key: ${key}`);
       localStorage.removeItem(key);
     }
   });
@@ -15,6 +18,7 @@ export const cleanupAuthState = () => {
   if (typeof sessionStorage !== 'undefined') {
     Object.keys(sessionStorage).forEach((key) => {
       if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+        console.log(`Removing sessionStorage key: ${key}`);
         sessionStorage.removeItem(key);
       }
     });
@@ -26,6 +30,7 @@ export const cleanupAuthState = () => {
  * @param url The URL to navigate to
  */
 export const safeNavigate = (url: string) => {
+  console.log(`Safe navigating to: ${url}`);
   // Use window.location.href for a full page refresh to ensure clean state
   window.location.href = url;
 };
