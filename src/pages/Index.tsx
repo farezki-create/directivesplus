@@ -6,7 +6,7 @@ import Hero from "../components/Hero";
 import Features from "../components/Features";
 import Footer from "../components/Footer";
 import DirectivesInfo from "../components/DirectivesInfo";
-import { FileText, MessageSquare } from "lucide-react";
+import { FileText, MessageSquare, Heart } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -20,7 +20,7 @@ const Index = () => {
       <Header />
       <main className="flex-grow">
         <Hero />
-        {/* Bouton d'accès aux documents */}
+        {/* Boutons d'accès */}
         <div className="container mx-auto py-8 text-center">
           <div className="flex flex-col md:flex-row gap-4 justify-center">
             <Button 
@@ -38,6 +38,14 @@ const Index = () => {
             >
               <MessageSquare className="mr-2" size={20} />
               Voir les commentaires
+            </Button>
+            
+            <Button 
+              onClick={() => navigate('/soutenir')}
+              className="bg-directiveplus-500 hover:bg-directiveplus-600 text-lg py-6 px-8"
+            >
+              <Heart className="mr-2" size={20} />
+              Soutenir le projet
             </Button>
           </div>
           <p className="mt-3 text-sm text-gray-600">

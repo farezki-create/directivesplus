@@ -29,6 +29,7 @@ import DataBreachProcedure from "./pages/DataBreachProcedure";
 import ReportDataBreach from "./pages/ReportDataBreach";
 import Comments from "./pages/Comments";
 import LegalMentions from "./pages/LegalMentions";
+import Soutenir from "./pages/Soutenir";
 import CookieBanner from "./components/CookieBanner";
 
 import "./App.css";
@@ -56,6 +57,7 @@ const App = () => {
           <Route path="/signaler-violation" element={<ReportDataBreach />} />
           <Route path="/commentaires" element={<Comments />} />
           <Route path="/mentions-legales" element={<LegalMentions />} />
+          <Route path="/soutenir" element={<Soutenir />} />
           
           {/* Questionnaire section routes with proper protection */}
           <Route path="/avis-general" element={<AvisGeneral />} />
