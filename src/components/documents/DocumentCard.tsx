@@ -36,10 +36,10 @@ const DocumentCard = ({
   const [isPrivate, setIsPrivate] = useState(document.is_private || false);
   const [showShareDialog, setShowShareDialog] = useState(false);
   
-  const handleVisibilityChange = (checked: boolean) => {
+  const handleVisibilityChange = (documentId: string, checked: boolean) => {
     setIsPrivate(checked);
     if (onVisibilityChange) {
-      onVisibilityChange(document.id, checked);
+      onVisibilityChange(documentId, checked);
     }
   };
 
