@@ -31,7 +31,9 @@ const MedicalDocumentActions = ({
 
       <DocumentPreviewDialog 
         filePath={previewDocument} 
-        onOpenChange={() => setPreviewDocument(null)} 
+        onOpenChange={(open) => {
+          if (!open) setPreviewDocument(null);
+        }} 
       />
     </>
   );
