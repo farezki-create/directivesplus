@@ -25,7 +25,7 @@ const MedicalDocumentActions = ({
   handleDownload,
   handlePrint
 }: MedicalDocumentActionsProps) => {
-  console.log("MedicalDocumentActions - previewDocument:", previewDocument);
+  console.log("[MedicalDocumentActions] previewDocument:", previewDocument);
   
   return (
     <>
@@ -38,7 +38,7 @@ const MedicalDocumentActions = ({
       <DocumentPreviewDialog 
         filePath={previewDocument} 
         onOpenChange={(open) => {
-          console.log("DocumentPreviewDialog - onOpenChange:", open, "filePath:", previewDocument);
+          console.log("[MedicalDocumentActions] onOpenChange:", open, "filePath:", previewDocument);
           if (!open) setPreviewDocument(null);
         }}
         onDownload={handleDownload ? (filePath) => {

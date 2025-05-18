@@ -25,13 +25,13 @@ const DocumentPreviewDialog: FC<DocumentPreviewDialogProps> = ({
 }) => {
   const isOpen = !!filePath;
   
-  console.log("DocumentPreviewDialog - filePath:", filePath, "isOpen:", isOpen);
+  console.log("[DocumentPreviewDialog] filePath:", filePath, "isOpen:", isOpen);
   
   const handleDownload = () => {
     if (filePath && onDownload) {
       onDownload(filePath);
     } else if (filePath) {
-      // Fallback if onDownload is not provided
+      // Fallback si onDownload n'est pas fourni
       downloadFile(filePath, toast);
     }
   };
@@ -40,7 +40,7 @@ const DocumentPreviewDialog: FC<DocumentPreviewDialogProps> = ({
     if (filePath && onPrint) {
       onPrint(filePath);
     } else if (filePath) {
-      // Fallback if onPrint is not provided
+      // Fallback si onPrint n'est pas fourni
       const { isAudio, isImage } = detectDocumentType(filePath);
       
       if (isAudio) {
@@ -60,6 +60,8 @@ const DocumentPreviewDialog: FC<DocumentPreviewDialogProps> = ({
       window.open(filePath, '_blank');
     }
   };
+  
+  if (!isOpen) return null;
   
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>

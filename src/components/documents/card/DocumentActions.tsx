@@ -23,7 +23,7 @@ const DocumentActions = ({
   onPrint,
   hideShare = false
 }: DocumentActionsProps) => {
-  console.log("DocumentActions - Handlers disponibles:", { 
+  console.log("[DocumentActions] Handlers disponibles:", { 
     onView: !!onView,
     onDownload: !!onDownload,
     onDelete: !!onDelete,
@@ -36,8 +36,8 @@ const DocumentActions = ({
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          console.log("Bouton Voir et imprimer cliqué");
-          if (onView) onView();
+          console.log("[DocumentActions] Bouton Voir et imprimer cliqué");
+          onView();
         }}
         size="sm"
         variant="outline"

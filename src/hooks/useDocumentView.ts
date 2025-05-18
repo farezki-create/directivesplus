@@ -7,10 +7,10 @@ export const useDocumentView = () => {
 
   const handleView = (filePath: string, fileType: string = "application/pdf") => {
     try {
-      console.log("Demande de visualisation du document:", filePath, fileType);
+      console.log("[useDocumentView] Demande de visualisation du document:", filePath);
       
       if (!filePath) {
-        console.error("Tentative de visualisation avec un chemin vide");
+        console.error("[useDocumentView] Tentative de visualisation avec un chemin vide");
         toast({
           title: "Erreur",
           description: "Impossible d'afficher le document: chemin invalide",
@@ -19,11 +19,11 @@ export const useDocumentView = () => {
         return;
       }
 
-      // Utilisation directe de setPreviewDocument pour assurer que la mise à jour est effectuée
+      // Directement mettre à jour le state pour afficher le document
       setPreviewDocument(filePath);
-      console.log("Document mis en prévisualisation:", filePath);
+      console.log("[useDocumentView] Document mis en prévisualisation:", filePath);
     } catch (error) {
-      console.error("Erreur lors de l'affichage du document:", error);
+      console.error("[useDocumentView] Erreur lors de l'affichage du document:", error);
       toast({
         title: "Erreur",
         description: "Impossible d'afficher le document",

@@ -31,8 +31,8 @@ const MedicalDocumentList = ({
   onDelete,
   onVisibilityChange
 }: MedicalDocumentListProps) => {
-  console.log("MedicalDocumentList - onView exists:", !!onView);
-  console.log("MedicalDocumentList - documents:", documents);
+  console.log("[MedicalDocumentList] onView exists:", !!onView);
+  console.log("[MedicalDocumentList] documents:", documents);
   
   if (documents.length === 0) {
     return <EmptyDocumentsState message="Vous n'avez pas encore ajouté de données médicales" />;
