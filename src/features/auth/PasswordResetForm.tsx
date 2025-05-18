@@ -56,10 +56,15 @@ export const PasswordResetForm = ({ token, onSuccess }: PasswordResetFormProps) 
         // En utilisant la méthode correcte avec les bons paramètres
         try {
           // La méthode correcte pour vérifier un token de récupération
-          await supabase.auth.verifyOtp({
+          const { error: verifyError } = await supabase.auth.verifyOtp({
             token_hash: token,
             type: 'recovery',
           });
+          
+          if (verifyError) {
+            console.error("Error verifying token:", verifyError);
+            throw verifyError;
+          }
           console.log("Token verified successfully");
         } catch (tokenError) {
           console.error("Error verifying token:", tokenError);
