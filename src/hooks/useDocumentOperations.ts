@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -26,23 +25,23 @@ export const useDocumentOperations = (refreshDocuments: () => void) => {
         return;
       }
       
-      // Pour les PDF et autres documents, télécharger et ouvrir
+      // Créer un lien de téléchargement
       const link = document.createElement('a');
       link.href = filePath;
-      link.target = '_blank';
+      link.download = fileName; // Spécifier le nom du fichier pour téléchargement
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       
       toast({
-        title: "Document ouvert",
-        description: "Votre document a été ouvert dans un nouvel onglet"
+        title: "Téléchargement réussi",
+        description: "Votre document a été téléchargé avec succès"
       });
     } catch (error) {
-      console.error("Erreur lors de l'ouverture du document:", error);
+      console.error("Erreur lors du téléchargement du document:", error);
       toast({
         title: "Erreur",
-        description: "Impossible d'ouvrir le document",
+        description: "Impossible de télécharger le document",
         variant: "destructive"
       });
     }

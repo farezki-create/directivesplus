@@ -6,6 +6,8 @@ import AppNavigation from "@/components/AppNavigation";
 import AccessCard from "@/components/card/AccessCard";
 import LoadingState from "@/components/questionnaire/LoadingState";
 import { toast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 const AccessCardPage = () => {
   const { user, isAuthenticated, isLoading, profile } = useAuth();
@@ -35,6 +37,18 @@ const AccessCardPage = () => {
       
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="max-w-3xl mx-auto">
+          {/* Ajout du bouton retour */}
+          <div className="mb-6">
+            <Button
+              variant="outline"
+              onClick={() => navigate("/dashboard")}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft size={16} />
+              Retour au tableau de bord
+            </Button>
+          </div>
+
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-800">Carte d'accès</h1>
             <p className="text-gray-600 mt-2">

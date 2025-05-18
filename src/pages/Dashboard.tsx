@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import AppNavigation from "@/components/AppNavigation";
 import DirectivesGrid from "@/components/DirectivesGrid";
 import { Button } from "@/components/ui/button";
-import { Home } from "lucide-react";
+import { Home, ArrowLeft } from "lucide-react";
 import InfoSteps from "@/components/InfoSteps";
 
 const Dashboard = () => {
@@ -56,7 +56,7 @@ const Dashboard = () => {
             <img 
               src="/lovable-uploads/0a786ed1-a905-4b29-be3a-ca3b24d3efae.png" 
               alt="DirectivesPlus Logo" 
-              className="w-64 h-auto" // Reduced logo size to match homepage
+              className="w-40 h-auto" // Taille réduite du logo (était w-64)
             />
           </div>
           
