@@ -1,6 +1,6 @@
 
 import { toast } from "@/hooks/use-toast";
-import { shareDocument } from "@/utils/documentOperations";
+import { shareDocument } from "@/utils/document-operations";
 
 export const useDocumentShare = () => {
   const handleShare = (documentId: string) => {

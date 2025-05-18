@@ -5,7 +5,7 @@ import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { detectFileType } from "@/utils/documentUtils";
-import { downloadDocument, printDocument } from "@/utils/documentOperations";
+import { downloadDocument, printDocument } from "@/utils/document-operations";
 import { useDocumentOperations } from "@/hooks/useDocumentOperations";
 
 export interface Document {

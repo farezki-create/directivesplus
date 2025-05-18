@@ -1,6 +1,6 @@
 
 import { toast } from "@/hooks/use-toast";
-import { downloadDocument } from "@/utils/documentOperations";
+import { downloadDocument } from "@/utils/document-operations";
 
 export const useDocumentDownload = () => {
   const handleDownload = (filePath: string, fileName: string) => {
