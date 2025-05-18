@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Upload, Camera, Eye, Lock, Unlock } from "lucide-react";
+import { Upload, Eye, Lock, Unlock } from "lucide-react";
 import FilePreview from "./FilePreview";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import { DocumentUploaderProps } from "./types";
@@ -19,8 +19,6 @@ const DocumentUploader = ({ userId, onUploadComplete, documentType = "directive"
     clearFile,
     uploadFile,
     previewFile,
-    openCamera,
-    isScanning,
     setIsPrivate,
     isPrivate
   } = useFileUpload(userId, onUploadComplete, documentType);
@@ -35,7 +33,7 @@ const DocumentUploader = ({ userId, onUploadComplete, documentType = "directive"
   return (
     <div className="p-4 border rounded-lg mb-6 bg-white">
       <h3 className="font-medium text-lg mb-4">
-        Importer un {documentType === 'medical' ? 'document médical' : 'document'}
+        Importer et ajouter un {documentType === 'medical' ? 'document médical' : 'document'}
       </h3>
       
       <div className="flex flex-col space-y-4">
@@ -53,7 +51,7 @@ const DocumentUploader = ({ userId, onUploadComplete, documentType = "directive"
                 file:bg-gray-100 file:text-gray-700
                 hover:file:bg-gray-200
               "
-              disabled={uploading || isScanning}
+              disabled={uploading}
             />
             {/* Input pour l'appareil photo (caché) */}
             <input
@@ -70,17 +68,6 @@ const DocumentUploader = ({ userId, onUploadComplete, documentType = "directive"
               </div>
             )}
           </div>
-          
-          <Button
-            type="button"
-            onClick={openCamera}
-            disabled={uploading || isScanning}
-            className="flex items-center gap-2"
-            variant="outline"
-          >
-            <Camera size={16} />
-            Prendre une photo
-          </Button>
         </div>
         
         {file && (
@@ -116,9 +103,6 @@ const DocumentUploader = ({ userId, onUploadComplete, documentType = "directive"
         )}
         
         <div>
-          {isScanning && (
-            <p className="text-sm text-gray-600">Accès à l'appareil photo... Veuillez patienter.</p>
-          )}
           {uploading && (
             <p className="text-sm text-gray-600">Téléchargement en cours... Le document sera automatiquement enregistré.</p>
           )}

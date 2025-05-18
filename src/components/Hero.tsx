@@ -8,6 +8,13 @@ const Hero = () => {
   const handleGetStarted = () => {
     navigate("/auth");
   };
+  
+  const scrollToInfo = () => {
+    const infoSection = document.getElementById('en-savoir-plus');
+    if (infoSection) {
+      infoSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <section className="bg-gradient-to-b from-white to-directiveplus-50 section-padding">
@@ -40,7 +47,7 @@ const Hero = () => {
               </Button>
               <Button 
                 variant="outline" 
-                onClick={() => navigate("/#features")}
+                onClick={scrollToInfo}
                 className="text-directiveplus-600 border-directiveplus-200 hover:bg-directiveplus-50 text-lg py-6 px-8"
               >
                 En savoir plus

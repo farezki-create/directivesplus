@@ -10,7 +10,6 @@ export const useFileUpload = (
 ) => {
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
-  const [isScanning, setIsScanning] = useState(false);
   const [isPrivate, setIsPrivate] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -64,32 +63,6 @@ export const useFileUpload = (
       window.open(url, "_blank");
     };
     reader.readAsDataURL(file);
-  };
-
-  // Remplace l'implémentation du scan par l'accès à l'appareil photo
-  const openCamera = async () => {
-    setIsScanning(true);
-    
-    try {
-      // Ouvre l'appareil photo via l'input file avec capture=camera
-      if (cameraInputRef.current) {
-        cameraInputRef.current.click();
-      }
-      
-      toast({
-        title: "Appareil photo",
-        description: "Veuillez prendre une photo de votre document"
-      });
-    } catch (error) {
-      console.error("Erreur lors de l'accès à l'appareil photo:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible d'accéder à l'appareil photo",
-        variant: "destructive"
-      });
-    } finally {
-      setIsScanning(false);
-    }
   };
 
   const uploadFile = async () => {
@@ -157,7 +130,6 @@ export const useFileUpload = (
   return {
     file,
     uploading,
-    isScanning,
     fileInputRef,
     cameraInputRef,
     isPrivate,
@@ -165,7 +137,6 @@ export const useFileUpload = (
     handleFileChange,
     clearFile,
     uploadFile,
-    previewFile,
-    openCamera // Remplace scanDocument par openCamera
+    previewFile
   };
 };
