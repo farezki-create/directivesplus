@@ -12,6 +12,7 @@ interface Document {
   description?: string;
   content_type?: string;
   user_id: string;
+  is_private?: boolean;
 }
 
 export const useMedicalDocuments = (user: User | null) => {
@@ -50,11 +51,11 @@ export const useMedicalDocuments = (user: User | null) => {
     }
   }, [user]);
 
-  const handleUploadComplete = () => {
+  const handleUploadComplete = (url: string, fileName: string, isPrivate: boolean) => {
     fetchDocuments();
     toast({
       title: "Document téléchargé",
-      description: "Votre document a été importé avec succès"
+      description: "Votre document a été importé avec succès" + (isPrivate ? " (privé)" : " (visible avec code)")
     });
   };
 

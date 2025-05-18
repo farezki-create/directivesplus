@@ -13,7 +13,7 @@ const DirectivesAddDocumentSection: FC<DocumentUploaderProps> = ({
     <div className="mb-8">
       <AudioRecorder 
         userId={userId}
-        onRecordingComplete={onUploadComplete}
+        onRecordingComplete={(url, fileName) => onUploadComplete(url, fileName, false)}
       />
       <DocumentUploader 
         userId={userId}

@@ -7,10 +7,13 @@ import {
   Eye,
   Trash2,
   FileText,
-  Music
+  Music,
+  Lock,
+  Unlock
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 interface DocumentCardProps {
   document: {
@@ -20,6 +23,7 @@ interface DocumentCardProps {
     created_at: string;
     description?: string;
     content_type?: string;
+    is_private?: boolean;
   };
   onDownload: (filePath: string, fileName: string) => void;
   onPrint: (filePath: string, contentType?: string) => void;
@@ -37,6 +41,7 @@ const DocumentCard: FC<DocumentCardProps> = ({
   onDelete
 }) => {
   const isAudio = document.content_type?.includes('audio');
+  const isPrivate = document.is_private === true;
 
   return (
     <Card key={document.id} className="overflow-hidden">
@@ -48,7 +53,20 @@ const DocumentCard: FC<DocumentCardProps> = ({
             <FileText size={18} className="mt-1 text-gray-500" />
           )}
           <div className="flex-1">
-            <CardTitle>{document.file_name}</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle>{document.file_name}</CardTitle>
+              {isPrivate ? (
+                <Badge variant="outline" className="flex items-center gap-1 ml-2">
+                  <Lock size={12} />
+                  <span className="text-xs">Privé</span>
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="flex items-center gap-1 ml-2 bg-green-50">
+                  <Unlock size={12} />
+                  <span className="text-xs">Accessible avec code</span>
+                </Badge>
+              )}
+            </div>
             <CardDescription>
               Créé le {new Date(document.created_at).toLocaleDateString('fr-FR')}
             </CardDescription>

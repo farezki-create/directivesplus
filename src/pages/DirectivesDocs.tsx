@@ -28,6 +28,7 @@ interface Document {
   description?: string;
   content_type?: string;
   user_id: string;
+  is_private?: boolean;
 }
 
 const DirectivesDocs = () => {
@@ -86,7 +87,7 @@ const DirectivesDocs = () => {
     }
   }
 
-  const handleUploadComplete = (url: string, fileName: string) => {
+  const handleUploadComplete = (url: string, fileName: string, isPrivate: boolean) => {
     fetchDocuments();
   };
 

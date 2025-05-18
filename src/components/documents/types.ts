@@ -1,7 +1,7 @@
 
 export interface DocumentUploaderProps {
   userId: string;
-  onUploadComplete: (url: string, fileName: string) => void;
+  onUploadComplete: (url: string, fileName: string, isPrivate: boolean) => void;
   documentType?: "directive" | "medical";
 }
 

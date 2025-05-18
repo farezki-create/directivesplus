@@ -5,11 +5,13 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const useFileUpload = (
   userId: string, 
-  onUploadComplete: (url: string, fileName: string) => void,
+  onUploadComplete: (url: string, fileName: string, isPrivate: boolean) => void,
   documentType: "directive" | "medical"
 ) => {
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
+  const [isPrivate, setIsPrivate] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -49,6 +51,62 @@ export const useFileUpload = (
     }
   };
 
+  const previewFile = () => {
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const url = URL.createObjectURL(file);
+      window.open(url, "_blank");
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Implémentation simplifiée du scan de document
+  const scanDocument = async () => {
+    setIsScanning(true);
+    
+    try {
+      // Simulation d'une intégration avec un scanner
+      toast({
+        title: "Scanner en cours d'initialisation",
+        description: "Veuillez patienter..."
+      });
+      
+      // Simule l'attente d'une opération de scan
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      toast({
+        title: "Scanner prêt",
+        description: "Veuillez numériser votre document"
+      });
+      
+      // Simule un scan terminé après quelques secondes (à remplacer par l'API réelle)
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      // Dans un cas réel, l'image scannée serait récupérée depuis l'API du scanner
+      // et convertie en File ou Blob
+      const response = await fetch('/placeholder.svg');
+      const blob = await response.blob();
+      const scannedFile = new File([blob], 'document-scanné.png', { type: 'image/png' });
+      
+      setFile(scannedFile);
+      toast({
+        title: "Document numérisé avec succès",
+        description: "Vous pouvez maintenant l'enregistrer"
+      });
+    } catch (error) {
+      console.error("Erreur lors du scan:", error);
+      toast({
+        title: "Erreur de numérisation",
+        description: "Impossible de numériser le document",
+        variant: "destructive"
+      });
+    } finally {
+      setIsScanning(false);
+    }
+  };
+
   const uploadFile = async () => {
     if (!file || !userId) return;
     
@@ -70,6 +128,7 @@ export const useFileUpload = (
             file_path: base64data, // Stocker directement en base64 data URI
             content_type: file.type,
             file_size: file.size,
+            is_private: isPrivate,
             description: documentType === 'medical' 
               ? 'Document médical importé le ' + new Date().toLocaleDateString('fr-FR')
               : 'Document importé le ' + new Date().toLocaleDateString('fr-FR'),
@@ -81,8 +140,8 @@ export const useFileUpload = (
           throw error;
         }
         
-        // Appeler onUploadComplete avec le chemin du fichier et le nom
-        onUploadComplete(base64data, file.name);
+        // Appeler onUploadComplete avec le chemin du fichier, le nom et le statut privé
+        onUploadComplete(base64data, file.name, isPrivate);
         
         // Réinitialiser le state du composant
         setFile(null);
@@ -110,9 +169,14 @@ export const useFileUpload = (
   return {
     file,
     uploading,
+    isScanning,
     fileInputRef,
+    isPrivate,
+    setIsPrivate,
     handleFileChange,
     clearFile,
-    uploadFile
+    uploadFile,
+    previewFile,
+    scanDocument
   };
 };
