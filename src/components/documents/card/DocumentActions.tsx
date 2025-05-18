@@ -14,7 +14,7 @@ interface DocumentActionsProps {
   onDownload: () => void;
   onShare: () => void;
   onDelete: () => void;
-  onPrint?: () => void; // Added onPrint prop
+  onPrint?: () => void;
 }
 
 const DocumentActions = ({
@@ -24,10 +24,23 @@ const DocumentActions = ({
   onDelete,
   onPrint
 }: DocumentActionsProps) => {
+  console.log("DocumentActions - Handlers disponibles:", { 
+    onView: !!onView, 
+    onDownload: !!onDownload, 
+    onShare: !!onShare, 
+    onDelete: !!onDelete,
+    onPrint: !!onPrint
+  });
+
   return (
     <div className="flex flex-wrap justify-end gap-2">
       <Button
-        onClick={onView}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log("Bouton Voir cliqué");
+          onView();
+        }}
         size="sm"
         variant="outline"
         className="text-xs"
@@ -36,7 +49,12 @@ const DocumentActions = ({
         Voir
       </Button>
       <Button
-        onClick={onDownload}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log("Bouton Télécharger cliqué");
+          onDownload();
+        }}
         size="sm"
         variant="outline"
         className="text-xs"
@@ -46,7 +64,12 @@ const DocumentActions = ({
       </Button>
       {onPrint && (
         <Button
-          onClick={onPrint}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log("Bouton Imprimer cliqué");
+            onPrint();
+          }}
           size="sm"
           variant="outline"
           className="text-xs"
@@ -56,7 +79,12 @@ const DocumentActions = ({
         </Button>
       )}
       <Button
-        onClick={onShare}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log("Bouton Partager cliqué");
+          onShare();
+        }}
         size="sm"
         variant="outline"
         className="text-xs"
@@ -65,7 +93,12 @@ const DocumentActions = ({
         Partager
       </Button>
       <Button
-        onClick={onDelete}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log("Bouton Supprimer cliqué");
+          onDelete();
+        }}
         size="sm"
         variant="outline"
         className="text-xs text-red-500 hover:text-red-700 hover:border-red-200"

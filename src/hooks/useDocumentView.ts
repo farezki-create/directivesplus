@@ -1,14 +1,15 @@
 
 import { toast } from "@/hooks/use-toast";
 import { useDocumentPreview } from "./useDocumentPreview";
-import { viewDocument } from "@/utils/documentOperations";
 
 export const useDocumentView = () => {
   const { setPreviewDocument } = useDocumentPreview();
 
   const handleView = (filePath: string, fileType: string = "application/pdf") => {
     try {
-      viewDocument(filePath, fileType, setPreviewDocument);
+      console.log("useDocumentView - handleView appelé avec:", filePath, fileType);
+      // Simplifier le flux - afficher directement le document
+      setPreviewDocument(filePath);
     } catch (error) {
       console.error("Erreur lors de l'affichage du document:", error);
       toast({

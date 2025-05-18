@@ -15,6 +15,11 @@ export const useDocumentOperations = (refreshDocuments: () => void) => {
   const { handleShare } = useDocumentShare();
   const { handleView } = useDocumentView();
   
+  console.log("useDocumentOperations - état actuel:", { 
+    previewDocument, 
+    documentToDelete 
+  });
+  
   return {
     previewDocument,
     setPreviewDocument,

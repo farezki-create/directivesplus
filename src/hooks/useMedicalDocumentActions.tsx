@@ -12,7 +12,7 @@ interface UseMedicalDocumentActionsProps {
 }
 
 export const useMedicalDocumentActions = ({ onDeleteComplete }: UseMedicalDocumentActionsProps) => {
-  // Use the specialized hooks
+  // Utilisation des hooks spécialisés
   const { previewDocument, setPreviewDocument } = useDocumentPreview();
   const { documentToDelete, setDocumentToDelete, confirmDelete, handleDelete } = 
     useDocumentDeletion({ onDeleteComplete, tableName: "medical_documents" });
@@ -21,6 +21,11 @@ export const useMedicalDocumentActions = ({ onDeleteComplete }: UseMedicalDocume
   const { handlePrint } = useDocumentPrint();
   const { handleShare } = useDocumentShare();
   const { handleView } = useDocumentView();
+
+  console.log("useMedicalDocumentActions - état actuel:", {
+    previewDocument,
+    documentToDelete
+  });
 
   return {
     documentToDelete,

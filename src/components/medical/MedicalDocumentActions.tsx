@@ -21,6 +21,11 @@ const MedicalDocumentActions = ({
   setPreviewDocument,
   handleDelete
 }: MedicalDocumentActionsProps) => {
+  console.log("MedicalDocumentActions - rendu avec:", { 
+    documentToDelete, 
+    previewDocument 
+  });
+
   return (
     <>
       <DeleteConfirmationDialog 
@@ -32,6 +37,7 @@ const MedicalDocumentActions = ({
       <DocumentPreviewDialog 
         filePath={previewDocument} 
         onOpenChange={(open) => {
+          console.log("MedicalDocumentActions - DocumentPreviewDialog onOpenChange:", open);
           if (!open) setPreviewDocument(null);
         }} 
       />

@@ -23,22 +23,25 @@ const DocumentPreviewDialog: FC<DocumentPreviewDialogProps> = ({
   onDownload,
   onPrint,
 }) => {
+  console.log("DocumentPreviewDialog - rendu avec filePath:", filePath);
   const isOpen = !!filePath;
   
   const handleDownload = () => {
+    console.log("DocumentPreviewDialog - handleDownload appelé");
     if (filePath && onDownload) {
       onDownload(filePath);
     } else if (filePath) {
-      // Fallback if onDownload is not provided
+      // Fallback si onDownload n'est pas fourni
       downloadFile(filePath, toast);
     }
   };
   
   const handlePrint = () => {
+    console.log("DocumentPreviewDialog - handlePrint appelé");
     if (filePath && onPrint) {
       onPrint(filePath);
     } else if (filePath) {
-      // Fallback if onPrint is not provided
+      // Fallback si onPrint n'est pas fourni
       const { isAudio, isImage } = detectDocumentType(filePath);
       
       if (isAudio) {

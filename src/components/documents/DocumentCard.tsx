@@ -43,13 +43,7 @@ const DocumentCard = ({
     }
   };
 
-  const handleViewClick = () => {
-    onView(document.file_path, document.file_type);
-  };
-
-  const handleShareClick = () => {
-    setShowShareDialog(true);
-  };
+  console.log("DocumentCard rendu avec document:", document);
 
   return (
     <div className="bg-white rounded-lg border p-4 shadow-sm">
@@ -61,11 +55,26 @@ const DocumentCard = ({
         />
         
         <DocumentActions
-          onView={handleViewClick}
-          onDownload={() => onDownload(document.file_path, document.file_name)}
-          onPrint={() => onPrint(document.file_path, document.file_type)}
-          onShare={handleShareClick}
-          onDelete={() => onDelete(document.id)}
+          onView={() => {
+            console.log("DocumentCard - onView appelé pour:", document.file_path);
+            onView(document.file_path, document.file_type);
+          }}
+          onDownload={() => {
+            console.log("DocumentCard - onDownload appelé:", document.file_path, document.file_name);
+            onDownload(document.file_path, document.file_name);
+          }}
+          onPrint={() => {
+            console.log("DocumentCard - onPrint appelé:", document.file_path, document.file_type);
+            onPrint(document.file_path, document.file_type);
+          }}
+          onShare={() => {
+            console.log("DocumentCard - onShare - Affichage du dialog de partage");
+            setShowShareDialog(true);
+          }}
+          onDelete={() => {
+            console.log("DocumentCard - onDelete appelé pour ID:", document.id);
+            onDelete(document.id);
+          }}
         />
       </div>
 
