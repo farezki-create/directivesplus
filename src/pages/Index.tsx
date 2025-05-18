@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import Hero from "../components/Hero";
-import Features from "../components/Features";
 import Footer from "../components/Footer";
 import DirectivesInfo from "../components/DirectivesInfo";
 import { FileText, MessageSquare } from "lucide-react";
@@ -39,7 +38,6 @@ const Index = () => {
         <section id="en-savoir-plus" className="bg-gray-50 py-16">
           <DirectivesInfo />
         </section>
-        <Features />
         
         {/* Bouton Voir commentaires en bas de page */}
         <div className="container mx-auto py-8 text-center mb-8">

@@ -3,7 +3,6 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import {
   Download,
-  Printer,
   Share2,
   Eye,
   Trash
@@ -12,7 +11,6 @@ import {
 interface DocumentActionsProps {
   onView: () => void;
   onDownload: () => void;
-  onPrint: () => void;
   onShare: () => void;
   onDelete: () => void;
 }
@@ -20,7 +18,6 @@ interface DocumentActionsProps {
 const DocumentActions = ({
   onView,
   onDownload,
-  onPrint,
   onShare,
   onDelete
 }: DocumentActionsProps) => {
@@ -43,15 +40,6 @@ const DocumentActions = ({
       >
         <Download className="h-3 w-3 mr-1" />
         Télécharger
-      </Button>
-      <Button
-        onClick={onPrint}
-        size="sm"
-        variant="outline"
-        className="text-xs"
-      >
-        <Printer className="h-3 w-3 mr-1" />
-        Imprimer
       </Button>
       <Button
         onClick={onShare}

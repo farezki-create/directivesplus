@@ -46,95 +46,43 @@ export const downloadDocument = (filePath: string, fileName: string) => {
 };
 
 /**
- * Prints a document using the provided file path and file type
+ * Shares a document using the provided document ID
+ * Improved sharing functionality using Web Share API if available
  */
-export const printDocument = (filePath: string, fileType: string = "application/pdf") => {
+export const shareDocument = async (documentId: string) => {
   try {
-    // Vérifier si c'est un fichier audio
-    if (filePath.includes('audio') || (fileType && fileType.includes('audio'))) {
-      toast({
-        title: "Information",
-        description: "L'impression n'est pas disponible pour les fichiers audio."
+    const shareUrl = `${window.location.origin}/partage-document/${documentId}`;
+    
+    // Check if Web Share API is available
+    if (navigator.share) {
+      await navigator.share({
+        title: "Partage de document DirectivesPlus",
+        text: "Consultez ce document sur DirectivesPlus",
+        url: shareUrl
       });
-      return;
-    }
-
-    // Pour les images et PDFs, créer une iframe optimisée pour l'impression
-    if ((fileType && fileType.includes('image')) || 
-        (filePath.endsWith('.jpg') || filePath.endsWith('.jpeg') || filePath.endsWith('.png'))) {
-      const iframe = document.createElement('iframe');
-      iframe.style.display = 'none';
-      document.body.appendChild(iframe);
       
-      const doc = iframe.contentWindow?.document;
-      if (doc) {
-        doc.open();
-        doc.write(`
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <title>Impression document</title>
-            <style>
-              body { margin: 0; display: flex; justify-content: center; }
-              img { max-width: 100%; max-height: 100vh; object-fit: contain; }
-            </style>
-          </head>
-          <body>
-            <img src="${filePath}" />
-          </body>
-          </html>
-        `);
-        doc.close();
-        
-        iframe.onload = () => {
-          try {
-            iframe.contentWindow?.print();
-            setTimeout(() => {
-              document.body.removeChild(iframe);
-            }, 1000);
-          } catch (err) {
-            console.error("Erreur lors de l'impression:", err);
-            document.body.removeChild(iframe);
-          }
-        };
-        return;
-      }
-    }
-
-    // Pour les PDF et autres documents
-    const printWindow = window.open(filePath, '_blank');
-    if (printWindow) {
-      printWindow.addEventListener('load', function() {
-        try {
-          setTimeout(() => {
-            printWindow.print();
-          }, 1000);
-        } catch (err) {
-          console.error("Erreur lors de l'impression:", err);
-        }
+      toast({
+        title: "Partage réussi",
+        description: "Le document a été partagé avec succès"
       });
     } else {
-      throw new Error("Impossible d'ouvrir une nouvelle fenêtre pour l'impression.");
+      // Fallback for browsers without Web Share API
+      await navigator.clipboard.writeText(shareUrl);
+      toast({
+        title: "Lien copié",
+        description: "Le lien de partage a été copié dans votre presse-papiers"
+      });
     }
   } catch (error) {
-    console.error("Erreur lors de l'impression:", error);
-    toast({
-      title: "Erreur",
-      description: "Impossible d'imprimer le document",
-      variant: "destructive"
-    });
+    console.error("Erreur lors du partage du document:", error);
+    // Don't show error for user-aborted sharing
+    if (error.name !== "AbortError") {
+      toast({
+        title: "Information",
+        description: "Le dialogue de partage a été ouvert. Utilisez les options disponibles pour partager le document."
+      });
+    }
   }
-};
-
-/**
- * Shares a document using the provided document ID
- */
-export const shareDocument = (documentId: string) => {
-  console.log("Partage du document:", documentId);
-  toast({
-    title: "Fonctionnalité en développement",
-    description: "Le partage de document sera bientôt disponible. Pour envoyer un email, veuillez utiliser la fonction de partage de votre navigateur."
-  });
 };
 
 /**
