@@ -13,11 +13,8 @@ import {
 
 const InfoSteps = () => {
   const steps = [
-    { id: 1, text: "Répondre au questionnaire Avis Général", icon: <ClipboardList /> },
-    { id: 2, text: "Répondre au questionnaire Maintien en Vie", icon: <ClipboardList /> },
-    { id: 3, text: "Répondre au questionnaire Maladie Avancée", icon: <ClipboardList /> },
-    { id: 4, text: "Répondre au questionnaire Goûts et Peurs", icon: <ClipboardList /> },
-    { id: 5, text: "Ajouter texte libre et phrases types", icon: <FileText /> },
+    { id: 1, text: "Répondre aux 4 questionnaires", icon: <ClipboardList /> },
+    { id: 5, text: "Ajouter un texte libre et des phrases types", icon: <FileText /> },
     { id: 6, text: "Désigner la personne de confiance", icon: <UserCheck /> },
     { id: 7, text: "Consulter la synthèse", icon: <Sparkles /> },
     { id: 8, text: "Enregistrer", icon: <Save /> },
@@ -37,26 +34,24 @@ const InfoSteps = () => {
             <div className="w-1/3 text-center">
               <h3 className="text-directiveplus-700 font-medium mb-4">Préparation</h3>
               <div className="flex flex-col space-y-4">
-                {steps.slice(0, 4).map((step) => (
-                  <div key={step.id} className="flex items-center bg-white p-3 rounded-md shadow-sm">
-                    <div className="bg-directiveplus-100 p-2 rounded-full mr-3 text-directiveplus-600">
-                      {step.icon}
-                    </div>
-                    <span className="text-sm">
-                      <span className="inline-flex items-center justify-center bg-directiveplus-600 text-white rounded-full h-5 w-5 mr-1.5 text-xs">
-                        {step.id}
-                      </span>
-                      {step.text}
-                    </span>
+                <div className="flex items-center bg-white p-3 rounded-md shadow-sm">
+                  <div className="bg-directiveplus-100 p-2 rounded-full mr-3 text-directiveplus-600">
+                    <ClipboardList />
                   </div>
-                ))}
+                  <span className="text-sm">
+                    <span className="inline-flex items-center justify-center bg-directiveplus-600 text-white rounded-full h-5 w-5 mr-1.5 text-xs">
+                      1
+                    </span>
+                    Répondre aux 4 questionnaires
+                  </span>
+                </div>
               </div>
             </div>
             
             <div className="w-1/3 text-center">
               <h3 className="text-directiveplus-700 font-medium mb-4">Finalisation</h3>
               <div className="flex flex-col space-y-4">
-                {steps.slice(4, 7).map((step) => (
+                {steps.slice(1, 4).map((step) => (
                   <div key={step.id} className="flex items-center bg-white p-3 rounded-md shadow-sm">
                     <div className="bg-directiveplus-100 p-2 rounded-full mr-3 text-directiveplus-600">
                       {step.icon}
@@ -75,7 +70,7 @@ const InfoSteps = () => {
             <div className="w-1/3 text-center">
               <h3 className="text-directiveplus-700 font-medium mb-4">Distribution</h3>
               <div className="flex flex-col space-y-4">
-                {steps.slice(7).map((step) => (
+                {steps.slice(4).map((step) => (
                   <div key={step.id} className="flex items-center bg-white p-3 rounded-md shadow-sm">
                     <div className="bg-directiveplus-100 p-2 rounded-full mr-3 text-directiveplus-600">
                       {step.icon}

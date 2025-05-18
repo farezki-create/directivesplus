@@ -1,7 +1,7 @@
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Upload, Eye, Lock, Unlock } from "lucide-react";
+import { Upload, Eye, Lock, Unlock, Save } from "lucide-react";
 import FilePreview from "./FilePreview";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import { DocumentUploaderProps } from "./types";
@@ -22,13 +22,6 @@ const DocumentUploader = ({ userId, onUploadComplete, documentType = "directive"
     setIsPrivate,
     isPrivate
   } = useFileUpload(userId, onUploadComplete, documentType);
-
-  // Automatically upload the file when it's selected
-  useEffect(() => {
-    if (file && !uploading) {
-      uploadFile();
-    }
-  }, [file]);
 
   return (
     <div className="p-4 border rounded-lg mb-6 bg-white">
@@ -98,6 +91,17 @@ const DocumentUploader = ({ userId, onUploadComplete, documentType = "directive"
                   {isPrivate ? "Document privé" : "Document visible avec code d'accès"}
                 </Label>
               </div>
+            </div>
+            
+            <div className="flex justify-end">
+              <Button 
+                onClick={uploadFile} 
+                disabled={uploading}
+                className="flex items-center gap-2"
+              >
+                <Save size={16} />
+                Enregistrer
+              </Button>
             </div>
           </>
         )}
