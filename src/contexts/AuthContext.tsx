@@ -1,5 +1,5 @@
 
-import { createContext, useState, useEffect, useContext } from "react";
+import React, { createContext, useState, useEffect, useContext } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { cleanupAuthState, fetchUserProfile, safeNavigate } from "@/utils/authUtils";
@@ -14,7 +14,7 @@ const AuthContext = createContext<AuthContextProps>({
   profile: null,
 });
 
-export const AuthProvider = ({ children }: AuthProviderProps) => {
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<any | null>(null);
