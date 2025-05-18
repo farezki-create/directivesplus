@@ -1,10 +1,12 @@
 
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import { LoginForm } from "@/features/auth/LoginForm";
 import { RegisterForm } from "@/features/auth/RegisterForm";
@@ -14,15 +16,32 @@ import { ForgotPasswordForm } from "@/features/auth/ForgotPasswordForm";
 const Auth = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const [verificationSent, setVerificationSent] = useState(false);
   const [verificationEmail, setVerificationEmail] = useState("");
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const { isAuthenticated, isLoading } = useAuth();
   const [redirectInProgress, setRedirectInProgress] = useState(false);
+  const [isPasswordReset, setIsPasswordReset] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
   
   // Get the redirect path from location state or default to /dashboard
   const from = location.state?.from || "/dashboard";
 
+  useEffect(() => {
+    // Check if the URL contains a recovery token
+    const token = searchParams.get("token");
+    const type = searchParams.get("type");
+    
+    if (token && type === "recovery") {
+      setIsPasswordReset(true);
+      toast({
+        title: "Réinitialisez votre mot de passe",
+        description: "Veuillez entrer votre nouveau mot de passe.",
+      });
+    }
+  }, [searchParams]);
+  
   // Handle verification alert when email is sent
   const handleVerificationSent = (email: string) => {
     setVerificationEmail(email);
@@ -32,7 +51,7 @@ const Auth = () => {
   // Redirect if already authenticated, but only after the auth state has loaded
   // and prevent redirect loops with a flag
   useEffect(() => {
-    if (!isLoading && isAuthenticated && !redirectInProgress) {
+    if (!isLoading && isAuthenticated && !redirectInProgress && !isPasswordReset) {
       console.log("Auth page: Already authenticated, redirecting to:", from);
       setRedirectInProgress(true);
       
@@ -41,7 +60,7 @@ const Auth = () => {
         navigate(from, { replace: true });
       }, 100);
     }
-  }, [isAuthenticated, isLoading, navigate, from, redirectInProgress]);
+  }, [isAuthenticated, isLoading, navigate, from, redirectInProgress, isPasswordReset]);
 
   // Show loading while checking auth status
   if (isLoading) {
@@ -54,7 +73,7 @@ const Auth = () => {
   }
 
   // Don't render auth page if already authenticated and redirecting
-  if (isAuthenticated && redirectInProgress) {
+  if (isAuthenticated && redirectInProgress && !isPasswordReset) {
     return (
       <div className="h-screen flex flex-col items-center justify-center">
         <Loader2 className="h-12 w-12 animate-spin text-directiveplus-600" />
