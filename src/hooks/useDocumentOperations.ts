@@ -6,14 +6,10 @@ import { useDocumentPrint } from "./useDocumentPrint";
 import { useDocumentShare } from "./useDocumentShare";
 import { useDocumentView } from "./useDocumentView";
 
-interface UseDocumentOperationsProps {
-  refreshDocuments: () => void;
-}
-
 export const useDocumentOperations = (refreshDocuments: () => void) => {
   const { previewDocument, setPreviewDocument } = useDocumentPreview();
   const { documentToDelete, setDocumentToDelete, confirmDelete, handleDelete } = 
-    useDocumentDeletion({ onDeleteComplete: refreshDocuments });
+    useDocumentDeletion({ onDeleteComplete: refreshDocuments, tableName: "pdf_documents" });
   const { handleDownload } = useDocumentDownload();
   const { handlePrint } = useDocumentPrint();
   const { handleShare } = useDocumentShare();

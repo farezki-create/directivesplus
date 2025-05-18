@@ -15,7 +15,7 @@ export const useMedicalDocumentActions = ({ onDeleteComplete }: UseMedicalDocume
   // Use the specialized hooks
   const { previewDocument, setPreviewDocument } = useDocumentPreview();
   const { documentToDelete, setDocumentToDelete, confirmDelete, handleDelete } = 
-    useDocumentDeletion({ onDeleteComplete, tableName: 'medical_documents' });
+    useDocumentDeletion({ onDeleteComplete, tableName: "medical_documents" });
   const { handleVisibilityChange } = useDocumentVisibility();
   const { handleDownload } = useDocumentDownload();
   const { handlePrint } = useDocumentPrint();
