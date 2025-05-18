@@ -42,6 +42,7 @@ const DocumentPreviewDialog: FC<DocumentPreviewDialogProps> = ({
   
   const handleOpenExternal = () => {
     if (filePath) {
+      console.log("DocumentPreviewDialog - Ouverture externe de:", filePath);
       window.open(filePath, '_blank');
     }
   };

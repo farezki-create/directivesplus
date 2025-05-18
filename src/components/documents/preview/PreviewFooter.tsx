@@ -18,7 +18,8 @@ const PreviewFooter = ({
   onPrint 
 }: PreviewFooterProps) => {
   console.log("PreviewFooter - rendu avec filePath:", filePath);
-  const { isAudio } = filePath ? detectDocumentType(filePath) : { isAudio: false };
+  const fileInfo = filePath ? detectDocumentType(filePath) : { isAudio: false };
+  const isAudio = fileInfo.isAudio;
 
   return (
     <DialogFooter className="flex justify-between items-center">
@@ -29,6 +30,7 @@ const PreviewFooter = ({
               <Button 
                 onClick={(e) => {
                   e.preventDefault();
+                  e.stopPropagation();
                   console.log("PreviewFooter - Bouton Imprimer cliqué");
                   onPrint();
                 }} 
@@ -42,6 +44,7 @@ const PreviewFooter = ({
             <Button 
               onClick={(e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 console.log("PreviewFooter - Bouton Télécharger cliqué");
                 onDownload();
               }} 

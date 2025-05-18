@@ -1,8 +1,8 @@
 
 import React, { useState } from "react";
-import DocumentHeader from "./card/DocumentHeader";
-import DocumentActions from "./card/DocumentActions";
-import ShareDialog from "./card/ShareDialog";
+import DocumentHeader from "@/components/documents/card/DocumentHeader";
+import DocumentActions from "@/components/documents/card/DocumentActions";
+import ShareDialog from "@/components/documents/card/ShareDialog";
 
 interface Document {
   id: string;
@@ -11,6 +11,7 @@ interface Document {
   created_at: string;
   description?: string;
   file_type?: string;
+  content_type?: string;
   is_private?: boolean;
 }
 
@@ -45,6 +46,9 @@ const DocumentCard = ({
 
   console.log("DocumentCard rendu avec document:", document);
 
+  // Determine the correct file type to use (handle both file_type and content_type)
+  const fileType = document.file_type || document.content_type || detectFileTypeFromPath(document.file_path);
+
   return (
     <div className="bg-white rounded-lg border p-4 shadow-sm">
       <div className="flex items-start justify-between mb-4">
@@ -57,15 +61,15 @@ const DocumentCard = ({
         <DocumentActions
           onView={() => {
             console.log("DocumentCard - onView appelé pour:", document.file_path);
-            onView(document.file_path, document.file_type);
+            onView(document.file_path, fileType);
           }}
           onDownload={() => {
             console.log("DocumentCard - onDownload appelé:", document.file_path, document.file_name);
             onDownload(document.file_path, document.file_name);
           }}
           onPrint={() => {
-            console.log("DocumentCard - onPrint appelé:", document.file_path, document.file_type);
-            onPrint(document.file_path, document.file_type);
+            console.log("DocumentCard - onPrint appelé:", document.file_path, fileType);
+            onPrint(document.file_path, fileType);
           }}
           onShare={() => {
             console.log("DocumentCard - onShare - Affichage du dialog de partage");
@@ -85,6 +89,26 @@ const DocumentCard = ({
       />
     </div>
   );
+};
+
+// Helper function to detect file type from path
+const detectFileTypeFromPath = (filePath: string): string => {
+  if (!filePath) return "application/pdf"; // Default
+  
+  if (filePath.includes('image') || 
+      filePath.endsWith('.jpg') || 
+      filePath.endsWith('.jpeg') || 
+      filePath.endsWith('.png') || 
+      filePath.endsWith('.gif')) {
+    return 'image/jpeg';
+  } else if (filePath.includes('pdf') || filePath.endsWith('.pdf')) {
+    return 'application/pdf';
+  } else if (filePath.includes('audio') || 
+             filePath.endsWith('.mp3') || 
+             filePath.endsWith('.wav')) {
+    return 'audio/mpeg';
+  }
+  return 'application/pdf'; // Default
 };
 
 export default DocumentCard;

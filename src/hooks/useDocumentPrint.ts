@@ -6,6 +6,11 @@ export const useDocumentPrint = () => {
     try {
       console.log("useDocumentPrint - handlePrint appelé pour:", filePath, fileType);
       
+      // Vérifier que le chemin du fichier est valide
+      if (!filePath) {
+        throw new Error("Chemin de fichier invalide");
+      }
+      
       // Vérifier si c'est un fichier audio
       if (filePath.includes('audio') || (fileType && fileType.includes('audio'))) {
         toast({
@@ -16,7 +21,7 @@ export const useDocumentPrint = () => {
       }
       
       // Optimisation pour impression d'images
-      if (fileType && fileType.includes('image') || 
+      if ((fileType && fileType.includes('image')) || 
           filePath.includes('image') || 
           filePath.endsWith('.jpg') || 
           filePath.endsWith('.png') || 
@@ -61,8 +66,10 @@ export const useDocumentPrint = () => {
       // Pour les PDF, ouvrir directement pour impression
       const printWindow = window.open(filePath, '_blank');
       if (printWindow) {
+        console.log("useDocumentPrint - Fenêtre d'impression ouverte pour:", filePath);
         printWindow.onload = function() {
           setTimeout(() => {
+            console.log("useDocumentPrint - Lancement de l'impression");
             printWindow.print();
           }, 1000);
         };

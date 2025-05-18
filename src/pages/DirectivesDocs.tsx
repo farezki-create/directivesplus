@@ -29,6 +29,7 @@ interface Document {
   content_type?: string;
   user_id: string;
   is_private?: boolean;
+  file_type?: string;
 }
 
 const DirectivesDocs = () => {
@@ -74,6 +75,7 @@ const DirectivesDocs = () => {
       
       if (error) throw error;
       
+      console.log("DirectivesDocs - Documents récupérés:", data);
       setDocuments(data || []);
     } catch (error: any) {
       console.error("Erreur lors de la récupération des documents:", error);
@@ -98,6 +100,7 @@ const DirectivesDocs = () => {
   };
 
   const handlePreviewPrint = (filePath: string) => {
+    console.log("DirectivesDocs - handlePreviewPrint appelé pour:", filePath);
     const fileType = detectFileType(filePath);
     printDocument(filePath, fileType);
   };
@@ -177,6 +180,10 @@ const DirectivesDocs = () => {
             onShare={handleShare}
             onView={handleView}
             onDelete={confirmDelete}
+            onVisibilityChange={(id, isPrivate) => {
+              console.log("DirectivesDocs - Changement de visibilité:", id, isPrivate);
+              // You can implement visibility change handling here
+            }}
           />
         </div>
       </main>

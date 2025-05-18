@@ -10,7 +10,9 @@ interface Document {
   created_at: string;
   description?: string;
   content_type?: string;
+  file_type?: string;
   user_id: string;
+  is_private?: boolean;
 }
 
 interface DirectivesDocumentListProps {
@@ -20,6 +22,7 @@ interface DirectivesDocumentListProps {
   onShare: (documentId: string) => void;
   onView: (filePath: string, contentType?: string) => void;
   onDelete: (documentId: string) => void;
+  onVisibilityChange?: (documentId: string, isPrivate: boolean) => void;
 }
 
 const DirectivesDocumentList: FC<DirectivesDocumentListProps> = ({
@@ -29,6 +32,7 @@ const DirectivesDocumentList: FC<DirectivesDocumentListProps> = ({
   onShare,
   onView,
   onDelete,
+  onVisibilityChange
 }) => {
   if (documents.length === 0) {
     return <EmptyDocumentsState />;
@@ -47,6 +51,7 @@ const DirectivesDocumentList: FC<DirectivesDocumentListProps> = ({
           onShare={onShare}
           onView={onView}
           onDelete={onDelete}
+          onVisibilityChange={onVisibilityChange}
         />
       ))}
     </div>
