@@ -1,7 +1,6 @@
 
 import { toast } from "@/hooks/use-toast";
 import { useDocumentPreview } from "./useDocumentPreview";
-import { viewDocument } from "@/utils/documentOperations";
 
 export const useDocumentView = () => {
   const { setPreviewDocument } = useDocumentPreview();
