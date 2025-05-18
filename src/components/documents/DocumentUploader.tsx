@@ -109,10 +109,8 @@ const DocumentUploader = ({ userId, onUploadComplete, documentType = "directive"
           {isScanning && (
             <p className="text-sm text-gray-600">Scan en cours... Veuillez patienter.</p>
           )}
-          {uploading ? (
+          {uploading && (
             <p className="text-sm text-gray-600">Téléchargement en cours... Le document sera automatiquement enregistré.</p>
-          ) : (
-            <p className="text-sm text-gray-600">Sélectionnez un document pour le téléverser automatiquement.</p>
           )}
         </div>
       </div>

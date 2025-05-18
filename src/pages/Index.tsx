@@ -33,12 +33,12 @@ const Index = () => {
             </Button>
             
             <Button 
-              onClick={() => navigate('/temoignages')}
+              onClick={() => navigate('/commentaires')}
               variant="outline"
               className="border-directiveplus-600 text-directiveplus-700 hover:bg-directiveplus-50 text-lg py-6 px-8"
             >
               <MessageSquare className="mr-2" size={20} />
-              Voir les témoignages
+              Voir les commentaires
             </Button>
           </div>
           <p className="mt-3 text-sm text-gray-600">
