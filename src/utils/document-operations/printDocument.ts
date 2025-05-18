@@ -64,8 +64,22 @@ export const printDocument = (filePath: string, fileType: string = "application/
       }
     }
     
-    // Pour les PDF, ouvrir directement pour impression
-    const printWindow = window.open(filePath, '_blank');
+    // Pour les PDF et autres types de documents
+    // Correction: utiliser une URL complète et vérifier qu'elle est valide
+    // Assurer que les // sont présents pour les URLs absolues
+    let url = filePath;
+    if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('//')) {
+      // Pour les URLs relatives, on s'assure qu'elles sont bien formées
+      if (!url.startsWith('/')) {
+        url = '/' + url;
+      }
+      // Convertir en URL absolue si nécessaire
+      url = window.location.origin + url;
+    }
+    
+    console.log("printDocument - URL formatée pour impression:", url);
+    
+    const printWindow = window.open(url, '_blank');
     if (printWindow) {
       printWindow.onload = function() {
         setTimeout(() => {

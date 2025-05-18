@@ -21,6 +21,20 @@ const PreviewFooter = ({
   const fileInfo = filePath ? detectDocumentType(filePath) : { isAudio: false };
   const isAudio = fileInfo.isAudio;
 
+  const handlePrint = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("PreviewFooter - Bouton Imprimer cliqué");
+    onPrint();
+  };
+
+  const handleDownload = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("PreviewFooter - Bouton Télécharger cliqué");
+    onDownload();
+  };
+
   return (
     <DialogFooter className="flex justify-between items-center">
       <div>
@@ -28,12 +42,7 @@ const PreviewFooter = ({
           <>
             {!isAudio && (
               <Button 
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  console.log("PreviewFooter - Bouton Imprimer cliqué");
-                  onPrint();
-                }} 
+                onClick={handlePrint} 
                 variant="outline" 
                 className="mr-2"
               >
@@ -42,12 +51,7 @@ const PreviewFooter = ({
               </Button>
             )}
             <Button 
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                console.log("PreviewFooter - Bouton Télécharger cliqué");
-                onDownload();
-              }} 
+              onClick={handleDownload}
               variant="outline"
             >
               <Download className="h-4 w-4 mr-2" />
