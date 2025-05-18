@@ -9,7 +9,6 @@ import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useFormContext } from "react-hook-form";
 import { useState } from "react";
-import * as z from "zod";
 
 interface PersonalInformationFieldsProps {
   isEmailDisabled?: boolean;

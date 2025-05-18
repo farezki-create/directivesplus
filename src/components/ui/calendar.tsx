@@ -1,9 +1,17 @@
+
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DayPicker } from "react-day-picker";
 
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
@@ -13,15 +21,57 @@ function Calendar({
   showOutsideDays = true,
   ...props
 }: CalendarProps) {
+  const fromYear = 1900;
+  const toYear = new Date().getFullYear();
+  const years = Array.from({ length: toYear - fromYear + 1 }, (_, i) => toYear - i);
+
+  function CustomCaption(props: { 
+    displayMonth: Date; 
+    onClick?: React.MouseEventHandler<HTMLElement>;
+    onYearSelect?: (year: number) => void;
+  }) {
+    const { displayMonth, onYearSelect } = props;
+    const month = displayMonth.toLocaleString('default', { month: 'long' });
+    const year = displayMonth.getFullYear();
+
+    const handleYearChange = (value: string) => {
+      if (onYearSelect) {
+        onYearSelect(parseInt(value));
+      }
+    };
+
+    return (
+      <div className="flex items-center justify-center gap-1">
+        <span className="text-sm font-medium">{month}</span>
+        <Select value={year.toString()} onValueChange={handleYearChange}>
+          <SelectTrigger className="h-7 w-20 text-xs border-none focus:ring-0">
+            <SelectValue placeholder={year} />
+          </SelectTrigger>
+          <SelectContent className="max-h-60 overflow-y-auto">
+            {years.map((year) => (
+              <SelectItem 
+                key={year} 
+                value={year.toString()}
+                className="text-xs cursor-pointer"
+              >
+                {year}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    );
+  }
+
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
-      className={cn("p-3", className)}
+      className={cn("p-3 pointer-events-auto", className)}
       classNames={{
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
         month: "space-y-4",
         caption: "flex justify-center pt-1 relative items-center",
-        caption_label: "text-sm font-medium",
+        caption_label: "hidden", // Hide default caption
         nav: "space-x-1 flex items-center",
         nav_button: cn(
           buttonVariants({ variant: "outline" }),
@@ -54,6 +104,14 @@ function Calendar({
       components={{
         IconLeft: ({ ..._props }) => <ChevronLeft className="h-4 w-4" />,
         IconRight: ({ ..._props }) => <ChevronRight className="h-4 w-4" />,
+        Caption: (captionProps) => {
+          const onYearSelect = (year: number) => {
+            const newDate = new Date(captionProps.displayMonth);
+            newDate.setFullYear(year);
+            captionProps.goToMonth(newDate);
+          };
+          return <CustomCaption {...captionProps} onYearSelect={onYearSelect} />;
+        },
       }}
       {...props}
     />
