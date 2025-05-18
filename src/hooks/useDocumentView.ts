@@ -8,6 +8,7 @@ export const useDocumentView = () => {
 
   const handleView = (filePath: string, fileType: string = "application/pdf") => {
     try {
+      console.log("Visualisation du document:", filePath, fileType);
       viewDocument(filePath, fileType, setPreviewDocument);
     } catch (error) {
       console.error("Erreur lors de l'affichage du document:", error);
