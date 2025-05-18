@@ -1,7 +1,6 @@
 import { useDocumentDeletion } from "./useDocumentDeletion";
 import { useDocumentDownload } from "./useDocumentDownload";
 import { useDocumentPrint } from "./useDocumentPrint";
-import { useDocumentShare } from "./useDocumentShare";
 import { useDocumentViewer } from "./useDocumentViewer";
 
 /**
@@ -30,7 +29,6 @@ export const useDocumentOperations = (refreshDocuments: () => void) => {
   // Other document operations
   const { handleDownload } = useDocumentDownload();
   const { handlePrint } = useDocumentPrint();
-  const { handleShare } = useDocumentShare();
   
   console.log("useDocumentOperations - état actuel:", { 
     previewDocument, 
@@ -52,7 +50,6 @@ export const useDocumentOperations = (refreshDocuments: () => void) => {
     // Other document operations
     handleDownload,
     handlePrint,
-    handleShare,
     handleView
   };
 };

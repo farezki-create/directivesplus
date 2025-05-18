@@ -35,7 +35,6 @@ export const useDirectivesDocuments = () => {
     setDocumentToDelete,
     handleDownload,
     handlePrint,
-    handleShare,
     handleView,
     confirmDelete,
     handleDelete
@@ -104,7 +103,6 @@ export const useDirectivesDocuments = () => {
     setDocumentToDelete,
     handleDownload,
     handlePrint,
-    handleShare,
     handleView,
     confirmDelete,
     handleDelete,

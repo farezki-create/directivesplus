@@ -5,7 +5,7 @@ import { useAccessCode } from "@/hooks/useAccessCode";
 import CardOptions from "./CardOptions";
 import CardDisplay from "./CardDisplay";
 import CardActions from "./CardActions";
-import { downloadCard, printCard, shareCard } from "./utils/cardOperations";
+import { downloadCard, printCard } from "./utils/cardOperations";
 
 interface AccessCardProps {
   firstName: string;
@@ -51,21 +51,6 @@ const AccessCard: React.FC<AccessCardProps> = ({ firstName, lastName, birthDate 
       medicalCode
     });
   };
-  
-  const handleShare = async () => {
-    if (!user) return;
-    
-    await shareCard({
-      cardRef,
-      userId: user.id,
-      firstName,
-      lastName,
-      includeDirective,
-      includeMedical,
-      directiveCode,
-      medicalCode
-    });
-  };
 
   return (
     <div className="space-y-8">
@@ -91,9 +76,7 @@ const AccessCard: React.FC<AccessCardProps> = ({ firstName, lastName, birthDate 
         <CardActions 
           onDownload={handleDownload}
           onPrint={handlePrint}
-          onShare={handleShare}
           disabled={!includeDirective && !includeMedical}
-          showShare={!!navigator.share}
         />
       </div>
     </div>

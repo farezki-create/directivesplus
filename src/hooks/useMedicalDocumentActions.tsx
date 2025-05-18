@@ -4,7 +4,6 @@ import { useDocumentPreview } from "./useDocumentPreview";
 import { useDocumentVisibility } from "./useDocumentVisibility";
 import { useDocumentDownload } from "./useDocumentDownload";
 import { useDocumentPrint } from "./useDocumentPrint";
-import { useDocumentShare } from "./useDocumentShare";
 import { useDocumentViewer } from "./useDocumentViewer";
 
 interface UseMedicalDocumentActionsProps {
@@ -20,7 +19,6 @@ export const useMedicalDocumentActions = ({ onDeleteComplete }: UseMedicalDocume
   const { handleVisibilityChange } = useDocumentVisibility();
   const { handleDownload } = useDocumentDownload();
   const { handlePrint } = useDocumentPrint();
-  const { handleShare } = useDocumentShare();
 
   console.log("useMedicalDocumentActions - état actuel:", {
     previewDocument,
@@ -34,7 +32,6 @@ export const useMedicalDocumentActions = ({ onDeleteComplete }: UseMedicalDocume
     setPreviewDocument,
     handleDownload,
     handlePrint,
-    handleShare,
     handleView,
     confirmDelete,
     handleDelete,

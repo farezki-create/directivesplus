@@ -1,3 +1,4 @@
+
 import { useAccessCode } from "@/hooks/useAccessCode";
 import { useDirectivesDocuments } from "@/hooks/useDirectivesDocuments";
 import { useAuth } from "@/contexts/AuthContext";
@@ -25,7 +26,6 @@ const DirectivesDocs = () => {
     setDocumentToDelete,
     handleDownload,
     handlePrint,
-    handleShare,
     handleView,
     confirmDelete,
     handleDelete,
