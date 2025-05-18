@@ -1,11 +1,10 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { checkMedicalAccessCode, showErrorToast, showSuccessToast } from "@/utils/accessUtils";
 
 // Schema de validation pour le formulaire
 const formSchema = z.object({
@@ -16,23 +15,6 @@ const formSchema = z.object({
 });
 
 export type MedicalFormData = z.infer<typeof formSchema>;
-
-// Fonction utilitaire pour vérifier le code d'accès médical
-const checkMedicalAccessCode = async (accessCode: string) => {
-  console.log(`Vérification du code d'accès médical: ${accessCode}`);
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('medical_access_code', accessCode.trim());
-  
-  if (error) {
-    console.error("Erreur lors de la vérification du code d'accès médical:", error);
-    throw error;
-  }
-  
-  console.log(`Résultat de la vérification médicale:`, data);
-  return data;
-};
 
 export const useMedicalDataAccessForm = () => {
   const navigate = useNavigate();
@@ -73,11 +55,7 @@ export const useMedicalDataAccessForm = () => {
       
       if (!profilesData || profilesData.length === 0) {
         console.log("Code d'accès médical invalide");
-        toast({
-          title: "Accès refusé",
-          description: "Code d'accès médical invalide",
-          variant: "destructive"
-        });
+        showErrorToast("Accès refusé", "Code d'accès médical invalide");
         return;
       }
       
@@ -91,20 +69,13 @@ export const useMedicalDataAccessForm = () => {
           profile.last_name.toLowerCase() !== formData.lastName.toLowerCase() ||
           !birthDateMatch) {
         console.log("Informations personnelles médicales incorrectes");
-        toast({
-          title: "Accès refusé",
-          description: "Informations personnelles incorrectes",
-          variant: "destructive"
-        });
+        showErrorToast("Accès refusé", "Informations personnelles incorrectes");
         return;
       }
       
       // Accès accordé
       console.log("Accès aux données médicales accordé");
-      toast({
-        title: "Accès autorisé",
-        description: "Chargement des données médicales..."
-      });
+      showSuccessToast("Accès autorisé", "Chargement des données médicales...");
       
       // Navigation vers la page des données médicales après un court délai
       setTimeout(() => {
@@ -112,11 +83,10 @@ export const useMedicalDataAccessForm = () => {
       }, 1000);
     } catch (error: any) {
       console.error("Erreur d'accès aux données médicales:", error);
-      toast({
-        title: "Erreur", 
-        description: "Une erreur est survenue lors de la vérification de l'accès",
-        variant: "destructive"
-      });
+      showErrorToast(
+        "Erreur", 
+        "Une erreur est survenue lors de la vérification de l'accès"
+      );
     } finally {
       setLoading(false);
     }

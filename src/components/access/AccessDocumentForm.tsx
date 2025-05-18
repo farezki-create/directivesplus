@@ -2,25 +2,37 @@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import FormField from "./FormField";
 import FormActions from "./FormActions";
-import { useAccessDocumentForm } from "@/hooks/useAccessDocumentForm";
+import { useDirectivesAccessForm } from "@/hooks/useDirectivesAccessForm";
+import { useMedicalDataAccessForm } from "@/hooks/useMedicalDataAccessForm";
 import { Form } from "@/components/ui/form";
 import { useEffect } from "react";
 
 const AccessDocumentForm = () => {
   const { 
-    form, 
-    loading, 
-    accessDirectives, 
-    accessMedicalData 
-  } = useAccessDocumentForm();
+    form: directivesForm, 
+    loading: directivesLoading, 
+    accessDirectives 
+  } = useDirectivesAccessForm();
+
+  const {
+    form: medicalForm,
+    loading: medicalLoading,
+    accessMedicalData
+  } = useMedicalDataAccessForm();
+
+  const loading = directivesLoading || medicalLoading;
 
   // Using useEffect to watch for form errors
   useEffect(() => {
     // Log any form errors when they change
-    if (Object.keys(form.formState.errors).length > 0) {
-      console.log("Erreurs du formulaire:", form.formState.errors);
+    if (Object.keys(directivesForm.formState.errors).length > 0) {
+      console.log("Erreurs du formulaire directives:", directivesForm.formState.errors);
     }
-  }, [form.formState.errors]); // Watch for changes in the errors object
+
+    if (Object.keys(medicalForm.formState.errors).length > 0) {
+      console.log("Erreurs du formulaire médical:", medicalForm.formState.errors);
+    }
+  }, [directivesForm.formState.errors, medicalForm.formState.errors]); // Watch for changes in the errors object
 
   return (
     <div className="max-w-md mx-auto">
@@ -36,7 +48,7 @@ const AccessDocumentForm = () => {
           </CardDescription>
         </CardHeader>
 
-        <Form {...form}>
+        <Form {...directivesForm}>
           <form onSubmit={(e) => {
             e.preventDefault(); // Empêcher la soumission automatique du formulaire
             console.log("Formulaire soumis, mais action empêchée");
@@ -47,7 +59,7 @@ const AccessDocumentForm = () => {
                 id="lastName"
                 label="Nom"
                 placeholder="Nom de famille"
-                control={form.control}
+                control={directivesForm.control}
                 disabled={loading}
               />
               
@@ -55,7 +67,7 @@ const AccessDocumentForm = () => {
                 id="firstName"
                 label="Prénom"
                 placeholder="Prénom"
-                control={form.control}
+                control={directivesForm.control}
                 disabled={loading}
               />
               
@@ -63,7 +75,7 @@ const AccessDocumentForm = () => {
                 id="birthDate"
                 label="Date de naissance"
                 type="date"
-                control={form.control}
+                control={directivesForm.control}
                 disabled={loading}
               />
               
@@ -71,7 +83,7 @@ const AccessDocumentForm = () => {
                 id="accessCode"
                 label="Code d'accès"
                 placeholder="Code d'accès unique"
-                control={form.control}
+                control={directivesForm.control}
                 disabled={loading}
               />
             </CardContent>
