@@ -6,9 +6,9 @@ import { Download, Printer, Share2 } from "lucide-react";
 interface CardActionsProps {
   onDownload: () => void;
   onPrint: () => void;
-  onShare?: () => void;
+  onShare: () => void;
   disabled: boolean;
-  showShare?: boolean;
+  showShare: boolean;
 }
 
 const CardActions: React.FC<CardActionsProps> = ({
@@ -16,7 +16,7 @@ const CardActions: React.FC<CardActionsProps> = ({
   onPrint,
   onShare,
   disabled,
-  showShare = false
+  showShare
 }) => {
   return (
     <div className="mt-6 flex flex-wrap gap-3 justify-center">
@@ -40,7 +40,7 @@ const CardActions: React.FC<CardActionsProps> = ({
         Imprimer
       </Button>
       
-      {showShare && onShare && (
+      {showShare && (
         <Button
           onClick={onShare}
           variant="outline"

@@ -18,38 +18,27 @@ const PreviewFooter = ({
   onPrint 
 }: PreviewFooterProps) => {
   const { isAudio } = filePath ? detectDocumentType(filePath) : { isAudio: false };
-  
-  console.log("[PreviewFooter] filePath:", filePath, "isAudio:", isAudio);
 
   return (
     <DialogFooter className="flex justify-between items-center">
-      <div className="flex items-center gap-2">
+      <div>
         {filePath && (
           <>
             {!isAudio && (
               <Button 
-                onClick={(e) => {
-                  e.preventDefault();
-                  console.log("[PreviewFooter] Bouton Imprimer cliqué");
-                  onPrint();
-                }}
+                onClick={onPrint} 
                 variant="outline" 
-                className="flex items-center gap-1"
+                className="mr-2"
               >
-                <Printer className="h-4 w-4" />
+                <Printer className="h-4 w-4 mr-2" />
                 Imprimer
               </Button>
             )}
             <Button 
-              onClick={(e) => {
-                e.preventDefault();
-                console.log("[PreviewFooter] Bouton Télécharger cliqué");
-                onDownload();
-              }}
+              onClick={onDownload} 
               variant="outline"
-              className="flex items-center gap-1"
             >
-              <Download className="h-4 w-4" />
+              <Download className="h-4 w-4 mr-2" />
               Télécharger
             </Button>
           </>
@@ -58,9 +47,8 @@ const PreviewFooter = ({
       <Button 
         onClick={() => onOpenChange(false)} 
         variant="outline"
-        className="flex items-center gap-1"
       >
-        <X className="h-4 w-4" />
+        <X className="h-4 w-4 mr-2" />
         Fermer
       </Button>
     </DialogFooter>

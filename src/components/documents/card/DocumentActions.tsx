@@ -3,6 +3,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import {
   Download,
+  Share2,
   Eye,
   Trash,
   Printer
@@ -11,34 +12,22 @@ import {
 interface DocumentActionsProps {
   onView: () => void;
   onDownload: () => void;
+  onShare: () => void;
   onDelete: () => void;
-  onPrint?: () => void;
-  hideShare?: boolean;
+  onPrint?: () => void; // Added onPrint prop
 }
 
 const DocumentActions = ({
   onView,
   onDownload,
+  onShare,
   onDelete,
-  onPrint,
-  hideShare = false
+  onPrint
 }: DocumentActionsProps) => {
-  console.log("[DocumentActions] Handlers disponibles:", { 
-    onView: !!onView,
-    onDownload: !!onDownload,
-    onDelete: !!onDelete,
-    onPrint: !!onPrint
-  });
-
   return (
     <div className="flex flex-wrap justify-end gap-2">
       <Button
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          console.log("[DocumentActions] Bouton Voir cliqué");
-          onView();
-        }}
+        onClick={onView}
         size="sm"
         variant="outline"
         className="text-xs"
@@ -47,11 +36,7 @@ const DocumentActions = ({
         Voir
       </Button>
       <Button
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          if (onDownload) onDownload();
-        }}
+        onClick={onDownload}
         size="sm"
         variant="outline"
         className="text-xs"
@@ -59,12 +44,28 @@ const DocumentActions = ({
         <Download className="h-3 w-3 mr-1" />
         Télécharger
       </Button>
+      {onPrint && (
+        <Button
+          onClick={onPrint}
+          size="sm"
+          variant="outline"
+          className="text-xs"
+        >
+          <Printer className="h-3 w-3 mr-1" />
+          Imprimer
+        </Button>
+      )}
       <Button
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          if (onDelete) onDelete();
-        }}
+        onClick={onShare}
+        size="sm"
+        variant="outline"
+        className="text-xs"
+      >
+        <Share2 className="h-3 w-3 mr-1" />
+        Partager
+      </Button>
+      <Button
+        onClick={onDelete}
         size="sm"
         variant="outline"
         className="text-xs text-red-500 hover:text-red-700 hover:border-red-200"

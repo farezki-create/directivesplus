@@ -174,6 +174,7 @@ const DirectivesDocs = () => {
             documents={documents}
             onDownload={handleDownload}
             onPrint={handlePrint}
+            onShare={handleShare}
             onView={handleView}
             onDelete={confirmDelete}
           />

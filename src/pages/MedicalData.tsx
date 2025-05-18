@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -29,9 +28,6 @@ const MedicalData = () => {
   const documentActions = useMedicalDocumentActions({
     onDeleteComplete: fetchDocuments
   });
-  
-  console.log("MedicalData - documentActions.previewDocument:", documentActions.previewDocument);
-  console.log("MedicalData - documents:", documents);
   
   // Redirect if not authenticated
   if (!isLoading && !isAuthenticated) {
@@ -90,6 +86,7 @@ const MedicalData = () => {
             documents={documents}
             onDownload={documentActions.handleDownload}
             onPrint={documentActions.handlePrint}
+            onShare={documentActions.handleShare}
             onView={documentActions.handleView}
             onDelete={documentActions.confirmDelete}
             onVisibilityChange={documentActions.handleVisibilityChange}
@@ -99,8 +96,6 @@ const MedicalData = () => {
       
       <MedicalDocumentActions
         {...documentActions}
-        handleDownload={documentActions.handleDownload}
-        handlePrint={documentActions.handlePrint}
       />
       
       <footer className="bg-white py-6 border-t mt-auto">
