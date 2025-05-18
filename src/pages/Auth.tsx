@@ -38,12 +38,25 @@ const Auth = () => {
     const type = searchParams.get("type");
     
     if (token && type === "recovery") {
+      console.log("Recovery token detected:", token);
       setIsPasswordReset(true);
       setResetToken(token);
       toast({
         title: "Réinitialisez votre mot de passe",
         description: "Veuillez entrer votre nouveau mot de passe.",
       });
+    } else if (searchParams.toString().includes("token=")) {
+      // Fallback check for token in case the type parameter is missing
+      const rawToken = searchParams.toString().split("token=")[1]?.split("&")[0];
+      if (rawToken) {
+        console.log("Token found without type parameter:", rawToken);
+        setIsPasswordReset(true);
+        setResetToken(rawToken);
+        toast({
+          title: "Réinitialisez votre mot de passe",
+          description: "Veuillez entrer votre nouveau mot de passe.",
+        });
+      }
     }
   }, [searchParams]);
   

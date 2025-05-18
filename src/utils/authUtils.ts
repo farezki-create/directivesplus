@@ -69,3 +69,21 @@ export const fetchUserProfile = async (userId: string, supabase: any) => {
     return null;
   }
 };
+
+/**
+ * Parse a URL for authentication tokens and parameters
+ * @param url The URL to parse
+ * @returns An object with the parsed token and type
+ */
+export const parseAuthTokenFromUrl = (url: string) => {
+  try {
+    const searchParams = new URLSearchParams(url.split('?')[1] || '');
+    const token = searchParams.get('token');
+    const type = searchParams.get('type');
+    
+    return { token, type };
+  } catch (error) {
+    console.error('Error parsing auth token from URL:', error);
+    return { token: null, type: null };
+  }
+};
