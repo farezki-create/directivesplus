@@ -1,0 +1,78 @@
+
+import React from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Download,
+  Printer,
+  Share2,
+  Eye,
+  Trash
+} from "lucide-react";
+
+interface DocumentActionsProps {
+  onView: () => void;
+  onDownload: () => void;
+  onPrint: () => void;
+  onShare: () => void;
+  onDelete: () => void;
+}
+
+const DocumentActions = ({
+  onView,
+  onDownload,
+  onPrint,
+  onShare,
+  onDelete
+}: DocumentActionsProps) => {
+  return (
+    <div className="flex flex-wrap justify-end gap-2">
+      <Button
+        onClick={onView}
+        size="sm"
+        variant="outline"
+        className="text-xs"
+      >
+        <Eye className="h-3 w-3 mr-1" />
+        Voir
+      </Button>
+      <Button
+        onClick={onDownload}
+        size="sm"
+        variant="outline"
+        className="text-xs"
+      >
+        <Download className="h-3 w-3 mr-1" />
+        Télécharger
+      </Button>
+      <Button
+        onClick={onPrint}
+        size="sm"
+        variant="outline"
+        className="text-xs"
+      >
+        <Printer className="h-3 w-3 mr-1" />
+        Imprimer
+      </Button>
+      <Button
+        onClick={onShare}
+        size="sm"
+        variant="outline"
+        className="text-xs"
+      >
+        <Share2 className="h-3 w-3 mr-1" />
+        Partager
+      </Button>
+      <Button
+        onClick={onDelete}
+        size="sm"
+        variant="outline"
+        className="text-xs text-red-500 hover:text-red-700 hover:border-red-200"
+      >
+        <Trash className="h-3 w-3 mr-1" />
+        Supprimer
+      </Button>
+    </div>
+  );
+};
+
+export default DocumentActions;
