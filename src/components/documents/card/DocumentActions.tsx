@@ -5,7 +5,8 @@ import {
   Download,
   Share2,
   Eye,
-  Trash
+  Trash,
+  Printer
 } from "lucide-react";
 
 interface DocumentActionsProps {
@@ -13,13 +14,15 @@ interface DocumentActionsProps {
   onDownload: () => void;
   onShare: () => void;
   onDelete: () => void;
+  onPrint?: () => void; // Added onPrint prop
 }
 
 const DocumentActions = ({
   onView,
   onDownload,
   onShare,
-  onDelete
+  onDelete,
+  onPrint
 }: DocumentActionsProps) => {
   return (
     <div className="flex flex-wrap justify-end gap-2">
@@ -41,6 +44,17 @@ const DocumentActions = ({
         <Download className="h-3 w-3 mr-1" />
         Télécharger
       </Button>
+      {onPrint && (
+        <Button
+          onClick={onPrint}
+          size="sm"
+          variant="outline"
+          className="text-xs"
+        >
+          <Printer className="h-3 w-3 mr-1" />
+          Imprimer
+        </Button>
+      )}
       <Button
         onClick={onShare}
         size="sm"
