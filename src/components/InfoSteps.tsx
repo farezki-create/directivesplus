@@ -13,7 +13,7 @@ import {
 
 const InfoSteps = () => {
   const steps = [
-    { id: 1, text: "Répondre aux questionnaires 1 à 4", icon: <ClipboardList /> },
+    { id: 1, text: "1 2 3 4 Répondre aux questionnaires", icon: <ClipboardList /> },
     { id: 5, text: "Ajouter texte libre et phrases types", icon: <FileText /> },
     { id: 6, text: "Désigner la personne de confiance", icon: <UserCheck /> },
     { id: 7, text: "Consulter la synthèse", icon: <Sparkles /> },

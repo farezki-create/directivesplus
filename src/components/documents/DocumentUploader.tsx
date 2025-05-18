@@ -16,6 +16,11 @@ const DocumentUploader = ({ userId, onUploadComplete, documentType = "directive"
     uploadFile
   } = useFileUpload(userId, onUploadComplete, documentType);
 
+  const handleUpload = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent default button behavior
+    uploadFile();
+  };
+
   return (
     <div className="p-4 border rounded-lg mb-6 bg-white">
       <h3 className="font-medium text-lg mb-4">
@@ -41,7 +46,7 @@ const DocumentUploader = ({ userId, onUploadComplete, documentType = "directive"
         
         <div className="flex justify-end">
           <Button 
-            onClick={uploadFile}
+            onClick={handleUpload}
             disabled={!file || uploading}
             className="flex items-center gap-2"
           >

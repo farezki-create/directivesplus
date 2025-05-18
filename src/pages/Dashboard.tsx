@@ -56,7 +56,7 @@ const Dashboard = () => {
             <img 
               src="/lovable-uploads/0a786ed1-a905-4b29-be3a-ca3b24d3efae.png" 
               alt="DirectivesPlus Logo" 
-              className="w-96 h-auto" // Logo encore plus grand
+              className="w-64 h-auto" // Reduced logo size to match homepage
             />
           </div>
           

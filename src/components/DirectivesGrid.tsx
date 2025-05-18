@@ -117,7 +117,7 @@ const DirectivesGrid = () => {
         </Link>
       </div>
       
-      {/* Ligne des documents et carte d'accès */}
+      {/* Ligne des documents et carte d'accès - Réarrangement */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Link to="/mes-directives" className="group">
           <div className="bg-white border rounded-lg p-6 shadow-sm transition-all hover:shadow-md flex flex-col items-center justify-center text-center h-full">
@@ -148,7 +148,7 @@ const DirectivesGrid = () => {
         </Link>
       </div>
       
-      {/* Ligne de Données Médicales */}
+      {/* Ligne de Données Médicales - Placée en dernier */}
       <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
         <Link to="/donnees-medicales" className="group">
           <div className="bg-white border rounded-lg p-6 shadow-sm transition-all hover:shadow-md flex flex-col items-center justify-center text-center h-full">
