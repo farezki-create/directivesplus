@@ -107,16 +107,6 @@ const Soutenir = () => {
                     Je fais un don
                   </Button>
                 </a>
-                <a href="#devenir-membre">
-                  <Button 
-                    variant="outline" 
-                    size="lg"
-                    className="border-directiveplus-200 text-directiveplus-700 hover:bg-directiveplus-50 text-lg flex items-center gap-2"
-                  >
-                    <Users className="h-5 w-5" />
-                    Devenir membre
-                  </Button>
-                </a>
               </div>
               <p className="mt-4 text-sm text-gray-600">
                 Vos dons sont déductibles des impôts à hauteur de 66%

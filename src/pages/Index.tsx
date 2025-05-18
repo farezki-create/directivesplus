@@ -7,6 +7,7 @@ import Features from "../components/Features";
 import Footer from "../components/Footer";
 import DirectivesInfo from "../components/DirectivesInfo";
 import { FileText, MessageSquare, Heart } from "lucide-react";
+import ChatAssistant from "../components/ChatAssistant";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -39,14 +40,6 @@ const Index = () => {
               <MessageSquare className="mr-2" size={20} />
               Voir les commentaires
             </Button>
-            
-            <Button 
-              onClick={() => navigate('/soutenir')}
-              className="bg-directiveplus-500 hover:bg-directiveplus-600 text-lg py-6 px-8"
-            >
-              <Heart className="mr-2" size={20} />
-              Soutenir le projet
-            </Button>
           </div>
           <p className="mt-3 text-sm text-gray-600">
             Accédez aux directives anticipées ou aux données médicales avec un code d'accès
@@ -58,6 +51,7 @@ const Index = () => {
         <Features />
       </main>
       <Footer />
+      <ChatAssistant />
     </div>
   );
 };
