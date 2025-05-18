@@ -25,6 +25,8 @@ const DocumentPreviewDialog: FC<DocumentPreviewDialogProps> = ({
 }) => {
   const isOpen = !!filePath;
   
+  console.log("DocumentPreviewDialog - filePath:", filePath, "isOpen:", isOpen);
+  
   const handleDownload = () => {
     if (filePath && onDownload) {
       onDownload(filePath);

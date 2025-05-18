@@ -38,6 +38,7 @@ const MedicalDocumentActions = ({
       <DocumentPreviewDialog 
         filePath={previewDocument} 
         onOpenChange={(open) => {
+          console.log("DocumentPreviewDialog - onOpenChange:", open, "filePath:", previewDocument);
           if (!open) setPreviewDocument(null);
         }}
         onDownload={handleDownload ? (filePath) => {
@@ -53,4 +54,3 @@ const MedicalDocumentActions = ({
 };
 
 export default MedicalDocumentActions;
-

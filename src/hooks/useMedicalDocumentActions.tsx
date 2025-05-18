@@ -22,6 +22,8 @@ export const useMedicalDocumentActions = ({ onDeleteComplete }: UseMedicalDocume
   const { handleShare } = useDocumentShare();
   const { handleView } = useDocumentView();
 
+  console.log("useMedicalDocumentActions - previewDocument:", previewDocument);
+
   return {
     documentToDelete,
     setDocumentToDelete,

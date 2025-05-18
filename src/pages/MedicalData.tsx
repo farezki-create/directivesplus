@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -28,6 +29,9 @@ const MedicalData = () => {
   const documentActions = useMedicalDocumentActions({
     onDeleteComplete: fetchDocuments
   });
+  
+  console.log("MedicalData - documentActions.previewDocument:", documentActions.previewDocument);
+  console.log("MedicalData - documents:", documents);
   
   // Redirect if not authenticated
   if (!isLoading && !isAuthenticated) {

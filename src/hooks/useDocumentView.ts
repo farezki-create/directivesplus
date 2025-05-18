@@ -20,7 +20,9 @@ export const useDocumentView = () => {
         return;
       }
 
-      viewDocument(filePath, fileType, setPreviewDocument);
+      // Utilisation directe de setPreviewDocument pour assurer que la mise à jour est effectuée
+      setPreviewDocument(filePath);
+      console.log("Document mis en prévisualisation:", filePath);
     } catch (error) {
       console.error("Erreur lors de l'affichage du document:", error);
       toast({
@@ -33,4 +35,3 @@ export const useDocumentView = () => {
 
   return { handleView };
 };
-

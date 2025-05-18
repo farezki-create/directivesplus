@@ -35,8 +35,9 @@ const DocumentActions = ({
       <Button
         onClick={(e) => {
           e.preventDefault();
+          e.stopPropagation();
           console.log("Bouton Voir et imprimer cliqué");
-          onView();
+          if (onView) onView();
         }}
         size="sm"
         variant="outline"
@@ -48,7 +49,8 @@ const DocumentActions = ({
       <Button
         onClick={(e) => {
           e.preventDefault();
-          onDownload();
+          e.stopPropagation();
+          if (onDownload) onDownload();
         }}
         size="sm"
         variant="outline"
@@ -60,7 +62,8 @@ const DocumentActions = ({
       <Button
         onClick={(e) => {
           e.preventDefault();
-          onDelete();
+          e.stopPropagation();
+          if (onDelete) onDelete();
         }}
         size="sm"
         variant="outline"
@@ -74,4 +77,3 @@ const DocumentActions = ({
 };
 
 export default DocumentActions;
-

@@ -36,6 +36,8 @@ const DocumentCard = ({
 }: DocumentCardProps) => {
   const [isPrivate, setIsPrivate] = useState(document.is_private || false);
   
+  console.log("DocumentCard - document:", document.file_name, "file_path:", document.file_path);
+  
   const handleVisibilityChange = (documentId: string, checked: boolean) => {
     setIsPrivate(checked);
     if (onVisibilityChange) {
@@ -44,6 +46,7 @@ const DocumentCard = ({
   };
 
   const handleViewClick = () => {
+    console.log("DocumentCard - handleViewClick called for:", document.file_name);
     onView(document.file_path, document.file_type);
   };
 
