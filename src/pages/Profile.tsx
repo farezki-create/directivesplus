@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
+import { format } from "date-fns";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,13 +14,30 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+
 import { useAuth } from "@/contexts/AuthContext";
 
-// Profile schema
+// Profile schema avec validation
 const profileSchema = z.object({
-  firstName: z.string().min(2, "Prénom requis"),
-  lastName: z.string().min(2, "Nom requis"),
+  firstName: z.string().min(2, "Prénom requis (2 caractères minimum)"),
+  lastName: z.string().min(2, "Nom requis (2 caractères minimum)"),
   email: z.string().email("Email invalide").optional(),
+  birthDate: z.date().optional(),
+  phoneNumber: z.string()
+    .regex(/^[0-9+\s-]{6,15}$/, "Numéro de téléphone invalide")
+    .optional()
+    .or(z.literal('')),
+  address: z.string().optional(),
+  city: z.string().optional(),
+  postalCode: z.string()
+    .regex(/^[0-9]{5}$/, "Code postal invalide (5 chiffres)")
+    .optional()
+    .or(z.literal('')),
+  country: z.string().optional(),
 });
 
 type Profile = {
@@ -27,6 +45,12 @@ type Profile = {
   first_name: string | null;
   last_name: string | null;
   email: string; // We'll get this from auth
+  birth_date: Date | null;
+  phone_number: string | null;
+  address: string | null;
+  city: string | null;
+  postal_code: string | null;
+  country: string | null;
   role: "patient" | "medecin" | "institution"; // We'll get this from auth context
 };
 
@@ -42,6 +66,12 @@ export default function Profile() {
       firstName: "",
       lastName: "",
       email: "",
+      birthDate: undefined,
+      phoneNumber: "",
+      address: "",
+      city: "",
+      postalCode: "",
+      country: "",
     },
   });
 
@@ -84,10 +114,20 @@ export default function Profile() {
           };
           
           setProfile(enrichedProfile as Profile);
+          
+          // Transform the date string to a Date object if it exists
+          const birthDate = data.birth_date ? new Date(data.birth_date) : undefined;
+          
           form.reset({
             firstName: data.first_name || "",
             lastName: data.last_name || "",
             email: user.email || "",
+            birthDate: birthDate,
+            phoneNumber: data.phone_number || "",
+            address: data.address || "",
+            city: data.city || "",
+            postalCode: data.postal_code || "",
+            country: data.country || "",
           });
         }
       } catch (error: any) {
@@ -100,7 +140,7 @@ export default function Profile() {
     };
 
     fetchProfile();
-  }, [navigate]);
+  }, [navigate, form]);
 
   // Update profile
   async function onSubmit(values: z.infer<typeof profileSchema>) {
@@ -108,12 +148,21 @@ export default function Profile() {
       setIsLoading(true);
 
       if (!profile) return;
+      
+      // Format the birthDate for the database if it exists
+      const formattedBirthDate = values.birthDate ? values.birthDate.toISOString().split('T')[0] : null;
 
       const { error } = await supabase
         .from("profiles")
         .update({
           first_name: values.firstName,
           last_name: values.lastName,
+          birth_date: formattedBirthDate,
+          phone_number: values.phoneNumber,
+          address: values.address,
+          city: values.city,
+          postal_code: values.postalCode,
+          country: values.country,
         })
         .eq("id", profile.id);
 
@@ -131,6 +180,12 @@ export default function Profile() {
         ...profile,
         first_name: values.firstName,
         last_name: values.lastName,
+        birth_date: values.birthDate,
+        phone_number: values.phoneNumber,
+        address: values.address,
+        city: values.city,
+        postal_code: values.postalCode,
+        country: values.country,
       });
     } catch (error: any) {
       toast.error("Une erreur est survenue", {
@@ -248,6 +303,7 @@ export default function Profile() {
                   )}
                 />
               </div>
+              
               <FormField
                 control={form.control}
                 name="email"
@@ -264,6 +320,121 @@ export default function Profile() {
                   </FormItem>
                 )}
               />
+              
+              <FormField
+                control={form.control}
+                name="birthDate"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Date de naissance</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "w-full pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value ? (
+                              format(field.value, "dd/MM/yyyy")
+                            ) : (
+                              <span>Choisir une date</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          disabled={(date) =>
+                            date > new Date() || date < new Date("1900-01-01")
+                          }
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="phoneNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Numéro de téléphone</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Téléphone" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="address"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Adresse</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Adresse" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="postalCode"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Code postal</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Code postal" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="city"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Ville</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Ville" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
+              <FormField
+                control={form.control}
+                name="country"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Pays</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Pays" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
               <div className="mt-6">
                 <Button
                   type="submit"
