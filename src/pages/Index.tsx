@@ -6,7 +6,7 @@ import Hero from "../components/Hero";
 import Features from "../components/Features";
 import Footer from "../components/Footer";
 import DirectivesInfo from "../components/DirectivesInfo";
-import { FileText, MessageSquare, Heart } from "lucide-react";
+import { FileText, MessageSquare } from "lucide-react";
 import ChatAssistant from "../components/ChatAssistant";
 
 const Index = () => {
@@ -31,15 +31,6 @@ const Index = () => {
               <FileText className="mr-2" size={20} />
               Accès documents sans connexion
             </Button>
-            
-            <Button 
-              onClick={() => navigate('/commentaires')}
-              variant="outline"
-              className="border-directiveplus-600 text-directiveplus-700 hover:bg-directiveplus-50 text-lg py-6 px-8"
-            >
-              <MessageSquare className="mr-2" size={20} />
-              Voir les commentaires
-            </Button>
           </div>
           <p className="mt-3 text-sm text-gray-600">
             Accédez aux directives anticipées ou aux données médicales avec un code d'accès
@@ -49,6 +40,18 @@ const Index = () => {
           <DirectivesInfo />
         </section>
         <Features />
+        
+        {/* Bouton Voir commentaires en bas de page */}
+        <div className="container mx-auto py-8 text-center mb-8">
+          <Button 
+            onClick={() => navigate('/commentaires')}
+            variant="outline"
+            className="border-directiveplus-600 text-directiveplus-700 hover:bg-directiveplus-50 text-lg py-6 px-8"
+          >
+            <MessageSquare className="mr-2" size={20} />
+            Voir les commentaires
+          </Button>
+        </div>
       </main>
       <Footer />
       <ChatAssistant />

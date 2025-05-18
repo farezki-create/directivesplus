@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { MessageSquare, Send, X } from 'lucide-react';
+import { MessageSquare, Send, X, Link as LinkIcon } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { setPerplexityApiKey, getPerplexityApiKey, sendChatMessage, ChatMessage } from '@/utils/perplexityService';
 
@@ -66,11 +66,14 @@ const ChatAssistant = ({ onClose }: ChatAssistantProps) => {
     
     try {
       // Add system message if this is the first message
+      const systemMessage: ChatMessage = { 
+        role: 'system', 
+        content: 'Vous êtes un assistant pour DirectivesPlus, une plateforme de gestion des directives anticipées médicales. ' +
+                'Répondez de façon utile, précise et concise. Incluez TOUJOURS des références à la fin de votre réponse sous forme d\'une liste de sources. Répondez en français.'
+      };
+      
       const allMessages: ChatMessage[] = messages.length === 0 
-        ? [
-            { role: 'system', content: 'Vous êtes un assistant pour DirectivesPlus, une plateforme de gestion des directives anticipées médicales. Répondez de façon utile, précise et concise. Répondez en français.' },
-            userMessage
-          ]
+        ? [systemMessage, userMessage]
         : [...messages, userMessage];
       
       const response = await sendChatMessage({
@@ -103,6 +106,45 @@ const ChatAssistant = ({ onClose }: ChatAssistantProps) => {
   const handleClose = () => {
     setIsOpen(false);
     if (onClose) onClose();
+  };
+
+  // Function to format message content to highlight references
+  const formatMessageContent = (content: string) => {
+    // Check if the content has references section
+    const hasReferences = content.includes("Références:") || 
+                          content.includes("Sources:") || 
+                          content.includes("Références :") || 
+                          content.includes("Sources :");
+    
+    if (!hasReferences) return content;
+    
+    // Split the content into main text and references
+    let mainText, references;
+    
+    if (content.includes("Références:")) {
+      [mainText, references] = content.split("Références:");
+    } else if (content.includes("Références :")) {
+      [mainText, references] = content.split("Références :");
+    } else if (content.includes("Sources:")) {
+      [mainText, references] = content.split("Sources:");
+    } else {
+      [mainText, references] = content.split("Sources :");
+    }
+    
+    return (
+      <>
+        <div>{mainText}</div>
+        {references && (
+          <div className="mt-2 pt-2 border-t border-gray-200">
+            <div className="flex items-center text-xs font-medium text-gray-500 mb-1">
+              <LinkIcon className="h-3 w-3 mr-1" />
+              Références:
+            </div>
+            <div className="text-xs text-gray-600">{references}</div>
+          </div>
+        )}
+      </>
+    );
   };
 
   return (
@@ -177,7 +219,13 @@ const ChatAssistant = ({ onClose }: ChatAssistantProps) => {
                               : 'bg-directiveplus-50 mr-4 rounded-br-none'
                           } p-3 rounded-xl`}
                         >
-                          <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                          {msg.role === 'user' ? (
+                            <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                          ) : (
+                            <div className="text-sm whitespace-pre-wrap">
+                              {formatMessageContent(msg.content)}
+                            </div>
+                          )}
                         </div>
                       ))}
                       {isLoading && (

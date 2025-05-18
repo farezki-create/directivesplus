@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { Menu, X, User, UserPlus, LogOut, Heart } from "lucide-react";
+import { Menu, X, User, UserPlus, LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const Header = () => {
@@ -31,10 +31,6 @@ const Header = () => {
           
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8">
-            <Link to="/soutenir" className="text-directiveplus-600 hover:text-directiveplus-700 px-3 py-2 font-medium flex items-center">
-              <Heart className="mr-1 h-4 w-4" />
-              Soutenir
-            </Link>
             {profile?.role === "institution" && (
               <Link to="/admin" className="text-directiveplus-600 hover:text-directiveplus-700 px-3 py-2 font-medium">
                 Administration
@@ -103,14 +99,6 @@ const Header = () => {
       {isMenuOpen && (
         <div className="md:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white shadow-md">
-            <Link 
-              to="/soutenir" 
-              className="block px-3 py-2 text-directiveplus-600 hover:text-directiveplus-700 font-medium flex items-center"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              <Heart className="mr-1 h-4 w-4" />
-              Soutenir
-            </Link>
             {profile?.role === "institution" && (
               <Link 
                 to="/admin" 
