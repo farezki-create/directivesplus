@@ -34,15 +34,6 @@ const Header = () => {
             <Link to="/" className="text-gray-700 hover:text-directiveplus-600 px-3 py-2 font-medium">
               Accueil
             </Link>
-            <a href="#features" className="text-gray-700 hover:text-directiveplus-600 px-3 py-2 font-medium">
-              Fonctionnalités
-            </a>
-            <a href="#testimonials" className="text-gray-700 hover:text-directiveplus-600 px-3 py-2 font-medium">
-              Témoignages
-            </a>
-            <a href="#" className="text-gray-700 hover:text-directiveplus-600 px-3 py-2 font-medium">
-              Contact
-            </a>
             {profile?.role === "institution" && (
               <Link to="/admin" className="text-directiveplus-600 hover:text-directiveplus-700 px-3 py-2 font-medium">
                 Administration
@@ -118,27 +109,6 @@ const Header = () => {
             >
               Accueil
             </Link>
-            <a 
-              href="#features" 
-              className="block px-3 py-2 text-gray-700 hover:text-directiveplus-600 font-medium"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Fonctionnalités
-            </a>
-            <a 
-              href="#testimonials" 
-              className="block px-3 py-2 text-gray-700 hover:text-directiveplus-600 font-medium"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Témoignages
-            </a>
-            <a 
-              href="#" 
-              className="block px-3 py-2 text-gray-700 hover:text-directiveplus-600 font-medium"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Contact
-            </a>
             {profile?.role === "institution" && (
               <Link 
                 to="/admin" 

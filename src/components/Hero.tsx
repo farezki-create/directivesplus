@@ -61,9 +61,16 @@ const Hero = () => {
           {/* Features Section */}
           <div className="mt-16 max-w-4xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {/* Feature 1 */}
+              {/* Feature 1 - Simple et guidé with image */}
               <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-                <h3 className="font-semibold text-lg mb-2 text-directiveplus-700">Simple et guidé</h3>
+                <div className="flex flex-col items-center mb-3">
+                  <img 
+                    src="/placeholder.svg" 
+                    alt="Processus guidé" 
+                    className="w-20 h-20 mb-3 object-cover"
+                  />
+                  <h3 className="font-semibold text-lg text-directiveplus-700">Simple et guidé</h3>
+                </div>
                 <p className="text-gray-600">Un processus pas à pas pour vous accompagner dans la rédaction.</p>
               </div>
               
@@ -86,9 +93,16 @@ const Hero = () => {
                 </p>
               </div>
               
-              {/* Feature 3 */}
+              {/* Feature 3 - Facilement partageable with image */}
               <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-                <h3 className="font-semibold text-lg mb-2 text-directiveplus-700">Facilement partageable</h3>
+                <div className="flex flex-col items-center mb-3">
+                  <img 
+                    src="/placeholder.svg" 
+                    alt="Partage facile" 
+                    className="w-20 h-20 mb-3 object-cover"
+                  />
+                  <h3 className="font-semibold text-lg text-directiveplus-700">Facilement partageable</h3>
+                </div>
                 <p className="text-gray-600">Télécharger, partager, imprimer: gérez vos directives comme vous le souhaitez.</p>
               </div>
             </div>
