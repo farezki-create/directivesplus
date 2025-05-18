@@ -2,9 +2,10 @@
 import React from 'react';
 import { Star } from 'lucide-react';
 import { TestimonialList } from '@/components/TestimonialList';
+import { Testimonial } from '@/components/TestimonialList';
 
 const TestimonialsList = () => {
-  const testimonials = [
+  const testimonials: Testimonial[] = [
     {
       id: '1',
       name: 'Marie Dupont',
@@ -39,10 +40,10 @@ const TestimonialsList = () => {
 
   // Grouper les témoignages par catégorie
   const groupedTestimonials = {
-    general: testimonials.filter(t => t.itemType === 'general'),
-    questionnaires: testimonials.filter(t => t.itemType === 'questionnaires'),
-    acces: testimonials.filter(t => t.itemType === 'acces'),
-    medical: testimonials.filter(t => t.itemType === 'medical')
+    general: testimonials.filter(t => t.itemType === 'general') as Testimonial[],
+    questionnaires: testimonials.filter(t => t.itemType === 'questionnaires') as Testimonial[],
+    acces: testimonials.filter(t => t.itemType === 'acces') as Testimonial[],
+    medical: testimonials.filter(t => t.itemType === 'medical') as Testimonial[]
   };
 
   return (
