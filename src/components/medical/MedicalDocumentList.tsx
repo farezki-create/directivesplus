@@ -49,7 +49,11 @@ const MedicalDocumentList = ({
           onView={() => onView(doc.file_path, doc.file_type)}
           onDelete={() => onDelete(doc.id)}
           onVisibilityChange={onVisibilityChange ? 
-            (isPrivate: boolean) => onVisibilityChange(doc.id, isPrivate)
+            // Fix: Adapt the function signature to match what DocumentCard expects
+            (isPrivate: boolean) => {
+              // Here we need to explicitly pass the document ID first, then the isPrivate boolean
+              onVisibilityChange(doc.id, isPrivate);
+            }
             : undefined}
         />
       ))}
