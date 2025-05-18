@@ -19,7 +19,6 @@ interface DirectivesDocumentListProps {
   documents: Document[];
   onDownload: (filePath: string, fileName: string) => void;
   onPrint: (filePath: string, contentType?: string) => void;
-  onShare: (documentId: string) => void;
   onView: (filePath: string, contentType?: string) => void;
   onDelete: (documentId: string) => void;
   onVisibilityChange?: (documentId: string, isPrivate: boolean) => void;
@@ -29,7 +28,6 @@ const DirectivesDocumentList: FC<DirectivesDocumentListProps> = ({
   documents,
   onDownload,
   onPrint,
-  onShare,
   onView,
   onDelete,
   onVisibilityChange
@@ -48,7 +46,6 @@ const DirectivesDocumentList: FC<DirectivesDocumentListProps> = ({
           document={doc}
           onDownload={onDownload}
           onPrint={onPrint}
-          onShare={onShare}
           onView={onView}
           onDelete={onDelete}
           onVisibilityChange={onVisibilityChange}

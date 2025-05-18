@@ -3,7 +3,6 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import {
   Download,
-  Share2,
   Eye,
   Trash,
   Printer
@@ -12,7 +11,6 @@ import {
 interface DocumentActionsProps {
   onView: () => void;
   onDownload: () => void;
-  onShare: () => void;
   onDelete: () => void;
   onPrint?: () => void;
 }
@@ -20,14 +18,12 @@ interface DocumentActionsProps {
 const DocumentActions = ({
   onView,
   onDownload,
-  onShare,
   onDelete,
   onPrint
 }: DocumentActionsProps) => {
   console.log("DocumentActions - Handlers disponibles:", { 
     onView: !!onView, 
     onDownload: !!onDownload, 
-    onShare: !!onShare, 
     onDelete: !!onDelete,
     onPrint: !!onPrint
   });
@@ -78,20 +74,6 @@ const DocumentActions = ({
           Imprimer
         </Button>
       )}
-      <Button
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          console.log("DocumentActions - Bouton Partager cliqué");
-          onShare();
-        }}
-        size="sm"
-        variant="outline"
-        className="text-xs"
-      >
-        <Share2 className="h-3 w-3 mr-1" />
-        Partager
-      </Button>
       <Button
         onClick={(e) => {
           e.preventDefault();

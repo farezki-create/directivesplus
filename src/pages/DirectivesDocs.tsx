@@ -1,4 +1,3 @@
-
 import { useAccessCode } from "@/hooks/useAccessCode";
 import { useDirectivesDocuments } from "@/hooks/useDirectivesDocuments";
 import { useAuth } from "@/contexts/AuthContext";
@@ -58,7 +57,6 @@ const DirectivesDocs = () => {
           onUploadComplete={handleUploadComplete}
           onDownload={handleDownload}
           onPrint={handlePrint}
-          onShare={handleShare}
           onView={handleView}
           onDelete={confirmDelete}
           accessCode={accessCode}

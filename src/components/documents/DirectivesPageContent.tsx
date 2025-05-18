@@ -14,7 +14,6 @@ interface DirectivesPageContentProps {
   onUploadComplete: (url: string, fileName: string, isPrivate: boolean) => void;
   onDownload: (filePath: string, fileName: string) => void;
   onPrint: (filePath: string, contentType?: string) => void;
-  onShare: (documentId: string) => void;
   onView: (filePath: string, contentType?: string) => void;
   onDelete: (documentId: string) => void;
   accessCode?: string;
@@ -33,7 +32,6 @@ const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
   onUploadComplete,
   onDownload,
   onPrint,
-  onShare,
   onView,
   onDelete,
   accessCode,
@@ -66,7 +64,6 @@ const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
         documents={documents}
         onDownload={onDownload}
         onPrint={onPrint}
-        onShare={onShare}
         onView={onView}
         onDelete={onDelete}
         onVisibilityChange={(id, isPrivate) => {

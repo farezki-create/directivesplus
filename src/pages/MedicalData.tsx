@@ -86,7 +86,6 @@ const MedicalData = () => {
             documents={documents}
             onDownload={documentActions.handleDownload}
             onPrint={documentActions.handlePrint}
-            onShare={documentActions.handleShare}
             onView={documentActions.handleView}
             onDelete={documentActions.confirmDelete}
             onVisibilityChange={documentActions.handleVisibilityChange}

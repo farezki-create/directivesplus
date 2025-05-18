@@ -18,7 +18,6 @@ interface MedicalDocumentListProps {
   documents: Document[];
   onDownload: (filePath: string, fileName: string) => void;
   onPrint: (filePath: string, fileType?: string) => void;
-  onShare: (documentId: string) => void;
   onView: (filePath: string, fileType?: string) => void;
   onDelete: (documentId: string) => void;
   onVisibilityChange?: (documentId: string, isPrivate: boolean) => void;
@@ -28,7 +27,6 @@ const MedicalDocumentList = ({
   documents,
   onDownload,
   onPrint,
-  onShare,
   onView,
   onDelete,
   onVisibilityChange
@@ -45,7 +43,6 @@ const MedicalDocumentList = ({
           document={doc}
           onDownload={onDownload}
           onPrint={onPrint}
-          onShare={onShare}
           onView={onView}
           onDelete={onDelete}
           onVisibilityChange={onVisibilityChange}
