@@ -13,7 +13,6 @@ interface DocumentActionsProps {
   onDownload: () => void;
   onDelete: () => void;
   onPrint?: () => void;
-  onShare?: () => void;
   hideShare?: boolean;
 }
 
@@ -24,10 +23,21 @@ const DocumentActions = ({
   onPrint,
   hideShare = false
 }: DocumentActionsProps) => {
+  console.log("DocumentActions - Handlers disponibles:", { 
+    onView: !!onView,
+    onDownload: !!onDownload,
+    onDelete: !!onDelete,
+    onPrint: !!onPrint
+  });
+
   return (
     <div className="flex flex-wrap justify-end gap-2">
       <Button
-        onClick={onView}
+        onClick={(e) => {
+          e.preventDefault();
+          console.log("Bouton Voir et imprimer cliqué");
+          onView();
+        }}
         size="sm"
         variant="outline"
         className="text-xs"
@@ -36,7 +46,10 @@ const DocumentActions = ({
         Voir et imprimer
       </Button>
       <Button
-        onClick={onDownload}
+        onClick={(e) => {
+          e.preventDefault();
+          onDownload();
+        }}
         size="sm"
         variant="outline"
         className="text-xs"
@@ -45,7 +58,10 @@ const DocumentActions = ({
         Télécharger
       </Button>
       <Button
-        onClick={onDelete}
+        onClick={(e) => {
+          e.preventDefault();
+          onDelete();
+        }}
         size="sm"
         variant="outline"
         className="text-xs text-red-500 hover:text-red-700 hover:border-red-200"
@@ -58,3 +74,4 @@ const DocumentActions = ({
 };
 
 export default DocumentActions;
+

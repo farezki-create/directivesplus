@@ -12,6 +12,8 @@ interface MedicalDocumentActionsProps {
   previewDocument: string | null;
   setPreviewDocument: (path: string | null) => void;
   handleDelete: () => Promise<void>;
+  handleDownload?: (filePath: string, fileName: string) => void;
+  handlePrint?: (filePath: string, fileType?: string) => void;
 }
 
 const MedicalDocumentActions = ({
@@ -19,8 +21,12 @@ const MedicalDocumentActions = ({
   setDocumentToDelete,
   previewDocument,
   setPreviewDocument,
-  handleDelete
+  handleDelete,
+  handleDownload,
+  handlePrint
 }: MedicalDocumentActionsProps) => {
+  console.log("MedicalDocumentActions - previewDocument:", previewDocument);
+  
   return (
     <>
       <DeleteConfirmationDialog 
@@ -33,10 +39,18 @@ const MedicalDocumentActions = ({
         filePath={previewDocument} 
         onOpenChange={(open) => {
           if (!open) setPreviewDocument(null);
-        }} 
+        }}
+        onDownload={handleDownload ? (filePath) => {
+          const fileName = filePath.split('/').pop() || 'document';
+          handleDownload(filePath, fileName);
+        } : undefined}
+        onPrint={handlePrint ? (filePath) => {
+          handlePrint(filePath);
+        } : undefined}
       />
     </>
   );
 };
 
 export default MedicalDocumentActions;
+

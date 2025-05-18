@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -96,6 +95,8 @@ const MedicalData = () => {
       
       <MedicalDocumentActions
         {...documentActions}
+        handleDownload={documentActions.handleDownload}
+        handlePrint={documentActions.handlePrint}
       />
       
       <footer className="bg-white py-6 border-t mt-auto">

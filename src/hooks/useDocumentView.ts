@@ -8,7 +8,18 @@ export const useDocumentView = () => {
 
   const handleView = (filePath: string, fileType: string = "application/pdf") => {
     try {
-      console.log("Visualisation du document:", filePath, fileType);
+      console.log("Demande de visualisation du document:", filePath, fileType);
+      
+      if (!filePath) {
+        console.error("Tentative de visualisation avec un chemin vide");
+        toast({
+          title: "Erreur",
+          description: "Impossible d'afficher le document: chemin invalide",
+          variant: "destructive"
+        });
+        return;
+      }
+
       viewDocument(filePath, fileType, setPreviewDocument);
     } catch (error) {
       console.error("Erreur lors de l'affichage du document:", error);
@@ -22,3 +33,4 @@ export const useDocumentView = () => {
 
   return { handleView };
 };
+

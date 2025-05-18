@@ -1,4 +1,3 @@
-
 import { toast } from "@/hooks/use-toast";
 
 /**
@@ -103,7 +102,18 @@ export const viewDocument = (
 ) => {
   try {
     console.log("Visualisation du document:", filePath, fileType);
-    setPreviewDocument(filePath);
+    // Correction: Assurez-vous que le chemin du document est bien passé à la fonction setPreviewDocument
+    if (filePath) {
+      setPreviewDocument(filePath);
+      console.log("Document mis en prévisualisation:", filePath);
+    } else {
+      console.error("Chemin de fichier manquant pour la visualisation");
+      toast({
+        title: "Erreur",
+        description: "Impossible d'ouvrir le document: chemin manquant",
+        variant: "destructive"
+      });
+    }
   } catch (error) {
     console.error("Erreur lors de l'ouverture du document:", error);
     toast({
