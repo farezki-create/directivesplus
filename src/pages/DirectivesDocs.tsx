@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -99,33 +98,26 @@ const DirectivesDocs = () => {
   };
 
   const handlePreviewPrint = (filePath: string) => {
-    const { isImage } = detectDocumentType(filePath);
-    printDocument(filePath, isImage ? "image/jpeg" : "application/pdf");
+    const fileType = detectFileType(filePath);
+    printDocument(filePath, fileType);
   };
   
   // Helper function to detect document type
-  const detectDocumentType = (filePath: string) => {
-    const isAudio = 
-      filePath.includes('audio') || 
-      filePath.endsWith('.mp3') || 
-      filePath.endsWith('.wav') || 
-      filePath.endsWith('.ogg');
-    
-    const isPdf = 
-      filePath.includes('pdf') || 
-      filePath.endsWith('.pdf') || 
-      filePath.includes('application/pdf');
-    
-    const isImage = 
-      filePath.includes('image') || 
-      filePath.endsWith('.jpg') || 
-      filePath.endsWith('.jpeg') || 
-      filePath.endsWith('.png') || 
-      filePath.endsWith('.gif') || 
-      filePath.includes('image/jpeg') || 
-      filePath.includes('image/png');
-
-    return { isAudio, isPdf, isImage };
+  const detectFileType = (filePath: string) => {
+    if (filePath.includes('image') || 
+        filePath.endsWith('.jpg') || 
+        filePath.endsWith('.jpeg') || 
+        filePath.endsWith('.png') || 
+        filePath.endsWith('.gif')) {
+      return 'image/jpeg';
+    } else if (filePath.includes('pdf') || filePath.endsWith('.pdf')) {
+      return 'application/pdf';
+    } else if (filePath.includes('audio') || 
+               filePath.endsWith('.mp3') || 
+               filePath.endsWith('.wav')) {
+      return 'audio/mpeg';
+    }
+    return 'application/pdf'; // default
   };
 
   if (isLoading || loading) {

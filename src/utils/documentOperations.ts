@@ -55,18 +55,28 @@ export const shareDocument = async (documentId: string) => {
     
     // Check if Web Share API is available
     if (navigator.share) {
-      await navigator.share({
-        title: "Partage de document DirectivesPlus",
-        text: "Consultez ce document sur DirectivesPlus",
-        url: shareUrl
-      });
-      
-      toast({
-        title: "Partage réussi",
-        description: "Le document a été partagé avec succès"
-      });
+      try {
+        await navigator.share({
+          title: "Partage de document DirectivesPlus",
+          text: "Consultez ce document sur DirectivesPlus",
+          url: shareUrl
+        });
+        
+        toast({
+          title: "Partage réussi",
+          description: "Le document a été partagé avec succès"
+        });
+      } catch (error) {
+        // Si l'utilisateur annule le partage ou si une autre erreur se produit
+        console.error("Erreur lors du partage:", error);
+        
+        // On n'affiche pas d'erreur pour une annulation
+        if (error.name !== "AbortError") {
+          throw error; // Relancer l'erreur pour le bloc catch externe
+        }
+      }
     } else {
-      // Fallback for browsers without Web Share API
+      // Fallback pour les navigateurs sans Web Share API
       await navigator.clipboard.writeText(shareUrl);
       toast({
         title: "Lien copié",
@@ -75,13 +85,11 @@ export const shareDocument = async (documentId: string) => {
     }
   } catch (error) {
     console.error("Erreur lors du partage du document:", error);
-    // Don't show error for user-aborted sharing
-    if (error.name !== "AbortError") {
-      toast({
-        title: "Information",
-        description: "Le dialogue de partage a été ouvert. Utilisez les options disponibles pour partager le document."
-      });
-    }
+    toast({
+      title: "Erreur",
+      description: "Impossible de partager le document. Vérifiez les permissions de votre navigateur.",
+      variant: "destructive"
+    });
   }
 };
 
@@ -150,11 +158,9 @@ export const printDocument = (filePath: string, fileType: string = "application/
             <body>
               <img src="${filePath}" alt="Document à imprimer" />
               <script>
-                // Attendre le chargement complet de l'image
                 window.onload = function() {
                   setTimeout(function() {
                     window.print();
-                    // Fermer la fenêtre après l'impression (peut être bloqué par le navigateur)
                     setTimeout(function() { window.close(); }, 500);
                   }, 500);
                 }
@@ -170,20 +176,11 @@ export const printDocument = (filePath: string, fileType: string = "application/
     // Pour les PDF, ouvrir directement pour impression
     const printWindow = window.open(filePath, '_blank');
     if (printWindow) {
-      printWindow.addEventListener('load', function() {
-        try {
-          setTimeout(() => {
-            printWindow.print();
-          }, 1000); // Délai pour s'assurer que le contenu est chargé
-        } catch (err) {
-          console.error("Erreur lors de l'impression:", err);
-          toast({
-            title: "Erreur",
-            description: "Problème lors de l'impression, essayez d'utiliser le bouton d'impression du navigateur",
-            variant: "destructive"
-          });
-        }
-      });
+      printWindow.onload = function() {
+        setTimeout(() => {
+          printWindow.print();
+        }, 1000);
+      };
     } else {
       throw new Error("Impossible d'ouvrir une nouvelle fenêtre. Vérifiez que les popups sont autorisés.");
     }

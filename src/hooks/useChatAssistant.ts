@@ -23,7 +23,9 @@ export const useChatAssistant = () => {
       const systemMessage: ChatMessage = { 
         role: 'system', 
         content: 'Vous êtes un assistant pour DirectivesPlus, une plateforme de gestion des directives anticipées médicales. ' +
-                'Répondez de façon utile, précise et concise. Incluez TOUJOURS des références à la fin de votre réponse sous forme d\'une liste de sources. Répondez en français.'
+                'Répondez de façon très simple comme si vous parliez à un enfant de 8 ans. ' +
+                'Utilisez des exemples concrets et courts. Évitez les paragraphes et les mots compliqués. ' +
+                'Répondez en français sans inclure de références ni sources.'
       };
       
       const allMessages: ChatMessage[] = messages.length === 0 

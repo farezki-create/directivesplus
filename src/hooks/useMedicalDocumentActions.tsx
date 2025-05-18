@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useDocumentDeletion } from "./useDocumentDeletion";
 import { useDocumentPreview } from "./useDocumentPreview";
 import { useDocumentVisibility } from "./useDocumentVisibility";
-import { downloadDocument, printDocument, shareDocument, viewDocument } from "@/utils/documentOperations";
+import { downloadDocument, shareDocument, viewDocument, printDocument } from "@/utils/documentOperations";
 
 interface UseMedicalDocumentActionsProps {
   onDeleteComplete: () => void;

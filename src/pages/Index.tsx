@@ -35,9 +35,6 @@ const Index = () => {
             Accédez aux directives anticipées ou aux données médicales avec un code d'accès
           </p>
         </div>
-        <section id="en-savoir-plus" className="bg-gray-50 py-16">
-          <DirectivesInfo />
-        </section>
         
         {/* Bouton Voir commentaires en bas de page */}
         <div className="container mx-auto py-8 text-center mb-8">
