@@ -5,22 +5,22 @@ import { useDocumentVisibility } from "./useDocumentVisibility";
 import { useDocumentDownload } from "./useDocumentDownload";
 import { useDocumentPrint } from "./useDocumentPrint";
 import { useDocumentShare } from "./useDocumentShare";
-import { useDocumentView } from "./useDocumentView";
+import { useDocumentViewer } from "./useDocumentViewer";
 
 interface UseMedicalDocumentActionsProps {
   onDeleteComplete: () => void;
 }
 
 export const useMedicalDocumentActions = ({ onDeleteComplete }: UseMedicalDocumentActionsProps) => {
-  // Utilisation des hooks spécialisés
-  const { previewDocument, setPreviewDocument } = useDocumentPreview();
+  // Utilisation du hook combiné useDocumentViewer au lieu de useDocumentView et useDocumentPreview séparément
+  const { previewDocument, setPreviewDocument, handleView } = useDocumentViewer();
+  
   const { documentToDelete, setDocumentToDelete, confirmDelete, handleDelete } = 
     useDocumentDeletion({ onDeleteComplete, tableName: "medical_documents" });
   const { handleVisibilityChange } = useDocumentVisibility();
   const { handleDownload } = useDocumentDownload();
   const { handlePrint } = useDocumentPrint();
   const { handleShare } = useDocumentShare();
-  const { handleView } = useDocumentView();
 
   console.log("useMedicalDocumentActions - état actuel:", {
     previewDocument,

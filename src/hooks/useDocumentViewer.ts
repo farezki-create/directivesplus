@@ -15,8 +15,12 @@ export const useDocumentViewer = () => {
     try {
       console.log("useDocumentViewer - handleView appelé avec:", filePath, fileType);
       
-      // Use the viewDocument utility function
-      viewDocument(filePath, fileType, setPreviewDocument);
+      if (!filePath) {
+        throw new Error("Chemin de fichier invalide");
+      }
+      
+      // Directement définir le document à prévisualiser
+      setPreviewDocument(filePath);
       
       console.log("useDocumentViewer - Document prévisualisé:", filePath);
     } catch (error) {

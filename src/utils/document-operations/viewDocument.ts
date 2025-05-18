@@ -16,7 +16,10 @@ export const viewDocument = (
       throw new Error("Chemin de fichier invalide");
     }
     
+    // Set the document to preview directly
     setPreviewDocument(filePath);
+    
+    console.log("viewDocument - Document prévisualisé avec succès:", filePath);
   } catch (error) {
     console.error("Erreur lors de l'ouverture du document:", error);
     toast({

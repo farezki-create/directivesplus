@@ -1,12 +1,14 @@
 
+import { useCallback } from "react";
 import { toast } from "@/hooks/use-toast";
 import { viewDocument } from "@/utils/document-operations";
 
 /**
  * Simple hook for document viewing operations
+ * @deprecated Use useDocumentViewer instead
  */
 export const useDocumentView = () => {
-  const handleView = (filePath: string, fileType: string = "application/pdf") => {
+  const handleView = useCallback((filePath: string, fileType: string = "application/pdf") => {
     try {
       console.log("useDocumentView - handleView appelé avec:", filePath, fileType);
       
@@ -29,7 +31,7 @@ export const useDocumentView = () => {
         variant: "destructive"
       });
     }
-  };
+  }, []);
 
   return { handleView };
 };
