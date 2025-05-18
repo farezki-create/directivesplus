@@ -15,9 +15,10 @@ interface LoginFormProps {
   onVerificationSent: (email: string) => void;
   redirectPath: string;
   setRedirectInProgress: (value: boolean) => void;
+  onForgotPassword: () => void;
 }
 
-export const LoginForm = ({ onVerificationSent, redirectPath, setRedirectInProgress }: LoginFormProps) => {
+export const LoginForm = ({ onVerificationSent, redirectPath, setRedirectInProgress, onForgotPassword }: LoginFormProps) => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   
@@ -127,6 +128,15 @@ export const LoginForm = ({ onVerificationSent, redirectPath, setRedirectInProgr
             </FormItem>
           )}
         />
+        <div className="flex justify-end">
+          <button
+            type="button"
+            className="text-sm text-directiveplus-600 hover:underline"
+            onClick={onForgotPassword}
+          >
+            Mot de passe oublié ?
+          </button>
+        </div>
         <Button disabled={loading} type="submit" className="w-full">
           {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
           {loading ? "Connexion..." : "Se connecter"}

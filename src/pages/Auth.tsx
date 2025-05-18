@@ -9,12 +9,14 @@ import Header from "@/components/Header";
 import { LoginForm } from "@/features/auth/LoginForm";
 import { RegisterForm } from "@/features/auth/RegisterForm";
 import { VerificationAlert } from "@/features/auth/VerificationAlert";
+import { ForgotPasswordForm } from "@/features/auth/ForgotPasswordForm";
 
 const Auth = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [verificationSent, setVerificationSent] = useState(false);
   const [verificationEmail, setVerificationEmail] = useState("");
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const { isAuthenticated, isLoading } = useAuth();
   const [redirectInProgress, setRedirectInProgress] = useState(false);
   
@@ -61,6 +63,15 @@ const Auth = () => {
     );
   }
 
+  // Handle toggling forgot password form
+  const handleForgotPassword = () => {
+    setShowForgotPassword(true);
+  };
+
+  const handleCancelForgotPassword = () => {
+    setShowForgotPassword(false);
+  };
+
   return (
     <>
       <Header />
@@ -73,22 +84,27 @@ const Auth = () => {
           <CardContent className="grid gap-4">
             {verificationSent && <VerificationAlert email={verificationEmail} />}
             
-            <Tabs defaultValue="login">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="login">Connexion</TabsTrigger>
-                <TabsTrigger value="register">Inscription</TabsTrigger>
-              </TabsList>
-              <TabsContent value="login">
-                <LoginForm 
-                  onVerificationSent={handleVerificationSent}
-                  redirectPath={from} 
-                  setRedirectInProgress={setRedirectInProgress}
-                />
-              </TabsContent>
-              <TabsContent value="register">
-                <RegisterForm onVerificationSent={handleVerificationSent} />
-              </TabsContent>
-            </Tabs>
+            {showForgotPassword ? (
+              <ForgotPasswordForm onCancel={handleCancelForgotPassword} />
+            ) : (
+              <Tabs defaultValue="login">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="login">Connexion</TabsTrigger>
+                  <TabsTrigger value="register">Inscription</TabsTrigger>
+                </TabsList>
+                <TabsContent value="login">
+                  <LoginForm 
+                    onVerificationSent={handleVerificationSent}
+                    redirectPath={from} 
+                    setRedirectInProgress={setRedirectInProgress}
+                    onForgotPassword={handleForgotPassword}
+                  />
+                </TabsContent>
+                <TabsContent value="register">
+                  <RegisterForm onVerificationSent={handleVerificationSent} />
+                </TabsContent>
+              </Tabs>
+            )}
           </CardContent>
           <CardFooter>
             <p className="text-xs text-gray-500 text-center w-full">
