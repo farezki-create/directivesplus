@@ -48,7 +48,12 @@ const MedicalDocumentList = ({
           onShare={() => onShare(doc.id)}
           onView={() => onView(doc.file_path, doc.file_type)}
           onDelete={() => onDelete(doc.id)}
-          onVisibilityChange={onVisibilityChange ? (isPrivate: boolean) => onVisibilityChange(doc.id, isPrivate) : undefined}
+          onVisibilityChange={onVisibilityChange ? 
+            (isPrivate: boolean) => {
+              if (onVisibilityChange) {
+                onVisibilityChange(doc.id, isPrivate);
+              }
+            } : undefined}
         />
       ))}
     </div>
