@@ -6,7 +6,8 @@ import Hero from "../components/Hero";
 import Features from "../components/Features";
 import Footer from "../components/Footer";
 import DirectivesInfo from "../components/DirectivesInfo";
-import { FileText } from "lucide-react";
+import { FileText, MessageSquare } from "lucide-react";
+import Testimonials from "../components/Testimonials";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -22,13 +23,24 @@ const Index = () => {
         <Hero />
         {/* Bouton d'accès aux documents */}
         <div className="container mx-auto py-8 text-center">
-          <Button 
-            onClick={handleAccessDocuments}
-            className="bg-directiveplus-600 hover:bg-directiveplus-700 text-lg py-6 px-8"
-          >
-            <FileText className="mr-2" size={20} />
-            Accès documents sans connexion
-          </Button>
+          <div className="flex flex-col md:flex-row gap-4 justify-center">
+            <Button 
+              onClick={handleAccessDocuments}
+              className="bg-directiveplus-600 hover:bg-directiveplus-700 text-lg py-6 px-8"
+            >
+              <FileText className="mr-2" size={20} />
+              Accès documents sans connexion
+            </Button>
+            
+            <Button 
+              onClick={() => navigate('/temoignages')}
+              variant="outline"
+              className="border-directiveplus-600 text-directiveplus-700 hover:bg-directiveplus-50 text-lg py-6 px-8"
+            >
+              <MessageSquare className="mr-2" size={20} />
+              Voir les témoignages
+            </Button>
+          </div>
           <p className="mt-3 text-sm text-gray-600">
             Accédez aux directives anticipées ou aux données médicales avec un code d'accès
           </p>
@@ -37,7 +49,7 @@ const Index = () => {
           <DirectivesInfo />
         </section>
         <Features />
-        {/* La section Testimonials a été supprimée */}
+        <Testimonials />
       </main>
       <Footer />
     </div>

@@ -27,6 +27,7 @@ import DataProtectionImpact from "./pages/DataProtectionImpact";
 import BackupPolicy from "./pages/BackupPolicy";
 import DataBreachProcedure from "./pages/DataBreachProcedure";
 import ReportDataBreach from "./pages/ReportDataBreach";
+import TestimonialsPage from "./pages/Testimonials";
 
 import "./App.css";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
@@ -51,6 +52,7 @@ const App = () => {
           <Route path="/politique-sauvegarde" element={<BackupPolicy />} />
           <Route path="/procedure-violation-donnees" element={<DataBreachProcedure />} />
           <Route path="/signaler-violation" element={<ReportDataBreach />} />
+          <Route path="/temoignages" element={<TestimonialsPage />} />
           
           {/* Questionnaire section routes with proper protection */}
           <Route path="/avis-general" element={<AvisGeneral />} />
