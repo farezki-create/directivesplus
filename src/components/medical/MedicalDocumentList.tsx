@@ -43,12 +43,12 @@ const MedicalDocumentList = ({
         <DocumentCard 
           key={doc.id}
           document={doc}
-          onDownload={onDownload}
+          onDownload={() => onDownload(doc.file_path, doc.file_name)}
           onPrint={() => onPrint(doc.file_path, doc.file_type)}
-          onShare={onShare}
-          onView={onView}
-          onDelete={onDelete}
-          onVisibilityChange={onVisibilityChange}
+          onShare={() => onShare(doc.id)}
+          onView={() => onView(doc.file_path, doc.file_type)}
+          onDelete={() => onDelete(doc.id)}
+          onVisibilityChange={onVisibilityChange ? (isPrivate) => onVisibilityChange(doc.id, isPrivate) : undefined}
         />
       ))}
     </div>

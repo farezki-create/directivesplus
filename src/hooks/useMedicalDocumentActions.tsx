@@ -13,8 +13,14 @@ export const useMedicalDocumentActions = ({ onDeleteComplete }: UseMedicalDocume
 
   const handleDownload = (filePath: string, fileName: string) => {
     try {
-      // Pour les fichiers audio, afficher dans une boîte de dialogue
-      if (filePath.includes('audio')) {
+      // Pour les fichiers audio ou autres formats prévisualisables, afficher dans une boîte de dialogue
+      if (filePath.includes('audio') || 
+          filePath.includes('pdf') || 
+          filePath.includes('image') ||
+          filePath.endsWith('.jpg') || 
+          filePath.endsWith('.jpeg') || 
+          filePath.endsWith('.png') || 
+          filePath.endsWith('.pdf')) {
         setPreviewDocument(filePath);
         return;
       }
@@ -38,6 +44,7 @@ export const useMedicalDocumentActions = ({ onDeleteComplete }: UseMedicalDocume
       // Pour les PDF et autres documents, télécharger et ouvrir
       const link = document.createElement('a');
       link.href = filePath;
+      link.download = fileName;
       link.target = '_blank';
       document.body.appendChild(link);
       link.click();
@@ -59,11 +66,21 @@ export const useMedicalDocumentActions = ({ onDeleteComplete }: UseMedicalDocume
 
   const handlePrint = (filePath: string, fileType: string = "application/pdf") => {
     try {
-      if (filePath.startsWith('data:') && filePath.includes('audio')) {
+      // Vérifier si c'est un fichier audio
+      if (filePath.includes('audio') || (fileType && fileType.includes('audio'))) {
         toast({
           title: "Information",
           description: "L'impression n'est pas disponible pour les fichiers audio."
         });
+        return;
+      }
+
+      // Pour les images et PDFs, utiliser la prévisualisation pour une meilleure expérience d'impression
+      if ((fileType && fileType.includes('image')) || 
+          (filePath.endsWith('.jpg') || filePath.endsWith('.jpeg') || filePath.endsWith('.png')) ||
+          (fileType && fileType.includes('pdf')) || 
+          filePath.endsWith('.pdf')) {
+        setPreviewDocument(filePath);
         return;
       }
 
@@ -110,25 +127,20 @@ export const useMedicalDocumentActions = ({ onDeleteComplete }: UseMedicalDocume
       }
 
       // Pour les PDF et autres documents
-      iframe.src = filePath;
-      iframe.onload = () => {
-        try {
-          iframe.contentWindow?.print();
-          setTimeout(() => {
-            document.body.removeChild(iframe);
-          }, 1000);
-        } catch (err) {
-          console.error("Erreur lors de l'impression:", err);
-          document.body.removeChild(iframe);
-          
-          // Fallback - ouvrir dans un nouvel onglet pour impression
-          const printWindow = window.open(filePath, '_blank');
-          if (printWindow) {
-            printWindow.focus();
-            printWindow.onload = () => printWindow.print();
+      const printWindow = window.open(filePath, '_blank');
+      if (printWindow) {
+        printWindow.addEventListener('load', function() {
+          try {
+            setTimeout(() => {
+              printWindow.print();
+            }, 1000);
+          } catch (err) {
+            console.error("Erreur lors de l'impression:", err);
           }
-        }
-      };
+        });
+      } else {
+        throw new Error("Impossible d'ouvrir une nouvelle fenêtre pour l'impression.");
+      }
     } catch (error) {
       console.error("Erreur lors de l'impression:", error);
       toast({
@@ -144,24 +156,17 @@ export const useMedicalDocumentActions = ({ onDeleteComplete }: UseMedicalDocume
     console.log("Partage du document:", documentId);
     toast({
       title: "Fonctionnalité en développement",
-      description: "Le partage de document sera bientôt disponible"
+      description: "Le partage de document sera bientôt disponible. Pour envoyer un email, veuillez utiliser la fonction de partage de votre navigateur."
     });
   };
   
   const handleView = (filePath: string, fileType: string = "application/pdf") => {
-    // Télécharger et ouvrir automatiquement le document
+    // Pour tous les types de fichiers, utiliser la prévisualisation
     try {
-      const link = document.createElement('a');
-      link.href = filePath;
-      link.target = '_blank';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      console.log("Visualisation du document:", filePath, fileType);
       
-      toast({
-        title: "Document ouvert",
-        description: "Votre document a été ouvert dans un nouvel onglet"
-      });
+      // Utiliser le dialogue de prévisualisation pour tous les types de fichiers
+      setPreviewDocument(filePath);
     } catch (error) {
       console.error("Erreur lors de l'ouverture du document:", error);
       toast({
