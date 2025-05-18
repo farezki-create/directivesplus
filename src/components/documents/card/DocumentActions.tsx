@@ -38,7 +38,7 @@ const DocumentActions = ({
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          console.log("Bouton Voir cliqué");
+          console.log("DocumentActions - Bouton Voir cliqué");
           onView();
         }}
         size="sm"
@@ -52,7 +52,7 @@ const DocumentActions = ({
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          console.log("Bouton Télécharger cliqué");
+          console.log("DocumentActions - Bouton Télécharger cliqué");
           onDownload();
         }}
         size="sm"
@@ -67,7 +67,7 @@ const DocumentActions = ({
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            console.log("Bouton Imprimer cliqué");
+            console.log("DocumentActions - Bouton Imprimer cliqué");
             onPrint();
           }}
           size="sm"
@@ -82,7 +82,7 @@ const DocumentActions = ({
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          console.log("Bouton Partager cliqué");
+          console.log("DocumentActions - Bouton Partager cliqué");
           onShare();
         }}
         size="sm"
@@ -96,7 +96,7 @@ const DocumentActions = ({
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          console.log("Bouton Supprimer cliqué");
+          console.log("DocumentActions - Bouton Supprimer cliqué");
           onDelete();
         }}
         size="sm"

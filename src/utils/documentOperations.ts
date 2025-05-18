@@ -6,11 +6,14 @@ import { toast } from "@/hooks/use-toast";
  */
 export const downloadDocument = (filePath: string, fileName: string) => {
   try {
+    console.log("downloadDocument - Téléchargement du document:", filePath, fileName);
+    
     // If it's a data URI (base64)
     if (filePath.startsWith('data:')) {
+      console.log("downloadDocument - Téléchargement d'un data URI");
       const link = document.createElement('a');
       link.href = filePath;
-      link.download = fileName;
+      link.download = fileName || "document";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -23,9 +26,10 @@ export const downloadDocument = (filePath: string, fileName: string) => {
     }
     
     // For other document types
+    console.log("downloadDocument - Téléchargement d'une URL standard");
     const link = document.createElement('a');
     link.href = filePath;
-    link.download = fileName;
+    link.download = fileName || filePath.split('/').pop() || "document";
     link.target = '_blank';
     document.body.appendChild(link);
     link.click();
@@ -66,7 +70,7 @@ export const shareDocument = async (documentId: string) => {
           title: "Partage réussi",
           description: "Le document a été partagé avec succès"
         });
-      } catch (error) {
+      } catch (error: any) {
         // Si l'utilisateur annule le partage ou si une autre erreur se produit
         console.error("Erreur lors du partage:", error);
         
@@ -102,7 +106,12 @@ export const viewDocument = (
   setPreviewDocument: (path: string | null) => void
 ) => {
   try {
-    console.log("Visualisation du document:", filePath, fileType);
+    console.log("viewDocument - Visualisation du document:", filePath, fileType);
+    
+    if (!filePath) {
+      throw new Error("Chemin de fichier invalide");
+    }
+    
     setPreviewDocument(filePath);
   } catch (error) {
     console.error("Erreur lors de l'ouverture du document:", error);
@@ -119,7 +128,11 @@ export const viewDocument = (
  */
 export const printDocument = (filePath: string, fileType: string = "application/pdf") => {
   try {
-    console.log("Impression du document:", filePath, fileType);
+    console.log("printDocument - Impression du document:", filePath, fileType);
+    
+    if (!filePath) {
+      throw new Error("Chemin de fichier invalide");
+    }
     
     // Vérifier si c'est un fichier audio
     if (filePath.includes('audio') || (fileType && fileType.includes('audio'))) {

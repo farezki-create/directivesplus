@@ -34,6 +34,8 @@ const DirectivesDocumentList: FC<DirectivesDocumentListProps> = ({
     return <EmptyDocumentsState />;
   }
 
+  console.log("DirectivesDocumentList - Rendering", documents.length, "documents");
+  
   return (
     <div className="grid gap-6">
       {documents.map((doc) => (

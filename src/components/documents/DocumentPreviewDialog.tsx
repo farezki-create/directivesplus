@@ -8,7 +8,7 @@ import { toast } from "@/hooks/use-toast";
 import DocumentPreviewHeader from "./preview/DocumentPreviewHeader";
 import PreviewContent from "./preview/PreviewContent";
 import PreviewFooter from "./preview/PreviewFooter";
-import { detectDocumentType, downloadFile, printDocument } from "./preview/documentUtils";
+import { detectDocumentType } from "./preview/documentUtils";
 
 interface DocumentPreviewDialogProps {
   filePath: string | null;
@@ -30,9 +30,6 @@ const DocumentPreviewDialog: FC<DocumentPreviewDialogProps> = ({
     console.log("DocumentPreviewDialog - handleDownload appelé");
     if (filePath && onDownload) {
       onDownload(filePath);
-    } else if (filePath) {
-      // Fallback si onDownload n'est pas fourni
-      downloadFile(filePath, toast);
     }
   };
   
@@ -40,19 +37,6 @@ const DocumentPreviewDialog: FC<DocumentPreviewDialogProps> = ({
     console.log("DocumentPreviewDialog - handlePrint appelé");
     if (filePath && onPrint) {
       onPrint(filePath);
-    } else if (filePath) {
-      // Fallback si onPrint n'est pas fourni
-      const { isAudio, isImage } = detectDocumentType(filePath);
-      
-      if (isAudio) {
-        toast({
-          title: "Information",
-          description: "L'impression n'est pas disponible pour les fichiers audio"
-        });
-        return;
-      }
-      
-      printDocument(filePath, isImage, toast);
     }
   };
   

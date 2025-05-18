@@ -25,6 +25,7 @@ export const detectDocumentType = (filePath: string) => {
 
 export const downloadFile = (filePath: string, toast: any) => {
   try {
+    console.log("downloadFile - Téléchargement du fichier:", filePath);
     const fileName = filePath.split('/').pop() || 'document';
     const link = document.createElement('a');
     link.href = filePath;
@@ -49,6 +50,7 @@ export const downloadFile = (filePath: string, toast: any) => {
 
 export const printDocument = (filePath: string, isImage: boolean, toast: any) => {
   try {
+    console.log("printDocument - Impression du fichier:", filePath, "isImage:", isImage);
     if (isImage) {
       const printWindow = window.open('', '_blank');
       if (printWindow) {
