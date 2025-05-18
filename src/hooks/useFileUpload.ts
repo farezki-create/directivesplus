@@ -66,7 +66,14 @@ export const useFileUpload = (
   };
 
   const uploadFile = async () => {
-    if (!file || !userId) return;
+    if (!file || !userId) {
+      toast({
+        title: "Aucun fichier sélectionné",
+        description: "Veuillez sélectionner un document à enregistrer",
+        variant: "destructive"
+      });
+      return;
+    }
     
     setUploading(true);
     
@@ -76,6 +83,9 @@ export const useFileUpload = (
       reader.onloadend = async () => {
         const base64data = reader.result as string;
         const table = documentType === 'medical' ? 'medical_documents' : 'pdf_documents';
+        
+        console.log(`Enregistrement du document dans la table: ${table}`);
+        console.log(`Type du document: ${file.type}`);
         
         // Créer un nouvel enregistrement dans la table appropriée
         const { data, error } = await supabase
@@ -95,8 +105,11 @@ export const useFileUpload = (
           .select();
         
         if (error) {
+          console.error("Erreur lors de l'enregistrement du document:", error);
           throw error;
         }
+        
+        console.log("Document enregistré avec succès:", data);
         
         // Appeler onUploadComplete avec le chemin du fichier, le nom et le statut privé
         onUploadComplete(base64data, file.name, isPrivate);
@@ -111,7 +124,7 @@ export const useFileUpload = (
         }
         
         toast({
-          title: "Document téléchargé",
+          title: "Document enregistré",
           description: "Votre document a été importé avec succès"
         });
       };
@@ -119,7 +132,7 @@ export const useFileUpload = (
       console.error("Erreur lors de l'upload du document:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de télécharger le document",
+        description: "Impossible d'enregistrer le document",
         variant: "destructive"
       });
     } finally {

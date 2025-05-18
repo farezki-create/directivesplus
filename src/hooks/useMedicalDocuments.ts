@@ -24,14 +24,20 @@ export const useMedicalDocuments = (user: User | null) => {
     
     try {
       setLoading(true);
+      console.log("Fetching medical documents for user:", user.id);
+      
       const { data, error } = await supabase
         .from('medical_documents')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching documents:", error);
+        throw error;
+      }
       
+      console.log("Retrieved documents:", data?.length || 0);
       setDocuments(data || []);
     } catch (error: any) {
       console.error("Erreur lors de la récupération des documents:", error);
@@ -52,6 +58,7 @@ export const useMedicalDocuments = (user: User | null) => {
   }, [user]);
 
   const handleUploadComplete = (url: string, fileName: string, isPrivate: boolean) => {
+    console.log("Document upload complete, refreshing list...");
     fetchDocuments();
     toast({
       title: "Document téléchargé",

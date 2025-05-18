@@ -11,6 +11,7 @@ interface Document {
   description?: string;
   content_type?: string;
   user_id: string;
+  is_private?: boolean;
 }
 
 interface MedicalDocumentListProps {
