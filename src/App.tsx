@@ -28,6 +28,8 @@ import BackupPolicy from "./pages/BackupPolicy";
 import DataBreachProcedure from "./pages/DataBreachProcedure";
 import ReportDataBreach from "./pages/ReportDataBreach";
 import Comments from "./pages/Comments";
+import LegalMentions from "./pages/LegalMentions";
+import CookieBanner from "./components/CookieBanner";
 
 import "./App.css";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
@@ -53,6 +55,7 @@ const App = () => {
           <Route path="/procedure-violation-donnees" element={<DataBreachProcedure />} />
           <Route path="/signaler-violation" element={<ReportDataBreach />} />
           <Route path="/commentaires" element={<Comments />} />
+          <Route path="/mentions-legales" element={<LegalMentions />} />
           
           {/* Questionnaire section routes with proper protection */}
           <Route path="/avis-general" element={<AvisGeneral />} />
@@ -67,6 +70,7 @@ const App = () => {
           
           <Route path="*" element={<NotFound />} />
         </Routes>
+        <CookieBanner />
         <Toaster />
       </AuthProvider>
     </Router>

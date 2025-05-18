@@ -1,4 +1,6 @@
 
+import { Link } from "react-router-dom";
+
 const Footer = () => {
   return (
     <footer className="bg-gray-900 text-gray-300 pt-12 pb-8">
@@ -70,8 +72,16 @@ const Footer = () => {
             <div className="mt-6">
               <h3 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Légal</h3>
               <ul className="space-y-2">
-                <li><a href="#" className="hover:text-white transition-colors">Confidentialité</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Conditions</a></li>
+                <li>
+                  <Link to="/politique-confidentialite" className="hover:text-white transition-colors">
+                    Confidentialité
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/mentions-legales" className="hover:text-white transition-colors">
+                    Mentions légales & CGU
+                  </Link>
+                </li>
               </ul>
             </div>
           </div>
@@ -80,15 +90,18 @@ const Footer = () => {
         {/* Footer Bottom */}
         <div className="border-t border-gray-800 pt-8 mt-8 flex flex-col md:flex-row justify-between items-center">
           <p>&copy; 2025 DirectivePlus. Tous droits réservés.</p>
-          <div className="mt-4 md:mt-0">
+          <div className="mt-4 md:mt-0 flex items-center gap-4">
             <select className="bg-gray-800 text-gray-300 py-1 px-3 rounded-md">
               <option>Français</option>
               <option>English</option>
             </select>
+            <span className="text-sm">
+              Contact: <a href="mailto:mesdirectives@directivesplus.fr" className="hover:text-white">mesdirectives@directivesplus.fr</a>
+            </span>
           </div>
         </div>
       </div>
-    </footer>
+    </div>
   );
 };
 
