@@ -27,16 +27,16 @@ function Calendar({
 
   function CustomCaption({ 
     displayMonth,
-    onMonthChange,
+    goToMonth,
   }: CaptionProps) {
     const month = displayMonth.toLocaleString('default', { month: 'long' });
     const year = displayMonth.getFullYear();
 
     const handleYearChange = (value: string) => {
-      if (onMonthChange) {
+      if (goToMonth) {
         const newDate = new Date(displayMonth);
         newDate.setFullYear(parseInt(value));
-        onMonthChange(newDate);
+        goToMonth(newDate);
       }
     };
 
