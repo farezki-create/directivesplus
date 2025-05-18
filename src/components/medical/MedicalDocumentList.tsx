@@ -9,7 +9,7 @@ interface Document {
   file_path: string;
   created_at: string;
   description?: string;
-  content_type?: string;
+  file_type?: string;  // Changed from content_type to file_type
   user_id: string;
   is_private?: boolean;
 }
@@ -17,9 +17,9 @@ interface Document {
 interface MedicalDocumentListProps {
   documents: Document[];
   onDownload: (filePath: string, fileName: string) => void;
-  onPrint: (filePath: string, contentType?: string) => void;
+  onPrint: (filePath: string, fileType?: string) => void; // Changed from contentType
   onShare: (documentId: string) => void;
-  onView: (filePath: string, contentType?: string) => void;
+  onView: (filePath: string, fileType?: string) => void; // Changed from contentType
   onDelete: (documentId: string) => void;
 }
 
@@ -42,7 +42,7 @@ const MedicalDocumentList = ({
           key={doc.id}
           document={doc}
           onDownload={onDownload}
-          onPrint={() => onPrint(doc.file_path, doc.content_type)}
+          onPrint={() => onPrint(doc.file_path, doc.file_type)}
           onShare={onShare}
           onView={onView}
           onDelete={onDelete}

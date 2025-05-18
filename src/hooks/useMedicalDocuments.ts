@@ -10,7 +10,7 @@ interface Document {
   file_path: string;
   created_at: string;
   description?: string;
-  content_type?: string;
+  file_type?: string;  // Changed from content_type to file_type
   user_id: string;
   is_private?: boolean;
 }
