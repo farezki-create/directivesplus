@@ -45,7 +45,7 @@ type Profile = {
   first_name: string | null;
   last_name: string | null;
   email: string; // We'll get this from auth
-  birth_date: Date | null;
+  birth_date: string | null; // Modifié de Date à string | null
   phone_number: string | null;
   address: string | null;
   city: string | null;
@@ -180,7 +180,7 @@ export default function Profile() {
         ...profile,
         first_name: values.firstName,
         last_name: values.lastName,
-        birth_date: values.birthDate,
+        birth_date: formattedBirthDate,
         phone_number: values.phoneNumber,
         address: values.address,
         city: values.city,
