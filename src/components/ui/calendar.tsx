@@ -1,7 +1,6 @@
-
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { DayPicker, CaptionProps } from "react-day-picker";
+import { DayPicker } from "react-day-picker";
 
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
@@ -27,16 +26,19 @@ function Calendar({
 
   function CustomCaption({ 
     displayMonth,
-    onMonthSelect,
-  }: CaptionProps) {
+    onMonthChange,
+  }: {
+    displayMonth: Date;
+    onMonthChange?: (month: Date) => void;
+  }) {
     const month = displayMonth.toLocaleString('default', { month: 'long' });
     const year = displayMonth.getFullYear();
 
     const handleYearChange = (value: string) => {
-      if (onMonthSelect) {
+      if (onMonthChange) {
         const newDate = new Date(displayMonth);
         newDate.setFullYear(parseInt(value));
-        onMonthSelect(newDate);
+        onMonthChange(newDate);
       }
     };
 
@@ -99,7 +101,6 @@ function Calendar({
         day_range_middle:
           "aria-selected:bg-accent aria-selected:text-accent-foreground",
         day_hidden: "invisible",
-        ...classNames,
       }}
       components={{
         IconLeft: ({ ..._props }) => <ChevronLeft className="h-4 w-4" />,
