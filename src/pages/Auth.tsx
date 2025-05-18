@@ -12,6 +12,7 @@ import { LoginForm } from "@/features/auth/LoginForm";
 import { RegisterForm } from "@/features/auth/RegisterForm";
 import { VerificationAlert } from "@/features/auth/VerificationAlert";
 import { ForgotPasswordForm } from "@/features/auth/ForgotPasswordForm";
+import { PasswordResetForm } from "@/features/auth/PasswordResetForm";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ const Auth = () => {
   const { isAuthenticated, isLoading } = useAuth();
   const [redirectInProgress, setRedirectInProgress] = useState(false);
   const [isPasswordReset, setIsPasswordReset] = useState(false);
-  const [newPassword, setNewPassword] = useState("");
+  const [resetToken, setResetToken] = useState("");
   
   // Get the redirect path from location state or default to /dashboard
   const from = location.state?.from || "/dashboard";
@@ -35,6 +36,7 @@ const Auth = () => {
     
     if (token && type === "recovery") {
       setIsPasswordReset(true);
+      setResetToken(token);
       toast({
         title: "Réinitialisez votre mot de passe",
         description: "Veuillez entrer votre nouveau mot de passe.",
@@ -46,6 +48,15 @@ const Auth = () => {
   const handleVerificationSent = (email: string) => {
     setVerificationEmail(email);
     setVerificationSent(true);
+  };
+
+  // Handle successful password reset
+  const handlePasswordResetSuccess = () => {
+    setIsPasswordReset(false);
+    toast({
+      title: "Connexion",
+      description: "Veuillez vous connecter avec votre nouveau mot de passe.",
+    });
   };
 
   // Redirect if already authenticated, but only after the auth state has loaded
@@ -103,7 +114,9 @@ const Auth = () => {
           <CardContent className="grid gap-4">
             {verificationSent && <VerificationAlert email={verificationEmail} />}
             
-            {showForgotPassword ? (
+            {isPasswordReset ? (
+              <PasswordResetForm token={resetToken} onSuccess={handlePasswordResetSuccess} />
+            ) : showForgotPassword ? (
               <ForgotPasswordForm onCancel={handleCancelForgotPassword} />
             ) : (
               <Tabs defaultValue="login">
