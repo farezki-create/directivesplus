@@ -67,10 +67,23 @@ const Hero = () => {
                 <p className="text-gray-600">Un processus pas à pas pour vous accompagner dans la rédaction.</p>
               </div>
               
-              {/* Feature 2 */}
+              {/* Feature 2 - Modified with French flag */}
               <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-                <h3 className="font-semibold text-lg mb-2 text-directiveplus-700">100% sécurisé</h3>
-                <p className="text-gray-600">Vos directives anticipées ne sont jamais stockées et sont automatiquement supprimées dès que vous vous déconnectez.</p>
+                <div className="flex flex-col items-center mb-2">
+                  <h3 className="font-semibold text-lg text-directiveplus-700">100% sécurisé en France</h3>
+                  <div className="flex items-center mt-1">
+                    <div className="h-6 w-12 flex overflow-hidden rounded shadow-sm">
+                      <div className="bg-blue-700 w-1/3 h-full animate-pulse"></div>
+                      <div className="bg-white w-1/3 h-full"></div>
+                      <div className="bg-red-600 w-1/3 h-full animate-pulse"></div>
+                    </div>
+                  </div>
+                </div>
+                <p className="text-gray-600">
+                  Vos directives anticipées et données médicales sont stockées dans un serveur HDS Scalingo, 
+                  certifié par les autorités de santé françaises. Scalingo est une entreprise française et les 
+                  serveurs sont en France.
+                </p>
               </div>
               
               {/* Feature 3 */}
