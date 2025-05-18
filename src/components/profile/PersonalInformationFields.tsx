@@ -8,6 +8,7 @@ import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useFormContext } from "react-hook-form";
+import { useState } from "react";
 import * as z from "zod";
 
 interface PersonalInformationFieldsProps {
@@ -16,6 +17,7 @@ interface PersonalInformationFieldsProps {
 
 export default function PersonalInformationFields({ isEmailDisabled = true }: PersonalInformationFieldsProps) {
   const form = useFormContext();
+  const [calendarOpen, setCalendarOpen] = useState(false);
   
   return (
     <>
@@ -27,9 +29,15 @@ export default function PersonalInformationFields({ isEmailDisabled = true }: Pe
             <FormItem>
               <FormLabel>Prénom</FormLabel>
               <FormControl>
-                <Input placeholder="Prénom" {...field} />
+                <Input 
+                  placeholder="Prénom" 
+                  {...field} 
+                  className={cn(
+                    form.formState.errors.firstName && "border-red-500 focus-visible:ring-red-500"
+                  )}
+                />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="animate-fade-in" />
             </FormItem>
           )}
         />
@@ -40,9 +48,15 @@ export default function PersonalInformationFields({ isEmailDisabled = true }: Pe
             <FormItem>
               <FormLabel>Nom</FormLabel>
               <FormControl>
-                <Input placeholder="Nom" {...field} />
+                <Input 
+                  placeholder="Nom" 
+                  {...field} 
+                  className={cn(
+                    form.formState.errors.lastName && "border-red-500 focus-visible:ring-red-500"
+                  )}
+                />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="animate-fade-in" />
             </FormItem>
           )}
         />
@@ -60,7 +74,7 @@ export default function PersonalInformationFields({ isEmailDisabled = true }: Pe
             <FormDescription>
               L'adresse email ne peut pas être modifiée
             </FormDescription>
-            <FormMessage />
+            <FormMessage className="animate-fade-in" />
           </FormItem>
         )}
       />
@@ -71,14 +85,15 @@ export default function PersonalInformationFields({ isEmailDisabled = true }: Pe
         render={({ field }) => (
           <FormItem className="flex flex-col">
             <FormLabel>Date de naissance</FormLabel>
-            <Popover>
+            <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
               <PopoverTrigger asChild>
                 <FormControl>
                   <Button
                     variant={"outline"}
                     className={cn(
                       "w-full pl-3 text-left font-normal",
-                      !field.value && "text-muted-foreground"
+                      !field.value && "text-muted-foreground",
+                      form.formState.errors.birthDate && "border-red-500 focus-visible:ring-red-500"
                     )}
                   >
                     {field.value ? (
@@ -94,7 +109,10 @@ export default function PersonalInformationFields({ isEmailDisabled = true }: Pe
                 <Calendar
                   mode="single"
                   selected={field.value}
-                  onSelect={field.onChange}
+                  onSelect={(date) => {
+                    field.onChange(date);
+                    setCalendarOpen(false);
+                  }}
                   disabled={(date) =>
                     date > new Date() || date < new Date("1900-01-01")
                   }
@@ -103,7 +121,7 @@ export default function PersonalInformationFields({ isEmailDisabled = true }: Pe
                 />
               </PopoverContent>
             </Popover>
-            <FormMessage />
+            <FormMessage className="animate-fade-in" />
           </FormItem>
         )}
       />
@@ -115,9 +133,15 @@ export default function PersonalInformationFields({ isEmailDisabled = true }: Pe
           <FormItem>
             <FormLabel>Numéro de téléphone</FormLabel>
             <FormControl>
-              <Input placeholder="Téléphone" {...field} />
+              <Input 
+                placeholder="Téléphone" 
+                {...field} 
+                className={cn(
+                  form.formState.errors.phoneNumber && "border-red-500 focus-visible:ring-red-500"
+                )}
+              />
             </FormControl>
-            <FormMessage />
+            <FormMessage className="animate-fade-in" />
           </FormItem>
         )}
       />
