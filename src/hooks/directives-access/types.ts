@@ -38,7 +38,7 @@ export type ProfileResult = {
   error?: string;
 };
 
-// Add this type to match the utility function return type
+// Updated type definition to ensure consistent properties across all functions
 export type AccessCodeCheckResult = {
   data: any[];
   error: string | null;

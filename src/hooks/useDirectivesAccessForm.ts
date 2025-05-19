@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -75,7 +76,7 @@ export const useDirectivesAccessForm = () => {
       const accessResult: AccessCodeCheckResult = await checkDirectivesAccessCode(accessCode);
       
       if (accessResult.error) {
-        console.error("Erreur lors de la vérification du code d'accès:", accessResult.error);
+        console.error("Erreur lors de la vérification du code d'accès:", accessResult.error, accessResult.details);
         
         // Messages d'erreur personnalisés selon le type d'erreur
         if (accessResult.noProfiles) {
@@ -207,6 +208,8 @@ export const useDirectivesAccessForm = () => {
         "Une erreur est survenue lors de la vérification de l'accès"
       );
       setLoading(false);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -217,3 +220,5 @@ export const useDirectivesAccessForm = () => {
     accessDirectives
   };
 };
+
+export default useDirectivesAccessForm;

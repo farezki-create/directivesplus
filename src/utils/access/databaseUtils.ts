@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { AccessCodeCheckResult } from "./accessCodeSearch";
+import { AccessCodeCheckResult } from "@/hooks/directives-access/types";
 
 // Check database connection
 export const checkDatabaseConnection = async (): Promise<AccessCodeCheckResult> => {
