@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { checkMedicalAccessCode, showErrorToast, showSuccessToast } from "@/utils/accessUtils";
+import { supabase } from "@/integrations/supabase/client";
 
 // Schema de validation pour le formulaire
 const formSchema = z.object({
@@ -68,6 +69,27 @@ export const useMedicalDataAccessForm = () => {
       
       const profile = profilesData[0];
       console.log("Profil médical trouvé:", profile);
+      
+      // Vérifier si le profil est un résultat spécial (format DM-)
+      // Dans ce cas, on a seulement user_id et pas les autres propriétés
+      if ('user_id' in profile && !('first_name' in profile)) {
+        // Il faut récupérer les détails du profil complet avec l'ID utilisateur
+        const { data: completeProfile, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', profile.user_id)
+          .single();
+          
+        if (error || !completeProfile) {
+          console.error("Erreur lors de la récupération du profil complet:", error);
+          setErrorMessage("Une erreur est survenue lors de la vérification de l'accès. Profil utilisateur introuvable.");
+          showErrorToast("Erreur", "Profil utilisateur introuvable");
+          return;
+        }
+        
+        // Remplacer le profil partiel par le profil complet
+        profile = completeProfile;
+      }
       
       // Normaliser les données pour la comparaison (insensible à la casse)
       const normalizedFirstName = formData.firstName.toLowerCase().trim();

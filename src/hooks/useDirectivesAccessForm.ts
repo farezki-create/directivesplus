@@ -10,6 +10,7 @@ import {
   showErrorToast, 
   showSuccessToast 
 } from "@/utils/accessUtils";
+import { supabase } from "@/integrations/supabase/client";
 
 // Schema de validation pour le formulaire
 const formSchema = z.object({
