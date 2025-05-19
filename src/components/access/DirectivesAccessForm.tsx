@@ -1,8 +1,7 @@
-
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import FormField from "./FormField";
 import { Form } from "@/components/ui/form";
-import { useDirectivesAccessForm } from "@/hooks/useDirectivesAccessForm";
+import { useDirectivesAccessForm } from "@/hooks/directives-access/useDirectivesAccessForm";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, Database, FileText, Info, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
