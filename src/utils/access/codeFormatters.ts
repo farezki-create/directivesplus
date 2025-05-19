@@ -35,28 +35,35 @@ export const handleSpecialCodes = async (code: string) => {
     console.log(`Code spécial détecté, extraction de l'ID: ${idPart}`);
     
     try {
-      // CORRECTION: Au lieu de chercher par l'ID directement qui peut causer des erreurs de format UUID,
-      // Essayons d'abord de retrouver le profil par correspondance partielle avec l'ID
-      const fullUUID = idPart.length < 36 ? `${idPart}%` : idPart;
+      // Approche 1: Rechercher par correspondance exacte du début de l'ID (sans ilike)
+      // Convertir en minuscules pour la comparaison (plus sûr pour les IDs)
+      const idPartLower = idPart.toLowerCase();
+      console.log(`Recherche de profil avec ID commençant par: ${idPartLower}`);
       
-      console.log(`Recherche de profil avec ID commençant par: ${fullUUID}`);
-      const { data: profilesByIdMatch, error: idMatchError } = await supabase
+      // Récupérer tous les profils pour filtrer manuellement par ID (plus sûr que ilike sur UUID)
+      const { data: allProfiles, error: profilesError } = await supabase
         .from('profiles')
         .select('id, medical_access_code, first_name, last_name')
-        .ilike('id', fullUUID)
-        .limit(1);
+        .limit(100); // Limite raisonnable
         
-      if (idMatchError) {
-        console.error("Erreur lors de la recherche par ID partiel:", idMatchError);
-      } else if (profilesByIdMatch && profilesByIdMatch.length > 0) {
-        console.log("Profil trouvé via correspondance d'ID partiel:", profilesByIdMatch[0]);
-        // Transformer pour correspondre au format attendu avec user_id
-        return profilesByIdMatch.map(profile => ({
-          user_id: profile.id
-        }));
+      if (profilesError) {
+        console.error("Erreur lors de la récupération des profils:", profilesError);
+      } else if (allProfiles && allProfiles.length > 0) {
+        // Filtrer manuellement les profils dont l'ID commence par idPart
+        const matchingProfiles = allProfiles.filter(profile => 
+          profile.id.toLowerCase().startsWith(idPartLower)
+        );
+        
+        if (matchingProfiles.length > 0) {
+          console.log("Profil trouvé via correspondance d'ID par préfixe:", matchingProfiles[0]);
+          // Transformer pour correspondre au format attendu avec user_id
+          return matchingProfiles.map(profile => ({
+            user_id: profile.id
+          }));
+        }
       }
       
-      // Si aucune correspondance par ID partiel, essayons avec le medical_access_code
+      // Approche 2: Si aucun profil trouvé par ID, chercher par medical_access_code
       console.log("Tentative avec code d'accès médical:", idPart);
       const { data, error } = await supabase
         .from('profiles')
@@ -76,8 +83,7 @@ export const handleSpecialCodes = async (code: string) => {
         }));
       }
 
-      // Dernière tentative: chercher si l'ID complet existe
-      // Cette approche est utilisée uniquement si les deux premières ont échoué
+      // Approche 3: Si c'est un UUID complet, recherche directe
       if (idPart.length === 36) { // Si c'est potentiellement un UUID complet
         console.log("Tentative avec UUID complet:", idPart);
         const { data: exactMatch, error: exactError } = await supabase
@@ -91,6 +97,22 @@ export const handleSpecialCodes = async (code: string) => {
             user_id: profile.id
           }));
         }
+      }
+      
+      // Si tout échoue, on pourrait chercher directement par l'ID utilisateur
+      console.log("Tentative directe avec ID utilisateur:", idPart);
+      try {
+        const { data: userData, error: userError } = await supabase.auth.admin.getUserById(idPart);
+        
+        if (!userError && userData && userData.user) {
+          console.log("Utilisateur trouvé directement via auth.admin:", userData.user);
+          return [{
+            user_id: userData.user.id
+          }];
+        }
+      } catch (authErr) {
+        console.error("Erreur lors de la recherche directe de l'utilisateur:", authErr);
+        // On continue normalement, cette erreur n'est pas bloquante
       }
       
       console.log("Aucun profil trouvé pour ce code spécial");
