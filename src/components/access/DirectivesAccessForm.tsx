@@ -26,8 +26,9 @@ const DirectivesAccessForm = () => {
   useEffect(() => {
     const checkConnection = async () => {
       try {
-        // Afficher l'URL Supabase pour déboguer
-        console.log("URL Supabase:", supabase.supabaseUrl);
+        // Get the Supabase URL from client's configuration (in a safe way)
+        // URL is stored in integrations/supabase/client.ts as SUPABASE_URL
+        console.log("URL Supabase:", process.env.SUPABASE_URL || "https://kytqqjnecezkxyhmmjrz.supabase.co");
         
         // Simple test query to check if Supabase is responsive
         const { data, error } = await supabase.from('profiles').select('id').limit(1);
@@ -39,7 +40,7 @@ const DirectivesAccessForm = () => {
             error: error,
             errorMessage: error.message,
             errorDetails: error.details,
-            url: supabase.supabaseUrl,
+            url: process.env.SUPABASE_URL || "https://kytqqjnecezkxyhmmjrz.supabase.co",
             timestamp: new Date().toISOString()
           });
         } else if (data && data.length > 0) {
@@ -48,21 +49,24 @@ const DirectivesAccessForm = () => {
           setDebugInfo({
             profileFound: true,
             profileId: data[0].id,
-            connectionUrl: supabase.supabaseUrl
+            connectionUrl: process.env.SUPABASE_URL || "https://kytqqjnecezkxyhmmjrz.supabase.co"
           });
         } else {
           console.log("Connexion à la base de données réussie, mais aucun profil trouvé");
           
-          // Tenter une requête plus large pour voir s'il y a d'autres tables avec des données
-          const tablesCheck = await supabase.rpc('get_tables_info');
-          console.log("Vérification des tables disponibles:", tablesCheck);
+          // Attempt a different query to check other tables
+          try {
+            const tablesCheck = await supabase.rpc('get_available_tables');
+            console.log("Vérification des tables disponibles:", tablesCheck);
+          } catch (err) {
+            console.error("Erreur lors de la vérification des tables:", err);
+          }
           
           setConnectionStatus("warning");
           setDebugInfo({
             profileFound: false,
             message: "Aucun profil n'existe dans la base de données",
-            connectionUrl: supabase.supabaseUrl,
-            tablesCheck: tablesCheck
+            connectionUrl: process.env.SUPABASE_URL || "https://kytqqjnecezkxyhmmjrz.supabase.co"
           });
         }
       } catch (err) {
@@ -188,7 +192,7 @@ const DirectivesAccessForm = () => {
               <Alert variant="default" className="bg-gray-100 text-xs mt-2">
                 <AlertTitle>Informations de débogage</AlertTitle>
                 <AlertDescription>
-                  <p className="mb-1">URL Supabase: {supabase.supabaseUrl}</p>
+                  <p className="mb-1">URL Supabase: {process.env.SUPABASE_URL || "https://kytqqjnecezkxyhmmjrz.supabase.co"}</p>
                   <pre className="text-xs overflow-auto max-h-32 p-2 bg-gray-200 rounded">
                     {JSON.stringify(debugInfo, null, 2)}
                   </pre>

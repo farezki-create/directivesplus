@@ -31,13 +31,14 @@ export const checkDatabaseConnection = async (): Promise<AccessCodeCheckResult> 
     if (!connectionTest.data || connectionTest.data.length === 0) {
       console.warn("Aucun profil n'existe dans la base de données");
       
-      // Essayer une requête sans filtres pour vérifier si la table existe
+      // Try a query without filters to check if the table exists
       try {
         const tableCheck = await supabase.from('profiles').select('count');
         console.log("Vérification de la table profiles:", tableCheck);
         
-        // Vérifier les paramètres de connexion à Supabase
-        console.log("URL Supabase:", supabase.supabaseUrl);
+        // Show connection parameters for debugging
+        const supabaseUrl = process.env.SUPABASE_URL || "https://kytqqjnecezkxyhmmjrz.supabase.co";
+        console.log("URL Supabase:", supabaseUrl);
       } catch (err) {
         console.error("Erreur lors de la vérification de la table:", err);
       }
