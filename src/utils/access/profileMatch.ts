@@ -1,8 +1,8 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import type { FormData } from "@/hooks/useDirectivesAccessForm";
+import type { DirectivesFormData } from "@/hooks/directives-access/types";
 
-export const checkProfileMatch = async (userId: string, formData: FormData) => {
+export const checkProfileMatch = async (userId: string, formData: DirectivesFormData) => {
   console.log(`Vérification du profil pour l'utilisateur: ${userId}`);
   
   try {
