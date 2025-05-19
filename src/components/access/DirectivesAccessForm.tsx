@@ -93,7 +93,7 @@ const DirectivesAccessForm = () => {
             </Button>
             
             {showTestInfo && (
-              <Alert variant="info" className="bg-blue-50 text-xs mt-2">
+              <Alert variant="default" className="bg-blue-50 text-xs mt-2">
                 <AlertDescription>
                   Pour tester l'accès, vous pouvez utiliser le code "TEST" ou "DEMO". 
                   Ces codes de débogage permettent d'accéder à la plateforme sans vérification stricte.
