@@ -8,15 +8,19 @@ type AuthErrorAlertProps = {
 
 const AuthErrorAlert = ({ errorMessage }: AuthErrorAlertProps) => {
   if (!errorMessage) return null;
+
+  const isNoProfiles = errorMessage.includes("Aucun profil n'existe");
   
   return (
-    <Alert variant="destructive" className="mb-4">
+    <Alert variant={isNoProfiles ? "default" : "destructive"} className={`mb-4 ${isNoProfiles ? "bg-amber-50 border-amber-200" : ""}`}>
       <AlertTriangle className="h-4 w-4" />
-      <AlertTitle className="ml-2">Erreur d'authentification</AlertTitle>
+      <AlertTitle className="ml-2">{isNoProfiles ? "Information" : "Erreur d'authentification"}</AlertTitle>
       <AlertDescription>{errorMessage}</AlertDescription>
-      <AlertDescription className="mt-2 text-xs">
-        Vérifiez que le code correspond bien au format attendu (exemples: G24JKZBH, ABC123DE, DM-81847C2D)
-      </AlertDescription>
+      {!isNoProfiles && (
+        <AlertDescription className="mt-2 text-xs">
+          Vérifiez que le code correspond bien au format attendu (exemples: G24JKZBH, ABC123DE, DM-81847C2D)
+        </AlertDescription>
+      )}
     </Alert>
   );
 };

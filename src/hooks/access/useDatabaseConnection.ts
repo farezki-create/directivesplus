@@ -2,9 +2,21 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
+export type ConnectionStatus = 'success' | 'warning' | 'error' | 'loading' | null;
+
+export interface DebugInfo {
+  profileFound?: boolean;
+  message?: string;
+  connectionUrl?: string;
+  error?: any;
+  errorMessage?: string;
+  errorDetails?: any;
+  timestamp?: string;
+}
+
 export const useDatabaseConnection = () => {
-  const [connectionStatus, setConnectionStatus] = useState<string | null>(null);
-  const [debugInfo, setDebugInfo] = useState<any>(null);
+  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('loading');
+  const [debugInfo, setDebugInfo] = useState<DebugInfo | null>(null);
 
   // Check database connection on component mount
   useEffect(() => {
@@ -57,7 +69,11 @@ export const useDatabaseConnection = () => {
       } catch (err) {
         console.error("Exception lors de la vérification de connexion:", err);
         setConnectionStatus("error");
-        setDebugInfo(err);
+        setDebugInfo({
+          error: err,
+          errorMessage: err instanceof Error ? err.message : "Erreur inconnue",
+          timestamp: new Date().toISOString()
+        });
       }
     };
     

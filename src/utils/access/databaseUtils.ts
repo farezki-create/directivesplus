@@ -23,7 +23,8 @@ export const checkDatabaseConnection = async (): Promise<AccessCodeCheckResult> 
       return { 
         data: [], 
         error: "Erreur de connexion à la base de données",
-        details: connectionTest.error
+        details: connectionTest.error,
+        errorType: 'connection'
       };
     }
     
@@ -43,11 +44,12 @@ export const checkDatabaseConnection = async (): Promise<AccessCodeCheckResult> 
         console.error("Erreur lors de la vérification de la table:", err);
       }
       
-      // Return a consistent error object with noProfiles flag
+      // Return a consistent error object with noProfiles flag and errorType
       return { 
         data: [], 
-        error: "Aucun profil n'existe dans la base de données",
-        noProfiles: true
+        error: "Aucun profil n'existe dans la base de données. Veuillez contacter l'administrateur pour créer un compte.",
+        noProfiles: true,
+        errorType: 'noProfiles'
       };
     }
     
@@ -58,7 +60,8 @@ export const checkDatabaseConnection = async (): Promise<AccessCodeCheckResult> 
     return {
       data: [],
       error: "Exception lors de la vérification de la connexion à la base de données",
-      details: err
+      details: err,
+      errorType: 'exception'
     };
   }
 };

@@ -1,12 +1,25 @@
 
-import { AlertTriangle, Database } from "lucide-react";
+import { AlertTriangle, Database, Info } from "lucide-react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { ConnectionStatus } from "@/hooks/access/useDatabaseConnection";
 
 type ConnectionStatusAlertProps = {
-  status: string | null;
+  status: ConnectionStatus;
 };
 
 const ConnectionStatusAlert = ({ status }: ConnectionStatusAlertProps) => {
+  if (status === "loading") {
+    return (
+      <Alert variant="default" className="mx-6 mb-2 bg-blue-50 border-blue-200">
+        <Info className="h-4 w-4" />
+        <AlertTitle className="ml-2">Connexion en cours</AlertTitle>
+        <AlertDescription>
+          Vérification de la connexion à la base de données...
+        </AlertDescription>
+      </Alert>
+    );
+  }
+  
   if (status === "error") {
     return (
       <Alert variant="destructive" className="mx-6 mb-2">
@@ -26,7 +39,7 @@ const ConnectionStatusAlert = ({ status }: ConnectionStatusAlertProps) => {
         <AlertTitle className="ml-2">Avertissement</AlertTitle>
         <AlertDescription>
           Connecté à la base de données, mais aucun profil utilisateur n'est disponible.
-          Vérifiez que vous utilisez la bonne clé d'API Supabase.
+          Veuillez contacter l'administrateur pour créer un compte avant d'essayer d'accéder aux données.
         </AlertDescription>
       </Alert>
     );
