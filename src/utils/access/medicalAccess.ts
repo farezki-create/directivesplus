@@ -12,7 +12,7 @@ export const checkMedicalAccessCode = async (accessCode: string) => {
   
   try {
     // Vérifier d'abord si c'est un code spécial (DM-xxxx)
-    if (accessCode.toUpperCase().startsWith('DM')) {
+    if (accessCode.toUpperCase().trim().startsWith('DM')) {
       console.log("Format spécial DM détecté pour accès médical, traitement spécifique...");
       const specialResult = await handleSpecialCodes(accessCode);
       if (specialResult && specialResult.length > 0) {
@@ -20,6 +20,7 @@ export const checkMedicalAccessCode = async (accessCode: string) => {
         return specialResult;
       } else {
         console.log("Aucun résultat spécial trouvé pour accès médical");
+        // Si pas de résultat, essayer avec le code normalisé comme fallback
       }
     }
     

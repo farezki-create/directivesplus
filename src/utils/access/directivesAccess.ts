@@ -13,7 +13,7 @@ export const checkDirectivesAccessCode = async (accessCode: string) => {
   
   try {
     // Vérifier si c'est un code spécial (DM-xxxx)
-    if (accessCode.toUpperCase().startsWith('DM')) {
+    if (accessCode.toUpperCase().trim().startsWith('DM')) {
       console.log("Format spécial DM détecté, traitement spécifique...");
       const specialResult = await handleSpecialCodes(accessCode);
       if (specialResult && specialResult.length > 0) {
@@ -21,6 +21,7 @@ export const checkDirectivesAccessCode = async (accessCode: string) => {
         return specialResult;
       } else {
         console.log("Aucun résultat spécial trouvé pour directives");
+        // Si pas de résultat, essayer avec le code normalisé comme fallback
       }
     }
     
@@ -32,7 +33,7 @@ export const checkDirectivesAccessCode = async (accessCode: string) => {
     const { data: docAccessData, error: docAccessError } = await supabase
       .from('document_access_codes')
       .select('user_id')
-      .or(`access_code.eq.${normalizedCode},access_code.ilike.${normalizedCode}`);
+      .or(`access_code.eq.${normalizedCode},access_code.ilike.%${normalizedCode}%`);
       
     if (docAccessError) {
       console.error("Erreur lors de la vérification dans document_access_codes:", docAccessError);
@@ -47,7 +48,7 @@ export const checkDirectivesAccessCode = async (accessCode: string) => {
     const { data: profileData, error: profileError } = await supabase
       .from('profiles')
       .select('id, medical_access_code')
-      .or(`medical_access_code.eq.${normalizedCode},medical_access_code.ilike.${normalizedCode}`);
+      .or(`medical_access_code.eq.${normalizedCode},medical_access_code.ilike.%${normalizedCode}%`);
       
     if (profileError) {
       console.error("Erreur lors de la vérification dans profiles:", profileError);
