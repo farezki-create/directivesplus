@@ -4,19 +4,19 @@ import FormField from "./FormField";
 import { Form } from "@/components/ui/form";
 import { useMedicalDataAccessForm } from "@/hooks/useMedicalDataAccessForm";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, FileSearch, Loader2 } from "lucide-react";
-import { useEffect } from "react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { FileSearch, Loader2 } from "lucide-react";
+import AuthErrorAlert from "./AuthErrorAlert";
+import { useDatabaseConnection } from "@/hooks/access/useDatabaseConnection";
+import ConnectionStatusAlert from "./ConnectionStatusAlert";
+import TestInfoAlert from "./TestInfoAlert";
+import { useState } from "react";
+import DebugInfoAlert from "./DebugInfoAlert";
 
 const MedicalDataAccessForm = () => {
   const { form, loading, errorMessage, accessMedicalData } = useMedicalDataAccessForm();
-
-  // Using useEffect to watch for form errors
-  useEffect(() => {
-    if (Object.keys(form.formState.errors).length > 0) {
-      console.log("Erreurs du formulaire données médicales:", form.formState.errors);
-    }
-  }, [form.formState.errors]);
+  const { connectionStatus, debugInfo } = useDatabaseConnection();
+  const [showTestInfo, setShowTestInfo] = useState(false);
+  const [showDebugInfo, setShowDebugInfo] = useState(false);
 
   return (
     <Card className="shadow-lg">
@@ -27,21 +27,14 @@ const MedicalDataAccessForm = () => {
         </CardDescription>
       </CardHeader>
 
+      <ConnectionStatusAlert status={connectionStatus} />
+
       <Form {...form}>
         <form onSubmit={(e) => {
           e.preventDefault();
         }}>
           <CardContent className="space-y-4">
-            {errorMessage && (
-              <Alert variant="destructive" className="mb-4">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertTitle className="ml-2">Erreur d'authentification</AlertTitle>
-                <AlertDescription>{errorMessage}</AlertDescription>
-                <AlertDescription className="mt-2 text-xs">
-                  Vérifiez que le code correspond bien au format attendu (exemples: G24JKZBH, ABC123DE, DM-81847C2D)
-                </AlertDescription>
-              </Alert>
-            )}
+            <AuthErrorAlert errorMessage={errorMessage} />
             
             <FormField 
               id="lastName"
@@ -78,6 +71,27 @@ const MedicalDataAccessForm = () => {
             <p className="text-xs text-gray-500 -mt-3 mb-2">
               Entrez le code d'accès médical fourni par le patient (exemples: G24JKZBH, DM-81847C2D)
             </p>
+
+            <TestInfoAlert 
+              showTestInfo={showTestInfo} 
+              connectionStatus={connectionStatus}
+              setShowTestInfo={setShowTestInfo} 
+            />
+
+            <DebugInfoAlert 
+              debugInfo={debugInfo} 
+              showAlert={showDebugInfo} 
+            />
+
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="text-xs text-gray-500 p-0 h-auto" 
+              onClick={() => setShowDebugInfo(!showDebugInfo)}
+              type="button"
+            >
+              {showDebugInfo ? "Masquer" : "Afficher"} informations de débogage
+            </Button>
           </CardContent>
 
           <CardFooter>
