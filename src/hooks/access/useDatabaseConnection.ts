@@ -11,7 +11,7 @@ export const useDatabaseConnection = () => {
     const checkConnection = async () => {
       try {
         // Get the Supabase URL from client's configuration
-        const supabaseUrl = process.env.SUPABASE_URL || "https://kytqqjnecezkxyhmmjrz.supabase.co";
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://kytqqjnecezkxyhmmjrz.supabase.co";
         console.log("URL Supabase:", supabaseUrl);
         
         // Simple test query to check if Supabase is responsive
