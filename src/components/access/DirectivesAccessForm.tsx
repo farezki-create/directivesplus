@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import FormField from "./FormField";
 import { Form } from "@/components/ui/form";
@@ -25,26 +26,43 @@ const DirectivesAccessForm = () => {
   useEffect(() => {
     const checkConnection = async () => {
       try {
+        // Afficher l'URL Supabase pour déboguer
+        console.log("URL Supabase:", supabase.supabaseUrl);
+        
         // Simple test query to check if Supabase is responsive
         const { data, error } = await supabase.from('profiles').select('id').limit(1);
         
         if (error) {
           console.error("Erreur de connexion à la base de données:", error);
           setConnectionStatus("error");
-          setDebugInfo(error);
+          setDebugInfo({
+            error: error,
+            errorMessage: error.message,
+            errorDetails: error.details,
+            url: supabase.supabaseUrl,
+            timestamp: new Date().toISOString()
+          });
         } else if (data && data.length > 0) {
           console.log("Connexion à la base de données réussie, profil trouvé:", data);
           setConnectionStatus("success");
           setDebugInfo({
             profileFound: true,
-            profileId: data[0].id
+            profileId: data[0].id,
+            connectionUrl: supabase.supabaseUrl
           });
         } else {
           console.log("Connexion à la base de données réussie, mais aucun profil trouvé");
+          
+          // Tenter une requête plus large pour voir s'il y a d'autres tables avec des données
+          const tablesCheck = await supabase.rpc('get_tables_info');
+          console.log("Vérification des tables disponibles:", tablesCheck);
+          
           setConnectionStatus("warning");
           setDebugInfo({
             profileFound: false,
-            message: "Aucun profil n'existe dans la base de données"
+            message: "Aucun profil n'existe dans la base de données",
+            connectionUrl: supabase.supabaseUrl,
+            tablesCheck: tablesCheck
           });
         }
       } catch (err) {
@@ -82,6 +100,7 @@ const DirectivesAccessForm = () => {
           <AlertTitle className="ml-2">Avertissement</AlertTitle>
           <AlertDescription>
             Connecté à la base de données, mais aucun profil utilisateur n'est disponible.
+            Vérifiez que vous utilisez la bonne clé d'API Supabase.
           </AlertDescription>
         </Alert>
       )}
@@ -165,10 +184,11 @@ const DirectivesAccessForm = () => {
             )}
 
             {/* Debug Info section */}
-            {(connectionStatus === "warning" || connectionStatus === "error") && showTestInfo && (
+            {(connectionStatus === "warning" || connectionStatus === "error" || showTestInfo) && (
               <Alert variant="default" className="bg-gray-100 text-xs mt-2">
                 <AlertTitle>Informations de débogage</AlertTitle>
                 <AlertDescription>
+                  <p className="mb-1">URL Supabase: {supabase.supabaseUrl}</p>
                   <pre className="text-xs overflow-auto max-h-32 p-2 bg-gray-200 rounded">
                     {JSON.stringify(debugInfo, null, 2)}
                   </pre>

@@ -11,7 +11,19 @@ export const verifyDirectivesAccess = async (
 ): Promise<DirectivesVerificationResult> => {
   // Vérifier d'abord la connexion à la base de données
   const connectionResult = await verifyDatabaseConnection();
+  
+  console.log("Résultat de vérification de la connexion:", connectionResult);
+  
   if (!connectionResult.isValid) {
+    if (connectionResult.error?.includes("Aucun profil")) {
+      showErrorToast("Avertissement", "Aucun profil utilisateur trouvé dans la base de données");
+      return {
+        isValid: false,
+        error: "Aucun profil utilisateur n'existe dans la base de données. Vérifiez que vous êtes connecté à la bonne base de données.",
+        errorType: 'noProfiles'
+      };
+    }
+    
     showErrorToast("Erreur", "Problème de connexion à la base de données");
     return {
       isValid: false,
@@ -24,7 +36,14 @@ export const verifyDirectivesAccess = async (
   const accessCode = formData.accessCode.trim();
   const isDebugMode = accessCode.toUpperCase() === "TEST" || accessCode.toUpperCase() === "DEMO";
   
+  if (isDebugMode) {
+    console.log("Mode débogage activé avec le code:", accessCode);
+  }
+  
   const accessResult = await verifyAccessCode(accessCode);
+  
+  console.log("Résultat de vérification du code d'accès:", accessResult);
+  
   if (!accessResult.isValid) {
     showErrorToast("Accès refusé", accessResult.error || "Code d'accès invalide");
     return {
@@ -37,6 +56,8 @@ export const verifyDirectivesAccess = async (
   // Récupérer le profil utilisateur
   const userId = accessResult.userId as string;
   const profileResult = await fetchUserProfile(userId);
+  
+  console.log("Résultat de récupération du profil:", profileResult);
   
   if (!profileResult.isValid) {
     showErrorToast("Erreur", "Profil introuvable");
