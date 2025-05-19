@@ -26,7 +26,7 @@ export const checkMedicalAccessCode = async (accessCode: string) => {
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
-      .ilike('medical_access_code', normalizedCode);
+      .or(`medical_access_code.eq.${normalizedCode},medical_access_code.ilike.${normalizedCode}`);
     
     if (error) {
       console.error("Erreur lors de la vérification du code d'accès médical:", error);

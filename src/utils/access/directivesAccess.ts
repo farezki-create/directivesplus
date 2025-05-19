@@ -27,11 +27,23 @@ export const checkDirectivesAccessCode = async (accessCode: string) => {
     let { data, error } = await supabase
       .from('document_access_codes')
       .select('user_id')
-      .ilike('access_code', normalizedCode);
+      .eq('access_code', normalizedCode);
       
     if (error) {
       console.error("Erreur lors de la vérification du code d'accès:", error);
       throw error;
+    }
+    
+    if (!data || data.length === 0) {
+      // Essayer avec la recherche insensible à la casse
+      const { data: caseInsensitiveData, error: caseError } = await supabase
+        .from('document_access_codes')
+        .select('user_id')
+        .ilike('access_code', normalizedCode);
+        
+      if (!caseError && caseInsensitiveData && caseInsensitiveData.length > 0) {
+        data = caseInsensitiveData;
+      }
     }
     
     // Si rien n'est trouvé avec le code exact, vérifier le code médical dans profiles
@@ -42,7 +54,7 @@ export const checkDirectivesAccessCode = async (accessCode: string) => {
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('id, medical_access_code')
-        .ilike('medical_access_code', normalizedCode);
+        .or(`medical_access_code.eq.${normalizedCode},medical_access_code.ilike.${normalizedCode}`);
         
       if (profileError) {
         console.error("Erreur lors de la vérification du code médical:", profileError);

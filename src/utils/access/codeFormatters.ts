@@ -35,87 +35,80 @@ export const handleSpecialCodes = async (code: string) => {
     console.log(`Code spécial détecté, extraction de l'ID: ${idPart}`);
     
     try {
-      // Approche 1: Rechercher par correspondance exacte du début de l'ID (sans ilike)
-      // Convertir en minuscules pour la comparaison (plus sûr pour les IDs)
-      const idPartLower = idPart.toLowerCase();
-      console.log(`Recherche de profil avec ID commençant par: ${idPartLower}`);
+      // Approche 1: Utiliser l'ID comme code d'accès médical directement
+      console.log("Tentative directe avec code d'accès médical:", idPart);
+      const { data: medicalMatches, error: medicalError } = await supabase
+        .from('profiles')
+        .select('id, medical_access_code')
+        .eq('medical_access_code', idPart);
       
-      // Récupérer tous les profils pour filtrer manuellement par ID (plus sûr que ilike sur UUID)
+      if (!medicalError && medicalMatches && medicalMatches.length > 0) {
+        console.log("Profil trouvé via correspondance exacte de code médical:", medicalMatches[0]);
+        return medicalMatches.map(profile => ({
+          user_id: profile.id
+        }));
+      }
+      
+      // Approche 2: Chercher par code médical partiel
+      const { data: partialMatches, error: partialError } = await supabase
+        .from('profiles')
+        .select('id, medical_access_code')
+        .ilike('medical_access_code', `%${idPart}%`);
+        
+      if (!partialError && partialMatches && partialMatches.length > 0) {
+        console.log("Profil trouvé via correspondance partielle de code médical:", partialMatches[0]);
+        return partialMatches.map(profile => ({
+          user_id: profile.id
+        }));
+      }
+      
+      // Approche 3: Récupérer tous les profils et chercher des correspondances manuellement
       const { data: allProfiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, medical_access_code, first_name, last_name')
-        .limit(100); // Limite raisonnable
-        
-      if (profilesError) {
-        console.error("Erreur lors de la récupération des profils:", profilesError);
-      } else if (allProfiles && allProfiles.length > 0) {
-        // Filtrer manuellement les profils dont l'ID commence par idPart
+        .select('id, medical_access_code, first_name, last_name');
+      
+      if (!profilesError && allProfiles && allProfiles.length > 0) {
+        // Vérifier si l'ID correspond à un début d'UUID de profil
+        const idPartLower = idPart.toLowerCase();
         const matchingProfiles = allProfiles.filter(profile => 
           profile.id.toLowerCase().startsWith(idPartLower)
         );
         
         if (matchingProfiles.length > 0) {
-          console.log("Profil trouvé via correspondance d'ID par préfixe:", matchingProfiles[0]);
-          // Transformer pour correspondre au format attendu avec user_id
+          console.log("Profil trouvé via correspondance de début d'ID:", matchingProfiles[0]);
           return matchingProfiles.map(profile => ({
             user_id: profile.id
           }));
         }
-      }
-      
-      // Approche 2: Si aucun profil trouvé par ID, chercher par medical_access_code
-      console.log("Tentative avec code d'accès médical:", idPart);
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, medical_access_code, first_name, last_name')
-        .or(`medical_access_code.ilike.%${idPart}%,medical_access_code.eq.${idPart}`);
         
-      if (error) {
-        console.error("Erreur lors de la vérification du code spécial (via medical_access_code):", error);
-        return null;
-      }
-      
-      if (data && data.length > 0) {
-        console.log("Profil trouvé via code médical:", data[0]);
-        // Transformer les données pour correspondre au format attendu
-        return data.map(profile => ({
-          user_id: profile.id
-        }));
-      }
-
-      // Approche 3: Si c'est un UUID complet, recherche directe
-      if (idPart.length === 36) { // Si c'est potentiellement un UUID complet
-        console.log("Tentative avec UUID complet:", idPart);
-        const { data: exactMatch, error: exactError } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('id', idPart);
-          
-        if (!exactError && exactMatch && exactMatch.length > 0) {
-          console.log("Profil trouvé via UUID exact:", exactMatch[0]);
-          return exactMatch.map(profile => ({
+        // Vérifier si l'ID est un sous-ensemble d'un UUID de profil (moins strict)
+        const looseMatches = allProfiles.filter(profile => 
+          profile.id.toLowerCase().includes(idPartLower)
+        );
+        
+        if (looseMatches.length > 0) {
+          console.log("Profil trouvé via correspondance partielle d'ID:", looseMatches[0]);
+          return looseMatches.map(profile => ({
             user_id: profile.id
           }));
         }
       }
       
-      // Si tout échoue, on pourrait chercher directement par l'ID utilisateur
-      console.log("Tentative directe avec ID utilisateur:", idPart);
-      try {
-        const { data: userData, error: userError } = await supabase.auth.admin.getUserById(idPart);
-        
-        if (!userError && userData && userData.user) {
-          console.log("Utilisateur trouvé directement via auth.admin:", userData.user);
-          return [{
-            user_id: userData.user.id
-          }];
-        }
-      } catch (authErr) {
-        console.error("Erreur lors de la recherche directe de l'utilisateur:", authErr);
-        // On continue normalement, cette erreur n'est pas bloquante
+      // Approche 4: Vérifier les codes d'accès dans document_access_codes
+      const { data: docAccessCodes, error: docAccessError } = await supabase
+        .from('document_access_codes')
+        .select('user_id')
+        .eq('access_code', idPart);
+      
+      if (!docAccessError && docAccessCodes && docAccessCodes.length > 0) {
+        console.log("Code trouvé dans document_access_codes:", docAccessCodes[0]);
+        return docAccessCodes.map(code => ({
+          user_id: code.user_id
+        }));
       }
       
-      console.log("Aucun profil trouvé pour ce code spécial");
+      // Si on arrive ici, aucune correspondance n'a été trouvée
+      console.log("Aucun profil ou code d'accès trouvé pour:", idPart);
       return null;
     } catch (err) {
       console.error("Exception dans handleSpecialCodes:", err);
