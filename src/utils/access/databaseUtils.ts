@@ -35,33 +35,3 @@ export const checkDatabaseConnection = async () => {
     };
   }
 };
-
-// Find the first available profile (for test mode)
-export const searchFirstAvailableProfile = async (reason: string) => {
-  // Get any available profile for demo mode
-  const { data: demoProfiles, error } = await supabase
-    .from('profiles')
-    .select('id')
-    .limit(1);
-    
-  if (error) {
-    console.error("Erreur lors de la recherche d'un profil de démo:", error);
-    return {
-      data: [],
-      error: "Erreur lors de la recherche d'un profil de démo",
-      details: error
-    };
-  }
-    
-  if (demoProfiles && demoProfiles.length > 0) {
-    console.log("Profil de démo trouvé:", demoProfiles[0].id);
-    return { data: [{ user_id: demoProfiles[0].id }], error: null };
-  } else {
-    console.error("Aucun profil disponible pour le mode démo");
-    return { 
-      data: [], 
-      error: "Aucun profil disponible pour le mode démo",
-      noProfiles: true
-    };
-  }
-};

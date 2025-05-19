@@ -3,7 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { handleSpecialCodes, normalizeAccessCode } from "./codeFormatters";
 import { showSuccessToast } from "./toast";
 import { checkDatabaseConnection } from "./databaseUtils";
-import { searchExactAccessCode, searchFlexibleAccessCode, searchProfileByAccessCode, searchFirstAvailableProfile } from "./accessCodeSearch";
+import { 
+  searchExactAccessCode, 
+  searchFlexibleAccessCode, 
+  searchProfileByAccessCode, 
+  searchFirstAvailableProfile 
+} from "./accessCodeSearch";
 
 // Main function to check directive access codes
 export const checkDirectivesAccessCode = async (accessCode: string) => {
