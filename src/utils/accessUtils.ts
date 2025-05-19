@@ -23,8 +23,42 @@ export const showSuccessToast = (title: string, description: string) => {
 const normalizeAccessCode = (code: string): string => {
   // Supprimer les espaces et convertir en majuscules
   const trimmed = code.trim().toUpperCase();
-  // Supprimer tout caractère non alphanumérique (comme les tirets)
+  
+  // Enlever les tirets ou autres caractères spéciaux si présents
+  // Note: On conserve seulement les caractères alphanumériques
   return trimmed.replace(/[^A-Z0-9]/g, '');
+};
+
+// Logique spéciale pour les codes avec préfixe "DM-"
+const handleSpecialCodes = async (code: string) => {
+  // Si le code commence par "DM-" ou "DM", c'est probablement un ID utilisateur
+  const upperCode = code.trim().toUpperCase();
+  if (upperCode.startsWith('DM-') || upperCode.startsWith('DM')) {
+    // Extraire l'ID potentiel (après le préfixe)
+    const idPart = upperCode.replace(/^DM-?/i, '').toLowerCase();
+    console.log(`Code spécial détecté, extraction de l'ID: ${idPart}`);
+    
+    // Chercher directement par ID utilisateur
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', idPart);
+      
+    if (error) {
+      console.error("Erreur lors de la vérification du code spécial:", error);
+      return [];
+    }
+    
+    if (data && data.length > 0) {
+      console.log("ID utilisateur trouvé directement:", data);
+      // Transformer pour correspondre au format attendu
+      return data.map(profile => ({
+        user_id: profile.id
+      }));
+    }
+  }
+  
+  return null; // Pas un code spécial ou pas trouvé
 };
 
 // Fonctions utilitaires pour les interactions avec la base de données
@@ -37,6 +71,12 @@ export const checkDirectivesAccessCode = async (accessCode: string) => {
   console.log(`Vérification du code d'accès: "${accessCode}"`);
   
   try {
+    // Vérifier d'abord si c'est un code spécial (DM-xxxx)
+    const specialResult = await handleSpecialCodes(accessCode);
+    if (specialResult) {
+      return specialResult;
+    }
+    
     // Normalisation du code (suppression des espaces, tirets, et uniformisation en majuscules)
     const normalizedCode = normalizeAccessCode(accessCode);
     console.log(`Code d'accès normalisé: "${normalizedCode}"`);
@@ -59,7 +99,7 @@ export const checkDirectivesAccessCode = async (accessCode: string) => {
       
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('id')
+        .select('id, medical_access_code')
         .ilike('medical_access_code', normalizedCode);
         
       if (profileError) {
@@ -139,6 +179,12 @@ export const checkMedicalAccessCode = async (accessCode: string) => {
   console.log(`Vérification du code d'accès médical: "${accessCode}"`);
   
   try {
+    // Vérifier d'abord si c'est un code spécial (DM-xxxx)
+    const specialResult = await handleSpecialCodes(accessCode);
+    if (specialResult) {
+      return specialResult;
+    }
+    
     // Normalisation du code (suppression des espaces, tirets, et uniformisation en majuscules)
     const normalizedCode = normalizeAccessCode(accessCode);
     console.log(`Code d'accès médical normalisé: "${normalizedCode}"`);
