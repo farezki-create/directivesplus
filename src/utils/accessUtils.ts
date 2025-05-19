@@ -21,21 +21,51 @@ export const showSuccessToast = (title: string, description: string) => {
 
 // Fonctions utilitaires pour les interactions avec la base de données
 export const checkDirectivesAccessCode = async (accessCode: string) => {
-  console.log(`Vérification du code d'accès: ${accessCode}`);
+  if (!accessCode) {
+    console.error("Code d'accès vide");
+    return [];
+  }
+  
+  console.log(`Vérification du code d'accès: "${accessCode}"`);
   
   try {
-    const { data, error } = await supabase
+    // Essayer avec le code exact
+    let { data, error } = await supabase
       .from('document_access_codes')
       .select('user_id')
-      .eq('access_code', accessCode.trim());
+      .eq('access_code', accessCode);
       
     if (error) {
       console.error("Erreur lors de la vérification du code d'accès:", error);
       throw error;
     }
     
+    // Si rien n'est trouvé avec le code exact, vérifier le code médical dans profiles
+    // (pour permettre l'accès croisé)
+    if (!data || data.length === 0) {
+      console.log("Code d'accès non trouvé dans document_access_codes, vérification dans profiles...");
+      
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('medical_access_code', accessCode);
+        
+      if (profileError) {
+        console.error("Erreur lors de la vérification du code médical:", profileError);
+        throw profileError;
+      }
+      
+      if (profileData && profileData.length > 0) {
+        console.log("Code trouvé dans profiles:", profileData);
+        // Transformer les données pour correspondre au format attendu
+        data = profileData.map(profile => ({
+          user_id: profile.id
+        }));
+      }
+    }
+    
     console.log(`Résultat de la vérification:`, data);
-    return data;
+    return data || [];
   } catch (error) {
     console.error("Exception lors de la vérification du code d'accès:", error);
     throw error;
@@ -64,11 +94,19 @@ export const checkProfileMatch = async (userId: string, formData: FormData) => {
     const profile = data[0];
     console.log("Profil trouvé:", profile);
     
+    // Normaliser les données pour la comparaison
+    const normalizedFirstName = formData.firstName.toLowerCase().trim();
+    const normalizedLastName = formData.lastName.toLowerCase().trim();
+    const profileFirstName = (profile.first_name || '').toLowerCase().trim();
+    const profileLastName = (profile.last_name || '').toLowerCase().trim();
+    
+    console.log(`Comparaison des noms: "${normalizedFirstName}" == "${profileFirstName}" && "${normalizedLastName}" == "${profileLastName}"`);
+    
     const birthDateMatch = formData.birthDate ? 
       new Date(profile.birth_date).toISOString().split('T')[0] === formData.birthDate : true;
     
-    const isMatch = profile.first_name.toLowerCase() === formData.firstName.toLowerCase() && 
-                    profile.last_name.toLowerCase() === formData.lastName.toLowerCase() &&
+    const isMatch = profileFirstName === normalizedFirstName && 
+                    profileLastName === normalizedLastName &&
                     birthDateMatch;
     
     console.log(`Correspondance du profil: ${isMatch}`);
@@ -81,9 +119,15 @@ export const checkProfileMatch = async (userId: string, formData: FormData) => {
 };
 
 export const checkMedicalAccessCode = async (accessCode: string) => {
-  console.log(`Vérification du code d'accès médical: ${accessCode}`);
+  if (!accessCode) {
+    console.error("Code d'accès médical vide");
+    return [];
+  }
+  
+  console.log(`Vérification du code d'accès médical: "${accessCode}"`);
   
   try {
+    // Essayer avec le code exact
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
@@ -95,7 +139,7 @@ export const checkMedicalAccessCode = async (accessCode: string) => {
     }
     
     console.log(`Résultat de la vérification médicale:`, data);
-    return data;
+    return data || [];
   } catch (error) {
     console.error("Exception lors de la vérification du code d'accès médical:", error);
     throw error;

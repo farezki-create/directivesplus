@@ -24,6 +24,7 @@ export type FormData = z.infer<typeof formSchema>;
 export const useDirectivesAccessForm = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   
   // Initialisation de react-hook-form avec le resolver zod
   const form = useForm<FormData>({
@@ -38,6 +39,7 @@ export const useDirectivesAccessForm = () => {
 
   // Fonction de validation du formulaire
   const handleFormValidation = async () => {
+    setErrorMessage(null);
     const isValid = await form.trigger();
     console.log("Validation du formulaire directives:", isValid);
     return isValid;
@@ -55,11 +57,16 @@ export const useDirectivesAccessForm = () => {
     
     setLoading(true);
     try {
+      // Normaliser le code d'accès (suppression des espaces)
+      const normalizedCode = formData.accessCode.trim();
+      console.log(`Code d'accès normalisé: "${normalizedCode}"`);
+      
       // Vérification du code d'accès
-      const accessData = await checkDirectivesAccessCode(formData.accessCode);
+      const accessData = await checkDirectivesAccessCode(normalizedCode);
       
       if (!accessData || accessData.length === 0) {
         console.log("Code d'accès directives invalide");
+        setErrorMessage("Code d'accès invalide ou incorrect");
         showErrorToast("Accès refusé", "Code d'accès invalide");
         return;
       }
@@ -72,6 +79,7 @@ export const useDirectivesAccessForm = () => {
       
       if (!isMatch) {
         console.log("Informations personnelles incorrectes pour directives");
+        setErrorMessage("Les informations personnelles ne correspondent pas au code d'accès");
         showErrorToast("Accès refusé", "Informations personnelles incorrectes");
         return;
       }
@@ -86,6 +94,7 @@ export const useDirectivesAccessForm = () => {
       }, 1000);
     } catch (error: any) {
       console.error("Erreur d'accès aux directives:", error);
+      setErrorMessage("Une erreur est survenue lors de la vérification de l'accès");
       showErrorToast(
         "Erreur", 
         "Une erreur est survenue lors de la vérification de l'accès"
@@ -98,6 +107,7 @@ export const useDirectivesAccessForm = () => {
   return {
     form,
     loading,
+    errorMessage,
     accessDirectives
   };
 };

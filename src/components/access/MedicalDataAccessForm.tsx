@@ -4,11 +4,12 @@ import FormField from "./FormField";
 import { Form } from "@/components/ui/form";
 import { useMedicalDataAccessForm } from "@/hooks/useMedicalDataAccessForm";
 import { Button } from "@/components/ui/button";
-import { FileSearch } from "lucide-react";
+import { AlertTriangle, FileSearch, Loader2 } from "lucide-react";
 import { useEffect } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const MedicalDataAccessForm = () => {
-  const { form, loading, accessMedicalData } = useMedicalDataAccessForm();
+  const { form, loading, errorMessage, accessMedicalData } = useMedicalDataAccessForm();
 
   // Using useEffect to watch for form errors
   useEffect(() => {
@@ -31,6 +32,13 @@ const MedicalDataAccessForm = () => {
           e.preventDefault();
         }}>
           <CardContent className="space-y-4">
+            {errorMessage && (
+              <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>{errorMessage}</AlertDescription>
+              </Alert>
+            )}
+            
             <FormField 
               id="lastName"
               label="Nom"
@@ -61,7 +69,11 @@ const MedicalDataAccessForm = () => {
               placeholder="Code d'accès médical"
               control={form.control}
               disabled={loading}
+              className="mb-1"
             />
+            <p className="text-xs text-gray-500 -mt-3 mb-2">
+              Entrez le code d'accès médical fourni par le patient (exemple: G24JKZBH)
+            </p>
           </CardContent>
 
           <CardFooter>
@@ -74,7 +86,11 @@ const MedicalDataAccessForm = () => {
               disabled={loading}
               type="button"
             >
-              <FileSearch size={18} />
+              {loading ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <FileSearch size={18} />
+              )}
               {loading ? "Vérification en cours..." : "Accéder aux données médicales"}
             </Button>
           </CardFooter>

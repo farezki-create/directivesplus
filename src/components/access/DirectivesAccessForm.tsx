@@ -4,11 +4,12 @@ import FormField from "./FormField";
 import { Form } from "@/components/ui/form";
 import { useDirectivesAccessForm } from "@/hooks/useDirectivesAccessForm";
 import { Button } from "@/components/ui/button";
-import { FileText, Loader2 } from "lucide-react";
+import { AlertTriangle, FileText, Loader2 } from "lucide-react";
 import { useEffect } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const DirectivesAccessForm = () => {
-  const { form, loading, accessDirectives } = useDirectivesAccessForm();
+  const { form, loading, errorMessage, accessDirectives } = useDirectivesAccessForm();
 
   // Using useEffect to watch for form errors
   useEffect(() => {
@@ -31,6 +32,13 @@ const DirectivesAccessForm = () => {
           e.preventDefault();
         }}>
           <CardContent className="space-y-4">
+            {errorMessage && (
+              <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>{errorMessage}</AlertDescription>
+              </Alert>
+            )}
+            
             <FormField 
               id="lastName"
               label="Nom"
@@ -61,7 +69,11 @@ const DirectivesAccessForm = () => {
               placeholder="Code d'accès aux directives"
               control={form.control}
               disabled={loading}
+              className="mb-1"
             />
+            <p className="text-xs text-gray-500 -mt-3 mb-2">
+              Entrez le code d'accès fourni par le patient (exemple: G24JKZBH)
+            </p>
           </CardContent>
 
           <CardFooter>
