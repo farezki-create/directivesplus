@@ -4,80 +4,18 @@ import FormField from "./FormField";
 import { Form } from "@/components/ui/form";
 import { useDirectivesAccessForm } from "@/hooks/directives-access/useDirectivesAccessForm";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, Database, FileText, Info, Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { supabase } from "@/integrations/supabase/client";
+import { FileText, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { useDatabaseConnection } from "@/hooks/access/useDatabaseConnection";
+import ConnectionStatusAlert from "./ConnectionStatusAlert";
+import TestInfoAlert from "./TestInfoAlert";
+import DebugInfoAlert from "./DebugInfoAlert";
+import AuthErrorAlert from "./AuthErrorAlert";
 
 const DirectivesAccessForm = () => {
   const { form, loading, errorMessage, accessDirectives } = useDirectivesAccessForm();
   const [showTestInfo, setShowTestInfo] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState<string | null>(null);
-  const [debugInfo, setDebugInfo] = useState<any>(null);
-
-  // Using useEffect to watch for form errors
-  useEffect(() => {
-    if (Object.keys(form.formState.errors).length > 0) {
-      console.log("Erreurs du formulaire directives:", form.formState.errors);
-    }
-  }, [form.formState.errors]);
-
-  // Check database connection on component mount
-  useEffect(() => {
-    const checkConnection = async () => {
-      try {
-        // Get the Supabase URL from client's configuration (in a safe way)
-        // URL is stored in integrations/supabase/client.ts as SUPABASE_URL
-        console.log("URL Supabase:", process.env.SUPABASE_URL || "https://kytqqjnecezkxyhmmjrz.supabase.co");
-        
-        // Simple test query to check if Supabase is responsive
-        const { data, error } = await supabase.from('profiles').select('id').limit(1);
-        
-        if (error) {
-          console.error("Erreur de connexion à la base de données:", error);
-          setConnectionStatus("error");
-          setDebugInfo({
-            error: error,
-            errorMessage: error.message,
-            errorDetails: error.details,
-            url: process.env.SUPABASE_URL || "https://kytqqjnecezkxyhmmjrz.supabase.co",
-            timestamp: new Date().toISOString()
-          });
-        } else if (data && data.length > 0) {
-          console.log("Connexion à la base de données réussie, profil trouvé:", data);
-          setConnectionStatus("success");
-          setDebugInfo({
-            profileFound: true,
-            profileId: data[0].id,
-            connectionUrl: process.env.SUPABASE_URL || "https://kytqqjnecezkxyhmmjrz.supabase.co"
-          });
-        } else {
-          console.log("Connexion à la base de données réussie, mais aucun profil trouvé");
-          
-          // Attempt a different query to check other tables
-          try {
-            const tablesCheck = await supabase.rpc('get_available_tables');
-            console.log("Vérification des tables disponibles:", tablesCheck);
-          } catch (err) {
-            console.error("Erreur lors de la vérification des tables:", err);
-          }
-          
-          setConnectionStatus("warning");
-          setDebugInfo({
-            profileFound: false,
-            message: "Aucun profil n'existe dans la base de données",
-            connectionUrl: process.env.SUPABASE_URL || "https://kytqqjnecezkxyhmmjrz.supabase.co"
-          });
-        }
-      } catch (err) {
-        console.error("Exception lors de la vérification de connexion:", err);
-        setConnectionStatus("error");
-        setDebugInfo(err);
-      }
-    };
-    
-    checkConnection();
-  }, []);
+  const { connectionStatus, debugInfo } = useDatabaseConnection();
 
   return (
     <Card className="shadow-lg">
@@ -88,42 +26,14 @@ const DirectivesAccessForm = () => {
         </CardDescription>
       </CardHeader>
 
-      {connectionStatus === "error" && (
-        <Alert variant="destructive" className="mx-6 mb-2">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertTitle className="ml-2">Problème de connexion</AlertTitle>
-          <AlertDescription>
-            Impossible de se connecter à la base de données. Veuillez réessayer plus tard ou contacter le support.
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {connectionStatus === "warning" && (
-        <Alert variant="default" className="mx-6 mb-2 bg-amber-50 border-amber-200">
-          <Database className="h-4 w-4" />
-          <AlertTitle className="ml-2">Avertissement</AlertTitle>
-          <AlertDescription>
-            Connecté à la base de données, mais aucun profil utilisateur n'est disponible.
-            Vérifiez que vous utilisez la bonne clé d'API Supabase.
-          </AlertDescription>
-        </Alert>
-      )}
+      <ConnectionStatusAlert status={connectionStatus} />
 
       <Form {...form}>
         <form onSubmit={(e) => {
           e.preventDefault();
         }}>
           <CardContent className="space-y-4">
-            {errorMessage && (
-              <Alert variant="destructive" className="mb-4">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertTitle className="ml-2">Erreur d'authentification</AlertTitle>
-                <AlertDescription>{errorMessage}</AlertDescription>
-                <AlertDescription className="mt-2 text-xs">
-                  Vérifiez que le code correspond bien au format attendu (exemples: G24JKZBH, ABC123DE, DM-81847C2D)
-                </AlertDescription>
-              </Alert>
-            )}
+            <AuthErrorAlert errorMessage={errorMessage} />
             
             <FormField 
               id="lastName"
@@ -162,43 +72,17 @@ const DirectivesAccessForm = () => {
             </p>
             
             {/* Information mode test */}
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="text-xs text-gray-500 p-0 h-auto" 
-              onClick={() => setShowTestInfo(!showTestInfo)}
-              type="button"
-            >
-              <Info className="h-3 w-3 mr-1" />
-              Mode test / débogage
-            </Button>
+            <TestInfoAlert 
+              showTestInfo={showTestInfo} 
+              connectionStatus={connectionStatus}
+              setShowTestInfo={setShowTestInfo}
+            />
             
-            {showTestInfo && (
-              <Alert variant="default" className="bg-blue-50 text-xs mt-2">
-                <AlertDescription>
-                  Pour tester l'accès, vous pouvez utiliser le code "TEST" ou "DEMO". 
-                  Ces codes de débogage permettent d'accéder à la plateforme sans vérification stricte.
-                  {connectionStatus === "warning" && (
-                    <p className="mt-2 text-orange-600 font-semibold">
-                      Attention: Aucun profil n'existe dans la base de données, les codes test ne fonctionneront pas.
-                    </p>
-                  )}
-                </AlertDescription>
-              </Alert>
-            )}
-
             {/* Debug Info section */}
-            {(connectionStatus === "warning" || connectionStatus === "error" || showTestInfo) && (
-              <Alert variant="default" className="bg-gray-100 text-xs mt-2">
-                <AlertTitle>Informations de débogage</AlertTitle>
-                <AlertDescription>
-                  <p className="mb-1">URL Supabase: {process.env.SUPABASE_URL || "https://kytqqjnecezkxyhmmjrz.supabase.co"}</p>
-                  <pre className="text-xs overflow-auto max-h-32 p-2 bg-gray-200 rounded">
-                    {JSON.stringify(debugInfo, null, 2)}
-                  </pre>
-                </AlertDescription>
-              </Alert>
-            )}
+            <DebugInfoAlert 
+              debugInfo={debugInfo}
+              showAlert={(connectionStatus === "warning" || connectionStatus === "error" || showTestInfo)}
+            />
           </CardContent>
 
           <CardFooter>
