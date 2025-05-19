@@ -35,66 +35,84 @@ export const handleSpecialCodes = async (code: string) => {
     console.log(`Code spécial détecté, extraction de l'ID: ${idPart}`);
     
     try {
-      // Approche 1: Utiliser l'ID comme code d'accès médical directement
-      console.log("Tentative directe avec code d'accès médical:", idPart);
+      // Nouvelle approche plus directe: vérifier explicitement si l'ID est un UUID complet
+      if (idPart.length >= 8) {
+        console.log("Tentative avec UUID partiel:", idPart);
+        // Méthode 1: Récupérer directement le profil par l'ID si c'est un UUID complet
+        const { data: profileById, error: profileError } = await supabase
+          .from('profiles')
+          .select('id, first_name, last_name')
+          .eq('id', idPart.toLowerCase());
+          
+        if (!profileError && profileById && profileById.length > 0) {
+          console.log("Profil trouvé directement par ID:", profileById[0]);
+          return profileById.map(profile => ({
+            user_id: profile.id
+          }));
+        }
+          
+        // Méthode 2: Vérifier si l'ID partiel correspond au début d'un UUID
+        const { data: allProfiles, error } = await supabase
+          .from('profiles')
+          .select('id, first_name, last_name');
+        
+        if (!error && allProfiles && allProfiles.length > 0) {
+          const idPartLower = idPart.toLowerCase();
+          
+          // Vérifier les correspondances exactes d'ID
+          const matchingProfiles = allProfiles.filter(profile => 
+            profile.id.toLowerCase() === idPartLower
+          );
+          
+          if (matchingProfiles.length > 0) {
+            console.log("Profil trouvé par correspondance exacte d'ID:", matchingProfiles[0]);
+            return matchingProfiles.map(profile => ({
+              user_id: profile.id
+            }));
+          }
+          
+          // Vérifier les correspondances partielles d'ID (début d'ID)
+          const partialMatches = allProfiles.filter(profile => 
+            profile.id.toLowerCase().startsWith(idPartLower)
+          );
+          
+          if (partialMatches.length > 0) {
+            console.log("Profil trouvé par début d'ID:", partialMatches[0]);
+            return partialMatches.map(profile => ({
+              user_id: profile.id
+            }));
+          }
+          
+          // Vérifier les correspondances partielles d'ID (n'importe où dans l'ID)
+          const looseMatches = allProfiles.filter(profile => 
+            profile.id.toLowerCase().includes(idPartLower)
+          );
+          
+          if (looseMatches.length > 0) {
+            console.log("Profil trouvé par correspondance partielle d'ID:", looseMatches[0]);
+            return looseMatches.map(profile => ({
+              user_id: profile.id
+            }));
+          }
+        }
+      }
+      
+      // Approche 3: Vérifier les codes médicaux dans profiles
+      console.log("Vérification alternative dans les codes médicaux...");
       const { data: medicalMatches, error: medicalError } = await supabase
         .from('profiles')
         .select('id, medical_access_code')
-        .eq('medical_access_code', idPart);
-      
+        .ilike('medical_access_code', idPart);
+        
       if (!medicalError && medicalMatches && medicalMatches.length > 0) {
-        console.log("Profil trouvé via correspondance exacte de code médical:", medicalMatches[0]);
+        console.log("Profil trouvé via code médical:", medicalMatches[0]);
         return medicalMatches.map(profile => ({
           user_id: profile.id
         }));
       }
       
-      // Approche 2: Chercher par code médical partiel
-      const { data: partialMatches, error: partialError } = await supabase
-        .from('profiles')
-        .select('id, medical_access_code')
-        .ilike('medical_access_code', `%${idPart}%`);
-        
-      if (!partialError && partialMatches && partialMatches.length > 0) {
-        console.log("Profil trouvé via correspondance partielle de code médical:", partialMatches[0]);
-        return partialMatches.map(profile => ({
-          user_id: profile.id
-        }));
-      }
-      
-      // Approche 3: Récupérer tous les profils et chercher des correspondances manuellement
-      const { data: allProfiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('id, medical_access_code, first_name, last_name');
-      
-      if (!profilesError && allProfiles && allProfiles.length > 0) {
-        // Vérifier si l'ID correspond à un début d'UUID de profil
-        const idPartLower = idPart.toLowerCase();
-        const matchingProfiles = allProfiles.filter(profile => 
-          profile.id.toLowerCase().startsWith(idPartLower)
-        );
-        
-        if (matchingProfiles.length > 0) {
-          console.log("Profil trouvé via correspondance de début d'ID:", matchingProfiles[0]);
-          return matchingProfiles.map(profile => ({
-            user_id: profile.id
-          }));
-        }
-        
-        // Vérifier si l'ID est un sous-ensemble d'un UUID de profil (moins strict)
-        const looseMatches = allProfiles.filter(profile => 
-          profile.id.toLowerCase().includes(idPartLower)
-        );
-        
-        if (looseMatches.length > 0) {
-          console.log("Profil trouvé via correspondance partielle d'ID:", looseMatches[0]);
-          return looseMatches.map(profile => ({
-            user_id: profile.id
-          }));
-        }
-      }
-      
       // Approche 4: Vérifier les codes d'accès dans document_access_codes
+      console.log("Vérification dans document_access_codes...");
       const { data: docAccessCodes, error: docAccessError } = await supabase
         .from('document_access_codes')
         .select('user_id')
@@ -102,9 +120,25 @@ export const handleSpecialCodes = async (code: string) => {
       
       if (!docAccessError && docAccessCodes && docAccessCodes.length > 0) {
         console.log("Code trouvé dans document_access_codes:", docAccessCodes[0]);
-        return docAccessCodes.map(code => ({
-          user_id: code.user_id
-        }));
+        return docAccessCodes;
+      }
+
+      // Recherche avec UUID partiel dans document_access_codes
+      console.log("Recherche avancée dans document_access_codes avec correspondance partielle...");
+      const { data: allAccessCodes, error: allCodesError } = await supabase
+        .from('document_access_codes')
+        .select('user_id, access_code');
+        
+      if (!allCodesError && allAccessCodes && allAccessCodes.length > 0) {
+        const idPartLower = idPart.toLowerCase();
+        const matchingCodes = allAccessCodes.filter(code => 
+          code.access_code.toLowerCase().includes(idPartLower)
+        );
+        
+        if (matchingCodes.length > 0) {
+          console.log("Code trouvé via correspondance partielle:", matchingCodes[0]);
+          return matchingCodes;
+        }
       }
       
       // Si on arrive ici, aucune correspondance n'a été trouvée

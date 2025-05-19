@@ -13,10 +13,13 @@ export const checkDirectivesAccessCode = async (accessCode: string) => {
   
   try {
     // Vérifier d'abord si c'est un code spécial (DM-xxxx)
-    const specialResult = await handleSpecialCodes(accessCode);
-    if (specialResult) {
-      console.log("Résultat spécial trouvé pour directives:", specialResult);
-      return specialResult;
+    if (accessCode.toUpperCase().startsWith('DM')) {
+      console.log("Format spécial DM détecté, traitement spécifique...");
+      const specialResult = await handleSpecialCodes(accessCode);
+      if (specialResult && specialResult.length > 0) {
+        console.log("Résultat spécial trouvé pour directives:", specialResult);
+        return specialResult;
+      }
     }
     
     // Normalisation du code (suppression des espaces, tirets, et uniformisation en majuscules)
@@ -47,24 +50,31 @@ export const checkDirectivesAccessCode = async (accessCode: string) => {
     }
     
     // Si rien n'est trouvé avec le code exact, vérifier le code médical dans profiles
-    // (pour permettre l'accès croisé)
     if (!data || data.length === 0) {
       console.log("Code d'accès non trouvé dans document_access_codes, vérification dans profiles...");
       
+      // D'abord avec correspondance exacte
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('id, medical_access_code')
-        .or(`medical_access_code.eq.${normalizedCode},medical_access_code.ilike.${normalizedCode}`);
+        .eq('medical_access_code', normalizedCode);
         
-      if (profileError) {
-        console.error("Erreur lors de la vérification du code médical:", profileError);
-        throw profileError;
+      if (!profileError && profileData && profileData.length > 0) {
+        console.log("Code trouvé dans profiles avec correspondance exacte:", profileData);
+        return profileData.map(profile => ({
+          user_id: profile.id
+        }));
       }
       
-      if (profileData && profileData.length > 0) {
-        console.log("Code trouvé dans profiles:", profileData);
-        // Transformer les données pour correspondre au format attendu
-        data = profileData.map(profile => ({
+      // Ensuite avec correspondance insensible à la casse
+      const { data: profileDataIlike, error: profileErrorIlike } = await supabase
+        .from('profiles')
+        .select('id, medical_access_code')
+        .ilike('medical_access_code', normalizedCode);
+        
+      if (!profileErrorIlike && profileDataIlike && profileDataIlike.length > 0) {
+        console.log("Code trouvé dans profiles avec correspondance insensible à la casse:", profileDataIlike);
+        return profileDataIlike.map(profile => ({
           user_id: profile.id
         }));
       }
