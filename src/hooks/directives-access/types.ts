@@ -18,3 +18,22 @@ export type DirectivesVerificationResult = {
   userId?: string;
   profileData?: any;
 };
+
+export type ConnectionCheckResult = {
+  isValid: boolean;
+  error?: string;
+};
+
+export type AccessCodeVerificationResult = {
+  isValid: boolean;
+  userId?: string;
+  error?: string;
+  errorType?: 'noProfiles' | 'invalidCode' | 'general';
+  details?: any;
+};
+
+export type ProfileResult = {
+  isValid: boolean;
+  profileData?: any;
+  error?: string;
+};
