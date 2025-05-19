@@ -7,7 +7,8 @@ import {
   FormField, 
   FormItem, 
   FormLabel, 
-  FormMessage 
+  FormMessage,
+  FormDescription
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
@@ -30,10 +31,12 @@ export const PasswordFields = () => {
                   type={showPassword ? "text" : "password"} 
                   placeholder="••••••••" 
                   {...field} 
+                  aria-label="Mot de passe"
                 />
                 <button
                   type="button"
-                  className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
+                  aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+                  className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-directiveplus-500 rounded-full p-1"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? <EyeOffIcon size={18} /> : <EyeIcon size={18} />}
@@ -41,9 +44,9 @@ export const PasswordFields = () => {
               </div>
             </FormControl>
             <FormMessage />
-            <p className="text-xs text-gray-500 mt-1">
+            <FormDescription className="text-xs text-gray-500 mt-1">
               Au moins 8 caractères, une majuscule et un chiffre
-            </p>
+            </FormDescription>
           </FormItem>
         )}
       />
@@ -60,10 +63,12 @@ export const PasswordFields = () => {
                   type={showConfirmPassword ? "text" : "password"} 
                   placeholder="••••••••" 
                   {...field} 
+                  aria-label="Confirmer le mot de passe"
                 />
                 <button
                   type="button"
-                  className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
+                  aria-label={showConfirmPassword ? "Masquer la confirmation" : "Afficher la confirmation"}
+                  className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-directiveplus-500 rounded-full p-1"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 >
                   {showConfirmPassword ? <EyeOffIcon size={18} /> : <EyeIcon size={18} />}

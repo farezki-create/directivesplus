@@ -3,8 +3,8 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2 } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Loader2, Mail } from "lucide-react";
 
 interface VerificationAlertProps {
   email: string;
@@ -41,17 +41,19 @@ export const VerificationAlert = ({ email }: VerificationAlertProps) => {
 
   return (
     <Alert className="bg-amber-50 border-amber-200 mb-4">
+      <Mail className="h-4 w-4 text-amber-800" />
+      <AlertTitle className="text-amber-800 font-medium">Vérification requise</AlertTitle>
       <AlertDescription className="text-amber-800">
         <p>Un email de vérification a été envoyé à <strong>{email}</strong>.</p>
         <p className="mt-2">Veuillez vérifier votre boîte de réception et cliquer sur le lien de confirmation.</p>
         <Button 
           variant="outline" 
-          className="mt-2" 
+          className="mt-2 bg-white border-amber-300 text-amber-800 hover:bg-amber-100 flex items-center gap-2" 
           onClick={resendVerificationEmail}
           disabled={loading}
         >
-          {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-          Renvoyer l'email
+          {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+          {loading ? "Envoi en cours..." : "Renvoyer l'email"}
         </Button>
       </AlertDescription>
     </Alert>

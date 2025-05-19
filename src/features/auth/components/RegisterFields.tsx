@@ -14,7 +14,7 @@ export const RegisterFields = () => {
   
   return (
     <>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField
           control={form.control}
           name="firstName"
@@ -22,7 +22,11 @@ export const RegisterFields = () => {
             <FormItem>
               <FormLabel>Prénom*</FormLabel>
               <FormControl>
-                <Input placeholder="Prénom" {...field} />
+                <Input 
+                  placeholder="Prénom" 
+                  {...field} 
+                  aria-required="true"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -35,7 +39,11 @@ export const RegisterFields = () => {
             <FormItem>
               <FormLabel>Nom*</FormLabel>
               <FormControl>
-                <Input placeholder="Nom" {...field} />
+                <Input 
+                  placeholder="Nom" 
+                  {...field} 
+                  aria-required="true"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -55,6 +63,7 @@ export const RegisterFields = () => {
                 max={new Date().toISOString().split('T')[0]}
                 min="1900-01-01"
                 {...field} 
+                aria-required="true"
               />
             </FormControl>
             <FormMessage />
@@ -69,7 +78,12 @@ export const RegisterFields = () => {
           <FormItem>
             <FormLabel>Email*</FormLabel>
             <FormControl>
-              <Input placeholder="votre@email.com" {...field} />
+              <Input 
+                placeholder="votre@email.com" 
+                type="email"
+                {...field} 
+                aria-required="true"
+              />
             </FormControl>
             <FormMessage />
           </FormItem>

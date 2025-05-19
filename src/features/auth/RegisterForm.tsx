@@ -19,8 +19,8 @@ export const RegisterForm = ({ onVerificationSent }: RegisterFormProps) => {
         <RegisterFields />
         <PasswordFields />
         
-        <Button disabled={loading} type="submit" className="w-full">
-          {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+        <Button disabled={loading} type="submit" className="w-full flex items-center justify-center">
+          {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {loading ? "Inscription..." : "S'inscrire"}
         </Button>
         <p className="text-xs text-gray-500 text-center">

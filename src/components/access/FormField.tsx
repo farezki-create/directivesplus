@@ -16,6 +16,7 @@ type FormFieldProps = {
   placeholder?: string;
   control: Control<any>;
   disabled?: boolean;
+  className?: string;
 };
 
 const FormField = ({ 
@@ -24,14 +25,15 @@ const FormField = ({
   type = "text", 
   placeholder = "",
   control,
-  disabled = false
+  disabled = false,
+  className
 }: FormFieldProps) => {
   return (
     <HookFormField
       control={control}
       name={id}
       render={({ field }) => (
-        <FormItem className="space-y-2">
+        <FormItem className={className}>
           <FormLabel>{label}</FormLabel>
           <FormControl>
             <Input 

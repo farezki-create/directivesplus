@@ -4,7 +4,7 @@ import FormField from "./FormField";
 import { Form } from "@/components/ui/form";
 import { useDirectivesAccessForm } from "@/hooks/useDirectivesAccessForm";
 import { Button } from "@/components/ui/button";
-import { FileText } from "lucide-react";
+import { FileText, Loader2 } from "lucide-react";
 import { useEffect } from "react";
 
 const DirectivesAccessForm = () => {
@@ -74,7 +74,11 @@ const DirectivesAccessForm = () => {
               disabled={loading}
               type="button"
             >
-              <FileText size={18} />
+              {loading ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <FileText size={18} />
+              )}
               {loading ? "Vérification en cours..." : "Accéder aux directives anticipées"}
             </Button>
           </CardFooter>
