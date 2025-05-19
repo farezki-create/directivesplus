@@ -9,7 +9,8 @@ type DebugInfoAlertProps = {
 const DebugInfoAlert = ({ debugInfo, showAlert }: DebugInfoAlertProps) => {
   if (!showAlert) return null;
   
-  const supabaseUrl = process.env.SUPABASE_URL || "https://kytqqjnecezkxyhmmjrz.supabase.co";
+  // Utiliser import.meta.env au lieu de process.env pour les applications Vite
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://kytqqjnecezkxyhmmjrz.supabase.co";
 
   return (
     <Alert variant="default" className="bg-gray-100 text-xs mt-2">
