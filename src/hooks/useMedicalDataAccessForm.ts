@@ -67,17 +67,21 @@ export const useMedicalDataAccessForm = () => {
         return;
       }
       
-      const profile = profilesData[0];
-      console.log("Profil médical trouvé:", profile);
+      // On récupère les données initiales du profil
+      let profileData = profilesData[0];
+      console.log("Profil médical initial trouvé:", profileData);
       
       // Vérifier si le profil est un résultat spécial (format DM-)
       // Dans ce cas, on a seulement user_id et pas les autres propriétés
-      if ('user_id' in profile && !('first_name' in profile)) {
+      if ('user_id' in profileData && !('first_name' in profileData)) {
+        console.log("Format spécial détecté (DM-), récupération du profil complet");
+        const userId = profileData.user_id;
+        
         // Il faut récupérer les détails du profil complet avec l'ID utilisateur
         const { data: completeProfile, error } = await supabase
           .from('profiles')
           .select('*')
-          .eq('id', profile.user_id)
+          .eq('id', userId)
           .single();
           
         if (error || !completeProfile) {
@@ -87,18 +91,28 @@ export const useMedicalDataAccessForm = () => {
           return;
         }
         
-        // Remplacer le profil partiel par le profil complet
-        profile = completeProfile;
+        // Utiliser le profil complet à la place du profil partiel
+        profileData = completeProfile;
+        console.log("Profil complet récupéré:", profileData);
+      }
+      
+      // S'assurer que le profil a les propriétés nécessaires
+      if (!('first_name' in profileData) || !('last_name' in profileData)) {
+        console.error("Le profil ne contient pas les informations requises");
+        setErrorMessage("Les informations de profil sont incomplètes. Veuillez contacter le support.");
+        showErrorToast("Erreur", "Profil incomplet");
+        return;
       }
       
       // Normaliser les données pour la comparaison (insensible à la casse)
       const normalizedFirstName = formData.firstName.toLowerCase().trim();
       const normalizedLastName = formData.lastName.toLowerCase().trim();
-      const profileFirstName = (profile.first_name || '').toLowerCase().trim();
-      const profileLastName = (profile.last_name || '').toLowerCase().trim();
+      const profileFirstName = (profileData.first_name || '').toLowerCase().trim();
+      const profileLastName = (profileData.last_name || '').toLowerCase().trim();
       
+      // Vérifier la date de naissance si elle est fournie
       const birthDateMatch = formData.birthDate ? 
-        new Date(profile.birth_date).toISOString().split('T')[0] === formData.birthDate : true;
+        ('birth_date' in profileData && new Date(profileData.birth_date).toISOString().split('T')[0] === formData.birthDate) : true;
       
       if (profileFirstName !== normalizedFirstName || 
           profileLastName !== normalizedLastName ||
