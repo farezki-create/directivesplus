@@ -37,7 +37,7 @@ export const checkDatabaseConnection = async (): Promise<AccessCodeCheckResult> 
         console.log("Vérification de la table profiles:", tableCheck);
         
         // Show connection parameters for debugging
-        const supabaseUrl = process.env.SUPABASE_URL || "https://kytqqjnecezkxyhmmjrz.supabase.co";
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://kytqqjnecezkxyhmmjrz.supabase.co";
         console.log("URL Supabase:", supabaseUrl);
       } catch (err) {
         console.error("Erreur lors de la vérification de la table:", err);
