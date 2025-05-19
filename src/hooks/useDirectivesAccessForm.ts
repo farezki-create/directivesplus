@@ -72,17 +72,37 @@ export const useDirectivesAccessForm = () => {
         return;
       }
       
-      const userId = accessData[0].user_id;
-      console.log("ID utilisateur récupéré:", userId);
+      const accessItem = accessData[0];
+      console.log("Données d'accès récupérées:", accessItem);
       
-      // Vérification des informations du profil
-      const { isMatch } = await checkProfileMatch(userId, formData);
-      
-      if (!isMatch) {
-        console.log("Informations personnelles incorrectes pour directives");
-        setErrorMessage("Les informations personnelles ne correspondent pas au code d'accès. Veuillez vérifier l'orthographe du nom et prénom ainsi que la date de naissance.");
-        showErrorToast("Accès refusé", "Informations personnelles incorrectes");
-        return;
+      // Vérifier si c'est un format spécial avec seulement user_id
+      if ('user_id' in accessItem) {
+        const userId = accessItem.user_id;
+        console.log("ID utilisateur récupéré:", userId);
+        
+        // Vérification des informations du profil
+        const { isMatch } = await checkProfileMatch(userId, formData);
+        
+        if (!isMatch) {
+          console.log("Informations personnelles incorrectes pour directives");
+          setErrorMessage("Les informations personnelles ne correspondent pas au code d'accès. Veuillez vérifier l'orthographe du nom et prénom ainsi que la date de naissance.");
+          showErrorToast("Accès refusé", "Informations personnelles incorrectes");
+          return;
+        }
+      } else {
+        // Format standard avec ID direct
+        const userId = accessItem.id;
+        console.log("ID utilisateur standard récupéré:", userId);
+        
+        // Vérification des informations du profil
+        const { isMatch } = await checkProfileMatch(userId, formData);
+        
+        if (!isMatch) {
+          console.log("Informations personnelles incorrectes pour directives");
+          setErrorMessage("Les informations personnelles ne correspondent pas au code d'accès. Veuillez vérifier l'orthographe du nom et prénom ainsi que la date de naissance.");
+          showErrorToast("Accès refusé", "Informations personnelles incorrectes");
+          return;
+        }
       }
       
       // Accès accordé
