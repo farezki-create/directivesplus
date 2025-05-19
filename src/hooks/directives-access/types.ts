@@ -45,4 +45,5 @@ export type AccessCodeCheckResult = {
   details?: any;
   noProfiles?: boolean;
   invalidCode?: boolean;
+  errorType?: 'connection' | 'noProfiles' | 'invalidCode' | 'general' | 'exception';
 };

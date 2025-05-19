@@ -8,6 +8,8 @@ export interface DebugInfo {
   profileFound?: boolean;
   message?: string;
   connectionUrl?: string;
+  url?: string;
+  profileId?: string;
   error?: any;
   errorMessage?: string;
   errorDetails?: any;
