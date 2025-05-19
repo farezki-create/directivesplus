@@ -11,7 +11,6 @@ import {
   showSuccessToast,
   AccessData
 } from "@/utils/access";
-import { supabase } from "@/integrations/supabase/client";
 
 // Schema de validation pour le formulaire
 const formSchema = z.object({
@@ -73,39 +72,43 @@ export const useDirectivesAccessForm = () => {
         return;
       }
       
-      const accessItem = accessData[0] as AccessData;
+      const accessItem = accessData[0];
       console.log("Données d'accès récupérées:", accessItem);
       
-      let userId: string;
-      
-      // Vérifier si c'est un format spécial avec user_id
-      if ('user_id' in accessItem) {
-        userId = accessItem.user_id;
-        console.log("ID utilisateur spécial récupéré:", userId);
-      } else {
-        // Format standard avec ID direct
-        userId = accessItem.id;
-        console.log("ID utilisateur standard récupéré:", userId);
-      }
-      
-      // Vérification des informations du profil
-      const { isMatch } = await checkProfileMatch(userId, formData);
-      
-      if (!isMatch) {
-        console.log("Informations personnelles incorrectes pour directives");
-        setErrorMessage("Les informations personnelles ne correspondent pas au code d'accès. Veuillez vérifier l'orthographe du nom et prénom ainsi que la date de naissance.");
-        showErrorToast("Accès refusé", "Informations personnelles incorrectes");
+      if (!('user_id' in accessItem)) {
+        console.error("Format de données d'accès invalide:", accessItem);
+        setErrorMessage("Erreur interne: Format de données d'accès invalide.");
+        showErrorToast("Erreur", "Format de données d'accès invalide");
         return;
       }
       
-      // Accès accordé
-      console.log("Accès aux directives accordé");
-      showSuccessToast("Accès autorisé", "Chargement des directives anticipées...");
+      const userId = accessItem.user_id;
+      console.log("ID utilisateur récupéré:", userId);
       
-      // Navigation vers la page des directives après un court délai
-      setTimeout(() => {
-        navigate('/mes-directives');
-      }, 1000);
+      // Vérification des informations du profil
+      try {
+        const { isMatch, profile } = await checkProfileMatch(userId, formData);
+        
+        if (!isMatch) {
+          console.log("Informations personnelles incorrectes pour directives");
+          setErrorMessage("Les informations personnelles ne correspondent pas au code d'accès. Veuillez vérifier l'orthographe du nom et prénom ainsi que la date de naissance.");
+          showErrorToast("Accès refusé", "Informations personnelles incorrectes");
+          return;
+        }
+        
+        // Accès accordé
+        console.log("Accès aux directives accordé");
+        showSuccessToast("Accès autorisé", "Chargement des directives anticipées...");
+        
+        // Navigation vers la page des directives après un court délai
+        setTimeout(() => {
+          navigate('/mes-directives');
+        }, 1000);
+      } catch (profileError) {
+        console.error("Erreur lors de la vérification du profil:", profileError);
+        setErrorMessage("Une erreur est survenue lors de la vérification des informations personnelles. Le profil utilisateur est introuvable ou incomplet.");
+        showErrorToast("Erreur", "Profil introuvable");
+      }
     } catch (error: any) {
       console.error("Erreur d'accès aux directives:", error);
       setErrorMessage("Une erreur est survenue lors de la vérification de l'accès. Veuillez réessayer ou contacter le support.");

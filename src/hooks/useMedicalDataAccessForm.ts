@@ -110,9 +110,13 @@ export const useMedicalDataAccessForm = () => {
       const profileFirstName = (profileData.first_name || '').toLowerCase().trim();
       const profileLastName = (profileData.last_name || '').toLowerCase().trim();
       
-      // Vérifier la date de naissance si elle est fournie
-      const birthDateMatch = formData.birthDate ? 
-        ('birth_date' in profileData && new Date(profileData.birth_date).toISOString().split('T')[0] === formData.birthDate) : true;
+      // Vérification souple pour la date de naissance
+      let birthDateMatch = true;
+      if (formData.birthDate && profileData.birth_date) {
+        const formattedBirthDate = new Date(formData.birthDate).toISOString().split('T')[0];
+        const profileBirthDate = new Date(profileData.birth_date).toISOString().split('T')[0];
+        birthDateMatch = formattedBirthDate === profileBirthDate;
+      }
       
       if (profileFirstName !== normalizedFirstName || 
           profileLastName !== normalizedLastName ||

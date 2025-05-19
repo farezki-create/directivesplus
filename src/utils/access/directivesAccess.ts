@@ -12,76 +12,54 @@ export const checkDirectivesAccessCode = async (accessCode: string) => {
   console.log(`Vérification du code d'accès: "${accessCode}"`);
   
   try {
-    // Vérifier d'abord si c'est un code spécial (DM-xxxx)
+    // Vérifier si c'est un code spécial (DM-xxxx)
     if (accessCode.toUpperCase().startsWith('DM')) {
       console.log("Format spécial DM détecté, traitement spécifique...");
       const specialResult = await handleSpecialCodes(accessCode);
       if (specialResult && specialResult.length > 0) {
         console.log("Résultat spécial trouvé pour directives:", specialResult);
         return specialResult;
+      } else {
+        console.log("Aucun résultat spécial trouvé pour directives");
       }
     }
     
-    // Normalisation du code (suppression des espaces, tirets, et uniformisation en majuscules)
+    // Si ce n'est pas un code spécial ou aucun résultat trouvé, continuer avec la procédure normale
     const normalizedCode = normalizeAccessCode(accessCode);
     console.log(`Code d'accès normalisé: "${normalizedCode}"`);
     
-    // Essayer avec le code exact
-    let { data, error } = await supabase
+    // Essayer avec le code dans document_access_codes
+    const { data: docAccessData, error: docAccessError } = await supabase
       .from('document_access_codes')
       .select('user_id')
-      .eq('access_code', normalizedCode);
+      .or(`access_code.eq.${normalizedCode},access_code.ilike.${normalizedCode}`);
       
-    if (error) {
-      console.error("Erreur lors de la vérification du code d'accès:", error);
-      throw error;
+    if (docAccessError) {
+      console.error("Erreur lors de la vérification dans document_access_codes:", docAccessError);
+    } else if (docAccessData && docAccessData.length > 0) {
+      console.log("Code trouvé dans document_access_codes:", docAccessData);
+      return docAccessData;
+    } else {
+      console.log("Code non trouvé dans document_access_codes, vérification dans profiles...");
     }
     
-    if (!data || data.length === 0) {
-      // Essayer avec la recherche insensible à la casse
-      const { data: caseInsensitiveData, error: caseError } = await supabase
-        .from('document_access_codes')
-        .select('user_id')
-        .ilike('access_code', normalizedCode);
-        
-      if (!caseError && caseInsensitiveData && caseInsensitiveData.length > 0) {
-        data = caseInsensitiveData;
-      }
+    // Si rien n'est trouvé, vérifier le code médical dans profiles
+    const { data: profileData, error: profileError } = await supabase
+      .from('profiles')
+      .select('id, medical_access_code')
+      .or(`medical_access_code.eq.${normalizedCode},medical_access_code.ilike.${normalizedCode}`);
+      
+    if (profileError) {
+      console.error("Erreur lors de la vérification dans profiles:", profileError);
+    } else if (profileData && profileData.length > 0) {
+      console.log("Code trouvé dans profiles:", profileData);
+      return profileData.map(profile => ({
+        user_id: profile.id
+      }));
     }
     
-    // Si rien n'est trouvé avec le code exact, vérifier le code médical dans profiles
-    if (!data || data.length === 0) {
-      console.log("Code d'accès non trouvé dans document_access_codes, vérification dans profiles...");
-      
-      // D'abord avec correspondance exacte
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('id, medical_access_code')
-        .eq('medical_access_code', normalizedCode);
-        
-      if (!profileError && profileData && profileData.length > 0) {
-        console.log("Code trouvé dans profiles avec correspondance exacte:", profileData);
-        return profileData.map(profile => ({
-          user_id: profile.id
-        }));
-      }
-      
-      // Ensuite avec correspondance insensible à la casse
-      const { data: profileDataIlike, error: profileErrorIlike } = await supabase
-        .from('profiles')
-        .select('id, medical_access_code')
-        .ilike('medical_access_code', normalizedCode);
-        
-      if (!profileErrorIlike && profileDataIlike && profileDataIlike.length > 0) {
-        console.log("Code trouvé dans profiles avec correspondance insensible à la casse:", profileDataIlike);
-        return profileDataIlike.map(profile => ({
-          user_id: profile.id
-        }));
-      }
-    }
-    
-    console.log(`Résultat de la vérification:`, data);
-    return data || [];
+    console.log("Aucun résultat trouvé pour le code d'accès normalisé");
+    return [];
   } catch (error) {
     console.error("Exception lors de la vérification du code d'accès:", error);
     throw error;

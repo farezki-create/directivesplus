@@ -32,8 +32,16 @@ export const checkProfileMatch = async (userId: string, formData: FormData) => {
     
     console.log(`Comparaison des noms: "${normalizedFirstName}" == "${profileFirstName}" && "${normalizedLastName}" == "${profileLastName}"`);
     
-    const birthDateMatch = formData.birthDate ? 
-      new Date(profile.birth_date).toISOString().split('T')[0] === formData.birthDate : true;
+    // Vérification souple pour la date de naissance (optionnelle)
+    let birthDateMatch = true;
+    if (formData.birthDate && profile.birth_date) {
+      const formattedBirthDate = new Date(formData.birthDate).toISOString().split('T')[0];
+      const profileBirthDate = new Date(profile.birth_date).toISOString().split('T')[0];
+      birthDateMatch = formattedBirthDate === profileBirthDate;
+      console.log(`Comparaison des dates: "${formattedBirthDate}" == "${profileBirthDate}", résultat: ${birthDateMatch}`);
+    } else {
+      console.log("Date de naissance non fournie ou non disponible dans le profil, ignorée dans la comparaison");
+    }
     
     const isMatch = profileFirstName === normalizedFirstName && 
                     profileLastName === normalizedLastName &&
