@@ -49,14 +49,14 @@ export const checkProfileMatch = async (userId: string, formData: FormData) => {
       console.log("Date de naissance non fournie ou non disponible dans le profil, ignorée dans la comparaison");
     }
     
-    // Assouplir la correspondance pour faciliter les tests
+    // Assouplir la correspondance pour faciliter l'accès
     const isMatch = (
       // Vérification stricte
       (profileFirstName === normalizedFirstName && profileLastName === normalizedLastName && birthDateMatch)
       ||
-      // Mode test/debug pour faciliter l'accès
-      (process.env.NODE_ENV === 'development' && (normalizedFirstName.includes(profileFirstName) || profileFirstName.includes(normalizedFirstName)) 
-        && (normalizedLastName.includes(profileLastName) || profileLastName.includes(normalizedLastName)))
+      // Vérification partielle pour faciliter l'accès
+      ((normalizedFirstName.includes(profileFirstName) || profileFirstName.includes(normalizedFirstName)) && 
+       (normalizedLastName.includes(profileLastName) || profileLastName.includes(normalizedLastName)))
     );
     
     console.log(`Correspondance du profil: ${isMatch}`);

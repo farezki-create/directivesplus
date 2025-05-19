@@ -28,7 +28,7 @@ export const checkMedicalAccessCode = async (accessCode: string) => {
     const normalizedCode = normalizeAccessCode(accessCode);
     console.log(`Code d'accès médical normalisé: "${normalizedCode}"`);
     
-    // Recherche dans profiles avec medical_access_code
+    // Recherche dans profiles avec medical_access_code - recherche exacte et avec LIKE
     const { data: profileData, error: profileError } = await supabase
       .from('profiles')
       .select('*')

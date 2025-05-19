@@ -17,6 +17,60 @@ export type AccessData = {
   [key: string]: any;
 };
 
+// Fonction pour générer un code d'accès alphnumérique standard
+export const generateStandardAccessCode = (length: number = 8): string => {
+  const chars = '0123456789ABCDEFGHJKLMNPQRSTUVWXYZ'; // Exclusion de I et O pour éviter la confusion
+  let result = '';
+  
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * chars.length);
+    result += chars.charAt(randomIndex);
+  }
+  
+  return result;
+};
+
+// Fonction pour enregistrer un nouveau code d'accès pour un utilisateur
+export const createNewAccessCode = async (userId: string, isForMedical: boolean = false): Promise<string | null> => {
+  try {
+    // Générer un nouveau code standardisé
+    const newCode = generateStandardAccessCode(10);
+    console.log(`Génération d'un nouveau code d'accès pour l'utilisateur ${userId}: ${newCode}`);
+    
+    if (isForMedical) {
+      // Mettre à jour le profil avec le nouveau code d'accès médical
+      const { error } = await supabase
+        .from('profiles')
+        .update({ medical_access_code: newCode })
+        .eq('id', userId);
+        
+      if (error) {
+        console.error("Erreur lors de la création du code d'accès médical:", error);
+        return null;
+      }
+    } else {
+      // Créer un code d'accès pour les directives
+      const { error } = await supabase
+        .from('document_access_codes')
+        .insert({
+          user_id: userId,
+          access_code: newCode,
+          is_full_access: true
+        });
+        
+      if (error) {
+        console.error("Erreur lors de la création du code d'accès directives:", error);
+        return null;
+      }
+    }
+    
+    return newCode;
+  } catch (err) {
+    console.error("Exception lors de la création du code d'accès:", err);
+    return null;
+  }
+};
+
 // Fonction améliorée pour traiter les codes spéciaux DM-
 export const handleSpecialCodes = async (code: string): Promise<AccessData[] | null> => {
   const upperCode = code.trim().toUpperCase();

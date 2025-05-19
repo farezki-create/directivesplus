@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
+import { generateStandardAccessCode, createNewAccessCode } from "@/utils/access/codeFormatters";
 
 export const useAccessCode = (user: User | null, type: "directive" | "medical") => {
   const [accessCode, setAccessCode] = useState<string | null>(null);
@@ -11,15 +12,6 @@ export const useAccessCode = (user: User | null, type: "directive" | "medical") 
       generateAccessCode();
     }
   }, [user]);
-
-  const generateRandomCode = (length: number) => {
-    const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    let result = '';
-    for (let i = 0; i < length; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return result;
-  };
 
   const generateAccessCode = async () => {
     if (!user) return;
@@ -42,18 +34,24 @@ export const useAccessCode = (user: User | null, type: "directive" | "medical") 
           return;
         }
         
-        // Générer un nouveau code d'accès
-        const newAccessCode = generateRandomCode(8);
-        
-        // Mettre à jour le profil avec le nouveau code d'accès
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({ medical_access_code: newAccessCode })
-          .eq('id', user.id);
+        // Générer un nouveau code d'accès standardisé
+        const newCode = await createNewAccessCode(user.id, true);
+        if (newCode) {
+          setAccessCode(newCode);
+        } else {
+          // Fallback sur l'ancien générateur si la création a échoué
+          const fallbackCode = generateStandardAccessCode(8);
           
-        if (updateError) throw updateError;
-        
-        setAccessCode(newAccessCode);
+          // Mettre à jour le profil avec le nouveau code d'accès
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update({ medical_access_code: fallbackCode })
+            .eq('id', user.id);
+            
+          if (updateError) throw updateError;
+          
+          setAccessCode(fallbackCode);
+        }
       } else {
         // Pour l'accès aux directives, utiliser la table document_access_codes
         // Vérifier s'il existe un code pour cet utilisateur
@@ -73,21 +71,27 @@ export const useAccessCode = (user: User | null, type: "directive" | "medical") 
           return;
         }
         
-        // Générer un nouveau code d'accès
-        const newAccessCode = generateRandomCode(8);
-        
-        // Créer un enregistrement dans document_access_codes
-        const { error: insertError } = await supabase
-          .from('document_access_codes')
-          .insert({
-            user_id: user.id,
-            access_code: newAccessCode,
-            is_full_access: true,
-          });
+        // Générer un nouveau code d'accès standardisé
+        const newCode = await createNewAccessCode(user.id, false);
+        if (newCode) {
+          setAccessCode(newCode);
+        } else {
+          // Fallback sur l'ancien générateur si la création a échoué
+          const fallbackCode = generateStandardAccessCode(10);
           
-        if (insertError) throw insertError;
-        
-        setAccessCode(newAccessCode);
+          // Créer un enregistrement dans document_access_codes
+          const { error: insertError } = await supabase
+            .from('document_access_codes')
+            .insert({
+              user_id: user.id,
+              access_code: fallbackCode,
+              is_full_access: true,
+            });
+            
+          if (insertError) throw insertError;
+          
+          setAccessCode(fallbackCode);
+        }
       }
     } catch (error) {
       console.error(`Error retrieving access code for ${type}:`, error);

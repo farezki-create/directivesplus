@@ -29,7 +29,7 @@ export const checkDirectivesAccessCode = async (accessCode: string) => {
     const normalizedCode = normalizeAccessCode(accessCode);
     console.log(`Code d'accès normalisé: "${normalizedCode}"`);
     
-    // Essayer avec le code dans document_access_codes
+    // Essayer avec le code dans document_access_codes - Recherche exacte et avec LIKE
     const { data: docAccessData, error: docAccessError } = await supabase
       .from('document_access_codes')
       .select('user_id')
