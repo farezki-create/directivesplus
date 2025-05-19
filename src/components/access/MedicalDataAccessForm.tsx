@@ -38,7 +38,7 @@ const MedicalDataAccessForm = () => {
                 <AlertTitle className="ml-2">Erreur d'authentification</AlertTitle>
                 <AlertDescription>{errorMessage}</AlertDescription>
                 <AlertDescription className="mt-2 text-xs">
-                  Vérifiez que le code correspond bien au format attendu (ex: G24JKZBH ou ABC123DE)
+                  Vérifiez que le code correspond bien au format attendu (exemples: G24JKZBH, ABC123DE, DM-81847C2D)
                 </AlertDescription>
               </Alert>
             )}
@@ -76,7 +76,7 @@ const MedicalDataAccessForm = () => {
               className="mb-1"
             />
             <p className="text-xs text-gray-500 -mt-3 mb-2">
-              Entrez le code d'accès médical fourni par le patient (exemple: G24JKZBH)
+              Entrez le code d'accès médical fourni par le patient (exemples: G24JKZBH, DM-81847C2D)
             </p>
           </CardContent>
 

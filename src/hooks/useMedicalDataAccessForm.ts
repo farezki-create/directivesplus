@@ -52,12 +52,12 @@ export const useMedicalDataAccessForm = () => {
     
     setLoading(true);
     try {
-      // Normaliser le code d'accès (suppression des espaces)
-      const normalizedCode = formData.accessCode.trim();
-      console.log(`Code d'accès médical normalisé: "${normalizedCode}"`);
+      // Code d'accès (sera normalisé dans la fonction checkMedicalAccessCode)
+      const accessCode = formData.accessCode;
+      console.log(`Code d'accès médical: "${accessCode}"`);
       
       // Vérification du code d'accès médical
-      const profilesData = await checkMedicalAccessCode(normalizedCode);
+      const profilesData = await checkMedicalAccessCode(accessCode);
       
       if (!profilesData || profilesData.length === 0) {
         console.log("Code d'accès médical invalide");

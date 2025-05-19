@@ -57,12 +57,12 @@ export const useDirectivesAccessForm = () => {
     
     setLoading(true);
     try {
-      // Normaliser le code d'accès (suppression des espaces)
-      const normalizedCode = formData.accessCode.trim();
-      console.log(`Code d'accès normalisé: "${normalizedCode}"`);
+      // Code d'accès (sera normalisé dans la fonction checkDirectivesAccessCode)
+      const accessCode = formData.accessCode;
+      console.log(`Code d'accès: "${accessCode}"`);
       
       // Vérification du code d'accès
-      const accessData = await checkDirectivesAccessCode(normalizedCode);
+      const accessData = await checkDirectivesAccessCode(accessCode);
       
       if (!accessData || accessData.length === 0) {
         console.log("Code d'accès directives invalide");

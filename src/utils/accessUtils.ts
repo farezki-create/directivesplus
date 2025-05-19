@@ -19,6 +19,14 @@ export const showSuccessToast = (title: string, description: string) => {
   });
 };
 
+// Normalisation du code d'accès pour supporter différents formats (avec ou sans tiret)
+const normalizeAccessCode = (code: string): string => {
+  // Supprimer les espaces et convertir en majuscules
+  const trimmed = code.trim().toUpperCase();
+  // Supprimer tout caractère non alphanumérique (comme les tirets)
+  return trimmed.replace(/[^A-Z0-9]/g, '');
+};
+
 // Fonctions utilitaires pour les interactions avec la base de données
 export const checkDirectivesAccessCode = async (accessCode: string) => {
   if (!accessCode) {
@@ -29,8 +37,8 @@ export const checkDirectivesAccessCode = async (accessCode: string) => {
   console.log(`Vérification du code d'accès: "${accessCode}"`);
   
   try {
-    // Normalisation du code (suppression des espaces, uniformisation en majuscules)
-    const normalizedCode = accessCode.trim().toUpperCase();
+    // Normalisation du code (suppression des espaces, tirets, et uniformisation en majuscules)
+    const normalizedCode = normalizeAccessCode(accessCode);
     console.log(`Code d'accès normalisé: "${normalizedCode}"`);
     
     // Essayer avec le code exact
@@ -131,8 +139,8 @@ export const checkMedicalAccessCode = async (accessCode: string) => {
   console.log(`Vérification du code d'accès médical: "${accessCode}"`);
   
   try {
-    // Normalisation du code (suppression des espaces, uniformisation en majuscules)
-    const normalizedCode = accessCode.trim().toUpperCase();
+    // Normalisation du code (suppression des espaces, tirets, et uniformisation en majuscules)
+    const normalizedCode = normalizeAccessCode(accessCode);
     console.log(`Code d'accès médical normalisé: "${normalizedCode}"`);
     
     // Essayer avec le code exact
