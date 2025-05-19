@@ -4,12 +4,13 @@ import FormField from "./FormField";
 import { Form } from "@/components/ui/form";
 import { useDirectivesAccessForm } from "@/hooks/useDirectivesAccessForm";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, FileText, Loader2 } from "lucide-react";
-import { useEffect } from "react";
+import { AlertTriangle, FileText, Info, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const DirectivesAccessForm = () => {
   const { form, loading, errorMessage, accessDirectives } = useDirectivesAccessForm();
+  const [showTestInfo, setShowTestInfo] = useState(false);
 
   // Using useEffect to watch for form errors
   useEffect(() => {
@@ -78,6 +79,27 @@ const DirectivesAccessForm = () => {
             <p className="text-xs text-gray-500 -mt-3 mb-2">
               Entrez le code d'accès fourni par le patient (exemples: G24JKZBH, DM-81847C2D)
             </p>
+            
+            {/* Information mode test */}
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="text-xs text-gray-500 p-0 h-auto" 
+              onClick={() => setShowTestInfo(!showTestInfo)}
+              type="button"
+            >
+              <Info className="h-3 w-3 mr-1" />
+              Mode test / débogage
+            </Button>
+            
+            {showTestInfo && (
+              <Alert variant="info" className="bg-blue-50 text-xs mt-2">
+                <AlertDescription>
+                  Pour tester l'accès, vous pouvez utiliser le code "TEST" ou "DEMO". 
+                  Ces codes de débogage permettent d'accéder à la plateforme sans vérification stricte.
+                </AlertDescription>
+              </Alert>
+            )}
           </CardContent>
 
           <CardFooter>
