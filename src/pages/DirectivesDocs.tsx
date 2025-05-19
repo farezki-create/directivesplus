@@ -12,7 +12,7 @@ import DocumentPreviewDialog from "@/components/documents/DocumentPreviewDialog"
 
 const DirectivesDocs = () => {
   const { user, profile } = useAuth();
-  const accessCode = useAccessCode(user, "directive");
+  const { accessCode } = useAccessCode(user, "directive");
   
   const {
     isLoading,
