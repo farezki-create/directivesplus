@@ -66,7 +66,7 @@ export const useDirectivesAccessForm = () => {
       
       if (!accessData || accessData.length === 0) {
         console.log("Code d'accès directives invalide");
-        setErrorMessage("Code d'accès invalide ou incorrect");
+        setErrorMessage("Code d'accès invalide ou incorrect. Veuillez vérifier que vous avez entré le bon code.");
         showErrorToast("Accès refusé", "Code d'accès invalide");
         return;
       }
@@ -79,7 +79,7 @@ export const useDirectivesAccessForm = () => {
       
       if (!isMatch) {
         console.log("Informations personnelles incorrectes pour directives");
-        setErrorMessage("Les informations personnelles ne correspondent pas au code d'accès");
+        setErrorMessage("Les informations personnelles ne correspondent pas au code d'accès. Veuillez vérifier l'orthographe du nom et prénom ainsi que la date de naissance.");
         showErrorToast("Accès refusé", "Informations personnelles incorrectes");
         return;
       }
@@ -94,7 +94,7 @@ export const useDirectivesAccessForm = () => {
       }, 1000);
     } catch (error: any) {
       console.error("Erreur d'accès aux directives:", error);
-      setErrorMessage("Une erreur est survenue lors de la vérification de l'accès");
+      setErrorMessage("Une erreur est survenue lors de la vérification de l'accès. Veuillez réessayer ou contacter le support.");
       showErrorToast(
         "Erreur", 
         "Une erreur est survenue lors de la vérification de l'accès"

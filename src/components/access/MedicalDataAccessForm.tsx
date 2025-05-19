@@ -6,7 +6,7 @@ import { useMedicalDataAccessForm } from "@/hooks/useMedicalDataAccessForm";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, FileSearch, Loader2 } from "lucide-react";
 import { useEffect } from "react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const MedicalDataAccessForm = () => {
   const { form, loading, errorMessage, accessMedicalData } = useMedicalDataAccessForm();
@@ -33,9 +33,13 @@ const MedicalDataAccessForm = () => {
         }}>
           <CardContent className="space-y-4">
             {errorMessage && (
-              <Alert variant="destructive">
+              <Alert variant="destructive" className="mb-4">
                 <AlertTriangle className="h-4 w-4" />
+                <AlertTitle className="ml-2">Erreur d'authentification</AlertTitle>
                 <AlertDescription>{errorMessage}</AlertDescription>
+                <AlertDescription className="mt-2 text-xs">
+                  Vérifiez que le code correspond bien au format attendu (ex: G24JKZBH ou ABC123DE)
+                </AlertDescription>
               </Alert>
             )}
             

@@ -29,11 +29,15 @@ export const checkDirectivesAccessCode = async (accessCode: string) => {
   console.log(`Vérification du code d'accès: "${accessCode}"`);
   
   try {
+    // Normalisation du code (suppression des espaces, uniformisation en majuscules)
+    const normalizedCode = accessCode.trim().toUpperCase();
+    console.log(`Code d'accès normalisé: "${normalizedCode}"`);
+    
     // Essayer avec le code exact
     let { data, error } = await supabase
       .from('document_access_codes')
       .select('user_id')
-      .eq('access_code', accessCode);
+      .ilike('access_code', normalizedCode);
       
     if (error) {
       console.error("Erreur lors de la vérification du code d'accès:", error);
@@ -48,7 +52,7 @@ export const checkDirectivesAccessCode = async (accessCode: string) => {
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('id')
-        .eq('medical_access_code', accessCode);
+        .ilike('medical_access_code', normalizedCode);
         
       if (profileError) {
         console.error("Erreur lors de la vérification du code médical:", profileError);
@@ -94,7 +98,7 @@ export const checkProfileMatch = async (userId: string, formData: FormData) => {
     const profile = data[0];
     console.log("Profil trouvé:", profile);
     
-    // Normaliser les données pour la comparaison
+    // Normaliser les données pour la comparaison (insensible à la casse)
     const normalizedFirstName = formData.firstName.toLowerCase().trim();
     const normalizedLastName = formData.lastName.toLowerCase().trim();
     const profileFirstName = (profile.first_name || '').toLowerCase().trim();
@@ -127,11 +131,15 @@ export const checkMedicalAccessCode = async (accessCode: string) => {
   console.log(`Vérification du code d'accès médical: "${accessCode}"`);
   
   try {
+    // Normalisation du code (suppression des espaces, uniformisation en majuscules)
+    const normalizedCode = accessCode.trim().toUpperCase();
+    console.log(`Code d'accès médical normalisé: "${normalizedCode}"`);
+    
     // Essayer avec le code exact
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
-      .eq('medical_access_code', accessCode.trim());
+      .ilike('medical_access_code', normalizedCode);
     
     if (error) {
       console.error("Erreur lors de la vérification du code d'accès médical:", error);
