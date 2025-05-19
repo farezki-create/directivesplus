@@ -8,8 +8,9 @@ import {
   checkDirectivesAccessCode, 
   checkProfileMatch, 
   showErrorToast, 
-  showSuccessToast 
-} from "@/utils/accessUtils";
+  showSuccessToast,
+  AccessData
+} from "@/utils/access";
 import { supabase } from "@/integrations/supabase/client";
 
 // Schema de validation pour le formulaire
@@ -21,20 +22,6 @@ const formSchema = z.object({
 });
 
 export type FormData = z.infer<typeof formSchema>;
-
-// Type définition pour les résultats spéciaux (format DM-)
-type SpecialAccessData = {
-  user_id: string;
-};
-
-// Type définition pour les résultats standard
-type StandardAccessData = {
-  id: string;
-  [key: string]: any;
-};
-
-// Union type pour les deux formats possibles
-type AccessData = SpecialAccessData | StandardAccessData;
 
 export const useDirectivesAccessForm = () => {
   const navigate = useNavigate();

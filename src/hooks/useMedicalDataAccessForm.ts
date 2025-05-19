@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { checkMedicalAccessCode, showErrorToast, showSuccessToast } from "@/utils/accessUtils";
+import { checkMedicalAccessCode, showErrorToast, showSuccessToast } from "@/utils/access";
 import { supabase } from "@/integrations/supabase/client";
 
 // Schema de validation pour le formulaire
