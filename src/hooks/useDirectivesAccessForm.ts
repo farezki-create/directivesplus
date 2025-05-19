@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -7,10 +6,10 @@ import * as z from "zod";
 import { 
   checkDirectivesAccessCode,
   showErrorToast, 
-  showSuccessToast,
-  AccessData
+  showSuccessToast
 } from "@/utils/access";
 import { supabase } from "@/integrations/supabase/client";
+import { AccessCodeCheckResult } from "@/hooks/directives-access/types";
 
 // Schema de validation pour le formulaire
 const formSchema = z.object({
@@ -73,10 +72,10 @@ export const useDirectivesAccessForm = () => {
       console.log(`Code d'accès: "${accessCode}"`);
       
       // Vérification du code d'accès avec la version améliorée qui renvoie des objets d'erreur enrichis
-      const accessResult = await checkDirectivesAccessCode(accessCode);
+      const accessResult: AccessCodeCheckResult = await checkDirectivesAccessCode(accessCode);
       
       if (accessResult.error) {
-        console.error("Erreur lors de la vérification du code d'accès:", accessResult.error, accessResult.details);
+        console.error("Erreur lors de la vérification du code d'accès:", accessResult.error);
         
         // Messages d'erreur personnalisés selon le type d'erreur
         if (accessResult.noProfiles) {

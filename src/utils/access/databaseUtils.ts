@@ -1,8 +1,9 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { AccessCodeCheckResult } from "./accessCodeSearch";
 
 // Check database connection
-export const checkDatabaseConnection = async () => {
+export const checkDatabaseConnection = async (): Promise<AccessCodeCheckResult> => {
   try {
     // Check first if database connection is working
     const connectionTest = await supabase.from('profiles').select('id').limit(1);

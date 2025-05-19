@@ -1,14 +1,14 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { checkDirectivesAccessCode } from "@/utils/access";
-import { AccessCodeVerificationResult } from "./types";
+import { AccessCodeVerificationResult, AccessCodeCheckResult } from "./types";
 
 // Vérifier le code d'accès et récupérer l'ID utilisateur
 export const verifyAccessCode = async (accessCode: string): Promise<AccessCodeVerificationResult> => {
   console.log(`Vérification du code d'accès: "${accessCode}"`);
   
   // Vérification du code d'accès avec la version améliorée
-  const accessResult = await checkDirectivesAccessCode(accessCode);
+  const accessResult: AccessCodeCheckResult = await checkDirectivesAccessCode(accessCode);
   
   if (accessResult.error) {
     console.error("Erreur lors de la vérification du code d'accès:", accessResult.error, accessResult.details);

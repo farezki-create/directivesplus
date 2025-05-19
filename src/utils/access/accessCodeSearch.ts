@@ -1,8 +1,17 @@
 
 import { supabase } from "@/integrations/supabase/client";
 
+// Define a type for the access code check result
+export type AccessCodeCheckResult = {
+  data: any[];
+  error: string | null;
+  details?: any;
+  noProfiles?: boolean;
+  invalidCode?: boolean;
+};
+
 // Search for exact match in document_access_codes
-export const searchExactAccessCode = async (normalizedCode: string) => {
+export const searchExactAccessCode = async (normalizedCode: string): Promise<AccessCodeCheckResult> => {
   const { data, error } = await supabase
     .from('document_access_codes')
     .select('user_id, access_code')
@@ -25,7 +34,7 @@ export const searchExactAccessCode = async (normalizedCode: string) => {
 };
 
 // Search with flexible matching in document_access_codes
-export const searchFlexibleAccessCode = async (normalizedCode: string) => {
+export const searchFlexibleAccessCode = async (normalizedCode: string): Promise<AccessCodeCheckResult> => {
   const { data, error } = await supabase
     .from('document_access_codes')
     .select('user_id, access_code')
@@ -48,7 +57,7 @@ export const searchFlexibleAccessCode = async (normalizedCode: string) => {
 };
 
 // Search in profiles.medical_access_code
-export const searchProfileByAccessCode = async (normalizedCode: string) => {
+export const searchProfileByAccessCode = async (normalizedCode: string): Promise<AccessCodeCheckResult> => {
   const { data, error } = await supabase
     .from('profiles')
     .select('id, medical_access_code')
@@ -77,7 +86,7 @@ export const searchProfileByAccessCode = async (normalizedCode: string) => {
 };
 
 // Find the first available profile (for test mode)
-export const searchFirstAvailableProfile = async (reason: string) => {
+export const searchFirstAvailableProfile = async (reason: string): Promise<AccessCodeCheckResult> => {
   // Get any available profile for demo mode
   const { data: demoProfiles, error } = await supabase
     .from('profiles')

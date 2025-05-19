@@ -37,3 +37,12 @@ export type ProfileResult = {
   profileData?: any;
   error?: string;
 };
+
+// Add this type to match the utility function return type
+export type AccessCodeCheckResult = {
+  data: any[];
+  error: string | null;
+  details?: any;
+  noProfiles?: boolean;
+  invalidCode?: boolean;
+};

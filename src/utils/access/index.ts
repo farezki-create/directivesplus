@@ -7,4 +7,3 @@ export * from './accessCodeSearch';
 export * from './databaseUtils';
 export * from './medicalAccess';
 export * from './profileMatch';
-

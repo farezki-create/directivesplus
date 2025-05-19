@@ -7,11 +7,12 @@ import {
   searchExactAccessCode, 
   searchFlexibleAccessCode, 
   searchProfileByAccessCode, 
-  searchFirstAvailableProfile 
+  searchFirstAvailableProfile,
+  AccessCodeCheckResult 
 } from "./accessCodeSearch";
 
 // Main function to check directive access codes
-export const checkDirectivesAccessCode = async (accessCode: string) => {
+export const checkDirectivesAccessCode = async (accessCode: string): Promise<AccessCodeCheckResult> => {
   if (!accessCode) {
     console.error("Code d'accès vide");
     return { data: [], error: "Code d'accès vide" };
