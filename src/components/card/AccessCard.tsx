@@ -17,8 +17,18 @@ interface AccessCardProps {
 
 const AccessCard: React.FC<AccessCardProps> = ({ firstName, lastName, birthDate }) => {
   const { user } = useAuth();
-  const { accessCode: directiveCode, regenerateAccessCode: regenerateDirectiveCode, isLoading: isLoadingDirective } = useAccessCode(user, "directive");
-  const { accessCode: medicalCode, regenerateAccessCode: regenerateMedicalCode, isLoading: isLoadingMedical } = useAccessCode(user, "medical");
+  const { 
+    accessCode: directiveCode, 
+    regenerateAccessCode: regenerateDirectiveCode, 
+    isLoading: isLoadingDirective 
+  } = useAccessCode(user, "directive");
+  
+  const { 
+    accessCode: medicalCode, 
+    regenerateAccessCode: regenerateMedicalCode, 
+    isLoading: isLoadingMedical 
+  } = useAccessCode(user, "medical");
+  
   const cardRef = useRef<HTMLDivElement>(null);
   
   const [includeDirective, setIncludeDirective] = useState(true);

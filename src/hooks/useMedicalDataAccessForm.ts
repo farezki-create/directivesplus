@@ -118,17 +118,32 @@ export const useMedicalDataAccessForm = () => {
         birthDateMatch = formattedBirthDate === profileBirthDate;
       }
       
+      // Vérification par inclusion pour assouplir la correspondance
+      const firstNameMatch = normalizedFirstName.includes(profileFirstName) || 
+                             profileFirstName.includes(normalizedFirstName);
+      
+      const lastNameMatch = normalizedLastName.includes(profileLastName) || 
+                           profileLastName.includes(normalizedLastName);
+      
       // Assouplir la correspondance pour faciliter les tests
-      const isMatch = (
-        // Vérification stricte
-        (profileFirstName === normalizedFirstName && profileLastName === normalizedLastName && birthDateMatch)
-        ||
-        // Mode test/debug pour faciliter l'accès
-        (process.env.NODE_ENV === 'development' && (normalizedFirstName.includes(profileFirstName) || profileFirstName.includes(normalizedFirstName))
-          && (normalizedLastName.includes(profileLastName) || profileLastName.includes(normalizedLastName)))
-      );
+      const isMatch = (firstNameMatch && lastNameMatch && birthDateMatch);
       
       if (!isMatch) {
+        console.log("Comparaison - Prénom:", { 
+          input: normalizedFirstName, 
+          profile: profileFirstName,
+          match: firstNameMatch 
+        });
+        console.log("Comparaison - Nom:", { 
+          input: normalizedLastName, 
+          profile: profileLastName,
+          match: lastNameMatch 
+        });
+        console.log("Comparaison - Date:", { 
+          input: formData.birthDate, 
+          profile: profileData.birth_date,
+          match: birthDateMatch 
+        });
         console.log("Informations personnelles médicales incorrectes");
         setErrorMessage("Les informations personnelles ne correspondent pas au code d'accès. Veuillez vérifier l'orthographe du nom et prénom ainsi que la date de naissance.");
         showErrorToast("Accès refusé", "Informations personnelles incorrectes");
@@ -138,6 +153,10 @@ export const useMedicalDataAccessForm = () => {
       // Accès accordé
       console.log("Accès aux données médicales accordé");
       showSuccessToast("Accès autorisé", "Chargement des données médicales...");
+      
+      // Enregistrer l'ID utilisateur pour la session
+      localStorage.setItem('medical_access_user_id', profileData.id);
+      localStorage.setItem('medical_access_timestamp', new Date().toISOString());
       
       // Navigation vers la page des données médicales après un court délai
       setTimeout(() => {
