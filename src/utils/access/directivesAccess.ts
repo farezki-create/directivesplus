@@ -29,34 +29,64 @@ export const checkDirectivesAccessCode = async (accessCode: string) => {
     const normalizedCode = normalizeAccessCode(accessCode);
     console.log(`Code d'accès normalisé: "${normalizedCode}"`);
     
-    // Essayer avec le code dans document_access_codes - Recherche exacte et avec LIKE
+    // Essayer avec le code dans document_access_codes - Recherche plus flexible
     const { data: docAccessData, error: docAccessError } = await supabase
       .from('document_access_codes')
-      .select('user_id')
-      .or(`access_code.eq.${normalizedCode},access_code.ilike.%${normalizedCode}%`);
+      .select('user_id, access_code')
+      .ilike('access_code', `%${normalizedCode}%`);
       
     if (docAccessError) {
       console.error("Erreur lors de la vérification dans document_access_codes:", docAccessError);
     } else if (docAccessData && docAccessData.length > 0) {
-      console.log("Code trouvé dans document_access_codes:", docAccessData);
+      // Rechercher la meilleure correspondance
+      const exactMatch = docAccessData.find(item => 
+        item.access_code.toUpperCase() === normalizedCode.toUpperCase());
+      
+      if (exactMatch) {
+        console.log("Correspondance exacte trouvée:", exactMatch);
+        return [exactMatch];
+      }
+      
+      console.log("Correspondances partielles trouvées dans document_access_codes:", docAccessData);
       return docAccessData;
     } else {
       console.log("Code non trouvé dans document_access_codes, vérification dans profiles...");
     }
     
-    // Si rien n'est trouvé, vérifier le code médical dans profiles
+    // Si rien n'est trouvé, vérifier le code médical dans profiles qui pourrait être utilisé par erreur
     const { data: profileData, error: profileError } = await supabase
       .from('profiles')
       .select('id, medical_access_code')
-      .or(`medical_access_code.eq.${normalizedCode},medical_access_code.ilike.%${normalizedCode}%`);
+      .ilike('medical_access_code', `%${normalizedCode}%`);
       
     if (profileError) {
       console.error("Erreur lors de la vérification dans profiles:", profileError);
     } else if (profileData && profileData.length > 0) {
-      console.log("Code trouvé dans profiles:", profileData);
+      console.log("Code trouvé dans profiles (medical_access_code):", profileData);
       return profileData.map(profile => ({
         user_id: profile.id
       }));
+    }
+    
+    // Dernière tentative: recherche directe par ID utilisateur (pour faciliter les tests)
+    if (normalizedCode.length >= 4) {
+      const { data: userIdSearch, error: userIdError } = await supabase
+        .from('profiles')
+        .select('id')
+        .limit(20);
+        
+      if (!userIdError && userIdSearch && userIdSearch.length > 0) {
+        // Rechercher des correspondances partielles
+        const matchingUsers = userIdSearch.filter(user => 
+          user.id.toLowerCase().includes(normalizedCode.toLowerCase()) ||
+          normalizedCode.toLowerCase().includes(user.id.substring(0, 8).toLowerCase())
+        );
+        
+        if (matchingUsers.length > 0) {
+          console.log("Utilisateurs trouvés par ID partiel:", matchingUsers);
+          return matchingUsers.map(user => ({ user_id: user.id }));
+        }
+      }
     }
     
     console.log("Aucun résultat trouvé pour le code d'accès normalisé");
