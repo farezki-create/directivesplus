@@ -7,9 +7,9 @@ import {
   searchExactAccessCode, 
   searchFlexibleAccessCode, 
   searchProfileByAccessCode, 
-  searchFirstAvailableProfile,
-  AccessCodeCheckResult 
+  searchFirstAvailableProfile 
 } from "./accessCodeSearch";
+import { AccessCodeCheckResult } from "@/hooks/directives-access/types";
 
 // Main function to check directive access codes
 export const checkDirectivesAccessCode = async (accessCode: string): Promise<AccessCodeCheckResult> => {
