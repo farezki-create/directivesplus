@@ -22,6 +22,20 @@ const formSchema = z.object({
 
 export type FormData = z.infer<typeof formSchema>;
 
+// Type définition pour les résultats spéciaux (format DM-)
+type SpecialAccessData = {
+  user_id: string;
+};
+
+// Type définition pour les résultats standard
+type StandardAccessData = {
+  id: string;
+  [key: string]: any;
+};
+
+// Union type pour les deux formats possibles
+type AccessData = SpecialAccessData | StandardAccessData;
+
 export const useDirectivesAccessForm = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -63,7 +77,7 @@ export const useDirectivesAccessForm = () => {
       console.log(`Code d'accès: "${accessCode}"`);
       
       // Vérification du code d'accès
-      const accessData = await checkDirectivesAccessCode(accessCode);
+      const accessData = await checkDirectivesAccessCode(accessCode) as AccessData[];
       
       if (!accessData || accessData.length === 0) {
         console.log("Code d'accès directives invalide");
@@ -72,37 +86,29 @@ export const useDirectivesAccessForm = () => {
         return;
       }
       
-      const accessItem = accessData[0];
+      const accessItem = accessData[0] as AccessData;
       console.log("Données d'accès récupérées:", accessItem);
       
-      // Vérifier si c'est un format spécial avec seulement user_id
+      let userId: string;
+      
+      // Vérifier si c'est un format spécial avec user_id
       if ('user_id' in accessItem) {
-        const userId = accessItem.user_id;
-        console.log("ID utilisateur récupéré:", userId);
-        
-        // Vérification des informations du profil
-        const { isMatch } = await checkProfileMatch(userId, formData);
-        
-        if (!isMatch) {
-          console.log("Informations personnelles incorrectes pour directives");
-          setErrorMessage("Les informations personnelles ne correspondent pas au code d'accès. Veuillez vérifier l'orthographe du nom et prénom ainsi que la date de naissance.");
-          showErrorToast("Accès refusé", "Informations personnelles incorrectes");
-          return;
-        }
+        userId = accessItem.user_id;
+        console.log("ID utilisateur spécial récupéré:", userId);
       } else {
         // Format standard avec ID direct
-        const userId = accessItem.id;
+        userId = accessItem.id;
         console.log("ID utilisateur standard récupéré:", userId);
-        
-        // Vérification des informations du profil
-        const { isMatch } = await checkProfileMatch(userId, formData);
-        
-        if (!isMatch) {
-          console.log("Informations personnelles incorrectes pour directives");
-          setErrorMessage("Les informations personnelles ne correspondent pas au code d'accès. Veuillez vérifier l'orthographe du nom et prénom ainsi que la date de naissance.");
-          showErrorToast("Accès refusé", "Informations personnelles incorrectes");
-          return;
-        }
+      }
+      
+      // Vérification des informations du profil
+      const { isMatch } = await checkProfileMatch(userId, formData);
+      
+      if (!isMatch) {
+        console.log("Informations personnelles incorrectes pour directives");
+        setErrorMessage("Les informations personnelles ne correspondent pas au code d'accès. Veuillez vérifier l'orthographe du nom et prénom ainsi que la date de naissance.");
+        showErrorToast("Accès refusé", "Informations personnelles incorrectes");
+        return;
       }
       
       // Accès accordé
