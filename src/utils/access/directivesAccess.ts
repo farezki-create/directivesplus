@@ -15,6 +15,7 @@ export const checkDirectivesAccessCode = async (accessCode: string) => {
     // Vérifier d'abord si c'est un code spécial (DM-xxxx)
     const specialResult = await handleSpecialCodes(accessCode);
     if (specialResult) {
+      console.log("Résultat spécial trouvé pour directives:", specialResult);
       return specialResult;
     }
     

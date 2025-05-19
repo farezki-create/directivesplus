@@ -35,45 +35,69 @@ export const handleSpecialCodes = async (code: string) => {
     console.log(`Code spécial détecté, extraction de l'ID: ${idPart}`);
     
     try {
-      // Au lieu de chercher directement par ID, cherchons dans le medical_access_code
-      // Cette approche est plus sûre car elle évite les problèmes de format UUID
-      const { data, error } = await supabase
+      // CORRECTION: Au lieu de chercher par l'ID directement qui peut causer des erreurs de format UUID,
+      // Essayons d'abord de retrouver le profil par correspondance partielle avec l'ID
+      const fullUUID = idPart.length < 36 ? `${idPart}%` : idPart;
+      
+      console.log(`Recherche de profil avec ID commençant par: ${fullUUID}`);
+      const { data: profilesByIdMatch, error: idMatchError } = await supabase
         .from('profiles')
-        .select('*')
-        .or(`medical_access_code.ilike.%${idPart}%,medical_access_code.ilike.${idPart}`);
+        .select('id, medical_access_code, first_name, last_name')
+        .ilike('id', fullUUID)
+        .limit(1);
         
-      if (error) {
-        console.error("Erreur lors de la vérification du code spécial (via medical_access_code):", error);
-        return [];
-      }
-      
-      if (data && data.length > 0) {
-        console.log("Profil trouvé via code médical spécial:", data);
-        return data;
-      }
-      
-      // Si on n'a rien trouvé, essayons avec l'ID directement au cas où
-      console.log("Tentative alternative avec l'ID complet:", idPart);
-      const { data: idData, error: idError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('id', idPart);
-        
-      if (idError) {
-        console.error("Erreur lors de la vérification de l'ID:", idError);
-        return [];
-      }
-      
-      if (idData && idData.length > 0) {
-        console.log("ID utilisateur trouvé directement:", idData);
-        // Transformer pour correspondre au format attendu
-        return idData.map(profile => ({
+      if (idMatchError) {
+        console.error("Erreur lors de la recherche par ID partiel:", idMatchError);
+      } else if (profilesByIdMatch && profilesByIdMatch.length > 0) {
+        console.log("Profil trouvé via correspondance d'ID partiel:", profilesByIdMatch[0]);
+        // Transformer pour correspondre au format attendu avec user_id
+        return profilesByIdMatch.map(profile => ({
           user_id: profile.id
         }));
       }
+      
+      // Si aucune correspondance par ID partiel, essayons avec le medical_access_code
+      console.log("Tentative avec code d'accès médical:", idPart);
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, medical_access_code, first_name, last_name')
+        .or(`medical_access_code.ilike.%${idPart}%,medical_access_code.eq.${idPart}`);
+        
+      if (error) {
+        console.error("Erreur lors de la vérification du code spécial (via medical_access_code):", error);
+        return null;
+      }
+      
+      if (data && data.length > 0) {
+        console.log("Profil trouvé via code médical:", data[0]);
+        // Transformer les données pour correspondre au format attendu
+        return data.map(profile => ({
+          user_id: profile.id
+        }));
+      }
+
+      // Dernière tentative: chercher si l'ID complet existe
+      // Cette approche est utilisée uniquement si les deux premières ont échoué
+      if (idPart.length === 36) { // Si c'est potentiellement un UUID complet
+        console.log("Tentative avec UUID complet:", idPart);
+        const { data: exactMatch, error: exactError } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', idPart);
+          
+        if (!exactError && exactMatch && exactMatch.length > 0) {
+          console.log("Profil trouvé via UUID exact:", exactMatch[0]);
+          return exactMatch.map(profile => ({
+            user_id: profile.id
+          }));
+        }
+      }
+      
+      console.log("Aucun profil trouvé pour ce code spécial");
+      return null;
     } catch (err) {
       console.error("Exception dans handleSpecialCodes:", err);
-      return [];
+      return null;
     }
   }
   

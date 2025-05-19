@@ -14,6 +14,7 @@ export const checkMedicalAccessCode = async (accessCode: string) => {
     // Vérifier d'abord si c'est un code spécial (DM-xxxx)
     const specialResult = await handleSpecialCodes(accessCode);
     if (specialResult) {
+      console.log("Résultat spécial trouvé:", specialResult);
       return specialResult;
     }
     
