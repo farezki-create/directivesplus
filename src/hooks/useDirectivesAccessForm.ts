@@ -58,54 +58,46 @@ export const useDirectivesAccessForm = () => {
     
     setLoading(true);
     try {
+      // Vérifier d'abord si la connexion à la base de données fonctionne
+      const connectionTest = await supabase.from('profiles').select('count').limit(1);
+      if (connectionTest.error) {
+        console.error("Erreur de connexion à la base de données:", connectionTest.error);
+        setErrorMessage("Erreur de connexion à la base de données. Veuillez réessayer plus tard.");
+        showErrorToast("Erreur", "Problème de connexion à la base de données");
+        setLoading(false);
+        return;
+      }
+      
       // Code d'accès (sera normalisé dans la fonction checkDirectivesAccessCode)
       const accessCode = formData.accessCode.trim();
       console.log(`Code d'accès: "${accessCode}"`);
       
-      // Vérification du code d'accès - essayer différentes méthodes
-      let accessData: AccessData[] = [];
+      // Vérification du code d'accès avec la version améliorée qui renvoie des objets d'erreur enrichis
+      const accessResult = await checkDirectivesAccessCode(accessCode);
       
-      // En mode débogage, ne pas essayer de récupérer le code d'accès si TEST ou DEMO
-      const isDebugMode = accessCode.toUpperCase() === "TEST" || accessCode.toUpperCase() === "DEMO";
-      
-      if (isDebugMode) {
-        console.log("Mode débogage activé, récupération directe du premier profil");
-        const { data: debugProfile } = await supabase
-          .from('profiles')
-          .select('id')
-          .limit(1);
-          
-        if (debugProfile && debugProfile.length > 0) {
-          accessData = [{ user_id: debugProfile[0].id }];
-        }
-      } else {
-        // 1. Vérifier d'abord avec la méthode standard
-        accessData = await checkDirectivesAccessCode(accessCode) as AccessData[];
+      if (accessResult.error) {
+        console.error("Erreur lors de la vérification du code d'accès:", accessResult.error, accessResult.details);
         
-        // 2. Si rien n'est trouvé, essayer avec DM préfixé (si ce n'est pas déjà le cas)
-        if ((!accessData || accessData.length === 0) && !accessCode.toUpperCase().startsWith('DM')) {
-          console.log("Essai avec préfixe DM-");
-          const accessWithDM = `DM-${accessCode}`;
-          accessData = await checkDirectivesAccessCode(accessWithDM) as AccessData[];
+        // Messages d'erreur personnalisés selon le type d'erreur
+        if (accessResult.noProfiles) {
+          setErrorMessage("Aucun profil n'existe dans la base de données. Impossible de vérifier le code d'accès.");
+          showErrorToast("Base de données vide", "Aucun profil trouvé dans la base de données");
+        } else if (accessResult.invalidCode) {
+          setErrorMessage("Code d'accès invalide ou incorrect. Veuillez vérifier que vous avez entré le bon code.");
+          showErrorToast("Accès refusé", "Code d'accès invalide");
+        } else {
+          setErrorMessage(`Erreur lors de la vérification: ${accessResult.error}`);
+          showErrorToast("Erreur", "Problème lors de la vérification");
         }
         
-        // 3. Essayer directement avec l'ID (cas spécial pour le test)
-        if (!accessData || accessData.length === 0) {
-          console.log("Essai direct avec l'ID");
-          const { data: directCheck } = await supabase
-            .from('profiles')
-            .select('id')
-            .limit(1);
-            
-          if (directCheck && directCheck.length > 0) {
-            console.log("Utilisation du premier profil trouvé pour le test");
-            accessData = [{ user_id: directCheck[0].id }];
-          }
-        }
+        setLoading(false);
+        return;
       }
       
+      const accessData = accessResult.data;
+      
       if (!accessData || accessData.length === 0) {
-        console.log("Code d'accès directives invalide");
+        console.log("Code d'accès directives invalide ou résultat vide");
         setErrorMessage("Code d'accès invalide ou incorrect. Veuillez vérifier que vous avez entré le bon code.");
         showErrorToast("Accès refusé", "Code d'accès invalide");
         setLoading(false);
@@ -134,9 +126,17 @@ export const useDirectivesAccessForm = () => {
           .eq('id', userId)
           .single();
           
-        if (profileError || !profileData) {
+        if (profileError) {
           console.error("Erreur lors de la récupération du profil:", profileError);
-          setErrorMessage("Profil utilisateur introuvable.");
+          setErrorMessage("Profil utilisateur introuvable. Veuillez vérifier l'ID utilisateur.");
+          showErrorToast("Erreur", "Profil introuvable");
+          setLoading(false);
+          return;
+        }
+        
+        if (!profileData) {
+          console.error("Profil introuvable pour l'ID:", userId);
+          setErrorMessage("Profil utilisateur introuvable pour l'ID fourni.");
           showErrorToast("Erreur", "Profil introuvable");
           setLoading(false);
           return;
@@ -149,7 +149,8 @@ export const useDirectivesAccessForm = () => {
         });
         
         // En mode débogage, désactiver la vérification du nom et autres validations
-        if (isDebugMode || accessCode.toUpperCase() === "TEST" || accessCode.toUpperCase() === "DEMO") {
+        const isDebugMode = accessCode.toUpperCase() === "TEST" || accessCode.toUpperCase() === "DEMO";
+        if (isDebugMode) {
           console.log("Mode débogage/démo activé - validation ignorée");
         } else {
           // Mode de validation ultra-souple - accepter presque tout
