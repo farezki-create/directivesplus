@@ -17,20 +17,30 @@ export const useAccessCode = (user: User | null, type: "directive" | "medical") 
       fetchUserAccessCode();
     } else {
       console.log(`[useAccessCode] No user authenticated, type=${type}`);
+      setAccessCode(null);
     }
-  }, [user]);
+  }, [user, type]);
 
   // Fetch the access code for the user
   const fetchUserAccessCode = async () => {
     if (!user) return;
     
-    const code = await fetchAccessCode(user, type);
-    if (code) {
-      setAccessCode(code);
+    try {
+      console.log(`[useAccessCode] Fetching ${type} access code for userId=${user.id}`);
+      const code = await fetchAccessCode(user, type);
+      
+      if (code) {
+        console.log(`[useAccessCode] Successfully fetched ${type} code:`, code);
+        setAccessCode(code);
+      } else {
+        console.log(`[useAccessCode] No ${type} access code found`);
+      }
+    } catch (err) {
+      console.error(`[useAccessCode] Error fetching ${type} access code:`, err);
     }
   };
 
-  // Force code generation if it wasn't found - add this additional check
+  // Force code generation if it wasn't found
   useEffect(() => {
     const generateCodeIfNeeded = async () => {
       if (user && !accessCode) {
