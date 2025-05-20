@@ -8,6 +8,7 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
   const safePageId = pageId || '';
   const [saving, setSaving] = useState(false);
   const initialFetchDone = useRef(false);
+  const isMounted = useRef(true);
   
   // Always call hooks with consistent parameters
   const { 
@@ -37,18 +38,27 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
   }, [setResponses]);
   
   // Stabilize memoizedFetchResponses with useCallback
-  const memoizedFetchResponses = useCallback(() => {
-    if (safePageId && (!initialFetchDone.current || Object.keys(responses).length === 0)) {
+  const memoizedFetchResponses = useCallback(async () => {
+    if (!safePageId || !isMounted.current) return Promise.resolve(responses);
+    
+    if (!initialFetchDone.current) {
       console.log("Fetching responses for pageId:", safePageId);
       initialFetchDone.current = true;
-      return fetchResponses();
+      try {
+        return await fetchResponses();
+      } catch (error) {
+        console.error("Error fetching responses:", error);
+        return responses;
+      }
     }
+    
     return Promise.resolve(responses);
   }, [safePageId, fetchResponses, responses]);
   
-  // Use useEffect with proper dependencies
+  // Use useEffect with proper dependencies and cleanup
   useEffect(() => {
-    // Reset the ref when page changes
+    isMounted.current = true;
+    
     if (safePageId) {
       console.log("useQuestionnaireData effect running for pageId:", safePageId);
       memoizedFetchResponses();
@@ -57,13 +67,14 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
     // Cleanup function
     return () => {
       console.log("Cleaning up useQuestionnaireData for pageId:", safePageId);
+      isMounted.current = false;
       initialFetchDone.current = false;
     };
   }, [safePageId, memoizedFetchResponses]);
   
   // Stabilize handleSave function with useCallback and proper dependencies
   const handleSave = useCallback(async () => {
-    if (!safePageId || !questions) return;
+    if (!safePageId || !questions || !isMounted.current) return;
     
     setSaving(true);
     console.log("Saving responses:", responses);
@@ -73,7 +84,9 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
     } catch (error) {
       console.error("Error saving responses:", error);
     } finally {
-      setSaving(false);
+      if (isMounted.current) {
+        setSaving(false);
+      }
     }
   }, [safePageId, responses, questions, saveResponses]);
   

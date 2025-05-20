@@ -43,11 +43,11 @@ const QuestionItem = memo(({ question, response, onResponseChange }: QuestionIte
             <RadioGroupItem 
               value="yes" 
               id={`${question.id}-yes`}
+              checked={response === "yes"}
             />
             <Label 
               htmlFor={`${question.id}-yes`}
               className="cursor-pointer w-full py-1"
-              onClick={() => handleChange("yes")}
             >
               {options.yes}
             </Label>
@@ -58,11 +58,11 @@ const QuestionItem = memo(({ question, response, onResponseChange }: QuestionIte
             <RadioGroupItem 
               value="no" 
               id={`${question.id}-no`}
+              checked={response === "no"}
             />
             <Label 
               htmlFor={`${question.id}-no`}
               className="cursor-pointer w-full py-1"
-              onClick={() => handleChange("no")}
             >
               {options.no}
             </Label>
@@ -73,11 +73,11 @@ const QuestionItem = memo(({ question, response, onResponseChange }: QuestionIte
             <RadioGroupItem 
               value="unsure" 
               id={`${question.id}-unsure`}
+              checked={response === "unsure"}
             />
             <Label 
               htmlFor={`${question.id}-unsure`}
               className="cursor-pointer w-full py-1"
-              onClick={() => handleChange("unsure")}
             >
               {options.unsure}
             </Label>
