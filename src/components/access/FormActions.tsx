@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { FileText, FileSearch, Loader2 } from "lucide-react";
+import { FileText, FileSearch } from "lucide-react";
 
 type FormActionsProps = {
   loading: boolean;
@@ -12,36 +12,22 @@ const FormActions = ({ loading, onAccessDirectives, onAccessMedicalData }: FormA
   return (
     <div className="flex flex-col gap-3 w-full">
       <Button 
-        className="w-full flex items-center justify-center gap-2" 
-        onClick={(e) => {
-          e.preventDefault();
-          onAccessDirectives();
-        }}
+        className="w-full flex items-center gap-2" 
+        onClick={onAccessDirectives}
         disabled={loading}
         type="button"
       >
-        {loading ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
-        ) : (
-          <FileText size={18} />
-        )}
+        <FileText size={18} />
         {loading ? "Vérification en cours..." : "Accéder aux directives anticipées"}
       </Button>
       
       <Button 
-        className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700" 
-        onClick={(e) => {
-          e.preventDefault();
-          onAccessMedicalData();
-        }}
+        className="w-full flex items-center gap-2 bg-blue-600 hover:bg-blue-700" 
+        onClick={onAccessMedicalData}
         disabled={loading}
         type="button"
       >
-        {loading ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
-        ) : (
-          <FileSearch size={18} />
-        )}
+        <FileSearch size={18} />
         {loading ? "Vérification en cours..." : "Accéder aux données médicales"}
       </Button>
     </div>

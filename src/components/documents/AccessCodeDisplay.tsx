@@ -1,18 +1,16 @@
 
 import { FC } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Copy, RefreshCcw } from "lucide-react";
+import { Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 
 interface AccessCodeDisplayProps {
-  accessCode: string | null;
+  accessCode: string;
   firstName: string;
   lastName: string;
   birthDate: string;
   type: "directive" | "medical";
-  onRegenerateCode?: () => Promise<void>;
-  isLoading?: boolean;
 }
 
 const AccessCodeDisplay: FC<AccessCodeDisplayProps> = ({
@@ -20,13 +18,9 @@ const AccessCodeDisplay: FC<AccessCodeDisplayProps> = ({
   firstName,
   lastName,
   birthDate,
-  type,
-  onRegenerateCode,
-  isLoading = false
+  type
 }) => {
   const handleCopyCode = () => {
-    if (!accessCode) return;
-    
     navigator.clipboard.writeText(accessCode).then(
       () => {
         toast({
@@ -86,32 +80,17 @@ const AccessCodeDisplay: FC<AccessCodeDisplayProps> = ({
           <div className="bg-white p-4 rounded-md border border-sky-200 flex items-center justify-between">
             <div>
               <div className="text-sm font-medium text-gray-500">Code d'accès unique</div>
-              <div className="text-lg font-bold tracking-wider">{accessCode || "Non disponible"}</div>
+              <div className="text-lg font-bold tracking-wider">{accessCode}</div>
             </div>
-            <div className="flex gap-2">
-              {onRegenerateCode && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="flex items-center gap-2"
-                  onClick={onRegenerateCode}
-                  disabled={isLoading}
-                >
-                  <RefreshCcw size={16} className={isLoading ? "animate-spin" : ""} />
-                  {isLoading ? "..." : "Régénérer"}
-                </Button>
-              )}
-              <Button
-                size="sm"
-                variant="outline"
-                className="flex items-center gap-2"
-                onClick={handleCopyCode}
-                disabled={!accessCode}
-              >
-                <Copy size={16} />
-                Copier
-              </Button>
-            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              className="flex items-center gap-2"
+              onClick={handleCopyCode}
+            >
+              <Copy size={16} />
+              Copier
+            </Button>
           </div>
           
           <p className="text-xs text-gray-500">

@@ -1,8 +1,15 @@
 
 import { FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useFormContext } from "react-hook-form";
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useFormContext } from "react-hook-form";
+import { useState } from "react";
+import * as z from "zod";
 
 interface PersonalInformationFieldsProps {
   isEmailDisabled?: boolean;
@@ -10,6 +17,7 @@ interface PersonalInformationFieldsProps {
 
 export default function PersonalInformationFields({ isEmailDisabled = true }: PersonalInformationFieldsProps) {
   const form = useFormContext();
+  const [calendarOpen, setCalendarOpen] = useState(false);
   
   return (
     <>
@@ -74,38 +82,48 @@ export default function PersonalInformationFields({ isEmailDisabled = true }: Pe
       <FormField
         control={form.control}
         name="birthDate"
-        render={({ field }) => {
-          // Convertir la date en format YYYY-MM-DD pour l'input de type date
-          const value = field.value 
-            ? (field.value instanceof Date 
-                ? field.value.toISOString().split('T')[0]
-                : field.value) 
-            : '';
-            
-          return (
-            <FormItem>
-              <FormLabel>Date de naissance</FormLabel>
-              <FormControl>
-                <Input
-                  type="date"
-                  placeholder="JJ/MM/AAAA"
-                  value={value}
-                  onChange={(e) => {
-                    // Convertir la chaîne de date en objet Date
-                    const date = e.target.value ? new Date(e.target.value) : null;
+        render={({ field }) => (
+          <FormItem className="flex flex-col">
+            <FormLabel>Date de naissance</FormLabel>
+            <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+              <PopoverTrigger asChild>
+                <FormControl>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-full pl-3 text-left font-normal",
+                      !field.value && "text-muted-foreground",
+                      form.formState.errors.birthDate && "border-red-500 focus-visible:ring-red-500"
+                    )}
+                  >
+                    {field.value ? (
+                      format(field.value, "dd/MM/yyyy")
+                    ) : (
+                      <span>Choisir une date</span>
+                    )}
+                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                  </Button>
+                </FormControl>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={field.value}
+                  onSelect={(date) => {
                     field.onChange(date);
+                    setCalendarOpen(false);
                   }}
-                  className={cn(
-                    form.formState.errors.birthDate && "border-red-500 focus-visible:ring-red-500"
-                  )}
-                  max={new Date().toISOString().split('T')[0]} // Ne pas permettre des dates futures
-                  min="1900-01-01" // Date minimale à 1900
+                  disabled={(date) =>
+                    date > new Date() || date < new Date("1900-01-01")
+                  }
+                  initialFocus
+                  className="p-3 pointer-events-auto"
                 />
-              </FormControl>
-              <FormMessage className="animate-fade-in" />
-            </FormItem>
-          );
-        }}
+              </PopoverContent>
+            </Popover>
+            <FormMessage className="animate-fade-in" />
+          </FormItem>
+        )}
       />
       
       <FormField

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,7 +16,7 @@ const MedicalData = () => {
   const { user, isAuthenticated, isLoading, profile } = useAuth();
   const navigate = useNavigate();
   const [showAddOptions, setShowAddOptions] = useState(false);
-  const { accessCode, regenerateAccessCode, isLoading: isLoadingAccessCode } = useAccessCode(user, "medical");
+  const accessCode = useAccessCode(user, "medical");
   
   const {
     documents,
@@ -70,8 +69,6 @@ const MedicalData = () => {
               lastName={profile.last_name || ""}
               birthDate={profile.birth_date || ""}
               type="medical"
-              onRegenerateCode={regenerateAccessCode}
-              isLoading={isLoadingAccessCode}
             />
           )}
 

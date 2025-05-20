@@ -6,8 +6,6 @@ import CardOptions from "./CardOptions";
 import CardDisplay from "./CardDisplay";
 import CardActions from "./CardActions";
 import { downloadCard, printCard } from "./utils/cardOperations";
-import { Button } from "@/components/ui/button";
-import { RefreshCcw } from "lucide-react";
 
 interface AccessCardProps {
   firstName: string;
@@ -17,18 +15,8 @@ interface AccessCardProps {
 
 const AccessCard: React.FC<AccessCardProps> = ({ firstName, lastName, birthDate }) => {
   const { user } = useAuth();
-  const { 
-    accessCode: directiveCode, 
-    regenerateAccessCode: regenerateDirectiveCode, 
-    isLoading: isLoadingDirective 
-  } = useAccessCode(user, "directive");
-  
-  const { 
-    accessCode: medicalCode, 
-    regenerateAccessCode: regenerateMedicalCode, 
-    isLoading: isLoadingMedical 
-  } = useAccessCode(user, "medical");
-  
+  const directiveCode = useAccessCode(user, "directive");
+  const medicalCode = useAccessCode(user, "medical");
   const cardRef = useRef<HTMLDivElement>(null);
   
   const [includeDirective, setIncludeDirective] = useState(true);
@@ -84,33 +72,6 @@ const AccessCard: React.FC<AccessCardProps> = ({ firstName, lastName, birthDate 
           directiveCode={directiveCode}
           medicalCode={medicalCode}
         />
-        
-        {/* Ajout des boutons de régénération de codes */}
-        <div className="mt-6 mb-4 flex flex-wrap gap-4 justify-center">
-          {includeDirective && (
-            <Button 
-              onClick={regenerateDirectiveCode}
-              variant="outline" 
-              className="flex items-center gap-2"
-              disabled={isLoadingDirective}
-            >
-              <RefreshCcw size={16} className={isLoadingDirective ? "animate-spin" : ""} />
-              {isLoadingDirective ? "Régénération..." : "Régénérer code directives"}
-            </Button>
-          )}
-          
-          {includeMedical && (
-            <Button 
-              onClick={regenerateMedicalCode}
-              variant="outline" 
-              className="flex items-center gap-2"
-              disabled={isLoadingMedical}
-            >
-              <RefreshCcw size={16} className={isLoadingMedical ? "animate-spin" : ""} />
-              {isLoadingMedical ? "Régénération..." : "Régénérer code médical"}
-            </Button>
-          )}
-        </div>
         
         <CardActions 
           onDownload={handleDownload}

@@ -45,44 +45,14 @@ export const PasswordResetForm = ({ token, onSuccess }: PasswordResetFormProps) 
     setLoading(true);
 
     try {
-      console.log("Updating password with token present:", !!token);
+      console.log("Updating password with token");
       
-      // Vérifiez d'abord si nous sommes déjà authentifiés via le token de récupération
-      const { data: sessionData } = await supabase.auth.getSession();
-      
-      if (!sessionData.session) {
-        console.log("No session found, attempting to use token directly");
-        // Si pas de session, essayez de vous authentifier avec le token
-        // En utilisant la méthode correcte avec les bons paramètres
-        try {
-          // La méthode correcte pour vérifier un token de récupération
-          const { error: verifyError } = await supabase.auth.verifyOtp({
-            token_hash: token,
-            type: 'recovery',
-          });
-          
-          if (verifyError) {
-            console.error("Error verifying token:", verifyError);
-            throw verifyError;
-          }
-          console.log("Token verified successfully");
-        } catch (tokenError) {
-          console.error("Error verifying token:", tokenError);
-          // Continuez quand même, car le token pourrait déjà être utilisé pour authentifier l'utilisateur
-        }
-      }
-      
-      // Maintenant mettez à jour le mot de passe
       const { error } = await supabase.auth.updateUser({ 
         password: values.password 
       });
 
-      if (error) {
-        console.error("Error updating password:", error);
-        throw error;
-      }
+      if (error) throw error;
       
-      console.log("Password updated successfully");
       toast({
         title: "Mot de passe réinitialisé",
         description: "Votre mot de passe a été mis à jour avec succès.",

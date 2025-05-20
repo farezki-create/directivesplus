@@ -19,11 +19,6 @@ const QuestionItem = memo(({ question, response, onResponseChange }: QuestionIte
     unsure: 'Je ne sais pas'
   };
   
-  const handleRadioChange = (value: string) => {
-    console.log(`Changing response for question ${question.id} to ${value}`);
-    onResponseChange(question.id, value);
-  };
-  
   return (
     <Card className="mb-6">
       <CardContent className="p-6">
@@ -33,44 +28,21 @@ const QuestionItem = memo(({ question, response, onResponseChange }: QuestionIte
         )}
         
         <RadioGroup 
-          value={response} 
-          onValueChange={handleRadioChange}
+          value={response || ''} 
+          onValueChange={(value) => onResponseChange(question.id, value)}
           className="space-y-2 mt-4"
         >
-          {/* Option Oui */}
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="yes" id={`${question.id}-yes`} />
-            <Label 
-              htmlFor={`${question.id}-yes`}
-              className="text-sm font-medium cursor-pointer w-full"
-              onClick={() => handleRadioChange("yes")}
-            >
-              {options.yes}
-            </Label>
+            <Label htmlFor={`${question.id}-yes`}>{options.yes}</Label>
           </div>
-          
-          {/* Option Non */}
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="no" id={`${question.id}-no`} />
-            <Label 
-              htmlFor={`${question.id}-no`}
-              className="text-sm font-medium cursor-pointer w-full"
-              onClick={() => handleRadioChange("no")}
-            >
-              {options.no}
-            </Label>
+            <Label htmlFor={`${question.id}-no`}>{options.no}</Label>
           </div>
-          
-          {/* Option Je ne sais pas */}
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="unsure" id={`${question.id}-unsure`} />
-            <Label 
-              htmlFor={`${question.id}-unsure`}
-              className="text-sm font-medium cursor-pointer w-full"
-              onClick={() => handleRadioChange("unsure")}
-            >
-              {options.unsure}
-            </Label>
+            <Label htmlFor={`${question.id}-unsure`}>{options.unsure}</Label>
           </div>
         </RadioGroup>
       </CardContent>

@@ -26,20 +26,13 @@ export const cleanupAuthState = () => {
 };
 
 /**
- * Safe navigation to a URL with prevention of navigation loops
+ * Safe navigation to a URL with prevent of navigation loops
  * @param url The URL to navigate to
  */
 export const safeNavigate = (url: string) => {
   console.log(`Safe navigating to: ${url}`);
-  
-  // Add timestamp to prevent caching issues
-  const timestamp = new Date().getTime();
-  const navigateUrl = url.includes('?') 
-    ? `${url}&_=${timestamp}` 
-    : `${url}?_=${timestamp}`;
-  
-  // Use window.location.replace to prevent back button from going to auth again
-  window.location.replace(navigateUrl);
+  // Use window.location.href for a full page refresh to ensure clean state
+  window.location.href = url;
 };
 
 /**
@@ -67,23 +60,5 @@ export const fetchUserProfile = async (userId: string, supabase: any) => {
   } catch (error) {
     console.error("Error in profile fetch:", error);
     return null;
-  }
-};
-
-/**
- * Parse a URL for authentication tokens and parameters
- * @param url The URL to parse
- * @returns An object with the parsed token and type
- */
-export const parseAuthTokenFromUrl = (url: string) => {
-  try {
-    const searchParams = new URLSearchParams(url.split('?')[1] || '');
-    const token = searchParams.get('token');
-    const type = searchParams.get('type');
-    
-    return { token, type };
-  } catch (error) {
-    console.error('Error parsing auth token from URL:', error);
-    return { token: null, type: null };
   }
 };

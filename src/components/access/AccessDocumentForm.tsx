@@ -2,37 +2,25 @@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import FormField from "./FormField";
 import FormActions from "./FormActions";
-import { useDirectivesAccessForm } from "@/hooks/useDirectivesAccessForm";
-import { useMedicalDataAccessForm } from "@/hooks/useMedicalDataAccessForm";
+import { useAccessDocumentForm } from "@/hooks/useAccessDocumentForm";
 import { Form } from "@/components/ui/form";
 import { useEffect } from "react";
 
 const AccessDocumentForm = () => {
   const { 
-    form: directivesForm, 
-    loading: directivesLoading, 
-    accessDirectives 
-  } = useDirectivesAccessForm();
-
-  const {
-    form: medicalForm,
-    loading: medicalLoading,
-    accessMedicalData
-  } = useMedicalDataAccessForm();
-
-  const loading = directivesLoading || medicalLoading;
+    form, 
+    loading, 
+    accessDirectives, 
+    accessMedicalData 
+  } = useAccessDocumentForm();
 
   // Using useEffect to watch for form errors
   useEffect(() => {
     // Log any form errors when they change
-    if (Object.keys(directivesForm.formState.errors).length > 0) {
-      console.log("Erreurs du formulaire directives:", directivesForm.formState.errors);
+    if (Object.keys(form.formState.errors).length > 0) {
+      console.log("Erreurs du formulaire:", form.formState.errors);
     }
-
-    if (Object.keys(medicalForm.formState.errors).length > 0) {
-      console.log("Erreurs du formulaire médical:", medicalForm.formState.errors);
-    }
-  }, [directivesForm.formState.errors, medicalForm.formState.errors]); // Watch for changes in the errors object
+  }, [form.formState.errors]); // Watch for changes in the errors object
 
   return (
     <div className="max-w-md mx-auto">
@@ -48,18 +36,17 @@ const AccessDocumentForm = () => {
           </CardDescription>
         </CardHeader>
 
-        <Form {...directivesForm}>
-          <form onSubmit={(e) => {
-            e.preventDefault(); // Empêcher la soumission automatique du formulaire
-            console.log("Formulaire soumis, mais action empêchée");
-            // Ne rien faire ici - les actions sont gérées par les boutons
-          }}>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit((data) => {
+            console.log("Formulaire soumis avec données:", data);
+            // Don't take any action here - actions are handled by FormActions component
+          })}>
             <CardContent className="space-y-4">
               <FormField 
                 id="lastName"
                 label="Nom"
                 placeholder="Nom de famille"
-                control={directivesForm.control}
+                control={form.control}
                 disabled={loading}
               />
               
@@ -67,7 +54,7 @@ const AccessDocumentForm = () => {
                 id="firstName"
                 label="Prénom"
                 placeholder="Prénom"
-                control={directivesForm.control}
+                control={form.control}
                 disabled={loading}
               />
               
@@ -75,7 +62,7 @@ const AccessDocumentForm = () => {
                 id="birthDate"
                 label="Date de naissance"
                 type="date"
-                control={directivesForm.control}
+                control={form.control}
                 disabled={loading}
               />
               
@@ -83,7 +70,7 @@ const AccessDocumentForm = () => {
                 id="accessCode"
                 label="Code d'accès"
                 placeholder="Code d'accès unique"
-                control={directivesForm.control}
+                control={form.control}
                 disabled={loading}
               />
             </CardContent>

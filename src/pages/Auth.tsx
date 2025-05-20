@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
@@ -26,9 +26,6 @@ const Auth = () => {
   const [isPasswordReset, setIsPasswordReset] = useState(false);
   const [resetToken, setResetToken] = useState("");
   
-  // Ref to track if we've already attempted to redirect
-  const hasAttemptedRedirect = useRef(false);
-  
   // Get the redirect path from location state or default to /dashboard
   const from = location.state?.from || "/dashboard";
 
@@ -38,25 +35,12 @@ const Auth = () => {
     const type = searchParams.get("type");
     
     if (token && type === "recovery") {
-      console.log("Recovery token detected:", token);
       setIsPasswordReset(true);
       setResetToken(token);
       toast({
         title: "Réinitialisez votre mot de passe",
         description: "Veuillez entrer votre nouveau mot de passe.",
       });
-    } else if (searchParams.toString().includes("token=")) {
-      // Fallback check for token in case the type parameter is missing
-      const rawToken = searchParams.toString().split("token=")[1]?.split("&")[0];
-      if (rawToken) {
-        console.log("Token found without type parameter:", rawToken);
-        setIsPasswordReset(true);
-        setResetToken(rawToken);
-        toast({
-          title: "Réinitialisez votre mot de passe",
-          description: "Veuillez entrer votre nouveau mot de passe.",
-        });
-      }
     }
   }, [searchParams]);
   
@@ -78,10 +62,9 @@ const Auth = () => {
   // Redirect if already authenticated, but only after the auth state has loaded
   // and prevent redirect loops with a flag
   useEffect(() => {
-    if (!isLoading && isAuthenticated && !redirectInProgress && !isPasswordReset && !hasAttemptedRedirect.current) {
+    if (!isLoading && isAuthenticated && !redirectInProgress && !isPasswordReset) {
       console.log("Auth page: Already authenticated, redirecting to:", from);
       setRedirectInProgress(true);
-      hasAttemptedRedirect.current = true;
       
       // Use setTimeout to avoid race conditions with React rendering
       setTimeout(() => {

@@ -2,18 +2,24 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
-import { generateStandardAccessCode, createNewAccessCode } from "@/utils/access/codeFormatters";
-import { toast } from "@/hooks/use-toast";
 
 export const useAccessCode = (user: User | null, type: "directive" | "medical") => {
   const [accessCode, setAccessCode] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
     if (user) {
       generateAccessCode();
     }
   }, [user]);
+
+  const generateRandomCode = (length: number) => {
+    const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  };
 
   const generateAccessCode = async () => {
     if (!user) return;
@@ -36,24 +42,18 @@ export const useAccessCode = (user: User | null, type: "directive" | "medical") 
           return;
         }
         
-        // Générer un nouveau code d'accès standardisé
-        const newCode = await createNewAccessCode(user.id, true);
-        if (newCode) {
-          setAccessCode(newCode);
-        } else {
-          // Fallback sur l'ancien générateur si la création a échoué
-          const fallbackCode = generateStandardAccessCode(8);
+        // Générer un nouveau code d'accès
+        const newAccessCode = generateRandomCode(8);
+        
+        // Mettre à jour le profil avec le nouveau code d'accès
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ medical_access_code: newAccessCode })
+          .eq('id', user.id);
           
-          // Mettre à jour le profil avec le nouveau code d'accès
-          const { error: updateError } = await supabase
-            .from('profiles')
-            .update({ medical_access_code: fallbackCode })
-            .eq('id', user.id);
-            
-          if (updateError) throw updateError;
-          
-          setAccessCode(fallbackCode);
-        }
+        if (updateError) throw updateError;
+        
+        setAccessCode(newAccessCode);
       } else {
         // Pour l'accès aux directives, utiliser la table document_access_codes
         // Vérifier s'il existe un code pour cet utilisateur
@@ -73,103 +73,26 @@ export const useAccessCode = (user: User | null, type: "directive" | "medical") 
           return;
         }
         
-        // Générer un nouveau code d'accès standardisé
-        const newCode = await createNewAccessCode(user.id, false);
-        if (newCode) {
-          setAccessCode(newCode);
-        } else {
-          // Fallback sur l'ancien générateur si la création a échoué
-          const fallbackCode = generateStandardAccessCode(10);
+        // Générer un nouveau code d'accès
+        const newAccessCode = generateRandomCode(8);
+        
+        // Créer un enregistrement dans document_access_codes
+        const { error: insertError } = await supabase
+          .from('document_access_codes')
+          .insert({
+            user_id: user.id,
+            access_code: newAccessCode,
+            is_full_access: true,
+          });
           
-          // Créer un enregistrement dans document_access_codes
-          const { error: insertError } = await supabase
-            .from('document_access_codes')
-            .insert({
-              user_id: user.id,
-              access_code: fallbackCode,
-              is_full_access: true,
-            });
-            
-          if (insertError) throw insertError;
-          
-          setAccessCode(fallbackCode);
-        }
+        if (insertError) throw insertError;
+        
+        setAccessCode(newAccessCode);
       }
     } catch (error) {
       console.error(`Error retrieving access code for ${type}:`, error);
     }
   };
 
-  const regenerateAccessCode = async () => {
-    if (!user) return;
-    setIsLoading(true);
-    
-    try {
-      const newCode = generateStandardAccessCode(8);
-      
-      if (type === "medical") {
-        // Mettre à jour le code d'accès médical dans le profil
-        const { error } = await supabase
-          .from('profiles')
-          .update({ medical_access_code: newCode })
-          .eq('id', user.id);
-          
-        if (error) throw error;
-        
-        setAccessCode(newCode);
-        toast({
-          title: "Succès",
-          description: "Votre code d'accès médical a été régénéré",
-        });
-      } else {
-        // Pour les directives, mettre à jour le code dans document_access_codes
-        const { data, error: selectError } = await supabase
-          .from('document_access_codes')
-          .select('id')
-          .eq('user_id', user.id)
-          .is('document_id', null)
-          .limit(1);
-          
-        if (selectError) throw selectError;
-        
-        if (data && data.length > 0) {
-          // Mettre à jour le code existant
-          const { error } = await supabase
-            .from('document_access_codes')
-            .update({ access_code: newCode })
-            .eq('id', data[0].id);
-            
-          if (error) throw error;
-        } else {
-          // Créer un nouveau code si aucun n'existe
-          const { error } = await supabase
-            .from('document_access_codes')
-            .insert({
-              user_id: user.id,
-              access_code: newCode,
-              is_full_access: true,
-            });
-            
-          if (error) throw error;
-        }
-        
-        setAccessCode(newCode);
-        toast({
-          title: "Succès",
-          description: "Votre code d'accès aux directives a été régénéré",
-        });
-      }
-    } catch (error) {
-      console.error(`Error regenerating access code for ${type}:`, error);
-      toast({
-        title: "Erreur",
-        description: `Impossible de régénérer le code d'accès: ${error}`,
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return { accessCode, regenerateAccessCode, isLoading };
+  return accessCode;
 };

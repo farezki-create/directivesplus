@@ -1,11 +1,10 @@
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useQuestionsData } from "@/hooks/useQuestionsData";
 import { useQuestionnaireResponses } from "@/hooks/useQuestionnaireResponses";
 
 export const useQuestionnaireData = (pageId: string | undefined) => {
   const [saving, setSaving] = useState(false);
-  const fetchedRef = useRef(false);
   
   // Use our specialized hooks
   const { 
@@ -25,9 +24,7 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
   
   // Memoize fetchResponses to prevent infinite loops
   const memoizedFetchResponses = useCallback(() => {
-    if (fetchedRef.current || !pageId) return;
     console.log("Fetching responses for pageId:", pageId);
-    fetchedRef.current = true;
     return fetchResponses();
   }, [pageId, fetchResponses]);
   
@@ -36,20 +33,14 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
     if (pageId) {
       memoizedFetchResponses();
     }
-    
-    return () => {
-      // Reset the flag when the component unmounts or pageId changes
-      fetchedRef.current = false;
-    };
   }, [pageId, memoizedFetchResponses]);
   
-  const handleResponseChange = useCallback((questionId: string, value: string) => {
-    console.log(`Setting response for ${questionId} to ${value}`);
+  const handleResponseChange = (questionId: string, value: string) => {
     setResponses(prev => ({
       ...prev,
       [questionId]: value
     }));
-  }, [setResponses]);
+  };
   
   const handleSave = async () => {
     if (!pageId) return;
