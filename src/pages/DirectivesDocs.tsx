@@ -10,7 +10,7 @@ import DirectivesPageContent from "@/components/documents/DirectivesPageContent"
 import DeleteConfirmationDialog from "@/components/documents/DeleteConfirmationDialog";
 import DocumentPreviewDialog from "@/components/documents/DocumentPreviewDialog";
 import AccessCodeDisplay from "@/components/documents/AccessCodeDisplay";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const DirectivesDocs = () => {
   const { user, profile } = useAuth();
@@ -62,7 +62,7 @@ const DirectivesDocs = () => {
       <main className="flex-grow container mx-auto px-4 py-8">
         <DirectivesNavigation />
         
-        {/* Always display access code if profile and access code are available */}
+        {/* Affichage du code d'accès */}
         {accessCode && profile && (
           <div className="mt-4 mb-8">
             <AccessCodeDisplay 

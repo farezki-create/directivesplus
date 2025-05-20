@@ -93,7 +93,7 @@ const MedicalData = () => {
           
           <MedicalHeader onAddDocument={() => setShowAddOptions(!showAddOptions)} />
 
-          {/* Always display access code if available */}
+          {/* Affichage du code d'accès */}
           {accessCode && profile && (
             <div className="mt-4 mb-8">
               <AccessCodeDisplay 
