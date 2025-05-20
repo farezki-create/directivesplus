@@ -10,6 +10,9 @@ interface QuestionsContainerProps {
 }
 
 const QuestionsContainer = memo(({ questions, responses, onResponseChange }: QuestionsContainerProps) => {
+  console.log("Rendering QuestionsContainer with", questions.length, "questions");
+  console.log("Current responses:", responses);
+  
   if (questions.length === 0) {
     return (
       <div className="text-center p-4">

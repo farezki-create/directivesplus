@@ -19,6 +19,12 @@ const QuestionItem = memo(({ question, response, onResponseChange }: QuestionIte
     unsure: 'Je ne sais pas'
   };
   
+  // Add debugging to confirm when a response change is triggered
+  const handleChange = (value: string) => {
+    console.log(`QuestionItem: Changing response for question ${question.id} from "${response}" to "${value}"`);
+    onResponseChange(question.id, value);
+  };
+  
   return (
     <Card className="mb-6">
       <CardContent className="p-6">
@@ -29,20 +35,55 @@ const QuestionItem = memo(({ question, response, onResponseChange }: QuestionIte
         
         <RadioGroup 
           value={response || ''} 
-          onValueChange={(value) => onResponseChange(question.id, value)}
-          className="space-y-2 mt-4"
+          onValueChange={handleChange}
+          className="space-y-3 mt-4"
         >
           <div className="flex items-center space-x-2">
-            <RadioGroupItem value="yes" id={`${question.id}-yes`} />
-            <Label htmlFor={`${question.id}-yes`}>{options.yes}</Label>
+            <RadioGroupItem 
+              value="yes" 
+              id={`${question.id}-yes`} 
+              aria-labelledby={`${question.id}-yes-label`}
+            />
+            <Label 
+              htmlFor={`${question.id}-yes`} 
+              id={`${question.id}-yes-label`}
+              className="cursor-pointer w-full py-1"
+              onClick={() => handleChange("yes")}
+            >
+              {options.yes}
+            </Label>
           </div>
+          
           <div className="flex items-center space-x-2">
-            <RadioGroupItem value="no" id={`${question.id}-no`} />
-            <Label htmlFor={`${question.id}-no`}>{options.no}</Label>
+            <RadioGroupItem 
+              value="no" 
+              id={`${question.id}-no`} 
+              aria-labelledby={`${question.id}-no-label`}
+            />
+            <Label 
+              htmlFor={`${question.id}-no`} 
+              id={`${question.id}-no-label`}
+              className="cursor-pointer w-full py-1"
+              onClick={() => handleChange("no")}
+            >
+              {options.no}
+            </Label>
           </div>
+          
           <div className="flex items-center space-x-2">
-            <RadioGroupItem value="unsure" id={`${question.id}-unsure`} />
-            <Label htmlFor={`${question.id}-unsure`}>{options.unsure}</Label>
+            <RadioGroupItem 
+              value="unsure" 
+              id={`${question.id}-unsure`} 
+              aria-labelledby={`${question.id}-unsure-label`}
+            />
+            <Label 
+              htmlFor={`${question.id}-unsure`} 
+              id={`${question.id}-unsure-label`}
+              className="cursor-pointer w-full py-1"
+              onClick={() => handleChange("unsure")}
+            >
+              {options.unsure}
+            </Label>
           </div>
         </RadioGroup>
       </CardContent>
