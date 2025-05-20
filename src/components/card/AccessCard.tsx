@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import CardOptions from "./CardOptions";
 import CardDisplay from "./CardDisplay";
 import { useCardOperations } from "@/hooks/useCardOperations";
+import { useAccessCode } from "@/hooks/useAccessCode";
 
 interface AccessCardProps {
   firstName: string;
@@ -17,7 +18,11 @@ const AccessCard: React.FC<AccessCardProps> = ({ firstName, lastName, birthDate 
   // Simplified state - no automatic generation
   const [includeDirective, setIncludeDirective] = React.useState<boolean>(true);
   const [includeMedical, setIncludeMedical] = React.useState<boolean>(true);
-
+  
+  // Use the hooks to get access codes directly
+  const directiveCode = useAccessCode(user, "directive");
+  const medicalCode = useAccessCode(user, "medical");
+  
   // Simplified card operations without automatic generation
   const {
     cardRef
@@ -27,8 +32,8 @@ const AccessCard: React.FC<AccessCardProps> = ({ firstName, lastName, birthDate 
     lastName,
     includeDirective,
     includeMedical,
-    null, // No directiveCode
-    null  // No medicalCode
+    directiveCode,
+    medicalCode
   );
 
   return (
@@ -48,8 +53,8 @@ const AccessCard: React.FC<AccessCardProps> = ({ firstName, lastName, birthDate 
           birthDate={birthDate}
           includeDirective={includeDirective}
           includeMedical={includeMedical}
-          directiveCode={null}
-          medicalCode={null}
+          directiveCode={directiveCode}
+          medicalCode={medicalCode}
           websiteUrl="directivesplus.fr"
         />
       </div>

@@ -9,19 +9,20 @@ interface CardActionsProps {
   onGenerate?: () => void;
   disabled?: boolean;
   isLoading?: boolean;
+  codesReady?: boolean;
 }
 
-// Le composant CardActions est conservé mais ne sera plus utilisé pour la génération
 const CardActions: React.FC<CardActionsProps> = ({
   onDownload,
   onPrint,
   onGenerate,
   disabled = true,
-  isLoading = false
+  isLoading = false,
+  codesReady = false
 }) => {
   return (
     <div className="mt-6 flex flex-wrap gap-3 justify-center">
-      {onGenerate && (
+      {onGenerate && !codesReady && (
         <Button
           onClick={onGenerate}
           variant="default"
@@ -29,7 +30,7 @@ const CardActions: React.FC<CardActionsProps> = ({
           disabled={true}
         >
           <RefreshCw size={16} />
-          Fonctionnalité désactivée
+          Génération automatique
         </Button>
       )}
       
@@ -38,7 +39,7 @@ const CardActions: React.FC<CardActionsProps> = ({
           onClick={onDownload}
           variant="outline"
           className="flex items-center gap-2"
-          disabled={true}
+          disabled={!codesReady || disabled}
         >
           <Download size={16} />
           Télécharger
@@ -50,7 +51,7 @@ const CardActions: React.FC<CardActionsProps> = ({
           onClick={onPrint}
           variant="outline"
           className="flex items-center gap-2"
-          disabled={true}
+          disabled={!codesReady || disabled}
         >
           <Printer size={16} />
           Imprimer

@@ -1,7 +1,5 @@
-
 import { useRef } from "react";
 import { User } from "@supabase/supabase-js";
-import { toast } from "@/hooks/use-toast";
 
 export const useCardOperations = (
   user: User | null,
@@ -12,7 +10,7 @@ export const useCardOperations = (
   directiveCode: string | null,
   medicalCode: string | null
 ) => {
-  // Garder seulement la référence au card
+  // Keep only the reference to the card
   const cardRef = useRef<HTMLDivElement>(null);
 
   return {

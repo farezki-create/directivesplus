@@ -8,11 +8,25 @@ import LoadingState from "@/components/questionnaire/LoadingState";
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { useAccessCode } from "@/hooks/useAccessCode";
 
 const AccessCardPage = () => {
   const { user, isAuthenticated, isLoading, profile } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  
+  // Directly use the hooks to get access codes
+  const directiveCode = useAccessCode(user, "directive");
+  const medicalCode = useAccessCode(user, "medical");
+  
+  // Determine if codes are ready
+  const [codesReady, setCodesReady] = useState(false);
+  
+  useEffect(() => {
+    if (directiveCode && medicalCode) {
+      setCodesReady(true);
+    }
+  }, [directiveCode, medicalCode]);
   
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -51,7 +65,9 @@ const AccessCardPage = () => {
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-800">Carte d'accès</h1>
             <p className="text-gray-600 mt-2">
-              Cette fonctionnalité est actuellement en maintenance. Vous pourrez bientôt accéder à votre carte.
+              {codesReady ? 
+                "Votre carte d'accès est prête à être utilisée." : 
+                "Chargement de vos codes d'accès..."}
             </p>
           </div>
           

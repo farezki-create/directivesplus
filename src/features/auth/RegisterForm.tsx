@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { registerFormSchema, type RegisterFormValues } from "./schemas";
 import { cleanupAuthState } from "@/utils/authUtils";
+import { generateRandomCode } from "@/hooks/useAccessCode";
 
 interface RegisterFormProps {
   onVerificationSent: (email: string) => void;
@@ -53,6 +54,9 @@ export const RegisterForm = ({ onVerificationSent }: RegisterFormProps) => {
       // Format birthdate properly
       const birthDate = new Date(values.birthDate).toISOString().split('T')[0];
       
+      // Generate access codes in advance
+      const medicalAccessCode = generateRandomCode(8);
+      
       // Now sign up
       const { error, data } = await supabase.auth.signUp({
         email: values.email,
@@ -64,12 +68,31 @@ export const RegisterForm = ({ onVerificationSent }: RegisterFormProps) => {
             birth_date: birthDate,
             address: values.address || null,
             phone_number: values.phoneNumber || null,
+            medical_access_code: medicalAccessCode
           },
           emailRedirectTo: window.location.origin + "/auth"
         }
       });
 
       if (error) throw error;
+      
+      // If user is created successfully, create directive access code entry
+      if (data?.user) {
+        const directiveAccessCode = generateRandomCode(8);
+        
+        // Create directive access code in document_access_codes table
+        const { error: directiveError } = await supabase
+          .from('document_access_codes')
+          .insert({
+            user_id: data.user.id,
+            access_code: directiveAccessCode,
+            is_full_access: true
+          });
+          
+        if (directiveError) {
+          console.error("Error creating directive access code:", directiveError);
+        }
+      }
       
       // Check if email confirmation is required
       if (data?.user?.identities && data.user.identities.length === 0) {
