@@ -33,37 +33,37 @@ export const useAccessCode = (user: User | null, type: "directive" | "medical") 
         console.log(`[useAccessCode] Successfully fetched ${type} code:`, code);
         setAccessCode(code);
       } else {
-        console.log(`[useAccessCode] No ${type} access code found`);
+        console.log(`[useAccessCode] No ${type} access code found, will try to generate`);
+        // If no code found, generate one immediately
+        try {
+          const generatedCode = await generateAccessCode(user, type);
+          if (generatedCode) {
+            console.log(`[useAccessCode] Successfully generated ${type} code on fetch:`, generatedCode);
+            setAccessCode(generatedCode);
+          }
+        } catch (genErr) {
+          console.error(`[useAccessCode] Error generating ${type} code on fetch:`, genErr);
+        }
       }
     } catch (err) {
       console.error(`[useAccessCode] Error fetching ${type} access code:`, err);
-    }
-  };
-
-  // Force code generation if it wasn't found
-  useEffect(() => {
-    const generateCodeIfNeeded = async () => {
-      if (user && !accessCode) {
-        console.log(`[useAccessCode] No ${type} access code found, forcing generation...`);
+      
+      // If the error is due to profile not existing, try to generate a new code
+      // The fetchCode function already handles this case now, so this is just a backup
+      if (err && (err as any).code === 'PGRST116') {
+        console.log(`[useAccessCode] Profile error, trying to generate new ${type} code`);
         try {
           const newCode = await generateAccessCode(user, type);
           if (newCode) {
-            console.log(`[useAccessCode] Successfully forced generation of ${type} code:`, newCode);
+            console.log(`[useAccessCode] Successfully generated ${type} code after profile error:`, newCode);
             setAccessCode(newCode);
           }
-        } catch (err) {
-          console.error(`[useAccessCode] Error in forced code generation for ${type}:`, err);
+        } catch (genErr) {
+          console.error(`[useAccessCode] Error in emergency code generation for ${type}:`, genErr);
         }
       }
-    };
-    
-    // Slight delay to ensure we don't have race conditions
-    const timer = setTimeout(() => {
-      generateCodeIfNeeded();
-    }, 1000);
-    
-    return () => clearTimeout(timer);
-  }, [user, accessCode, type]);
+    }
+  };
 
   return accessCode;
 };

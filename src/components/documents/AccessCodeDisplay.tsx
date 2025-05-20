@@ -59,12 +59,12 @@ const AccessCodeDisplay: FC<AccessCodeDisplayProps> = ({
   };
 
   const formatDate = (dateString: string) => {
-    if (!dateString) return "";
+    if (!dateString) return "Non renseignée";
     try {
       const date = new Date(dateString);
       return date.toLocaleDateString('fr-FR');
     } catch (e) {
-      return dateString;
+      return "Format invalide";
     }
   };
 
@@ -109,7 +109,7 @@ const AccessCodeDisplay: FC<AccessCodeDisplayProps> = ({
             </div>
             <div>
               <div className="text-sm font-medium text-gray-500">Date de naissance</div>
-              <div className="font-medium">{formatDate(birthDate) || "Non renseignée"}</div>
+              <div className="font-medium">{formatDate(birthDate)}</div>
             </div>
           </div>
           

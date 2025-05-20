@@ -7,7 +7,7 @@ import AccessCard from "@/components/card/AccessCard";
 import LoadingState from "@/components/questionnaire/LoadingState";
 import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, User } from "lucide-react";
 import { useAccessCode } from "@/hooks/access-codes/useAccessCode";
 import { Card, CardContent } from "@/components/ui/card";
 import AccessCodeDisplay from "@/components/documents/AccessCodeDisplay";
@@ -35,7 +35,7 @@ const AccessCardPage = () => {
   }, [user, profile, directiveCode, medicalCode]);
   
   useEffect(() => {
-    if (directiveCode && medicalCode) {
+    if (directiveCode || medicalCode) {
       console.log("AccessCardPage - Codes ready:", { directiveCode, medicalCode });
       setCodesReady(true);
     }
@@ -57,6 +57,11 @@ const AccessCardPage = () => {
   if (isLoading || loading) {
     return <LoadingState loading={true} />;
   }
+
+  // Set default values for profile data if it's missing
+  const firstName = profile?.first_name || "";
+  const lastName = profile?.last_name || "";
+  const birthDate = profile?.birth_date || null;
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -83,6 +88,32 @@ const AccessCardPage = () => {
                 "Chargement de vos codes d'accès..."}
             </p>
           </div>
+          
+          {/* Profile warning if incomplete */}
+          {!profile || (!firstName && !lastName) ? (
+            <Card className="mb-6 border-yellow-200 bg-yellow-50">
+              <CardContent className="pt-6">
+                <div className="flex items-start gap-3">
+                  <User className="h-6 w-6 text-yellow-600 mt-0.5" />
+                  <div>
+                    <h3 className="font-medium text-yellow-800">Profil incomplet</h3>
+                    <p className="text-sm text-yellow-700">
+                      Pour une meilleure expérience avec votre carte d'accès, veuillez compléter 
+                      votre profil avec vos informations personnelles.
+                    </p>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="mt-3 border-yellow-300 bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
+                      onClick={() => navigate("/profile")}
+                    >
+                      Compléter mon profil
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ) : null}
           
           {/* Section dédiée à l'affichage des codes d'accès */}
           <div className="mb-8">
@@ -118,22 +149,22 @@ const AccessCardPage = () => {
             </Card>
             
             {/* Affichage complet des codes avec les informations du profil */}
-            {profile && directiveCode && (
+            {directiveCode && (
               <AccessCodeDisplay 
                 accessCode={directiveCode}
-                firstName={profile.first_name || ""}
-                lastName={profile.last_name || ""}
-                birthDate={profile.birth_date || ""}
+                firstName={firstName}
+                lastName={lastName}
+                birthDate={birthDate || ""}
                 type="directive"
               />
             )}
             
-            {profile && medicalCode && (
+            {medicalCode && (
               <AccessCodeDisplay 
                 accessCode={medicalCode}
-                firstName={profile.first_name || ""}
-                lastName={profile.last_name || ""}
-                birthDate={profile.birth_date || ""}
+                firstName={firstName}
+                lastName={lastName}
+                birthDate={birthDate || ""}
                 type="medical"
               />
             )}
@@ -147,15 +178,13 @@ const AccessCardPage = () => {
               Vous pouvez la télécharger ou l'imprimer pour l'avoir toujours avec vous.
             </p>
             
-            {profile && (
-              <AccessCard 
-                firstName={profile.first_name || ""} 
-                lastName={profile.last_name || ""} 
-                birthDate={profile.birth_date}
-                directiveCode={directiveCode}  // Pass the codes directly
-                medicalCode={medicalCode}      // to the AccessCard component
-              />
-            )}
+            <AccessCard 
+              firstName={firstName} 
+              lastName={lastName} 
+              birthDate={birthDate}
+              directiveCode={directiveCode}
+              medicalCode={medicalCode}
+            />
           </div>
           
           <div className="mt-10 bg-blue-50 border border-blue-200 rounded-lg p-4">

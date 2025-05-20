@@ -13,15 +13,15 @@ interface AccessCardProps {
   firstName: string;
   lastName: string;
   birthDate: string | null;
-  directiveCode?: string | null;  // Add these props to accept codes directly
-  medicalCode?: string | null;    // from the parent component
+  directiveCode?: string | null;
+  medicalCode?: string | null;
 }
 
 const AccessCard: React.FC<AccessCardProps> = ({ 
   firstName, 
   lastName, 
   birthDate,
-  directiveCode: externalDirectiveCode,  // Accept codes from props
+  directiveCode: externalDirectiveCode,
   medicalCode: externalMedicalCode 
 }) => {
   const { user } = useAuth();
@@ -38,22 +38,23 @@ const AccessCard: React.FC<AccessCardProps> = ({
   const directiveCode = externalDirectiveCode || hooksDirectiveCode;
   const medicalCode = externalMedicalCode || hooksMedicalCode;
   
-  // Check if codes are ready
-  const codesReady = !!(directiveCode && medicalCode);
+  // Check if codes are ready - consider both codes ready if they're available
+  const directiveReady = !!directiveCode && includeDirective;
+  const medicalReady = !!medicalCode && includeMedical;
+  const codesReady = (directiveReady || medicalReady);
   
   useEffect(() => {
     console.log("AccessCard - Using codes:", { 
       directiveCode, 
       medicalCode,
       firstName,
-      lastName 
+      lastName,
+      codesReady
     });
-  }, [directiveCode, medicalCode, firstName, lastName]);
+  }, [directiveCode, medicalCode, firstName, lastName, codesReady]);
   
   // Simplified card operations without automatic generation
-  const {
-    cardRef
-  } = useCardOperations(
+  const { cardRef } = useCardOperations(
     user,
     firstName,
     lastName,
@@ -65,7 +66,7 @@ const AccessCard: React.FC<AccessCardProps> = ({
 
   // Handle download
   const handleDownload = () => {
-    if (!user) return;
+    if (!user || !codesReady) return;
     
     downloadCard({
       cardRef,
@@ -81,7 +82,7 @@ const AccessCard: React.FC<AccessCardProps> = ({
   
   // Handle print
   const handlePrint = () => {
-    if (!user) return;
+    if (!user || !codesReady) return;
     
     printCard({
       cardRef,
@@ -107,8 +108,8 @@ const AccessCard: React.FC<AccessCardProps> = ({
       <div className="flex flex-col items-center space-y-6">
         <CardDisplay 
           cardRef={cardRef}
-          firstName={firstName}
-          lastName={lastName}
+          firstName={firstName || ""}
+          lastName={lastName || ""}
           birthDate={birthDate}
           includeDirective={includeDirective}
           includeMedical={includeMedical}
