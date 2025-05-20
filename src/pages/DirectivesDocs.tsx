@@ -15,9 +15,10 @@ import { useEffect, useState } from "react";
 const DirectivesDocs = () => {
   const { user, profile } = useAuth();
   const accessCode = useAccessCode(user, "directive");
+  const [displayCode, setDisplayCode] = useState<string | null>(null);
   
+  console.log("DirectivesDocs - Auth state:", { userId: user?.id, hasProfile: !!profile });
   console.log("DirectivesDocs - Access code:", accessCode);
-  console.log("DirectivesDocs - Profile:", profile);
   
   const {
     isLoading,
@@ -38,6 +39,14 @@ const DirectivesDocs = () => {
     handlePreviewDownload,
     handlePreviewPrint
   } = useDirectivesDocuments();
+
+  // Update displayCode whenever accessCode changes
+  useEffect(() => {
+    if (accessCode) {
+      setDisplayCode(accessCode);
+      console.log("DirectivesDocs - Setting displayCode:", accessCode);
+    }
+  }, [accessCode]);
 
   useEffect(() => {
     if (user && !accessCode) {
@@ -63,10 +72,10 @@ const DirectivesDocs = () => {
         <DirectivesNavigation />
         
         {/* Affichage du code d'accès */}
-        {accessCode && profile && (
+        {displayCode && profile && (
           <div className="mt-4 mb-8">
             <AccessCodeDisplay 
-              accessCode={accessCode}
+              accessCode={displayCode}
               firstName={profile.first_name || ""}
               lastName={profile.last_name || ""}
               birthDate={profile.birth_date || ""}
@@ -75,6 +84,7 @@ const DirectivesDocs = () => {
           </div>
         )}
         
+        {/* Pass display code rather than the direct access code */}
         <DirectivesPageContent
           documents={documents}
           showAddOptions={showAddOptions}
@@ -85,7 +95,7 @@ const DirectivesDocs = () => {
           onPrint={handlePrint}
           onView={handleView}
           onDelete={confirmDelete}
-          accessCode={accessCode}
+          accessCode={displayCode}
           profile={profile}
         />
       </main>

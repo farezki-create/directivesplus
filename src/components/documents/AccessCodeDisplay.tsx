@@ -1,5 +1,5 @@
 
-import { FC } from "react";
+import { FC, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,15 @@ const AccessCodeDisplay: FC<AccessCodeDisplayProps> = ({
   birthDate,
   type
 }) => {
+  useEffect(() => {
+    console.log("AccessCodeDisplay rendered:", { 
+      type, 
+      accessCode,
+      firstName, 
+      lastName
+    });
+  }, [accessCode, firstName, lastName, birthDate, type]);
+
   const handleCopyCode = () => {
     navigator.clipboard.writeText(accessCode).then(
       () => {
@@ -49,7 +58,16 @@ const AccessCodeDisplay: FC<AccessCodeDisplayProps> = ({
     }
   };
 
-  console.log(`Rendering AccessCodeDisplay for ${type}:`, { accessCode, firstName, lastName, birthDate });
+  if (!accessCode) {
+    console.warn("AccessCodeDisplay - No access code provided!");
+    return (
+      <Card className="mb-8 bg-red-50 border-red-200">
+        <CardContent className="pt-6">
+          <p>Le code d'accès n'est pas disponible. Veuillez recharger la page ou contacter le support.</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="mb-8 bg-sky-50 border-sky-200">

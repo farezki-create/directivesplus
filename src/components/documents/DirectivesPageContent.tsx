@@ -15,7 +15,7 @@ interface DirectivesPageContentProps {
   onPrint: (filePath: string, contentType?: string) => void;
   onView: (filePath: string, contentType?: string) => void;
   onDelete: (documentId: string) => void;
-  accessCode?: string;
+  accessCode?: string | null;
   profile?: {
     first_name?: string;
     last_name?: string;
@@ -36,6 +36,15 @@ const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
   accessCode,
   profile
 }) => {
+  // Log when this component renders with its props
+  React.useEffect(() => {
+    console.log("DirectivesPageContent rendered:", { 
+      documentsCount: documents.length, 
+      hasUserId: !!userId,
+      accessCode: accessCode
+    });
+  }, [documents.length, userId, accessCode]);
+
   return (
     <div className="max-w-4xl mx-auto">
       <DirectivesPageHeader 

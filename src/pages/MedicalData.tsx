@@ -20,6 +20,7 @@ const MedicalData = () => {
   const navigate = useNavigate();
   const [showAddOptions, setShowAddOptions] = useState(false);
   const accessCode = useAccessCode(user, "medical");
+  const [displayCode, setDisplayCode] = useState<string | null>(null);
   
   const {
     documents,
@@ -32,6 +33,14 @@ const MedicalData = () => {
     onDeleteComplete: fetchDocuments
   });
   
+  // Update displayCode whenever accessCode changes
+  useEffect(() => {
+    if (accessCode) {
+      setDisplayCode(accessCode);
+      console.log("MedicalData - Setting displayCode:", accessCode);
+    }
+  }, [accessCode]);
+  
   useEffect(() => {
     // If the user doesn't have a medical access code, generate one
     const ensureMedicalAccessCode = async () => {
@@ -40,6 +49,7 @@ const MedicalData = () => {
           console.log("Attempting to generate medical access code");
           const newCode = await generateAccessCode(user, "medical");
           if (newCode) {
+            setDisplayCode(newCode);
             toast({
               title: "Code d'accès généré",
               description: "Un nouveau code d'accès pour vos données médicales a été généré.",
@@ -71,8 +81,9 @@ const MedicalData = () => {
     );
   }
 
+  console.log("Medical page - Auth state:", { userId: user?.id, hasProfile: !!profile });
   console.log("Medical page - Access code:", accessCode);
-  console.log("Medical page - Profile:", profile);
+  console.log("Medical page - Display code:", displayCode);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -94,10 +105,10 @@ const MedicalData = () => {
           <MedicalHeader onAddDocument={() => setShowAddOptions(!showAddOptions)} />
 
           {/* Affichage du code d'accès */}
-          {accessCode && profile && (
+          {displayCode && profile && (
             <div className="mt-4 mb-8">
               <AccessCodeDisplay 
-                accessCode={accessCode}
+                accessCode={displayCode}
                 firstName={profile.first_name || ""}
                 lastName={profile.last_name || ""}
                 birthDate={profile.birth_date || ""}
