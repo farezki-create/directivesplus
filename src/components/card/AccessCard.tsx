@@ -1,11 +1,8 @@
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import CardOptions from "./CardOptions";
 import CardDisplay from "./CardDisplay";
-import CardActions from "./CardActions";
-import CardStatusMessage from "./CardStatusMessage";
-import { useAccessCardGeneration } from "@/hooks/useAccessCardGeneration";
 import { useCardOperations } from "@/hooks/useCardOperations";
 
 interface AccessCardProps {
@@ -17,60 +14,22 @@ interface AccessCardProps {
 const AccessCard: React.FC<AccessCardProps> = ({ firstName, lastName, birthDate }) => {
   const { user } = useAuth();
   
-  const [includeDirective, setIncludeDirective] = useState<boolean>(true);
-  const [includeMedical, setIncludeMedical] = useState<boolean>(true);
+  // Simplified state - no automatic generation
+  const [includeDirective, setIncludeDirective] = React.useState<boolean>(true);
+  const [includeMedical, setIncludeMedical] = React.useState<boolean>(true);
 
-  // Use our custom hooks
+  // Simplified card operations without automatic generation
   const {
-    directiveCode,
-    medicalCode,
-    isGenerating,
-    isCardReady,
-    handleGenerateCard
-  } = useAccessCardGeneration(user, includeDirective, includeMedical);
-
-  // Initialize card operations
-  const {
-    cardRef,
-    handleDownload,
-    handlePrint
+    cardRef
   } = useCardOperations(
     user,
     firstName,
     lastName,
     includeDirective,
     includeMedical,
-    directiveCode,
-    medicalCode
+    null, // No directiveCode
+    null  // No medicalCode
   );
-
-  // Auto-generate the card when component mounts or when options change
-  useEffect(() => {
-    if (user && !isGenerating && (includeDirective || includeMedical)) {
-      // Only generate if we don't have the required codes yet
-      const needsDirectiveGeneration = includeDirective && !directiveCode;
-      const needsMedicalGeneration = includeMedical && !medicalCode;
-      
-      if (needsDirectiveGeneration || needsMedicalGeneration) {
-        console.log("Auto-generating card...");
-        const timer = setTimeout(() => {
-          handleGenerateCard();
-        }, 800);
-        
-        return () => clearTimeout(timer);
-      }
-    }
-  }, [user, includeDirective, includeMedical, directiveCode, medicalCode, isGenerating, handleGenerateCard]);
-
-  // Log the current state for debugging
-  console.log("Card state:", { 
-    directiveCode, 
-    medicalCode, 
-    isCardReady, 
-    isGenerating,
-    includeDirective,
-    includeMedical 
-  });
 
   return (
     <div className="space-y-8">
@@ -89,22 +48,9 @@ const AccessCard: React.FC<AccessCardProps> = ({ firstName, lastName, birthDate 
           birthDate={birthDate}
           includeDirective={includeDirective}
           includeMedical={includeMedical}
-          directiveCode={directiveCode}
-          medicalCode={medicalCode}
+          directiveCode={null}
+          medicalCode={null}
           websiteUrl="directivesplus.fr"
-        />
-        
-        <CardActions 
-          onGenerate={handleGenerateCard}
-          onDownload={handleDownload}
-          onPrint={handlePrint}
-          disabled={(!includeDirective && !includeMedical) || isGenerating}
-          isLoading={isGenerating}
-        />
-        
-        <CardStatusMessage 
-          isCardReady={isCardReady} 
-          isGenerating={isGenerating} 
         />
       </div>
     </div>

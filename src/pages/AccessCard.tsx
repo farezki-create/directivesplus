@@ -37,7 +37,6 @@ const AccessCardPage = () => {
       
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="max-w-3xl mx-auto">
-          {/* Ajout du bouton retour */}
           <div className="mb-6">
             <Button
               variant="outline"
@@ -52,7 +51,7 @@ const AccessCardPage = () => {
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-800">Carte d'accès</h1>
             <p className="text-gray-600 mt-2">
-              Générez une carte au format carte bancaire avec vos informations et codes d'accès
+              Cette fonctionnalité est actuellement en maintenance. Vous pourrez bientôt accéder à votre carte.
             </p>
           </div>
           
