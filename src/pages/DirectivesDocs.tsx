@@ -14,7 +14,7 @@ import { useEffect, useState } from "react";
 
 const DirectivesDocs = () => {
   const { user, profile } = useAuth();
-  const accessCode = useAccessCode(user, "directive");
+  const { accessCode, isLoading: codeLoading } = useAccessCode(user, "directive");
   const [displayCode, setDisplayCode] = useState<string | null>(null);
   
   console.log("DirectivesDocs - Auth state:", { userId: user?.id, hasProfile: !!profile });

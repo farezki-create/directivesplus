@@ -19,7 +19,7 @@ const MedicalData = () => {
   const { user, isAuthenticated, isLoading, profile } = useAuth();
   const navigate = useNavigate();
   const [showAddOptions, setShowAddOptions] = useState(false);
-  const accessCode = useAccessCode(user, "medical");
+  const { accessCode, isLoading: codeLoading } = useAccessCode(user, "medical");
   const [displayCode, setDisplayCode] = useState<string | null>(null);
   
   const {

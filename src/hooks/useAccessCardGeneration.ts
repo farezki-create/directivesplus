@@ -1,8 +1,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { User } from "@supabase/supabase-js";
-import { useAccessCode, generateAccessCode } from "@/hooks/useAccessCode";
-import { toast } from "@/hooks/use-toast";
+import { useAccessCode, generateAccessCode } from "@/hooks/access-codes/useAccessCode";
+import { toast } from "@/components/ui/use-toast";
 
 export interface AccessCodeState {
   directiveCode: string | null;
@@ -22,8 +22,8 @@ export const useAccessCardGeneration = (
   const [isCardReady, setIsCardReady] = useState(false);
   
   // Get initial access codes
-  const directiveCodeFromHook = useAccessCode(user, "directive");
-  const medicalCodeFromHook = useAccessCode(user, "medical");
+  const { accessCode: directiveCodeFromHook, isLoading: directiveLoading } = useAccessCode(user, "directive");
+  const { accessCode: medicalCodeFromHook, isLoading: medicalLoading } = useAccessCode(user, "medical");
 
   // Set initial codes from database
   useEffect(() => {
@@ -110,6 +110,7 @@ export const useAccessCardGeneration = (
     medicalCode,
     isGenerating,
     isCardReady,
-    handleGenerateCard
+    handleGenerateCard,
+    isLoading: directiveLoading || medicalLoading
   };
 };

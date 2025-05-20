@@ -1,19 +1,21 @@
 
-import { Loader2 } from "lucide-react";
+import React from "react";
 
-type LoadingStateProps = {
+export interface LoadingStateProps {
   loading: boolean;
-};
+  message?: string;
+}
 
-const LoadingState = ({ loading }: LoadingStateProps) => {
+const LoadingState: React.FC<LoadingStateProps> = ({ 
+  loading,
+  message = "Chargement en cours..."
+}) => {
   if (!loading) return null;
-
+  
   return (
-    <div className="flex justify-center items-center py-4">
-      <div className="flex flex-col items-center">
-        <Loader2 className="h-8 w-8 text-directiveplus-600 animate-spin" />
-        <p className="mt-2 text-sm text-gray-600">Chargement en cours...</p>
-      </div>
+    <div className="flex flex-col items-center justify-center py-8">
+      <div className="w-10 h-10 rounded-full border-t-2 border-b-2 border-directiveplus-600 animate-spin"></div>
+      <p className="mt-4 text-gray-600">{message}</p>
     </div>
   );
 };
