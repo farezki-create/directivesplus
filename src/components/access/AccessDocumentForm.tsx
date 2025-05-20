@@ -5,6 +5,7 @@ import FormActions from "./FormActions";
 import { useAccessDocumentForm } from "@/hooks/useAccessDocumentForm";
 import { Form } from "@/components/ui/form";
 import { useEffect } from "react";
+import LoadingState from "@/components/questionnaire/LoadingState";
 
 const AccessDocumentForm = () => {
   const { 
@@ -86,6 +87,9 @@ const AccessDocumentForm = () => {
                 disabled={loading}
               />
             </CardContent>
+
+            {/* Loading spinner */}
+            <LoadingState loading={loading} />
 
             <CardFooter>
               <FormActions 

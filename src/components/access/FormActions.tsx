@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { FileText, FileSearch } from "lucide-react";
+import { FileText, FileSearch, Loader2 } from "lucide-react";
 import { useState } from "react";
 
 type FormActionsProps = {
@@ -60,8 +60,12 @@ const FormActions = ({ loading, onAccessDirectives, onAccessMedicalData }: FormA
           variant="default"
           data-testid="access-directives-button"
         >
-          <FileText size={18} />
-          {loading ? "Vérification en cours..." : "Accéder aux directives anticipées"}
+          {loading && activeButton === "directives" ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <FileText size={18} />
+          )}
+          {loading && activeButton === "directives" ? "Vérification en cours..." : "Accéder aux directives anticipées"}
         </Button>
       </div>
       
@@ -86,8 +90,12 @@ const FormActions = ({ loading, onAccessDirectives, onAccessMedicalData }: FormA
           style={{ backgroundColor: '#3b82f6', color: 'white' }}
           data-testid="access-medical-button"
         >
-          <FileSearch size={18} />
-          {loading ? "Vérification en cours..." : "Accéder aux données médicales"}
+          {loading && activeButton === "medical" ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <FileSearch size={18} />
+          )}
+          {loading && activeButton === "medical" ? "Vérification en cours..." : "Accéder aux données médicales"}
         </Button>
       </div>
     </div>
