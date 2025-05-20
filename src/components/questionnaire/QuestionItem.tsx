@@ -34,16 +34,14 @@ const QuestionItem = memo(({ question, response, onResponseChange }: QuestionIte
         )}
         
         <RadioGroup 
-          value={response || ""} 
+          value={response} 
           onValueChange={handleChange}
           className="space-y-3 mt-4"
         >
-          {/* Yes option */}
           <div className="flex items-center space-x-2">
             <RadioGroupItem 
               value="yes" 
               id={`${question.id}-yes`}
-              checked={response === "yes"}
             />
             <Label 
               htmlFor={`${question.id}-yes`}
@@ -53,12 +51,10 @@ const QuestionItem = memo(({ question, response, onResponseChange }: QuestionIte
             </Label>
           </div>
           
-          {/* No option */}
           <div className="flex items-center space-x-2">
             <RadioGroupItem 
               value="no" 
               id={`${question.id}-no`}
-              checked={response === "no"}
             />
             <Label 
               htmlFor={`${question.id}-no`}
@@ -68,12 +64,10 @@ const QuestionItem = memo(({ question, response, onResponseChange }: QuestionIte
             </Label>
           </div>
           
-          {/* Unsure option */}
           <div className="flex items-center space-x-2">
             <RadioGroupItem 
               value="unsure" 
               id={`${question.id}-unsure`}
-              checked={response === "unsure"}
             />
             <Label 
               htmlFor={`${question.id}-unsure`}

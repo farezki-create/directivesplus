@@ -28,8 +28,9 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
   
   // Stabilize handleResponseChange function with useCallback
   const handleResponseChange = useCallback((questionId: string, value: string) => {
+    if (!isMounted.current) return;
+    
     console.log(`useQuestionnaireData: Changing response for question ${questionId} to "${value}"`);
-    // Use functional update to ensure we're working with the latest state
     setResponses(prevResponses => {
       const newResponses = { ...prevResponses, [questionId]: value };
       console.log("New responses state:", newResponses);
@@ -37,40 +38,29 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
     });
   }, [setResponses]);
   
-  // Stabilize memoizedFetchResponses with useCallback
-  const memoizedFetchResponses = useCallback(async () => {
-    if (!safePageId || !isMounted.current) return Promise.resolve(responses);
-    
-    if (!initialFetchDone.current) {
-      console.log("Fetching responses for pageId:", safePageId);
-      initialFetchDone.current = true;
-      try {
-        return await fetchResponses();
-      } catch (error) {
-        console.error("Error fetching responses:", error);
-        return responses;
-      }
-    }
-    
-    return Promise.resolve(responses);
-  }, [safePageId, fetchResponses, responses]);
-  
-  // Use useEffect with proper dependencies and cleanup
+  // Handle one-time fetching of responses
   useEffect(() => {
     isMounted.current = true;
     
-    if (safePageId) {
-      console.log("useQuestionnaireData effect running for pageId:", safePageId);
-      memoizedFetchResponses();
-    }
+    const fetchInitialResponses = async () => {
+      if (!safePageId || initialFetchDone.current) return;
+      
+      try {
+        console.log("Initial fetch of responses for pageId:", safePageId);
+        initialFetchDone.current = true;
+        await fetchResponses();
+      } catch (error) {
+        console.error("Error fetching initial responses:", error);
+      }
+    };
     
-    // Cleanup function
+    fetchInitialResponses();
+    
     return () => {
       console.log("Cleaning up useQuestionnaireData for pageId:", safePageId);
       isMounted.current = false;
-      initialFetchDone.current = false;
     };
-  }, [safePageId, memoizedFetchResponses]);
+  }, [safePageId, fetchResponses]);
   
   // Stabilize handleSave function with useCallback and proper dependencies
   const handleSave = useCallback(async () => {
