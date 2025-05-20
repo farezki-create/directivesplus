@@ -25,16 +25,26 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
     setResponses
   } = useQuestionnaireResponses(safePageId);
   
-  // Stabilize all functions with useCallback to prevent unnecessary recreations
+  // Stabilize handleResponseChange function with useCallback
+  const handleResponseChange = useCallback((questionId: string, value: string) => {
+    console.log(`useQuestionnaireData: Changing response for question ${questionId} to "${value}"`);
+    setResponses(prevResponses => ({
+      ...prevResponses,
+      [questionId]: value
+    }));
+  }, [setResponses]);
+  
+  // Stabilize memoizedFetchResponses with useCallback
   const memoizedFetchResponses = useCallback(() => {
     if (!initialFetchDone.current && safePageId) {
       console.log("Fetching responses for pageId:", safePageId);
       initialFetchDone.current = true;
       return fetchResponses();
     }
-    return Promise.resolve();
+    return Promise.resolve({});
   }, [safePageId, fetchResponses]);
   
+  // Use useEffect with proper dependencies
   useEffect(() => {
     // Reset the ref when page changes
     initialFetchDone.current = false;
@@ -49,16 +59,9 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
     };
   }, [safePageId, memoizedFetchResponses]);
   
-  const handleResponseChange = useCallback((questionId: string, value: string) => {
-    console.log(`useQuestionnaireData: Changing response for question ${questionId} to "${value}"`);
-    setResponses(prevResponses => ({
-      ...prevResponses,
-      [questionId]: value
-    }));
-  }, [setResponses]);
-  
+  // Stabilize handleSave function with useCallback and proper dependencies
   const handleSave = useCallback(async () => {
-    if (!safePageId) return;
+    if (!safePageId || !questions) return;
     
     setSaving(true);
     console.log("Saving responses:", responses);
