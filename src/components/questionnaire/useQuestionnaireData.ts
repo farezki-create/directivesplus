@@ -10,7 +10,7 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
   const initialFetchDone = useRef(false);
   const isMounted = useRef(true);
   
-  // Always call hooks with consistent parameters
+  // Always call hooks unconditionally at the top level
   const { 
     questions,
     loading: questionsLoading, 

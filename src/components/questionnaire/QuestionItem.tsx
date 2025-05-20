@@ -25,6 +25,9 @@ const QuestionItem = memo(({ question, response, onResponseChange }: QuestionIte
     onResponseChange(question.id, value);
   }, [question.id, onResponseChange]);
   
+  // Ensure we always have a string value for the RadioGroup
+  const radioValue = response || "";
+  
   return (
     <Card className="mb-6">
       <CardContent className="p-6">
@@ -34,7 +37,7 @@ const QuestionItem = memo(({ question, response, onResponseChange }: QuestionIte
         )}
         
         <RadioGroup 
-          value={response} 
+          value={radioValue}
           onValueChange={handleChange}
           className="space-y-3 mt-4"
         >
