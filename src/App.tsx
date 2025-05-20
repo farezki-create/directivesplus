@@ -34,6 +34,7 @@ import LegalMentions from "./pages/LegalMentions";
 import Soutenir from "./pages/Soutenir";
 import CookieBanner from "./components/CookieBanner";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import AffichageDossier from "./pages/AffichageDossier";
 
 import "./App.css";
 
@@ -67,6 +68,7 @@ const router = createBrowserRouter([
   { path: "/personne-confiance", element: <PersonneConfiance /> },
   { path: "/synthese", element: <Synthesis /> },
   { path: "/carte-acces", element: <AccessCardPage /> },
+  { path: "/affichage-dossier", element: <AffichageDossier /> },
   { path: "*", element: <NotFound /> },
 ]);
 

@@ -8,6 +8,10 @@ import { useEffect, useState } from "react";
 import LoadingState from "@/components/questionnaire/LoadingState";
 import { useVerifierCodeAcces } from "@/hooks/useVerifierCodeAcces";
 import { toast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
+import { useDossierStore } from "@/store/dossierStore";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 const DirectivesAccessForm = () => {
   const { 
@@ -18,6 +22,13 @@ const DirectivesAccessForm = () => {
   
   // État local pour stocker le code d'accès
   const [code, setCode] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  
+  // Navigation
+  const navigate = useNavigate();
+  
+  // Store pour le dossier actif
+  const { setDossierActif } = useDossierStore();
   
   // Hook personnalisé pour vérifier le code d'accès
   const { verifierCode, loading: verificationLoading, result } = useVerifierCodeAcces();
@@ -38,23 +49,30 @@ const DirectivesAccessForm = () => {
     return () => subscription.unsubscribe();
   }, [form]);
 
-  // Using useEffect to watch for form errors
-  useEffect(() => {
-    // Log any form errors when they change
-    if (Object.keys(form.formState.errors).length > 0) {
-      console.log("Erreurs du formulaire:", form.formState.errors);
-    }
-  }, [form.formState.errors]); // Watch for changes in the errors object
-  
   // Observer les résultats de la vérification du code
   useEffect(() => {
     if (result) {
       if (result.success) {
+        setErrorMessage(null);
         toast({
           title: "Accès autorisé",
           description: "Le code d'accès est valide. Chargement du dossier...",
         });
+        
+        // Stocker le dossier actif et naviguer vers la page d'affichage
+        if (result.dossier) {
+          setDossierActif({
+            id: result.dossier.id,
+            contenu: result.dossier.contenu
+          });
+          
+          // Navigation vers la page d'affichage du dossier
+          setTimeout(() => {
+            navigate('/affichage-dossier');
+          }, 500);
+        }
       } else {
+        setErrorMessage(result.error || "Code d'accès invalide");
         toast({
           title: "Accès refusé",
           description: result.error || "Code d'accès invalide",
@@ -62,10 +80,11 @@ const DirectivesAccessForm = () => {
         });
       }
     }
-  }, [result]);
+  }, [result, navigate, setDossierActif]);
 
   const handleAccessDirectives = async () => {
-    console.log("Requesting access to directives with code:", code);
+    console.log("Demande d'accès avec le code:", code);
+    setErrorMessage(null);
     
     // Vérifier si le formulaire est valide
     const isValid = await form.trigger();
@@ -75,17 +94,11 @@ const DirectivesAccessForm = () => {
     
     try {
       // Vérifier le code d'accès via la fonction Edge
-      const verificationResult = await verifierCode(code);
-      
-      // Si la vérification est réussie, continuer avec l'accès aux directives
-      if (verificationResult.success) {
-        // Attendre un moment pour que l'utilisateur voie le toast de succès
-        setTimeout(() => {
-          accessDirectives();
-        }, 1000);
-      }
+      await verifierCode(code);
+      // Le reste de la logique est géré par useEffect qui observe result
     } catch (error) {
       console.error("Erreur lors de la vérification du code:", error);
+      setErrorMessage("Une erreur est survenue lors de la vérification du code d'accès");
     }
   };
 
@@ -137,6 +150,16 @@ const DirectivesAccessForm = () => {
                 control={form.control}
                 disabled={loading}
               />
+
+              {errorMessage && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Erreur</AlertTitle>
+                  <AlertDescription>
+                    {errorMessage}
+                  </AlertDescription>
+                </Alert>
+              )}
             </CardContent>
 
             {/* Indicateur de chargement */}
