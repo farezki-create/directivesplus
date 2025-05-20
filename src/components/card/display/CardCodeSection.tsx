@@ -23,7 +23,7 @@ const CardCodeSection: React.FC<CardCodeSectionProps> = ({
           <div>
             <p className="text-xs font-semibold">Directives anticipées:</p>
             <p className="font-mono font-bold tracking-wider text-lg">
-              {directiveCode || "Générez le code"}
+              {directiveCode || "En attente..."}
             </p>
           </div>
         </div>
@@ -35,7 +35,7 @@ const CardCodeSection: React.FC<CardCodeSectionProps> = ({
           <div>
             <p className="text-xs font-semibold">Données médicales:</p>
             <p className="font-mono font-bold tracking-wider text-lg">
-              {medicalCode || "Générez le code"}
+              {medicalCode || "En attente..."}
             </p>
           </div>
         </div>
