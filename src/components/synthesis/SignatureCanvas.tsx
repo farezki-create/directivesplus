@@ -18,10 +18,17 @@ const SignatureCanvas = ({ initialSignature, onSave }: SignatureCanvasProps) => 
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    // Get the 2D rendering context
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+    
+    // Set actual canvas dimensions to match display size
+    // This is crucial for proper coordinate mapping
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = rect.height;
 
-    // Clear canvas
+    // Clear canvas with white background
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -29,12 +36,38 @@ const SignatureCanvas = ({ initialSignature, onSave }: SignatureCanvasProps) => 
     if (initialSignature) {
       const img = new Image();
       img.onload = () => {
-        ctx.drawImage(img, 0, 0);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         setHasSignature(true);
       };
       img.src = initialSignature;
     }
   }, [initialSignature]);
+
+  const getCoordinates = (e: React.MouseEvent | React.TouchEvent | TouchEvent | MouseEvent): { x: number, y: number } => {
+    const canvas = canvasRef.current;
+    if (!canvas) return { x: 0, y: 0 };
+
+    const rect = canvas.getBoundingClientRect();
+    let x, y;
+
+    // Check if it's a touch event
+    if ((e as TouchEvent).touches) {
+      const touchEvent = e as TouchEvent;
+      x = touchEvent.touches[0].clientX - rect.left;
+      y = touchEvent.touches[0].clientY - rect.top;
+    } else {
+      // It's a mouse event
+      const mouseEvent = e as MouseEvent;
+      x = mouseEvent.clientX - rect.left;
+      y = mouseEvent.clientY - rect.top;
+    }
+
+    // Scale coordinates based on canvas dimensions
+    x = (x / rect.width) * canvas.width;
+    y = (y / rect.height) * canvas.height;
+
+    return { x, y };
+  };
 
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
@@ -46,20 +79,14 @@ const SignatureCanvas = ({ initialSignature, onSave }: SignatureCanvasProps) => 
     setIsDrawing(true);
     setHasSignature(true);
 
-    let x, y;
-    if ("touches" in e) {
-      // Touch event
-      const rect = canvas.getBoundingClientRect();
-      x = e.touches[0].clientX - rect.left;
-      y = e.touches[0].clientY - rect.top;
-    } else {
-      // Mouse event
-      x = e.nativeEvent.offsetX;
-      y = e.nativeEvent.offsetY;
-    }
-
+    // Get the coordinates and start a new path
+    const { x, y } = getCoordinates(e.nativeEvent);
+    
     ctx.beginPath();
     ctx.moveTo(x, y);
+    ctx.lineWidth = 2;
+    ctx.lineCap = "round";
+    ctx.strokeStyle = "black";
   };
 
   const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
@@ -71,25 +98,14 @@ const SignatureCanvas = ({ initialSignature, onSave }: SignatureCanvasProps) => 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    let x, y;
-    if ("touches" in e) {
-      // Prevent scrolling when drawing
+    // Prevent scrolling when drawing on touch devices
+    if ((e.nativeEvent as TouchEvent).touches) {
       e.preventDefault();
-      
-      // Touch event
-      const rect = canvas.getBoundingClientRect();
-      x = e.touches[0].clientX - rect.left;
-      y = e.touches[0].clientY - rect.top;
-    } else {
-      // Mouse event
-      x = e.nativeEvent.offsetX;
-      y = e.nativeEvent.offsetY;
     }
 
-    ctx.lineWidth = 2;
-    ctx.lineCap = "round";
-    ctx.strokeStyle = "black";
-
+    // Get the coordinates and continue the path
+    const { x, y } = getCoordinates(e.nativeEvent);
+    
     ctx.lineTo(x, y);
     ctx.stroke();
   };
@@ -125,9 +141,7 @@ const SignatureCanvas = ({ initialSignature, onSave }: SignatureCanvasProps) => 
       <div className="border rounded-md p-2 bg-white">
         <canvas
           ref={canvasRef}
-          width={600}
-          height={200}
-          className="w-full border border-dashed border-gray-300 touch-none"
+          className="w-full border border-dashed border-gray-300 touch-none h-[200px]"
           onMouseDown={startDrawing}
           onMouseMove={draw}
           onMouseUp={stopDrawing}
