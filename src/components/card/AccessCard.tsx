@@ -1,9 +1,13 @@
+
 import React, { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import CardOptions from "./CardOptions";
 import CardDisplay from "./CardDisplay";
+import CardActions from "./CardActions";
 import { useCardOperations } from "@/hooks/useCardOperations";
 import { useAccessCode } from "@/hooks/access-codes/useAccessCode";
+import { downloadCard } from "./utils/downloadCard";
+import { printCard } from "./utils/printCard";
 
 interface AccessCardProps {
   firstName: string;
@@ -21,6 +25,9 @@ const AccessCard: React.FC<AccessCardProps> = ({ firstName, lastName, birthDate 
   // Use the hooks to get access codes directly
   const directiveCode = useAccessCode(user, "directive");
   const medicalCode = useAccessCode(user, "medical");
+  
+  // Check if codes are ready
+  const codesReady = !!(directiveCode && medicalCode);
   
   useEffect(() => {
     console.log("AccessCard - Using codes:", { 
@@ -44,6 +51,38 @@ const AccessCard: React.FC<AccessCardProps> = ({ firstName, lastName, birthDate 
     medicalCode
   );
 
+  // Handle download
+  const handleDownload = () => {
+    if (!user) return;
+    
+    downloadCard({
+      cardRef,
+      userId: user.id,
+      firstName,
+      lastName,
+      includeDirective,
+      includeMedical,
+      directiveCode,
+      medicalCode
+    });
+  };
+  
+  // Handle print
+  const handlePrint = () => {
+    if (!user) return;
+    
+    printCard({
+      cardRef,
+      userId: user.id,
+      firstName,
+      lastName,
+      includeDirective,
+      includeMedical,
+      directiveCode,
+      medicalCode
+    });
+  };
+
   return (
     <div className="space-y-8">
       <CardOptions 
@@ -53,7 +92,7 @@ const AccessCard: React.FC<AccessCardProps> = ({ firstName, lastName, birthDate 
         setIncludeMedical={setIncludeMedical}
       />
       
-      <div className="flex flex-col items-center">
+      <div className="flex flex-col items-center space-y-6">
         <CardDisplay 
           cardRef={cardRef}
           firstName={firstName}
@@ -64,6 +103,13 @@ const AccessCard: React.FC<AccessCardProps> = ({ firstName, lastName, birthDate 
           directiveCode={directiveCode}
           medicalCode={medicalCode}
           websiteUrl="directivesplus.fr"
+        />
+        
+        <CardActions 
+          onDownload={handleDownload}
+          onPrint={handlePrint}
+          disabled={!codesReady}
+          codesReady={codesReady}
         />
       </div>
     </div>

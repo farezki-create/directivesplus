@@ -139,13 +139,22 @@ const AccessCardPage = () => {
             )}
           </div>
           
-          {profile && (
-            <AccessCard 
-              firstName={profile.first_name || ""} 
-              lastName={profile.last_name || ""} 
-              birthDate={profile.birth_date}
-            />
-          )}
+          {/* Section pour la carte d'accès */}
+          <div className="mb-10 p-6 bg-white rounded-lg shadow-md">
+            <h2 className="text-xl font-bold mb-4">Votre carte d'accès personnelle</h2>
+            <p className="text-gray-600 mb-6">
+              Cette carte contient vos codes d'accès pour vos directives anticipées et données médicales. 
+              Vous pouvez la télécharger ou l'imprimer pour l'avoir toujours avec vous.
+            </p>
+            
+            {profile && (
+              <AccessCard 
+                firstName={profile.first_name || ""} 
+                lastName={profile.last_name || ""} 
+                birthDate={profile.birth_date}
+              />
+            )}
+          </div>
           
           <div className="mt-10 bg-blue-50 border border-blue-200 rounded-lg p-4">
             <h3 className="font-medium text-blue-800">Pourquoi utiliser une carte d'accès?</h3>

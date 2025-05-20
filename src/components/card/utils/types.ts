@@ -1,8 +1,6 @@
 
-import { RefObject } from "react";
-
 export interface CardOperationOptions {
-  cardRef: RefObject<HTMLDivElement>;
+  cardRef: React.RefObject<HTMLDivElement>;
   userId: string;
   firstName: string;
   lastName: string;

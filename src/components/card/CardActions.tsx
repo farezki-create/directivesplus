@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Download, Printer, RefreshCw } from "lucide-react";
+import { Download, Printer } from "lucide-react";
 
 interface CardActionsProps {
   onDownload?: () => void;
@@ -15,25 +15,11 @@ interface CardActionsProps {
 const CardActions: React.FC<CardActionsProps> = ({
   onDownload,
   onPrint,
-  onGenerate,
-  disabled = true,
-  isLoading = false,
+  disabled = false,
   codesReady = false
 }) => {
   return (
-    <div className="mt-6 flex flex-wrap gap-3 justify-center">
-      {onGenerate && !codesReady && (
-        <Button
-          onClick={onGenerate}
-          variant="default"
-          className="flex items-center gap-2"
-          disabled={true}
-        >
-          <RefreshCw size={16} />
-          Génération automatique
-        </Button>
-      )}
-      
+    <div className="mt-4 flex flex-wrap gap-3 justify-center">
       {onDownload && (
         <Button
           onClick={onDownload}
