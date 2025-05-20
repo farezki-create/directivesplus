@@ -36,20 +36,18 @@ export default function DeleteAccountSection() {
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Êtes-vous absolument sûr ?</AlertDialogTitle>
-              <AlertDialogDescription className="space-y-2">
-                <p>
-                  Cette action est <span className="font-bold">irréversible</span> et entraînera la suppression permanente de :
-                </p>
-                <ul className="list-disc pl-6">
-                  <li>Votre profil utilisateur</li>
-                  <li>Toutes vos directives médicales</li>
-                  <li>Tous vos documents et fichiers</li>
-                  <li>Toutes les données médicales associées</li>
-                </ul>
-                <p className="mt-2 text-red-600 font-medium">
-                  Vous ne pourrez pas récupérer ces informations une fois supprimées.
-                </p>
+              <AlertDialogDescription>
+                Cette action est <span className="font-bold">irréversible</span> et entraînera la suppression permanente de :
               </AlertDialogDescription>
+              <ul className="list-disc pl-6 mt-2 text-muted-foreground text-sm">
+                <li>Votre profil utilisateur</li>
+                <li>Toutes vos directives médicales</li>
+                <li>Tous vos documents et fichiers</li>
+                <li>Toutes les données médicales associées</li>
+              </ul>
+              <div className="mt-2 text-red-600 font-medium text-sm">
+                Vous ne pourrez pas récupérer ces informations une fois supprimées.
+              </div>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Annuler</AlertDialogCancel>

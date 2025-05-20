@@ -32,15 +32,16 @@ export const useDeleteAccount = () => {
         }
       );
       
+      const responseData = await response.json();
+      
       if (!response.ok) {
-        const result = await response.json();
-        throw new Error(result.error || "Erreur lors de la suppression du compte");
+        console.error("Erreur HTTP lors de la suppression:", response.status, responseData);
+        throw new Error(responseData.error || responseData.details || "Erreur lors de la suppression du compte");
       }
       
-      const result = await response.json();
-      
-      if (!result.success) {
-        throw new Error(result.error || "Erreur lors de la suppression du compte");
+      if (!responseData.success) {
+        console.error("Échec de la suppression:", responseData);
+        throw new Error(responseData.error || responseData.details || "Erreur lors de la suppression du compte");
       }
       
       // Nettoyer l'état d'authentification
