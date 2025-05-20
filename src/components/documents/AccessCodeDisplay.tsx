@@ -3,7 +3,7 @@ import { FC } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 
 interface AccessCodeDisplayProps {
   accessCode: string;
@@ -48,6 +48,8 @@ const AccessCodeDisplay: FC<AccessCodeDisplayProps> = ({
       return dateString;
     }
   };
+
+  console.log(`Rendering AccessCodeDisplay for ${type}:`, { accessCode, firstName, lastName, birthDate });
 
   return (
     <Card className="mb-8 bg-sky-50 border-sky-200">

@@ -163,5 +163,20 @@ export const useAccessCode = (user: User | null, type: "directive" | "medical") 
     }
   };
 
+  // Force code generation if it wasn't found
+  useEffect(() => {
+    const generateCodeIfNeeded = async () => {
+      if (user && !accessCode) {
+        console.log(`No ${type} access code found, attempting to generate one...`);
+        const newCode = await generateAccessCode(user, type);
+        if (newCode) {
+          setAccessCode(newCode);
+        }
+      }
+    };
+    
+    generateCodeIfNeeded();
+  }, [user, accessCode, type]);
+
   return accessCode;
 };

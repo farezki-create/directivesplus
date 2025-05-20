@@ -37,6 +37,7 @@ const MedicalData = () => {
     const ensureMedicalAccessCode = async () => {
       if (user && !accessCode) {
         try {
+          console.log("Attempting to generate medical access code");
           const newCode = await generateAccessCode(user, "medical");
           if (newCode) {
             toast({
@@ -70,8 +71,8 @@ const MedicalData = () => {
     );
   }
 
-  console.log("Access code:", accessCode);
-  console.log("Profile:", profile);
+  console.log("Medical page - Access code:", accessCode);
+  console.log("Medical page - Profile:", profile);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -92,6 +93,7 @@ const MedicalData = () => {
           
           <MedicalHeader onAddDocument={() => setShowAddOptions(!showAddOptions)} />
 
+          {/* Always display access code if available */}
           {accessCode && profile && (
             <div className="mt-4 mb-8">
               <AccessCodeDisplay 

@@ -4,7 +4,6 @@ import { Document } from "@/hooks/useDirectivesDocuments";
 import DirectivesPageHeader from "@/components/documents/DirectivesPageHeader";
 import DirectivesAddDocumentSection from "@/components/documents/DirectivesAddDocumentSection";
 import DirectivesDocumentList from "@/components/documents/DirectivesDocumentList";
-import AccessCodeDisplay from "@/components/documents/AccessCodeDisplay";
 
 interface DirectivesPageContentProps {
   documents: Document[];
@@ -42,16 +41,6 @@ const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
       <DirectivesPageHeader 
         onAddDocument={() => setShowAddOptions(!showAddOptions)} 
       />
-
-      {accessCode && profile && (
-        <AccessCodeDisplay 
-          accessCode={accessCode}
-          firstName={profile.first_name || ""}
-          lastName={profile.last_name || ""}
-          birthDate={profile.birth_date || ""}
-          type="directive"
-        />
-      )}
 
       {showAddOptions && userId && (
         <DirectivesAddDocumentSection 
