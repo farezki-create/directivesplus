@@ -2,10 +2,10 @@
 import { useState, useEffect } from "react";
 import { User } from "@supabase/supabase-js";
 import { fetchAccessCode } from "./fetchCode";
-import { generateAccessCode } from "./generateCode";
 
 /**
  * Hook for managing access codes for directives or medical data
+ * Only fetches existing codes without generating new ones
  */
 export const useAccessCode = (user: User | null, type: "directive" | "medical") => {
   // Initialize state unconditionally (important for React)
@@ -32,34 +32,12 @@ export const useAccessCode = (user: User | null, type: "directive" | "medical") 
           console.log(`[useAccessCode] Successfully fetched ${type} code:`, code);
           setAccessCode(code);
         } else {
-          console.log(`[useAccessCode] No ${type} access code found, generating new one`);
-          // If no code found, generate one immediately
-          try {
-            const generatedCode = await generateAccessCode(user, type);
-            if (generatedCode) {
-              console.log(`[useAccessCode] Successfully generated ${type} code:`, generatedCode);
-              setAccessCode(generatedCode);
-            }
-          } catch (genErr) {
-            console.error(`[useAccessCode] Error generating ${type} code:`, genErr);
-          }
+          console.log(`[useAccessCode] No ${type} access code found`);
+          setAccessCode(null); // No generation functionality
         }
       } catch (err) {
         console.error(`[useAccessCode] Error fetching ${type} access code:`, err);
-        
-        // Handle profile missing error
-        if (err && (err as any).code === 'PGRST116') {
-          console.log(`[useAccessCode] Profile error, trying to generate new ${type} code`);
-          try {
-            const newCode = await generateAccessCode(user, type);
-            if (newCode) {
-              console.log(`[useAccessCode] Successfully generated ${type} code after profile error:`, newCode);
-              setAccessCode(newCode);
-            }
-          } catch (genErr) {
-            console.error(`[useAccessCode] Error in emergency code generation for ${type}:`, genErr);
-          }
-        }
+        setAccessCode(null);
       } finally {
         setIsLoading(false);
       }
@@ -72,5 +50,5 @@ export const useAccessCode = (user: User | null, type: "directive" | "medical") 
   return { accessCode, isLoading };
 };
 
-// Re-export other functions to maintain backward compatibility
-export { generateRandomCode, generateAccessCode } from "./generateCode";
+// Export the generateRandomCode function for compatibility but remove actual generation
+export { generateRandomCode } from "./generateCode";

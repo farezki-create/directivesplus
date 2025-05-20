@@ -1,16 +1,18 @@
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { User } from "@supabase/supabase-js";
-import { useAccessCode, generateAccessCode } from "@/hooks/access-codes/useAccessCode";
+import { useAccessCode } from "@/hooks/access-codes/useAccessCode";
 import { toast } from "@/components/ui/use-toast";
 
 export interface AccessCodeState {
   directiveCode: string | null;
   medicalCode: string | null;
-  isGenerating: boolean;
   isCardReady: boolean;
 }
 
+/**
+ * This hook now only fetches existing codes without generation capability
+ */
 export const useAccessCardGeneration = (
   user: User | null, 
   includeDirective: boolean, 
@@ -18,22 +20,21 @@ export const useAccessCardGeneration = (
 ) => {
   const [directiveCode, setDirectiveCode] = useState<string | null>(null);
   const [medicalCode, setMedicalCode] = useState<string | null>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
   const [isCardReady, setIsCardReady] = useState(false);
   
-  // Get initial access codes
+  // Get access codes
   const { accessCode: directiveCodeFromHook, isLoading: directiveLoading } = useAccessCode(user, "directive");
   const { accessCode: medicalCodeFromHook, isLoading: medicalLoading } = useAccessCode(user, "medical");
 
-  // Set initial codes from database
+  // Set codes from database
   useEffect(() => {
-    if (directiveCodeFromHook) {
+    if (directiveCodeFromHook !== null) {
       setDirectiveCode(directiveCodeFromHook);
     }
   }, [directiveCodeFromHook]);
   
   useEffect(() => {
-    if (medicalCodeFromHook) {
+    if (medicalCodeFromHook !== null) {
       setMedicalCode(medicalCodeFromHook);
     }
   }, [medicalCodeFromHook]);
@@ -55,60 +56,18 @@ export const useAccessCardGeneration = (
     
   }, [includeDirective, includeMedical, directiveCode, medicalCode]);
 
-  // Generate card function with useCallback to prevent unnecessary re-renders
-  const handleGenerateCard = useCallback(async () => {
-    if (!user) {
-      toast({
-        title: "Erreur",
-        description: "Vous devez être connecté pour générer la carte",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    // Don't do anything if no options are selected
-    if (!includeDirective && !includeMedical) {
-      toast({
-        title: "Attention",
-        description: "Veuillez sélectionner au moins un type de code à inclure",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    setIsGenerating(true);
-    
-    try {
-      if (includeDirective) {
-        const code = await generateAccessCode(user, "directive");
-        setDirectiveCode(code);
-      }
-      
-      if (includeMedical) {
-        const code = await generateAccessCode(user, "medical");
-        setMedicalCode(code);
-      }
-      
-      toast({
-        title: "Carte générée",
-        description: "La carte d'accès a été générée avec succès",
-      });
-    } catch (error) {
-      console.error("Error generating card:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de générer la carte d'accès",
-        variant: "destructive"
-      });
-    } finally {
-      setIsGenerating(false);
-    }
-  }, [user, includeDirective, includeMedical]);
+  // Empty generation function - notifies that generation is disabled
+  const handleGenerateCard = () => {
+    toast({
+      title: "Fonctionnalité désactivée",
+      description: "La génération automatique de codes d'accès a été désactivée.",
+      variant: "destructive"
+    });
+  };
 
   return {
     directiveCode,
     medicalCode,
-    isGenerating,
     isCardReady,
     handleGenerateCard,
     isLoading: directiveLoading || medicalLoading

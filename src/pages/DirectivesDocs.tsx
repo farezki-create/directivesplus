@@ -48,14 +48,6 @@ const DirectivesDocs = () => {
     }
   }, [accessCode]);
 
-  useEffect(() => {
-    if (user && !accessCode) {
-      console.log("No directive access code found, waiting for generation...");
-    } else if (accessCode) {
-      console.log("Directive access code found:", accessCode);
-    }
-  }, [user, accessCode]);
-
   if (isLoading) {
     return <DirectivesLoadingState />;
   }

@@ -2,12 +2,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import AppNavigation from "@/components/AppNavigation";
-import LoadingState from "@/components/questionnaire/LoadingState";
-import { toast } from "@/components/ui/use-toast";
 import { useAccessCode } from "@/hooks/access-codes/useAccessCode";
 
-// Import our new components
+// Import our components
 import AccessCardHeader from "@/components/access-card/AccessCardHeader";
 import ProfileWarning from "@/components/access-card/ProfileWarning";
 import AccessCodeCards from "@/components/access-card/AccessCodeCards";
@@ -15,6 +12,9 @@ import AccessCodeDisplays from "@/components/access-card/AccessCodeDisplays";
 import AccessCardSection from "@/components/access-card/AccessCardSection";
 import AccessInfoBox from "@/components/access-card/AccessInfoBox";
 import PageFooter from "@/components/access-card/PageFooter";
+import AppNavigation from "@/components/AppNavigation";
+import LoadingState from "@/components/questionnaire/LoadingState";
+import { toast } from "@/components/ui/use-toast";
 
 const AccessCardPage = () => {
   const { user, isAuthenticated, isLoading, profile } = useAuth();

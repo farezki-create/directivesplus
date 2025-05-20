@@ -2,12 +2,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 import AppNavigation from "@/components/AppNavigation";
 import DocumentUploader from "@/components/documents/DocumentUploader";
 import AccessCodeDisplay from "@/components/documents/AccessCodeDisplay";
-import { useAccessCode, generateAccessCode } from "@/hooks/access-codes/useAccessCode";
+import { useAccessCode } from "@/hooks/access-codes/useAccessCode";
 import MedicalHeader from "@/components/medical/MedicalHeader";
 import MedicalDocumentList from "@/components/medical/MedicalDocumentList";
 import MedicalDocumentActions, { useMedicalDocumentActions } from "@/components/medical/MedicalDocumentActions";
@@ -40,32 +39,6 @@ const MedicalData = () => {
       console.log("MedicalData - Setting displayCode:", accessCode);
     }
   }, [accessCode]);
-  
-  useEffect(() => {
-    // If the user doesn't have a medical access code, generate one
-    const ensureMedicalAccessCode = async () => {
-      if (user && !accessCode) {
-        try {
-          console.log("Attempting to generate medical access code");
-          const newCode = await generateAccessCode(user, "medical");
-          if (newCode) {
-            setDisplayCode(newCode);
-            toast({
-              title: "Code d'accès généré",
-              description: "Un nouveau code d'accès pour vos données médicales a été généré.",
-              duration: 5000
-            });
-          }
-        } catch (error) {
-          console.error("Error generating medical access code:", error);
-        }
-      }
-    };
-    
-    if (isAuthenticated && !isLoading) {
-      ensureMedicalAccessCode();
-    }
-  }, [user, accessCode, isAuthenticated, isLoading]);
 
   // Redirect if not authenticated
   if (!isLoading && !isAuthenticated) {

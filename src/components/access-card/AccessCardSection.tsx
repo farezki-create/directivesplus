@@ -1,5 +1,5 @@
 
-import { Profile } from "@/contexts/AuthContextTypes";
+import { UserProfile } from "@/contexts/AuthContextTypes";
 import AccessCard from "@/components/card/AccessCard";
 import LoadingState from "@/components/questionnaire/LoadingState";
 
