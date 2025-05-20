@@ -44,17 +44,23 @@ const AccessCard: React.FC<AccessCardProps> = ({ firstName, lastName, birthDate 
     medicalCode
   );
 
-  // Automatically generate the card when the component loads
+  // Auto-generate the card when component mounts or when options change
   useEffect(() => {
-    if (user && !isCardReady && !isGenerating) {
-      // Small delay to ensure component is fully mounted
-      const timer = setTimeout(() => {
-        handleGenerateCard();
-      }, 500);
+    if (user && !isGenerating && (includeDirective || includeMedical)) {
+      // Only generate if we don't have the required codes yet
+      const needsDirectiveGeneration = includeDirective && !directiveCode;
+      const needsMedicalGeneration = includeMedical && !medicalCode;
       
-      return () => clearTimeout(timer);
+      if (needsDirectiveGeneration || needsMedicalGeneration) {
+        console.log("Auto-generating card...");
+        const timer = setTimeout(() => {
+          handleGenerateCard();
+        }, 800);
+        
+        return () => clearTimeout(timer);
+      }
     }
-  }, [user, isCardReady, isGenerating, handleGenerateCard]);
+  }, [user, includeDirective, includeMedical, directiveCode, medicalCode, isGenerating, handleGenerateCard]);
 
   // Log the current state for debugging
   console.log("Card state:", { 

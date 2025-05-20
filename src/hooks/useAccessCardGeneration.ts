@@ -21,45 +21,41 @@ export const useAccessCardGeneration = (
   const [isGenerating, setIsGenerating] = useState(false);
   const [isCardReady, setIsCardReady] = useState(false);
   
-  // Use the hook to get the initial values
+  // Get initial access codes
   const directiveCodeFromHook = useAccessCode(user, "directive");
   const medicalCodeFromHook = useAccessCode(user, "medical");
 
-  // Update local state when codes are retrieved from the hooks
+  // Set initial codes from database
   useEffect(() => {
     if (directiveCodeFromHook) {
-      console.log("Setting directive code from hook:", directiveCodeFromHook);
       setDirectiveCode(directiveCodeFromHook);
     }
   }, [directiveCodeFromHook]);
   
   useEffect(() => {
     if (medicalCodeFromHook) {
-      console.log("Setting medical code from hook:", medicalCodeFromHook);
       setMedicalCode(medicalCodeFromHook);
     }
   }, [medicalCodeFromHook]);
 
-  // Card ready logic with simplified approach
+  // Update card ready status whenever codes or options change
   useEffect(() => {
-    // Card is ready when we have all the required codes
-    let isReady = true;
+    if (!includeDirective && !includeMedical) {
+      // No codes selected, card is not ready
+      setIsCardReady(false);
+      return;
+    }
+
+    // Check if all required codes are available
+    const directiveReady = !includeDirective || directiveCode !== null;
+    const medicalReady = !includeMedical || medicalCode !== null;
     
-    if (includeDirective && !directiveCode) isReady = false;
-    if (includeMedical && !medicalCode) isReady = false;
+    // Card is ready when all required codes are available
+    setIsCardReady(directiveReady && medicalReady);
     
-    console.log("Card ready status:", { 
-      includeDirective, 
-      directiveCode, 
-      includeMedical, 
-      medicalCode, 
-      isReady 
-    });
-    
-    setIsCardReady(isReady);
   }, [includeDirective, includeMedical, directiveCode, medicalCode]);
 
-  // Function to handle generating/refreshing the codes
+  // Generate card function with useCallback to prevent unnecessary re-renders
   const handleGenerateCard = useCallback(async () => {
     if (!user) {
       toast({
@@ -70,36 +66,33 @@ export const useAccessCardGeneration = (
       return;
     }
     
+    // Don't do anything if no options are selected
+    if (!includeDirective && !includeMedical) {
+      toast({
+        title: "Attention",
+        description: "Veuillez sélectionner au moins un type de code à inclure",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setIsGenerating(true);
     
     try {
-      let newDirectiveCode = directiveCode;
-      let newMedicalCode = medicalCode;
-      
-      // Generate new codes as needed
       if (includeDirective) {
-        newDirectiveCode = await generateAccessCode(user, "directive");
-        console.log("Generated directive code:", newDirectiveCode);
-        setDirectiveCode(newDirectiveCode);
+        const code = await generateAccessCode(user, "directive");
+        setDirectiveCode(code);
       }
       
       if (includeMedical) {
-        newMedicalCode = await generateAccessCode(user, "medical");
-        console.log("Generated medical code:", newMedicalCode);
-        setMedicalCode(newMedicalCode);
+        const code = await generateAccessCode(user, "medical");
+        setMedicalCode(code);
       }
       
       toast({
         title: "Carte générée",
         description: "La carte d'accès a été générée avec succès",
       });
-      
-      // Update card ready status
-      let isReady = true;
-      if (includeDirective && !newDirectiveCode) isReady = false;
-      if (includeMedical && !newMedicalCode) isReady = false;
-      
-      setIsCardReady(isReady);
     } catch (error) {
       console.error("Error generating card:", error);
       toast({
@@ -110,7 +103,7 @@ export const useAccessCardGeneration = (
     } finally {
       setIsGenerating(false);
     }
-  }, [user, includeDirective, includeMedical, directiveCode, medicalCode]);
+  }, [user, includeDirective, includeMedical]);
 
   return {
     directiveCode,
