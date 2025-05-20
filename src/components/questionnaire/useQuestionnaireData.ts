@@ -7,12 +7,12 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
   const [saving, setSaving] = useState(false);
   const initialFetchDone = useRef(false);
   
-  // Use our specialized hooks
+  // Use our specialized hooks - ensure these are always called
   const { 
     questions,
     loading: questionsLoading, 
     error: questionsError 
-  } = useQuestionsData(pageId);
+  } = useQuestionsData(pageId || '');
   
   const {
     responses,
@@ -21,7 +21,7 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
     fetchResponses,
     saveResponses,
     setResponses
-  } = useQuestionnaireResponses(pageId);
+  } = useQuestionnaireResponses(pageId || '');
   
   // Memoize fetchResponses to prevent infinite loops
   const memoizedFetchResponses = useCallback(() => {
@@ -46,15 +46,15 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
     };
   }, [pageId, memoizedFetchResponses]);
   
-  const handleResponseChange = (questionId: string, value: string) => {
+  const handleResponseChange = useCallback((questionId: string, value: string) => {
     console.log(`useQuestionnaireData: Changing response for question ${questionId} to "${value}"`);
     setResponses(prev => ({
       ...prev,
       [questionId]: value
     }));
-  };
+  }, [setResponses]);
   
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     if (!pageId) return;
     
     setSaving(true);
@@ -65,7 +65,7 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
     } finally {
       setSaving(false);
     }
-  };
+  }, [pageId, responses, questions, saveResponses]);
   
   // Derive loading and error from the specialized hooks
   const loading = questionsLoading || responsesLoading;

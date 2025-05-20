@@ -13,7 +13,7 @@ const QuestionsContainer = memo(({ questions, responses, onResponseChange }: Que
   console.log("Rendering QuestionsContainer with", questions.length, "questions");
   console.log("Current responses:", responses);
   
-  if (questions.length === 0) {
+  if (!questions || questions.length === 0) {
     return (
       <div className="text-center p-4">
         <p>Aucune question disponible pour cette section.</p>

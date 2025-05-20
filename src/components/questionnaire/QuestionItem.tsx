@@ -1,5 +1,5 @@
 
-import { memo } from "react";
+import { memo, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
@@ -19,11 +19,17 @@ const QuestionItem = memo(({ question, response, onResponseChange }: QuestionIte
     unsure: 'Je ne sais pas'
   };
   
-  // Add debugging to confirm when a response change is triggered
-  const handleChange = (value: string) => {
+  // Use callback to prevent recreating the function on each render
+  const handleChange = useCallback((value: string) => {
     console.log(`QuestionItem: Changing response for question ${question.id} from "${response}" to "${value}"`);
     onResponseChange(question.id, value);
-  };
+  }, [question.id, onResponseChange, response]);
+  
+  // Handler for direct label clicks
+  const handleLabelClick = useCallback((value: string) => {
+    console.log(`QuestionItem: Label clicked for ${value}`);
+    handleChange(value);
+  }, [handleChange]);
   
   return (
     <Card className="mb-6">
@@ -34,7 +40,7 @@ const QuestionItem = memo(({ question, response, onResponseChange }: QuestionIte
         )}
         
         <RadioGroup 
-          value={response || ''} 
+          value={response} 
           onValueChange={handleChange}
           className="space-y-3 mt-4"
         >
@@ -48,7 +54,7 @@ const QuestionItem = memo(({ question, response, onResponseChange }: QuestionIte
               htmlFor={`${question.id}-yes`} 
               id={`${question.id}-yes-label`}
               className="cursor-pointer w-full py-1"
-              onClick={() => handleChange("yes")}
+              onClick={() => handleLabelClick("yes")}
             >
               {options.yes}
             </Label>
@@ -64,7 +70,7 @@ const QuestionItem = memo(({ question, response, onResponseChange }: QuestionIte
               htmlFor={`${question.id}-no`} 
               id={`${question.id}-no-label`}
               className="cursor-pointer w-full py-1"
-              onClick={() => handleChange("no")}
+              onClick={() => handleLabelClick("no")}
             >
               {options.no}
             </Label>
@@ -80,7 +86,7 @@ const QuestionItem = memo(({ question, response, onResponseChange }: QuestionIte
               htmlFor={`${question.id}-unsure`} 
               id={`${question.id}-unsure-label`}
               className="cursor-pointer w-full py-1"
-              onClick={() => handleChange("unsure")}
+              onClick={() => handleLabelClick("unsure")}
             >
               {options.unsure}
             </Label>
