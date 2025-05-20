@@ -20,17 +20,15 @@ const CardActions: React.FC<CardActionsProps> = ({
 }) => {
   return (
     <div className="mt-6 flex flex-wrap gap-3 justify-center">
-      {onGenerate && (
-        <Button
-          onClick={onGenerate}
-          variant="default"
-          className="flex items-center gap-2"
-          disabled={isLoading}
-        >
-          <RefreshCw size={16} className={isLoading ? "animate-spin" : ""} />
-          {isLoading ? "Génération en cours..." : "Générer la carte"}
-        </Button>
-      )}
+      <Button
+        onClick={onGenerate}
+        variant="default"
+        className="flex items-center gap-2"
+        disabled={isLoading}
+      >
+        <RefreshCw size={16} className={isLoading ? "animate-spin" : ""} />
+        {isLoading ? "Génération en cours..." : "Générer la carte"}
+      </Button>
       
       <Button
         onClick={onDownload}

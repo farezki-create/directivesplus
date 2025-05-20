@@ -1,7 +1,6 @@
-
 import React, { useRef, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useAccessCode } from "@/hooks/useAccessCode";
+import { useAccessCode, generateAccessCode } from "@/hooks/useAccessCode";
 import CardOptions from "./CardOptions";
 import CardDisplay from "./CardDisplay";
 import CardActions from "./CardActions";
@@ -120,7 +119,7 @@ const AccessCard: React.FC<AccessCardProps> = ({ firstName, lastName, birthDate 
     });
   };
 
-  // New function to handle generating/refreshing the codes
+  // Function to handle generating/refreshing the codes
   const handleGenerateCard = async () => {
     if (!user) {
       toast({
@@ -134,8 +133,6 @@ const AccessCard: React.FC<AccessCardProps> = ({ firstName, lastName, birthDate 
     setIsGenerating(true);
     
     try {
-      const { generateAccessCode } = await import('@/hooks/useAccessCode');
-      
       // Generate new codes as needed
       if (includeDirective) {
         const newDirectiveCode = await generateAccessCode(user, "directive");
