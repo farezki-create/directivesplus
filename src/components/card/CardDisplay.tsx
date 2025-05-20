@@ -1,7 +1,7 @@
 
 import React from "react";
 import { FileText, Activity, Link } from "lucide-react";
-import { formatDate } from "./utils/cardOperations";
+import { formatDate } from "./utils/formatters";
 
 interface CardDisplayProps {
   cardRef: React.RefObject<HTMLDivElement>;

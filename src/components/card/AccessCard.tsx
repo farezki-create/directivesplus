@@ -5,7 +5,8 @@ import { useAccessCode } from "@/hooks/useAccessCode";
 import CardOptions from "./CardOptions";
 import CardDisplay from "./CardDisplay";
 import CardActions from "./CardActions";
-import { downloadCard, printCard } from "./utils/cardOperations";
+import { downloadCard } from "./utils/downloadCard";
+import { printCard } from "./utils/printCard";
 import { toast } from "@/hooks/use-toast";
 
 interface AccessCardProps {
