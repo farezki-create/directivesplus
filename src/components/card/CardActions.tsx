@@ -6,7 +6,7 @@ import { Download, Printer, RefreshCw } from "lucide-react";
 interface CardActionsProps {
   onDownload: () => void;
   onPrint: () => void;
-  onGenerate?: () => void;
+  onGenerate: () => void;
   disabled: boolean;
   isLoading?: boolean;
 }

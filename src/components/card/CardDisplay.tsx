@@ -14,6 +14,7 @@ interface CardDisplayProps {
   includeMedical: boolean;
   directiveCode?: string | null;
   medicalCode?: string | null;
+  websiteUrl?: string;
 }
 
 const CardDisplay: React.FC<CardDisplayProps> = ({
@@ -24,7 +25,8 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
   includeDirective,
   includeMedical,
   directiveCode,
-  medicalCode
+  medicalCode,
+  websiteUrl = "directivesplus.fr"
 }) => {
   const formattedBirthDate = formatDate(birthDate);
 
@@ -48,7 +50,7 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
             medicalCode={medicalCode}
           />
           
-          <CardFooter />
+          <CardFooter websiteUrl={websiteUrl} />
         </div>
       </div>
     </div>

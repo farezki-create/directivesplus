@@ -2,13 +2,28 @@
 import React from "react";
 import { Link } from "lucide-react";
 
-const CardFooter: React.FC = () => {
+interface CardFooterProps {
+  websiteUrl?: string;
+}
+
+const CardFooter: React.FC<CardFooterProps> = ({ 
+  websiteUrl = "directivesplus.fr" 
+}) => {
+  const handleWebsiteClick = () => {
+    // Ensure URL has proper protocol
+    const url = websiteUrl.startsWith('http') ? websiteUrl : `https://${websiteUrl}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
   return (
-    <div className="flex items-center gap-2 bg-white/20 rounded p-1.5">
+    <div 
+      className="flex items-center gap-2 bg-white/20 rounded p-1.5 cursor-pointer hover:bg-white/30 transition-colors"
+      onClick={handleWebsiteClick}
+    >
       <Link size={16} className="shrink-0" />
       <div>
         <p className="text-xs font-semibold">Site web:</p>
-        <p className="font-mono font-bold tracking-wider text-sm">directivesplus.fr</p>
+        <p className="font-mono font-bold tracking-wider text-sm">{websiteUrl}</p>
       </div>
     </div>
   );
