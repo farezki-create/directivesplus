@@ -46,6 +46,7 @@ export const VerificationAlert = ({ email }: VerificationAlertProps) => {
       <AlertDescription className="text-amber-800">
         <p>Un email de vérification a été envoyé à <strong>{email}</strong>.</p>
         <p className="mt-2">Veuillez vérifier votre boîte de réception et cliquer sur le lien de confirmation.</p>
+        <p className="mt-2 text-xs">Si vous ne recevez pas l'email dans quelques minutes, vérifiez votre dossier spam ou essayez de vous connecter directement - en développement, la vérification par email peut être désactivée.</p>
         <Button 
           variant="outline" 
           className="mt-2 bg-white border-amber-300 text-amber-800 hover:bg-amber-100 flex items-center gap-2" 

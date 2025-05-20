@@ -69,10 +69,16 @@ export const useRegisterForm = (onVerificationSent: (email: string) => void) => 
           variant: "destructive",
         });
       } else {
+        console.log("Successful signup, session:", data.session ? "Available" : "Not available");
+        console.log("Email confirmation required:", !data.session);
+        
         toast({
           title: "Inscription réussie",
-          description: "Veuillez vérifier votre email pour confirmer votre compte.",
+          description: data.session 
+            ? "Votre compte a été créé avec succès. Vous êtes maintenant connecté."
+            : "Veuillez vérifier votre email pour confirmer votre compte.",
         });
+        
         onVerificationSent(values.email);
       }
     } catch (error: any) {
