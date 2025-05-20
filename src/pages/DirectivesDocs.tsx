@@ -9,6 +9,7 @@ import DirectivesNavigation from "@/components/documents/DirectivesNavigation";
 import DirectivesPageContent from "@/components/documents/DirectivesPageContent";
 import DeleteConfirmationDialog from "@/components/documents/DeleteConfirmationDialog";
 import DocumentPreviewDialog from "@/components/documents/DocumentPreviewDialog";
+import AccessCodeDisplay from "@/components/documents/AccessCodeDisplay";
 
 const DirectivesDocs = () => {
   const { user, profile } = useAuth();

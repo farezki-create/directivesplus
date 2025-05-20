@@ -5,13 +5,26 @@ import { useAuth } from "@/contexts/AuthContext";
 import AppNavigation from "@/components/AppNavigation";
 import DirectivesGrid from "@/components/DirectivesGrid";
 import { toast } from "@/components/ui/use-toast";
+import { useAccessCode, generateAccessCode } from "@/hooks/useAccessCode";
 
 const Rediger = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const accessCode = useAccessCode(user, "directive");
 
   useEffect(() => {
+    // Ensure access code exists
+    const ensureAccessCode = async () => {
+      if (user && !accessCode) {
+        try {
+          await generateAccessCode(user, "directive");
+        } catch (error) {
+          console.error("Error generating directive access code:", error);
+        }
+      }
+    };
+    
     // Only redirect if authentication state is loaded and user is not authenticated
     if (!isLoading && !isAuthenticated) {
       console.log("User not authenticated, redirecting to auth page");
@@ -28,8 +41,10 @@ const Rediger = () => {
         title: "Bienvenue sur la page de rédaction",
         description: "Vous pouvez commencer à rédiger vos directives.",
       });
+      
+      ensureAccessCode();
     }
-  }, [isAuthenticated, isLoading, navigate, user, location.pathname]);
+  }, [isAuthenticated, isLoading, navigate, user, location.pathname, accessCode]);
 
   // Show loading indicator while checking auth
   if (isLoading) {

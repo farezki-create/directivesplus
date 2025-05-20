@@ -121,6 +121,12 @@ export const useAccessCode = (user: User | null, type: "directive" | "medical") 
         if (profileData && profileData.medical_access_code) {
           console.log("Found existing medical access code:", profileData.medical_access_code);
           setAccessCode(profileData.medical_access_code);
+        } else {
+          // Generate a new code if one doesn't exist
+          const newCode = await generateAccessCode(user, "medical");
+          if (newCode) {
+            setAccessCode(newCode);
+          }
         }
       } else {
         // For directive access, use the document_access_codes table
@@ -140,6 +146,12 @@ export const useAccessCode = (user: User | null, type: "directive" | "medical") 
         if (data && data.length > 0 && data[0].access_code) {
           console.log("Found existing directive access code:", data[0].access_code);
           setAccessCode(data[0].access_code);
+        } else {
+          // Generate a new code if one doesn't exist
+          const newCode = await generateAccessCode(user, "directive");
+          if (newCode) {
+            setAccessCode(newCode);
+          }
         }
       }
     } catch (error) {
