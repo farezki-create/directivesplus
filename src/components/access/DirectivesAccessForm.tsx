@@ -6,16 +6,24 @@ import { useAccessDocumentForm } from "@/hooks/useAccessDocumentForm";
 import { Form } from "@/components/ui/form";
 import { useEffect, useState } from "react";
 import LoadingState from "@/components/questionnaire/LoadingState";
+import { useVerifierCodeAcces } from "@/hooks/useVerifierCodeAcces";
+import { toast } from "@/hooks/use-toast";
 
 const DirectivesAccessForm = () => {
   const { 
     form, 
-    loading, 
+    loading: formLoading, 
     accessDirectives
   } = useAccessDocumentForm();
   
   // État local pour stocker le code d'accès
   const [code, setCode] = useState("");
+  
+  // Hook personnalisé pour vérifier le code d'accès
+  const { verifierCode, loading: verificationLoading, result } = useVerifierCodeAcces();
+  
+  // État de chargement combiné
+  const loading = formLoading || verificationLoading;
 
   // Utiliser useEffect pour observer les changements dans le champ de code d'accès
   useEffect(() => {
@@ -37,10 +45,48 @@ const DirectivesAccessForm = () => {
       console.log("Erreurs du formulaire:", form.formState.errors);
     }
   }, [form.formState.errors]); // Watch for changes in the errors object
+  
+  // Observer les résultats de la vérification du code
+  useEffect(() => {
+    if (result) {
+      if (result.success) {
+        toast({
+          title: "Accès autorisé",
+          description: "Le code d'accès est valide. Chargement du dossier...",
+        });
+      } else {
+        toast({
+          title: "Accès refusé",
+          description: result.error || "Code d'accès invalide",
+          variant: "destructive"
+        });
+      }
+    }
+  }, [result]);
 
-  const handleAccessDirectives = () => {
+  const handleAccessDirectives = async () => {
     console.log("Requesting access to directives with code:", code);
-    accessDirectives();
+    
+    // Vérifier si le formulaire est valide
+    const isValid = await form.trigger();
+    if (!isValid) {
+      return;
+    }
+    
+    try {
+      // Vérifier le code d'accès via la fonction Edge
+      const verificationResult = await verifierCode(code);
+      
+      // Si la vérification est réussie, continuer avec l'accès aux directives
+      if (verificationResult.success) {
+        // Attendre un moment pour que l'utilisateur voie le toast de succès
+        setTimeout(() => {
+          accessDirectives();
+        }, 1000);
+      }
+    } catch (error) {
+      console.error("Erreur lors de la vérification du code:", error);
+    }
   };
 
   return (

@@ -1,2 +1,5 @@
 
 project_id = "kytqqjnecezkxyhmmjrz"
+
+[functions.verifierCodeAcces]
+verify_jwt = false
