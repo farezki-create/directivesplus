@@ -1,10 +1,9 @@
-
 import React, { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import CardOptions from "./CardOptions";
 import CardDisplay from "./CardDisplay";
 import { useCardOperations } from "@/hooks/useCardOperations";
-import { useAccessCode } from "@/hooks/useAccessCode";
+import { useAccessCode } from "@/hooks/access-codes/useAccessCode";
 
 interface AccessCardProps {
   firstName: string;

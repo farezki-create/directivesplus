@@ -1,5 +1,5 @@
 
-import { useAccessCode } from "@/hooks/useAccessCode";
+import { useAccessCode } from "@/hooks/access-codes/useAccessCode";
 import { useDirectivesDocuments } from "@/hooks/useDirectivesDocuments";
 import { useAuth } from "@/contexts/AuthContext";
 

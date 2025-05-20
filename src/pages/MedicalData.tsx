@@ -7,7 +7,7 @@ import { toast } from "@/components/ui/use-toast";
 import AppNavigation from "@/components/AppNavigation";
 import DocumentUploader from "@/components/documents/DocumentUploader";
 import AccessCodeDisplay from "@/components/documents/AccessCodeDisplay";
-import { useAccessCode, generateAccessCode } from "@/hooks/useAccessCode";
+import { useAccessCode, generateAccessCode } from "@/hooks/access-codes/useAccessCode";
 import MedicalHeader from "@/components/medical/MedicalHeader";
 import MedicalDocumentList from "@/components/medical/MedicalDocumentList";
 import MedicalDocumentActions, { useMedicalDocumentActions } from "@/components/medical/MedicalDocumentActions";

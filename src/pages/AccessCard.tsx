@@ -8,7 +8,7 @@ import LoadingState from "@/components/questionnaire/LoadingState";
 import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { useAccessCode } from "@/hooks/useAccessCode";
+import { useAccessCode } from "@/hooks/access-codes/useAccessCode";
 import { Card, CardContent } from "@/components/ui/card";
 import AccessCodeDisplay from "@/components/documents/AccessCodeDisplay";
 
