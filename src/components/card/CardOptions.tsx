@@ -23,7 +23,11 @@ const CardOptions: React.FC<CardOptionsProps> = ({
           <Checkbox 
             id="directive"
             checked={includeDirective} 
-            onCheckedChange={(checked) => setIncludeDirective(checked === true)}
+            onCheckedChange={(checked) => {
+              // Convert the checked value to a boolean
+              const isChecked = checked === true;
+              setIncludeDirective(isChecked);
+            }}
           />
           <label 
             htmlFor="directive"
@@ -37,7 +41,11 @@ const CardOptions: React.FC<CardOptionsProps> = ({
           <Checkbox 
             id="medical"
             checked={includeMedical} 
-            onCheckedChange={(checked) => setIncludeMedical(checked === true)}
+            onCheckedChange={(checked) => {
+              // Convert the checked value to a boolean
+              const isChecked = checked === true;
+              setIncludeMedical(isChecked);
+            }}
           />
           <label 
             htmlFor="medical"

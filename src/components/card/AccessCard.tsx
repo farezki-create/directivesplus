@@ -17,8 +17,8 @@ interface AccessCardProps {
 const AccessCard: React.FC<AccessCardProps> = ({ firstName, lastName, birthDate }) => {
   const { user } = useAuth();
   
-  const [includeDirective, setIncludeDirective] = useState(true);
-  const [includeMedical, setIncludeMedical] = useState(true);
+  const [includeDirective, setIncludeDirective] = useState<boolean>(true);
+  const [includeMedical, setIncludeMedical] = useState<boolean>(true);
 
   // Use our custom hooks
   const {

@@ -19,6 +19,8 @@ const CardFooter: React.FC<CardFooterProps> = ({
     <div 
       className="flex items-center gap-2 bg-white/20 rounded p-2 cursor-pointer hover:bg-white/30 transition-colors"
       onClick={handleWebsiteClick}
+      role="button"
+      aria-label={`Visiter le site web: ${websiteUrl}`}
     >
       <Link size={20} className="shrink-0 text-white" />
       <div>
