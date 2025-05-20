@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -56,7 +55,7 @@ const AccessCardPage = () => {
 
   // Show global loading state when initial auth is loading
   if (isLoading || loading) {
-    return <LoadingState loading={true} />;
+    return <LoadingState loading={true} message="Chargement en cours..." />;
   }
 
   // Set default values for profile data if it's missing

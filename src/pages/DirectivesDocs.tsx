@@ -2,6 +2,7 @@
 import { useAccessCode } from "@/hooks/access-codes/useAccessCode";
 import { useDirectivesDocuments } from "@/hooks/useDirectivesDocuments";
 import { useAuth } from "@/contexts/AuthContext";
+import { useEffect, useState } from "react";
 
 import AppNavigation from "@/components/AppNavigation";
 import DirectivesLoadingState from "@/components/documents/DirectivesLoadingState";
@@ -10,7 +11,6 @@ import DirectivesPageContent from "@/components/documents/DirectivesPageContent"
 import DeleteConfirmationDialog from "@/components/documents/DeleteConfirmationDialog";
 import DocumentPreviewDialog from "@/components/documents/DocumentPreviewDialog";
 import AccessCodeDisplay from "@/components/documents/AccessCodeDisplay";
-import { useEffect, useState } from "react";
 
 const DirectivesDocs = () => {
   const { user, profile } = useAuth();
