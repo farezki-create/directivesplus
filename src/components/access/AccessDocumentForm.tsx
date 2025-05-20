@@ -37,11 +37,11 @@ const AccessDocumentForm = () => {
         </CardHeader>
 
         <Form {...form}>
-          <form onSubmit={(e) => {
-            // Prevent default form submission behavior
-            e.preventDefault();
-            console.log("Form submit prevented");
-          }}>
+          {/* 
+            Important: Use a div instead of a form element to prevent any form submission.
+            The button handlers will manage the validation and submission.
+          */}
+          <div>
             <CardContent className="space-y-4">
               <FormField 
                 id="lastName"
@@ -83,7 +83,7 @@ const AccessDocumentForm = () => {
                 onAccessMedicalData={accessMedicalData}
               />
             </CardFooter>
-          </form>
+          </div>
         </Form>
       </Card>
     </div>
