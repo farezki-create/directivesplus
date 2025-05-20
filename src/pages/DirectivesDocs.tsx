@@ -15,6 +15,9 @@ const DirectivesDocs = () => {
   const { user, profile } = useAuth();
   const accessCode = useAccessCode(user, "directive");
   
+  console.log("DirectivesDocs - Access code:", accessCode);
+  console.log("DirectivesDocs - Profile:", profile);
+  
   const {
     isLoading,
     isAuthenticated,
@@ -49,6 +52,19 @@ const DirectivesDocs = () => {
       
       <main className="flex-grow container mx-auto px-4 py-8">
         <DirectivesNavigation />
+        
+        {/* Display access code directly if not showing in DirectivesPageContent */}
+        {accessCode && profile && (
+          <div className="mt-4 mb-8">
+            <AccessCodeDisplay 
+              accessCode={accessCode}
+              firstName={profile.first_name || ""}
+              lastName={profile.last_name || ""}
+              birthDate={profile.birth_date || ""}
+              type="directive"
+            />
+          </div>
+        )}
         
         <DirectivesPageContent
           documents={documents}

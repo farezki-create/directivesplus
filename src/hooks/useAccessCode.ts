@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 
 export const generateRandomCode = (length: number = 8) => {
   const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -104,6 +104,8 @@ export const useAccessCode = (user: User | null, type: "directive" | "medical") 
     if (!user) return;
     
     try {
+      console.log(`Fetching ${type} access code for user:`, user.id);
+      
       if (type === "medical") {
         // For medical access, check the user's profile
         const { data: profileData, error: profileError } = await supabase
@@ -122,6 +124,7 @@ export const useAccessCode = (user: User | null, type: "directive" | "medical") 
           console.log("Found existing medical access code:", profileData.medical_access_code);
           setAccessCode(profileData.medical_access_code);
         } else {
+          console.log("No medical access code found, generating new one...");
           // Generate a new code if one doesn't exist
           const newCode = await generateAccessCode(user, "medical");
           if (newCode) {
@@ -147,6 +150,7 @@ export const useAccessCode = (user: User | null, type: "directive" | "medical") 
           console.log("Found existing directive access code:", data[0].access_code);
           setAccessCode(data[0].access_code);
         } else {
+          console.log("No directive access code found, generating new one...");
           // Generate a new code if one doesn't exist
           const newCode = await generateAccessCode(user, "directive");
           if (newCode) {

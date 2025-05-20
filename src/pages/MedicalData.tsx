@@ -70,6 +70,9 @@ const MedicalData = () => {
     );
   }
 
+  console.log("Access code:", accessCode);
+  console.log("Profile:", profile);
+
   return (
     <div className="min-h-screen flex flex-col">
       <AppNavigation />
@@ -90,13 +93,15 @@ const MedicalData = () => {
           <MedicalHeader onAddDocument={() => setShowAddOptions(!showAddOptions)} />
 
           {accessCode && profile && (
-            <AccessCodeDisplay 
-              accessCode={accessCode}
-              firstName={profile.first_name || ""}
-              lastName={profile.last_name || ""}
-              birthDate={profile.birth_date || ""}
-              type="medical"
-            />
+            <div className="mt-4 mb-8">
+              <AccessCodeDisplay 
+                accessCode={accessCode}
+                firstName={profile.first_name || ""}
+                lastName={profile.last_name || ""}
+                birthDate={profile.birth_date || ""}
+                type="medical"
+              />
+            </div>
           )}
 
           {showAddOptions && user && (
