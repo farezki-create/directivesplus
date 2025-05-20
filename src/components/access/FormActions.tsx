@@ -23,26 +23,45 @@ const FormActions = ({ loading, onAccessDirectives, onAccessMedicalData }: FormA
   };
 
   return (
-    <div className="flex flex-col gap-3 w-full">
-      <Button 
-        className="w-full flex items-center gap-2" 
-        onClick={handleAccessDirectives}
-        disabled={loading}
-        type="button"
-      >
-        <FileText size={18} />
-        {loading ? "Vérification en cours..." : "Accéder aux directives anticipées"}
-      </Button>
+    <div className="flex flex-col gap-6 w-full">
+      {/* First button for directives */}
+      <div className="w-full">
+        <Button 
+          className="w-full flex items-center gap-2 bg-directiveplus-700 hover:bg-directiveplus-800" 
+          onClick={handleAccessDirectives}
+          disabled={loading}
+          type="button"
+          variant="default"
+        >
+          <FileText size={18} />
+          {loading ? "Vérification en cours..." : "Accéder aux directives anticipées"}
+        </Button>
+      </div>
       
-      <Button 
-        className="w-full flex items-center gap-2 bg-blue-600 hover:bg-blue-700" 
-        onClick={handleAccessMedicalData}
-        disabled={loading}
-        type="button"
-      >
-        <FileSearch size={18} />
-        {loading ? "Vérification en cours..." : "Accéder aux données médicales"}
-      </Button>
+      {/* Visual separator */}
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t border-gray-300" />
+        </div>
+        <div className="relative flex justify-center">
+          <span className="bg-white px-2 text-sm text-gray-500">ou</span>
+        </div>
+      </div>
+      
+      {/* Second button for medical data */}
+      <div className="w-full">
+        <Button 
+          className="w-full flex items-center gap-2" 
+          onClick={handleAccessMedicalData}
+          disabled={loading}
+          type="button"
+          variant="default"
+          style={{ backgroundColor: '#3b82f6', color: 'white' }}
+        >
+          <FileSearch size={18} />
+          {loading ? "Vérification en cours..." : "Accéder aux données médicales"}
+        </Button>
+      </div>
     </div>
   );
 };
