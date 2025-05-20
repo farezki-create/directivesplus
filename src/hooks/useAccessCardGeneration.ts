@@ -42,12 +42,15 @@ export const useAccessCardGeneration = (
 
   // Determine if the card is ready based on selected options and available codes
   useEffect(() => {
-    // Explicitly calculate a boolean value for card readiness
-    const isReady = Boolean(
-      (!includeDirective || directiveCode) && 
-      (!includeMedical || medicalCode)
-    );
+    // Calculate if card is ready as a boolean using simple logic expressions
+    // If directive is included, we need a code; if medical is included, we need a code
+    const isReady = 
+      (!includeDirective || (directiveCode !== null && directiveCode !== undefined)) && 
+      (!includeMedical || (medicalCode !== null && medicalCode !== undefined));
+    
     console.log("Card ready check:", { includeDirective, directiveCode, includeMedical, medicalCode, isReady });
+    
+    // Set the state with the boolean value directly
     setIsCardReady(isReady);
   }, [includeDirective, includeMedical, directiveCode, medicalCode]);
 
@@ -86,13 +89,13 @@ export const useAccessCardGeneration = (
         description: "La carte d'accès a été générée avec succès",
       });
       
-      // Update card ready state after generation - ensure we get a boolean result
-      const newCardReady = Boolean(
-        (!includeDirective || newDirectiveCode !== null) && 
-        (!includeMedical || newMedicalCode !== null)
-      );
-        
-      setIsCardReady(newCardReady);
+      // Calculate card readiness using simple boolean expressions
+      const isNewCardReady = 
+        (!includeDirective || (newDirectiveCode !== null && newDirectiveCode !== undefined)) && 
+        (!includeMedical || (newMedicalCode !== null && newMedicalCode !== undefined));
+      
+      // Set the state with the boolean value directly
+      setIsCardReady(isNewCardReady);
     } catch (error) {
       console.error("Error generating card:", error);
       toast({
