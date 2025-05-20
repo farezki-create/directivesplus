@@ -13,18 +13,30 @@ interface AccessCardProps {
   firstName: string;
   lastName: string;
   birthDate: string | null;
+  directiveCode?: string | null;  // Add these props to accept codes directly
+  medicalCode?: string | null;    // from the parent component
 }
 
-const AccessCard: React.FC<AccessCardProps> = ({ firstName, lastName, birthDate }) => {
+const AccessCard: React.FC<AccessCardProps> = ({ 
+  firstName, 
+  lastName, 
+  birthDate,
+  directiveCode: externalDirectiveCode,  // Accept codes from props
+  medicalCode: externalMedicalCode 
+}) => {
   const { user } = useAuth();
   
   // Simplified state - no automatic generation
   const [includeDirective, setIncludeDirective] = React.useState<boolean>(true);
   const [includeMedical, setIncludeMedical] = React.useState<boolean>(true);
   
-  // Use the hooks to get access codes directly
-  const directiveCode = useAccessCode(user, "directive");
-  const medicalCode = useAccessCode(user, "medical");
+  // Use the hooks to get access codes directly OR use the props passed from parent
+  const hooksDirectiveCode = useAccessCode(user, "directive");
+  const hooksMedicalCode = useAccessCode(user, "medical");
+  
+  // Use external codes (from props) if provided, otherwise use hook codes
+  const directiveCode = externalDirectiveCode || hooksDirectiveCode;
+  const medicalCode = externalMedicalCode || hooksMedicalCode;
   
   // Check if codes are ready
   const codesReady = !!(directiveCode && medicalCode);

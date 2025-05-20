@@ -152,6 +152,8 @@ const AccessCardPage = () => {
                 firstName={profile.first_name || ""} 
                 lastName={profile.last_name || ""} 
                 birthDate={profile.birth_date}
+                directiveCode={directiveCode}  // Pass the codes directly
+                medicalCode={medicalCode}      // to the AccessCard component
               />
             )}
           </div>
