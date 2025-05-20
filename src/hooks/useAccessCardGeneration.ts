@@ -40,17 +40,23 @@ export const useAccessCardGeneration = (
     }
   }, [medicalCodeFromHook]);
 
-  // Determine if the card is ready based on selected options and available codes
+  // Completely rewritten card ready logic to avoid type issues
   useEffect(() => {
-    // Calculate if card is ready - explicitly cast as boolean to avoid type issues
-    const isReady = Boolean(
-      (!includeDirective || directiveCode !== null) && 
-      (!includeMedical || medicalCode !== null)
-    );
+    let ready = true;
     
-    console.log("Card ready check:", { includeDirective, directiveCode, includeMedical, medicalCode, isReady });
+    // If directive is included but no code exists, card is not ready
+    if (includeDirective && directiveCode === null) {
+      ready = false;
+    }
     
-    setIsCardReady(isReady);
+    // If medical is included but no code exists, card is not ready
+    if (includeMedical && medicalCode === null) {
+      ready = false;
+    }
+    
+    console.log("Card ready check:", { includeDirective, directiveCode, includeMedical, medicalCode, ready });
+    
+    setIsCardReady(ready);
   }, [includeDirective, includeMedical, directiveCode, medicalCode]);
 
   // Function to handle generating/refreshing the codes
@@ -67,8 +73,9 @@ export const useAccessCardGeneration = (
     setIsGenerating(true);
     
     try {
-      let newDirectiveCode = null;
-      let newMedicalCode = null;
+      // Initialize the codes to their current values
+      let newDirectiveCode = directiveCode;
+      let newMedicalCode = medicalCode;
       
       // Generate new codes as needed
       if (includeDirective) {
@@ -88,13 +95,18 @@ export const useAccessCardGeneration = (
         description: "La carte d'accès a été générée avec succès",
       });
       
-      // Update card ready state after generation - ensure we get a proper boolean
-      const isNewCardReady = Boolean(
-        (!includeDirective || newDirectiveCode !== null) && 
-        (!includeMedical || newMedicalCode !== null)
-      );
+      // Completely rewritten card ready logic for after generation
+      let ready = true;
       
-      setIsCardReady(isNewCardReady);
+      if (includeDirective && newDirectiveCode === null) {
+        ready = false;
+      }
+      
+      if (includeMedical && newMedicalCode === null) {
+        ready = false;
+      }
+      
+      setIsCardReady(ready);
     } catch (error) {
       console.error("Error generating card:", error);
       toast({
