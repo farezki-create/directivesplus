@@ -19,17 +19,11 @@ const QuestionItem = memo(({ question, response, onResponseChange }: QuestionIte
     unsure: 'Je ne sais pas'
   };
   
-  // Use callback to prevent recreating the function on each render
+  // Handler for both direct radio change and label clicks
   const handleChange = useCallback((value: string) => {
-    console.log(`QuestionItem: Changing response for question ${question.id} from "${response}" to "${value}"`);
+    console.log(`QuestionItem: Setting response for question ${question.id} to "${value}"`);
     onResponseChange(question.id, value);
-  }, [question.id, onResponseChange, response]);
-  
-  // Handler for direct label clicks
-  const handleLabelClick = useCallback((value: string) => {
-    console.log(`QuestionItem: Label clicked for ${value}`);
-    handleChange(value);
-  }, [handleChange]);
+  }, [question.id, onResponseChange]);
   
   return (
     <Card className="mb-6">
@@ -44,49 +38,52 @@ const QuestionItem = memo(({ question, response, onResponseChange }: QuestionIte
           onValueChange={handleChange}
           className="space-y-3 mt-4"
         >
-          <div className="flex items-center space-x-2">
+          {/* Yes option */}
+          <div className="flex items-center space-x-2" onClick={() => handleChange("yes")}>
             <RadioGroupItem 
               value="yes" 
-              id={`${question.id}-yes`} 
+              id={`${question.id}-yes`}
+              checked={response === "yes"}
               aria-labelledby={`${question.id}-yes-label`}
             />
             <Label 
-              htmlFor={`${question.id}-yes`} 
+              htmlFor={`${question.id}-yes`}
               id={`${question.id}-yes-label`}
               className="cursor-pointer w-full py-1"
-              onClick={() => handleLabelClick("yes")}
             >
               {options.yes}
             </Label>
           </div>
           
-          <div className="flex items-center space-x-2">
+          {/* No option */}
+          <div className="flex items-center space-x-2" onClick={() => handleChange("no")}>
             <RadioGroupItem 
               value="no" 
-              id={`${question.id}-no`} 
+              id={`${question.id}-no`}
+              checked={response === "no"}
               aria-labelledby={`${question.id}-no-label`}
             />
             <Label 
-              htmlFor={`${question.id}-no`} 
+              htmlFor={`${question.id}-no`}
               id={`${question.id}-no-label`}
               className="cursor-pointer w-full py-1"
-              onClick={() => handleLabelClick("no")}
             >
               {options.no}
             </Label>
           </div>
           
-          <div className="flex items-center space-x-2">
+          {/* Unsure option */}
+          <div className="flex items-center space-x-2" onClick={() => handleChange("unsure")}>
             <RadioGroupItem 
               value="unsure" 
-              id={`${question.id}-unsure`} 
+              id={`${question.id}-unsure`}
+              checked={response === "unsure"}
               aria-labelledby={`${question.id}-unsure-label`}
             />
             <Label 
-              htmlFor={`${question.id}-unsure`} 
+              htmlFor={`${question.id}-unsure`}
               id={`${question.id}-unsure-label`}
               className="cursor-pointer w-full py-1"
-              onClick={() => handleLabelClick("unsure")}
             >
               {options.unsure}
             </Label>

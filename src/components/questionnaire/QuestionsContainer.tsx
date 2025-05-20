@@ -10,10 +10,13 @@ interface QuestionsContainerProps {
 }
 
 const QuestionsContainer = memo(({ questions, responses, onResponseChange }: QuestionsContainerProps) => {
-  console.log("Rendering QuestionsContainer with", questions.length, "questions");
+  console.log("Rendering QuestionsContainer with", questions?.length || 0, "questions");
   console.log("Current responses:", responses);
   
-  if (!questions || questions.length === 0) {
+  // Ensure questions is an array before trying to access it
+  const hasQuestions = Array.isArray(questions) && questions.length > 0;
+  
+  if (!hasQuestions) {
     return (
       <div className="text-center p-4">
         <p>Aucune question disponible pour cette section.</p>

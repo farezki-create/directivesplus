@@ -1,6 +1,6 @@
 
 import { useLocation, useNavigate } from "react-router-dom";
-import { getSectionTitle, getSectionTable } from "./questionnaire/utils";
+import { getSectionTitle } from "./questionnaire/utils";
 import { useQuestionnaireData } from "./questionnaire/useQuestionnaireData";
 import LoadingState from "./questionnaire/LoadingState";
 import ErrorState from "./questionnaire/ErrorState";
@@ -30,27 +30,20 @@ const QuestionnaireSection = () => {
   
   // Add debug logs
   useEffect(() => {
-    if (pageId && !hasInitialized) {
+    if (pageId && !hasInitialized && !loading) {
       console.log("QuestionnaireSection - pageId:", pageId);
-      console.log("QuestionnaireSection - table:", getSectionTable(pageId));
       console.log("QuestionnaireSection - questions:", questions);
-      console.log("QuestionnaireSection - loading:", loading);
-      console.log("QuestionnaireSection - error:", error);
-      
-      if (!loading) {
-        setHasInitialized(true);
-      }
+      console.log("QuestionnaireSection - responses:", responses);
+      setHasInitialized(true);
     }
-  }, [pageId, questions, loading, error, hasInitialized]);
+  }, [pageId, questions, loading, responses, hasInitialized]);
   
   // Prevent showing loading state after the component has initialized
   if (loading && !hasInitialized) {
-    console.log("QuestionnaireSection - showing initial loading state");
     return <LoadingState loading={loading} />;
   }
   
   if (error) {
-    console.log("QuestionnaireSection - showing error state:", error);
     toast({
       title: "Erreur",
       description: error,
@@ -59,9 +52,10 @@ const QuestionnaireSection = () => {
     return <ErrorState error={error} />;
   }
   
-  // Check if we have questions after loading
-  if (!questions || questions.length === 0) {
-    console.log("QuestionnaireSection - no questions available");
+  // Check if we have questions
+  const hasQuestions = Array.isArray(questions) && questions.length > 0;
+
+  if (!hasQuestions) {
     return (
       <div className="space-y-8 max-w-3xl mx-auto">
         <div className="mb-6">
@@ -106,8 +100,8 @@ const QuestionnaireSection = () => {
       </h1>
       
       <QuestionsContainer 
-        questions={questions}
-        responses={responses}
+        questions={questions || []}
+        responses={responses || {}}
         onResponseChange={handleResponseChange}
       />
       
