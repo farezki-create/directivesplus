@@ -104,7 +104,8 @@ serve(async (req: Request) => {
     // Journalisation du succès
     await logAccess(dossier.id, true);
 
-    // Retourne les données du dossier en cas de succès
+    // Retourne les données du dossier en cas de succès (données chiffrées)
+    // Le déchiffrement se fera côté client
     return new Response(
       JSON.stringify({
         success: true,

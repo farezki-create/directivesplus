@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDossierStore } from "@/store/dossierStore";
 import Header from "@/components/Header";
@@ -7,12 +7,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import BackButton from "@/components/ui/back-button";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, LogOut } from "lucide-react";
+import { AlertCircle, LogOut, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { decryptData } from "@/utils/encryption";
 
 const AffichageDossier = () => {
   const { dossierActif, clearDossierActif } = useDossierStore();
   const navigate = useNavigate();
+  const [decryptedContent, setDecryptedContent] = useState<any>(null);
+  const [decryptionError, setDecryptionError] = useState<boolean>(false);
   
   useEffect(() => {
     // Rediriger vers la page d'accès si aucun dossier n'est actif
@@ -23,6 +26,28 @@ const AffichageDossier = () => {
         variant: "destructive"
       });
       navigate('/acces-document');
+    } else {
+      // Tenter de déchiffrer le contenu
+      try {
+        // Vérifier si le contenu est chiffré (commence par "U2F")
+        if (typeof dossierActif.contenu === 'string' && dossierActif.contenu.startsWith('U2F')) {
+          const decrypted = decryptData(dossierActif.contenu);
+          setDecryptedContent(decrypted);
+          console.log("Données déchiffrées avec succès");
+        } else {
+          // Si les données ne sont pas chiffrées (rétrocompatibilité)
+          setDecryptedContent(dossierActif.contenu);
+          console.log("Données non chiffrées utilisées directement");
+        }
+      } catch (error) {
+        console.error("Erreur de déchiffrement:", error);
+        setDecryptionError(true);
+        toast({
+          title: "Erreur de déchiffrement",
+          description: "Impossible de déchiffrer les données du dossier",
+          variant: "destructive"
+        });
+      }
     }
   }, [dossierActif, navigate]);
 
@@ -42,6 +67,18 @@ const AffichageDossier = () => {
   // Fonction pour afficher les données structurées
   const renderDonneesMedicales = (contenu: any) => {
     if (!contenu) return <p>Aucune donnée disponible.</p>;
+    
+    if (decryptionError) {
+      return (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Erreur de déchiffrement</AlertTitle>
+          <AlertDescription>
+            Impossible de déchiffrer les données du dossier. Le format ou la clé de déchiffrement pourrait être invalide.
+          </AlertDescription>
+        </Alert>
+      );
+    }
     
     // Si c'est un objet JSON
     if (typeof contenu === 'object') {
@@ -90,18 +127,22 @@ const AffichageDossier = () => {
           <Alert className="mb-6">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Information</AlertTitle>
-            <AlertDescription>
-              Vous consultez le dossier médical avec l'identifiant {dossierActif.id}
+            <AlertDescription className="flex items-center">
+              <span>Vous consultez le dossier médical avec l'identifiant {dossierActif.id}</span>
+              <ShieldCheck className="h-4 w-4 ml-2 text-green-600" title="Données chiffrées"/>
             </AlertDescription>
           </Alert>
           
           <Card className="shadow-lg">
             <CardHeader>
-              <CardTitle>Informations du Dossier</CardTitle>
+              <CardTitle className="flex items-center justify-between">
+                <span>Informations du Dossier</span>
+                <ShieldCheck size={18} className="text-green-600" title="Données chiffrées"/>
+              </CardTitle>
             </CardHeader>
             
             <CardContent>
-              {renderDonneesMedicales(dossierActif.contenu)}
+              {renderDonneesMedicales(decryptedContent)}
             </CardContent>
           </Card>
         </div>
