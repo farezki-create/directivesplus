@@ -10,8 +10,8 @@ interface CardDisplayProps {
   birthDate: string | null;
   includeDirective: boolean;
   includeMedical: boolean;
-  directiveCode?: string;
-  medicalCode?: string;
+  directiveCode?: string | null;
+  medicalCode?: string | null;
 }
 
 const CardDisplay: React.FC<CardDisplayProps> = ({

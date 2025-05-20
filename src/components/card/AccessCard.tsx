@@ -6,6 +6,7 @@ import CardOptions from "./CardOptions";
 import CardDisplay from "./CardDisplay";
 import CardActions from "./CardActions";
 import { downloadCard, printCard } from "./utils/cardOperations";
+import { toast } from "@/hooks/use-toast";
 
 interface AccessCardProps {
   firstName: string;
@@ -23,7 +24,32 @@ const AccessCard: React.FC<AccessCardProps> = ({ firstName, lastName, birthDate 
   const [includeMedical, setIncludeMedical] = useState(true);
   
   const handleDownload = async () => {
-    if (!user) return;
+    if (!user) {
+      toast({
+        title: "Erreur",
+        description: "Vous devez être connecté pour télécharger la carte",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (!directiveCode && includeDirective) {
+      toast({
+        title: "Erreur",
+        description: "Le code d'accès aux directives n'a pas pu être généré",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (!medicalCode && includeMedical) {
+      toast({
+        title: "Erreur",
+        description: "Le code d'accès médical n'a pas pu être généré",
+        variant: "destructive"
+      });
+      return;
+    }
     
     await downloadCard({
       cardRef,
@@ -38,7 +64,32 @@ const AccessCard: React.FC<AccessCardProps> = ({ firstName, lastName, birthDate 
   };
   
   const handlePrint = async () => {
-    if (!user) return;
+    if (!user) {
+      toast({
+        title: "Erreur",
+        description: "Vous devez être connecté pour imprimer la carte",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (!directiveCode && includeDirective) {
+      toast({
+        title: "Erreur",
+        description: "Le code d'accès aux directives n'a pas pu être généré",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (!medicalCode && includeMedical) {
+      toast({
+        title: "Erreur",
+        description: "Le code d'accès médical n'a pas pu être généré",
+        variant: "destructive"
+      });
+      return;
+    }
     
     await printCard({
       cardRef,
@@ -51,6 +102,9 @@ const AccessCard: React.FC<AccessCardProps> = ({ firstName, lastName, birthDate 
       medicalCode
     });
   };
+
+  // Vérifier si les codes sont disponibles
+  const isCardReady = (includeDirective && !directiveCode) || (includeMedical && !medicalCode) ? false : true;
 
   return (
     <div className="space-y-8">
@@ -76,8 +130,14 @@ const AccessCard: React.FC<AccessCardProps> = ({ firstName, lastName, birthDate 
         <CardActions 
           onDownload={handleDownload}
           onPrint={handlePrint}
-          disabled={!includeDirective && !includeMedical}
+          disabled={!includeDirective && !includeMedical || !isCardReady}
         />
+        
+        {!isCardReady && (
+          <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md text-yellow-800 text-sm">
+            <p>Génération des codes d'accès en cours... Veuillez patienter ou rafraîchir la page.</p>
+          </div>
+        )}
       </div>
     </div>
   );

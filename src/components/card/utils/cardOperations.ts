@@ -1,4 +1,3 @@
-
 import html2canvas from "html2canvas";
 import { toast } from "@/hooks/use-toast";
 import { logAccessEvent, notifyAccessLogged } from "@/utils/accessLoggingUtils";
@@ -10,8 +9,8 @@ interface CardDownloadOptions {
   lastName: string;
   includeDirective: boolean;
   includeMedical: boolean;
-  directiveCode?: string;
-  medicalCode?: string;
+  directiveCode?: string | null;
+  medicalCode?: string | null;
 }
 
 export const downloadCard = async ({
