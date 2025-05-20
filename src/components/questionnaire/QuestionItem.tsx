@@ -37,32 +37,49 @@ const QuestionItem = memo(({ question, response, onResponseChange }: QuestionIte
           onValueChange={handleRadioChange}
           className="space-y-2 mt-4"
         >
-          <div className="flex items-center space-x-2">
+          {/* Option Oui */}
+          <div className="flex items-center space-x-2 relative">
+            <div 
+              className="absolute inset-0 cursor-pointer" 
+              onClick={() => handleRadioChange("yes")}
+              aria-hidden="true"
+            />
             <RadioGroupItem value="yes" id={`${question.id}-yes`} />
             <Label 
               htmlFor={`${question.id}-yes`}
               className="text-sm cursor-pointer"
-              onClick={() => handleRadioChange("yes")}
             >
               {options.yes}
             </Label>
           </div>
-          <div className="flex items-center space-x-2">
+          
+          {/* Option Non */}
+          <div className="flex items-center space-x-2 relative">
+            <div 
+              className="absolute inset-0 cursor-pointer" 
+              onClick={() => handleRadioChange("no")}
+              aria-hidden="true"
+            />
             <RadioGroupItem value="no" id={`${question.id}-no`} />
             <Label 
               htmlFor={`${question.id}-no`}
               className="text-sm cursor-pointer"
-              onClick={() => handleRadioChange("no")}
             >
               {options.no}
             </Label>
           </div>
-          <div className="flex items-center space-x-2">
+          
+          {/* Option Je ne sais pas */}
+          <div className="flex items-center space-x-2 relative">
+            <div 
+              className="absolute inset-0 cursor-pointer" 
+              onClick={() => handleRadioChange("unsure")}
+              aria-hidden="true"
+            />
             <RadioGroupItem value="unsure" id={`${question.id}-unsure`} />
             <Label 
               htmlFor={`${question.id}-unsure`}
               className="text-sm cursor-pointer"
-              onClick={() => handleRadioChange("unsure")}
             >
               {options.unsure}
             </Label>
