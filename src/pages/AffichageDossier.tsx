@@ -10,6 +10,7 @@ import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, LogOut, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { decryptData } from "@/utils/encryption";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const AffichageDossier = () => {
   const { dossierActif, clearDossierActif } = useDossierStore();
@@ -129,7 +130,14 @@ const AffichageDossier = () => {
             <AlertTitle>Information</AlertTitle>
             <AlertDescription className="flex items-center">
               <span>Vous consultez le dossier médical avec l'identifiant {dossierActif.id}</span>
-              <ShieldCheck className="h-4 w-4 ml-2 text-green-600" title="Données chiffrées"/>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <ShieldCheck className="h-4 w-4 ml-2 text-green-600" />
+                  </TooltipTrigger>
+                  <TooltipContent>Données chiffrées</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </AlertDescription>
           </Alert>
           
@@ -137,7 +145,14 @@ const AffichageDossier = () => {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span>Informations du Dossier</span>
-                <ShieldCheck size={18} className="text-green-600" title="Données chiffrées"/>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <ShieldCheck size={18} className="text-green-600" />
+                    </TooltipTrigger>
+                    <TooltipContent>Données chiffrées</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </CardTitle>
             </CardHeader>
             
