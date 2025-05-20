@@ -1,6 +1,11 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { UserProfile } from "@/contexts/AuthContextTypes";
+
+interface UserProfile {
+  first_name?: string | null;
+  last_name?: string | null;
+  birth_date?: string | null;
+}
 
 interface ProfileWarningProps {
   profile: UserProfile | null;
