@@ -83,10 +83,11 @@ export const useAccessCardGeneration = (
       });
       
       // Update card ready state after generation
-      setIsCardReady(
+      const newCardReady = 
         (!includeDirective || newDirectiveCode !== null) && 
-        (!includeMedical || newMedicalCode !== null)
-      );
+        (!includeMedical || newMedicalCode !== null);
+        
+      setIsCardReady(newCardReady);
     } catch (error) {
       console.error("Error generating card:", error);
       toast({
