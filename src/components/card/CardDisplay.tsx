@@ -1,6 +1,8 @@
 
 import React from "react";
-import { FileText, Activity, Link } from "lucide-react";
+import CardHeader from "./display/CardHeader";
+import CardCodeSection from "./display/CardCodeSection";
+import CardFooter from "./display/CardFooter";
 import { formatDate } from "./utils/formatters";
 
 interface CardDisplayProps {
@@ -24,59 +26,29 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
   directiveCode,
   medicalCode
 }) => {
+  const formattedBirthDate = formatDate(birthDate);
+
   return (
     <div 
       ref={cardRef} 
       className="w-[340px] h-[240px] rounded-xl bg-gradient-to-r from-directiveplus-600 to-directiveplus-700 text-white shadow-lg overflow-hidden"
     >
       <div className="p-4 flex flex-col justify-between h-full">
-        <div>
-          <div className="flex justify-between items-start">
-            <div>
-              <h3 className="font-bold text-lg">DirectivesPlus</h3>
-              <p className="text-xs opacity-75">Carte d'accès personnelle</p>
-            </div>
-            <img 
-              src="/lovable-uploads/0a786ed1-a905-4b29-be3a-ca3b24d3efae.png" 
-              alt="Logo" 
-              className="w-10 h-10"
-            />
-          </div>
-          
-          <div className="mt-4 mb-2">
-            <p className="font-semibold uppercase">{lastName} {firstName}</p>
-            <p className="text-xs opacity-80">Né(e) le: {formatDate(birthDate)}</p>
-          </div>
-        </div>
+        <CardHeader 
+          firstName={firstName}
+          lastName={lastName}
+          birthDate={formattedBirthDate}
+        />
         
-        <div className="space-y-1.5 mb-1">
-          {includeDirective && directiveCode && (
-            <div className="flex items-center gap-2 bg-white/20 rounded p-1.5">
-              <FileText size={16} className="shrink-0" />
-              <div>
-                <p className="text-xs font-semibold">Directives anticipées:</p>
-                <p className="font-mono font-bold tracking-wider text-sm">{directiveCode}</p>
-              </div>
-            </div>
-          )}
+        <div>
+          <CardCodeSection
+            includeDirective={includeDirective}
+            includeMedical={includeMedical}
+            directiveCode={directiveCode}
+            medicalCode={medicalCode}
+          />
           
-          {includeMedical && medicalCode && (
-            <div className="flex items-center gap-2 bg-white/20 rounded p-1.5">
-              <Activity size={16} className="shrink-0" />
-              <div>
-                <p className="text-xs font-semibold">Données médicales:</p>
-                <p className="font-mono font-bold tracking-wider text-sm">{medicalCode}</p>
-              </div>
-            </div>
-          )}
-          
-          <div className="flex items-center gap-2 bg-white/20 rounded p-1.5">
-            <Link size={16} className="shrink-0" />
-            <div>
-              <p className="text-xs font-semibold">Site web:</p>
-              <p className="font-mono font-bold tracking-wider text-sm">directivesplus.fr</p>
-            </div>
-          </div>
+          <CardFooter />
         </div>
       </div>
     </div>
