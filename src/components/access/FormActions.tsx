@@ -1,104 +1,62 @@
 
 import { Button } from "@/components/ui/button";
-import { FileText, FileSearch, Loader2 } from "lucide-react";
+import { FileText, FileSearch, Loader2, LucideIcon } from "lucide-react";
 import { useState } from "react";
 
 type FormActionsProps = {
   loading: boolean;
-  onAccessDirectives: () => void;
-  onAccessMedicalData: () => void;
+  onAction: () => void;
+  actionLabel: string;
+  actionIcon: "file-text" | "file-search";
+  buttonColor?: string;
 };
 
-const FormActions = ({ loading, onAccessDirectives, onAccessMedicalData }: FormActionsProps) => {
-  // Track which button was clicked to prevent multiple actions
-  const [activeButton, setActiveButton] = useState<string | null>(null);
+const FormActions = ({ 
+  loading, 
+  onAction, 
+  actionLabel, 
+  actionIcon,
+  buttonColor = "bg-directiveplus-700 hover:bg-directiveplus-800" 
+}: FormActionsProps) => {
+  const [isActive, setIsActive] = useState<boolean>(false);
   
-  // Create completely isolated handlers with debounce mechanism
-  const handleAccessDirectives = (e: React.MouseEvent) => {
+  // Get the icon component based on the provided icon name
+  const getIcon = () => {
+    if (actionIcon === "file-text") return <FileText size={18} />;
+    if (actionIcon === "file-search") return <FileSearch size={18} />;
+    return <FileText size={18} />; // Default fallback
+  };
+  
+  const handleAction = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
-    // Prevent action if already clicked or other button is active
-    if (activeButton || loading) return;
+    // Prevent action if already clicked or loading
+    if (isActive || loading) return;
     
     // Set this button as active
-    setActiveButton("directives");
-    onAccessDirectives();
+    setIsActive(true);
+    onAction();
     
     // Reset active state after a delay
-    setTimeout(() => setActiveButton(null), 1000);
+    setTimeout(() => setIsActive(false), 1000);
   };
-  
-  const handleAccessMedicalData = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    // Prevent action if already clicked or other button is active
-    if (activeButton || loading) return;
-    
-    // Set this button as active
-    setActiveButton("medical");
-    onAccessMedicalData();
-    
-    // Reset active state after a delay
-    setTimeout(() => setActiveButton(null), 1000);
-  };
-
-  // Determine button states
-  const directivesDisabled = loading || activeButton === "medical";
-  const medicalDisabled = loading || activeButton === "directives";
 
   return (
-    <div className="flex flex-col gap-6 w-full">
-      {/* First button for directives */}
-      <div className="w-full">
-        <Button 
-          className="w-full flex items-center gap-2 bg-directiveplus-700 hover:bg-directiveplus-800" 
-          onClick={handleAccessDirectives}
-          disabled={directivesDisabled}
-          type="button"
-          variant="default"
-          data-testid="access-directives-button"
-        >
-          {loading && activeButton === "directives" ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <FileText size={18} />
-          )}
-          {loading && activeButton === "directives" ? "Vérification en cours..." : "Accéder aux directives anticipées"}
-        </Button>
-      </div>
-      
-      {/* Visual separator */}
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-gray-300" />
-        </div>
-        <div className="relative flex justify-center">
-          <span className="bg-white px-2 text-sm text-gray-500">ou</span>
-        </div>
-      </div>
-      
-      {/* Second button for medical data */}
-      <div className="w-full">
-        <Button 
-          className="w-full flex items-center gap-2" 
-          onClick={handleAccessMedicalData}
-          disabled={medicalDisabled}
-          type="button"
-          variant="default"
-          style={{ backgroundColor: '#3b82f6', color: 'white' }}
-          data-testid="access-medical-button"
-        >
-          {loading && activeButton === "medical" ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <FileSearch size={18} />
-          )}
-          {loading && activeButton === "medical" ? "Vérification en cours..." : "Accéder aux données médicales"}
-        </Button>
-      </div>
-    </div>
+    <Button 
+      className={`w-full flex items-center gap-2 ${buttonColor}`} 
+      onClick={handleAction}
+      disabled={loading || isActive}
+      type="button"
+      variant="default"
+    >
+      {loading ? (
+        <Loader2 className="h-4 w-4 animate-spin" />
+      ) : (
+        getIcon()
+      )}
+      {loading ? "Vérification en cours..." : actionLabel}
+    </Button>
   );
 };
 

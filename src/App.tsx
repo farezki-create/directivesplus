@@ -15,6 +15,8 @@ import PlaceholderPage from "@/pages/PlaceholderPage";
 import DirectivesDocs from "@/pages/DirectivesDocs";
 import MedicalData from "@/pages/MedicalData";
 import AccessDocuments from "@/pages/AccessDocuments";
+import DirectivesAccess from "@/pages/DirectivesAccess";
+import MedicalAccess from "@/pages/MedicalAccess";
 import AvisGeneral from "@/pages/AvisGeneral";
 import MaintienVie from "@/pages/MaintienVie";
 import MaladieAvancee from "@/pages/MaladieAvancee";
@@ -46,6 +48,8 @@ const router = createBrowserRouter([
   { path: "/mes-directives", element: <DirectivesDocs /> },
   { path: "/donnees-medicales", element: <MedicalData /> },
   { path: "/acces-document", element: <AccessDocuments /> },
+  { path: "/acces-directives", element: <DirectivesAccess /> },
+  { path: "/acces-medical", element: <MedicalAccess /> },
   { path: "/admin", element: <Admin /> },
   { path: "/politique-confidentialite", element: <PrivacyPolicy /> },
   { path: "/analyse-impact-protection-donnees", element: <DataProtectionImpact /> },
