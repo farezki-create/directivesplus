@@ -14,6 +14,6 @@ interface DossierState {
 
 export const useDossierStore = create<DossierState>((set) => ({
   dossierActif: null,
-  setDossierActif: (dossier) => set({ dossierActif }),
+  setDossierActif: (dossier) => set({ dossierActif: dossier }),
   clearDossierActif: () => set({ dossierActif: null }),
 }));
