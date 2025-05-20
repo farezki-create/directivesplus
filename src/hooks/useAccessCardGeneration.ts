@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { User } from "@supabase/supabase-js";
 import { useAccessCode, generateAccessCode } from "@/hooks/useAccessCode";
 import { toast } from "@/hooks/use-toast";
@@ -40,27 +40,27 @@ export const useAccessCardGeneration = (
     }
   }, [medicalCodeFromHook]);
 
-  // Completely rewritten card ready logic to avoid type issues
+  // Card ready logic with simplified approach
   useEffect(() => {
-    let ready = true;
+    // Card is ready when we have all the required codes
+    let isReady = true;
     
-    // If directive is included but no code exists, card is not ready
-    if (includeDirective && directiveCode === null) {
-      ready = false;
-    }
+    if (includeDirective && !directiveCode) isReady = false;
+    if (includeMedical && !medicalCode) isReady = false;
     
-    // If medical is included but no code exists, card is not ready
-    if (includeMedical && medicalCode === null) {
-      ready = false;
-    }
+    console.log("Card ready status:", { 
+      includeDirective, 
+      directiveCode, 
+      includeMedical, 
+      medicalCode, 
+      isReady 
+    });
     
-    console.log("Card ready check:", { includeDirective, directiveCode, includeMedical, medicalCode, ready });
-    
-    setIsCardReady(ready);
+    setIsCardReady(isReady);
   }, [includeDirective, includeMedical, directiveCode, medicalCode]);
 
   // Function to handle generating/refreshing the codes
-  const handleGenerateCard = async () => {
+  const handleGenerateCard = useCallback(async () => {
     if (!user) {
       toast({
         title: "Erreur",
@@ -73,7 +73,6 @@ export const useAccessCardGeneration = (
     setIsGenerating(true);
     
     try {
-      // Initialize the codes to their current values
       let newDirectiveCode = directiveCode;
       let newMedicalCode = medicalCode;
       
@@ -95,18 +94,12 @@ export const useAccessCardGeneration = (
         description: "La carte d'accès a été générée avec succès",
       });
       
-      // Completely rewritten card ready logic for after generation
-      let ready = true;
+      // Update card ready status
+      let isReady = true;
+      if (includeDirective && !newDirectiveCode) isReady = false;
+      if (includeMedical && !newMedicalCode) isReady = false;
       
-      if (includeDirective && newDirectiveCode === null) {
-        ready = false;
-      }
-      
-      if (includeMedical && newMedicalCode === null) {
-        ready = false;
-      }
-      
-      setIsCardReady(ready);
+      setIsCardReady(isReady);
     } catch (error) {
       console.error("Error generating card:", error);
       toast({
@@ -117,7 +110,7 @@ export const useAccessCardGeneration = (
     } finally {
       setIsGenerating(false);
     }
-  };
+  }, [user, includeDirective, includeMedical, directiveCode, medicalCode]);
 
   return {
     directiveCode,
