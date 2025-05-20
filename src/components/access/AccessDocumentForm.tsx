@@ -22,6 +22,17 @@ const AccessDocumentForm = () => {
     }
   }, [form.formState.errors]); // Watch for changes in the errors object
 
+  // Create completely isolated handlers at this level too
+  const handleAccessDirectives = () => {
+    console.log("Requesting access to directives");
+    accessDirectives();
+  };
+  
+  const handleAccessMedicalData = () => {
+    console.log("Requesting access to medical data");
+    accessMedicalData();
+  };
+
   return (
     <div className="max-w-md mx-auto">
       <h1 className="text-3xl font-bold mb-6 text-center text-directiveplus-700">
@@ -79,8 +90,8 @@ const AccessDocumentForm = () => {
             <CardFooter>
               <FormActions 
                 loading={loading}
-                onAccessDirectives={accessDirectives}
-                onAccessMedicalData={accessMedicalData}
+                onAccessDirectives={handleAccessDirectives}
+                onAccessMedicalData={handleAccessMedicalData}
               />
             </CardFooter>
           </div>

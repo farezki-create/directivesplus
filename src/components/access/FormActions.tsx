@@ -1,6 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { FileText, FileSearch } from "lucide-react";
+import { useState } from "react";
 
 type FormActionsProps = {
   loading: boolean;
@@ -9,18 +10,43 @@ type FormActionsProps = {
 };
 
 const FormActions = ({ loading, onAccessDirectives, onAccessMedicalData }: FormActionsProps) => {
-  // Create completely isolated handlers with separate functions
+  // Track which button was clicked to prevent multiple actions
+  const [activeButton, setActiveButton] = useState<string | null>(null);
+  
+  // Create completely isolated handlers with debounce mechanism
   const handleAccessDirectives = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    
+    // Prevent action if already clicked or other button is active
+    if (activeButton || loading) return;
+    
+    // Set this button as active
+    setActiveButton("directives");
     onAccessDirectives();
+    
+    // Reset active state after a delay
+    setTimeout(() => setActiveButton(null), 1000);
   };
   
   const handleAccessMedicalData = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    
+    // Prevent action if already clicked or other button is active
+    if (activeButton || loading) return;
+    
+    // Set this button as active
+    setActiveButton("medical");
     onAccessMedicalData();
+    
+    // Reset active state after a delay
+    setTimeout(() => setActiveButton(null), 1000);
   };
+
+  // Determine button states
+  const directivesDisabled = loading || activeButton === "medical";
+  const medicalDisabled = loading || activeButton === "directives";
 
   return (
     <div className="flex flex-col gap-6 w-full">
@@ -29,9 +55,10 @@ const FormActions = ({ loading, onAccessDirectives, onAccessMedicalData }: FormA
         <Button 
           className="w-full flex items-center gap-2 bg-directiveplus-700 hover:bg-directiveplus-800" 
           onClick={handleAccessDirectives}
-          disabled={loading}
+          disabled={directivesDisabled}
           type="button"
           variant="default"
+          data-testid="access-directives-button"
         >
           <FileText size={18} />
           {loading ? "Vérification en cours..." : "Accéder aux directives anticipées"}
@@ -53,10 +80,11 @@ const FormActions = ({ loading, onAccessDirectives, onAccessMedicalData }: FormA
         <Button 
           className="w-full flex items-center gap-2" 
           onClick={handleAccessMedicalData}
-          disabled={loading}
+          disabled={medicalDisabled}
           type="button"
           variant="default"
           style={{ backgroundColor: '#3b82f6', color: 'white' }}
+          data-testid="access-medical-button"
         >
           <FileSearch size={18} />
           {loading ? "Vérification en cours..." : "Accéder aux données médicales"}
