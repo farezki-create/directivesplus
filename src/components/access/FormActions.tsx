@@ -13,7 +13,11 @@ const FormActions = ({ loading, onAccessDirectives, onAccessMedicalData }: FormA
     <div className="flex flex-col gap-3 w-full">
       <Button 
         className="w-full flex items-center gap-2" 
-        onClick={onAccessDirectives}
+        onClick={(e) => {
+          e.preventDefault(); // Prevent form submission
+          e.stopPropagation(); // Stop event propagation
+          onAccessDirectives();
+        }}
         disabled={loading}
         type="button"
       >
@@ -23,7 +27,11 @@ const FormActions = ({ loading, onAccessDirectives, onAccessMedicalData }: FormA
       
       <Button 
         className="w-full flex items-center gap-2 bg-blue-600 hover:bg-blue-700" 
-        onClick={onAccessMedicalData}
+        onClick={(e) => {
+          e.preventDefault(); // Prevent form submission
+          e.stopPropagation(); // Stop event propagation
+          onAccessMedicalData();
+        }}
         disabled={loading}
         type="button"
       >
