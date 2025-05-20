@@ -1,6 +1,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 
+// Define local interface for profile data
 interface UserProfile {
   first_name?: string | null;
   last_name?: string | null;

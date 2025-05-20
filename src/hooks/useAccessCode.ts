@@ -4,6 +4,8 @@
 import { useAccessCode, generateRandomCode } from "./access-codes/useAccessCode";
 import { generateAccessCode } from "./access-codes/generateCode";
 
+// Re-export everything for backwards compatibility
 export { useAccessCode, generateRandomCode, generateAccessCode };
 
+// Default export for easy importing
 export default useAccessCode;
