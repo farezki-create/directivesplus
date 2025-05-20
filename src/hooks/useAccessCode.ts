@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { toast } from "@/hooks/use-toast";
 
-export const generateRandomCode = (length: number) => {
+export const generateRandomCode = (length: number = 8) => {
   const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   let result = '';
   for (let i = 0; i < length; i++) {
@@ -17,13 +17,12 @@ export const generateAccessCode = async (user: User | null, type: "directive" | 
   if (!user) return null;
   
   try {
+    // Pour les deux types, générer un nouveau code d'accès
+    const newAccessCode = generateRandomCode(8);
+    console.log(`Génération d'un nouveau code d'accès pour ${type}:`, newAccessCode);
+    
     if (type === "medical") {
-      // Pour l'accès médical, vérifier le profil de l'utilisateur
-      // Générer un nouveau code d'accès
-      const newAccessCode = generateRandomCode(8);
-      console.log("Génération d'un nouveau code d'accès médical:", newAccessCode);
-      
-      // Mettre à jour le profil avec le nouveau code d'accès
+      // Pour l'accès médical, mettre à jour le profil de l'utilisateur
       const { error: updateError } = await supabase
         .from('profiles')
         .update({ medical_access_code: newAccessCode })
@@ -37,11 +36,7 @@ export const generateAccessCode = async (user: User | null, type: "directive" | 
       console.log("Code d'accès médical sauvegardé avec succès");
       return newAccessCode;
     } else {
-      // Pour l'accès aux directives
-      // Générer un nouveau code d'accès
-      const newAccessCode = generateRandomCode(8);
-      console.log("Génération d'un nouveau code d'accès pour les directives:", newAccessCode);
-      
+      // Pour l'accès aux directives, utiliser la table document_access_codes
       // Vérifier s'il existe un code pour cet utilisateur
       const { data, error } = await supabase
         .from('document_access_codes')
@@ -51,6 +46,7 @@ export const generateAccessCode = async (user: User | null, type: "directive" | 
         .limit(1);
       
       if (error) {
+        console.error("Erreur lors de la vérification du code existant:", error);
         throw error;
       }
       
@@ -62,6 +58,7 @@ export const generateAccessCode = async (user: User | null, type: "directive" | 
           .eq('id', data[0].id);
         
         if (updateError) {
+          console.error("Erreur lors de la mise à jour du code existant:", updateError);
           throw updateError;
         }
       } else {
@@ -117,35 +114,33 @@ export const useAccessCode = (user: User | null, type: "directive" | "medical") 
           
         if (profileError) {
           console.error("Erreur lors de la récupération du profil:", profileError);
-          throw profileError;
+          return;
         }
         
         // Si l'utilisateur a un code d'accès médical, l'utiliser
         if (profileData && profileData.medical_access_code) {
           console.log("Code d'accès médical existant trouvé:", profileData.medical_access_code);
           setAccessCode(profileData.medical_access_code);
-          return;
         }
       } else {
         // Pour l'accès aux directives, utiliser la table document_access_codes
         // Vérifier s'il existe un code pour cet utilisateur
         const { data, error } = await supabase
           .from('document_access_codes')
-          .select('*')
+          .select('access_code')
           .eq('user_id', user.id)
-          .is('document_id', null) // Ne récupérer que les codes d'accès généraux, pas les codes spécifiques à un document
+          .is('document_id', null) // Ne récupérer que les codes d'accès généraux
           .limit(1);
           
         if (error) {
           console.error("Erreur lors de la récupération du code d'accès:", error);
-          throw error;
+          return;
         }
           
         // Si nous avons un code d'accès, l'utiliser
         if (data && data.length > 0 && data[0].access_code) {
           console.log("Code d'accès aux directives existant trouvé:", data[0].access_code);
           setAccessCode(data[0].access_code);
-          return;
         }
       }
     } catch (error) {

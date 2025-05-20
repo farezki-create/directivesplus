@@ -25,19 +25,20 @@ export const useCardOperations = (
       return;
     }
     
-    if (!directiveCode && includeDirective) {
-      toast({
-        title: "Erreur",
-        description: "Le code d'accès aux directives n'a pas pu être généré",
-        variant: "destructive"
-      });
-      return;
+    const missingCodes = [];
+    
+    if (includeDirective && !directiveCode) {
+      missingCodes.push("directives anticipées");
     }
     
-    if (!medicalCode && includeMedical) {
+    if (includeMedical && !medicalCode) {
+      missingCodes.push("données médicales");
+    }
+    
+    if (missingCodes.length > 0) {
       toast({
-        title: "Erreur",
-        description: "Le code d'accès médical n'a pas pu être généré",
+        title: "Codes manquants",
+        description: `Les codes d'accès pour ${missingCodes.join(" et ")} n'ont pas été générés. Veuillez d'abord générer la carte.`,
         variant: "destructive"
       });
       return;
@@ -65,19 +66,20 @@ export const useCardOperations = (
       return;
     }
     
-    if (!directiveCode && includeDirective) {
-      toast({
-        title: "Erreur",
-        description: "Le code d'accès aux directives n'a pas pu être généré",
-        variant: "destructive"
-      });
-      return;
+    const missingCodes = [];
+    
+    if (includeDirective && !directiveCode) {
+      missingCodes.push("directives anticipées");
     }
     
-    if (!medicalCode && includeMedical) {
+    if (includeMedical && !medicalCode) {
+      missingCodes.push("données médicales");
+    }
+    
+    if (missingCodes.length > 0) {
       toast({
-        title: "Erreur",
-        description: "Le code d'accès médical n'a pas pu être généré",
+        title: "Codes manquants",
+        description: `Les codes d'accès pour ${missingCodes.join(" et ")} n'ont pas été générés. Veuillez d'abord générer la carte.`,
         variant: "destructive"
       });
       return;

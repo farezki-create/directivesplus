@@ -43,6 +43,8 @@ const AccessCard: React.FC<AccessCardProps> = ({ firstName, lastName, birthDate 
     medicalCode
   );
 
+  console.log("État actuel des codes:", { directiveCode, medicalCode, isCardReady, isGenerating });
+
   return (
     <div className="space-y-8">
       <CardOptions 
