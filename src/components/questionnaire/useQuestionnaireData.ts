@@ -28,33 +28,35 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
   // Stabilize handleResponseChange function with useCallback
   const handleResponseChange = useCallback((questionId: string, value: string) => {
     console.log(`useQuestionnaireData: Changing response for question ${questionId} to "${value}"`);
-    setResponses(prevResponses => ({
-      ...prevResponses,
-      [questionId]: value
-    }));
+    // Use functional update to ensure we're working with the latest state
+    setResponses(prevResponses => {
+      const newResponses = { ...prevResponses, [questionId]: value };
+      console.log("New responses state:", newResponses);
+      return newResponses;
+    });
   }, [setResponses]);
   
   // Stabilize memoizedFetchResponses with useCallback
   const memoizedFetchResponses = useCallback(() => {
-    if (!initialFetchDone.current && safePageId) {
+    if (safePageId && (!initialFetchDone.current || Object.keys(responses).length === 0)) {
       console.log("Fetching responses for pageId:", safePageId);
       initialFetchDone.current = true;
       return fetchResponses();
     }
-    return Promise.resolve({});
-  }, [safePageId, fetchResponses]);
+    return Promise.resolve(responses);
+  }, [safePageId, fetchResponses, responses]);
   
   // Use useEffect with proper dependencies
   useEffect(() => {
     // Reset the ref when page changes
-    initialFetchDone.current = false;
-    
     if (safePageId) {
+      console.log("useQuestionnaireData effect running for pageId:", safePageId);
       memoizedFetchResponses();
     }
     
     // Cleanup function
     return () => {
+      console.log("Cleaning up useQuestionnaireData for pageId:", safePageId);
       initialFetchDone.current = false;
     };
   }, [safePageId, memoizedFetchResponses]);
@@ -68,6 +70,8 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
     
     try {
       await saveResponses(responses, questions);
+    } catch (error) {
+      console.error("Error saving responses:", error);
     } finally {
       setSaving(false);
     }
