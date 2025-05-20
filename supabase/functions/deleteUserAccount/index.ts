@@ -75,30 +75,53 @@ serve(async (req: Request) => {
     }
 
     const userId = userResponse.user.id;
-
-    // Suppression des données associées à l'utilisateur
-    // Note: La suppression en cascade devrait fonctionner si les contraintes de clés étrangères
-    // sont correctement configurées dans la base de données
     
-    // 1. Suppression des documents PDF
+    // Suppression des données dans l'ordre pour respecter les contraintes de clé étrangère
+    
+    // 1. Supprimer les réponses au questionnaire (qui ont une contrainte FK)
+    await supabase.from("questionnaire_preferences_responses").delete().eq("user_id", userId);
+    await supabase.from("questionnaire_responses").delete().eq("user_id", userId);
+    
+    // 2. Supprimer les synthèses de questionnaire
+    await supabase.from("questionnaire_synthesis").delete().eq("user_id", userId);
+    
+    // 3. Supprimer les signatures
+    await supabase.from("user_signatures").delete().eq("user_id", userId);
+    
+    // 4. Supprimer les personnes de confiance
+    await supabase.from("trusted_persons").delete().eq("user_id", userId);
+
+    // 5. Suppression des documents PDF
     await supabase.from("pdf_documents").delete().eq("user_id", userId);
     
-    // 2. Suppression des documents médicaux
+    // 6. Suppression des documents médicaux
     await supabase.from("medical_documents").delete().eq("user_id", userId);
     
-    // 3. Suppression des dossiers médicaux (si liés à l'utilisateur)
-    // Cette étape dépend de votre schéma de base de données
+    // 7. Suppression des données médicales
+    await supabase.from("medical_data").delete().eq("user_id", userId);
     
-    // 4. Suppression des directives
+    // 8. Supprimer les logs d'accès associés à l'utilisateur
+    await supabase.from("document_access_logs").delete().eq("user_id", userId);
+    
+    // 9. Supprimer les codes d'accès aux documents
+    await supabase.from("document_access_codes").delete().eq("user_id", userId);
+    
+    // 10. Suppression des directives
     await supabase.from("directives").delete().eq("user_id", userId);
     
-    // 5. Suppression des informations de profil
+    // 11. Suppression des directives avancées
+    await supabase.from("advance_directives").delete().eq("user_id", userId);
+    
+    // 12. Suppression des commandes
+    await supabase.from("orders").delete().eq("user_id", userId);
+    
+    // 13. Suppression des avis
+    await supabase.from("reviews").delete().eq("user_id", userId);
+    
+    // 14. Suppression des informations de profil
     await supabase.from("profiles").delete().eq("id", userId);
     
-    // 6. Supprimer d'autres données si nécessaire
-    // Ajouter d'autres suppressions spécifiques au projet ici
-    
-    // 7. Enfin, supprimer le compte utilisateur lui-même
+    // 15. Enfin, supprimer le compte utilisateur lui-même
     const { error: deleteError } = await adminAuthClient.deleteUser(userId);
 
     if (deleteError) {

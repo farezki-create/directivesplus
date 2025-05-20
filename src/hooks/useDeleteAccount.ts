@@ -32,9 +32,14 @@ export const useDeleteAccount = () => {
         }
       );
       
+      if (!response.ok) {
+        const result = await response.json();
+        throw new Error(result.error || "Erreur lors de la suppression du compte");
+      }
+      
       const result = await response.json();
       
-      if (!response.ok || !result.success) {
+      if (!result.success) {
         throw new Error(result.error || "Erreur lors de la suppression du compte");
       }
       
