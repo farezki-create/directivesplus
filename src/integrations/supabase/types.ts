@@ -211,6 +211,59 @@ export type Database = {
         }
         Relationships: []
       }
+      dossiers_medicaux: {
+        Row: {
+          code_acces: string
+          contenu_dossier: Json
+          cree_le: string | null
+          id: string
+        }
+        Insert: {
+          code_acces: string
+          contenu_dossier: Json
+          cree_le?: string | null
+          id?: string
+        }
+        Update: {
+          code_acces?: string
+          contenu_dossier?: Json
+          cree_le?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
+      logs_acces: {
+        Row: {
+          details: string | null
+          dossier_id: string | null
+          id: string
+          succes: boolean
+          timestamp_acces: string | null
+        }
+        Insert: {
+          details?: string | null
+          dossier_id?: string | null
+          id?: string
+          succes: boolean
+          timestamp_acces?: string | null
+        }
+        Update: {
+          details?: string | null
+          dossier_id?: string | null
+          id?: string
+          succes?: boolean
+          timestamp_acces?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "logs_acces_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers_medicaux"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       medical_data: {
         Row: {
           access_code: string

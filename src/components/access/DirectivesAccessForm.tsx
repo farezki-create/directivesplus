@@ -4,7 +4,7 @@ import FormField from "./FormField";
 import FormActions from "./FormActions";
 import { useAccessDocumentForm } from "@/hooks/useAccessDocumentForm";
 import { Form } from "@/components/ui/form";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import LoadingState from "@/components/questionnaire/LoadingState";
 
 const DirectivesAccessForm = () => {
@@ -13,6 +13,22 @@ const DirectivesAccessForm = () => {
     loading, 
     accessDirectives
   } = useAccessDocumentForm();
+  
+  // État local pour stocker le code d'accès
+  const [code, setCode] = useState("");
+
+  // Utiliser useEffect pour observer les changements dans le champ de code d'accès
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === "accessCode") {
+        setCode(value.accessCode || "");
+        console.log("Code d'accès mis à jour:", value.accessCode);
+      }
+    });
+
+    // Nettoyer l'abonnement lors du démontage du composant
+    return () => subscription.unsubscribe();
+  }, [form]);
 
   // Using useEffect to watch for form errors
   useEffect(() => {
@@ -23,7 +39,7 @@ const DirectivesAccessForm = () => {
   }, [form.formState.errors]); // Watch for changes in the errors object
 
   const handleAccessDirectives = () => {
-    console.log("Requesting access to directives");
+    console.log("Requesting access to directives with code:", code);
     accessDirectives();
   };
 
@@ -77,8 +93,8 @@ const DirectivesAccessForm = () => {
               />
             </CardContent>
 
-            {/* Loading spinner */}
-            <LoadingState loading={loading} />
+            {/* Indicateur de chargement */}
+            <LoadingState loading={loading} message="Vérification en cours..." />
 
             <CardFooter>
               <div className="w-full">
