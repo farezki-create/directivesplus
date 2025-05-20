@@ -4,6 +4,7 @@ import AccessDocumentForm from "@/components/access/AccessDocumentForm";
 import Header from "@/components/Header";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import BackButton from "@/components/ui/back-button";
 
 const AccessDocuments = () => {
   const { isAuthenticated } = useAuth();
@@ -24,6 +25,7 @@ const AccessDocuments = () => {
       <Header />
       
       <main className="flex-grow container mx-auto px-4 py-8 mt-6">
+        <BackButton />
         <AccessDocumentForm />
       </main>
       

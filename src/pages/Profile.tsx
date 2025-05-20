@@ -7,6 +7,7 @@ import ProfileSkeleton from "@/components/profile/ProfileSkeleton";
 import { useProfileData } from "@/components/profile/useProfileData";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
+import BackButton from "@/components/ui/back-button";
 
 export default function Profile() {
   const {
@@ -20,6 +21,7 @@ export default function Profile() {
 
   return (
     <div className="container mx-auto py-10">
+      <BackButton />
       <Card className={cn(
         "max-w-2xl mx-auto transition-all duration-300",
         isLoading ? "opacity-75" : "opacity-100"
