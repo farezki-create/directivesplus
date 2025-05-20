@@ -62,6 +62,7 @@ const AccessCard: React.FC<AccessCardProps> = ({ firstName, lastName, birthDate 
           includeMedical={includeMedical}
           directiveCode={directiveCode}
           medicalCode={medicalCode}
+          websiteUrl="directivesplus.fr"
         />
         
         <CardActions 
