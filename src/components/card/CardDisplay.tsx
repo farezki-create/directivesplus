@@ -33,7 +33,7 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
   return (
     <div 
       ref={cardRef} 
-      className="w-[340px] h-[240px] rounded-xl bg-gradient-to-r from-directiveplus-600 to-directiveplus-700 text-white shadow-lg overflow-hidden"
+      className="w-[340px] h-[240px] rounded-xl bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-lg overflow-hidden"
     >
       <div className="p-4 flex flex-col justify-between h-full">
         <CardHeader 

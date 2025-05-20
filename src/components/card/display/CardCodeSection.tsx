@@ -16,13 +16,13 @@ const CardCodeSection: React.FC<CardCodeSectionProps> = ({
   medicalCode 
 }) => {
   return (
-    <div className="space-y-1.5 mb-1">
+    <div className="space-y-2 mb-2">
       {includeDirective && (
-        <div className="flex items-center gap-2 bg-white/20 rounded p-1.5">
-          <FileText size={16} className="shrink-0" />
+        <div className="flex items-center gap-2 bg-white/20 rounded p-2">
+          <FileText size={24} className="shrink-0 text-white" />
           <div>
             <p className="text-xs font-semibold">Directives anticipées:</p>
-            <p className="font-mono font-bold tracking-wider text-sm">
+            <p className="font-mono font-bold tracking-wider text-lg">
               {directiveCode || "Générez le code"}
             </p>
           </div>
@@ -30,11 +30,11 @@ const CardCodeSection: React.FC<CardCodeSectionProps> = ({
       )}
       
       {includeMedical && (
-        <div className="flex items-center gap-2 bg-white/20 rounded p-1.5">
-          <Activity size={16} className="shrink-0" />
+        <div className="flex items-center gap-2 bg-white/20 rounded p-2">
+          <Activity size={24} className="shrink-0 text-white" />
           <div>
             <p className="text-xs font-semibold">Données médicales:</p>
-            <p className="font-mono font-bold tracking-wider text-sm">
+            <p className="font-mono font-bold tracking-wider text-lg">
               {medicalCode || "Générez le code"}
             </p>
           </div>

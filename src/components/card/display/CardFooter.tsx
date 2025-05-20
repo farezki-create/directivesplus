@@ -17,10 +17,10 @@ const CardFooter: React.FC<CardFooterProps> = ({
 
   return (
     <div 
-      className="flex items-center gap-2 bg-white/20 rounded p-1.5 cursor-pointer hover:bg-white/30 transition-colors"
+      className="flex items-center gap-2 bg-white/20 rounded p-2 cursor-pointer hover:bg-white/30 transition-colors"
       onClick={handleWebsiteClick}
     >
-      <Link size={16} className="shrink-0" />
+      <Link size={20} className="shrink-0 text-white" />
       <div>
         <p className="text-xs font-semibold">Site web:</p>
         <p className="font-mono font-bold tracking-wider text-sm">{websiteUrl}</p>

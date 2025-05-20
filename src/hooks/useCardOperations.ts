@@ -44,16 +44,30 @@ export const useCardOperations = (
       return;
     }
     
-    await downloadCard({
-      cardRef,
-      userId: user.id,
-      firstName,
-      lastName,
-      includeDirective,
-      includeMedical,
-      directiveCode,
-      medicalCode
-    });
+    try {
+      await downloadCard({
+        cardRef,
+        userId: user.id,
+        firstName,
+        lastName,
+        includeDirective,
+        includeMedical,
+        directiveCode,
+        medicalCode
+      });
+      
+      toast({
+        title: "Téléchargement réussi",
+        description: "La carte a été téléchargée avec succès",
+      });
+    } catch (error) {
+      console.error("Download error:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de télécharger la carte",
+        variant: "destructive"
+      });
+    }
   };
   
   const handlePrint = async () => {
@@ -85,16 +99,25 @@ export const useCardOperations = (
       return;
     }
     
-    await printCard({
-      cardRef,
-      userId: user.id,
-      firstName,
-      lastName,
-      includeDirective,
-      includeMedical,
-      directiveCode,
-      medicalCode
-    });
+    try {
+      await printCard({
+        cardRef,
+        userId: user.id,
+        firstName,
+        lastName,
+        includeDirective,
+        includeMedical,
+        directiveCode,
+        medicalCode
+      });
+    } catch (error) {
+      console.error("Print error:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'imprimer la carte",
+        variant: "destructive"
+      });
+    }
   };
 
   return {

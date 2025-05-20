@@ -12,19 +12,19 @@ const CardHeader: React.FC<CardHeaderProps> = ({ lastName, firstName, birthDate 
     <div>
       <div className="flex justify-between items-start">
         <div>
-          <h3 className="font-bold text-lg">DirectivesPlus</h3>
-          <p className="text-xs opacity-75">Carte d'accès personnelle</p>
+          <h3 className="font-bold text-2xl">DirectivesPlus</h3>
+          <p className="text-sm opacity-90">Carte d'accès personnelle</p>
         </div>
         <img 
-          src="/lovable-uploads/0a786ed1-a905-4b29-be3a-ca3b24d3efae.png" 
+          src="/lovable-uploads/2ec810a2-02f4-4490-b17d-fd70edd2a559.png" 
           alt="Logo" 
-          className="w-10 h-10"
+          className="w-16 h-16 object-contain bg-white rounded-md p-1"
         />
       </div>
       
-      <div className="mt-4 mb-2">
-        <p className="font-semibold uppercase">{lastName} {firstName}</p>
-        <p className="text-xs opacity-80">Né(e) le: {birthDate}</p>
+      <div className="mt-6 mb-2 text-center">
+        <p className="font-bold text-xl uppercase">{lastName} {firstName}</p>
+        <p className="text-sm opacity-90">Né(e) le: {birthDate}</p>
       </div>
     </div>
   );

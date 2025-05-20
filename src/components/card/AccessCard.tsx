@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import CardOptions from "./CardOptions";
 import CardDisplay from "./CardDisplay";
@@ -29,6 +29,7 @@ const AccessCard: React.FC<AccessCardProps> = ({ firstName, lastName, birthDate 
     handleGenerateCard
   } = useAccessCardGeneration(user, includeDirective, includeMedical);
 
+  // Initialize card operations
   const {
     cardRef,
     handleDownload,
@@ -43,7 +44,15 @@ const AccessCard: React.FC<AccessCardProps> = ({ firstName, lastName, birthDate 
     medicalCode
   );
 
-  console.log("État actuel des codes:", { directiveCode, medicalCode, isCardReady, isGenerating });
+  // Log the current state for debugging
+  console.log("Card state:", { 
+    directiveCode, 
+    medicalCode, 
+    isCardReady, 
+    isGenerating,
+    includeDirective,
+    includeMedical 
+  });
 
   return (
     <div className="space-y-8">
@@ -68,10 +77,10 @@ const AccessCard: React.FC<AccessCardProps> = ({ firstName, lastName, birthDate 
         />
         
         <CardActions 
+          onGenerate={handleGenerateCard}
           onDownload={handleDownload}
           onPrint={handlePrint}
-          onGenerate={handleGenerateCard}
-          disabled={!includeDirective && !includeMedical || !isCardReady}
+          disabled={(!includeDirective && !includeMedical) || isGenerating}
           isLoading={isGenerating}
         />
         

@@ -17,52 +17,52 @@ export const generateAccessCode = async (user: User | null, type: "directive" | 
   if (!user) return null;
   
   try {
-    // Pour les deux types, générer un nouveau code d'accès
+    // Generate a new random code
     const newAccessCode = generateRandomCode(8);
-    console.log(`Génération d'un nouveau code d'accès pour ${type}:`, newAccessCode);
+    console.log(`Generating new access code for ${type}:`, newAccessCode);
     
     if (type === "medical") {
-      // Pour l'accès médical, mettre à jour le profil de l'utilisateur
+      // For medical access, update the user's profile
       const { error: updateError } = await supabase
         .from('profiles')
         .update({ medical_access_code: newAccessCode })
         .eq('id', user.id);
         
       if (updateError) {
-        console.error("Erreur lors de la mise à jour du profil:", updateError);
+        console.error("Error updating profile:", updateError);
         throw updateError;
       }
       
-      console.log("Code d'accès médical sauvegardé avec succès");
+      console.log("Medical access code saved successfully");
       return newAccessCode;
     } else {
-      // Pour l'accès aux directives, utiliser la table document_access_codes
-      // Vérifier s'il existe un code pour cet utilisateur
+      // For directive access, use the document_access_codes table
+      // Check if a code exists for this user
       const { data, error } = await supabase
         .from('document_access_codes')
         .select('*')
         .eq('user_id', user.id)
-        .is('document_id', null) // Ne récupérer que les codes d'accès généraux
+        .is('document_id', null)
         .limit(1);
       
       if (error) {
-        console.error("Erreur lors de la vérification du code existant:", error);
+        console.error("Error checking for existing code:", error);
         throw error;
       }
       
       if (data && data.length > 0) {
-        // Mettre à jour le code existant
+        // Update existing code
         const { error: updateError } = await supabase
           .from('document_access_codes')
           .update({ access_code: newAccessCode })
           .eq('id', data[0].id);
         
         if (updateError) {
-          console.error("Erreur lors de la mise à jour du code existant:", updateError);
+          console.error("Error updating existing code:", updateError);
           throw updateError;
         }
       } else {
-        // Créer un nouveau code s'il n'en existe pas
+        // Create new code if none exists
         const { error: insertError } = await supabase
           .from('document_access_codes')
           .insert({
@@ -72,16 +72,16 @@ export const generateAccessCode = async (user: User | null, type: "directive" | 
           });
           
         if (insertError) {
-          console.error("Erreur lors de la création du code d'accès:", insertError);
+          console.error("Error creating access code:", insertError);
           throw insertError;
         }
       }
       
-      console.log("Code d'accès aux directives sauvegardé avec succès");
+      console.log("Directive access code saved successfully");
       return newAccessCode;
     }
   } catch (error) {
-    console.error(`Erreur lors de la génération du code d'accès pour ${type}:`, error);
+    console.error(`Error generating access code for ${type}:`, error);
     toast({
       title: "Erreur",
       description: `Impossible de générer le code d'accès pour vos ${type === "directive" ? "directives" : "données médicales"}`,
@@ -105,7 +105,7 @@ export const useAccessCode = (user: User | null, type: "directive" | "medical") 
     
     try {
       if (type === "medical") {
-        // Pour l'accès médical, vérifier le profil de l'utilisateur
+        // For medical access, check the user's profile
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('medical_access_code')
@@ -113,38 +113,37 @@ export const useAccessCode = (user: User | null, type: "directive" | "medical") 
           .single();
           
         if (profileError) {
-          console.error("Erreur lors de la récupération du profil:", profileError);
+          console.error("Error retrieving profile:", profileError);
           return;
         }
         
-        // Si l'utilisateur a un code d'accès médical, l'utiliser
+        // If the user has a medical access code, use it
         if (profileData && profileData.medical_access_code) {
-          console.log("Code d'accès médical existant trouvé:", profileData.medical_access_code);
+          console.log("Found existing medical access code:", profileData.medical_access_code);
           setAccessCode(profileData.medical_access_code);
         }
       } else {
-        // Pour l'accès aux directives, utiliser la table document_access_codes
-        // Vérifier s'il existe un code pour cet utilisateur
+        // For directive access, use the document_access_codes table
         const { data, error } = await supabase
           .from('document_access_codes')
           .select('access_code')
           .eq('user_id', user.id)
-          .is('document_id', null) // Ne récupérer que les codes d'accès généraux
+          .is('document_id', null)
           .limit(1);
           
         if (error) {
-          console.error("Erreur lors de la récupération du code d'accès:", error);
+          console.error("Error retrieving access code:", error);
           return;
         }
           
-        // Si nous avons un code d'accès, l'utiliser
+        // If we have an access code, use it
         if (data && data.length > 0 && data[0].access_code) {
-          console.log("Code d'accès aux directives existant trouvé:", data[0].access_code);
+          console.log("Found existing directive access code:", data[0].access_code);
           setAccessCode(data[0].access_code);
         }
       }
     } catch (error) {
-      console.error(`Erreur lors de la récupération du code d'accès pour ${type}:`, error);
+      console.error(`Error retrieving access code for ${type}:`, error);
     }
   };
 

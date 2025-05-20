@@ -11,27 +11,41 @@ export interface AccessCodeState {
   isCardReady: boolean;
 }
 
-export const useAccessCardGeneration = (user: User | null, includeDirective: boolean, includeMedical: boolean) => {
+export const useAccessCardGeneration = (
+  user: User | null, 
+  includeDirective: boolean, 
+  includeMedical: boolean
+) => {
   const [directiveCode, setDirectiveCode] = useState<string | null>(null);
   const [medicalCode, setMedicalCode] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isCardReady, setIsCardReady] = useState(false);
   
   // Use the hook to get the initial values
   const directiveCodeFromHook = useAccessCode(user, "directive");
   const medicalCodeFromHook = useAccessCode(user, "medical");
 
-  // Set the initial values when they're loaded from the hook
+  // Update local state when codes are retrieved from the hooks
   useEffect(() => {
     if (directiveCodeFromHook) {
+      console.log("Setting directive code from hook:", directiveCodeFromHook);
       setDirectiveCode(directiveCodeFromHook);
     }
   }, [directiveCodeFromHook]);
   
   useEffect(() => {
     if (medicalCodeFromHook) {
+      console.log("Setting medical code from hook:", medicalCodeFromHook);
       setMedicalCode(medicalCodeFromHook);
     }
   }, [medicalCodeFromHook]);
+
+  // Determine if the card is ready based on selected options and available codes
+  useEffect(() => {
+    const isReady = (!includeDirective || directiveCode) && (!includeMedical || medicalCode);
+    console.log("Card ready check:", { includeDirective, directiveCode, includeMedical, medicalCode, isReady });
+    setIsCardReady(isReady);
+  }, [includeDirective, includeMedical, directiveCode, medicalCode]);
 
   // Function to handle generating/refreshing the codes
   const handleGenerateCard = async () => {
@@ -47,16 +61,19 @@ export const useAccessCardGeneration = (user: User | null, includeDirective: boo
     setIsGenerating(true);
     
     try {
+      let newDirectiveCode = null;
+      let newMedicalCode = null;
+      
       // Generate new codes as needed
       if (includeDirective) {
-        const newDirectiveCode = await generateAccessCode(user, "directive");
-        console.log("Nouveau code directive généré:", newDirectiveCode);
+        newDirectiveCode = await generateAccessCode(user, "directive");
+        console.log("Generated directive code:", newDirectiveCode);
         setDirectiveCode(newDirectiveCode);
       }
       
       if (includeMedical) {
-        const newMedicalCode = await generateAccessCode(user, "medical");
-        console.log("Nouveau code médical généré:", newMedicalCode);
+        newMedicalCode = await generateAccessCode(user, "medical");
+        console.log("Generated medical code:", newMedicalCode);
         setMedicalCode(newMedicalCode);
       }
       
@@ -64,8 +81,14 @@ export const useAccessCardGeneration = (user: User | null, includeDirective: boo
         title: "Carte générée",
         description: "La carte d'accès a été générée avec succès",
       });
+      
+      // Update card ready state after generation
+      setIsCardReady(
+        (!includeDirective || newDirectiveCode !== null) && 
+        (!includeMedical || newMedicalCode !== null)
+      );
     } catch (error) {
-      console.error("Erreur lors de la génération de la carte:", error);
+      console.error("Error generating card:", error);
       toast({
         title: "Erreur",
         description: "Impossible de générer la carte d'accès",
@@ -75,12 +98,6 @@ export const useAccessCardGeneration = (user: User | null, includeDirective: boo
       setIsGenerating(false);
     }
   };
-
-  // Check if the card is ready (if all required codes are available)
-  const isCardReady = Boolean(
-    (!includeDirective || (includeDirective && directiveCode)) && 
-    (!includeMedical || (includeMedical && medicalCode))
-  );
 
   return {
     directiveCode,
