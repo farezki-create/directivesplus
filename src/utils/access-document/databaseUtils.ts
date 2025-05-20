@@ -1,5 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { FormData } from "./validationSchema";
 
 /**
  * Checks if the provided access code exists for directives access

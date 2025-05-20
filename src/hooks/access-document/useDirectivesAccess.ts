@@ -27,7 +27,11 @@ export const useDirectivesAccess = () => {
       console.log("ID utilisateur récupéré:", userId);
       
       // Vérification des informations du profil
-      const { isMatch } = await checkProfileMatch(userId, formData);
+      const { isMatch } = await checkProfileMatch(userId, {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        birthDate: formData.birthDate
+      });
       
       if (!isMatch) {
         console.log("Informations personnelles incorrectes");

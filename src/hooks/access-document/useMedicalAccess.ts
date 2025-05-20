@@ -54,6 +54,8 @@ export const useMedicalAccess = () => {
     } finally {
       setLoading(false);
     }
+    
+    return { loading };
   };
 
   return {
