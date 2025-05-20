@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,9 +16,9 @@ const AccessCardPage = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   
-  // Directly use the hooks to get access codes
-  const directiveCode = useAccessCode(user, "directive");
-  const medicalCode = useAccessCode(user, "medical");
+  // Use the updated hook with isLoading state
+  const { accessCode: directiveCode, isLoading: directiveLoading } = useAccessCode(user, "directive");
+  const { accessCode: medicalCode, isLoading: medicalLoading } = useAccessCode(user, "medical");
   
   // Determine if codes are ready
   const [codesReady, setCodesReady] = useState(false);
@@ -54,6 +53,7 @@ const AccessCardPage = () => {
     }
   }, [isAuthenticated, isLoading, navigate]);
 
+  // Show global loading state when initial auth is loading
   if (isLoading || loading) {
     return <LoadingState loading={true} />;
   }
@@ -62,6 +62,9 @@ const AccessCardPage = () => {
   const firstName = profile?.first_name || "";
   const lastName = profile?.last_name || "";
   const birthDate = profile?.birth_date || null;
+
+  // Check if we're still loading codes
+  const isCodesLoading = directiveLoading || medicalLoading;
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -85,7 +88,8 @@ const AccessCardPage = () => {
             <p className="text-gray-600 mt-2">
               {codesReady ? 
                 "Votre carte d'accès est prête à être utilisée." : 
-                "Chargement de vos codes d'accès..."}
+                isCodesLoading ? "Chargement de vos codes d'accès..." :
+                "Préparez votre carte d'accès pour les professionnels de santé."}
             </p>
           </div>
           
@@ -129,7 +133,9 @@ const AccessCardPage = () => {
                   ) : (
                     <div className="p-3 bg-gray-50 rounded-md border border-gray-200">
                       <p className="text-sm font-medium text-gray-500 mb-1">Code d'accès directives anticipées</p>
-                      <p className="text-gray-400 italic">En cours de génération...</p>
+                      <p className="text-gray-400 italic">
+                        {directiveLoading ? "En cours de génération..." : "Non disponible"}
+                      </p>
                     </div>
                   )}
                   
@@ -141,7 +147,9 @@ const AccessCardPage = () => {
                   ) : (
                     <div className="p-3 bg-gray-50 rounded-md border border-gray-200">
                       <p className="text-sm font-medium text-gray-500 mb-1">Code d'accès données médicales</p>
-                      <p className="text-gray-400 italic">En cours de génération...</p>
+                      <p className="text-gray-400 italic">
+                        {medicalLoading ? "En cours de génération..." : "Non disponible"}
+                      </p>
                     </div>
                   )}
                 </div>
@@ -178,13 +186,19 @@ const AccessCardPage = () => {
               Vous pouvez la télécharger ou l'imprimer pour l'avoir toujours avec vous.
             </p>
             
-            <AccessCard 
-              firstName={firstName} 
-              lastName={lastName} 
-              birthDate={birthDate}
-              directiveCode={directiveCode}
-              medicalCode={medicalCode}
-            />
+            {isCodesLoading ? (
+              <div className="py-8 text-center">
+                <LoadingState loading={true} message="Génération de votre carte d'accès..." />
+              </div>
+            ) : (
+              <AccessCard 
+                firstName={firstName} 
+                lastName={lastName} 
+                birthDate={birthDate}
+                directiveCode={directiveCode}
+                medicalCode={medicalCode}
+              />
+            )}
           </div>
           
           <div className="mt-10 bg-blue-50 border border-blue-200 rounded-lg p-4">

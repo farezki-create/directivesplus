@@ -30,9 +30,9 @@ const AccessCard: React.FC<AccessCardProps> = ({
   const [includeDirective, setIncludeDirective] = React.useState<boolean>(true);
   const [includeMedical, setIncludeMedical] = React.useState<boolean>(true);
   
-  // Use the hooks to get access codes directly OR use the props passed from parent
-  const hooksDirectiveCode = useAccessCode(user, "directive");
-  const hooksMedicalCode = useAccessCode(user, "medical");
+  // Use the updated hooks to get access codes directly OR use the props passed from parent
+  const { accessCode: hooksDirectiveCode } = useAccessCode(user, "directive");
+  const { accessCode: hooksMedicalCode } = useAccessCode(user, "medical");
   
   // Use external codes (from props) if provided, otherwise use hook codes
   const directiveCode = externalDirectiveCode || hooksDirectiveCode;
