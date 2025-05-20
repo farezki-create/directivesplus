@@ -25,11 +25,21 @@ const AccessCodeDisplay: FC<AccessCodeDisplayProps> = ({
       type, 
       accessCode,
       firstName, 
-      lastName
+      lastName,
+      birthDate
     });
   }, [accessCode, firstName, lastName, birthDate, type]);
 
   const handleCopyCode = () => {
+    if (!accessCode) {
+      toast({
+        title: "Erreur",
+        description: "Aucun code d'accès disponible à copier",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     navigator.clipboard.writeText(accessCode).then(
       () => {
         toast({
@@ -69,16 +79,22 @@ const AccessCodeDisplay: FC<AccessCodeDisplayProps> = ({
     );
   }
 
+  const cardBgClass = type === "directive" ? "bg-purple-50 border-purple-200" : "bg-sky-50 border-sky-200";
+  const titleText = type === "directive" ? "Directives anticipées" : "Données médicales";
+  const descriptionText = type === "directive" ? "vos directives" : "vos données médicales";
+  const headingTextClass = type === "directive" ? "text-purple-800" : "text-sky-800";
+  const subtitleTextClass = type === "directive" ? "text-purple-600" : "text-sky-600";
+
   return (
-    <Card className="mb-8 bg-sky-50 border-sky-200">
+    <Card className={`mb-8 ${cardBgClass}`}>
       <CardContent className="pt-6">
         <div className="space-y-4">
           <div>
-            <h3 className="text-lg font-medium text-sky-800">
-              Accès sans connexion pour {type === "directive" ? "les directives anticipées" : "les données médicales"}
+            <h3 className={`text-lg font-medium ${headingTextClass}`}>
+              Accès sans connexion pour {titleText}
             </h3>
-            <p className="text-sm text-sky-600 mt-1">
-              Les professionnels de santé peuvent accéder à {type === "directive" ? "vos directives" : "vos données médicales"} avec les informations suivantes
+            <p className={`text-sm ${subtitleTextClass} mt-1`}>
+              Les professionnels de santé peuvent accéder à {descriptionText} avec les informations suivantes
             </p>
           </div>
           
@@ -97,10 +113,10 @@ const AccessCodeDisplay: FC<AccessCodeDisplayProps> = ({
             </div>
           </div>
           
-          <div className="bg-white p-4 rounded-md border border-sky-200 flex items-center justify-between">
+          <div className="bg-white p-4 rounded-md border border-gray-200 flex items-center justify-between">
             <div>
               <div className="text-sm font-medium text-gray-500">Code d'accès unique</div>
-              <div className="text-lg font-bold tracking-wider">{accessCode}</div>
+              <div className="text-lg font-bold tracking-wider font-mono">{accessCode}</div>
             </div>
             <Button
               size="sm"

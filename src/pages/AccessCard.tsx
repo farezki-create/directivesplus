@@ -5,10 +5,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import AppNavigation from "@/components/AppNavigation";
 import AccessCard from "@/components/card/AccessCard";
 import LoadingState from "@/components/questionnaire/LoadingState";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useAccessCode } from "@/hooks/useAccessCode";
+import { Card, CardContent } from "@/components/ui/card";
+import AccessCodeDisplay from "@/components/documents/AccessCodeDisplay";
 
 const AccessCardPage = () => {
   const { user, isAuthenticated, isLoading, profile } = useAuth();
@@ -22,8 +24,19 @@ const AccessCardPage = () => {
   // Determine if codes are ready
   const [codesReady, setCodesReady] = useState(false);
   
+  // Debug logs
+  useEffect(() => {
+    console.log("AccessCardPage - Auth state:", { 
+      userId: user?.id, 
+      hasProfile: !!profile, 
+      directiveCode, 
+      medicalCode 
+    });
+  }, [user, profile, directiveCode, medicalCode]);
+  
   useEffect(() => {
     if (directiveCode && medicalCode) {
+      console.log("AccessCardPage - Codes ready:", { directiveCode, medicalCode });
       setCodesReady(true);
     }
   }, [directiveCode, medicalCode]);
@@ -69,6 +82,61 @@ const AccessCardPage = () => {
                 "Votre carte d'accès est prête à être utilisée." : 
                 "Chargement de vos codes d'accès..."}
             </p>
+          </div>
+          
+          {/* Section dédiée à l'affichage des codes d'accès */}
+          <div className="mb-8">
+            <Card className="mb-6 border-purple-200">
+              <CardContent className="pt-6">
+                <h2 className="text-xl font-bold mb-4">Vos codes d'accès</h2>
+                <div className="space-y-4">
+                  {directiveCode ? (
+                    <div className="p-3 bg-purple-50 rounded-md border border-purple-200">
+                      <p className="text-sm font-medium text-gray-500 mb-1">Code d'accès directives anticipées</p>
+                      <p className="font-mono text-lg font-bold tracking-wider">{directiveCode}</p>
+                    </div>
+                  ) : (
+                    <div className="p-3 bg-gray-50 rounded-md border border-gray-200">
+                      <p className="text-sm font-medium text-gray-500 mb-1">Code d'accès directives anticipées</p>
+                      <p className="text-gray-400 italic">En cours de génération...</p>
+                    </div>
+                  )}
+                  
+                  {medicalCode ? (
+                    <div className="p-3 bg-sky-50 rounded-md border border-sky-200">
+                      <p className="text-sm font-medium text-gray-500 mb-1">Code d'accès données médicales</p>
+                      <p className="font-mono text-lg font-bold tracking-wider">{medicalCode}</p>
+                    </div>
+                  ) : (
+                    <div className="p-3 bg-gray-50 rounded-md border border-gray-200">
+                      <p className="text-sm font-medium text-gray-500 mb-1">Code d'accès données médicales</p>
+                      <p className="text-gray-400 italic">En cours de génération...</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+            
+            {/* Affichage complet des codes avec les informations du profil */}
+            {profile && directiveCode && (
+              <AccessCodeDisplay 
+                accessCode={directiveCode}
+                firstName={profile.first_name || ""}
+                lastName={profile.last_name || ""}
+                birthDate={profile.birth_date || ""}
+                type="directive"
+              />
+            )}
+            
+            {profile && medicalCode && (
+              <AccessCodeDisplay 
+                accessCode={medicalCode}
+                firstName={profile.first_name || ""}
+                lastName={profile.last_name || ""}
+                birthDate={profile.birth_date || ""}
+                type="medical"
+              />
+            )}
           </div>
           
           {profile && (

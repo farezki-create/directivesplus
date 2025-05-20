@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import CardHeader from "./display/CardHeader";
 import CardCodeSection from "./display/CardCodeSection";
 import CardFooter from "./display/CardFooter";
@@ -29,6 +29,15 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
   websiteUrl = "directivesplus.fr"
 }) => {
   const formattedBirthDate = formatDate(birthDate);
+  
+  useEffect(() => {
+    console.log("CardDisplay - Rendering with codes:", { 
+      directiveCode,
+      medicalCode,
+      includeDirective,
+      includeMedical
+    });
+  }, [directiveCode, medicalCode, includeDirective, includeMedical]);
 
   return (
     <div 

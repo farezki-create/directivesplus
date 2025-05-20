@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import CardOptions from "./CardOptions";
 import CardDisplay from "./CardDisplay";
@@ -22,6 +22,15 @@ const AccessCard: React.FC<AccessCardProps> = ({ firstName, lastName, birthDate 
   // Use the hooks to get access codes directly
   const directiveCode = useAccessCode(user, "directive");
   const medicalCode = useAccessCode(user, "medical");
+  
+  useEffect(() => {
+    console.log("AccessCard - Using codes:", { 
+      directiveCode, 
+      medicalCode,
+      firstName,
+      lastName 
+    });
+  }, [directiveCode, medicalCode, firstName, lastName]);
   
   // Simplified card operations without automatic generation
   const {
