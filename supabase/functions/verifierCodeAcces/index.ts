@@ -14,6 +14,176 @@ interface RequestBody {
   code_saisi: string;
 }
 
+// Interface pour les réponses standardisées
+interface StandardResponse {
+  success: boolean;
+  error?: string;
+  dossier?: {
+    id: string;
+    userId: string;
+    isFullAccess: boolean;
+    profileData?: any;
+    contenu?: any;
+  };
+}
+
+/**
+ * Créer un client Supabase avec les droits d'administrateur
+ * @returns Client Supabase configuré
+ */
+function createSupabaseClient() {
+  const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
+  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+
+  if (!supabaseUrl || !supabaseServiceKey) {
+    throw new Error("Configuration Supabase manquante");
+  }
+
+  return createClient(supabaseUrl, supabaseServiceKey);
+}
+
+/**
+ * Journalise une tentative d'accès
+ * @param supabase Client Supabase
+ * @param userId ID de l'utilisateur
+ * @param success Succès de la tentative
+ * @param details Détails supplémentaires
+ * @param accessCodeId ID du code d'accès (optionnel)
+ */
+async function logAccessAttempt(
+  supabase: any,
+  userId: string | null,
+  success: boolean,
+  details: string,
+  accessCodeId: string | null = null
+) {
+  try {
+    await supabase.from("document_access_logs").insert({
+      user_id: userId || "00000000-0000-0000-0000-000000000000",
+      access_code_id: accessCodeId,
+      nom_consultant: "Access via Edge Function",
+      prenom_consultant: "System",
+      success,
+      details
+    });
+  } catch (error) {
+    console.error("Erreur de journalisation:", error);
+  }
+}
+
+/**
+ * Vérifie l'existence d'un code d'accès
+ * @param supabase Client Supabase
+ * @param code Code d'accès à vérifier
+ * @returns Données du code d'accès ou null
+ */
+async function verifyAccessCode(supabase: any, code: string) {
+  const { data, error } = await supabase
+    .from("document_access_codes")
+    .select("user_id, document_id, is_full_access")
+    .eq("access_code", code)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Erreur Supabase lors de la vérification du code:", error);
+    return null;
+  }
+
+  return data;
+}
+
+/**
+ * Récupère les données du profil utilisateur
+ * @param supabase Client Supabase
+ * @param userId ID de l'utilisateur
+ * @returns Données du profil ou null
+ */
+async function fetchUserProfile(supabase: any, userId: string) {
+  const { data: profileData } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", userId)
+    .single();
+  
+  return profileData;
+}
+
+/**
+ * Récupère ou crée un dossier médical
+ * @param supabase Client Supabase
+ * @param documentId ID du document
+ * @param userId ID de l'utilisateur
+ * @param code Code d'accès
+ * @param profileData Données du profil
+ * @returns Contenu du dossier et son ID
+ */
+async function getOrCreateMedicalRecord(
+  supabase: any,
+  documentId: string,
+  userId: string,
+  code: string,
+  profileData: any
+) {
+  // Vérifier si le dossier médical existe
+  const { data: medicalRecordData } = await supabase
+    .from("dossiers_medicaux")
+    .select("contenu_dossier, id")
+    .eq("id", documentId)
+    .maybeSingle();
+
+  // Si le dossier existe déjà, retourner son contenu
+  if (medicalRecordData) {
+    console.log("Dossier médical existant récupéré, ID:", medicalRecordData.id);
+    return {
+      content: medicalRecordData.contenu_dossier,
+      id: medicalRecordData.id
+    };
+  }
+
+  // Sinon, récupérer les directives pour cet utilisateur
+  const { data: directivesData } = await supabase
+    .from("advance_directives")
+    .select("content")
+    .eq("user_id", userId)
+    .order("updated_at", { ascending: false })
+    .limit(1);
+  
+  // Créer un nouveau dossier médical
+  const dossierContenu = {
+    patient: {
+      nom: profileData?.last_name,
+      prenom: profileData?.first_name,
+      date_naissance: profileData?.birth_date
+    }
+  };
+  
+  // Ajouter les directives si disponibles
+  if (directivesData && directivesData.length > 0) {
+    dossierContenu["directives_anticipees"] = directivesData[0].content;
+  }
+  
+  // Insérer le nouveau dossier
+  const { data: newDossier } = await supabase
+    .from("dossiers_medicaux")
+    .insert({
+      id: documentId,
+      code_acces: code,
+      contenu_dossier: dossierContenu
+    })
+    .select()
+    .single();
+  
+  console.log("Nouveau dossier médical créé avec ID:", documentId);
+  
+  return {
+    content: dossierContenu,
+    id: documentId
+  };
+}
+
+/**
+ * Gestionnaire principal des requêtes
+ */
 serve(async (req: Request) => {
   // Gestion des requêtes OPTIONS (CORS preflight)
   if (req.method === "OPTIONS") {
@@ -48,59 +218,15 @@ serve(async (req: Request) => {
       );
     }
 
-    // Création du client Supabase avec les droits d'administrateur
-    const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
-
-    if (!supabaseUrl || !supabaseServiceKey) {
-      return new Response(
-        JSON.stringify({ error: "Configuration Supabase manquante" }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    // Création du client Supabase
+    const supabase = createSupabaseClient();
 
     // Vérification du code d'accès
-    const { data, error } = await supabase
-      .from("document_access_codes")
-      .select("user_id, document_id, is_full_access")
-      .eq("access_code", code_saisi)
-      .maybeSingle();
-
-    if (error) {
-      console.error("Erreur Supabase:", error);
-      return new Response(
-        JSON.stringify({ success: false, error: "Erreur de base de données" }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    // Journalisation de la tentative d'accès
-    const logAccess = async (userId: string | null, success: boolean, details: string) => {
-      try {
-        await supabase.from("document_access_logs").insert({
-          user_id: userId || "00000000-0000-0000-0000-000000000000",
-          access_code_id: data?.id || null,
-          nom_consultant: "Access via Edge Function",
-          prenom_consultant: "System",
-          success,
-          details
-        });
-      } catch (error) {
-        console.error("Erreur de journalisation:", error);
-      }
-    };
+    const accessCodeData = await verifyAccessCode(supabase, code_saisi);
 
     // Si le code d'accès n'existe pas
-    if (!data) {
-      await logAccess(null, false, "Code d'accès invalide");
+    if (!accessCodeData) {
+      await logAccessAttempt(supabase, null, false, "Code d'accès invalide");
       
       return new Response(
         JSON.stringify({ 
@@ -114,86 +240,46 @@ serve(async (req: Request) => {
       );
     }
 
-    // Si le code d'accès existe, récupérer les données du document associé
-    const userId = data.user_id;
-    const documentId = data.document_id;
+    // Extraction des données du code d'accès
+    const userId = accessCodeData.user_id;
+    const documentId = accessCodeData.document_id;
     
-    // Récupérer les données du profil pour vérifier plus tard
-    const { data: profileData } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", userId)
-      .single();
+    // Récupération des données du profil
+    const profileData = await fetchUserProfile(supabase, userId);
 
-    // Vérifier si le dossier médical existe pour ce document_id spécifique
-    const { data: medicalRecordData } = await supabase
-      .from("dossiers_medicaux")
-      .select("contenu_dossier, id")
-      .eq("id", documentId)
-      .maybeSingle();
+    // Récupération ou création du dossier médical
+    const { content: dossierContent, id: dossierId } = await getOrCreateMedicalRecord(
+      supabase,
+      documentId,
+      userId,
+      code_saisi,
+      profileData
+    );
 
-    // Si le dossier n'existe pas pour ce document_id, créez-en un nouveau
-    let dossierContent = null;
-    let dossierId = documentId;
-    
-    if (!medicalRecordData) {
-      // Récupérer les directives pour cet utilisateur, à inclure dans le dossier médical
-      const { data: directivesData } = await supabase
-        .from("advance_directives")
-        .select("content")
-        .eq("user_id", userId)
-        .order("updated_at", { ascending: false })
-        .limit(1);
-      
-      // Créer un nouveau dossier médical avec les directives
-      const dossierContenu = {
-        patient: {
-          nom: profileData?.last_name,
-          prenom: profileData?.first_name,
-          date_naissance: profileData?.birth_date
-        }
-      };
-      
-      // Ajouter les directives si disponibles
-      if (directivesData && directivesData.length > 0) {
-        dossierContenu["directives_anticipees"] = directivesData[0].content;
-      }
-      
-      // Insérer le nouveau dossier
-      const { data: newDossier } = await supabase
-        .from("dossiers_medicaux")
-        .insert({
-          id: documentId,
-          code_acces: code_saisi,
-          contenu_dossier: dossierContenu
-        })
-        .select()
-        .single();
-      
-      dossierContent = dossierContenu;
-      
-      console.log("Nouveau dossier médical créé avec ID:", documentId);
-    } else {
-      dossierContent = medicalRecordData.contenu_dossier;
-      dossierId = medicalRecordData.id;
-      console.log("Dossier médical existant récupéré, ID:", dossierId);
-    }
+    // Journalisation de l'accès réussi
+    await logAccessAttempt(
+      supabase, 
+      userId, 
+      true, 
+      `Accès valide au dossier ${dossierId}`, 
+      accessCodeData.id
+    );
 
-    // Assurer l'enregistrement de cet accès
-    await logAccess(userId, true, `Accès valide au dossier ${dossierId}`);
+    // Création de la réponse réussie
+    const successResponse: StandardResponse = {
+      success: true,
+      dossier: {
+        id: dossierId,
+        userId: userId,
+        isFullAccess: accessCodeData.is_full_access,
+        profileData: profileData,
+        contenu: dossierContent
+      },
+    };
 
-    // Retourner les informations du dossier
+    // Retour de la réponse
     return new Response(
-      JSON.stringify({
-        success: true,
-        dossier: {
-          id: dossierId,
-          userId: userId,
-          isFullAccess: data.is_full_access,
-          profileData: profileData,
-          contenu: dossierContent
-        },
-      }),
+      JSON.stringify(successResponse),
       {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
