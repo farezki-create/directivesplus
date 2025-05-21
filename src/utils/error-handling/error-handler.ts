@@ -1,3 +1,4 @@
+
 /**
  * Types et fonctions pour la gestion centralisée des erreurs
  */
@@ -19,7 +20,8 @@ export enum ErrorType {
   PERMISSION = "permission_error",
   SYSTEM = "system_error",
   RESOURCE = "resource_error",
-  UNKNOWN = "unknown_error"
+  UNKNOWN = "unknown_error",
+  DATABASE = "database_error"  // Added DATABASE error type
 }
 
 /**
