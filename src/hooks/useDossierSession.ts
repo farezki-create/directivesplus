@@ -17,7 +17,9 @@ export const useDossierSession = () => {
   const { dossierActif } = useDossierStore();
   const { handleCloseDossier, redirectToAccessPage } = useDossierNavigation();
   const [decryptedContent, setDecryptedContent] = useState<any>(null);
-  const [decryptionError, setDecryptionError] = useState<boolean>(false);
+  const [decryptionError, setDecryptionError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [activeTab, setActiveTab] = useState<string>("directives");
   
   // Effet pour déchiffrer et afficher les données
   useEffect(() => {
@@ -27,19 +29,24 @@ export const useDossierSession = () => {
       return;
     }
     
+    setLoading(true);
+    
     // Essayer de déchiffrer le contenu
     try {
       console.log("Traitement des données du dossier:", dossierActif.id);
       const decrypted = decryptDossierContent(dossierActif.contenu);
       setDecryptedContent(decrypted);
-    } catch (error) {
+      setDecryptionError(null);
+    } catch (error: any) {
       console.error("Erreur de déchiffrement pour le dossier:", dossierActif.id, error);
-      setDecryptionError(true);
+      setDecryptionError(error.message || "Erreur de déchiffrement");
       toast({
         title: "Erreur de déchiffrement",
         description: "Impossible de déchiffrer les données du dossier",
         variant: "destructive"
       });
+    } finally {
+      setLoading(false);
     }
   }, [dossierActif, redirectToAccessPage]);
 
@@ -64,6 +71,9 @@ export const useDossierSession = () => {
     hasDirectives: hasDirectives(),
     getDirectives,
     patientInfo,
-    handleCloseDossier
+    handleCloseDossier,
+    loading,
+    activeTab,
+    setActiveTab
   };
 };

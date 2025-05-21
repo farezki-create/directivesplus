@@ -6,21 +6,32 @@ import DirectivesHeader from "./directives/DirectivesHeader";
 import DirectivesContent from "./directives/DirectivesContent";
 import NoDirectivesAlert from "./directives/NoDirectivesAlert";
 
-interface DirectivesTabProps {
+export interface DirectivesTabProps {
   decryptedContent: any;
-  hasDirectives: boolean;
+  hasDirectives?: boolean;
   getDirectives?: () => any;
+  decryptionError?: string | null; // Added decryptionError prop
 }
 
 const DirectivesTab: React.FC<DirectivesTabProps> = ({ 
   decryptedContent, 
-  hasDirectives,
-  getDirectives 
+  hasDirectives = false,
+  getDirectives,
+  decryptionError
 }) => {
   // Log debug information when component renders
   useEffect(() => {
     logDirectiveDebugInfo(decryptedContent, hasDirectives, getDirectives);
   }, [decryptedContent, hasDirectives, getDirectives]);
+  
+  // Display error if there is one
+  if (decryptionError) {
+    return (
+      <CardContent className="p-6">
+        <NoDirectivesAlert />
+      </CardContent>
+    );
+  }
   
   // Extract directives content with fallback strategies
   const directivesData = extractDirectives(decryptedContent, hasDirectives, getDirectives);

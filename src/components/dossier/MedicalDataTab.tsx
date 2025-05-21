@@ -44,7 +44,10 @@ const MedicalDataTab: React.FC<MedicalDataTabProps> = ({ decryptedContent, decry
 
   return (
     <>
-      <MedicalHeader userId={decryptedContent?.user_id} onUploadComplete={refreshDocuments} />
+      <MedicalHeader 
+        userId={decryptedContent?.user_id} 
+        onAddDocument={() => {/* Add document logic here */}} 
+      />
       <CardContent className="p-6">
         <MedicalDocumentList
           documents={documents}

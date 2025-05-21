@@ -17,15 +17,17 @@ const AffichageDossier: React.FC = () => {
     decryptionError,
     loading, 
     activeTab, 
-    setActiveTab 
+    setActiveTab,
+    hasDirectives,
+    getDirectives
   } = useDossierSession();
   
   const { 
     resetActivityTimer, 
     logDossierEvent, 
     handleSecurityClose,
-    startSecurityMonitoring,  // Add this property to match the type
-    stopSecurityMonitoring    // Add this property to match the type
+    startSecurityMonitoring,
+    stopSecurityMonitoring
   } = useDossierSecurity();
   
   const { id } = useParams<{ id: string }>();
@@ -79,8 +81,10 @@ const AffichageDossier: React.FC = () => {
           
           <TabsContent value="directives" className="p-0">
             <DirectivesTab 
-              loading={loading} 
               decryptedContent={decryptedContent}
+              hasDirectives={hasDirectives}
+              getDirectives={getDirectives}
+              decryptionError={decryptionError}
             />
           </TabsContent>
           

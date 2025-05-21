@@ -16,21 +16,37 @@ interface Document {
 
 interface MedicalDocumentListProps {
   documents: Document[];
+  loading?: boolean; // Add loading prop
   onDownload: (filePath: string, fileName: string) => void;
   onPrint: (filePath: string, fileType?: string) => void;
   onView: (filePath: string, fileType?: string) => void;
   onDelete: (documentId: string) => void;
   onVisibilityChange?: (documentId: string, isPrivate: boolean) => void;
+  documentToDelete?: string | null; // Make optional
+  setDocumentToDelete?: (id: string | null) => void; // Make optional
+  confirmDelete?: (id: string) => void; // Make optional
 }
 
 const MedicalDocumentList = ({
   documents,
+  loading = false,
   onDownload,
   onPrint,
   onView,
   onDelete,
-  onVisibilityChange
+  onVisibilityChange,
+  documentToDelete,
+  setDocumentToDelete,
+  confirmDelete
 }: MedicalDocumentListProps) => {
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-8">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-directiveplus-600"></div>
+      </div>
+    );
+  }
+
   if (documents.length === 0) {
     return <EmptyDocumentsState message="Vous n'avez pas encore ajouté de données médicales" />;
   }
