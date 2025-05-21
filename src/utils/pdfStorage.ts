@@ -18,6 +18,11 @@ export const savePdfToDatabase = async (
       throw new Error("Aucune donnée PDF disponible");
     }
     
+    // Make sure userId is valid
+    if (!data.userId) {
+      throw new Error("ID utilisateur manquant");
+    }
+    
     const fileName = `directives-anticipees-${new Date().toLocaleDateString('fr-FR', {
       year: 'numeric',
       month: '2-digit',
@@ -31,7 +36,7 @@ export const savePdfToDatabase = async (
       file_name: fileName,
       file_path: data.pdfOutput, // Stocke le PDF comme data URI
       content_type: "application/pdf",
-      file_size: Math.floor(data.pdfOutput.length / 1.33), // Estimation approximative de la taille
+      file_size: Math.floor((data.pdfOutput.length || 0) / 1.33), // Estimation approximative de la taille
       description: data.description || "Directives anticipées générées le " + new Date().toLocaleDateString('fr-FR', {
         year: 'numeric',
         month: 'long',

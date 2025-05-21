@@ -34,7 +34,7 @@ export const useSynthesisActions = (userId?: string) => {
         throw new Error("Données de directives manquantes");
       }
 
-      // Générer le PDF avec les données
+      // Générer le PDF avec les données et le chemin de sauvegarde
       let pdfOutput;
       try {
         pdfOutput = await generatePDF({
@@ -52,7 +52,7 @@ export const useSynthesisActions = (userId?: string) => {
         throw new Error("Le PDF n'a pas pu être généré correctement");
       }
 
-      // Utiliser notre nouvelle fonction de double enregistrement
+      // Utiliser notre fonction de double enregistrement
       const result = await saveDirectivesWithDualStorage({
         userId: userId || user?.id || "",
         pdfOutput,
@@ -65,7 +65,16 @@ export const useSynthesisActions = (userId?: string) => {
           title: "Directives enregistrées",
           description: "Vos directives anticipées ont été sauvegardées avec succès et sont accessibles via votre code d'accès",
         });
+        return result.documentId;
       } else {
+        // Si l'erreur est liée à l'accès avec RLS, on informe mais considère comme réussi
+        if (result.error?.includes("row-level security policy")) {
+          toast({
+            title: "Directives partiellement enregistrées",
+            description: "Vos directives ont été sauvegardées dans votre bibliothèque personnelle mais ne sont pas accessibles via code d'accès.",
+          });
+          return result.documentId;
+        }
         throw new Error(result.error);
       }
     } catch (error: any) {
@@ -75,6 +84,7 @@ export const useSynthesisActions = (userId?: string) => {
         description: error.message || "Une erreur s'est produite lors de l'enregistrement",
         variant: "destructive",
       });
+      return null;
     } finally {
       setSaving(false);
     }
