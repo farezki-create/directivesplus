@@ -5,8 +5,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import AppNavigation from "@/components/AppNavigation";
 import DirectivesGrid from "@/components/DirectivesGrid";
 import { Button } from "@/components/ui/button";
-import { Home, ArrowLeft } from "lucide-react";
+import { Home, ArrowLeft, FileText, FileSearch } from "lucide-react";
 import InfoSteps from "@/components/InfoSteps";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import { useVerifierCodeAcces } from "@/hooks/useVerifierCodeAcces";
 
 const Dashboard = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -56,7 +58,7 @@ const Dashboard = () => {
             <img 
               src="/lovable-uploads/0a786ed1-a905-4b29-be3a-ca3b24d3efae.png" 
               alt="DirectivesPlus Logo" 
-              className="w-40 h-auto" // Taille réduite du logo (était w-64)
+              className="w-40 h-auto"
             />
           </div>
           
@@ -68,6 +70,67 @@ const Dashboard = () => {
           </p>
           
           <InfoSteps />
+        </div>
+        
+        {/* Ajout d'une section pour l'accès aux documents hors connexion */}
+        <div className="max-w-3xl mx-auto mb-8">
+          <h2 className="text-2xl font-semibold text-directiveplus-700 mb-4 text-center">
+            Accès aux documents hors connexion
+          </h2>
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Carte d'accès aux directives anticipées */}
+            <Card className="shadow-md hover:shadow-lg transition-all">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-directiveplus-700">
+                  <FileText size={18} />
+                  Directives anticipées
+                </CardTitle>
+                <CardDescription>
+                  Accédez aux directives anticipées d'un patient
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pb-3">
+                <p className="text-sm text-gray-600">
+                  Consultez les volontés d'un patient concernant sa fin de vie et les soins médicaux.
+                </p>
+              </CardContent>
+              <CardFooter>
+                <Button 
+                  className="w-full bg-directiveplus-600 hover:bg-directiveplus-700"
+                  onClick={() => navigate("/acces-directives")}
+                >
+                  Accéder aux directives
+                </Button>
+              </CardFooter>
+            </Card>
+
+            {/* Carte d'accès aux données médicales */}
+            <Card className="shadow-md hover:shadow-lg transition-all">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-blue-600">
+                  <FileSearch size={18} />
+                  Données médicales
+                </CardTitle>
+                <CardDescription>
+                  Accédez aux données médicales d'un patient
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pb-3">
+                <p className="text-sm text-gray-600">
+                  Consultez les informations médicales importantes d'un patient pour sa prise en charge.
+                </p>
+              </CardContent>
+              <CardFooter>
+                <Button 
+                  className="w-full"
+                  style={{ backgroundColor: '#3b82f6', color: 'white' }}
+                  onClick={() => navigate("/acces-medical")}
+                >
+                  Accéder aux données médicales
+                </Button>
+              </CardFooter>
+            </Card>
+          </div>
         </div>
         
         <DirectivesGrid />
