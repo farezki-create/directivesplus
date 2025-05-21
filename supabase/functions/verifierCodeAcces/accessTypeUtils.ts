@@ -15,18 +15,20 @@ export type AccessTypeInfo = {
  * @returns Access type information object
  */
 export function determineAccessType(bruteForceIdentifier?: string): AccessTypeInfo {
+  console.log(`Détermination du type d'accès avec l'identifiant: "${bruteForceIdentifier || 'non défini'}"`);
+  
   // Default to full access
   let accessType: 'directives' | 'medical' | 'full' = 'full';
   let isDirectivesOnly = false;
   let isMedicalOnly = false;
   
   if (bruteForceIdentifier) {
-    if (bruteForceIdentifier.includes("directives_access")) {
+    if (bruteForceIdentifier.includes("directives") || bruteForceIdentifier.includes("directives_access")) {
       accessType = "directives";
       isDirectivesOnly = true;
       isMedicalOnly = false;
       console.log("Type d'accès défini: directives uniquement");
-    } else if (bruteForceIdentifier.includes("medical_access")) {
+    } else if (bruteForceIdentifier.includes("medical") || bruteForceIdentifier.includes("medical_access")) {
       accessType = "medical";
       isMedicalOnly = true;
       isDirectivesOnly = false;
@@ -34,6 +36,8 @@ export function determineAccessType(bruteForceIdentifier?: string): AccessTypeIn
     } else {
       console.log("Type d'accès défini: complet (par défaut)");
     }
+  } else {
+    console.log("Aucun identifiant fourni, type d'accès défini par défaut à complet");
   }
   
   console.log(`Type d'accès déterminé: ${accessType}, DirectivesOnly: ${isDirectivesOnly}, MedicalOnly: ${isMedicalOnly}`);

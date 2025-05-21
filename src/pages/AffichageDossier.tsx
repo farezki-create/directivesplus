@@ -1,5 +1,5 @@
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate } from "react-router-dom";
@@ -11,6 +11,8 @@ import { useDossierSecurity } from "@/hooks/useDossierSecurity";
 import { useDossierSession } from "@/hooks/useDossierSession";
 import { useDossierStore } from "@/store/dossierStore";
 import { toast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { AlertCircle } from "lucide-react";
 
 const AffichageDossier: React.FC = () => {
   const { dossierActif } = useDossierStore();
@@ -36,6 +38,7 @@ const AffichageDossier: React.FC = () => {
   } = useDossierSecurity();
   
   const navigate = useNavigate();
+  const [loadAttempts, setLoadAttempts] = useState(0);
   
   // Vérifier si un dossier est actif dès le chargement
   useEffect(() => {
@@ -64,13 +67,23 @@ const AffichageDossier: React.FC = () => {
       
       logDossierEvent("view", true);
       startSecurityMonitoring();
+      
+      // Si le contenu est vide, essayer de recharger la page une fois
+      if (!dossierActif.contenu && loadAttempts === 0) {
+        setLoadAttempts(prev => prev + 1);
+        const reloadTimer = setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+        
+        return () => clearTimeout(reloadTimer);
+      }
     }
     
     // Stop monitoring on unmount
     return () => {
       stopSecurityMonitoring();
     };
-  }, [dossierActif, logDossierEvent, startSecurityMonitoring, stopSecurityMonitoring]);
+  }, [dossierActif, logDossierEvent, startSecurityMonitoring, stopSecurityMonitoring, loadAttempts]);
   
   // Event handler for tab change
   const handleTabChange = (value: string) => {
@@ -122,13 +135,51 @@ const AffichageDossier: React.FC = () => {
       <div className="container max-w-4xl py-8">
         <Card className="shadow-lg p-8">
           <div className="flex flex-col items-center justify-center h-64">
-            <p className="text-lg text-red-600 font-medium">Aucun dossier disponible</p>
-            <button 
+            <AlertCircle className="h-12 w-12 text-red-500 mb-2" />
+            <p className="text-lg text-red-600 font-medium mb-4">Aucun dossier disponible</p>
+            <p className="text-gray-600 mb-4 text-center">
+              Nous n'avons pas pu trouver ou charger le dossier demandé. 
+              Veuillez réessayer avec un code d'accès valide.
+            </p>
+            <Button 
               onClick={() => navigate('/acces-document')}
-              className="mt-4 px-4 py-2 bg-directiveplus-600 text-white rounded hover:bg-directiveplus-700"
+              className="mt-2 px-4 py-2 bg-directiveplus-600 text-white rounded hover:bg-directiveplus-700"
             >
               Retour à la page d'accès
-            </button>
+            </Button>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+  
+  // Si le contenu du dossier est vide ou invalide
+  if (!decryptedContent && !loading) {
+    return (
+      <div className="container max-w-4xl py-8">
+        <Card className="shadow-lg p-8">
+          <div className="flex flex-col items-center justify-center h-64">
+            <AlertCircle className="h-12 w-12 text-amber-500 mb-2" />
+            <p className="text-lg text-amber-600 font-medium mb-2">Problème de chargement du dossier</p>
+            <p className="text-gray-600 mb-4 text-center">
+              Le dossier a bien été trouvé, mais son contenu est vide ou ne peut pas être affiché.
+              {decryptionError && <span className="block mt-2 text-red-500">{decryptionError}</span>}
+            </p>
+            <div className="flex space-x-4">
+              <Button 
+                onClick={() => window.location.reload()}
+                variant="outline"
+                className="mt-2"
+              >
+                Réessayer
+              </Button>
+              <Button 
+                onClick={() => navigate('/acces-document')}
+                className="mt-2 bg-directiveplus-600 text-white hover:bg-directiveplus-700"
+              >
+                Nouveau code d'accès
+              </Button>
+            </div>
           </div>
         </Card>
       </div>

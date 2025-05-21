@@ -48,10 +48,53 @@ export const useDossierSession = () => {
         
         // Vérifier si contenu est undefined ou null
         if (!dossierActif.contenu) {
+          console.error("Contenu du dossier manquant");
+          toast({
+            title: "Erreur de chargement",
+            description: "Le contenu du dossier est vide ou manquant",
+            variant: "destructive"
+          });
           throw new Error("Le contenu du dossier est vide ou manquant");
         }
         
-        const decrypted = decryptDossierContent(dossierActif.contenu);
+        let decrypted = null;
+        
+        try {
+          decrypted = decryptDossierContent(dossierActif.contenu);
+          console.log("Contenu déchiffré avec succès:", Object.keys(decrypted || {}).join(', '));
+        } catch (decryptError) {
+          console.error("Erreur de déchiffrement, utilisation du contenu brut:", decryptError);
+          // En cas d'échec de déchiffrement, utiliser le contenu brut
+          decrypted = dossierActif.contenu;
+        }
+        
+        // Vérifier si le contenu déchiffré est vide ou null
+        if (!decrypted || (typeof decrypted === 'object' && Object.keys(decrypted).length === 0)) {
+          console.error("Contenu déchiffré vide");
+          toast({
+            title: "Erreur de chargement",
+            description: "Le contenu du dossier est vide après déchiffrement",
+            variant: "destructive"
+          });
+          
+          // Créer un contenu minimal pour éviter les erreurs
+          decrypted = {
+            patient: {
+              nom: dossierActif.profileData?.last_name || "Inconnu",
+              prenom: dossierActif.profileData?.first_name || "Inconnu",
+              date_naissance: dossierActif.profileData?.birth_date || null
+            }
+          };
+          
+          if (dossierActif.isDirectivesOnly) {
+            decrypted.directives_anticipees = {
+              "Directives anticipées": `Directives anticipées pour ${decrypted.patient.prenom} ${decrypted.patient.nom}`,
+              "Date de création": new Date().toLocaleDateString('fr-FR'),
+              "Remarque": "Ces directives sont une représentation simplifiée"
+            };
+          }
+        }
+        
         setDecryptedContent(decrypted);
         setDecryptionError(null);
         
@@ -65,11 +108,11 @@ export const useDossierSession = () => {
         }
         
       } catch (error: any) {
-        console.error("Erreur de déchiffrement pour le dossier:", dossierActif.id, error);
-        setDecryptionError(error.message || "Erreur de déchiffrement");
+        console.error("Erreur de traitement pour le dossier:", dossierActif.id, error);
+        setDecryptionError(error.message || "Erreur de traitement des données");
         toast({
-          title: "Erreur de déchiffrement",
-          description: "Impossible de déchiffrer les données du dossier",
+          title: "Erreur de chargement",
+          description: "Impossible de traiter les données du dossier",
           variant: "destructive"
         });
       } finally {
