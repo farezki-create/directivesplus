@@ -2,12 +2,17 @@ import { useDocumentDeletion } from "./useDocumentDeletion";
 import { useDocumentDownload } from "./useDocumentDownload";
 import { useDocumentPrint } from "./useDocumentPrint";
 import { useDocumentViewer } from "./useDocumentViewer";
+import { ErrorType, handleError } from "@/utils/error-handling";
+import { useState } from "react";
 
 /**
- * Hook that combines all document operations into a single interface
- * This serves as a facade pattern to simplify access to document operations
+ * Hook qui combine toutes les opérations sur les documents dans une interface unique
+ * Sert de pattern façade pour simplifier l'accès aux opérations sur les documents
+ * avec gestion d'erreurs améliorée
  */
 export const useDocumentOperations = (refreshDocuments: () => void) => {
+  const [isProcessing, setIsProcessing] = useState(false);
+  
   // Document viewing and preview operations
   const { 
     previewDocument, 
@@ -26,17 +31,78 @@ export const useDocumentOperations = (refreshDocuments: () => void) => {
     tableName: "pdf_documents" 
   });
   
-  // Other document operations
-  const { handleDownload } = useDocumentDownload();
-  const { handlePrint } = useDocumentPrint();
+  // Other document operations with enhanced error handling
+  const { handleDownload: originalHandleDownload } = useDocumentDownload();
+  const { handlePrint: originalHandlePrint } = useDocumentPrint();
+  
+  // Wrapper for download with error handling
+  const handleDownload = async (file: any) => {
+    setIsProcessing(true);
+    try {
+      await originalHandleDownload(file);
+    } catch (error) {
+      await handleError(
+        error,
+        ErrorType.NETWORK,
+        "DocumentOperations",
+        "download",
+        true,
+        "Impossible de télécharger le document. Veuillez réessayer."
+      );
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+  
+  // Wrapper for print with error handling
+  const handlePrint = async (file: any) => {
+    setIsProcessing(true);
+    try {
+      await originalHandlePrint(file);
+    } catch (error) {
+      await handleError(
+        error,
+        ErrorType.UNKNOWN,
+        "DocumentOperations",
+        "print",
+        true,
+        "Impossible d'imprimer le document. Veuillez réessayer."
+      );
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+  
+  // Enhanced view with error handling
+  const handleViewWithErrorHandling = async (file: any) => {
+    setIsProcessing(true);
+    try {
+      await handleView(file);
+    } catch (error) {
+      await handleError(
+        error,
+        ErrorType.NETWORK,
+        "DocumentOperations",
+        "view",
+        true,
+        "Impossible d'afficher le document. Veuillez réessayer."
+      );
+    } finally {
+      setIsProcessing(false);
+    }
+  };
   
   console.log("useDocumentOperations - état actuel:", { 
     previewDocument, 
-    documentToDelete 
+    documentToDelete,
+    isProcessing
   });
   
   // Return a unified API for all document operations
   return {
+    // Processing state
+    isProcessing,
+    
     // Preview operations
     previewDocument,
     setPreviewDocument,
@@ -47,9 +113,9 @@ export const useDocumentOperations = (refreshDocuments: () => void) => {
     confirmDelete,
     handleDelete,
     
-    // Other document operations
+    // Other document operations with enhanced error handling
     handleDownload,
     handlePrint,
-    handleView
+    handleView: handleViewWithErrorHandling
   };
 };

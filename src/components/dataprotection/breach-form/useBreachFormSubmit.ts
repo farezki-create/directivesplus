@@ -1,53 +1,53 @@
 
-import { useState } from 'react';
+import { useState } from "react";
+import { FormSchema } from "./types";
 import { toast } from "@/hooks/use-toast";
-import { reportDataBreach } from "@/utils/dataBreachUtils";
-import { FormSchema } from './types';
+import { reportDataBreach } from "@/utils/data-breach";
 
-export const useBreachFormSubmit = (onSuccess?: () => void) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+/**
+ * Hook personnalisé pour gérer la soumission du formulaire de signalement de violation
+ * @param onSuccessCallback Fonction à exécuter en cas de succès
+ */
+export const useBreachFormSubmit = (onSuccessCallback?: () => void) => {
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  const handleSubmit = async (values: FormSchema) => {
+  const handleSubmit = async (data: FormSchema) => {
     setIsSubmitting(true);
     try {
-      // Convert affected_users_count to number if provided
-      const affectedUsersCount = values.affected_users_count ? 
-        parseInt(values.affected_users_count, 10) : undefined;
+      console.log("Soumission du formulaire de violation:", data);
       
-      // Create a notification object with all required properties explicitly assigned
       const notificationData = {
-        breach_type: values.breach_type,
-        description: values.description,
-        affected_data_types: values.affected_data_types,
-        affected_users_count: affectedUsersCount,
-        detection_date: values.detection_date,
-        remediation_measures: values.remediation_measures,
-        is_notified_to_authorities: values.is_notified_to_authorities,
-        is_notified_to_users: values.is_notified_to_users,
-        reporter_name: values.reporter_name,
-        reporter_email: values.reporter_email,
-        risk_level: values.risk_level,
-        is_data_encrypted: values.is_data_encrypted
+        breach_type: data.breach_type,
+        description: data.description,
+        affected_data_types: data.affected_data_types,
+        affected_users_count: data.affected_users_count ? parseInt(data.affected_users_count) : undefined,
+        detection_date: data.detection_date,
+        remediation_measures: data.remediation_measures,
+        is_notified_to_authorities: data.is_notified_to_authorities,
+        is_notified_to_users: data.is_notified_to_users,
+        reporter_name: data.reporter_name,
+        reporter_email: data.reporter_email,
+        risk_level: data.risk_level,
+        is_data_encrypted: data.is_data_encrypted
       };
+
+      const result = await reportDataBreach(notificationData);
       
-      const success = await reportDataBreach(notificationData);
-      
-      if (success) {
+      if (result) {
         toast({
-          title: "Signalement enregistré",
-          description: "La violation de données a été correctement signalée et sera traitée par l'équipe de sécurité.",
-          duration: 5000,
+          title: "Signalement envoyé avec succès",
+          description: "La violation de données a été correctement signalée.",
         });
         
-        if (onSuccess) {
-          onSuccess();
+        if (onSuccessCallback) {
+          onSuccessCallback();
         }
       }
     } catch (error) {
-      console.error("Erreur lors de l'envoi du signalement:", error);
+      console.error("Erreur lors du signalement de la violation:", error);
       toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de l'envoi du signalement. Veuillez réessayer.",
+        title: "Erreur lors du signalement",
+        description: "Une erreur inattendue est survenue. Veuillez réessayer.",
         variant: "destructive",
       });
     } finally {
@@ -55,8 +55,5 @@ export const useBreachFormSubmit = (onSuccess?: () => void) => {
     }
   };
 
-  return {
-    isSubmitting,
-    handleSubmit
-  };
+  return { isSubmitting, handleSubmit };
 };

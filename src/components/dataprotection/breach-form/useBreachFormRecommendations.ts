@@ -1,52 +1,51 @@
 
-import { useState, useEffect } from 'react';
-import { evaluateAuthorityNotificationNeeded, evaluateUserNotificationNeeded } from "@/utils/dataBreachUtils";
+import { useEffect, useState } from 'react';
+import { evaluateAuthorityNotificationNeeded, evaluateUserNotificationNeeded } from '@/utils/data-breach';
 
-interface RecommendationsData {
-  notifyAuthorities: boolean;
-  notifyUsers: boolean;
-  urgency: "normal" | "urgent" | "critical";
-}
-
+/**
+ * Hook personnalisé pour générer des recommandations basées sur les données du formulaire de violation
+ * @param riskLevel Le niveau de risque sélectionné
+ * @param dataTypes Les types de données affectées
+ * @param isEncrypted Indique si les données étaient chiffrées
+ * @returns Recommandations pour la notification
+ */
 export const useBreachFormRecommendations = (
   riskLevel: "low" | "medium" | "high" | "critical",
   dataTypes: string[],
   isEncrypted: boolean
 ) => {
-  const [recommendations, setRecommendations] = useState<RecommendationsData | null>(null);
+  const [recommendations, setRecommendations] = useState<{
+    notifyAuthorities: boolean;
+    notifyUsers: boolean;
+    urgency: 'low' | 'medium' | 'high' | 'critical';
+  } | null>(null);
 
+  // Met à jour les recommandations lorsque les paramètres changent
   const updateRecommendations = () => {
-    if (dataTypes.length > 0 && riskLevel) {
-      const notifyAuthorities = evaluateAuthorityNotificationNeeded(
-        riskLevel,
-        dataTypes
-      );
-      
-      const notifyUsers = evaluateUserNotificationNeeded(
-        riskLevel,
-        dataTypes,
-        isEncrypted
-      );
-      
-      let urgency: "normal" | "urgent" | "critical" = "normal";
-      if (riskLevel === "high") urgency = "urgent";
-      if (riskLevel === "critical") urgency = "critical";
-      
-      setRecommendations({
-        notifyAuthorities,
-        notifyUsers,
-        urgency
-      });
+    if (!riskLevel || !dataTypes || dataTypes.length === 0) {
+      setRecommendations(null);
+      return;
     }
+
+    // Détermine si une notification aux autorités est nécessaire
+    const notifyAuthorities = evaluateAuthorityNotificationNeeded(riskLevel, dataTypes);
+    
+    // Détermine si une notification aux personnes concernées est nécessaire
+    const notifyUsers = evaluateUserNotificationNeeded(riskLevel, dataTypes, isEncrypted);
+
+    // Détermine l'urgence de la notification
+    const urgency = riskLevel;
+
+    setRecommendations({
+      notifyAuthorities,
+      notifyUsers,
+      urgency
+    });
   };
 
-  // Update recommendations when dependencies change
   useEffect(() => {
     updateRecommendations();
   }, [riskLevel, dataTypes, isEncrypted]);
 
-  return {
-    recommendations,
-    updateRecommendations
-  };
+  return { recommendations, updateRecommendations };
 };
