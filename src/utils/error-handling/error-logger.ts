@@ -75,9 +75,11 @@ export async function logError(metadata: ErrorMetadata): Promise<void> {
     if (!metadata.sessionId) {
       const { data: sessionData } = await supabase.auth.getSession();
       if (sessionData?.session) {
-        // Fix: Accessing the correct property for session ID
-        // The session object in Supabase has an 'id' property directly
-        metadata.sessionId = sessionData.session.id || sessionData.session.access_token?.substring(0, 20);
+        // Fix: La propriété 'id' n'existe pas sur le type Session
+        // Utilisons plutôt une combinaison d'identifiants uniques disponibles
+        metadata.sessionId = 
+          sessionData.session.access_token?.substring(0, 8) || // Premiers caractères du token d'accès
+          `session-${Date.now()}`; // Fallback avec timestamp
       }
     }
 
