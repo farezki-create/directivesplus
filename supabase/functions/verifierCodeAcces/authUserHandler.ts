@@ -2,7 +2,7 @@
 import { StandardResponse } from "./types.ts";
 import { createSupabaseClient } from "./supabaseClient.ts";
 import { fetchUserProfile } from "./accessService.ts";
-import { getAuthUserMedicalRecord } from "./dossierService.ts";
+import { getOrCreateMedicalRecord } from "./dossierService.ts";
 import { logAccessAttempt } from "./loggingService.ts";
 import { corsHeaders } from "./corsHelpers.ts";
 
@@ -40,9 +40,12 @@ export async function handleAuthenticatedUserRequest(
   const profileData = await fetchUserProfile(supabase, userId);
   
   // Récupérer le dossier pour l'utilisateur authentifié
-  const { content: dossierContent, id: dossierId } = await getAuthUserMedicalRecord(
+  const { content: dossierContent, id: dossierId } = await getOrCreateMedicalRecord(
     supabase,
+    null, // Pas de document ID pour un utilisateur authentifié
     userId,
+    "auth_user_" + userId.substring(0, 8), // Code d'accès généré pour l'utilisateur auth
+    profileData,
     accessType
   );
   

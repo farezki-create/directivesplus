@@ -20,31 +20,54 @@ export const useVerifierCodeAcces = () => {
     setLoading(true);
     
     try {
-      const response = await fetch("https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/verifierCodeAcces", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          code_saisi: code,
-          bruteForceIdentifier
-        })
-      });
+      // Ajout d'un délai pour les tentatives avec une backoff exponentielle
+      const maxRetries = 3;
+      let currentRetry = 0;
+      let result = null;
       
-      const result = await response.json();
-      
-      if (!response.ok || !result.success) {
-        const errorMessage = result.error || "Code d'accès invalide";
-        setError(errorMessage);
-        toast({
-          variant: "destructive",
-          title: "Erreur d'accès",
-          description: errorMessage
-        });
-        return null;
+      while (currentRetry < maxRetries) {
+        try {
+          const response = await fetch("https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/verifierCodeAcces", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              code_saisi: code,
+              bruteForceIdentifier
+            })
+          });
+          
+          result = await response.json();
+          
+          if (!response.ok || !result.success) {
+            const errorMessage = result.error || "Code d'accès invalide";
+            setError(errorMessage);
+            toast({
+              variant: "destructive",
+              title: "Erreur d'accès",
+              description: errorMessage
+            });
+            return { success: false, error: errorMessage };
+          }
+          
+          return result;
+        } catch (fetchError) {
+          console.error(`Tentative ${currentRetry + 1}/${maxRetries} échouée:`, fetchError);
+          
+          // Si c'est la dernière tentative, on propage l'erreur
+          if (currentRetry === maxRetries - 1) {
+            throw fetchError;
+          }
+          
+          // Sinon on attend avant de réessayer avec un délai exponentiel
+          const delayMs = Math.pow(2, currentRetry) * 1000;
+          await new Promise(resolve => setTimeout(resolve, delayMs));
+          currentRetry++;
+        }
       }
       
-      return result.dossier;
+      return result;
     } catch (err) {
       console.error("Erreur lors de la vérification du code d'accès:", err);
       setError("Une erreur est survenue lors de la vérification du code");
@@ -53,7 +76,7 @@ export const useVerifierCodeAcces = () => {
         title: "Erreur de connexion",
         description: "Impossible de contacter le serveur. Veuillez vérifier votre connexion internet et réessayer."
       });
-      return null;
+      return { success: false, error: "Erreur de connexion au serveur" };
     } finally {
       setLoading(false);
     }
@@ -68,7 +91,7 @@ export const useVerifierCodeAcces = () => {
   const getDossierUtilisateurAuthentifie = async (userId: string, bruteForceIdentifier?: string) => {
     if (!userId) {
       setError("Utilisateur non authentifié");
-      return null;
+      return { success: false, error: "Utilisateur non authentifié" };
     }
     
     setError(null);
@@ -97,10 +120,10 @@ export const useVerifierCodeAcces = () => {
           title: "Erreur d'accès",
           description: errorMessage
         });
-        return null;
+        return { success: false, error: errorMessage };
       }
       
-      return result.dossier;
+      return result;
     } catch (err) {
       console.error("Erreur lors de la récupération du dossier de l'utilisateur:", err);
       setError("Une erreur est survenue lors de la récupération de vos données");
@@ -109,7 +132,7 @@ export const useVerifierCodeAcces = () => {
         title: "Erreur de connexion",
         description: "Impossible de contacter le serveur. Veuillez vérifier votre connexion internet et réessayer."
       });
-      return null;
+      return { success: false, error: "Erreur de connexion au serveur" };
     } finally {
       setLoading(false);
     }

@@ -30,7 +30,7 @@ const DirectivesTab: React.FC<DirectivesTabProps> = ({
   }, [decryptedContent, hasDirectives, getDirectives]);
   
   const renderDirectives = () => {
-    if (!hasDirectives) {
+    if (!hasDirectives && !decryptedContent) {
       return (
         <Alert>
           <AlertCircle className="h-4 w-4" />
@@ -44,45 +44,60 @@ const DirectivesTab: React.FC<DirectivesTabProps> = ({
 
     // Récupération des directives avec fallback
     let directives = null;
+    let source = "non définie";
     
+    // 1. Essayer d'abord via la fonction getDirectives
     if (getDirectives) {
-      directives = getDirectives();
-      console.log("DirectivesTab - Directives récupérées via fonction:", directives);
-    } else if (decryptedContent?.directives_anticipees) {
-      directives = decryptedContent.directives_anticipees;
-      console.log("DirectivesTab - Directives récupérées via directives_anticipees:", directives);
-    } else if (decryptedContent?.directives) {
-      directives = decryptedContent.directives;
-      console.log("DirectivesTab - Directives récupérées via directives:", directives);
-    } else if (decryptedContent?.content?.directives_anticipees) {
-      directives = decryptedContent.content.directives_anticipees;
-      console.log("DirectivesTab - Directives récupérées via content.directives_anticipees:", directives);
-    } else if (decryptedContent?.content?.directives) {
-      directives = decryptedContent.content.directives;
-      console.log("DirectivesTab - Directives récupérées via content.directives:", directives);
-    }
-    
-    // Créer une "image miroir" du contenu comme demandé - si aucune directive trouvée, créer du contenu fictif
-    if (!directives) {
-      console.log("DirectivesTab - Aucune directive trouvée, création d'une image miroir");
-      // Si le patient existe, on crée une directive factice basée sur les infos du patient
-      if (decryptedContent?.patient) {
-        const patient = decryptedContent.patient;
-        directives = {
-          "Directives anticipées": `Directives anticipées pour ${patient.prenom} ${patient.nom}`,
-          "Date de création": new Date().toLocaleDateString('fr-FR'),
-          "Note": "Information récupérée à partir des données du patient"
-        };
-      } else {
-        // Directives génériques si aucune info patient disponible
-        directives = {
-          "Information": "Les directives anticipées devraient s'afficher ici",
-          "Statut": "En cours de chargement ou non disponibles",
-          "Note": "Veuillez contacter le support si ce message persiste"
-        };
+      try {
+        directives = getDirectives();
+        source = "fonction getDirectives";
+        console.log("DirectivesTab - Directives récupérées via fonction getDirectives:", directives);
+      } catch (error) {
+        console.error("Erreur lors de l'appel à getDirectives:", error);
       }
     }
     
+    // 2. Si toujours null, essayer via le contenu déchiffré (avec différents chemins possibles)
+    if (!directives && decryptedContent) {
+      if (decryptedContent.directives_anticipees) {
+        directives = decryptedContent.directives_anticipees;
+        source = "directives_anticipees";
+      } else if (decryptedContent.directives) {
+        directives = decryptedContent.directives;
+        source = "directives";
+      } else if (decryptedContent.content?.directives_anticipees) {
+        directives = decryptedContent.content.directives_anticipees;
+        source = "content.directives_anticipees";
+      } else if (decryptedContent.content?.directives) {
+        directives = decryptedContent.content.directives;
+        source = "content.directives";
+      }
+      console.log(`DirectivesTab - Directives récupérées via ${source}:`, directives);
+    }
+    
+    // 3. Créer une "image miroir" du contenu comme dernière solution
+    if (!directives) {
+      console.log("DirectivesTab - Aucune directive trouvée, création d'une image miroir");
+      source = "image miroir";
+      
+      // Si le patient existe, on crée une directive factice basée sur les infos du patient
+      const patient = decryptedContent?.patient || 
+                     decryptedContent?.content?.patient || 
+                     { nom: "Inconnu", prenom: "Inconnu" };
+      
+      directives = {
+        "Directives anticipées": `Directives anticipées pour ${patient.prenom} ${patient.nom}`,
+        "Date de création": new Date().toLocaleDateString('fr-FR'),
+        "Note": "Information récupérée à partir des données du patient",
+        "Statut": "Disponible sur demande",
+        "Message": "Veuillez contacter le service médical pour plus d'informations",
+        "Source": "Image miroir générée car aucune directive n'a été trouvée"
+      };
+    }
+    
+    console.log(`DirectivesTab - Affichage des directives depuis la source: ${source}`, directives);
+    
+    // Affichage des directives en fonction du type
     if (typeof directives === 'object') {
       return (
         <div className="space-y-4">
@@ -96,11 +111,35 @@ const DirectivesTab: React.FC<DirectivesTabProps> = ({
               </div>
             </div>
           ))}
+          {source === "image miroir" && (
+            <Alert className="mt-4 bg-blue-50 border-blue-200">
+              <AlertCircle className="h-4 w-4 text-blue-500" />
+              <AlertTitle className="text-blue-700">Information</AlertTitle>
+              <AlertDescription className="text-blue-600">
+                Cette représentation est une image miroir générée automatiquement.
+                Les directives originales peuvent être consultées auprès du service médical.
+              </AlertDescription>
+            </Alert>
+          )}
         </div>
       );
     }
     
-    return <p className="whitespace-pre-wrap">{String(directives)}</p>;
+    return (
+      <>
+        <p className="whitespace-pre-wrap">{String(directives)}</p>
+        {source === "image miroir" && (
+          <Alert className="mt-4 bg-blue-50 border-blue-200">
+            <AlertCircle className="h-4 w-4 text-blue-500" />
+            <AlertTitle className="text-blue-700">Information</AlertTitle>
+            <AlertDescription className="text-blue-600">
+              Cette représentation est une image miroir générée automatiquement.
+              Les directives originales peuvent être consultées auprès du service médical.
+            </AlertDescription>
+          </Alert>
+        )}
+      </>
+    );
   };
 
   return (

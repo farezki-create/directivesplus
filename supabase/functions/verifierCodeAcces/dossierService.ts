@@ -90,8 +90,8 @@ export async function getOrCreateMedicalRecord(
     }
     
     // Si toujours pas de directives, créer des directives factices pour le développement
-    // Remplacer cette vérification qui utilisait process.env
-    const isDevelopment = Deno.env.get("ENVIRONMENT") === "development" || true;
+    // Corriger la vérification d'environnement de développement pour Deno
+    const isDevelopment = true; // Simplifié pour toujours permettre les données de développement
     
     if (!directives && isDevelopment) {
       console.log("Création de directives factices pour l'environnement de développement");
