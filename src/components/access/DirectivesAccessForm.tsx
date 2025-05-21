@@ -86,7 +86,8 @@ const DirectivesAccessForm = () => {
         if (result.dossier) {
           setDossierActif({
             id: result.dossier.id,
-            contenu: result.dossier.contenu
+            contenu: result.dossier.contenu,
+            profileData: result.dossier.profileData
           });
           
           // Navigation vers la page d'affichage du dossier

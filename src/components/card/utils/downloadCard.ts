@@ -47,20 +47,20 @@ export const downloadCard = async ({
     if (includeDirective && directiveCode) {
       logged = await logAccessEvent({
         userId,
-        accessCodeId: directiveCode, // Utilise le code comme ID pour simplifier
+        accessCodeId: directiveCode,
         resourceType: "directive",
         action: "download",
-        success: true // Add success property
+        success: true
       });
     }
     
     if (includeMedical && medicalCode) {
       logged = await logAccessEvent({
         userId,
-        accessCodeId: medicalCode, // Utilise le code comme ID pour simplifier
+        accessCodeId: medicalCode,
         resourceType: "medical",
         action: "download",
-        success: true // Add success property
+        success: true
       });
     }
     

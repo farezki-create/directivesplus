@@ -87,7 +87,7 @@ export const printCard = async ({
         accessCodeId: directiveCode,
         resourceType: "directive",
         action: "print",
-        success: true // Add success property
+        success: true
       });
     }
     
@@ -97,7 +97,7 @@ export const printCard = async ({
         accessCodeId: medicalCode,
         resourceType: "medical",
         action: "print",
-        success: true // Add success property
+        success: true
       });
     }
     

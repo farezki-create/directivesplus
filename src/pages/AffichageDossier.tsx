@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDossierStore } from "@/store/dossierStore";
@@ -49,7 +50,7 @@ const AffichageDossier = () => {
           resourceType: "dossier",
           resourceId: dossierActif.id,
           action: "view",
-          success: true // Add success property
+          success: true
         });
       } catch (error) {
         console.error("Erreur de déchiffrement:", error);
@@ -67,7 +68,7 @@ const AffichageDossier = () => {
           resourceType: "dossier",
           resourceId: dossierActif.id,
           action: "attempt",
-          success: false // Failed attempt
+          success: false
         });
       }
     }
@@ -112,7 +113,7 @@ const AffichageDossier = () => {
         resourceType: "dossier",
         resourceId: dossierActif.id,
         action: "access",
-        success: true // Add success property
+        success: true
       });
     }
     

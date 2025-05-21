@@ -1,9 +1,9 @@
+
 import { create } from 'zustand';
 
 interface DossierMedical {
   id: string;
   contenu: any;
-  // Add profileData if it's needed
   profileData?: any;
 }
 

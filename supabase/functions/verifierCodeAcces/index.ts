@@ -124,7 +124,56 @@ serve(async (req: Request) => {
       .eq("id", userId)
       .single();
 
+    // Get directives for this user, to include in the medical record
+    const { data: directivesData } = await supabase
+      .from("advance_directives")
+      .select("content")
+      .eq("user_id", userId)
+      .order("updated_at", { ascending: false })
+      .limit(1);
+
+    // Ensure we record this access
     await logAccess(userId, true, "Code d'accès valide");
+
+    // Create or update medical record with directives content
+    if (directivesData && directivesData.length > 0) {
+      console.log("Copie des directives anticipées vers le dossier médical");
+      
+      // Check if a medical record exists for this user
+      const { data: existingMedicalData } = await supabase
+        .from("dossiers_medicaux")
+        .select("id, contenu_dossier")
+        .eq("code_acces", code_saisi)
+        .maybeSingle();
+
+      if (existingMedicalData) {
+        // Update existing medical record to include directives
+        const updatedContent = {
+          ...existingMedicalData.contenu_dossier,
+          directives_anticipees: directivesData[0].content
+        };
+        
+        await supabase
+          .from("dossiers_medicaux")
+          .update({ contenu_dossier: updatedContent })
+          .eq("id", existingMedicalData.id);
+      } else {
+        // Create new medical record with directives
+        await supabase
+          .from("dossiers_medicaux")
+          .insert({
+            code_acces: code_saisi,
+            contenu_dossier: {
+              directives_anticipees: directivesData[0].content,
+              patient: {
+                nom: profileData?.last_name,
+                prenom: profileData?.first_name,
+                date_naissance: profileData?.birth_date
+              }
+            }
+          });
+      }
+    }
 
     // Retourner les informations du dossier
     return new Response(

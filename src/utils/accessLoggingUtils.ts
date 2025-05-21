@@ -14,7 +14,7 @@ interface AccessEventLog {
   details?: string;
 }
 
-export const logAccessEvent = async (event: AccessEventLog) => {
+export const logAccessEvent = async (event: AccessEventLog): Promise<boolean> => {
   try {
     // Make sure we have valid UUIDs or handle non-UUID values
     const validUserId = isValidUUID(event.userId) ? 
@@ -48,6 +48,7 @@ export const logAccessEvent = async (event: AccessEventLog) => {
 
     if (error) {
       console.error("Erreur lors de la journalisation de l'accès:", error);
+      return false;
     }
     
     return !error;
@@ -57,7 +58,7 @@ export const logAccessEvent = async (event: AccessEventLog) => {
   }
 };
 
-// Add the missing notifyAccessLogged function
+// Add the notifyAccessLogged function
 export const notifyAccessLogged = (action: string, success: boolean) => {
   if (success) {
     toast({

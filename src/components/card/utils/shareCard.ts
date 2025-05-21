@@ -55,7 +55,7 @@ export const shareCard = async ({
           accessCodeId: directiveCode,
           resourceType: "directive",
           action: "share",
-          success: true // Add success property
+          success: true
         });
       }
       
@@ -65,7 +65,7 @@ export const shareCard = async ({
           accessCodeId: medicalCode,
           resourceType: "medical",
           action: "share",
-          success: true // Add success property
+          success: true
         });
       }
       
