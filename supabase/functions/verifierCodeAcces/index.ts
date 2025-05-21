@@ -64,31 +64,44 @@ serve(async (req: Request) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Recherche du dossier médical correspondant au code
-    const { data: dossier, error: dossierError } = await supabase
-      .from("dossiers_medicaux")
-      .select("id, contenu_dossier")
-      .eq("code_acces", code_saisi)
-      .single();
+    // Vérification du code d'accès
+    const { data, error } = await supabase
+      .from("document_access_codes")
+      .select("user_id, document_id, is_full_access")
+      .eq("access_code", code_saisi)
+      .maybeSingle();
 
-    // Enregistrement de la tentative d'accès
-    const logAccess = async (dossier_id: string | null, succes: boolean) => {
-      const details = succes
-        ? "Accès réussi"
-        : "Code d'accès invalide ou dossier non trouvé";
+    if (error) {
+      console.error("Erreur Supabase:", error);
+      return new Response(
+        JSON.stringify({ success: false, error: "Erreur de base de données" }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
 
-      await supabase.from("logs_acces").insert({
-        dossier_id,
-        succes,
-        details,
-      });
+    // Journalisation de la tentative d'accès
+    const logAccess = async (userId: string | null, success: boolean, details: string) => {
+      try {
+        await supabase.from("document_access_logs").insert({
+          user_id: userId || "00000000-0000-0000-0000-000000000000",
+          access_code_id: data?.id || null,
+          nom_consultant: "Access via Edge Function",
+          prenom_consultant: "System",
+          success,
+          details
+        });
+      } catch (error) {
+        console.error("Erreur de journalisation:", error);
+      }
     };
 
-    // Gestion des erreurs et réponse
-    if (dossierError || !dossier) {
-      // Journalisation de l'échec (sans ID de dossier)
-      await logAccess(null, false);
-
+    // Si le code d'accès n'existe pas
+    if (!data) {
+      await logAccess(null, false, "Code d'accès invalide");
+      
       return new Response(
         JSON.stringify({ 
           success: false, 
@@ -101,17 +114,27 @@ serve(async (req: Request) => {
       );
     }
 
-    // Journalisation du succès
-    await logAccess(dossier.id, true);
+    // Si le code d'accès existe, récupérer les données du document associé
+    const userId = data.user_id;
+    
+    // Récupérer les données du profil pour vérifier plus tard
+    const { data: profileData } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", userId)
+      .single();
 
-    // Retourne les données du dossier en cas de succès (données chiffrées)
-    // Le déchiffrement se fera côté client
+    await logAccess(userId, true, "Code d'accès valide");
+
+    // Retourner les informations du dossier
     return new Response(
       JSON.stringify({
         success: true,
         dossier: {
-          id: dossier.id,
-          contenu: dossier.contenu_dossier,
+          id: data.document_id || "general_access",
+          userId: userId,
+          isFullAccess: data.is_full_access,
+          profileData: profileData
         },
       }),
       {
@@ -120,9 +143,8 @@ serve(async (req: Request) => {
       }
     );
   } catch (error) {
-    // Gestion des erreurs générales
-    console.error("Erreur lors de la vérification du code:", error);
-
+    console.error("Erreur:", error);
+    
     return new Response(
       JSON.stringify({
         success: false,

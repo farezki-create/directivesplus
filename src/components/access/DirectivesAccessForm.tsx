@@ -7,7 +7,7 @@ import { Form } from "@/components/ui/form";
 import { useEffect, useState } from "react";
 import LoadingState from "@/components/questionnaire/LoadingState";
 import { useVerifierCodeAcces } from "@/hooks/useVerifierCodeAcces";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useDossierStore } from "@/store/dossierStore";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -55,6 +55,8 @@ const DirectivesAccessForm = () => {
   // Observer les résultats de la vérification du code
   useEffect(() => {
     if (result) {
+      console.log("Résultat de la vérification:", result);
+      
       if (result.success) {
         setErrorMessage(null);
         setBlockedAccess(false);
@@ -66,22 +68,27 @@ const DirectivesAccessForm = () => {
         
         // Journaliser l'accès réussi
         const formData = form.getValues();
-        logAccessEvent({
-          userId: '00000000-0000-0000-0000-000000000000', // Utilisateur anonyme
-          accessCodeId: result.dossier?.id || 'unknown',
-          consultantName: formData.lastName,
-          consultantFirstName: formData.firstName,
-          resourceType: "directive",
-          resourceId: result.dossier?.id,
-          action: "access",
-          success: true
-        });
+        try {
+          logAccessEvent({
+            userId: result.dossier?.userId || '00000000-0000-0000-0000-000000000000',
+            accessCodeId: result.dossier?.id || 'unknown',
+            consultantName: formData.lastName,
+            consultantFirstName: formData.firstName,
+            resourceType: "directive",
+            resourceId: result.dossier?.id,
+            action: "access",
+            success: true
+          });
+        } catch (err) {
+          console.error("Erreur lors de la journalisation de l'accès:", err);
+        }
         
         // Stocker le dossier actif et naviguer vers la page d'affichage
         if (result.dossier) {
           setDossierActif({
             id: result.dossier.id,
-            contenu: result.dossier.contenu
+            contenu: result.dossier.contenu,
+            profileData: result.dossier.profileData
           });
           
           // Navigation vers la page d'affichage du dossier
@@ -93,16 +100,20 @@ const DirectivesAccessForm = () => {
         setErrorMessage(result.error || "Code d'accès invalide");
         
         // Journaliser la tentative échouée
-        const formData = form.getValues();
-        logAccessEvent({
-          userId: '00000000-0000-0000-0000-000000000000', // Utilisateur anonyme
-          accessCodeId: 'invalid_attempt',
-          consultantName: formData.lastName,
-          consultantFirstName: formData.firstName,
-          resourceType: "directive",
-          action: "attempt",
-          success: false
-        });
+        try {
+          const formData = form.getValues();
+          logAccessEvent({
+            userId: '00000000-0000-0000-0000-000000000000',
+            accessCodeId: 'failed_attempt',
+            consultantName: formData.lastName,
+            consultantFirstName: formData.firstName,
+            resourceType: "directive",
+            action: "attempt",
+            success: false
+          });
+        } catch (err) {
+          console.error("Erreur lors de la journalisation de l'accès:", err);
+        }
         
         toast({
           title: "Accès refusé",
@@ -124,7 +135,6 @@ const DirectivesAccessForm = () => {
     setErrorMessage(null);
     
     // Créer un identifiant pour la protection contre la force brute
-    // Basé sur des informations de l'utilisateur
     const bruteForcePrevention = `directives_${formData.lastName.toLowerCase()}_${formData.birthDate}`;
     
     // Vérifier si l'accès n'est pas bloqué pour cause de trop de tentatives
@@ -139,8 +149,11 @@ const DirectivesAccessForm = () => {
     setRemainingAttempts(bruteForceCheck.remainingAttempts);
     
     try {
+      // Afficher des logs pour le débogage
+      console.log("Vérification du code d'accès:", code);
+      console.log("Données du formulaire:", formData);
+      
       // Vérifier le code d'accès via la fonction Edge
-      // Passer un identifiant partiel pour le tracking de force brute
       await verifierCode(code, `${formData.lastName.substring(0, 2)}${formData.firstName.substring(0, 2)}`);
       // Le reste de la logique est géré par useEffect qui observe result
     } catch (error) {

@@ -2,20 +2,22 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FormData, formSchema } from "@/utils/access-document/validationSchema";
-import { checkBruteForceAttempt, resetBruteForceCounter } from "@/utils/securityUtils";
+import { formSchema, FormData } from "@/utils/access-document/validationSchema";
+import { useVerifierCodeAcces } from "@/hooks/useVerifierCodeAcces";
+import { checkBruteForceAttempt } from "@/utils/securityUtils";
 import { logAccessEvent } from "@/utils/accessLoggingUtils";
-import { ErrorType, handleError } from "@/utils/error-handling/error-handler";
-import { accessMedicalData } from "@/utils/access-document/accessUtils";
+import { useNavigate } from "react-router-dom";
 
 export const useMedicalAccessForm = () => {
-  // States
+  const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [blockedAccess, setBlockedAccess] = useState(false);
   const [remainingAttempts, setRemainingAttempts] = useState<number | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  // Initialize the form with validation
+  const navigate = useNavigate();
+  
+  const { verifierCode, loading: verificationLoading, result } = useVerifierCodeAcces();
+  
+  // Initialisation de react-hook-form avec le resolver zod
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -26,9 +28,9 @@ export const useMedicalAccessForm = () => {
     }
   });
 
-  // Handle access to medical data
+  // Handle access
   const handleAccess = async () => {
-    // Verify if the form is valid
+    // Vérifier si le formulaire est valide
     const isValid = await form.trigger();
     if (!isValid) {
       return;
@@ -37,11 +39,10 @@ export const useMedicalAccessForm = () => {
     const formData = form.getValues();
     setErrorMessage(null);
     
-    // Create an identifier for brute force prevention
-    // Based on user information
+    // Créer un identifiant pour la protection contre la force brute
     const bruteForcePrevention = `medical_${formData.lastName.toLowerCase()}_${formData.birthDate}`;
     
-    // Check if access is not blocked due to too many attempts
+    // Vérifier si l'accès n'est pas bloqué pour cause de trop de tentatives
     const bruteForceCheck = checkBruteForceAttempt(bruteForcePrevention);
     
     if (!bruteForceCheck.allowed) {
@@ -54,62 +55,42 @@ export const useMedicalAccessForm = () => {
     setLoading(true);
     
     try {
-      // Access medical data
-      const result = await accessMedicalData(formData);
+      // Vérifier le code d'accès médical via la fonction Edge
+      const result = await verifierCode(formData.accessCode, `medical_${formData.lastName.substring(0, 2)}`);
       
-      if (result && result.success) {
-        // Reset brute force counter on success
-        resetBruteForceCounter(bruteForcePrevention);
-        
-        // Log successful access
+      if (result.success) {
         logAccessEvent({
-          userId: result.userId || '00000000-0000-0000-0000-000000000000',
-          accessCodeId: result.accessCodeId || 'unknown',
+          userId: result.dossier?.userId || '00000000-0000-0000-0000-000000000000',
+          accessCodeId: result.dossier?.id || 'unknown',
           consultantName: formData.lastName,
           consultantFirstName: formData.firstName,
           resourceType: "medical",
-          resourceId: result.resourceId,
+          resourceId: result.dossier?.id,
           action: "access",
           success: true
         });
         
-        setErrorMessage(null);
-        setBlockedAccess(false);
+        // Navigation vers la page de données médicales
+        setTimeout(() => {
+          navigate('/donnees-medicales');
+        }, 500);
       } else {
+        setErrorMessage(result.error || "Accès refusé");
+        
         // Log failed attempt
         logAccessEvent({
           userId: '00000000-0000-0000-0000-000000000000',
-          accessCodeId: 'invalid_attempt',
+          accessCodeId: 'failed_attempt',
           consultantName: formData.lastName,
           consultantFirstName: formData.firstName,
           resourceType: "medical",
           action: "attempt",
           success: false
         });
-        
-        setErrorMessage(result?.error || "Accès refusé");
       }
-    } catch (error) {
-      handleError({
-        error,
-        type: ErrorType.CLIENT,
-        component: "MedicalAccessForm",
-        operation: "handleAccessMedicalData",
-        showToast: false
-      });
-      
-      setErrorMessage("Une erreur est survenue lors de la vérification de l'accès");
-      
-      // Log the error
-      logAccessEvent({
-        userId: '00000000-0000-0000-0000-000000000000',
-        accessCodeId: 'error',
-        consultantName: formData.lastName,
-        consultantFirstName: formData.firstName,
-        resourceType: "medical",
-        action: "attempt",
-        success: false
-      });
+    } catch (error: any) {
+      console.error("Erreur lors de l'accès médical:", error);
+      setErrorMessage(error.message || "Une erreur est survenue");
     } finally {
       setLoading(false);
     }
@@ -117,7 +98,7 @@ export const useMedicalAccessForm = () => {
 
   return {
     form,
-    loading,
+    loading: loading || verificationLoading,
     errorMessage,
     blockedAccess,
     remainingAttempts,
