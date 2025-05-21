@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import { Dossier } from "@/store/dossierStore";
+import { supabase } from "@/integrations/supabase/client";
 
 /**
  * Hook pour vérifier les codes d'accès et récupérer les dossiers
@@ -259,4 +260,3 @@ export const useVerifierCodeAcces = () => {
     retryCount
   };
 };
-
