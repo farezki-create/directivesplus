@@ -20,11 +20,20 @@ export const useDossierSession = () => {
   const [decryptionError, setDecryptionError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<string>("directives");
+  const [sessionInitialized, setSessionInitialized] = useState<boolean>(false);
   
   // Effet pour déchiffrer et afficher les données
   useEffect(() => {
     // Mettre un petit délai pour permettre au dossier d'être chargé
     const timer = setTimeout(() => {
+      // Ne traiter que si le hook n'a pas encore été initialisé ou si le dossier a changé
+      if (sessionInitialized && !dossierActif) {
+        // Ne pas rediriger si déjà initialisé mais pas de dossier actif
+        // Cela évite les redirections en boucle
+        setLoading(false);
+        return;
+      }
+      
       // Rediriger vers la page d'accès si aucun dossier actif
       if (!dossierActif) {
         console.log("Aucun dossier actif trouvé, redirection vers la page d'accès");
@@ -32,6 +41,7 @@ export const useDossierSession = () => {
         return;
       }
       
+      setSessionInitialized(true);
       setLoading(true);
       
       // Essayer de déchiffrer le contenu
@@ -51,10 +61,10 @@ export const useDossierSession = () => {
       } finally {
         setLoading(false);
       }
-    }, 100); // Petit délai pour s'assurer que le dossier est chargé
+    }, 300); // Augmenter le délai pour s'assurer que le dossier est chargé
     
     return () => clearTimeout(timer);
-  }, [dossierActif, redirectToAccessPage]);
+  }, [dossierActif, redirectToAccessPage, sessionInitialized]);
 
   // Vérifier l'existence des directives
   const hasDirectives = useCallback(() => {

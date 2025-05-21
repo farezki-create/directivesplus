@@ -23,7 +23,7 @@ export const useDossierNavigation = () => {
     // Utiliser un timeout pour éviter les problèmes de navigation pendant une mise à jour d'état
     setTimeout(() => {
       navigate('/acces-document');
-    }, 50);
+    }, 100);
   }, [clearDossierActif, navigate]);
 
   /**
@@ -31,15 +31,19 @@ export const useDossierNavigation = () => {
    * @param message Error message to display
    */
   const redirectToAccessPage = useCallback((message: string) => {
+    // Ne pas effacer automatiquement le dossier actif lors d'une redirection
+    // pour éviter les problèmes de redirection en boucle
+    
     toast({
       title: "Accès refusé",
       description: message,
       variant: "destructive"
     });
-    // Utiliser un timeout pour éviter les problèmes de navigation pendant une mise à jour d'état
+    
+    // Utiliser un timeout plus long pour éviter les problèmes de navigation pendant une mise à jour d'état
     setTimeout(() => {
-      navigate('/acces-document');
-    }, 50);
+      navigate('/acces-document', { replace: true });
+    }, 100);
   }, [navigate]);
   
   return {
