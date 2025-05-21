@@ -38,7 +38,7 @@ const AccessDocuments = () => {
                     {isAuthenticated && " Ou accédez directement à vos propres directives."}
                   </p>
                   
-                  <Link to="/directives-access" className="w-full">
+                  <Link to="/acces-directives" className="w-full">
                     <Button className="w-full bg-directiveplus-600 hover:bg-directiveplus-700">
                       {isAuthenticated 
                         ? "Consulter vos directives ou saisir un code" 
@@ -61,7 +61,7 @@ const AccessDocuments = () => {
                     {isAuthenticated && " Ou consultez directement vos propres données médicales."}
                   </p>
                   
-                  <Link to="/medical-access" className="w-full">
+                  <Link to="/acces-medical" className="w-full">
                     <Button className="w-full bg-blue-600 hover:bg-blue-700">
                       {isAuthenticated 
                         ? "Consulter vos données ou saisir un code" 
