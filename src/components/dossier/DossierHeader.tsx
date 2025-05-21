@@ -1,11 +1,8 @@
-
 import React from "react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, LogOut, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { ShieldCheck } from "lucide-react";
 import BackButton from "@/components/ui/back-button";
 
 interface DossierHeaderProps {
