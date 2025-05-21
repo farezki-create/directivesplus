@@ -99,7 +99,7 @@ export const useVerifierCodeAcces = () => {
         if (!result.dossier.contenu) {
           console.warn("Le dossier récupéré ne contient pas de données");
           toast({
-            variant: "warning",
+            variant: "default",
             title: "Attention",
             description: "Le dossier a été trouvé mais semble être vide. Certaines informations pourraient ne pas s'afficher correctement."
           });
@@ -213,7 +213,7 @@ export const useVerifierCodeAcces = () => {
         if (!result.dossier.contenu) {
           console.warn("Le dossier récupéré ne contient pas de données");
           toast({
-            variant: "warning",
+            variant: "default",
             title: "Attention",
             description: "Le dossier a été trouvé mais semble être vide. Certaines informations pourraient ne pas s'afficher correctement."
           });
@@ -259,3 +259,4 @@ export const useVerifierCodeAcces = () => {
     retryCount
   };
 };
+
