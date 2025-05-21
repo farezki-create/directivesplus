@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import FormField from "./FormField";
 import FormActions from "./FormActions";
@@ -87,8 +86,7 @@ const DirectivesAccessForm = () => {
         if (result.dossier) {
           setDossierActif({
             id: result.dossier.id,
-            contenu: result.dossier.contenu,
-            profileData: result.dossier.profileData
+            contenu: result.dossier.contenu
           });
           
           // Navigation vers la page d'affichage du dossier

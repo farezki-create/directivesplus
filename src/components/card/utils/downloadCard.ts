@@ -49,7 +49,8 @@ export const downloadCard = async ({
         userId,
         accessCodeId: directiveCode, // Utilise le code comme ID pour simplifier
         resourceType: "directive",
-        action: "download"
+        action: "download",
+        success: true // Add success property
       });
     }
     
@@ -58,7 +59,8 @@ export const downloadCard = async ({
         userId,
         accessCodeId: medicalCode, // Utilise le code comme ID pour simplifier
         resourceType: "medical",
-        action: "download"
+        action: "download",
+        success: true // Add success property
       });
     }
     

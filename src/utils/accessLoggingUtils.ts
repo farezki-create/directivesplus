@@ -1,5 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/components/ui/use-toast";
 
 interface AccessEventLog {
   userId: string;
@@ -48,8 +49,23 @@ export const logAccessEvent = async (event: AccessEventLog) => {
     if (error) {
       console.error("Erreur lors de la journalisation de l'accès:", error);
     }
+    
+    return !error;
   } catch (error) {
     console.error("Erreur lors de la journalisation de l'accès:", error);
+    return false;
+  }
+};
+
+// Add the missing notifyAccessLogged function
+export const notifyAccessLogged = (action: string, success: boolean) => {
+  if (success) {
+    toast({
+      title: "Journal d'accès",
+      description: `Les détails de ${action} ont été journalisés avec succès.`
+    });
+  } else {
+    console.warn("La journalisation de l'accès a échoué");
   }
 };
 

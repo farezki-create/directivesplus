@@ -48,7 +48,8 @@ const AffichageDossier = () => {
           accessCodeId: dossierActif.id,
           resourceType: "dossier",
           resourceId: dossierActif.id,
-          action: "view"
+          action: "view",
+          success: true // Add success property
         });
       } catch (error) {
         console.error("Erreur de déchiffrement:", error);
@@ -66,7 +67,7 @@ const AffichageDossier = () => {
           resourceType: "dossier",
           resourceId: dossierActif.id,
           action: "attempt",
-          success: false
+          success: false // Failed attempt
         });
       }
     }
@@ -111,7 +112,7 @@ const AffichageDossier = () => {
         resourceType: "dossier",
         resourceId: dossierActif.id,
         action: "access",
-        success: true
+        success: true // Add success property
       });
     }
     
