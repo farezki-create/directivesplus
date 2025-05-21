@@ -27,10 +27,13 @@ const AffichageDossier: React.FC = () => {
     handleCloseDossier
   );
   
-  // Reset activity timer on component mount
+  // Reset activity timer on component mount and log data for debugging
   useEffect(() => {
     resetActivityTimer();
-  }, [resetActivityTimer]);
+    console.log("AffichageDossier - Dossier actif:", dossierActif);
+    console.log("AffichageDossier - Contenu déchiffré:", decryptedContent);
+    console.log("AffichageDossier - Directives disponibles:", hasDirectives);
+  }, [resetActivityTimer, dossierActif, decryptedContent, hasDirectives]);
 
   if (!dossierActif) {
     return null;
@@ -55,7 +58,7 @@ const AffichageDossier: React.FC = () => {
           <PatientInfoCard patientInfo={patientInfo} />
           
           <Tabs defaultValue={defaultTab} className="w-full">
-            <TabsList className="grid grid-cols-2 mb-4">
+            <TabsList className="grid w-full grid-cols-2 mb-4">
               {!isDirectivesOnly && (
                 <TabsTrigger value="dossier" disabled={isDirectivesOnly}>Données médicales</TabsTrigger>
               )}

@@ -11,6 +11,8 @@ interface DirectivesTabProps {
 }
 
 const DirectivesTab: React.FC<DirectivesTabProps> = ({ decryptedContent, hasDirectives }) => {
+  console.log("DirectivesTab - Content:", decryptedContent, "hasDirectives:", hasDirectives);
+  
   const renderDirectives = () => {
     if (!hasDirectives) {
       return (
@@ -25,6 +27,19 @@ const DirectivesTab: React.FC<DirectivesTabProps> = ({ decryptedContent, hasDire
     }
 
     const directives = decryptedContent.directives_anticipees;
+    console.log("DirectivesTab - Directives content:", directives);
+    
+    if (!directives) {
+      return (
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Information</AlertTitle>
+          <AlertDescription>
+            Contenu des directives anticipées non disponible.
+          </AlertDescription>
+        </Alert>
+      );
+    }
     
     if (typeof directives === 'object') {
       return (

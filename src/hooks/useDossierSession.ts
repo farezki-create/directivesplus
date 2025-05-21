@@ -37,37 +37,39 @@ export const useDossierSession = () => {
         variant: "destructive"
       });
       navigate('/acces-document');
-    } else {
-      // Essayer de déchiffrer le contenu
-      try {
-        console.log("Traitement des données du dossier:", dossierActif.id);
-        
-        // Vérifier si le contenu est chiffré (commence par "U2F")
-        if (typeof dossierActif.contenu === 'string' && dossierActif.contenu.startsWith('U2F')) {
-          const decrypted = decryptData(dossierActif.contenu);
-          setDecryptedContent(decrypted);
-          console.log("Données déchiffrées avec succès pour le dossier:", dossierActif.id);
-        } else {
-          // Si les données ne sont pas chiffrées (compatibilité descendante)
-          setDecryptedContent(dossierActif.contenu);
-          console.log("Données non chiffrées utilisées directement pour le dossier:", dossierActif.id);
-        }
-      } catch (error) {
-        console.error("Erreur de déchiffrement pour le dossier:", dossierActif.id, error);
-        setDecryptionError(true);
-        toast({
-          title: "Erreur de déchiffrement",
-          description: "Impossible de déchiffrer les données du dossier",
-          variant: "destructive"
-        });
+      return;
+    }
+    
+    // Essayer de déchiffrer le contenu
+    try {
+      console.log("Traitement des données du dossier:", dossierActif.id);
+      console.log("Contenu du dossier:", dossierActif.contenu);
+      
+      // Vérifier si le contenu est chiffré (commence par "U2F")
+      if (typeof dossierActif.contenu === 'string' && dossierActif.contenu.startsWith('U2F')) {
+        const decrypted = decryptData(dossierActif.contenu);
+        setDecryptedContent(decrypted);
+        console.log("Données déchiffrées avec succès pour le dossier:", dossierActif.id);
+      } else {
+        // Si les données ne sont pas chiffrées (compatibilité descendante)
+        setDecryptedContent(dossierActif.contenu);
+        console.log("Données non chiffrées utilisées directement pour le dossier:", dossierActif.id);
       }
+    } catch (error) {
+      console.error("Erreur de déchiffrement pour le dossier:", dossierActif.id, error);
+      setDecryptionError(true);
+      toast({
+        title: "Erreur de déchiffrement",
+        description: "Impossible de déchiffrer les données du dossier",
+        variant: "destructive"
+      });
     }
   }, [dossierActif, navigate]);
 
   // Vérifier si le contenu déchiffré contient des directives
   const hasDirectives = decryptedContent && 
     typeof decryptedContent === 'object' && 
-    decryptedContent.directives_anticipees;
+    decryptedContent.directives_anticipees !== undefined;
 
   // Extraire les informations du patient si disponibles
   const patientInfo = decryptedContent && 

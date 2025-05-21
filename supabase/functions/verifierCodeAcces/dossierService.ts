@@ -30,6 +30,7 @@ export async function getAuthUserMedicalRecord(
 
   // Récupérer les directives pour cet utilisateur si l'accès le permet
   if (accessType === "directives" || accessType === "full") {
+    console.log("getAuthUserMedicalRecord - Récupération des directives pour l'utilisateur:", userId);
     const { data: directivesData } = await supabase
       .from("advance_directives")
       .select("content")
@@ -39,7 +40,10 @@ export async function getAuthUserMedicalRecord(
 
     // Ajouter les directives si disponibles
     if (directivesData && directivesData.length > 0) {
+      console.log("getAuthUserMedicalRecord - Directives trouvées:", directivesData[0].content);
       dossierContenu["directives_anticipees"] = directivesData[0].content;
+    } else {
+      console.log("getAuthUserMedicalRecord - Aucune directive trouvée pour l'utilisateur:", userId);
     }
   }
 
@@ -57,6 +61,8 @@ export async function getAuthUserMedicalRecord(
       dossierContenu["donnees_medicales"] = medicalData[0].data;
     }
   }
+
+  console.log("getAuthUserMedicalRecord - Contenu du dossier créé:", dossierContenu);
   
   return {
     content: dossierContenu,
@@ -109,6 +115,7 @@ export async function getOrCreateMedicalRecord(
 
   // Récupérer les directives pour cet utilisateur si l'accès le permet
   if (accessType === "directives" || accessType === "full") {
+    console.log("getOrCreateMedicalRecord - Récupération des directives pour l'utilisateur:", userId);
     const { data: directivesData } = await supabase
       .from("advance_directives")
       .select("content")
@@ -118,7 +125,10 @@ export async function getOrCreateMedicalRecord(
 
     // Ajouter les directives si disponibles
     if (directivesData && directivesData.length > 0) {
+      console.log("getOrCreateMedicalRecord - Directives trouvées:", directivesData[0].content);
       dossierContenu["directives_anticipees"] = directivesData[0].content;
+    } else {
+      console.log("getOrCreateMedicalRecord - Aucune directive trouvée pour l'utilisateur:", userId);
     }
   }
 
@@ -137,21 +147,29 @@ export async function getOrCreateMedicalRecord(
     }
   }
   
+  // Créer un ID de document si non fourni
+  const finalDocumentId = documentId || crypto.randomUUID();
+  
   // Insérer le nouveau dossier
-  const { data: newDossier } = await supabase
+  const { data: newDossier, error } = await supabase
     .from("dossiers_medicaux")
     .insert({
-      id: documentId,
+      id: finalDocumentId,
       code_acces: code,
       contenu_dossier: dossierContenu
     })
     .select()
     .single();
+    
+  if (error) {
+    console.error("Erreur lors de la création du dossier médical:", error);
+  }
   
-  console.log("Nouveau dossier médical créé avec ID:", documentId);
+  console.log("Nouveau dossier médical créé avec ID:", finalDocumentId);
+  console.log("Contenu du dossier:", dossierContenu);
   
   return {
     content: dossierContenu,
-    id: documentId
+    id: finalDocumentId
   };
 }
