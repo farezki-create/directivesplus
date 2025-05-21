@@ -1,98 +1,97 @@
 
-import { useEffect } from "react";
-import Header from "@/components/Header";
-import { toast } from "@/hooks/use-toast";
+import React, { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import BackButton from "@/components/ui/back-button";
-import { FileText, FileSearch } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import Header from "@/components/Header";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { FileText, Activity } from "lucide-react";
 
 const AccessDocuments = () => {
-  const { isAuthenticated } = useAuth();
-  const navigate = useNavigate();
-  
+  const { isAuthenticated, user } = useAuth();
+
   useEffect(() => {
-    console.log("Page de choix d'accès aux documents chargée");
-    console.log("État d'authentification:", isAuthenticated ? "Connecté" : "Non connecté");
-    
-    toast({
-      title: "Accès aux documents",
-      description: "Choisissez le type de document auquel vous souhaitez accéder"
-    });
-  }, [isAuthenticated]);
+    if (isAuthenticated && user) {
+      console.log("Utilisateur connecté dans AccessDocuments:", user.id);
+    }
+  }, [isAuthenticated, user]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen bg-gray-50">
       <Header />
-      
-      <main className="flex-grow container mx-auto px-4 py-8 mt-6">
-        <BackButton />
-        
-        <div className="max-w-2xl mx-auto">
-          <h1 className="text-3xl font-bold mb-8 text-center">
-            Accès aux documents
+      <main className="container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-3xl font-bold text-directiveplus-800 text-center mb-8">
+            Accéder à un document
           </h1>
           
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Directives anticipées */}
-            <Card className="shadow-lg transition-all hover:shadow-xl">
-              <CardHeader>
-                <CardTitle className="text-directiveplus-700 flex items-center gap-2">
-                  <FileText />
-                  Directives anticipées
-                </CardTitle>
-                <CardDescription>
-                  Accédez aux directives anticipées d'un patient
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 mb-6">
-                  Consultez les volontés d'un patient concernant sa fin de vie et les soins médicaux.
-                </p>
-                <Button
-                  className="w-full bg-directiveplus-700 hover:bg-directiveplus-800"
-                  onClick={() => navigate("/acces-directives")}
-                >
-                  Accéder aux directives
-                </Button>
+          <div className="grid md:grid-cols-2 gap-6">
+            <Card className="shadow-sm hover:shadow-md transition-shadow">
+              <CardContent className="pt-6">
+                <div className="flex flex-col items-center text-center">
+                  <div className="bg-directiveplus-100 p-4 rounded-full mb-4">
+                    <FileText className="h-8 w-8 text-directiveplus-600" />
+                  </div>
+                  <h2 className="text-xl font-semibold mb-2">Directives anticipées</h2>
+                  <p className="text-gray-600 mb-6">
+                    Consultez des directives anticipées avec le code d'accès fourni par leur titulaire.
+                    {isAuthenticated && " Ou accédez directement à vos propres directives."}
+                  </p>
+                  
+                  <Link to="/directives-access" className="w-full">
+                    <Button className="w-full bg-directiveplus-600 hover:bg-directiveplus-700">
+                      {isAuthenticated 
+                        ? "Consulter vos directives ou saisir un code" 
+                        : "Saisir un code d'accès"}
+                    </Button>
+                  </Link>
+                </div>
               </CardContent>
             </Card>
             
-            {/* Données médicales */}
-            <Card className="shadow-lg transition-all hover:shadow-xl">
-              <CardHeader>
-                <CardTitle className="text-blue-600 flex items-center gap-2">
-                  <FileSearch />
-                  Données médicales
-                </CardTitle>
-                <CardDescription>
-                  Accédez aux données médicales d'un patient
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 mb-6">
-                  Consultez les informations médicales importantes d'un patient pour sa prise en charge.
-                </p>
-                <Button
-                  className="w-full"
-                  onClick={() => navigate("/acces-medical")}
-                  style={{ backgroundColor: '#3b82f6', color: 'white' }}
-                >
-                  Accéder aux données médicales
-                </Button>
+            <Card className="shadow-sm hover:shadow-md transition-shadow">
+              <CardContent className="pt-6">
+                <div className="flex flex-col items-center text-center">
+                  <div className="bg-blue-100 p-4 rounded-full mb-4">
+                    <Activity className="h-8 w-8 text-blue-600" />
+                  </div>
+                  <h2 className="text-xl font-semibold mb-2">Données médicales</h2>
+                  <p className="text-gray-600 mb-6">
+                    Accédez aux données médicales d'un patient avec le code d'accès qu'il vous a fourni.
+                    {isAuthenticated && " Ou consultez directement vos propres données médicales."}
+                  </p>
+                  
+                  <Link to="/medical-access" className="w-full">
+                    <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                      {isAuthenticated 
+                        ? "Consulter vos données ou saisir un code" 
+                        : "Saisir un code d'accès"}
+                    </Button>
+                  </Link>
+                </div>
               </CardContent>
             </Card>
           </div>
+
+          {isAuthenticated && (
+            <div className="mt-8 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-center text-green-800">
+                Vous êtes connecté. Vous pouvez accéder directement à vos directives et données médicales en cliquant sur les boutons ci-dessus.
+              </p>
+            </div>
+          )}
+          
+          <div className="mt-12 bg-white p-6 rounded-lg shadow-sm">
+            <h3 className="text-lg font-semibold mb-4">Comment ça fonctionne ?</h3>
+            <ol className="list-decimal pl-5 space-y-2">
+              <li>Demandez un code d'accès au titulaire des directives ou au patient</li>
+              <li>Choisissez le type de document auquel vous souhaitez accéder</li>
+              <li>Saisissez le code et les informations d'identification demandées</li>
+              <li>Consultez le document en toute sécurité</li>
+            </ol>
+          </div>
         </div>
       </main>
-      
-      <footer className="bg-white py-6 border-t">
-        <div className="container mx-auto px-4 text-center text-gray-500">
-          <p>© 2025 DirectivesPlus. Tous droits réservés.</p>
-        </div>
-      </footer>
     </div>
   );
 };

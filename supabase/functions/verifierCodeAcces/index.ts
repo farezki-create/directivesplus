@@ -13,6 +13,8 @@ const corsHeaders = {
 interface RequestBody {
   code_saisi: string;
   bruteForceIdentifier?: string;
+  isAuthUserRequest?: boolean;
+  userId?: string;
 }
 
 // Interface pour les réponses standardisées
@@ -115,6 +117,68 @@ async function fetchUserProfile(supabase: any, userId: string) {
     .single();
   
   return profileData;
+}
+
+/**
+ * Récupère ou crée un dossier médical pour un utilisateur authentifié
+ * @param supabase Client Supabase  
+ * @param userId ID de l'utilisateur
+ * @returns Contenu du dossier pour l'utilisateur authentifié
+ */
+async function getAuthUserMedicalRecord(
+  supabase: any,
+  userId: string,
+  accessType: string = "full"
+) {
+  // Générer un ID pour ce dossier
+  const dossierId = crypto.randomUUID();
+  
+  // Récupérer les données du profil
+  const profileData = await fetchUserProfile(supabase, userId);
+  
+  // Créer un contenu de dossier avec les informations du patient
+  const dossierContenu: any = {
+    patient: {
+      nom: profileData?.last_name,
+      prenom: profileData?.first_name,
+      date_naissance: profileData?.birth_date
+    }
+  };
+
+  // Récupérer les directives pour cet utilisateur si l'accès le permet
+  if (accessType === "directives" || accessType === "full") {
+    const { data: directivesData } = await supabase
+      .from("advance_directives")
+      .select("content")
+      .eq("user_id", userId)
+      .order("updated_at", { ascending: false })
+      .limit(1);
+
+    // Ajouter les directives si disponibles
+    if (directivesData && directivesData.length > 0) {
+      dossierContenu["directives_anticipees"] = directivesData[0].content;
+    }
+  }
+
+  // Récupérer les données médicales si l'accès le permet
+  if (accessType === "medical" || accessType === "full") {
+    const { data: medicalData } = await supabase
+      .from("medical_data")
+      .select("data")
+      .eq("user_id", userId)
+      .order("updated_at", { ascending: false })
+      .limit(1);
+
+    // Ajouter les données médicales si disponibles
+    if (medicalData && medicalData.length > 0) {
+      dossierContenu["donnees_medicales"] = medicalData[0].data;
+    }
+  }
+  
+  return {
+    content: dossierContenu,
+    id: dossierId
+  };
 }
 
 /**
@@ -235,8 +299,74 @@ serve(async (req: Request) => {
 
     // Récupération et validation du corps de la requête
     const reqBody = await req.json() as RequestBody;
-    const { code_saisi, bruteForceIdentifier } = reqBody;
+    const { code_saisi, bruteForceIdentifier, isAuthUserRequest, userId } = reqBody;
 
+    // Cas spécial: requête pour un utilisateur authentifié
+    if (isAuthUserRequest && userId) {
+      console.log("Requête pour utilisateur authentifié:", userId);
+      
+      // Création du client Supabase
+      const supabase = createSupabaseClient();
+      
+      // Déterminer le type d'accès demandé basé sur l'identifiant bruteForceIdentifier
+      let accessType = "full"; 
+      let isDirectivesOnly = false;
+      let isMedicalOnly = false;
+      
+      if (bruteForceIdentifier && typeof bruteForceIdentifier === "string") {
+        if (bruteForceIdentifier.includes("directives_access")) {
+          accessType = "directives";
+          isDirectivesOnly = true;
+        } else if (bruteForceIdentifier.includes("medical_access")) {
+          accessType = "medical";
+          isMedicalOnly = true;
+        }
+      }
+      
+      // Récupérer les données du profil
+      const profileData = await fetchUserProfile(supabase, userId);
+      
+      // Récupérer le dossier pour l'utilisateur authentifié
+      const { content: dossierContent, id: dossierId } = await getAuthUserMedicalRecord(
+        supabase,
+        userId,
+        accessType
+      );
+      
+      // Journaliser l'accès réussi
+      await logAccessAttempt(
+        supabase, 
+        userId, 
+        true, 
+        `Accès de l'utilisateur authentifié à son propre dossier`, 
+        null
+      );
+      
+      // Création de la réponse réussie
+      const successResponse: StandardResponse = {
+        success: true,
+        dossier: {
+          id: dossierId,
+          userId: userId,
+          isFullAccess: true,
+          isDirectivesOnly: isDirectivesOnly,
+          isMedicalOnly: isMedicalOnly,
+          profileData: profileData,
+          contenu: dossierContent
+        },
+      };
+      
+      // Retour de la réponse
+      return new Response(
+        JSON.stringify(successResponse),
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Mode normal: validation par code d'accès
     if (!code_saisi || typeof code_saisi !== "string") {
       return new Response(
         JSON.stringify({ error: "Code d'accès invalide ou manquant" }),

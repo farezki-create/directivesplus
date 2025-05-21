@@ -1,119 +1,94 @@
 
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { checkBruteForceAttempt, resetBruteForceCounter } from "@/utils/securityUtils";
-import { toast } from "@/hooks/use-toast";
-import { Dossier } from "@/store/dossierStore";
 
-interface VerificationResult {
-  success: boolean;
-  dossier?: Dossier;
-  error?: string;
-}
-
+/**
+ * Hook pour vérifier les codes d'accès et récupérer les dossiers
+ */
 export const useVerifierCodeAcces = () => {
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<VerificationResult | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const verifierCode = async (code: string, identifierInfo: string = ''): Promise<VerificationResult> => {
+  /**
+   * Vérifie un code d'accès et récupère le dossier correspondant
+   * @param code Code d'accès saisi par l'utilisateur 
+   * @param bruteForceIdentifier Identifiant de contexte pour la vérification
+   * @returns Dossier si la vérification est réussie, null sinon
+   */
+  const verifierCode = async (code: string, bruteForceIdentifier?: string) => {
+    setError(null);
     setLoading(true);
-    setResult(null);
-    
-    // Identifier unique pour la détection de force brute
-    const bruteForceIdentifier = `access_code_${code.substring(0, 4)}_${identifierInfo}`;
-    
-    // Vérifier si l'utilisateur n'est pas bloqué pour force brute
-    const bruteForceCheck = checkBruteForceAttempt(bruteForceIdentifier);
-    
-    if (!bruteForceCheck.allowed) {
-      const errorResult = { 
-        success: false, 
-        error: `Trop de tentatives. Veuillez réessayer dans ${Math.ceil(bruteForceCheck.blockExpiresIn! / 60)} minutes.` 
-      };
-      setResult(errorResult);
-      setLoading(false);
-      return errorResult;
-    }
     
     try {
-      console.log("Appel de la fonction Edge verifierCodeAcces avec le code:", code);
-      
-      // Appel à la fonction Edge
-      const { data, error } = await supabase.functions.invoke("verifierCodeAcces", {
-        body: { 
+      const response = await fetch("https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/verifierCodeAcces", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
           code_saisi: code,
           bruteForceIdentifier
-        },
+        })
       });
-
-      console.log("Réponse de la fonction Edge:", data, error);
-
-      if (error) {
-        console.error("Erreur lors de l'appel à la fonction Edge:", error);
-        
-        // On affiche un toast pour l'erreur
-        toast({
-          title: "Erreur de serveur",
-          description: "Une erreur est survenue lors de la vérification du code d'accès",
-          variant: "destructive"
-        });
-        
-        const errorResult = { 
-          success: false, 
-          error: "Erreur de communication avec le serveur" 
-        };
-        setResult(errorResult);
-        return errorResult;
+      
+      const result = await response.json();
+      
+      if (!response.ok || !result.success) {
+        const errorMessage = result.error || "Code d'accès invalide";
+        setError(errorMessage);
+        return null;
       }
-
-      // Si succès, réinitialiser le compteur de tentatives
-      if (data && data.success) {
-        resetBruteForceCounter(bruteForceIdentifier);
-        
-        // S'assurer que toutes les propriétés requises sont présentes
-        if (data.dossier) {
-          // Garantir que les propriétés booléennes sont définies
-          data.dossier.isFullAccess = data.dossier.isFullAccess || false;
-          data.dossier.isDirectivesOnly = data.dossier.isDirectivesOnly || false;
-          data.dossier.isMedicalOnly = data.dossier.isMedicalOnly || false;
-          
-          // S'assurer que contenu est au moins un objet vide s'il est undefined
-          data.dossier.contenu = data.dossier.contenu || {};
-          
-          // Afficher un toast avec l'ID du dossier pour confirmation
-          toast({
-            title: "Accès autorisé",
-            description: `Accès au dossier ${data.dossier.id} accordé`
-          });
-        }
-      } else if (!data) {
-        // Gérer le cas où data est undefined ou null
-        const errorResult = { 
-          success: false, 
-          error: "Aucune réponse du serveur"
-        };
-        setResult(errorResult);
-        return errorResult;
-      }
-
-      setResult(data);
-      return data as VerificationResult;
+      
+      return result.dossier;
     } catch (err) {
-      console.error("Erreur lors de la vérification du code:", err);
-      
-      // On affiche un toast pour l'erreur
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la vérification du code d'accès",
-        variant: "destructive"
+      console.error("Erreur lors de la vérification du code d'accès:", err);
+      setError("Une erreur est survenue lors de la vérification du code");
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Récupère le dossier de l'utilisateur authentifié
+   * @param userId ID de l'utilisateur authentifié
+   * @param bruteForceIdentifier Identifiant pour le contexte spécifique (directives ou médical)
+   * @returns Le dossier de l'utilisateur ou null
+   */
+  const getDossierUtilisateurAuthentifie = async (userId: string, bruteForceIdentifier?: string) => {
+    if (!userId) {
+      setError("Utilisateur non authentifié");
+      return null;
+    }
+    
+    setError(null);
+    setLoading(true);
+    
+    try {
+      const response = await fetch("https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/verifierCodeAcces", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          isAuthUserRequest: true,
+          userId,
+          bruteForceIdentifier
+        })
       });
       
-      const errorResult = { 
-        success: false, 
-        error: "Une erreur inattendue est survenue" 
-      };
-      setResult(errorResult);
-      return errorResult;
+      const result = await response.json();
+      
+      if (!response.ok || !result.success) {
+        const errorMessage = result.error || "Erreur de récupération du dossier";
+        setError(errorMessage);
+        return null;
+      }
+      
+      return result.dossier;
+    } catch (err) {
+      console.error("Erreur lors de la récupération du dossier de l'utilisateur:", err);
+      setError("Une erreur est survenue lors de la récupération de vos données");
+      return null;
     } finally {
       setLoading(false);
     }
@@ -121,7 +96,8 @@ export const useVerifierCodeAcces = () => {
 
   return {
     verifierCode,
+    getDossierUtilisateurAuthentifie,
     loading,
-    result
+    error
   };
 };
