@@ -1,12 +1,12 @@
 
-import React, { useEffect } from "react";
+import React from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import FormField from "./FormField";
-import FormActions from "./FormActions";
 import { Form } from "@/components/ui/form";
 import LoadingState from "@/components/questionnaire/LoadingState";
-import SecurityAlerts from "./SecurityAlerts";
+import SecurityAlerts from "../SecurityAlerts";
+import FormActions from "../FormActions";
 import { useMedicalAccessForm } from "@/hooks/access-document/useMedicalAccessForm";
+import MedicalFormFields from "./MedicalFormFields";
 
 const MedicalAccessForm = () => {
   const { 
@@ -17,14 +17,6 @@ const MedicalAccessForm = () => {
     remainingAttempts,
     handleAccess
   } = useMedicalAccessForm();
-
-  // Using useEffect to watch for form errors
-  useEffect(() => {
-    // Log any form errors when they change
-    if (Object.keys(form.formState.errors).length > 0) {
-      console.log("Erreurs du formulaire:", form.formState.errors);
-    }
-  }, [form.formState.errors]); // Watch for changes in the errors object
 
   return (
     <div className="max-w-md mx-auto">
@@ -43,36 +35,10 @@ const MedicalAccessForm = () => {
         <Form {...form}>
           <div>
             <CardContent className="space-y-4">
-              <FormField 
-                id="lastName"
-                label="Nom"
-                placeholder="Nom de famille"
-                control={form.control}
-                disabled={loading || blockedAccess}
-              />
-              
-              <FormField 
-                id="firstName"
-                label="Prénom"
-                placeholder="Prénom"
-                control={form.control}
-                disabled={loading || blockedAccess}
-              />
-              
-              <FormField 
-                id="birthDate"
-                label="Date de naissance"
-                type="date"
-                control={form.control}
-                disabled={loading || blockedAccess}
-              />
-              
-              <FormField 
-                id="accessCode"
-                label="Code d'accès"
-                placeholder="Code d'accès unique"
-                control={form.control}
-                disabled={loading || blockedAccess}
+              <MedicalFormFields 
+                form={form}
+                blockedAccess={blockedAccess}
+                loading={loading}
               />
 
               <SecurityAlerts 

@@ -1,10 +1,10 @@
 
 import { useEffect } from "react";
-import MedicalAccessForm from "@/components/access/MedicalAccessForm";
 import Header from "@/components/Header";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import BackButton from "@/components/ui/back-button";
+import MedicalAccessForm from "@/components/access/medical/MedicalAccessForm";
 
 const MedicalAccess = () => {
   const { isAuthenticated } = useAuth();

@@ -3,11 +3,10 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormData, formSchema } from "@/utils/access-document/validationSchema";
-import { toast } from "@/hooks/use-toast";
-import { logAccessEvent } from "@/utils/accessLoggingUtils";
 import { checkBruteForceAttempt, resetBruteForceCounter } from "@/utils/securityUtils";
-import { accessMedicalData } from "@/utils/access-document/accessUtils";
+import { logAccessEvent } from "@/utils/accessLoggingUtils";
 import { ErrorType, handleError } from "@/utils/error-handling/error-handler";
+import { accessMedicalData } from "@/utils/access-document/accessUtils";
 
 export const useMedicalAccessForm = () => {
   // States
