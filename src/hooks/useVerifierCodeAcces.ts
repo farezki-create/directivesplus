@@ -3,16 +3,11 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { checkBruteForceAttempt, resetBruteForceCounter } from "@/utils/securityUtils";
 import { toast } from "@/components/ui/use-toast";
+import { Dossier } from "@/store/dossierStore";
 
 interface VerificationResult {
   success: boolean;
-  dossier?: {
-    id: string;
-    userId: string;
-    isFullAccess: boolean;
-    profileData?: any;
-    contenu?: any;
-  };
+  dossier?: Dossier;
   error?: string;
 }
 
@@ -45,7 +40,10 @@ export const useVerifierCodeAcces = () => {
       
       // Appel à la fonction Edge
       const { data, error } = await supabase.functions.invoke("verifierCodeAcces", {
-        body: { code_saisi: code },
+        body: { 
+          code_saisi: code,
+          bruteForceIdentifier
+        },
       });
 
       console.log("Réponse de la fonction Edge:", data, error);

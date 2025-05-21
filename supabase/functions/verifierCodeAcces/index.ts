@@ -12,6 +12,7 @@ const corsHeaders = {
 // Interface pour la requête
 interface RequestBody {
   code_saisi: string;
+  bruteForceIdentifier?: string;
 }
 
 // Interface pour les réponses standardisées
@@ -22,8 +23,8 @@ interface StandardResponse {
     id: string;
     userId: string;
     isFullAccess: boolean;
-    isDirectivesOnly?: boolean;
-    isMedicalOnly?: boolean;
+    isDirectivesOnly: boolean;
+    isMedicalOnly: boolean;
     profileData?: any;
     contenu?: any;
   };
@@ -227,7 +228,8 @@ serve(async (req: Request) => {
     }
 
     // Récupération et validation du corps de la requête
-    const { code_saisi } = await req.json() as RequestBody;
+    const reqBody = await req.json() as RequestBody;
+    const { code_saisi, bruteForceIdentifier } = reqBody;
 
     if (!code_saisi || typeof code_saisi !== "string") {
       return new Response(
@@ -265,6 +267,11 @@ serve(async (req: Request) => {
     const userId = accessCodeData.user_id;
     const documentId = accessCodeData.document_id;
     const typeAccess = accessCodeData.type_access || "full";
+    const isFullAccess = accessCodeData.is_full_access || false;
+    
+    // Valeurs booléennes pour le type d'accès
+    const isDirectivesOnly = typeAccess === "directives";
+    const isMedicalOnly = typeAccess === "medical";
     
     // Récupération des données du profil
     const profileData = await fetchUserProfile(supabase, userId);
@@ -294,9 +301,9 @@ serve(async (req: Request) => {
       dossier: {
         id: dossierId,
         userId: userId,
-        isFullAccess: accessCodeData.is_full_access,
-        isDirectivesOnly: typeAccess === "directives",
-        isMedicalOnly: typeAccess === "medical",
+        isFullAccess: isFullAccess,
+        isDirectivesOnly: isDirectivesOnly,
+        isMedicalOnly: isMedicalOnly,
         profileData: profileData,
         contenu: dossierContent
       },

@@ -3,7 +3,6 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormData, formSchema } from "@/utils/access-document/validationSchema";
-import { accessMedicalData } from "@/utils/access-document/accessUtils";
 import { checkBruteForceAttempt } from "@/utils/securityUtils";
 import { useVerifierCodeAcces } from "@/hooks/useVerifierCodeAcces";
 import { useDossierStore, Dossier } from "@/store/dossierStore";
