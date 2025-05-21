@@ -77,31 +77,33 @@ serve(async (req: Request) => {
     const userId = userResponse.user.id;
     console.log(`Début de la suppression du compte pour l'utilisateur: ${userId}`);
     
-    try {
-      // 1. D'abord supprimer les données de questionnaire médical 
-      await supabase.from("questionnaire_medical").delete().eq("user_id", userId);
-      console.log("Données de questionnaire médical supprimées");
-    } catch (err) {
-      console.log("Erreur ou table inexistante lors de la suppression de questionnaire_medical:", err);
-      // Continuer même en cas d'erreur
-    }
+    // IMPORTANT - Priorité de suppression (dans l'ordre pour éviter les violations de contraintes)
     
     try {
-      // 2. Supprimer les réponses au questionnaire
+      // 1. Supprimer d'abord les réponses au questionnaire qui ont des contraintes de clé étrangère
       await supabase.from("questionnaire_preferences_responses").delete().eq("user_id", userId);
       await supabase.from("questionnaire_responses").delete().eq("user_id", userId);
       console.log("Réponses au questionnaire supprimées");
     } catch (err) {
-      console.log("Erreur ou table inexistante lors de la suppression des réponses au questionnaire:", err);
+      console.log("Erreur lors de la suppression des réponses au questionnaire:", err);
       // Continuer même en cas d'erreur
     }
     
     try {
-      // 3. Supprimer les synthèses de questionnaire
+      // 2. Supprimer les synthèses de questionnaire
       await supabase.from("questionnaire_synthesis").delete().eq("user_id", userId);
       console.log("Synthèses de questionnaire supprimées");
     } catch (err) {
-      console.log("Erreur ou table inexistante lors de la suppression des synthèses:", err);
+      console.log("Erreur lors de la suppression des synthèses:", err);
+      // Continuer même en cas d'erreur
+    }
+    
+    try {
+      // 3. Supprimer le questionnaire médical
+      await supabase.from("questionnaire_medical").delete().eq("user_id", userId);
+      console.log("Questionnaire médical supprimé");
+    } catch (err) {
+      console.log("Erreur lors de la suppression du questionnaire médical:", err);
       // Continuer même en cas d'erreur
     }
     
@@ -110,7 +112,7 @@ serve(async (req: Request) => {
       await supabase.from("user_signatures").delete().eq("user_id", userId);
       console.log("Signatures supprimées");
     } catch (err) {
-      console.log("Erreur ou table inexistante lors de la suppression des signatures:", err);
+      console.log("Erreur lors de la suppression des signatures:", err);
       // Continuer même en cas d'erreur
     }
     
@@ -119,7 +121,7 @@ serve(async (req: Request) => {
       await supabase.from("trusted_persons").delete().eq("user_id", userId);
       console.log("Personnes de confiance supprimées");
     } catch (err) {
-      console.log("Erreur ou table inexistante lors de la suppression des personnes de confiance:", err);
+      console.log("Erreur lors de la suppression des personnes de confiance:", err);
       // Continuer même en cas d'erreur
     }
 
@@ -128,7 +130,7 @@ serve(async (req: Request) => {
       await supabase.from("pdf_documents").delete().eq("user_id", userId);
       console.log("Documents PDF supprimés");
     } catch (err) {
-      console.log("Erreur ou table inexistante lors de la suppression des documents PDF:", err);
+      console.log("Erreur lors de la suppression des documents PDF:", err);
       // Continuer même en cas d'erreur
     }
     
@@ -137,7 +139,7 @@ serve(async (req: Request) => {
       await supabase.from("medical_documents").delete().eq("user_id", userId);
       console.log("Documents médicaux supprimés");
     } catch (err) {
-      console.log("Erreur ou table inexistante lors de la suppression des documents médicaux:", err);
+      console.log("Erreur lors de la suppression des documents médicaux:", err);
       // Continuer même en cas d'erreur
     }
     
@@ -146,7 +148,7 @@ serve(async (req: Request) => {
       await supabase.from("medical_data").delete().eq("user_id", userId);
       console.log("Données médicales supprimées");
     } catch (err) {
-      console.log("Erreur ou table inexistante lors de la suppression des données médicales:", err);
+      console.log("Erreur lors de la suppression des données médicales:", err);
       // Continuer même en cas d'erreur
     }
     
@@ -155,7 +157,7 @@ serve(async (req: Request) => {
       await supabase.from("document_access_logs").delete().eq("user_id", userId);
       console.log("Logs d'accès supprimés");
     } catch (err) {
-      console.log("Erreur ou table inexistante lors de la suppression des logs d'accès:", err);
+      console.log("Erreur lors de la suppression des logs d'accès:", err);
       // Continuer même en cas d'erreur
     }
     
@@ -164,7 +166,7 @@ serve(async (req: Request) => {
       await supabase.from("document_access_codes").delete().eq("user_id", userId);
       console.log("Codes d'accès aux documents supprimés");
     } catch (err) {
-      console.log("Erreur ou table inexistante lors de la suppression des codes d'accès:", err);
+      console.log("Erreur lors de la suppression des codes d'accès:", err);
       // Continuer même en cas d'erreur
     }
     
@@ -173,7 +175,7 @@ serve(async (req: Request) => {
       await supabase.from("directives").delete().eq("user_id", userId);
       console.log("Directives supprimées");
     } catch (err) {
-      console.log("Erreur ou table inexistante lors de la suppression des directives:", err);
+      console.log("Erreur lors de la suppression des directives:", err);
       // Continuer même en cas d'erreur
     }
     
@@ -182,7 +184,7 @@ serve(async (req: Request) => {
       await supabase.from("advance_directives").delete().eq("user_id", userId);
       console.log("Directives avancées supprimées");
     } catch (err) {
-      console.log("Erreur ou table inexistante lors de la suppression des directives avancées:", err);
+      console.log("Erreur lors de la suppression des directives avancées:", err);
       // Continuer même en cas d'erreur
     }
     
@@ -191,7 +193,7 @@ serve(async (req: Request) => {
       await supabase.from("orders").delete().eq("user_id", userId);
       console.log("Commandes supprimées");
     } catch (err) {
-      console.log("Erreur ou table inexistante lors de la suppression des commandes:", err);
+      console.log("Erreur lors de la suppression des commandes:", err);
       // Continuer même en cas d'erreur
     }
     
@@ -200,7 +202,7 @@ serve(async (req: Request) => {
       await supabase.from("reviews").delete().eq("user_id", userId);
       console.log("Avis supprimés");
     } catch (err) {
-      console.log("Erreur ou table inexistante lors de la suppression des avis:", err);
+      console.log("Erreur lors de la suppression des avis:", err);
       // Continuer même en cas d'erreur
     }
     
@@ -209,7 +211,7 @@ serve(async (req: Request) => {
       await supabase.from("profiles").delete().eq("id", userId);
       console.log("Profil supprimé");
     } catch (err) {
-      console.log("Erreur ou table inexistante lors de la suppression du profil:", err);
+      console.log("Erreur lors de la suppression du profil:", err);
       // Continuer même en cas d'erreur
     }
     
