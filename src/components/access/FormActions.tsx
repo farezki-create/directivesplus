@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { FileText, FileSearch, Loader2 } from "lucide-react";
 import { useState } from "react";
@@ -8,7 +9,8 @@ type FormActionsProps = {
   actionLabel?: string;
   actionIcon?: "file-text" | "file-search";
   buttonColor?: string;
-  // Add support for the separate action handlers
+  isDisabled?: boolean;
+  // Support pour les gestionnaires d'action séparés
   onAccessDirectives?: () => void;
   onAccessMedicalData?: () => void;
 };
@@ -19,6 +21,7 @@ const FormActions = ({
   actionLabel,
   actionIcon,
   buttonColor = "bg-directiveplus-700 hover:bg-directiveplus-800",
+  isDisabled = false,
   onAccessDirectives,
   onAccessMedicalData
 }: FormActionsProps) => {
@@ -37,7 +40,7 @@ const FormActions = ({
     e.stopPropagation();
     
     // Prevent action if already clicked or loading
-    if (isActive || loading) return;
+    if (isActive || loading || isDisabled) return;
     
     // Set this button as active
     setIsActive(true);
@@ -56,7 +59,7 @@ const FormActions = ({
     e.preventDefault();
     e.stopPropagation();
     
-    if (isActive || loading) return;
+    if (isActive || loading || isDisabled) return;
     
     setIsActive(true);
     if (onAccessDirectives) {
@@ -71,7 +74,7 @@ const FormActions = ({
     e.preventDefault();
     e.stopPropagation();
     
-    if (isActive || loading) return;
+    if (isActive || loading || isDisabled) return;
     
     setIsActive(true);
     if (onAccessMedicalData) {
@@ -88,7 +91,7 @@ const FormActions = ({
         <Button 
           className="w-full flex items-center gap-2 bg-directiveplus-700 hover:bg-directiveplus-800" 
           onClick={handleAccessDirectives}
-          disabled={loading || isActive}
+          disabled={loading || isActive || isDisabled}
           type="button"
           variant="default"
         >
@@ -103,7 +106,7 @@ const FormActions = ({
         <Button 
           className="w-full flex items-center gap-2 bg-blue-600 hover:bg-blue-700" 
           onClick={handleAccessMedicalData}
-          disabled={loading || isActive}
+          disabled={loading || isActive || isDisabled}
           type="button"
           variant="default"
         >
@@ -123,7 +126,7 @@ const FormActions = ({
     <Button 
       className={`w-full flex items-center gap-2 ${buttonColor}`} 
       onClick={handleAction}
-      disabled={loading || isActive}
+      disabled={loading || isActive || isDisabled}
       type="button"
       variant="default"
     >

@@ -106,7 +106,7 @@ const MedicalAccessForm = () => {
         consultantName: formData.lastName,
         consultantFirstName: formData.firstName,
         resourceType: "medical",
-        action: "error",
+        action: "attempt",
         success: false
       });
     } finally {
@@ -174,7 +174,7 @@ const MedicalAccessForm = () => {
               )}
               
               {remainingAttempts !== null && remainingAttempts < 3 && !blockedAccess && (
-                <Alert variant="warning" className="bg-amber-50 border-amber-500">
+                <Alert variant="default" className="bg-amber-50 border-amber-500">
                   <AlertCircle className="h-4 w-4 text-amber-500" />
                   <AlertTitle className="text-amber-700">Attention</AlertTitle>
                   <AlertDescription className="text-amber-700">
@@ -198,7 +198,7 @@ const MedicalAccessForm = () => {
                   actionLabel="Accéder aux données médicales"
                   actionIcon="file-search"
                   buttonColor="bg-blue-600 hover:bg-blue-700"
-                  disabled={blockedAccess}
+                  isDisabled={blockedAccess}
                 />
               </div>
             </CardFooter>

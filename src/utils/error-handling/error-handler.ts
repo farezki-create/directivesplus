@@ -1,4 +1,3 @@
-
 /**
  * Types et fonctions pour la gestion centralisée des erreurs
  */
@@ -7,15 +6,20 @@ import { toast } from "@/hooks/use-toast";
 import { logError } from "./error-logger";
 
 /**
- * Types d'erreurs pouvant survenir dans l'application
+ * Types d'erreurs génériques pour la classification et le reporting
  */
 export enum ErrorType {
-  AUTH = "authentication",
-  PERMISSION = "permission",
-  VALIDATION = "validation",
-  NETWORK = "network",
-  DATABASE = "database",
-  UNKNOWN = "unknown"
+  VALIDATION = "validation_error",
+  NETWORK = "network_error",
+  SERVER = "server_error",
+  CLIENT = "client_error",
+  DATA = "data_error",
+  AUTH = "authentication_error",
+  AUTH_SECURITY = "authentication_security_error",
+  PERMISSION = "permission_error",
+  SYSTEM = "system_error",
+  RESOURCE = "resource_error",
+  UNKNOWN = "unknown_error"
 }
 
 /**

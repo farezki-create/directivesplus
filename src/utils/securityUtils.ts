@@ -1,4 +1,3 @@
-
 /**
  * Génère un code d'accès aléatoire et sécurisé
  * @param length Longueur du code (défaut: 12)
@@ -246,7 +245,7 @@ function logBruteForceAttempt(identifier: string, ipAddress?: string, isBlocked:
     import('./error-handling').then(({ logError, ErrorType }) => {
       logError({
         error: `Tentative d'accès ${isBlocked ? 'bloquée' : 'suspecte'}`,
-        type: ErrorType.SECURITY,
+        type: ErrorType.AUTH_SECURITY,
         component: 'BruteForceProtection',
         operation: isBlocked ? 'access_blocked' : 'suspicious_access',
         additionalInfo: {

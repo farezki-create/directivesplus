@@ -209,7 +209,7 @@ const DirectivesAccessForm = () => {
               )}
               
               {remainingAttempts !== null && remainingAttempts < 3 && !blockedAccess && (
-                <Alert variant="warning" className="bg-amber-50 border-amber-500">
+                <Alert variant="default" className="bg-amber-50 border-amber-500">
                   <AlertCircle className="h-4 w-4 text-amber-500" />
                   <AlertTitle className="text-amber-700">Attention</AlertTitle>
                   <AlertDescription className="text-amber-700">
@@ -232,7 +232,7 @@ const DirectivesAccessForm = () => {
                   onAction={handleAccessDirectives}
                   actionLabel="Accéder aux directives anticipées"
                   actionIcon="file-text"
-                  disabled={blockedAccess}
+                  isDisabled={blockedAccess}
                 />
               </div>
             </CardFooter>
