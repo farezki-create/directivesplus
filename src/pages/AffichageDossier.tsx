@@ -7,11 +7,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import BackButton from "@/components/ui/back-button";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, LogOut, ShieldCheck } from "lucide-react";
+import { AlertCircle, LogOut, ShieldCheck, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { decryptData } from "@/utils/encryption";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { logAccessEvent } from "@/utils/accessLoggingUtils";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const AffichageDossier = () => {
   const { dossierActif, clearDossierActif } = useDossierStore();
@@ -129,6 +130,16 @@ const AffichageDossier = () => {
     return null;
   }
 
+  // Vérifier la présence des directives anticipées dans le contenu déchiffré
+  const hasDirectives = decryptedContent && 
+    typeof decryptedContent === 'object' && 
+    decryptedContent.directives_anticipees;
+
+  // Extraire les informations patient si disponibles
+  const patientInfo = decryptedContent && 
+    typeof decryptedContent === 'object' && 
+    decryptedContent.patient;
+
   // Fonction pour afficher les données structurées
   const renderDonneesMedicales = (contenu: any) => {
     if (!contenu) return <p>Aucune donnée disponible.</p>;
@@ -144,14 +155,20 @@ const AffichageDossier = () => {
         </Alert>
       );
     }
+
+    // Filtrer les données médicales (exclure les directives anticipées pour cette section)
+    const medicalData = { ...contenu };
+    if (medicalData.directives_anticipees) {
+      delete medicalData.directives_anticipees;
+    }
     
     // Si c'est un objet JSON
-    if (typeof contenu === 'object') {
+    if (typeof medicalData === 'object' && Object.keys(medicalData).length > 0) {
       return (
         <div className="space-y-4">
-          {Object.entries(contenu).map(([key, value]) => (
+          {Object.entries(medicalData).map(([key, value]) => (
             <div key={key} className="border-b pb-2">
-              <h3 className="font-medium text-gray-700">{key}</h3>
+              <h3 className="font-medium text-gray-700 capitalize">{key.replace(/_/g, ' ')}</h3>
               <div className="mt-1 text-gray-600">
                 {typeof value === 'object' 
                   ? <pre className="bg-gray-50 p-2 rounded overflow-x-auto">{JSON.stringify(value, null, 2)}</pre>
@@ -163,8 +180,44 @@ const AffichageDossier = () => {
       );
     }
     
-    // Si c'est du texte
-    return <p className="whitespace-pre-wrap">{String(contenu)}</p>;
+    // Si c'est du texte ou s'il n'y a pas de données médicales
+    return <p className="whitespace-pre-wrap">{typeof medicalData === 'string' ? medicalData : "Aucune donnée médicale disponible."}</p>;
+  };
+
+  // Fonction spécifique pour afficher les directives anticipées
+  const renderDirectives = () => {
+    if (!hasDirectives) {
+      return (
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Information</AlertTitle>
+          <AlertDescription>
+            Aucune directive anticipée n'est disponible pour ce dossier.
+          </AlertDescription>
+        </Alert>
+      );
+    }
+
+    const directives = decryptedContent.directives_anticipees;
+    
+    if (typeof directives === 'object') {
+      return (
+        <div className="space-y-4">
+          {Object.entries(directives).map(([key, value]) => (
+            <div key={key} className="border-b pb-2">
+              <h3 className="font-medium text-gray-700 capitalize">{key.replace(/_/g, ' ')}</h3>
+              <div className="mt-1 text-gray-600">
+                {typeof value === 'object' 
+                  ? <pre className="bg-gray-50 p-2 rounded overflow-x-auto">{JSON.stringify(value, null, 2)}</pre>
+                  : String(value)}
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+    
+    return <p className="whitespace-pre-wrap">{String(directives)}</p>;
   };
 
   return (
@@ -189,6 +242,33 @@ const AffichageDossier = () => {
             Consultation du Dossier Médical
           </h1>
           
+          {patientInfo && (
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle className="text-lg">Informations du patient</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {patientInfo.nom && (
+                    <div>
+                      <span className="font-medium">Nom:</span> {patientInfo.nom}
+                    </div>
+                  )}
+                  {patientInfo.prenom && (
+                    <div>
+                      <span className="font-medium">Prénom:</span> {patientInfo.prenom}
+                    </div>
+                  )}
+                  {patientInfo.date_naissance && (
+                    <div>
+                      <span className="font-medium">Date de naissance:</span> {patientInfo.date_naissance}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+          
           <Alert className="mb-6">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Information</AlertTitle>
@@ -204,26 +284,63 @@ const AffichageDossier = () => {
               </TooltipProvider>
             </AlertDescription>
           </Alert>
-          
-          <Card className="shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span>Informations du Dossier</span>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <ShieldCheck size={18} className="text-green-600" />
-                    </TooltipTrigger>
-                    <TooltipContent>Données chiffrées</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </CardTitle>
-            </CardHeader>
+
+          <Tabs defaultValue="dossier" className="w-full">
+            <TabsList className="grid grid-cols-2 mb-4">
+              <TabsTrigger value="dossier">Données médicales</TabsTrigger>
+              <TabsTrigger value="directives" className="flex items-center gap-1">
+                <FileText size={16} />
+                Directives anticipées
+                {hasDirectives && (
+                  <span className="bg-green-100 text-green-800 text-xs px-2 py-1 ml-1 rounded-full">
+                    Disponible
+                  </span>
+                )}
+              </TabsTrigger>
+            </TabsList>
             
-            <CardContent>
-              {renderDonneesMedicales(decryptedContent)}
-            </CardContent>
-          </Card>
+            <TabsContent value="dossier">
+              <Card className="shadow-lg">
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <span>Informations Médicales</span>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <ShieldCheck size={18} className="text-green-600" />
+                        </TooltipTrigger>
+                        <TooltipContent>Données chiffrées</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {renderDonneesMedicales(decryptedContent)}
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="directives">
+              <Card className="shadow-lg">
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <span>Directives Anticipées</span>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <FileText size={18} className="text-blue-600" />
+                        </TooltipTrigger>
+                        <TooltipContent>Directives du patient</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {renderDirectives()}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </div>
       </main>
       
