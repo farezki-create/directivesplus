@@ -44,6 +44,7 @@ const DirectivesTab: React.FC<DirectivesTabProps> = ({
 
     // Récupération des directives avec fallback
     let directives = null;
+    
     if (getDirectives) {
       directives = getDirectives();
       console.log("DirectivesTab - Directives récupérées via fonction:", directives);
