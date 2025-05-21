@@ -5,7 +5,7 @@ import { toast } from "@/hooks/use-toast";
 
 interface DirectivesStorageOptions {
   userId: string;
-  pdfOutput: string;
+  pdfOutput: string | null;
   description: string;
   profileData?: any;
 }
@@ -22,6 +22,11 @@ export const saveDirectivesWithDualStorage = async (
   options: DirectivesStorageOptions
 ): Promise<{ success: boolean; error?: string; documentId?: string }> => {
   try {
+    // Vérifier si les données PDF sont disponibles
+    if (!options.pdfOutput) {
+      throw new Error("Aucune donnée PDF n'a été générée. Veuillez réessayer.");
+    }
+    
     // 1. Sauvegarde dans la bibliothèque personnelle (pdf_documents)
     const savedData = await savePdfToDatabase({
       userId: options.userId,

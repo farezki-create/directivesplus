@@ -29,12 +29,28 @@ export const useSynthesisActions = (userId?: string) => {
     try {
       setSaving(true);
 
+      // Vérifier si les données sont valides
+      if (!data) {
+        throw new Error("Données de directives manquantes");
+      }
+
       // Générer le PDF avec les données
-      const pdfOutput = await generatePDF({
-        ...data,
-        freeText,
-        signature,
-      });
+      let pdfOutput;
+      try {
+        pdfOutput = await generatePDF({
+          ...data,
+          freeText,
+          signature,
+        });
+      } catch (pdfError: any) {
+        console.error("Erreur lors de la génération du PDF:", pdfError);
+        throw new Error("Impossible de générer le PDF: " + (pdfError.message || "Erreur inconnue"));
+      }
+
+      // Vérifier si le PDF a été généré correctement
+      if (!pdfOutput) {
+        throw new Error("Le PDF n'a pas pu être généré correctement");
+      }
 
       // Utiliser notre nouvelle fonction de double enregistrement
       const result = await saveDirectivesWithDualStorage({

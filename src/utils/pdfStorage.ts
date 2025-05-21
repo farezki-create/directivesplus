@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 // Interface for PDF storage data
 export interface PdfStorageData {
   userId: string;
-  pdfOutput: string;
+  pdfOutput: string | null;
   description: string;
 }
 
@@ -13,6 +13,11 @@ export const savePdfToDatabase = async (
   data: PdfStorageData
 ): Promise<any> => {
   try {
+    // Validate pdfOutput before proceeding
+    if (!data.pdfOutput) {
+      throw new Error("Aucune donnée PDF disponible");
+    }
+    
     const fileName = `directives-anticipees-${new Date().toLocaleDateString('fr-FR', {
       year: 'numeric',
       month: '2-digit',
