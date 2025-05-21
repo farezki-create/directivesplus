@@ -2,7 +2,7 @@
 import { jsPDF } from "jspdf";
 import { PdfLayout } from "./types";
 
-export const renderSignature = (pdf: jsPDF, layout: PdfLayout, yPosition: number, signature: string): number => {
+export const renderSignature = (pdf: jsPDF, layout: PdfLayout, yPosition: number, signature: string | null): number => {
   pdf.setFontSize(14);
   pdf.setFont("helvetica", "bold");
   pdf.text("SIGNATURE", 20, yPosition);
@@ -37,7 +37,7 @@ export const renderSignature = (pdf: jsPDF, layout: PdfLayout, yPosition: number
   return yPosition;
 };
 
-export const addSignatureFooter = (pdf: jsPDF, layout: PdfLayout, signature: string): void => {
+export const addSignatureFooter = (pdf: jsPDF, layout: PdfLayout, signature: string | null): void => {
   if (!signature) return;
   
   const footerY = layout.pageHeight - layout.footerHeight;

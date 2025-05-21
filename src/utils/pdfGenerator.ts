@@ -21,7 +21,7 @@ export interface PdfData {
   customPhrases: string[];
   trustedPersons: any[];
   freeText: string;
-  signature: string;
+  signature: string | null;
   userId?: string;
 }
 
@@ -44,7 +44,7 @@ const translateResponse = (response: string): string => {
 };
 
 // Main PDF generation function
-export const generatePDF = async (data: PdfData): Promise<any> => {
+export const generatePDF = async (data: PdfData): Promise<string> => {
   try {
     console.log("Génération du PDF avec les données:", data);
     
@@ -101,11 +101,15 @@ export const generatePDF = async (data: PdfData): Promise<any> => {
     const totalPages = pdf.getNumberOfPages();
     for (let i = 1; i <= totalPages; i++) {
       pdf.setPage(i);
-      addSignatureFooter(pdf, layout, data.signature);
+      addSignatureFooter(pdf, layout, data.signature || null);
     }
     
     // Generate PDF output
     const pdfOutput = pdf.output("datauristring");
+    
+    if (!pdfOutput || typeof pdfOutput !== 'string' || pdfOutput.length < 100) {
+      throw new Error("La génération du PDF a échoué, sortie invalide");
+    }
     
     // Store PDF in database if userId is provided
     if (data.userId) {
@@ -117,16 +121,16 @@ export const generatePDF = async (data: PdfData): Promise<any> => {
         minute: '2-digit'
       });
       
-      return await savePdfToDatabase({
+      await savePdfToDatabase({
         userId: data.userId,
         pdfOutput,
         description
       });
     }
     
-    return Promise.resolve(null);
+    return pdfOutput;
   } catch (error) {
     console.error("Erreur dans la génération du PDF:", error);
-    return Promise.reject(error);
+    throw error;
   }
 };
