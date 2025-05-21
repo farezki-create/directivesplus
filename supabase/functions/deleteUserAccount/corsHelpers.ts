@@ -19,7 +19,9 @@ export function createErrorResponse(message: string, status = 400, details?: any
   return new Response(
     JSON.stringify({ 
       error: message,
-      details: details ? details : undefined
+      details: details ? details : undefined,
+      success: false,
+      timestamp: new Date().toISOString()
     }),
     {
       status,
@@ -31,7 +33,11 @@ export function createErrorResponse(message: string, status = 400, details?: any
 // Create standard success response with CORS headers
 export function createSuccessResponse(data: any, status = 200) {
   return new Response(
-    JSON.stringify(data),
+    JSON.stringify({
+      ...data,
+      success: true,
+      timestamp: new Date().toISOString()
+    }),
     {
       status,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

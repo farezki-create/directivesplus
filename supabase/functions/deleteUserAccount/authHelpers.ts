@@ -2,12 +2,16 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 import { corsHeaders, createErrorResponse } from "./corsHelpers.ts";
 
-// Validate and extract user information from the authorization token
+/**
+ * Validate and extract user information from the authorization token
+ * @param req Request object
+ * @returns Object containing validation results
+ */
 export async function validateAuth(req: Request) {
   // Extract the token from authorization header
   const authHeader = req.headers.get("Authorization");
   if (!authHeader) {
-    return { error: createErrorResponse("Autorisation manquante", 401) };
+    return { error: createErrorResponse("Missing authorization", 401) };
   }
 
   // Verify Supabase configuration
@@ -15,7 +19,7 @@ export async function validateAuth(req: Request) {
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 
   if (!supabaseUrl || !supabaseServiceKey) {
-    return { error: createErrorResponse("Configuration Supabase manquante", 500) };
+    return { error: createErrorResponse("Missing Supabase configuration", 500) };
   }
 
   // Initialize Supabase client
@@ -28,7 +32,7 @@ export async function validateAuth(req: Request) {
 
   if (userError || !userResponse.user) {
     return { 
-      error: createErrorResponse("Utilisateur non autorisé ou invalide", 401) 
+      error: createErrorResponse("Unauthorized or invalid user", 401) 
     };
   }
 
