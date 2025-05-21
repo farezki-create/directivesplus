@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import Header from "@/components/Header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileText } from "lucide-react";
@@ -10,7 +10,6 @@ import DossierHeader from "@/components/dossier/DossierHeader";
 import MedicalDataTab from "@/components/dossier/MedicalDataTab";
 import DirectivesTab from "@/components/dossier/DirectivesTab";
 import DossierFooter from "@/components/dossier/DossierFooter";
-import DocumentsLinkSection from "@/components/dossier/DocumentsLinkSection";
 
 const AffichageDossier: React.FC = () => {
   const {
@@ -49,9 +48,6 @@ const AffichageDossier: React.FC = () => {
         
         <div className="max-w-4xl mx-auto">
           <PatientInfoCard patientInfo={patientInfo} />
-          
-          {/* Section de liens vers les documents - maintenant avec les vrais liens */}
-          <DocumentsLinkSection dossierId={dossierActif.id} />
           
           <Tabs defaultValue="dossier" className="w-full">
             <TabsList className="grid grid-cols-2 mb-4">
