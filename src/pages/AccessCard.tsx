@@ -1,7 +1,9 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAccessCode } from "@/hooks/access-codes/useAccessCode";
+import { generateAccessCode } from "@/hooks/access-codes/generateCode";
 
 // Import our components
 import AccessCardHeader from "@/components/access-card/AccessCardHeader";
@@ -14,8 +16,8 @@ import PageFooter from "@/components/access-card/PageFooter";
 import AppNavigation from "@/components/AppNavigation";
 import LoadingState from "@/components/questionnaire/LoadingState";
 import { toast } from "@/components/ui/use-toast";
-import Button from "@/components/ui/Button";
-import RefreshCw from "@/components/ui/icons/RefreshCw";
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
 
 const AccessCardPage = () => {
   const { user, isAuthenticated, isLoading, profile } = useAuth();
