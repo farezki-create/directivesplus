@@ -1,32 +1,45 @@
 
-import { z } from "zod";
+import * as z from "zod";
 
-// Schema de validation pour le formulaire de connexion
-export const loginFormSchema = z.object({
-  email: z.string().email("Adresse email invalide"),
-  password: z.string().min(1, "Mot de passe requis"),
+export const registerFormSchema = z.object({
+  firstName: z.string().min(2, "Le prénom est requis"),
+  lastName: z.string().min(2, "Le nom est requis"),
+  gender: z.enum(["M", "F", "autre"]).optional(),
+  birthDate: z.string().min(1, "La date de naissance est requise"),
+  email: z.string().email("Format d'email invalide"),
+  phoneNumber: z.string().optional(),
+  address: z.string().optional(),
+  postalCode: z.string().optional(),
+  city: z.string().optional(),
+  country: z.string().optional(),
+  password: z.string().min(6, "Le mot de passe doit contenir au moins 6 caractères"),
+  passwordConfirm: z.string(),
+}).refine((data) => data.password === data.passwordConfirm, {
+  path: ["passwordConfirm"],
+  message: "Les mots de passe ne correspondent pas",
 });
 
-// Schema de validation pour le formulaire d'inscription
-export const registerFormSchema = z.object({
-  firstName: z.string().min(1, "Prénom requis"),
-  lastName: z.string().min(1, "Nom requis"),
-  gender: z.enum(["male", "female", "other"], {
-    required_error: "Genre requis"
-  }),
-  birthDate: z.string().min(1, "Date de naissance requise"),
-  email: z.string().email("Adresse email invalide"),
-  address: z.string().min(1, "Adresse requise"),
-  phoneNumber: z.string().min(1, "Numéro de téléphone requis"),
-  password: z.string()
-    .min(8, "Le mot de passe doit contenir au moins 8 caractères")
-    .regex(/[A-Z]/, "Le mot de passe doit contenir au moins une majuscule")
-    .regex(/[0-9]/, "Le mot de passe doit contenir au moins un chiffre"),
-  passwordConfirm: z.string().min(1, "Confirmation du mot de passe requise"),
-}).refine(data => data.password === data.passwordConfirm, {
-  message: "Les mots de passe ne correspondent pas",
-  path: ["passwordConfirm"],
+export type RegisterFormValues = z.infer<typeof registerFormSchema>;
+
+export const loginFormSchema = z.object({
+  email: z.string().email("Format d'email invalide"),
+  password: z.string().min(1, "Le mot de passe est requis"),
 });
 
 export type LoginFormValues = z.infer<typeof loginFormSchema>;
-export type RegisterFormValues = z.infer<typeof registerFormSchema>;
+
+export const forgotPasswordSchema = z.object({
+  email: z.string().email("Format d'email invalide"),
+});
+
+export type ForgotPasswordValues = z.infer<typeof forgotPasswordSchema>;
+
+export const resetPasswordSchema = z.object({
+  password: z.string().min(6, "Le mot de passe doit contenir au moins 6 caractères"),
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  path: ["confirmPassword"],
+  message: "Les mots de passe ne correspondent pas",
+});
+
+export type ResetPasswordValues = z.infer<typeof resetPasswordSchema>;

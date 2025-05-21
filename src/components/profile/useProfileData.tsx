@@ -58,6 +58,8 @@ export function useProfileData() {
           return;
         }
 
+        console.log("Métadonnées utilisateur:", user.user_metadata);
+
         // Get the user's profile
         const { data, error } = await supabase
           .from("profiles")
@@ -99,6 +101,7 @@ export function useProfileData() {
           };
           
           setFormValues(initialValues);
+          console.log("Données du profil chargées:", initialValues);
         }
       } catch (error: any) {
         toast.error("Une erreur est survenue", {

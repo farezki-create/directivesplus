@@ -13,7 +13,7 @@ export const useRegister = (onVerificationSent: (email: string) => void) => {
     setLoading(true);
     
     try {
-      console.log("Attempting to sign up...");
+      console.log("Attempting to sign up with data:", values);
       
       // Clean up existing auth state first
       cleanupAuthState();
@@ -55,6 +55,8 @@ export const useRegister = (onVerificationSent: (email: string) => void) => {
       
       // Si l'utilisateur est créé avec succès, créer un code d'accès aux directives
       if (data?.user) {
+        console.log("User created successfully, setting up profiles and access codes");
+        
         // Créer le code d'accès aux directives dans document_access_codes
         const { error: directiveError } = await supabase
           .from('document_access_codes')
@@ -78,11 +80,16 @@ export const useRegister = (onVerificationSent: (email: string) => void) => {
             birth_date: birthDate,
             address: values.address,
             phone_number: values.phoneNumber,
-            medical_access_code: medicalAccessCode
+            medical_access_code: medicalAccessCode,
+            postal_code: values.postalCode,
+            city: values.city,
+            country: values.country
           });
           
         if (profileError) {
           console.error("Error creating profile:", profileError);
+        } else {
+          console.log("Profile created successfully with address data");
         }
       }
       
