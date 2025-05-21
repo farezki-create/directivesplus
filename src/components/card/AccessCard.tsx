@@ -6,6 +6,7 @@ import CardDisplay from "./CardDisplay";
 import CardActions from "./CardActions";
 import { useCardOperations } from "@/hooks/useCardOperations";
 import { useAccessCode } from "@/hooks/access-codes/useAccessCode";
+import { useAccessCardGeneration } from "@/hooks/useAccessCardGeneration";
 import { downloadCard } from "./utils/downloadCard";
 import { printCard } from "./utils/printCard";
 
@@ -26,13 +27,19 @@ const AccessCard: React.FC<AccessCardProps> = ({
 }) => {
   const { user } = useAuth();
   
-  // Simplified state - no automatic generation
+  // State for code selection
   const [includeDirective, setIncludeDirective] = React.useState<boolean>(true);
   const [includeMedical, setIncludeMedical] = React.useState<boolean>(true);
   
   // Use the updated hooks to get access codes directly OR use the props passed from parent
   const { accessCode: hooksDirectiveCode, isLoading: directiveLoading } = useAccessCode(user, "directive");
   const { accessCode: hooksMedicalCode, isLoading: medicalLoading } = useAccessCode(user, "medical");
+  
+  // Use the generate hook for regenerating codes
+  const { 
+    handleGenerateCard, 
+    isGenerating 
+  } = useAccessCardGeneration(user, includeDirective, includeMedical);
   
   // Use external codes (from props) if provided, otherwise use hook codes
   const directiveCode = externalDirectiveCode || hooksDirectiveCode;
@@ -96,6 +103,11 @@ const AccessCard: React.FC<AccessCardProps> = ({
     });
   };
 
+  // Handle regeneration of codes
+  const handleRegenerate = () => {
+    handleGenerateCard();
+  };
+
   return (
     <div className="space-y-8">
       <CardOptions 
@@ -121,8 +133,11 @@ const AccessCard: React.FC<AccessCardProps> = ({
         <CardActions 
           onDownload={handleDownload}
           onPrint={handlePrint}
+          onGenerate={handleRegenerate}
           disabled={!codesReady}
           codesReady={codesReady}
+          isGenerating={isGenerating}
+          isLoading={directiveLoading || medicalLoading}
         />
       </div>
     </div>

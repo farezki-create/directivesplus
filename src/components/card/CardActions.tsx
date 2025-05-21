@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Download, Printer } from "lucide-react";
+import { Download, Printer, RefreshCw } from "lucide-react";
 
 interface CardActionsProps {
   onDownload?: () => void;
@@ -9,13 +9,17 @@ interface CardActionsProps {
   onGenerate?: () => void;
   disabled?: boolean;
   isLoading?: boolean;
+  isGenerating?: boolean;
   codesReady?: boolean;
 }
 
 const CardActions: React.FC<CardActionsProps> = ({
   onDownload,
   onPrint,
+  onGenerate,
   disabled = false,
+  isLoading = false,
+  isGenerating = false,
   codesReady = false
 }) => {
   return (
@@ -41,6 +45,18 @@ const CardActions: React.FC<CardActionsProps> = ({
         >
           <Printer size={16} />
           Imprimer
+        </Button>
+      )}
+
+      {onGenerate && (
+        <Button
+          onClick={onGenerate}
+          variant="default"
+          className="flex items-center gap-2 bg-directiveplus-600 hover:bg-directiveplus-700"
+          disabled={isGenerating || isLoading || disabled}
+        >
+          <RefreshCw size={16} className={isGenerating ? "animate-spin" : ""} />
+          {isGenerating ? "Génération..." : "Régénérer les codes"}
         </Button>
       )}
     </div>

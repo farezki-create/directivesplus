@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,6 +14,8 @@ import PageFooter from "@/components/access-card/PageFooter";
 import AppNavigation from "@/components/AppNavigation";
 import LoadingState from "@/components/questionnaire/LoadingState";
 import { toast } from "@/components/ui/use-toast";
+import Button from "@/components/ui/Button";
+import RefreshCw from "@/components/ui/icons/RefreshCw";
 
 const AccessCardPage = () => {
   const { user, isAuthenticated, isLoading, profile } = useAuth();
@@ -22,8 +23,11 @@ const AccessCardPage = () => {
   const [loading, setLoading] = useState(true);
   
   // Use the updated hook with isLoading state
-  const { accessCode: directiveCode, isLoading: directiveLoading } = useAccessCode(user, "directive");
-  const { accessCode: medicalCode, isLoading: medicalLoading } = useAccessCode(user, "medical");
+  const { accessCode: directiveCode, isLoading: directiveLoading, refreshCode: refreshDirectiveCode } = useAccessCode(user, "directive");
+  const { accessCode: medicalCode, isLoading: medicalLoading, refreshCode: refreshMedicalCode } = useAccessCode(user, "medical");
+  
+  // State for regeneration
+  const [isRegenerating, setIsRegenerating] = useState(false);
   
   // Determine if codes are ready
   const [codesReady, setCodesReady] = useState(false);
@@ -58,6 +62,37 @@ const AccessCardPage = () => {
     }
   }, [isAuthenticated, isLoading, navigate]);
 
+  // Handle regeneration of codes
+  const handleRegenerateCode = async (type: "directive" | "medical" | "both") => {
+    if (!user) return;
+    
+    setIsRegenerating(true);
+    try {
+      if (type === "directive" || type === "both") {
+        const newCode = await generateAccessCode(user, "directive");
+        if (newCode) {
+          refreshDirectiveCode();
+        }
+      }
+      
+      if (type === "medical" || type === "both") {
+        const newCode = await generateAccessCode(user, "medical");
+        if (newCode) {
+          refreshMedicalCode();
+        }
+      }
+    } catch (error) {
+      console.error("Error regenerating codes:", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la régénération des codes",
+        variant: "destructive"
+      });
+    } finally {
+      setIsRegenerating(false);
+    }
+  };
+
   // Show global loading state when initial auth is loading
   if (isLoading || loading) {
     return <LoadingState loading={true} message="Chargement en cours..." />;
@@ -69,7 +104,7 @@ const AccessCardPage = () => {
   const birthDate = profile?.birth_date || null;
 
   // Check if we're still loading codes
-  const isCodesLoading = directiveLoading || medicalLoading;
+  const isCodesLoading = directiveLoading || medicalLoading || isRegenerating;
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -87,11 +122,26 @@ const AccessCardPage = () => {
           
           {/* Section dédiée à l'affichage des codes d'accès */}
           <div className="mb-8">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-directiveplus-800">Vos codes d'accès</h2>
+              <Button 
+                onClick={() => handleRegenerateCode("both")} 
+                disabled={isCodesLoading}
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <RefreshCw size={16} className={isRegenerating ? "animate-spin" : ""} />
+                Régénérer tous les codes
+              </Button>
+            </div>
+            
             <AccessCodeCards 
               directiveCode={directiveCode}
               medicalCode={medicalCode}
-              directiveLoading={directiveLoading}
-              medicalLoading={medicalLoading}
+              directiveLoading={directiveLoading || (isRegenerating)}
+              medicalLoading={medicalLoading || (isRegenerating)}
+              onRegenerateDirective={() => handleRegenerateCode("directive")}
+              onRegenerateMedical={() => handleRegenerateCode("medical")}
             />
             
             {/* Affichage complet des codes avec les informations du profil */}

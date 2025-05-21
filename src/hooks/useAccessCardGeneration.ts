@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { User } from "@supabase/supabase-js";
 import { useAccessCode } from "@/hooks/access-codes/useAccessCode";
+import { generateAccessCode } from "@/hooks/access-codes/generateCode";
 import { toast } from "@/components/ui/use-toast";
 
 export interface AccessCodeState {
@@ -10,9 +11,6 @@ export interface AccessCodeState {
   isCardReady: boolean;
 }
 
-/**
- * This hook now only fetches existing codes without generation capability
- */
 export const useAccessCardGeneration = (
   user: User | null, 
   includeDirective: boolean, 
@@ -21,6 +19,7 @@ export const useAccessCardGeneration = (
   const [directiveCode, setDirectiveCode] = useState<string | null>(null);
   const [medicalCode, setMedicalCode] = useState<string | null>(null);
   const [isCardReady, setIsCardReady] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   
   // Get access codes
   const { accessCode: directiveCodeFromHook, isLoading: directiveLoading } = useAccessCode(user, "directive");
@@ -56,13 +55,50 @@ export const useAccessCardGeneration = (
     
   }, [includeDirective, includeMedical, directiveCode, medicalCode]);
 
-  // Empty generation function - notifies that generation is disabled
-  const handleGenerateCard = () => {
-    toast({
-      title: "Fonctionnalité désactivée",
-      description: "La génération automatique de codes d'accès a été désactivée.",
-      variant: "destructive"
-    });
+  // Generate function that can regenerate codes
+  const handleGenerateCard = async () => {
+    if (!user) {
+      toast({
+        title: "Non connecté",
+        description: "Vous devez être connecté pour générer des codes d'accès",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      // Generate directive code if needed
+      if (includeDirective) {
+        const newDirectiveCode = await generateAccessCode(user, "directive");
+        if (newDirectiveCode) {
+          setDirectiveCode(newDirectiveCode);
+        }
+      }
+
+      // Generate medical code if needed
+      if (includeMedical) {
+        const newMedicalCode = await generateAccessCode(user, "medical");
+        if (newMedicalCode) {
+          setMedicalCode(newMedicalCode);
+        }
+      }
+
+      // Show success toast
+      toast({
+        title: "Codes d'accès régénérés",
+        description: "Vos nouveaux codes d'accès sont désormais disponibles"
+      });
+    } catch (err) {
+      console.error("Error generating codes:", err);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la génération des codes",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return {
@@ -70,6 +106,7 @@ export const useAccessCardGeneration = (
     medicalCode,
     isCardReady,
     handleGenerateCard,
+    isGenerating,
     isLoading: directiveLoading || medicalLoading
   };
 };
