@@ -73,8 +73,8 @@ const AffichageDossier: React.FC = () => {
   }
 
   // Déterminer quel onglet doit être actif par défaut en fonction du type de dossier
-  const isDirectivesOnly = dossierActif.isDirectivesOnly;
-  const isMedicalOnly = dossierActif.isMedicalOnly;
+  const isDirectivesOnly = dossierActif?.isDirectivesOnly || false;
+  const isMedicalOnly = dossierActif?.isMedicalOnly || false;
   const defaultTab = isDirectivesOnly ? "directives" : "dossier";
 
   return (
