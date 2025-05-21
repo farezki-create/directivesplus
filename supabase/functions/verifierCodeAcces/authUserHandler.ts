@@ -1,3 +1,4 @@
+
 import { StandardResponse } from "./types.ts";
 import { createSupabaseClient } from "./supabaseClient.ts";
 import { getOrCreateMedicalRecord } from "./dossierService.ts";
@@ -41,10 +42,14 @@ export async function handleAuthenticatedUserRequest(
         accessType = "directives";
         isDirectivesOnly = true;
         isMedicalOnly = false;
+        console.log("Type d'accès défini: directives uniquement");
       } else if (bruteForceIdentifier.includes("medical_access")) {
         accessType = "medical";
         isMedicalOnly = true;
         isDirectivesOnly = false;
+        console.log("Type d'accès défini: médical uniquement");
+      } else {
+        console.log("Type d'accès défini: complet (par défaut)");
       }
     }
     
@@ -72,17 +77,17 @@ export async function handleAuthenticatedUserRequest(
     }
 
     // Récupération du code d'accès approprié selon le type
-    const codeFieldName = accessType === "medical" ? "medical_access_code" : "document_access_codes";
-    
-    // Si on cherche un code de directives, interroger la table document_access_codes
     let accessCode;
     
-    if (accessType === "directives") {
+    if (accessType === "medical") {
+      accessCode = profileData.medical_access_code;
+      console.log("Utilisation du code d'accès médical:", accessCode);
+    } else {
+      // Pour les directives ou l'accès complet, chercher dans la table document_access_codes
       const { data: accessCodes, error: accessError } = await supabase
         .from("document_access_codes")
         .select("access_code")
         .eq("user_id", userId)
-        .eq("is_full_access", false)
         .order("created_at", { ascending: false })
         .limit(1);
       
@@ -91,18 +96,39 @@ export async function handleAuthenticatedUserRequest(
       }
       
       accessCode = accessCodes && accessCodes.length > 0 ? accessCodes[0].access_code : null;
-    } else {
-      // Sinon, utiliser le code du profil
-      accessCode = profileData.medical_access_code;
+      console.log("Utilisation du code d'accès de directives:", accessCode);
     }
 
     if (!accessCode) {
-      // Si pas de code d'accès, on en crée un nouveau pour les directives
-      if (accessType === "directives") {
-        try {
-          const randomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-          accessCode = randomCode;
+      // Si pas de code d'accès, on en crée un nouveau
+      try {
+        const randomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+        accessCode = randomCode;
+        
+        if (accessType === "medical") {
+          // Mettre à jour le profil avec le code d'accès médical
+          const { error: updateError } = await supabase
+            .from("profiles")
+            .update({ medical_access_code: accessCode })
+            .eq("id", userId);
           
+          if (updateError) {
+            console.error("Erreur lors de la mise à jour du code d'accès médical:", updateError);
+            return new Response(
+              JSON.stringify({
+                success: false,
+                error: "Impossible de créer un code d'accès médical",
+              }),
+              {
+                status: 500,
+                headers: { ...corsHeaders, "Content-Type": "application/json" },
+              }
+            );
+          }
+          
+          console.log("Nouveau code d'accès médical créé:", accessCode);
+        } else {
+          // Créer un nouveau code d'accès pour les directives
           const { error: insertError } = await supabase
             .from("document_access_codes")
             .insert({
@@ -112,11 +138,11 @@ export async function handleAuthenticatedUserRequest(
             });
           
           if (insertError) {
-            console.error("Erreur lors de la création du code d'accès:", insertError);
+            console.error("Erreur lors de la création du code d'accès de directives:", insertError);
             return new Response(
               JSON.stringify({
                 success: false,
-                error: "Impossible de créer un code d'accès",
+                error: "Impossible de créer un code d'accès de directives",
               }),
               {
                 status: 500,
@@ -124,33 +150,25 @@ export async function handleAuthenticatedUserRequest(
               }
             );
           }
-        } catch (codeError) {
-          console.error("Erreur lors de la génération du code d'accès:", codeError);
-          return new Response(
-            JSON.stringify({
-              success: false,
-              error: "Erreur lors de la génération du code d'accès",
-            }),
-            {
-              status: 500,
-              headers: { ...corsHeaders, "Content-Type": "application/json" },
-            }
-          );
+          
+          console.log("Nouveau code d'accès de directives créé:", accessCode);
         }
-      } else {
-        // Pour les données médicales, c'est obligatoire d'avoir un code
+      } catch (codeError) {
+        console.error("Erreur lors de la génération du code d'accès:", codeError);
         return new Response(
           JSON.stringify({
             success: false,
-            error: "Aucun code d'accès médical n'est disponible pour cet utilisateur",
+            error: "Erreur lors de la génération du code d'accès",
           }),
           {
-            status: 404,
+            status: 500,
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           }
         );
       }
     }
+    
+    console.log("Code d'accès utilisé pour le dossier:", accessCode);
 
     // Récupération ou création du dossier médical
     try {

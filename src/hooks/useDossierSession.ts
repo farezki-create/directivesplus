@@ -44,14 +44,19 @@ export const useDossierSession = () => {
       // Essayer de déchiffrer le contenu
       try {
         console.log("Traitement des données du dossier:", dossierActif.id);
+        console.log("Type d'accès:", dossierActif.isDirectivesOnly ? "Directives seulement" : 
+                                  dossierActif.isMedicalOnly ? "Médical seulement" : "Complet");
+                                  
         const decrypted = decryptDossierContent(dossierActif.contenu);
         setDecryptedContent(decrypted);
         setDecryptionError(null);
         
-        // Définir l'onglet actif en fonction du type d'accès
+        // Définir correctement l'onglet actif en fonction du type d'accès
         if (dossierActif.isDirectivesOnly) {
+          console.log("Configuration de l'onglet actif: directives");
           setActiveTab("directives");
         } else if (dossierActif.isMedicalOnly) {
+          console.log("Configuration de l'onglet actif: medical");
           setActiveTab("medical");
         }
         
@@ -66,7 +71,7 @@ export const useDossierSession = () => {
       } finally {
         setLoading(false);
       }
-    }, 500); // Augmenter le délai pour s'assurer que le dossier est chargé
+    }, 800); // Augmenter davantage le délai pour s'assurer que le dossier est complètement chargé
     
     return () => clearTimeout(timer);
   }, [dossierActif, redirectToAccessPage, sessionInitialized]);
@@ -85,6 +90,14 @@ export const useDossierSession = () => {
   const patientInfo = decryptedContent ? 
     extractPatientInfo(decryptedContent, dossierActif) : null;
 
+  // Vérifier si l'utilisateur a accès aux directives
+  const canAccessDirectives = dossierActif ? 
+    !dossierActif.isMedicalOnly : false;
+
+  // Vérifier si l'utilisateur a accès aux données médicales
+  const canAccessMedical = dossierActif ? 
+    !dossierActif.isDirectivesOnly : false;
+
   return {
     dossierActif,
     decryptedContent,
@@ -95,6 +108,8 @@ export const useDossierSession = () => {
     handleCloseDossier,
     loading,
     activeTab,
-    setActiveTab
+    setActiveTab,
+    canAccessDirectives,
+    canAccessMedical
   };
 };

@@ -64,10 +64,14 @@ export async function handleAccessCodeRequest(
       accessType = "directives";
       isDirectivesOnly = true;
       isMedicalOnly = false;
+      console.log("Type d'accès défini: directives uniquement");
     } else if (bruteForceIdentifier.includes("medical_access")) {
       accessType = "medical";
       isMedicalOnly = true;
       isDirectivesOnly = false;
+      console.log("Type d'accès défini: médical uniquement");
+    } else {
+      console.log("Type d'accès défini: complet (par défaut)");
     }
   }
   

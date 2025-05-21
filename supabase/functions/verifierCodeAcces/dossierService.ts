@@ -132,15 +132,17 @@ export async function getOrCreateMedicalRecord(
       }
     };
     
-    // Ajouter les directives si disponibles
+    // Ajouter les directives si disponibles et si c'est un accès de type directives ou complet
     if (directives && (accessType === "directives" || accessType === "full")) {
       dossierContent.directives_anticipees = directives;
       dossierContent.directives = directives; // Pour compatibilité avec d'autres formats
+      console.log("Directives ajoutées au contenu du dossier");
     }
     
-    // Ajouter les données médicales si disponibles
+    // Ajouter les données médicales si disponibles et si c'est un accès de type médical ou complet
     if (medicalData && (accessType === "medical" || accessType === "full")) {
       dossierContent.donnees_medicales = medicalData;
+      console.log("Données médicales ajoutées au contenu du dossier");
     }
     
     console.log("Contenu du dossier préparé:", Object.keys(dossierContent).join(', '));

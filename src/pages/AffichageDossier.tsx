@@ -10,6 +10,7 @@ import DossierFooter from "@/components/dossier/DossierFooter";
 import { useDossierSecurity } from "@/hooks/useDossierSecurity";
 import { useDossierSession } from "@/hooks/useDossierSession";
 import { useDossierStore } from "@/store/dossierStore";
+import { toast } from "@/hooks/use-toast";
 
 const AffichageDossier: React.FC = () => {
   const { dossierActif } = useDossierStore();
@@ -21,7 +22,9 @@ const AffichageDossier: React.FC = () => {
     activeTab, 
     setActiveTab,
     hasDirectives,
-    getDirectives
+    getDirectives,
+    canAccessDirectives,
+    canAccessMedical
   } = useDossierSession();
   
   const { 
@@ -51,6 +54,10 @@ const AffichageDossier: React.FC = () => {
   // Log view event and start monitoring on mount
   useEffect(() => {
     if (dossierActif) {
+      console.log("Dossier actif trouvé:", dossierActif.id);
+      console.log("Directives only:", dossierActif.isDirectivesOnly);
+      console.log("Medical only:", dossierActif.isMedicalOnly);
+      
       logDossierEvent("view", true);
       startSecurityMonitoring();
     }
@@ -65,6 +72,7 @@ const AffichageDossier: React.FC = () => {
   const handleTabChange = (value: string) => {
     // Vérifier si l'utilisateur a accès à cet onglet
     if (value === "medical" && dossierActif?.isDirectivesOnly) {
+      console.log("Tentative d'accès aux données médicales refusée");
       toast({
         title: "Accès refusé",
         description: "Vous n'avez pas accès aux données médicales avec ce code",
@@ -74,6 +82,7 @@ const AffichageDossier: React.FC = () => {
     }
     
     if (value === "directives" && dossierActif?.isMedicalOnly) {
+      console.log("Tentative d'accès aux directives refusée");
       toast({
         title: "Accès refusé",
         description: "Vous n'avez pas accès aux directives anticipées avec ce code",
@@ -109,9 +118,6 @@ const AffichageDossier: React.FC = () => {
     return null;
   }
   
-  // Import manquant pour toast
-  const { toast } = require("@/hooks/use-toast");
-  
   return (
     <div className="container max-w-4xl py-8" onClick={resetActivityTimer}>
       <Card className="shadow-lg">
@@ -129,13 +135,15 @@ const AffichageDossier: React.FC = () => {
             <TabsList className="grid grid-cols-2">
               <TabsTrigger 
                 value="directives"
-                disabled={dossierActif.isMedicalOnly}
+                disabled={!canAccessDirectives}
+                className={!canAccessDirectives ? "opacity-50 cursor-not-allowed" : ""}
               >
                 Directives Anticipées
               </TabsTrigger>
               <TabsTrigger 
                 value="medical"
-                disabled={dossierActif.isDirectivesOnly}
+                disabled={!canAccessMedical}
+                className={!canAccessMedical ? "opacity-50 cursor-not-allowed" : ""}
               >
                 Données Médicales
               </TabsTrigger>
