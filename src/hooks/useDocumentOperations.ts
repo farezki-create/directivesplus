@@ -46,7 +46,7 @@ export const useDocumentOperations = (refreshDocuments: () => void) => {
         ErrorType.NETWORK,
         "DocumentOperations",
         "download",
-        true,
+        true, // showToast
         "Impossible de télécharger le document. Veuillez réessayer."
       );
     } finally {
@@ -65,7 +65,7 @@ export const useDocumentOperations = (refreshDocuments: () => void) => {
         ErrorType.UNKNOWN,
         "DocumentOperations",
         "print",
-        true,
+        true, // showToast
         "Impossible d'imprimer le document. Veuillez réessayer."
       );
     } finally {
@@ -84,7 +84,7 @@ export const useDocumentOperations = (refreshDocuments: () => void) => {
         ErrorType.NETWORK,
         "DocumentOperations",
         "view",
-        true,
+        true, // showToast
         "Impossible d'afficher le document. Veuillez réessayer."
       );
     } finally {

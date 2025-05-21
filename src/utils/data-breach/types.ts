@@ -39,5 +39,5 @@ export interface BreachLogData {
 export interface BreachRecommendations {
   notifyAuthorities: boolean;
   notifyUsers: boolean;
-  urgency: 'low' | 'medium' | 'high' | 'critical';
+  urgency: 'low' | 'medium' | 'high' | 'critical'; // Corriger pour utiliser les mêmes valeurs que risk_level
 }

@@ -1,75 +1,58 @@
 
+/**
+ * Types et fonctions pour la gestion centralisée des erreurs
+ */
+
 import { toast } from "@/hooks/use-toast";
-import { ErrorType, logError } from "./error-logger";
+import { logError } from "./error-logger";
 
 /**
- * Gestionnaire d'erreurs centralisé pour l'application
- * Permet de traiter les erreurs de manière cohérente avec journalisation et notification
+ * Types d'erreurs pouvant survenir dans l'application
  */
-
-// Messages d'erreur utilisateur par type d'erreur
-const ERROR_MESSAGES = {
-  [ErrorType.VALIDATION]: "Veuillez vérifier les informations saisies.",
-  [ErrorType.AUTHENTICATION]: "Un problème d'authentification est survenu.",
-  [ErrorType.NETWORK]: "Problème de connexion réseau.",
-  [ErrorType.API]: "Un problème est survenu lors de la communication avec le serveur.",
-  [ErrorType.DATABASE]: "Problème d'accès aux données.",
-  [ErrorType.UNKNOWN]: "Une erreur inattendue s'est produite."
-};
+export enum ErrorType {
+  AUTH = "authentication",
+  PERMISSION = "permission",
+  VALIDATION = "validation",
+  NETWORK = "network",
+  DATABASE = "database",
+  UNKNOWN = "unknown"
+}
 
 /**
- * Traite une erreur avec journalisation et notification à l'utilisateur
- * @param error L'erreur à traiter
- * @param errorType Le type d'erreur pour la classification
- * @param component Le composant où l'erreur s'est produite
- * @param action L'action qui a généré l'erreur
+ * Gère les erreurs de manière centralisée
+ * @param error L'erreur à gérer
+ * @param type Le type d'erreur
+ * @param component Le composant source de l'erreur
+ * @param operation L'opération qui a échoué
  * @param showToast Afficher une notification à l'utilisateur
- * @param customMessage Message personnalisé à afficher à l'utilisateur
+ * @param customMessage Message personnalisé à afficher
  */
-export async function handleError(
-  error: Error | unknown,
-  errorType: ErrorType = ErrorType.UNKNOWN,
-  component?: string,
-  action?: string,
+export const handleError = async (
+  error: any,
+  type: ErrorType,
+  component: string,
+  operation: string,
   showToast: boolean = true,
   customMessage?: string
-): Promise<void> {
-  // Journalisation de l'erreur
-  await logError(error, errorType, { component, action });
+): Promise<void> => {
+  // Logger l'erreur
+  await logError({
+    error,
+    type,
+    component,
+    operation,
+    timestamp: new Date().toISOString()
+  });
 
-  // Notification à l'utilisateur si demandé
+  // Afficher un toast si demandé
   if (showToast) {
-    const message = customMessage || ERROR_MESSAGES[errorType];
     toast({
       title: "Erreur",
-      description: message,
-      variant: "destructive",
+      description: customMessage || "Une erreur est survenue. Veuillez réessayer.",
+      variant: "destructive"
     });
   }
-}
-
-/**
- * HOC pour envelopper une fonction asynchrone avec gestion d'erreurs
- * @param fn Fonction à exécuter
- * @param errorType Type d'erreur par défaut
- * @param component Composant concerné
- * @param action Action concernée
- * @param showToast Afficher une notification en cas d'erreur
- * @returns La fonction enveloppée avec gestion d'erreurs
- */
-export function withErrorHandling<T, Args extends any[]>(
-  fn: (...args: Args) => Promise<T>,
-  errorType: ErrorType = ErrorType.UNKNOWN,
-  component?: string,
-  action?: string,
-  showToast: boolean = true
-): (...args: Args) => Promise<T | undefined> {
-  return async (...args: Args): Promise<T | undefined> => {
-    try {
-      return await fn(...args);
-    } catch (error) {
-      await handleError(error, errorType, component, action, showToast);
-      return undefined;
-    }
-  };
-}
+  
+  // Enregistrer dans la console pour le débogage
+  console.error(`[${type}] Erreur dans ${component}.${operation}:`, error);
+};
