@@ -47,10 +47,8 @@ export function useProfileData() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        // Get the current user
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-
-        if (userError || !user) {
+        if (!user || !user.id) {
+          console.log("No user found in context, redirecting to auth");
           toast.error("Session expirée", {
             description: "Veuillez vous reconnecter",
           });
@@ -58,7 +56,7 @@ export function useProfileData() {
           return;
         }
 
-        console.log("Métadonnées utilisateur:", user.user_metadata);
+        console.log("Fetching profile for user ID:", user.id);
 
         // Get the user's profile
         const { data, error } = await supabase
@@ -68,6 +66,7 @@ export function useProfileData() {
           .single();
 
         if (error) {
+          console.error("Error fetching profile:", error.message);
           toast.error("Erreur lors du chargement du profil", {
             description: error.message,
           });
@@ -75,6 +74,8 @@ export function useProfileData() {
         }
 
         if (data) {
+          console.log("Profile data loaded:", data);
+          
           // Combine data with user email and role
           const userRole = user.user_metadata?.role || "patient";
           const enrichedProfile = {
@@ -101,9 +102,12 @@ export function useProfileData() {
           };
           
           setFormValues(initialValues);
-          console.log("Données du profil chargées:", initialValues);
+          console.log("Form values set:", initialValues);
+        } else {
+          console.log("No profile data found for user ID:", user.id);
         }
       } catch (error: any) {
+        console.error("Error in fetchProfile:", error);
         toast.error("Une erreur est survenue", {
           description: error.message || "Veuillez réessayer plus tard",
         });
@@ -113,7 +117,7 @@ export function useProfileData() {
     };
 
     fetchProfile();
-  }, [navigate]);
+  }, [navigate, user]);
 
   // Handle profile update
   const handleProfileUpdate = (updatedProfile: Partial<Profile>) => {

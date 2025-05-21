@@ -41,6 +41,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         // Only fetch profile if we have a user and using setTimeout to avoid potential auth deadlocks
         if (currentSession?.user) {
+          console.log("Auth state change: Fetching profile for user", currentSession.user.id);
           setTimeout(() => {
             if (isMounted) loadUserProfile(currentSession.user.id);
           }, 0);
@@ -61,11 +62,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         
         setUser(initialSession?.user ?? null);
         setSession(initialSession);
-        setIsLoading(false);
-
+        
         if (initialSession?.user) {
-          loadUserProfile(initialSession.user.id);
+          console.log("Initial session: Fetching profile for user", initialSession.user.id);
+          await loadUserProfile(initialSession.user.id);
         }
+        
+        setIsLoading(false);
       } catch (error) {
         console.error("Error getting initial session:", error);
         if (isMounted) {
@@ -119,9 +122,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
    */
   const loadUserProfile = async (userId: string) => {
     try {
+      console.log("Loading profile data for user:", userId);
       const profileData = await fetchUserProfile(userId, supabase);
+      
       if (profileData) {
+        console.log("Profile data loaded successfully:", profileData);
         setProfile(profileData);
+      } else {
+        console.log("No profile data found for user:", userId);
       }
     } catch (error) {
       console.error("Error loading user profile:", error);
