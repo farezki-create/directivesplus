@@ -42,14 +42,14 @@ export const useDocumentOperations = (refreshDocuments: () => void) => {
     try {
       await originalHandleDownload(file.file_path, file.file_name);
     } catch (error) {
-      await handleError(
+      await handleError({
         error,
-        ErrorType.NETWORK,
-        "DocumentOperations",
-        "download",
-        true, // showToast
-        "Impossible de télécharger le document. Veuillez réessayer."
-      );
+        type: ErrorType.NETWORK,
+        component: "DocumentOperations",
+        operation: "download",
+        showToast: true,
+        toastMessage: "Impossible de télécharger le document. Veuillez réessayer."
+      });
     } finally {
       setIsProcessing(false);
     }
@@ -61,14 +61,14 @@ export const useDocumentOperations = (refreshDocuments: () => void) => {
     try {
       await originalHandlePrint(file.file_path, file.file_type);
     } catch (error) {
-      await handleError(
+      await handleError({
         error,
-        ErrorType.UNKNOWN,
-        "DocumentOperations",
-        "print",
-        true, // showToast
-        "Impossible d'imprimer le document. Veuillez réessayer."
-      );
+        type: ErrorType.UNKNOWN,
+        component: "DocumentOperations",
+        operation: "print",
+        showToast: true,
+        toastMessage: "Impossible d'imprimer le document. Veuillez réessayer."
+      });
     } finally {
       setIsProcessing(false);
     }
@@ -80,14 +80,14 @@ export const useDocumentOperations = (refreshDocuments: () => void) => {
     try {
       await handleView(file);
     } catch (error) {
-      await handleError(
+      await handleError({
         error,
-        ErrorType.NETWORK,
-        "DocumentOperations",
-        "view",
-        true, // showToast
-        "Impossible d'afficher le document. Veuillez réessayer."
-      );
+        type: ErrorType.NETWORK,
+        component: "DocumentOperations",
+        operation: "view",
+        showToast: true,
+        toastMessage: "Impossible d'afficher le document. Veuillez réessayer."
+      });
     } finally {
       setIsProcessing(false);
     }

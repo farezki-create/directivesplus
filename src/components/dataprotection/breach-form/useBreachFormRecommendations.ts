@@ -2,6 +2,9 @@
 import { useEffect, useState } from 'react';
 import { evaluateAuthorityNotificationNeeded, evaluateUserNotificationNeeded } from '@/utils/data-breach';
 
+type RiskLevel = "low" | "medium" | "high" | "critical";
+type UrgencyLevel = "low" | "medium" | "high" | "critical";
+
 /**
  * Hook personnalisé pour générer des recommandations basées sur les données du formulaire de violation
  * @param riskLevel Le niveau de risque sélectionné
@@ -10,14 +13,14 @@ import { evaluateAuthorityNotificationNeeded, evaluateUserNotificationNeeded } f
  * @returns Recommandations pour la notification
  */
 export const useBreachFormRecommendations = (
-  riskLevel: "low" | "medium" | "high" | "critical",
+  riskLevel: RiskLevel,
   dataTypes: string[],
   isEncrypted: boolean
 ) => {
   const [recommendations, setRecommendations] = useState<{
     notifyAuthorities: boolean;
     notifyUsers: boolean;
-    urgency: 'low' | 'medium' | 'high' | 'critical';
+    urgency: UrgencyLevel;
   } | null>(null);
 
   // Met à jour les recommandations lorsque les paramètres changent

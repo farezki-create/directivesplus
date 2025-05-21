@@ -1002,6 +1002,10 @@ export type Database = {
           access_code_id: string
         }[]
       }
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       verify_directive_access: {
         Args: {
           p_directive_id: string
