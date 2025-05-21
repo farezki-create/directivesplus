@@ -1,3 +1,4 @@
+
 import { useDocumentDeletion } from "./useDocumentDeletion";
 import { useDocumentDownload } from "./useDocumentDownload";
 import { useDocumentPrint } from "./useDocumentPrint";
@@ -39,7 +40,7 @@ export const useDocumentOperations = (refreshDocuments: () => void) => {
   const handleDownload = async (file: any) => {
     setIsProcessing(true);
     try {
-      await originalHandleDownload(file);
+      await originalHandleDownload(file.file_path, file.file_name);
     } catch (error) {
       await handleError(
         error,
@@ -58,7 +59,7 @@ export const useDocumentOperations = (refreshDocuments: () => void) => {
   const handlePrint = async (file: any) => {
     setIsProcessing(true);
     try {
-      await originalHandlePrint(file);
+      await originalHandlePrint(file.file_path, file.file_type);
     } catch (error) {
       await handleError(
         error,

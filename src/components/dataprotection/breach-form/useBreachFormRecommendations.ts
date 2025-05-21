@@ -33,7 +33,7 @@ export const useBreachFormRecommendations = (
     // Détermine si une notification aux personnes concernées est nécessaire
     const notifyUsers = evaluateUserNotificationNeeded(riskLevel, dataTypes, isEncrypted);
 
-    // Détermine l'urgence de la notification
+    // Utilise directement le niveau de risque comme niveau d'urgence
     const urgency = riskLevel;
 
     setRecommendations({

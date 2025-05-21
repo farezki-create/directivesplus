@@ -5,43 +5,32 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
-
-// Types d'erreurs pour une meilleure catégorisation
-export enum ErrorType {
-  VALIDATION = 'validation_error',
-  AUTHENTICATION = 'auth_error',
-  NETWORK = 'network_error',
-  API = 'api_error',
-  DATABASE = 'database_error',
-  UNKNOWN = 'unknown_error'
-}
+import { ErrorType } from "./error-handler";
 
 // Interface pour les métadonnées d'erreur
 export interface ErrorMetadata {
+  error: any;
+  type: ErrorType;
   component?: string;
-  action?: string;
+  operation?: string;
+  timestamp?: string;
   additionalInfo?: Record<string, any>;
   userId?: string;
 }
 
 /**
  * Journalise une erreur avec contexte et métadonnées
- * @param error L'erreur à journaliser
- * @param errorType Type d'erreur pour classification
- * @param metadata Métadonnées supplémentaires sur le contexte de l'erreur
  */
-export async function logError(
-  error: Error | unknown, 
-  errorType: ErrorType = ErrorType.UNKNOWN,
-  metadata: ErrorMetadata = {}
-): Promise<void> {
+export async function logError(metadata: ErrorMetadata): Promise<void> {
   // Formatage de l'erreur pour la journalisation
   const errorObject = {
-    type: errorType,
-    message: error instanceof Error ? error.message : String(error),
-    stack: error instanceof Error ? error.stack : undefined,
-    timestamp: new Date().toISOString(),
-    ...metadata
+    type: metadata.type,
+    message: metadata.error instanceof Error ? metadata.error.message : String(metadata.error),
+    stack: metadata.error instanceof Error ? metadata.error.stack : undefined,
+    timestamp: metadata.timestamp || new Date().toISOString(),
+    component: metadata.component,
+    operation: metadata.operation,
+    ...metadata.additionalInfo
   };
 
   // Journalisation console pour le développement
@@ -63,9 +52,9 @@ export async function logError(
         user_id: metadata.userId || '00000000-0000-0000-0000-000000000000',
         access_code_id: 'error_log',
         nom_consultant: metadata.component || 'System',
-        prenom_consultant: errorType,
+        prenom_consultant: String(metadata.type),
         ip_address: 'internal',
-        user_agent: `ERROR | Type: ${errorType} | Component: ${metadata.component} | Action: ${metadata.action} | Message: ${errorObject.message.substring(0, 200)}`
+        user_agent: `ERROR | Type: ${metadata.type} | Component: ${metadata.component} | Action: ${metadata.operation} | Message: ${errorObject.message.substring(0, 200)}`
       });
   } catch (loggingError) {
     // Éviter les boucles infinies de journalisation
