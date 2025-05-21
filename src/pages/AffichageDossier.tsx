@@ -1,96 +1,99 @@
 
 import React, { useEffect } from "react";
-import { useDossierSession } from "@/hooks/useDossierSession";
-import { useDossierSecurity } from "@/hooks/useDossierSecurity";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useParams, useNavigate } from "react-router-dom";
 import DossierHeader from "@/components/dossier/DossierHeader";
-import DossierFooter from "@/components/dossier/DossierFooter";
-import PatientInfoCard from "@/components/dossier/PatientInfoCard";
 import DirectivesTab from "@/components/dossier/DirectivesTab";
 import MedicalDataTab from "@/components/dossier/MedicalDataTab";
-import BackButton from "@/components/ui/back-button";
-import LoadingState from "@/components/questionnaire/LoadingState";
+import DossierFooter from "@/components/dossier/DossierFooter";
+import { useDossierSecurity } from "@/hooks/useDossierSecurity";
+import { useDossierSession } from "@/hooks/useDossierSession";
 
-const AffichageDossier = () => {
+const AffichageDossier: React.FC = () => {
   const { 
-    dossierActif,
-    decryptedContent,
+    patientInfo, 
+    decryptedContent, 
     decryptionError,
-    hasDirectives,
-    getDirectives,
-    patientInfo,
-    handleCloseDossier
+    loading, 
+    activeTab, 
+    setActiveTab 
   } = useDossierSession();
   
-  // Use security hook only if we have an active dossier to avoid React errors
-  const securityHook = dossierActif ? useDossierSecurity() : null;
+  const { 
+    resetActivityTimer, 
+    logDossierEvent, 
+    handleSecurityClose,
+    startSecurityMonitoring,  // Add this property to match the type
+    stopSecurityMonitoring    // Add this property to match the type
+  } = useDossierSecurity();
   
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  
+  // Log view event and start monitoring on mount
   useEffect(() => {
-    // Only start security monitoring if we have an active dossier
-    if (dossierActif && securityHook) {
-      securityHook.startSecurityMonitoring();
-      return () => securityHook.stopSecurityMonitoring();
-    }
-  }, [dossierActif, securityHook]);
-
-  if (!dossierActif) {
-    return <LoadingState loading={true} message="Chargement du dossier..." />;
+    logDossierEvent("view", true);
+    startSecurityMonitoring();
+    
+    // Stop monitoring on unmount
+    return () => {
+      stopSecurityMonitoring();
+    };
+  }, [logDossierEvent, startSecurityMonitoring, stopSecurityMonitoring]);
+  
+  // Event handler for tab change
+  const handleTabChange = (value: string) => {
+    resetActivityTimer();
+    setActiveTab(value);
+    
+    // Log tab change event
+    logDossierEvent(`switch_to_${value}`, true);
+  };
+  
+  // Redirect to home if no ID is provided
+  if (!id) {
+    navigate('/');
+    return null;
   }
-
-  if (decryptionError) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <BackButton />
-        <Card className="p-8 max-w-2xl mx-auto">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">Erreur de déchiffrement</h1>
-          <p>Impossible de déchiffrer les données du dossier.</p>
-          <div className="mt-4">
-            <button
-              onClick={handleCloseDossier}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            >
-              Fermer le dossier
-            </button>
-          </div>
-        </Card>
-      </div>
-    );
-  }
-
+  
   return (
-    <div className="container mx-auto px-4 py-8">
-      <BackButton />
-      
-      <DossierHeader 
-        onClose={handleCloseDossier}
-        patientInfo={patientInfo}
-      />
-      
-      <div className="mb-6">
-        <PatientInfoCard patientInfo={patientInfo} />
-      </div>
-      
-      <Tabs defaultValue="directives" className="space-y-4">
-        <TabsList className="grid grid-cols-2">
-          <TabsTrigger value="directives">Directives anticipées</TabsTrigger>
-          <TabsTrigger value="medical-data">Données médicales</TabsTrigger>
-        </TabsList>
+    <div className="container max-w-4xl py-8" onClick={resetActivityTimer}>
+      <Card className="shadow-lg">
+        <DossierHeader 
+          onClose={handleSecurityClose}
+          patientInfo={patientInfo}
+        />
         
-        <TabsContent value="directives" className="space-y-4">
-          <DirectivesTab 
-            decryptedContent={decryptedContent}
-            hasDirectives={hasDirectives}
-            getDirectives={getDirectives}
-          />
-        </TabsContent>
+        <Tabs 
+          value={activeTab} 
+          onValueChange={handleTabChange}
+          className="w-full"
+        >
+          <div className="px-6 py-2 border-b">
+            <TabsList className="grid grid-cols-2">
+              <TabsTrigger value="directives">Directives Anticipées</TabsTrigger>
+              <TabsTrigger value="medical">Données Médicales</TabsTrigger>
+            </TabsList>
+          </div>
+          
+          <TabsContent value="directives" className="p-0">
+            <DirectivesTab 
+              loading={loading} 
+              decryptedContent={decryptedContent}
+            />
+          </TabsContent>
+          
+          <TabsContent value="medical" className="p-0">
+            <MedicalDataTab 
+              decryptedContent={decryptedContent}
+              decryptionError={decryptionError}
+            />
+          </TabsContent>
+        </Tabs>
         
-        <TabsContent value="medical-data" className="space-y-4">
-          <MedicalDataTab decryptedContent={decryptedContent} />
-        </TabsContent>
-      </Tabs>
-      
-      <DossierFooter />
+        <DossierFooter />
+      </Card>
     </div>
   );
 };

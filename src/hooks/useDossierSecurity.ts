@@ -1,122 +1,101 @@
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
-import { logAccessEvent } from "@/utils/accessLoggingUtils";
 
-/**
- * Hook for managing security aspects of a dossier session, including:
- * - Inactivity timeout
- * - Session logging
- * - Dossier closure
- */
-export const useDossierSecurity = (
-  dossierId: string | undefined,
-  onSessionExpired: () => void,
-  inactivityTimeoutMinutes: number = 15
-) => {
-  // Use useRef instead of useState to avoid potential React queue issues
-  const lastActivityTimeRef = useRef<number>(Date.now());
-  const intervalIdRef = useRef<number | null>(null);
-  
-  // Reset activity time on user interaction
-  const resetActivityTimer = () => {
-    lastActivityTimeRef.current = Date.now();
-  };
-  
-  // Log access event
-  const logDossierEvent = (action: string, success: boolean) => {
-    if (!dossierId) return;
-    
-    logAccessEvent({
-      userId: '00000000-0000-0000-0000-000000000000',
-      accessCodeId: dossierId,
-      resourceType: "dossier",
-      resourceId: dossierId,
-      action,
-      success
-    });
-  };
-  
-  // Handle dossier closure
-  const handleSecurityClose = () => {
-    if (dossierId) {
-      logDossierEvent("access", true);
+// Default timeout of 5 minutes
+const DEFAULT_TIMEOUT_MS = 5 * 60 * 1000;
+
+export const useDossierSecurity = () => {
+  const [lastActivity, setLastActivity] = useState<number>(Date.now());
+  const [timeoutId, setTimeoutId] = useState<number | null>(null);
+  const navigate = useNavigate();
+
+  // Reset the activity timer
+  const resetActivityTimer = useCallback(() => {
+    setLastActivity(Date.now());
+  }, []);
+
+  // Log dossier events
+  const logDossierEvent = useCallback((action: string, success: boolean) => {
+    console.log(`Dossier event: ${action}, success: ${success}`);
+    // Here you could send this to an analytics service or log it server-side
+  }, []);
+
+  // Handle security close (redirect to home)
+  const handleSecurityClose = useCallback(() => {
+    logDossierEvent("close", true);
+    navigate('/');
+  }, [navigate, logDossierEvent]);
+
+  // Start security monitoring
+  const startSecurityMonitoring = useCallback(() => {
+    // Clear any existing timeout
+    if (timeoutId) {
+      window.clearTimeout(timeoutId);
     }
-    onSessionExpired();
-  };
 
-  // Set up event listeners for user activity
+    // Set new timeout
+    const newTimeoutId = window.setTimeout(() => {
+      toast({
+        title: "Session expirée",
+        description: "Votre session a expiré pour des raisons de sécurité.",
+        variant: "destructive"
+      });
+      logDossierEvent("timeout", true);
+      navigate('/');
+    }, DEFAULT_TIMEOUT_MS);
+
+    setTimeoutId(Number(newTimeoutId));
+  }, [navigate, timeoutId, logDossierEvent]);
+
+  // Stop security monitoring
+  const stopSecurityMonitoring = useCallback(() => {
+    if (timeoutId) {
+      window.clearTimeout(timeoutId);
+      setTimeoutId(null);
+    }
+  }, [timeoutId]);
+
+  // Reset timer when lastActivity changes
   useEffect(() => {
-    if (!dossierId) return;
-    
-    // Initialize the last activity time when the effect runs
-    lastActivityTimeRef.current = Date.now();
-    
-    // Event handlers to reset inactivity timeout
-    const handleUserActivity = () => resetActivityTimer();
-    
-    // Register event listeners
-    window.addEventListener('mousemove', handleUserActivity);
-    window.addEventListener('keypress', handleUserActivity);
-    window.addEventListener('touchstart', handleUserActivity);
-    window.addEventListener('scroll', handleUserActivity);
-    
-    // Cleanup event listeners on component destruction
+    if (timeoutId) {
+      window.clearTimeout(timeoutId);
+    }
+
+    const newTimeoutId = window.setTimeout(() => {
+      toast({
+        title: "Session expirée",
+        description: "Votre session a expiré pour des raisons de sécurité.",
+        variant: "destructive"
+      });
+      logDossierEvent("timeout", true);
+      navigate('/');
+    }, DEFAULT_TIMEOUT_MS);
+
+    setTimeoutId(Number(newTimeoutId));
+
     return () => {
-      window.removeEventListener('mousemove', handleUserActivity);
-      window.removeEventListener('keypress', handleUserActivity);
-      window.removeEventListener('touchstart', handleUserActivity);
-      window.removeEventListener('scroll', handleUserActivity);
-    };
-  }, [dossierId]);
-  
-  // Check for inactivity and handle session expiration
-  useEffect(() => {
-    if (!dossierId) return;
-    
-    const inactivityTimeoutMs = inactivityTimeoutMinutes * 60 * 1000;
-    
-    // Set interval to check for inactivity
-    const checkInactivity = () => {
-      const currentTime = Date.now();
-      const timeSinceLastActivity = currentTime - lastActivityTimeRef.current;
-      
-      if (timeSinceLastActivity >= inactivityTimeoutMs) {
-        toast({
-          title: "Session expirée",
-          description: "Votre session a expiré pour des raisons de sécurité",
-          variant: "default"
-        });
-        
-        // Log session expiration
-        logDossierEvent("timeout", true);
-        
-        // Close dossier
-        onSessionExpired();
-        
-        // Clear interval
-        if (intervalIdRef.current !== null) {
-          clearInterval(intervalIdRef.current);
-          intervalIdRef.current = null;
-        }
+      if (newTimeoutId) {
+        window.clearTimeout(newTimeoutId);
       }
     };
-    
-    // Start the interval and store its ID
-    intervalIdRef.current = window.setInterval(checkInactivity, 10000);
-    
-    // Clean up interval on unmount
+  }, [lastActivity, navigate, logDossierEvent]);
+
+  // Clean up on unmount
+  useEffect(() => {
     return () => {
-      if (intervalIdRef.current !== null) {
-        clearInterval(intervalIdRef.current);
-        intervalIdRef.current = null;
+      if (timeoutId) {
+        window.clearTimeout(timeoutId);
       }
     };
-  }, [dossierId, inactivityTimeoutMinutes, onSessionExpired]);
-  
+  }, [timeoutId]);
+
   return {
     resetActivityTimer,
     logDossierEvent,
-    handleSecurityClose
+    handleSecurityClose,
+    startSecurityMonitoring,
+    stopSecurityMonitoring
   };
 };

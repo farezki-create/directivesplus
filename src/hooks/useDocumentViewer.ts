@@ -2,6 +2,7 @@
 import { useCallback } from "react";
 import { useDocumentPreview } from "./useDocumentPreview";
 import { toast } from "@/hooks/use-toast";
+import { viewDocument } from "@/utils/document-operations";
 
 /**
  * Hook that combines document viewing and preview capabilities
@@ -18,8 +19,8 @@ export const useDocumentViewer = () => {
         throw new Error("Chemin de fichier invalide");
       }
       
-      // Directement définir le document à prévisualiser
-      setPreviewDocument(filePath);
+      // Use the viewDocument utility function
+      viewDocument(filePath, fileType, setPreviewDocument);
       
       console.log("useDocumentViewer - Document prévisualisé:", filePath);
     } catch (error) {
