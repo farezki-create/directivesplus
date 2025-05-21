@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { ErrorType, handleError } from "@/utils/error-handling";
@@ -8,9 +7,12 @@ interface LogAccessOptions {
   accessCodeId: string;
   consultantName?: string; 
   consultantFirstName?: string;
-  resourceType: "medical" | "directive";
+  resourceType: "medical" | "directive" | "dossier";
   resourceId?: string;
-  action: "view" | "download" | "print" | "share" | "access";
+  action: "view" | "download" | "print" | "share" | "access" | "attempt";
+  ipAddress?: string;
+  userAgent?: string;
+  success?: boolean;
 }
 
 export const logAccessEvent = async (options: LogAccessOptions) => {
@@ -22,23 +24,20 @@ export const logAccessEvent = async (options: LogAccessOptions) => {
       consultantFirstName, 
       resourceType,
       resourceId,
-      action 
+      action,
+      ipAddress,
+      userAgent,
+      success = true
     } = options;
 
-    // Récupérer les informations sur l'environnement client
-    const userAgent = navigator.userAgent;
+    // Récupérer les informations sur l'environnement client si non fournies
+    const clientUserAgent = userAgent || navigator.userAgent;
     
     // Pour obtenir l'adresse IP, il faut normalement passer par un service côté serveur
     // Ici, pour des raisons de démonstration nous allons l'enregistrer comme "client_side"
-    // Dans un environnement de production, cela devrait être remplacé par une fonction Edge
-    const ipAddress = "client_side";
-
-    // Format combiné pour stocker les métadonnées de ressource jusqu'à la mise à jour des types
-    const enhancedUserAgent = `${userAgent} | ResourceType: ${resourceType} | Action: ${action} | ResourceID: ${resourceId || "general_access"}`;
+    const clientIpAddress = ipAddress || "client_side";
 
     // Enregistrer l'événement d'accès dans la table document_access_logs
-    // IMPORTANT: Nous utilisons uniquement les champs reconnus par TypeScript
-    // Les nouveaux champs seront gérés après mise à jour des types
     const { error } = await supabase
       .from('document_access_logs')
       .insert({
@@ -46,8 +45,8 @@ export const logAccessEvent = async (options: LogAccessOptions) => {
         access_code_id: accessCodeId,
         nom_consultant: consultantName || null,
         prenom_consultant: consultantFirstName || null,
-        ip_address: ipAddress,
-        user_agent: enhancedUserAgent
+        ip_address: clientIpAddress,
+        user_agent: `${clientUserAgent} | ResourceType: ${resourceType} | Action: ${action} | ResourceID: ${resourceId || "general_access"} | Success: ${success}`
       });
 
     if (error) {
@@ -74,10 +73,10 @@ export const notifyAccessLogged = (action: string, success: boolean) => {
 };
 
 // Fonction pour journaliser une erreur d'accès
-export const logAccessError = async (userId: string, error: any, resourceType: string) => {
+export const logAccessError = async (userId: string, error: any, resourceType: string, resourceId?: string) => {
   try {
     const userAgent = navigator.userAgent;
-    const enhancedUserAgent = `Error logging | ResourceType: ${resourceType} | Error: ${JSON.stringify(error).slice(0, 500)}`;
+    const enhancedUserAgent = `Error logging | ResourceType: ${resourceType} | ResourceID: ${resourceId || 'unknown'} | Error: ${JSON.stringify(error).slice(0, 500)}`;
     
     const { error: logError } = await supabase
       .from('document_access_logs')
@@ -85,7 +84,6 @@ export const logAccessError = async (userId: string, error: any, resourceType: s
         user_id: userId,
         ip_address: "client_side",
         user_agent: enhancedUserAgent,
-        // Nous ne pouvons pas utiliser les nouveaux champs tant que les types ne sont pas mis à jour
         access_code_id: "error_log" // Pour respecter la contrainte non-null
       });
       

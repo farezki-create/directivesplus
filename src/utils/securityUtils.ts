@@ -130,6 +130,7 @@ interface BruteForceProtection {
   lastAttempt: number;
   isBlocked: boolean;
   blockExpiration: number | null;
+  ipAddress?: string;
 }
 
 const bruteForceStore: Record<string, BruteForceProtection> = {};
@@ -137,6 +138,7 @@ const bruteForceStore: Record<string, BruteForceProtection> = {};
 /**
  * Détection de tentatives de force brute
  * @param identifier Identifiant pour l'action (ex: adresse IP, combinaison user+IP, etc.)
+ * @param ipAddress Adresse IP optionnelle pour enrichir les logs
  * @param maxAttempts Nombre maximum de tentatives avant blocage
  * @param timeWindowMinutes Fenêtre de temps en minutes pour les tentatives
  * @param blockDurationMinutes Durée du blocage en minutes
@@ -144,6 +146,7 @@ const bruteForceStore: Record<string, BruteForceProtection> = {};
  */
 export const checkBruteForceAttempt = (
   identifier: string, 
+  ipAddress?: string,
   maxAttempts: number = 5,
   timeWindowMinutes: number = 15,
   blockDurationMinutes: number = 30
@@ -159,8 +162,12 @@ export const checkBruteForceAttempt = (
       firstAttempt: now,
       lastAttempt: now,
       isBlocked: false,
-      blockExpiration: null
+      blockExpiration: null,
+      ipAddress: ipAddress
     };
+  } else if (ipAddress && !bruteForceStore[identifier].ipAddress) {
+    // Mettre à jour l'IP si fournie et non définie précédemment
+    bruteForceStore[identifier].ipAddress = ipAddress;
   }
   
   const protection = bruteForceStore[identifier];
@@ -177,6 +184,10 @@ export const checkBruteForceAttempt = (
   // Si bloqué, renvoyer le statut
   if (protection.isBlocked && protection.blockExpiration) {
     const remainingBlockMs = protection.blockExpiration - now;
+    
+    // Journaliser la tentative d'accès pendant un blocage
+    logBruteForceAttempt(identifier, ipAddress || protection.ipAddress, true);
+    
     return {
       allowed: false,
       remainingAttempts: 0,
@@ -200,7 +211,7 @@ export const checkBruteForceAttempt = (
     protection.blockExpiration = now + blockDurationMs;
     
     // Journaliser la détection d'attaque potentielle
-    console.warn(`Potentielle attaque par force brute détectée pour ${identifier}. Blocage pour ${blockDurationMinutes} minutes.`);
+    logBruteForceAttempt(identifier, ipAddress || protection.ipAddress, true);
     
     return {
       allowed: false,
@@ -209,11 +220,47 @@ export const checkBruteForceAttempt = (
     };
   }
   
+  // Journaliser la tentative (non bloquée)
+  if (protection.attempts >= Math.floor(maxAttempts / 2)) {
+    // Ne journaliser que si on atteint la moitié des tentatives max
+    logBruteForceAttempt(identifier, ipAddress || protection.ipAddress, false);
+  }
+  
   return {
     allowed: true,
     remainingAttempts: maxAttempts - protection.attempts
   };
 };
+
+/**
+ * Journalisation des tentatives de force brute
+ */
+function logBruteForceAttempt(identifier: string, ipAddress?: string, isBlocked: boolean = false) {
+  const protection = bruteForceStore[identifier];
+  if (!protection) return;
+  
+  console.warn(`Tentative d'accès ${isBlocked ? 'bloquée' : 'suspecte'} pour ${identifier}${ipAddress ? ` depuis ${ipAddress}` : ''}. ${protection.attempts} tentatives.`);
+  
+  // Enregistrer dans document_access_logs via la fonction error-logger
+  try {
+    import('./error-handling').then(({ logError, ErrorType }) => {
+      logError({
+        error: `Tentative d'accès ${isBlocked ? 'bloquée' : 'suspecte'}`,
+        type: ErrorType.SECURITY,
+        component: 'BruteForceProtection',
+        operation: isBlocked ? 'access_blocked' : 'suspicious_access',
+        additionalInfo: {
+          identifier,
+          attempts: protection.attempts,
+          timeWindow: Math.floor((protection.lastAttempt - protection.firstAttempt) / 1000),
+          ipAddress: ipAddress || 'unknown'
+        }
+      });
+    });
+  } catch (e) {
+    console.error('Erreur lors de la journalisation de tentative de force brute:', e);
+  }
+}
 
 /**
  * Réinitialise le compteur de tentatives après une authentification réussie

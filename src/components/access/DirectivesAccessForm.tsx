@@ -12,6 +12,8 @@ import { useNavigate } from "react-router-dom";
 import { useDossierStore } from "@/store/dossierStore";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { logAccessEvent } from "@/utils/accessLoggingUtils";
+import { checkBruteForceAttempt } from "@/utils/securityUtils";
 
 const DirectivesAccessForm = () => {
   const { 
@@ -23,6 +25,8 @@ const DirectivesAccessForm = () => {
   // État local pour stocker le code d'accès
   const [code, setCode] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [blockedAccess, setBlockedAccess] = useState(false);
+  const [remainingAttempts, setRemainingAttempts] = useState<number | null>(null);
   
   // Navigation
   const navigate = useNavigate();
@@ -41,7 +45,6 @@ const DirectivesAccessForm = () => {
     const subscription = form.watch((value, { name }) => {
       if (name === "accessCode") {
         setCode(value.accessCode || "");
-        console.log("Code d'accès mis à jour:", value.accessCode);
       }
     });
 
@@ -54,9 +57,24 @@ const DirectivesAccessForm = () => {
     if (result) {
       if (result.success) {
         setErrorMessage(null);
+        setBlockedAccess(false);
+        
         toast({
           title: "Accès autorisé",
           description: "Le code d'accès est valide. Chargement du dossier...",
+        });
+        
+        // Journaliser l'accès réussi
+        const formData = form.getValues();
+        logAccessEvent({
+          userId: '00000000-0000-0000-0000-000000000000', // Utilisateur anonyme
+          accessCodeId: result.dossier?.id || 'unknown',
+          consultantName: formData.lastName,
+          consultantFirstName: formData.firstName,
+          resourceType: "directive",
+          resourceId: result.dossier?.id,
+          action: "access",
+          success: true
         });
         
         // Stocker le dossier actif et naviguer vers la page d'affichage
@@ -73,6 +91,19 @@ const DirectivesAccessForm = () => {
         }
       } else {
         setErrorMessage(result.error || "Code d'accès invalide");
+        
+        // Journaliser la tentative échouée
+        const formData = form.getValues();
+        logAccessEvent({
+          userId: '00000000-0000-0000-0000-000000000000', // Utilisateur anonyme
+          accessCodeId: 'invalid_attempt',
+          consultantName: formData.lastName,
+          consultantFirstName: formData.firstName,
+          resourceType: "directive",
+          action: "attempt",
+          success: false
+        });
+        
         toast({
           title: "Accès refusé",
           description: result.error || "Code d'accès invalide",
@@ -80,21 +111,37 @@ const DirectivesAccessForm = () => {
         });
       }
     }
-  }, [result, navigate, setDossierActif]);
+  }, [result, navigate, setDossierActif, form]);
 
   const handleAccessDirectives = async () => {
-    console.log("Demande d'accès avec le code:", code);
-    setErrorMessage(null);
-    
     // Vérifier si le formulaire est valide
     const isValid = await form.trigger();
     if (!isValid) {
       return;
     }
     
+    const formData = form.getValues();
+    setErrorMessage(null);
+    
+    // Créer un identifiant pour la protection contre la force brute
+    // Basé sur des informations de l'utilisateur
+    const bruteForcePrevention = `directives_${formData.lastName.toLowerCase()}_${formData.birthDate}`;
+    
+    // Vérifier si l'accès n'est pas bloqué pour cause de trop de tentatives
+    const bruteForceCheck = checkBruteForceAttempt(bruteForcePrevention);
+    
+    if (!bruteForceCheck.allowed) {
+      setBlockedAccess(true);
+      setErrorMessage(`Trop de tentatives. Veuillez réessayer dans ${Math.ceil((bruteForceCheck.blockExpiresIn || 0) / 60)} minutes.`);
+      return;
+    }
+    
+    setRemainingAttempts(bruteForceCheck.remainingAttempts);
+    
     try {
       // Vérifier le code d'accès via la fonction Edge
-      await verifierCode(code);
+      // Passer un identifiant partiel pour le tracking de force brute
+      await verifierCode(code, `${formData.lastName.substring(0, 2)}${formData.firstName.substring(0, 2)}`);
       // Le reste de la logique est géré par useEffect qui observe result
     } catch (error) {
       console.error("Erreur lors de la vérification du code:", error);
@@ -124,7 +171,7 @@ const DirectivesAccessForm = () => {
                 label="Nom"
                 placeholder="Nom de famille"
                 control={form.control}
-                disabled={loading}
+                disabled={loading || blockedAccess}
               />
               
               <FormField 
@@ -132,7 +179,7 @@ const DirectivesAccessForm = () => {
                 label="Prénom"
                 placeholder="Prénom"
                 control={form.control}
-                disabled={loading}
+                disabled={loading || blockedAccess}
               />
               
               <FormField 
@@ -140,7 +187,7 @@ const DirectivesAccessForm = () => {
                 label="Date de naissance"
                 type="date"
                 control={form.control}
-                disabled={loading}
+                disabled={loading || blockedAccess}
               />
               
               <FormField 
@@ -148,7 +195,7 @@ const DirectivesAccessForm = () => {
                 label="Code d'accès"
                 placeholder="Code d'accès unique"
                 control={form.control}
-                disabled={loading}
+                disabled={loading || blockedAccess}
               />
 
               {errorMessage && (
@@ -157,6 +204,19 @@ const DirectivesAccessForm = () => {
                   <AlertTitle>Erreur</AlertTitle>
                   <AlertDescription>
                     {errorMessage}
+                  </AlertDescription>
+                </Alert>
+              )}
+              
+              {remainingAttempts !== null && remainingAttempts < 3 && !blockedAccess && (
+                <Alert variant="warning" className="bg-amber-50 border-amber-500">
+                  <AlertCircle className="h-4 w-4 text-amber-500" />
+                  <AlertTitle className="text-amber-700">Attention</AlertTitle>
+                  <AlertDescription className="text-amber-700">
+                    {remainingAttempts <= 0 
+                      ? "Dernière tentative avant blocage temporaire."
+                      : `${remainingAttempts} tentative${remainingAttempts > 1 ? 's' : ''} restante${remainingAttempts > 1 ? 's' : ''} avant blocage temporaire.`
+                    }
                   </AlertDescription>
                 </Alert>
               )}
@@ -172,6 +232,7 @@ const DirectivesAccessForm = () => {
                   onAction={handleAccessDirectives}
                   actionLabel="Accéder aux directives anticipées"
                   actionIcon="file-text"
+                  disabled={blockedAccess}
                 />
               </div>
             </CardFooter>

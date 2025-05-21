@@ -5,11 +5,19 @@ import { FormData } from "@/utils/access-document/validationSchema";
 import { checkMedicalAccessCode } from "@/utils/access-document/databaseUtils";
 import { showErrorToast, showSuccessToast } from "@/utils/access-document/toastUtils";
 
+export interface MedicalAccessResult {
+  success: boolean;
+  error?: string;
+  userId?: string;
+  accessCodeId?: string;
+  resourceId?: string;
+}
+
 export const useMedicalAccess = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
-  const accessMedicalData = async (formData: FormData) => {
+  const accessMedicalData = async (formData: FormData): Promise<MedicalAccessResult> => {
     console.log("Données du formulaire pour données médicales:", formData);
     
     setLoading(true);
@@ -20,7 +28,10 @@ export const useMedicalAccess = () => {
       if (!profilesData || profilesData.length === 0) {
         console.log("Code d'accès médical invalide");
         showErrorToast("Accès refusé", "Code d'accès médical invalide");
-        return;
+        return { 
+          success: false,
+          error: "Code d'accès médical invalide"
+        };
       }
       
       const profile = profilesData[0];
@@ -34,7 +45,10 @@ export const useMedicalAccess = () => {
           !birthDateMatch) {
         console.log("Informations personnelles médicales incorrectes");
         showErrorToast("Accès refusé", "Informations personnelles incorrectes");
-        return;
+        return {
+          success: false,
+          error: "Informations personnelles incorrectes" 
+        };
       }
       
       // Accès accordé
@@ -45,17 +59,27 @@ export const useMedicalAccess = () => {
       setTimeout(() => {
         navigate('/donnees-medicales');
       }, 1000);
+      
+      return {
+        success: true,
+        userId: profile.id,
+        accessCodeId: profile.medical_access_code || 'unknown',
+        resourceId: profile.id
+      };
     } catch (error: any) {
       console.error("Erreur d'accès aux données médicales:", error);
       showErrorToast(
         "Erreur", 
         "Une erreur est survenue lors de la vérification de l'accès"
       );
+      
+      return {
+        success: false,
+        error: error.message || "Une erreur est survenue"
+      };
     } finally {
       setLoading(false);
     }
-    
-    return { loading };
   };
 
   return {

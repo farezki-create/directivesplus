@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useDirectivesAccess } from "./access-document/useDirectivesAccess";
-import { useMedicalAccess } from "./access-document/useMedicalAccess";
+import { useMedicalAccess, MedicalAccessResult } from "./access-document/useMedicalAccess";
 import { formSchema, FormData } from "@/utils/access-document/validationSchema";
 
 export const useAccessDocumentForm = () => {
@@ -47,17 +47,17 @@ export const useAccessDocumentForm = () => {
   };
 
   // Fonction d'accès aux données médicales
-  const accessMedicalData = async () => {
+  const accessMedicalData = async (): Promise<MedicalAccessResult> => {
     if (!await handleFormValidation()) {
       console.log("Le formulaire n'est pas valide");
-      return;
+      return { success: false, error: "Formulaire invalide" };
     }
     
     const formData = form.getValues();
     setLoading(true);
     
     try {
-      await medicalAccess.accessMedicalData(formData);
+      return await medicalAccess.accessMedicalData(formData);
     } finally {
       setLoading(false);
     }

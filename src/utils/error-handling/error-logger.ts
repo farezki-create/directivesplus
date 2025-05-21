@@ -19,6 +19,9 @@ export interface ErrorMetadata {
   userId?: string;
   sessionId?: string;
   correlationId?: string;
+  resourceType?: string;  // Type de ressource concernée
+  resourceId?: string;    // Identifiant de la ressource
+  actionType?: string;    // Type d'action (lecture, écriture, etc.)
 }
 
 /**
@@ -38,6 +41,9 @@ export async function logError(metadata: ErrorMetadata): Promise<void> {
     component: metadata.component,
     operation: metadata.operation,
     correlationId: metadata.correlationId || generateCorrelationId(),
+    resourceType: metadata.resourceType,
+    resourceId: metadata.resourceId,
+    actionType: metadata.actionType,
     ...metadata.additionalInfo
   };
 
@@ -92,7 +98,7 @@ export async function logError(metadata: ErrorMetadata): Promise<void> {
         nom_consultant: metadata.component || 'System',
         prenom_consultant: String(metadata.type),
         ip_address: 'internal',
-        user_agent: `ERROR | Level: ${logLevel} | Type: ${metadata.type} | Component: ${metadata.component} | Action: ${metadata.operation} | CID: ${errorObject.correlationId} | Message: ${errorObject.message.substring(0, 180)}`
+        user_agent: `ERROR | Level: ${logLevel} | Type: ${metadata.type} | Component: ${metadata.component} | Action: ${metadata.operation || metadata.actionType} | Resource: ${metadata.resourceType || 'unknown'}:${metadata.resourceId || 'unknown'} | CID: ${errorObject.correlationId} | Message: ${errorObject.message.substring(0, 180)}`
       });
   } catch (loggingError) {
     // Éviter les boucles infinies de journalisation

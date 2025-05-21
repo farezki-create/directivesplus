@@ -11,6 +11,7 @@ import { AlertCircle, LogOut, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { decryptData } from "@/utils/encryption";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { logAccessEvent } from "@/utils/accessLoggingUtils";
 
 const AffichageDossier = () => {
   const { dossierActif, clearDossierActif } = useDossierStore();
@@ -18,6 +19,7 @@ const AffichageDossier = () => {
   const [decryptedContent, setDecryptedContent] = useState<any>(null);
   const [decryptionError, setDecryptionError] = useState<boolean>(false);
   
+  // Effet pour déchiffrer et afficher les données
   useEffect(() => {
     // Rediriger vers la page d'accès si aucun dossier n'est actif
     if (!dossierActif) {
@@ -40,6 +42,15 @@ const AffichageDossier = () => {
           setDecryptedContent(dossierActif.contenu);
           console.log("Données non chiffrées utilisées directement");
         }
+
+        // Journaliser la visualisation du dossier
+        logAccessEvent({
+          userId: '00000000-0000-0000-0000-000000000000', // Utilisateur anonyme
+          accessCodeId: dossierActif.id,
+          resourceType: "dossier",
+          resourceId: dossierActif.id,
+          action: "view"
+        });
       } catch (error) {
         console.error("Erreur de déchiffrement:", error);
         setDecryptionError(true);
@@ -48,11 +59,63 @@ const AffichageDossier = () => {
           description: "Impossible de déchiffrer les données du dossier",
           variant: "destructive"
         });
+
+        // Journaliser l'erreur de déchiffrement
+        logAccessEvent({
+          userId: '00000000-0000-0000-0000-000000000000',
+          accessCodeId: dossierActif.id,
+          resourceType: "dossier",
+          resourceId: dossierActif.id,
+          action: "error",
+          success: false
+        });
       }
     }
   }, [dossierActif, navigate]);
 
+  // Effets pour gérer la sécurité de la session
+  useEffect(() => {
+    // Définir un délai d'inactivité
+    const inactivityTimeout = setTimeout(() => {
+      if (dossierActif) {
+        toast({
+          title: "Session expirée",
+          description: "Votre session a expiré pour des raisons de sécurité",
+          variant: "default"
+        });
+        handleFermerDossier();
+      }
+    }, 15 * 60 * 1000); // 15 minutes
+    
+    // Écouter les événements utilisateur pour réinitialiser le délai d'inactivité
+    const resetTimeout = () => {
+      clearTimeout(inactivityTimeout);
+    };
+    
+    window.addEventListener('mousemove', resetTimeout);
+    window.addEventListener('keypress', resetTimeout);
+    
+    // Nettoyage à la destruction du composant
+    return () => {
+      clearTimeout(inactivityTimeout);
+      window.removeEventListener('mousemove', resetTimeout);
+      window.removeEventListener('keypress', resetTimeout);
+    };
+  }, [dossierActif]);
+
   const handleFermerDossier = () => {
+    // Journaliser la fermeture du dossier si disponible
+    if (dossierActif) {
+      logAccessEvent({
+        userId: '00000000-0000-0000-0000-000000000000',
+        accessCodeId: dossierActif.id,
+        resourceType: "dossier",
+        resourceId: dossierActif.id,
+        action: "access",
+        success: true
+      });
+    }
+    
     clearDossierActif();
     toast({
       title: "Dossier fermé",
