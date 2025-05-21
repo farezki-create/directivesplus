@@ -35,9 +35,12 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
       directiveCode,
       medicalCode,
       includeDirective,
-      includeMedical
+      includeMedical,
+      firstName,
+      lastName,
+      birthDate: formattedBirthDate
     });
-  }, [directiveCode, medicalCode, includeDirective, includeMedical]);
+  }, [directiveCode, medicalCode, includeDirective, includeMedical, firstName, lastName, formattedBirthDate]);
 
   return (
     <div 
@@ -51,7 +54,7 @@ const CardDisplay: React.FC<CardDisplayProps> = ({
           birthDate={formattedBirthDate}
         />
         
-        <div>
+        <div className="flex flex-col items-center justify-center">
           <CardCodeSection
             includeDirective={includeDirective}
             includeMedical={includeMedical}

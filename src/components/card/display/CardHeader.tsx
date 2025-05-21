@@ -9,7 +9,7 @@ interface CardHeaderProps {
 
 const CardHeader: React.FC<CardHeaderProps> = ({ lastName, firstName, birthDate }) => {
   return (
-    <div>
+    <div className="w-full">
       <div className="flex justify-between items-start">
         <div>
           <h3 className="font-bold text-2xl">DirectivesPlus</h3>
@@ -23,8 +23,12 @@ const CardHeader: React.FC<CardHeaderProps> = ({ lastName, firstName, birthDate 
       </div>
       
       <div className="mt-6 mb-2 text-center">
-        <p className="font-bold text-xl uppercase">{lastName} {firstName}</p>
-        <p className="text-sm opacity-90">Né(e) le: {birthDate}</p>
+        <p className="font-bold text-xl uppercase">
+          {lastName ? lastName : "NOM"} {firstName ? firstName : "Prénom"}
+        </p>
+        <p className="text-sm opacity-90">
+          Né(e) le: {birthDate || "Non spécifié"}
+        </p>
       </div>
     </div>
   );

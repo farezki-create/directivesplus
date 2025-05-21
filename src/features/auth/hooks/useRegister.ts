@@ -30,6 +30,7 @@ export const useRegister = (onVerificationSent: (email: string) => void) => {
       
       // Generate access codes in advance
       const medicalAccessCode = generateRandomCode(8);
+      const directiveAccessCode = generateRandomCode(8);
       
       // Now sign up
       const { error, data } = await supabase.auth.signUp({
@@ -43,7 +44,8 @@ export const useRegister = (onVerificationSent: (email: string) => void) => {
             birth_date: birthDate,
             address: values.address,
             phone_number: values.phoneNumber,
-            medical_access_code: medicalAccessCode
+            medical_access_code: medicalAccessCode,
+            directive_access_code: directiveAccessCode
           },
           emailRedirectTo: window.location.origin + "/auth"
         }
@@ -51,11 +53,9 @@ export const useRegister = (onVerificationSent: (email: string) => void) => {
 
       if (error) throw error;
       
-      // If user is created successfully, create directive access code entry
+      // Si l'utilisateur est créé avec succès, créer un code d'accès aux directives
       if (data?.user) {
-        const directiveAccessCode = generateRandomCode(8);
-        
-        // Create directive access code in document_access_codes table
+        // Créer le code d'accès aux directives dans document_access_codes
         const { error: directiveError } = await supabase
           .from('document_access_codes')
           .insert({
@@ -66,6 +66,23 @@ export const useRegister = (onVerificationSent: (email: string) => void) => {
           
         if (directiveError) {
           console.error("Error creating directive access code:", directiveError);
+        }
+        
+        // S'assurer que les données de profil sont définies
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .upsert({
+            id: data.user.id,
+            first_name: values.firstName,
+            last_name: values.lastName,
+            birth_date: birthDate,
+            address: values.address,
+            phone_number: values.phoneNumber,
+            medical_access_code: medicalAccessCode
+          });
+          
+        if (profileError) {
+          console.error("Error creating profile:", profileError);
         }
       }
       
