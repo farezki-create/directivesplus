@@ -28,37 +28,10 @@ const AffichageDossier: React.FC = () => {
     handleCloseDossier
   );
   
-  // Documents associés au dossier actif
-  const [documentLinks, setDocumentLinks] = useState<any[]>([]);
-  
   // Reset activity timer on component mount
   useEffect(() => {
     resetActivityTimer();
   }, [resetActivityTimer]);
-
-  // Effet pour charger les liens des documents associés au dossier
-  useEffect(() => {
-    if (dossierActif && dossierActif.id) {
-      // Dans un cas réel, on récupérerait les documents depuis la base de données
-      // Ici, nous utilisons des données simulées pour l'exemple
-      const mockDocuments = [
-        {
-          id: `doc-${dossierActif.id}-1`,
-          title: "Directives anticipées",
-          type: "directive" as const,
-          path: `/directives-viewer/${dossierActif.id}`
-        },
-        {
-          id: `doc-${dossierActif.id}-2`,
-          title: "Données médicales",
-          type: "medical" as const,
-          path: `/medical-viewer/${dossierActif.id}`
-        }
-      ];
-      
-      setDocumentLinks(mockDocuments);
-    }
-  }, [dossierActif]);
 
   if (!dossierActif) {
     return null;
@@ -77,11 +50,8 @@ const AffichageDossier: React.FC = () => {
         <div className="max-w-4xl mx-auto">
           <PatientInfoCard patientInfo={patientInfo} />
           
-          {/* Section de liens vers les documents */}
-          <DocumentsLinkSection 
-            documents={documentLinks} 
-            dossierId={dossierActif.id}
-          />
+          {/* Section de liens vers les documents - maintenant avec les vrais liens */}
+          <DocumentsLinkSection dossierId={dossierActif.id} />
           
           <Tabs defaultValue="dossier" className="w-full">
             <TabsList className="grid grid-cols-2 mb-4">

@@ -6,7 +6,7 @@ import DocumentViewer from "./DocumentViewer";
 const DirectivesViewer: React.FC = () => {
   const { dossierId } = useParams<{ dossierId: string }>();
   
-  return <DocumentViewer />;
+  return <DocumentViewer documentType="directive" />;
 };
 
 export default DirectivesViewer;
