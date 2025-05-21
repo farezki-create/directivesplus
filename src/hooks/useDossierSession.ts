@@ -4,13 +4,12 @@ import { useNavigate } from "react-router-dom";
 import { useDossierStore } from "@/store/dossierStore";
 import { toast } from "@/hooks/use-toast";
 import { decryptData } from "@/utils/encryption";
-import { useDossierSecurity } from "@/hooks/useDossierSecurity";
 
 /**
- * Hook for managing dossier session data, including:
- * - Data decryption
- * - Content extraction
- * - Session management
+ * Hook pour gérer les données de session du dossier médical, incluant:
+ * - Le déchiffrement des données
+ * - L'extraction du contenu
+ * - La gestion de la session
  */
 export const useDossierSession = () => {
   const { dossierActif, clearDossierActif } = useDossierStore();
@@ -18,7 +17,7 @@ export const useDossierSession = () => {
   const [decryptedContent, setDecryptedContent] = useState<any>(null);
   const [decryptionError, setDecryptionError] = useState<boolean>(false);
   
-  // Handle dossier closure and navigation
+  // Fonction pour fermer le dossier et naviguer
   const handleCloseDossier = () => {
     clearDossierActif();
     toast({
@@ -28,15 +27,9 @@ export const useDossierSession = () => {
     navigate('/acces-document');
   };
   
-  // Use the security hook
-  const { logDossierEvent } = useDossierSecurity(
-    dossierActif?.id,
-    handleCloseDossier
-  );
-  
-  // Effect to decrypt and display data
+  // Effet pour déchiffrer et afficher les données
   useEffect(() => {
-    // Redirect to access page if no active dossier
+    // Rediriger vers la page d'accès si aucun dossier actif
     if (!dossierActif) {
       toast({
         title: "Accès refusé",
@@ -45,42 +38,38 @@ export const useDossierSession = () => {
       });
       navigate('/acces-document');
     } else {
-      // Try to decrypt content
+      // Essayer de déchiffrer le contenu
       try {
-        // Check if content is encrypted (starts with "U2F")
+        console.log("Traitement des données du dossier:", dossierActif.id);
+        
+        // Vérifier si le contenu est chiffré (commence par "U2F")
         if (typeof dossierActif.contenu === 'string' && dossierActif.contenu.startsWith('U2F')) {
           const decrypted = decryptData(dossierActif.contenu);
           setDecryptedContent(decrypted);
-          console.log("Données déchiffrées avec succès");
+          console.log("Données déchiffrées avec succès pour le dossier:", dossierActif.id);
         } else {
-          // If data is not encrypted (backward compatibility)
+          // Si les données ne sont pas chiffrées (compatibilité descendante)
           setDecryptedContent(dossierActif.contenu);
-          console.log("Données non chiffrées utilisées directement");
+          console.log("Données non chiffrées utilisées directement pour le dossier:", dossierActif.id);
         }
-
-        // Log the dossier view
-        logDossierEvent("view", true);
       } catch (error) {
-        console.error("Erreur de déchiffrement:", error);
+        console.error("Erreur de déchiffrement pour le dossier:", dossierActif.id, error);
         setDecryptionError(true);
         toast({
           title: "Erreur de déchiffrement",
           description: "Impossible de déchiffrer les données du dossier",
           variant: "destructive"
         });
-
-        // Log the decryption error
-        logDossierEvent("attempt", false);
       }
     }
-  }, [dossierActif, navigate, logDossierEvent]);
+  }, [dossierActif, navigate]);
 
-  // Check if the decrypted content contains directives
+  // Vérifier si le contenu déchiffré contient des directives
   const hasDirectives = decryptedContent && 
     typeof decryptedContent === 'object' && 
     decryptedContent.directives_anticipees;
 
-  // Extract patient info if available
+  // Extraire les informations du patient si disponibles
   const patientInfo = decryptedContent && 
     typeof decryptedContent === 'object' && 
     decryptedContent.patient;

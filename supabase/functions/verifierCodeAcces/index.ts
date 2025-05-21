@@ -116,6 +116,7 @@ serve(async (req: Request) => {
 
     // Si le code d'accès existe, récupérer les données du document associé
     const userId = data.user_id;
+    const documentId = data.document_id;
     
     // Récupérer les données du profil pour vérifier plus tard
     const { data: profileData } = await supabase
@@ -124,66 +125,73 @@ serve(async (req: Request) => {
       .eq("id", userId)
       .single();
 
-    // Get directives for this user, to include in the medical record
-    const { data: directivesData } = await supabase
-      .from("advance_directives")
-      .select("content")
-      .eq("user_id", userId)
-      .order("updated_at", { ascending: false })
-      .limit(1);
+    // Vérifier si le dossier médical existe pour ce document_id spécifique
+    const { data: medicalRecordData } = await supabase
+      .from("dossiers_medicaux")
+      .select("contenu_dossier, id")
+      .eq("id", documentId)
+      .maybeSingle();
 
-    // Ensure we record this access
-    await logAccess(userId, true, "Code d'accès valide");
-
-    // Create or update medical record with directives content
-    if (directivesData && directivesData.length > 0) {
-      console.log("Copie des directives anticipées vers le dossier médical");
+    // Si le dossier n'existe pas pour ce document_id, créez-en un nouveau
+    let dossierContent = null;
+    let dossierId = documentId;
+    
+    if (!medicalRecordData) {
+      // Récupérer les directives pour cet utilisateur, à inclure dans le dossier médical
+      const { data: directivesData } = await supabase
+        .from("advance_directives")
+        .select("content")
+        .eq("user_id", userId)
+        .order("updated_at", { ascending: false })
+        .limit(1);
       
-      // Check if a medical record exists for this user
-      const { data: existingMedicalData } = await supabase
-        .from("dossiers_medicaux")
-        .select("id, contenu_dossier")
-        .eq("code_acces", code_saisi)
-        .maybeSingle();
-
-      if (existingMedicalData) {
-        // Update existing medical record to include directives
-        const updatedContent = {
-          ...existingMedicalData.contenu_dossier,
-          directives_anticipees: directivesData[0].content
-        };
-        
-        await supabase
-          .from("dossiers_medicaux")
-          .update({ contenu_dossier: updatedContent })
-          .eq("id", existingMedicalData.id);
-      } else {
-        // Create new medical record with directives
-        await supabase
-          .from("dossiers_medicaux")
-          .insert({
-            code_acces: code_saisi,
-            contenu_dossier: {
-              directives_anticipees: directivesData[0].content,
-              patient: {
-                nom: profileData?.last_name,
-                prenom: profileData?.first_name,
-                date_naissance: profileData?.birth_date
-              }
-            }
-          });
+      // Créer un nouveau dossier médical avec les directives
+      const dossierContenu = {
+        patient: {
+          nom: profileData?.last_name,
+          prenom: profileData?.first_name,
+          date_naissance: profileData?.birth_date
+        }
+      };
+      
+      // Ajouter les directives si disponibles
+      if (directivesData && directivesData.length > 0) {
+        dossierContenu["directives_anticipees"] = directivesData[0].content;
       }
+      
+      // Insérer le nouveau dossier
+      const { data: newDossier } = await supabase
+        .from("dossiers_medicaux")
+        .insert({
+          id: documentId,
+          code_acces: code_saisi,
+          contenu_dossier: dossierContenu
+        })
+        .select()
+        .single();
+      
+      dossierContent = dossierContenu;
+      
+      console.log("Nouveau dossier médical créé avec ID:", documentId);
+    } else {
+      dossierContent = medicalRecordData.contenu_dossier;
+      dossierId = medicalRecordData.id;
+      console.log("Dossier médical existant récupéré, ID:", dossierId);
     }
+
+    // Assurer l'enregistrement de cet accès
+    await logAccess(userId, true, `Accès valide au dossier ${dossierId}`);
 
     // Retourner les informations du dossier
     return new Response(
       JSON.stringify({
         success: true,
         dossier: {
-          id: data.document_id || "general_access",
+          id: dossierId,
           userId: userId,
           isFullAccess: data.is_full_access,
-          profileData: profileData
+          profileData: profileData,
+          contenu: dossierContent
         },
       }),
       {

@@ -71,6 +71,12 @@ export const useVerifierCodeAcces = () => {
       // Si succès, réinitialiser le compteur de tentatives
       if (data && data.success) {
         resetBruteForceCounter(bruteForceIdentifier);
+        
+        // Afficher un toast avec l'ID du dossier pour confirmation
+        toast({
+          title: "Accès autorisé",
+          description: `Accès au dossier ${data.dossier.id} accordé`
+        });
       }
 
       setResult(data);
