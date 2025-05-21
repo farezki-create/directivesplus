@@ -19,6 +19,7 @@ export const RegisterForm = ({ onVerificationSent }: RegisterFormProps) => {
     defaultValues: {
       firstName: "",
       lastName: "",
+      gender: undefined,
       birthDate: "",
       email: "",
       address: "",

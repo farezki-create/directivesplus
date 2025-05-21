@@ -17,23 +17,23 @@ export const ContactInfoFields = ({ form }: ContactInfoFieldsProps) => {
         name="address"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Adresse</FormLabel>
+            <FormLabel>Adresse*</FormLabel>
             <FormControl>
-              <Input placeholder="Adresse" {...field} />
+              <Input placeholder="Adresse complète" {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
         )}
       />
-
+      
       <FormField
         control={form.control}
         name="phoneNumber"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Numéro de téléphone</FormLabel>
+            <FormLabel>Téléphone*</FormLabel>
             <FormControl>
-              <Input placeholder="+33 1 23 45 67 89" {...field} />
+              <Input placeholder="Numéro de téléphone" {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>

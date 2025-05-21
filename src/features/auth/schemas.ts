@@ -11,15 +11,18 @@ export const loginFormSchema = z.object({
 export const registerFormSchema = z.object({
   firstName: z.string().min(1, "Prénom requis"),
   lastName: z.string().min(1, "Nom requis"),
+  gender: z.enum(["male", "female", "other"], {
+    required_error: "Genre requis"
+  }),
   birthDate: z.string().min(1, "Date de naissance requise"),
   email: z.string().email("Adresse email invalide"),
-  address: z.string().optional(),
-  phoneNumber: z.string().optional(),
+  address: z.string().min(1, "Adresse requise"),
+  phoneNumber: z.string().min(1, "Numéro de téléphone requis"),
   password: z.string()
     .min(8, "Le mot de passe doit contenir au moins 8 caractères")
     .regex(/[A-Z]/, "Le mot de passe doit contenir au moins une majuscule")
     .regex(/[0-9]/, "Le mot de passe doit contenir au moins un chiffre"),
-  passwordConfirm: z.string(),
+  passwordConfirm: z.string().min(1, "Confirmation du mot de passe requise"),
 }).refine(data => data.password === data.passwordConfirm, {
   message: "Les mots de passe ne correspondent pas",
   path: ["passwordConfirm"],

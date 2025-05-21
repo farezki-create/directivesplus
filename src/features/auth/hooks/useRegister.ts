@@ -39,9 +39,10 @@ export const useRegister = (onVerificationSent: (email: string) => void) => {
           data: {
             first_name: values.firstName,
             last_name: values.lastName,
+            gender: values.gender,
             birth_date: birthDate,
-            address: values.address || null,
-            phone_number: values.phoneNumber || null,
+            address: values.address,
+            phone_number: values.phoneNumber,
             medical_access_code: medicalAccessCode
           },
           emailRedirectTo: window.location.origin + "/auth"
