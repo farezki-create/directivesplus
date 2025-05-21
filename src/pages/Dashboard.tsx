@@ -1,18 +1,64 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import AppNavigation from "@/components/AppNavigation";
 import DirectivesGrid from "@/components/DirectivesGrid";
 import { Button } from "@/components/ui/button";
-import { Home, ArrowLeft, FileText, FileSearch } from "lucide-react";
+import { Home, ArrowLeft, FileText, FileSearch, Key, User, Lock } from "lucide-react";
 import InfoSteps from "@/components/InfoSteps";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { useVerifierCodeAcces } from "@/hooks/useVerifierCodeAcces";
+import { Input } from "@/components/ui/input";
+import { toast } from "@/hooks/use-toast";
+import { useDossierStore } from "@/store/dossierStore";
 
 const Dashboard = () => {
   const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
+  const { verifierCode, loading: verifyingCode } = useVerifierCodeAcces();
+  const { setDossierActif } = useDossierStore();
+  const [accessCode, setAccessCode] = useState("");
+
+  // Accéder directement au dossier avec un code
+  const handleDirectAccess = async () => {
+    if (!accessCode.trim()) {
+      toast({
+        title: "Code manquant",
+        description: "Veuillez saisir un code d'accès",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const result = await verifierCode(accessCode);
+      
+      if (result.success && result.dossier) {
+        setDossierActif(result.dossier);
+        
+        toast({
+          title: "Accès autorisé",
+          description: "Redirection vers le dossier..."
+        });
+        
+        // Rediriger vers la page d'affichage du dossier
+        navigate("/affichage-dossier");
+      } else {
+        toast({
+          title: "Accès refusé",
+          description: result.error || "Code d'accès invalide",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la vérification du code",
+        variant: "destructive"
+      });
+    }
+  };
 
   // Move useEffect hook to the top level - must be called unconditionally
   useEffect(() => {
@@ -70,6 +116,49 @@ const Dashboard = () => {
           </p>
           
           <InfoSteps />
+        </div>
+        
+        {/* Accès direct par code */}
+        <div className="max-w-3xl mx-auto mb-8">
+          <Card className="shadow-md">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-directiveplus-700">
+                <Key size={20} />
+                Accès direct par code
+              </CardTitle>
+              <CardDescription>
+                Consultez directement un dossier en saisissant son code d'accès
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-2">
+                <Input
+                  value={accessCode}
+                  onChange={(e) => setAccessCode(e.target.value)}
+                  placeholder="Saisissez le code d'accès"
+                  className="font-mono"
+                  maxLength={10}
+                />
+                <Button 
+                  onClick={handleDirectAccess}
+                  disabled={verifyingCode || !accessCode.trim()}
+                  className="bg-directiveplus-600 hover:bg-directiveplus-700 whitespace-nowrap"
+                >
+                  {verifyingCode ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
+                      Vérification...
+                    </>
+                  ) : (
+                    <>
+                      <Lock size={16} className="mr-1" />
+                      Accéder
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
         
         {/* Ajout d'une section pour l'accès aux documents hors connexion */}
