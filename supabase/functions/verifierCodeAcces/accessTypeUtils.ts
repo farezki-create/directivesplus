@@ -3,13 +3,20 @@
  * Utilities for determining access types based on context identifiers
  */
 
+export type AccessTypeInfo = {
+  accessType: 'directives' | 'medical' | 'full';
+  isDirectivesOnly: boolean;
+  isMedicalOnly: boolean;
+};
+
 /**
  * Determine access type based on bruteForceIdentifier
  * @param bruteForceIdentifier Identifier for access context
  * @returns Access type information object
  */
-export function determineAccessType(bruteForceIdentifier?: string) {
-  let accessType = "full"; // valeur par défaut
+export function determineAccessType(bruteForceIdentifier?: string): AccessTypeInfo {
+  // Default to full access
+  let accessType: 'directives' | 'medical' | 'full' = 'full';
   let isDirectivesOnly = false;
   let isMedicalOnly = false;
   

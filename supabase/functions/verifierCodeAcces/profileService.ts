@@ -16,16 +16,26 @@ export async function fetchUserProfile(supabase: any, userId: string) {
   
   console.log(`Récupération du profil pour l'utilisateur: ${userId}`);
   
-  const { data: profileData, error: profileError } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", userId)
-    .single();
+  try {
+    const { data: profileData, error: profileError } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", userId)
+      .maybeSingle();
 
-  if (profileError || !profileData) {
-    console.error("Erreur lors de la récupération du profil:", profileError);
-    throw new Error("Profil utilisateur non trouvé");
+    if (profileError) {
+      console.error("Erreur lors de la récupération du profil:", profileError);
+      throw new Error(`Erreur lors de la récupération du profil: ${profileError.message}`);
+    }
+    
+    if (!profileData) {
+      console.error("Profil utilisateur non trouvé");
+      throw new Error("Profil utilisateur non trouvé");
+    }
+    
+    return profileData;
+  } catch (error: any) {
+    console.error("Exception lors de la récupération du profil:", error);
+    throw new Error(`Échec de la récupération du profil: ${error.message}`);
   }
-  
-  return profileData;
 }

@@ -37,18 +37,22 @@ const AffichageDossier: React.FC = () => {
   
   const navigate = useNavigate();
   
-  // Vérifier si un dossier est actif
+  // Vérifier si un dossier est actif dès le chargement
   useEffect(() => {
-    // Cette vérification doit être faite APRÈS le premier rendu
-    if (!dossierActif && !loading) {
-      console.log("Aucun dossier actif dans AffichageDossier, redirection...");
-      // Utiliser un timeout pour éviter les problèmes de navigation pendant le rendu
-      const timer = setTimeout(() => {
+    const checkDossierActif = () => {
+      if (!dossierActif && !loading) {
+        console.log("Aucun dossier actif dans AffichageDossier, redirection...");
         navigate('/acces-document', { replace: true });
-      }, 100);
-      
-      return () => clearTimeout(timer);
-    }
+      }
+    };
+    
+    // Vérification immédiate
+    checkDossierActif();
+    
+    // Re-vérification après un court délai pour laisser le temps au state de se mettre à jour
+    const timer = setTimeout(checkDossierActif, 1000);
+    
+    return () => clearTimeout(timer);
   }, [dossierActif, navigate, loading]);
   
   // Log view event and start monitoring on mount
@@ -71,7 +75,7 @@ const AffichageDossier: React.FC = () => {
   // Event handler for tab change
   const handleTabChange = (value: string) => {
     // Vérifier si l'utilisateur a accès à cet onglet
-    if (value === "medical" && dossierActif?.isDirectivesOnly) {
+    if (value === "medical" && !canAccessMedical) {
       console.log("Tentative d'accès aux données médicales refusée");
       toast({
         title: "Accès refusé",
@@ -81,7 +85,7 @@ const AffichageDossier: React.FC = () => {
       return;
     }
     
-    if (value === "directives" && dossierActif?.isMedicalOnly) {
+    if (value === "directives" && !canAccessDirectives) {
       console.log("Tentative d'accès aux directives refusée");
       toast({
         title: "Accès refusé",
@@ -113,9 +117,22 @@ const AffichageDossier: React.FC = () => {
   }
   
   // Si pas de dossier actif après le chargement, ne rien afficher
-  // La redirection sera gérée par l'effet ci-dessus
   if (!dossierActif) {
-    return null;
+    return (
+      <div className="container max-w-4xl py-8">
+        <Card className="shadow-lg p-8">
+          <div className="flex flex-col items-center justify-center h-64">
+            <p className="text-lg text-red-600 font-medium">Aucun dossier disponible</p>
+            <button 
+              onClick={() => navigate('/acces-document')}
+              className="mt-4 px-4 py-2 bg-directiveplus-600 text-white rounded hover:bg-directiveplus-700"
+            >
+              Retour à la page d'accès
+            </button>
+          </div>
+        </Card>
+      </div>
+    );
   }
   
   return (
