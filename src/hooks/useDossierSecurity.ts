@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "@/hooks/use-toast";
 import { logAccessEvent } from "@/utils/accessLoggingUtils";
 
@@ -14,11 +14,13 @@ export const useDossierSecurity = (
   onSessionExpired: () => void,
   inactivityTimeoutMinutes: number = 15
 ) => {
-  const [lastActivityTime, setLastActivityTime] = useState<number>(Date.now());
+  // Use useRef instead of useState to avoid potential React queue issues
+  const lastActivityTimeRef = useRef<number>(Date.now());
+  const intervalIdRef = useRef<number | null>(null);
   
   // Reset activity time on user interaction
   const resetActivityTimer = () => {
-    setLastActivityTime(Date.now());
+    lastActivityTimeRef.current = Date.now();
   };
   
   // Log access event
@@ -47,6 +49,9 @@ export const useDossierSecurity = (
   useEffect(() => {
     if (!dossierId) return;
     
+    // Initialize the last activity time when the effect runs
+    lastActivityTimeRef.current = Date.now();
+    
     // Event handlers to reset inactivity timeout
     const handleUserActivity = () => resetActivityTimer();
     
@@ -72,9 +77,9 @@ export const useDossierSecurity = (
     const inactivityTimeoutMs = inactivityTimeoutMinutes * 60 * 1000;
     
     // Set interval to check for inactivity
-    const intervalId = setInterval(() => {
+    const checkInactivity = () => {
       const currentTime = Date.now();
-      const timeSinceLastActivity = currentTime - lastActivityTime;
+      const timeSinceLastActivity = currentTime - lastActivityTimeRef.current;
       
       if (timeSinceLastActivity >= inactivityTimeoutMs) {
         toast({
@@ -89,14 +94,25 @@ export const useDossierSecurity = (
         // Close dossier
         onSessionExpired();
         
-        // Clear this interval
-        clearInterval(intervalId);
+        // Clear interval
+        if (intervalIdRef.current !== null) {
+          clearInterval(intervalIdRef.current);
+          intervalIdRef.current = null;
+        }
       }
-    }, 10000); // Check every 10 seconds
+    };
+    
+    // Start the interval and store its ID
+    intervalIdRef.current = window.setInterval(checkInactivity, 10000);
     
     // Clean up interval on unmount
-    return () => clearInterval(intervalId);
-  }, [dossierId, lastActivityTime, inactivityTimeoutMinutes, onSessionExpired]);
+    return () => {
+      if (intervalIdRef.current !== null) {
+        clearInterval(intervalIdRef.current);
+        intervalIdRef.current = null;
+      }
+    };
+  }, [dossierId, inactivityTimeoutMinutes, onSessionExpired]);
   
   return {
     resetActivityTimer,

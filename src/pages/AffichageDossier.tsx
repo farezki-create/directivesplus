@@ -24,29 +24,31 @@ const AffichageDossier: React.FC = () => {
     handleCloseDossier
   } = useDossierSession();
   
-  // Initialize security hook
-  const { resetActivityTimer } = useDossierSecurity(
-    dossierActif?.id,
+  // Initialize security hook only if dossierActif exists
+  const security = dossierActif ? useDossierSecurity(
+    dossierActif.id,
     handleCloseDossier
-  );
+  ) : { resetActivityTimer: () => {} };
   
   // Reset activity timer on component mount and log data for debugging
   useEffect(() => {
-    resetActivityTimer();
-    console.log("AffichageDossier - Dossier actif:", dossierActif);
-    console.log("AffichageDossier - Contenu déchiffré:", decryptedContent);
-    console.log("AffichageDossier - Directives disponibles:", hasDirectives);
-    
-    // Vérifier si getDirectives fonctionne
-    if (getDirectives) {
-      try {
-        const directives = getDirectives();
-        console.log("AffichageDossier - Test getDirectives:", directives);
-      } catch (error) {
-        console.error("AffichageDossier - Erreur dans getDirectives:", error);
+    if (dossierActif) {
+      security.resetActivityTimer();
+      console.log("AffichageDossier - Dossier actif:", dossierActif);
+      console.log("AffichageDossier - Contenu déchiffré:", decryptedContent);
+      console.log("AffichageDossier - Directives disponibles:", hasDirectives);
+      
+      // Vérifier si getDirectives fonctionne
+      if (getDirectives) {
+        try {
+          const directives = getDirectives();
+          console.log("AffichageDossier - Test getDirectives:", directives);
+        } catch (error) {
+          console.error("AffichageDossier - Erreur dans getDirectives:", error);
+        }
       }
     }
-  }, [resetActivityTimer, dossierActif, decryptedContent, hasDirectives, getDirectives]);
+  }, [security.resetActivityTimer, dossierActif, decryptedContent, hasDirectives, getDirectives]);
 
   if (!dossierActif) {
     return (
