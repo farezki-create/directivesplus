@@ -5,7 +5,7 @@ import { checkDirectivesAccessCode, checkProfileMatch } from "@/utils/access-doc
 import { showErrorToast, showSuccessToast } from "@/utils/access-document/toastUtils";
 import { checkBruteForceAttempt, resetBruteForceCounter } from "@/utils/securityUtils";
 
-// Type pour le résultat de l'accès
+// Type for the result of the access
 export interface DirectivesAccessResult {
   success: boolean;
   error?: string;
@@ -14,15 +14,23 @@ export interface DirectivesAccessResult {
   directiveId?: string;
 }
 
-// Fonction pour accéder aux directives
+// Function for accessing directives
 export const accessDirectives = async (formData: FormData): Promise<DirectivesAccessResult> => {
   console.log("Données du formulaire pour directives:", formData);
   
   try {
-    // Identifier pour la détection de force brute
+    // Make sure formData has required fields
+    if (!formData.firstName || !formData.lastName) {
+      return {
+        success: false,
+        error: "Nom et prénom sont requis"
+      };
+    }
+
+    // Identifier for brute force detection
     const bruteForceIdentifier = `directives_${formData.lastName.substring(0, 3)}_${formData.firstName.substring(0, 3)}`;
     
-    // Vérifier si l'utilisateur n'est pas bloqué pour force brute
+    // Check if user is not blocked for brute force
     const bruteForceCheck = checkBruteForceAttempt(bruteForceIdentifier);
     
     if (!bruteForceCheck.allowed) {
@@ -33,7 +41,7 @@ export const accessDirectives = async (formData: FormData): Promise<DirectivesAc
       };
     }
 
-    // Vérifier le code d'accès
+    // Check access code
     const accessCodesData = await checkDirectivesAccessCode(formData.accessCode);
     
     if (!accessCodesData || accessCodesData.length === 0) {
@@ -45,9 +53,14 @@ export const accessDirectives = async (formData: FormData): Promise<DirectivesAc
       };
     }
     
-    // Vérifier les informations personnelles
+    // Check personal information
     const userId = accessCodesData[0].user_id;
-    const { isMatch, profile } = await checkProfileMatch(userId, formData);
+    // Explicitly pass required values with correct types
+    const { isMatch, profile } = await checkProfileMatch(userId, {
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      birthDate: formData.birthDate
+    });
     
     if (!isMatch) {
       console.log("Informations personnelles incorrectes");
@@ -58,12 +71,12 @@ export const accessDirectives = async (formData: FormData): Promise<DirectivesAc
       };
     }
     
-    // Accès accordé
+    // Access granted
     console.log("Accès aux directives accordé");
     resetBruteForceCounter(bruteForceIdentifier);
     showSuccessToast("Accès autorisé", "Chargement des directives anticipées...");
     
-    // Redirection vers la page de directives après un court délai
+    // Redirect to directives page after a short delay
     setTimeout(() => {
       window.location.href = '/directives-anticipees';
     }, 1000);
@@ -72,10 +85,10 @@ export const accessDirectives = async (formData: FormData): Promise<DirectivesAc
       success: true,
       userId,
       accessCodeId: formData.accessCode,
-      directiveId: formData.accessCode // À remplacer par l'ID réel des directives
+      directiveId: formData.accessCode // To be replaced with actual directive ID
     };
   } catch (error: any) {
-    console.error("Erreur d'accès aux directives:", error);
+    console.error("Error accessing directives:", error);
     showErrorToast(
       "Erreur", 
       "Une erreur est survenue lors de la vérification de l'accès"

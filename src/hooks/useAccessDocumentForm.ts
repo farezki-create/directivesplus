@@ -2,16 +2,15 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useDirectivesAccess } from "./access-document/useDirectivesAccess";
+import { accessDirectives } from "./access-document/useDirectivesAccess";
 import { useMedicalAccess, MedicalAccessResult } from "./access-document/useMedicalAccess";
 import { formSchema, FormData } from "@/utils/access-document/validationSchema";
 
 export const useAccessDocumentForm = () => {
   const [loading, setLoading] = useState(false);
-  const directivesAccess = useDirectivesAccess();
   const medicalAccess = useMedicalAccess();
   
-  // Initialisation de react-hook-form avec le resolver zod
+  // Initialize react-hook-form with zod resolver
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -22,17 +21,17 @@ export const useAccessDocumentForm = () => {
     }
   });
 
-  // Fonction de validation du formulaire
+  // Form validation function
   const handleFormValidation = async () => {
     const isValid = await form.trigger();
-    console.log("Validation du formulaire:", isValid);
+    console.log("Form validation:", isValid);
     return isValid;
   };
 
-  // Fonction d'accès aux directives
-  const accessDirectives = async () => {
+  // Function to access directives
+  const accessDirectivesFunc = async () => {
     if (!await handleFormValidation()) {
-      console.log("Le formulaire n'est pas valide");
+      console.log("Form is not valid");
       return;
     }
     
@@ -40,17 +39,17 @@ export const useAccessDocumentForm = () => {
     setLoading(true);
     
     try {
-      await directivesAccess.accessDirectives(formData);
+      return await accessDirectives(formData);
     } finally {
       setLoading(false);
     }
   };
 
-  // Fonction d'accès aux données médicales
+  // Function to access medical data
   const accessMedicalData = async (): Promise<MedicalAccessResult> => {
     if (!await handleFormValidation()) {
-      console.log("Le formulaire n'est pas valide");
-      return { success: false, error: "Formulaire invalide" };
+      console.log("Form is not valid");
+      return { success: false, error: "Invalid form" };
     }
     
     const formData = form.getValues();
@@ -65,8 +64,8 @@ export const useAccessDocumentForm = () => {
 
   return {
     form,
-    loading: loading || directivesAccess.loading || medicalAccess.loading,
-    accessDirectives,
+    loading: loading || medicalAccess.loading,
+    accessDirectives: accessDirectivesFunc,
     accessMedicalData
   };
 };

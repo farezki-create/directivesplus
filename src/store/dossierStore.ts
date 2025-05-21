@@ -1,7 +1,7 @@
 
 import { create } from 'zustand';
 
-interface Dossier {
+export interface Dossier {
   id: string;
   userId: string;
   isFullAccess: boolean;

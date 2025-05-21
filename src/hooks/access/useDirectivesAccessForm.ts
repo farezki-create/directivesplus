@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { FormData, formSchema } from "@/utils/access-document/validationSchema";
 import { checkBruteForceAttempt } from "@/utils/securityUtils";
 import { useVerifierCodeAcces } from "@/hooks/useVerifierCodeAcces";
-import { useDossierStore } from "@/store/dossierStore";
+import { useDossierStore, Dossier } from "@/store/dossierStore";
 import { useNavigate } from "react-router-dom";
 
 export const useDirectivesAccessForm = () => {
@@ -33,10 +33,10 @@ export const useDirectivesAccessForm = () => {
     setLoading(true);
     
     try {
-      // Identifier pour la détection de force brute
+      // Identifier for brute force detection
       const bruteForceIdentifier = `directives_access_${formData.lastName.substring(0, 3)}_${formData.firstName.substring(0, 3)}`;
       
-      // Vérifier si l'utilisateur n'est pas bloqué pour force brute
+      // Check if user is not blocked for brute force
       const bruteForceCheck = checkBruteForceAttempt(bruteForceIdentifier);
       
       if (!bruteForceCheck.allowed) {
@@ -48,14 +48,25 @@ export const useDirectivesAccessForm = () => {
       
       setRemainingAttempts(bruteForceCheck.remainingAttempts);
       
-      // Vérification du code d'accès avec la fonction Edge
+      // Check access code with Edge function
       const result = await verifierCode(formData.accessCode, bruteForceIdentifier);
       
       if (result.success && result.dossier) {
-        // Stockage du dossier actif
-        setDossierActif(result.dossier);
+        // Ensure the dossier object has all required properties
+        const dossier: Dossier = {
+          id: result.dossier.id,
+          userId: result.dossier.userId,
+          isFullAccess: result.dossier.isFullAccess,
+          isDirectivesOnly: result.dossier.isDirectivesOnly,
+          isMedicalOnly: result.dossier.isMedicalOnly,
+          profileData: result.dossier.profileData,
+          contenu: result.dossier.contenu || {} // Provide a default empty object if contenu is undefined
+        };
         
-        // Redirection vers la page d'affichage du dossier
+        // Store active dossier
+        setDossierActif(dossier);
+        
+        // Redirect to file display page
         navigate("/affichage-dossier");
       } else {
         setErrorMessage(result.error || "Accès refusé. Veuillez vérifier vos informations.");
