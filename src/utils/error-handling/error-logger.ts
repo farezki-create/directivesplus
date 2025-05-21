@@ -6,6 +6,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { ErrorType } from "./error-handler";
+import { LogLevel, getLogLevelFromErrorType } from "./logger-levels";
 
 // Interface pour les métadonnées d'erreur
 export interface ErrorMetadata {
@@ -16,25 +17,50 @@ export interface ErrorMetadata {
   timestamp?: string;
   additionalInfo?: Record<string, any>;
   userId?: string;
+  sessionId?: string;
+  correlationId?: string;
 }
 
 /**
  * Journalise une erreur avec contexte et métadonnées
  */
 export async function logError(metadata: ErrorMetadata): Promise<void> {
+  // Déterminer le niveau de log en fonction du type d'erreur
+  const logLevel = getLogLevelFromErrorType(metadata.type);
+  
   // Formatage de l'erreur pour la journalisation
   const errorObject = {
     type: metadata.type,
+    level: logLevel,
     message: metadata.error instanceof Error ? metadata.error.message : String(metadata.error),
     stack: metadata.error instanceof Error ? metadata.error.stack : undefined,
     timestamp: metadata.timestamp || new Date().toISOString(),
     component: metadata.component,
     operation: metadata.operation,
+    correlationId: metadata.correlationId || generateCorrelationId(),
     ...metadata.additionalInfo
   };
 
-  // Journalisation console pour le développement
-  console.error('ERREUR APPLICATIVE:', errorObject);
+  // Journalisation console pour le développement avec indication du niveau
+  const logPrefix = `[${logLevel.toUpperCase()}][${metadata.type}]`;
+  
+  switch(logLevel) {
+    case LogLevel.DEBUG:
+      console.debug(`${logPrefix}:`, errorObject);
+      break;
+    case LogLevel.INFO:
+      console.info(`${logPrefix}:`, errorObject);
+      break;
+    case LogLevel.WARNING:
+      console.warn(`${logPrefix}:`, errorObject);
+      break;
+    case LogLevel.ERROR:
+    case LogLevel.CRITICAL:
+      console.error(`${logPrefix}:`, errorObject);
+      break;
+    default:
+      console.log(`${logPrefix}:`, errorObject);
+  }
 
   // Récupérer l'utilisateur connecté si disponible
   try {
@@ -42,6 +68,14 @@ export async function logError(metadata: ErrorMetadata): Promise<void> {
       const { data } = await supabase.auth.getUser();
       if (data?.user) {
         metadata.userId = data.user.id;
+      }
+    }
+
+    // Récupérer la session courante si possible
+    if (!metadata.sessionId) {
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (sessionData?.session) {
+        metadata.sessionId = sessionData.session.id;
       }
     }
 
@@ -54,10 +88,17 @@ export async function logError(metadata: ErrorMetadata): Promise<void> {
         nom_consultant: metadata.component || 'System',
         prenom_consultant: String(metadata.type),
         ip_address: 'internal',
-        user_agent: `ERROR | Type: ${metadata.type} | Component: ${metadata.component} | Action: ${metadata.operation} | Message: ${errorObject.message.substring(0, 200)}`
+        user_agent: `ERROR | Level: ${logLevel} | Type: ${metadata.type} | Component: ${metadata.component} | Action: ${metadata.operation} | CID: ${errorObject.correlationId} | Message: ${errorObject.message.substring(0, 180)}`
       });
   } catch (loggingError) {
     // Éviter les boucles infinies de journalisation
     console.error('Erreur lors de la journalisation:', loggingError);
   }
+}
+
+/**
+ * Génère un identifiant de corrélation unique pour suivre les erreurs liées
+ */
+function generateCorrelationId(): string {
+  return `err-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 }
