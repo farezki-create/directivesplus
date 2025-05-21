@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { toast } from "@/components/ui/use-toast";
 
 /**
  * Hook pour vérifier les codes d'accès et récupérer les dossiers
@@ -35,6 +36,11 @@ export const useVerifierCodeAcces = () => {
       if (!response.ok || !result.success) {
         const errorMessage = result.error || "Code d'accès invalide";
         setError(errorMessage);
+        toast({
+          variant: "destructive",
+          title: "Erreur d'accès",
+          description: errorMessage
+        });
         return null;
       }
       
@@ -42,6 +48,11 @@ export const useVerifierCodeAcces = () => {
     } catch (err) {
       console.error("Erreur lors de la vérification du code d'accès:", err);
       setError("Une erreur est survenue lors de la vérification du code");
+      toast({
+        variant: "destructive",
+        title: "Erreur de connexion",
+        description: "Impossible de contacter le serveur. Veuillez vérifier votre connexion internet et réessayer."
+      });
       return null;
     } finally {
       setLoading(false);
@@ -81,6 +92,11 @@ export const useVerifierCodeAcces = () => {
       if (!response.ok || !result.success) {
         const errorMessage = result.error || "Erreur de récupération du dossier";
         setError(errorMessage);
+        toast({
+          variant: "destructive",
+          title: "Erreur d'accès",
+          description: errorMessage
+        });
         return null;
       }
       
@@ -88,6 +104,11 @@ export const useVerifierCodeAcces = () => {
     } catch (err) {
       console.error("Erreur lors de la récupération du dossier de l'utilisateur:", err);
       setError("Une erreur est survenue lors de la récupération de vos données");
+      toast({
+        variant: "destructive",
+        title: "Erreur de connexion",
+        description: "Impossible de contacter le serveur. Veuillez vérifier votre connexion internet et réessayer."
+      });
       return null;
     } finally {
       setLoading(false);

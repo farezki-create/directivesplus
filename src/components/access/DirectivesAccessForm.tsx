@@ -5,6 +5,8 @@ import LoadingState from "@/components/questionnaire/LoadingState";
 import { useDirectivesAccessForm } from "@/hooks/access/useDirectivesAccessForm";
 import FormActions from "./FormActions";
 import DirectivesFormFields from "./DirectivesFormFields";
+import { toast } from "@/components/ui/use-toast";
+import { useEffect } from "react";
 
 interface DirectivesAccessFormProps {
   onSubmit?: (accessCode: string, formData: any) => Promise<void>;
@@ -19,6 +21,17 @@ const DirectivesAccessForm = ({ onSubmit }: DirectivesAccessFormProps) => {
     remainingAttempts, 
     blockedAccess 
   } = useDirectivesAccessForm(onSubmit);
+
+  // Afficher les messages d'erreur via toast
+  useEffect(() => {
+    if (errorMessage) {
+      toast({
+        variant: "destructive",
+        title: "Accès refusé",
+        description: errorMessage
+      });
+    }
+  }, [errorMessage]);
 
   return (
     <div className="max-w-md mx-auto">

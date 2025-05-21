@@ -299,11 +299,11 @@ serve(async (req: Request) => {
 
     // Récupération et validation du corps de la requête
     const reqBody = await req.json() as RequestBody;
-    const { code_saisi, bruteForceIdentifier, isAuthUserRequest, userId } = reqBody;
+    const { code_saisi, bruteForceIdentifier, isAuthUserRequest, userId: requestUserId } = reqBody;
 
     // Cas spécial: requête pour un utilisateur authentifié
-    if (isAuthUserRequest && userId) {
-      console.log("Requête pour utilisateur authentifié:", userId);
+    if (isAuthUserRequest && requestUserId) {
+      console.log("Requête pour utilisateur authentifié:", requestUserId);
       
       // Création du client Supabase
       const supabase = createSupabaseClient();
@@ -324,19 +324,19 @@ serve(async (req: Request) => {
       }
       
       // Récupérer les données du profil
-      const profileData = await fetchUserProfile(supabase, userId);
+      const profileData = await fetchUserProfile(supabase, requestUserId);
       
       // Récupérer le dossier pour l'utilisateur authentifié
       const { content: dossierContent, id: dossierId } = await getAuthUserMedicalRecord(
         supabase,
-        userId,
+        requestUserId,
         accessType
       );
       
       // Journaliser l'accès réussi
       await logAccessAttempt(
         supabase, 
-        userId, 
+        requestUserId, 
         true, 
         `Accès de l'utilisateur authentifié à son propre dossier`, 
         null
@@ -347,7 +347,7 @@ serve(async (req: Request) => {
         success: true,
         dossier: {
           id: dossierId,
-          userId: userId,
+          userId: requestUserId,
           isFullAccess: true,
           isDirectivesOnly: isDirectivesOnly,
           isMedicalOnly: isMedicalOnly,
