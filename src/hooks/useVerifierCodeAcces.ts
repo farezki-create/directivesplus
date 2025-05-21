@@ -27,6 +27,8 @@ export const useVerifierCodeAcces = () => {
       
       while (currentRetry < maxRetries) {
         try {
+          console.log(`Tentative ${currentRetry + 1}/${maxRetries} de vérification du code: ${code}`);
+          
           const response = await fetch("https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/verifierCodeAcces", {
             method: "POST",
             headers: {
@@ -38,9 +40,15 @@ export const useVerifierCodeAcces = () => {
             })
           });
           
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`Erreur HTTP ${response.status}:`, errorText);
+            throw new Error(`Erreur de serveur: ${response.status} ${response.statusText}`);
+          }
+          
           result = await response.json();
           
-          if (!response.ok || !result.success) {
+          if (!result.success) {
             const errorMessage = result.error || "Code d'accès invalide";
             setError(errorMessage);
             toast({
@@ -51,8 +59,9 @@ export const useVerifierCodeAcces = () => {
             return { success: false, error: errorMessage };
           }
           
+          console.log("Vérification réussie, dossier récupéré:", result.dossier?.id);
           return result;
-        } catch (fetchError) {
+        } catch (fetchError: any) {
           console.error(`Tentative ${currentRetry + 1}/${maxRetries} échouée:`, fetchError);
           
           // Si c'est la dernière tentative, on propage l'erreur
@@ -62,21 +71,23 @@ export const useVerifierCodeAcces = () => {
           
           // Sinon on attend avant de réessayer avec un délai exponentiel
           const delayMs = Math.pow(2, currentRetry) * 1000;
+          console.log(`Attente de ${delayMs}ms avant la prochaine tentative...`);
           await new Promise(resolve => setTimeout(resolve, delayMs));
           currentRetry++;
         }
       }
       
       return result;
-    } catch (err) {
+    } catch (err: any) {
       console.error("Erreur lors de la vérification du code d'accès:", err);
-      setError("Une erreur est survenue lors de la vérification du code");
+      const errorMessage = "Impossible de contacter le serveur. Veuillez vérifier votre connexion internet et réessayer.";
+      setError(errorMessage);
       toast({
         variant: "destructive",
         title: "Erreur de connexion",
-        description: "Impossible de contacter le serveur. Veuillez vérifier votre connexion internet et réessayer."
+        description: errorMessage
       });
-      return { success: false, error: "Erreur de connexion au serveur" };
+      return { success: false, error: errorMessage };
     } finally {
       setLoading(false);
     }
@@ -98,41 +109,74 @@ export const useVerifierCodeAcces = () => {
     setLoading(true);
     
     try {
-      const response = await fetch("https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/verifierCodeAcces", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          isAuthUserRequest: true,
-          userId,
-          bruteForceIdentifier
-        })
-      });
+      console.log(`Récupération du dossier pour l'utilisateur authentifié: ${userId}`);
       
-      const result = await response.json();
+      // Ajout d'un délai pour les tentatives avec une backoff exponentielle
+      const maxRetries = 3;
+      let currentRetry = 0;
       
-      if (!response.ok || !result.success) {
-        const errorMessage = result.error || "Erreur de récupération du dossier";
-        setError(errorMessage);
-        toast({
-          variant: "destructive",
-          title: "Erreur d'accès",
-          description: errorMessage
-        });
-        return { success: false, error: errorMessage };
+      while (currentRetry < maxRetries) {
+        try {
+          const response = await fetch("https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/verifierCodeAcces", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              isAuthUserRequest: true,
+              userId,
+              bruteForceIdentifier
+            })
+          });
+          
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`Erreur HTTP ${response.status}:`, errorText);
+            throw new Error(`Erreur de serveur: ${response.status} ${response.statusText}`);
+          }
+          
+          const result = await response.json();
+          
+          if (!result.success) {
+            const errorMessage = result.error || "Erreur de récupération du dossier";
+            setError(errorMessage);
+            toast({
+              variant: "destructive",
+              title: "Erreur d'accès",
+              description: errorMessage
+            });
+            return { success: false, error: errorMessage };
+          }
+          
+          console.log("Dossier utilisateur authentifié récupéré avec succès:", result.dossier?.id);
+          return result;
+        } catch (fetchError: any) {
+          console.error(`Tentative ${currentRetry + 1}/${maxRetries} échouée:`, fetchError);
+          
+          // Si c'est la dernière tentative, on propage l'erreur
+          if (currentRetry === maxRetries - 1) {
+            throw fetchError;
+          }
+          
+          // Sinon on attend avant de réessayer avec un délai exponentiel
+          const delayMs = Math.pow(2, currentRetry) * 1000;
+          console.log(`Attente de ${delayMs}ms avant la prochaine tentative...`);
+          await new Promise(resolve => setTimeout(resolve, delayMs));
+          currentRetry++;
+        }
       }
       
-      return result;
-    } catch (err) {
+      throw new Error("Nombre maximum de tentatives atteint sans succès");
+    } catch (err: any) {
       console.error("Erreur lors de la récupération du dossier de l'utilisateur:", err);
-      setError("Une erreur est survenue lors de la récupération de vos données");
+      const errorMessage = "Impossible de contacter le serveur. Veuillez vérifier votre connexion internet et réessayer.";
+      setError(errorMessage);
       toast({
         variant: "destructive",
         title: "Erreur de connexion",
-        description: "Impossible de contacter le serveur. Veuillez vérifier votre connexion internet et réessayer."
+        description: errorMessage
       });
-      return { success: false, error: "Erreur de connexion au serveur" };
+      return { success: false, error: errorMessage };
     } finally {
       setLoading(false);
     }

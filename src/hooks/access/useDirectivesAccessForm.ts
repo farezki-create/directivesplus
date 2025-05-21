@@ -63,12 +63,16 @@ export const useDirectivesAccessForm = (onSubmitProp?: (accessCode: string, form
           
           setRemainingAttempts(bruteForceCheck.remainingAttempts);
           
+          console.log("Vérification du code d'accès:", formData.accessCode);
+          
           // Check access code with Edge function
           const result = await verifierCode(formData.accessCode, bruteForceIdentifier);
           
           if (result.success && result.dossier) {
             // Réinitialiser le compteur de tentatives
             resetBruteForceCounter(bruteForceIdentifier);
+            
+            console.log("Récupération réussie du dossier:", result.dossier);
             
             // Ensure the dossier object has all required properties
             const dossier: Dossier = {
@@ -103,7 +107,12 @@ export const useDirectivesAccessForm = (onSubmitProp?: (accessCode: string, form
           }
         } catch (error: any) {
           console.error("Erreur lors de l'accès aux directives:", error);
-          const errorMsg = "Une erreur est survenue lors de la connexion au serveur. Veuillez réessayer.";
+          let errorMsg = "Une erreur est survenue lors de la connexion au serveur. Veuillez réessayer.";
+          
+          if (error.message && error.message.includes("Failed to fetch")) {
+            errorMsg = "Impossible de contacter le serveur. Vérifiez votre connexion internet et réessayez.";
+          }
+          
           setErrorMessage(errorMsg);
           toast({
             variant: "destructive",
