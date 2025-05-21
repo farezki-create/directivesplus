@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { checkBruteForceAttempt, resetBruteForceCounter } from "@/utils/securityUtils";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { Dossier } from "@/store/dossierStore";
 
 interface VerificationResult {
@@ -70,11 +70,30 @@ export const useVerifierCodeAcces = () => {
       if (data && data.success) {
         resetBruteForceCounter(bruteForceIdentifier);
         
-        // Afficher un toast avec l'ID du dossier pour confirmation
-        toast({
-          title: "Accès autorisé",
-          description: `Accès au dossier ${data.dossier.id} accordé`
-        });
+        // S'assurer que toutes les propriétés requises sont présentes
+        if (data.dossier) {
+          // Garantir que les propriétés booléennes sont définies
+          data.dossier.isFullAccess = data.dossier.isFullAccess || false;
+          data.dossier.isDirectivesOnly = data.dossier.isDirectivesOnly || false;
+          data.dossier.isMedicalOnly = data.dossier.isMedicalOnly || false;
+          
+          // S'assurer que contenu est au moins un objet vide s'il est undefined
+          data.dossier.contenu = data.dossier.contenu || {};
+          
+          // Afficher un toast avec l'ID du dossier pour confirmation
+          toast({
+            title: "Accès autorisé",
+            description: `Accès au dossier ${data.dossier.id} accordé`
+          });
+        }
+      } else if (!data) {
+        // Gérer le cas où data est undefined ou null
+        const errorResult = { 
+          success: false, 
+          error: "Aucune réponse du serveur"
+        };
+        setResult(errorResult);
+        return errorResult;
       }
 
       setResult(data);

@@ -81,18 +81,24 @@ async function logAccessAttempt(
  * @returns Données du code d'accès ou null
  */
 async function verifyAccessCode(supabase: any, code: string) {
-  const { data, error } = await supabase
-    .from("document_access_codes")
-    .select("user_id, document_id, is_full_access, type_access")
-    .eq("access_code", code)
-    .maybeSingle();
+  try {
+    // Remove type_access from the select query since it may not exist
+    const { data, error } = await supabase
+      .from("document_access_codes")
+      .select("id, user_id, document_id, is_full_access")
+      .eq("access_code", code)
+      .maybeSingle();
 
-  if (error) {
-    console.error("Erreur Supabase lors de la vérification du code:", error);
+    if (error) {
+      console.error("Erreur Supabase lors de la vérification du code:", error);
+      return null;
+    }
+
+    return data;
+  } catch (err) {
+    console.error("Exception lors de la vérification du code d'accès:", err);
     return null;
   }
-
-  return data;
 }
 
 /**
@@ -118,7 +124,7 @@ async function fetchUserProfile(supabase: any, userId: string) {
  * @param userId ID de l'utilisateur
  * @param code Code d'accès
  * @param profileData Données du profil
- * @param typeAccess Type d'accès (directives, medical, full)
+ * @param accessType Type d'accès ("directives", "medical", "full")
  * @returns Contenu du dossier et son ID
  */
 async function getOrCreateMedicalRecord(
@@ -127,7 +133,7 @@ async function getOrCreateMedicalRecord(
   userId: string,
   code: string,
   profileData: any,
-  typeAccess: string = "full"
+  accessType: string = "full"
 ) {
   // Vérifier si le dossier médical existe
   const { data: medicalRecordData } = await supabase
@@ -155,7 +161,7 @@ async function getOrCreateMedicalRecord(
   };
 
   // Récupérer les directives pour cet utilisateur si l'accès le permet
-  if (typeAccess === "directives" || typeAccess === "full") {
+  if (accessType === "directives" || accessType === "full") {
     const { data: directivesData } = await supabase
       .from("advance_directives")
       .select("content")
@@ -170,7 +176,7 @@ async function getOrCreateMedicalRecord(
   }
 
   // Récupérer les données médicales si l'accès le permet
-  if (typeAccess === "medical" || typeAccess === "full") {
+  if (accessType === "medical" || accessType === "full") {
     const { data: medicalData } = await supabase
       .from("medical_data")
       .select("data")
@@ -266,12 +272,24 @@ serve(async (req: Request) => {
     // Extraction des données du code d'accès
     const userId = accessCodeData.user_id;
     const documentId = accessCodeData.document_id;
-    const typeAccess = accessCodeData.type_access || "full";
     const isFullAccess = accessCodeData.is_full_access || false;
     
-    // Valeurs booléennes pour le type d'accès
-    const isDirectivesOnly = typeAccess === "directives";
-    const isMedicalOnly = typeAccess === "medical";
+    // Déterminons le type d'accès en fonction du contexte
+    // Puisque la colonne type_access n'existe pas, nous utiliserons une heuristique simple
+    // basée sur le bruteForceIdentifier qui contient des indices sur le type d'accès demandé
+    let accessType = "full"; // valeur par défaut
+    let isDirectivesOnly = false;
+    let isMedicalOnly = false;
+    
+    if (bruteForceIdentifier && typeof bruteForceIdentifier === "string") {
+      if (bruteForceIdentifier.includes("directives_access")) {
+        accessType = "directives";
+        isDirectivesOnly = true;
+      } else if (bruteForceIdentifier.includes("medical_access")) {
+        accessType = "medical";
+        isMedicalOnly = true;
+      }
+    }
     
     // Récupération des données du profil
     const profileData = await fetchUserProfile(supabase, userId);
@@ -283,7 +301,7 @@ serve(async (req: Request) => {
       userId,
       code_saisi,
       profileData,
-      typeAccess
+      accessType
     );
 
     // Journalisation de l'accès réussi
