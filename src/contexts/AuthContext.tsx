@@ -123,13 +123,60 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const loadUserProfile = async (userId: string) => {
     try {
       console.log("Loading profile data for user:", userId);
-      const profileData = await fetchUserProfile(userId, supabase);
+      
+      // First try to get the profile directly
+      const { data: profileData, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
+      
+      if (error) {
+        console.error("Error fetching profile:", error);
+        return;
+      }
       
       if (profileData) {
-        console.log("Profile data loaded successfully:", profileData);
+        console.log("Profile data loaded directly:", profileData);
         setProfile(profileData);
       } else {
-        console.log("No profile data found for user:", userId);
+        console.log("No profile found, attempting to create one from user metadata");
+        
+        // Get user metadata
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user?.user_metadata) {
+          console.log("Creating profile from user metadata:", user.user_metadata);
+          
+          // Create a profile from user metadata
+          const metadata = user.user_metadata;
+          const newProfile = {
+            id: userId,
+            first_name: metadata.first_name,
+            last_name: metadata.last_name,
+            birth_date: metadata.birth_date,
+            address: metadata.address,
+            phone_number: metadata.phone_number,
+            medical_access_code: metadata.medical_access_code,
+            postal_code: metadata.postal_code,
+            city: metadata.city,
+            country: metadata.country
+          };
+          
+          // Insert the profile
+          const { error: insertError } = await supabase
+            .from('profiles')
+            .insert(newProfile);
+            
+          if (insertError) {
+            console.error("Error creating profile from metadata:", insertError);
+          } else {
+            console.log("Profile created from metadata:", newProfile);
+            setProfile(newProfile);
+          }
+        } else {
+          console.log("No user metadata available to create profile");
+        }
       }
     } catch (error) {
       console.error("Error loading user profile:", error);

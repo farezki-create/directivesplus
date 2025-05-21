@@ -44,6 +44,9 @@ export const useRegister = (onVerificationSent: (email: string) => void) => {
             birth_date: birthDate,
             address: values.address,
             phone_number: values.phoneNumber,
+            postal_code: values.postalCode,
+            city: values.city,
+            country: values.country,
             medical_access_code: medicalAccessCode,
             directive_access_code: directiveAccessCode
           },
@@ -53,11 +56,11 @@ export const useRegister = (onVerificationSent: (email: string) => void) => {
 
       if (error) throw error;
       
-      // Si l'utilisateur est créé avec succès, créer un code d'accès aux directives
+      // If user is created successfully, create an access code for directives
       if (data?.user) {
         console.log("User created successfully, setting up profiles and access codes");
         
-        // Créer le code d'accès aux directives dans document_access_codes
+        // Create the directive access code in document_access_codes
         const { error: directiveError } = await supabase
           .from('document_access_codes')
           .insert({
@@ -70,7 +73,7 @@ export const useRegister = (onVerificationSent: (email: string) => void) => {
           console.error("Error creating directive access code:", directiveError);
         }
         
-        // S'assurer que les données de profil sont définies
+        // Make sure profile data is set
         const { error: profileError } = await supabase
           .from('profiles')
           .upsert({
