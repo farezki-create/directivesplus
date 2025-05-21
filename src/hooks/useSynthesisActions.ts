@@ -1,94 +1,63 @@
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { generatePDF } from "@/utils/pdfGenerator";
-import { useSignature } from "@/hooks/useSignature";
+import { saveDirectivesWithDualStorage } from "@/utils/directives/directivesStorage";
 
+/**
+ * Hook pour gérer les actions de synthèse des directives
+ */
 export const useSynthesisActions = (userId?: string) => {
-  const navigate = useNavigate();
-  const [saving, setSaving] = useState(false);
-  const { signature, setSignature, saveSignature } = useSignature(userId);
+  const { user, profile } = useAuth();
+  const [saving, setSaving] = useState<boolean>(false);
+  const [signature, setSignature] = useState<string | null>(null);
 
-  const handleSaveAndGeneratePDF = async (
-    freeText: string,
-    data: {
-      profileData: any;
-      responses: Record<string, any>;
-      examplePhrases: string[];
-      customPhrases: string[];
-      trustedPersons: any[];
+  /**
+   * Fonction pour sauvegarder et générer le PDF des directives
+   */
+  const handleSaveAndGeneratePDF = async (freeText: string, data: any) => {
+    if (!user && !userId) {
+      toast({
+        title: "Erreur",
+        description: "Vous devez être connecté pour enregistrer vos directives",
+        variant: "destructive",
+      });
+      return;
     }
-  ) => {
-    if (!userId) return;
-    
+
     try {
       setSaving(true);
-      
-      // 1. Vérifier la signature
-      if (!signature) {
-        toast({
-          title: "Attention",
-          description: "Veuillez signer le document avant de l'enregistrer",
-          variant: "default"
-        });
-        setSaving(false);
-        return;
-      }
-      
-      // 2. Enregistrer la signature
-      await saveSignature();
-      
-      // 3. Enregistrer la synthèse
-      const { data: synthData, error } = await supabase
-        .from('questionnaire_synthesis')
-        .upsert({
-          user_id: userId,
-          free_text: freeText || "",
-        }, {
-          onConflict: 'user_id'
-        })
-        .select();
-      
-      if (error) throw error;
-      
-      toast({
-        title: "Synthèse sauvegardée",
-        description: "Votre synthèse a été enregistrée avec succès"
-      });
-      
-      // 4. Générer le PDF
-      toast({
-        title: "Génération en cours",
-        description: "Votre document PDF est en cours de création..."
-      });
-      
-      const pdfRecord = await generatePDF({
+
+      // Générer le PDF avec les données
+      const pdfOutput = await generatePDF({
         ...data,
         freeText,
         signature,
-        userId
       });
-      
-      if (pdfRecord) {
+
+      // Utiliser notre nouvelle fonction de double enregistrement
+      const result = await saveDirectivesWithDualStorage({
+        userId: userId || user?.id || "",
+        pdfOutput,
+        description: "Directives anticipées générées le " + new Date().toLocaleDateString('fr-FR'),
+        profileData: profile || data.profileData
+      });
+
+      if (result.success) {
         toast({
-          title: "PDF généré",
-          description: "Votre document PDF a été généré et enregistré dans 'Mes Directives'"
+          title: "Directives enregistrées",
+          description: "Vos directives anticipées ont été sauvegardées avec succès et sont accessibles via votre code d'accès",
         });
-        
-        // Rediriger vers la page des directives après un court délai
-        setTimeout(() => {
-          navigate("/mes-directives");
-        }, 2000);
+      } else {
+        throw new Error(result.error);
       }
-      
     } catch (error: any) {
-      console.error("Erreur lors de l'enregistrement ou la génération:", error);
+      console.error("Erreur lors de la sauvegarde des directives:", error);
       toast({
         title: "Erreur",
-        description: "Impossible d'enregistrer la synthèse ou de générer le PDF",
-        variant: "destructive"
+        description: error.message || "Une erreur s'est produite lors de l'enregistrement",
+        variant: "destructive",
       });
     } finally {
       setSaving(false);
@@ -99,6 +68,6 @@ export const useSynthesisActions = (userId?: string) => {
     saving,
     signature,
     setSignature,
-    handleSaveAndGeneratePDF
+    handleSaveAndGeneratePDF,
   };
 };
