@@ -5,8 +5,8 @@ export interface Dossier {
   id: string;
   userId: string;
   isFullAccess: boolean;
-  isDirectivesOnly?: boolean;
-  isMedicalOnly?: boolean;
+  isDirectivesOnly: boolean;
+  isMedicalOnly: boolean;
   profileData?: any;
   contenu: any;
 }

@@ -57,9 +57,9 @@ export const useMedicalAccessForm = () => {
         const dossier: Dossier = {
           id: result.dossier.id,
           userId: result.dossier.userId,
-          isFullAccess: result.dossier.isFullAccess,
-          isDirectivesOnly: result.dossier.isDirectivesOnly,
-          isMedicalOnly: result.dossier.isMedicalOnly,
+          isFullAccess: result.dossier.isFullAccess || false,
+          isDirectivesOnly: result.dossier.isDirectivesOnly || false,
+          isMedicalOnly: result.dossier.isMedicalOnly || true,
           profileData: result.dossier.profileData,
           contenu: result.dossier.contenu || {} // Provide a default empty object if contenu is undefined
         };
