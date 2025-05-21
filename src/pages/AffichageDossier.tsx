@@ -34,7 +34,13 @@ const AffichageDossier: React.FC = () => {
     console.log("AffichageDossier - Dossier actif:", dossierActif);
     console.log("AffichageDossier - Contenu déchiffré:", decryptedContent);
     console.log("AffichageDossier - Directives disponibles:", hasDirectives);
-  }, [resetActivityTimer, dossierActif, decryptedContent, hasDirectives]);
+    
+    // Vérifier si getDirectives fonctionne
+    if (getDirectives) {
+      const directives = getDirectives();
+      console.log("AffichageDossier - Test getDirectives:", directives);
+    }
+  }, [resetActivityTimer, dossierActif, decryptedContent, hasDirectives, getDirectives]);
 
   if (!dossierActif) {
     return null;
@@ -89,7 +95,7 @@ const AffichageDossier: React.FC = () => {
               <TabsContent value="directives">
                 <DirectivesTab 
                   decryptedContent={decryptedContent}
-                  hasDirectives={hasDirectives}
+                  hasDirectives={hasDirectives === true}
                   getDirectives={getDirectives}
                 />
               </TabsContent>

@@ -66,27 +66,60 @@ export const useDossierSession = () => {
     }
   }, [dossierActif, navigate]);
 
-  // Vérifier si le contenu déchiffré contient des directives
-  // Amélioration de la détection des directives anticipées
-  const hasDirectives = !!decryptedContent && 
-    typeof decryptedContent === 'object' && 
-    (decryptedContent.directives_anticipees !== undefined || 
-     (decryptedContent.directives && decryptedContent.directives.length > 0));
+  // Fonctions améliorées pour vérifier et récupérer les directives
+  const checkDirectivesExistence = () => {
+    if (!decryptedContent) return false;
+    
+    // Vérifier dans toutes les structures possibles
+    if (decryptedContent.directives_anticipees) {
+      return true;
+    }
+    
+    if (decryptedContent.directives) {
+      return true;
+    }
+    
+    // Vérifier dans le cas où les directives pourraient être dans un niveau plus profond
+    if (decryptedContent.content?.directives_anticipees || decryptedContent.content?.directives) {
+      return true;
+    }
+    
+    return false;
+  };
 
   // Récupérer les directives anticipées (avec compatibilité pour différentes structures)
   const getDirectives = () => {
     if (!decryptedContent) return null;
     
+    // Cas 1: Directives dans directives_anticipees
     if (decryptedContent.directives_anticipees) {
+      console.log("Directives trouvées dans directives_anticipees:", decryptedContent.directives_anticipees);
       return decryptedContent.directives_anticipees;
-    } 
+    }
     
+    // Cas 2: Directives dans directives
     if (decryptedContent.directives) {
+      console.log("Directives trouvées dans directives:", decryptedContent.directives);
       return decryptedContent.directives;
     }
     
+    // Cas 3: Directives dans un niveau plus profond (content)
+    if (decryptedContent.content?.directives_anticipees) {
+      console.log("Directives trouvées dans content.directives_anticipees:", decryptedContent.content.directives_anticipees);
+      return decryptedContent.content.directives_anticipees;
+    }
+    
+    if (decryptedContent.content?.directives) {
+      console.log("Directives trouvées dans content.directives:", decryptedContent.content.directives);
+      return decryptedContent.content.directives;
+    }
+    
+    console.log("Aucune directive trouvée dans le contenu déchiffré:", decryptedContent);
     return null;
   };
+
+  // Vérifier si le contenu déchiffré contient des directives
+  const hasDirectives = checkDirectivesExistence();
 
   // Extraire les informations du patient si disponibles
   const patientInfo = decryptedContent && 
