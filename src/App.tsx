@@ -35,6 +35,8 @@ import Soutenir from "./pages/Soutenir";
 import CookieBanner from "./components/CookieBanner";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import AffichageDossier from "./pages/AffichageDossier";
+import DirectivesViewer from "./pages/DirectivesViewer";
+import MedicalViewer from "./pages/MedicalViewer";
 
 import "./App.css";
 
@@ -69,6 +71,9 @@ const router = createBrowserRouter([
   { path: "/synthese", element: <Synthesis /> },
   { path: "/carte-acces", element: <AccessCardPage /> },
   { path: "/affichage-dossier", element: <AffichageDossier /> },
+  // Nouvelles routes pour visualiser les documents
+  { path: "/directives-viewer/:dossierId", element: <DirectivesViewer /> },
+  { path: "/medical-viewer/:dossierId", element: <MedicalViewer /> },
   { path: "*", element: <NotFound /> },
 ]);
 
