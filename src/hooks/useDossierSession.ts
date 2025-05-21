@@ -24,16 +24,13 @@ export const useDossierSession = () => {
   
   // Effet pour déchiffrer et afficher les données
   useEffect(() => {
-    // Mettre un petit délai pour permettre au dossier d'être chargé
+    // Ne traiter que si le hook n'a pas encore été initialisé
+    if (sessionInitialized) {
+      return;
+    }
+    
+    // Mettre un délai pour permettre au dossier d'être chargé
     const timer = setTimeout(() => {
-      // Ne traiter que si le hook n'a pas encore été initialisé ou si le dossier a changé
-      if (sessionInitialized && !dossierActif) {
-        // Ne pas rediriger si déjà initialisé mais pas de dossier actif
-        // Cela évite les redirections en boucle
-        setLoading(false);
-        return;
-      }
-      
       // Rediriger vers la page d'accès si aucun dossier actif
       if (!dossierActif) {
         console.log("Aucun dossier actif trouvé, redirection vers la page d'accès");
@@ -50,6 +47,14 @@ export const useDossierSession = () => {
         const decrypted = decryptDossierContent(dossierActif.contenu);
         setDecryptedContent(decrypted);
         setDecryptionError(null);
+        
+        // Définir l'onglet actif en fonction du type d'accès
+        if (dossierActif.isDirectivesOnly) {
+          setActiveTab("directives");
+        } else if (dossierActif.isMedicalOnly) {
+          setActiveTab("medical");
+        }
+        
       } catch (error: any) {
         console.error("Erreur de déchiffrement pour le dossier:", dossierActif.id, error);
         setDecryptionError(error.message || "Erreur de déchiffrement");
@@ -61,7 +66,7 @@ export const useDossierSession = () => {
       } finally {
         setLoading(false);
       }
-    }, 300); // Augmenter le délai pour s'assurer que le dossier est chargé
+    }, 500); // Augmenter le délai pour s'assurer que le dossier est chargé
     
     return () => clearTimeout(timer);
   }, [dossierActif, redirectToAccessPage, sessionInitialized]);

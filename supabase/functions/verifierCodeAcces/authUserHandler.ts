@@ -1,4 +1,3 @@
-
 import { StandardResponse } from "./types.ts";
 import { createSupabaseClient } from "./supabaseClient.ts";
 import { getOrCreateMedicalRecord } from "./dossierService.ts";
@@ -34,11 +33,22 @@ export async function handleAuthenticatedUserRequest(
   try {
     // Déterminons le type d'accès en fonction du bruteForceIdentifier
     let accessType = "full"; // valeur par défaut
-    if (bruteForceIdentifier && bruteForceIdentifier.includes("directives_access")) {
-      accessType = "directives";
-    } else if (bruteForceIdentifier && bruteForceIdentifier.includes("medical_access")) {
-      accessType = "medical";
+    let isDirectivesOnly = false;
+    let isMedicalOnly = false;
+    
+    if (bruteForceIdentifier) {
+      if (bruteForceIdentifier.includes("directives_access")) {
+        accessType = "directives";
+        isDirectivesOnly = true;
+        isMedicalOnly = false;
+      } else if (bruteForceIdentifier.includes("medical_access")) {
+        accessType = "medical";
+        isMedicalOnly = true;
+        isDirectivesOnly = false;
+      }
     }
+    
+    console.log(`Type d'accès déterminé: ${accessType}, DirectivesOnly: ${isDirectivesOnly}, MedicalOnly: ${isMedicalOnly}`);
 
     // Récupération des données du profil
     const { data: profileData, error: profileError } = await supabase
@@ -161,15 +171,17 @@ export async function handleAuthenticatedUserRequest(
         `Accès authentifié au dossier ${dossierId}`
       );
 
+      console.log(`Dossier récupéré avec succès. ID: ${dossierId}, Type: ${accessType}`);
+
       // Création de la réponse réussie
       const successResponse: StandardResponse = {
         success: true,
         dossier: {
           id: dossierId,
           userId: userId,
-          isFullAccess: true,
-          isDirectivesOnly: accessType === "directives",
-          isMedicalOnly: accessType === "medical",
+          isFullAccess: accessType === "full",
+          isDirectivesOnly: isDirectivesOnly,
+          isMedicalOnly: isMedicalOnly,
           profileData: profileData,
           contenu: dossierContent,
         },

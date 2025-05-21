@@ -63,9 +63,11 @@ export async function handleAccessCodeRequest(
     if (bruteForceIdentifier.includes("directives_access")) {
       accessType = "directives";
       isDirectivesOnly = true;
+      isMedicalOnly = false;
     } else if (bruteForceIdentifier.includes("medical_access")) {
       accessType = "medical";
       isMedicalOnly = true;
+      isDirectivesOnly = false;
     }
   }
   
@@ -90,6 +92,8 @@ export async function handleAccessCodeRequest(
     `Accès valide au dossier ${dossierId}`, 
     accessCodeData.id
   );
+
+  console.log(`Accès validé - Type: ${accessType}, DirectivesOnly: ${isDirectivesOnly}, MedicalOnly: ${isMedicalOnly}`);
 
   // Création de la réponse réussie
   const successResponse: StandardResponse = {

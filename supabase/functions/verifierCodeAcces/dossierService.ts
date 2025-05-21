@@ -90,36 +90,35 @@ export async function getOrCreateMedicalRecord(
       }
     }
     
-    // Si toujours pas de directives, créer des directives factices
-    // Simplifié pour toujours permettre les données de développement
-    if (!directives) {
-      console.log("Création de directives factices");
-      
-      // Si accessType est directives, on doit absolument fournir des directives
-      if (accessType === "directives" || accessType === "full") {
-        directives = {
-          "Directives anticipées": profileData ? 
-            `Directives anticipées pour ${profileData.first_name || ''} ${profileData.last_name || ''}` : 
-            "Directives anticipées du patient",
-          "Date de création": new Date().toISOString().split('T')[0],
-          "Personne de confiance": "Non spécifiée",
-          "Instructions": "Document disponible sur demande",
-          "Remarque": "Ces directives sont une représentation simplifiée"
-        };
-        console.log("Directives factices créées pour l'accès de type:", accessType);
-      }
+    // Si toujours pas de directives et que l'accès est de type directives, créer des directives factices
+    if (!directives && (accessType === "directives" || accessType === "full")) {
+      console.log("Création de directives factices pour l'accès de type:", accessType);
+      directives = {
+        "Directives anticipées": profileData ? 
+          `Directives anticipées pour ${profileData.first_name || ''} ${profileData.last_name || ''}` : 
+          "Directives anticipées du patient",
+        "Date de création": new Date().toISOString().split('T')[0],
+        "Personne de confiance": "Non spécifiée",
+        "Instructions": "Document disponible sur demande",
+        "Remarque": "Ces directives sont une représentation simplifiée"
+      };
     }
     
     // Récupérer les données médicales de l'utilisateur
-    const { data: medicalData, error: medicalError } = await supabase
-      .from("questionnaire_medical")
-      .select("*")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false })
-      .maybeSingle();
-    
-    if (medicalError) {
-      console.error("Erreur lors de la récupération des données médicales:", medicalError);
+    let medicalData = null;
+    if (accessType === "medical" || accessType === "full") {
+      const { data: medicalResult, error: medicalError } = await supabase
+        .from("questionnaire_medical")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .maybeSingle();
+      
+      if (medicalError) {
+        console.error("Erreur lors de la récupération des données médicales:", medicalError);
+      } else if (medicalResult) {
+        medicalData = medicalResult;
+      }
     }
     
     // Générer le contenu du dossier
@@ -134,13 +133,13 @@ export async function getOrCreateMedicalRecord(
     };
     
     // Ajouter les directives si disponibles
-    if (directives) {
+    if (directives && (accessType === "directives" || accessType === "full")) {
       dossierContent.directives_anticipees = directives;
       dossierContent.directives = directives; // Pour compatibilité avec d'autres formats
     }
     
     // Ajouter les données médicales si disponibles
-    if (medicalData) {
+    if (medicalData && (accessType === "medical" || accessType === "full")) {
       dossierContent.donnees_medicales = medicalData;
     }
     

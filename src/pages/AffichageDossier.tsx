@@ -63,6 +63,25 @@ const AffichageDossier: React.FC = () => {
   
   // Event handler for tab change
   const handleTabChange = (value: string) => {
+    // Vérifier si l'utilisateur a accès à cet onglet
+    if (value === "medical" && dossierActif?.isDirectivesOnly) {
+      toast({
+        title: "Accès refusé",
+        description: "Vous n'avez pas accès aux données médicales avec ce code",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (value === "directives" && dossierActif?.isMedicalOnly) {
+      toast({
+        title: "Accès refusé",
+        description: "Vous n'avez pas accès aux directives anticipées avec ce code",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     resetActivityTimer();
     setActiveTab(value);
     
@@ -90,6 +109,9 @@ const AffichageDossier: React.FC = () => {
     return null;
   }
   
+  // Import manquant pour toast
+  const { toast } = require("@/hooks/use-toast");
+  
   return (
     <div className="container max-w-4xl py-8" onClick={resetActivityTimer}>
       <Card className="shadow-lg">
@@ -105,8 +127,18 @@ const AffichageDossier: React.FC = () => {
         >
           <div className="px-6 py-2 border-b">
             <TabsList className="grid grid-cols-2">
-              <TabsTrigger value="directives">Directives Anticipées</TabsTrigger>
-              <TabsTrigger value="medical">Données Médicales</TabsTrigger>
+              <TabsTrigger 
+                value="directives"
+                disabled={dossierActif.isMedicalOnly}
+              >
+                Directives Anticipées
+              </TabsTrigger>
+              <TabsTrigger 
+                value="medical"
+                disabled={dossierActif.isDirectivesOnly}
+              >
+                Données Médicales
+              </TabsTrigger>
             </TabsList>
           </div>
           
