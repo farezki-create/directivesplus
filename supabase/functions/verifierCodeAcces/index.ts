@@ -22,6 +22,8 @@ interface StandardResponse {
     id: string;
     userId: string;
     isFullAccess: boolean;
+    isDirectivesOnly?: boolean;
+    isMedicalOnly?: boolean;
     profileData?: any;
     contenu?: any;
   };
@@ -80,7 +82,7 @@ async function logAccessAttempt(
 async function verifyAccessCode(supabase: any, code: string) {
   const { data, error } = await supabase
     .from("document_access_codes")
-    .select("user_id, document_id, is_full_access")
+    .select("user_id, document_id, is_full_access, type_access")
     .eq("access_code", code)
     .maybeSingle();
 
@@ -115,6 +117,7 @@ async function fetchUserProfile(supabase: any, userId: string) {
  * @param userId ID de l'utilisateur
  * @param code Code d'accès
  * @param profileData Données du profil
+ * @param typeAccess Type d'accès (directives, medical, full)
  * @returns Contenu du dossier et son ID
  */
 async function getOrCreateMedicalRecord(
@@ -122,7 +125,8 @@ async function getOrCreateMedicalRecord(
   documentId: string,
   userId: string,
   code: string,
-  profileData: any
+  profileData: any,
+  typeAccess: string = "full"
 ) {
   // Vérifier si le dossier médical existe
   const { data: medicalRecordData } = await supabase
@@ -140,26 +144,43 @@ async function getOrCreateMedicalRecord(
     };
   }
 
-  // Sinon, récupérer les directives pour cet utilisateur
-  const { data: directivesData } = await supabase
-    .from("advance_directives")
-    .select("content")
-    .eq("user_id", userId)
-    .order("updated_at", { ascending: false })
-    .limit(1);
-  
-  // Créer un nouveau dossier médical
-  const dossierContenu = {
+  // Sinon, créer un nouveau dossier avec le contenu approprié
+  const dossierContenu: any = {
     patient: {
       nom: profileData?.last_name,
       prenom: profileData?.first_name,
       date_naissance: profileData?.birth_date
     }
   };
-  
-  // Ajouter les directives si disponibles
-  if (directivesData && directivesData.length > 0) {
-    dossierContenu["directives_anticipees"] = directivesData[0].content;
+
+  // Récupérer les directives pour cet utilisateur si l'accès le permet
+  if (typeAccess === "directives" || typeAccess === "full") {
+    const { data: directivesData } = await supabase
+      .from("advance_directives")
+      .select("content")
+      .eq("user_id", userId)
+      .order("updated_at", { ascending: false })
+      .limit(1);
+
+    // Ajouter les directives si disponibles
+    if (directivesData && directivesData.length > 0) {
+      dossierContenu["directives_anticipees"] = directivesData[0].content;
+    }
+  }
+
+  // Récupérer les données médicales si l'accès le permet
+  if (typeAccess === "medical" || typeAccess === "full") {
+    const { data: medicalData } = await supabase
+      .from("medical_data")
+      .select("data")
+      .eq("user_id", userId)
+      .order("updated_at", { ascending: false })
+      .limit(1);
+
+    // Ajouter les données médicales si disponibles
+    if (medicalData && medicalData.length > 0) {
+      dossierContenu["donnees_medicales"] = medicalData[0].data;
+    }
   }
   
   // Insérer le nouveau dossier
@@ -243,6 +264,7 @@ serve(async (req: Request) => {
     // Extraction des données du code d'accès
     const userId = accessCodeData.user_id;
     const documentId = accessCodeData.document_id;
+    const typeAccess = accessCodeData.type_access || "full";
     
     // Récupération des données du profil
     const profileData = await fetchUserProfile(supabase, userId);
@@ -253,7 +275,8 @@ serve(async (req: Request) => {
       documentId,
       userId,
       code_saisi,
-      profileData
+      profileData,
+      typeAccess
     );
 
     // Journalisation de l'accès réussi
@@ -272,6 +295,8 @@ serve(async (req: Request) => {
         id: dossierId,
         userId: userId,
         isFullAccess: accessCodeData.is_full_access,
+        isDirectivesOnly: typeAccess === "directives",
+        isMedicalOnly: typeAccess === "medical",
         profileData: profileData,
         contenu: dossierContent
       },

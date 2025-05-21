@@ -2,17 +2,25 @@
 import React from "react";
 import { UseFormReturn } from "react-hook-form";
 import FormField from "../FormField";
-import { FormData } from "@/utils/access-document/validationSchema";
+import SecurityAlerts from "../SecurityAlerts";
 
 interface MedicalFormFieldsProps {
-  form: UseFormReturn<FormData>;
-  blockedAccess: boolean;
+  form: UseFormReturn<any>;
   loading: boolean;
+  blockedAccess: boolean;
+  errorMessage: string | null;
+  remainingAttempts: number | null;
 }
 
-const MedicalFormFields = ({ form, blockedAccess, loading }: MedicalFormFieldsProps) => {
+const MedicalFormFields: React.FC<MedicalFormFieldsProps> = ({
+  form,
+  loading,
+  blockedAccess,
+  errorMessage,
+  remainingAttempts,
+}) => {
   return (
-    <>
+    <div className="space-y-4">
       <FormField 
         id="lastName"
         label="Nom"
@@ -39,12 +47,18 @@ const MedicalFormFields = ({ form, blockedAccess, loading }: MedicalFormFieldsPr
       
       <FormField 
         id="accessCode"
-        label="Code d'accès"
-        placeholder="Code d'accès unique"
+        label="Code d'accès aux données médicales"
+        placeholder="Code d'accès unique aux données médicales"
         control={form.control}
         disabled={loading || blockedAccess}
       />
-    </>
+
+      <SecurityAlerts 
+        errorMessage={errorMessage}
+        remainingAttempts={remainingAttempts}
+        blockedAccess={blockedAccess}
+      />
+    </div>
   );
 };
 

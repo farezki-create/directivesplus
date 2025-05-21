@@ -2,22 +2,22 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { formSchema, FormData } from "@/utils/access-document/validationSchema";
-import { useVerifierCodeAcces } from "@/hooks/useVerifierCodeAcces";
+import { FormData, formSchema } from "@/utils/access-document/validationSchema";
+import { accessMedicalData } from "@/utils/access-document/accessUtils";
 import { checkBruteForceAttempt } from "@/utils/securityUtils";
-import { logAccessEvent } from "@/utils/accessLoggingUtils";
+import { useVerifierCodeAcces } from "@/hooks/useVerifierCodeAcces";
+import { useDossierStore } from "@/store/dossierStore";
 import { useNavigate } from "react-router-dom";
 
 export const useMedicalAccessForm = () => {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [blockedAccess, setBlockedAccess] = useState(false);
   const [remainingAttempts, setRemainingAttempts] = useState<number | null>(null);
+  const [blockedAccess, setBlockedAccess] = useState(false);
   const navigate = useNavigate();
+  const { verifierCode } = useVerifierCodeAcces();
+  const { setDossierActif } = useDossierStore();
   
-  const { verifierCode, loading: verificationLoading, result } = useVerifierCodeAcces();
-  
-  // Initialisation de react-hook-form avec le resolver zod
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -28,69 +28,42 @@ export const useMedicalAccessForm = () => {
     }
   });
 
-  // Handle access
-  const handleAccess = async () => {
-    // Vérifier si le formulaire est valide
-    const isValid = await form.trigger();
-    if (!isValid) {
-      return;
-    }
-    
+  const handleAccessMedical = async () => {
     const formData = form.getValues();
     setErrorMessage(null);
-    
-    // Créer un identifiant pour la protection contre la force brute
-    const bruteForcePrevention = `medical_${formData.lastName.toLowerCase()}_${formData.birthDate}`;
-    
-    // Vérifier si l'accès n'est pas bloqué pour cause de trop de tentatives
-    const bruteForceCheck = checkBruteForceAttempt(bruteForcePrevention);
-    
-    if (!bruteForceCheck.allowed) {
-      setBlockedAccess(true);
-      setErrorMessage(`Trop de tentatives. Veuillez réessayer dans ${Math.ceil((bruteForceCheck.blockExpiresIn || 0) / 60)} minutes.`);
-      return;
-    }
-    
-    setRemainingAttempts(bruteForceCheck.remainingAttempts);
     setLoading(true);
     
     try {
-      // Vérifier le code d'accès médical via la fonction Edge
-      const result = await verifierCode(formData.accessCode, `medical_${formData.lastName.substring(0, 2)}`);
+      // Identifier pour la détection de force brute
+      const bruteForceIdentifier = `medical_access_${formData.lastName.substring(0, 3)}_${formData.firstName.substring(0, 3)}`;
       
-      if (result.success) {
-        logAccessEvent({
-          userId: result.dossier?.userId || '00000000-0000-0000-0000-000000000000',
-          accessCodeId: result.dossier?.id || 'unknown',
-          consultantName: formData.lastName,
-          consultantFirstName: formData.firstName,
-          resourceType: "medical",
-          resourceId: result.dossier?.id,
-          action: "access",
-          success: true
-        });
+      // Vérifier si l'utilisateur n'est pas bloqué pour force brute
+      const bruteForceCheck = checkBruteForceAttempt(bruteForceIdentifier);
+      
+      if (!bruteForceCheck.allowed) {
+        setBlockedAccess(true);
+        setErrorMessage(`Trop de tentatives. Veuillez réessayer dans ${Math.ceil(bruteForceCheck.blockExpiresIn! / 60)} minutes.`);
+        setLoading(false);
+        return;
+      }
+      
+      setRemainingAttempts(bruteForceCheck.remainingAttempts);
+      
+      // Vérification du code d'accès avec la fonction Edge
+      const result = await verifierCode(formData.accessCode, bruteForceIdentifier);
+      
+      if (result.success && result.dossier) {
+        // Stockage du dossier actif
+        setDossierActif(result.dossier);
         
-        // Navigation vers la page de données médicales
-        setTimeout(() => {
-          navigate('/donnees-medicales');
-        }, 500);
+        // Redirection vers la page d'affichage du dossier
+        navigate("/affichage-dossier");
       } else {
-        setErrorMessage(result.error || "Accès refusé");
-        
-        // Log failed attempt
-        logAccessEvent({
-          userId: '00000000-0000-0000-0000-000000000000',
-          accessCodeId: 'failed_attempt',
-          consultantName: formData.lastName,
-          consultantFirstName: formData.firstName,
-          resourceType: "medical",
-          action: "attempt",
-          success: false
-        });
+        setErrorMessage(result.error || "Accès refusé. Veuillez vérifier vos informations.");
       }
     } catch (error: any) {
-      console.error("Erreur lors de l'accès médical:", error);
-      setErrorMessage(error.message || "Une erreur est survenue");
+      console.error("Erreur lors de l'accès aux données médicales:", error);
+      setErrorMessage("Une erreur est survenue. Veuillez réessayer.");
     } finally {
       setLoading(false);
     }
@@ -98,10 +71,10 @@ export const useMedicalAccessForm = () => {
 
   return {
     form,
-    loading: loading || verificationLoading,
+    loading,
+    handleAccessMedical,
     errorMessage,
-    blockedAccess,
     remainingAttempts,
-    handleAccess
+    blockedAccess
   };
 };

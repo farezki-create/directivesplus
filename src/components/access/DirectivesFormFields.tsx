@@ -47,8 +47,8 @@ const DirectivesFormFields: React.FC<DirectivesFormFieldsProps> = ({
       
       <FormField 
         id="accessCode"
-        label="Code d'accès"
-        placeholder="Code d'accès unique"
+        label="Code d'accès aux directives anticipées"
+        placeholder="Code d'accès unique aux directives"
         control={form.control}
         disabled={loading || blockedAccess}
       />

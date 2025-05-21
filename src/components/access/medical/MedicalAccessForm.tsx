@@ -1,21 +1,19 @@
 
-import React from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
 import LoadingState from "@/components/questionnaire/LoadingState";
-import SecurityAlerts from "../SecurityAlerts";
-import FormActions from "../FormActions";
 import { useMedicalAccessForm } from "@/hooks/access-document/useMedicalAccessForm";
+import FormActions from "../FormActions";
 import MedicalFormFields from "./MedicalFormFields";
 
 const MedicalAccessForm = () => {
   const { 
     form, 
     loading, 
-    errorMessage,
-    blockedAccess,
-    remainingAttempts,
-    handleAccess
+    handleAccessMedical, 
+    errorMessage, 
+    remainingAttempts, 
+    blockedAccess 
   } = useMedicalAccessForm();
 
   return (
@@ -35,30 +33,25 @@ const MedicalAccessForm = () => {
         <Form {...form}>
           <div>
             <CardContent className="space-y-4">
-              <MedicalFormFields 
+              <MedicalFormFields
                 form={form}
-                blockedAccess={blockedAccess}
                 loading={loading}
-              />
-
-              <SecurityAlerts 
+                blockedAccess={blockedAccess}
                 errorMessage={errorMessage}
                 remainingAttempts={remainingAttempts}
-                blockedAccess={blockedAccess}
               />
             </CardContent>
 
-            {/* Loading spinner */}
+            {/* Loading indicator */}
             <LoadingState loading={loading} message="Vérification en cours..." />
 
             <CardFooter>
               <div className="w-full">
                 <FormActions 
                   loading={loading}
-                  onAction={handleAccess}
+                  onAction={handleAccessMedical}
                   actionLabel="Accéder aux données médicales"
                   actionIcon="file-search"
-                  buttonColor="bg-blue-600 hover:bg-blue-700"
                   isDisabled={blockedAccess}
                 />
               </div>

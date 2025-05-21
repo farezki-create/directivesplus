@@ -36,6 +36,11 @@ const AffichageDossier: React.FC = () => {
     return null;
   }
 
+  // Déterminer quel onglet doit être actif par défaut en fonction du type de dossier
+  const isDirectivesOnly = dossierActif.isDirectivesOnly;
+  const isMedicalOnly = dossierActif.isMedicalOnly;
+  const defaultTab = isDirectivesOnly ? "directives" : "dossier";
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Header />
@@ -49,33 +54,41 @@ const AffichageDossier: React.FC = () => {
         <div className="max-w-4xl mx-auto">
           <PatientInfoCard patientInfo={patientInfo} />
           
-          <Tabs defaultValue="dossier" className="w-full">
+          <Tabs defaultValue={defaultTab} className="w-full">
             <TabsList className="grid grid-cols-2 mb-4">
-              <TabsTrigger value="dossier">Données médicales</TabsTrigger>
-              <TabsTrigger value="directives" className="flex items-center gap-1">
-                <FileText size={16} />
-                Directives anticipées
-                {hasDirectives && (
-                  <span className="bg-green-100 text-green-800 text-xs px-2 py-1 ml-1 rounded-full">
-                    Disponible
-                  </span>
-                )}
-              </TabsTrigger>
+              {!isDirectivesOnly && (
+                <TabsTrigger value="dossier" disabled={isDirectivesOnly}>Données médicales</TabsTrigger>
+              )}
+              {!isMedicalOnly && (
+                <TabsTrigger value="directives" disabled={isMedicalOnly} className="flex items-center gap-1">
+                  <FileText size={16} />
+                  Directives anticipées
+                  {hasDirectives && (
+                    <span className="bg-green-100 text-green-800 text-xs px-2 py-1 ml-1 rounded-full">
+                      Disponible
+                    </span>
+                  )}
+                </TabsTrigger>
+              )}
             </TabsList>
             
-            <TabsContent value="dossier">
-              <MedicalDataTab 
-                decryptedContent={decryptedContent} 
-                decryptionError={decryptionError}
-              />
-            </TabsContent>
+            {!isDirectivesOnly && (
+              <TabsContent value="dossier">
+                <MedicalDataTab 
+                  decryptedContent={decryptedContent} 
+                  decryptionError={decryptionError}
+                />
+              </TabsContent>
+            )}
             
-            <TabsContent value="directives">
-              <DirectivesTab 
-                decryptedContent={decryptedContent}
-                hasDirectives={hasDirectives}
-              />
-            </TabsContent>
+            {!isMedicalOnly && (
+              <TabsContent value="directives">
+                <DirectivesTab 
+                  decryptedContent={decryptedContent}
+                  hasDirectives={hasDirectives}
+                />
+              </TabsContent>
+            )}
           </Tabs>
         </div>
       </main>
