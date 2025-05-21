@@ -1,9 +1,10 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import Header from "@/components/Header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileText } from "lucide-react";
 import { useDossierSession } from "@/hooks/useDossierSession";
+import { useDossierSecurity } from "@/hooks/useDossierSecurity";
 import PatientInfoCard from "@/components/dossier/PatientInfoCard";
 import DossierHeader from "@/components/dossier/DossierHeader";
 import MedicalDataTab from "@/components/dossier/MedicalDataTab";
@@ -19,6 +20,17 @@ const AffichageDossier: React.FC = () => {
     patientInfo,
     handleCloseDossier
   } = useDossierSession();
+  
+  // Initialize security hook
+  const { resetActivityTimer } = useDossierSecurity(
+    dossierActif?.id,
+    handleCloseDossier
+  );
+  
+  // Reset activity timer on component mount
+  useEffect(() => {
+    resetActivityTimer();
+  }, [resetActivityTimer]);
 
   if (!dossierActif) {
     return null;

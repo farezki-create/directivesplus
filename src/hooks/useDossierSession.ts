@@ -4,13 +4,35 @@ import { useNavigate } from "react-router-dom";
 import { useDossierStore } from "@/store/dossierStore";
 import { toast } from "@/hooks/use-toast";
 import { decryptData } from "@/utils/encryption";
-import { logAccessEvent } from "@/utils/accessLoggingUtils";
+import { useDossierSecurity } from "@/hooks/useDossierSecurity";
 
+/**
+ * Hook for managing dossier session data, including:
+ * - Data decryption
+ * - Content extraction
+ * - Session management
+ */
 export const useDossierSession = () => {
   const { dossierActif, clearDossierActif } = useDossierStore();
   const navigate = useNavigate();
   const [decryptedContent, setDecryptedContent] = useState<any>(null);
   const [decryptionError, setDecryptionError] = useState<boolean>(false);
+  
+  // Handle dossier closure and navigation
+  const handleCloseDossier = () => {
+    clearDossierActif();
+    toast({
+      title: "Dossier fermé",
+      description: "Le dossier médical a été fermé avec succès"
+    });
+    navigate('/acces-document');
+  };
+  
+  // Use the security hook
+  const { logDossierEvent } = useDossierSecurity(
+    dossierActif?.id,
+    handleCloseDossier
+  );
   
   // Effect to decrypt and display data
   useEffect(() => {
@@ -37,14 +59,7 @@ export const useDossierSession = () => {
         }
 
         // Log the dossier view
-        logAccessEvent({
-          userId: '00000000-0000-0000-0000-000000000000', // Anonymous user
-          accessCodeId: dossierActif.id,
-          resourceType: "dossier",
-          resourceId: dossierActif.id,
-          action: "view",
-          success: true
-        });
+        logDossierEvent("view", true);
       } catch (error) {
         console.error("Erreur de déchiffrement:", error);
         setDecryptionError(true);
@@ -55,68 +70,10 @@ export const useDossierSession = () => {
         });
 
         // Log the decryption error
-        logAccessEvent({
-          userId: '00000000-0000-0000-0000-000000000000',
-          accessCodeId: dossierActif.id,
-          resourceType: "dossier",
-          resourceId: dossierActif.id,
-          action: "attempt",
-          success: false
-        });
+        logDossierEvent("attempt", false);
       }
     }
-  }, [dossierActif, navigate]);
-
-  // Effects for session security management
-  useEffect(() => {
-    // Set inactivity timeout
-    const inactivityTimeout = setTimeout(() => {
-      if (dossierActif) {
-        toast({
-          title: "Session expirée",
-          description: "Votre session a expiré pour des raisons de sécurité",
-          variant: "default"
-        });
-        handleCloseDossier();
-      }
-    }, 15 * 60 * 1000); // 15 minutes
-    
-    // Listen for user events to reset inactivity timeout
-    const resetTimeout = () => {
-      clearTimeout(inactivityTimeout);
-    };
-    
-    window.addEventListener('mousemove', resetTimeout);
-    window.addEventListener('keypress', resetTimeout);
-    
-    // Cleanup on component destruction
-    return () => {
-      clearTimeout(inactivityTimeout);
-      window.removeEventListener('mousemove', resetTimeout);
-      window.removeEventListener('keypress', resetTimeout);
-    };
-  }, [dossierActif]);
-
-  const handleCloseDossier = () => {
-    // Log the dossier closure if available
-    if (dossierActif) {
-      logAccessEvent({
-        userId: '00000000-0000-0000-0000-000000000000',
-        accessCodeId: dossierActif.id,
-        resourceType: "dossier",
-        resourceId: dossierActif.id,
-        action: "access",
-        success: true
-      });
-    }
-    
-    clearDossierActif();
-    toast({
-      title: "Dossier fermé",
-      description: "Le dossier médical a été fermé avec succès"
-    });
-    navigate('/acces-document');
-  };
+  }, [dossierActif, navigate, logDossierEvent]);
 
   // Check if the decrypted content contains directives
   const hasDirectives = decryptedContent && 
