@@ -31,6 +31,8 @@ export async function getAuthUserMedicalRecord(
   // Récupérer les directives pour cet utilisateur si l'accès le permet
   if (accessType === "directives" || accessType === "full") {
     console.log("getAuthUserMedicalRecord - Récupération des directives pour l'utilisateur:", userId);
+    
+    // Chercher d'abord dans advance_directives
     const { data: directivesData } = await supabase
       .from("advance_directives")
       .select("content")
@@ -38,12 +40,26 @@ export async function getAuthUserMedicalRecord(
       .order("updated_at", { ascending: false })
       .limit(1);
 
-    // Ajouter les directives si disponibles
+    // Si les directives sont trouvées dans advance_directives
     if (directivesData && directivesData.length > 0) {
-      console.log("getAuthUserMedicalRecord - Directives trouvées:", directivesData[0].content);
+      console.log("getAuthUserMedicalRecord - Directives trouvées dans advance_directives:", directivesData[0].content);
       dossierContenu["directives_anticipees"] = directivesData[0].content;
     } else {
-      console.log("getAuthUserMedicalRecord - Aucune directive trouvée pour l'utilisateur:", userId);
+      // Sinon, chercher dans la table directives
+      const { data: alternativeDirectives } = await supabase
+        .from("directives")
+        .select("content")
+        .eq("user_id", userId)
+        .eq("is_active", true)
+        .order("updated_at", { ascending: false })
+        .limit(1);
+        
+      if (alternativeDirectives && alternativeDirectives.length > 0) {
+        console.log("getAuthUserMedicalRecord - Directives trouvées dans directives:", alternativeDirectives[0].content);
+        dossierContenu["directives_anticipees"] = alternativeDirectives[0].content;
+      } else {
+        console.log("getAuthUserMedicalRecord - Aucune directive trouvée pour l'utilisateur:", userId);
+      }
     }
   }
 
@@ -116,6 +132,8 @@ export async function getOrCreateMedicalRecord(
   // Récupérer les directives pour cet utilisateur si l'accès le permet
   if (accessType === "directives" || accessType === "full") {
     console.log("getOrCreateMedicalRecord - Récupération des directives pour l'utilisateur:", userId);
+    
+    // Chercher d'abord dans advance_directives
     const { data: directivesData } = await supabase
       .from("advance_directives")
       .select("content")
@@ -123,12 +141,26 @@ export async function getOrCreateMedicalRecord(
       .order("updated_at", { ascending: false })
       .limit(1);
 
-    // Ajouter les directives si disponibles
+    // Si les directives sont trouvées dans advance_directives
     if (directivesData && directivesData.length > 0) {
-      console.log("getOrCreateMedicalRecord - Directives trouvées:", directivesData[0].content);
+      console.log("getOrCreateMedicalRecord - Directives trouvées dans advance_directives:", directivesData[0].content);
       dossierContenu["directives_anticipees"] = directivesData[0].content;
     } else {
-      console.log("getOrCreateMedicalRecord - Aucune directive trouvée pour l'utilisateur:", userId);
+      // Sinon, chercher dans la table directives
+      const { data: alternativeDirectives } = await supabase
+        .from("directives")
+        .select("content")
+        .eq("user_id", userId)
+        .eq("is_active", true)
+        .order("updated_at", { ascending: false })
+        .limit(1);
+        
+      if (alternativeDirectives && alternativeDirectives.length > 0) {
+        console.log("getOrCreateMedicalRecord - Directives trouvées dans directives:", alternativeDirectives[0].content);
+        dossierContenu["directives_anticipees"] = alternativeDirectives[0].content;
+      } else {
+        console.log("getOrCreateMedicalRecord - Aucune directive trouvée pour l'utilisateur:", userId);
+      }
     }
   }
 

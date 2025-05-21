@@ -17,6 +17,7 @@ const AffichageDossier: React.FC = () => {
     decryptedContent,
     decryptionError,
     hasDirectives,
+    getDirectives,
     patientInfo,
     handleCloseDossier
   } = useDossierSession();
@@ -89,6 +90,7 @@ const AffichageDossier: React.FC = () => {
                 <DirectivesTab 
                   decryptedContent={decryptedContent}
                   hasDirectives={hasDirectives}
+                  getDirectives={getDirectives}
                 />
               </TabsContent>
             )}

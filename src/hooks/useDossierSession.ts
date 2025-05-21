@@ -67,9 +67,26 @@ export const useDossierSession = () => {
   }, [dossierActif, navigate]);
 
   // Vérifier si le contenu déchiffré contient des directives
-  const hasDirectives = decryptedContent && 
+  // Amélioration de la détection des directives anticipées
+  const hasDirectives = !!decryptedContent && 
     typeof decryptedContent === 'object' && 
-    decryptedContent.directives_anticipees !== undefined;
+    (decryptedContent.directives_anticipees !== undefined || 
+     (decryptedContent.directives && decryptedContent.directives.length > 0));
+
+  // Récupérer les directives anticipées (avec compatibilité pour différentes structures)
+  const getDirectives = () => {
+    if (!decryptedContent) return null;
+    
+    if (decryptedContent.directives_anticipees) {
+      return decryptedContent.directives_anticipees;
+    } 
+    
+    if (decryptedContent.directives) {
+      return decryptedContent.directives;
+    }
+    
+    return null;
+  };
 
   // Extraire les informations du patient si disponibles
   const patientInfo = decryptedContent && 
@@ -81,6 +98,7 @@ export const useDossierSession = () => {
     decryptedContent,
     decryptionError,
     hasDirectives,
+    getDirectives,
     patientInfo,
     handleCloseDossier
   };

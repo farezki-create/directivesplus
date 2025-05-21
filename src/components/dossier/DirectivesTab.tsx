@@ -8,9 +8,14 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 interface DirectivesTabProps {
   decryptedContent: any;
   hasDirectives: boolean;
+  getDirectives?: () => any;  // Nouvelle fonction pour récupérer les directives
 }
 
-const DirectivesTab: React.FC<DirectivesTabProps> = ({ decryptedContent, hasDirectives }) => {
+const DirectivesTab: React.FC<DirectivesTabProps> = ({ 
+  decryptedContent, 
+  hasDirectives,
+  getDirectives 
+}) => {
   console.log("DirectivesTab - Content:", decryptedContent, "hasDirectives:", hasDirectives);
   
   const renderDirectives = () => {
@@ -26,8 +31,10 @@ const DirectivesTab: React.FC<DirectivesTabProps> = ({ decryptedContent, hasDire
       );
     }
 
-    const directives = decryptedContent.directives_anticipees;
-    console.log("DirectivesTab - Directives content:", directives);
+    let directives = getDirectives ? getDirectives() : 
+                    (decryptedContent?.directives_anticipees || decryptedContent?.directives);
+    
+    console.log("DirectivesTab - Directives trouvées:", directives);
     
     if (!directives) {
       return (
