@@ -1,20 +1,19 @@
 
 import React, { useEffect } from "react";
-import Header from "@/components/Header";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileText, AlertTriangle } from "lucide-react";
 import { useDossierSession } from "@/hooks/useDossierSession";
 import { useDossierSecurity } from "@/hooks/useDossierSecurity";
-import PatientInfoCard from "@/components/dossier/PatientInfoCard";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card } from "@/components/ui/card";
 import DossierHeader from "@/components/dossier/DossierHeader";
-import MedicalDataTab from "@/components/dossier/MedicalDataTab";
-import DirectivesTab from "@/components/dossier/DirectivesTab";
 import DossierFooter from "@/components/dossier/DossierFooter";
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
+import PatientInfoCard from "@/components/dossier/PatientInfoCard";
+import DirectivesTab from "@/components/dossier/DirectivesTab";
+import MedicalDataTab from "@/components/dossier/MedicalDataTab";
+import BackButton from "@/components/ui/back-button";
+import LoadingState from "@/components/questionnaire/LoadingState";
 
-const AffichageDossier: React.FC = () => {
-  const {
+const AffichageDossier = () => {
+  const { 
     dossierActif,
     decryptedContent,
     decryptionError,
@@ -24,111 +23,72 @@ const AffichageDossier: React.FC = () => {
     handleCloseDossier
   } = useDossierSession();
   
-  // Initialize security hook only if dossierActif exists
-  const security = dossierActif ? useDossierSecurity(
-    dossierActif.id,
-    handleCloseDossier
-  ) : { resetActivityTimer: () => {} };
+  // Use security hook only if we have an active dossier to avoid React errors
+  const securityHook = dossierActif ? useDossierSecurity() : null;
   
-  // Reset activity timer on component mount and log data for debugging
   useEffect(() => {
-    if (dossierActif) {
-      security.resetActivityTimer();
-      console.log("AffichageDossier - Dossier actif:", dossierActif);
-      console.log("AffichageDossier - Contenu déchiffré:", decryptedContent);
-      console.log("AffichageDossier - Directives disponibles:", hasDirectives);
-      
-      // Vérifier si getDirectives fonctionne
-      if (getDirectives) {
-        try {
-          const directives = getDirectives();
-          console.log("AffichageDossier - Test getDirectives:", directives);
-        } catch (error) {
-          console.error("AffichageDossier - Erreur dans getDirectives:", error);
-        }
-      }
+    // Only start security monitoring if we have an active dossier
+    if (dossierActif && securityHook) {
+      securityHook.startSecurityMonitoring();
+      return () => securityHook.stopSecurityMonitoring();
     }
-  }, [security.resetActivityTimer, dossierActif, decryptedContent, hasDirectives, getDirectives]);
+  }, [dossierActif, securityHook]);
 
   if (!dossierActif) {
+    return <LoadingState loading={true} message="Chargement du dossier..." />;
+  }
+
+  if (decryptionError) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
-        <Alert className="max-w-md">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>Dossier non disponible</AlertTitle>
-          <AlertDescription>
-            Aucun dossier n'est actuellement accessible. Veuillez saisir un code d'accès valide.
-            <div className="mt-4">
-              <Button 
-                onClick={() => window.location.href = '/acces-document'}
-                className="w-full"
-              >
-                Retour à la page d'accès
-              </Button>
-            </div>
-          </AlertDescription>
-        </Alert>
+      <div className="container mx-auto px-4 py-8">
+        <BackButton />
+        <Card className="p-8 max-w-2xl mx-auto">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Erreur de déchiffrement</h1>
+          <p>Impossible de déchiffrer les données du dossier.</p>
+          <div className="mt-4">
+            <button
+              onClick={handleCloseDossier}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Fermer le dossier
+            </button>
+          </div>
+        </Card>
       </div>
     );
   }
 
-  // Déterminer quel onglet doit être actif par défaut en fonction du type de dossier
-  const isDirectivesOnly = dossierActif?.isDirectivesOnly || false;
-  const isMedicalOnly = dossierActif?.isMedicalOnly || false;
-  const defaultTab = isDirectivesOnly ? "directives" : "dossier";
-
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <Header />
+    <div className="container mx-auto px-4 py-8">
+      <BackButton />
       
-      <main className="flex-grow container mx-auto px-4 py-8 mt-6">
-        <DossierHeader 
-          dossierId={dossierActif.id} 
-          onClose={handleCloseDossier} 
-        />
+      <DossierHeader 
+        onClose={handleCloseDossier}
+        patientInfo={patientInfo}
+      />
+      
+      <div className="mb-6">
+        <PatientInfoCard patientInfo={patientInfo} />
+      </div>
+      
+      <Tabs defaultValue="directives" className="space-y-4">
+        <TabsList className="grid grid-cols-2">
+          <TabsTrigger value="directives">Directives anticipées</TabsTrigger>
+          <TabsTrigger value="medical-data">Données médicales</TabsTrigger>
+        </TabsList>
         
-        <div className="max-w-4xl mx-auto">
-          <PatientInfoCard patientInfo={patientInfo} />
-          
-          <Tabs defaultValue={defaultTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-4">
-              {!isDirectivesOnly && (
-                <TabsTrigger value="dossier" disabled={isDirectivesOnly}>Données médicales</TabsTrigger>
-              )}
-              {!isMedicalOnly && (
-                <TabsTrigger value="directives" disabled={isMedicalOnly} className="flex items-center gap-1">
-                  <FileText size={16} />
-                  Directives anticipées
-                  {hasDirectives && (
-                    <span className="bg-green-100 text-green-800 text-xs px-2 py-1 ml-1 rounded-full">
-                      Disponible
-                    </span>
-                  )}
-                </TabsTrigger>
-              )}
-            </TabsList>
-            
-            {!isDirectivesOnly && (
-              <TabsContent value="dossier">
-                <MedicalDataTab 
-                  decryptedContent={decryptedContent} 
-                  decryptionError={decryptionError}
-                />
-              </TabsContent>
-            )}
-            
-            {!isMedicalOnly && (
-              <TabsContent value="directives">
-                <DirectivesTab 
-                  decryptedContent={decryptedContent}
-                  hasDirectives={hasDirectives === true}
-                  getDirectives={getDirectives}
-                />
-              </TabsContent>
-            )}
-          </Tabs>
-        </div>
-      </main>
+        <TabsContent value="directives" className="space-y-4">
+          <DirectivesTab 
+            decryptedContent={decryptedContent}
+            hasDirectives={hasDirectives}
+            getDirectives={getDirectives}
+          />
+        </TabsContent>
+        
+        <TabsContent value="medical-data" className="space-y-4">
+          <MedicalDataTab decryptedContent={decryptedContent} />
+        </TabsContent>
+      </Tabs>
       
       <DossierFooter />
     </div>
