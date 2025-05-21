@@ -8,7 +8,7 @@ import { useVerifierCodeAcces } from "@/hooks/useVerifierCodeAcces";
 import { useDossierStore, Dossier } from "@/store/dossierStore";
 import { useNavigate } from "react-router-dom";
 
-export const useDirectivesAccessForm = () => {
+export const useDirectivesAccessForm = (onSubmitProp?: (accessCode: string, formData: any) => Promise<void>) => {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [remainingAttempts, setRemainingAttempts] = useState<number | null>(null);
@@ -33,6 +33,13 @@ export const useDirectivesAccessForm = () => {
     setLoading(true);
     
     try {
+      // If external onSubmit is provided, use it
+      if (onSubmitProp) {
+        await onSubmitProp(formData.accessCode, formData);
+        setLoading(false);
+        return;
+      }
+      
       // Identifier for brute force detection
       const bruteForceIdentifier = `directives_access_${formData.lastName.substring(0, 3)}_${formData.firstName.substring(0, 3)}`;
       

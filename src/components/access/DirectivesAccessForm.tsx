@@ -6,7 +6,11 @@ import { useDirectivesAccessForm } from "@/hooks/access/useDirectivesAccessForm"
 import FormActions from "./FormActions";
 import DirectivesFormFields from "./DirectivesFormFields";
 
-const DirectivesAccessForm = () => {
+interface DirectivesAccessFormProps {
+  onSubmit?: (accessCode: string, formData: any) => Promise<void>;
+}
+
+const DirectivesAccessForm = ({ onSubmit }: DirectivesAccessFormProps) => {
   const { 
     form, 
     loading, 
@@ -14,7 +18,7 @@ const DirectivesAccessForm = () => {
     errorMessage, 
     remainingAttempts, 
     blockedAccess 
-  } = useDirectivesAccessForm();
+  } = useDirectivesAccessForm(onSubmit);
 
   return (
     <div className="max-w-md mx-auto">

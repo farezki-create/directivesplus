@@ -6,7 +6,11 @@ import { useMedicalAccessForm } from "@/hooks/access-document/useMedicalAccessFo
 import FormActions from "../FormActions";
 import MedicalFormFields from "./MedicalFormFields";
 
-const MedicalAccessForm = () => {
+interface MedicalAccessFormProps {
+  onSubmit?: (accessCode: string, formData: any) => Promise<void>;
+}
+
+const MedicalAccessForm = ({ onSubmit }: MedicalAccessFormProps) => {
   const { 
     form, 
     loading, 
@@ -14,7 +18,7 @@ const MedicalAccessForm = () => {
     errorMessage, 
     remainingAttempts, 
     blockedAccess 
-  } = useMedicalAccessForm();
+  } = useMedicalAccessForm(onSubmit);
 
   return (
     <div className="max-w-md mx-auto">
