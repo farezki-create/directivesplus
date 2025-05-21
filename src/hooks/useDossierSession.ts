@@ -23,31 +23,37 @@ export const useDossierSession = () => {
   
   // Effet pour déchiffrer et afficher les données
   useEffect(() => {
-    // Rediriger vers la page d'accès si aucun dossier actif
-    if (!dossierActif) {
-      redirectToAccessPage("Veuillez saisir un code d'accès valide");
-      return;
-    }
+    // Mettre un petit délai pour permettre au dossier d'être chargé
+    const timer = setTimeout(() => {
+      // Rediriger vers la page d'accès si aucun dossier actif
+      if (!dossierActif) {
+        console.log("Aucun dossier actif trouvé, redirection vers la page d'accès");
+        redirectToAccessPage("Veuillez saisir un code d'accès valide");
+        return;
+      }
+      
+      setLoading(true);
+      
+      // Essayer de déchiffrer le contenu
+      try {
+        console.log("Traitement des données du dossier:", dossierActif.id);
+        const decrypted = decryptDossierContent(dossierActif.contenu);
+        setDecryptedContent(decrypted);
+        setDecryptionError(null);
+      } catch (error: any) {
+        console.error("Erreur de déchiffrement pour le dossier:", dossierActif.id, error);
+        setDecryptionError(error.message || "Erreur de déchiffrement");
+        toast({
+          title: "Erreur de déchiffrement",
+          description: "Impossible de déchiffrer les données du dossier",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
+      }
+    }, 100); // Petit délai pour s'assurer que le dossier est chargé
     
-    setLoading(true);
-    
-    // Essayer de déchiffrer le contenu
-    try {
-      console.log("Traitement des données du dossier:", dossierActif.id);
-      const decrypted = decryptDossierContent(dossierActif.contenu);
-      setDecryptedContent(decrypted);
-      setDecryptionError(null);
-    } catch (error: any) {
-      console.error("Erreur de déchiffrement pour le dossier:", dossierActif.id, error);
-      setDecryptionError(error.message || "Erreur de déchiffrement");
-      toast({
-        title: "Erreur de déchiffrement",
-        description: "Impossible de déchiffrer les données du dossier",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
+    return () => clearTimeout(timer);
   }, [dossierActif, redirectToAccessPage]);
 
   // Vérifier l'existence des directives

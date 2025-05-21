@@ -42,6 +42,18 @@ export const useDirectivesAccessForm = (onSubmitProp?: (accessCode: string, form
             return;
           }
           
+          // Vérification de la saisie
+          if (!formData.accessCode || formData.accessCode.trim() === '') {
+            setErrorMessage("Veuillez saisir un code d'accès valide");
+            toast({
+              variant: "destructive",
+              title: "Données manquantes",
+              description: "Veuillez saisir un code d'accès valide"
+            });
+            setLoading(false);
+            return;
+          }
+          
           // Identifier for brute force detection
           const bruteForceIdentifier = `directives_access_${formData.lastName.substring(0, 3)}_${formData.firstName.substring(0, 3)}`;
           

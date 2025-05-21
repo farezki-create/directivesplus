@@ -89,23 +89,37 @@ export async function handleAuthenticatedUserRequest(
     if (!accessCode) {
       // Si pas de code d'accès, on en crée un nouveau pour les directives
       if (accessType === "directives") {
-        const randomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-        accessCode = randomCode;
-        
-        const { error: insertError } = await supabase
-          .from("document_access_codes")
-          .insert({
-            user_id: userId,
-            access_code: accessCode,
-            is_full_access: false
-          });
-        
-        if (insertError) {
-          console.error("Erreur lors de la création du code d'accès:", insertError);
+        try {
+          const randomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+          accessCode = randomCode;
+          
+          const { error: insertError } = await supabase
+            .from("document_access_codes")
+            .insert({
+              user_id: userId,
+              access_code: accessCode,
+              is_full_access: false
+            });
+          
+          if (insertError) {
+            console.error("Erreur lors de la création du code d'accès:", insertError);
+            return new Response(
+              JSON.stringify({
+                success: false,
+                error: "Impossible de créer un code d'accès",
+              }),
+              {
+                status: 500,
+                headers: { ...corsHeaders, "Content-Type": "application/json" },
+              }
+            );
+          }
+        } catch (codeError) {
+          console.error("Erreur lors de la génération du code d'accès:", codeError);
           return new Response(
             JSON.stringify({
               success: false,
-              error: "Impossible de créer un code d'accès",
+              error: "Erreur lors de la génération du code d'accès",
             }),
             {
               status: 500,
@@ -129,42 +143,56 @@ export async function handleAuthenticatedUserRequest(
     }
 
     // Récupération ou création du dossier médical
-    const { content: dossierContent, id: dossierId } = await getOrCreateMedicalRecord(
-      supabase,
-      null, // Pas de document ID spécifique
-      userId,
-      accessCode,
-      profileData,
-      accessType
-    );
+    try {
+      const { content: dossierContent, id: dossierId } = await getOrCreateMedicalRecord(
+        supabase,
+        null, // Pas de document ID spécifique
+        userId,
+        accessCode,
+        profileData,
+        accessType
+      );
 
-    // Journalisation de l'accès
-    await logAccessAttempt(
-      supabase,
-      userId,
-      true,
-      `Accès authentifié au dossier ${dossierId}`
-    );
+      // Journalisation de l'accès
+      await logAccessAttempt(
+        supabase,
+        userId,
+        true,
+        `Accès authentifié au dossier ${dossierId}`
+      );
 
-    // Création de la réponse réussie
-    const successResponse: StandardResponse = {
-      success: true,
-      dossier: {
-        id: dossierId,
-        userId: userId,
-        isFullAccess: true,
-        isDirectivesOnly: accessType === "directives",
-        isMedicalOnly: accessType === "medical",
-        profileData: profileData,
-        contenu: dossierContent,
-      },
-    };
+      // Création de la réponse réussie
+      const successResponse: StandardResponse = {
+        success: true,
+        dossier: {
+          id: dossierId,
+          userId: userId,
+          isFullAccess: true,
+          isDirectivesOnly: accessType === "directives",
+          isMedicalOnly: accessType === "medical",
+          profileData: profileData,
+          contenu: dossierContent,
+        },
+      };
 
-    // Retour de la réponse
-    return new Response(JSON.stringify(successResponse), {
-      status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+      // Retour de la réponse
+      return new Response(JSON.stringify(successResponse), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    } catch (dossierError: any) {
+      console.error("Erreur lors de la récupération/création du dossier:", dossierError);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: `Erreur lors de la récupération du dossier: ${dossierError.message || "Erreur inconnue"}`,
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
   } catch (error) {
     console.error("Erreur lors du traitement de la requête authentifiée:", error);
     

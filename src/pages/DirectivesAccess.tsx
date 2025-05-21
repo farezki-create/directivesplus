@@ -50,7 +50,12 @@ const DirectivesAccess = () => {
       }
     };
 
-    accessUserDossier();
+    // Utilisez un setTimeout pour éviter les problèmes de mise à jour d'état pendant le rendu
+    const timer = setTimeout(() => {
+      accessUserDossier();
+    }, 100);
+    
+    return () => clearTimeout(timer);
   }, [isAuthenticated, user, setDossierActif, navigate, getDossierUtilisateurAuthentifie]);
 
   const handleFormSubmit = async (accessCode: string, formData: any) => {

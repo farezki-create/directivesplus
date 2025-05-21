@@ -17,6 +17,17 @@ export const useVerifierCodeAcces = () => {
    * @returns Dossier si la vérification est réussie, null sinon
    */
   const verifierCode = async (code: string, bruteForceIdentifier?: string) => {
+    if (!code || code.trim() === '') {
+      const errorMessage = "Veuillez saisir un code d'accès valide";
+      setError(errorMessage);
+      toast({
+        variant: "destructive",
+        title: "Code manquant",
+        description: errorMessage
+      });
+      return { success: false, error: errorMessage };
+    }
+
     setError(null);
     setLoading(true);
     

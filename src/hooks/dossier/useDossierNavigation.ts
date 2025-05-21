@@ -20,7 +20,10 @@ export const useDossierNavigation = () => {
       title: "Dossier fermé",
       description: "Le dossier médical a été fermé avec succès"
     });
-    navigate('/acces-document');
+    // Utiliser un timeout pour éviter les problèmes de navigation pendant une mise à jour d'état
+    setTimeout(() => {
+      navigate('/acces-document');
+    }, 50);
   }, [clearDossierActif, navigate]);
 
   /**
@@ -33,7 +36,10 @@ export const useDossierNavigation = () => {
       description: message,
       variant: "destructive"
     });
-    navigate('/acces-document');
+    // Utiliser un timeout pour éviter les problèmes de navigation pendant une mise à jour d'état
+    setTimeout(() => {
+      navigate('/acces-document');
+    }, 50);
   }, [navigate]);
   
   return {
