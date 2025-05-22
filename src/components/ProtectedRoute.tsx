@@ -15,6 +15,9 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
   
+  // Public routes that don't require authentication
+  const publicRoutes = ['/directives-acces', '/'];
+  
   useEffect(() => {
     console.log("ProtectedRoute for", location.pathname);
     console.log("- Auth status:", isAuthenticated ? "Authenticated" : "Not authenticated");
@@ -41,6 +44,11 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
         <p className="mt-4 text-gray-600">Vérification de l'authentification...</p>
       </div>
     );
+  }
+
+  // Allow access to public routes without authentication
+  if (publicRoutes.includes(location.pathname)) {
+    return <>{children}</>;
   }
 
   // Prevent navigation loop by checking if we're already redirecting

@@ -18,6 +18,7 @@ const DirectivesAcces = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { verifierCode } = useVerifierCodeAcces();
   
   // Auto-load directives for authenticated users
   useEffect(() => {
@@ -65,30 +66,15 @@ const DirectivesAcces = () => {
         throw new Error("Code d'accès manquant");
       }
       
-      // Call the API
-      const apiUrl = "https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/verifierCodeAcces";
+      // Use the verifierCode function from the hook
       const bruteForceIdentifier = `directives_public_${formData.firstName}_${formData.lastName}`;
+      const dossier = await verifierCode(accessCode, bruteForceIdentifier);
       
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          accessCode: accessCode,
-          patientName: `${formData.firstName} ${formData.lastName}`,
-          patientBirthDate: formData.birthDate,
-          bruteForceIdentifier: bruteForceIdentifier
-        })
-      });
-      
-      const result = await response.json();
-      
-      if (result.success) {
-        console.log("Code d'accès aux directives valide, dossier récupéré:", result);
+      if (dossier) {
+        console.log("Code d'accès aux directives valide, dossier récupéré:", dossier);
         
         // Store in dossier store
-        setDossierActif(result.dossier);
+        setDossierActif(dossier);
         
         // Navigate to dashboard instead of affichage-dossier
         navigate("/dashboard", { replace: true });
@@ -99,13 +85,13 @@ const DirectivesAcces = () => {
           description: "Vous avez accès aux directives anticipées",
         });
       } else {
-        console.error("Code d'accès invalide:", result.error);
+        console.error("Code d'accès invalide");
         toast({
           title: "Accès refusé",
-          description: result.error || "Code d'accès invalide ou données incorrectes",
+          description: "Code d'accès invalide ou données incorrectes",
           variant: "destructive"
         });
-        throw new Error(result.error || "Code d'accès invalide");
+        throw new Error("Code d'accès invalide");
       }
     } catch (error) {
       console.error("Erreur lors de la vérification du code d'accès aux directives:", error);
@@ -114,7 +100,6 @@ const DirectivesAcces = () => {
         description: "Une erreur est survenue lors de la vérification du code d'accès",
         variant: "destructive"
       });
-      throw error;
     } finally {
       setIsSubmitting(false);
     }
