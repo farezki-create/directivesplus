@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import AppNavigation from "@/components/AppNavigation";
 import DirectivesGrid from "@/components/DirectivesGrid";
 import { Button } from "@/components/ui/button";
-import { Home, ArrowLeft } from "lucide-react";
+import { Home, ArrowLeft, Lock } from "lucide-react";
 import InfoSteps from "@/components/InfoSteps";
 
 const Dashboard = () => {
@@ -35,6 +35,11 @@ const Dashboard = () => {
     return null;
   }
 
+  // Handler pour accéder aux directives publiques
+  const handlePublicAccess = () => {
+    navigate("/mes-directives");
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <AppNavigation />
@@ -56,7 +61,7 @@ const Dashboard = () => {
             <img 
               src="/lovable-uploads/0a786ed1-a905-4b29-be3a-ca3b24d3efae.png" 
               alt="DirectivesPlus Logo" 
-              className="w-40 h-auto" // Taille réduite du logo (était w-64)
+              className="w-40 h-auto" 
             />
           </div>
           
@@ -66,6 +71,17 @@ const Dashboard = () => {
           <p className="text-gray-600 text-lg mb-6">
             Rédigez vos directives anticipées et désignez vos personnes de confiance en quelques étapes simples et sécurisées.
           </p>
+          
+          <div className="flex justify-center mb-8">
+            <Button
+              onClick={handlePublicAccess}
+              variant="outline"
+              className="flex items-center gap-2 border-directiveplus-500 text-directiveplus-600 hover:bg-directiveplus-50"
+            >
+              <Lock size={16} />
+              Accès public aux directives
+            </Button>
+          </div>
           
           <InfoSteps />
         </div>

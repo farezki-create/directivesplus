@@ -58,6 +58,10 @@ const PublicDirectivesAccessForm: React.FC<PublicDirectivesAccessFormProps> = ({
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)}>
           <CardContent className="space-y-4">
+            <div className="text-sm text-gray-600 mb-3 p-3 bg-blue-50 rounded-md border border-blue-100">
+              Pour accéder aux directives, veuillez saisir les informations du patient et le code d'accès fourni.
+            </div>
+            
             <FormField
               control={form.control}
               name="firstName"
