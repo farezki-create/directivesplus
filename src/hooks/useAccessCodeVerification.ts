@@ -3,7 +3,7 @@ import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
-// Define a simple type for the medical document to avoid deep type inference
+// Définition explicite du type pour le document médical
 type MedicalDocument = {
   id: string;
   user_id: string;
@@ -16,6 +16,12 @@ type MedicalDocument = {
   shared_code?: string;
   shared_code_expires_at?: string;
   is_active?: boolean;
+};
+
+// Type pour la réponse de la requête Supabase
+type SupabaseQueryResponse = {
+  data: any[] | null;
+  error: any | null;
 };
 
 /**
@@ -48,21 +54,16 @@ export const useAccessCodeVerification = () => {
     try {
       console.log(`Vérification du code d'accès partagé: ${sharedCode}`);
       
-      // Solve TypeScript error by avoiding complex type inference completely
-      // Use a TypeScript type assertion to bypass the type checking
-      const result = await supabase
+      // Utilisation d'un cast explicite pour éviter les problèmes d'inférence de type
+      const { data, error: fetchError }: SupabaseQueryResponse = await supabase
         .from('medical_documents')
         .select('*')
-        .eq('shared_code', sharedCode);
+        .eq('shared_code', sharedCode) as unknown as SupabaseQueryResponse;
       
-      // Type assertion to help TypeScript understand the structure
-      const data = result.data as any[];
-      const fetchError = result.error;
-      
-      // Process data safely after retrieval
+      // Traitement sécurisé des données après récupération
       let document: MedicalDocument | null = null;
       if (data && Array.isArray(data) && data.length > 0) {
-        // Explicitly cast the data to MedicalDocument to avoid type errors
+        // Cast explicite vers MedicalDocument
         document = data[0] as MedicalDocument;
       }
       
