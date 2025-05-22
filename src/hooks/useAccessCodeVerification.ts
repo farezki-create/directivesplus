@@ -48,11 +48,16 @@ export const useAccessCodeVerification = () => {
     try {
       console.log(`Vérification du code d'accès partagé: ${sharedCode}`);
       
-      // Use any to completely bypass TypeScript type checking for the query
-      const { data, error: fetchError } = await supabase
+      // Solve TypeScript error by avoiding complex type inference completely
+      // Use a TypeScript type assertion to bypass the type checking
+      const result = await supabase
         .from('medical_documents')
         .select('*')
-        .eq('shared_code', sharedCode) as { data: any, error: any };
+        .eq('shared_code', sharedCode);
+      
+      // Type assertion to help TypeScript understand the structure
+      const data = result.data as any[];
+      const fetchError = result.error;
       
       // Process data safely after retrieval
       let document: MedicalDocument | null = null;
