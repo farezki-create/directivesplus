@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -143,7 +142,7 @@ const AffichageDossier: React.FC = () => {
     };
   }, [dossierActif, logDossierEvent, startSecurityMonitoring, stopSecurityMonitoring, loadAttempts]);
   
-  // Afficher un état de chargement pendant que les données sont récupérées
+  // Render loading, error and content components based on state
   if (loading || initialLoading) {
     return <DossierLoadingState />;
   }

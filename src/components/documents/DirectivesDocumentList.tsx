@@ -22,6 +22,7 @@ interface DirectivesDocumentListProps {
   onView: (filePath: string, contentType?: string) => void;
   onDelete: (documentId: string) => void;
   onVisibilityChange?: (documentId: string, isPrivate: boolean) => void;
+  onAddToSharedFolder?: (document: Document) => void;
 }
 
 const DirectivesDocumentList: FC<DirectivesDocumentListProps> = ({
@@ -30,7 +31,8 @@ const DirectivesDocumentList: FC<DirectivesDocumentListProps> = ({
   onPrint,
   onView,
   onDelete,
-  onVisibilityChange
+  onVisibilityChange,
+  onAddToSharedFolder
 }) => {
   if (documents.length === 0) {
     return <EmptyDocumentsState />;
@@ -49,6 +51,7 @@ const DirectivesDocumentList: FC<DirectivesDocumentListProps> = ({
           onView={onView}
           onDelete={onDelete}
           onVisibilityChange={onVisibilityChange}
+          onAddToSharedFolder={onAddToSharedFolder ? () => onAddToSharedFolder(doc) : undefined}
           showPrint={false} // Désactiver l'affichage du bouton imprimer dans les directives
         />
       ))}

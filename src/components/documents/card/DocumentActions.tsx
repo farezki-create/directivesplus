@@ -5,7 +5,8 @@ import {
   Download,
   Eye,
   Trash,
-  Printer
+  Printer,
+  Share
 } from "lucide-react";
 
 interface DocumentActionsProps {
@@ -13,6 +14,7 @@ interface DocumentActionsProps {
   onDownload: () => void;
   onDelete: () => void;
   onPrint?: () => void;
+  onAddToSharedFolder?: () => void;
   showPrint?: boolean;
 }
 
@@ -21,13 +23,15 @@ const DocumentActions = ({
   onDownload,
   onDelete,
   onPrint,
+  onAddToSharedFolder,
   showPrint = true
 }: DocumentActionsProps) => {
   console.log("DocumentActions - Handlers disponibles:", { 
     onView: !!onView, 
     onDownload: !!onDownload, 
     onDelete: !!onDelete,
-    onPrint: !!onPrint
+    onPrint: !!onPrint,
+    onAddToSharedFolder: !!onAddToSharedFolder
   });
 
   return (
@@ -74,6 +78,22 @@ const DocumentActions = ({
         >
           <Printer className="h-3 w-3 mr-1" />
           Imprimer
+        </Button>
+      )}
+      {onAddToSharedFolder && (
+        <Button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log("DocumentActions - Bouton Ajouter au dossier partagé cliqué");
+            onAddToSharedFolder();
+          }}
+          size="sm"
+          variant="outline" 
+          className="text-xs text-directiveplus-600 hover:text-directiveplus-800 hover:bg-directiveplus-50"
+        >
+          <Share className="h-3 w-3 mr-1" />
+          Ajouter au dossier partagé
         </Button>
       )}
       <Button

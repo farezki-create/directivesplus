@@ -4,6 +4,8 @@ import { Document } from "@/hooks/useDirectivesDocuments";
 import DirectivesPageHeader from "@/components/documents/DirectivesPageHeader";
 import DirectivesAddDocumentSection from "@/components/documents/DirectivesAddDocumentSection";
 import DirectivesDocumentList from "@/components/documents/DirectivesDocumentList";
+import { useNavigate } from "react-router-dom";
+import { toast } from "@/hooks/use-toast";
 
 interface DirectivesPageContentProps {
   documents: Document[];
@@ -36,6 +38,8 @@ const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
   accessCode,
   profile
 }) => {
+  const navigate = useNavigate();
+
   // Log when this component renders with its props
   React.useEffect(() => {
     console.log("DirectivesPageContent rendered:", { 
@@ -47,6 +51,30 @@ const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
     // Ne pas récupérer le code d'accès direct ici pour éviter une double redirection
     // Cela permet de s'assurer que seule la page AffichageDossier traite les codes directs
   }, [documents.length, userId, accessCode]);
+
+  const handleAddToSharedFolder = (document: Document) => {
+    console.log("Ajout au dossier partagé:", document);
+
+    if (!accessCode) {
+      toast({
+        title: "Erreur",
+        description: "Aucun code d'accès n'est disponible pour ce document",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Stocker le code d'accès dans sessionStorage pour la redirection
+    sessionStorage.setItem('directAccessCode', accessCode);
+    
+    // Rediriger vers la page d'affichage du dossier
+    navigate('/affichage-dossier', { replace: true });
+
+    toast({
+      title: "Document ajouté",
+      description: "Document ajouté au dossier partagé",
+    });
+  };
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -67,6 +95,7 @@ const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
         onPrint={onPrint}
         onView={onView}
         onDelete={onDelete}
+        onAddToSharedFolder={handleAddToSharedFolder}
         onVisibilityChange={(id, isPrivate) => {
           console.log("DirectivesPageContent - Changement de visibilité:", id, isPrivate);
           // You can implement visibility change handling here
