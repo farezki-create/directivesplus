@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { generatePDF } from "@/utils/pdfGenerator";
 import { saveDirectivesWithDualStorage } from "@/utils/directives/directivesStorage";
+import { useNavigate } from "react-router-dom";
 
 /**
  * Hook pour gérer les actions de synthèse des directives
@@ -12,6 +13,7 @@ export const useSynthesisActions = (userId?: string) => {
   const { user, profile } = useAuth();
   const [saving, setSaving] = useState<boolean>(false);
   const [signature, setSignature] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   /**
    * Fonction pour sauvegarder et générer le PDF des directives
@@ -57,7 +59,8 @@ export const useSynthesisActions = (userId?: string) => {
         userId: userId || user?.id || "",
         pdfOutput,
         description: "Directives anticipées générées le " + new Date().toLocaleDateString('fr-FR'),
-        profileData: profile || data.profileData
+        profileData: profile || data.profileData,
+        redirectToViewer: true
       });
 
       if (result.success) {
@@ -65,6 +68,21 @@ export const useSynthesisActions = (userId?: string) => {
           title: "Directives enregistrées",
           description: "Vos directives anticipées ont été sauvegardées avec succès et sont accessibles via votre code d'accès",
         });
+        
+        // Rediriger vers la page d'affichage du dossier si un code d'accès existe
+        if (result.accessCode) {
+          console.log("Redirection vers affichage-dossier avec le code d'accès:", result.accessCode);
+          
+          // Stocker temporairement le code d'accès dans le sessionStorage
+          sessionStorage.setItem('directAccessCode', result.accessCode);
+          
+          // Rediriger vers la page d'affichage dossier
+          // Délai court pour permettre à la toast de s'afficher avant la redirection
+          setTimeout(() => {
+            navigate('/affichage-dossier');
+          }, 300);
+        }
+        
         return result.documentId;
       } else {
         throw new Error(result.error);

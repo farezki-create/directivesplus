@@ -61,6 +61,7 @@ const SynthesisContent = ({ profileData, userId }: SynthesisContentProps) => {
         trustedPersons
       }
     );
+    // Remarque: La redirection est maintenant gérée dans le hook useSynthesisActions
   };
 
   return (

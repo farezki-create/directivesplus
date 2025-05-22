@@ -7,6 +7,7 @@ interface DirectivesStorageOptions {
   pdfOutput: string | null;
   description: string;
   profileData?: any;
+  redirectToViewer?: boolean; // New option to redirect after saving
 }
 
 /**
@@ -19,7 +20,7 @@ interface DirectivesStorageOptions {
  */
 export const saveDirectivesWithDualStorage = async (
   options: DirectivesStorageOptions
-): Promise<{ success: boolean; error?: string; documentId?: string }> => {
+): Promise<{ success: boolean; error?: string; documentId?: string; accessCode?: string }> => {
   try {
     // Vérifier si les données PDF sont disponibles
     if (!options.pdfOutput) {
@@ -131,7 +132,8 @@ export const saveDirectivesWithDualStorage = async (
     
     return { 
       success: true, 
-      documentId: savedData?.[0]?.id 
+      documentId: savedData?.[0]?.id,
+      accessCode: accessCode // Retourner le code d'accès pour permettre la redirection
     };
   } catch (error: any) {
     console.error("Erreur lors du double enregistrement des directives:", error);

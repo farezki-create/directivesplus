@@ -10,9 +10,11 @@ import DossierErrorState from "@/components/dossier/DossierErrorState";
 import { useDossierSecurity } from "@/hooks/useDossierSecurity";
 import { useDossierSession } from "@/hooks/useDossierSession";
 import { useDossierStore } from "@/store/dossierStore";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 const AffichageDossier: React.FC = () => {
-  const { dossierActif } = useDossierStore();
+  const { dossierActif, setDossierActif } = useDossierStore();
   const { 
     patientInfo, 
     decryptedContent, 
@@ -36,11 +38,70 @@ const AffichageDossier: React.FC = () => {
   
   const navigate = useNavigate();
   const [loadAttempts, setLoadAttempts] = useState(0);
+  const [initialLoading, setInitialLoading] = useState(true);
+  
+  // Vérifier si nous avons un code d'accès direct dans sessionStorage
+  useEffect(() => {
+    const checkDirectAccessCode = async () => {
+      // Récupérer le code d'accès de sessionStorage
+      const directAccessCode = sessionStorage.getItem('directAccessCode');
+      
+      // Si on a un code d'accès direct et pas de dossier actif, charger le dossier
+      if (directAccessCode && !dossierActif) {
+        console.log("Code d'accès direct trouvé:", directAccessCode);
+        
+        try {
+          // Charger le dossier à partir du code d'accès
+          const { data: dossierData, error } = await supabase
+            .from("dossiers_medicaux")
+            .select("*")
+            .eq("code_acces", directAccessCode)
+            .single();
+            
+          if (error) {
+            console.error("Erreur lors du chargement du dossier:", error);
+            toast({
+              title: "Erreur",
+              description: "Impossible de charger le dossier avec le code fourni",
+              variant: "destructive"
+            });
+            navigate('/acces-document');
+            return;
+          }
+          
+          if (dossierData) {
+            // Définir le dossier comme actif
+            setDossierActif({
+              id: dossierData.id,
+              userId: "direct-access", // ID temporaire pour l'accès direct
+              isFullAccess: false,
+              isDirectivesOnly: true,
+              isMedicalOnly: false,
+              contenu: dossierData.contenu_dossier
+            });
+            
+            console.log("Dossier chargé avec succès à partir du code d'accès direct");
+            
+            // Nettoyer le code d'accès de session
+            sessionStorage.removeItem('directAccessCode');
+          }
+        } catch (error) {
+          console.error("Erreur lors du chargement direct du dossier:", error);
+        } finally {
+          setInitialLoading(false);
+        }
+      } else {
+        setInitialLoading(false);
+      }
+    };
+    
+    checkDirectAccessCode();
+  }, [dossierActif, navigate, setDossierActif]);
   
   // Vérifier si un dossier est actif dès le chargement
   useEffect(() => {
     const checkDossierActif = () => {
-      if (!dossierActif && !loading) {
+      if (!dossierActif && !loading && !initialLoading) {
         console.log("Aucun dossier actif dans AffichageDossier, redirection...");
         navigate('/acces-document', { replace: true });
       }
@@ -53,7 +114,7 @@ const AffichageDossier: React.FC = () => {
     const timer = setTimeout(checkDossierActif, 1000);
     
     return () => clearTimeout(timer);
-  }, [dossierActif, navigate, loading]);
+  }, [dossierActif, navigate, loading, initialLoading]);
   
   // Log view event and start monitoring on mount
   useEffect(() => {
@@ -83,7 +144,7 @@ const AffichageDossier: React.FC = () => {
   }, [dossierActif, logDossierEvent, startSecurityMonitoring, stopSecurityMonitoring, loadAttempts]);
   
   // Afficher un état de chargement pendant que les données sont récupérées
-  if (loading) {
+  if (loading || initialLoading) {
     return <DossierLoadingState />;
   }
   
