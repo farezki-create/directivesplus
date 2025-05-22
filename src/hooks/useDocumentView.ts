@@ -12,15 +12,8 @@ export const useDocumentView = () => {
     try {
       console.log("useDocumentView - handleView appelé avec:", filePath, fileType);
       
-      // This is a simplified version that doesn't handle the preview directly
-      // For full functionality, use useDocumentViewer instead
-      const setPreviewDocument = (path: string | null) => {
-        console.log("Document preview would be set to:", path);
-        // This is intentionally empty as this hook is being deprecated
-        // in favor of useDocumentViewer
-      };
-      
-      viewDocument(filePath, fileType, setPreviewDocument);
+      // Use the viewDocument utility function
+      viewDocument(filePath);
       
       console.log("useDocumentView - Document action triggered:", filePath);
     } catch (error) {

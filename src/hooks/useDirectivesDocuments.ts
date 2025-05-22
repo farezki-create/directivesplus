@@ -81,13 +81,12 @@ export const useDirectivesDocuments = () => {
 
   const handlePreviewDownload = (filePath: string) => {
     const fileName = filePath.split('/').pop() || 'document';
-    downloadDocument(filePath, fileName);
+    downloadDocument(filePath);
   };
 
   const handlePreviewPrint = (filePath: string) => {
     console.log("handlePreviewPrint appelé pour:", filePath);
-    const fileType = detectFileType(filePath);
-    printDocument(filePath, fileType);
+    printDocument(filePath);
   };
 
   return {

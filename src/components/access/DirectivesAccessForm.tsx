@@ -1,64 +1,99 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useDirectivesAccessForm } from "@/hooks/access/useDirectivesAccessForm";
-import DirectivesFormFields from "./DirectivesFormFields";
+import { Input } from "@/components/ui/input";
+import { 
+  Card,
+  CardContent,
+  CardFooter
+} from "@/components/ui/card";
 
 interface DirectivesAccessFormProps {
-  onSubmit?: (accessCode: string, formData: any) => Promise<void>;
+  onSubmit: (accessCode: string, formData: any) => void;
 }
 
 const DirectivesAccessForm: React.FC<DirectivesAccessFormProps> = ({ onSubmit }) => {
-  const {
-    form,
-    loading,
-    errorMessage,
-    remainingAttempts,
-    blockedAccess,
-    handleAccessDirectives
-  } = useDirectivesAccessForm(onSubmit);
-  
+  const [accessCode, setAccessCode] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    
+    if (!accessCode.trim() || !firstName.trim() || !lastName.trim()) {
+      return;
+    }
+    
+    setLoading(true);
+    
+    // Pass form data to parent component
+    onSubmit(accessCode, { firstName, lastName });
+    
+    setLoading(false);
+  };
+
   return (
-    <div className="max-w-md mx-auto bg-white p-8 rounded-lg shadow">
-      <h1 className="text-2xl font-bold text-center mb-6 text-directiveplus-700">
-        Accès aux directives anticipées
-      </h1>
-      
-      <p className="mb-6 text-gray-700">
-        Veuillez entrer le code d'accès aux directives anticipées ainsi que 
-        les informations d'identification demandées pour y accéder.
-      </p>
-      
-      <form onSubmit={(e) => { 
-        e.preventDefault();
-        handleAccessDirectives();
-      }}>
-        <DirectivesFormFields 
-          form={form} 
-          loading={loading}
-          blockedAccess={blockedAccess}
-          errorMessage={errorMessage}
-          remainingAttempts={remainingAttempts}
-        />
+    <Card>
+      <form onSubmit={handleSubmit}>
+        <CardContent className="space-y-4 pt-4">
+          <div>
+            <label htmlFor="accessCode" className="block mb-1 text-sm font-medium">
+              Code d'accès aux directives
+            </label>
+            <Input 
+              id="accessCode"
+              type="text"
+              placeholder="Entrez le code d'accès"
+              value={accessCode}
+              onChange={(e) => setAccessCode(e.target.value)}
+              required
+              className="w-full"
+            />
+          </div>
+          
+          <div>
+            <label htmlFor="firstName" className="block mb-1 text-sm font-medium">
+              Prénom du consultant
+            </label>
+            <Input 
+              id="firstName"
+              type="text"
+              placeholder="Votre prénom"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              required
+              className="w-full"
+            />
+          </div>
+          
+          <div>
+            <label htmlFor="lastName" className="block mb-1 text-sm font-medium">
+              Nom du consultant
+            </label>
+            <Input 
+              id="lastName"
+              type="text"
+              placeholder="Votre nom"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              required
+              className="w-full"
+            />
+          </div>
+        </CardContent>
         
-        <div className="mt-6">
-          <Button
-            type="submit"
-            className="w-full bg-directiveplus-600 hover:bg-directiveplus-700"
-            disabled={loading || blockedAccess}
+        <CardFooter>
+          <Button 
+            type="submit" 
+            className="w-full"
+            disabled={loading}
           >
-            {loading ? (
-              <span className="flex items-center justify-center">
-                <span className="animate-spin mr-2 h-4 w-4 border-2 border-t-transparent rounded-full"></span>
-                Vérification...
-              </span>
-            ) : (
-              "Accéder aux directives"
-            )}
+            {loading ? "Vérification..." : "Accéder aux directives anticipées"}
           </Button>
-        </div>
+        </CardFooter>
       </form>
-    </div>
+    </Card>
   );
 };
 

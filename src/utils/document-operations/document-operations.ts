@@ -1,37 +1,31 @@
 
-// Utility file for document operations
+// Utility functions for document operations
 
 /**
- * View a document in a new browser tab
- * @param documentUrl URL of the document to view
+ * View a document by setting it as preview or opening it in a new window
+ * @param filePath Path to the document
+ * @param fileType MIME type of the document
+ * @param setPreviewDocument Optional function to set preview document
  */
-export const viewDocument = (documentUrl: string) => {
-  console.log("Opening document in new tab:", documentUrl);
-  window.open(documentUrl, '_blank');
+export const viewDocument = (filePath: string) => {
+  console.log("Opening document for viewing:", filePath);
+  window.open(filePath, '_blank');
 };
 
 /**
  * Download a document
- * @param documentUrl URL of the document to download
- * @param fileName Optional file name for the downloaded document
+ * @param filePath Path to the document
+ * @param fileName Name to save the file as
  */
-export const downloadDocument = (documentUrl: string, fileName?: string) => {
-  console.log("Downloading document:", documentUrl);
+export const downloadDocument = (filePath: string) => {
+  console.log("Downloading document:", filePath);
   
-  // Create a link element
+  // Create a temporary anchor element
   const link = document.createElement('a');
-  link.href = documentUrl;
+  link.href = filePath;
+  link.download = filePath.split('/').pop() || 'document';
   
-  // Set the download attribute with file name if provided
-  if (fileName) {
-    link.download = fileName;
-  } else {
-    // Extract file name from URL as fallback
-    const urlParts = documentUrl.split('/');
-    link.download = urlParts[urlParts.length - 1];
-  }
-  
-  // Append to body, trigger click and remove
+  // Append to the document, trigger click and remove
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -39,15 +33,13 @@ export const downloadDocument = (documentUrl: string, fileName?: string) => {
 
 /**
  * Print a document
- * @param documentUrl URL of the document to print
+ * @param filePath Path to the document
  */
-export const printDocument = (documentUrl: string) => {
-  console.log("Printing document:", documentUrl);
+export const printDocument = (filePath: string) => {
+  console.log("Printing document:", filePath);
   
-  // Open document in a new window
-  const printWindow = window.open(documentUrl, '_blank');
-  
-  // Wait for the document to load before printing
+  // Open the document in a new window and print it
+  const printWindow = window.open(filePath, '_blank');
   if (printWindow) {
     printWindow.addEventListener('load', () => {
       printWindow.print();
@@ -56,29 +48,28 @@ export const printDocument = (documentUrl: string) => {
 };
 
 /**
- * Share a document
- * @param documentId ID of the document to share
+ * Share a document via the Web Share API or fallback to copying the link
+ * @param filePath Path to the document
+ * @param title Title for the share dialog
  */
-export const shareDocument = (documentId: string) => {
-  console.log("Sharing document:", documentId);
+export const shareDocument = (filePath: string, title = 'Partager ce document') => {
+  console.log("Sharing document:", filePath);
   
-  // Use Web Share API if available
+  // Check if Web Share API is available
   if (navigator.share) {
     navigator.share({
-      title: 'Document partagé via DirectivesPlus',
-      text: 'Veuillez consulter ce document partagé depuis DirectivesPlus.',
-      url: window.location.origin + '/view-document/' + documentId,
-    })
-    .catch(error => console.log('Erreur lors du partage:', error));
+      title: title,
+      url: filePath
+    }).catch(err => {
+      console.error("Error sharing:", err);
+    });
   } else {
-    // Fallback: Copy link to clipboard
-    const shareUrl = window.location.origin + '/view-document/' + documentId;
-    navigator.clipboard.writeText(shareUrl)
-      .then(() => {
-        alert('Lien du document copié dans le presse-papiers!');
-      })
-      .catch(err => {
-        console.error('Erreur lors de la copie du lien:', err);
-      });
+    // Fallback to copying the link
+    navigator.clipboard.writeText(filePath).then(() => {
+      console.log("Link copied to clipboard");
+      // In a real app, show a toast notification here
+    }).catch(err => {
+      console.error("Error copying link:", err);
+    });
   }
 };

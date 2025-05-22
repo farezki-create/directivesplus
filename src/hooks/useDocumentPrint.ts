@@ -8,12 +8,12 @@ export const useDocumentPrint = () => {
     try {
       console.log("useDocumentPrint - handlePrint appelé pour:", filePath, fileType);
       
-      // Si le fileType n'est pas spécifié, essayer de le détecter
+      // If the fileType isn't specified, try to detect it
       const actualFileType = fileType || detectFileType(filePath);
       console.log("useDocumentPrint - Type détecté:", actualFileType);
       
       // Use the printDocument utility function
-      printDocument(filePath, actualFileType);
+      printDocument(filePath);
     } catch (error) {
       console.error("Erreur lors de l'impression:", error);
       toast({

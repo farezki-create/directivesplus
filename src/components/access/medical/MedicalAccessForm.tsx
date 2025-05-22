@@ -1,83 +1,99 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import MedicalFormFields from "./MedicalFormFields";
-
-// Define a form schema
-const formSchema = z.object({
-  firstName: z.string().min(1, "Le prénom est requis"),
-  lastName: z.string().min(1, "Le nom est requis"),
-  birthDate: z.string().min(1, "La date de naissance est requise"),
-  accessCode: z.string().min(1, "Le code d'accès est requis")
-});
-
-// Define type for form data
-type FormData = z.infer<typeof formSchema>;
+import { Input } from "@/components/ui/input";
+import { 
+  Card,
+  CardContent,
+  CardFooter
+} from "@/components/ui/card";
 
 interface MedicalAccessFormProps {
-  onSubmit: (accessCode: string, formData: any) => Promise<void>;
+  onSubmit: (accessCode: string, formData: any) => void;
 }
 
 const MedicalAccessForm: React.FC<MedicalAccessFormProps> = ({ onSubmit }) => {
-  const [loading, setLoading] = React.useState(false);
-  const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
-  const [remainingAttempts, setRemainingAttempts] = React.useState<number | null>(null);
-  const [blockedAccess, setBlockedAccess] = React.useState(false);
-  
-  const form = useForm<FormData>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      firstName: "",
-      lastName: "",
-      birthDate: "",
-      accessCode: ""
-    }
-  });
+  const [accessCode, setAccessCode] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (formData: FormData) => {
-    setErrorMessage(null);
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    
+    if (!accessCode.trim() || !firstName.trim() || !lastName.trim()) {
+      return;
+    }
+    
     setLoading(true);
     
-    try {
-      await onSubmit(formData.accessCode, formData);
-    } catch (error: any) {
-      console.error("Error submitting form:", error);
-      setErrorMessage(error.message || "Une erreur est survenue");
-    } finally {
-      setLoading(false);
-    }
+    // Pass form data to parent component
+    onSubmit(accessCode, { firstName, lastName });
+    
+    setLoading(false);
   };
-  
+
   return (
-    <form onSubmit={form.handleSubmit(handleSubmit)}>
-      <MedicalFormFields
-        form={form}
-        loading={loading}
-        blockedAccess={blockedAccess}
-        errorMessage={errorMessage}
-        remainingAttempts={remainingAttempts}
-      />
-      
-      <div className="mt-6">
-        <Button
-          type="submit"
-          className="w-full bg-directiveplus-600 hover:bg-directiveplus-700"
-          disabled={loading}
-        >
-          {loading ? (
-            <span className="flex items-center justify-center">
-              <span className="animate-spin mr-2 h-4 w-4 border-2 border-t-transparent rounded-full"></span>
-              Vérification...
-            </span>
-          ) : (
-            "Accéder aux données médicales"
-          )}
-        </Button>
-      </div>
-    </form>
+    <Card>
+      <form onSubmit={handleSubmit}>
+        <CardContent className="space-y-4 pt-4">
+          <div>
+            <label htmlFor="accessCode" className="block mb-1 text-sm font-medium">
+              Code d'accès médical
+            </label>
+            <Input 
+              id="accessCode"
+              type="text"
+              placeholder="Entrez le code d'accès"
+              value={accessCode}
+              onChange={(e) => setAccessCode(e.target.value)}
+              required
+              className="w-full"
+            />
+          </div>
+          
+          <div>
+            <label htmlFor="firstName" className="block mb-1 text-sm font-medium">
+              Prénom du consultant
+            </label>
+            <Input 
+              id="firstName"
+              type="text"
+              placeholder="Votre prénom"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              required
+              className="w-full"
+            />
+          </div>
+          
+          <div>
+            <label htmlFor="lastName" className="block mb-1 text-sm font-medium">
+              Nom du consultant
+            </label>
+            <Input 
+              id="lastName"
+              type="text"
+              placeholder="Votre nom"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              required
+              className="w-full"
+            />
+          </div>
+        </CardContent>
+        
+        <CardFooter>
+          <Button 
+            type="submit" 
+            className="w-full"
+            disabled={loading}
+          >
+            {loading ? "Vérification..." : "Accéder au dossier médical"}
+          </Button>
+        </CardFooter>
+      </form>
+    </Card>
   );
 };
 

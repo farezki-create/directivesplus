@@ -1,63 +1,103 @@
 
-import React from "react";
-import { Checkbox } from "@/components/ui/checkbox";
+import React, { useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { 
+  Download, 
+  Printer, 
+  Share2
+} from "lucide-react";
+import { 
+  downloadDocument, 
+  printDocument, 
+  shareDocument 
+} from "@/utils/document-operations";
+import html2canvas from "html2canvas";
 
 interface CardOptionsProps {
-  includeDirective: boolean;
-  setIncludeDirective: (checked: boolean) => void;
-  includeMedical: boolean;
-  setIncludeMedical: (checked: boolean) => void;
+  cardRef: React.RefObject<HTMLDivElement>;
+  firstName: string;
+  lastName: string;
 }
 
 const CardOptions: React.FC<CardOptionsProps> = ({
-  includeDirective,
-  setIncludeDirective,
-  includeMedical,
-  setIncludeMedical
+  cardRef,
+  firstName,
+  lastName
 }) => {
+  const handleDownload = async () => {
+    if (cardRef.current) {
+      try {
+        const fileName = `carte-acces-${firstName.toLowerCase()}-${lastName.toLowerCase()}.png`;
+        const canvas = await html2canvas(cardRef.current);
+        const imgUrl = canvas.toDataURL("image/png");
+        
+        downloadDocument(imgUrl);
+      } catch (error) {
+        console.error("Error downloading card:", error);
+      }
+    }
+  };
+
+  const handlePrint = async () => {
+    if (cardRef.current) {
+      try {
+        const canvas = await html2canvas(cardRef.current);
+        const imgUrl = canvas.toDataURL("image/png");
+        
+        printDocument(imgUrl);
+      } catch (error) {
+        console.error("Error printing card:", error);
+      }
+    }
+  };
+
+  const handleShare = async () => {
+    if (cardRef.current) {
+      try {
+        const canvas = await html2canvas(cardRef.current);
+        const imgUrl = canvas.toDataURL("image/png");
+        const title = `Carte d'accès de ${firstName} ${lastName}`;
+        
+        shareDocument(imgUrl, title);
+      } catch (error) {
+        console.error("Error sharing card:", error);
+      }
+    }
+  };
+
   return (
-    <div className="bg-white p-5 rounded-lg shadow-md">
-      <h2 className="text-xl font-semibold mb-4">Options de la carte</h2>
-      <div className="space-y-4">
-        <div className="flex items-center space-x-2">
-          <Checkbox 
-            id="directive"
-            checked={includeDirective} 
-            onCheckedChange={(checked) => {
-              // Convert the checked value to a boolean
-              const isChecked = checked === true;
-              setIncludeDirective(isChecked);
-            }}
-          />
-          <label 
-            htmlFor="directive"
-            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-          >
-            Inclure le code pour les directives anticipées
-          </label>
-        </div>
+    <div className="flex flex-col gap-3 mt-4">
+      <h3 className="text-lg font-semibold">Options</h3>
+      <div className="flex flex-wrap gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex gap-2 items-center"
+          onClick={handleDownload}
+        >
+          <Download size={16} />
+          Télécharger
+        </Button>
         
-        <div className="flex items-center space-x-2">
-          <Checkbox 
-            id="medical"
-            checked={includeMedical} 
-            onCheckedChange={(checked) => {
-              // Convert the checked value to a boolean
-              const isChecked = checked === true;
-              setIncludeMedical(isChecked);
-            }}
-          />
-          <label 
-            htmlFor="medical"
-            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-          >
-            Inclure le code pour les données médicales
-          </label>
-        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex gap-2 items-center"
+          onClick={handlePrint}
+        >
+          <Printer size={16} />
+          Imprimer
+        </Button>
         
-        {!includeDirective && !includeMedical && (
-          <p className="text-red-500 text-sm mt-2">Veuillez sélectionner au moins un type de code à inclure</p>
-        )}
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex gap-2 items-center"
+          onClick={handleShare}
+        >
+          <Share2 size={16} />
+          Partager
+        </Button>
       </div>
     </div>
   );

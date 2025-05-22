@@ -19,8 +19,13 @@ export const useDocumentViewer = () => {
         throw new Error("Chemin de fichier invalide");
       }
       
-      // Use the viewDocument utility function
-      viewDocument(filePath, fileType, setPreviewDocument);
+      // Set the preview document
+      setPreviewDocument(filePath);
+      
+      // For external viewing, use the viewDocument utility function
+      if (fileType !== "preview") {
+        viewDocument(filePath);
+      }
       
       console.log("useDocumentViewer - Document prévisualisé:", filePath);
     } catch (error) {

@@ -3,9 +3,9 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDossierStore } from "@/store/dossierStore";
-import { useVerifierCodeAcces } from "@/hooks/useVerifierCodeAcces";
+import { useVerifierCodeAcces, Dossier } from "@/hooks/useVerifierCodeAcces";
 import { toast } from "@/components/ui/use-toast";
-import { getAuthUserDossier } from "@/api/accessCodeVerification";
+import { getAuthUserDossier } from "@/api/dossier";
 
 import Header from "@/components/Header";
 import MedicalAccessForm from "@/components/access/medical/MedicalAccessForm";
@@ -32,26 +32,12 @@ const MedicalAccess = () => {
         // Option 1: Utiliser la fonction existante
         const dossier = await getDossierUtilisateurAuthentifie(user.id, "medical_access");
         
-        // Option 2: Utiliser la nouvelle fonction optimisée pour les utilisateurs authentifiés
-        if (!dossier) {
-          const authResult = await getAuthUserDossier(user.id, "medical");
-          if (authResult.success) {
-            setDossierActif(authResult.dossier);
-            toast({
-              title: "Succès",
-              description: "Vos données médicales ont été chargées avec succès",
-            });
-            navigate("/affichage-dossier");
-            return;
-          }
-        } else {
-          setDossierActif(dossier);
-          toast({
-            title: "Succès",
-            description: "Vos données médicales ont été chargées avec succès",
-          });
-          navigate("/affichage-dossier");
-        }
+        setDossierActif(dossier);
+        toast({
+          title: "Succès",
+          description: "Vos données médicales ont été chargées avec succès",
+        });
+        navigate("/affichage-dossier");
       } catch (error) {
         console.error("Erreur lors de la récupération des données médicales:", error);
         toast({
