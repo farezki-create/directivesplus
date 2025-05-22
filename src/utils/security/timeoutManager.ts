@@ -3,6 +3,11 @@ import { toast } from "@/hooks/use-toast";
 import { logDossierSecurityEvent } from "./securityEventLogger";
 
 /**
+ * Default timeout for security sessions (5 minutes)
+ */
+export const DEFAULT_SECURITY_TIMEOUT_MS = 5 * 60 * 1000;
+
+/**
  * Creates and manages a security timeout
  * @param onTimeout Function to call when timeout expires
  * @param timeoutMs Timeout in milliseconds
