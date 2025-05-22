@@ -34,15 +34,15 @@ export const useAccessCodeVerification = () => {
       console.log(`Vérification du code d'accès partagé: ${sharedCode}`);
       
       // Récupérer le document médical à partir du code partagé
-      // Explicitement typer la réponse pour éviter l'erreur de profondeur de type
-      const { data: document, error: fetchError }: { 
-        data: any | null, 
-        error: any | null 
-      } = await supabase
+      // Utiliser 'any' pour éviter le problème de profondeur de type
+      const response = await supabase
         .from('medical_documents')
         .select('*')
         .eq('shared_code', sharedCode)
         .single();
+      
+      const document = response.data;
+      const fetchError = response.error;
       
       if (fetchError) {
         console.error("Erreur lors de la récupération du document:", fetchError);
