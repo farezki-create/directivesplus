@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 
 export interface Dossier {
   id: string;
@@ -28,30 +28,33 @@ export const useVerifierCodeAcces = () => {
    * @param bruteForceIdentifier Identifier for brute force protection
    * @returns Dossier if code is valid
    */
-  const verifierCode = async (accessCode: string, bruteForceIdentifier?: string): Promise<Dossier> => {
+  const verifierCode = async (accessCode: string, bruteForceIdentifier?: string): Promise<Dossier | null> => {
     console.log(`Verifying access code: ${accessCode} (Identifier: ${bruteForceIdentifier || 'none'})`);
     
     setLoading(true);
     try {
-      // In a real implementation, this would verify the access code
-      // For this simplified version, just return a mock dossier
-      const mockDossier: Dossier = {
-        id: "mock-dossier-id",
-        userId: "mock-user-id",
-        isFullAccess: false,
-        isDirectivesOnly: true,
-        isMedicalOnly: false,
-        profileData: {
-          first_name: "Jean",
-          last_name: "Dupont",
-          birth_date: "1970-01-01"
-        },
-        contenu: {
-          document_url: "https://example.com/document.pdf"
-        }
-      };
+      // Call the actual Edge Function
+      const apiUrl = "https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/verifierCodeAcces";
       
-      return mockDossier;
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          accessCode: accessCode,
+          bruteForceIdentifier: bruteForceIdentifier || "direct_access"
+        })
+      });
+      
+      const result = await response.json();
+      
+      if (!result.success) {
+        console.error("Error verifying access code:", result.error);
+        return null;
+      }
+      
+      return result.dossier;
     } catch (error) {
       console.error("Error verifying access code:", error);
       toast({
@@ -59,7 +62,7 @@ export const useVerifierCodeAcces = () => {
         description: "Une erreur est survenue lors de la vérification du code d'accès",
         variant: "destructive"
       });
-      throw new Error("Error verifying access code");
+      return null;
     } finally {
       setLoading(false);
     }
@@ -68,29 +71,33 @@ export const useVerifierCodeAcces = () => {
   /**
    * Get dossier for authenticated user
    */
-  const getDossierUtilisateurAuthentifie = async (userId: string, accessType?: string): Promise<Dossier> => {
+  const getDossierUtilisateurAuthentifie = async (userId: string, accessType?: string): Promise<Dossier | null> => {
     console.log(`Getting dossier for authenticated user: ${userId} (Type: ${accessType || 'full'})`);
     
     setLoading(true);
     try {
-      // In a real implementation, this would fetch the user's dossier
-      const mockDossier: Dossier = {
-        id: "mock-dossier-id",
-        userId: userId,
-        isFullAccess: true,
-        isDirectivesOnly: false,
-        isMedicalOnly: false,
-        profileData: {
-          first_name: "Jean",
-          last_name: "Dupont",
-          birth_date: "1970-01-01"
-        },
-        contenu: {
-          document_url: "https://example.com/document.pdf"
-        }
-      };
+      // Call the Edge Function with user ID
+      const apiUrl = "https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/verifierCodeAcces";
       
-      return mockDossier;
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: userId,
+          accessType: accessType || "full"
+        })
+      });
+      
+      const result = await response.json();
+      
+      if (!result.success) {
+        console.error("Error getting authenticated user dossier:", result.error);
+        return null;
+      }
+      
+      return result.dossier;
     } catch (error) {
       console.error("Error getting authenticated user dossier:", error);
       toast({
@@ -98,7 +105,7 @@ export const useVerifierCodeAcces = () => {
         description: "Une erreur est survenue lors de la récupération du dossier",
         variant: "destructive"
       });
-      throw new Error("Error getting authenticated user dossier");
+      return null;
     } finally {
       setLoading(false);
     }

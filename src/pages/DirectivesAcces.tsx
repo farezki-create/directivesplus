@@ -56,6 +56,15 @@ const DirectivesAcces = () => {
       setIsSubmitting(true);
       console.log("Vérification du code d'accès aux directives:", accessCode);
       
+      if (!accessCode || accessCode.trim() === '') {
+        toast({
+          title: "Erreur",
+          description: "Le code d'accès est requis",
+          variant: "destructive"
+        });
+        throw new Error("Code d'accès manquant");
+      }
+      
       // Call the API
       const apiUrl = "https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/verifierCodeAcces";
       const bruteForceIdentifier = `directives_public_${formData.firstName}_${formData.lastName}`;

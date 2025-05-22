@@ -54,6 +54,24 @@ export const useDirectivesAccessForm = () => {
           
           console.log("Vérification de l'accès public:", formData);
           
+          // Test avec un code d'accès valide de 8 caractères ou plus
+          if (formData.accessCode.length < 8) {
+            setErrorMessage("Le code d'accès doit comporter au moins 8 caractères");
+            setRemainingAttempts((prev) => prev !== null ? Math.max(0, prev - 1) : 2);
+            
+            if (remainingAttempts !== null && remainingAttempts <= 1) {
+              setBlockedAccess(true);
+            }
+            
+            toast({
+              title: "Accès refusé",
+              description: "Le code d'accès doit comporter au moins 8 caractères",
+              variant: "destructive"
+            });
+            setLoading(false);
+            return;
+          }
+          
           // Verify access code
           const result = await verifierCode(
             formData.accessCode, 
