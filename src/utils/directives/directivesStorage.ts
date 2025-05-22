@@ -110,13 +110,12 @@ export const saveDirectivesWithDualStorage = async (
       
       console.log("Dossier médical existant mis à jour avec les directives:", existingDossier.id);
     } else {
-      // Créer un nouveau dossier médical
+      // Créer un nouveau dossier médical - REMOVED type_dossier field which was causing the error
       const { error: insertError } = await supabase
         .from("dossiers_medicaux")
         .insert({
           user_id: options.userId,
           code_acces: accessCode,
-          type_dossier: "directives",
           contenu_dossier: dossierContent
         });
       
