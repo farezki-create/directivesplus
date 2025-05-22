@@ -15,18 +15,6 @@ const DatePickerField: React.FC<DatePickerFieldProps> = ({
   onChange,
   disabled = false
 }) => {
-  // État local pour gérer la valeur d'affichage
-  const [displayValue, setDisplayValue] = useState(() => {
-    // Convertir le format ISO en format JJ/MM/AAAA pour l'affichage
-    if (value && value.match(/^\d{4}-\d{2}-\d{2}$/)) {
-      const date = new Date(value);
-      if (!isNaN(date.getTime())) {
-        return format(date, "dd/MM/yyyy");
-      }
-    }
-    return value ? formatDateForDisplay(value) : "";
-  });
-
   // Fonction pour formater la date au format JJ/MM/AAAA pour l'affichage
   const formatDateForDisplay = (dateString: string) => {
     if (!dateString) return "";
@@ -66,6 +54,18 @@ const DatePickerField: React.FC<DatePickerFieldProps> = ({
     
     return input;
   };
+
+  // État local pour gérer la valeur d'affichage
+  const [displayValue, setDisplayValue] = useState(() => {
+    // Convertir le format ISO en format JJ/MM/AAAA pour l'affichage
+    if (value && value.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      const date = new Date(value);
+      if (!isNaN(date.getTime())) {
+        return format(date, "dd/MM/yyyy");
+      }
+    }
+    return value ? formatDateForDisplay(value) : "";
+  });
 
   // Gestion du changement de valeur
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
