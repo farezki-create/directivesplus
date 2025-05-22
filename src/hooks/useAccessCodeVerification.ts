@@ -34,8 +34,8 @@ export const useAccessCodeVerification = () => {
       console.log(`Vérification du code d'accès partagé: ${sharedCode}`);
       
       // Récupérer le document médical à partir du code partagé
-      // Utiliser 'any' pour éviter le problème de profondeur de type
-      const response = await supabase
+      // Éviter complètement les problèmes de typage en utilisant any
+      const response: any = await supabase
         .from('medical_documents')
         .select('*')
         .eq('shared_code', sharedCode)
