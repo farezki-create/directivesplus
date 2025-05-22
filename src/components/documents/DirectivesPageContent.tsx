@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Document } from "@/hooks/useDirectivesDocuments";
 import DirectivesPageHeader from "@/components/documents/DirectivesPageHeader";
@@ -57,8 +58,10 @@ const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
     try {
       setIsAdding(true);
       console.log("[DirectivesPageContent] Document sélectionné pour partage:", document);
+      console.log("[DirectivesPageContent] URL du document:", document.file_path);
       
-      // Create an ultra simple dossier structure with just the document URL
+      // MÉTHODE ULTRA SIMPLIFIÉE
+      // Créer un dossier minimal avec juste l'URL du document pour l'affichage direct
       const simpleDossier = {
         id: `direct-${Date.now()}`,
         userId: isAuthenticated ? user?.id || userId : "anonymous",
@@ -80,7 +83,6 @@ const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
       // Store access code for non-authenticated users if available
       if (!isAuthenticated && accessCode) {
         sessionStorage.setItem('directAccessCode', accessCode);
-        console.log("[DirectivesPageContent] Code d'accès stocké:", accessCode);
       }
       
       toast({
@@ -88,8 +90,10 @@ const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
         description: "Redirection vers l'affichage du document..."
       });
       
-      // Navigate to the dossier display page
-      navigate('/affichage-dossier', { replace: true });
+      // Navigate to the dossier display page with a delay to ensure state is updated
+      setTimeout(() => {
+        navigate('/affichage-dossier', { replace: true });
+      }, 100);
     } catch (error) {
       console.error("[DirectivesPageContent] Erreur:", error);
       toast({

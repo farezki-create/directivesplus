@@ -17,83 +17,55 @@ const DirectivesContent: React.FC<DirectivesContentProps> = ({ directives, sourc
     });
   }, [directives, source]);
 
+  // Fonction simple pour extraire l'URL du document à partir de différents formats possibles
+  const extractDocumentUrl = () => {
+    // Si directives est une chaîne qui ressemble à une URL
+    if (typeof directives === 'string' && (
+        directives.startsWith('http') || 
+        directives.startsWith('/') || 
+        directives.startsWith('data:')
+      )) {
+      return directives;
+    }
+    
+    // Si directives est un objet avec une propriété document_url
+    if (typeof directives === 'object' && directives?.document_url) {
+      return directives.document_url;
+    }
+    
+    // Si directives est un objet avec une propriété contenu qui est une URL
+    if (typeof directives === 'object' && 
+        directives?.contenu && 
+        typeof directives.contenu === 'string' &&
+        (directives.contenu.startsWith('http') || 
+         directives.contenu.startsWith('/') || 
+         directives.contenu.startsWith('data:'))) {
+      return directives.contenu;
+    }
+    
+    // Pas d'URL trouvée
+    return null;
+  };
+
   // Handle different possible types of directives
   if (!directives) {
     return <p className="text-gray-500 italic">Aucune directive disponible</p>;
   }
   
-  // Check if directives is directly a document URL
-  if (typeof directives === 'string' && (
-      directives.startsWith('http') || 
-      directives.startsWith('/') || 
-      directives.startsWith('data:')
-    )) {
+  // Extraire l'URL du document
+  const documentUrl = extractDocumentUrl();
+  
+  // Si nous avons une URL de document, l'afficher directement
+  if (documentUrl) {
     return (
       <div className="space-y-4">
         <div className="border rounded-lg overflow-hidden">
           <iframe 
-            src={directives}
+            src={documentUrl}
             className="w-full h-[70vh]"
             title="Document partagé"
+            onError={() => console.error("Erreur de chargement du document:", documentUrl)}
           />
-        </div>
-        {source === "image miroir" && <MirrorSourceAlert />}
-      </div>
-    );
-  }
-  
-  // Format de PDF (data URI)
-  if (typeof directives === 'string' && directives.startsWith('data:application/pdf')) {
-    return (
-      <div className="space-y-4">
-        <div className="border rounded-lg overflow-hidden">
-          <iframe 
-            src={directives}
-            className="w-full h-[70vh]"
-            title="Directives anticipées (PDF)"
-          />
-        </div>
-        {source === "image miroir" && <MirrorSourceAlert />}
-      </div>
-    );
-  }
-  
-  // Check if directives object has document_url property
-  if (typeof directives === 'object' && directives.document_url) {
-    return (
-      <div className="space-y-4">
-        <div className="border rounded-lg overflow-hidden">
-          <iframe 
-            src={directives.document_url}
-            className="w-full h-[70vh]"
-            title="Document partagé"
-          />
-        </div>
-        {source === "image miroir" && <MirrorSourceAlert />}
-      </div>
-    );
-  }
-  
-  // Si c'est un objet contenant un PDF dans le champ contenu
-  if (typeof directives === 'object' && !Array.isArray(directives) && 
-      directives.contenu && typeof directives.contenu === 'string' && 
-      directives.contenu.startsWith('data:application/pdf')) {
-    return (
-      <div className="space-y-4">
-        <div className="border rounded-lg overflow-hidden">
-          <iframe 
-            src={directives.contenu}
-            className="w-full h-[70vh]"
-            title="Directives anticipées (PDF)"
-          />
-        </div>
-        <div className="text-sm text-gray-600">
-          {directives.date_creation && (
-            <p>Date de création: {new Date(directives.date_creation).toLocaleDateString('fr-FR')}</p>
-          )}
-          {directives.description && (
-            <p className="mt-1">{directives.description}</p>
-          )}
         </div>
         {source === "image miroir" && <MirrorSourceAlert />}
       </div>

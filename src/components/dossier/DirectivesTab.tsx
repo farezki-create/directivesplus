@@ -42,7 +42,7 @@ const DirectivesTab: React.FC<DirectivesTabProps> = ({
     );
   }
   
-  // Check if we have a direct document URL
+  // PRIORITÉ 1: Vérifier d'abord si nous avons une URL de document directe
   if (decryptedContent?.document_url) {
     console.log("DirectivesTab - Found direct document URL:", decryptedContent.document_url);
     return (
@@ -58,7 +58,7 @@ const DirectivesTab: React.FC<DirectivesTabProps> = ({
     );
   }
   
-  // Extract directives content with fallback strategies
+  // PRIORITÉ 2: Vérifier les directives dans le contenu déchiffré
   const directivesData = extractDirectives(decryptedContent, hasDirectives, getDirectives);
   
   const renderDirectives = () => {
