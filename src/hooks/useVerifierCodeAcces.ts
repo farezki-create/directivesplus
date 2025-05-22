@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { verifyCodeWithRetries, getAuthUserDossierWithRetries } from "@/api/dossierAccess";
+import { verifyCodeWithRetries, getAuthUserDossierWithRetries } from "@/api/dossier";
 
 /**
  * Hook pour vérifier les codes d'accès et récupérer les dossiers

@@ -1,38 +1,6 @@
 
 import { toast } from "@/hooks/use-toast";
-import { retryWithBackoff } from "@/utils/api/retryWithBackoff";
-
-/**
- * API call to verify a code d'accès
- */
-export const verifyAccessCode = async (
-  code: string, 
-  bruteForceIdentifier?: string
-) => {
-  console.log(`Tentative de vérification du code: ${code} avec identifiant: ${bruteForceIdentifier || 'aucun'}`);
-  
-  const response = await fetch("https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/verifierCodeAcces", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      code_saisi: code,
-      bruteForceIdentifier
-    })
-  });
-  
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error(`Erreur HTTP ${response.status}:`, errorText);
-    throw new Error(`Erreur de serveur: ${response.status} ${response.statusText}`);
-  }
-  
-  const result = await response.json();
-  console.log("Réponse de vérification du code:", result);
-  
-  return result;
-};
+import { retryWithBackoff, showErrorToast } from "../utils/apiUtils";
 
 /**
  * API call to get authenticated user's dossier
@@ -40,8 +8,8 @@ export const verifyAccessCode = async (
 export const getAuthUserDossier = async (
   userId: string, 
   bruteForceIdentifier?: string,
-  documentPath?: string, // Parameter to support direct document incorporation
-  documentsList?: any[] // Parameter to support document lists
+  documentPath?: string,
+  documentsList?: any[]
 ) => {
   console.log(`Tentative de récupération du dossier pour l'utilisateur authentifié: ${userId} (${bruteForceIdentifier || 'accès complet'})`);
   console.log("Document path:", documentPath);
@@ -107,58 +75,13 @@ export const getAuthUserDossier = async (
 };
 
 /**
- * Verifies access code with retries
- */
-export const verifyCodeWithRetries = async (code: string, bruteForceIdentifier?: string) => {
-  try {
-    const result = await retryWithBackoff(
-      () => verifyAccessCode(code, bruteForceIdentifier),
-      3
-    );
-    
-    if (!result.success) {
-      const errorMessage = result.error || "Code d'accès invalide";
-      toast({
-        variant: "destructive",
-        title: "Erreur d'accès",
-        description: errorMessage
-      });
-      return { success: false, error: errorMessage };
-    }
-    
-    // Vérifier que le résultat contient bien un dossier
-    if (!result.dossier) {
-      const errorMessage = "Le serveur n'a pas retourné de dossier";
-      toast({
-        variant: "destructive",
-        title: "Erreur d'accès",
-        description: errorMessage
-      });
-      return { success: false, error: errorMessage };
-    }
-    
-    console.log("Dossier récupéré avec succès:", result.dossier);
-    
-    return result;
-  } catch (err: any) {
-    const errorMessage = "Impossible de contacter le serveur après plusieurs tentatives. Veuillez vérifier votre connexion internet et réessayer.";
-    toast({
-      variant: "destructive",
-      title: "Erreur de connexion",
-      description: errorMessage
-    });
-    return { success: false, error: errorMessage };
-  }
-};
-
-/**
  * Gets authenticated user dossier with retries
  */
 export const getAuthUserDossierWithRetries = async (
   userId: string, 
   bruteForceIdentifier?: string,
-  documentPath?: string, // Added optional document path parameter
-  documentsList?: any[] // Added optional documents list parameter
+  documentPath?: string,
+  documentsList?: any[]
 ) => {
   if (!userId) {
     return { success: false, error: "Utilisateur non authentifié" };
@@ -172,22 +95,14 @@ export const getAuthUserDossierWithRetries = async (
     
     if (!result.success) {
       const errorMessage = result.error || "Erreur de récupération du dossier";
-      toast({
-        variant: "destructive",
-        title: "Erreur d'accès",
-        description: errorMessage
-      });
+      showErrorToast("Erreur d'accès", errorMessage);
       return { success: false, error: errorMessage };
     }
     
     // Vérifier que le résultat contient bien un dossier
     if (!result.dossier) {
       const errorMessage = "Le serveur n'a pas retourné de dossier";
-      toast({
-        variant: "destructive",
-        title: "Erreur d'accès",
-        description: errorMessage
-      });
+      showErrorToast("Erreur d'accès", errorMessage);
       return { success: false, error: errorMessage };
     }
     
@@ -212,11 +127,7 @@ export const getAuthUserDossierWithRetries = async (
     return result;
   } catch (err: any) {
     const errorMessage = "Impossible de contacter le serveur après plusieurs tentatives. Veuillez vérifier votre connexion internet et réessayer.";
-    toast({
-      variant: "destructive",
-      title: "Erreur de connexion",
-      description: errorMessage
-    });
+    showErrorToast("Erreur de connexion", errorMessage);
     return { success: false, error: errorMessage };
   }
 };
