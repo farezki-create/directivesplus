@@ -1,6 +1,12 @@
 
-export * from './document-operations';
+// Re-export document operations from individual files
+export { 
+  viewDocument, 
+  downloadDocument, 
+  printDocument 
+} from './document-operations';
+
+// Export shareDocument from its dedicated file
 export * from './shareDocument';
 
-// Re-export all document operations from a central location
 // This pattern makes imports cleaner in the rest of the application
