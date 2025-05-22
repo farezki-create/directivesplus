@@ -65,6 +65,27 @@ export const getMedicalDocuments = async (userId: string): Promise<MedicalDocume
   }
 };
 
+// Define the type for dossier content to include document_url
+interface DossierContent {
+  patient: {
+    nom: string;
+    prenom: string;
+    date_naissance: string;
+  };
+  document_url?: string; // Make document_url optional
+}
+
+// Define the type for the dossier data
+interface DossierData {
+  id: string;
+  userId: string;
+  isFullAccess: boolean;
+  isDirectivesOnly: boolean;
+  isMedicalOnly: boolean;
+  profileData: any;
+  contenu: DossierContent;
+}
+
 /**
  * Get authenticated user dossier without requiring an access code
  */
@@ -84,7 +105,7 @@ export const getAuthUserDossier = async (
     if (profileError) throw profileError;
     
     // Create a dossier object for authenticated users with enhanced document support
-    const dossierData = {
+    const dossierData: DossierData = {
       id: `auth-${Date.now()}`,
       userId: userId,
       isFullAccess: true,
