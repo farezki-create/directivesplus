@@ -1,10 +1,11 @@
+
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 
 const Header = () => {
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, user, signOut } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const toggleMobileMenu = () => {
@@ -53,7 +54,7 @@ const Header = () => {
                   Profil
                 </Link>
                 <button
-                  onClick={logout}
+                  onClick={signOut}
                   className="text-gray-700 hover:text-directiveplus-600 transition-colors"
                 >
                   Déconnexion
@@ -119,7 +120,7 @@ const Header = () => {
                   Profil
                 </Link>
                 <button
-                  onClick={logout}
+                  onClick={signOut}
                   className="text-gray-700 hover:text-directiveplus-600 transition-colors block"
                 >
                   Déconnexion

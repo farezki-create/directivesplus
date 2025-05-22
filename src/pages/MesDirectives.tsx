@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -90,6 +89,7 @@ export default function MesDirectives() {
           medical_profile_id: data.medical_profile_id,
           isFullAccess: true,
           isDirectivesOnly: true,
+          isMedicalOnly: false, // Add the missing required property
           profileData: {
             first_name: data.first_name,
             last_name: data.last_name,
