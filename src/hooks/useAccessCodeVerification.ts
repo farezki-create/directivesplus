@@ -55,28 +55,28 @@ export const useAccessCodeVerification = () => {
     try {
       console.log(`Vérification du code d'accès partagé: ${sharedCode}`);
       
-      // Utilisation d'une approche simplifiée pour éviter les problèmes de typage
-      const { data, error: fetchError } = await supabase
+      // Contourner les problèmes de typage en utilisant any et du type casting ultérieur
+      const response = await supabase
         .from('medical_documents')
         .select('*')
-        .eq('shared_code', sharedCode) as { data: any, error: any };
+        .eq('shared_code', sharedCode);
       
       // Traitement sécurisé des données après récupération
       let document: MedicalDocument | null = null;
-      if (data && Array.isArray(data) && data.length > 0) {
+      if (response.data && Array.isArray(response.data) && response.data.length > 0) {
         // Cast explicite vers MedicalDocument
-        document = data[0] as MedicalDocument;
+        document = response.data[0] as MedicalDocument;
       }
       
-      if (fetchError) {
-        console.error("Erreur lors de la récupération du document:", fetchError);
-        setError(fetchError.message);
+      if (response.error) {
+        console.error("Erreur lors de la récupération du document:", response.error);
+        setError(response.error.message);
         toast({
           variant: "destructive",
           title: "Erreur d'accès",
           description: "Document non trouvé ou code d'accès invalide"
         });
-        return { success: false, error: fetchError.message };
+        return { success: false, error: response.error.message };
       }
       
       if (!document) {
