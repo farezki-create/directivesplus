@@ -35,7 +35,10 @@ export const useAccessCodeVerification = () => {
       
       // Récupérer le document médical à partir du code partagé
       // Explicitement typer la réponse pour éviter l'erreur de profondeur de type
-      const { data: document, error: fetchError } = await supabase
+      const { data: document, error: fetchError }: { 
+        data: any | null, 
+        error: any | null 
+      } = await supabase
         .from('medical_documents')
         .select('*')
         .eq('shared_code', sharedCode)
