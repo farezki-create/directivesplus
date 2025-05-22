@@ -101,6 +101,7 @@ export const useDirectivesAccessForm = () => {
       })();
     } catch (formError) {
       console.error("Erreur de validation du formulaire:", formError);
+      setLoading(false);
     }
   };
 

@@ -31,7 +31,7 @@ const DirectivesAccessForm: React.FC<DirectivesAccessFormProps> = ({ onSubmit })
     if (onSubmit && form.getValues) {
       const values = form.getValues();
       console.log("Soumission du formulaire avec les valeurs:", values);
-      onSubmit(values.accessCode, values);
+      await onSubmit(values.accessCode, values);
     } else {
       // Sinon, utilisez le gestionnaire par défaut
       await handleSubmit();

@@ -56,7 +56,7 @@ const DirectivesAcces = () => {
       
       // Call the API
       const apiUrl = "https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/verifierCodeAcces";
-      const bruteForceIdentifier = `directives_access_${formData.firstName}_${formData.lastName}_${formData.birthDate}`;
+      const bruteForceIdentifier = `directives_public_${formData.firstName}_${formData.lastName}`;
       
       const response = await fetch(apiUrl, {
         method: 'POST',
