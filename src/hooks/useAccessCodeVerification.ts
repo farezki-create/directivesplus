@@ -36,17 +36,16 @@ export const useAccessCodeVerification = () => {
     try {
       console.log(`Vérification du code d'accès partagé: ${sharedCode}`);
       
-      // Use type assertion to bypass TypeScript's deep inference
-      const response = await supabase
+      // Use a more direct approach without complex typing
+      const { data, error: fetchError } = await supabase
         .from('medical_documents')
-        .select()
-        .eq('shared_code', sharedCode);
+        .select('*')
+        .eq('shared_code', sharedCode) as { 
+          data: MedicalDocument[] | null; 
+          error: any; 
+        };
       
-      // Cast the data to avoid TypeScript inference issues
-      const data = response.data as MedicalDocument[] | null;
-      const fetchError = response.error;
-      
-      const document = data?.[0] || null;
+      const document = data && data.length > 0 ? data[0] : null;
       
       if (fetchError) {
         console.error("Erreur lors de la récupération du document:", fetchError);
