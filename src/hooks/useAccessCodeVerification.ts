@@ -48,14 +48,16 @@ export const useAccessCodeVerification = () => {
     try {
       console.log(`Vérification du code d'accès partagé: ${sharedCode}`);
       
+      // Fix: Use the proper typing approach for Supabase queries
       const { data, error: fetchError } = await supabase
-        .from<MedicalDocument>("medical_documents")
+        .from("medical_documents")
         .select("*")
         .eq("shared_code", sharedCode);
       
       // Process data safely after retrieval
       let document: MedicalDocument | null = null;
       if (data && Array.isArray(data) && data.length > 0) {
+        // Explicitly cast the data to MedicalDocument to avoid type errors
         document = data[0] as MedicalDocument;
       }
       
