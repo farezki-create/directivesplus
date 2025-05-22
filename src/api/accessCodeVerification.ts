@@ -9,29 +9,6 @@ export interface MedicalDocument {
   [key: string]: any;
 }
 
-// Define the type for dossier content to include document_url
-export interface DossierContent {
-  patient?: {
-    nom: string;
-    prenom: string;
-    date_naissance: string;
-  };
-  document_url?: string;
-  document_name?: string;
-  [key: string]: any;
-}
-
-// Define the type for the dossier data
-export interface DossierData {
-  id: string;
-  userId: string;
-  isFullAccess: boolean;
-  isDirectivesOnly: boolean;
-  isMedicalOnly: boolean;
-  profileData: any;
-  contenu: DossierContent;
-}
-
 /**
  * Verifies access code against the backend
  */
@@ -41,7 +18,7 @@ export const verifyAccessCode = async (
   patientBirthDate: string,
   documentType: "medical" | "directive" = "directive"
 ) => {
-  console.log(`[API] Vérification du code ${accessCode} pour ${patientName}`);
+  console.log(`Vérification du code ${accessCode} pour ${patientName} né(e) le ${patientBirthDate}`);
 
   const bruteForceIdentifier = `${documentType}_access_${patientName}_${patientBirthDate}`;
   
@@ -62,7 +39,7 @@ export const verifyAccessCode = async (
 
     return await response.json();
   } catch (error) {
-    console.error("[API] Erreur vérification code:", error);
+    console.error("Erreur lors de la vérification du code d'accès:", error);
     return {
       success: false,
       error: "Une erreur est survenue lors de la communication avec le serveur"
@@ -83,64 +60,51 @@ export const getMedicalDocuments = async (userId: string): Promise<MedicalDocume
     if (error) throw error;
     return data as MedicalDocument[];
   } catch (error) {
-    console.error("[API] Erreur récupération documents:", error);
+    console.error("Erreur lors de la récupération des documents médicaux:", error);
     return [];
   }
 };
 
+// Define the type for dossier content to include document_url
+interface DossierContent {
+  patient: {
+    nom: string;
+    prenom: string;
+    date_naissance: string;
+  };
+  document_url?: string; // Make document_url optional
+}
+
+// Define the type for the dossier data
+interface DossierData {
+  id: string;
+  userId: string;
+  isFullAccess: boolean;
+  isDirectivesOnly: boolean;
+  isMedicalOnly: boolean;
+  profileData: any;
+  contenu: DossierContent;
+}
+
 /**
  * Get authenticated user dossier without requiring an access code
- * Works with direct document links
  */
 export const getAuthUserDossier = async (
   userId: string,
   documentType: "medical" | "directive" = "directive",
-  documentPath?: string
+  documentPath?: string // Added optional document path parameter for direct document inclusion
 ): Promise<any> => {
   try {
-    console.log("[API] getAuthUserDossier appelé avec:", { userId, documentType, documentPath });
-    
-    // If document path is provided, create a direct document dossier
-    if (documentPath) {
-      console.log("[API] Création dossier direct avec document:", documentPath);
-      
-      const directDossier: DossierData = {
-        id: `direct-document-${Date.now()}`,
-        userId: userId,
-        isFullAccess: true,
-        isDirectivesOnly: documentType === "directive",
-        isMedicalOnly: documentType === "medical",
-        profileData: null,
-        contenu: {
-          document_url: documentPath,
-          document_name: documentPath.split('/').pop() || "document",
-          patient: {
-            nom: "Document",
-            prenom: "Partagé",
-            date_naissance: new Date().toISOString().split('T')[0],
-          }
-        }
-      };
-      
-      return {
-        success: true,
-        dossier: directDossier
-      };
-    }
-    
-    // Fetch user profile for regular dossier
+    // Fetch user profile
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', userId)
       .single();
     
-    if (profileError) {
-      console.error("[API] Erreur récupération profil:", profileError);
-      throw profileError;
-    }
+    if (profileError) throw profileError;
     
-    // Create a dossier object for authenticated users
+    // Create a dossier object for authenticated users with enhanced document support
     const dossierData: DossierData = {
       id: `auth-${Date.now()}`,
       userId: userId,
@@ -152,16 +116,15 @@ export const getAuthUserDossier = async (
         patient: {
           nom: profile.last_name || "Inconnu",
           prenom: profile.first_name || "Inconnu",
-          date_naissance: profile.birth_date || new Date().toISOString().split('T')[0],
+          date_naissance: profile.birth_date || null,
         }
       }
     };
     
     // If a document path was provided, add it to the dossier content
     if (documentPath) {
-      console.log("[API] Ajout document au dossier:", documentPath);
+      console.log("Adding document to dossier:", documentPath);
       dossierData.contenu.document_url = documentPath;
-      dossierData.contenu.document_name = documentPath.split('/').pop() || "document";
     }
     
     return {
@@ -169,7 +132,7 @@ export const getAuthUserDossier = async (
       dossier: dossierData
     };
   } catch (error) {
-    console.error("[API] Erreur récupération dossier authentifié:", error);
+    console.error("Erreur lors de la récupération du dossier authentifié:", error);
     return {
       success: false,
       error: "Une erreur est survenue lors de la récupération des données utilisateur"

@@ -45,60 +45,109 @@ const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
   const { setDossierActif } = useDossierStore();
   const { user, isAuthenticated } = useAuth();
 
-  // Log component render for debugging
+  // Log when this component renders with its props
   React.useEffect(() => {
-    console.log("[DirectivesPageContent] rendered:", { 
+    console.log("DirectivesPageContent rendered:", { 
       documentsCount: documents.length, 
-      accessCode: accessCode ? "présent" : "absent",
+      hasUserId: !!userId,
+      accessCode: accessCode,
       isAuthenticated
     });
-  }, [documents.length, accessCode, isAuthenticated]);
+  }, [documents.length, userId, accessCode, isAuthenticated]);
 
   const handleAddToSharedFolder = async (document: Document) => {
     try {
+      console.log("Ajout au dossier partagé:", document);
       setIsAdding(true);
-      console.log("[DirectivesPageContent] Document sélectionné pour partage:", document);
-      console.log("[DirectivesPageContent] URL du document:", document.file_path);
-      
-      // MÉTHODE ULTRA SIMPLIFIÉE
-      // Créer un dossier minimal avec juste l'URL du document pour l'affichage direct
-      const simpleDossier = {
-        id: `direct-${Date.now()}`,
-        userId: isAuthenticated ? user?.id || userId : "anonymous",
-        isFullAccess: true,
-        isDirectivesOnly: true,
-        isMedicalOnly: false,
-        profileData: null,
-        contenu: {
-          document_url: document.file_path,
-          document_name: document.file_name
-        }
-      };
-      
-      console.log("[DirectivesPageContent] Dossier ultra simple créé:", simpleDossier);
-      
-      // Store the dossier in global state
-      setDossierActif(simpleDossier);
-      
-      // Store access code for non-authenticated users if available
-      if (!isAuthenticated && accessCode) {
-        sessionStorage.setItem('directAccessCode', accessCode);
+
+      // Pour les utilisateurs authentifiés, on peut ignorer la vérification de code
+      if (isAuthenticated) {
+        // Afficher un toast de chargement
+        toast({
+          title: "Traitement en cours",
+          description: "Préparation du document pour le dossier partagé en tant qu'utilisateur connecté...",
+        });
+        
+        // Créer un dossier minimal avec les infos utilisateur et le document sélectionné
+        const minimalDossier = {
+          id: `auth-${Date.now()}`,
+          userId: user?.id || "",
+          isFullAccess: true,
+          isDirectivesOnly: true,
+          isMedicalOnly: false,
+          profileData: profile || {
+            first_name: user?.user_metadata?.first_name,
+            last_name: user?.user_metadata?.last_name,
+            birth_date: user?.user_metadata?.birth_date,
+          },
+          contenu: {
+            patient: {
+              nom: user?.user_metadata?.last_name || profile?.last_name || "Inconnu",
+              prenom: user?.user_metadata?.first_name || profile?.first_name || "Inconnu",
+              date_naissance: user?.user_metadata?.birth_date || profile?.birth_date || null,
+            },
+            document_url: document.file_path,
+            document_name: document.file_name
+          }
+        };
+        
+        // Stocker les informations dans le store
+        setDossierActif(minimalDossier);
+        
+        // Attendre un moment pour laisser le temps au state de se mettre à jour
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Rediriger vers la page d'affichage du dossier
+        console.log("Redirection vers affichage-dossier pour utilisateur connecté avec document:", document.file_name);
+        navigate('/affichage-dossier', { replace: true });
+
+        toast({
+          title: "Document ajouté",
+          description: "Document ajouté au dossier partagé avec succès",
+        });
+        return;
       }
-      
+
+      // Pour les utilisateurs non authentifiés, on garde le comportement existant
+      if (!accessCode) {
+        toast({
+          title: "Erreur",
+          description: "Aucun code d'accès n'est disponible pour ce document",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Afficher un toast de chargement
       toast({
-        title: "Document prêt",
-        description: "Redirection vers l'affichage du document..."
+        title: "Traitement en cours",
+        description: "Préparation du document pour le dossier partagé...",
       });
       
-      // Navigate to the dossier display page with a delay to ensure state is updated
-      setTimeout(() => {
-        navigate('/affichage-dossier', { replace: true });
-      }, 100);
+      // Stocker le code d'accès dans sessionStorage pour la redirection
+      sessionStorage.setItem('directAccessCode', accessCode);
+      
+      console.log("Code d'accès stocké:", accessCode);
+      
+      // Réinitialiser l'état du dossier actif pour forcer un nouveau chargement
+      setDossierActif(null);
+      
+      // Attendre un moment pour laisser le temps au state de se mettre à jour
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Rediriger vers la page d'affichage du dossier
+      console.log("Redirection vers affichage-dossier");
+      navigate('/affichage-dossier', { replace: true });
+
+      toast({
+        title: "Document ajouté",
+        description: "Document ajouté au dossier partagé avec succès",
+      });
     } catch (error) {
-      console.error("[DirectivesPageContent] Erreur:", error);
+      console.error("Erreur lors de l'ajout au dossier partagé:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de partager ce document pour le moment.",
+        description: "Une erreur s'est produite lors de l'ajout au dossier partagé",
         variant: "destructive"
       });
     } finally {
@@ -127,7 +176,8 @@ const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
         onDelete={onDelete}
         onAddToSharedFolder={handleAddToSharedFolder}
         onVisibilityChange={(id, isPrivate) => {
-          console.log("[DirectivesPageContent] Changement de visibilité:", id, isPrivate);
+          console.log("DirectivesPageContent - Changement de visibilité:", id, isPrivate);
+          // You can implement visibility change handling here
         }}
         isAdding={isAdding}
       />

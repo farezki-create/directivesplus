@@ -25,8 +25,7 @@ const DirectivesTab: React.FC<DirectivesTabProps> = ({
       hasContent: !!decryptedContent,
       hasDirectives,
       hasGetDirectives: !!getDirectives,
-      decryptionError,
-      documentUrl: decryptedContent?.document_url || "none"
+      decryptionError
     });
     
     logDirectiveDebugInfo(decryptedContent, hasDirectives, getDirectives);
@@ -42,23 +41,7 @@ const DirectivesTab: React.FC<DirectivesTabProps> = ({
     );
   }
   
-  // PRIORITÉ 1: Vérifier d'abord si nous avons une URL de document directe
-  if (decryptedContent?.document_url) {
-    console.log("DirectivesTab - Found direct document URL:", decryptedContent.document_url);
-    return (
-      <Card className="shadow-lg">
-        <DirectivesHeader />
-        <CardContent className="p-6">
-          <DirectivesContent 
-            directives={decryptedContent.document_url} 
-            source="direct" 
-          />
-        </CardContent>
-      </Card>
-    );
-  }
-  
-  // PRIORITÉ 2: Vérifier les directives dans le contenu déchiffré
+  // Extract directives content with fallback strategies
   const directivesData = extractDirectives(decryptedContent, hasDirectives, getDirectives);
   
   const renderDirectives = () => {

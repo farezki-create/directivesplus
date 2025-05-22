@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { verifyAccessCode, getMedicalDocuments, MedicalDocument, getAuthUserDossier } from "@/api/accessCodeVerification";
 import { VerificationResult, logVerificationResult } from "@/utils/access/verificationResult";
@@ -17,68 +18,25 @@ export const useAccessCodeVerification = () => {
   ) => {
     try {
       setIsVerifying(true);
-      console.log("[useAccessCodeVerification] Vérification initiée:", {
-        bypassCodeCheck,
-        documentPath: documentPath ? "présent" : "absent",
-        accessType: documentType
-      });
       
-      // SIMPLIFIED APPROACH: For authenticated users with document path, create ultra simple direct dossier
-      if ((bypassCodeCheck || accessCode === "direct") && documentPath) {
-        logVerificationResult(true, "Accès direct au document ultra simple");
-        console.log("[useAccessCodeVerification] Document direct ultra simple:", documentPath);
-        
-        // Create the simplest possible dossier
-        const ultraSimpleDossier = {
-          id: `direct-${Date.now()}`,
-          userId: patientName, // User ID is passed in patientName for authenticated users
-          isFullAccess: true,
-          isDirectivesOnly: documentType === "directive",
-          isMedicalOnly: documentType === "medical",
-          profileData: null,
-          contenu: {
-            document_url: documentPath,
-            document_name: documentPath.split('/').pop() || "document"
-          }
-        };
-        
-        console.log("[useAccessCodeVerification] Dossier ultra simple créé:", ultraSimpleDossier);
-        setVerificationResult({
-          success: true,
-          data: ultraSimpleDossier,
-          accessType: documentType
-        });
-        setRemainingAttempts(3);
-        return ultraSimpleDossier;
-      }
-      
-      // For authenticated users without specific document
+      // For authenticated users, we can bypass the code verification
       if (bypassCodeCheck) {
         logVerificationResult(true, "Authenticated user bypass");
+        console.log("Authenticated user bypass with document:", documentPath);
         
-        // Get auth user dossier
+        // Get auth user dossier with optional document path
         const authResult = await getAuthUserDossier(patientName, documentType, documentPath);
         
         if (authResult.success) {
-          console.log("[useAccessCodeVerification] Dossier authentifié récupéré");
-          
-          // Ensure document is in the dossier if provided
-          if (documentPath && authResult.dossier) {
-            console.log("[useAccessCodeVerification] Ajout du document au dossier:", documentPath);
-            authResult.dossier.contenu.document_url = documentPath;
-            authResult.dossier.contenu.document_name = documentPath.split('/').pop() || "document";
-          }
-          
           setVerificationResult({
             success: true,
-            data: authResult.dossier,
+            data: authResult.dossier, // Use the dossier from auth result
             accessType: documentType
           });
-          setRemainingAttempts(3);
+          setRemainingAttempts(3); // Reset attempts
           return authResult.dossier;
         } else {
-          console.error("[useAccessCodeVerification] Échec récupération dossier:", authResult.error);
-          throw new Error(authResult.error || "Échec de récupération");
+          throw new Error(authResult.error || "Échec de la récupération du dossier authentifié");
         }
       }
       
@@ -92,20 +50,12 @@ export const useAccessCodeVerification = () => {
       
       if (result.success) {
         logVerificationResult(true, "Code validated successfully", result);
-        
-        // If there's a document path, make sure it's included in the dossier
-        if (documentPath && result.dossier) {
-          console.log("[useAccessCodeVerification] Ajout document au dossier vérifié:", documentPath);
-          result.dossier.contenu.document_url = documentPath;
-          result.dossier.contenu.document_name = documentPath.split('/').pop() || "document";
-        }
-        
         setVerificationResult({
           success: true,
           data: result.dossier,
           accessType: documentType
         });
-        setRemainingAttempts(3);
+        setRemainingAttempts(3); // Reset attempts on success
         return result.dossier;
       } else {
         logVerificationResult(false, result.error || "Invalid access code");
@@ -117,7 +67,7 @@ export const useAccessCodeVerification = () => {
         return null;
       }
     } catch (error) {
-      console.error("[useAccessCodeVerification] Erreur verification:", error);
+      console.error("Erreur lors de la vérification du code d'accès:", error);
       setRemainingAttempts(prev => Math.max(0, prev - 1));
       setVerificationResult({
         success: false,
