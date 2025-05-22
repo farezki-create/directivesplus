@@ -22,7 +22,7 @@ export const useDossierNavigation = () => {
     });
     // Utiliser un timeout pour éviter les problèmes de navigation pendant une mise à jour d'état
     setTimeout(() => {
-      navigate('/acces-document', { replace: true });
+      navigate('/directives-docs', { replace: true });
     }, 100);
   }, [clearDossierActif, navigate]);
 
@@ -42,7 +42,7 @@ export const useDossierNavigation = () => {
     
     // Utiliser un timeout plus long pour éviter les problèmes de navigation pendant une mise à jour d'état
     setTimeout(() => {
-      navigate('/acces-document', { replace: true });
+      navigate('/directives-docs', { replace: true });
     }, 100);
   }, [navigate]);
   

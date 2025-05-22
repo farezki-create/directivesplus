@@ -11,6 +11,7 @@ import DirectivesDocs from "@/pages/DirectivesDocs";
 import Dashboard from "@/pages/Dashboard";
 import AffichageDossier from "@/pages/AffichageDossier";
 import DirectivesAcces from "@/pages/DirectivesAcces";
+import { Navigate } from "react-router-dom";
 // Import Admin
 import Admin from "@/pages/Admin";
 import NotFound from "@/pages/NotFound";
@@ -28,6 +29,8 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/affichage-dossier" element={<AffichageDossier />} />
         <Route path="/directives-acces" element={<DirectivesAcces />} />
+        {/* Redirect from old route to new route */}
+        <Route path="/acces-document" element={<Navigate to="/directives-docs" replace />} />
         {/* Admin Route */}
         <Route path="/admin" element={<Admin />} />
         <Route path="*" element={<NotFound />} />
