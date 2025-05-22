@@ -16,6 +16,7 @@ import MesDirectives from "@/pages/MesDirectives";
 import Admin from "@/pages/Admin";
 import NotFound from "@/pages/NotFound";
 import AffichageDossierRedirect from "@/pages/AffichageDossierRedirect";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 import "./App.css";
 
@@ -23,19 +24,49 @@ function App() {
   return (
     <AuthProvider>
       <Routes>
+        {/* Routes publiques, accessibles sans authentification */}
         <Route path="/" element={<Index />} />
         <Route path="/auth" element={<Auth />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/directives-docs" element={<DirectivesDocs />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/directives-acces" element={<DirectivesAcces />} />
         <Route path="/mes-directives" element={<MesDirectives />} />
-        {/* Add redirect route for /affichage-dossier */}
+        <Route path="/directives-acces" element={<DirectivesAcces />} />
         <Route path="/affichage-dossier" element={<AffichageDossierRedirect />} />
-        {/* Redirect from old route to new route */}
         <Route path="/acces-document" element={<Navigate to="/directives-docs" replace />} />
-        {/* Admin Route */}
-        <Route path="/admin" element={<Admin />} />
+        
+        {/* Routes protégées, nécessitant une authentification */}
+        <Route 
+          path="/profile" 
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/directives-docs" 
+          element={
+            <ProtectedRoute>
+              <DirectivesDocs />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/dashboard" 
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin" 
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <Admin />
+            </ProtectedRoute>
+          } 
+        />
+        
+        {/* Page non trouvée */}
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Toaster />
