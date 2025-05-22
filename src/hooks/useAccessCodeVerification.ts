@@ -47,17 +47,17 @@ export const useAccessCodeVerification = () => {
     try {
       console.log(`Vérification du code d'accès partagé: ${sharedCode}`);
       
-      // Use any type for the query result to avoid TypeScript complexity
-      const { data, error: fetchError } = await supabase
+      // Pour éviter les problèmes de typage complexe, utiliser une approche simplifiée
+      const result = await supabase
         .from('medical_documents')
         .select('*')
-        .eq('shared_code', sharedCode) as { data: any; error: any };
+        .eq('shared_code', sharedCode);
       
-      // Safely cast data to our simplified type
-      const typedData = data as MedicalDocument[] | null;
+      const data = result.data as MedicalDocument[] | null;
+      const fetchError = result.error;
       
       // Find the first document that matches, if any
-      const document = typedData && typedData.length > 0 ? typedData[0] : null;
+      const document = data && data.length > 0 ? data[0] : null;
       
       if (fetchError) {
         console.error("Erreur lors de la récupération du document:", fetchError);
