@@ -2,7 +2,7 @@
 // Utility file for document operations
 // This file is created for backward compatibility with older code
 
-// Import specific functions from document-operations.ts
+// Import specific functions from document-operations folder
 export { 
   viewDocument, 
   downloadDocument, 

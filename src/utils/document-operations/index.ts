@@ -1,5 +1,5 @@
 
-// Re-export document operations from individual files
+// Re-export document operations from document-operations.ts
 export { 
   viewDocument, 
   downloadDocument, 
@@ -8,5 +8,3 @@ export {
 
 // Export shareDocument from its dedicated file
 export { shareDocument } from './shareDocument';
-
-// This pattern makes imports cleaner in the rest of the application
