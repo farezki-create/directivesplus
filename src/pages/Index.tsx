@@ -5,7 +5,6 @@ import Header from "../components/Header";
 import Hero from "../components/Hero";
 import Footer from "../components/Footer";
 import { MessageSquare } from "lucide-react";
-import ChatAssistant from "../components/ChatAssistant";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -29,7 +28,6 @@ const Index = () => {
         </div>
       </main>
       <Footer />
-      <ChatAssistant />
     </div>
   );
 };

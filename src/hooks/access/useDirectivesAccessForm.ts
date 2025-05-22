@@ -2,12 +2,21 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FormData, formSchema } from "@/utils/access-document/validationSchema";
-import { checkBruteForceAttempt, resetBruteForceCounter } from "@/utils/securityUtils";
-import { useVerifierCodeAcces } from "@/hooks/useVerifierCodeAcces";
-import { useDossierStore, Dossier } from "@/store/dossierStore";
+import { z } from "zod";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
+import { useDossierStore } from "@/store/dossierStore";
+
+// Define a form schema
+const formSchema = z.object({
+  firstName: z.string().min(1, "Le prénom est requis"),
+  lastName: z.string().min(1, "Le nom est requis"),
+  birthDate: z.string().min(1, "La date de naissance est requise"),
+  accessCode: z.string().min(1, "Le code d'accès est requis")
+});
+
+// Define type for form data
+type FormData = z.infer<typeof formSchema>;
 
 export const useDirectivesAccessForm = (onSubmitProp?: (accessCode: string, formData: any) => Promise<void>) => {
   const [loading, setLoading] = useState(false);
@@ -15,7 +24,6 @@ export const useDirectivesAccessForm = (onSubmitProp?: (accessCode: string, form
   const [remainingAttempts, setRemainingAttempts] = useState<number | null>(null);
   const [blockedAccess, setBlockedAccess] = useState(false);
   const navigate = useNavigate();
-  const { verifierCode } = useVerifierCodeAcces();
   const { setDossierActif } = useDossierStore();
   
   const form = useForm<FormData>({
@@ -50,73 +58,18 @@ export const useDirectivesAccessForm = (onSubmitProp?: (accessCode: string, form
               title: "Données manquantes",
               description: "Veuillez saisir un code d'accès valide"
             });
-            setLoading(false);
             return;
           }
+
+          console.log("This functionality has been removed. Redirecting to login page.");
+          toast({
+            title: "Connexion requise",
+            description: "Vous devez vous connecter pour accéder à cette fonctionnalité",
+            variant: "destructive"
+          });
           
-          // Identifier for brute force detection
-          const bruteForceIdentifier = `directives_access_${formData.lastName.substring(0, 3)}_${formData.firstName.substring(0, 3)}`;
-          
-          // Check if user is not blocked for brute force
-          const bruteForceCheck = checkBruteForceAttempt(bruteForceIdentifier);
-          
-          if (!bruteForceCheck.allowed) {
-            setBlockedAccess(true);
-            const message = `Trop de tentatives. Veuillez réessayer dans ${Math.ceil(bruteForceCheck.blockExpiresIn! / 60)} minutes.`;
-            setErrorMessage(message);
-            toast({
-              variant: "destructive",
-              title: "Accès bloqué",
-              description: message
-            });
-            setLoading(false);
-            return;
-          }
-          
-          setRemainingAttempts(bruteForceCheck.remainingAttempts);
-          
-          console.log("Vérification du code d'accès:", formData.accessCode);
-          
-          // Check access code with Edge function
-          const result = await verifierCode(formData.accessCode, bruteForceIdentifier);
-          
-          if (result.success && result.dossier) {
-            // Réinitialiser le compteur de tentatives
-            resetBruteForceCounter(bruteForceIdentifier);
-            
-            console.log("Récupération réussie du dossier:", result.dossier);
-            
-            // Ensure the dossier object has all required properties
-            const dossier: Dossier = {
-              id: result.dossier.id,
-              userId: result.dossier.userId,
-              isFullAccess: result.dossier.isFullAccess || false,
-              isDirectivesOnly: result.dossier.isDirectivesOnly || true,
-              isMedicalOnly: result.dossier.isMedicalOnly || false,
-              profileData: result.dossier.profileData,
-              contenu: result.dossier.contenu || {} // Provide a default empty object if contenu is undefined
-            };
-            
-            // Store active dossier
-            setDossierActif(dossier);
-            
-            // Show success message
-            toast({
-              title: "Accès autorisé",
-              description: "Chargement des directives anticipées...",
-            });
-            
-            // Redirect to file display page
-            navigate("/affichage-dossier");
-          } else {
-            const errorMsg = result.error || "Accès refusé. Veuillez vérifier vos informations.";
-            setErrorMessage(errorMsg);
-            toast({
-              variant: "destructive",
-              title: "Accès refusé",
-              description: errorMsg
-            });
-          }
+          // Redirect to login page
+          navigate("/auth", { state: { from: "/acces-directives" } });
         } catch (error: any) {
           console.error("Erreur lors de l'accès aux directives:", error);
           let errorMsg = "Une erreur est survenue lors de la connexion au serveur. Veuillez réessayer.";

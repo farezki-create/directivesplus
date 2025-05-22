@@ -6,5 +6,6 @@
 export { 
   viewDocument, 
   downloadDocument, 
-  printDocument 
+  printDocument,
+  shareDocument
 } from './document-operations/document-operations';

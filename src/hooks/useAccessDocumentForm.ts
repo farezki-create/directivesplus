@@ -2,13 +2,24 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { accessDirectives } from "./access-document/useDirectivesAccess";
-import { useMedicalAccess, MedicalAccessResult } from "./access-document/useMedicalAccess";
-import { formSchema, FormData } from "@/utils/access-document/validationSchema";
+import { z } from "zod";
+import { toast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
+
+// Define form schema
+const formSchema = z.object({
+  firstName: z.string().min(1, "Le prénom est requis"),
+  lastName: z.string().min(1, "Le nom est requis"),
+  birthDate: z.string().min(1, "La date de naissance est requise"),
+  accessCode: z.string().min(1, "Le code d'accès est requis")
+});
+
+// Define type for form data
+export type FormData = z.infer<typeof formSchema>;
 
 export const useAccessDocumentForm = () => {
   const [loading, setLoading] = useState(false);
-  const medicalAccess = useMedicalAccess();
+  const navigate = useNavigate();
   
   // Initialize react-hook-form with zod resolver
   const form = useForm<FormData>({
@@ -28,35 +39,51 @@ export const useAccessDocumentForm = () => {
     return isValid;
   };
 
-  // Function to access directives
-  const accessDirectivesFunc = async () => {
-    if (!await handleFormValidation()) {
-      console.log("Form is not valid");
-      return;
-    }
-    
-    const formData = form.getValues();
-    setLoading(true);
-    
-    try {
-      return await accessDirectives(formData);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Function to access medical data
-  const accessMedicalData = async (): Promise<MedicalAccessResult> => {
+  // Function to access directives (now redirects to login)
+  const accessDirectives = async () => {
     if (!await handleFormValidation()) {
       console.log("Form is not valid");
       return { success: false, error: "Invalid form" };
     }
     
-    const formData = form.getValues();
     setLoading(true);
     
     try {
-      return await medicalAccess.accessMedicalData(formData);
+      console.log("Direct access to documents has been disabled. Login required.");
+      
+      toast({
+        title: "Connexion requise",
+        description: "Vous devez vous connecter pour accéder à cette fonctionnalité",
+        variant: "destructive"
+      });
+      
+      navigate("/auth");
+      return { success: false, error: "Login required" };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Function to access medical data (now redirects to login)
+  const accessMedicalData = async () => {
+    if (!await handleFormValidation()) {
+      console.log("Form is not valid");
+      return { success: false, error: "Invalid form" };
+    }
+    
+    setLoading(true);
+    
+    try {
+      console.log("Direct access to documents has been disabled. Login required.");
+      
+      toast({
+        title: "Connexion requise",
+        description: "Vous devez vous connecter pour accéder à cette fonctionnalité",
+        variant: "destructive"
+      });
+      
+      navigate("/auth");
+      return { success: false, error: "Login required" };
     } finally {
       setLoading(false);
     }
@@ -64,8 +91,8 @@ export const useAccessDocumentForm = () => {
 
   return {
     form,
-    loading: loading || medicalAccess.loading,
-    accessDirectives: accessDirectivesFunc,
+    loading,
+    accessDirectives,
     accessMedicalData
   };
 };
