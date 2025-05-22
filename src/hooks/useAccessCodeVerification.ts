@@ -2,6 +2,9 @@
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Database } from "@/integrations/supabase/types";
+
+type MedicalDocument = Database['public']['Tables']['medical_documents']['Row'];
 
 /**
  * Hook spécialisé pour la vérification de codes d'accès médicaux partagés
@@ -33,13 +36,13 @@ export const useAccessCodeVerification = () => {
     try {
       console.log(`Vérification du code d'accès partagé: ${sharedCode}`);
       
-      // Use explicit any type to avoid TypeScript inference issues
+      // Avoid TypeScript inference issues by using simpler query approach
       const { data, error: fetchError } = await supabase
         .from('medical_documents')
-        .select('*')
-        .eq('shared_code', sharedCode) as { data: any[], error: any };
+        .select()
+        .eq('shared_code', sharedCode);
       
-      const document = data?.[0] || null;
+      const document: MedicalDocument | null = data?.[0] || null;
       
       if (fetchError) {
         console.error("Erreur lors de la récupération du document:", fetchError);
