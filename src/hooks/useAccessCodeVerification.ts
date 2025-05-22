@@ -14,6 +14,7 @@ type MedicalDocument = {
   description: string;
   created_at: string;
   shared_code?: string;
+  is_active?: boolean;
 };
 
 /**
@@ -46,11 +47,11 @@ export const useAccessCodeVerification = () => {
     try {
       console.log(`Vérification du code d'accès partagé: ${sharedCode}`);
       
-      // Use any to avoid TypeScript inference issues
+      // Utilisation de type any pour éviter l'inférence excessive
       const { data, error: fetchError } = await supabase
         .from("medical_documents")
         .select("*")
-        .eq("shared_code", sharedCode) as { data: any; error: any };
+        .eq("shared_code", sharedCode);
       
       // Process data safely after retrieval
       let document: MedicalDocument | null = null;
