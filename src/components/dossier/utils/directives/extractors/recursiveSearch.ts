@@ -11,6 +11,8 @@
 export const searchDirectivesRecursively = (decryptedContent: any) => {
   if (!decryptedContent || typeof decryptedContent !== 'object') return null;
   
+  console.log("searchDirectivesRecursively analyzing object");
+  
   const searchForDirectives = (obj: any, path: string = 'root'): any => {
     if (!obj || typeof obj !== 'object') return null;
     
@@ -18,7 +20,8 @@ export const searchDirectivesRecursively = (decryptedContent: any) => {
     const indicativeKeys = [
       'directive', 'anticipe', 'medical', 'soin', 'patient', 'health',
       'care', 'instruction', 'wish', 'preference', 'decision', 'consent',
-      'traitement', 'volonte', 'fin', 'vie', 'reanimation', 'resuscitation'
+      'traitement', 'volonte', 'fin', 'vie', 'reanimation', 'resuscitation',
+      'personne', 'confiance'
     ];
     
     // Vérifier si l'objet semble contenir des directives (comme analyse DICOM)
@@ -27,6 +30,7 @@ export const searchDirectivesRecursively = (decryptedContent: any) => {
     );
     
     if (hasIndicativeKeys) {
+      console.log(`Found directive-like object at path: ${path}`, Object.keys(obj));
       return { directives: obj, source: path };
     }
     
@@ -41,5 +45,9 @@ export const searchDirectivesRecursively = (decryptedContent: any) => {
     return null;
   };
   
-  return searchForDirectives(decryptedContent);
+  const result = searchForDirectives(decryptedContent);
+  if (result) {
+    console.log("Recursive search found directives at:", result.source);
+  }
+  return result;
 };

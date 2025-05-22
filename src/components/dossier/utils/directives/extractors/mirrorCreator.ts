@@ -17,6 +17,7 @@ export const createDirectivesMirror = (decryptedContent: any) => {
     "Instructions": "Document complet disponible sur demande auprès du titulaire du dossier"
   };
   
+  console.log("Mirror directives created:", directives);
   return { directives, source: "image miroir" };
 };
 
@@ -30,6 +31,8 @@ const extractPatientInfo = (content: any): { firstName: string; lastName: string
   if (!content) return { firstName, lastName };
   
   try {
+    console.log("Extracting patient info from:", content);
+    
     // Try to find patient info in common structures
     if (content.patient) {
       firstName = content.patient.prenom || content.patient.first_name || firstName;
@@ -63,5 +66,6 @@ const extractPatientInfo = (content: any): { firstName: string; lastName: string
     console.error("Error extracting patient info:", e);
   }
   
+  console.log("Extracted patient info:", { firstName, lastName });
   return { firstName, lastName };
 };

@@ -39,38 +39,53 @@ export const extractDirectives = (
   if (!directives && decryptedContent) {
     console.log("Trying specialized extractors on decrypted content");
     
-    // Essayer différentes méthodes d'extraction dans l'ordre
-    const extractionMethods = [
-      // Extraction par chemin direct
-      () => {
-        console.log("Trying extraction by direct path");
-        return extractDirectivesByPath(decryptedContent);
-      },
+    // Gérer le cas où le contenu déchiffré est lui-même les directives
+    if (typeof decryptedContent === 'object' && !Array.isArray(decryptedContent)) {
+      const directiveKeywords = ['directive', 'anticipée', 'confiance', 'personne', 'instruction'];
+      const keys = Object.keys(decryptedContent);
       
-      // Extraction depuis une chaîne (JSON/XML)
-      () => {
-        if (typeof decryptedContent === 'string') {
-          console.log("Trying extraction from string content");
-          return extractDirectivesFromString(decryptedContent);
-        }
-        return null;
-      },
-      
-      // Recherche récursive intelligente
-      () => {
-        console.log("Trying recursive search");
-        return searchDirectivesRecursively(decryptedContent);
+      if (keys.length < 10 && keys.some(key => 
+        directiveKeywords.some(keyword => key.toLowerCase().includes(keyword)))) {
+        directives = decryptedContent;
+        source = "contenu_direct";
+        console.log("Le contenu déchiffré semble être directement les directives");
       }
-    ];
+    }
+    
+    // Si toujours pas trouvé, essayer différentes méthodes d'extraction dans l'ordre
+    if (!directives) {
+      const extractionMethods = [
+        // Extraction par chemin direct
+        () => {
+          console.log("Trying extraction by direct path");
+          return extractDirectivesByPath(decryptedContent);
+        },
+        
+        // Extraction depuis une chaîne (JSON/XML)
+        () => {
+          if (typeof decryptedContent === 'string') {
+            console.log("Trying extraction from string content");
+            return extractDirectivesFromString(decryptedContent);
+          }
+          return null;
+        },
+        
+        // Recherche récursive intelligente
+        () => {
+          console.log("Trying recursive search");
+          return searchDirectivesRecursively(decryptedContent);
+        }
+      ];
 
-    // Appliquer chaque méthode d'extraction jusqu'à ce qu'une réussisse
-    for (const method of extractionMethods) {
-      const result = method();
-      if (result) {
-        directives = result.directives;
-        source = result.source;
-        console.log(`DirectivesTab - Directives found in ${source}:`, directives);
-        break;
+      // Appliquer chaque méthode d'extraction jusqu'à ce qu'une réussisse
+      for (const method of extractionMethods) {
+        const result = method();
+        if (result) {
+          directives = result.directives;
+          source = result.source;
+          console.log(`DirectivesTab - Directives found in ${source}:`, directives);
+          break;
+        }
       }
     }
   }

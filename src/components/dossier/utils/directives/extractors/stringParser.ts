@@ -28,6 +28,22 @@ export const extractDirectivesFromString = (stringContent: string) => {
           return { directives: jsonContent.contenu.directives_anticipees, source: "json.contenu.directives_anticipees" };
         }
         
+        // Check if the JSON itself might be directives (object with directive-like keys)
+        if (typeof jsonContent === 'object' && !Array.isArray(jsonContent)) {
+          const directiveKeys = Object.keys(jsonContent);
+          const likelyDirectiveObject = directiveKeys.some(key => 
+            key.toLowerCase().includes('directive') || 
+            key.toLowerCase().includes('anticipée') || 
+            key.toLowerCase().includes('personne') ||
+            key.toLowerCase().includes('confiance') ||
+            key.toLowerCase().includes('instructions')
+          );
+          
+          if (likelyDirectiveObject && directiveKeys.length < 10) {
+            return { directives: jsonContent, source: "json.objet_directive" };
+          }
+        }
+        
         // Return the whole JSON if nothing specific found
         return { directives: jsonContent, source: "json" };
       }
@@ -44,11 +60,13 @@ export const extractDirectivesFromString = (stringContent: string) => {
     }
     
     // Look for directive-like content in plain text
-    if (stringContent.toLowerCase().includes('directives anticipées')) {
+    if (stringContent.toLowerCase().includes('directives anticipées') || 
+        stringContent.toLowerCase().includes('personne de confiance')) {
       // Extract the surrounding paragraph or section
       const lines = stringContent.split('\n');
       for (let i = 0; i < lines.length; i++) {
-        if (lines[i].toLowerCase().includes('directives anticipées')) {
+        if (lines[i].toLowerCase().includes('directives anticipées') || 
+            lines[i].toLowerCase().includes('personne de confiance')) {
           // Extract a few lines as the directive
           const startLine = Math.max(0, i - 2);
           const endLine = Math.min(lines.length - 1, i + 5);

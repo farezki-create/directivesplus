@@ -22,8 +22,8 @@ const DirectivesContent: React.FC<DirectivesContentProps> = ({ directives, sourc
     return <p className="text-gray-500 italic">Aucune directive disponible</p>;
   }
   
-  if (typeof directives === 'object') {
-    // Si c'est un objet, afficher chaque propriété comme une ligne
+  // Si c'est un objet, afficher chaque propriété comme une ligne
+  if (typeof directives === 'object' && !Array.isArray(directives)) {
     return (
       <div className="space-y-4">
         {Object.entries(directives).map(([key, value]) => (
@@ -41,11 +41,34 @@ const DirectivesContent: React.FC<DirectivesContentProps> = ({ directives, sourc
     );
   }
   
+  // Si c'est une chaîne, l'afficher directement
   if (typeof directives === 'string') {
-    // Si c'est une chaîne, l'afficher directement
     return (
       <div>
         <p className="whitespace-pre-wrap text-gray-700">{directives}</p>
+        {source === "image miroir" && <MirrorSourceAlert />}
+      </div>
+    );
+  }
+  
+  // Si c'est un tableau, mapper chaque élément
+  if (Array.isArray(directives)) {
+    return (
+      <div className="space-y-4">
+        {directives.map((item, index) => (
+          <div key={index} className="border-b pb-2">
+            {typeof item === 'object' ? (
+              Object.entries(item).map(([key, value]) => (
+                <div key={key} className="mb-2">
+                  <h3 className="font-medium text-gray-700 capitalize">{key.replace(/_/g, ' ')}</h3>
+                  <div className="mt-1 text-gray-600">{String(value)}</div>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-600">{String(item)}</p>
+            )}
+          </div>
+        ))}
         {source === "image miroir" && <MirrorSourceAlert />}
       </div>
     );
