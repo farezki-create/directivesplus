@@ -68,7 +68,7 @@ const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
           description: "Préparation du document pour le dossier partagé en tant qu'utilisateur connecté...",
         });
         
-        // Créer un dossier minimal avec les infos utilisateur
+        // Créer un dossier minimal avec les infos utilisateur et le document sélectionné
         const minimalDossier = {
           id: `auth-${Date.now()}`,
           userId: user?.id || "",
@@ -81,6 +81,11 @@ const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
             birth_date: user?.user_metadata?.birth_date,
           },
           contenu: {
+            patient: {
+              nom: user?.user_metadata?.last_name || profile?.last_name || "Inconnu",
+              prenom: user?.user_metadata?.first_name || profile?.first_name || "Inconnu",
+              date_naissance: user?.user_metadata?.birth_date || profile?.birth_date || null,
+            },
             document_url: document.file_path,
             document_name: document.file_name
           }
@@ -93,7 +98,7 @@ const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
         await new Promise(resolve => setTimeout(resolve, 500));
         
         // Rediriger vers la page d'affichage du dossier
-        console.log("Redirection vers affichage-dossier pour utilisateur connecté");
+        console.log("Redirection vers affichage-dossier pour utilisateur connecté avec document:", document.file_name);
         navigate('/affichage-dossier', { replace: true });
 
         toast({

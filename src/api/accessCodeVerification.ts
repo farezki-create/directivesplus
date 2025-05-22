@@ -70,7 +70,8 @@ export const getMedicalDocuments = async (userId: string): Promise<MedicalDocume
  */
 export const getAuthUserDossier = async (
   userId: string,
-  documentType: "medical" | "directive" = "directive"
+  documentType: "medical" | "directive" = "directive",
+  documentPath?: string // Added optional document path parameter for direct document inclusion
 ): Promise<any> => {
   try {
     // Fetch user profile
@@ -82,24 +83,32 @@ export const getAuthUserDossier = async (
     
     if (profileError) throw profileError;
     
-    // Create a minimal dossier object for authenticated users
-    return {
-      success: true,
-      dossier: {
-        id: `auth-${Date.now()}`,
-        userId: userId,
-        isFullAccess: true,
-        isDirectivesOnly: documentType === "directive",
-        isMedicalOnly: documentType === "medical",
-        profileData: profile,
-        contenu: {
-          patient: {
-            nom: profile.last_name || "Inconnu",
-            prenom: profile.first_name || "Inconnu",
-            date_naissance: profile.birth_date || null,
-          }
+    // Create a dossier object for authenticated users with enhanced document support
+    const dossierData = {
+      id: `auth-${Date.now()}`,
+      userId: userId,
+      isFullAccess: true,
+      isDirectivesOnly: documentType === "directive",
+      isMedicalOnly: documentType === "medical",
+      profileData: profile,
+      contenu: {
+        patient: {
+          nom: profile.last_name || "Inconnu",
+          prenom: profile.first_name || "Inconnu",
+          date_naissance: profile.birth_date || null,
         }
       }
+    };
+    
+    // If a document path was provided, add it to the dossier content
+    if (documentPath) {
+      console.log("Adding document to dossier:", documentPath);
+      dossierData.contenu.document_url = documentPath;
+    }
+    
+    return {
+      success: true,
+      dossier: dossierData
     };
   } catch (error) {
     console.error("Erreur lors de la récupération du dossier authentifié:", error);

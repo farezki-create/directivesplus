@@ -39,20 +39,29 @@ export const verifyAccessCode = async (
  */
 export const getAuthUserDossier = async (
   userId: string, 
-  bruteForceIdentifier?: string
+  bruteForceIdentifier?: string,
+  documentPath?: string // Added parameter to support direct document incorporation
 ) => {
   console.log(`Tentative de récupération du dossier pour l'utilisateur authentifié: ${userId} (${bruteForceIdentifier || 'accès complet'})`);
+  
+  const requestBody: any = {
+    isAuthUserRequest: true,
+    userId,
+    bruteForceIdentifier
+  };
+  
+  // If a document path is provided, include it in the request
+  if (documentPath) {
+    requestBody.documentPath = documentPath;
+    console.log("Adding document to dossier request:", documentPath);
+  }
   
   const response = await fetch("https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/verifierCodeAcces", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({
-      isAuthUserRequest: true,
-      userId,
-      bruteForceIdentifier
-    })
+    body: JSON.stringify(requestBody)
   });
   
   if (!response.ok) {
@@ -121,14 +130,18 @@ export const verifyCodeWithRetries = async (code: string, bruteForceIdentifier?:
 /**
  * Gets authenticated user dossier with retries
  */
-export const getAuthUserDossierWithRetries = async (userId: string, bruteForceIdentifier?: string) => {
+export const getAuthUserDossierWithRetries = async (
+  userId: string, 
+  bruteForceIdentifier?: string,
+  documentPath?: string // Added optional document path parameter
+) => {
   if (!userId) {
     return { success: false, error: "Utilisateur non authentifié" };
   }
   
   try {
     const result = await retryWithBackoff(
-      () => getAuthUserDossier(userId, bruteForceIdentifier),
+      () => getAuthUserDossier(userId, bruteForceIdentifier, documentPath),
       3
     );
     
@@ -161,6 +174,13 @@ export const getAuthUserDossierWithRetries = async (userId: string, bruteForceId
         title: "Attention",
         description: "Le dossier a été trouvé mais semble être vide. Certaines informations pourraient ne pas s'afficher correctement."
       });
+    }
+    
+    // Vérifier si le document est présent quand c'était demandé
+    if (documentPath && !result.dossier.contenu.document_url) {
+      console.warn("Le document demandé n'a pas été ajouté au dossier:", documentPath);
+      // Add the document URL manually if it wasn't included in the response
+      result.dossier.contenu.document_url = documentPath;
     }
     
     return result;
