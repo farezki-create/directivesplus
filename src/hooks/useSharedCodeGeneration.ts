@@ -27,7 +27,7 @@ export const useSharedCodeGeneration = () => {
       // Vérifier si le document existe et appartient à l'utilisateur
       const { data: document, error: docError } = await supabase
         .from('medical_documents')
-        .select('id, owner_id')
+        .select('id, user_id')
         .eq('id', documentId)
         .single();
       
@@ -37,7 +37,7 @@ export const useSharedCodeGeneration = () => {
       
       // Vérifier que l'utilisateur est bien le propriétaire du document
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user || document.owner_id !== user.id) {
+      if (!user || document.user_id !== user.id) {
         throw new Error("Vous n'êtes pas autorisé à partager ce document");
       }
       
@@ -114,7 +114,7 @@ export const useSharedCodeGeneration = () => {
           shared_expires_at: null
         })
         .eq('id', documentId)
-        .eq('owner_id', user.id);
+        .eq('user_id', user.id);
       
       if (updateError) {
         throw new Error("Erreur lors de la révocation du code d'accès");
