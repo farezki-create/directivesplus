@@ -46,11 +46,11 @@ export const useAccessCodeVerification = () => {
     try {
       console.log(`Vérification du code d'accès partagé: ${sharedCode}`);
       
-      // Use generic typing to avoid deep inference
+      // Use any to avoid TypeScript inference issues
       const { data, error: fetchError } = await supabase
         .from("medical_documents")
         .select("*")
-        .eq("shared_code", sharedCode);
+        .eq("shared_code", sharedCode) as { data: any; error: any };
       
       // Process data safely after retrieval
       let document: MedicalDocument | null = null;
