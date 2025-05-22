@@ -18,6 +18,13 @@ type MedicalDocument = {
   is_active?: boolean;
 };
 
+// Type de retour simplifié pour les fonctions
+type VerificationResult = {
+  success: boolean;
+  error?: string;
+  document?: MedicalDocument | null;
+};
+
 /**
  * Hook spécialisé pour la vérification de codes d'accès médicaux partagés
  */
@@ -30,7 +37,7 @@ export const useAccessCodeVerification = () => {
    * @param sharedCode Code d'accès partagé
    * @returns Le document médical si la vérification est réussie, null sinon
    */
-  const verifySharedAccessCode = async (sharedCode: string) => {
+  const verifySharedAccessCode = async (sharedCode: string): Promise<VerificationResult> => {
     if (!sharedCode || sharedCode.trim() === '') {
       const errorMessage = "Code d'accès partagé invalide ou manquant";
       setError(errorMessage);
@@ -39,7 +46,7 @@ export const useAccessCodeVerification = () => {
         title: "Code invalide",
         description: errorMessage
       });
-      return { success: false, error: errorMessage, document: null };
+      return { success: false, error: errorMessage };
     }
 
     setError(null);
@@ -48,12 +55,14 @@ export const useAccessCodeVerification = () => {
     try {
       console.log(`Vérification du code d'accès partagé: ${sharedCode}`);
       
-      // Évite complètement les problèmes de type en utilisant any temporairement
-      // pour l'appel à la base de données, puis en typant correctement le résultat
-      const { data, error: fetchError }: { data: any, error: any } = await supabase
+      // Requête simplifiée sans typage complexe
+      const response = await supabase
         .from('medical_documents')
         .select('*')
         .eq('shared_code', sharedCode);
+      
+      const data = response.data;
+      const fetchError = response.error;
       
       // Traitement sécurisé des données après récupération
       let document: MedicalDocument | null = null;
@@ -70,7 +79,7 @@ export const useAccessCodeVerification = () => {
           title: "Erreur d'accès",
           description: "Document non trouvé ou code d'accès invalide"
         });
-        return { success: false, error: fetchError.message, document: null };
+        return { success: false, error: fetchError.message };
       }
       
       if (!document) {
@@ -81,7 +90,7 @@ export const useAccessCodeVerification = () => {
           title: "Erreur d'accès",
           description: errorMessage
         });
-        return { success: false, error: errorMessage, document: null };
+        return { success: false, error: errorMessage };
       }
       
       console.log("Document trouvé avec succès:", document.id);
@@ -105,7 +114,7 @@ export const useAccessCodeVerification = () => {
         title: "Erreur d'accès",
         description: "Une erreur est survenue lors de la vérification du code d'accès"
       });
-      return { success: false, error: err.message, document: null };
+      return { success: false, error: err.message };
     } finally {
       setLoading(false);
     }

@@ -37,7 +37,11 @@ export const logDirectiveDebugInfo = (
       'content.directives',
       'content.directives_anticipees',
       'contenu.directives',
-      'contenu.directives_anticipees'
+      'contenu.directives_anticipees',
+      'dossier.directives',
+      'dossier.directives_anticipees',
+      'document.directives',
+      'document.directives_anticipees'
     ];
     
     paths.forEach(path => {
@@ -90,15 +94,23 @@ export const extractDirectives = (
   
   // 2. Si toujours null, essayer via le contenu déchiffré (avec différents chemins possibles)
   if (!directives && decryptedContent) {
+    // Augmentation des chemins possibles pour trouver les directives
     const paths = [
       ['directives_anticipees'],
       ['directives'],
       ['content', 'directives_anticipees'],
       ['content', 'directives'],
       ['contenu', 'directives_anticipees'],
-      ['contenu', 'directives']
+      ['contenu', 'directives'],
+      ['dossier', 'directives_anticipees'],
+      ['dossier', 'directives'],
+      ['document', 'directives_anticipees'],
+      ['document', 'directives'],
+      ['data', 'directives_anticipees'],
+      ['data', 'directives']
     ];
     
+    // Recherche par chemin direct
     for (const path of paths) {
       let obj = decryptedContent;
       let valid = true;
@@ -119,9 +131,76 @@ export const extractDirectives = (
         break;
       }
     }
+    
+    // Recherche par contenu brut si c'est une chaîne de caractères
+    if (!directives && typeof decryptedContent === 'string' && decryptedContent.includes('directive')) {
+      try {
+        const parsedContent = JSON.parse(decryptedContent);
+        if (parsedContent && typeof parsedContent === 'object') {
+          for (const path of paths) {
+            let obj = parsedContent;
+            let valid = true;
+            
+            for (const key of path) {
+              if (obj && typeof obj === 'object' && key in obj) {
+                obj = obj[key];
+              } else {
+                valid = false;
+                break;
+              }
+            }
+            
+            if (valid && obj) {
+              directives = obj;
+              source = `string.parsed.${path.join('.')}`;
+              console.log(`DirectivesTab - Directives trouvées dans ${source}:`, directives);
+              break;
+            }
+          }
+        }
+      } catch (error) {
+        console.warn("Échec du parsing du contenu comme JSON:", error);
+      }
+    }
   }
   
-  // 3. Créer une "image miroir" du contenu comme dernière solution
+  // 3. Fallback pour trouver les directives dans n'importe quel objet contenant des propriétés pertinentes
+  if (!directives && decryptedContent && typeof decryptedContent === 'object') {
+    const searchForDirectives = (obj: any, path: string = 'root'): any => {
+      if (!obj || typeof obj !== 'object') return null;
+      
+      // Recherche de termes indicatifs
+      const indicativeKeys = ['directive', 'anticipe', 'medical', 'soin', 'patient', 'health', 'care', 'instruction'];
+      
+      // Vérifie si l'objet actuel semble être des directives
+      const hasIndicativeKeys = Object.keys(obj).some(key => 
+        indicativeKeys.some(term => key.toLowerCase().includes(term))
+      );
+      
+      if (hasIndicativeKeys) {
+        console.log(`DirectivesTab - Possible directives trouvées dans ${path}:`, obj);
+        return { directives: obj, source: path };
+      }
+      
+      // Recherche récursive dans les propriétés de l'objet
+      for (const key in obj) {
+        if (obj[key] && typeof obj[key] === 'object') {
+          const found = searchForDirectives(obj[key], `${path}.${key}`);
+          if (found) return found;
+        }
+      }
+      
+      return null;
+    };
+    
+    const result = searchForDirectives(decryptedContent);
+    if (result) {
+      directives = result.directives;
+      source = result.source;
+    }
+  }
+  
+  // 4. Créer une "image miroir" du contenu comme dernière solution
   if (!directives) {
     console.log("DirectivesTab - Aucune directive trouvée, création d'une image miroir");
     source = "image miroir";
