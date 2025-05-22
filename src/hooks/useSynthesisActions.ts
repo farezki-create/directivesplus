@@ -69,18 +69,15 @@ export const useSynthesisActions = (userId?: string) => {
           description: "Vos directives anticipées ont été sauvegardées avec succès et sont accessibles via votre code d'accès",
         });
         
-        // Rediriger vers la page d'affichage du dossier si un code d'accès existe
+        // Rediriger uniquement vers la page d'affichage du dossier si un code d'accès existe
         if (result.accessCode) {
           console.log("Redirection vers affichage-dossier avec le code d'accès:", result.accessCode);
           
           // Stocker temporairement le code d'accès dans le sessionStorage
           sessionStorage.setItem('directAccessCode', result.accessCode);
           
-          // Rediriger vers la page d'affichage dossier
-          // Délai court pour permettre à la toast de s'afficher avant la redirection
-          setTimeout(() => {
-            navigate('/affichage-dossier');
-          }, 300);
+          // Rediriger vers la page d'affichage dossier sans délai
+          navigate('/affichage-dossier', { replace: true });
         }
         
         return result.documentId;

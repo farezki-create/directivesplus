@@ -40,17 +40,17 @@ const AffichageDossier: React.FC = () => {
   const [loadAttempts, setLoadAttempts] = useState(0);
   const [initialLoading, setInitialLoading] = useState(true);
   
-  // Vérifier si nous avons un code d'accès direct dans sessionStorage
+  // Vérifier si nous avons un code d'accès direct dans sessionStorage et immédiatement l'utiliser
   useEffect(() => {
     const checkDirectAccessCode = async () => {
-      // Récupérer le code d'accès de sessionStorage
-      const directAccessCode = sessionStorage.getItem('directAccessCode');
-      
-      // Si on a un code d'accès direct et pas de dossier actif, charger le dossier
-      if (directAccessCode && !dossierActif) {
-        console.log("Code d'accès direct trouvé:", directAccessCode);
+      try {
+        // Récupérer le code d'accès de sessionStorage
+        const directAccessCode = sessionStorage.getItem('directAccessCode');
         
-        try {
+        // Si on a un code d'accès direct et pas de dossier actif, charger le dossier
+        if (directAccessCode && !dossierActif) {
+          console.log("Code d'accès direct trouvé dans AffichageDossier:", directAccessCode);
+          
           // Charger le dossier à partir du code d'accès
           const { data: dossierData, error } = await supabase
             .from("dossiers_medicaux")
@@ -65,7 +65,7 @@ const AffichageDossier: React.FC = () => {
               description: "Impossible de charger le dossier avec le code fourni",
               variant: "destructive"
             });
-            navigate('/acces-document');
+            navigate('/acces-document', { replace: true });
             return;
           }
           
@@ -82,21 +82,21 @@ const AffichageDossier: React.FC = () => {
             
             console.log("Dossier chargé avec succès à partir du code d'accès direct");
             
-            // Nettoyer le code d'accès de session
+            // Nettoyer le code d'accès de session après utilisation
             sessionStorage.removeItem('directAccessCode');
+            
+            logDossierEvent("direct_access_view", true);
           }
-        } catch (error) {
-          console.error("Erreur lors du chargement direct du dossier:", error);
-        } finally {
-          setInitialLoading(false);
         }
-      } else {
+      } catch (error) {
+        console.error("Erreur lors du chargement direct du dossier:", error);
+      } finally {
         setInitialLoading(false);
       }
     };
     
     checkDirectAccessCode();
-  }, [dossierActif, navigate, setDossierActif]);
+  }, [dossierActif, navigate, setDossierActif, logDossierEvent]);
   
   // Vérifier si un dossier est actif dès le chargement
   useEffect(() => {

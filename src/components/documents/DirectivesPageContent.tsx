@@ -43,6 +43,9 @@ const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
       hasUserId: !!userId,
       accessCode: accessCode
     });
+    
+    // Ne pas récupérer le code d'accès direct ici pour éviter une double redirection
+    // Cela permet de s'assurer que seule la page AffichageDossier traite les codes directs
   }, [documents.length, userId, accessCode]);
 
   return (
