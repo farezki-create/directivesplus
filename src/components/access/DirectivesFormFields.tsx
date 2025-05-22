@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { UseFormReturn } from "react-hook-form";
 import FormField from "./FormField";
@@ -101,18 +100,20 @@ const DirectivesFormFields: React.FC<DirectivesFormFieldsProps> = ({
 
   // Composant personnalisé pour l'en-tête du calendrier
   const CalendarHeader = ({ 
-    onPreviousMonth, 
-    onNextMonth
+    displayMonth,
+    onMonthDecrement, 
+    onMonthIncrement
   }: { 
-    onPreviousMonth: () => void;
-    onNextMonth: () => void;
+    displayMonth: Date;
+    onMonthDecrement: () => void;
+    onMonthIncrement: () => void;
   }) => (
     <div className="flex justify-between items-center px-1 py-2">
       <Button
         variant="outline"
         size="icon"
         className="h-7 w-7"
-        onClick={onPreviousMonth}
+        onClick={onMonthDecrement}
       >
         <ChevronLeft className="h-4 w-4" />
       </Button>
@@ -155,7 +156,7 @@ const DirectivesFormFields: React.FC<DirectivesFormFieldsProps> = ({
         variant="outline"
         size="icon"
         className="h-7 w-7"
-        onClick={onNextMonth}
+        onClick={onMonthIncrement}
       >
         <ChevronRight className="h-4 w-4" />
       </Button>
@@ -247,10 +248,19 @@ const DirectivesFormFields: React.FC<DirectivesFormFieldsProps> = ({
                     locale={fr}
                     className={cn("p-3 pointer-events-auto")}
                     components={{
-                      Caption: ({ onPreviousClick, onNextClick }) => (
+                      Caption: ({ displayMonth }) => (
                         <CalendarHeader 
-                          onPreviousMonth={onPreviousClick} 
-                          onNextMonth={onNextClick}
+                          displayMonth={displayMonth}
+                          onMonthDecrement={() => {
+                            const newDate = new Date(calendarDate);
+                            newDate.setMonth(newDate.getMonth() - 1);
+                            setCalendarDate(newDate);
+                          }} 
+                          onMonthIncrement={() => {
+                            const newDate = new Date(calendarDate);
+                            newDate.setMonth(newDate.getMonth() + 1);
+                            setCalendarDate(newDate);
+                          }}
                         />
                       )
                     }}
