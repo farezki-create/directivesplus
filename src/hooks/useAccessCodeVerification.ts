@@ -18,12 +18,6 @@ type MedicalDocument = {
   is_active?: boolean;
 };
 
-// Type pour la réponse de la requête Supabase
-type SupabaseQueryResponse = {
-  data: any[] | null;
-  error: any | null;
-};
-
 /**
  * Hook spécialisé pour la vérification de codes d'accès médicaux partagés
  */
@@ -54,11 +48,14 @@ export const useAccessCodeVerification = () => {
     try {
       console.log(`Vérification du code d'accès partagé: ${sharedCode}`);
       
-      // Utilisation d'un cast explicite pour éviter les problèmes d'inférence de type
-      const { data, error: fetchError }: SupabaseQueryResponse = await supabase
+      // Simplification pour éviter les problèmes d'inférence de types
+      const result = await supabase
         .from('medical_documents')
         .select('*')
-        .eq('shared_code', sharedCode) as unknown as SupabaseQueryResponse;
+        .eq('shared_code', sharedCode);
+      
+      const data = result.data;
+      const fetchError = result.error;
       
       // Traitement sécurisé des données après récupération
       let document: MedicalDocument | null = null;
