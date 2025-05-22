@@ -1,6 +1,5 @@
 
 import { useRef } from "react";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
@@ -14,6 +13,7 @@ import FreeTextSection from "./FreeTextSection";
 import ActionButtons from "./ActionButtons";
 import { useSynthesisData } from "@/hooks/useSynthesisData";
 import { useSynthesisActions } from "@/hooks/useSynthesisActions";
+import { useNavigate } from "react-router-dom";
 
 interface SynthesisContentProps {
   profileData: any;
@@ -51,6 +51,7 @@ const SynthesisContent = ({ profileData, userId }: SynthesisContentProps) => {
   }
 
   const onSave = async () => {
+    // La redirection est maintenant entièrement gérée dans le hook useSynthesisActions
     await handleSaveAndGeneratePDF(
       freeText, 
       {
@@ -61,7 +62,7 @@ const SynthesisContent = ({ profileData, userId }: SynthesisContentProps) => {
         trustedPersons
       }
     );
-    // Remarque: La redirection est maintenant gérée dans le hook useSynthesisActions
+    // Pas de redirection supplémentaire ici - tout est géré dans le hook
   };
 
   return (

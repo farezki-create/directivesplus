@@ -76,11 +76,12 @@ export const useSynthesisActions = (userId?: string) => {
           // Stocker temporairement le code d'accès dans le sessionStorage
           sessionStorage.setItem('directAccessCode', result.accessCode);
           
-          // Rediriger vers la page d'affichage dossier sans délai
+          // Rediriger uniquement vers l'affichage du dossier, avec replace: true pour éviter le retour arrière
           navigate('/affichage-dossier', { replace: true });
+          
+          // Arrêtons l'exécution ici pour éviter toute redirection supplémentaire
+          return result.documentId; 
         }
-        
-        return result.documentId;
       } else {
         throw new Error(result.error);
       }

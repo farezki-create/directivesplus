@@ -22,7 +22,7 @@ export const useDossierNavigation = () => {
     });
     // Utiliser un timeout pour éviter les problèmes de navigation pendant une mise à jour d'état
     setTimeout(() => {
-      navigate('/acces-document');
+      navigate('/acces-document', { replace: true });
     }, 100);
   }, [clearDossierActif, navigate]);
 
