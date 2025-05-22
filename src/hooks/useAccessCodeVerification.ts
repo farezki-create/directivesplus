@@ -33,16 +33,12 @@ export const useAccessCodeVerification = () => {
     try {
       console.log(`Vérification du code d'accès partagé: ${sharedCode}`);
       
-      // Récupérer le document médical à partir du code partagé
-      // Éviter complètement les problèmes de typage en utilisant any
-      const response: any = await supabase
+      // Using a more direct approach to avoid TypeScript inference issues
+      const { data, error: fetchError } = await supabase
         .from('medical_documents')
         .select('*')
         .eq('shared_code', sharedCode)
         .single();
-      
-      const document = response.data;
-      const fetchError = response.error;
       
       if (fetchError) {
         console.error("Erreur lors de la récupération du document:", fetchError);
@@ -55,7 +51,7 @@ export const useAccessCodeVerification = () => {
         return { success: false, error: fetchError.message, document: null };
       }
       
-      if (!document) {
+      if (!data) {
         const errorMessage = "Document non trouvé avec ce code d'accès";
         setError(errorMessage);
         toast({
@@ -66,11 +62,11 @@ export const useAccessCodeVerification = () => {
         return { success: false, error: errorMessage, document: null };
       }
       
-      console.log("Document trouvé avec succès:", document.id);
+      console.log("Document trouvé avec succès:", data.id);
       
       // Enregistrer l'accès dans les logs
       await supabase.from('document_access_logs').insert({
-        user_id: document.user_id,
+        user_id: data.user_id,
         access_code_id: null,
         nom_consultant: null,
         prenom_consultant: null,
@@ -78,7 +74,7 @@ export const useAccessCodeVerification = () => {
         user_agent: navigator.userAgent
       });
       
-      return { success: true, document };
+      return { success: true, document: data };
     } catch (err: any) {
       console.error("Erreur lors de la vérification du code d'accès partagé:", err);
       setError(err.message);
