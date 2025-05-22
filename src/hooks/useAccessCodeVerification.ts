@@ -4,7 +4,18 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
 
-type MedicalDocument = Database['public']['Tables']['medical_documents']['Row'];
+// Define a simple type for the medical document to avoid deep type inference
+type MedicalDocument = {
+  id: string;
+  user_id: string;
+  file_path: string;
+  file_name: string;
+  file_type: string;
+  file_size: number;
+  description: string;
+  created_at: string;
+  shared_code?: string;
+};
 
 /**
  * Hook spécialisé pour la vérification de codes d'accès médicaux partagés
@@ -36,18 +47,17 @@ export const useAccessCodeVerification = () => {
     try {
       console.log(`Vérification du code d'accès partagé: ${sharedCode}`);
       
-      // Explicitly type the result of the query to avoid deep type inference
-      const result = await supabase
+      // Use any type for the query result to avoid TypeScript complexity
+      const { data, error: fetchError } = await supabase
         .from('medical_documents')
         .select('*')
-        .eq('shared_code', sharedCode);
+        .eq('shared_code', sharedCode) as { data: any; error: any };
       
-      // Extract the data and error from the result with proper typing
-      const data: MedicalDocument[] | null = result.data;
-      const fetchError = result.error;
+      // Safely cast data to our simplified type
+      const typedData = data as MedicalDocument[] | null;
       
       // Find the first document that matches, if any
-      const document = data && data.length > 0 ? data[0] : null;
+      const document = typedData && typedData.length > 0 ? typedData[0] : null;
       
       if (fetchError) {
         console.error("Erreur lors de la récupération du document:", fetchError);
