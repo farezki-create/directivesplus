@@ -3,7 +3,7 @@ import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
-// Define a more specific type for the document to avoid deep type instantiation
+// Define a simple interface for the medical document to avoid deep type instantiation
 interface MedicalDocument {
   id: string;
   user_id: string;
@@ -18,7 +18,7 @@ interface MedicalDocument {
   is_active?: boolean | null;
 }
 
-// Simplified result type
+// Define a simpler result type
 type VerificationResult = {
   success: boolean;
   error?: string;
@@ -55,7 +55,7 @@ export const useAccessCodeVerification = () => {
     try {
       console.log(`Vérification du code d'accès partagé: ${sharedCode}`);
       
-      // Simple query without type complications
+      // Use explicit casting to simplify type handling
       const { data, error: queryError } = await supabase
         .from('medical_documents')
         .select('*')
@@ -85,7 +85,7 @@ export const useAccessCodeVerification = () => {
         return { success: false, error: errorMessage };
       }
       
-      // Safely cast the first document
+      // Use type assertion here to avoid deep type instantiation
       const document = data[0] as MedicalDocument;
       console.log("Document trouvé avec succès:", document.id);
       
