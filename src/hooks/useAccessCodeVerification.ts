@@ -33,11 +33,14 @@ export const useAccessCodeVerification = () => {
     try {
       console.log(`Vérification du code d'accès partagé: ${sharedCode}`);
       
-      // Use Promise-based syntax instead of builder pattern to avoid type issues
-      const { data, error: fetchError } = await supabase.from('medical_documents')
-        .select()
-        .eq('shared_code', sharedCode)
-        .maybeSingle();
+      // Use raw query syntax to bypass TypeScript inference issues
+      const result = await supabase
+        .from('medical_documents')
+        .select('*')
+        .eq('shared_code', sharedCode);
+      
+      const data = result.data?.[0] || null;
+      const fetchError = result.error;
       
       if (fetchError) {
         console.error("Erreur lors de la récupération du document:", fetchError);
