@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { Menu, X, User, UserPlus, LogOut } from "lucide-react";
+import { Menu, X, User, UserPlus, LogOut, Lock } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const Header = () => {
@@ -16,6 +16,10 @@ const Header = () => {
 
   const handleLoginClick = () => {
     navigate('/auth');
+  };
+
+  const handlePublicAccess = () => {
+    navigate('/mes-directives');
   };
 
   return (
@@ -36,6 +40,15 @@ const Header = () => {
                 Administration
               </Link>
             )}
+            
+            <Button 
+              variant="outline" 
+              className="border-directiveplus-200 text-directiveplus-700 hover:bg-directiveplus-50"
+              onClick={handlePublicAccess}
+            >
+              <Lock size={18} className="mr-2" />
+              Accès public aux directives
+            </Button>
           </nav>
           
           {/* CTA Buttons */}
@@ -108,6 +121,19 @@ const Header = () => {
                 Administration
               </Link>
             )}
+            
+            <Button 
+              variant="outline" 
+              className="w-full border-directiveplus-200 text-directiveplus-700 hover:bg-directiveplus-50"
+              onClick={() => {
+                navigate('/mes-directives');
+                setIsMenuOpen(false);
+              }}
+            >
+              <Lock size={18} className="mr-2" />
+              Accès public aux directives
+            </Button>
+            
             <div className="mt-4 flex flex-col space-y-2">
               {!isLoading && (
                 <>
