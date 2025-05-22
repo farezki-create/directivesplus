@@ -5,14 +5,18 @@ import { searchDirectivesRecursively } from "./extractors/recursiveSearch";
 import { createDirectivesMirror } from "./extractors/mirrorCreator";
 
 /**
- * Extract directives from content with fallback strategies - based on medical imaging and health space systems
+ * Extract directives from content with multiple fallback strategies
+ * Based on medical imaging and health space systems for compatibility
  */
 export const extractDirectives = (
   decryptedContent: any, 
   hasDirectives: boolean,
   getDirectives?: () => any
 ) => {
-  if (!hasDirectives && (!decryptedContent || Object.keys(decryptedContent).length === 0)) {
+  console.log("extractDirectives starting with content:", decryptedContent);
+  
+  if (!hasDirectives && (!decryptedContent || Object.keys(decryptedContent || {}).length === 0)) {
+    console.log("No content or directives to extract");
     return null;
   }
 
@@ -33,17 +37,30 @@ export const extractDirectives = (
   
   // 2. Si toujours null, essayer via le contenu déchiffré avec extracteurs spécialisés
   if (!directives && decryptedContent) {
+    console.log("Trying specialized extractors on decrypted content");
+    
     // Essayer différentes méthodes d'extraction dans l'ordre
     const extractionMethods = [
       // Extraction par chemin direct
-      () => extractDirectivesByPath(decryptedContent),
+      () => {
+        console.log("Trying extraction by direct path");
+        return extractDirectivesByPath(decryptedContent);
+      },
       
       // Extraction depuis une chaîne (JSON/XML)
-      () => typeof decryptedContent === 'string' ? 
-        extractDirectivesFromString(decryptedContent) : null,
+      () => {
+        if (typeof decryptedContent === 'string') {
+          console.log("Trying extraction from string content");
+          return extractDirectivesFromString(decryptedContent);
+        }
+        return null;
+      },
       
       // Recherche récursive intelligente
-      () => searchDirectivesRecursively(decryptedContent)
+      () => {
+        console.log("Trying recursive search");
+        return searchDirectivesRecursively(decryptedContent);
+      }
     ];
 
     // Appliquer chaque méthode d'extraction jusqu'à ce qu'une réussisse
@@ -52,7 +69,7 @@ export const extractDirectives = (
       if (result) {
         directives = result.directives;
         source = result.source;
-        console.log(`DirectivesTab - Directives trouvées dans ${source}:`, directives);
+        console.log(`DirectivesTab - Directives found in ${source}:`, directives);
         break;
       }
     }
@@ -60,13 +77,13 @@ export const extractDirectives = (
   
   // 3. Créer une "image miroir" comme dernier recours
   if (!directives) {
-    console.log("DirectivesTab - Aucune directive trouvée, création d'une image miroir");
+    console.log("No directives found, creating mirror image");
     const result = createDirectivesMirror(decryptedContent);
     directives = result.directives;
     source = result.source;
   }
   
-  console.log(`DirectivesTab - Affichage des directives depuis la source: ${source}`, directives);
+  console.log(`DirectivesTab - Final directives from source: ${source}`, directives);
   
   return { directives, source };
 };

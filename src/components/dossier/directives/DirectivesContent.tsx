@@ -8,6 +8,20 @@ interface DirectivesContentProps {
 }
 
 const DirectivesContent: React.FC<DirectivesContentProps> = ({ directives, source }) => {
+  // Log what we're rendering for debugging
+  React.useEffect(() => {
+    console.log("DirectivesContent rendering with:", { 
+      directivesType: typeof directives,
+      directivesContent: directives,
+      source 
+    });
+  }, [directives, source]);
+
+  // Handle different possible types of directives
+  if (!directives) {
+    return <p className="text-gray-500 italic">Aucune directive disponible</p>;
+  }
+  
   if (typeof directives === 'object') {
     return (
       <div className="space-y-4">
@@ -26,9 +40,22 @@ const DirectivesContent: React.FC<DirectivesContentProps> = ({ directives, sourc
     );
   }
   
+  if (typeof directives === 'string') {
+    // Handle string content
+    return (
+      <div>
+        <p className="whitespace-pre-wrap text-gray-700">{directives}</p>
+        {source === "image miroir" && <MirrorSourceAlert />}
+      </div>
+    );
+  }
+  
+  // Fallback for any other type
   return (
     <>
-      <p className="whitespace-pre-wrap">{String(directives || "Aucune directive disponible")}</p>
+      <p className="whitespace-pre-wrap">
+        {String(directives || "Aucune directive disponible")}
+      </p>
       {source === "image miroir" && <MirrorSourceAlert />}
     </>
   );

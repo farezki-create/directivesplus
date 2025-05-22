@@ -10,7 +10,7 @@ export interface DirectivesTabProps {
   decryptedContent: any;
   hasDirectives?: boolean;
   getDirectives?: () => any;
-  decryptionError?: string | null; // Added decryptionError prop
+  decryptionError?: string | null;
 }
 
 const DirectivesTab: React.FC<DirectivesTabProps> = ({ 
@@ -19,13 +19,21 @@ const DirectivesTab: React.FC<DirectivesTabProps> = ({
   getDirectives,
   decryptionError
 }) => {
-  // Log debug information when component renders
+  // Log debug information for better visibility in the console
   useEffect(() => {
+    console.log("DirectivesTab rendered with:", {
+      hasContent: !!decryptedContent,
+      hasDirectives,
+      hasGetDirectives: !!getDirectives,
+      decryptionError
+    });
+    
     logDirectiveDebugInfo(decryptedContent, hasDirectives, getDirectives);
-  }, [decryptedContent, hasDirectives, getDirectives]);
+  }, [decryptedContent, hasDirectives, getDirectives, decryptionError]);
   
   // Display error if there is one
   if (decryptionError) {
+    console.log("DirectivesTab - Showing error state:", decryptionError);
     return (
       <CardContent className="p-6">
         <NoDirectivesAlert />
@@ -38,17 +46,19 @@ const DirectivesTab: React.FC<DirectivesTabProps> = ({
   
   const renderDirectives = () => {
     if (!directivesData) {
+      console.log("DirectivesTab - No directives data found");
       return <NoDirectivesAlert />;
     }
 
     const { directives, source } = directivesData;
+    console.log("DirectivesTab - Rendering directives from source:", source);
     return <DirectivesContent directives={directives} source={source} />;
   };
 
   return (
     <Card className="shadow-lg">
       <DirectivesHeader />
-      <CardContent>
+      <CardContent className="p-6">
         {renderDirectives()}
       </CardContent>
     </Card>

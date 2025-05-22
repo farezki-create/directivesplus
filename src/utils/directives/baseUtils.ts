@@ -2,49 +2,81 @@
 import { Dossier } from "@/store/dossierStore";
 
 /**
- * Extracts patient information from decrypted content
- * Format compatible avec les systèmes de santé standard
- * @param decryptedContent The decrypted dossier content
+ * Extract patient information from decrypted content
+ * @param decryptedContent The decrypted content
  * @param dossierActif The active dossier object
  * @returns Patient information object
  */
 export const extractPatientInfo = (
   decryptedContent: any,
-  dossierActif: Dossier | null
-): any => {
-  if (!decryptedContent || !dossierActif) return null;
+  dossierActif: Dossier | null = null
+) => {
+  console.log("Extracting patient info from:", decryptedContent);
   
-  // Extraction du patient avec chemins standardisés (DMP/Mon Espace Santé)
-  if (decryptedContent.patient) {
-    return decryptedContent.patient;
-  } 
+  // Default patient info
+  const defaultInfo = {
+    firstName: "Prénom",
+    lastName: "Nom",
+    birthDate: null,
+    gender: null
+  };
   
-  if (decryptedContent.content?.patient) {
-    return decryptedContent.content.patient;
+  if (!decryptedContent && !dossierActif) {
+    return defaultInfo;
   }
   
-  if (decryptedContent.contenu?.patient) {
-    return decryptedContent.contenu.patient;
+  try {
+    // Try to get patient info from profile data in dossier
+    if (dossierActif?.profileData) {
+      return {
+        firstName: dossierActif.profileData.first_name || defaultInfo.firstName,
+        lastName: dossierActif.profileData.last_name || defaultInfo.lastName,
+        birthDate: dossierActif.profileData.birth_date || defaultInfo.birthDate,
+        gender: dossierActif.profileData.gender || defaultInfo.gender
+      };
+    }
+    
+    // Try common data paths
+    if (decryptedContent.patient) {
+      return {
+        firstName: decryptedContent.patient.prenom || decryptedContent.patient.first_name || defaultInfo.firstName,
+        lastName: decryptedContent.patient.nom || decryptedContent.patient.last_name || defaultInfo.lastName,
+        birthDate: decryptedContent.patient.date_naissance || decryptedContent.patient.birth_date || defaultInfo.birthDate,
+        gender: decryptedContent.patient.sexe || decryptedContent.patient.gender || defaultInfo.gender
+      };
+    } 
+    
+    if (decryptedContent.content?.patient) {
+      const patient = decryptedContent.content.patient;
+      return {
+        firstName: patient.prenom || patient.first_name || defaultInfo.firstName,
+        lastName: patient.nom || patient.last_name || defaultInfo.lastName,
+        birthDate: patient.date_naissance || patient.birth_date || defaultInfo.birthDate,
+        gender: patient.sexe || patient.gender || defaultInfo.gender
+      };
+    }
+    
+    // Try direct properties
+    if (decryptedContent.first_name || decryptedContent.last_name) {
+      return {
+        firstName: decryptedContent.first_name || defaultInfo.firstName,
+        lastName: decryptedContent.last_name || defaultInfo.lastName,
+        birthDate: decryptedContent.birth_date || defaultInfo.birthDate,
+        gender: decryptedContent.gender || defaultInfo.gender
+      };
+    }
+    
+    if (decryptedContent.prenom || decryptedContent.nom) {
+      return {
+        firstName: decryptedContent.prenom || defaultInfo.firstName,
+        lastName: decryptedContent.nom || defaultInfo.lastName,
+        birthDate: decryptedContent.date_naissance || defaultInfo.birthDate,
+        gender: decryptedContent.sexe || defaultInfo.gender
+      };
+    }
+  } catch (error) {
+    console.error("Error extracting patient info:", error);
   }
   
-  if (decryptedContent.meta?.patient) {
-    return decryptedContent.meta.patient;
-  }
-  
-  if (decryptedContent.dossier?.patient) {
-    return decryptedContent.dossier.patient;
-  }
-  
-  // Fallback sur profileData (format standard)
-  if (dossierActif.profileData) {
-    return {
-      nom: dossierActif.profileData.last_name,
-      prenom: dossierActif.profileData.first_name,
-      date_naissance: dossierActif.profileData.birth_date,
-      adresse: dossierActif.profileData.address,
-      telephone: dossierActif.profileData.phone_number
-    };
-  }
-  
-  return null;
+  return defaultInfo;
 };

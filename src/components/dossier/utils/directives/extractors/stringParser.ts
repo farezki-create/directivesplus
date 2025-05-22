@@ -1,79 +1,73 @@
 
 /**
- * Extract directives from string content (JSON or XML)
+ * Extract directives from string content
  */
-
-/**
- * Attempts to extract directives from string content that might be JSON or XML
- * @param decryptedContent String content to parse
- * @returns Object containing directives and source if found
- */
-export const extractDirectivesFromString = (decryptedContent: string) => {
-  if (typeof decryptedContent !== 'string') return null;
+export const extractDirectivesFromString = (stringContent: string) => {
+  if (!stringContent || typeof stringContent !== 'string') return null;
   
-  // Skip if content doesn't look medical
-  if (!decryptedContent.includes('directive') && 
-      !decryptedContent.includes('medical') && 
-      !decryptedContent.includes('patient')) {
+  console.log("Extracting directives from string content:", stringContent.substring(0, 100) + "...");
+  
+  try {
+    // Try parsing as JSON
+    try {
+      const jsonContent = JSON.parse(stringContent);
+      if (jsonContent) {
+        // Check for directives in parsed JSON
+        if (jsonContent.directives) {
+          return { directives: jsonContent.directives, source: "json.directives" };
+        }
+        if (jsonContent.directives_anticipees) {
+          return { directives: jsonContent.directives_anticipees, source: "json.directives_anticipees" };
+        }
+        
+        // Try common paths
+        if (jsonContent.content?.directives) {
+          return { directives: jsonContent.content.directives, source: "json.content.directives" };
+        }
+        if (jsonContent.contenu?.directives_anticipees) {
+          return { directives: jsonContent.contenu.directives_anticipees, source: "json.contenu.directives_anticipees" };
+        }
+        
+        // Return the whole JSON if nothing specific found
+        return { directives: jsonContent, source: "json" };
+      }
+    } catch (jsonError) {
+      console.log("Not valid JSON:", jsonError);
+    }
+    
+    // Check if it's an XML-like string
+    if (stringContent.includes('<directives>')) {
+      const directivesMatch = stringContent.match(/<directives>(.*?)<\/directives>/s);
+      if (directivesMatch && directivesMatch[1]) {
+        return { directives: directivesMatch[1], source: "xml.directives" };
+      }
+    }
+    
+    // Look for directive-like content in plain text
+    if (stringContent.toLowerCase().includes('directives anticipées')) {
+      // Extract the surrounding paragraph or section
+      const lines = stringContent.split('\n');
+      for (let i = 0; i < lines.length; i++) {
+        if (lines[i].toLowerCase().includes('directives anticipées')) {
+          // Extract a few lines as the directive
+          const startLine = Math.max(0, i - 2);
+          const endLine = Math.min(lines.length - 1, i + 5);
+          const directiveContent = lines.slice(startLine, endLine + 1).join('\n');
+          return { directives: directiveContent, source: "text" };
+        }
+      }
+    }
+    
+    // As a last resort, return the full content if not too long
+    if (stringContent.length < 1000) {
+      return { directives: stringContent, source: "texte_complet" };
+    }
+    
+    // Return first 500 characters as a sample
+    return { directives: stringContent.substring(0, 500) + "...", source: "texte_partiel" };
+    
+  } catch (error) {
+    console.error("Error extracting directives from string:", error);
     return null;
   }
-
-  // First try JSON parsing
-  try {
-    const parsedContent = JSON.parse(decryptedContent);
-    if (parsedContent && typeof parsedContent === 'object') {
-      // Use the same paths as in coreExtractor
-      const paths = [
-        ['directives_anticipees'], ['directives'],
-        ['content', 'directives_anticipees'], ['content', 'directives'],
-        ['contenu', 'directives_anticipees'], ['contenu', 'directives'],
-        ['meta', 'directives'], ['dicom', 'directives'],
-        ['dossier', 'directives_anticipees'], ['dossier', 'directives'],
-        ['document', 'directives'], ['data', 'directives'],
-        ['xmlData', 'directives'], ['xml', 'directives']
-      ];
-      
-      for (const path of paths) {
-        let obj = parsedContent;
-        let valid = true;
-        
-        for (const key of path) {
-          if (obj && typeof obj === 'object' && key in obj) {
-            obj = obj[key];
-          } else {
-            valid = false;
-            break;
-          }
-        }
-        
-        if (valid && obj) {
-          return { directives: obj, source: `string.parsed.${path.join('.')}` };
-        }
-      }
-    }
-  } catch (error) {
-    // If JSON parsing fails, try XML extraction
-    if (decryptedContent.includes('<directive') || decryptedContent.includes('<directives')) {
-      // Extraction simplifiée de balises XML (comme format radiologie)
-      const extractXmlContent = (xml: string, tag: string) => {
-        const regex = new RegExp(`<${tag}[^>]*>(.*?)<\/${tag}>`, 'gs');
-        const matches = [...xml.matchAll(regex)];
-        if (matches.length > 0) {
-          return matches.map(m => m[1]).join('\n');
-        }
-        return null;
-      };
-      
-      // Essayer d'extraire des balises communes dans les formats médicaux
-      const xmlTags = ['directive', 'directives', 'directivesAnticipees', 'wishes', 'instructions'];
-      for (const tag of xmlTags) {
-        const content = extractXmlContent(decryptedContent, tag);
-        if (content) {
-          return { directives: { [tag]: content }, source: `xml.${tag}` };
-        }
-      }
-    }
-  }
-  
-  return null;
 };

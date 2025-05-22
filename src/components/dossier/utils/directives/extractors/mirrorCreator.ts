@@ -1,43 +1,67 @@
 
 /**
- * Create fallback directives when none can be extracted
- */
-
-/**
- * Creates a "mirror" or fallback representation of directives when none can be found
- * @param decryptedContent The decrypted content to extract patient info from
- * @returns Object containing generated directives and source
+ * Creates a mirror representation of directives when none can be found
  */
 export const createDirectivesMirror = (decryptedContent: any) => {
-  // Création d'un document standardisé basé sur le patient
-  let patient = { nom: "Inconnu", prenom: "Inconnu" };
+  console.log("Creating mirror directives from content:", decryptedContent);
   
-  // Chercher les infos du patient dans différents emplacements (format médical standard)
-  if (decryptedContent) {
-    if (decryptedContent.patient) {
-      patient = decryptedContent.patient;
-    } else if (decryptedContent.content?.patient) {
-      patient = decryptedContent.content.patient;
-    } else if (decryptedContent.contenu?.patient) {
-      patient = decryptedContent.contenu.patient;
-    } else if (decryptedContent.profileData) {
-      patient = {
-        nom: decryptedContent.profileData.last_name || "Inconnu",
-        prenom: decryptedContent.profileData.first_name || "Inconnu"
-      };
-    } else if (decryptedContent.meta?.patient) {
-      patient = decryptedContent.meta.patient;
-    }
-  }
+  // Get patient info from any available source
+  const patientInfo = extractPatientInfo(decryptedContent);
   
-  // Format standardisé des directives (similaire au DMP/Mon Espace Santé)
+  // Create a mirror representation based on found patient info
   const directives = {
-    "Directives anticipées": `Directives anticipées pour ${patient.prenom} ${patient.nom}`,
+    "Directives anticipées": `Directives anticipées pour ${patientInfo.firstName} ${patientInfo.lastName}`,
     "Date de création": new Date().toLocaleDateString('fr-FR'),
     "Personne de confiance": "Non spécifiée",
-    "Instructions": "Document disponible sur demande",
-    "Remarque": "Ces directives sont une représentation simplifiée"
+    "Remarques": "Ce document est une représentation simplifiée de vos directives anticipées",
+    "Instructions": "Document complet disponible sur demande auprès du titulaire du dossier"
   };
   
   return { directives, source: "image miroir" };
+};
+
+/**
+ * Extract patient information from any source in the content
+ */
+const extractPatientInfo = (content: any): { firstName: string; lastName: string } => {
+  let firstName = "Prénom";
+  let lastName = "Nom";
+  
+  if (!content) return { firstName, lastName };
+  
+  try {
+    // Try to find patient info in common structures
+    if (content.patient) {
+      firstName = content.patient.prenom || content.patient.first_name || firstName;
+      lastName = content.patient.nom || content.patient.last_name || lastName;
+    } 
+    else if (content.content?.patient) {
+      firstName = content.content.patient.prenom || content.content.patient.first_name || firstName;
+      lastName = content.content.patient.nom || content.content.patient.last_name || lastName;
+    }
+    else if (content.contenu?.patient) {
+      firstName = content.contenu.patient.prenom || content.contenu.patient.first_name || firstName;
+      lastName = content.contenu.patient.nom || content.contenu.patient.last_name || lastName;
+    }
+    else if (content.profileData) {
+      firstName = content.profileData.first_name || firstName;
+      lastName = content.profileData.last_name || lastName;
+    }
+    else if (content.meta?.patient) {
+      firstName = content.meta.patient.prenom || content.meta.patient.first_name || firstName;
+      lastName = content.meta.patient.nom || content.meta.patient.last_name || lastName;
+    }
+    else if (content.nom && content.prenom) {
+      firstName = content.prenom;
+      lastName = content.nom;
+    }
+    else if (content.first_name && content.last_name) {
+      firstName = content.first_name;
+      lastName = content.last_name;
+    }
+  } catch (e) {
+    console.error("Error extracting patient info:", e);
+  }
+  
+  return { firstName, lastName };
 };
