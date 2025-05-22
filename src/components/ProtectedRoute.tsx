@@ -16,7 +16,7 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
   
   // Public routes that don't require authentication
-  const publicRoutes = ['/directives-acces', '/'];
+  const publicRoutes = ['/directives-acces', '/', '/mes-directives'];
   
   useEffect(() => {
     console.log("ProtectedRoute for", location.pathname);

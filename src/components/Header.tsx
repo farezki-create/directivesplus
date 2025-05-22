@@ -1,190 +1,146 @@
-
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Button } from "@/components/ui/button";
-import { Menu, X, User, UserPlus, LogOut, Lock } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useState } from "react";
+import { Menu, X } from "lucide-react";
 
 const Header = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { isAuthenticated, signOut, profile, isLoading } = useAuth();
-  const navigate = useNavigate();
+  const { isAuthenticated, user, logout } = useAuth();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
-
-  const handleLoginClick = () => {
-    navigate('/auth');
-  };
-
-  const handlePublicAccess = () => {
-    navigate('/directives-acces');
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-50">
-      <div className="container mx-auto container-padding">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <div className="flex-shrink-0 flex items-center">
-            <Link to="/">
-              <h1 className="text-xl font-bold text-directiveplus-700">DirectivePlus</h1>
+    <header className="bg-white sticky top-0 z-10 border-b shadow-sm">
+      <div className="container mx-auto px-4 py-3">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center">
+            <Link to="/" className="flex items-center">
+              <span className="text-xl font-bold text-directiveplus-600">
+                DirectivesPlus
+              </span>
             </Link>
           </div>
-          
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-8">
-            {profile?.role === "institution" && (
-              <Link to="/admin" className="text-directiveplus-600 hover:text-directiveplus-700 px-3 py-2 font-medium">
-                Administration
-              </Link>
-            )}
-            
-            <Button 
-              variant="outline" 
-              className="border-directiveplus-200 text-directiveplus-700 hover:bg-directiveplus-50"
-              onClick={handlePublicAccess}
-            >
-              <Lock size={18} className="mr-2" />
-              Accès public aux directives
-            </Button>
-          </nav>
-          
-          {/* CTA Buttons */}
+
           <div className="hidden md:flex items-center space-x-4">
-            {!isLoading && (
+            <Link
+              to="/"
+              className="text-gray-700 hover:text-directiveplus-600 transition-colors"
+            >
+              Accueil
+            </Link>
+            
+            <Link
+              to="/mes-directives"
+              className="text-gray-700 hover:text-directiveplus-600 transition-colors"
+            >
+              Accès directives
+            </Link>
+            
+            {isAuthenticated ? (
               <>
-                {isAuthenticated ? (
-                  <div className="flex items-center space-x-4">
-                    <Button 
-                      variant="outline" 
-                      className="border-directiveplus-200 text-directiveplus-700 hover:bg-directiveplus-50"
-                      onClick={() => navigate('/profile')}
-                    >
-                      <User size={18} className="mr-2" />
-                      {profile?.first_name || 'Profil'}
-                    </Button>
-                    <Button 
-                      className="bg-directiveplus-600 hover:bg-directiveplus-700"
-                      onClick={signOut}
-                    >
-                      <LogOut size={18} className="mr-2" />
-                      Déconnexion
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="flex items-center space-x-4">
-                    <Button 
-                      variant="outline" 
-                      className="border-directiveplus-200 text-directiveplus-700 hover:bg-directiveplus-50"
-                      onClick={handleLoginClick}
-                    >
-                      Se connecter
-                    </Button>
-                    <Button 
-                      className="bg-directiveplus-600 hover:bg-directiveplus-700"
-                      onClick={handleLoginClick}
-                    >
-                      <UserPlus size={18} className="mr-2" />
-                      Inscription
-                    </Button>
-                  </div>
-                )}
+                <Link
+                  to="/dashboard"
+                  className="text-gray-700 hover:text-directiveplus-600 transition-colors"
+                >
+                  Mon Dossier
+                </Link>
+                <Link
+                  to="/profile"
+                  className="text-gray-700 hover:text-directiveplus-600 transition-colors"
+                >
+                  Profil
+                </Link>
+                <button
+                  onClick={logout}
+                  className="text-gray-700 hover:text-directiveplus-600 transition-colors"
+                >
+                  Déconnexion
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/auth"
+                  className="text-gray-700 hover:text-directiveplus-600 transition-colors"
+                >
+                  Connexion
+                </Link>
+                <Link
+                  to="/auth"
+                  className="text-gray-700 hover:text-directiveplus-600 transition-colors"
+                >
+                  Inscription
+                </Link>
               </>
             )}
           </div>
-          
-          {/* Mobile Menu Button */}
+
           <div className="md:hidden">
-            <button
-              onClick={toggleMenu}
-              className="text-gray-700 hover:text-directiveplus-600"
-              aria-label="Toggle menu"
-            >
-              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            <button onClick={toggleMobileMenu} className="text-gray-600 hover:text-directiveplus-600 focus:outline-none">
+              {isMobileMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
             </button>
           </div>
         </div>
       </div>
-      
-      {/* Mobile Menu */}
-      {isMenuOpen && (
-        <div className="md:hidden">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white shadow-md">
-            {profile?.role === "institution" && (
-              <Link 
-                to="/admin" 
-                className="block px-3 py-2 text-directiveplus-600 hover:text-directiveplus-700 font-medium"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Administration
-              </Link>
-            )}
-            
-            <Button 
-              variant="outline" 
-              className="w-full border-directiveplus-200 text-directiveplus-700 hover:bg-directiveplus-50"
-              onClick={() => {
-                navigate('/directives-acces');
-                setIsMenuOpen(false);
-              }}
+
+      {isMobileMenuOpen && (
+        <div className="bg-gray-50 border-b py-2">
+          <div className="container mx-auto px-4 flex flex-col space-y-2">
+            <Link
+              to="/"
+              className="text-gray-700 hover:text-directiveplus-600 transition-colors block"
             >
-              <Lock size={18} className="mr-2" />
-              Accès public aux directives
-            </Button>
-            
-            <div className="mt-4 flex flex-col space-y-2">
-              {!isLoading && (
-                <>
-                  {isAuthenticated ? (
-                    <>
-                      <Button 
-                        variant="outline" 
-                        className="border-directiveplus-200 text-directiveplus-700 hover:bg-directiveplus-50 w-full"
-                        onClick={() => {
-                          navigate('/profile');
-                          setIsMenuOpen(false);
-                        }}
-                      >
-                        <User size={18} className="mr-2" />
-                        Profil
-                      </Button>
-                      <Button 
-                        className="bg-directiveplus-600 hover:bg-directiveplus-700 w-full"
-                        onClick={signOut}
-                      >
-                        <LogOut size={18} className="mr-2" />
-                        Déconnexion
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <Button 
-                        variant="outline" 
-                        className="border-directiveplus-200 text-directiveplus-700 hover:bg-directiveplus-50 w-full"
-                        onClick={() => {
-                          navigate('/auth');
-                          setIsMenuOpen(false);
-                        }}
-                      >
-                        Se connecter
-                      </Button>
-                      <Button 
-                        className="bg-directiveplus-600 hover:bg-directiveplus-700 w-full"
-                        onClick={() => {
-                          navigate('/auth');
-                          setIsMenuOpen(false);
-                        }}
-                      >
-                        <UserPlus size={18} className="mr-2" />
-                        Inscription
-                      </Button>
-                    </>
-                  )}
-                </>
-              )}
-            </div>
+              Accueil
+            </Link>
+            <Link
+              to="/mes-directives"
+              className="text-gray-700 hover:text-directiveplus-600 transition-colors block"
+            >
+              Accès directives
+            </Link>
+            {isAuthenticated ? (
+              <>
+                <Link
+                  to="/dashboard"
+                  className="text-gray-700 hover:text-directiveplus-600 transition-colors block"
+                >
+                  Mon Dossier
+                </Link>
+                <Link
+                  to="/profile"
+                  className="text-gray-700 hover:text-directiveplus-600 transition-colors block"
+                >
+                  Profil
+                </Link>
+                <button
+                  onClick={logout}
+                  className="text-gray-700 hover:text-directiveplus-600 transition-colors block"
+                >
+                  Déconnexion
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/auth"
+                  className="text-gray-700 hover:text-directiveplus-600 transition-colors block"
+                >
+                  Connexion
+                </Link>
+                <Link
+                  to="/auth"
+                  className="text-gray-700 hover:text-directiveplus-600 transition-colors block"
+                >
+                  Inscription
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}

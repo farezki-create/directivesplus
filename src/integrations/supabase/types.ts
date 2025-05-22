@@ -917,6 +917,42 @@ export type Database = {
         }
         Relationships: []
       }
+      shared_profiles: {
+        Row: {
+          access_code: string
+          birthdate: string
+          created_at: string | null
+          expires_at: string | null
+          first_name: string
+          id: string
+          last_name: string
+          medical_profile_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          access_code: string
+          birthdate: string
+          created_at?: string | null
+          expires_at?: string | null
+          first_name: string
+          id?: string
+          last_name: string
+          medical_profile_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          access_code?: string
+          birthdate?: string
+          created_at?: string | null
+          expires_at?: string | null
+          first_name?: string
+          id?: string
+          last_name?: string
+          medical_profile_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       trusted_persons: {
         Row: {
           address: string | null
