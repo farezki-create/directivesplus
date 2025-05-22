@@ -6,7 +6,8 @@ import {
   Eye,
   Trash,
   Printer,
-  Share
+  Share,
+  Loader2
 } from "lucide-react";
 
 interface DocumentActionsProps {
@@ -16,6 +17,7 @@ interface DocumentActionsProps {
   onPrint?: () => void;
   onAddToSharedFolder?: () => void;
   showPrint?: boolean;
+  isAddingToShared?: boolean;
 }
 
 const DocumentActions = ({
@@ -24,14 +26,16 @@ const DocumentActions = ({
   onDelete,
   onPrint,
   onAddToSharedFolder,
-  showPrint = true
+  showPrint = true,
+  isAddingToShared = false
 }: DocumentActionsProps) => {
   console.log("DocumentActions - Handlers disponibles:", { 
     onView: !!onView, 
     onDownload: !!onDownload, 
     onDelete: !!onDelete,
     onPrint: !!onPrint,
-    onAddToSharedFolder: !!onAddToSharedFolder
+    onAddToSharedFolder: !!onAddToSharedFolder,
+    isAddingToShared
   });
 
   return (
@@ -85,15 +89,21 @@ const DocumentActions = ({
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
+            if (isAddingToShared) return;
             console.log("DocumentActions - Bouton Ajouter au dossier partagé cliqué");
             onAddToSharedFolder();
           }}
           size="sm"
           variant="outline" 
           className="text-xs text-directiveplus-600 hover:text-directiveplus-800 hover:bg-directiveplus-50"
+          disabled={isAddingToShared}
         >
-          <Share className="h-3 w-3 mr-1" />
-          Ajouter au dossier partagé
+          {isAddingToShared ? (
+            <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+          ) : (
+            <Share className="h-3 w-3 mr-1" />
+          )}
+          {isAddingToShared ? 'Ajout en cours...' : 'Ajouter au dossier partagé'}
         </Button>
       )}
       <Button
@@ -106,6 +116,7 @@ const DocumentActions = ({
         size="sm"
         variant="outline"
         className="text-xs text-red-500 hover:text-red-700 hover:border-red-200"
+        disabled={isAddingToShared}
       >
         <Trash className="h-3 w-3 mr-1" />
         Supprimer

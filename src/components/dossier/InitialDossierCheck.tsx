@@ -55,7 +55,8 @@ const InitialDossierCheck: React.FC<InitialDossierCheckProps> = ({
       
       // Si le contenu est vide, essayer de recharger la page une fois
       if (!dossierActif.contenu && loadAttempts === 0) {
-        setLoadAttempts(prev => prev + 1);
+        // Fix: pass the new value directly instead of using a function
+        setLoadAttempts(1);
         const reloadTimer = setTimeout(() => {
           window.location.reload();
         }, 2000);

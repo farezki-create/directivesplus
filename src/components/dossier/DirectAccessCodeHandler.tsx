@@ -20,6 +20,7 @@ const DirectAccessCodeHandler: React.FC<DirectAccessCodeHandlerProps> = ({
   useEffect(() => {
     const checkDirectAccessCode = async () => {
       try {
+        setInitialLoading(true);
         // Récupérer le code d'accès de sessionStorage
         const directAccessCode = sessionStorage.getItem('directAccessCode');
         
@@ -46,6 +47,8 @@ const DirectAccessCodeHandler: React.FC<DirectAccessCodeHandlerProps> = ({
           }
           
           if (dossierData) {
+            console.log("Dossier trouvé avec succès:", dossierData);
+            
             // Définir le dossier comme actif
             setDossierActif({
               id: dossierData.id,
@@ -62,10 +65,28 @@ const DirectAccessCodeHandler: React.FC<DirectAccessCodeHandlerProps> = ({
             sessionStorage.removeItem('directAccessCode');
             
             logDossierEvent("direct_access_view", true);
+            
+            toast({
+              title: "Dossier chargé",
+              description: "Votre dossier a été chargé avec succès",
+            });
+          } else {
+            console.error("Aucun dossier trouvé avec le code fourni");
+            toast({
+              title: "Erreur",
+              description: "Aucun dossier trouvé avec le code fourni",
+              variant: "destructive"
+            });
+            navigate('/acces-document', { replace: true });
           }
         }
       } catch (error) {
         console.error("Erreur lors du chargement direct du dossier:", error);
+        toast({
+          title: "Erreur",
+          description: "Une erreur s'est produite lors du chargement du dossier",
+          variant: "destructive"
+        });
       } finally {
         setInitialLoading(false);
       }

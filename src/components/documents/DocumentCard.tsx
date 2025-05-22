@@ -23,6 +23,7 @@ interface DocumentCardProps {
   onVisibilityChange?: (documentId: string, isPrivate: boolean) => void;
   onAddToSharedFolder?: () => void;
   showPrint?: boolean;
+  isAddingToShared?: boolean;
 }
 
 const DocumentCard = ({
@@ -33,7 +34,8 @@ const DocumentCard = ({
   onDelete,
   onVisibilityChange,
   onAddToSharedFolder,
-  showPrint = true
+  showPrint = true,
+  isAddingToShared = false
 }: DocumentCardProps) => {
   const [isPrivate, setIsPrivate] = useState(document.is_private || false);
   
@@ -77,6 +79,7 @@ const DocumentCard = ({
           }}
           onAddToSharedFolder={onAddToSharedFolder}
           showPrint={showPrint}
+          isAddingToShared={isAddingToShared}
         />
       </div>
     </div>

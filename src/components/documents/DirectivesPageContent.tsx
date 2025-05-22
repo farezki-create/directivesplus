@@ -1,11 +1,12 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Document } from "@/hooks/useDirectivesDocuments";
 import DirectivesPageHeader from "@/components/documents/DirectivesPageHeader";
 import DirectivesAddDocumentSection from "@/components/documents/DirectivesAddDocumentSection";
 import DirectivesDocumentList from "@/components/documents/DirectivesDocumentList";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
+import { useDossierStore } from "@/store/dossierStore";
 
 interface DirectivesPageContentProps {
   documents: Document[];
@@ -39,6 +40,8 @@ const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
   profile
 }) => {
   const navigate = useNavigate();
+  const [isAdding, setIsAdding] = useState(false);
+  const { setDossierActif } = useDossierStore();
 
   // Log when this component renders with its props
   React.useEffect(() => {
@@ -47,33 +50,60 @@ const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
       hasUserId: !!userId,
       accessCode: accessCode
     });
-    
-    // Ne pas récupérer le code d'accès direct ici pour éviter une double redirection
-    // Cela permet de s'assurer que seule la page AffichageDossier traite les codes directs
   }, [documents.length, userId, accessCode]);
 
-  const handleAddToSharedFolder = (document: Document) => {
-    console.log("Ajout au dossier partagé:", document);
+  const handleAddToSharedFolder = async (document: Document) => {
+    try {
+      console.log("Ajout au dossier partagé:", document);
+      setIsAdding(true);
 
-    if (!accessCode) {
+      if (!accessCode) {
+        toast({
+          title: "Erreur",
+          description: "Aucun code d'accès n'est disponible pour ce document",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Afficher un toast de chargement
+      toast({
+        title: "Traitement en cours",
+        description: "Préparation du document pour le dossier partagé...",
+      });
+      
+      // Attendre un moment pour laisser le temps au state de se mettre à jour
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Stocker le code d'accès dans sessionStorage pour la redirection
+      sessionStorage.setItem('directAccessCode', accessCode);
+      
+      console.log("Code d'accès stocké:", accessCode);
+      
+      // Réinitialiser l'état du dossier actif pour forcer un nouveau chargement
+      setDossierActif(null);
+      
+      // Attendre un moment pour laisser le temps au state de se mettre à jour
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Rediriger vers la page d'affichage du dossier
+      console.log("Redirection vers affichage-dossier");
+      navigate('/affichage-dossier', { replace: true });
+
+      toast({
+        title: "Document ajouté",
+        description: "Document ajouté au dossier partagé avec succès",
+      });
+    } catch (error) {
+      console.error("Erreur lors de l'ajout au dossier partagé:", error);
       toast({
         title: "Erreur",
-        description: "Aucun code d'accès n'est disponible pour ce document",
+        description: "Une erreur s'est produite lors de l'ajout au dossier partagé",
         variant: "destructive"
       });
-      return;
+    } finally {
+      setIsAdding(false);
     }
-
-    // Stocker le code d'accès dans sessionStorage pour la redirection
-    sessionStorage.setItem('directAccessCode', accessCode);
-    
-    // Rediriger vers la page d'affichage du dossier
-    navigate('/affichage-dossier', { replace: true });
-
-    toast({
-      title: "Document ajouté",
-      description: "Document ajouté au dossier partagé",
-    });
   };
 
   return (
@@ -100,6 +130,7 @@ const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
           console.log("DirectivesPageContent - Changement de visibilité:", id, isPrivate);
           // You can implement visibility change handling here
         }}
+        isAdding={isAdding}
       />
     </div>
   );
