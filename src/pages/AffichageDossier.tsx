@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useDossierStore } from "@/store/dossierStore";
 import { useDossierSession } from "@/hooks/useDossierSession";
@@ -43,6 +42,74 @@ const AffichageDossier: React.FC = () => {
   const [loadAttempts, setLoadAttempts] = useState(0);
   const [initialLoading, setInitialLoading] = useState(true);
   const [documentLoadError, setDocumentLoadError] = useState<string | null>(null);
+  const [directDocumentDisplay, setDirectDocumentDisplay] = useState(false);
+  
+  // Log dossier content for debugging
+  useEffect(() => {
+    if (dossierActif) {
+      console.log("[AffichageDossier] dossierActif:", {
+        id: dossierActif.id,
+        contenu: dossierActif.contenu ? "présent" : "absent",
+        document_url: dossierActif.contenu?.document_url || "aucun",
+      });
+      
+      // Check if this is a direct document display case
+      if (dossierActif.contenu?.document_url && 
+          (!dossierActif.contenu.patient || 
+           Object.keys(dossierActif.contenu).length <= 2)) {
+        console.log("[AffichageDossier] Document direct détecté:", dossierActif.contenu.document_url);
+        setDirectDocumentDisplay(true);
+      }
+    }
+  }, [dossierActif]);
+  
+  // Direct document display component
+  const DirectDocumentDisplay = () => {
+    if (!dossierActif?.contenu?.document_url) return null;
+    
+    return (
+      <div className="container max-w-3xl py-8">
+        <Alert className="mb-4 bg-blue-50 border-blue-200">
+          <AlertTitle>Document en affichage direct</AlertTitle>
+          <AlertDescription>
+            Ce document a été partagé directement depuis votre espace personnel.
+          </AlertDescription>
+        </Alert>
+        <div className="border rounded-lg overflow-hidden">
+          <iframe 
+            src={dossierActif.contenu.document_url}
+            className="w-full h-[70vh]"
+            title="Document partagé"
+          />
+        </div>
+      </div>
+    );
+  };
+  
+  // Handler for retrying document load
+  const handleRetryDocumentLoad = () => {
+    if (dossierActif?.contenu?.document_url) {
+      toast({
+        title: "Nouvelle tentative",
+        description: "Tentative de rechargement du document..."
+      });
+      
+      // Reset error state
+      setDocumentLoadError(null);
+      
+      if (directDocumentDisplay) {
+        // Force a re-render for direct document display
+        setDirectDocumentDisplay(false);
+        setTimeout(() => setDirectDocumentDisplay(true), 100);
+        return;
+      }
+      
+      // Reload the page as a last resort
+      window.location.reload();
+    } else {
+      navigate('/mes-directives');
+    }
+  };
   
   // Afficher le contenu du dossier pour le débogage
   useEffect(() => {
@@ -95,47 +162,6 @@ const AffichageDossier: React.FC = () => {
     }
   }, [dossierActif, decryptedContent, loading, logDossierEvent]);
   
-  // Handler for retrying document load
-  const handleRetryDocumentLoad = () => {
-    if (dossierActif?.contenu?.document_url) {
-      toast({
-        title: "Nouvelle tentative",
-        description: "Tentative de rechargement du document..."
-      });
-      
-      // Reset error state
-      setDocumentLoadError(null);
-      
-      // Pour les utilisateurs authentifiés, on tente de forcer le rechargement du document
-      if (isAuthenticated && user && dossierActif.contenu.document_url) {
-        console.log("Tentative de rechargement manuel du document pour utilisateur authentifié");
-        
-        // Copier le document URL directement dans le contenu déchiffré si possible
-        if (decryptedContent && dossierActif.contenu.document_url) {
-          decryptedContent.document_url = dossierActif.contenu.document_url;
-          console.log("Document URL ajouté manuellement au contenu déchiffré");
-          
-          // Forcer un re-render
-          setActiveTab(activeTab === "medical" ? "directives" : "medical");
-          setTimeout(() => setActiveTab(activeTab), 100);
-          
-          toast({
-            title: "Document rechargé",
-            description: "Le document a été rechargé manuellement"
-          });
-          return;
-        }
-      }
-      
-      // Sinon, on tente un simple rechargement de la page
-      window.location.reload();
-    } else {
-      // Pour les cas où il n'y a pas de document dans le dossier
-      navigate('/mes-directives');
-    }
-  };
-  
-  // Gérer le code d'accès direct (dans un composant séparé)
   return (
     <>
       <DirectAccessCodeHandler 
@@ -154,25 +180,8 @@ const AffichageDossier: React.FC = () => {
         stopSecurityMonitoring={stopSecurityMonitoring}
       />
       
-      {/* Document direct display if dossier contains document_url but no other content */}
-      {dossierActif && dossierActif.contenu?.document_url && !loading && !initialLoading &&
-       Object.keys(dossierActif.contenu).length === 2 && dossierActif.contenu.patient && (
-        <div className="container max-w-3xl py-8">
-          <Alert className="mb-4 bg-blue-50 border-blue-200">
-            <AlertTitle>Document en affichage direct</AlertTitle>
-            <AlertDescription>
-              Ce document a été partagé directement depuis votre espace personnel.
-            </AlertDescription>
-          </Alert>
-          <div className="border rounded-lg overflow-hidden">
-            <iframe 
-              src={dossierActif.contenu.document_url}
-              className="w-full h-[70vh]"
-              title="Document partagé"
-            />
-          </div>
-        </div>
-      )}
+      {/* Direct document display */}
+      {directDocumentDisplay && dossierActif?.contenu?.document_url && !loading && <DirectDocumentDisplay />}
       
       {/* Document load error */}
       {documentLoadError && (
@@ -200,15 +209,17 @@ const AffichageDossier: React.FC = () => {
       ) : (
         <>
           {/* Gestion des erreurs */}
-          <DossierNoDataError
-            dossierActif={dossierActif}
-            decryptedContent={decryptedContent}
-            decryptionError={decryptionError}
-            loading={loading}
-          />
+          {!directDocumentDisplay && (
+            <DossierNoDataError
+              dossierActif={dossierActif}
+              decryptedContent={decryptedContent}
+              decryptionError={decryptionError}
+              loading={loading}
+            />
+          )}
           
           {/* Contenu principal (affiché uniquement si nous avons du contenu) */}
-          {dossierActif && decryptedContent && (
+          {!directDocumentDisplay && dossierActif && decryptedContent && (
             <DossierContentView
               patientInfo={patientInfo}
               decryptedContent={decryptedContent}
