@@ -22,6 +22,26 @@ const DirectivesContent: React.FC<DirectivesContentProps> = ({ directives, sourc
     return <p className="text-gray-500 italic">Aucune directive disponible</p>;
   }
   
+  // Check if directives is directly a document URL
+  if (typeof directives === 'string' && (
+      directives.startsWith('http') || 
+      directives.startsWith('/') || 
+      directives.startsWith('data:')
+    )) {
+    return (
+      <div className="space-y-4">
+        <div className="border rounded-lg overflow-hidden">
+          <iframe 
+            src={directives}
+            className="w-full h-[70vh]"
+            title="Document partagé"
+          />
+        </div>
+        {source === "image miroir" && <MirrorSourceAlert />}
+      </div>
+    );
+  }
+  
   // Format de PDF (data URI)
   if (typeof directives === 'string' && directives.startsWith('data:application/pdf')) {
     return (
@@ -31,6 +51,22 @@ const DirectivesContent: React.FC<DirectivesContentProps> = ({ directives, sourc
             src={directives}
             className="w-full h-[70vh]"
             title="Directives anticipées (PDF)"
+          />
+        </div>
+        {source === "image miroir" && <MirrorSourceAlert />}
+      </div>
+    );
+  }
+  
+  // Check if directives object has document_url property
+  if (typeof directives === 'object' && directives.document_url) {
+    return (
+      <div className="space-y-4">
+        <div className="border rounded-lg overflow-hidden">
+          <iframe 
+            src={directives.document_url}
+            className="w-full h-[70vh]"
+            title="Document partagé"
           />
         </div>
         {source === "image miroir" && <MirrorSourceAlert />}

@@ -54,16 +54,27 @@ const AffichageDossier: React.FC = () => {
       });
       
       // Check if this is a direct document display case
-      if (dossierActif.contenu?.document_url && 
-          (!dossierActif.contenu.patient || 
-           Object.keys(dossierActif.contenu).length <= 2)) {
-        console.log("[AffichageDossier] Document direct détecté:", dossierActif.contenu.document_url);
-        setDirectDocumentDisplay(true);
+      if (dossierActif.contenu?.document_url) {
+        // Either simple dossier with just document_url or minimal fields
+        if (!dossierActif.contenu.patient || 
+            Object.keys(dossierActif.contenu).length <= 3) {
+          console.log("[AffichageDossier] Document direct ultra simple détecté:", dossierActif.contenu.document_url);
+          setDirectDocumentDisplay(true);
+        }
       }
     }
-  }, [dossierActif]);
+    
+    // Also check if we have a decryptedContent with document_url but it's not in dossierActif
+    if (decryptedContent?.document_url && dossierActif?.contenu && !dossierActif.contenu.document_url) {
+      console.log("[AffichageDossier] Transfert du document du contenu déchiffré vers le dossier");
+      dossierActif.contenu.document_url = decryptedContent.document_url;
+      dossierActif.contenu.document_name = decryptedContent.document_name || 
+                                          decryptedContent.document_url.split('/').pop() || 
+                                          "document";
+    }
+  }, [dossierActif, decryptedContent]);
   
-  // Direct document display component
+  // Direct document display component - SIMPLIFIED VERSION
   const DirectDocumentDisplay = () => {
     if (!dossierActif?.contenu?.document_url) return null;
     
@@ -180,7 +191,7 @@ const AffichageDossier: React.FC = () => {
         stopSecurityMonitoring={stopSecurityMonitoring}
       />
       
-      {/* Direct document display */}
+      {/* Direct document display - SIMPLIFIED version gets priority */}
       {directDocumentDisplay && dossierActif?.contenu?.document_url && !loading && <DirectDocumentDisplay />}
       
       {/* Document load error */}

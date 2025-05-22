@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { verifyAccessCode, getMedicalDocuments, MedicalDocument, getAuthUserDossier } from "@/api/accessCodeVerification";
 import { VerificationResult, logVerificationResult } from "@/utils/access/verificationResult";
@@ -24,12 +23,13 @@ export const useAccessCodeVerification = () => {
         accessType: documentType
       });
       
-      // For authenticated users with document path, create direct dossier
-      if (bypassCodeCheck && documentPath) {
-        logVerificationResult(true, "Accès direct au document pour utilisateur authentifié");
-        console.log("[useAccessCodeVerification] Document direct pour utilisateur authentifié:", documentPath);
+      // SIMPLIFIED APPROACH: For authenticated users with document path, create ultra simple direct dossier
+      if ((bypassCodeCheck || accessCode === "direct") && documentPath) {
+        logVerificationResult(true, "Accès direct au document ultra simple");
+        console.log("[useAccessCodeVerification] Document direct ultra simple:", documentPath);
         
-        const directDossier = {
+        // Create the simplest possible dossier
+        const ultraSimpleDossier = {
           id: `direct-${Date.now()}`,
           userId: patientName, // User ID is passed in patientName for authenticated users
           isFullAccess: true,
@@ -38,23 +38,18 @@ export const useAccessCodeVerification = () => {
           profileData: null,
           contenu: {
             document_url: documentPath,
-            document_name: documentPath.split('/').pop() || "document",
-            patient: {
-              nom: "Utilisateur",
-              prenom: "Authentifié",
-              date_naissance: new Date().toISOString().split('T')[0],
-            }
+            document_name: documentPath.split('/').pop() || "document"
           }
         };
         
-        console.log("[useAccessCodeVerification] Dossier direct créé:", directDossier);
+        console.log("[useAccessCodeVerification] Dossier ultra simple créé:", ultraSimpleDossier);
         setVerificationResult({
           success: true,
-          data: directDossier,
+          data: ultraSimpleDossier,
           accessType: documentType
         });
         setRemainingAttempts(3);
-        return directDossier;
+        return ultraSimpleDossier;
       }
       
       // For authenticated users without specific document

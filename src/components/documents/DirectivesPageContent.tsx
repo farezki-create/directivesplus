@@ -58,30 +58,21 @@ const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
       setIsAdding(true);
       console.log("[DirectivesPageContent] Document sélectionné pour partage:", document);
       
-      // Create the simplest possible dossier structure
+      // Create an ultra simple dossier structure with just the document URL
       const simpleDossier = {
         id: `direct-${Date.now()}`,
         userId: isAuthenticated ? user?.id || userId : "anonymous",
         isFullAccess: true,
         isDirectivesOnly: true,
         isMedicalOnly: false,
-        profileData: profile || {
-          first_name: user?.user_metadata?.first_name || "Utilisateur",
-          last_name: user?.user_metadata?.last_name || "Anonyme",
-        },
+        profileData: null,
         contenu: {
           document_url: document.file_path,
-          document_name: document.file_name,
-          // Only add patient info if we have it
-          patient: {
-            nom: profile?.last_name || user?.user_metadata?.last_name || "Anonyme",
-            prenom: profile?.first_name || user?.user_metadata?.first_name || "Utilisateur",
-            date_naissance: profile?.birth_date || user?.user_metadata?.birth_date || new Date().toISOString().split('T')[0],
-          }
+          document_name: document.file_name
         }
       };
       
-      console.log("[DirectivesPageContent] Dossier simple créé:", simpleDossier);
+      console.log("[DirectivesPageContent] Dossier ultra simple créé:", simpleDossier);
       
       // Store the dossier in global state
       setDossierActif(simpleDossier);
@@ -91,9 +82,6 @@ const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
         sessionStorage.setItem('directAccessCode', accessCode);
         console.log("[DirectivesPageContent] Code d'accès stocké:", accessCode);
       }
-      
-      // Wait briefly to ensure the state is updated
-      await new Promise(resolve => setTimeout(resolve, 300));
       
       toast({
         title: "Document prêt",
