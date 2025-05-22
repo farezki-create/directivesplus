@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -5,14 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, CalendarIcon } from "lucide-react";
+import { Loader2, CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { useDossierStore } from "@/store/dossierStore";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { useCalendarState } from "@/hooks/useCalendarState";
 import Header from "@/components/Header";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function MesDirectives() {
   const navigate = useNavigate();
@@ -23,6 +26,15 @@ export default function MesDirectives() {
   const [birthdate, setBirthdate] = useState<Date | undefined>(undefined);
   const [accessCode, setAccessCode] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const {
+    calendarDate,
+    months,
+    years,
+    handleMonthChange,
+    handleYearChange,
+    decrementMonth,
+    incrementMonth
+  } = useCalendarState();
 
   const handleVerify = async () => {
     if (!firstName || !lastName || !birthdate || !accessCode) {
@@ -195,13 +207,65 @@ export default function MesDirectives() {
                         <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <div className="p-2 flex items-center justify-between bg-muted/20">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={decrementMonth}
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        <div className="flex items-center gap-2">
+                          <Select
+                            value={calendarDate.getMonth().toString()}
+                            onValueChange={handleMonthChange}
+                          >
+                            <SelectTrigger className="h-7 w-[100px]">
+                              <SelectValue placeholder="Mois" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {months.map((month) => (
+                                <SelectItem key={month.value} value={month.value.toString()}>
+                                  {month.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Select
+                            value={calendarDate.getFullYear().toString()}
+                            onValueChange={handleYearChange}
+                          >
+                            <SelectTrigger className="h-7 w-[100px]">
+                              <SelectValue placeholder="Année" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {years.map((year) => (
+                                <SelectItem key={year} value={year.toString()}>
+                                  {year}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={incrementMonth}
+                        >
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                      </div>
                       <Calendar
                         mode="single"
                         selected={birthdate}
                         onSelect={setBirthdate}
                         disabled={(date) => date > new Date() || loading}
                         initialFocus
+                        month={calendarDate}
+                        onMonthChange={date => calendarDate.setMonth(date.getMonth())}
                       />
                     </PopoverContent>
                   </Popover>
