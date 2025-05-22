@@ -18,24 +18,42 @@ export const useAccessCodeVerification = () => {
   ) => {
     try {
       setIsVerifying(true);
+      console.log("[useAccessCodeVerification] verifyCode appelé avec:", {
+        bypassCodeCheck,
+        documentPath,
+        patientName: bypassCodeCheck ? patientName : "(redacted)",
+        accessType: documentType
+      });
       
       // For authenticated users, we can bypass the code verification
       if (bypassCodeCheck) {
         logVerificationResult(true, "Authenticated user bypass");
-        console.log("Authenticated user bypass with document:", documentPath);
+        console.log("[useAccessCodeVerification] Bypass de vérification pour utilisateur authentifié avec document:", documentPath);
         
         // Get auth user dossier with optional document path
         const authResult = await getAuthUserDossier(patientName, documentType, documentPath);
         
         if (authResult.success) {
+          console.log("[useAccessCodeVerification] Résultat authResult réussi:", 
+            documentPath ? "avec document" : "sans document");
+          
+          // Vérifier et ajouter le document si nécessaire
+          if (documentPath && authResult.dossier && (!authResult.dossier.contenu.document_url || authResult.dossier.contenu.document_url !== documentPath)) {
+            console.log("[useAccessCodeVerification] Document non présent dans le dossier, ajout manuel:", documentPath);
+            authResult.dossier.contenu.document_url = documentPath;
+            authResult.dossier.contenu.document_name = documentPath.split('/').pop() || "document";
+          }
+          
           setVerificationResult({
             success: true,
-            data: authResult.dossier, // Use the dossier from auth result
+            data: authResult.dossier,
             accessType: documentType
           });
           setRemainingAttempts(3); // Reset attempts
+          console.log("[useAccessCodeVerification] Dossier final:", authResult.dossier);
           return authResult.dossier;
         } else {
+          console.error("[useAccessCodeVerification] Échec récupération dossier authentifié:", authResult.error);
           throw new Error(authResult.error || "Échec de la récupération du dossier authentifié");
         }
       }
@@ -67,7 +85,7 @@ export const useAccessCodeVerification = () => {
         return null;
       }
     } catch (error) {
-      console.error("Erreur lors de la vérification du code d'accès:", error);
+      console.error("[useAccessCodeVerification] Erreur verification:", error);
       setRemainingAttempts(prev => Math.max(0, prev - 1));
       setVerificationResult({
         success: false,

@@ -40,39 +40,59 @@ export const verifyAccessCode = async (
 export const getAuthUserDossier = async (
   userId: string, 
   bruteForceIdentifier?: string,
-  documentPath?: string // Added parameter to support direct document incorporation
+  documentPath?: string
 ) => {
   console.log(`Tentative de récupération du dossier pour l'utilisateur authentifié: ${userId} (${bruteForceIdentifier || 'accès complet'})`);
-  console.log("Document path:", documentPath);
+  console.log("Document path reçu dans getAuthUserDossier:", documentPath);
   
-  const requestBody: any = {
-    isAuthUserRequest: true,
-    userId,
-    bruteForceIdentifier
-  };
-  
-  // If a document path is provided, include it in the request
-  if (documentPath) {
-    requestBody.documentPath = documentPath;
-    console.log("Adding document to dossier request:", documentPath);
+  try {
+    // Préparation des données de la requête
+    const requestBody: any = {
+      isAuthUserRequest: true,
+      userId,
+      bruteForceIdentifier
+    };
+    
+    // Si un document est fourni, l'inclure dans la requête
+    if (documentPath) {
+      requestBody.documentPath = documentPath;
+      console.log("Document ajouté à la requête:", documentPath);
+    }
+    
+    const response = await fetch("https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/verifierCodeAcces", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(requestBody)
+    });
+    
+    if (!response.ok) {
+      console.error(`Erreur HTTP ${response.status} lors de la récupération du dossier`);
+      throw new Error(`Erreur de serveur: ${response.status} ${response.statusText}`);
+    }
+    
+    const result = await response.json();
+    console.log("Réponse de récupération du dossier:", result);
+    
+    // Vérifier si le document URL est bien présent dans la réponse
+    if (documentPath && (!result.dossier || !result.dossier.contenu || !result.dossier.contenu.document_url)) {
+      console.log("Document path non trouvé dans la réponse, ajout manuel:", documentPath);
+      if (!result.dossier) {
+        result.dossier = { contenu: {} };
+      } else if (!result.dossier.contenu) {
+        result.dossier.contenu = {};
+      }
+      
+      // Ajouter manuellement le document_url
+      result.dossier.contenu.document_url = documentPath;
+    }
+    
+    return result;
+  } catch (error) {
+    console.error("Erreur dans getAuthUserDossier:", error);
+    throw error;
   }
-  
-  const response = await fetch("https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/verifierCodeAcces", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(requestBody)
-  });
-  
-  if (!response.ok) {
-    throw new Error(`Erreur de serveur: ${response.status} ${response.statusText}`);
-  }
-  
-  const result = await response.json();
-  console.log("Réponse de récupération du dossier utilisateur:", result);
-  
-  return result;
 };
 
 /**
@@ -134,13 +154,15 @@ export const verifyCodeWithRetries = async (code: string, bruteForceIdentifier?:
 export const getAuthUserDossierWithRetries = async (
   userId: string, 
   bruteForceIdentifier?: string,
-  documentPath?: string // Added optional document path parameter
+  documentPath?: string
 ) => {
   if (!userId) {
     return { success: false, error: "Utilisateur non authentifié" };
   }
   
   try {
+    console.log("Appel getAuthUserDossierWithRetries avec document:", documentPath);
+    
     const result = await retryWithBackoff(
       () => getAuthUserDossier(userId, bruteForceIdentifier, documentPath),
       3
@@ -178,14 +200,16 @@ export const getAuthUserDossierWithRetries = async (
     }
     
     // Vérifier si le document est présent quand c'était demandé
-    if (documentPath && !result.dossier.contenu.document_url) {
-      console.warn("Le document demandé n'a pas été ajouté au dossier:", documentPath);
-      // Add the document URL manually if it wasn't included in the response
+    if (documentPath && (!result.dossier.contenu.document_url || result.dossier.contenu.document_url !== documentPath)) {
+      console.log("Ajout manuel du document demandé:", documentPath);
       result.dossier.contenu.document_url = documentPath;
+      result.dossier.contenu.document_name = documentPath.split('/').pop() || "document";
     }
     
+    console.log("Dossier final retourné:", result.dossier);
     return result;
   } catch (err: any) {
+    console.error("Erreur dans getAuthUserDossierWithRetries:", err);
     const errorMessage = "Impossible de contacter le serveur après plusieurs tentatives. Veuillez vérifier votre connexion internet et réessayer.";
     toast({
       variant: "destructive",

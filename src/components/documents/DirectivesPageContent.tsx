@@ -60,82 +60,51 @@ const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
       console.log("Ajout au dossier partagé:", document);
       setIsAdding(true);
 
-      // Pour les utilisateurs authentifiés, on peut ignorer la vérification de code
-      if (isAuthenticated) {
-        // Afficher un toast de chargement
-        toast({
-          title: "Traitement en cours",
-          description: "Préparation du document pour le dossier partagé en tant qu'utilisateur connecté...",
-        });
-        
-        // Créer un dossier minimal avec les infos utilisateur et le document sélectionné
-        const minimalDossier = {
-          id: `auth-${Date.now()}`,
-          userId: user?.id || "",
-          isFullAccess: true,
-          isDirectivesOnly: true,
-          isMedicalOnly: false,
-          profileData: profile || {
-            first_name: user?.user_metadata?.first_name,
-            last_name: user?.user_metadata?.last_name,
-            birth_date: user?.user_metadata?.birth_date,
-          },
-          contenu: {
-            patient: {
-              nom: user?.user_metadata?.last_name || profile?.last_name || "Inconnu",
-              prenom: user?.user_metadata?.first_name || profile?.first_name || "Inconnu",
-              date_naissance: user?.user_metadata?.birth_date || profile?.birth_date || null,
-            },
-            document_url: document.file_path,
-            document_name: document.file_name
-          }
-        };
-        
-        // Stocker les informations dans le store
-        setDossierActif(minimalDossier);
-        
-        // Attendre un moment pour laisser le temps au state de se mettre à jour
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // Rediriger vers la page d'affichage du dossier
-        console.log("Redirection vers affichage-dossier pour utilisateur connecté avec document:", document.file_name);
-        navigate('/affichage-dossier', { replace: true });
-
-        toast({
-          title: "Document ajouté",
-          description: "Document ajouté au dossier partagé avec succès",
-        });
-        return;
-      }
-
-      // Pour les utilisateurs non authentifiés, on garde le comportement existant
-      if (!accessCode) {
-        toast({
-          title: "Erreur",
-          description: "Aucun code d'accès n'est disponible pour ce document",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      // Afficher un toast de chargement
+      // MÉTHODE SIMPLIFIÉE: Créer un dossier directement avec le document sélectionné
+      // Cette approche est plus directe et évite plusieurs couches d'appels API
+      
       toast({
         title: "Traitement en cours",
         description: "Préparation du document pour le dossier partagé...",
       });
       
-      // Stocker le code d'accès dans sessionStorage pour la redirection
-      sessionStorage.setItem('directAccessCode', accessCode);
+      // Création d'un dossier minimal avec le document sélectionné
+      const minimalDossier = {
+        id: `manual-${Date.now()}`,
+        userId: isAuthenticated ? (user?.id || userId) : "anonymous",
+        isFullAccess: true,
+        isDirectivesOnly: true,
+        isMedicalOnly: false,
+        profileData: profile || {
+          first_name: user?.user_metadata?.first_name || "Utilisateur",
+          last_name: user?.user_metadata?.last_name || "Anonyme",
+          birth_date: user?.user_metadata?.birth_date || new Date().toISOString().split('T')[0],
+        },
+        contenu: {
+          patient: {
+            nom: (user?.user_metadata?.last_name || profile?.last_name || "Anonyme"),
+            prenom: (user?.user_metadata?.first_name || profile?.first_name || "Utilisateur"),
+            date_naissance: (user?.user_metadata?.birth_date || profile?.birth_date || new Date().toISOString().split('T')[0]),
+          },
+          document_url: document.file_path,
+          document_name: document.file_name
+        }
+      };
       
-      console.log("Code d'accès stocké:", accessCode);
+      // Stockage du dossier dans le store pour accès global
+      console.log("Stockage du dossier dans le store:", minimalDossier);
+      setDossierActif(minimalDossier);
       
-      // Réinitialiser l'état du dossier actif pour forcer un nouveau chargement
-      setDossierActif(null);
+      // Pour utilisateurs authentifiés, stockage du code pour la redirection
+      if (!isAuthenticated && accessCode) {
+        sessionStorage.setItem('directAccessCode', accessCode);
+        console.log("Code d'accès stocké pour utilisateur non authentifié:", accessCode);
+      }
       
-      // Attendre un moment pour laisser le temps au state de se mettre à jour
+      // Attendre un moment pour s'assurer que le state est mis à jour
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      // Rediriger vers la page d'affichage du dossier
+      // Redirection vers la page d'affichage du dossier
       console.log("Redirection vers affichage-dossier");
       navigate('/affichage-dossier', { replace: true });
 

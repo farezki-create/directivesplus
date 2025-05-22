@@ -44,22 +44,60 @@ const AffichageDossier: React.FC = () => {
   const [initialLoading, setInitialLoading] = useState(true);
   const [documentLoadError, setDocumentLoadError] = useState<string | null>(null);
   
+  // Afficher le contenu du dossier pour le débogage
+  useEffect(() => {
+    if (dossierActif) {
+      console.log("AffichageDossier - dossierActif:", {
+        id: dossierActif.id,
+        contenu: dossierActif.contenu ? "présent" : "absent",
+        document_url: dossierActif.contenu?.document_url || "aucun",
+        hasContentKeys: dossierActif.contenu ? Object.keys(dossierActif.contenu) : []
+      });
+    }
+    
+    if (decryptedContent) {
+      console.log("AffichageDossier - decryptedContent:", {
+        document_url: decryptedContent.document_url || "aucun",
+        hasKeys: Object.keys(decryptedContent)
+      });
+    }
+  }, [dossierActif, decryptedContent]);
+  
+  // S'assurer que le document est bien transféré du dossier vers le contenu déchiffré
+  useEffect(() => {
+    if (dossierActif && decryptedContent && 
+        dossierActif.contenu?.document_url && 
+        !decryptedContent.document_url) {
+      
+      console.log("Transfert manuel du document du dossier au contenu déchiffré:", 
+                  dossierActif.contenu.document_url);
+                  
+      // On ajoute manuellement le document au contenu déchiffré
+      decryptedContent.document_url = dossierActif.contenu.document_url;
+      decryptedContent.document_name = dossierActif.contenu.document_name || 
+                                      dossierActif.contenu.document_url.split('/').pop() || 
+                                      "document";
+    }
+  }, [dossierActif, decryptedContent]);
+  
   // Check for document-related errors when the dossier content changes
   useEffect(() => {
-    if (dossierActif && !loading && !decryptedContent?.document_url && dossierActif?.contenu?.document_url) {
-      console.log("Document URL exists in dossier but not in decrypted content:", dossierActif.contenu.document_url);
-      setDocumentLoadError("Le document n'a pas pu être chargé correctement. Veuillez réessayer.");
-      
-      // Log the event for troubleshooting
-      logDossierEvent("document_load_failure", false);
-    } else {
-      setDocumentLoadError(null);
+    if (dossierActif && !loading) {
+      if (dossierActif.contenu?.document_url && (!decryptedContent || !decryptedContent.document_url)) {
+        console.log("Document URL exists in dossier but not in decrypted content:", dossierActif.contenu.document_url);
+        setDocumentLoadError("Le document n'a pas pu être chargé correctement. Veuillez réessayer.");
+        
+        // Log the event for troubleshooting
+        logDossierEvent("document_load_failure", false);
+      } else {
+        setDocumentLoadError(null);
+      }
     }
-  }, [dossierActif, decryptedContent, loading]);
+  }, [dossierActif, decryptedContent, loading, logDossierEvent]);
   
   // Handler for retrying document load
   const handleRetryDocumentLoad = () => {
-    if (isAuthenticated && user) {
+    if (dossierActif?.contenu?.document_url) {
       toast({
         title: "Nouvelle tentative",
         description: "Tentative de rechargement du document..."
@@ -68,10 +106,31 @@ const AffichageDossier: React.FC = () => {
       // Reset error state
       setDocumentLoadError(null);
       
-      // Force a reload of the current page
+      // Pour les utilisateurs authentifiés, on tente de forcer le rechargement du document
+      if (isAuthenticated && user && dossierActif.contenu.document_url) {
+        console.log("Tentative de rechargement manuel du document pour utilisateur authentifié");
+        
+        // Copier le document URL directement dans le contenu déchiffré si possible
+        if (decryptedContent && dossierActif.contenu.document_url) {
+          decryptedContent.document_url = dossierActif.contenu.document_url;
+          console.log("Document URL ajouté manuellement au contenu déchiffré");
+          
+          // Forcer un re-render
+          setActiveTab(activeTab === "medical" ? "directives" : "medical");
+          setTimeout(() => setActiveTab(activeTab), 100);
+          
+          toast({
+            title: "Document rechargé",
+            description: "Le document a été rechargé manuellement"
+          });
+          return;
+        }
+      }
+      
+      // Sinon, on tente un simple rechargement de la page
       window.location.reload();
     } else {
-      // For non-authenticated users, just navigate back
+      // Pour les cas où il n'y a pas de document dans le dossier
       navigate('/mes-directives');
     }
   };
@@ -94,6 +153,26 @@ const AffichageDossier: React.FC = () => {
         startSecurityMonitoring={startSecurityMonitoring}
         stopSecurityMonitoring={stopSecurityMonitoring}
       />
+      
+      {/* Document direct display if dossier contains document_url but no other content */}
+      {dossierActif && dossierActif.contenu?.document_url && !loading && !initialLoading &&
+       Object.keys(dossierActif.contenu).length === 2 && dossierActif.contenu.patient && (
+        <div className="container max-w-3xl py-8">
+          <Alert className="mb-4 bg-blue-50 border-blue-200">
+            <AlertTitle>Document en affichage direct</AlertTitle>
+            <AlertDescription>
+              Ce document a été partagé directement depuis votre espace personnel.
+            </AlertDescription>
+          </Alert>
+          <div className="border rounded-lg overflow-hidden">
+            <iframe 
+              src={dossierActif.contenu.document_url}
+              className="w-full h-[70vh]"
+              title="Document partagé"
+            />
+          </div>
+        </div>
+      )}
       
       {/* Document load error */}
       {documentLoadError && (
