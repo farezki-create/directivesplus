@@ -2,95 +2,108 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useDossierStore } from "@/store/dossierStore";
-import { useVerifierCodeAcces } from "@/hooks/useVerifierCodeAcces";
-import { toast } from "@/hooks/use-toast";
-
 import Header from "@/components/Header";
 import DirectivesAccessForm from "@/components/access/DirectivesAccessForm";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
+import { toast } from "@/components/ui/use-toast";
+import { useDossierStore } from "@/store/dossierStore";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { InfoIcon } from "lucide-react";
+import { getAuthUserDossier } from "@/api/accessCodeVerification";
 
 const DirectivesAccess = () => {
   const { user, isAuthenticated } = useAuth();
   const { setDossierActif } = useDossierStore();
   const navigate = useNavigate();
-  const { verifierCode, getDossierUtilisateurAuthentifie, loading, error } = useVerifierCodeAcces();
-  const [isAccessing, setIsAccessing] = useState(false);
-  const [connectionError, setConnectionError] = useState<string | null>(null);
-
-  // Si l'utilisateur est connecté, on récupère ses directives automatiquement
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // Auto-load directives for authenticated users
   useEffect(() => {
-    const accessUserDossier = async () => {
-      // Ne pas récupérer automatiquement si on est déjà en train de le faire
-      if (isAccessing || !isAuthenticated || !user?.id) return;
+    const loadUserDirectives = async () => {
+      if (!isAuthenticated || !user?.id || isLoading) return;
       
       try {
-        setIsAccessing(true);
-        setConnectionError(null);
-        console.log("Récupération automatique des directives pour l'utilisateur connecté:", user?.id);
+        setIsLoading(true);
+        console.log("Loading directives for authenticated user:", user.id);
         
-        const result = await getDossierUtilisateurAuthentifie(user.id, "directives_access");
+        // Get user dossier
+        const authResult = await getAuthUserDossier(user.id, "directive");
         
-        if (result.success && result.dossier) {
-          setDossierActif(result.dossier);
+        if (authResult.success) {
+          setDossierActif(authResult.dossier);
           toast({
-            title: "Succès",
+            title: "Accès autorisé",
             description: "Vos directives ont été chargées avec succès",
           });
-          navigate("/affichage-dossier");
+          navigate("/affichage-dossier", { replace: true });
         } else {
-          setConnectionError(result.error || "Erreur lors de la récupération de vos directives");
+          console.error("Failed to load user directives:", authResult.error);
         }
       } catch (error) {
-        console.error("Erreur lors de la récupération des directives:", error);
-        setConnectionError("Impossible de contacter le serveur. Veuillez réessayer ultérieurement.");
+        console.error("Error loading directives for authenticated user:", error);
       } finally {
-        setIsAccessing(false);
+        setIsLoading(false);
       }
     };
-
-    // Utilisez un setTimeout pour éviter les problèmes de mise à jour d'état pendant le rendu
-    const timer = setTimeout(() => {
-      accessUserDossier();
-    }, 100);
     
-    return () => clearTimeout(timer);
-  }, [isAuthenticated, user, setDossierActif, navigate, getDossierUtilisateurAuthentifie]);
-
-  const handleFormSubmit = async (accessCode: string, formData: any) => {
+    loadUserDirectives();
+  }, [isAuthenticated, user, navigate, setDossierActif]);
+  
+  const handleAccessDirectives = async (accessCode: string, formData: any) => {
     try {
-      console.log("Vérification du code d'accès:", accessCode);
-      setConnectionError(null);
-
-      // Vérifier le code d'accès
-      const result = await verifierCode(accessCode, "directives_access");
+      console.log("Vérification du code d'accès aux directives:", accessCode);
       
-      if (result.success && result.dossier) {
-        console.log("Code d'accès valide, dossier récupéré:", result.dossier);
+      // Call the API
+      const apiUrl = "https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/verifierCodeAcces";
+      const bruteForceIdentifier = `directives_access_${formData.firstName}_${formData.lastName}_${formData.birthDate}`;
+      
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          accessCode: accessCode,
+          patientName: `${formData.firstName} ${formData.lastName}`,
+          patientBirthDate: formData.birthDate,
+          bruteForceIdentifier: bruteForceIdentifier
+        })
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        console.log("Code d'accès aux directives valide, dossier récupéré:", result);
         
-        // Stocker le dossier actif en utilisant le store
+        // Store in dossier store
         setDossierActif(result.dossier);
         
-        // Rediriger vers la page d'affichage du dossier
-        navigate("/affichage-dossier");
+        // Navigate to dossier viewer
+        navigate("/affichage-dossier", { replace: true });
         
-        // Notification de succès
+        // Success toast
         toast({
           title: "Accès autorisé",
           description: "Vous avez accès aux directives anticipées",
         });
       } else {
-        setConnectionError(result.error || "Accès refusé. Veuillez vérifier vos informations.");
+        console.error("Code d'accès invalide:", result.error);
+        toast({
+          title: "Accès refusé",
+          description: result.error || "Code d'accès invalide ou données incorrectes",
+          variant: "destructive"
+        });
       }
     } catch (error) {
-      console.error("Erreur lors de la vérification du code d'accès:", error);
-      setConnectionError("Impossible de contacter le serveur. Veuillez vérifier votre connexion internet et réessayer.");
+      console.error("Erreur lors de la vérification du code d'accès aux directives:", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la vérification du code d'accès",
+        variant: "destructive"
+      });
     }
   };
-
-  // Afficher un message si on est déjà en train de récupérer les données
-  if (isAccessing || loading) {
+  
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
@@ -112,36 +125,17 @@ const DirectivesAccess = () => {
     <div className="min-h-screen bg-gray-50">
       <Header />
       <main className="container mx-auto px-4 py-8">
-        <div className="max-w-md mx-auto bg-white p-8 rounded-lg shadow">
-          <h1 className="text-2xl font-bold text-center mb-6 text-directiveplus-700">
-            Accès aux directives anticipées
-          </h1>
-          
-          {connectionError && (
-            <Alert variant="destructive" className="mb-6">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Erreur de connexion</AlertTitle>
-              <AlertDescription>
-                {connectionError}
-              </AlertDescription>
-            </Alert>
-          )}
-          
-          <p className="mb-6 text-gray-700">
-            Veuillez entrer le code d'accès fourni par le titulaire des directives anticipées ainsi 
-            que les informations d'identification demandées pour y accéder.
-          </p>
-
-          <DirectivesAccessForm onSubmit={handleFormSubmit} />
-          
-          {isAuthenticated && (
-            <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-              <p className="text-sm text-blue-800">
-                Vous êtes connecté. Si vous souhaitez consulter vos propres directives, elles seront chargées automatiquement.
-              </p>
-            </div>
-          )}
-        </div>
+        {isAuthenticated && (
+          <Alert className="max-w-md mx-auto mb-4 bg-blue-50 border-blue-200">
+            <InfoIcon className="h-5 w-5 text-blue-600" />
+            <AlertDescription className="text-blue-800">
+              Vous êtes connecté en tant que {user?.user_metadata?.first_name} {user?.user_metadata?.last_name}.
+              Vos directives anticipées seront chargées automatiquement.
+            </AlertDescription>
+          </Alert>
+        )}
+        
+        <DirectivesAccessForm onSubmit={handleAccessDirectives} />
       </main>
     </div>
   );

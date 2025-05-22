@@ -12,12 +12,25 @@ export const useAccessCodeVerification = () => {
     accessCode: string,
     patientName: string,
     patientBirthDate: string,
-    documentType: "medical" | "directive" = "directive"
+    documentType: "medical" | "directive" = "directive",
+    bypassCodeCheck = false // New parameter for authenticated users
   ) => {
     try {
       setIsVerifying(true);
       
-      // Call the verification service
+      // For authenticated users, we can bypass the code verification
+      if (bypassCodeCheck) {
+        logVerificationResult(true, "Authenticated user bypass");
+        setVerificationResult({
+          success: true,
+          data: { authenticated: true }, // Minimal data needed
+          accessType: documentType
+        });
+        setRemainingAttempts(3); // Reset attempts
+        return { authenticated: true }; // Return minimal data
+      }
+      
+      // Regular code verification for non-authenticated users
       const result = await verifyAccessCode(
         accessCode,
         patientName,

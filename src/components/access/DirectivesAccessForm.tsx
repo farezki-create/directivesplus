@@ -7,6 +7,9 @@ import FormActions from "./FormActions";
 import DirectivesFormFields from "./DirectivesFormFields";
 import { toast } from "@/components/ui/use-toast";
 import { useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { InfoIcon } from "lucide-react";
 
 interface DirectivesAccessFormProps {
   onSubmit?: (accessCode: string, formData: any) => Promise<void>;
@@ -21,6 +24,8 @@ const DirectivesAccessForm = ({ onSubmit }: DirectivesAccessFormProps) => {
     remainingAttempts, 
     blockedAccess 
   } = useDirectivesAccessForm(onSubmit);
+
+  const { isAuthenticated, user } = useAuth();
 
   // Afficher les messages d'erreur via toast
   useEffect(() => {
@@ -38,6 +43,16 @@ const DirectivesAccessForm = ({ onSubmit }: DirectivesAccessFormProps) => {
       <h1 className="text-3xl font-bold mb-6 text-center text-directiveplus-700">
         Accès aux directives anticipées
       </h1>
+      
+      {isAuthenticated && (
+        <Alert className="mb-4 bg-blue-50 border-blue-200">
+          <InfoIcon className="h-5 w-5 text-blue-600" />
+          <AlertDescription className="text-blue-800">
+            Vous êtes connecté en tant que {user?.user_metadata?.first_name} {user?.user_metadata?.last_name}. 
+            En tant qu'utilisateur authentifié, vous pouvez accéder directement à vos directives sans saisir de code d'accès.
+          </AlertDescription>
+        </Alert>
+      )}
       
       <Card className="shadow-lg">
         <CardHeader>

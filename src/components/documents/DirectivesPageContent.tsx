@@ -7,6 +7,7 @@ import DirectivesDocumentList from "@/components/documents/DirectivesDocumentLis
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { useDossierStore } from "@/store/dossierStore";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface DirectivesPageContentProps {
   documents: Document[];
@@ -42,21 +43,67 @@ const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
   const navigate = useNavigate();
   const [isAdding, setIsAdding] = useState(false);
   const { setDossierActif } = useDossierStore();
+  const { user, isAuthenticated } = useAuth();
 
   // Log when this component renders with its props
   React.useEffect(() => {
     console.log("DirectivesPageContent rendered:", { 
       documentsCount: documents.length, 
       hasUserId: !!userId,
-      accessCode: accessCode
+      accessCode: accessCode,
+      isAuthenticated
     });
-  }, [documents.length, userId, accessCode]);
+  }, [documents.length, userId, accessCode, isAuthenticated]);
 
   const handleAddToSharedFolder = async (document: Document) => {
     try {
       console.log("Ajout au dossier partagé:", document);
       setIsAdding(true);
 
+      // Pour les utilisateurs authentifiés, on peut ignorer la vérification de code
+      if (isAuthenticated) {
+        // Afficher un toast de chargement
+        toast({
+          title: "Traitement en cours",
+          description: "Préparation du document pour le dossier partagé en tant qu'utilisateur connecté...",
+        });
+        
+        // Créer un dossier minimal avec les infos utilisateur
+        const minimalDossier = {
+          id: `auth-${Date.now()}`,
+          userId: user?.id || "",
+          isFullAccess: true,
+          isDirectivesOnly: true,
+          isMedicalOnly: false,
+          profileData: profile || {
+            first_name: user?.user_metadata?.first_name,
+            last_name: user?.user_metadata?.last_name,
+            birth_date: user?.user_metadata?.birth_date,
+          },
+          contenu: {
+            document_url: document.file_path,
+            document_name: document.file_name
+          }
+        };
+        
+        // Stocker les informations dans le store
+        setDossierActif(minimalDossier);
+        
+        // Attendre un moment pour laisser le temps au state de se mettre à jour
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Rediriger vers la page d'affichage du dossier
+        console.log("Redirection vers affichage-dossier pour utilisateur connecté");
+        navigate('/affichage-dossier', { replace: true });
+
+        toast({
+          title: "Document ajouté",
+          description: "Document ajouté au dossier partagé avec succès",
+        });
+        return;
+      }
+
+      // Pour les utilisateurs non authentifiés, on garde le comportement existant
       if (!accessCode) {
         toast({
           title: "Erreur",
@@ -71,9 +118,6 @@ const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
         title: "Traitement en cours",
         description: "Préparation du document pour le dossier partagé...",
       });
-      
-      // Attendre un moment pour laisser le temps au state de se mettre à jour
-      await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Stocker le code d'accès dans sessionStorage pour la redirection
       sessionStorage.setItem('directAccessCode', accessCode);

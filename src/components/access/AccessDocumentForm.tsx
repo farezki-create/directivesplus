@@ -6,6 +6,9 @@ import { useAccessDocumentForm } from "@/hooks/useAccessDocumentForm";
 import { Form } from "@/components/ui/form";
 import { useEffect } from "react";
 import LoadingState from "@/components/questionnaire/LoadingState";
+import { useAuth } from "@/contexts/AuthContext";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { InfoIcon } from "lucide-react";
 
 const AccessDocumentForm = () => {
   const { 
@@ -14,6 +17,8 @@ const AccessDocumentForm = () => {
     accessDirectives, 
     accessMedicalData 
   } = useAccessDocumentForm();
+  
+  const { isAuthenticated, user } = useAuth();
 
   // Using useEffect to watch for form errors
   useEffect(() => {
@@ -39,6 +44,16 @@ const AccessDocumentForm = () => {
       <h1 className="text-3xl font-bold mb-6 text-center text-directiveplus-700">
         Accès document
       </h1>
+      
+      {isAuthenticated && (
+        <Alert className="mb-4 bg-blue-50 border-blue-200">
+          <InfoIcon className="h-5 w-5 text-blue-600" />
+          <AlertDescription className="text-blue-800">
+            Vous êtes connecté en tant que {user?.user_metadata?.first_name} {user?.user_metadata?.last_name}. 
+            En tant qu'utilisateur authentifié, vous pouvez accéder directement à vos documents sans saisir de code d'accès.
+          </AlertDescription>
+        </Alert>
+      )}
       
       <Card className="shadow-lg">
         <CardHeader>
