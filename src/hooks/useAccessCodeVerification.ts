@@ -1,127 +1,108 @@
 
 import { useState } from "react";
-import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
-// Define a simple interface for the medical document to avoid deep type instantiation
+// Définir des types simples pour éviter le problème de "Type instantiation is excessively deep"
 interface MedicalDocument {
   id: string;
-  user_id: string;
-  file_path: string;
   file_name: string;
-  file_type: string;
-  file_size: number;
-  description: string;
-  created_at: string;
-  shared_code?: string | null;
-  shared_code_expires_at?: string | null;
-  is_active?: boolean | null;
+  file_path: string;
+  [key: string]: any;
 }
 
-// Define a simpler result type
+// Type simplifié pour le résultat de vérification
 type VerificationResult = {
   success: boolean;
-  error?: string;
-  document?: MedicalDocument | null;
+  data?: any;
+  message?: string;
+  accessType?: string;
 };
 
-/**
- * Hook spécialisé pour la vérification de codes d'accès médicaux partagés
- */
 export const useAccessCodeVerification = () => {
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  
-  /**
-   * Vérifie un code d'accès partagé pour un document médical
-   * @param sharedCode Code d'accès partagé
-   * @returns Le document médical si la vérification est réussie, null sinon
-   */
-  const verifySharedAccessCode = async (sharedCode: string): Promise<VerificationResult> => {
-    if (!sharedCode || sharedCode.trim() === '') {
-      const errorMessage = "Code d'accès partagé invalide ou manquant";
-      setError(errorMessage);
-      toast({
-        variant: "destructive",
-        title: "Code invalide",
-        description: errorMessage
-      });
-      return { success: false, error: errorMessage };
-    }
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verificationResult, setVerificationResult] = useState<VerificationResult | null>(null);
+  const [remainingAttempts, setRemainingAttempts] = useState(3);
 
-    setError(null);
-    setLoading(true);
-    
+  const verifyAccessCode = async (
+    accessCode: string,
+    patientName: string,
+    patientBirthDate: string,
+    documentType: "medical" | "directive" = "directive"
+  ) => {
     try {
-      console.log(`Vérification du code d'accès partagé: ${sharedCode}`);
+      setIsVerifying(true);
+      console.log(`Vérification du code ${accessCode} pour ${patientName} né(e) le ${patientBirthDate}`);
+
+      const bruteForceIdentifier = `${documentType}_access_${patientName}_${patientBirthDate}`;
       
-      // Use any type to avoid deep instantiation issues
-      const { data, error: queryError } = await supabase
-        .from('medical_documents')
-        .select('*')
-        .eq('shared_code', sharedCode);
-      
-      // Handle query errors
-      if (queryError) {
-        console.error("Erreur lors de la récupération du document:", queryError);
-        setError(queryError.message);
-        toast({
-          variant: "destructive",
-          title: "Erreur d'accès",
-          description: "Document non trouvé ou code d'accès invalide"
-        });
-        return { success: false, error: queryError.message };
-      }
-      
-      // Data validation - check if we have results
-      if (!data || data.length === 0) {
-        const errorMessage = "Document non trouvé avec ce code d'accès";
-        setError(errorMessage);
-        toast({
-          variant: "destructive",
-          title: "Erreur d'accès",
-          description: errorMessage
-        });
-        return { success: false, error: errorMessage };
-      }
-      
-      // Use type assertion here to avoid deep type instantiation
-      const document = data[0] as MedicalDocument;
-      console.log("Document trouvé avec succès:", document.id);
-      
-      // Log access
-      try {
-        await supabase.from('document_access_logs').insert({
-          user_id: document.user_id,
-          access_code_id: null,
-          nom_consultant: null,
-          prenom_consultant: null,
-          ip_address: null,
-          user_agent: navigator.userAgent
-        });
-      } catch (logError) {
-        // Just log the error but don't fail the verification
-        console.error("Erreur lors de l'enregistrement de l'accès:", logError);
-      }
-      
-      return { success: true, document };
-    } catch (err: any) {
-      console.error("Erreur lors de la vérification du code d'accès partagé:", err);
-      setError(err.message);
-      toast({
-        variant: "destructive",
-        title: "Erreur d'accès",
-        description: "Une erreur est survenue lors de la vérification du code d'accès"
+      // Appel à la fonction Edge verifierCodeAcces
+      const response = await fetch(`https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/verifierCodeAcces`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          accessCode,
+          patientName,
+          patientBirthDate,
+          bruteForceIdentifier
+        })
       });
-      return { success: false, error: err.message };
+
+      const result = await response.json();
+      
+      if (result.success) {
+        console.log("Vérification réussie:", result);
+        setVerificationResult({
+          success: true,
+          data: result.dossier,
+          accessType: documentType
+        });
+        setRemainingAttempts(3); // Réinitialiser les tentatives
+        return result.dossier;
+      } else {
+        console.log("Échec de la vérification:", result);
+        setRemainingAttempts(prev => Math.max(0, prev - 1));
+        setVerificationResult({
+          success: false,
+          message: result.error || "Code d'accès invalide ou document introuvable"
+        });
+        return null;
+      }
+    } catch (error) {
+      console.error("Erreur lors de la vérification du code d'accès:", error);
+      setRemainingAttempts(prev => Math.max(0, prev - 1));
+      setVerificationResult({
+        success: false,
+        message: "Une erreur est survenue lors de la vérification"
+      });
+      return null;
     } finally {
-      setLoading(false);
+      setIsVerifying(false);
     }
   };
-  
+
+  const getMedicalDocuments = async (userId: string): Promise<MedicalDocument[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('medical_documents')
+        .select('*')
+        .eq('user_id', userId);
+
+      if (error) throw error;
+      return data as MedicalDocument[];
+    } catch (error) {
+      console.error("Erreur lors de la récupération des documents médicaux:", error);
+      return [];
+    }
+  };
+
   return {
-    verifySharedAccessCode,
-    loading,
-    error
+    isVerifying,
+    verificationResult,
+    remainingAttempts,
+    blockedAccess: remainingAttempts === 0,
+    verifyAccessCode,
+    getMedicalDocuments
   };
 };

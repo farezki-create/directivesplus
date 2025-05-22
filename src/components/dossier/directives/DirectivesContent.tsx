@@ -23,6 +23,7 @@ const DirectivesContent: React.FC<DirectivesContentProps> = ({ directives, sourc
   }
   
   if (typeof directives === 'object') {
+    // Si c'est un objet, afficher chaque propriété comme une ligne
     return (
       <div className="space-y-4">
         {Object.entries(directives).map(([key, value]) => (
@@ -41,7 +42,7 @@ const DirectivesContent: React.FC<DirectivesContentProps> = ({ directives, sourc
   }
   
   if (typeof directives === 'string') {
-    // Handle string content
+    // Si c'est une chaîne, l'afficher directement
     return (
       <div>
         <p className="whitespace-pre-wrap text-gray-700">{directives}</p>
@@ -50,7 +51,7 @@ const DirectivesContent: React.FC<DirectivesContentProps> = ({ directives, sourc
     );
   }
   
-  // Fallback for any other type
+  // Fallback pour tout autre type
   return (
     <>
       <p className="whitespace-pre-wrap">
