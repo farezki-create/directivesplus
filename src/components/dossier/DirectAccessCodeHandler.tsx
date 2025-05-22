@@ -5,9 +5,15 @@ import { toast } from '@/hooks/use-toast';
 
 interface DirectAccessCodeHandlerProps {
   onLoad: (data: any) => void;
+  logDossierEvent?: (action: string, success: boolean) => void;
+  setInitialLoading?: (loading: boolean) => void;
 }
 
-const DirectAccessCodeHandler: React.FC<DirectAccessCodeHandlerProps> = ({ onLoad }) => {
+const DirectAccessCodeHandler: React.FC<DirectAccessCodeHandlerProps> = ({ 
+  onLoad, 
+  logDossierEvent,
+  setInitialLoading 
+}) => {
   const { setDossierActif } = useDossierStore();
 
   useEffect(() => {
@@ -45,12 +51,28 @@ const DirectAccessCodeHandler: React.FC<DirectAccessCodeHandlerProps> = ({ onLoa
         sessionStorage.removeItem('directAccessCode');
         sessionStorage.removeItem('documentData');
         
+        // Log the event if the function is provided
+        if (logDossierEvent) {
+          logDossierEvent("direct_access_document_loaded", true);
+        }
+        
+        // Update loading state if the function is provided
+        if (setInitialLoading) {
+          setInitialLoading(false);
+        }
+        
         toast({
           title: "Document chargé",
           description: "Le document a été chargé avec succès",
         });
       } catch (error) {
         console.error("Error loading direct access document:", error);
+        
+        // Log the error if the function is provided
+        if (logDossierEvent) {
+          logDossierEvent("direct_access_document_load_error", false);
+        }
+        
         toast({
           title: "Erreur",
           description: "Impossible de charger le document direct",
@@ -58,7 +80,7 @@ const DirectAccessCodeHandler: React.FC<DirectAccessCodeHandlerProps> = ({ onLoa
         });
       }
     }
-  }, [setDossierActif, onLoad]);
+  }, [setDossierActif, onLoad, logDossierEvent, setInitialLoading]);
 
   return null; // This component doesn't render anything
 };

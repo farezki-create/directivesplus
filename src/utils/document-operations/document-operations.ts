@@ -15,15 +15,18 @@ export const viewDocument = (filePath: string) => {
 /**
  * Download a document
  * @param filePath Path to the document
- * @param fileName Name to save the file as
+ * @param fileName Name to save the file as (optional, will be extracted from path if not provided)
  */
 export const downloadDocument = (filePath: string) => {
   console.log("Downloading document:", filePath);
   
+  // Extract filename from path if not provided
+  const fileName = filePath.split('/').pop() || 'document';
+  
   // Create a temporary anchor element
   const link = document.createElement('a');
   link.href = filePath;
-  link.download = filePath.split('/').pop() || 'document';
+  link.download = fileName;
   
   // Append to the document, trigger click and remove
   document.body.appendChild(link);

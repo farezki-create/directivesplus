@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { useDossierStore } from "@/store/dossierStore";
 import { useDossierSession } from "@/hooks/useDossierSession";
-import { useDossierSecurity } from "@/hooks/useDossierSecurity";
+import { useDossierSecurity } from "@/hooks/security/useDossierSecurity";
 import DirectAccessCodeHandler from "@/components/dossier/DirectAccessCodeHandler";
 import InitialDossierCheck from "@/components/dossier/InitialDossierCheck";
 import DossierMain from "@/components/dossier/DossierMain";
@@ -46,14 +46,30 @@ const AffichageDossier: React.FC = () => {
     logDossierEvent
   );
   
+  // Handlers for the check components
+  const handleComplete = () => {
+    setInitialLoading(false);
+  };
+  
+  const handleError = (message: string) => {
+    console.error("Dossier error:", message);
+    setInitialLoading(false);
+  };
+  
   return (
     <>
       <DirectAccessCodeHandler 
-        logDossierEvent={logDossierEvent} 
+        onLoad={(data) => {
+          console.log("Direct access document loaded:", data);
+          setInitialLoading(false);
+        }}
+        logDossierEvent={logDossierEvent}
         setInitialLoading={setInitialLoading}
       />
       
       <InitialDossierCheck
+        onComplete={handleComplete}
+        onError={handleError}
         dossierActif={dossierActif}
         loading={loading}
         initialLoading={initialLoading}
