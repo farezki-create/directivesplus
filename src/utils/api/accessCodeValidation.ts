@@ -41,3 +41,46 @@ export const validateDossierResponse = (result: any): boolean => {
   
   return true;
 };
+
+/**
+ * Validates public access form data
+ */
+export const validatePublicAccessData = (formData: any): boolean => {
+  if (!formData.firstName || formData.firstName.trim() === '') {
+    toast({
+      variant: "destructive",
+      title: "Données incomplètes",
+      description: "Le prénom est requis"
+    });
+    return false;
+  }
+  
+  if (!formData.lastName || formData.lastName.trim() === '') {
+    toast({
+      variant: "destructive",
+      title: "Données incomplètes",
+      description: "Le nom est requis"
+    });
+    return false;
+  }
+  
+  if (!formData.birthDate) {
+    toast({
+      variant: "destructive",
+      title: "Données incomplètes",
+      description: "La date de naissance est requise"
+    });
+    return false;
+  }
+  
+  if (!formData.accessCode || formData.accessCode.trim() === '') {
+    toast({
+      variant: "destructive",
+      title: "Données incomplètes",
+      description: "Le code d'accès est requis"
+    });
+    return false;
+  }
+  
+  return true;
+};

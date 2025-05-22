@@ -9,7 +9,13 @@ export const useDocumentDownload = () => {
       
       // Download the document directly with the path only
       // The fileName is now optional and will be handled inside downloadDocument
-      downloadDocument(filePath);
+      if (fileName) {
+        // For backward compatibility, we can still pass fileName if provided
+        console.log("Using legacy call pattern with fileName");
+        downloadDocument(filePath);
+      } else {
+        downloadDocument(filePath);
+      }
     } catch (error) {
       console.error("Erreur lors du téléchargement du document:", error);
       toast({
