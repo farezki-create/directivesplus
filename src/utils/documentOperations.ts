@@ -5,7 +5,7 @@ export {
   viewDocument, 
   downloadDocument, 
   printDocument 
-} from './document-operations';
+} from './document-operations/document-operations';
 
 // Export the shareDocument function from its dedicated file
-export * from './document-operations/shareDocument';
+export { shareDocument } from './document-operations/shareDocument';

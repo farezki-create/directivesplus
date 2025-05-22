@@ -7,6 +7,6 @@ export {
 } from './document-operations';
 
 // Export shareDocument from its dedicated file
-export * from './shareDocument';
+export { shareDocument } from './shareDocument';
 
 // This pattern makes imports cleaner in the rest of the application
