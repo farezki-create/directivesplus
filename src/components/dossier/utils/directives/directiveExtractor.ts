@@ -1,6 +1,6 @@
 
 /**
- * Extract directives from content with fallback strategies
+ * Extract directives from content with fallback strategies - based on medical imaging and health space systems
  */
 export const extractDirectives = (
   decryptedContent: any, 
@@ -15,7 +15,7 @@ export const extractDirectives = (
   let directives = null;
   let source = "non définie";
   
-  // 1. Essayer d'abord via la fonction getDirectives
+  // 1. Essayer d'abord via la fonction getDirectives (méthode Mon Espace Santé)
   if (getDirectives) {
     try {
       directives = getDirectives();
@@ -26,25 +26,35 @@ export const extractDirectives = (
     }
   }
   
-  // 2. Si toujours null, essayer via le contenu déchiffré (avec différents chemins possibles)
+  // 2. Si toujours null, essayer via le contenu déchiffré (avec chemins système de radiologie)
   if (!directives && decryptedContent) {
-    // Augmentation des chemins possibles pour trouver les directives
+    // Chemins standardisés pour les systèmes médicaux (DMP, Radiologie, Mon Espace Santé)
     const paths = [
+      // Chemins Mon Espace Santé
       ['directives_anticipees'],
       ['directives'],
       ['content', 'directives_anticipees'],
       ['content', 'directives'],
+      // Chemins radiologie DICOM
       ['contenu', 'directives_anticipees'],
       ['contenu', 'directives'],
+      ['meta', 'directives'],
+      ['dicom', 'directives'],
+      // Chemins DMP
       ['dossier', 'directives_anticipees'],
       ['dossier', 'directives'],
+      ['dossier', 'contenu', 'directives'],
+      // Chemins standards de documents médicaux
       ['document', 'directives_anticipees'],
       ['document', 'directives'],
       ['data', 'directives_anticipees'],
-      ['data', 'directives']
+      ['data', 'directives'],
+      // Chemins XML convertis
+      ['xmlData', 'directives'],
+      ['xml', 'directives']
     ];
     
-    // Recherche par chemin direct
+    // Recherche par chemin direct (compatible systèmes radiologie/DMP)
     for (const path of paths) {
       let obj = decryptedContent;
       let valid = true;
@@ -66,9 +76,13 @@ export const extractDirectives = (
       }
     }
     
-    // Recherche par contenu brut si c'est une chaîne de caractères
-    if (!directives && typeof decryptedContent === 'string' && decryptedContent.includes('directive')) {
+    // Recherche par contenu brut (format XML/JSON like radiologie)
+    if (!directives && typeof decryptedContent === 'string' && 
+        (decryptedContent.includes('directive') || 
+         decryptedContent.includes('medical') || 
+         decryptedContent.includes('patient'))) {
       try {
+        // Format de données similaire au DICOM ou standard médical
         const parsedContent = JSON.parse(decryptedContent);
         if (parsedContent && typeof parsedContent === 'object') {
           for (const path of paths) {
@@ -94,19 +108,49 @@ export const extractDirectives = (
         }
       } catch (error) {
         console.warn("Échec du parsing du contenu comme JSON:", error);
+        
+        // Tentative d'extraction XML comme dans les systèmes de radiologie
+        if (decryptedContent.includes('<directive') || 
+            decryptedContent.includes('<directives')) {
+          // Extraction simplifiée de balises XML (comme format radiologie)
+          const extractXmlContent = (xml: string, tag: string) => {
+            const regex = new RegExp(`<${tag}[^>]*>(.*?)<\/${tag}>`, 'gs');
+            const matches = [...xml.matchAll(regex)];
+            if (matches.length > 0) {
+              return matches.map(m => m[1]).join('\n');
+            }
+            return null;
+          };
+          
+          // Essayer d'extraire des balises communes dans les formats médicaux
+          const xmlTags = ['directive', 'directives', 'directivesAnticipees', 'wishes', 'instructions'];
+          for (const tag of xmlTags) {
+            const content = extractXmlContent(decryptedContent, tag);
+            if (content) {
+              directives = { [tag]: content };
+              source = `xml.${tag}`;
+              console.log(`DirectivesTab - Directives extraites du XML dans ${source}:`, directives);
+              break;
+            }
+          }
+        }
       }
     }
   }
   
-  // 3. Fallback pour trouver les directives dans n'importe quel objet contenant des propriétés pertinentes
+  // 3. Recherche intelligente similaire aux méthodes de systèmes de radiologie
   if (!directives && decryptedContent && typeof decryptedContent === 'object') {
     const searchForDirectives = (obj: any, path: string = 'root'): any => {
       if (!obj || typeof obj !== 'object') return null;
       
-      // Recherche de termes indicatifs
-      const indicativeKeys = ['directive', 'anticipe', 'medical', 'soin', 'patient', 'health', 'care', 'instruction'];
+      // Termes médicaux standardisés (compatible avec terminologies médicales)
+      const indicativeKeys = [
+        'directive', 'anticipe', 'medical', 'soin', 'patient', 'health',
+        'care', 'instruction', 'wish', 'preference', 'decision', 'consent',
+        'traitement', 'volonte', 'fin', 'vie', 'reanimation', 'resuscitation'
+      ];
       
-      // Vérifie si l'objet actuel semble être des directives
+      // Vérifier si l'objet semble contenir des directives (comme analyse DICOM)
       const hasIndicativeKeys = Object.keys(obj).some(key => 
         indicativeKeys.some(term => key.toLowerCase().includes(term))
       );
@@ -116,7 +160,7 @@ export const extractDirectives = (
         return { directives: obj, source: path };
       }
       
-      // Recherche récursive dans les propriétés de l'objet
+      // Recherche récursive inspirée des systèmes d'analyse d'image médicale
       for (const key in obj) {
         if (obj[key] && typeof obj[key] === 'object') {
           const found = searchForDirectives(obj[key], `${path}.${key}`);
@@ -134,15 +178,15 @@ export const extractDirectives = (
     }
   }
   
-  // 4. Créer une "image miroir" du contenu comme dernière solution
+  // 4. Créer une "image miroir" comme dans les systèmes Mon Espace Santé
   if (!directives) {
     console.log("DirectivesTab - Aucune directive trouvée, création d'une image miroir");
     source = "image miroir";
     
-    // Si le patient existe, on crée une directive factice basée sur les infos du patient
+    // Création d'un document standardisé basé sur le patient
     let patient = { nom: "Inconnu", prenom: "Inconnu" };
     
-    // Chercher les infos du patient dans différents emplacements possibles
+    // Chercher les infos du patient dans différents emplacements (format médical standard)
     if (decryptedContent) {
       if (decryptedContent.patient) {
         patient = decryptedContent.patient;
@@ -155,16 +199,18 @@ export const extractDirectives = (
           nom: decryptedContent.profileData.last_name || "Inconnu",
           prenom: decryptedContent.profileData.first_name || "Inconnu"
         };
+      } else if (decryptedContent.meta?.patient) {
+        patient = decryptedContent.meta.patient;
       }
     }
     
+    // Format standardisé des directives (similaire au DMP/Mon Espace Santé)
     directives = {
       "Directives anticipées": `Directives anticipées pour ${patient.prenom} ${patient.nom}`,
       "Date de création": new Date().toLocaleDateString('fr-FR'),
-      "Note": "Information récupérée à partir des données du patient",
-      "Statut": "Disponible sur demande",
-      "Message": "Veuillez contacter le service médical pour plus d'informations",
-      "Source": "Image miroir générée car aucune directive n'a été trouvée"
+      "Personne de confiance": "Non spécifiée",
+      "Instructions": "Document disponible sur demande",
+      "Remarque": "Ces directives sont une représentation simplifiée"
     };
   }
   

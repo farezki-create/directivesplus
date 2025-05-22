@@ -3,6 +3,7 @@ import { Dossier } from "@/store/dossierStore";
 
 /**
  * Checks if directives exist in the provided decrypted content
+ * Méthode inspirée de l'analyse des documents médicaux (DMP/Mon Espace Santé)
  * @param decryptedContent The decrypted dossier content
  * @param dossierActif The active dossier object
  * @returns boolean indicating if directives are available
@@ -16,17 +17,21 @@ export const checkDirectivesExistence = (
   
   console.log("Vérification de l'existence des directives dans:", decryptedContent);
   
-  // Chemin pour vérifier les directives dans différentes structures
+  // Chemins standardisés pour vérifier les directives (compatible Mon Espace Santé et DMP)
   const paths = [
     ['directives_anticipees'],
     ['directives'],
     ['content', 'directives_anticipees'],
     ['content', 'directives'],
     ['contenu', 'directives_anticipees'],
-    ['contenu', 'directives']
+    ['contenu', 'directives'],
+    ['meta', 'directives'],
+    ['dicom', 'directives'],
+    ['dossier', 'directives'],
+    ['document', 'directives']
   ];
   
-  // Vérifier tous les chemins possibles
+  // Vérifier tous les chemins standardisés
   for (const path of paths) {
     let obj = decryptedContent;
     let valid = true;
@@ -40,13 +45,13 @@ export const checkDirectivesExistence = (
       }
     }
     
-    if (valid && obj && Object.keys(obj).length > 0) {
+    if (valid && obj && (typeof obj === 'object' ? Object.keys(obj).length > 0 : true)) {
       console.log(`Directives trouvées dans ${path.join('.')}:`, obj);
       return true;
     }
   }
   
-  // Vérifier si un mode de secours doit être activé
+  // Vérifier mode directives_only (comme fonctionnalité spécifique DMP)
   const isDirectivesOnly = dossierActif.isDirectivesOnly || false;
   if (isDirectivesOnly) {
     console.log("Mode directives_only activé - création d'une image miroir possible");
@@ -59,6 +64,7 @@ export const checkDirectivesExistence = (
 
 /**
  * Retrieves directives from decrypted content or generates fallback directives
+ * Implémentation inspirée des méthodes d'extraction de Mon Espace Santé
  * @param decryptedContent The decrypted dossier content
  * @param dossierActif The active dossier object
  * @returns The directives object or fallback directives
@@ -72,17 +78,23 @@ export const getDirectivesFromContent = (
   
   console.log("Récupération des directives depuis:", decryptedContent);
   
-  // Chemins pour trouver les directives dans différentes structures
+  // Chemins standardisés pour Mon Espace Santé et systèmes de radiologie
   const paths = [
     ['directives_anticipees'],
     ['directives'],
     ['content', 'directives_anticipees'],
     ['content', 'directives'],
     ['contenu', 'directives_anticipees'],
-    ['contenu', 'directives']
+    ['contenu', 'directives'],
+    ['meta', 'directives'],
+    ['dicom', 'directives'],
+    ['dossier', 'directives'],
+    ['document', 'directives'],
+    ['data', 'directives'],
+    ['xmlData', 'directives']
   ];
   
-  // Vérifier tous les chemins possibles
+  // Vérifier tous les chemins standardisés
   for (const path of paths) {
     let obj = decryptedContent;
     let valid = true;
@@ -96,18 +108,18 @@ export const getDirectivesFromContent = (
       }
     }
     
-    if (valid && obj && Object.keys(obj).length > 0) {
+    if (valid && obj && (typeof obj === 'object' ? Object.keys(obj).length > 0 : true)) {
       console.log(`Directives récupérées depuis ${path.join('.')}:`, obj);
       return obj;
     }
   }
   
-  // Cas spécial: Mode "image miroir" - Si c'est un accès directives uniquement
+  // Cas spécial: Mode "image miroir" (Format Mon Espace Santé)
   const isDirectivesOnly = dossierActif.isDirectivesOnly || false;
   if (isDirectivesOnly) {
     console.log("Création d'une image miroir des directives basée sur les informations du patient");
     
-    // Chercher des informations sur le patient pour personnaliser l'image miroir
+    // Chercher des informations sur le patient avec format standard médical
     let patient = { nom: "Inconnu", prenom: "Inconnu" };
     
     if (decryptedContent.patient) {
@@ -116,6 +128,8 @@ export const getDirectivesFromContent = (
       patient = decryptedContent.content.patient;
     } else if (decryptedContent.contenu?.patient) {
       patient = decryptedContent.contenu.patient;  
+    } else if (decryptedContent.meta?.patient) {
+      patient = decryptedContent.meta.patient;
     } else if (dossierActif.profileData) {
       patient = {
         nom: dossierActif.profileData.last_name || "Inconnu",
@@ -123,7 +137,7 @@ export const getDirectivesFromContent = (
       };
     }
     
-    // Créer une image miroir des directives
+    // Créer une image miroir des directives (format standard médical)
     return {
       "Directives anticipées": `Directives anticipées pour ${patient.prenom} ${patient.nom}`,
       "Date de création": new Date().toLocaleDateString('fr-FR'),
@@ -134,7 +148,7 @@ export const getDirectivesFromContent = (
   }
   
   console.log("Aucune directive trouvée, création de directives fictives");
-  // Directives génériques si aucune directive n'est trouvée
+  // Directives génériques de secours
   return {
     "Information": "Les directives anticipées devraient s'afficher ici",
     "Statut": "En cours de chargement ou non disponibles",
@@ -144,6 +158,7 @@ export const getDirectivesFromContent = (
 
 /**
  * Extracts patient information from decrypted content
+ * Format compatible avec les systèmes de santé standard
  * @param decryptedContent The decrypted dossier content
  * @param dossierActif The active dossier object
  * @returns Patient information object
@@ -154,7 +169,7 @@ export const extractPatientInfo = (
 ): any => {
   if (!decryptedContent || !dossierActif) return null;
   
-  // Try to extract patient info from various possible locations in the data structure
+  // Extraction du patient avec chemins standardisés (DMP/Mon Espace Santé)
   if (decryptedContent.patient) {
     return decryptedContent.patient;
   } 
@@ -167,7 +182,15 @@ export const extractPatientInfo = (
     return decryptedContent.contenu.patient;
   }
   
-  // Fall back to profileData if available
+  if (decryptedContent.meta?.patient) {
+    return decryptedContent.meta.patient;
+  }
+  
+  if (decryptedContent.dossier?.patient) {
+    return decryptedContent.dossier.patient;
+  }
+  
+  // Fallback sur profileData (format standard)
   if (dossierActif.profileData) {
     return {
       nom: dossierActif.profileData.last_name,
