@@ -3,8 +3,8 @@ import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
-// Définition explicite du type pour le document médical
-type MedicalDocument = {
+// Define a more explicit type for the document to avoid deep type instantiation
+interface MedicalDocument {
   id: string;
   user_id: string;
   file_path: string;
@@ -13,12 +13,12 @@ type MedicalDocument = {
   file_size: number;
   description: string;
   created_at: string;
-  shared_code?: string;
-  shared_code_expires_at?: string;
-  is_active?: boolean;
-};
+  shared_code?: string | null;
+  shared_code_expires_at?: string | null;
+  is_active?: boolean | null;
+}
 
-// Type de retour simplifié pour les fonctions
+// Simplified result type
 type VerificationResult = {
   success: boolean;
   error?: string;
@@ -55,28 +55,26 @@ export const useAccessCodeVerification = () => {
     try {
       console.log(`Vérification du code d'accès partagé: ${sharedCode}`);
       
-      // Éviter les problèmes de typage en utilisant une requête simplifiée
-      const result = await supabase
+      // Simple query without type complications
+      const { data, error: queryError } = await supabase
         .from('medical_documents')
         .select('*')
         .eq('shared_code', sharedCode);
       
-      // Traitement des erreurs
-      if (result.error) {
-        console.error("Erreur lors de la récupération du document:", result.error);
-        setError(result.error.message);
+      // Handle query errors
+      if (queryError) {
+        console.error("Erreur lors de la récupération du document:", queryError);
+        setError(queryError.message);
         toast({
           variant: "destructive",
           title: "Erreur d'accès",
           description: "Document non trouvé ou code d'accès invalide"
         });
-        return { success: false, error: result.error.message };
+        return { success: false, error: queryError.message };
       }
       
-      // Vérification et traitement des données
-      const data = result.data;
-      
-      if (!data || !Array.isArray(data) || data.length === 0) {
+      // Data validation - check if we have results
+      if (!data || data.length === 0) {
         const errorMessage = "Document non trouvé avec ce code d'accès";
         setError(errorMessage);
         toast({
@@ -87,19 +85,24 @@ export const useAccessCodeVerification = () => {
         return { success: false, error: errorMessage };
       }
       
-      // Conversion sûre du résultat en document médical
+      // Safely cast the first document
       const document = data[0] as MedicalDocument;
       console.log("Document trouvé avec succès:", document.id);
       
-      // Enregistrer l'accès dans les logs
-      await supabase.from('document_access_logs').insert({
-        user_id: document.user_id,
-        access_code_id: null,
-        nom_consultant: null,
-        prenom_consultant: null,
-        ip_address: null,
-        user_agent: navigator.userAgent
-      });
+      // Log access
+      try {
+        await supabase.from('document_access_logs').insert({
+          user_id: document.user_id,
+          access_code_id: null,
+          nom_consultant: null,
+          prenom_consultant: null,
+          ip_address: null,
+          user_agent: navigator.userAgent
+        });
+      } catch (logError) {
+        // Just log the error but don't fail the verification
+        console.error("Erreur lors de l'enregistrement de l'accès:", logError);
+      }
       
       return { success: true, document };
     } catch (err: any) {

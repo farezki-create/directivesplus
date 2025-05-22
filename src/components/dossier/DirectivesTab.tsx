@@ -1,7 +1,7 @@
 
 import React, { useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { logDirectiveDebugInfo, extractDirectives } from "./utils/directiveContentUtils";
+import { logDirectiveDebugInfo, extractDirectives } from "./utils/directives";
 import DirectivesHeader from "./directives/DirectivesHeader";
 import DirectivesContent from "./directives/DirectivesContent";
 import NoDirectivesAlert from "./directives/NoDirectivesAlert";
