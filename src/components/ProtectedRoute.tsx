@@ -15,29 +15,30 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
   
-  // Public routes that don't require authentication
-  const publicRoutes = ['/directives-acces', '/', '/mes-directives'];
+  // Liste explicite des routes publiques
+  const publicRoutes = ['/directives-acces', '/', '/mes-directives', '/auth', '/directives-acces', '/affichage-dossier'];
   
   useEffect(() => {
     console.log("ProtectedRoute for", location.pathname);
     console.log("- Auth status:", isAuthenticated ? "Authenticated" : "Not authenticated");
     console.log("- Loading:", isLoading);
     console.log("- Session:", session ? "Present" : "None");
+    console.log("- Is public route:", publicRoutes.includes(location.pathname));
     
-    // Only mark auth as checked when loading is complete
+    // Marquer l'authentification comme vérifiée une fois le chargement terminé
     if (!isLoading) {
       setHasCheckedAuth(true);
     }
     
-    // Reset redirecting state if authentication succeeds
+    // Réinitialiser l'état de redirection si l'authentification réussit
     if (isAuthenticated && isRedirecting) {
       setIsRedirecting(false);
     }
   }, [isAuthenticated, isLoading, location.pathname, isRedirecting, session]);
 
-  // Show loading indicator while checking auth state
+  // Afficher l'indicateur de chargement pendant la vérification de l'état d'authentification
   if (isLoading || !hasCheckedAuth) {
-    console.log("ProtectedRoute: Loading auth state...");
+    console.log("ProtectedRoute: Chargement de l'état d'authentification...");
     return (
       <div className="h-screen flex flex-col items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-directiveplus-600" />
@@ -46,20 +47,21 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     );
   }
 
-  // Allow access to public routes without authentication
+  // Si c'est une route publique, autoriser l'accès sans authentification
   if (publicRoutes.includes(location.pathname)) {
+    console.log("ProtectedRoute: Route publique, accès autorisé");
     return <>{children}</>;
   }
 
-  // Prevent navigation loop by checking if we're already redirecting
+  // Empêcher la boucle de navigation en vérifiant si nous redirigeons déjà
   if (!isAuthenticated && !isRedirecting) {
-    // Store the current path to redirect back after login
-    console.log("ProtectedRoute: Not authenticated, redirecting to auth from:", location.pathname);
+    // Stocker le chemin actuel pour rediriger après la connexion
+    console.log("ProtectedRoute: Non authentifié, redirection vers auth depuis:", location.pathname);
     setIsRedirecting(true);
     return <Navigate to="/auth" state={{ from: location.pathname }} replace />;
   }
 
-  // Check for role-based access if requiredRole is provided
+  // Vérifier l'accès basé sur le rôle si requiredRole est fourni
   if (requiredRole && profile) {
     const userRoles = profile.roles || [];
     const hasRequiredRole = Array.isArray(userRoles) 
@@ -67,13 +69,13 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
       : userRoles === requiredRole;
     
     if (!hasRequiredRole && !isRedirecting) {
-      console.log(`ProtectedRoute: User does not have required role: ${requiredRole}`);
+      console.log(`ProtectedRoute: L'utilisateur n'a pas le rôle requis: ${requiredRole}`);
       setIsRedirecting(true);
       return <Navigate to="/dashboard" state={{ from: location.pathname }} replace />;
     }
   }
 
-  console.log("ProtectedRoute: Authenticated, rendering protected content for", location.pathname);
+  console.log("ProtectedRoute: Authentifié, affichage du contenu protégé pour", location.pathname);
   return <>{children}</>;
 };
 
