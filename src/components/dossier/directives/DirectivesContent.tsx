@@ -38,31 +38,34 @@ const DirectivesContent: React.FC<DirectivesContentProps> = ({ directives, sourc
     );
   }
   
-  // Si c'est un objet, afficher chaque propriété comme une ligne
-  if (typeof directives === 'object' && !Array.isArray(directives)) {
-    // Gestion spéciale pour le format contenant des directives PDF
-    if (directives.contenu && typeof directives.contenu === 'string' && 
-        directives.contenu.startsWith('data:application/pdf')) {
-      return (
-        <div className="space-y-4">
-          <div className="border rounded-lg overflow-hidden">
-            <iframe 
-              src={directives.contenu}
-              className="w-full h-[70vh]"
-              title="Directives anticipées (PDF)"
-            />
-          </div>
-          <div className="text-sm text-gray-600">
-            <p>Date de création: {new Date(directives.date_creation).toLocaleDateString('fr-FR')}</p>
-            {directives.description && (
-              <p className="mt-1">{directives.description}</p>
-            )}
-          </div>
-          {source === "image miroir" && <MirrorSourceAlert />}
+  // Si c'est un objet contenant un PDF dans le champ contenu
+  if (typeof directives === 'object' && !Array.isArray(directives) && 
+      directives.contenu && typeof directives.contenu === 'string' && 
+      directives.contenu.startsWith('data:application/pdf')) {
+    return (
+      <div className="space-y-4">
+        <div className="border rounded-lg overflow-hidden">
+          <iframe 
+            src={directives.contenu}
+            className="w-full h-[70vh]"
+            title="Directives anticipées (PDF)"
+          />
         </div>
-      );
-    }
-    
+        <div className="text-sm text-gray-600">
+          {directives.date_creation && (
+            <p>Date de création: {new Date(directives.date_creation).toLocaleDateString('fr-FR')}</p>
+          )}
+          {directives.description && (
+            <p className="mt-1">{directives.description}</p>
+          )}
+        </div>
+        {source === "image miroir" && <MirrorSourceAlert />}
+      </div>
+    );
+  }
+  
+  // Si c'est un objet standard, afficher chaque propriété comme une ligne
+  if (typeof directives === 'object' && !Array.isArray(directives)) {
     return (
       <div className="space-y-4">
         {Object.entries(directives).map(([key, value]) => (

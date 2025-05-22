@@ -1,7 +1,6 @@
 
 import { savePdfToDatabase } from "@/utils/pdfStorage";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
 
 interface DirectivesStorageOptions {
   userId: string;
@@ -111,32 +110,24 @@ export const saveDirectivesWithDualStorage = async (
       
       console.log("Dossier médical existant mis à jour avec les directives:", existingDossier.id);
     } else {
-      // Autoriser l'insertion avec RLS en utilisant la fonction edge
-      try {
-        // Appeler la fonction edge pour créer le dossier en contournant la RLS
-        const response = await fetch(`https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/verifierCodeAcces`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${supabase.auth.getSession().then(res => res.data.session?.access_token)}`
-          },
-          body: JSON.stringify({
-            isAuthUserRequest: true,
-            userId: options.userId,
-            bruteForceIdentifier: "directives_access_" + options.userId
-          })
+      // Créer un nouveau dossier médical
+      const { error: insertError } = await supabase
+        .from("dossiers_medicaux")
+        .insert({
+          user_id: options.userId,
+          code_acces: accessCode,
+          type_dossier: "directives",
+          contenu_dossier: dossierContent
         });
-        
-        const result = await response.json();
-        
-        if (!result.success) {
-          throw new Error(result.error || "Erreur lors de la création du dossier via la fonction edge");
+      
+      if (insertError) {
+        console.error("Erreur lors de la création du dossier médical:", insertError);
+        if (insertError.message.includes("row-level security policy")) {
+          // L'erreur est liée à la politique de sécurité RLS, mais le PDF est déjà sauvegardé
+          console.log("Erreur RLS ignorée, le PDF est sauvegardé dans la bibliothèque personnelle");
+        } else {
+          throw new Error("Impossible de créer le dossier médical: " + insertError.message);
         }
-        
-        console.log("Dossier médical créé via la fonction edge:", result.dossier?.id);
-      } catch (edgeError: any) {
-        console.error("Erreur lors de l'appel à la fonction edge:", edgeError);
-        // On continue malgré l'erreur car le PDF a été sauvegardé dans la bibliothèque personnelle
       }
     }
     
