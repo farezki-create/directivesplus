@@ -3,6 +3,14 @@ import React from "react";
 import { UseFormReturn } from "react-hook-form";
 import FormField from "./FormField";
 import SecurityAlerts from "./SecurityAlerts";
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { FormControl, FormField as HookFormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+import { CalendarIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface DirectivesFormFieldsProps {
   form: UseFormReturn<any>;
@@ -37,12 +45,51 @@ const DirectivesFormFields: React.FC<DirectivesFormFieldsProps> = ({
         disabled={loading || blockedAccess}
       />
       
-      <FormField 
-        id="birthDate"
-        label="Date de naissance"
-        type="date"
+      <HookFormField
         control={form.control}
-        disabled={loading || blockedAccess}
+        name="birthDate"
+        render={({ field }) => (
+          <FormItem className="space-y-2">
+            <FormLabel>Date de naissance</FormLabel>
+            <Popover>
+              <PopoverTrigger asChild>
+                <FormControl>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-full flex justify-between text-left font-normal",
+                      !field.value && "text-muted-foreground",
+                      loading || blockedAccess ? "opacity-50 cursor-not-allowed" : ""
+                    )}
+                    disabled={loading || blockedAccess}
+                  >
+                    {field.value ? (
+                      format(new Date(field.value), "dd MMMM yyyy", { locale: fr })
+                    ) : (
+                      <span>Sélectionner une date</span>
+                    )}
+                    <CalendarIcon className="h-4 w-4 opacity-50 ml-2" />
+                  </Button>
+                </FormControl>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 bg-white" align="start">
+                <Calendar
+                  mode="single"
+                  selected={field.value ? new Date(field.value) : undefined}
+                  onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
+                  disabled={(date) => 
+                    date > new Date() || 
+                    date < new Date("1900-01-01")
+                  }
+                  initialFocus
+                  locale={fr}
+                  className="p-3 pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+            <FormMessage />
+          </FormItem>
+        )}
       />
       
       <FormField 
