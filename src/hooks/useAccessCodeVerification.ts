@@ -3,7 +3,7 @@ import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
-// Define a more explicit type for the document to avoid deep type instantiation
+// Define a more specific type for the document to avoid deep type instantiation
 interface MedicalDocument {
   id: string;
   user_id: string;
