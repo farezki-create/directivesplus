@@ -37,7 +37,7 @@ const Dashboard = () => {
 
   // Handler pour accéder aux directives publiques
   const handlePublicAccess = () => {
-    navigate("/mes-directives");
+    navigate("/directives-acces");
   };
 
   return (

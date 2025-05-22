@@ -19,7 +19,7 @@ const Header = () => {
   };
 
   const handlePublicAccess = () => {
-    navigate('/mes-directives');
+    navigate('/directives-acces');
   };
 
   return (
@@ -126,7 +126,7 @@ const Header = () => {
               variant="outline" 
               className="w-full border-directiveplus-200 text-directiveplus-700 hover:bg-directiveplus-50"
               onClick={() => {
-                navigate('/mes-directives');
+                navigate('/directives-acces');
                 setIsMenuOpen(false);
               }}
             >
