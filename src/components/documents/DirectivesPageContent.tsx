@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Document } from "@/hooks/useDirectivesDocuments";
 import DirectivesPageHeader from "@/components/documents/DirectivesPageHeader";
@@ -60,7 +59,7 @@ const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
       console.log("Ajout au dossier partagé:", document);
       setIsAdding(true);
 
-      // Prepare a documents list for the dossier
+      // Prepare a documents list for the dossier with complete document information
       const documentsList = [{
         id: document.id,
         file_name: document.file_name,
@@ -70,6 +69,8 @@ const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
         content_type: document.content_type || "application/pdf",
         is_shared: true
       }];
+
+      console.log("Document prepared for storage:", documentsList[0]);
 
       // Pour les utilisateurs authentifiés, on peut ignorer la vérification de code
       if (isAuthenticated && user) {
@@ -97,9 +98,7 @@ const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
               prenom: user?.user_metadata?.first_name || profile?.first_name || "Inconnu",
               date_naissance: user?.user_metadata?.birth_date || profile?.birth_date || null,
             },
-            document_url: document.file_path,
-            document_name: document.file_name,
-            documents: documentsList // Add the documents list
+            documents: documentsList // Use the documents list format
           }
         };
         
@@ -138,7 +137,7 @@ const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
         description: "Préparation du document pour le dossier partagé...",
       });
       
-      // Stocker le code d'accès dans sessionStorage pour la redirection
+      // Stocker le code d'accès et les documents dans sessionStorage pour la redirection
       sessionStorage.setItem('directAccessCode', accessCode);
       sessionStorage.setItem('documentData', JSON.stringify(documentsList));
       

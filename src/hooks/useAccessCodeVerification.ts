@@ -20,6 +20,7 @@ export const useAccessCodeVerification = () => {
     try {
       setIsVerifying(true);
       console.log("Vérification du code:", accessCode, "pour", patientName, "avec document:", documentPath);
+      console.log("Documents list:", documentList);
       
       // Pour les utilisateurs authentifiés, nous pouvons contourner la vérification du code
       if (bypassCodeCheck) {
@@ -27,7 +28,7 @@ export const useAccessCodeVerification = () => {
         console.log("Authenticated user bypass with document:", documentPath);
         
         // Obtenir le dossier utilisateur authentifié avec le chemin de document optionnel
-        const authResult = await getAuthUserDossier(patientName, documentType, documentPath);
+        const authResult = await getAuthUserDossier(patientName, documentType, documentPath, documentList);
         
         if (authResult.success) {
           console.log("Dossier authentifié récupéré avec succès:", authResult.dossier);
@@ -76,7 +77,7 @@ export const useAccessCodeVerification = () => {
         }
         
         // S'assurer que la liste de documents est disponible si fournie
-        if (documentList && documentList.length > 0 && !result.dossier.contenu.documents) {
+        if (documentList && documentList.length > 0) {
           console.log("Ajout manuel de la liste de documents au dossier:", documentList);
           result.dossier.contenu.documents = documentList;
         }

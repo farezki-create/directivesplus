@@ -26,17 +26,18 @@ const DirectivesTab: React.FC<DirectivesTabProps> = ({
       hasDirectives,
       hasGetDirectives: !!getDirectives,
       decryptionError,
-      documentUrl: decryptedContent?.document_url
+      documentUrl: decryptedContent?.document_url,
+      documentsList: decryptedContent?.documents
     });
     
     logDirectiveDebugInfo(decryptedContent, hasDirectives, getDirectives);
   }, [decryptedContent, hasDirectives, getDirectives, decryptionError]);
   
   // Format document for list display if it's a direct URL
-  const formatDocumentForList = (documentUrl: string) => {
+  const formatDocumentForList = (documentUrl: string, documentName?: string) => {
     return [{
       id: `doc-${Date.now()}`,
-      file_name: decryptedContent.document_name || "Document partagé",
+      file_name: documentName || decryptedContent.document_name || "Document partagé",
       file_path: documentUrl,
       created_at: new Date().toISOString(),
       is_shared: true,
@@ -44,10 +45,27 @@ const DirectivesTab: React.FC<DirectivesTabProps> = ({
     }];
   };
   
+  // Check if we already have a documents list
+  if (decryptedContent?.documents && Array.isArray(decryptedContent.documents) && decryptedContent.documents.length > 0) {
+    console.log("DirectivesTab - Using documents list:", decryptedContent.documents);
+    
+    return (
+      <Card className="shadow-lg">
+        <DirectivesHeader />
+        <CardContent className="p-6">
+          <DirectivesContent 
+            directives={decryptedContent.documents}
+            source="document list" 
+          />
+        </CardContent>
+      </Card>
+    );
+  }
+  
   // Prioritize direct document URL if available
   if (decryptedContent?.document_url) {
     console.log("DirectivesTab - Using direct document URL:", decryptedContent.document_url);
-    const documentsList = formatDocumentForList(decryptedContent.document_url);
+    const documentsList = formatDocumentForList(decryptedContent.document_url, decryptedContent.document_name);
     
     return (
       <Card className="shadow-lg">
