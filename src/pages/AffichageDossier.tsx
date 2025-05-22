@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { useDossierStore } from "@/store/dossierStore";
 import { useDossierSession } from "@/hooks/useDossierSession";
 import { useDossierSecurity } from "@/hooks/security/useDossierSecurity";
@@ -33,8 +33,8 @@ const AffichageDossier: React.FC = () => {
     stopSecurityMonitoring
   } = useDossierSecurity();
   
-  const [loadAttempts, setLoadAttempts] = useState(0);
-  const [initialLoading, setInitialLoading] = useState(true);
+  const [loadAttempts, setLoadAttempts] = React.useState(0);
+  const [initialLoading, setInitialLoading] = React.useState(true);
   
   // Use the document processing hook to manage document state
   const { documentLoadError } = useDocumentProcessing(
