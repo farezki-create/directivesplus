@@ -17,6 +17,7 @@ const DirectivesAcces = () => {
   const { setDossierActif } = useDossierStore();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Auto-load directives for authenticated users
   useEffect(() => {
@@ -52,6 +53,7 @@ const DirectivesAcces = () => {
   
   const handleAccessDirectives = async (accessCode: string, formData: any) => {
     try {
+      setIsSubmitting(true);
       console.log("Vérification du code d'accès aux directives:", accessCode);
       
       // Call the API
@@ -94,6 +96,7 @@ const DirectivesAcces = () => {
           description: result.error || "Code d'accès invalide ou données incorrectes",
           variant: "destructive"
         });
+        throw new Error(result.error || "Code d'accès invalide");
       }
     } catch (error) {
       console.error("Erreur lors de la vérification du code d'accès aux directives:", error);
@@ -102,6 +105,9 @@ const DirectivesAcces = () => {
         description: "Une erreur est survenue lors de la vérification du code d'accès",
         variant: "destructive"
       });
+      throw error;
+    } finally {
+      setIsSubmitting(false);
     }
   };
   

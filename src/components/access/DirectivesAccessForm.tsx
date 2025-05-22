@@ -11,13 +11,14 @@ import DirectivesFormFields from "./DirectivesFormFields";
 import { useDirectivesAccessForm } from "@/hooks/access/useDirectivesAccessForm";
 
 interface DirectivesAccessFormProps {
-  onSubmit?: (accessCode: string, formData: any) => void;
+  onSubmit?: (accessCode: string, formData: any) => Promise<void>;
 }
 
 const DirectivesAccessForm: React.FC<DirectivesAccessFormProps> = ({ onSubmit }) => {
   const {
     form,
     loading,
+    setLoading,
     handleSubmit,
     errorMessage,
     remainingAttempts,
@@ -29,9 +30,16 @@ const DirectivesAccessForm: React.FC<DirectivesAccessFormProps> = ({ onSubmit })
     
     // Si un gestionnaire personnalisé est fourni, utilisez-le
     if (onSubmit && form.getValues) {
-      const values = form.getValues();
-      console.log("Soumission du formulaire avec les valeurs:", values);
-      await onSubmit(values.accessCode, values);
+      try {
+        setLoading(true);
+        const values = form.getValues();
+        console.log("Soumission du formulaire avec les valeurs:", values);
+        await onSubmit(values.accessCode, values);
+      } catch (error) {
+        console.error("Erreur lors de la soumission du formulaire:", error);
+      } finally {
+        setLoading(false);
+      }
     } else {
       // Sinon, utilisez le gestionnaire par défaut
       await handleSubmit();

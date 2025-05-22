@@ -95,6 +95,8 @@ export const useDirectivesAccessForm = () => {
             description: "Impossible de vérifier votre accès aux directives",
             variant: "destructive"
           });
+          
+          setLoading(false);
         } finally {
           setLoading(false);
         }
@@ -108,6 +110,7 @@ export const useDirectivesAccessForm = () => {
   return {
     form,
     loading,
+    setLoading,
     handleSubmit,
     errorMessage,
     remainingAttempts,
