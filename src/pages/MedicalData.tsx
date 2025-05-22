@@ -1,12 +1,9 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "@/components/ui/use-toast";
 import AppNavigation from "@/components/AppNavigation";
 import DocumentUploader from "@/components/documents/DocumentUploader";
-import AccessCodeDisplay from "@/components/documents/AccessCodeDisplay";
-import { useAccessCode } from "@/hooks/access-codes/useAccessCode";
 import MedicalHeader from "@/components/medical/MedicalHeader";
 import MedicalDocumentList from "@/components/medical/MedicalDocumentList";
 import MedicalDocumentActions, { useMedicalDocumentActions } from "@/components/medical/MedicalDocumentActions";
@@ -18,8 +15,6 @@ const MedicalData = () => {
   const { user, isAuthenticated, isLoading, profile } = useAuth();
   const navigate = useNavigate();
   const [showAddOptions, setShowAddOptions] = useState(false);
-  const { accessCode, isLoading: codeLoading } = useAccessCode(user, "medical");
-  const [displayCode, setDisplayCode] = useState<string | null>(null);
   
   const {
     documents,
@@ -31,14 +26,6 @@ const MedicalData = () => {
   const documentActions = useMedicalDocumentActions({
     onDeleteComplete: fetchDocuments
   });
-  
-  // Update displayCode whenever accessCode changes
-  useEffect(() => {
-    if (accessCode) {
-      setDisplayCode(accessCode);
-      console.log("MedicalData - Setting displayCode:", accessCode);
-    }
-  }, [accessCode]);
 
   // Redirect if not authenticated
   if (!isLoading && !isAuthenticated) {
@@ -55,8 +42,6 @@ const MedicalData = () => {
   }
 
   console.log("Medical page - Auth state:", { userId: user?.id, hasProfile: !!profile });
-  console.log("Medical page - Access code:", accessCode);
-  console.log("Medical page - Display code:", displayCode);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -76,19 +61,6 @@ const MedicalData = () => {
           </div>
           
           <MedicalHeader onAddDocument={() => setShowAddOptions(!showAddOptions)} />
-
-          {/* Affichage du code d'accès */}
-          {displayCode && profile && (
-            <div className="mt-4 mb-8">
-              <AccessCodeDisplay 
-                accessCode={displayCode}
-                firstName={profile.first_name || ""}
-                lastName={profile.last_name || ""}
-                birthDate={profile.birth_date || ""}
-                type="medical"
-              />
-            </div>
-          )}
 
           {showAddOptions && user && (
             <div className="mb-8">

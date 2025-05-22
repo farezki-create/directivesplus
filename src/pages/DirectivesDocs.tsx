@@ -1,8 +1,6 @@
 
-import { useAccessCode } from "@/hooks/access-codes/useAccessCode";
 import { useDirectivesDocuments } from "@/hooks/useDirectivesDocuments";
 import { useAuth } from "@/contexts/AuthContext";
-import { useEffect, useState } from "react";
 
 import AppNavigation from "@/components/AppNavigation";
 import DirectivesLoadingState from "@/components/documents/DirectivesLoadingState";
@@ -10,15 +8,11 @@ import DirectivesNavigation from "@/components/documents/DirectivesNavigation";
 import DirectivesPageContent from "@/components/documents/DirectivesPageContent";
 import DeleteConfirmationDialog from "@/components/documents/DeleteConfirmationDialog";
 import DocumentPreviewDialog from "@/components/documents/DocumentPreviewDialog";
-import AccessCodeDisplay from "@/components/documents/AccessCodeDisplay";
 
 const DirectivesDocs = () => {
   const { user, profile } = useAuth();
-  const { accessCode, isLoading: codeLoading } = useAccessCode(user, "directive");
-  const [displayCode, setDisplayCode] = useState<string | null>(null);
   
   console.log("DirectivesDocs - Auth state:", { userId: user?.id, hasProfile: !!profile });
-  console.log("DirectivesDocs - Access code:", accessCode);
   
   const {
     isLoading,
@@ -40,14 +34,6 @@ const DirectivesDocs = () => {
     handlePreviewPrint
   } = useDirectivesDocuments();
 
-  // Update displayCode whenever accessCode changes
-  useEffect(() => {
-    if (accessCode) {
-      setDisplayCode(accessCode);
-      console.log("DirectivesDocs - Setting displayCode:", accessCode);
-    }
-  }, [accessCode]);
-
   if (isLoading) {
     return <DirectivesLoadingState />;
   }
@@ -63,20 +49,6 @@ const DirectivesDocs = () => {
       <main className="flex-grow container mx-auto px-4 py-8">
         <DirectivesNavigation />
         
-        {/* Affichage du code d'accès */}
-        {displayCode && profile && (
-          <div className="mt-4 mb-8">
-            <AccessCodeDisplay 
-              accessCode={displayCode}
-              firstName={profile.first_name || ""}
-              lastName={profile.last_name || ""}
-              birthDate={profile.birth_date || ""}
-              type="directive"
-            />
-          </div>
-        )}
-        
-        {/* Pass display code rather than the direct access code */}
         <DirectivesPageContent
           documents={documents}
           showAddOptions={showAddOptions}
@@ -87,7 +59,6 @@ const DirectivesDocs = () => {
           onPrint={handlePrint}
           onView={handleView}
           onDelete={confirmDelete}
-          accessCode={displayCode}
           profile={profile}
         />
       </main>

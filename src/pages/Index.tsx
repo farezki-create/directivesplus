@@ -4,37 +4,17 @@ import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import Hero from "../components/Hero";
 import Footer from "../components/Footer";
-import DirectivesInfo from "../components/DirectivesInfo";
-import { FileText, MessageSquare } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 import ChatAssistant from "../components/ChatAssistant";
 
 const Index = () => {
   const navigate = useNavigate();
-
-  const handleAccessDocuments = () => {
-    navigate("/acces-document");
-  };
 
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-grow">
         <Hero />
-        {/* Boutons d'accès */}
-        <div className="container mx-auto py-8 text-center">
-          <div className="flex flex-col md:flex-row gap-4 justify-center">
-            <Button 
-              onClick={handleAccessDocuments}
-              className="bg-directiveplus-600 hover:bg-directiveplus-700 text-lg py-6 px-8"
-            >
-              <FileText className="mr-2" size={20} />
-              Accès documents sans connexion
-            </Button>
-          </div>
-          <p className="mt-3 text-sm text-gray-600">
-            Accédez aux directives anticipées ou aux données médicales avec un code d'accès
-          </p>
-        </div>
         
         {/* Bouton Voir commentaires en bas de page */}
         <div className="container mx-auto py-8 text-center mb-8">

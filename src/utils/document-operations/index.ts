@@ -5,6 +5,3 @@ export {
   downloadDocument, 
   printDocument 
 } from './document-operations';
-
-// Export shareDocument from its dedicated file
-export { shareDocument } from './shareDocument';
