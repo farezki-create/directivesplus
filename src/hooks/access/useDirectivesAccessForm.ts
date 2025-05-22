@@ -77,9 +77,9 @@ export const useDirectivesAccessForm = () => {
             return;
           }
           
-          // Store the dossier and redirect
+          // Store the dossier and redirect to dashboard (instead of affichage-dossier)
           setDossierActif(result);
-          navigate("/affichage-dossier");
+          navigate("/dashboard", { replace: true });
           
           toast({
             title: "Accès autorisé",

@@ -24,22 +24,24 @@ const DirectivesAccessForm: React.FC<DirectivesAccessFormProps> = ({ onSubmit })
     blockedAccess
   } = useDirectivesAccessForm();
 
-  const onFormSubmit = async () => {
+  const onFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Si un gestionnaire personnalisé est fourni, utilisez-le
     if (onSubmit && form.getValues) {
       const values = form.getValues();
+      console.log("Soumission du formulaire avec les valeurs:", values);
       onSubmit(values.accessCode, values);
     } else {
+      // Sinon, utilisez le gestionnaire par défaut
       await handleSubmit();
     }
   };
 
   return (
-    <Card>
+    <Card className="max-w-md mx-auto">
       <Form {...form}>
-        <form onSubmit={(e) => {
-          e.preventDefault();
-          onFormSubmit();
-        }}>
+        <form onSubmit={onFormSubmit}>
           <CardContent className="space-y-4 pt-4">
             <DirectivesFormFields 
               form={form}
