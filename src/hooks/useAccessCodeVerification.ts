@@ -46,18 +46,14 @@ export const useAccessCodeVerification = () => {
     try {
       console.log(`Vérification du code d'accès partagé: ${sharedCode}`);
       
-      // Use any type for intermediate data to bypass TypeScript deep inference
-      const response: any = await supabase
+      // Use plain JavaScript object to avoid TypeScript deep inference
+      const { data, error: fetchError } = await supabase
         .from('medical_documents')
         .select('*')
-        .eq('shared_code', sharedCode);
-      
-      // Extract data and error from response
-      const data = response.data;
-      const fetchError = response.error;
+        .eq('shared_code', sharedCode) as { data: any, error: any };
       
       // Explicitly cast to our simple type
-      const documents = Array.isArray(data) ? data as MedicalDocument[] : null;
+      const documents = data ? (Array.isArray(data) ? data as MedicalDocument[] : null) : null;
       
       // Find the first document that matches, if any
       const document = documents && documents.length > 0 ? documents[0] : null;
