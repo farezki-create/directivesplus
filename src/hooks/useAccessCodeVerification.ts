@@ -56,7 +56,7 @@ export const useAccessCodeVerification = () => {
       console.log(`Vérification du code d'accès partagé: ${sharedCode}`);
       
       // Use any type to avoid deep instantiation issues
-      const { data, error: queryError }: { data: any, error: any } = await supabase
+      const { data, error: queryError } = await supabase
         .from('medical_documents')
         .select('*')
         .eq('shared_code', sharedCode);
