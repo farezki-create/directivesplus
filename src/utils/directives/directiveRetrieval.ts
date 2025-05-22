@@ -2,11 +2,11 @@
 import { Dossier } from "@/store/dossierStore";
 
 /**
- * Retrieves directives from decrypted content or generates fallback directives
+ * Récupère les directives depuis le contenu décrypté ou génère des directives de secours
  * Implémentation inspirée des méthodes d'extraction de Mon Espace Santé
- * @param decryptedContent The decrypted dossier content
- * @param dossierActif The active dossier object
- * @returns The directives object or fallback directives
+ * @param decryptedContent Le contenu décrypté du dossier
+ * @param dossierActif L'objet dossier actif
+ * @returns L'objet directives ou des directives de secours
  */
 export const getDirectivesFromContent = (
   decryptedContent: any,
@@ -17,20 +17,34 @@ export const getDirectivesFromContent = (
   
   console.log("Récupération des directives depuis:", decryptedContent);
   
-  // Chemins standardisés pour Mon Espace Santé et systèmes de radiologie
+  // Vérifier d'abord si nous sommes dans un affichage exclusif de directives
+  if (dossierActif.isDirectivesOnly) {
+    console.log("Mode d'affichage exclusif des directives");
+  }
+  
+  // Chemins standardisés pour toutes les sources de données possibles
   const paths = [
     ['directives_anticipees'],
     ['directives'],
+    ['directive_anticipee'],
+    ['directive'],
     ['content', 'directives_anticipees'],
     ['content', 'directives'],
     ['contenu', 'directives_anticipees'],
     ['contenu', 'directives'],
+    ['patient', 'directives_anticipees'],
+    ['patient', 'directives'],
     ['meta', 'directives'],
     ['dicom', 'directives'],
+    ['dossier', 'directives_anticipees'],
     ['dossier', 'directives'],
+    ['dossier', 'contenu', 'directives'],
+    ['document', 'directives_anticipees'],
     ['document', 'directives'],
+    ['data', 'directives_anticipees'],
     ['data', 'directives'],
-    ['xmlData', 'directives']
+    ['xmlData', 'directives'],
+    ['xml', 'directives']
   ];
   
   // Vérifier tous les chemins standardisés
@@ -50,6 +64,24 @@ export const getDirectivesFromContent = (
     if (valid && obj && (typeof obj === 'object' ? Object.keys(obj).length > 0 : true)) {
       console.log(`Directives récupérées depuis ${path.join('.')}:`, obj);
       return obj;
+    }
+  }
+  
+  // Vérification si l'objet racine est directement les directives
+  if (decryptedContent && typeof decryptedContent === 'object') {
+    const directiveIndicators = ['Directives anticipées', 'Date de création', 'Personne de confiance', 'Instructions'];
+    let indicatorCount = 0;
+    
+    for (const indicator of directiveIndicators) {
+      if (Object.keys(decryptedContent).some(key => key.includes(indicator))) {
+        indicatorCount++;
+      }
+    }
+    
+    // Si l'objet racine a suffisamment d'indicateurs de directives
+    if (indicatorCount >= 2) {
+      console.log("L'objet racine contient directement les directives");
+      return decryptedContent;
     }
   }
   
