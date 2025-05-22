@@ -247,7 +247,7 @@ const DirectivesFormFields: React.FC<DirectivesFormFieldsProps> = ({
                     locale={fr}
                     className={cn("p-3 pointer-events-auto")}
                     components={{
-                      Header: ({ onPreviousClick, onNextClick }) => (
+                      Caption: ({ onPreviousClick, onNextClick }) => (
                         <CalendarHeader 
                           onPreviousMonth={onPreviousClick} 
                           onNextMonth={onNextClick}
