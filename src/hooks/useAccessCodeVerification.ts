@@ -55,31 +55,28 @@ export const useAccessCodeVerification = () => {
     try {
       console.log(`Vérification du code d'accès partagé: ${sharedCode}`);
       
-      // Requête sans typage explicite pour éviter les problèmes d'inférence
-      const { data, error: queryError } = await supabase
+      // Éviter les problèmes de typage en utilisant une requête simplifiée
+      const result = await supabase
         .from('medical_documents')
         .select('*')
         .eq('shared_code', sharedCode);
       
-      // Traitement sécurisé des données après récupération
-      let document: MedicalDocument | null = null;
-      
-      if (queryError) {
-        console.error("Erreur lors de la récupération du document:", queryError);
-        setError(queryError.message);
+      // Traitement des erreurs
+      if (result.error) {
+        console.error("Erreur lors de la récupération du document:", result.error);
+        setError(result.error.message);
         toast({
           variant: "destructive",
           title: "Erreur d'accès",
           description: "Document non trouvé ou code d'accès invalide"
         });
-        return { success: false, error: queryError.message };
+        return { success: false, error: result.error.message };
       }
       
-      // Vérification et typage des données après récupération
-      if (data && Array.isArray(data) && data.length > 0) {
-        // Assignation avec vérification de type
-        document = data[0] as MedicalDocument;
-      } else {
+      // Vérification et traitement des données
+      const data = result.data;
+      
+      if (!data || !Array.isArray(data) || data.length === 0) {
         const errorMessage = "Document non trouvé avec ce code d'accès";
         setError(errorMessage);
         toast({
@@ -90,6 +87,8 @@ export const useAccessCodeVerification = () => {
         return { success: false, error: errorMessage };
       }
       
+      // Conversion sûre du résultat en document médical
+      const document = data[0] as MedicalDocument;
       console.log("Document trouvé avec succès:", document.id);
       
       // Enregistrer l'accès dans les logs
