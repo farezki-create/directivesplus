@@ -33,14 +33,13 @@ export const useAccessCodeVerification = () => {
     try {
       console.log(`Vérification du code d'accès partagé: ${sharedCode}`);
       
-      // Use raw query syntax to bypass TypeScript inference issues
-      const result = await supabase
+      // Use explicit any type to avoid TypeScript inference issues
+      const { data, error: fetchError } = await supabase
         .from('medical_documents')
         .select('*')
-        .eq('shared_code', sharedCode);
+        .eq('shared_code', sharedCode) as { data: any[], error: any };
       
-      const data = result.data?.[0] || null;
-      const fetchError = result.error;
+      const document = data?.[0] || null;
       
       if (fetchError) {
         console.error("Erreur lors de la récupération du document:", fetchError);
@@ -53,7 +52,7 @@ export const useAccessCodeVerification = () => {
         return { success: false, error: fetchError.message, document: null };
       }
       
-      if (!data) {
+      if (!document) {
         const errorMessage = "Document non trouvé avec ce code d'accès";
         setError(errorMessage);
         toast({
@@ -64,11 +63,11 @@ export const useAccessCodeVerification = () => {
         return { success: false, error: errorMessage, document: null };
       }
       
-      console.log("Document trouvé avec succès:", data.id);
+      console.log("Document trouvé avec succès:", document.id);
       
       // Enregistrer l'accès dans les logs
       await supabase.from('document_access_logs').insert({
-        user_id: data.user_id,
+        user_id: document.user_id,
         access_code_id: null,
         nom_consultant: null,
         prenom_consultant: null,
@@ -76,7 +75,7 @@ export const useAccessCodeVerification = () => {
         user_agent: navigator.userAgent
       });
       
-      return { success: true, document: data };
+      return { success: true, document };
     } catch (err: any) {
       console.error("Erreur lors de la vérification du code d'accès partagé:", err);
       setError(err.message);
