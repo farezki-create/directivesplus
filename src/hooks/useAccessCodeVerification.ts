@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Database } from "@/integrations/supabase/types";
 
 // Define a simple type for the medical document to avoid deep type inference
 type MedicalDocument = {
@@ -47,17 +46,20 @@ export const useAccessCodeVerification = () => {
     try {
       console.log(`Vérification du code d'accès partagé: ${sharedCode}`);
       
-      // Pour éviter les problèmes de typage complexe, utiliser une approche simplifiée
-      const result = await supabase
+      // Avoid TypeScript deep type inference by using explicit type casting
+      const { data, error: fetchError }: { 
+        data: any; 
+        error: any 
+      } = await supabase
         .from('medical_documents')
         .select('*')
         .eq('shared_code', sharedCode);
       
-      const data = result.data as MedicalDocument[] | null;
-      const fetchError = result.error;
+      // Cast the result to our simple type
+      const documents = data as MedicalDocument[] | null;
       
       // Find the first document that matches, if any
-      const document = data && data.length > 0 ? data[0] : null;
+      const document = documents && documents.length > 0 ? documents[0] : null;
       
       if (fetchError) {
         console.error("Erreur lors de la récupération du document:", fetchError);
