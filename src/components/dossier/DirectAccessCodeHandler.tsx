@@ -2,6 +2,7 @@
 import React, { useEffect } from 'react';
 import { useDossierStore } from '@/store/dossierStore';
 import { toast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 interface DirectAccessCodeHandlerProps {
   onLoad: (data: any) => void;
@@ -15,6 +16,7 @@ const DirectAccessCodeHandler: React.FC<DirectAccessCodeHandlerProps> = ({
   setInitialLoading 
 }) => {
   const { setDossierActif } = useDossierStore();
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Check for direct access code in sessionStorage
@@ -61,6 +63,9 @@ const DirectAccessCodeHandler: React.FC<DirectAccessCodeHandlerProps> = ({
           setInitialLoading(false);
         }
         
+        // Redirect to dashboard
+        navigate('/dashboard');
+        
         toast({
           title: "Document chargé",
           description: "Le document a été chargé avec succès",
@@ -80,7 +85,7 @@ const DirectAccessCodeHandler: React.FC<DirectAccessCodeHandlerProps> = ({
         });
       }
     }
-  }, [setDossierActif, onLoad, logDossierEvent, setInitialLoading]);
+  }, [setDossierActif, onLoad, logDossierEvent, setInitialLoading, navigate]);
 
   return null; // This component doesn't render anything
 };

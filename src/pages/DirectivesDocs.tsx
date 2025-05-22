@@ -129,7 +129,8 @@ const DirectivesDocs = () => {
 
   // Rediriger vers la page d'affichage si l'utilisateur a vérifié son accès public
   if (publicAccessVerified) {
-    navigate("/affichage-dossier");
+    // Redirection vers dashboard au lieu de affichage-dossier
+    navigate("/dashboard");
     return <DirectivesLoadingState />;
   }
 

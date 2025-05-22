@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Document } from "@/hooks/useDirectivesDocuments";
 import DirectivesPageHeader from "@/components/documents/DirectivesPageHeader";
@@ -110,9 +111,9 @@ const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
         // Attendre un moment pour laisser le temps au state de se mettre à jour
         await new Promise(resolve => setTimeout(resolve, 800));
         
-        // Rediriger vers la page d'affichage du dossier
-        console.log("Redirection vers affichage-dossier pour utilisateur connecté avec document:", document.file_name);
-        navigate('/affichage-dossier');
+        // Rediriger vers la page dashboard au lieu de affichage-dossier
+        console.log("Redirection vers dashboard pour utilisateur connecté avec document:", document.file_name);
+        navigate('/dashboard');
 
         toast({
           title: "Document ajouté",
@@ -150,9 +151,9 @@ const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
       // Attendre un moment pour laisser le temps au state de se mettre à jour
       await new Promise(resolve => setTimeout(resolve, 800));
       
-      // Rediriger vers la page d'affichage du dossier
-      console.log("Redirection vers affichage-dossier");
-      navigate('/affichage-dossier');
+      // Rediriger vers la page dashboard au lieu de affichage-dossier
+      console.log("Redirection vers dashboard");
+      navigate('/dashboard');
 
       toast({
         title: "Document ajouté",

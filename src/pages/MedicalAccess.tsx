@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDossierStore } from "@/store/dossierStore";
 import { useVerifierCodeAcces, Dossier } from "@/hooks/useVerifierCodeAcces";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { getAuthUserDossier } from "@/api/dossier";
 
 import Header from "@/components/Header";
@@ -37,7 +37,7 @@ const MedicalAccess = () => {
           title: "Succès",
           description: "Vos données médicales ont été chargées avec succès",
         });
-        navigate("/affichage-dossier");
+        navigate("/dashboard");
       } catch (error) {
         console.error("Erreur lors de la récupération des données médicales:", error);
         toast({
@@ -66,8 +66,8 @@ const MedicalAccess = () => {
         // Stocker le dossier actif en utilisant le store
         setDossierActif(dossier);
         
-        // Rediriger vers la page d'affichage du dossier
-        navigate("/affichage-dossier");
+        // Rediriger vers la page dashboard au lieu de affichage-dossier
+        navigate("/dashboard");
         
         // Notification de succès
         toast({
