@@ -18,29 +18,39 @@ export const useAccessCodeVerification = () => {
   ) => {
     try {
       setIsVerifying(true);
+      console.log("Vérification du code:", accessCode, "pour", patientName, "avec document:", documentPath);
       
-      // For authenticated users, we can bypass the code verification
+      // Pour les utilisateurs authentifiés, nous pouvons contourner la vérification du code
       if (bypassCodeCheck) {
-        logVerificationResult(true, "Authenticated user bypass");
+        logVerificationResult(true, "Authenticated user bypass", {documentPath});
         console.log("Authenticated user bypass with document:", documentPath);
         
-        // Get auth user dossier with optional document path
+        // Obtenir le dossier utilisateur authentifié avec le chemin de document optionnel
         const authResult = await getAuthUserDossier(patientName, documentType, documentPath);
         
         if (authResult.success) {
+          console.log("Dossier authentifié récupéré avec succès:", authResult.dossier);
+          
+          // S'assurer que le document_url est correctement défini
+          if (documentPath && !authResult.dossier.contenu.document_url) {
+            console.log("Ajout manuel de l'URL du document au dossier:", documentPath);
+            authResult.dossier.contenu.document_url = documentPath;
+          }
+          
           setVerificationResult({
             success: true,
-            data: authResult.dossier, // Use the dossier from auth result
+            data: authResult.dossier,
             accessType: documentType
           });
-          setRemainingAttempts(3); // Reset attempts
+          setRemainingAttempts(3); // Réinitialiser les tentatives
           return authResult.dossier;
         } else {
+          console.error("Échec de la récupération du dossier authentifié:", authResult.error);
           throw new Error(authResult.error || "Échec de la récupération du dossier authentifié");
         }
       }
       
-      // Regular code verification for non-authenticated users
+      // Vérification régulière du code pour les utilisateurs non authentifiés
       const result = await verifyAccessCode(
         accessCode,
         patientName,
@@ -50,15 +60,24 @@ export const useAccessCodeVerification = () => {
       
       if (result.success) {
         logVerificationResult(true, "Code validated successfully", result);
+        console.log("Code validé avec succès:", result.dossier);
+        
+        // S'assurer que le document_url est disponible si fourni
+        if (documentPath && !result.dossier.contenu.document_url) {
+          console.log("Ajout manuel de l'URL du document au dossier:", documentPath);
+          result.dossier.contenu.document_url = documentPath;
+        }
+        
         setVerificationResult({
           success: true,
           data: result.dossier,
           accessType: documentType
         });
-        setRemainingAttempts(3); // Reset attempts on success
+        setRemainingAttempts(3); // Réinitialiser les tentatives en cas de succès
         return result.dossier;
       } else {
         logVerificationResult(false, result.error || "Invalid access code");
+        console.error("Échec de la validation du code:", result.error);
         setRemainingAttempts(prev => Math.max(0, prev - 1));
         setVerificationResult({
           success: false,

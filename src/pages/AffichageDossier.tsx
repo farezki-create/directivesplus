@@ -14,7 +14,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 
 const AffichageDossier: React.FC = () => {
-  const { dossierActif } = useDossierStore();
+  const { dossierActif, setDossierActif } = useDossierStore();
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   
@@ -44,18 +44,57 @@ const AffichageDossier: React.FC = () => {
   const [initialLoading, setInitialLoading] = useState(true);
   const [documentLoadError, setDocumentLoadError] = useState<string | null>(null);
   
-  // Check for document-related errors when the dossier content changes
+  // Log detailed information about the dossier state for debugging
   useEffect(() => {
-    if (dossierActif && !loading && !decryptedContent?.document_url && dossierActif?.contenu?.document_url) {
-      console.log("Document URL exists in dossier but not in decrypted content:", dossierActif.contenu.document_url);
-      setDocumentLoadError("Le document n'a pas pu être chargé correctement. Veuillez réessayer.");
-      
-      // Log the event for troubleshooting
-      logDossierEvent("document_load_failure", false);
+    if (dossierActif) {
+      console.log("AffichageDossier - dossierActif état:", { 
+        id: dossierActif.id,
+        hasDocumentUrl: !!dossierActif.contenu?.document_url,
+        documentUrl: dossierActif.contenu?.document_url,
+        decryptedContentAvailable: !!decryptedContent,
+        loading
+      });
     } else {
-      setDocumentLoadError(null);
+      console.log("AffichageDossier - Aucun dossier actif");
     }
   }, [dossierActif, decryptedContent, loading]);
+  
+  // Check for document-related errors when the dossier content changes
+  useEffect(() => {
+    if (dossierActif && !loading) {
+      // Vérifier si l'URL du document existe dans le dossier
+      if (dossierActif.contenu?.document_url) {
+        console.log("URL du document détectée dans le dossier:", dossierActif.contenu.document_url);
+        
+        // Si le contenu déchiffré n'inclut pas l'URL du document, l'ajouter manuellement
+        if (decryptedContent && !decryptedContent.document_url) {
+          console.log("Ajout manuel de l'URL du document au contenu déchiffré");
+          const updatedContent = {
+            ...decryptedContent,
+            document_url: dossierActif.contenu.document_url
+          };
+          
+          // Force update of dossier actif to ensure document URL is present
+          setDossierActif({
+            ...dossierActif,
+            contenu: {
+              ...dossierActif.contenu,
+              document_url: dossierActif.contenu.document_url
+            }
+          });
+          
+          // Log status for debugging
+          console.log("Mise à jour du contenu déchiffré avec l'URL du document:", updatedContent);
+        }
+      } else if (!dossierActif.contenu?.document_url && !hasDirectives) {
+        console.log("Aucune URL de document ou directive trouvée dans le dossier");
+        setDocumentLoadError("Le document n'a pas pu être chargé correctement. Veuillez réessayer.");
+        logDossierEvent("document_load_failure", false);
+      } else {
+        setDocumentLoadError(null);
+      }
+    }
+  }, [dossierActif, decryptedContent, loading, hasDirectives]);
   
   // Handler for retrying document load
   const handleRetryDocumentLoad = () => {
@@ -68,7 +107,7 @@ const AffichageDossier: React.FC = () => {
       // Reset error state
       setDocumentLoadError(null);
       
-      // Force a reload of the current page
+      // Force a reload of the current page to restart the flow
       window.location.reload();
     } else {
       // For non-authenticated users, just navigate back
@@ -76,7 +115,6 @@ const AffichageDossier: React.FC = () => {
     }
   };
   
-  // Gérer le code d'accès direct (dans un composant séparé)
   return (
     <>
       <DirectAccessCodeHandler 
@@ -129,16 +167,16 @@ const AffichageDossier: React.FC = () => {
           />
           
           {/* Contenu principal (affiché uniquement si nous avons du contenu) */}
-          {dossierActif && decryptedContent && (
+          {dossierActif && (decryptedContent || dossierActif.contenu?.document_url) && (
             <DossierContentView
               patientInfo={patientInfo}
-              decryptedContent={decryptedContent}
+              decryptedContent={decryptedContent || { document_url: dossierActif.contenu.document_url }}
               decryptionError={decryptionError}
               activeTab={activeTab}
               setActiveTab={setActiveTab}
               canAccessDirectives={canAccessDirectives}
               canAccessMedical={canAccessMedical}
-              hasDirectives={hasDirectives}
+              hasDirectives={hasDirectives || !!dossierActif.contenu?.document_url}
               getDirectives={getDirectives}
               resetActivityTimer={resetActivityTimer}
               logDossierEvent={logDossierEvent}

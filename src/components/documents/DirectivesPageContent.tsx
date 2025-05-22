@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Document } from "@/hooks/useDirectivesDocuments";
 import DirectivesPageHeader from "@/components/documents/DirectivesPageHeader";
 import DirectivesAddDocumentSection from "@/components/documents/DirectivesAddDocumentSection";
@@ -46,7 +46,7 @@ const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
   const { user, isAuthenticated } = useAuth();
 
   // Log when this component renders with its props
-  React.useEffect(() => {
+  useEffect(() => {
     console.log("DirectivesPageContent rendered:", { 
       documentsCount: documents.length, 
       hasUserId: !!userId,
@@ -61,17 +61,17 @@ const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
       setIsAdding(true);
 
       // Pour les utilisateurs authentifiés, on peut ignorer la vérification de code
-      if (isAuthenticated) {
+      if (isAuthenticated && user) {
         // Afficher un toast de chargement
         toast({
           title: "Traitement en cours",
-          description: "Préparation du document pour le dossier partagé en tant qu'utilisateur connecté...",
+          description: "Préparation du document pour le dossier partagé...",
         });
         
         // Créer un dossier minimal avec les infos utilisateur et le document sélectionné
         const minimalDossier = {
           id: `auth-${Date.now()}`,
-          userId: user?.id || "",
+          userId: user.id || "",
           isFullAccess: true,
           isDirectivesOnly: true,
           isMedicalOnly: false,
@@ -91,15 +91,17 @@ const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
           }
         };
         
+        console.log("Dossier créé:", minimalDossier);
+        
         // Stocker les informations dans le store
         setDossierActif(minimalDossier);
         
         // Attendre un moment pour laisser le temps au state de se mettre à jour
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 800));
         
         // Rediriger vers la page d'affichage du dossier
         console.log("Redirection vers affichage-dossier pour utilisateur connecté avec document:", document.file_name);
-        navigate('/affichage-dossier', { replace: true });
+        navigate('/affichage-dossier');
 
         toast({
           title: "Document ajouté",
@@ -133,11 +135,11 @@ const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
       setDossierActif(null);
       
       // Attendre un moment pour laisser le temps au state de se mettre à jour
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 800));
       
       // Rediriger vers la page d'affichage du dossier
       console.log("Redirection vers affichage-dossier");
-      navigate('/affichage-dossier', { replace: true });
+      navigate('/affichage-dossier');
 
       toast({
         title: "Document ajouté",
@@ -177,7 +179,6 @@ const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
         onAddToSharedFolder={handleAddToSharedFolder}
         onVisibilityChange={(id, isPrivate) => {
           console.log("DirectivesPageContent - Changement de visibilité:", id, isPrivate);
-          // You can implement visibility change handling here
         }}
         isAdding={isAdding}
       />

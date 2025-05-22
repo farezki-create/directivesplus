@@ -13,13 +13,43 @@ const DirectivesContent: React.FC<DirectivesContentProps> = ({ directives, sourc
     console.log("DirectivesContent rendering with:", { 
       directivesType: typeof directives,
       directivesContent: directives,
-      source 
+      source,
+      isPDFUrl: typeof directives === 'string' && (
+        directives.startsWith('data:application/pdf') || 
+        directives.endsWith('.pdf') ||
+        directives.includes('storage.googleapis.com')
+      )
     });
   }, [directives, source]);
 
   // Handle different possible types of directives
   if (!directives) {
     return <p className="text-gray-500 italic">Aucune directive disponible</p>;
+  }
+  
+  // Handle URL links to PDF documents (from storage)
+  if (typeof directives === 'string' && (
+      directives.endsWith('.pdf') || 
+      directives.includes('storage.googleapis.com') ||
+      directives.includes('firebasestorage.googleapis.com'))
+  ) {
+    console.log("Affichage du PDF depuis l'URL:", directives);
+    return (
+      <div className="space-y-4">
+        <div className="border rounded-lg overflow-hidden">
+          <iframe 
+            src={directives}
+            className="w-full h-[70vh]"
+            title="Document (PDF)"
+            allow="fullscreen"
+          />
+        </div>
+        <p className="text-sm text-gray-500">
+          Source du document : {source}
+        </p>
+        {source === "image miroir" && <MirrorSourceAlert />}
+      </div>
+    );
   }
   
   // Format de PDF (data URI)

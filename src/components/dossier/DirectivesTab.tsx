@@ -25,11 +25,28 @@ const DirectivesTab: React.FC<DirectivesTabProps> = ({
       hasContent: !!decryptedContent,
       hasDirectives,
       hasGetDirectives: !!getDirectives,
-      decryptionError
+      decryptionError,
+      documentUrl: decryptedContent?.document_url
     });
     
     logDirectiveDebugInfo(decryptedContent, hasDirectives, getDirectives);
   }, [decryptedContent, hasDirectives, getDirectives, decryptionError]);
+  
+  // Prioritize direct document URL if available
+  if (decryptedContent?.document_url) {
+    console.log("DirectivesTab - Using direct document URL:", decryptedContent.document_url);
+    return (
+      <Card className="shadow-lg">
+        <DirectivesHeader />
+        <CardContent className="p-6">
+          <DirectivesContent 
+            directives={decryptedContent.document_url} 
+            source="document direct" 
+          />
+        </CardContent>
+      </Card>
+    );
+  }
   
   // Display error if there is one
   if (decryptionError) {

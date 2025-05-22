@@ -37,7 +37,13 @@ export const verifyAccessCode = async (
       })
     });
 
-    return await response.json();
+    if (!response.ok) {
+      console.error(`Erreur HTTP: ${response.status} ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    console.log("Résultat de la vérification:", result);
+    return result;
   } catch (error) {
     console.error("Erreur lors de la vérification du code d'accès:", error);
     return {
@@ -72,7 +78,8 @@ interface DossierContent {
     prenom: string;
     date_naissance: string;
   };
-  document_url?: string; // Make document_url optional
+  document_url?: string;
+  document_name?: string;
 }
 
 // Define the type for the dossier data
@@ -92,9 +99,11 @@ interface DossierData {
 export const getAuthUserDossier = async (
   userId: string,
   documentType: "medical" | "directive" = "directive",
-  documentPath?: string // Added optional document path parameter for direct document inclusion
+  documentPath?: string
 ): Promise<any> => {
   try {
+    console.log("getAuthUserDossier appelé avec:", { userId, documentType, documentPath });
+    
     // Fetch user profile
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
@@ -102,7 +111,12 @@ export const getAuthUserDossier = async (
       .eq('id', userId)
       .single();
     
-    if (profileError) throw profileError;
+    if (profileError) {
+      console.error("Erreur lors de la récupération du profil:", profileError);
+      throw profileError;
+    }
+    
+    console.log("Profil utilisateur récupéré:", profile);
     
     // Create a dossier object for authenticated users with enhanced document support
     const dossierData: DossierData = {
@@ -121,11 +135,13 @@ export const getAuthUserDossier = async (
       }
     };
     
-    // If a document path was provided, add it to the dossier content
+    // Si un chemin de document a été fourni, l'ajouter au contenu du dossier
     if (documentPath) {
-      console.log("Adding document to dossier:", documentPath);
+      console.log("Ajout du document au dossier:", documentPath);
       dossierData.contenu.document_url = documentPath;
     }
+    
+    console.log("Dossier créé pour utilisateur authentifié:", dossierData);
     
     return {
       success: true,

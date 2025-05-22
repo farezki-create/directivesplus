@@ -40,39 +40,56 @@ export const verifyAccessCode = async (
 export const getAuthUserDossier = async (
   userId: string, 
   bruteForceIdentifier?: string,
-  documentPath?: string // Added parameter to support direct document incorporation
+  documentPath?: string // Parameter to support direct document incorporation
 ) => {
   console.log(`Tentative de récupération du dossier pour l'utilisateur authentifié: ${userId} (${bruteForceIdentifier || 'accès complet'})`);
   console.log("Document path:", documentPath);
   
-  const requestBody: any = {
-    isAuthUserRequest: true,
-    userId,
-    bruteForceIdentifier
-  };
-  
-  // If a document path is provided, include it in the request
-  if (documentPath) {
-    requestBody.documentPath = documentPath;
-    console.log("Adding document to dossier request:", documentPath);
+  try {
+    const requestBody: any = {
+      isAuthUserRequest: true,
+      userId,
+      bruteForceIdentifier
+    };
+    
+    // If a document path is provided, include it in the request
+    if (documentPath) {
+      requestBody.documentPath = documentPath;
+      console.log("Adding document to dossier request:", documentPath);
+    }
+    
+    const response = await fetch("https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/verifierCodeAcces", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(requestBody)
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Erreur HTTP ${response.status}:`, errorText);
+      throw new Error(`Erreur de serveur: ${response.status} ${response.statusText}`);
+    }
+    
+    const result = await response.json();
+    
+    // Ensure document URL is present in the result if it was provided
+    if (documentPath && result.success && result.dossier && !result.dossier.contenu.document_url) {
+      console.log("Ajout manuel de l'URL du document au dossier:", documentPath);
+      result.dossier.contenu.document_url = documentPath;
+    }
+    
+    console.log("Réponse de récupération du dossier utilisateur:", result);
+    
+    return result;
+  } catch (err: any) {
+    console.error("Erreur lors de la récupération du dossier authentifié:", err);
+    return {
+      success: false,
+      error: err.message || "Erreur lors de l'accès au dossier"
+    };
   }
-  
-  const response = await fetch("https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/verifierCodeAcces", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(requestBody)
-  });
-  
-  if (!response.ok) {
-    throw new Error(`Erreur de serveur: ${response.status} ${response.statusText}`);
-  }
-  
-  const result = await response.json();
-  console.log("Réponse de récupération du dossier utilisateur:", result);
-  
-  return result;
 };
 
 /**
@@ -106,15 +123,7 @@ export const verifyCodeWithRetries = async (code: string, bruteForceIdentifier?:
       return { success: false, error: errorMessage };
     }
     
-    // Vérification supplémentaire du contenu du dossier
-    if (!result.dossier.contenu) {
-      console.warn("Le dossier récupéré ne contient pas de données");
-      toast({
-        variant: "default",
-        title: "Attention",
-        description: "Le dossier a été trouvé mais semble être vide. Certaines informations pourraient ne pas s'afficher correctement."
-      });
-    }
+    console.log("Dossier récupéré avec succès:", result.dossier);
     
     return result;
   } catch (err: any) {
@@ -167,22 +176,15 @@ export const getAuthUserDossierWithRetries = async (
       return { success: false, error: errorMessage };
     }
     
-    // Vérification supplémentaire du contenu du dossier
-    if (!result.dossier.contenu) {
-      console.warn("Le dossier récupéré ne contient pas de données");
-      toast({
-        variant: "default",
-        title: "Attention",
-        description: "Le dossier a été trouvé mais semble être vide. Certaines informations pourraient ne pas s'afficher correctement."
-      });
-    }
-    
     // Vérifier si le document est présent quand c'était demandé
     if (documentPath && !result.dossier.contenu.document_url) {
       console.warn("Le document demandé n'a pas été ajouté au dossier:", documentPath);
-      // Add the document URL manually if it wasn't included in the response
+      // Ajouter l'URL du document manuellement si elle n'a pas été incluse dans la réponse
       result.dossier.contenu.document_url = documentPath;
+      console.log("URL du document ajoutée manuellement au dossier");
     }
+    
+    console.log("Dossier authentifié récupéré avec succès:", result.dossier);
     
     return result;
   } catch (err: any) {
