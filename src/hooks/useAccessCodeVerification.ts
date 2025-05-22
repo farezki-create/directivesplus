@@ -55,14 +55,11 @@ export const useAccessCodeVerification = () => {
     try {
       console.log(`Vérification du code d'accès partagé: ${sharedCode}`);
       
-      // Requête simplifiée sans typage complexe
-      const response = await supabase
+      // Utilisation d'une approche simplifiée pour éviter les problèmes de typage
+      const { data, error: fetchError } = await supabase
         .from('medical_documents')
         .select('*')
-        .eq('shared_code', sharedCode);
-      
-      const data = response.data;
-      const fetchError = response.error;
+        .eq('shared_code', sharedCode) as { data: any, error: any };
       
       // Traitement sécurisé des données après récupération
       let document: MedicalDocument | null = null;
