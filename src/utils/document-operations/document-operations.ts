@@ -3,7 +3,7 @@ import { toast } from "@/hooks/use-toast";
 
 /**
  * Comprehensive document operations utility
- * Handles document viewing, downloading, sharing and printing
+ * Handles document viewing, downloading, and printing
  */
 
 // ----- Document View Operations -----
@@ -174,5 +174,3 @@ export const printDocument = (filePath: string, fileType: string = "application/
     });
   }
 };
-
-// Remove the shareDocument function from this file since it's now in a dedicated file
