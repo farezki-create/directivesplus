@@ -40,10 +40,12 @@ export const verifyAccessCode = async (
 export const getAuthUserDossier = async (
   userId: string, 
   bruteForceIdentifier?: string,
-  documentPath?: string // Parameter to support direct document incorporation
+  documentPath?: string, // Parameter to support direct document incorporation
+  documentsList?: any[] // Parameter to support document lists
 ) => {
   console.log(`Tentative de récupération du dossier pour l'utilisateur authentifié: ${userId} (${bruteForceIdentifier || 'accès complet'})`);
   console.log("Document path:", documentPath);
+  console.log("Documents list:", documentsList);
   
   try {
     const requestBody: any = {
@@ -56,6 +58,12 @@ export const getAuthUserDossier = async (
     if (documentPath) {
       requestBody.documentPath = documentPath;
       console.log("Adding document to dossier request:", documentPath);
+    }
+    
+    // If a documents list is provided, include it in the request
+    if (documentsList && documentsList.length > 0) {
+      requestBody.documentsList = documentsList;
+      console.log("Adding documents list to dossier request:", documentsList);
     }
     
     const response = await fetch("https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/verifierCodeAcces", {
@@ -78,6 +86,12 @@ export const getAuthUserDossier = async (
     if (documentPath && result.success && result.dossier && !result.dossier.contenu.document_url) {
       console.log("Ajout manuel de l'URL du document au dossier:", documentPath);
       result.dossier.contenu.document_url = documentPath;
+    }
+    
+    // Ensure documents list is present in the result if it was provided
+    if (documentsList && documentsList.length > 0 && result.success && result.dossier && !result.dossier.contenu.documents) {
+      console.log("Ajout manuel de la liste de documents au dossier:", documentsList);
+      result.dossier.contenu.documents = documentsList;
     }
     
     console.log("Réponse de récupération du dossier utilisateur:", result);
@@ -143,7 +157,8 @@ export const verifyCodeWithRetries = async (code: string, bruteForceIdentifier?:
 export const getAuthUserDossierWithRetries = async (
   userId: string, 
   bruteForceIdentifier?: string,
-  documentPath?: string // Added optional document path parameter
+  documentPath?: string, // Added optional document path parameter
+  documentsList?: any[] // Added optional documents list parameter
 ) => {
   if (!userId) {
     return { success: false, error: "Utilisateur non authentifié" };
@@ -151,7 +166,7 @@ export const getAuthUserDossierWithRetries = async (
   
   try {
     const result = await retryWithBackoff(
-      () => getAuthUserDossier(userId, bruteForceIdentifier, documentPath),
+      () => getAuthUserDossier(userId, bruteForceIdentifier, documentPath, documentsList),
       3
     );
     
@@ -182,6 +197,14 @@ export const getAuthUserDossierWithRetries = async (
       // Ajouter l'URL du document manuellement si elle n'a pas été incluse dans la réponse
       result.dossier.contenu.document_url = documentPath;
       console.log("URL du document ajoutée manuellement au dossier");
+    }
+    
+    // Vérifier si la liste de documents est présente quand c'était demandé
+    if (documentsList && documentsList.length > 0 && !result.dossier.contenu.documents) {
+      console.warn("La liste de documents demandée n'a pas été ajoutée au dossier:", documentsList);
+      // Ajouter la liste de documents manuellement si elle n'a pas été incluse dans la réponse
+      result.dossier.contenu.documents = documentsList;
+      console.log("Liste de documents ajoutée manuellement au dossier");
     }
     
     console.log("Dossier authentifié récupéré avec succès:", result.dossier);

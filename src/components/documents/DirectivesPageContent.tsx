@@ -60,6 +60,17 @@ const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
       console.log("Ajout au dossier partagé:", document);
       setIsAdding(true);
 
+      // Prepare a documents list for the dossier
+      const documentsList = [{
+        id: document.id,
+        file_name: document.file_name,
+        file_path: document.file_path,
+        created_at: document.created_at || new Date().toISOString(),
+        description: document.description || "",
+        content_type: document.content_type || "application/pdf",
+        is_shared: true
+      }];
+
       // Pour les utilisateurs authentifiés, on peut ignorer la vérification de code
       if (isAuthenticated && user) {
         // Afficher un toast de chargement
@@ -87,7 +98,8 @@ const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
               date_naissance: user?.user_metadata?.birth_date || profile?.birth_date || null,
             },
             document_url: document.file_path,
-            document_name: document.file_name
+            document_name: document.file_name,
+            documents: documentsList // Add the documents list
           }
         };
         
@@ -128,8 +140,10 @@ const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
       
       // Stocker le code d'accès dans sessionStorage pour la redirection
       sessionStorage.setItem('directAccessCode', accessCode);
+      sessionStorage.setItem('documentData', JSON.stringify(documentsList));
       
       console.log("Code d'accès stocké:", accessCode);
+      console.log("Documents stockés:", documentsList);
       
       // Réinitialiser l'état du dossier actif pour forcer un nouveau chargement
       setDossierActif(null);

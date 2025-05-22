@@ -71,7 +71,7 @@ export const getMedicalDocuments = async (userId: string): Promise<MedicalDocume
   }
 };
 
-// Define the type for dossier content to include document_url
+// Define the type for dossier content to include document_url and documents
 interface DossierContent {
   patient: {
     nom: string;
@@ -80,6 +80,7 @@ interface DossierContent {
   };
   document_url?: string;
   document_name?: string;
+  documents?: any[];
 }
 
 // Define the type for the dossier data
@@ -99,10 +100,11 @@ interface DossierData {
 export const getAuthUserDossier = async (
   userId: string,
   documentType: "medical" | "directive" = "directive",
-  documentPath?: string
+  documentPath?: string,
+  documentsList?: any[]
 ): Promise<any> => {
   try {
-    console.log("getAuthUserDossier appelé avec:", { userId, documentType, documentPath });
+    console.log("getAuthUserDossier appelé avec:", { userId, documentType, documentPath, hasDocumentsList: !!documentsList });
     
     // Fetch user profile
     const { data: profile, error: profileError } = await supabase
@@ -139,6 +141,12 @@ export const getAuthUserDossier = async (
     if (documentPath) {
       console.log("Ajout du document au dossier:", documentPath);
       dossierData.contenu.document_url = documentPath;
+    }
+    
+    // Si une liste de documents a été fournie, l'ajouter au contenu du dossier
+    if (documentsList && documentsList.length > 0) {
+      console.log("Ajout de la liste de documents au dossier:", documentsList);
+      dossierData.contenu.documents = documentsList;
     }
     
     console.log("Dossier créé pour utilisateur authentifié:", dossierData);

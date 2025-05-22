@@ -44,6 +44,36 @@ const AffichageDossier: React.FC = () => {
   const [initialLoading, setInitialLoading] = useState(true);
   const [documentLoadError, setDocumentLoadError] = useState<string | null>(null);
   
+  // Check for stored document data in sessionStorage
+  useEffect(() => {
+    try {
+      const storedDocumentData = sessionStorage.getItem('documentData');
+      if (storedDocumentData && dossierActif) {
+        console.log("Documents trouvés dans sessionStorage:", storedDocumentData);
+        const documents = JSON.parse(storedDocumentData);
+        
+        // Update the dossier to include the documents list
+        if (!dossierActif.contenu.documents) {
+          const updatedDossier = {
+            ...dossierActif,
+            contenu: {
+              ...dossierActif.contenu,
+              documents: documents
+            }
+          };
+          
+          console.log("Mise à jour du dossier avec les documents:", updatedDossier);
+          setDossierActif(updatedDossier);
+          
+          // Clear the sessionStorage after use
+          sessionStorage.removeItem('documentData');
+        }
+      }
+    } catch (error) {
+      console.error("Erreur lors de la récupération des documents dans sessionStorage:", error);
+    }
+  }, [dossierActif, setDossierActif]);
+  
   // Log detailed information about the dossier state for debugging
   useEffect(() => {
     if (dossierActif) {
@@ -51,6 +81,8 @@ const AffichageDossier: React.FC = () => {
         id: dossierActif.id,
         hasDocumentUrl: !!dossierActif.contenu?.document_url,
         documentUrl: dossierActif.contenu?.document_url,
+        hasDocuments: !!dossierActif.contenu?.documents,
+        documents: dossierActif.contenu?.documents,
         decryptedContentAvailable: !!decryptedContent,
         loading
       });
@@ -62,39 +94,56 @@ const AffichageDossier: React.FC = () => {
   // Check for document-related errors when the dossier content changes
   useEffect(() => {
     if (dossierActif && !loading) {
-      // Vérifier si l'URL du document existe dans le dossier
-      if (dossierActif.contenu?.document_url) {
-        console.log("URL du document détectée dans le dossier:", dossierActif.contenu.document_url);
+      // Verify if we have document URL or documents list
+      const hasDocumentUrl = !!dossierActif.contenu?.document_url;
+      const hasDocumentsList = !!dossierActif.contenu?.documents && Array.isArray(dossierActif.contenu.documents) && dossierActif.contenu.documents.length > 0;
+      
+      if (hasDocumentUrl || hasDocumentsList) {
+        console.log("Documents trouvés dans le dossier:", {
+          url: dossierActif.contenu?.document_url,
+          documents: dossierActif.contenu?.documents
+        });
         
-        // Si le contenu déchiffré n'inclut pas l'URL du document, l'ajouter manuellement
-        if (decryptedContent && !decryptedContent.document_url) {
-          console.log("Ajout manuel de l'URL du document au contenu déchiffré");
-          const updatedContent = {
-            ...decryptedContent,
-            document_url: dossierActif.contenu.document_url
-          };
+        // If we have decrypted content, make sure it includes the document information
+        if (decryptedContent) {
+          let updatedContent = { ...decryptedContent };
+          let needsUpdate = false;
           
-          // Force update of dossier actif to ensure document URL is present
-          setDossierActif({
-            ...dossierActif,
-            contenu: {
-              ...dossierActif.contenu,
-              document_url: dossierActif.contenu.document_url
-            }
-          });
+          if (hasDocumentUrl && !updatedContent.document_url) {
+            updatedContent.document_url = dossierActif.contenu.document_url;
+            needsUpdate = true;
+          }
           
-          // Log status for debugging
-          console.log("Mise à jour du contenu déchiffré avec l'URL du document:", updatedContent);
+          if (hasDocumentsList && !updatedContent.documents) {
+            updatedContent.documents = dossierActif.contenu.documents;
+            needsUpdate = true;
+          }
+          
+          if (needsUpdate) {
+            // Force update of dossier actif to ensure document information is present
+            setDossierActif({
+              ...dossierActif,
+              contenu: {
+                ...dossierActif.contenu,
+                ...(hasDocumentUrl ? { document_url: dossierActif.contenu.document_url } : {}),
+                ...(hasDocumentsList ? { documents: dossierActif.contenu.documents } : {})
+              }
+            });
+            
+            console.log("Mise à jour du contenu déchiffré avec les documents:", updatedContent);
+          }
         }
-      } else if (!dossierActif.contenu?.document_url && !hasDirectives) {
-        console.log("Aucune URL de document ou directive trouvée dans le dossier");
+        
+        setDocumentLoadError(null);
+      } else if (!hasDirectives) {
+        console.log("Aucune URL de document, liste de documents ou directive trouvée dans le dossier");
         setDocumentLoadError("Le document n'a pas pu être chargé correctement. Veuillez réessayer.");
         logDossierEvent("document_load_failure", false);
       } else {
         setDocumentLoadError(null);
       }
     }
-  }, [dossierActif, decryptedContent, loading, hasDirectives]);
+  }, [dossierActif, decryptedContent, loading, hasDirectives, setDossierActif, logDossierEvent]);
   
   // Handler for retrying document load
   const handleRetryDocumentLoad = () => {
@@ -167,16 +216,25 @@ const AffichageDossier: React.FC = () => {
           />
           
           {/* Contenu principal (affiché uniquement si nous avons du contenu) */}
-          {dossierActif && (decryptedContent || dossierActif.contenu?.document_url) && (
+          {dossierActif && (
+            decryptedContent || 
+            dossierActif.contenu?.document_url || 
+            (dossierActif.contenu?.documents && dossierActif.contenu.documents.length > 0)
+          ) && (
             <DossierContentView
               patientInfo={patientInfo}
-              decryptedContent={decryptedContent || { document_url: dossierActif.contenu.document_url }}
+              decryptedContent={decryptedContent || { 
+                document_url: dossierActif.contenu.document_url,
+                documents: dossierActif.contenu.documents
+              }}
               decryptionError={decryptionError}
               activeTab={activeTab}
               setActiveTab={setActiveTab}
               canAccessDirectives={canAccessDirectives}
               canAccessMedical={canAccessMedical}
-              hasDirectives={hasDirectives || !!dossierActif.contenu?.document_url}
+              hasDirectives={hasDirectives || 
+                !!dossierActif.contenu?.document_url || 
+                !!(dossierActif.contenu?.documents && dossierActif.contenu.documents.length > 0)}
               getDirectives={getDirectives}
               resetActivityTimer={resetActivityTimer}
               logDossierEvent={logDossierEvent}

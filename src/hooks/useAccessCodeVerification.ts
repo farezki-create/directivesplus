@@ -14,7 +14,8 @@ export const useAccessCodeVerification = () => {
     patientBirthDate: string,
     documentType: "medical" | "directive" = "directive",
     bypassCodeCheck = false, // Parameter for authenticated users
-    documentPath?: string // Optional document path for direct document inclusion
+    documentPath?: string, // Optional document path for direct document inclusion
+    documentList?: any[] // Optional list of documents for list format display
   ) => {
     try {
       setIsVerifying(true);
@@ -22,7 +23,7 @@ export const useAccessCodeVerification = () => {
       
       // Pour les utilisateurs authentifiés, nous pouvons contourner la vérification du code
       if (bypassCodeCheck) {
-        logVerificationResult(true, "Authenticated user bypass", {documentPath});
+        logVerificationResult(true, "Authenticated user bypass", {documentPath, hasDocumentList: !!documentList});
         console.log("Authenticated user bypass with document:", documentPath);
         
         // Obtenir le dossier utilisateur authentifié avec le chemin de document optionnel
@@ -31,10 +32,16 @@ export const useAccessCodeVerification = () => {
         if (authResult.success) {
           console.log("Dossier authentifié récupéré avec succès:", authResult.dossier);
           
-          // S'assurer que le document_url est correctement défini
+          // Add document URL if provided
           if (documentPath && !authResult.dossier.contenu.document_url) {
             console.log("Ajout manuel de l'URL du document au dossier:", documentPath);
             authResult.dossier.contenu.document_url = documentPath;
+          }
+          
+          // Add document list if provided
+          if (documentList && documentList.length > 0) {
+            console.log("Ajout manuel de la liste de documents au dossier:", documentList);
+            authResult.dossier.contenu.documents = documentList;
           }
           
           setVerificationResult({
@@ -66,6 +73,12 @@ export const useAccessCodeVerification = () => {
         if (documentPath && !result.dossier.contenu.document_url) {
           console.log("Ajout manuel de l'URL du document au dossier:", documentPath);
           result.dossier.contenu.document_url = documentPath;
+        }
+        
+        // S'assurer que la liste de documents est disponible si fournie
+        if (documentList && documentList.length > 0 && !result.dossier.contenu.documents) {
+          console.log("Ajout manuel de la liste de documents au dossier:", documentList);
+          result.dossier.contenu.documents = documentList;
         }
         
         setVerificationResult({

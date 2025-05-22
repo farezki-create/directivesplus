@@ -14,6 +14,7 @@ const DirectivesContent: React.FC<DirectivesContentProps> = ({ directives, sourc
       directivesType: typeof directives,
       directivesContent: directives,
       source,
+      isArray: Array.isArray(directives),
       isPDFUrl: typeof directives === 'string' && (
         directives.startsWith('data:application/pdf') || 
         directives.endsWith('.pdf') ||
@@ -25,6 +26,36 @@ const DirectivesContent: React.FC<DirectivesContentProps> = ({ directives, sourc
   // Handle different possible types of directives
   if (!directives) {
     return <p className="text-gray-500 italic">Aucune directive disponible</p>;
+  }
+  
+  // Handle document list format (array of document objects)
+  if (Array.isArray(directives) && directives.length > 0 && directives[0].file_path) {
+    console.log("Affichage des documents en format liste:", directives);
+    return (
+      <div className="space-y-6">
+        {directives.map((doc, index) => (
+          <div key={doc.id || index} className="border rounded-lg overflow-hidden">
+            <div className="bg-gray-50 p-3 border-b">
+              <h3 className="font-medium">{doc.file_name || "Document"}</h3>
+              {doc.created_at && (
+                <p className="text-xs text-gray-500">
+                  {new Date(doc.created_at).toLocaleDateString('fr-FR')}
+                </p>
+              )}
+            </div>
+            <iframe 
+              src={doc.file_path}
+              className="w-full h-[70vh]"
+              title={doc.file_name || "Document"}
+              allow="fullscreen"
+            />
+            <div className="p-2 bg-gray-50 text-xs text-gray-500">
+              Source: {source} {doc.is_shared && " (document partagé)"}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
   }
   
   // Handle URL links to PDF documents (from storage)

@@ -32,16 +32,30 @@ const DirectivesTab: React.FC<DirectivesTabProps> = ({
     logDirectiveDebugInfo(decryptedContent, hasDirectives, getDirectives);
   }, [decryptedContent, hasDirectives, getDirectives, decryptionError]);
   
+  // Format document for list display if it's a direct URL
+  const formatDocumentForList = (documentUrl: string) => {
+    return [{
+      id: `doc-${Date.now()}`,
+      file_name: decryptedContent.document_name || "Document partagé",
+      file_path: documentUrl,
+      created_at: new Date().toISOString(),
+      is_shared: true,
+      content_type: documentUrl.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'document'
+    }];
+  };
+  
   // Prioritize direct document URL if available
   if (decryptedContent?.document_url) {
     console.log("DirectivesTab - Using direct document URL:", decryptedContent.document_url);
+    const documentsList = formatDocumentForList(decryptedContent.document_url);
+    
     return (
       <Card className="shadow-lg">
         <DirectivesHeader />
         <CardContent className="p-6">
           <DirectivesContent 
-            directives={decryptedContent.document_url} 
-            source="document direct" 
+            directives={documentsList}
+            source="document list" 
           />
         </CardContent>
       </Card>
