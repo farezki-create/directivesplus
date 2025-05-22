@@ -175,7 +175,7 @@ export const printDocument = (filePath: string, fileType: string = "application/
   }
 };
 
-// ----- Document Share Operations -----
+// ----- Basic Document Share Operations -----
 export const shareDocument = async (documentId: string) => {
   try {
     const shareUrl = `${window.location.origin}/partage-document/${documentId}`;
