@@ -53,16 +53,20 @@ export const useSharedCodeGeneration = () => {
       }
       
       // Mettre à jour le document avec le nouveau code
-      const { error: updateError } = await supabase
-        .from('medical_documents')
-        .update({
-          shared_code: sharedCode,
-          shared_expires_at: expiresAt
-        })
-        .eq('id', documentId);
+      // Étant donné que nous n'avons pas de colonne shared_code dans medical_documents,
+      // nous allons utiliser la table document_access_codes à la place
+      const { error: insertError } = await supabase
+        .from('document_access_codes')
+        .insert({
+          user_id: user.id,
+          document_id: documentId,
+          access_code: sharedCode,
+          expires_at: expiresAt,
+          is_full_access: true
+        });
       
-      if (updateError) {
-        throw new Error("Erreur lors de la mise à jour du document");
+      if (insertError) {
+        throw new Error("Erreur lors de la création du code d'accès");
       }
       
       toast({
@@ -106,14 +110,11 @@ export const useSharedCodeGeneration = () => {
         throw new Error("Utilisateur non authentifié");
       }
       
-      // Mettre à jour le document pour supprimer le code d'accès
+      // Supprimer tous les codes d'accès pour ce document
       const { error: updateError } = await supabase
-        .from('medical_documents')
-        .update({
-          shared_code: null,
-          shared_expires_at: null
-        })
-        .eq('id', documentId)
+        .from('document_access_codes')
+        .delete()
+        .eq('document_id', documentId)
         .eq('user_id', user.id);
       
       if (updateError) {

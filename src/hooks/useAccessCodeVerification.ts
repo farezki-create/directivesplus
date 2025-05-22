@@ -65,11 +65,12 @@ export const useAccessCodeVerification = () => {
       console.log("Document trouvé avec succès:", document.id);
       
       // Enregistrer l'accès dans les logs
-      await supabase.from('access_logs').insert({
-        document_id: document.id,
-        access_type: 'shared_code',
-        shared_code: sharedCode,
-        ip_address: null, // À implémenter si nécessaire
+      await supabase.from('document_access_logs').insert({
+        user_id: document.user_id,
+        access_code_id: null,
+        nom_consultant: null,
+        prenom_consultant: null,
+        ip_address: null,
         user_agent: navigator.userAgent
       });
       
