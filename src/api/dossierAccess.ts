@@ -43,6 +43,7 @@ export const getAuthUserDossier = async (
   documentPath?: string // Added parameter to support direct document incorporation
 ) => {
   console.log(`Tentative de récupération du dossier pour l'utilisateur authentifié: ${userId} (${bruteForceIdentifier || 'accès complet'})`);
+  console.log("Document path:", documentPath);
   
   const requestBody: any = {
     isAuthUserRequest: true,
