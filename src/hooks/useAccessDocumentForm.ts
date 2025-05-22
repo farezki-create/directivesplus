@@ -5,14 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-
-// Define form schema
-const formSchema = z.object({
-  firstName: z.string().min(1, "Le prénom est requis"),
-  lastName: z.string().min(1, "Le nom est requis"),
-  birthDate: z.string().min(1, "La date de naissance est requise"),
-  accessCode: z.string().min(1, "Le code d'accès est requis")
-});
+import { formSchema } from "@/utils/access-document/validationSchema";
 
 // Define type for form data
 export type FormData = z.infer<typeof formSchema>;

@@ -6,6 +6,8 @@ import { z } from "zod";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { useDossierStore } from "@/store/dossierStore";
+import { validatePublicAccessData } from "@/utils/api/accessCodeValidation";
+import { useVerifierCodeAcces } from "@/hooks/useVerifierCodeAcces";
 
 // Define a form schema
 const formSchema = z.object({
@@ -18,13 +20,14 @@ const formSchema = z.object({
 // Define type for form data
 type FormData = z.infer<typeof formSchema>;
 
-export const useDirectivesAccessForm = (onSubmitProp?: (accessCode: string, formData: any) => Promise<void>) => {
+export const useDirectivesAccessForm = () => {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [remainingAttempts, setRemainingAttempts] = useState<number | null>(null);
+  const [remainingAttempts, setRemainingAttempts] = useState<number | null>(3);
   const [blockedAccess, setBlockedAccess] = useState(false);
   const navigate = useNavigate();
   const { setDossierActif } = useDossierStore();
+  const { verifierCode } = useVerifierCodeAcces();
   
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -36,53 +39,61 @@ export const useDirectivesAccessForm = (onSubmitProp?: (accessCode: string, form
     }
   });
 
-  const handleAccessDirectives = async () => {
+  const handleSubmit = async () => {
     try {
       await form.handleSubmit(async (formData) => {
         setErrorMessage(null);
         setLoading(true);
         
         try {
-          // If external onSubmit is provided, use it
-          if (onSubmitProp) {
-            await onSubmitProp(formData.accessCode, formData);
+          // Validate form data
+          if (!validatePublicAccessData(formData)) {
             setLoading(false);
             return;
           }
           
-          // Vérification de la saisie
-          if (!formData.accessCode || formData.accessCode.trim() === '') {
-            setErrorMessage("Veuillez saisir un code d'accès valide");
+          console.log("Vérification de l'accès public:", formData);
+          
+          // Verify access code
+          const result = await verifierCode(
+            formData.accessCode, 
+            `directives_public_${formData.firstName}_${formData.lastName}`
+          );
+          
+          if (!result) {
+            setErrorMessage("Code d'accès invalide ou informations incorrectes");
+            setRemainingAttempts((prev) => prev !== null ? Math.max(0, prev - 1) : 2);
+            
+            if (remainingAttempts !== null && remainingAttempts <= 1) {
+              setBlockedAccess(true);
+            }
+            
             toast({
-              variant: "destructive",
-              title: "Données manquantes",
-              description: "Veuillez saisir un code d'accès valide"
+              title: "Accès refusé",
+              description: "Code d'accès invalide ou informations incorrectes",
+              variant: "destructive"
             });
+            setLoading(false);
             return;
           }
-
-          console.log("This functionality has been removed. Redirecting to login page.");
+          
+          // Store the dossier and redirect
+          setDossierActif(result);
+          navigate("/affichage-dossier");
+          
           toast({
-            title: "Connexion requise",
-            description: "Vous devez vous connecter pour accéder à cette fonctionnalité",
-            variant: "destructive"
+            title: "Accès autorisé",
+            description: "Vous avez accès aux directives anticipées",
           });
           
-          // Redirect to login page
-          navigate("/auth", { state: { from: "/acces-directives" } });
         } catch (error: any) {
-          console.error("Erreur lors de l'accès aux directives:", error);
-          let errorMsg = "Une erreur est survenue lors de la connexion au serveur. Veuillez réessayer.";
+          console.error("Erreur lors de la vérification de l'accès public:", error);
+          setErrorMessage("Une erreur est survenue lors de la vérification de votre accès");
           
-          if (error.message && error.message.includes("Failed to fetch")) {
-            errorMsg = "Impossible de contacter le serveur. Vérifiez votre connexion internet et réessayez.";
-          }
-          
-          setErrorMessage(errorMsg);
           toast({
-            variant: "destructive",
-            title: "Erreur de connexion",
-            description: errorMsg
+            title: "Erreur d'accès",
+            description: "Impossible de vérifier votre accès aux directives",
+            variant: "destructive"
           });
         } finally {
           setLoading(false);
@@ -96,7 +107,7 @@ export const useDirectivesAccessForm = (onSubmitProp?: (accessCode: string, form
   return {
     form,
     loading,
-    handleAccessDirectives,
+    handleSubmit,
     errorMessage,
     remainingAttempts,
     blockedAccess

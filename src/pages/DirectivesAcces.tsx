@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import Header from "@/components/Header";
-import PublicDirectivesAccessForm from "@/components/access/PublicDirectivesAccessForm";
+import DirectivesAccessForm from "@/components/access/DirectivesAccessForm";
 import { toast } from "@/hooks/use-toast";
 import { useDossierStore } from "@/store/dossierStore";
 import { validatePublicAccessData } from "@/utils/api/accessCodeValidation";
@@ -16,7 +16,7 @@ const DirectivesAcces = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { verifierCode } = useVerifierCodeAcces();
   
-  const handlePublicAccess = async (formData) => {
+  const handlePublicAccess = async (accessCode: string, formData: any) => {
     if (!validatePublicAccessData(formData)) return;
     
     setIsLoading(true);
@@ -24,7 +24,7 @@ const DirectivesAcces = () => {
       console.log("Vérification de l'accès public:", formData);
       
       // Vérifier le code d'accès
-      const result = await verifierCode(formData.accessCode, 
+      const result = await verifierCode(accessCode, 
         `directives_public_${formData.firstName}_${formData.lastName}`);
       
       if (!result) {
@@ -75,10 +75,7 @@ const DirectivesAcces = () => {
             Accès aux directives anticipées
           </h1>
           
-          <PublicDirectivesAccessForm 
-            onSubmit={handlePublicAccess} 
-            loading={isLoading} 
-          />
+          <DirectivesAccessForm onSubmit={handlePublicAccess} />
 
           <div className="mt-8 text-center">
             <p className="text-sm text-gray-500">
