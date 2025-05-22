@@ -9,9 +9,10 @@ import { Calendar } from "@/components/ui/calendar";
 import { FormControl, FormField as HookFormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface DirectivesFormFieldsProps {
   form: UseFormReturn<any>;
@@ -30,6 +31,43 @@ const DirectivesFormFields: React.FC<DirectivesFormFieldsProps> = ({
 }) => {
   // État pour basculer entre le mode calendrier et la saisie manuelle
   const [manualInput, setManualInput] = useState(false);
+  
+  // État pour le mois et l'année sélectionnés dans le calendrier
+  const [calendarDate, setCalendarDate] = useState<Date>(new Date());
+
+  // Liste des années pour le sélecteur (de 1900 à l'année actuelle)
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: currentYear - 1899 }, (_, i) => currentYear - i);
+
+  // Liste des mois pour le sélecteur
+  const months = [
+    { value: 0, label: "Janvier" },
+    { value: 1, label: "Février" },
+    { value: 2, label: "Mars" },
+    { value: 3, label: "Avril" },
+    { value: 4, label: "Mai" },
+    { value: 5, label: "Juin" },
+    { value: 6, label: "Juillet" },
+    { value: 7, label: "Août" },
+    { value: 8, label: "Septembre" },
+    { value: 9, label: "Octobre" },
+    { value: 10, label: "Novembre" },
+    { value: 11, label: "Décembre" }
+  ];
+
+  // Fonction pour mettre à jour le mois dans le calendrier
+  const handleMonthChange = (monthIndex: string) => {
+    const newDate = new Date(calendarDate);
+    newDate.setMonth(Number(monthIndex));
+    setCalendarDate(newDate);
+  };
+
+  // Fonction pour mettre à jour l'année dans le calendrier
+  const handleYearChange = (year: string) => {
+    const newDate = new Date(calendarDate);
+    newDate.setFullYear(Number(year));
+    setCalendarDate(newDate);
+  };
 
   // Fonction pour formater la date au format JJ/MM/AAAA pour l'affichage
   const formatDateForDisplay = (dateString: string) => {
@@ -60,6 +98,69 @@ const DirectivesFormFields: React.FC<DirectivesFormFieldsProps> = ({
     
     return input;
   };
+
+  // Composant personnalisé pour l'en-tête du calendrier
+  const CalendarHeader = ({ 
+    onPreviousMonth, 
+    onNextMonth
+  }: { 
+    onPreviousMonth: () => void;
+    onNextMonth: () => void;
+  }) => (
+    <div className="flex justify-between items-center px-1 py-2">
+      <Button
+        variant="outline"
+        size="icon"
+        className="h-7 w-7"
+        onClick={onPreviousMonth}
+      >
+        <ChevronLeft className="h-4 w-4" />
+      </Button>
+      
+      <div className="flex space-x-1">
+        <Select
+          value={calendarDate.getMonth().toString()}
+          onValueChange={handleMonthChange}
+        >
+          <SelectTrigger className="h-7 w-[110px]">
+            <SelectValue placeholder="Mois" />
+          </SelectTrigger>
+          <SelectContent>
+            {months.map((month) => (
+              <SelectItem key={month.value} value={month.value.toString()}>
+                {month.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={calendarDate.getFullYear().toString()}
+          onValueChange={handleYearChange}
+        >
+          <SelectTrigger className="h-7 w-[75px]">
+            <SelectValue placeholder="Année" />
+          </SelectTrigger>
+          <SelectContent className="h-56 overflow-y-auto">
+            {years.map((year) => (
+              <SelectItem key={year} value={year.toString()}>
+                {year}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <Button
+        variant="outline"
+        size="icon"
+        className="h-7 w-7"
+        onClick={onNextMonth}
+      >
+        <ChevronRight className="h-4 w-4" />
+      </Button>
+    </div>
+  );
 
   return (
     <div className="space-y-4">
@@ -131,7 +232,7 @@ const DirectivesFormFields: React.FC<DirectivesFormFieldsProps> = ({
                     </Button>
                   </FormControl>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 bg-white" align="start">
+                <PopoverContent className="w-auto p-2 bg-white" align="start">
                   <Calendar
                     mode="single"
                     selected={field.value ? new Date(field.value) : undefined}
@@ -140,9 +241,19 @@ const DirectivesFormFields: React.FC<DirectivesFormFieldsProps> = ({
                       date > new Date() || 
                       date < new Date("1900-01-01")
                     }
+                    month={calendarDate}
+                    onMonthChange={setCalendarDate}
                     initialFocus
                     locale={fr}
-                    className="p-3 pointer-events-auto"
+                    className={cn("p-3 pointer-events-auto")}
+                    components={{
+                      Header: ({ onPreviousClick, onNextClick }) => (
+                        <CalendarHeader 
+                          onPreviousMonth={onPreviousClick} 
+                          onNextMonth={onNextClick}
+                        />
+                      )
+                    }}
                   />
                 </PopoverContent>
               </Popover>
