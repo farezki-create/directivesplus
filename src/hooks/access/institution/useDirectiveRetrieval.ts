@@ -97,15 +97,20 @@ export const retrieveDirectivesByInstitutionCode = async (
   for (const codeData of allValidCodes) {
     console.log("Checking user profile for user_id:", codeData.user_id);
     
-    // Récupérer le profil de l'utilisateur
+    // Récupérer le profil de l'utilisateur avec maybeSingle() pour éviter l'erreur
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('first_name, last_name, birth_date')
       .eq('id', codeData.user_id)
-      .single();
+      .maybeSingle();
 
     if (profileError) {
       console.error("Error fetching profile:", profileError);
+      continue;
+    }
+
+    if (!profile) {
+      console.log("No profile found for user_id:", codeData.user_id);
       continue;
     }
 
@@ -157,10 +162,11 @@ export const retrieveDirectivesByInstitutionCode = async (
     }
   }
 
-  // Si on arrive ici, le code est valide mais les informations ne correspondent pas
+  // Si on arrive ici, soit aucun profil n'existe, soit les informations ne correspondent pas
   throw new Error(
-    "Code d'accès valide trouvé mais les informations du patient ne correspondent pas. " +
+    "Aucun profil patient trouvé ou les informations ne correspondent pas. " +
     "Vérifiez que :\n" +
+    "• Le patient a bien créé son profil sur la plateforme\n" +
     "• Le nom de famille est correctement orthographié\n" +
     "• Le prénom est correctement orthographié\n" +
     "• La date de naissance est au format exact (YYYY-MM-DD)\n" +
