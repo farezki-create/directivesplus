@@ -8,6 +8,7 @@ const Hero = () => {
   const { isAuthenticated } = useAuth();
   
   const handleGetStarted = () => {
+    // Toujours rediriger vers le dashboard si l'utilisateur est authentifié
     if (isAuthenticated) {
       navigate("/dashboard");
     } else {
