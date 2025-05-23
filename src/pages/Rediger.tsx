@@ -5,6 +5,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import AppNavigation from "@/components/AppNavigation";
 import DirectivesGrid from "@/components/DirectivesGrid";
 import { toast } from "@/components/ui/use-toast";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 const Rediger = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -51,6 +53,17 @@ const Rediger = () => {
       <AppNavigation />
       
       <main className="flex-grow container mx-auto px-4 py-8">
+        <div className="mb-6">
+          <Button
+            variant="outline"
+            onClick={() => navigate("/")}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft size={16} />
+            Retour à l'accueil
+          </Button>
+        </div>
+        
         <div className="max-w-3xl mx-auto text-center mb-12">
           <h1 className="text-3xl md:text-4xl font-bold text-directiveplus-800 mb-4">
             Vos directives anticipées en toute simplicité
