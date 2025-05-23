@@ -1,11 +1,20 @@
 
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+
 const Hero = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+  
   const handleGetStarted = () => {
-    navigate("/mes-directives");
+    if (isAuthenticated) {
+      navigate("/dashboard");
+    } else {
+      navigate("/auth");
+    }
   };
+  
   const scrollToInfo = () => {
     const infoSection = document.getElementById('en-savoir-plus');
     if (infoSection) {
@@ -14,6 +23,7 @@ const Hero = () => {
       });
     }
   };
+  
   return <section className="bg-gradient-to-b from-white to-directiveplus-50 section-padding">
       <div className="container mx-auto container-padding">
         <div className="flex flex-col items-center text-center">
