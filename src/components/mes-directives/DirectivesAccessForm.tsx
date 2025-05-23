@@ -1,0 +1,158 @@
+
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { toast } from "@/hooks/use-toast";
+import { useDossierStore } from "@/store/dossierStore";
+import InstructionsBox from "./InstructionsBox";
+import FormFields from "./FormFields";
+import ErrorDisplay from "./ErrorDisplay";
+import SubmitButton from "./SubmitButton";
+
+export const DirectivesAccessForm = () => {
+  const navigate = useNavigate();
+  const { setDossierActif } = useDossierStore();
+  const [loading, setLoading] = useState(false);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [birthdate, setBirthdate] = useState<Date | undefined>(undefined);
+  const [accessCode, setAccessCode] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  const handleVerify = async () => {
+    if (!firstName || !lastName || !birthdate || !accessCode) {
+      setError("Veuillez remplir tous les champs");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    
+    try {
+      // Convert birthdate to ISO format for database comparison
+      const formattedDate = birthdate.toISOString().split('T')[0];
+      
+      // First, check the shared_profiles table
+      const { data, error: queryError } = await supabase
+        .from("shared_profiles")
+        .select("*, medical_profile_id")
+        .eq("first_name", firstName.trim())
+        .eq("last_name", lastName.trim())
+        .eq("birthdate", formattedDate)
+        .eq("access_code", accessCode.trim())
+        .maybeSingle();
+
+      if (queryError) {
+        console.error("Error verifying access code:", queryError);
+        throw new Error("Une erreur est survenue lors de la vérification du code d'accès");
+      }
+
+      if (!data) {
+        // If not found in shared_profiles, try using the edge function
+        const response = await fetch("https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/verifierCodeAcces", {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            accessCode: accessCode,
+            bruteForceIdentifier: `directives_public_${firstName}_${lastName}`
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (!result.success || !result.dossier) {
+          setError("Informations incorrectes ou accès expiré");
+          return;
+        }
+        
+        // Store the dossier and navigate to dashboard
+        setDossierActif(result.dossier);
+        
+        toast({
+          title: "Accès autorisé",
+          description: "Vous avez accès aux directives anticipées",
+        });
+        
+        navigate("/dashboard", { replace: true });
+      } else {
+        // Shared profile found, create a dossier object
+        const dossier = {
+          id: data.id,
+          userId: data.user_id,
+          medical_profile_id: data.medical_profile_id,
+          isFullAccess: true,
+          isDirectivesOnly: true,
+          isMedicalOnly: false, // Necessary required property
+          profileData: {
+            first_name: data.first_name,
+            last_name: data.last_name,
+            birth_date: data.birthdate
+          },
+          contenu: {
+            patient: {
+              nom: data.last_name,
+              prenom: data.first_name,
+              date_naissance: data.birthdate
+            }
+          }
+        };
+        
+        // Store the dossier and navigate to dashboard
+        setDossierActif(dossier);
+        
+        toast({
+          title: "Accès autorisé",
+          description: "Vous avez accès aux directives anticipées",
+        });
+        
+        navigate("/dashboard", { replace: true });
+      }
+    } catch (err: any) {
+      console.error("Error during verification:", err);
+      setError(err.message || "Une erreur est survenue lors de la vérification");
+      
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de vérifier votre accès aux directives",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Card className="shadow-md">
+      <CardHeader>
+        <CardTitle className="text-xl text-center text-directiveplus-700">
+          Accès à mes directives anticipées
+        </CardTitle>
+      </CardHeader>
+      
+      <CardContent className="space-y-4">
+        <InstructionsBox />
+        
+        <FormFields 
+          firstName={firstName}
+          setFirstName={setFirstName}
+          lastName={lastName}
+          setLastName={setLastName}
+          birthdate={birthdate}
+          setBirthdate={setBirthdate}
+          accessCode={accessCode}
+          setAccessCode={setAccessCode}
+          loading={loading}
+        />
+        
+        <ErrorDisplay error={error} />
+      </CardContent>
+      
+      <CardFooter>
+        <SubmitButton loading={loading} onClick={handleVerify} />
+      </CardFooter>
+    </Card>
+  );
+};
