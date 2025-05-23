@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -8,9 +7,9 @@ const Hero = () => {
   const { isAuthenticated } = useAuth();
   
   const handleGetStarted = () => {
-    // Rediriger vers la page des documents si l'utilisateur est authentifié
+    // Rediriger vers la page de rédaction si l'utilisateur est authentifié
     if (isAuthenticated) {
-      navigate("/directives-docs");
+      navigate("/rediger");
     } else {
       navigate("/auth");
     }
