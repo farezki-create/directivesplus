@@ -62,10 +62,11 @@ export const capitalizeFirstLetter = (str: string): string => {
   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 };
 
+// Fonction de nettoyage plus permissive
 export const cleanInstitutionAccessValues = (values: any) => {
   return {
-    lastName: values.lastName.trim().toUpperCase(),
-    firstName: capitalizeFirstLetter(values.firstName.trim()),
+    lastName: values.lastName.trim(), // Garde la casse originale
+    firstName: values.firstName.trim(), // Garde la casse originale
     birthDate: values.birthDate,
     institutionCode: values.institutionCode.trim().toUpperCase()
   };
