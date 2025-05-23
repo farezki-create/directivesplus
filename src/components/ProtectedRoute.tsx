@@ -1,6 +1,6 @@
 
 import { ReactNode, useEffect, useState } from "react";
-import { Navigate, useLocation } from "react-router-dom";
+import { Navigate, useLocation, useSearchParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -12,6 +12,7 @@ interface ProtectedRouteProps {
 const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   const { isAuthenticated, isLoading, profile, session } = useAuth();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
   
@@ -24,6 +25,7 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     console.log("- Loading:", isLoading);
     console.log("- Session:", session ? "Present" : "None");
     console.log("- Is public route:", publicRoutes.includes(location.pathname));
+    console.log("- Has code param:", searchParams.has("code"));
     
     // Marquer l'authentification comme vérifiée une fois le chargement terminé
     if (!isLoading) {
@@ -34,7 +36,7 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     if (isAuthenticated && isRedirecting) {
       setIsRedirecting(false);
     }
-  }, [isAuthenticated, isLoading, location.pathname, isRedirecting, session]);
+  }, [isAuthenticated, isLoading, location.pathname, isRedirecting, session, searchParams]);
 
   // Afficher l'indicateur de chargement pendant la vérification de l'état d'authentification
   if (isLoading || !hasCheckedAuth) {
@@ -50,6 +52,12 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   // Si c'est une route publique, autoriser l'accès sans authentification
   if (publicRoutes.includes(location.pathname)) {
     console.log("ProtectedRoute: Route publique, accès autorisé");
+    return <>{children}</>;
+  }
+  
+  // Exception spéciale: autoriser l'accès direct à /mes-directives avec un code d'accès dans l'URL
+  if (location.pathname === "/mes-directives" && searchParams.has("code")) {
+    console.log("ProtectedRoute: Accès direct aux directives avec code, autorisation spéciale");
     return <>{children}</>;
   }
 
