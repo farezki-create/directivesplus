@@ -1,100 +1,24 @@
-
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import AppNavigation from "@/components/AppNavigation";
-import DirectivesGrid from "@/components/DirectivesGrid";
-import { Button } from "@/components/ui/button";
-import { Home, ArrowLeft, Lock } from "lucide-react";
-import InfoSteps from "@/components/InfoSteps";
+import React from "react";
+import DossierContentProvider from "@/components/dossier/DossierContentProvider";
+import { useDossierStore } from "@/store/dossierStore";
+import DirectivesTab from "@/components/dossier/DirectivesTab";
 
 const Dashboard = () => {
-  const { isAuthenticated, isLoading } = useAuth();
-  const navigate = useNavigate();
-
-  // Move useEffect hook to the top level - must be called unconditionally
-  useEffect(() => {
-    // Only redirect if authentication state is loaded and user is not authenticated
-    if (!isLoading && !isAuthenticated) {
-      navigate("/auth");
-    }
-  }, [isAuthenticated, isLoading, navigate]);
-
-  // Render loading state
-  if (isLoading) {
-    return (
-      <div className="h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-directiveplus-600"></div>
-      </div>
-    );
-  }
-
-  // Only render the main content if the user is authenticated
-  // This prevents a flash of content before redirect
-  if (!isAuthenticated) {
-    return null;
-  }
-
-  // Handler pour accéder aux directives publiques
-  const handlePublicAccess = () => {
-    navigate("/directives-acces");
-  };
-
+  const dossierActif = useDossierStore((state) => state.dossierActif);
+  
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <AppNavigation />
-      
-      <main className="flex-grow container mx-auto px-4 py-8">
-        <div className="mb-6">
-          <Button
-            variant="outline"
-            onClick={() => navigate("/")}
-            className="flex items-center gap-2"
-          >
-            <Home size={16} />
-            Retour à l'accueil
-          </Button>
-        </div>
+    <DossierContentProvider>
+      {/* Wrap DirectivesTab and other components that need decrypted content */}
+      <div className="container mx-auto py-6">
+        <h1 className="text-2xl font-bold mb-4">Tableau de bord</h1>
         
-        <div className="max-w-3xl mx-auto text-center mb-8">
-          <div className="flex justify-center mb-6">
-            <img 
-              src="/lovable-uploads/0a786ed1-a905-4b29-be3a-ca3b24d3efae.png" 
-              alt="DirectivesPlus Logo" 
-              className="w-40 h-auto" 
-            />
+        {dossierActif && (
+          <div className="mt-6">
+            <DirectivesTab />
           </div>
-          
-          <h1 className="text-3xl md:text-4xl font-bold text-directiveplus-800 mb-4">
-            Vos directives anticipées en toute simplicité
-          </h1>
-          <p className="text-gray-600 text-lg mb-6">
-            Rédigez vos directives anticipées et désignez vos personnes de confiance en quelques étapes simples et sécurisées.
-          </p>
-          
-          <div className="flex justify-center mb-8">
-            <Button
-              onClick={handlePublicAccess}
-              variant="outline"
-              className="flex items-center gap-2 border-directiveplus-500 text-directiveplus-600 hover:bg-directiveplus-50"
-            >
-              <Lock size={16} />
-              Accès public aux directives
-            </Button>
-          </div>
-          
-          <InfoSteps />
-        </div>
-        
-        <DirectivesGrid />
-      </main>
-      
-      <footer className="bg-white py-6 border-t">
-        <div className="container mx-auto px-4 text-center text-gray-500">
-          <p>© 2025 DirectivesPlus. Tous droits réservés.</p>
-        </div>
-      </footer>
-    </div>
+        )}
+      </div>
+    </DossierContentProvider>
   );
 };
 
