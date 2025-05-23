@@ -12,7 +12,7 @@ import AccessCodeCards from "@/components/access-card/AccessCodeCards";
 import AccessCodeDisplays from "@/components/access-card/AccessCodeDisplays";
 import AccessCardSection from "@/components/access-card/AccessCardSection";
 import AccessInfoBox from "@/components/access-card/AccessInfoBox";
-import InstitutionCodeSection from "@/components/access-card/InstitutionCodeSection";
+import InstitutionAccessSection from "@/components/access-card/InstitutionAccessSection";
 import PageFooter from "@/components/access-card/PageFooter";
 import AppNavigation from "@/components/AppNavigation";
 import LoadingState from "@/components/questionnaire/LoadingState";
@@ -157,9 +157,9 @@ const AccessCardPage = () => {
             />
           </div>
 
-          {/* Section pour les codes d'institution (débogage) */}
+          {/* Section pour l'accès professionnel intégré */}
           <div className="mb-8">
-            <InstitutionCodeSection userId={user?.id} />
+            <InstitutionAccessSection userId={user?.id} />
           </div>
           
           {/* Section pour la carte d'accès */}

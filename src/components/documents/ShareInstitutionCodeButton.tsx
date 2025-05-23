@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { generateInstitutionCode } from "@/utils/institutionCodeGenerator";
 import { Button } from "@/components/ui/button";
-import { Hospital, Loader2, Copy, Check, InfoIcon } from "lucide-react";
+import { Hospital, Loader2, Copy, Check, Shield, Share2 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import {
   Dialog,
@@ -11,7 +11,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -35,7 +34,7 @@ const ShareInstitutionCodeButton = ({ directiveId }: ShareInstitutionCodeButtonP
         setCode(generatedCode);
         toast({
           title: "Code généré avec succès",
-          description: "Le code d'accès a été généré et est valable pendant 30 jours."
+          description: "Le code d'accès professionnel a été généré et est valable pendant 30 jours."
         });
       } else {
         setError("Une erreur est survenue lors de la génération du code");
@@ -82,22 +81,25 @@ const ShareInstitutionCodeButton = ({ directiveId }: ShareInstitutionCodeButtonP
       <DialogTrigger asChild>
         <Button variant="outline" className="flex items-center gap-2">
           <Hospital className="h-4 w-4" />
-          Accès institution
+          Accès professionnel
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Code d'accès institution</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <Hospital className="h-5 w-5" />
+            Code d'accès professionnel
+          </DialogTitle>
           <DialogDescription>
-            Générez un code temporaire pour permettre à un professionnel de santé ou une institution médicale
-            d'accéder à vos directives.
+            Générez un code temporaire sécurisé pour permettre à un professionnel de santé 
+            ou une institution médicale d'accéder à cette directive.
           </DialogDescription>
         </DialogHeader>
         
-        <div className="py-4">
+        <div className="py-4 space-y-4">
           {!code && !error && (
             <Alert className="bg-blue-50 border-blue-200">
-              <InfoIcon className="h-4 w-4 text-blue-600" />
+              <Shield className="h-4 w-4 text-blue-600" />
               <AlertDescription className="text-blue-800">
                 Ce code permettra à un professionnel de santé d'accéder à vos directives avec vos informations
                 personnelles (nom, prénom, date de naissance). Le code sera valide pendant 30 jours.
@@ -116,44 +118,56 @@ const ShareInstitutionCodeButton = ({ directiveId }: ShareInstitutionCodeButtonP
               <Alert className="bg-green-50 border-green-200">
                 <Check className="h-4 w-4 text-green-600" />
                 <AlertDescription className="text-green-800">
-                  Code généré avec succès! Partagez ce code avec votre institution médicale.
+                  <strong>Code généré avec succès !</strong><br />
+                  Partagez ce code avec votre professionnel de santé ou institution médicale.
                 </AlertDescription>
               </Alert>
               
-              <div className="flex items-center justify-between p-3 border rounded-md bg-muted">
-                <span className="font-mono text-xl tracking-widest">{code}</span>
+              <div className="flex items-center justify-between p-4 border-2 border-green-200 rounded-lg bg-green-50">
+                <span className="font-mono text-xl tracking-[0.2em] font-bold text-green-800">
+                  {code}
+                </span>
                 <Button 
                   variant="ghost" 
                   size="sm" 
                   onClick={copyToClipboard}
-                  className="text-muted-foreground hover:text-foreground"
+                  className="text-green-600 hover:text-green-700 hover:bg-green-100"
                 >
                   {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                 </Button>
               </div>
+
+              <Alert>
+                <Shield className="h-4 w-4" />
+                <AlertDescription>
+                  <strong>Important :</strong> Ce code permet l'accès à vos directives anticipées. 
+                  Ne le partagez qu'avec des professionnels de santé de confiance.
+                </AlertDescription>
+              </Alert>
             </div>
           )}
         </div>
         
-        <DialogFooter className="sm:justify-center gap-2">
+        <div className="flex justify-end gap-2">
           {!code ? (
             <Button 
-              type="button" 
               onClick={handleGenerateCode}
               disabled={isLoading}
+              className="flex items-center gap-2"
             >
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              <Share2 className="h-4 w-4" />
               Générer un code
             </Button>
           ) : (
             <Button
-              type="button"
+              variant="outline"
               onClick={() => setIsOpen(false)}
             >
               Fermer
             </Button>
           )}
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );
