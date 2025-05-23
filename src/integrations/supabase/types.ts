@@ -9,6 +9,44 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      access_logs: {
+        Row: {
+          access_by: string | null
+          access_type: string | null
+          accessed_at: string | null
+          directive_id: string | null
+          id: string
+          ip_address: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          access_by?: string | null
+          access_type?: string | null
+          accessed_at?: string | null
+          directive_id?: string | null
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          access_by?: string | null
+          access_type?: string | null
+          accessed_at?: string | null
+          directive_id?: string | null
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "access_logs_directive_id_fkey"
+            columns: ["directive_id"]
+            isOneToOne: false
+            referencedRelation: "directives"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       access_requests: {
         Row: {
           access_code: string
@@ -118,6 +156,8 @@ export type Database = {
           content: Json
           created_at: string | null
           id: string
+          institution_code: string | null
+          institution_code_expires_at: string | null
           is_active: boolean | null
           updated_at: string | null
           user_id: string
@@ -126,6 +166,8 @@ export type Database = {
           content: Json
           created_at?: string | null
           id?: string
+          institution_code?: string | null
+          institution_code_expires_at?: string | null
           is_active?: boolean | null
           updated_at?: string | null
           user_id: string
@@ -134,6 +176,8 @@ export type Database = {
           content?: Json
           created_at?: string | null
           id?: string
+          institution_code?: string | null
+          institution_code_expires_at?: string | null
           is_active?: boolean | null
           updated_at?: string | null
           user_id?: string
@@ -1021,6 +1065,20 @@ export type Database = {
       generate_random_code: {
         Args: { length: number }
         Returns: string
+      }
+      get_directives_by_institution_code: {
+        Args: {
+          input_nom: string
+          input_prenom: string
+          input_date_naissance: string
+          input_institution_code: string
+        }
+        Returns: {
+          id: string
+          user_id: string
+          content: Json
+          created_at: string
+        }[]
       }
       get_directives_by_shared_code: {
         Args: {

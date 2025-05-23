@@ -31,6 +31,7 @@ import ReportDataBreach from "@/pages/ReportDataBreach";
 import AccessCardPage from "@/pages/AccessCard";
 import EnSavoirPlus from "@/pages/EnSavoirPlus";
 import SharedAccessPageContainer from "@/pages/SharedAccessPage";
+import InstitutionAccess from "@/pages/InstitutionAccess";
 
 // Import Admin
 import Admin from "@/pages/Admin";
@@ -68,6 +69,7 @@ function App() {
         <Route path="/en-savoir-plus" element={<EnSavoirPlus />} />
         <Route path="/mentions-legales" element={<LegalMentions />} />
         <Route path="/acces-partage" element={<SharedAccessPageContainer />} />
+        <Route path="/acces-institution" element={<InstitutionAccess />} />
         
         {/* Routes avec accès alternatif via PlaceholderPage */}
         <Route path="/:pageId" element={<PlaceholderPage />} />
