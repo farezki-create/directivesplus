@@ -49,11 +49,12 @@ export function SharedAccessPage() {
         setDocs([]);
       } else {
         console.log("Directives retrieved:", data);
+        // Transform the data to ensure we have the correct properties
         setDocs(data.map(doc => ({
           id: doc.id,
           user_id: doc.user_id,
-          title: doc.titre || doc.content?.title,
-          content: doc.contenu || doc.content?.content,
+          title: doc.titre || (doc.content && typeof doc.content === 'object' ? doc.content.title : undefined),
+          content: doc.contenu || (doc.content && typeof doc.content === 'object' ? doc.content.content : undefined),
           created_at: doc.created_at,
           titre: doc.titre,
           contenu: doc.contenu
