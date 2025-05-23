@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { Loader2 } from "lucide-react";
+import { Loader2, Hospital } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/components/ui/use-toast";
@@ -13,6 +13,7 @@ import { RegisterForm } from "@/features/auth/RegisterForm";
 import { VerificationAlert } from "@/features/auth/VerificationAlert";
 import { ForgotPasswordForm } from "@/features/auth/ForgotPasswordForm";
 import { PasswordResetForm } from "@/features/auth/PasswordResetForm";
+import { Button } from "@/components/ui/button";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -137,6 +138,17 @@ const Auth = () => {
                 </TabsContent>
               </Tabs>
             )}
+            
+            <div className="mt-4 text-center">
+              <Button 
+                variant="ghost" 
+                onClick={() => navigate('/acces-institution')}
+                className="text-directiveplus-600 hover:bg-directiveplus-50 flex items-center mx-auto"
+              >
+                <Hospital className="mr-2" size={16} />
+                Accès pour les professionnels de santé
+              </Button>
+            </div>
           </CardContent>
           <CardFooter>
             <p className="text-xs text-gray-500 text-center w-full">

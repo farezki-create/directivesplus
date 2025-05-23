@@ -1,10 +1,11 @@
 
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import Header from "../components/Header";
 import Hero from "../components/Hero";
 import Footer from "../components/Footer";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, Hospital } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -15,16 +16,27 @@ const Index = () => {
       <main className="flex-grow">
         <Hero />
         
-        {/* Bouton Voir commentaires en bas de page */}
+        {/* Boutons en bas de page */}
         <div className="container mx-auto py-8 text-center mb-8">
-          <Button 
-            onClick={() => navigate('/commentaires')}
-            variant="outline"
-            className="border-directiveplus-600 text-directiveplus-700 hover:bg-directiveplus-50 text-lg py-6 px-8"
-          >
-            <MessageSquare className="mr-2" size={20} />
-            Voir les commentaires
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button 
+              onClick={() => navigate('/commentaires')}
+              variant="outline"
+              className="border-directiveplus-600 text-directiveplus-700 hover:bg-directiveplus-50 text-lg py-6 px-8"
+            >
+              <MessageSquare className="mr-2" size={20} />
+              Voir les commentaires
+            </Button>
+            
+            <Button 
+              onClick={() => navigate('/acces-institution')}
+              variant="outline"
+              className="border-directiveplus-600 text-directiveplus-700 hover:bg-directiveplus-50 text-lg py-6 px-8"
+            >
+              <Hospital className="mr-2" size={20} />
+              Accès Institution
+            </Button>
+          </div>
         </div>
       </main>
       <Footer />
