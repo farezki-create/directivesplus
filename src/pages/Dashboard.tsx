@@ -1,21 +1,43 @@
+
 import React from "react";
 import DossierContentProvider from "@/components/dossier/DossierContentProvider";
 import { useDossierStore } from "@/store/dossierStore";
 import DirectivesTab from "@/components/dossier/DirectivesTab";
+import DashboardHeader from "@/components/dossier/DashboardHeader";
+import DashboardNavigation from "@/components/dossier/DashboardNavigation";
+import DashboardEmptyState from "@/components/dossier/DashboardEmptyState";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FileText } from "lucide-react";
 
 const Dashboard = () => {
   const dossierActif = useDossierStore((state) => state.dossierActif);
   
   return (
     <DossierContentProvider>
-      {/* Wrap DirectivesTab and other components that need decrypted content */}
       <div className="container mx-auto py-6">
         <h1 className="text-2xl font-bold mb-4">Tableau de bord</h1>
         
-        {dossierActif && (
-          <div className="mt-6">
-            <DirectivesTab />
-          </div>
+        <DashboardNavigation />
+        
+        {dossierActif ? (
+          <>
+            <DashboardHeader />
+            
+            <Tabs defaultValue="directives" className="mt-6">
+              <TabsList>
+                <TabsTrigger value="directives" className="flex items-center gap-2">
+                  <FileText size={16} />
+                  Directives
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="directives" className="mt-4">
+                <DirectivesTab />
+              </TabsContent>
+            </Tabs>
+          </>
+        ) : (
+          <DashboardEmptyState />
         )}
       </div>
     </DossierContentProvider>

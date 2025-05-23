@@ -1,14 +1,15 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDossierStore } from "@/store/dossierStore";
 import { logDirectiveDebugInfo, extractDirectives } from "@/components/dossier/utils/directives";
 import { checkDirectivesExistence, getDirectivesFromContent, extractPatientInfo } from "@/utils/directives";
 import { toast } from "@/hooks/use-toast";
+import DirectivesHeader from "./directives/DirectivesHeader";
+import DirectivesContent from "./directives/DirectivesContent";
+import NoDirectivesAlert from "./directives/NoDirectivesAlert";
 
-/**
- * Composant pour afficher les directives anticipées
- */
 const DirectivesTab: React.FC = () => {
   const dossierActif = useDossierStore((state) => state.dossierActif);
   const decryptedContent = useDossierStore((state) => state.decryptedContent);
@@ -82,12 +83,7 @@ const DirectivesTab: React.FC = () => {
   
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Directives Anticipées</CardTitle>
-        <CardDescription>
-          Informations relatives aux directives anticipées du patient.
-        </CardDescription>
-      </CardHeader>
+      <DirectivesHeader />
       <CardContent className="grid gap-4">
         {loading ? (
           <>
@@ -99,7 +95,7 @@ const DirectivesTab: React.FC = () => {
           <>
             {hasDirectives && directives ? (
               <>
-                <div className="space-y-1">
+                <div className="space-y-1 mb-4">
                   <p className="text-sm font-medium">
                     <span className="font-bold">Nom:</span> {patientInfo.firstName} {patientInfo.lastName}
                   </p>
@@ -107,20 +103,11 @@ const DirectivesTab: React.FC = () => {
                     <span className="font-bold">Source:</span> {source}
                   </p>
                 </div>
-                <div className="mt-2">
-                  <pre className="whitespace-pre-wrap text-sm">
-                    {typeof directives === 'string' ? (
-                      directives
-                    ) : (
-                      JSON.stringify(directives, null, 2)
-                    )}
-                  </pre>
-                </div>
+                
+                <DirectivesContent directives={directives} source={source} />
               </>
             ) : (
-              <p className="text-sm text-gray-500">
-                Aucune directive anticipée trouvée pour ce patient.
-              </p>
+              <NoDirectivesAlert />
             )}
           </>
         )}
