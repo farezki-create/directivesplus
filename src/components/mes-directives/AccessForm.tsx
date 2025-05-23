@@ -1,5 +1,6 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -17,12 +18,22 @@ interface AccessFormProps {
 }
 
 export const AccessForm = ({ onSubmit, loading }: AccessFormProps) => {
+  const [searchParams] = useSearchParams();
+  const codeParam = searchParams.get("code");
+  
   const [form, setForm] = useState<AccessFormValues>({
     firstName: "",
     lastName: "",
     birthdate: "",
-    accessCode: ""
+    accessCode: codeParam || ""
   });
+
+  // Update the form if the code parameter changes
+  useEffect(() => {
+    if (codeParam) {
+      setForm(prev => ({ ...prev, accessCode: codeParam }));
+    }
+  }, [codeParam]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -80,7 +91,14 @@ export const AccessForm = ({ onSubmit, loading }: AccessFormProps) => {
           value={form.accessCode}
           onChange={handleChange}
           required
+          className={codeParam ? "bg-gray-100" : ""}
+          readOnly={!!codeParam}
         />
+        {codeParam && (
+          <p className="text-xs text-muted-foreground">
+            Code d'accès chargé automatiquement depuis l'URL
+          </p>
+        )}
       </div>
       
       <Button 

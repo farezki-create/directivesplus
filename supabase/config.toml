@@ -1,5 +1,8 @@
 
 project_id = "kytqqjnecezkxyhmmjrz"
 
+[functions.verifierCodeAcces]
+verify_jwt = false
+
 [functions.accessSharedProfile]
 verify_jwt = false

@@ -18,14 +18,15 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   
   // Liste explicite des routes publiques
   const publicRoutes = ['/directives-acces', '/', '/mes-directives', '/auth', '/directives-acces', '/affichage-dossier'];
+  const hasCodeParam = searchParams.has("code");
   
   useEffect(() => {
-    console.log("ProtectedRoute for", location.pathname);
-    console.log("- Auth status:", isAuthenticated ? "Authenticated" : "Not authenticated");
-    console.log("- Loading:", isLoading);
-    console.log("- Session:", session ? "Present" : "None");
-    console.log("- Is public route:", publicRoutes.includes(location.pathname));
-    console.log("- Has code param:", searchParams.has("code"));
+    console.log("ProtectedRoute for", location.pathname, {
+      isAuthenticated,
+      isLoading,
+      hasCodeParam,
+      isPublicRoute: publicRoutes.includes(location.pathname)
+    });
     
     // Marquer l'authentification comme vérifiée une fois le chargement terminé
     if (!isLoading) {
@@ -36,7 +37,7 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     if (isAuthenticated && isRedirecting) {
       setIsRedirecting(false);
     }
-  }, [isAuthenticated, isLoading, location.pathname, isRedirecting, session, searchParams]);
+  }, [isAuthenticated, isLoading, location.pathname, isRedirecting, session, searchParams, hasCodeParam]);
 
   // Afficher l'indicateur de chargement pendant la vérification de l'état d'authentification
   if (isLoading || !hasCheckedAuth) {
@@ -56,7 +57,7 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   }
   
   // Exception spéciale: autoriser l'accès direct à /mes-directives avec un code d'accès dans l'URL
-  if (location.pathname === "/mes-directives" && searchParams.has("code")) {
+  if (location.pathname === "/mes-directives" && hasCodeParam) {
     console.log("ProtectedRoute: Accès direct aux directives avec code, autorisation spéciale");
     return <>{children}</>;
   }

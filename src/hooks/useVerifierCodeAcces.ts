@@ -37,6 +37,11 @@ export const useVerifierCodeAcces = () => {
   const verifierCode = async (accessCode: string, bruteForceIdentifier?: string): Promise<Dossier | null> => {
     console.log(`Verifying access code: ${accessCode} (Identifier: ${bruteForceIdentifier || 'none'})`);
     
+    if (!accessCode) {
+      console.error("No access code provided");
+      return null;
+    }
+    
     setLoading(true);
     try {
       // Call the actual Edge Function
@@ -54,9 +59,15 @@ export const useVerifierCodeAcces = () => {
       });
       
       const result = await response.json();
+      console.log("Edge function response:", result);
       
       if (!result.success) {
         console.error("Error verifying access code:", result.error);
+        toast({
+          title: "Erreur",
+          description: result.error || "Code d'accès invalide ou expiré",
+          variant: "destructive"
+        });
         return null;
       }
       
