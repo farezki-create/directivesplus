@@ -22,7 +22,7 @@ export const retrieveDirectivesByInstitutionCode = async (
 ) => {
   console.log("Attempting to retrieve directives with cleaned values:", cleanedValues);
   
-  // D'abord, vérifions quels profils existent avec ces informations
+  // Vérifier les profils existants pour debug
   const { data: profiles, error: profileError } = await supabase
     .from('profiles')
     .select('id, first_name, last_name, birth_date')
@@ -30,7 +30,7 @@ export const retrieveDirectivesByInstitutionCode = async (
     .eq('first_name', cleanedValues.firstName)
     .eq('birth_date', cleanedValues.birthDate);
     
-  console.log("Found profiles matching patient info:", profiles);
+  console.log("Found profiles matching patient info:", profiles?.length || 0);
   
   if (profileError) {
     console.error("Error checking profiles:", profileError);
@@ -46,10 +46,10 @@ export const retrieveDirectivesByInstitutionCode = async (
   
   if (error) {
     console.error("Institution access RPC error:", error);
-    throw new Error("Erreur lors de la vérification de l'accès. Détails: " + error.message);
+    throw new Error("Erreur lors de la récupération des directives. Vérifiez vos informations.");
   }
   
-  console.log("RPC response:", data);
+  console.log("RPC response:", data?.length || 0, "directives found");
   
   if (data && data.length > 0) {
     console.log("Found directives with cleaned values");
@@ -60,9 +60,18 @@ export const retrieveDirectivesByInstitutionCode = async (
   console.log("No results with cleaned values, trying variations...");
   
   const variations = [
-    { lastName: originalValues.lastName.trim(), firstName: originalValues.firstName.trim() },
-    { lastName: originalValues.lastName.trim().toLowerCase(), firstName: originalValues.firstName.trim().toLowerCase() },
-    { lastName: capitalizeFirstLetter(originalValues.lastName.trim()), firstName: capitalizeFirstLetter(originalValues.firstName.trim()) }
+    { 
+      lastName: originalValues.lastName.trim().toUpperCase(), 
+      firstName: capitalizeFirstLetter(originalValues.firstName.trim()) 
+    },
+    { 
+      lastName: originalValues.lastName.trim().toLowerCase(), 
+      firstName: originalValues.firstName.trim().toLowerCase() 
+    },
+    { 
+      lastName: capitalizeFirstLetter(originalValues.lastName.trim()), 
+      firstName: capitalizeFirstLetter(originalValues.firstName.trim()) 
+    }
   ];
 
   for (const variation of variations) {
@@ -80,13 +89,18 @@ export const retrieveDirectivesByInstitutionCode = async (
     }
   }
 
-  console.log("No matching patient found with any name variation");
-  console.log("Patient info used:", { 
-    lastName: cleanedValues.lastName, 
-    firstName: cleanedValues.firstName, 
-    birthDate: cleanedValues.birthDate,
-    institutionCode: cleanedValues.institutionCode 
-  });
+  // Aucune correspondance trouvée
+  const errorMessage = [
+    "Aucune directive trouvée pour ce patient avec ce code d'accès.",
+    "",
+    "Vérifiez que :",
+    "• Le code d'accès est correct et n'a pas expiré",
+    "• Le nom de famille est exact (sensible à la casse)",
+    "• Le prénom est exact (sensible à la casse)", 
+    "• La date de naissance correspond exactement",
+    "",
+    "Si le problème persiste, contactez le patient pour obtenir un nouveau code."
+  ].join("\n");
   
-  throw new Error("Aucune directive trouvée pour ce patient avec ce code d'accès. Vérifiez que :\n1. Le code d'accès est correct\n2. Les informations du patient correspondent exactement\n3. Le code n'a pas expiré");
+  throw new Error(errorMessage);
 };

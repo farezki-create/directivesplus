@@ -13,12 +13,16 @@ export const generateInstitutionCode = async (
   expirationDays: number = 30
 ): Promise<string | null> => {
   try {
+    console.log("Generating institution code for directive:", directiveId);
+    
     // Generate a random 8-character code
     const code = generateRandomCode(8);
     
     // Calculate expiration date
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + expirationDays);
+    
+    console.log("Generated code:", code, "expires at:", expiresAt);
     
     // Update the directive with the new code
     const { error } = await supabase
@@ -39,9 +43,15 @@ export const generateInstitutionCode = async (
       return null;
     }
     
+    console.log("Institution code generated successfully");
     return code;
   } catch (err) {
     console.error("Error in generateInstitutionCode:", err);
+    toast({
+      title: "Erreur",
+      description: "Une erreur inattendue est survenue",
+      variant: "destructive"
+    });
     return null;
   }
 };
@@ -61,4 +71,31 @@ const generateRandomCode = (length: number): string => {
   }
   
   return result;
+};
+
+/**
+ * Vérifie si un code d'institution existe et est valide
+ */
+export const verifyInstitutionCodeExists = async (code: string): Promise<boolean> => {
+  try {
+    const { data, error } = await supabase
+      .from('directives')
+      .select('id, institution_code_expires_at')
+      .eq('institution_code', code)
+      .not('institution_code_expires_at', 'is', null)
+      .single();
+      
+    if (error || !data) {
+      return false;
+    }
+    
+    // Vérifier que le code n'a pas expiré
+    const expiresAt = new Date(data.institution_code_expires_at);
+    const now = new Date();
+    
+    return expiresAt > now;
+  } catch (err) {
+    console.error("Error verifying institution code:", err);
+    return false;
+  }
 };

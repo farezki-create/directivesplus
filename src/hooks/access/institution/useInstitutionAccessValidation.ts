@@ -16,22 +16,42 @@ export const validateInstitutionAccessForm = (values: any): Record<string, strin
 
   if (!values.lastName || values.lastName.trim() === '') {
     errors.lastName = "Le nom de famille est obligatoire";
+  } else if (values.lastName.trim().length < 2) {
+    errors.lastName = "Le nom de famille doit contenir au moins 2 caractères";
   }
 
   if (!values.firstName || values.firstName.trim() === '') {
     errors.firstName = "Le prénom est obligatoire";
+  } else if (values.firstName.trim().length < 2) {
+    errors.firstName = "Le prénom doit contenir au moins 2 caractères";
   }
 
   if (!values.birthDate) {
     errors.birthDate = "La date de naissance est obligatoire";
   } else if (!DATE_REGEX.test(values.birthDate)) {
     errors.birthDate = "Format de date invalide. Utilisez le format YYYY-MM-DD";
+  } else {
+    // Vérifier que la date est dans le passé
+    const birthDate = new Date(values.birthDate);
+    const today = new Date();
+    if (birthDate >= today) {
+      errors.birthDate = "La date de naissance doit être dans le passé";
+    }
+    
+    // Vérifier que la date n'est pas trop ancienne (plus de 150 ans)
+    const minDate = new Date();
+    minDate.setFullYear(today.getFullYear() - 150);
+    if (birthDate < minDate) {
+      errors.birthDate = "Date de naissance non valide";
+    }
   }
 
   if (!values.institutionCode || values.institutionCode.trim() === '') {
     errors.institutionCode = "Le code d'accès institution est obligatoire";
-  } else if (values.institutionCode.length < 6) {
+  } else if (values.institutionCode.trim().length < 6) {
     errors.institutionCode = "Le code d'accès institution doit contenir au moins 6 caractères";
+  } else if (values.institutionCode.trim().length > 20) {
+    errors.institutionCode = "Le code d'accès institution ne peut pas dépasser 20 caractères";
   }
 
   return errors;
