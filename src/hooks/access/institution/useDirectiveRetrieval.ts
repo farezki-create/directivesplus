@@ -16,16 +16,22 @@ interface OriginalValues {
   institutionCode: string;
 }
 
-interface DirectiveContent {
-  created_for_institution_access?: boolean;
-  [key: string]: any;
+interface DirectiveDocument {
+  id: string;
+  file_name: string;
+  file_path: string;
+  created_at: string;
+  description?: string;
+  content_type?: string;
+  user_id: string;
 }
 
 interface DirectiveRecord {
   id: string;
   user_id: string;
-  content: DirectiveContent;
+  content: any;
   created_at: string;
+  documents?: DirectiveDocument[];
 }
 
 export const retrieveDirectivesByInstitutionCode = async (
@@ -34,35 +40,59 @@ export const retrieveDirectivesByInstitutionCode = async (
 ): Promise<DirectiveRecord[]> => {
   console.log("Attempting to retrieve directives with cleaned values:", cleanedValues);
   
-  // Première tentative avec les valeurs nettoyées
-  console.log("Calling RPC with:", {
-    input_nom: cleanedValues.lastName,
-    input_prenom: cleanedValues.firstName,
-    input_date_naissance: cleanedValues.birthDate,
-    input_institution_code: cleanedValues.institutionCode
-  });
+  // Première tentative : chercher des documents PDF dans pdf_documents avec un code d'accès institution
+  console.log("Searching for real directive documents in pdf_documents table");
   
-  const { data, error } = await supabase.rpc("get_directives_by_institution_code", {
-    input_nom: cleanedValues.lastName,
-    input_prenom: cleanedValues.firstName,
-    input_date_naissance: cleanedValues.birthDate,
-    input_institution_code: cleanedValues.institutionCode
-  });
+  const { data: documentsData, error: documentsError } = await supabase
+    .from('pdf_documents')
+    .select(`
+      id,
+      file_name,
+      file_path,
+      created_at,
+      description,
+      content_type,
+      user_id,
+      profiles!inner(first_name, last_name, birth_date)
+    `)
+    .eq('profiles.last_name', cleanedValues.lastName)
+    .eq('profiles.first_name', cleanedValues.firstName)
+    .eq('profiles.birth_date', cleanedValues.birthDate);
   
-  if (error) {
-    console.error("Institution access RPC error:", error);
-    throw new Error("Erreur lors de la récupération des directives. Vérifiez vos informations.");
+  if (documentsError) {
+    console.error("Error fetching documents:", documentsError);
   }
   
-  console.log("RPC response:", data?.length || 0, "directives found");
+  console.log("Documents found:", documentsData?.length || 0);
   
-  if (data && data.length > 0) {
-    console.log("Found directives with cleaned values:", data);
-    return data as DirectiveRecord[];
+  // Si on trouve des documents PDF, vérifier le code d'institution via la table directives
+  if (documentsData && documentsData.length > 0) {
+    console.log("Found PDF documents, checking institution code validity");
+    
+    // Vérifier si l'utilisateur a un code d'institution valide
+    const { data: institutionCodeData, error: institutionError } = await supabase
+      .from('directives')
+      .select('id, user_id, institution_code, institution_code_expires_at')
+      .eq('user_id', documentsData[0].user_id)
+      .eq('institution_code', cleanedValues.institutionCode)
+      .gt('institution_code_expires_at', new Date().toISOString())
+      .single();
+    
+    if (!institutionError && institutionCodeData) {
+      console.log("Valid institution code found, returning documents");
+      
+      // Retourner les documents sous format compatible
+      return [{
+        id: institutionCodeData.id,
+        user_id: institutionCodeData.user_id,
+        content: { documents: documentsData },
+        created_at: documentsData[0].created_at
+      }];
+    }
   }
-
-  // Si aucune directive n'est trouvée avec les valeurs nettoyées, essayer les variations
-  console.log("No directives found with cleaned values, trying variations...");
+  
+  // Fallback : essayer avec les variations de nom
+  console.log("Trying with name variations...");
   
   const variations = [
     { 
@@ -86,47 +116,54 @@ export const retrieveDirectivesByInstitutionCode = async (
   for (const variation of variations) {
     console.log("Trying variation:", variation);
     
-    const { data: varData, error: varError } = await supabase.rpc("get_directives_by_institution_code", {
-      input_nom: variation.lastName,
-      input_prenom: variation.firstName,
-      input_date_naissance: cleanedValues.birthDate,
-      input_institution_code: cleanedValues.institutionCode
-    });
+    const { data: varDocuments, error: varError } = await supabase
+      .from('pdf_documents')
+      .select(`
+        id,
+        file_name,
+        file_path,
+        created_at,
+        description,
+        content_type,
+        user_id,
+        profiles!inner(first_name, last_name, birth_date)
+      `)
+      .eq('profiles.last_name', variation.lastName)
+      .eq('profiles.first_name', variation.firstName)
+      .eq('profiles.birth_date', cleanedValues.birthDate);
     
-    if (!varError && varData && varData.length > 0) {
-      console.log("Found directives with variation:", variation, "data:", varData);
-      return varData as DirectiveRecord[];
+    if (!varError && varDocuments && varDocuments.length > 0) {
+      // Vérifier le code d'institution
+      const { data: institutionCodeData, error: institutionError } = await supabase
+        .from('directives')
+        .select('id, user_id, institution_code, institution_code_expires_at')
+        .eq('user_id', varDocuments[0].user_id)
+        .eq('institution_code', cleanedValues.institutionCode)
+        .gt('institution_code_expires_at', new Date().toISOString())
+        .single();
+      
+      if (!institutionError && institutionCodeData) {
+        console.log("Found documents with variation:", variation);
+        return [{
+          id: institutionCodeData.id,
+          user_id: institutionCodeData.user_id,
+          content: { documents: varDocuments },
+          created_at: varDocuments[0].created_at
+        }];
+      }
     }
   }
 
-  // Si on n'a toujours pas trouvé de directives, vérifier s'il y a au moins des directives avec ce code
-  console.log("No directives found with any variation, checking for any directives with this code...");
+  // Vérifier s'il y a au moins un code d'institution valide
+  console.log("No documents found, checking for institution codes...");
   
-  // Récupérer toutes les directives avec ce code (y compris les tests) pour donner un message d'erreur approprié
-  const { data: allDirectives } = await supabase
+  const { data: allCodes } = await supabase
     .from('directives')
-    .select('id, content, user_id')
+    .select('id, user_id')
     .eq('institution_code', cleanedValues.institutionCode)
     .gt('institution_code_expires_at', new Date().toISOString());
   
-  if (allDirectives && allDirectives.length > 0) {
-    console.log("Found directives with institution code, checking if they are test directives:", allDirectives);
-    
-    // Vérifier si ce sont des directives de test
-    const testDirectives = allDirectives.filter(d => {
-      const content = d.content as DirectiveContent;
-      return content?.created_for_institution_access === true;
-    });
-    
-    if (testDirectives.length > 0 && testDirectives.length === allDirectives.length) {
-      throw new Error(
-        "Seules des directives de test ont été trouvées avec ce code d'accès. " +
-        "Veuillez vous assurer que le patient a créé de vraies directives anticipées " +
-        "et généré un code d'accès institution à partir de celles-ci."
-      );
-    }
-    
-    // Si on arrive ici, il y a des directives mais les informations patient ne correspondent pas
+  if (allCodes && allCodes.length > 0) {
     throw new Error(
       "Code d'accès valide trouvé mais les informations du patient ne correspondent pas. " +
       "Vérifiez le nom, prénom et date de naissance."
@@ -139,7 +176,7 @@ export const retrieveDirectivesByInstitutionCode = async (
     "Vérifiez que : " +
     "• Le code d'accès est correct et n'a pas expiré " +
     "• Les informations du patient correspondent exactement " +
-    "• Le patient a bien créé des directives anticipées réelles " +
+    "• Le patient a bien créé des directives anticipées " +
     "Si le problème persiste, demandez au patient de générer un nouveau code."
   );
 };
