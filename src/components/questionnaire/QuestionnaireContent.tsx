@@ -2,8 +2,8 @@
 import { memo } from "react";
 import { Question, Responses } from "./types";
 import QuestionsContainer from "./QuestionsContainer";
-import { LoadingState } from "./LoadingState";
-import { ErrorState } from "./ErrorState";
+import LoadingState from "./LoadingState";
+import ErrorState from "./ErrorState";
 
 interface QuestionnaireContentProps {
   questions: Question[];
@@ -20,7 +20,7 @@ const QuestionnaireContent = memo(({
   error, 
   onResponseChange 
 }: QuestionnaireContentProps) => {
-  if (loading) return <LoadingState />;
+  if (loading) return <LoadingState loading={loading} />;
   if (error) return <ErrorState error={error} />;
 
   return (
