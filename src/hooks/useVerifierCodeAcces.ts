@@ -1,30 +1,14 @@
-
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import { getAuthUserDossier } from "@/api/dossier/userDossierAccess";
 import { supabase } from "@/integrations/supabase/client";
+import { Dossier } from "./types/dossierTypes";
 
-export interface Dossier {
-  id: string;
-  userId: string;
-  isFullAccess: boolean;
-  isDirectivesOnly: boolean;
-  isMedicalOnly: boolean;
-  profileData: {
-    first_name: string;
-    last_name: string;
-    birth_date: string;
-  };
-  contenu: {
-    document_url?: string;
-    documents?: any[];
-    patient?: {
-      nom: string;
-      prenom: string;
-      date_naissance: string | null;
-    };
-  };
-}
+// This file is maintained for backward compatibility
+// It re-exports functionality from the new modular hooks
+// New code should use the hooks in the /hooks/access directory instead
+
+export { Dossier } from './types/dossierTypes';
 
 export const useVerifierCodeAcces = () => {
   const [loading, setLoading] = useState(false);
@@ -72,20 +56,20 @@ export const useVerifierCodeAcces = () => {
           const profile = data[0];
           const dossier: Dossier = {
             id: profile.id,
-            userId: profile.user_id,
+            userId: profile.user_id || "",
             isFullAccess: true,
             isDirectivesOnly: true,
             isMedicalOnly: false,
             profileData: {
-              first_name: profile.first_name,
-              last_name: profile.last_name,
-              birth_date: profile.birthdate
+              first_name: profile.first_name || "",
+              last_name: profile.last_name || "",
+              birth_date: profile.birthdate || "",
             },
             contenu: {
               patient: {
-                nom: profile.last_name,
-                prenom: profile.first_name,
-                date_naissance: profile.birthdate
+                nom: profile.last_name || "",
+                prenom: profile.first_name || "",
+                date_naissance: profile.birthdate || null
               }
             }
           };
@@ -125,6 +109,21 @@ export const useVerifierCodeAcces = () => {
           variant: "destructive"
         });
         return null;
+      }
+      
+      // Ensure the dossier conforms to our type
+      if (result.dossier) {
+        // Make sure userId exists
+        if (!result.dossier.userId) {
+          result.dossier.userId = "";
+        }
+        
+        // Make sure profileData exists with required fields
+        if (result.dossier.profileData) {
+          result.dossier.profileData.first_name = result.dossier.profileData.first_name || "";
+          result.dossier.profileData.last_name = result.dossier.profileData.last_name || "";
+          result.dossier.profileData.birth_date = result.dossier.profileData.birth_date || "";
+        }
       }
       
       return result.dossier;

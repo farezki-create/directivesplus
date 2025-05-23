@@ -10,9 +10,10 @@ export interface Dossier {
   isDirectivesOnly: boolean;
   isMedicalOnly: boolean;
   profileData?: {
-    first_name: string;
-    last_name: string;
-    birth_date: string;
+    first_name?: string;
+    last_name?: string;
+    birth_date?: string;
+    gender?: string;
   };
   contenu: {
     document_url?: string;

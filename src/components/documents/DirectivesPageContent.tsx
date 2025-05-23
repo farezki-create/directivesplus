@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Document } from "@/hooks/useDirectivesDocuments";
 import DirectivesPageHeader from "@/components/documents/DirectivesPageHeader";
@@ -81,6 +80,13 @@ const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
           description: "Préparation du document pour le dossier partagé...",
         });
         
+        // Ensure we have default values for all required fields in profileData
+        const userProfileData = {
+          first_name: (user?.user_metadata?.first_name || profile?.first_name || "Inconnu") as string,
+          last_name: (user?.user_metadata?.last_name || profile?.last_name || "Inconnu") as string,
+          birth_date: (user?.user_metadata?.birth_date || profile?.birth_date || null) as string,
+        };
+        
         // Créer un dossier minimal avec les infos utilisateur et le document sélectionné
         const minimalDossier = {
           id: `auth-${Date.now()}`,
@@ -88,16 +94,12 @@ const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
           isFullAccess: true,
           isDirectivesOnly: true,
           isMedicalOnly: false,
-          profileData: profile || {
-            first_name: user?.user_metadata?.first_name,
-            last_name: user?.user_metadata?.last_name,
-            birth_date: user?.user_metadata?.birth_date,
-          },
+          profileData: userProfileData,
           contenu: {
             patient: {
-              nom: user?.user_metadata?.last_name || profile?.last_name || "Inconnu",
-              prenom: user?.user_metadata?.first_name || profile?.first_name || "Inconnu",
-              date_naissance: user?.user_metadata?.birth_date || profile?.birth_date || null,
+              nom: userProfileData.last_name,
+              prenom: userProfileData.first_name,
+              date_naissance: userProfileData.birth_date || null,
             },
             documents: documentsList // Use the documents list format
           }
