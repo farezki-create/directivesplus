@@ -49,17 +49,25 @@ export const getAuthUserDossier = async (
         birth_date: null
       },
       contenu: {
-        patient: {
-          nom: profile?.last_name || "Inconnu",
-          prenom: profile?.first_name || "Inconnu",
-          date_naissance: profile?.birth_date || null,
-        },
         // Add document URL if provided
         ...(documentPath ? { document_url: documentPath } : {}),
         // Add document list if provided
         ...(documentsList && documentsList.length > 0 ? { documents: documentsList } : {})
       }
     };
+    
+    // Add patient information to the contenu object
+    if (profile) {
+      // Create a copy of contenu with patient information
+      dossier.contenu = {
+        ...dossier.contenu,
+        patient: {
+          nom: profile.last_name || "Inconnu",
+          prenom: profile.first_name || "Inconnu",
+          date_naissance: profile.birth_date || null,
+        }
+      };
+    }
     
     console.log("Dossier créé pour utilisateur authentifié:", dossier);
     

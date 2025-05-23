@@ -16,6 +16,11 @@ export interface Dossier {
   contenu: {
     document_url?: string;
     documents?: any[];
+    patient?: {
+      nom: string;
+      prenom: string;
+      date_naissance: string | null;
+    };
   };
 }
 
