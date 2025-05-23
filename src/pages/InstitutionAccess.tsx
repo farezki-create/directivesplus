@@ -14,8 +14,8 @@ export default function InstitutionAccess() {
         <div className="max-w-md mx-auto">
           <BackButton 
             className="mb-4" 
-            label="Retour à l'authentification"
-            onClick={() => window.location.href = '/auth'}
+            label="Retour à l'accueil"
+            onClick={() => window.location.href = '/'}
           />
           
           <Card>

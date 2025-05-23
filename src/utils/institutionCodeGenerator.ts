@@ -62,29 +62,3 @@ const generateRandomCode = (length: number): string => {
   
   return result;
 };
-
-/**
- * Validates if an institution code exists and is valid
- * @param code - The institution code to validate
- * @returns Boolean indicating if the code is valid
- */
-export const validateInstitutionCode = async (code: string): Promise<boolean> => {
-  try {
-    const { data, error } = await supabase
-      .from('directives')
-      .select('id')
-      .eq('institution_code', code)
-      .gt('institution_code_expires_at', new Date().toISOString())
-      .maybeSingle();
-    
-    if (error) {
-      console.error("Error validating institution code:", error);
-      return false;
-    }
-    
-    return !!data;
-  } catch (err) {
-    console.error("Error in validateInstitutionCode:", err);
-    return false;
-  }
-};
