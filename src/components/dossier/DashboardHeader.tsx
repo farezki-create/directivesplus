@@ -18,11 +18,11 @@ const DashboardHeader: React.FC = () => {
         {patientInfo ? (
           <div>
             <h2 className="text-2xl font-bold mb-2">
-              {patientInfo.prenom} {patientInfo.nom}
+              {patientInfo.firstName} {patientInfo.lastName}
             </h2>
-            {patientInfo.dateNaissance && (
+            {patientInfo.birthDate && (
               <p className="text-gray-600">
-                Né(e) le {new Date(patientInfo.dateNaissance).toLocaleDateString('fr-FR')}
+                Né(e) le {new Date(patientInfo.birthDate).toLocaleDateString('fr-FR')}
               </p>
             )}
           </div>

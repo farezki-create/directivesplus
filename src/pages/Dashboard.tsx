@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -12,6 +11,7 @@ import DashboardEmptyState from "@/components/dossier/DashboardEmptyState";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileText, Home } from "lucide-react";
 import DirectivesGrid from "@/components/DirectivesGrid";
+import DeleteDossierSection from "@/components/dossier/DeleteDossierSection";
 
 const Dashboard = () => {
   const {
@@ -79,6 +79,10 @@ const Dashboard = () => {
                 <DirectivesTab />
               </TabsContent>
             </Tabs>
+            
+            <div className="mt-8">
+              <DeleteDossierSection />
+            </div>
           </>
         ) : (
           <DashboardEmptyState />
