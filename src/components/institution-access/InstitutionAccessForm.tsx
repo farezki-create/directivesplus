@@ -49,9 +49,29 @@ export const InstitutionAccessForm = () => {
           </AlertDescription>
         </Alert>
       </div>
+
+      {error && error.includes("Aucun code d'accès institution n'existe") && (
+        <div className="mb-6">
+          <Alert className="bg-yellow-50 border-yellow-200">
+            <AlertCircle className="h-5 w-5 text-yellow-600" />
+            <AlertDescription className="text-yellow-800">
+              <strong>Information importante :</strong><br />
+              Il n'y a actuellement aucun code d'accès institution dans la base de données. 
+              <br /><br />
+              Pour tester cette fonctionnalité, vous devez :
+              <ol className="list-decimal list-inside mt-2 space-y-1">
+                <li>Vous connecter à votre compte</li>
+                <li>Créer ou accéder à vos directives</li>
+                <li>Utiliser le bouton "Accès institution" pour générer un code</li>
+                <li>Revenir ici avec ce code généré</li>
+              </ol>
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
       
       <form onSubmit={handleSubmit} className="space-y-4">
-        {error && (
+        {error && !error.includes("Aucun code d'accès institution n'existe") && (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>{error}</AlertDescription>

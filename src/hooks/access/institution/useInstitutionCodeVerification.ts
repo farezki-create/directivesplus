@@ -12,6 +12,21 @@ export const verifyInstitutionCodeExists = async (institutionCode: string) => {
     
   console.log("All existing institution codes in database:", allCodes);
   
+  if (allCodesError) {
+    console.error("Error fetching all codes:", allCodesError);
+  }
+  
+  // Vérifier le nombre total de directives dans la base
+  const { count: totalDirectives, error: countError } = await supabase
+    .from('directives')
+    .select('*', { count: 'exact', head: true });
+    
+  console.log("Total directives in database:", totalDirectives);
+  
+  if (countError) {
+    console.error("Error counting directives:", countError);
+  }
+  
   const { data: existingCodes, error: codeCheckError } = await supabase
     .from('directives')
     .select('id, institution_code_expires_at, user_id')
@@ -28,6 +43,11 @@ export const verifyInstitutionCodeExists = async (institutionCode: string) => {
   if (!existingCodes || existingCodes.length === 0) {
     console.log("No directives found with this institution code");
     console.log("Available institution codes:", allCodes?.map(c => c.institution_code).filter(Boolean));
+    
+    if (!allCodes || allCodes.length === 0) {
+      throw new Error("Aucun code d'accès institution n'existe dans la base de données. Vous devez d'abord créer une directive et générer un code d'accès institution depuis l'interface utilisateur.");
+    }
+    
     throw new Error("Code d'accès institution invalide. Vérifiez que le code est correct et qu'il a été généré pour ce patient.");
   }
 
