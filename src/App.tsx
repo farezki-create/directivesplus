@@ -11,7 +11,6 @@ import DirectivesDocs from "@/pages/DirectivesDocs";
 import Dashboard from "@/pages/Dashboard";
 import DirectivesAcces from "@/pages/DirectivesAcces";
 import { Navigate } from "react-router-dom";
-import MesDirectives from "@/pages/MesDirectives";
 import AvisGeneral from "@/pages/AvisGeneral";
 import GoutsPeurs from "@/pages/GoutsPeurs";
 import MaintienVie from "@/pages/MaintienVie";
@@ -48,7 +47,6 @@ function App() {
         {/* Routes publiques, accessibles sans authentification */}
         <Route path="/" element={<Index />} />
         <Route path="/auth" element={<Auth />} />
-        <Route path="/mes-directives" element={<MesDirectives />} />
         <Route path="/directives-acces" element={<DirectivesAcces />} />
         <Route path="/affichage-dossier" element={<AffichageDossierRedirect />} />
         <Route path="/acces-document" element={<Navigate to="/directives-docs" replace />} />

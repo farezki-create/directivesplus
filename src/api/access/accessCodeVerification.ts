@@ -1,5 +1,231 @@
 
+import { supabase } from "@/integrations/supabase/client";
+
+// Simplified MedicalDocument type
+export interface MedicalDocument {
+  id: string;
+  file_name: string;
+  file_path: string;
+  [key: string]: any;
+}
+
 /**
- * Backward compatibility layer for existing imports
+ * Verifies access code against the backend using RPC when possible
  */
-export * from './verification';
+export const verifyAccessCode = async (
+  accessCode: string,
+  patientName: string,
+  patientBirthDate: string,
+  documentType: "medical" | "directive" = "directive"
+) => {
+  console.log(`Vérification du code ${accessCode} pour ${patientName} né(e) le ${patientBirthDate}`);
+
+  // Parse patientName into first and last name if possible
+  let firstName = "", lastName = "";
+  if (patientName.includes(" ")) {
+    const nameParts = patientName.split(" ");
+    firstName = nameParts[0];
+    lastName = nameParts.slice(1).join(" ");
+  }
+
+  const bruteForceIdentifier = `${documentType}_access_${patientName}_${patientBirthDate}`;
+  
+  try {
+    // First try with RPC if we have both names
+    if (firstName && lastName) {
+      console.log(`Attempting RPC verification with firstName=${firstName}, lastName=${lastName}, birthdate=${patientBirthDate}`);
+      
+      // Convert birthdate string to Date object if provided
+      let birthDate = null;
+      if (patientBirthDate) {
+        try {
+          birthDate = new Date(patientBirthDate);
+        } catch (e) {
+          console.error("Invalid birthdate format:", e);
+        }
+      }
+
+      const { data: profiles, error: rpcError } = await supabase.rpc(
+        'verify_access_identity',
+        {
+          input_lastname: lastName,
+          input_firstname: firstName,
+          input_birthdate: birthDate,
+          input_access_code: accessCode,
+        }
+      );
+      
+      if (rpcError) {
+        console.error("RPC verification error:", rpcError);
+      } else if (profiles && profiles.length > 0) {
+        console.log("RPC verification successful:", profiles);
+        
+        // Create dossier from the profile
+        const profile = profiles[0];
+        return {
+          success: true,
+          dossier: {
+            id: profile.id,
+            userId: profile.user_id,
+            isFullAccess: true,
+            isDirectivesOnly: documentType === "directive",
+            isMedicalOnly: documentType === "medical",
+            profileData: {
+              first_name: profile.first_name,
+              last_name: profile.last_name,
+              birth_date: profile.birthdate
+            },
+            contenu: {
+              patient: {
+                nom: profile.last_name,
+                prenom: profile.first_name,
+                date_naissance: profile.birthdate
+              }
+            }
+          }
+        };
+      }
+    }
+    
+    // Fallback to Edge Function if RPC fails or isn't possible
+    console.log("Falling back to Edge Function for verification");
+    // Appel à la fonction Edge verifierCodeAcces
+    const response = await fetch(`https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/verifierCodeAcces`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        accessCode,
+        patientName,
+        patientBirthDate,
+        bruteForceIdentifier
+      })
+    });
+
+    if (!response.ok) {
+      console.error(`Erreur HTTP: ${response.status} ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    console.log("Résultat de la vérification:", result);
+    return result;
+  } catch (error) {
+    console.error("Erreur lors de la vérification du code d'accès:", error);
+    return {
+      success: false,
+      error: "Une erreur est survenue lors de la communication avec le serveur"
+    };
+  }
+};
+
+/**
+ * Fetches medical documents for a user
+ */
+export const getMedicalDocuments = async (userId: string): Promise<MedicalDocument[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('medical_documents')
+      .select('*')
+      .eq('user_id', userId);
+
+    if (error) throw error;
+    return data as MedicalDocument[];
+  } catch (error) {
+    console.error("Erreur lors de la récupération des documents médicaux:", error);
+    return [];
+  }
+};
+
+// Define the type for dossier content to include document_url and documents
+interface DossierContent {
+  patient: {
+    nom: string;
+    prenom: string;
+    date_naissance: string;
+  };
+  document_url?: string;
+  document_name?: string;
+  documents?: any[];
+}
+
+// Define the type for the dossier data
+interface DossierData {
+  id: string;
+  userId: string;
+  isFullAccess: boolean;
+  isDirectivesOnly: boolean;
+  isMedicalOnly: boolean;
+  profileData: any;
+  contenu: DossierContent;
+}
+
+/**
+ * Get authenticated user dossier without requiring an access code
+ */
+export const getAuthUserDossier = async (
+  userId: string,
+  documentType: "medical" | "directive" = "directive",
+  documentPath?: string,
+  documentsList?: any[]
+): Promise<any> => {
+  try {
+    console.log("getAuthUserDossier appelé avec:", { userId, documentType, documentPath, hasDocumentsList: !!documentsList });
+    
+    // Fetch user profile
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+    
+    if (profileError) {
+      console.error("Erreur lors de la récupération du profil:", profileError);
+      throw profileError;
+    }
+    
+    console.log("Profil utilisateur récupéré:", profile);
+    
+    // Create a dossier object for authenticated users with enhanced document support
+    const dossierData: DossierData = {
+      id: `auth-${Date.now()}`,
+      userId: userId,
+      isFullAccess: true,
+      isDirectivesOnly: documentType === "directive",
+      isMedicalOnly: documentType === "medical",
+      profileData: profile,
+      contenu: {
+        patient: {
+          nom: profile.last_name || "Inconnu",
+          prenom: profile.first_name || "Inconnu",
+          date_naissance: profile.birth_date || null,
+        }
+      }
+    };
+    
+    // Si un chemin de document a été fourni, l'ajouter au contenu du dossier
+    if (documentPath) {
+      console.log("Ajout du document au dossier:", documentPath);
+      dossierData.contenu.document_url = documentPath;
+    }
+    
+    // Si une liste de documents a été fournie, l'ajouter au contenu du dossier
+    if (documentsList && documentsList.length > 0) {
+      console.log("Ajout de la liste de documents au dossier:", documentsList);
+      dossierData.contenu.documents = documentsList;
+    }
+    
+    console.log("Dossier créé pour utilisateur authentifié:", dossierData);
+    
+    return {
+      success: true,
+      dossier: dossierData
+    };
+  } catch (error) {
+    console.error("Erreur lors de la récupération du dossier authentifié:", error);
+    return {
+      success: false,
+      error: "Une erreur est survenue lors de la récupération des données utilisateur"
+    };
+  }
+};
