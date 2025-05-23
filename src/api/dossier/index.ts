@@ -1,3 +1,5 @@
 
-// Export dossier-related API functions
+/**
+ * Re-export all dossier-related functions
+ */
 export * from './userDossierAccess';
