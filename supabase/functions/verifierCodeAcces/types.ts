@@ -1,10 +1,12 @@
 
 // Interface for the request body
 export interface RequestBody {
-  code_saisi: string;
+  accessCode?: string;
   bruteForceIdentifier?: string;
-  isAuthUserRequest?: boolean;
   userId?: string;
+  accessType?: string;
+  patientName?: string;
+  patientBirthDate?: string | Date;
 }
 
 // Interface for standardized responses
@@ -13,7 +15,7 @@ export interface StandardResponse {
   error?: string;
   dossier?: {
     id: string;
-    userId: string;
+    userId?: string;
     isFullAccess: boolean;
     isDirectivesOnly: boolean;
     isMedicalOnly: boolean;

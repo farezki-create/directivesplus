@@ -1,16 +1,15 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.24.0";
 import { corsHeaders } from "./corsHelpers.ts";
+import { RequestBody, StandardResponse } from "./types.ts";
+import { createSupabaseClient } from "./supabaseClient.ts";
+import { verifyAccessCode } from "./accessCodeVerifier.ts";
+import { getAuthenticatedUserDossier } from "./authenticatedAccess.ts";
+import { logAccessAttempt } from "./loggingService.ts";
 
-// Create a Supabase client with the Auth context of the logged in user.
-const supabaseClient = createClient(
-  Deno.env.get("SUPABASE_URL") ?? "",
-  Deno.env.get("SUPABASE_ANON_KEY") ?? ""
-);
-
+// Main handler function for the Edge Function
 serve(async (req: Request) => {
-  // This is needed if you're planning to invoke your function from a browser.
+  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
@@ -18,7 +17,16 @@ serve(async (req: Request) => {
   try {
     console.log("verifierCodeAcces function called");
     
-    const { accessCode, patientName, patientBirthDate, bruteForceIdentifier, userId, accessType } = await req.json();
+    const requestBody: RequestBody = await req.json();
+    const { 
+      accessCode, 
+      bruteForceIdentifier, 
+      userId, 
+      accessType,
+      patientName,
+      patientBirthDate
+    } = requestBody;
+    
     console.log("Request params:", { 
       hasAccessCode: !!accessCode, 
       hasPatientName: !!patientName, 
@@ -28,294 +36,45 @@ serve(async (req: Request) => {
       accessType
     });
 
-    // Authentificated user access flow
+    // Initialize Supabase client
+    const supabase = createSupabaseClient();
+    
+    // Handle authenticated user access flow
     if (userId) {
       console.log("Handling authenticated user access for userId:", userId);
-      
-      // Get user profile
-      const { data: profileData, error: profileError } = await supabaseClient
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-      
-      if (profileError) {
-        console.error("Error fetching profile:", profileError);
-        return new Response(
-          JSON.stringify({
-            success: false,
-            error: "Profil utilisateur non trouvé"
-          }),
-          {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 400,
-          }
-        );
-      }
-      
-      // Get user's documents
-      const { data: documents, error: docsError } = await supabaseClient
-        .from('pdf_documents')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
-      
-      if (docsError) {
-        console.error("Error fetching documents:", docsError);
-      }
-      
-      // Create dossier
-      const dossier = {
-        id: `auth-${Date.now()}`,
-        userId: userId,
-        isFullAccess: true,
-        isDirectivesOnly: accessType === "directive",
-        isMedicalOnly: accessType === "medical",
-        profileData: profileData || {
-          first_name: "Utilisateur",
-          last_name: "Non identifié",
-          birth_date: null
-        },
-        contenu: {
-          documents: documents || [],
-          patient: {
-            nom: profileData?.last_name || "Inconnu",
-            prenom: profileData?.first_name || "Inconnu",
-            date_naissance: profileData?.birth_date || null,
-          }
-        }
-      };
-      
-      console.log("Created dossier for authenticated user:", JSON.stringify(dossier, null, 2));
-      
-      return new Response(
-        JSON.stringify({
-          success: true,
-          dossier: dossier
-        }),
-        {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200,
-        }
-      );
+      const result = await getAuthenticatedUserDossier(supabase, userId, accessType);
+      return new Response(JSON.stringify(result), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: result.success ? 200 : 400,
+      });
     } 
     
-    // Parse bruteForceIdentifier to get firstName and lastName if available
-    let firstName = '', lastName = '';
-    if (bruteForceIdentifier && bruteForceIdentifier.includes('_')) {
-      [firstName, lastName] = bruteForceIdentifier.split('_');
-      console.log(`Parsed identifier: firstName=${firstName}, lastName=${lastName}`);
-    }
-    
-    // Code access flow
-    if (accessCode) {
+    // Handle access code flow
+    else if (accessCode) {
       console.log("Handling code access with code:", accessCode);
-
-      // First try with RPC function if we have name components
-      if (firstName && lastName) {
-        try {
-          console.log(`Attempting RPC verification with firstName=${firstName}, lastName=${lastName}`);
-          
-          const { data: sharedProfiles, error: rpcError } = await supabaseClient.rpc(
-            'verify_access_identity',
-            {
-              input_lastname: lastName,
-              input_firstname: firstName,
-              input_birthdate: null, // We might not have birthdate 
-              input_access_code: accessCode,
-            }
-          );
-          
-          if (rpcError) {
-            console.error("Error with RPC verification:", rpcError);
-          } else if (sharedProfiles && sharedProfiles.length > 0) {
-            console.log("RPC verification successful:", sharedProfiles);
-            const profile = sharedProfiles[0];
-            
-            // Get associated documents if any
-            const { data: documents, error: docsError } = await supabaseClient
-              .from('pdf_documents')
-              .select('*')
-              .eq('user_id', profile.user_id)
-              .order('created_at', { ascending: false });
-            
-            if (docsError) {
-              console.error("Error fetching documents:", docsError);
-            }
-            
-            // Build dossier object
-            const dossier = {
-              id: profile.id,
-              userId: profile.user_id,
-              isFullAccess: true,
-              isDirectivesOnly: true, // Shared profiles are for directives
-              isMedicalOnly: false,
-              profileData: {
-                first_name: profile.first_name,
-                last_name: profile.last_name,
-                birth_date: profile.birthdate
-              },
-              contenu: {
-                documents: documents || [],
-                patient: {
-                  nom: profile.last_name,
-                  prenom: profile.first_name,
-                  date_naissance: profile.birthdate
-                }
-              }
-            };
-            
-            console.log("Created dossier from RPC verification:", JSON.stringify(dossier, null, 2));
-            
-            return new Response(
-              JSON.stringify({
-                success: true,
-                dossier
-              }),
-              {
-                headers: { ...corsHeaders, "Content-Type": "application/json" },
-                status: 200,
-              }
-            );
-          }
-        } catch (rpcError) {
-          console.error("Exception during RPC verification:", rpcError);
-          // Continue with standard verification if RPC fails
-        }
-      }
-
-      // Standard verification with shared profiles
-      const { data: sharedProfiles, error: sharedProfileError } = await supabaseClient
-        .from('shared_profiles')
-        .select('*')
-        .eq('access_code', accessCode);
-
-      if (sharedProfileError) {
-        console.error("Error fetching shared profile:", sharedProfileError);
-      }
-
-      if (sharedProfiles && sharedProfiles.length > 0) {
-        const profile = sharedProfiles[0];
-        console.log("Found shared profile:", profile);
-        
-        // Get associated documents if any
-        const { data: documents, error: docsError } = await supabaseClient
-          .from('pdf_documents')
-          .select('*')
-          .eq('user_id', profile.user_id)
-          .order('created_at', { ascending: false });
-        
-        if (docsError) {
-          console.error("Error fetching documents:", docsError);
-        }
-        
-        // Build dossier object
-        const dossier = {
-          id: profile.id,
-          userId: profile.user_id,
-          isFullAccess: true,
-          isDirectivesOnly: true, // Shared profiles are for directives
-          isMedicalOnly: false,
-          profileData: {
-            first_name: profile.first_name,
-            last_name: profile.last_name,
-            birth_date: profile.birthdate
-          },
-          contenu: {
-            documents: documents || [],
-            patient: {
-              nom: profile.last_name,
-              prenom: profile.first_name,
-              date_naissance: profile.birthdate
-            }
-          }
-        };
-        
-        console.log("Created dossier from shared profile:", JSON.stringify(dossier, null, 2));
-        
-        return new Response(
-          JSON.stringify({
-            success: true,
-            dossier
-          }),
-          {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 200,
-          }
-        );
-      }
-
-      // If no shared profile found, try with medical dossiers
-      const { data: dossierMedical, error: dossierError } = await supabaseClient
-        .from('dossiers_medicaux')
-        .select('*')
-        .eq('code_acces', accessCode);
-        
-      if (dossierError) {
-        console.error("Error fetching dossier:", dossierError);
-      }
-
-      if (dossierMedical && dossierMedical.length > 0) {
-        const dossier = dossierMedical[0];
-        console.log("Found medical dossier with code:", accessCode);
-        
-        // Log access
-        try {
-          // Since logs_acces might have RLS policies, we'll catch errors but not fail
-          await supabaseClient
-            .from('logs_acces')
-            .insert({
-              dossier_id: dossier.id,
-              succes: true,
-              details: `Accès via code: ${accessCode}, Identifiant: ${bruteForceIdentifier || 'direct'}`
-            });
-        } catch (logError) {
-          console.error("Error logging access (continuing anyway):", logError);
-        }
-        
-        return new Response(
-          JSON.stringify({
-            success: true,
-            dossier: {
-              id: dossier.id,
-              isFullAccess: true,
-              isDirectivesOnly: true,
-              isMedicalOnly: false,
-              contenu: dossier.contenu_dossier
-            }
-          }),
-          {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 200,
-          }
-        );
-      }
-
-      // No valid dossier found with the provided code
-      console.log("No valid dossier found with code:", accessCode);
       
-      // Log failed attempt but don't fail if it doesn't work
-      try {
-        await supabaseClient
-          .from('logs_acces')
-          .insert({
-            succes: false,
-            details: `Tentative échouée avec code: ${accessCode}, Identifiant: ${bruteForceIdentifier || 'direct'}`
-          });
-      } catch (logError) {
-        console.error("Error logging failed access (continuing anyway):", logError);
-      }
-      
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: "Code d'accès invalide ou expiré"
-        }),
-        {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 400,
-        }
+      const result = await verifyAccessCode(
+        supabase, 
+        accessCode, 
+        bruteForceIdentifier,
+        patientName,
+        patientBirthDate
       );
+
+      // If verification failed, log the attempt
+      if (!result.success) {
+        await logAccessAttempt(
+          supabase,
+          null, 
+          false, 
+          `Tentative échouée avec code: ${accessCode}, Identifiant: ${bruteForceIdentifier || 'direct'}`
+        );
+      }
+      
+      return new Response(JSON.stringify(result), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: result.success ? 200 : 400,
+      });
     }
 
     // If no valid access parameters provided

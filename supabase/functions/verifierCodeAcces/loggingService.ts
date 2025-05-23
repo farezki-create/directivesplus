@@ -1,11 +1,11 @@
 
 /**
- * Journalise une tentative d'accès
- * @param supabase Client Supabase
- * @param userId ID de l'utilisateur
- * @param success Succès de la tentative
- * @param details Détails supplémentaires
- * @param accessCodeId ID du code d'accès (optionnel)
+ * Log an access attempt
+ * @param supabase Supabase client
+ * @param userId User ID (optional)
+ * @param success Whether access was successful
+ * @param details Additional details
+ * @param accessCodeId Access code ID (optional)
  */
 export async function logAccessAttempt(
   supabase: any,
@@ -15,15 +15,12 @@ export async function logAccessAttempt(
   accessCodeId: string | null = null
 ) {
   try {
-    await supabase.from("document_access_logs").insert({
-      user_id: userId || "00000000-0000-0000-0000-000000000000",
-      access_code_id: accessCodeId,
-      nom_consultant: "Access via Edge Function",
-      prenom_consultant: "System",
-      success,
+    await supabase.from("logs_acces").insert({
+      dossier_id: accessCodeId,
+      succes: success,
       details
     });
   } catch (error) {
-    console.error("Erreur de journalisation:", error);
+    console.error("Error logging access (continuing anyway):", error);
   }
 }

@@ -26,7 +26,7 @@ export async function fetchUserProfile(supabase: any, userId: string) {
     if (profileError) {
       console.error("Erreur lors de la récupération du profil:", profileError);
       
-      // Création d'un profil minimal en cas d'erreur pour éviter un échec complet
+      // Create a minimal profile in case of error to avoid complete failure
       return {
         id: userId,
         first_name: "Utilisateur",
@@ -38,7 +38,7 @@ export async function fetchUserProfile(supabase: any, userId: string) {
     if (!profileData) {
       console.log("Aucun profil trouvé, création d'un profil minimal");
       
-      // Création d'un profil minimal pour éviter un échec complet de l'accès
+      // Create a minimal profile to avoid complete failure of access
       return {
         id: userId,
         first_name: "Utilisateur",
@@ -51,7 +51,7 @@ export async function fetchUserProfile(supabase: any, userId: string) {
   } catch (error: any) {
     console.error("Exception lors de la récupération du profil:", error);
     
-    // Même en cas d'erreur, on renvoie un profil minimal pour permettre l'accès
+    // Even in case of error, return a minimal profile to allow access
     return {
       id: userId,
       first_name: "Utilisateur",
