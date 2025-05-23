@@ -42,12 +42,6 @@ const Header = () => {
             {isAuthenticated ? (
               <>
                 <Link
-                  to="/dashboard"
-                  className="text-gray-700 hover:text-directiveplus-600 transition-colors"
-                >
-                  Mon Dossier
-                </Link>
-                <Link
                   to="/profile"
                   className="text-gray-700 hover:text-directiveplus-600 transition-colors"
                 >
@@ -109,13 +103,6 @@ const Header = () => {
             </Link>
             {isAuthenticated ? (
               <>
-                <Link
-                  to="/dashboard"
-                  className="text-gray-700 hover:text-directiveplus-600 transition-colors block"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Mon Dossier
-                </Link>
                 <Link
                   to="/profile"
                   className="text-gray-700 hover:text-directiveplus-600 transition-colors block"

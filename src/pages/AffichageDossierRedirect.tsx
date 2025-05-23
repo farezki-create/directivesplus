@@ -7,10 +7,10 @@ const AffichageDossierRedirect = () => {
 
   useEffect(() => {
     // Log the redirect
-    console.log("Redirecting from /affichage-dossier to /dashboard");
+    console.log("Redirecting from /affichage-dossier to home");
     
-    // Redirect to dashboard
-    navigate('/dashboard', { replace: true });
+    // Redirect to home
+    navigate('/', { replace: true });
   }, [navigate]);
 
   return (
@@ -18,7 +18,7 @@ const AffichageDossierRedirect = () => {
       <div className="text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-directiveplus-600 mx-auto mb-4"></div>
         <h1 className="text-xl font-medium">Redirection en cours...</h1>
-        <p className="text-gray-600 mt-2">Vous allez être redirigé vers le tableau de bord.</p>
+        <p className="text-gray-600 mt-2">Vous allez être redirigé vers l'accueil.</p>
       </div>
     </div>
   );
