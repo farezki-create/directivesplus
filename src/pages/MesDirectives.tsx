@@ -3,7 +3,7 @@ import React from "react";
 import Header from "@/components/Header";
 import { DirectivesAccessForm } from "@/components/mes-directives/DirectivesAccessForm"; 
 import LoginLink from "@/components/mes-directives/LoginLink";
-import Footer from "@/components/mes-directives/Footer";
+import Footer from "@/components/Footer";
 
 export default function MesDirectives() {
   console.log("Rendering MesDirectives - PUBLIC PAGE");
