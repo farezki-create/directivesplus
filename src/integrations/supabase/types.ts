@@ -1022,6 +1022,21 @@ export type Database = {
         Args: { length: number }
         Returns: string
       }
+      get_directives_by_shared_code: {
+        Args: {
+          input_nom: string
+          input_prenom: string
+          input_date_naissance: string
+          input_shared_code: string
+        }
+        Returns: {
+          id: string
+          user_id: string
+          titre: string
+          contenu: string
+          created_at: string
+        }[]
+      }
       get_documents_with_access_code: {
         Args: {
           p_last_name: string
