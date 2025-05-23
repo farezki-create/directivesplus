@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Hospital, Loader2, Copy, Check, ExternalLink } from "lucide-react";
 import { generateInstitutionCode } from "@/utils/institutionCodeGenerator";
 import { toast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface InstitutionCodeSectionProps {
   userId?: string;
@@ -16,7 +17,11 @@ const InstitutionCodeSection = ({ userId }: InstitutionCodeSectionProps) => {
   const [copied, setCopied] = useState(false);
 
   const handleGenerateInstitutionCode = async () => {
+    console.log("Button clicked - handleGenerateInstitutionCode called");
+    console.log("UserId:", userId);
+    
     if (!userId) {
+      console.log("No userId provided");
       toast({
         title: "Erreur",
         description: "Utilisateur non authentifié",
@@ -27,23 +32,73 @@ const InstitutionCodeSection = ({ userId }: InstitutionCodeSectionProps) => {
 
     setIsGenerating(true);
     try {
-      // For testing, we'll use a dummy directive ID
-      // In production, this should be the actual directive ID
-      const dummyDirectiveId = userId; // Using user ID as placeholder
+      console.log("Starting institution code generation process");
       
-      const code = await generateInstitutionCode(dummyDirectiveId);
+      // First, check if user has any directives
+      console.log("Checking for existing directives for user:", userId);
+      const { data: existingDirectives, error: directivesError } = await supabase
+        .from('directives')
+        .select('id')
+        .eq('user_id', userId)
+        .limit(1);
+      
+      if (directivesError) {
+        console.error("Error checking directives:", directivesError);
+        throw new Error("Erreur lors de la vérification des directives");
+      }
+      
+      console.log("Existing directives found:", existingDirectives?.length || 0);
+      
+      let directiveId: string;
+      
+      if (!existingDirectives || existingDirectives.length === 0) {
+        console.log("No existing directives found, creating a new one");
+        
+        // Create a minimal directive for this user
+        const { data: newDirective, error: createError } = await supabase
+          .from('directives')
+          .insert({
+            user_id: userId,
+            content: { 
+              title: "Directive de test pour code institution",
+              created_for_institution_access: true,
+              created_at: new Date().toISOString()
+            }
+          })
+          .select('id')
+          .single();
+          
+        if (createError || !newDirective) {
+          console.error("Error creating directive:", createError);
+          throw new Error("Impossible de créer une directive");
+        }
+        
+        directiveId = newDirective.id;
+        console.log("Created new directive with ID:", directiveId);
+      } else {
+        directiveId = existingDirectives[0].id;
+        console.log("Using existing directive with ID:", directiveId);
+      }
+      
+      console.log("Generating institution code for directive:", directiveId);
+      const code = await generateInstitutionCode(directiveId);
+      
       if (code) {
+        console.log("Institution code generated successfully:", code);
         setInstitutionCode(code);
         toast({
           title: "Code d'institution généré",
           description: `Code: ${code} (valide 30 jours)`,
         });
+      } else {
+        console.log("Failed to generate institution code");
+        throw new Error("Impossible de générer le code");
       }
     } catch (error) {
-      console.error("Error generating institution code:", error);
+      console.error("Error in handleGenerateInstitutionCode:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de générer le code d'institution",
+        description: error instanceof Error ? error.message : "Impossible de générer le code d'institution",
         variant: "destructive"
       });
     } finally {
