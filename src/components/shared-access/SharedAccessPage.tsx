@@ -163,4 +163,5 @@ export function SharedAccessPage() {
         </div>
       </div>
     </div>
-  };
+  );
+}
