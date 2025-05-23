@@ -19,14 +19,25 @@ export const generateSharedCode = async (
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + expiresInDays);
     
-    // Update the directive with the shared code
-    const { error } = await supabase
+    // First, check if the directive exists and fetch it
+    const { data: directive, error: fetchError } = await supabase
       .from('directives')
-      .update({
-        shared_code: code,
-        shared_code_expires_at: expiresAt.toISOString()
-      })
-      .eq('id', directiveId);
+      .select('*')
+      .eq('id', directiveId)
+      .single();
+    
+    if (fetchError) {
+      console.error("Error fetching directive:", fetchError);
+      return { success: false, error: fetchError.message };
+    }
+
+    // Update the directive with the shared code
+    // We need to use the PostgreSQL function since the columns don't exist in the table schema yet
+    const { error } = await supabase.rpc('update_directive_shared_code', {
+      directive_id: directiveId,
+      code: code,
+      expires_at: expiresAt.toISOString()
+    });
     
     if (error) {
       console.error("Error generating shared code:", error);
@@ -49,14 +60,10 @@ export const revokeSharedCode = async (
   directiveId: string
 ): Promise<{ success: boolean; error?: string }> => {
   try {
-    // Remove the shared code by setting it to null
-    const { error } = await supabase
-      .from('directives')
-      .update({
-        shared_code: null,
-        shared_code_expires_at: null
-      })
-      .eq('id', directiveId);
+    // Remove the shared code using the PostgreSQL function
+    const { error } = await supabase.rpc('revoke_directive_shared_code', {
+      directive_id: directiveId
+    });
     
     if (error) {
       console.error("Error revoking shared code:", error);
@@ -81,30 +88,16 @@ export const extendSharedCodeExpiration = async (
   additionalDays: number = 7
 ): Promise<{ success: boolean; newExpiry?: string; error?: string }> => {
   try {
-    // First get the current directive to check if it has a shared code
-    const { data: directive, error: fetchError } = await supabase
-      .from('directives')
-      .select('id, shared_code, shared_code_expires_at')
-      .eq('id', directiveId)
-      .single();
-      
-    if (fetchError || !directive || !directive.shared_code) {
-      return { success: false, error: "Directive not found or no shared code exists" };
-    }
-    
     // Calculate new expiration date
-    const currentExpiry = directive.shared_code_expires_at 
-      ? new Date(directive.shared_code_expires_at) 
-      : new Date();
-    currentExpiry.setDate(currentExpiry.getDate() + additionalDays);
+    const newDate = new Date();
+    newDate.setDate(newDate.getDate() + additionalDays);
+    const newExpiryDate = newDate.toISOString();
     
-    // Update the expiration date
-    const { error } = await supabase
-      .from('directives')
-      .update({
-        shared_code_expires_at: currentExpiry.toISOString()
-      })
-      .eq('id', directiveId);
+    // Extend the expiration date using the PostgreSQL function
+    const { data, error } = await supabase.rpc('extend_directive_shared_code', {
+      directive_id: directiveId,
+      new_expires_at: newExpiryDate
+    });
     
     if (error) {
       console.error("Error extending shared code expiration:", error);
@@ -113,7 +106,7 @@ export const extendSharedCodeExpiration = async (
     
     return { 
       success: true, 
-      newExpiry: currentExpiry.toISOString() 
+      newExpiry: newExpiryDate
     };
   } catch (err: any) {
     console.error("Exception extending shared code expiration:", err);
