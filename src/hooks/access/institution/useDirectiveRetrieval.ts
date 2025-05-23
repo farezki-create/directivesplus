@@ -22,6 +22,20 @@ export const retrieveDirectivesByInstitutionCode = async (
 ) => {
   console.log("Attempting to retrieve directives with cleaned values:", cleanedValues);
   
+  // D'abord, vérifions quels profils existent avec ces informations
+  const { data: profiles, error: profileError } = await supabase
+    .from('profiles')
+    .select('id, first_name, last_name, birth_date')
+    .eq('last_name', cleanedValues.lastName)
+    .eq('first_name', cleanedValues.firstName)
+    .eq('birth_date', cleanedValues.birthDate);
+    
+  console.log("Found profiles matching patient info:", profiles);
+  
+  if (profileError) {
+    console.error("Error checking profiles:", profileError);
+  }
+  
   // Première tentative avec les valeurs nettoyées
   const { data, error } = await supabase.rpc("get_directives_by_institution_code", {
     input_nom: cleanedValues.lastName,
@@ -67,5 +81,12 @@ export const retrieveDirectivesByInstitutionCode = async (
   }
 
   console.log("No matching patient found with any name variation");
-  throw new Error("Aucune directive trouvée pour ce patient avec ce code d'accès. Vérifiez les informations saisies.");
+  console.log("Patient info used:", { 
+    lastName: cleanedValues.lastName, 
+    firstName: cleanedValues.firstName, 
+    birthDate: cleanedValues.birthDate,
+    institutionCode: cleanedValues.institutionCode 
+  });
+  
+  throw new Error("Aucune directive trouvée pour ce patient avec ce code d'accès. Vérifiez que :\n1. Le code d'accès est correct\n2. Les informations du patient correspondent exactement\n3. Le code n'a pas expiré");
 };
