@@ -11,12 +11,14 @@ interface AccessSharedProfileProps {
 
 export const AccessSharedProfile = ({ onSuccess, initialCode }: AccessSharedProfileProps) => {
   const { verifyAccess, loading, error, codeFromUrl } = useAccessVerification(onSuccess);
+  const [verificationAttempted, setVerificationAttempted] = useState(false);
   
   // Use either the explicitly passed initialCode or the one from the URL
   const accessCode = initialCode || codeFromUrl;
 
   const handleSubmit = async (formValues: AccessFormValues) => {
     console.log("AccessSharedProfile - Form submitted:", formValues);
+    setVerificationAttempted(true);
     try {
       // Merge passed code with form values if provided
       const valuesWithCode = accessCode ? {
@@ -55,6 +57,7 @@ export const AccessSharedProfile = ({ onSuccess, initialCode }: AccessSharedProf
       loading={loading} 
       error={error} 
       initialCode={accessCode}
+      verificationAttempted={verificationAttempted}
     />
   );
 };

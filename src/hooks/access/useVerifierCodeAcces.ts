@@ -14,8 +14,20 @@ export const useVerifierCodeAcces = () => {
   const { verifyCode } = useCodeVerification(setLoading);
   const { getDossierAuthenticated } = useAuthenticatedDossier(setLoading);
 
+  // Wrapper function for verifyCode with better error handling
+  const verifierCode = async (code: string, identifier?: string): Promise<Dossier | null> => {
+    try {
+      console.log(`Vérification du code: ${code} avec identifiant: ${identifier || 'non fourni'}`);
+      const dossier = await verifyCode(code, identifier);
+      return dossier;
+    } catch (error) {
+      console.error("Erreur lors de la vérification du code:", error);
+      return null;
+    }
+  };
+
   return {
-    verifierCode: verifyCode,
+    verifierCode,
     getDossierUtilisateurAuthentifie: getDossierAuthenticated,
     loading
   };

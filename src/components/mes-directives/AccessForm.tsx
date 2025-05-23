@@ -19,9 +19,10 @@ interface AccessFormProps {
   loading: boolean;
   error?: string | null;
   initialCode?: string | null;
+  verificationAttempted?: boolean;
 }
 
-export const AccessForm = ({ onSubmit, loading, error, initialCode }: AccessFormProps) => {
+export const AccessForm = ({ onSubmit, loading, error, initialCode, verificationAttempted = false }: AccessFormProps) => {
   const [searchParams] = useSearchParams();
   const codeParam = initialCode || searchParams.get("code");
   
@@ -55,6 +56,17 @@ export const AccessForm = ({ onSubmit, loading, error, initialCode }: AccessForm
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      
+      {/* Show a special message if verification was attempted with a code from URL and failed */}
+      {verificationAttempted && codeParam && error && (
+        <Alert variant="warning" className="bg-amber-50 border-amber-300">
+          <AlertCircle className="h-4 w-4 text-amber-600" />
+          <AlertDescription className="text-amber-800">
+            Le code d'accès fourni dans l'URL semble être invalide ou expiré. 
+            Veuillez vérifier vos informations et réessayer.
+          </AlertDescription>
         </Alert>
       )}
       

@@ -22,6 +22,7 @@ export const useAccessVerification = (onSuccess?: (dossier: any) => void) => {
   const [error, setError] = useState<string | null>(null);
   const [searchParams] = useSearchParams();
   const codeFromUrl = searchParams.get("code");
+  const [autoVerifyAttempted, setAutoVerifyAttempted] = useState(false);
   
   // Clear error when code changes
   useEffect(() => {
@@ -66,15 +67,21 @@ export const useAccessVerification = (onSuccess?: (dossier: any) => void) => {
           description: "Vos directives ont été chargées avec succès"
         });
         
+        // If onSuccess callback is provided, call it
+        if (onSuccess) {
+          onSuccess(result.dossier);
+        }
+        
         return {
           success: true,
           dossier: result.dossier
         };
       } else {
-        setError("Une erreur est survenue lors de la récupération des données");
+        const errorMessage = "Une erreur est survenue lors de la récupération des données";
+        setError(errorMessage);
         return {
           success: false,
-          error: "Une erreur est survenue lors de la récupération des données"
+          error: errorMessage
         };
       }
     } catch (err) {
@@ -87,13 +94,24 @@ export const useAccessVerification = (onSuccess?: (dossier: any) => void) => {
       };
     } finally {
       setLoading(false);
+      setAutoVerifyAttempted(true);
     }
   };
+
+  // Automatically attempt verification if a code is provided in the URL
+  // and we haven't already attempted auto-verification
+  useEffect(() => {
+    if (codeFromUrl && !autoVerifyAttempted && !loading) {
+      // But we need other form data - so we can't auto-verify yet
+      // This would need additional implementation if we want to auto-verify with just the code
+    }
+  }, [codeFromUrl, autoVerifyAttempted, loading]);
   
   return {
     verifyAccess,
     loading,
     error,
-    codeFromUrl
+    codeFromUrl,
+    autoVerifyAttempted
   };
 };
