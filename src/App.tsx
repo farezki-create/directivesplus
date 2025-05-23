@@ -1,4 +1,5 @@
 
+
 import { Route, Routes } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -25,7 +26,7 @@ import PlaceholderPage from "@/pages/PlaceholderPage";
 import LegalMentions from "@/pages/LegalMentions";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import ReportDataBreach from "@/pages/ReportDataBreach";
-import AccessCardPage from "@/pages/AccessCardPage";
+import AccessCard from "@/pages/AccessCard";
 import EnSavoirPlus from "@/pages/EnSavoirPlus";
 import SharedAccessPageContainer from "@/pages/SharedAccessPage";
 import InstitutionAccess from "@/pages/InstitutionAccess";
@@ -59,7 +60,7 @@ function App() {
         <Route path="/confidentialite" element={<PrivacyPolicy />} />
         <Route path="/report-breach" element={<ReportDataBreach />} />
         <Route path="/medical-access" element={<MedicalAccess />} />
-        <Route path="/carte-acces" element={<AccessCardPage />} />
+        <Route path="/carte-acces" element={<AccessCard />} />
         <Route path="/en-savoir-plus" element={<EnSavoirPlus />} />
         <Route path="/mentions-legales" element={<LegalMentions />} />
         <Route path="/acces-partage" element={<SharedAccessPageContainer />} />
@@ -120,3 +121,4 @@ function App() {
 }
 
 export default App;
+
