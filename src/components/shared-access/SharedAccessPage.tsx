@@ -18,6 +18,21 @@ interface Directive {
   contenu?: string;
 }
 
+// Define the type for the data returned from the database function
+interface DirectiveResponse {
+  id: string;
+  user_id: string;
+  titre?: string;
+  contenu?: string;
+  created_at: string;
+  content?: {
+    title?: string;
+    content?: string;
+    shared_code?: string;
+    shared_code_expires_at?: string;
+  };
+}
+
 export function SharedAccessPage() {
   const [nom, setNom] = useState("");
   const [prenom, setPrenom] = useState("");
@@ -50,7 +65,7 @@ export function SharedAccessPage() {
       } else {
         console.log("Directives retrieved:", data);
         // Transform the data to ensure we have the correct properties
-        setDocs(data.map(doc => ({
+        setDocs(data.map((doc: DirectiveResponse) => ({
           id: doc.id,
           user_id: doc.user_id,
           title: doc.titre || (doc.content && typeof doc.content === 'object' ? doc.content.title : undefined),
