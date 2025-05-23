@@ -7,7 +7,7 @@ import { DirectivesAccessForm } from "@/components/mes-directives/DirectivesAcce
 import LoginLink from "@/components/mes-directives/LoginLink";
 import Footer from "@/components/Footer";
 import { useDossierStore } from "@/store/dossierStore";
-import { useVerifierCodeAcces } from "@/hooks/useVerifierCodeAcces";
+import { useVerifierCodeAcces } from "@/hooks/access/useVerifierCodeAcces";
 import { toast } from "@/hooks/use-toast";
 
 export default function MesDirectives() {

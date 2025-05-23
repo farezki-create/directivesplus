@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { toast } from "@/components/ui/use-toast";
 import { AccessForm, AccessFormValues } from "./AccessForm";
-import { useAccessVerification } from "./useAccessVerification";
+import { useAccessVerification } from "@/hooks/access/useAccessVerification";
 
 interface AccessSharedProfileProps {
   onSuccess?: (dossier: any) => void;
