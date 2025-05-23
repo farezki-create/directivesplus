@@ -15,7 +15,7 @@ export const DocumentHeader = () => {
           className="flex items-center gap-2"
         >
           <ArrowLeft size={16} />
-          Retour à la rédaction
+          Retour au tableau de bord
         </Button>
       </div>
       

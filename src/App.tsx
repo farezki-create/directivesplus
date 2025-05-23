@@ -25,7 +25,7 @@ import PlaceholderPage from "@/pages/PlaceholderPage";
 import LegalMentions from "@/pages/LegalMentions";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import ReportDataBreach from "@/pages/ReportDataBreach";
-import AccessCardPage from "@/pages/AccessCard";
+import AccessCardPage from "@/pages/AccessCardPage";
 import EnSavoirPlus from "@/pages/EnSavoirPlus";
 import SharedAccessPageContainer from "@/pages/SharedAccessPage";
 import InstitutionAccess from "@/pages/InstitutionAccess";
@@ -46,7 +46,6 @@ function App() {
         <Route path="/" element={<Index />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/affichage-dossier" element={<AffichageDossierRedirect />} />
-        <Route path="/acces-document" element={<Navigate to="/directives-docs" replace />} />
         <Route path="/avis-general" element={<AvisGeneral />} />
         <Route path="/gouts-peurs" element={<GoutsPeurs />} />
         <Route path="/maintien-vie" element={<MaintienVie />} />
@@ -65,6 +64,7 @@ function App() {
         <Route path="/mentions-legales" element={<LegalMentions />} />
         <Route path="/acces-partage" element={<SharedAccessPageContainer />} />
         <Route path="/acces-institution" element={<InstitutionAccess />} />
+        <Route path="/dashboard" element={<Navigate to="/rediger" replace />} />
         
         {/* Routes avec accès alternatif via PlaceholderPage */}
         <Route path="/:pageId" element={<PlaceholderPage />} />
@@ -96,7 +96,11 @@ function App() {
         />
         <Route 
           path="/rediger" 
-          element={<Rediger />}
+          element={
+            <ProtectedRoute>
+              <Rediger />
+            </ProtectedRoute>
+          } 
         />
         <Route 
           path="/donnees-medicales" 

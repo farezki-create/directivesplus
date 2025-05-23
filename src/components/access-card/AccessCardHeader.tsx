@@ -11,7 +11,7 @@ const AccessCardHeader = () => {
       <div className="mb-6">
         <Button
           variant="outline"
-          onClick={() => navigate("/dashboard")}
+          onClick={() => navigate("/rediger")}
           className="flex items-center gap-2"
         >
           <ArrowLeft size={16} />
