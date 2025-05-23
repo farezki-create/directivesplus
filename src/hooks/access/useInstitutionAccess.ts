@@ -33,6 +33,8 @@ export const useInstitutionAccess = () => {
     setError(null);
     
     try {
+      console.log("Starting institution access verification with values:", values);
+      
       // Validation des données d'entrée
       const validationErrors = validateInstitutionAccessForm(values);
       if (Object.keys(validationErrors).length > 0) {
@@ -45,12 +47,15 @@ export const useInstitutionAccess = () => {
       console.log("Verifying institution access with cleaned values:", cleanedValues);
 
       // Vérifier l'existence et la validité du code institution
+      console.log("Step 1: Verifying institution code exists");
       await verifyInstitutionCodeExists(cleanedValues.institutionCode);
 
       // Récupérer les directives
+      console.log("Step 2: Retrieving directives");
       const finalData = await retrieveDirectivesByInstitutionCode(cleanedValues, values);
       
       // Logger l'accès réussi
+      console.log("Step 3: Logging access");
       const directiveIds = finalData.map(doc => doc.id);
       await logInstitutionAccess(directiveIds, cleanedValues);
       

@@ -20,6 +20,8 @@ export const retrieveDirectivesByInstitutionCode = async (
   cleanedValues: CleanedValues,
   originalValues: OriginalValues
 ) => {
+  console.log("Attempting to retrieve directives with cleaned values:", cleanedValues);
+  
   // Première tentative avec les valeurs nettoyées
   const { data, error } = await supabase.rpc("get_directives_by_institution_code", {
     input_nom: cleanedValues.lastName,
@@ -36,11 +38,12 @@ export const retrieveDirectivesByInstitutionCode = async (
   console.log("RPC response:", data);
   
   if (data && data.length > 0) {
+    console.log("Found directives with cleaned values");
     return data;
   }
 
   // Essayer avec différentes variations de casse pour les noms
-  console.log("Trying with different case variations...");
+  console.log("No results with cleaned values, trying variations...");
   
   const variations = [
     { lastName: originalValues.lastName.trim(), firstName: originalValues.firstName.trim() },

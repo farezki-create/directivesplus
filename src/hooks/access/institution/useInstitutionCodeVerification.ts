@@ -2,6 +2,8 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export const verifyInstitutionCodeExists = async (institutionCode: string) => {
+  console.log("Verifying institution code:", institutionCode);
+  
   const { data: existingCodes, error: codeCheckError } = await supabase
     .from('directives')
     .select('id, institution_code_expires_at')
@@ -13,15 +15,19 @@ export const verifyInstitutionCodeExists = async (institutionCode: string) => {
     throw new Error("Erreur lors de la vérification du code institution.");
   }
 
+  console.log("Found codes:", existingCodes);
+
   if (!existingCodes || existingCodes.length === 0) {
     console.log("No directives found with this institution code");
     throw new Error("Code d'accès institution invalide.");
   }
 
   const now = new Date();
-  const validCodes = existingCodes.filter(code => 
-    new Date(code.institution_code_expires_at) > now
-  );
+  const validCodes = existingCodes.filter(code => {
+    const expiresAt = new Date(code.institution_code_expires_at);
+    console.log("Checking expiry:", expiresAt, "vs now:", now);
+    return expiresAt > now;
+  });
 
   if (validCodes.length === 0) {
     console.log("Institution code has expired");
