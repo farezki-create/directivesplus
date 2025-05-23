@@ -1,5 +1,5 @@
 
-import { ShareAccessButton } from "../ShareAccessButton";
+
 import { ShareIcon } from "lucide-react";
 import ShareInstitutionCodeButton from "./ShareInstitutionCodeButton";
 
@@ -17,12 +17,9 @@ export function DocumentHeader({ title, showActions = true, documentId }: Docume
       {showActions && documentId && (
         <div className="flex items-center gap-3">
           <ShareInstitutionCodeButton directiveId={documentId} />
-          <ShareAccessButton>
-            <ShareIcon className="h-4 w-4 mr-2" />
-            Partager
-          </ShareAccessButton>
         </div>
       )}
     </div>
   );
 }
+
