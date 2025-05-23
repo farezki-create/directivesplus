@@ -16,10 +16,22 @@ interface OriginalValues {
   institutionCode: string;
 }
 
+interface DirectiveContent {
+  created_for_institution_access?: boolean;
+  [key: string]: any;
+}
+
+interface DirectiveRecord {
+  id: string;
+  user_id: string;
+  content: DirectiveContent;
+  created_at: string;
+}
+
 export const retrieveDirectivesByInstitutionCode = async (
   cleanedValues: CleanedValues,
   originalValues: OriginalValues
-) => {
+): Promise<DirectiveRecord[]> => {
   console.log("Attempting to retrieve directives with cleaned values:", cleanedValues);
   
   // Première tentative avec les valeurs nettoyées - en excluant les directives de test
@@ -46,13 +58,14 @@ export const retrieveDirectivesByInstitutionCode = async (
   
   if (data && data.length > 0) {
     // Filtrer côté client pour s'assurer qu'on n'a pas de directives de test
-    const realDirectives = data.filter(directive => 
-      !directive.content?.created_for_institution_access
-    );
+    const realDirectives = data.filter((directive: any) => {
+      const content = directive.content as DirectiveContent;
+      return !content?.created_for_institution_access;
+    });
     
     if (realDirectives.length > 0) {
       console.log("Found real directives with cleaned values:", realDirectives);
-      return realDirectives;
+      return realDirectives as DirectiveRecord[];
     }
   }
 
@@ -90,13 +103,14 @@ export const retrieveDirectivesByInstitutionCode = async (
     
     if (!varError && varData && varData.length > 0) {
       // Filtrer côté client pour exclure les directives de test
-      const realDirectives = varData.filter(directive => 
-        !directive.content?.created_for_institution_access
-      );
+      const realDirectives = varData.filter((directive: any) => {
+        const content = directive.content as DirectiveContent;
+        return !content?.created_for_institution_access;
+      });
       
       if (realDirectives.length > 0) {
         console.log("Found real directives with variation:", variation, "data:", realDirectives);
-        return realDirectives;
+        return realDirectives as DirectiveRecord[];
       }
     }
   }
@@ -112,7 +126,10 @@ export const retrieveDirectivesByInstitutionCode = async (
     .gt('institution_code_expires_at', new Date().toISOString());
   
   if (allDirectives && allDirectives.length > 0) {
-    const testDirectives = allDirectives.filter(d => d.content?.created_for_institution_access);
+    const testDirectives = allDirectives.filter(d => {
+      const content = d.content as DirectiveContent;
+      return content?.created_for_institution_access;
+    });
     
     if (testDirectives.length > 0) {
       throw new Error(

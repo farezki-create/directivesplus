@@ -42,7 +42,6 @@ const InstitutionAccessSection = ({ userId }: InstitutionAccessSectionProps) => 
         .from('directives')
         .select('id, content')
         .eq('user_id', userId)
-        .or('content->created_for_institution_access.is.null,content->created_for_institution_access.neq.true')
         .limit(1);
       
       if (directivesError) {
@@ -52,22 +51,6 @@ const InstitutionAccessSection = ({ userId }: InstitutionAccessSectionProps) => 
       let directiveId: string;
       
       if (!realDirectives || realDirectives.length === 0) {
-        // Check if user only has test directives
-        const { data: testDirectives } = await supabase
-          .from('directives')
-          .select('id')
-          .eq('user_id', userId)
-          .eq('content->created_for_institution_access', 'true');
-          
-        if (testDirectives && testDirectives.length > 0) {
-          toast({
-            title: "Directives manquantes",
-            description: "Vous devez d'abord créer vos directives anticipées pour générer un code d'accès professionnel.",
-            variant: "destructive"
-          });
-          return;
-        }
-        
         // Create a minimal directive for this user
         const { data: newDirective, error: createError } = await supabase
           .from('directives')
@@ -87,7 +70,22 @@ const InstitutionAccessSection = ({ userId }: InstitutionAccessSectionProps) => 
         
         directiveId = newDirective.id;
       } else {
-        directiveId = realDirectives[0].id;
+        // Filter out test directives
+        const nonTestDirectives = realDirectives.filter(directive => {
+          const content = directive.content as any;
+          return !content?.created_for_institution_access;
+        });
+        
+        if (nonTestDirectives.length === 0) {
+          toast({
+            title: "Directives manquantes",
+            description: "Vous devez d'abord créer vos directives anticipées pour générer un code d'accès professionnel.",
+            variant: "destructive"
+          });
+          return;
+        }
+        
+        directiveId = nonTestDirectives[0].id;
       }
       
       const code = await generateInstitutionCode(directiveId);
