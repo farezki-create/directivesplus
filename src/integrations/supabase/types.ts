@@ -1042,25 +1042,6 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
-      verify_access_identity: {
-        Args: {
-          input_lastname: string
-          input_firstname: string
-          input_birthdate: string
-          input_access_code: string
-        }
-        Returns: {
-          access_code: string
-          birthdate: string
-          created_at: string | null
-          expires_at: string | null
-          first_name: string
-          id: string
-          last_name: string
-          medical_profile_id: string | null
-          user_id: string | null
-        }[]
-      }
       verify_directive_access: {
         Args: {
           p_directive_id: string

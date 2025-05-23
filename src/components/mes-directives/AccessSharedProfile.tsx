@@ -8,10 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DatePickerField } from "./DatePickerField";
 import { Loader2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import FormFields from "./FormFields";
-import ErrorDisplay from "./ErrorDisplay";
-import SubmitButton from "./SubmitButton";
 
 export const AccessSharedProfile = () => {
   const navigate = useNavigate();
@@ -36,55 +32,29 @@ export const AccessSharedProfile = () => {
       // Convert birthdate to ISO format for database comparison
       const formattedDate = birthdate.toISOString().split('T')[0];
       
-      // Use the RPC function to verify identity
-      const { data, error: rpcError } = await supabase.rpc('verify_access_identity', {
-        input_firstname: firstName.trim(),
-        input_lastname: lastName.trim(),
-        input_birthdate: formattedDate,
-        input_access_code: accessCode.trim()
+      // Call the Edge Function endpoint
+      const response = await fetch("https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/accessSharedProfile", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          birthdate: formattedDate,
+          accessCode: accessCode.trim()
+        })
       });
       
-      if (rpcError || !data || data.length === 0) {
-        console.error("Error verifying identity:", rpcError);
-        throw new Error("Informations incorrectes ou accès expiré");
+      const result = await response.json();
+      
+      if (!response.ok || !result.success) {
+        console.error("Error accessing shared profile:", result.error);
+        throw new Error(result.error || "Informations incorrectes ou accès expiré");
       }
       
-      const sharedProfile = data[0];
-      
-      // Log access for audit purposes
-      await supabase.from("document_access_logs").insert({
-        user_id: sharedProfile.user_id || null,
-        access_code_id: sharedProfile.id,
-        nom_consultant: lastName,
-        prenom_consultant: firstName,
-        ip_address: null, // No IP in browser context
-        user_agent: navigator.userAgent || null
-      });
-      
-      // Create dossier object from shared profile
-      const dossier = {
-        id: sharedProfile.id,
-        userId: sharedProfile.user_id || null,
-        medical_profile_id: sharedProfile.medical_profile_id,
-        isFullAccess: true,
-        isDirectivesOnly: true,
-        isMedicalOnly: false,
-        profileData: {
-          first_name: sharedProfile.first_name,
-          last_name: sharedProfile.last_name,
-          birth_date: sharedProfile.birthdate
-        },
-        contenu: {
-          patient: {
-            nom: sharedProfile.last_name,
-            prenom: sharedProfile.first_name,
-            date_naissance: sharedProfile.birthdate
-          }
-        }
-      };
-      
       // Store the dossier and navigate to dashboard
-      setDossierActif(dossier);
+      setDossierActif(result.dossier);
       
       toast({
         title: "Accès autorisé",
@@ -119,26 +89,75 @@ export const AccessSharedProfile = () => {
           Veuillez saisir vos informations personnelles et le code d'accès qui vous a été fourni.
         </div>
         
-        <FormFields
-          firstName={firstName}
-          setFirstName={setFirstName}
-          lastName={lastName}
-          setLastName={setLastName}
-          birthdate={birthdate}
-          setBirthdate={setBirthdate}
-          accessCode={accessCode}
-          setAccessCode={setAccessCode}
-          loading={loading}
-        />
+        <div className="space-y-3">
+          <div className="space-y-1">
+            <label htmlFor="firstName" className="text-sm font-medium">
+              Prénom
+            </label>
+            <Input
+              id="firstName"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              placeholder="Votre prénom"
+              disabled={loading}
+            />
+          </div>
+          
+          <div className="space-y-1">
+            <label htmlFor="lastName" className="text-sm font-medium">
+              Nom
+            </label>
+            <Input
+              id="lastName"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              placeholder="Votre nom"
+              disabled={loading}
+            />
+          </div>
+          
+          <DatePickerField 
+            birthdate={birthdate}
+            setBirthdate={setBirthdate}
+            disabled={loading}
+          />
+          
+          <div className="space-y-1">
+            <label htmlFor="accessCode" className="text-sm font-medium">
+              Code d'accès
+            </label>
+            <Input
+              id="accessCode"
+              value={accessCode}
+              onChange={(e) => setAccessCode(e.target.value)}
+              placeholder="Code d'accès"
+              disabled={loading}
+            />
+          </div>
+        </div>
         
-        <ErrorDisplay error={error} />
+        {error && (
+          <div className="bg-red-50 text-red-800 p-3 rounded-md border border-red-200 text-sm">
+            {error}
+          </div>
+        )}
       </CardContent>
       
       <CardFooter>
-        <SubmitButton 
-          loading={loading} 
-          onClick={handleVerify} 
-        />
+        <Button
+          className="w-full"
+          onClick={handleVerify}
+          disabled={loading}
+        >
+          {loading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Vérification...
+            </>
+          ) : (
+            "Accéder à mes directives"
+          )}
+        </Button>
       </CardFooter>
     </Card>
   );
