@@ -12,7 +12,23 @@ import Dashboard from "@/pages/Dashboard";
 import DirectivesAcces from "@/pages/DirectivesAcces";
 import { Navigate } from "react-router-dom";
 import MesDirectives from "@/pages/MesDirectives";
-import AvisGeneral from "@/pages/AvisGeneral"; // Added import for AvisGeneral
+import AvisGeneral from "@/pages/AvisGeneral";
+import GoutsPeurs from "@/pages/GoutsPeurs";
+import MaintienVie from "@/pages/MaintienVie";
+import MaladieAvancee from "@/pages/MaladieAvancee";
+import ExemplesPhrases from "@/pages/ExemplesPhrases";
+import PersonneConfiance from "@/pages/PersonneConfiance";
+import Testimonials from "@/pages/Testimonials";
+import Soutenir from "@/pages/Soutenir";
+import Rediger from "@/pages/Rediger";
+import MedicalData from "@/pages/MedicalData";
+import Synthesis from "@/pages/Synthesis";
+import MedicalAccess from "@/pages/MedicalAccess";
+import PlaceholderPage from "@/pages/PlaceholderPage";
+import LegalMentions from "@/pages/LegalMentions";
+import PrivacyPolicy from "@/pages/PrivacyPolicy";
+import ReportDataBreach from "@/pages/ReportDataBreach";
+
 // Import Admin
 import Admin from "@/pages/Admin";
 import NotFound from "@/pages/NotFound";
@@ -32,7 +48,22 @@ function App() {
         <Route path="/directives-acces" element={<DirectivesAcces />} />
         <Route path="/affichage-dossier" element={<AffichageDossierRedirect />} />
         <Route path="/acces-document" element={<Navigate to="/directives-docs" replace />} />
-        <Route path="/avis-general" element={<AvisGeneral />} /> {/* Added route for AvisGeneral */}
+        <Route path="/avis-general" element={<AvisGeneral />} />
+        <Route path="/gouts-peurs" element={<GoutsPeurs />} />
+        <Route path="/maintien-vie" element={<MaintienVie />} />
+        <Route path="/maladie-avancee" element={<MaladieAvancee />} />
+        <Route path="/exemples-phrases" element={<ExemplesPhrases />} />
+        <Route path="/personne-confiance" element={<PersonneConfiance />} />
+        <Route path="/testimonials" element={<Testimonials />} />
+        <Route path="/commentaires" element={<Testimonials />} />
+        <Route path="/soutenir" element={<Soutenir />} />
+        <Route path="/legal" element={<LegalMentions />} />
+        <Route path="/confidentialite" element={<PrivacyPolicy />} />
+        <Route path="/report-breach" element={<ReportDataBreach />} />
+        <Route path="/medical-access" element={<MedicalAccess />} />
+        
+        {/* Routes avec accès alternatif via PlaceholderPage */}
+        <Route path="/:pageId" element={<PlaceholderPage />} />
         
         {/* Routes protégées, nécessitant une authentification */}
         <Route 
@@ -66,6 +97,18 @@ function App() {
               <Admin />
             </ProtectedRoute>
           } 
+        />
+        <Route 
+          path="/rediger" 
+          element={<Rediger />}
+        />
+        <Route 
+          path="/donnees-medicales" 
+          element={<MedicalData />}
+        />
+        <Route 
+          path="/synthese" 
+          element={<Synthesis />}
         />
         
         {/* Page non trouvée */}
