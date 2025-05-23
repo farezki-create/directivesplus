@@ -29,7 +29,7 @@ const AvisGeneral = () => {
     <QuestionnaireLayout title="Avis Général">
       <BackButton />
       <div className="w-full max-w-full flex flex-col">
-        <QuestionnaireSection pageId="avis-general" />
+        <QuestionnaireSection />
       </div>
     </QuestionnaireLayout>
   );
