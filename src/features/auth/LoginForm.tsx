@@ -59,10 +59,11 @@ export const LoginForm = ({ onVerificationSent, redirectPath, setRedirectInProgr
         description: "Vous êtes maintenant connecté.",
       });
       
-      console.log("Sign in successful, redirecting to:", redirectPath);
-      // Use replace: true to prevent back button from going to login again
+      // Rediriger vers l'accueil au lieu du dashboard
+      const finalRedirectPath = redirectPath === "/dashboard" ? "/" : redirectPath;
+      console.log("Sign in successful, redirecting to:", finalRedirectPath);
       setRedirectInProgress(true);
-      window.location.href = redirectPath;
+      window.location.href = finalRedirectPath;
     } catch (error: any) {
       console.error("Sign in error:", error);
       

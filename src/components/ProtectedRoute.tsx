@@ -86,7 +86,8 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     if (!hasRequiredRole && !isRedirecting) {
       console.log(`ProtectedRoute: L'utilisateur n'a pas le rôle requis: ${requiredRole}`);
       setIsRedirecting(true);
-      return <Navigate to="/dashboard" state={{ from: location.pathname }} replace />;
+      // Rediriger vers l'accueil au lieu du dashboard
+      return <Navigate to="/" state={{ from: location.pathname }} replace />;
     }
   }
 
