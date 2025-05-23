@@ -1,6 +1,6 @@
 
-import { PageHeader } from "@/components/layout/PageHeader";
-import { PageFooter } from "@/components/layout/PageFooter";
+import PageHeader from "@/components/layout/PageHeader";
+import PageFooter from "@/components/layout/PageFooter";
 import { InstitutionAccessForm } from "@/components/institution-access/InstitutionAccessForm";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 
