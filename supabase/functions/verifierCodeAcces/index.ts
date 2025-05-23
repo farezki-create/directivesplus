@@ -104,18 +104,18 @@ serve(async (req: Request) => {
     if (accessCode) {
       console.log("Handling code access with code:", accessCode);
 
-      // First try with shared profiles (most common case)
-      let { data: sharedProfile, error: sharedProfileError } = await supabaseClient
+      // First try with shared profiles
+      const { data: sharedProfiles, error: sharedProfileError } = await supabaseClient
         .from('shared_profiles')
-        .select('*, profiles(*)')
+        .select('*')
         .eq('access_code', accessCode);
 
       if (sharedProfileError) {
         console.error("Error fetching shared profile:", sharedProfileError);
       }
 
-      if (sharedProfile && sharedProfile.length > 0) {
-        const profile = sharedProfile[0];
+      if (sharedProfiles && sharedProfiles.length > 0) {
+        const profile = sharedProfiles[0];
         console.log("Found shared profile:", profile);
         
         // Get associated documents if any
@@ -169,38 +169,39 @@ serve(async (req: Request) => {
       const { data: dossierMedical, error: dossierError } = await supabaseClient
         .from('dossiers_medicaux')
         .select('*')
-        .eq('code_acces', accessCode)
-        .single();
+        .eq('code_acces', accessCode);
         
       if (dossierError) {
         console.error("Error fetching dossier:", dossierError);
       }
 
-      if (dossierMedical) {
+      if (dossierMedical && dossierMedical.length > 0) {
+        const dossier = dossierMedical[0];
         console.log("Found medical dossier with code:", accessCode);
         
         // Log access
-        const { error: logError } = await supabaseClient
-          .from('logs_acces')
-          .insert({
-            dossier_id: dossierMedical.id,
-            succes: true,
-            details: `Accès via code: ${accessCode}, Identifiant: ${bruteForceIdentifier || 'direct'}`
-          });
-        
-        if (logError) {
-          console.error("Error logging access:", logError);
+        try {
+          // Since logs_acces might have RLS policies, we'll catch errors but not fail
+          await supabaseClient
+            .from('logs_acces')
+            .insert({
+              dossier_id: dossier.id,
+              succes: true,
+              details: `Accès via code: ${accessCode}, Identifiant: ${bruteForceIdentifier || 'direct'}`
+            });
+        } catch (logError) {
+          console.error("Error logging access (continuing anyway):", logError);
         }
         
         return new Response(
           JSON.stringify({
             success: true,
             dossier: {
-              id: dossierMedical.id,
+              id: dossier.id,
               isFullAccess: true,
               isDirectivesOnly: true,
               isMedicalOnly: false,
-              contenu: dossierMedical.contenu_dossier
+              contenu: dossier.contenu_dossier
             }
           }),
           {
@@ -213,16 +214,16 @@ serve(async (req: Request) => {
       // No valid dossier found with the provided code
       console.log("No valid dossier found with code:", accessCode);
       
-      // Log failed attempt
-      const { error: logError } = await supabaseClient
-        .from('logs_acces')
-        .insert({
-          succes: false,
-          details: `Tentative échouée avec code: ${accessCode}, Identifiant: ${bruteForceIdentifier || 'direct'}`
-        });
-      
-      if (logError) {
-        console.error("Error logging failed access:", logError);
+      // Log failed attempt but don't fail if it doesn't work
+      try {
+        await supabaseClient
+          .from('logs_acces')
+          .insert({
+            succes: false,
+            details: `Tentative échouée avec code: ${accessCode}, Identifiant: ${bruteForceIdentifier || 'direct'}`
+          });
+      } catch (logError) {
+        console.error("Error logging failed access (continuing anyway):", logError);
       }
       
       return new Response(

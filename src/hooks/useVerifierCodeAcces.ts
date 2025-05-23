@@ -44,7 +44,7 @@ export const useVerifierCodeAcces = () => {
     
     setLoading(true);
     try {
-      // Call the actual Edge Function
+      // Call the actual Edge Function with full URL
       const apiUrl = "https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/verifierCodeAcces";
       
       const response = await fetch(apiUrl, {
@@ -57,6 +57,11 @@ export const useVerifierCodeAcces = () => {
           bruteForceIdentifier: bruteForceIdentifier || "direct_access"
         })
       });
+      
+      if (!response.ok) {
+        console.error(`HTTP Error: ${response.status}`, await response.text());
+        throw new Error(`Erreur HTTP: ${response.status}`);
+      }
       
       const result = await response.json();
       console.log("Edge function response:", result);
@@ -114,6 +119,11 @@ export const useVerifierCodeAcces = () => {
           accessType: accessType || "full"
         })
       });
+      
+      if (!response.ok) {
+        console.error(`HTTP Error: ${response.status}`, await response.text());
+        throw new Error(`Erreur HTTP: ${response.status}`);
+      }
       
       const edgeResult = await response.json();
       

@@ -9,7 +9,7 @@ interface AccessSharedProfileProps {
 }
 
 export const AccessSharedProfile = ({ onSuccess }: AccessSharedProfileProps) => {
-  const { verifyAccess, loading } = useAccessVerification(onSuccess);
+  const { verifyAccess, loading, error } = useAccessVerification(onSuccess);
 
   const handleSubmit = async (formValues: AccessFormValues) => {
     try {
@@ -33,6 +33,6 @@ export const AccessSharedProfile = ({ onSuccess }: AccessSharedProfileProps) => 
   };
 
   return (
-    <AccessForm onSubmit={handleSubmit} loading={loading} />
+    <AccessForm onSubmit={handleSubmit} loading={loading} error={error} />
   );
 };

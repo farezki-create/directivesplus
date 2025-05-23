@@ -4,6 +4,8 @@ import { useSearchParams } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 export interface AccessFormValues {
   firstName: string;
@@ -15,9 +17,10 @@ export interface AccessFormValues {
 interface AccessFormProps {
   onSubmit: (values: AccessFormValues) => void;
   loading: boolean;
+  error?: string | null;
 }
 
-export const AccessForm = ({ onSubmit, loading }: AccessFormProps) => {
+export const AccessForm = ({ onSubmit, loading, error }: AccessFormProps) => {
   const [searchParams] = useSearchParams();
   const codeParam = searchParams.get("code");
   
@@ -46,6 +49,13 @@ export const AccessForm = ({ onSubmit, loading }: AccessFormProps) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      
       <div className="space-y-2">
         <Label htmlFor="lastName">Nom</Label>
         <Input
