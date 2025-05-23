@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Hospital, Loader2, Copy, Check, Share2, Shield } from "lucide-react";
+import { Hospital, Loader2, Copy, Check, Share2, Shield, AlertTriangle } from "lucide-react";
 import { generateInstitutionCode } from "@/utils/institutionCodeGenerator";
 import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,7 +12,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -38,11 +37,12 @@ const InstitutionAccessSection = ({ userId }: InstitutionAccessSectionProps) => 
 
     setIsGenerating(true);
     try {
-      // Check if user has any directives
-      const { data: existingDirectives, error: directivesError } = await supabase
+      // Check for real directives first (not test directives)
+      const { data: realDirectives, error: directivesError } = await supabase
         .from('directives')
-        .select('id')
+        .select('id, content')
         .eq('user_id', userId)
+        .or('content->created_for_institution_access.is.null,content->created_for_institution_access.neq.true')
         .limit(1);
       
       if (directivesError) {
@@ -51,15 +51,30 @@ const InstitutionAccessSection = ({ userId }: InstitutionAccessSectionProps) => 
       
       let directiveId: string;
       
-      if (!existingDirectives || existingDirectives.length === 0) {
+      if (!realDirectives || realDirectives.length === 0) {
+        // Check if user only has test directives
+        const { data: testDirectives } = await supabase
+          .from('directives')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('content->created_for_institution_access', 'true');
+          
+        if (testDirectives && testDirectives.length > 0) {
+          toast({
+            title: "Directives manquantes",
+            description: "Vous devez d'abord créer vos directives anticipées pour générer un code d'accès professionnel.",
+            variant: "destructive"
+          });
+          return;
+        }
+        
         // Create a minimal directive for this user
         const { data: newDirective, error: createError } = await supabase
           .from('directives')
           .insert({
             user_id: userId,
             content: { 
-              title: "Directive pour accès professionnel",
-              created_for_institution_access: true,
+              title: "Directives anticipées",
               created_at: new Date().toISOString()
             }
           })
@@ -72,7 +87,7 @@ const InstitutionAccessSection = ({ userId }: InstitutionAccessSectionProps) => 
         
         directiveId = newDirective.id;
       } else {
-        directiveId = existingDirectives[0].id;
+        directiveId = realDirectives[0].id;
       }
       
       const code = await generateInstitutionCode(directiveId);
@@ -81,7 +96,7 @@ const InstitutionAccessSection = ({ userId }: InstitutionAccessSectionProps) => 
         setInstitutionCode(code);
         setIsDialogOpen(true);
         toast({
-          title: "Code d'institution généré",
+          title: "Code d'accès professionnel généré",
           description: "Code généré avec succès (valide 30 jours)",
         });
       } else {
@@ -90,7 +105,7 @@ const InstitutionAccessSection = ({ userId }: InstitutionAccessSectionProps) => 
     } catch (error) {
       toast({
         title: "Erreur",
-        description: error instanceof Error ? error.message : "Impossible de générer le code d'institution",
+        description: error instanceof Error ? error.message : "Impossible de générer le code d'accès professionnel",
         variant: "destructive"
       });
     } finally {
@@ -104,7 +119,7 @@ const InstitutionAccessSection = ({ userId }: InstitutionAccessSectionProps) => 
       setCopied(true);
       toast({
         title: "Code copié",
-        description: "Le code d'institution a été copié dans le presse-papier."
+        description: "Le code d'accès professionnel a été copié dans le presse-papier."
       });
       
       setTimeout(() => {
@@ -133,6 +148,14 @@ const InstitutionAccessSection = ({ userId }: InstitutionAccessSectionProps) => 
             Générez un code temporaire sécurisé pour permettre à un professionnel de santé 
             ou une institution médicale d'accéder à vos directives anticipées.
           </p>
+          
+          <Alert className="bg-amber-50 border-amber-200">
+            <AlertTriangle className="h-4 w-4 text-amber-600" />
+            <AlertDescription className="text-amber-800">
+              <strong>Important :</strong> Assurez-vous d'avoir rédigé vos directives anticipées 
+              avant de générer un code d'accès professionnel.
+            </AlertDescription>
+          </Alert>
           
           <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-md">
             <Shield className="h-4 w-4 text-blue-600" />
