@@ -1,105 +1,97 @@
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { toast } from "@/hooks/use-toast";
-import { useDossierStore } from "@/store/dossierStore";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { DatePickerField } from "./DatePickerField";
-import { Loader2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import FormFields from "./FormFields";
-import ErrorDisplay from "./ErrorDisplay";
-import SubmitButton from "./SubmitButton";
+import { Label } from "@/components/ui/label";
+import { useNavigate } from "react-router-dom";
 
 export const AccessSharedProfile = () => {
   const navigate = useNavigate();
-  const { setDossierActif } = useDossierStore();
+  const [form, setForm] = useState({
+    firstName: "",
+    lastName: "",
+    birthdate: "",
+    accessCode: ""
+  });
   const [loading, setLoading] = useState(false);
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [birthdate, setBirthdate] = useState<Date | undefined>(undefined);
-  const [accessCode, setAccessCode] = useState("");
-  const [error, setError] = useState<string | null>(null);
 
-  const handleVerify = async () => {
-    if (!firstName || !lastName || !birthdate || !accessCode) {
-      setError("Veuillez remplir tous les champs");
-      return;
-    }
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
-    setError(null);
-    
+
     try {
-      // Convert birthdate to ISO format for database comparison
-      const formattedDate = birthdate.toISOString().split('T')[0];
-      
-      // Use the RPC function to verify identity
-      const { data, error: rpcError } = await supabase.rpc('verify_access_identity', {
-        input_firstname: firstName.trim(),
-        input_lastname: lastName.trim(),
-        input_birthdate: formattedDate,
-        input_access_code: accessCode.trim()
+      const { data, error } = await supabase.rpc("verify_access_identity", {
+        input_lastname: form.lastName,
+        input_firstname: form.firstName,
+        input_birthdate: form.birthdate,
+        input_access_code: form.accessCode
       });
-      
-      if (rpcError || !data || data.length === 0) {
-        console.error("Error verifying identity:", rpcError);
-        throw new Error("Informations incorrectes ou accès expiré");
+
+      if (error || !data || data.length === 0) {
+        toast({
+          variant: "destructive",
+          title: "Échec de l'accès",
+          description: "Informations incorrectes ou accès expiré"
+        });
+        console.error("Erreur d'accès:", error);
+        return;
       }
-      
-      const sharedProfile = data[0];
-      
-      // Log access for audit purposes
+
+      // Log access for auditing
       await supabase.from("document_access_logs").insert({
-        user_id: sharedProfile.user_id || null,
-        access_code_id: sharedProfile.id,
-        nom_consultant: lastName,
-        prenom_consultant: firstName,
-        ip_address: null, // No IP in browser context
+        user_id: data[0].user_id || null,
+        access_code_id: data[0].id,
+        nom_consultant: form.lastName,
+        prenom_consultant: form.firstName,
+        ip_address: null,
         user_agent: navigator.userAgent || null
       });
-      
-      // Create dossier object from shared profile
+
+      // Store dossier in local storage or state management
       const dossier = {
-        id: sharedProfile.id,
-        userId: sharedProfile.user_id || null,
-        medical_profile_id: sharedProfile.medical_profile_id,
+        id: data[0].id,
+        userId: data[0].user_id || null,
+        medical_profile_id: data[0].medical_profile_id,
         isFullAccess: true,
         isDirectivesOnly: true,
         isMedicalOnly: false,
         profileData: {
-          first_name: sharedProfile.first_name,
-          last_name: sharedProfile.last_name,
-          birth_date: sharedProfile.birthdate
+          first_name: data[0].first_name,
+          last_name: data[0].last_name,
+          birth_date: data[0].birthdate
         },
         contenu: {
           patient: {
-            nom: sharedProfile.last_name,
-            prenom: sharedProfile.first_name,
-            date_naissance: sharedProfile.birthdate
+            nom: data[0].last_name,
+            prenom: data[0].first_name,
+            date_naissance: data[0].birthdate
           }
         }
       };
-      
-      // Store the dossier and navigate to dashboard
-      setDossierActif(dossier);
-      
+
+      // Store in localStorage for access across the app
+      localStorage.setItem("shared_dossier", JSON.stringify(dossier));
+
       toast({
-        title: "Accès autorisé",
-        description: "Vous avez accès aux directives anticipées",
+        title: "Accès validé",
+        description: "Redirection vers le dossier..."
       });
-      
-      navigate("/dashboard", { replace: true });
-    } catch (err: any) {
-      console.error("Error during verification:", err);
-      setError(err.message || "Une erreur est survenue lors de la vérification");
-      
+
+      // Redirect to display page
+      navigate("/affichage-dossier");
+
+    } catch (err) {
+      console.error("Erreur:", err);
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Impossible de vérifier votre accès aux directives",
+        description: "Impossible de vérifier les informations"
       });
     } finally {
       setLoading(false);
@@ -107,41 +99,62 @@ export const AccessSharedProfile = () => {
   };
 
   return (
-    <Card className="shadow-md">
-      <CardHeader>
-        <CardTitle className="text-xl text-center text-directiveplus-700">
-          Accès à mes directives anticipées
-        </CardTitle>
-      </CardHeader>
-      
-      <CardContent className="space-y-4">
-        <div className="text-sm text-gray-600 mb-3 p-3 bg-blue-50 rounded-md border border-blue-100">
-          Veuillez saisir vos informations personnelles et le code d'accès qui vous a été fourni.
-        </div>
-        
-        <FormFields
-          firstName={firstName}
-          setFirstName={setFirstName}
-          lastName={lastName}
-          setLastName={setLastName}
-          birthdate={birthdate}
-          setBirthdate={setBirthdate}
-          accessCode={accessCode}
-          setAccessCode={setAccessCode}
-          loading={loading}
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="lastName">Nom</Label>
+        <Input
+          id="lastName"
+          name="lastName"
+          placeholder="Nom de famille"
+          value={form.lastName}
+          onChange={handleChange}
+          required
         />
-        
-        <ErrorDisplay error={error} />
-      </CardContent>
+      </div>
       
-      <CardFooter>
-        <SubmitButton 
-          loading={loading} 
-          onClick={handleVerify} 
+      <div className="space-y-2">
+        <Label htmlFor="firstName">Prénom</Label>
+        <Input
+          id="firstName"
+          name="firstName"
+          placeholder="Prénom"
+          value={form.firstName}
+          onChange={handleChange}
+          required
         />
-      </CardFooter>
-    </Card>
+      </div>
+      
+      <div className="space-y-2">
+        <Label htmlFor="birthdate">Date de naissance</Label>
+        <Input
+          id="birthdate"
+          name="birthdate"
+          type="date"
+          value={form.birthdate}
+          onChange={handleChange}
+          required
+        />
+      </div>
+      
+      <div className="space-y-2">
+        <Label htmlFor="accessCode">Code d'accès</Label>
+        <Input
+          id="accessCode"
+          name="accessCode"
+          placeholder="Code d'accès"
+          value={form.accessCode}
+          onChange={handleChange}
+          required
+        />
+      </div>
+      
+      <Button 
+        type="submit" 
+        className="w-full"
+        disabled={loading}
+      >
+        {loading ? "Vérification..." : "Accéder à mon dossier"}
+      </Button>
+    </form>
   );
 };
-
-export default AccessSharedProfile;

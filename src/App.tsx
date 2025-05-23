@@ -12,6 +12,7 @@ import Dashboard from "@/pages/Dashboard";
 import DirectivesAcces from "@/pages/DirectivesAcces";
 import { Navigate } from "react-router-dom";
 import MesDirectives from "@/pages/MesDirectives";
+import AvisGeneral from "@/pages/AvisGeneral"; // Added import for AvisGeneral
 // Import Admin
 import Admin from "@/pages/Admin";
 import NotFound from "@/pages/NotFound";
@@ -31,6 +32,7 @@ function App() {
         <Route path="/directives-acces" element={<DirectivesAcces />} />
         <Route path="/affichage-dossier" element={<AffichageDossierRedirect />} />
         <Route path="/acces-document" element={<Navigate to="/directives-docs" replace />} />
+        <Route path="/avis-general" element={<AvisGeneral />} /> {/* Added route for AvisGeneral */}
         
         {/* Routes protégées, nécessitant une authentification */}
         <Route 
