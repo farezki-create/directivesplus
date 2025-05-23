@@ -11,6 +11,7 @@ export const verifyInstitutionCodeExists = async (institutionCode: string) => {
     .not('institution_code', 'is', null);
     
   console.log("All existing institution codes in database:", allCodes?.length || 0);
+  console.log("All codes data:", allCodes);
   
   if (allCodesError) {
     console.error("Error fetching all codes:", allCodesError);
@@ -30,6 +31,7 @@ export const verifyInstitutionCodeExists = async (institutionCode: string) => {
   }
 
   console.log("Found codes for specific institution code:", existingCodes?.length || 0);
+  console.log("Specific code data:", existingCodes);
 
   if (!existingCodes || existingCodes.length === 0) {
     console.log("No directives found with this institution code");

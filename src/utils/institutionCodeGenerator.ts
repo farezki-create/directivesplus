@@ -15,6 +15,20 @@ export const generateInstitutionCode = async (
   try {
     console.log("Generating institution code for directive:", directiveId);
     
+    // Vérifier d'abord si la directive existe
+    const { data: directive, error: directiveError } = await supabase
+      .from('directives')
+      .select('id, user_id')
+      .eq('id', directiveId)
+      .single();
+    
+    if (directiveError || !directive) {
+      console.error("Directive not found:", directiveError);
+      throw new Error("Directive non trouvée");
+    }
+    
+    console.log("Found directive:", directive);
+    
     // Generate a random 8-character code
     const code = generateRandomCode(8);
     
@@ -25,13 +39,14 @@ export const generateInstitutionCode = async (
     console.log("Generated code:", code, "expires at:", expiresAt);
     
     // Update the directive with the new code
-    const { error } = await supabase
+    const { data: updateData, error } = await supabase
       .from('directives')
       .update({
         institution_code: code,
         institution_code_expires_at: expiresAt.toISOString()
       })
-      .eq('id', directiveId);
+      .eq('id', directiveId)
+      .select();
     
     if (error) {
       console.error("Error setting institution code:", error);
@@ -43,6 +58,7 @@ export const generateInstitutionCode = async (
       return null;
     }
     
+    console.log("Institution code update result:", updateData);
     console.log("Institution code generated successfully");
     return code;
   } catch (err) {
