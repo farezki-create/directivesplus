@@ -1,7 +1,7 @@
 
 import { Dispatch, SetStateAction } from "react";
 import { getAuthUserDossier } from "@/api/dossier/userDossierAccess";
-import { Dossier } from "../types/dossierTypes";
+import type { Dossier } from "../types/dossierTypes";
 
 /**
  * Hook for getting authenticated user dossier
@@ -65,6 +65,12 @@ export const useAuthenticatedDossier = (setLoading: Dispatch<SetStateAction<bool
       }
       
       console.log("Successfully loaded dossier from edge function:", edgeResult.dossier);
+      
+      // Ensure userId is set
+      if (edgeResult.dossier) {
+        edgeResult.dossier.userId = edgeResult.dossier.userId || "";
+      }
+      
       return edgeResult.dossier;
     } catch (error) {
       console.error("Error in edge function dossier retrieval:", error);

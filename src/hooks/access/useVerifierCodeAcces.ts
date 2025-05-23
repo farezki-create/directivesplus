@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useAuthenticatedDossier } from "./useAuthenticatedDossier";
 import { useCodeVerification } from "./useCodeVerification";
-import { Dossier } from "../types/dossierTypes";
+import type { Dossier } from "../types/dossierTypes";
 
 /**
  * Main hook for verifying access codes and retrieving user dossiers
@@ -20,3 +20,6 @@ export const useVerifierCodeAcces = () => {
     loading
   };
 };
+
+// Re-export for backward compatibility
+export type { Dossier } from "../types/dossierTypes";

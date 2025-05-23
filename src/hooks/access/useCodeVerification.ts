@@ -2,7 +2,7 @@
 import { Dispatch, SetStateAction } from "react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Dossier } from "../types/dossierTypes";
+import type { Dossier } from "../types/dossierTypes";
 
 /**
  * Hook for verifying access codes
@@ -56,15 +56,15 @@ export const useCodeVerification = (setLoading: Dispatch<SetStateAction<boolean>
             isDirectivesOnly: true,
             isMedicalOnly: false,
             profileData: {
-              first_name: profile.first_name,
-              last_name: profile.last_name,
-              birth_date: profile.birthdate
+              first_name: profile.first_name || "",
+              last_name: profile.last_name || "",
+              birth_date: profile.birthdate || ""
             },
             contenu: {
               patient: {
-                nom: profile.last_name,
-                prenom: profile.first_name,
-                date_naissance: profile.birthdate
+                nom: profile.last_name || "",
+                prenom: profile.first_name || "",
+                date_naissance: profile.birthdate || null
               }
             }
           };
@@ -128,6 +128,13 @@ export const useCodeVerification = (setLoading: Dispatch<SetStateAction<boolean>
       // Ensure userId is set in the dossier from edge function
       if (result.dossier) {
         result.dossier.userId = result.dossier.userId || "";
+        
+        // Ensure profileData fields are set
+        if (result.dossier.profileData) {
+          result.dossier.profileData.first_name = result.dossier.profileData.first_name || "";
+          result.dossier.profileData.last_name = result.dossier.profileData.last_name || "";
+          result.dossier.profileData.birth_date = result.dossier.profileData.birth_date || "";
+        }
       }
       
       return result.dossier;

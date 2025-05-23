@@ -4,7 +4,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { useVerifierCodeAcces } from "@/hooks/access/useVerifierCodeAcces";
 import { useDossierStore } from "@/store/dossierStore";
-import { AccessFormValues } from "@/components/mes-directives/AccessForm"; 
+import type { AccessFormValues } from "@/components/mes-directives/AccessForm"; 
 
 export const useAccessVerification = (onSuccess = (dossier) => {}) => {
   const [loading, setLoading] = useState(false);
