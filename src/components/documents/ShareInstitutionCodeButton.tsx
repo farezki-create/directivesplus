@@ -1,142 +1,162 @@
 
 import { useState } from "react";
+import { generateInstitutionCode } from "@/utils/institutionCodeGenerator";
 import { Button } from "@/components/ui/button";
-import { Hospital, Loader2 } from "lucide-react";
+import { Hospital, Loader2, Copy, Check, InfoIcon } from "lucide-react";
+import { toast } from "@/components/ui/use-toast";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
+  DialogFooter,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { generateInstitutionCode } from "@/utils/institutionCodeGenerator";
-import { toast } from "@/components/ui/use-toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface ShareInstitutionCodeButtonProps {
   directiveId: string;
 }
 
-export const ShareInstitutionCodeButton = ({ directiveId }: ShareInstitutionCodeButtonProps) => {
-  const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [generatedCode, setGeneratedCode] = useState<string | null>(null);
-  const [expirationDays, setExpirationDays] = useState(30);
+const ShareInstitutionCodeButton = ({ directiveId }: ShareInstitutionCodeButtonProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [code, setCode] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleGenerate = async () => {
-    setLoading(true);
+  const handleGenerateCode = async () => {
+    setIsLoading(true);
+    setError(null);
     try {
-      const code = await generateInstitutionCode(directiveId, expirationDays);
-      if (code) {
-        setGeneratedCode(code);
+      const generatedCode = await generateInstitutionCode(directiveId);
+      if (generatedCode) {
+        setCode(generatedCode);
         toast({
-          title: "Code généré",
-          description: "Le code d'accès institution a été créé avec succès"
+          title: "Code généré avec succès",
+          description: "Le code d'accès a été généré et est valable pendant 30 jours."
         });
+      } else {
+        setError("Une erreur est survenue lors de la génération du code");
       }
+    } catch (err: any) {
+      setError(err.message || "Une erreur est survenue lors de la génération du code");
+      toast({
+        title: "Erreur",
+        description: "Impossible de générer le code d'accès",
+        variant: "destructive"
+      });
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  const handleCopyCode = () => {
-    if (generatedCode) {
-      navigator.clipboard.writeText(generatedCode);
+  const copyToClipboard = () => {
+    if (code) {
+      navigator.clipboard.writeText(code);
+      setCopied(true);
       toast({
         title: "Code copié",
-        description: "Le code d'accès a été copié dans le presse-papier"
+        description: "Le code d'accès a été copié dans le presse-papier."
       });
+      
+      setTimeout(() => {
+        setCopied(false);
+      }, 2000);
     }
   };
 
-  const handleDaysChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value);
-    if (value > 0 && value <= 365) {
-      setExpirationDays(value);
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
+    if (!open) {
+      // Reset state when dialog closes
+      setCode(null);
+      setError(null);
+      setCopied(false);
     }
-  };
-
-  const getExpirationDate = () => {
-    const date = new Date();
-    date.setDate(date.getDate() + expirationDays);
-    return date.toLocaleDateString();
   };
 
   return (
-    <>
-      <Button 
-        variant="outline" 
-        size="sm"
-        onClick={() => setOpen(true)}
-        className="flex items-center gap-1"
-      >
-        <Hospital className="h-4 w-4" />
-        <span>Accès institution</span>
-      </Button>
-
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Partager avec une institution médicale</DialogTitle>
-            <DialogDescription>
-              Générez un code d'accès temporaire pour permettre à un professionnel de santé ou une institution médicale de consulter cette directive.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="expiration">Durée de validité (jours)</Label>
-              <Input
-                id="expiration"
-                type="number"
-                min={1}
-                max={365}
-                value={expirationDays}
-                onChange={handleDaysChange}
-              />
-              <p className="text-xs text-muted-foreground">
-                Le code expirera le {getExpirationDate()}
-              </p>
-            </div>
-
-            {generatedCode && (
-              <div className="space-y-2 border p-4 rounded-md bg-muted/50">
-                <Label>Code d'accès institution</Label>
-                <div className="flex gap-2">
-                  <Input 
-                    value={generatedCode} 
-                    readOnly 
-                    className="font-mono text-center bg-white"
-                  />
-                  <Button onClick={handleCopyCode} size="sm">Copier</Button>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Transmettez ce code à l'institution médicale ou au professionnel de santé concerné.
-                </p>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      <DialogTrigger asChild>
+        <Button variant="outline" className="flex items-center gap-2">
+          <Hospital className="h-4 w-4" />
+          Accès institution
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Code d'accès institution</DialogTitle>
+          <DialogDescription>
+            Générez un code temporaire pour permettre à un professionnel de santé ou une institution médicale
+            d'accéder à vos directives.
+          </DialogDescription>
+        </DialogHeader>
+        
+        <div className="py-4">
+          {!code && !error && (
+            <Alert className="bg-blue-50 border-blue-200">
+              <InfoIcon className="h-4 w-4 text-blue-600" />
+              <AlertDescription className="text-blue-800">
+                Ce code permettra à un professionnel de santé d'accéder à vos directives avec vos informations
+                personnelles (nom, prénom, date de naissance). Le code sera valide pendant 30 jours.
+              </AlertDescription>
+            </Alert>
+          )}
+          
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          
+          {code && (
+            <div className="space-y-4">
+              <Alert className="bg-green-50 border-green-200">
+                <Check className="h-4 w-4 text-green-600" />
+                <AlertDescription className="text-green-800">
+                  Code généré avec succès! Partagez ce code avec votre institution médicale.
+                </AlertDescription>
+              </Alert>
+              
+              <div className="flex items-center justify-between p-3 border rounded-md bg-muted">
+                <span className="font-mono text-xl tracking-widest">{code}</span>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={copyToClipboard}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                </Button>
               </div>
-            )}
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>
+            </div>
+          )}
+        </div>
+        
+        <DialogFooter className="sm:justify-center gap-2">
+          {!code ? (
+            <Button 
+              type="button" 
+              onClick={handleGenerateCode}
+              disabled={isLoading}
+            >
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Générer un code
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              onClick={() => setIsOpen(false)}
+            >
               Fermer
             </Button>
-            <Button 
-              onClick={handleGenerate} 
-              disabled={loading}
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Génération...
-                </>
-              ) : generatedCode ? 'Régénérer' : 'Générer un code'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+          )}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
+
+export default ShareInstitutionCodeButton;

@@ -1,8 +1,10 @@
 
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CheckCircle } from "lucide-react";
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FileText, ChevronDown, ChevronUp } from "lucide-react";
 
-interface DirectiveDocument {
+interface Document {
   id: string;
   user_id: string;
   content: any;
@@ -10,48 +12,82 @@ interface DirectiveDocument {
 }
 
 interface DirectivesDisplayProps {
-  documents: DirectiveDocument[];
+  documents: Document[];
 }
 
 export const DirectivesDisplay = ({ documents }: DirectivesDisplayProps) => {
-  if (documents.length === 0) return null;
+  const [expandedDocId, setExpandedDocId] = useState<string | null>(null);
+
+  if (!documents || documents.length === 0) {
+    return null;
+  }
+
+  const toggleExpand = (docId: string) => {
+    if (expandedDocId === docId) {
+      setExpandedDocId(null);
+    } else {
+      setExpandedDocId(docId);
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("fr-FR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
 
   return (
-    <div className="mt-8 space-y-4">
-      <Alert className="bg-green-50 border-green-200">
-        <CheckCircle className="h-5 w-5 text-green-600" />
-        <AlertDescription className="text-green-800">
-          {documents.length} directive(s) trouvée(s) pour ce patient
-        </AlertDescription>
-      </Alert>
+    <div className="mt-8 space-y-6">
+      <h3 className="text-lg font-medium">Directives trouvées ({documents.length})</h3>
       
-      <h3 className="text-lg font-medium">Directives trouvées</h3>
-      {documents.map((doc) => (
-        <div key={doc.id} className="p-4 border rounded-md bg-gray-50">
-          <div className="flex justify-between items-center mb-2">
-            <h4 className="font-medium">Directive anticipée</h4>
-            <span className="text-sm text-gray-500">
-              {new Date(doc.created_at).toLocaleDateString('fr-FR')}
-            </span>
-          </div>
-          <div className="bg-white p-3 rounded border max-h-60 overflow-y-auto">
-            {doc.content && typeof doc.content === 'object' ? (
-              <div className="space-y-2">
-                {Object.entries(doc.content).map(([key, value]) => (
-                  <div key={key}>
-                    <strong className="capitalize">{key.replace('_', ' ')}:</strong>
-                    <p className="text-sm ml-2">
-                      {typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value)}
-                    </p>
-                  </div>
-                ))}
+      {documents.map((doc) => {
+        const isExpanded = expandedDocId === doc.id;
+        const title = doc.content?.title || "Directive";
+        const content = doc.content?.content || "Aucun contenu disponible";
+        
+        return (
+          <Card key={doc.id} className="shadow-sm">
+            <CardHeader className="py-3 px-4">
+              <div 
+                className="flex items-center justify-between cursor-pointer"
+                onClick={() => toggleExpand(doc.id)}
+              >
+                <CardTitle className="text-base flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-directiveplus-600" />
+                  {title}
+                </CardTitle>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">
+                    {formatDate(doc.created_at)}
+                  </span>
+                  {isExpanded ? (
+                    <ChevronUp className="h-4 w-4" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4" />
+                  )}
+                </div>
               </div>
-            ) : (
-              <p className="text-sm">{String(doc.content)}</p>
+            </CardHeader>
+            
+            {isExpanded && (
+              <CardContent className="pt-0 pb-3 px-4 border-t">
+                <div className="prose prose-sm max-w-none">
+                  {typeof content === "string" ? (
+                    <div dangerouslySetInnerHTML={{ __html: content }} />
+                  ) : (
+                    <pre className="text-sm whitespace-pre-wrap">
+                      {JSON.stringify(content, null, 2)}
+                    </pre>
+                  )}
+                </div>
+              </CardContent>
             )}
-          </div>
-        </div>
-      ))}
+          </Card>
+        );
+      })}
     </div>
   );
 };
