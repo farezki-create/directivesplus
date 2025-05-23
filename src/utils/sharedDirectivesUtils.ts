@@ -39,10 +39,10 @@ export const generateSharedCode = async (
     }
 
     // Update the directive with the shared code
-    // We'll update the content JSONB field directly
-    const content = directive.content || {};
+    // Create a new content object with the shared code properties
+    const contentObj = directive.content || {};
     const updatedContent = {
-      ...content,
+      ...contentObj,
       shared_code: code,
       shared_code_expires_at: expiresAt.toISOString()
     };
@@ -88,19 +88,24 @@ export const revokeSharedCode = async (
     }
 
     // Remove the shared code from the content JSONB
-    const content = directive.content || {};
-    const { shared_code, shared_code_expires_at, ...remainingContent } = content;
+    if (typeof directive.content === 'object' && directive.content !== null) {
+      const contentObj = { ...directive.content };
+      
+      // Delete the shared code properties
+      delete contentObj.shared_code;
+      delete contentObj.shared_code_expires_at;
 
-    const { error: updateError } = await supabase
-      .from('directives')
-      .update({
-        content: remainingContent
-      })
-      .eq('id', directiveId);
-    
-    if (updateError) {
-      console.error("Error revoking shared code:", updateError);
-      return { success: false, error: updateError.message };
+      const { error: updateError } = await supabase
+        .from('directives')
+        .update({
+          content: contentObj
+        })
+        .eq('id', directiveId);
+      
+      if (updateError) {
+        console.error("Error revoking shared code:", updateError);
+        return { success: false, error: updateError.message };
+      }
     }
     
     return { success: true };
@@ -139,26 +144,28 @@ export const extendSharedCodeExpiration = async (
     const newExpiryDate = newDate.toISOString();
     
     // Update the expiration date in the content JSONB
-    const content = directive.content || {};
-    if (!content.shared_code) {
-      return { success: false, error: "No shared code exists for this directive" };
-    }
+    if (typeof directive.content === 'object' && directive.content !== null) {
+      const contentObj = { ...directive.content };
+      
+      if (!contentObj.shared_code) {
+        return { success: false, error: "No shared code exists for this directive" };
+      }
 
-    const updatedContent = {
-      ...content,
-      shared_code_expires_at: newExpiryDate
-    };
+      contentObj.shared_code_expires_at = newExpiryDate;
 
-    const { error: updateError } = await supabase
-      .from('directives')
-      .update({
-        content: updatedContent
-      })
-      .eq('id', directiveId);
-    
-    if (updateError) {
-      console.error("Error extending shared code expiration:", updateError);
-      return { success: false, error: updateError.message };
+      const { error: updateError } = await supabase
+        .from('directives')
+        .update({
+          content: contentObj
+        })
+        .eq('id', directiveId);
+      
+      if (updateError) {
+        console.error("Error extending shared code expiration:", updateError);
+        return { success: false, error: updateError.message };
+      }
+    } else {
+      return { success: false, error: "Invalid content structure in directive" };
     }
     
     return { 

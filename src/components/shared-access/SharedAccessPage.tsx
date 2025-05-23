@@ -12,7 +12,7 @@ interface Directive {
   id: string;
   user_id: string;
   title?: string;
-  content?: string;
+  content?: any;
   created_at: string;
 }
 
@@ -170,5 +170,5 @@ export function SharedAccessPage() {
         </div>
       </div>
     </div>
-  );
+  )
 }
