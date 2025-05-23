@@ -1,9 +1,10 @@
+
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 const Hero = () => {
   const navigate = useNavigate();
   const handleGetStarted = () => {
-    navigate("/auth");
+    navigate("/mes-directives");
   };
   const scrollToInfo = () => {
     const infoSection = document.getElementById('en-savoir-plus');
