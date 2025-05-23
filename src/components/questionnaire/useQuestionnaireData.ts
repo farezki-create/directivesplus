@@ -4,13 +4,11 @@ import { useQuestionsData } from "@/hooks/useQuestionsData";
 import { useQuestionnaireResponses } from "@/hooks/useQuestionnaireResponses";
 
 export const useQuestionnaireData = (pageId: string | undefined) => {
-  // Provide default value to ensure consistency
   const safePageId = pageId || '';
   const [saving, setSaving] = useState(false);
   const initialFetchDone = useRef(false);
   const isMounted = useRef(true);
   
-  // Always call hooks unconditionally at the top level
   const { 
     questions,
     loading: questionsLoading, 
@@ -26,7 +24,6 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
     setResponses
   } = useQuestionnaireResponses(safePageId);
   
-  // Stabilize handleResponseChange function with useCallback
   const handleResponseChange = useCallback((questionId: string, value: string) => {
     if (!isMounted.current) return;
     
@@ -38,7 +35,6 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
     });
   }, [setResponses]);
   
-  // Handle one-time fetching of responses
   useEffect(() => {
     isMounted.current = true;
     
@@ -62,7 +58,6 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
     };
   }, [safePageId, fetchResponses]);
   
-  // Stabilize handleSave function with useCallback and proper dependencies
   const handleSave = useCallback(async () => {
     if (!safePageId || !questions || !isMounted.current) return;
     
@@ -80,7 +75,6 @@ export const useQuestionnaireData = (pageId: string | undefined) => {
     }
   }, [safePageId, responses, questions, saveResponses]);
   
-  // Derive loading and error from the specialized hooks
   const loading = questionsLoading || responsesLoading;
   const error = questionsError || responsesError;
 

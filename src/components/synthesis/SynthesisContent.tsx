@@ -1,8 +1,6 @@
 
 import { useRef } from "react";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import SignatureCanvas from "./SignatureCanvas";
 import QuestionnairesSection from "./QuestionnairesSection";
@@ -11,9 +9,9 @@ import TrustedPersonsSection from "./TrustedPersonsSection";
 import ProfileSection from "./ProfileSection";
 import FreeTextSection from "./FreeTextSection";
 import ActionButtons from "./ActionButtons";
+import { DocumentHeader } from "./DocumentHeader";
 import { useSynthesisData } from "@/hooks/useSynthesisData";
 import { useSynthesisActions } from "@/hooks/useSynthesisActions";
-import { useNavigate } from "react-router-dom";
 
 interface SynthesisContentProps {
   profileData: any;
@@ -21,10 +19,8 @@ interface SynthesisContentProps {
 }
 
 const SynthesisContent = ({ profileData, userId }: SynthesisContentProps) => {
-  const navigate = useNavigate();
   const signatureRef = useRef<HTMLDivElement>(null);
   
-  // Utilisation de nos hooks
   const { 
     loading, 
     responses, 
@@ -51,7 +47,6 @@ const SynthesisContent = ({ profileData, userId }: SynthesisContentProps) => {
   }
 
   const onSave = async () => {
-    // La redirection est maintenant entièrement gérée dans le hook useSynthesisActions
     await handleSaveAndGeneratePDF(
       freeText, 
       {
@@ -62,50 +57,26 @@ const SynthesisContent = ({ profileData, userId }: SynthesisContentProps) => {
         trustedPersons
       }
     );
-    // Pas de redirection supplémentaire ici - tout est géré dans le hook
   };
 
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
-      <div className="mb-6">
-        <Button
-          variant="outline"
-          onClick={() => navigate("/rediger")}
-          className="flex items-center gap-2"
-        >
-          <ArrowLeft size={16} />
-          Retour à la rédaction
-        </Button>
-      </div>
-      
-      <h1 className="text-3xl font-bold text-center mb-6">
-        Synthèse des Directives Anticipées
-      </h1>
+      <DocumentHeader />
       
       <div className="bg-white p-6 rounded-lg shadow">
         <div id="synthesis-document" className="space-y-8">
-          {/* Informations du profil */}
           <ProfileSection profileData={profileData} />
-          
-          {/* Personnes de confiance */}
           <TrustedPersonsSection trustedPersons={trustedPersons} />
-          
-          {/* Réponses aux questionnaires */}
           <QuestionnairesSection responses={responses} />
-          
-          {/* Phrases d'exemples et phrases personnalisées */}
           <ExamplesSection 
             examplePhrases={examplePhrases} 
             customPhrases={customPhrases} 
           />
-          
-          {/* Section de texte libre */}
           <FreeTextSection 
             freeText={freeText}
             setFreeText={setFreeText}
           />
           
-          {/* Section de signature */}
           <div className="space-y-4" ref={signatureRef}>
             <h3 className="text-lg font-medium">Signature</h3>
             <p className="text-sm text-gray-600">
