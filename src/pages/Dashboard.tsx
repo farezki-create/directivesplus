@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -11,6 +12,7 @@ import DashboardEmptyState from "@/components/dossier/DashboardEmptyState";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileText, Home } from "lucide-react";
 import DirectivesGrid from "@/components/DirectivesGrid";
+
 const Dashboard = () => {
   const {
     user,
@@ -21,6 +23,7 @@ const Dashboard = () => {
   const dossierActif = useDossierStore(state => state.dossierActif);
   const setDossierActif = useDossierStore(state => state.setDossierActif);
   const decryptedContent = useDossierStore(state => state.decryptedContent);
+
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       navigate("/auth");
@@ -32,6 +35,7 @@ const Dashboard = () => {
       loadUserDossier();
     }
   }, [isAuthenticated, isLoading, user, dossierActif, navigate]);
+
   const loadUserDossier = async () => {
     if (!user) return;
     try {
@@ -43,16 +47,45 @@ const Dashboard = () => {
       console.error("Erreur lors du chargement du dossier:", error);
     }
   };
+
   if (isLoading) {
     return <div className="h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-directiveplus-600"></div>
       </div>;
   }
+
   if (!isAuthenticated) {
     return null;
   }
-  return <DossierContentProvider>
-      
-    </DossierContentProvider>;
+
+  return (
+    <DossierContentProvider>
+      <div className="container mx-auto py-8 px-4">
+        <DashboardNavigation />
+        
+        {dossierActif ? (
+          <>
+            <DashboardHeader />
+            
+            <Tabs defaultValue="directives" className="w-full">
+              <TabsList>
+                <TabsTrigger value="directives" className="flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  Directives
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="directives" className="mt-4">
+                <DirectivesTab />
+              </TabsContent>
+            </Tabs>
+          </>
+        ) : (
+          <DashboardEmptyState />
+        )}
+      </div>
+    </DossierContentProvider>
+  );
 };
+
 export default Dashboard;
