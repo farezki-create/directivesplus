@@ -9,8 +9,6 @@ const DashboardHeader: React.FC = () => {
 
   // Extract patient info
   const patientInfo = extractPatientInfo(decryptedContent, dossierActif);
-  return <Card className="mb-6">
-      
-    </Card>;
+  return;
 };
 export default DashboardHeader;
