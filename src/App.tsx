@@ -8,7 +8,6 @@ import Index from "@/pages/Index";
 import Auth from "@/pages/Auth";
 import Profile from "@/pages/Profile";
 import DirectivesDocs from "@/pages/DirectivesDocs";
-import Dashboard from "@/pages/Dashboard";
 import DirectivesAcces from "@/pages/DirectivesAcces";
 import { Navigate } from "react-router-dom";
 import AvisGeneral from "@/pages/AvisGeneral";
@@ -86,14 +85,6 @@ function App() {
           element={
             <ProtectedRoute>
               <DirectivesDocs />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/dashboard" 
-          element={
-            <ProtectedRoute>
-              <Dashboard />
             </ProtectedRoute>
           } 
         />

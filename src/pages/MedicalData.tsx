@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -52,11 +51,11 @@ const MedicalData = () => {
           <div className="mb-6">
             <Button
               variant="outline"
-              onClick={() => navigate("/dashboard")}
+              onClick={() => navigate("/")}
               className="flex items-center gap-2"
             >
               <ArrowLeft size={16} />
-              Retour au tableau de bord
+              Retour à l'accueil
             </Button>
           </div>
           
