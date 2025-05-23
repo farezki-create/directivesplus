@@ -61,7 +61,7 @@ export const AccessForm = ({ onSubmit, loading, error, initialCode, verification
       
       {/* Show a special message if verification was attempted with a code from URL and failed */}
       {verificationAttempted && codeParam && error && (
-        <Alert variant="warning" className="bg-amber-50 border-amber-300">
+        <Alert variant="default" className="bg-amber-50 border-amber-300">
           <AlertCircle className="h-4 w-4 text-amber-600" />
           <AlertDescription className="text-amber-800">
             Le code d'accès fourni dans l'URL semble être invalide ou expiré. 
