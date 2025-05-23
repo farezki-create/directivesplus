@@ -3,9 +3,11 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { AccessSharedProfile } from "./AccessSharedProfile";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 export const DirectivesAccessForm = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
 
   const handleFormSubmit = (dossier) => {
     if (dossier) {
@@ -23,7 +25,9 @@ export const DirectivesAccessForm = () => {
         <AccessSharedProfile onSuccess={handleFormSubmit} />
       </CardContent>
       <CardFooter className="text-sm text-center text-muted-foreground">
-        Entrez vos informations pour accéder à vos directives médicales
+        {isAuthenticated 
+          ? "Vous êtes connecté. Vous pouvez accéder à vos directives depuis votre tableau de bord."
+          : "Entrez vos informations pour accéder à vos directives médicales"}
       </CardFooter>
     </Card>
   );

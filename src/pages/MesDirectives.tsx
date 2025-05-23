@@ -16,8 +16,8 @@ export default function MesDirectives() {
   const navigate = useNavigate();
   const { setDossierActif } = useDossierStore();
   const { getDossierUtilisateurAuthentifie } = useVerifierCodeAcces();
-  
-  // Handle authenticated users - should redirect to dashboard or load directives
+
+  // Only try to load user directives if the user is authenticated
   useEffect(() => {
     const loadUserDirectives = async () => {
       if (!isAuthenticated || !user) return;
@@ -50,6 +50,7 @@ export default function MesDirectives() {
     loadUserDirectives();
   }, [isAuthenticated, user, navigate, setDossierActif, getDossierUtilisateurAuthentifie]);
 
+  // The main page render should always work regardless of authentication status
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header />
