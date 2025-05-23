@@ -32,13 +32,6 @@ const Header = () => {
               Accueil
             </Link>
             
-            <Link
-              to="/mes-directives"
-              className="text-gray-700 hover:text-directiveplus-600 transition-colors"
-            >
-              Accès directives
-            </Link>
-            
             {isAuthenticated ? (
               <>
                 <Link
@@ -93,13 +86,6 @@ const Header = () => {
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Accueil
-            </Link>
-            <Link
-              to="/mes-directives"
-              className="text-gray-700 hover:text-directiveplus-600 transition-colors block"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Accès directives
             </Link>
             {isAuthenticated ? (
               <>

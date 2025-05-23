@@ -8,7 +8,6 @@ import Index from "@/pages/Index";
 import Auth from "@/pages/Auth";
 import Profile from "@/pages/Profile";
 import DirectivesDocs from "@/pages/DirectivesDocs";
-import DirectivesAcces from "@/pages/DirectivesAcces";
 import { Navigate } from "react-router-dom";
 import AvisGeneral from "@/pages/AvisGeneral";
 import GoutsPeurs from "@/pages/GoutsPeurs";
@@ -46,7 +45,6 @@ function App() {
         {/* Routes publiques, accessibles sans authentification */}
         <Route path="/" element={<Index />} />
         <Route path="/auth" element={<Auth />} />
-        <Route path="/directives-acces" element={<DirectivesAcces />} />
         <Route path="/affichage-dossier" element={<AffichageDossierRedirect />} />
         <Route path="/acces-document" element={<Navigate to="/directives-docs" replace />} />
         <Route path="/avis-general" element={<AvisGeneral />} />
