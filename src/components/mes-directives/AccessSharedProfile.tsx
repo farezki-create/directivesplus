@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
@@ -6,9 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
+import { useDossierStore } from "@/store/dossierStore";
 
-export const AccessSharedProfile = () => {
+interface AccessSharedProfileProps {
+  onSuccess?: (dossier: any) => void;
+}
+
+export const AccessSharedProfile = ({ onSuccess }: AccessSharedProfileProps) => {
   const navigate = useNavigate();
+  const { setDossierActif } = useDossierStore();
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -36,6 +41,8 @@ export const AccessSharedProfile = () => {
         setLoading(false);
         return;
       }
+
+      console.log("AccessSharedProfile - Submitting form:", form);
 
       // First try the RPC function approach
       const { data, error } = await supabase.rpc("verify_access_identity", {
@@ -84,13 +91,22 @@ export const AccessSharedProfile = () => {
         // Store in localStorage for access across the app
         localStorage.setItem("shared_dossier", JSON.stringify(dossier));
         
+        // Store in the global state
+        setDossierActif(dossier);
+        
         toast({
           title: "Accès validé",
           description: "Redirection vers le dossier..."
         });
         
-        // Redirect to dashboard instead of affichage-dossier
-        navigate("/dashboard");
+        // Call the onSuccess callback if provided
+        if (onSuccess) {
+          onSuccess(dossier);
+        } else {
+          // Otherwise navigate directly
+          navigate("/dashboard");
+        }
+        
         return;
       }
 
@@ -129,14 +145,22 @@ export const AccessSharedProfile = () => {
 
       // Store in localStorage for access across the app
       localStorage.setItem("shared_dossier", JSON.stringify(dossier));
+      
+      // Store in the global state
+      setDossierActif(dossier);
 
       toast({
         title: "Accès validé",
         description: "Redirection vers le dossier..."
       });
 
-      // Redirect to dashboard instead of affichage-dossier
-      navigate("/dashboard");
+      // Call the onSuccess callback if provided
+      if (onSuccess) {
+        onSuccess(dossier);
+      } else {
+        // Otherwise navigate directly
+        navigate("/dashboard");
+      }
 
     } catch (err) {
       console.error("Erreur lors de la vérification:", err);
