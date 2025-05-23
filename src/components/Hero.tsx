@@ -8,9 +8,9 @@ const Hero = () => {
   const { isAuthenticated } = useAuth();
   
   const handleGetStarted = () => {
-    // Toujours rediriger vers le dashboard si l'utilisateur est authentifié
+    // Rediriger vers la page des documents si l'utilisateur est authentifié
     if (isAuthenticated) {
-      navigate("/dashboard");
+      navigate("/directives-docs");
     } else {
       navigate("/auth");
     }

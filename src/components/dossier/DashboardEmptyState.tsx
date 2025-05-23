@@ -18,7 +18,7 @@ const DashboardEmptyState: React.FC = () => {
         <p className="text-gray-500 mb-6 text-center max-w-md">
           Vous n'avez pas encore de dossier actif. Accédez à vos directives pour en consulter un.
         </p>
-        <Button onClick={() => navigate("/mes-directives")}>
+        <Button onClick={() => navigate("/directives-docs")}>
           Consulter mes documents
         </Button>
       </CardContent>
