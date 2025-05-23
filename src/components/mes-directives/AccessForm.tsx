@@ -18,11 +18,12 @@ interface AccessFormProps {
   onSubmit: (values: AccessFormValues) => void;
   loading: boolean;
   error?: string | null;
+  initialCode?: string | null;
 }
 
-export const AccessForm = ({ onSubmit, loading, error }: AccessFormProps) => {
+export const AccessForm = ({ onSubmit, loading, error, initialCode }: AccessFormProps) => {
   const [searchParams] = useSearchParams();
-  const codeParam = searchParams.get("code");
+  const codeParam = initialCode || searchParams.get("code");
   
   const [form, setForm] = useState<AccessFormValues>({
     firstName: "",

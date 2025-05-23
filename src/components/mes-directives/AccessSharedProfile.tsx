@@ -6,15 +6,25 @@ import { useAccessVerification } from "@/hooks/access/useAccessVerification";
 
 interface AccessSharedProfileProps {
   onSuccess?: (dossier: any) => void;
+  initialCode?: string | null;
 }
 
-export const AccessSharedProfile = ({ onSuccess }: AccessSharedProfileProps) => {
+export const AccessSharedProfile = ({ onSuccess, initialCode }: AccessSharedProfileProps) => {
   const { verifyAccess, loading, error, codeFromUrl } = useAccessVerification(onSuccess);
+  
+  // Use either the explicitly passed initialCode or the one from the URL
+  const accessCode = initialCode || codeFromUrl;
 
   const handleSubmit = async (formValues: AccessFormValues) => {
     console.log("AccessSharedProfile - Form submitted:", formValues);
     try {
-      const result = await verifyAccess(formValues);
+      // Merge passed code with form values if provided
+      const valuesWithCode = accessCode ? {
+        ...formValues,
+        accessCode: accessCode
+      } : formValues;
+      
+      const result = await verifyAccess(valuesWithCode);
       
       if (!result.success) {
         toast({
@@ -44,6 +54,7 @@ export const AccessSharedProfile = ({ onSuccess }: AccessSharedProfileProps) => 
       onSubmit={handleSubmit} 
       loading={loading} 
       error={error} 
+      initialCode={accessCode}
     />
   );
 };

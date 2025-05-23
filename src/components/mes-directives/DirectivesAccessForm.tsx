@@ -10,11 +10,12 @@ export const DirectivesAccessForm = () => {
   const { isAuthenticated } = useAuth();
   const [searchParams] = useSearchParams();
   const hasCodeParam = searchParams.has("code");
+  const codeParam = searchParams.get("code");
 
   const handleFormSubmit = (dossier) => {
     if (dossier) {
-      console.log("DirectivesAccessForm - Access successful, navigating to dashboard");
-      navigate("/dashboard");
+      console.log("DirectivesAccessForm - Access successful, navigating to directives-docs");
+      navigate("/directives-docs");
     }
   };
 
@@ -37,7 +38,7 @@ export const DirectivesAccessForm = () => {
         <CardTitle className="text-center text-xl font-bold">Accéder à vos directives</CardTitle>
       </CardHeader>
       <CardContent>
-        <AccessSharedProfile onSuccess={handleFormSubmit} />
+        <AccessSharedProfile onSuccess={handleFormSubmit} initialCode={codeParam} />
       </CardContent>
       <CardFooter className="text-sm text-center text-muted-foreground">
         {getFormMessage()}
