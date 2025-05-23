@@ -2,13 +2,13 @@ import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import { getAuthUserDossier } from "@/api/dossier/userDossierAccess";
 import { supabase } from "@/integrations/supabase/client";
-import { Dossier } from "./types/dossierTypes";
+import type { Dossier } from "./types/dossierTypes";
 
 // This file is maintained for backward compatibility
 // It re-exports functionality from the new modular hooks
 // New code should use the hooks in the /hooks/access directory instead
 
-export { Dossier } from './types/dossierTypes';
+export type { Dossier } from './types/dossierTypes';
 
 export const useVerifierCodeAcces = () => {
   const [loading, setLoading] = useState(false);

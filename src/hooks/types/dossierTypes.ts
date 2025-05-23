@@ -3,7 +3,7 @@
  * Dossier type definitions
  */
 
-export interface Dossier {
+export type Dossier = {
   id: string;
   userId: string; // Changed from optional to required to match dossierStore.ts
   isFullAccess: boolean;

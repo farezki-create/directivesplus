@@ -1,13 +1,13 @@
 
 import { create } from 'zustand';
-import { Dossier as DossierType } from '@/hooks/types/dossierTypes';
+import type { Dossier } from '@/hooks/types/dossierTypes';
 
 // Re-export the Dossier type from our central type definition
 export type { Dossier } from '@/hooks/types/dossierTypes';
 
 interface DossierStore {
-  dossierActif: DossierType | null;
-  setDossierActif: (dossier: DossierType) => void;
+  dossierActif: Dossier | null;
+  setDossierActif: (dossier: Dossier) => void;
   clearDossierActif: () => void;
 }
 
