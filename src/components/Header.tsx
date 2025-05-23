@@ -96,12 +96,14 @@ const Header = () => {
             <Link
               to="/"
               className="text-gray-700 hover:text-directiveplus-600 transition-colors block"
+              onClick={() => setIsMobileMenuOpen(false)}
             >
               Accueil
             </Link>
             <Link
               to="/mes-directives"
               className="text-gray-700 hover:text-directiveplus-600 transition-colors block"
+              onClick={() => setIsMobileMenuOpen(false)}
             >
               Accès directives
             </Link>
@@ -110,18 +112,23 @@ const Header = () => {
                 <Link
                   to="/dashboard"
                   className="text-gray-700 hover:text-directiveplus-600 transition-colors block"
+                  onClick={() => setIsMobileMenuOpen(false)}
                 >
                   Mon Dossier
                 </Link>
                 <Link
                   to="/profile"
                   className="text-gray-700 hover:text-directiveplus-600 transition-colors block"
+                  onClick={() => setIsMobileMenuOpen(false)}
                 >
                   Profil
                 </Link>
                 <button
-                  onClick={signOut}
-                  className="text-gray-700 hover:text-directiveplus-600 transition-colors block"
+                  onClick={() => {
+                    signOut();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="text-gray-700 hover:text-directiveplus-600 transition-colors block text-left w-full"
                 >
                   Déconnexion
                 </button>
@@ -131,12 +138,14 @@ const Header = () => {
                 <Link
                   to="/auth"
                   className="text-gray-700 hover:text-directiveplus-600 transition-colors block"
+                  onClick={() => setIsMobileMenuOpen(false)}
                 >
                   Connexion
                 </Link>
                 <Link
                   to="/auth"
                   className="text-gray-700 hover:text-directiveplus-600 transition-colors block"
+                  onClick={() => setIsMobileMenuOpen(false)}
                 >
                   Inscription
                 </Link>
