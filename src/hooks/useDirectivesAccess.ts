@@ -28,17 +28,15 @@ export const useDirectivesAccess = () => {
       // Convert birthdate to ISO format for database comparison
       const formattedDate = birthdate.toISOString().split('T')[0];
       
-      // Use the new RLS approach with request headers for verification
+      // Use the standard query approach instead of withHeaders
+      // The RLS policies should check the matching criteria
       const { data, error: queryError } = await supabase
         .from("shared_profiles")
         .select("*, medical_profile_id")
-        .withHeaders({
-          "x-client-info": "access-code-verification",
-          "request.first_name": firstName.trim(),
-          "request.last_name": lastName.trim(),
-          "request.birthdate": formattedDate,
-          "request.access_code": accessCode.trim()
-        })
+        .eq("first_name", firstName.trim())
+        .eq("last_name", lastName.trim())
+        .eq("birthdate", formattedDate)
+        .eq("access_code", accessCode.trim())
         .maybeSingle();
 
       if (queryError) {
@@ -47,7 +45,7 @@ export const useDirectivesAccess = () => {
       }
 
       if (!data) {
-        // If not found with the RLS approach, try the edge function as fallback
+        // If not found with direct query, try the edge function as fallback
         const response = await fetch("https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/verifierCodeAcces", {
           method: 'POST',
           headers: {
@@ -76,7 +74,7 @@ export const useDirectivesAccess = () => {
         
         navigate("/dashboard", { replace: true });
       } else {
-        // Shared profile found with RLS approach, create a dossier object
+        // Shared profile found, create a dossier object
         const dossier = {
           id: data.id,
           userId: data.user_id,
