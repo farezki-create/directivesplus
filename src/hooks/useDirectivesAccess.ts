@@ -28,8 +28,7 @@ export const useDirectivesAccess = () => {
       // Convert birthdate to ISO format for database comparison
       const formattedDate = birthdate.toISOString().split('T')[0];
       
-      // Use the standard query approach instead of withHeaders
-      // The RLS policies should check the matching criteria
+      // Use the standard query approach
       const { data, error: queryError } = await supabase
         .from("shared_profiles")
         .select("*, medical_profile_id")
