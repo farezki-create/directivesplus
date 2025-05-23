@@ -28,6 +28,8 @@ import PlaceholderPage from "@/pages/PlaceholderPage";
 import LegalMentions from "@/pages/LegalMentions";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import ReportDataBreach from "@/pages/ReportDataBreach";
+import AccessCardPage from "@/pages/AccessCard";
+import EnSavoirPlus from "@/pages/EnSavoirPlus";
 
 // Import Admin
 import Admin from "@/pages/Admin";
@@ -61,6 +63,9 @@ function App() {
         <Route path="/confidentialite" element={<PrivacyPolicy />} />
         <Route path="/report-breach" element={<ReportDataBreach />} />
         <Route path="/medical-access" element={<MedicalAccess />} />
+        <Route path="/carte-acces" element={<AccessCardPage />} />
+        <Route path="/en-savoir-plus" element={<EnSavoirPlus />} />
+        <Route path="/mentions-legales" element={<LegalMentions />} />
         
         {/* Routes avec accès alternatif via PlaceholderPage */}
         <Route path="/:pageId" element={<PlaceholderPage />} />

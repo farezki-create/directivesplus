@@ -39,9 +39,14 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <a href="#en-savoir-plus" className="hover:text-white transition-colors">
+                <Link to="/en-savoir-plus" className="hover:text-white transition-colors">
                   En savoir plus
-                </a>
+                </Link>
+              </li>
+              <li>
+                <Link to="/carte-acces" className="hover:text-white transition-colors">
+                  Carte d'accès
+                </Link>
               </li>
             </ul>
           </div>
@@ -61,7 +66,7 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/politique-confidentialite" className="hover:text-white transition-colors">
+                <Link to="/confidentialite" className="hover:text-white transition-colors">
                   Confidentialité
                 </Link>
               </li>
