@@ -101,6 +101,9 @@ export const useInstitutionAccess = () => {
       
       console.log("RPC response:", data);
       
+      // Variable pour stocker les données finales
+      let finalData = data;
+      
       if (!data || data.length === 0) {
         // Essayer avec différentes variations de casse pour les noms
         console.log("Trying with different case variations...");
@@ -135,18 +138,18 @@ export const useInstitutionAccess = () => {
           return false;
         }
         
-        data = foundData;
+        finalData = foundData;
       }
       
       // Log the successful access
-      const directiveIds = data.map(doc => doc.id);
+      const directiveIds = finalData.map(doc => doc.id);
       await logInstitutionAccess(directiveIds, cleanedValues);
       
-      setDocuments(data);
+      setDocuments(finalData);
       
       toast({
         title: "Accès autorisé",
-        description: `${data.length} directive(s) trouvée(s) pour le patient`
+        description: `${finalData.length} directive(s) trouvée(s) pour le patient`
       });
       
       return true;
