@@ -12,6 +12,7 @@ import DirectivesGrid from "@/components/DirectivesGrid";
 
 const Dashboard = () => {
   const dossierActif = useDossierStore((state) => state.dossierActif);
+  const decryptedContent = useDossierStore((state) => state.decryptedContent);
   
   return (
     <DossierContentProvider>
@@ -24,8 +25,8 @@ const Dashboard = () => {
           <>
             <DashboardHeader />
             
-            <Tabs defaultValue="directives" className="mt-6">
-              <TabsList>
+            <Tabs defaultValue="home" className="mt-6">
+              <TabsList className="mb-4">
                 <TabsTrigger value="home" className="flex items-center gap-2">
                   <Home size={16} />
                   Accueil
@@ -36,7 +37,7 @@ const Dashboard = () => {
                 </TabsTrigger>
               </TabsList>
               
-              <TabsContent value="home" className="mt-4">
+              <TabsContent value="home">
                 <div className="bg-white p-6 rounded-lg border">
                   <h2 className="text-xl font-semibold mb-4">Bienvenue sur votre tableau de bord</h2>
                   <p className="text-gray-600 mb-6">
@@ -46,7 +47,7 @@ const Dashboard = () => {
                 </div>
               </TabsContent>
               
-              <TabsContent value="directives" className="mt-4">
+              <TabsContent value="directives">
                 <DirectivesTab />
               </TabsContent>
             </Tabs>
