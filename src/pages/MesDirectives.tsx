@@ -1,7 +1,6 @@
-
 import React, { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
 import { DirectivesAccessForm } from "@/components/mes-directives/DirectivesAccessForm"; 
 import LoginLink from "@/components/mes-directives/LoginLink";
@@ -16,6 +15,17 @@ export default function MesDirectives() {
   const navigate = useNavigate();
   const { setDossierActif } = useDossierStore();
   const { getDossierUtilisateurAuthentifie } = useVerifierCodeAcces();
+  const [searchParams] = useSearchParams();
+  const codeParam = searchParams.get("code");
+  
+  // Check for direct access with code parameter
+  useEffect(() => {
+    if (codeParam) {
+      console.log("MesDirectives - Direct access with code parameter:", codeParam);
+      // Keep this page rendered for direct access with code
+      return;
+    }
+  }, [codeParam]);
 
   // Only try to load user directives if the user is authenticated
   useEffect(() => {
@@ -48,7 +58,7 @@ export default function MesDirectives() {
     };
 
     loadUserDirectives();
-  }, [isAuthenticated, user, navigate, setDossierActif, getDossierUtilisateurAuthentifie]);
+  }, [isAuthenticated, user, navigate, setDossierActif, getDossierUtilisateurAuthentifie, codeParam]);
 
   // The main page render should always work regardless of authentication status
   return (

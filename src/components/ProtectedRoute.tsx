@@ -61,6 +61,12 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     return <>{children}</>;
   }
 
+  // Si l'utilisateur est authentifié, autoriser l'accès
+  if (isAuthenticated) {
+    console.log("ProtectedRoute: Utilisateur authentifié, accès autorisé pour", location.pathname);
+    return <>{children}</>;
+  }
+
   // Empêcher la boucle de navigation en vérifiant si nous redirigeons déjà
   if (!isAuthenticated && !isRedirecting) {
     // Stocker le chemin actuel pour rediriger après la connexion
