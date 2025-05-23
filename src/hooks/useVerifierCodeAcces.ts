@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
+import { getAuthUserDossier } from "@/api/dossier/userDossierAccess";
 
 export interface Dossier {
   id: string;
@@ -81,7 +82,15 @@ export const useVerifierCodeAcces = () => {
     
     setLoading(true);
     try {
-      // Call the Edge Function with user ID
+      // First try to use the local API function rather than the edge function
+      const result = await getAuthUserDossier(userId, accessType as "medical" | "directive");
+      
+      if (result.success && result.dossier) {
+        console.log("Successfully loaded dossier from local API:", result.dossier);
+        return result.dossier;
+      }
+      
+      // Fallback to the Edge Function with user ID if local API fails
       const apiUrl = "https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/verifierCodeAcces";
       
       const response = await fetch(apiUrl, {
@@ -95,21 +104,18 @@ export const useVerifierCodeAcces = () => {
         })
       });
       
-      const result = await response.json();
+      const edgeResult = await response.json();
       
-      if (!result.success) {
-        console.error("Error getting authenticated user dossier:", result.error);
+      if (!edgeResult.success) {
+        console.error("Error getting authenticated user dossier:", edgeResult.error);
         return null;
       }
       
-      return result.dossier;
+      console.log("Successfully loaded dossier from edge function:", edgeResult.dossier);
+      return edgeResult.dossier;
     } catch (error) {
       console.error("Error getting authenticated user dossier:", error);
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la récupération du dossier",
-        variant: "destructive"
-      });
+      // Don't show toast for this error since we'll handle it in the UI
       return null;
     } finally {
       setLoading(false);

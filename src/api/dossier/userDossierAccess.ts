@@ -36,6 +36,20 @@ export const getAuthUserDossier = async (
 
     console.log("Profile data loaded directly:", profile);
     
+    // Now check if the user has any directive documents
+    const { data: documents, error: docsError } = await supabase
+      .from('pdf_documents')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+    
+    if (docsError) {
+      console.error("Error getting user documents:", docsError);
+    }
+    
+    const userDocumentsList = documents || [];
+    console.log("User documents found:", userDocumentsList.length);
+    
     // Create a dossier from the profile data
     const dossier: Dossier = {
       id: `auth-${Date.now()}`,
@@ -52,7 +66,7 @@ export const getAuthUserDossier = async (
         // Add document URL if provided
         ...(documentPath ? { document_url: documentPath } : {}),
         // Add document list if provided
-        ...(documentsList && documentsList.length > 0 ? { documents: documentsList } : {})
+        documents: documentsList || userDocumentsList || []
       }
     };
     

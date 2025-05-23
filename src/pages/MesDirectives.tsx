@@ -36,7 +36,7 @@ export default function MesDirectives() {
           });
           navigate("/dashboard");
         } else {
-          // Navigate to dashboard anyway, but they might not see directives
+          // Navigate to dashboard anyway, where they can create/upload directives
           console.log("MesDirectives - User authenticated but no dossier found");
           navigate("/dashboard");
         }
