@@ -41,8 +41,9 @@ export const generateSharedCode = async (
     // Update the directive with the shared code
     // Create a new content object with the shared code properties
     const contentObj = directive.content || {};
-    const updatedContent = {
-      ...contentObj,
+    // Create a typed updatedContent object
+    const updatedContent: Record<string, any> = {
+      ...contentObj as Record<string, any>,
       shared_code: code,
       shared_code_expires_at: expiresAt.toISOString()
     };
@@ -89,11 +90,12 @@ export const revokeSharedCode = async (
 
     // Remove the shared code from the content JSONB
     if (typeof directive.content === 'object' && directive.content !== null) {
-      const contentObj = { ...directive.content };
+      // Create a typed contentObj to work with
+      const contentObj: Record<string, any> = { ...(directive.content as Record<string, any>) };
       
       // Delete the shared code properties
-      delete contentObj.shared_code;
-      delete contentObj.shared_code_expires_at;
+      delete contentObj['shared_code'];
+      delete contentObj['shared_code_expires_at'];
 
       const { error: updateError } = await supabase
         .from('directives')
@@ -145,13 +147,14 @@ export const extendSharedCodeExpiration = async (
     
     // Update the expiration date in the content JSONB
     if (typeof directive.content === 'object' && directive.content !== null) {
-      const contentObj = { ...directive.content };
+      // Create a typed contentObj
+      const contentObj: Record<string, any> = { ...(directive.content as Record<string, any>) };
       
-      if (!contentObj.shared_code) {
+      if (!contentObj['shared_code']) {
         return { success: false, error: "No shared code exists for this directive" };
       }
 
-      contentObj.shared_code_expires_at = newExpiryDate;
+      contentObj['shared_code_expires_at'] = newExpiryDate;
 
       const { error: updateError } = await supabase
         .from('directives')

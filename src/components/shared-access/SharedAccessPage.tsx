@@ -14,6 +14,8 @@ interface Directive {
   title?: string;
   content?: any;
   created_at: string;
+  titre?: string; 
+  contenu?: string;
 }
 
 export function SharedAccessPage() {
@@ -52,7 +54,9 @@ export function SharedAccessPage() {
           user_id: doc.user_id,
           title: doc.titre || doc.content?.title,
           content: doc.contenu || doc.content?.content,
-          created_at: doc.created_at
+          created_at: doc.created_at,
+          titre: doc.titre,
+          contenu: doc.contenu
         })));
       }
     } catch (err) {
@@ -146,8 +150,8 @@ export function SharedAccessPage() {
                     <div className="flex items-start gap-3">
                       <FileText className="h-5 w-5 text-directiveplus-600 flex-shrink-0 mt-1" />
                       <div>
-                        <h3 className="font-semibold">{doc.title || "Directive sans titre"}</h3>
-                        <p className="text-sm text-gray-700 mt-2">{doc.content || "Aucun contenu disponible"}</p>
+                        <h3 className="font-semibold">{doc.title || doc.titre || "Directive sans titre"}</h3>
+                        <p className="text-sm text-gray-700 mt-2">{doc.content || doc.contenu || "Aucun contenu disponible"}</p>
                         <p className="text-xs text-gray-500 mt-2">
                           Créé le {new Date(doc.created_at).toLocaleDateString('fr-FR')}
                         </p>
