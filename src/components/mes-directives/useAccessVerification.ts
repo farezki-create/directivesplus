@@ -21,6 +21,7 @@ export const useAccessVerification = (onSuccess = (dossier) => {}) => {
     
     // If we have a code parameter in the URL, use it instead of the form value
     const accessCode = codeParam || formValues.accessCode;
+    // Format identifier as firstName_lastName for the RPC function
     const fullName = `${formValues.firstName}_${formValues.lastName}`;
     
     try {

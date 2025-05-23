@@ -10,7 +10,7 @@ export interface MedicalDocument {
 }
 
 /**
- * Verifies access code against the backend
+ * Verifies access code against the backend using RPC when possible
  */
 export const verifyAccessCode = async (
   accessCode: string,
@@ -20,9 +20,75 @@ export const verifyAccessCode = async (
 ) => {
   console.log(`Vérification du code ${accessCode} pour ${patientName} né(e) le ${patientBirthDate}`);
 
+  // Parse patientName into first and last name if possible
+  let firstName = "", lastName = "";
+  if (patientName.includes(" ")) {
+    const nameParts = patientName.split(" ");
+    firstName = nameParts[0];
+    lastName = nameParts.slice(1).join(" ");
+  }
+
   const bruteForceIdentifier = `${documentType}_access_${patientName}_${patientBirthDate}`;
   
   try {
+    // First try with RPC if we have both names
+    if (firstName && lastName) {
+      console.log(`Attempting RPC verification with firstName=${firstName}, lastName=${lastName}, birthdate=${patientBirthDate}`);
+      
+      // Convert birthdate string to Date object if provided
+      let birthDate = null;
+      if (patientBirthDate) {
+        try {
+          birthDate = new Date(patientBirthDate);
+        } catch (e) {
+          console.error("Invalid birthdate format:", e);
+        }
+      }
+
+      const { data: profiles, error: rpcError } = await supabase.rpc(
+        'verify_access_identity',
+        {
+          input_lastname: lastName,
+          input_firstname: firstName,
+          input_birthdate: birthDate,
+          input_access_code: accessCode,
+        }
+      );
+      
+      if (rpcError) {
+        console.error("RPC verification error:", rpcError);
+      } else if (profiles && profiles.length > 0) {
+        console.log("RPC verification successful:", profiles);
+        
+        // Create dossier from the profile
+        const profile = profiles[0];
+        return {
+          success: true,
+          dossier: {
+            id: profile.id,
+            userId: profile.user_id,
+            isFullAccess: true,
+            isDirectivesOnly: documentType === "directive",
+            isMedicalOnly: documentType === "medical",
+            profileData: {
+              first_name: profile.first_name,
+              last_name: profile.last_name,
+              birth_date: profile.birthdate
+            },
+            contenu: {
+              patient: {
+                nom: profile.last_name,
+                prenom: profile.first_name,
+                date_naissance: profile.birthdate
+              }
+            }
+          }
+        };
+      }
+    }
+    
+    // Fallback to Edge Function if RPC fails or isn't possible
+    console.log("Falling back to Edge Function for verification");
     // Appel à la fonction Edge verifierCodeAcces
     const response = await fetch(`https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/verifierCodeAcces`, {
       method: 'POST',

@@ -100,11 +100,91 @@ serve(async (req: Request) => {
       );
     } 
     
+    // Parse bruteForceIdentifier to get firstName and lastName if available
+    let firstName = '', lastName = '';
+    if (bruteForceIdentifier && bruteForceIdentifier.includes('_')) {
+      [firstName, lastName] = bruteForceIdentifier.split('_');
+      console.log(`Parsed identifier: firstName=${firstName}, lastName=${lastName}`);
+    }
+    
     // Code access flow
     if (accessCode) {
       console.log("Handling code access with code:", accessCode);
 
-      // First try with shared profiles
+      // First try with RPC function if we have name components
+      if (firstName && lastName) {
+        try {
+          console.log(`Attempting RPC verification with firstName=${firstName}, lastName=${lastName}`);
+          
+          const { data: sharedProfiles, error: rpcError } = await supabaseClient.rpc(
+            'verify_access_identity',
+            {
+              input_lastname: lastName,
+              input_firstname: firstName,
+              input_birthdate: null, // We might not have birthdate 
+              input_access_code: accessCode,
+            }
+          );
+          
+          if (rpcError) {
+            console.error("Error with RPC verification:", rpcError);
+          } else if (sharedProfiles && sharedProfiles.length > 0) {
+            console.log("RPC verification successful:", sharedProfiles);
+            const profile = sharedProfiles[0];
+            
+            // Get associated documents if any
+            const { data: documents, error: docsError } = await supabaseClient
+              .from('pdf_documents')
+              .select('*')
+              .eq('user_id', profile.user_id)
+              .order('created_at', { ascending: false });
+            
+            if (docsError) {
+              console.error("Error fetching documents:", docsError);
+            }
+            
+            // Build dossier object
+            const dossier = {
+              id: profile.id,
+              userId: profile.user_id,
+              isFullAccess: true,
+              isDirectivesOnly: true, // Shared profiles are for directives
+              isMedicalOnly: false,
+              profileData: {
+                first_name: profile.first_name,
+                last_name: profile.last_name,
+                birth_date: profile.birthdate
+              },
+              contenu: {
+                documents: documents || [],
+                patient: {
+                  nom: profile.last_name,
+                  prenom: profile.first_name,
+                  date_naissance: profile.birthdate
+                }
+              }
+            };
+            
+            console.log("Created dossier from RPC verification:", JSON.stringify(dossier, null, 2));
+            
+            return new Response(
+              JSON.stringify({
+                success: true,
+                dossier
+              }),
+              {
+                headers: { ...corsHeaders, "Content-Type": "application/json" },
+                status: 200,
+              }
+            );
+          }
+        } catch (rpcError) {
+          console.error("Exception during RPC verification:", rpcError);
+          // Continue with standard verification if RPC fails
+        }
+      }
+
+      // Standard verification with shared profiles
       const { data: sharedProfiles, error: sharedProfileError } = await supabaseClient
         .from('shared_profiles')
         .select('*')
