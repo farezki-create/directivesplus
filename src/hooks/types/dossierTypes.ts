@@ -5,7 +5,7 @@
 
 export interface Dossier {
   id: string;
-  userId?: string;
+  userId: string; // Changed from optional to required to match dossierStore.ts
   isFullAccess: boolean;
   isDirectivesOnly: boolean;
   isMedicalOnly: boolean;

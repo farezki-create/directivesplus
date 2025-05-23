@@ -1,19 +1,13 @@
 
 import { create } from 'zustand';
+import { Dossier as DossierType } from '@/hooks/types/dossierTypes';
 
-export interface Dossier {
-  id: string;
-  userId: string;
-  isFullAccess: boolean;
-  isDirectivesOnly: boolean;
-  isMedicalOnly: boolean;
-  profileData?: any;
-  contenu: any;
-}
+// Re-export the Dossier type from our central type definition
+export type { Dossier } from '@/hooks/types/dossierTypes';
 
 interface DossierStore {
-  dossierActif: Dossier | null;
-  setDossierActif: (dossier: Dossier) => void;
+  dossierActif: DossierType | null;
+  setDossierActif: (dossier: DossierType) => void;
   clearDossierActif: () => void;
 }
 

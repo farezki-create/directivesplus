@@ -51,7 +51,7 @@ export const useCodeVerification = (setLoading: Dispatch<SetStateAction<boolean>
           const profile = data[0];
           const dossier: Dossier = {
             id: profile.id,
-            userId: profile.user_id,
+            userId: profile.user_id || "", // Ensure userId is set, using empty string as fallback
             isFullAccess: true,
             isDirectivesOnly: true,
             isMedicalOnly: false,
@@ -123,6 +123,11 @@ export const useCodeVerification = (setLoading: Dispatch<SetStateAction<boolean>
           variant: "destructive"
         });
         return null;
+      }
+      
+      // Ensure userId is set in the dossier from edge function
+      if (result.dossier) {
+        result.dossier.userId = result.dossier.userId || "";
       }
       
       return result.dossier;

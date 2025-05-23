@@ -48,7 +48,7 @@ export const getAuthUserDossier = async (
     // Create a dossier object for authenticated users
     const dossierData: Dossier = {
       id: `auth-${Date.now()}`,
-      userId: userId,
+      userId: userId, // Ensure userId is set
       isFullAccess: true,
       isDirectivesOnly: documentType === "directive",
       isMedicalOnly: documentType === "medical",
