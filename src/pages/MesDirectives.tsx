@@ -20,7 +20,7 @@ export default function MesDirectives() {
   const [loading, setLoading] = useState(false);
   const codeParam = searchParams.get("code");
   
-  // Only try to load user directives if the user is authenticated
+  // Si l'utilisateur est déjà authentifié, charger ses directives
   useEffect(() => {
     const loadUserDirectives = async () => {
       if (!isAuthenticated || !user || loading) return;
@@ -29,7 +29,7 @@ export default function MesDirectives() {
         setLoading(true);
         console.log("MesDirectives - Loading directives for user:", user.id);
         
-        // Try to get the user's dossier
+        // Essayer de récupérer le dossier de l'utilisateur
         const dossier = await getDossierUtilisateurAuthentifie(user.id, "directive");
         
         if (dossier) {
@@ -39,15 +39,15 @@ export default function MesDirectives() {
             title: "Accès autorisé",
             description: "Vos directives ont été chargées avec succès"
           });
-          navigate("/dashboard");
+          navigate("/directives-docs"); // Rediriger vers la page des documents de directives
         } else {
-          // Navigate to dashboard anyway, where they can create/upload directives
+          // Rediriger vers le tableau de bord même s'il n'y a pas de dossier
           console.log("MesDirectives - User authenticated but no dossier found");
           toast({
             title: "Information",
             description: "Aucune directive trouvée. Vous pouvez en créer ou en télécharger."
           });
-          navigate("/dashboard");
+          navigate("/directives-docs"); // Rediriger vers la page des documents de directives
         }
       } catch (error) {
         console.error("MesDirectives - Error loading directives:", error);
@@ -56,6 +56,7 @@ export default function MesDirectives() {
           description: "Une erreur est survenue lors du chargement de vos directives",
           variant: "destructive"
         });
+        setLoading(false);
       } finally {
         setLoading(false);
       }
@@ -64,7 +65,7 @@ export default function MesDirectives() {
     loadUserDirectives();
   }, [isAuthenticated, user, navigate, setDossierActif, getDossierUtilisateurAuthentifie, loading]);
 
-  // The main page render should always work regardless of authentication status
+  // Le rendu principal de la page doit toujours fonctionner, quel que soit l'état d'authentification
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header />

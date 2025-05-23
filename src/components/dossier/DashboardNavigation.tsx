@@ -31,7 +31,7 @@ const DashboardNavigation: React.FC = () => {
       
       <Button
         variant="outline"
-        onClick={() => navigate("/mes-directives")}
+        onClick={() => navigate("/directives-docs")}
         className="flex items-center gap-2"
       >
         <FileText size={16} />
