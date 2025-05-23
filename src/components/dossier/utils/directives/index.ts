@@ -17,3 +17,6 @@ export {
   searchDirectivesRecursively,
   createDirectivesMirror
 };
+
+// Export types
+export type { DirectiveExtractResult } from './types';
