@@ -11,8 +11,8 @@ import { AlertCircle, FileText } from "lucide-react";
 interface Directive {
   id: string;
   user_id: string;
-  titre: string;
-  contenu: string;
+  title?: string;
+  content?: string;
   created_at: string;
 }
 
@@ -46,7 +46,14 @@ export function SharedAccessPage() {
         setError("Aucune directive trouvée. Vérifiez vos informations et le code d'accès.");
         setDocs([]);
       } else {
-        setDocs(data as Directive[]);
+        console.log("Directives retrieved:", data);
+        setDocs(data.map(doc => ({
+          id: doc.id,
+          user_id: doc.user_id,
+          title: doc.titre || doc.content?.title,
+          content: doc.contenu || doc.content?.content,
+          created_at: doc.created_at
+        })));
       }
     } catch (err) {
       console.error("Exception:", err);
@@ -139,8 +146,8 @@ export function SharedAccessPage() {
                     <div className="flex items-start gap-3">
                       <FileText className="h-5 w-5 text-directiveplus-600 flex-shrink-0 mt-1" />
                       <div>
-                        <h3 className="font-semibold">{doc.titre}</h3>
-                        <p className="text-sm text-gray-700 mt-2">{doc.contenu}</p>
+                        <h3 className="font-semibold">{doc.title || "Directive sans titre"}</h3>
+                        <p className="text-sm text-gray-700 mt-2">{doc.content || "Aucun contenu disponible"}</p>
                         <p className="text-xs text-gray-500 mt-2">
                           Créé le {new Date(doc.created_at).toLocaleDateString('fr-FR')}
                         </p>

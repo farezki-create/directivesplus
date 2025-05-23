@@ -11,7 +11,8 @@ RETURNS TABLE (
   user_id uuid,
   titre text,
   contenu text,
-  created_at timestamp
+  created_at timestamp,
+  content jsonb
 )
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -23,7 +24,8 @@ BEGIN
     d.user_id, 
     d.content->>'title' as titre, 
     d.content->>'content' as contenu, 
-    d.created_at
+    d.created_at,
+    d.content
   FROM public.directives d
   JOIN public.profiles p ON p.id = d.user_id
   WHERE 
