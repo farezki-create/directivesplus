@@ -1,7 +1,7 @@
 
 import PageHeader from "@/components/layout/PageHeader";
 import PageFooter from "@/components/layout/PageFooter";
-import { SimpleAccessForm } from "@/components/institution-access/SimpleAccessForm";
+import { InstitutionAccessFormSimple } from "@/components/institution-access/InstitutionAccessFormSimple";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import BackButton from "@/components/ui/back-button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -33,21 +33,21 @@ export default function InstitutionAccessSimple() {
           <Card className="shadow-lg">
             <CardHeader className="text-center bg-gradient-to-r from-blue-500 to-green-500 text-white">
               <CardTitle className="text-2xl font-bold">
-                Accès Institution Simplifié
+                Accès Institution Standard
               </CardTitle>
               <p className="text-blue-100 mt-2">
-                Interface rapide pour l'accès aux directives anticipées
+                Accès sécurisé aux directives anticipées avec vérification d'identité
               </p>
             </CardHeader>
             
             <CardContent className="p-8">
-              <SimpleAccessForm />
+              <InstitutionAccessFormSimple />
             </CardContent>
             
             <CardFooter className="bg-gray-50 text-center text-sm text-muted-foreground border-t">
               <div className="w-full">
                 <p className="mb-2">
-                  <strong>Solution simplifiée</strong> - Interface similaire aux systèmes d'imagerie médicale
+                  <strong>Accès standard</strong> - Vérification complète de l'identité du patient
                 </p>
                 <p className="text-xs">
                   Conforme aux exigences de sécurité et de traçabilité des établissements de santé
@@ -60,12 +60,12 @@ export default function InstitutionAccessSimple() {
           <div className="mt-8 grid md:grid-cols-2 gap-4">
             <Card className="border-green-200">
               <CardContent className="p-4">
-                <h3 className="font-semibold text-green-800 mb-2">✓ Avantages</h3>
+                <h3 className="font-semibold text-green-800 mb-2">✓ Sécurité</h3>
                 <ul className="text-sm text-green-700 space-y-1">
-                  <li>• Accès rapide avec un seul code</li>
-                  <li>• Interface intuitive</li>
-                  <li>• Traçabilité complète</li>
-                  <li>• Compatible urgences</li>
+                  <li>• Vérification d'identité complète</li>
+                  <li>• Double authentification</li>
+                  <li>• Traçabilité totale</li>
+                  <li>• Accès temporaire</li>
                 </ul>
               </CardContent>
             </Card>
@@ -74,9 +74,9 @@ export default function InstitutionAccessSimple() {
               <CardContent className="p-4">
                 <h3 className="font-semibold text-blue-800 mb-2">ℹ Informations</h3>
                 <ul className="text-sm text-blue-700 space-y-1">
+                  <li>• Nom, prénom et date requis</li>
                   <li>• Code fourni par le patient</li>
                   <li>• Validité temporaire</li>
-                  <li>• Accès aux directives uniquement</li>
                   <li>• Support 24h/24</li>
                 </ul>
               </CardContent>
