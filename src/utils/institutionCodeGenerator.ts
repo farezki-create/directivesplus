@@ -1,7 +1,7 @@
 
-import { useUnifiedSharing } from "@/hooks/sharing/useUnifiedSharing";
+import { useSharing } from "@/hooks/sharing/useSharing";
 import { supabase } from "@/integrations/supabase/client";
-import type { ShareableDocument } from "@/hooks/sharing/types";
+import type { ShareableDocument } from "@/types/sharing";
 
 export const generateInstitutionCode = async (directiveId: string): Promise<string | null> => {
   try {
@@ -36,7 +36,7 @@ export const generateInstitutionCode = async (directiveId: string): Promise<stri
     };
 
     // Use the unified sharing service
-    const { generateInstitutionCode } = useUnifiedSharing();
+    const { generateInstitutionCode } = useSharing();
     const code = await generateInstitutionCode(shareableDocument, 30);
     return code;
   } catch (error) {

@@ -1,14 +1,16 @@
-import React, { useState } from "react";
-import DocumentHeader from "@/components/documents/card/DocumentHeader";
-import { DocumentActionsRefactored } from "./DocumentActionsRefactored";
-import { detectDocumentType } from "../preview/documentUtils";
-import { ShareableDocument } from "@/hooks/sharing/useUnifiedSharing";
+
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Eye, Download, Printer, Trash2, FolderPlus, FileText, Share2, Lock, Unlock } from "lucide-react";
+import { DocumentShareButton } from "../sharing/DocumentShareButton";
+import { ShareableDocument } from "@/types/sharing";
 
 interface DocumentCardRefactoredProps {
   document: ShareableDocument;
   onDownload: (filePath: string, fileName: string) => void;
-  onPrint: (filePath: string, fileType?: string) => void;
-  onView: (filePath: string, fileType?: string) => void;
+  onPrint: (filePath: string, contentType?: string) => void;
+  onView: (filePath: string, contentType?: string) => void;
   onDelete: (documentId: string) => void;
   onVisibilityChange?: (documentId: string, isPrivate: boolean) => void;
   onAddToSharedFolder?: () => void;
@@ -29,198 +31,126 @@ export const DocumentCardRefactored: React.FC<DocumentCardRefactoredProps> = ({
   showShare = false,
   isAddingToShared = false
 }) => {
-  const [isPrivate, setIsPrivate] = useState(document.is_private || false);
-
-  const handleVisibilityChange = (documentId: string, checked: boolean) => {
-    setIsPrivate(checked);
+  const handleToggleVisibility = () => {
     if (onVisibilityChange) {
-      onVisibilityChange(documentId, checked);
+      onVisibilityChange(document.id, !document.is_private);
     }
   };
 
-  const { isDirective } = detectDocumentType(document.file_path);
-  const fileType = getFileType(document);
-
-  const handleView = () => {
-    console.log("DocumentCardRefactored - onView appelé pour:", document.file_path);
-    
-    if (isDirective || document.file_type === 'directive') {
-      onView(document.file_path, 'directive');
-      return;
+  const getDocumentIcon = () => {
+    switch (document.file_type) {
+      case 'directive':
+        return <FileText className="h-8 w-8 text-blue-600" />;
+      case 'pdf':
+        return <FileText className="h-8 w-8 text-red-600" />;
+      case 'medical':
+        return <FileText className="h-8 w-8 text-green-600" />;
+      default:
+        return <FileText className="h-8 w-8 text-gray-600" />;
     }
-    
-    if (document.content && typeof document.content === 'object') {
-      displayDirectiveContent(document);
-      return;
-    }
-    
-    onView(document.file_path, fileType);
-  };
-
-  const handleDownload = () => {
-    console.log("DocumentCardRefactored - onDownload appelé:", document.file_path, document.file_name);
-    
-    if (document.content && typeof document.content === 'object') {
-      downloadDirectiveContent(document);
-      return;
-    }
-    
-    onDownload(document.file_path, document.file_name);
-  };
-
-  const handlePrint = () => {
-    console.log("DocumentCardRefactored - onPrint appelé:", document.file_path, fileType);
-    
-    if (document.content && typeof document.content === 'object') {
-      printDirectiveContent(document);
-      return;
-    }
-    
-    onPrint(document.file_path, fileType);
   };
 
   return (
-    <div className="bg-white rounded-lg border p-4 shadow-sm">
-      <div className="flex items-start justify-between mb-4">
-        <DocumentHeader 
-          document={document}
-          isPrivate={isPrivate}
-          onVisibilityChange={handleVisibilityChange}
-        />
-        
-        <DocumentActionsRefactored
-          document={document}
-          onView={handleView}
-          onDownload={handleDownload}
-          onPrint={handlePrint}
-          onDelete={() => onDelete(document.id)}
-          onAddToSharedFolder={onAddToSharedFolder}
-          showPrint={showPrint}
-          showShare={showShare}
-          isAddingToShared={isAddingToShared}
-        />
-      </div>
-    </div>
+    <Card className="w-full">
+      <CardHeader className="pb-3">
+        <div className="flex items-start gap-4">
+          {getDocumentIcon()}
+          <div className="flex-1">
+            <h3 className="font-semibold text-lg">{document.file_name}</h3>
+            {document.description && (
+              <p className="text-sm text-gray-600 mt-1">{document.description}</p>
+            )}
+            <div className="flex items-center gap-2 mt-2 text-xs text-gray-500">
+              <span>Créé le {new Date(document.created_at).toLocaleDateString()}</span>
+              {document.is_private !== undefined && (
+                <span className="flex items-center gap-1">
+                  {document.is_private ? <Lock className="h-3 w-3" /> : <Unlock className="h-3 w-3" />}
+                  {document.is_private ? 'Privé' : 'Accessible'}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      </CardHeader>
+      
+      <CardContent className="pt-0">
+        <div className="flex gap-2 flex-wrap">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onView(document.file_path, document.content_type)}
+            className="flex items-center gap-1"
+          >
+            <Eye size={16} />
+            Voir
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onDownload(document.file_path, document.file_name)}
+            className="flex items-center gap-1"
+          >
+            <Download size={16} />
+            Télécharger
+          </Button>
+
+          {showPrint && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPrint(document.file_path, document.content_type)}
+              className="flex items-center gap-1"
+            >
+              <Printer size={16} />
+              Imprimer
+            </Button>
+          )}
+
+          {showShare && (
+            <DocumentShareButton
+              document={document}
+              variant="outline"
+              size="sm"
+            />
+          )}
+
+          {onVisibilityChange && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleToggleVisibility}
+              className="flex items-center gap-1"
+            >
+              {document.is_private ? <Unlock size={16} /> : <Lock size={16} />}
+              {document.is_private ? 'Rendre accessible' : 'Rendre privé'}
+            </Button>
+          )}
+
+          {onAddToSharedFolder && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onAddToSharedFolder}
+              disabled={isAddingToShared}
+              className="flex items-center gap-1"
+            >
+              <FolderPlus size={16} />
+              {isAddingToShared ? "Ajout..." : "Ajouter"}
+            </Button>
+          )}
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onDelete(document.id)}
+            className="flex items-center gap-1 text-red-600 hover:bg-red-50"
+          >
+            <Trash2 size={16} />
+            Supprimer
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
-};
-
-// Fonctions utilitaires pour la gestion des directives
-const displayDirectiveContent = (document: ShareableDocument) => {
-  const directiveContent = document.content;
-  const newWindow = window.open('', '_blank');
-  if (newWindow) {
-    newWindow.document.write(`
-      <html>
-        <head>
-          <title>${directiveContent?.title || 'Directive Anticipée'}</title>
-          <style>
-            body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
-            h1 { color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
-            .content { margin-top: 20px; }
-            .date { color: #666; font-size: 0.9em; }
-            .metadata { background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 10px 0; }
-          </style>
-        </head>
-        <body>
-          <h1>${directiveContent?.title || 'Directive Anticipée'}</h1>
-          <div class="date">Créé le: ${new Date(document.created_at).toLocaleDateString('fr-FR')}</div>
-          <div class="metadata">
-            <strong>Document:</strong> ${document.description || 'Directive anticipée'}<br>
-            <strong>Statut:</strong> Document accessible
-          </div>
-          <div class="content">
-            <pre>${JSON.stringify(directiveContent, null, 2)}</pre>
-          </div>
-        </body>
-      </html>
-    `);
-    newWindow.document.close();
-  }
-};
-
-const downloadDirectiveContent = (document: ShareableDocument) => {
-  const directiveContent = document.content;
-  const content = JSON.stringify(directiveContent, null, 2);
-  const blob = new Blob([content], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  
-  const link = window.document.createElement('a');
-  link.href = url;
-  link.download = document.file_name.replace('.pdf', '.json');
-  window.document.body.appendChild(link);
-  link.click();
-  window.document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-};
-
-const printDirectiveContent = (document: ShareableDocument) => {
-  const directiveContent = document.content;
-  const printWindow = window.open('', '_blank');
-  if (printWindow) {
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>${directiveContent?.title || 'Directive Anticipée'}</title>
-          <style>
-            body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
-            h1 { color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
-            .content { margin-top: 20px; }
-            .date { color: #666; font-size: 0.9em; }
-            .metadata { background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 10px 0; }
-            @media print { body { margin: 0; } }
-          </style>
-        </head>
-        <body>
-          <h1>${directiveContent?.title || 'Directive Anticipée'}</h1>
-          <div class="date">Créé le: ${new Date(document.created_at).toLocaleDateString('fr-FR')}</div>
-          <div class="metadata">
-            <strong>Document:</strong> ${document.description || 'Directive anticipée'}<br>
-            <strong>Statut:</strong> Document accessible
-          </div>
-          <div class="content">
-            <pre>${JSON.stringify(directiveContent, null, 2)}</pre>
-          </div>
-          <script>
-            window.onload = function() {
-              setTimeout(function() { window.print(); }, 500);
-            }
-          </script>
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
-  }
-};
-
-const getFileType = (document: ShareableDocument): string => {
-  if (document.file_type) return document.file_type;
-  if (document.content_type) return document.content_type;
-  
-  if (document.file_path && document.file_path.startsWith('data:')) {
-    const mimeMatch = document.file_path.match(/^data:([^;]+)/);
-    if (mimeMatch) return mimeMatch[1];
-  }
-  
-  return detectFileTypeFromPath(document.file_name || document.file_path);
-};
-
-const detectFileTypeFromPath = (filePath: string): string => {
-  if (!filePath) return "application/pdf";
-  
-  const fileName = filePath.toLowerCase();
-  
-  if (fileName.includes('image') || 
-      fileName.endsWith('.jpg') || 
-      fileName.endsWith('.jpeg') || 
-      fileName.endsWith('.png') || 
-      fileName.endsWith('.gif')) {
-    return 'image/jpeg';
-  } else if (fileName.includes('pdf') || fileName.endsWith('.pdf')) {
-    return 'application/pdf';
-  } else if (fileName.includes('audio') || 
-             fileName.endsWith('.mp3') || 
-             fileName.endsWith('.wav')) {
-    return 'audio/mpeg';
-  }
-  return 'application/pdf';
 };

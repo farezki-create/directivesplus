@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -6,7 +7,7 @@ import { useDocumentViewer } from "./useDocumentViewer";
 import { useDocumentDownload } from "./useDocumentDownload";
 import { useDocumentPrint } from "./useDocumentPrint";
 import { useDocumentDeletion } from "./useDocumentDeletion";
-import { ShareableDocument } from "@/hooks/sharing/types";
+import { ShareableDocument } from "@/types/sharing";
 
 interface Document extends ShareableDocument {
   // Hérite de ShareableDocument pour compatibilité complète

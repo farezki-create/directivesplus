@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
-import { SharingService } from "@/hooks/sharing/core/sharingService";
+import { SharingService } from "@/services/sharingService";
 
 export interface InstitutionAccessFormValues {
   lastName: string;

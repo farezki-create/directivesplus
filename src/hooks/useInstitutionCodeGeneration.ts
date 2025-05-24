@@ -2,15 +2,15 @@
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useUnifiedSharing } from "@/hooks/sharing/useUnifiedSharing";
-import type { ShareableDocument } from "@/hooks/sharing/types";
+import { useSharing } from "@/hooks/sharing/useSharing";
+import type { ShareableDocument } from "@/types/sharing";
 
 export const useInstitutionCodeGeneration = () => {
   const [institutionCode, setInstitutionCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   
-  const { generateInstitutionCode, isGenerating, error } = useUnifiedSharing();
+  const { generateInstitutionCode, isGenerating, error } = useSharing();
 
   const handleGenerateInstitutionCode = async (userId: string) => {
     console.log("=== GÉNÉRATION CODE INSTITUTION (SYSTÈME UNIFIÉ) ===");

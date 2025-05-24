@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, CheckCircle, Info } from "lucide-react";
-import { useUnifiedSharing } from "@/hooks/sharing/useUnifiedSharing";
+import { useSharing } from "@/hooks/sharing/useSharing";
 import { useDossierStore } from "@/store/dossierStore";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
@@ -20,7 +20,7 @@ export interface InstitutionFormData {
 export const InstitutionAccessForm = () => {
   const navigate = useNavigate();
   const { setDossierActif } = useDossierStore();
-  const { validateAccessCode, isValidating } = useUnifiedSharing();
+  const { validateAccessCode, isValidating } = useSharing();
   const [result, setResult] = useState<any>(null);
   
   const [form, setForm] = useState<InstitutionFormData>({

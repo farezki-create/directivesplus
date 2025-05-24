@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { useDossierStore } from "@/store/dossierStore";
-import { SharingService } from "@/hooks/sharing/core/sharingService";
+import { SharingService } from "@/services/sharingService";
 
 export interface AccessFormData {
   firstName: string;

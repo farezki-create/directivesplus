@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { DocumentCardRefactored } from "@/components/documents/card/DocumentCardRefactored";
 import EmptyDocumentsState from "@/components/documents/EmptyDocumentsState";
@@ -5,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { FolderPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { ShareableDocument } from "@/hooks/sharing/useUnifiedSharing";
+import { ShareableDocument } from "@/types/sharing";
 
 interface MedicalDocumentListProps {
   documents: ShareableDocument[];
@@ -47,7 +48,6 @@ const MedicalDocumentList = ({
           description: `Document médical transféré: ${document.description || document.file_name}`,
           file_type: document.file_type,
           user_id: document.user_id,
-          is_private: false // Make it accessible with access code
         });
 
       if (error) {
