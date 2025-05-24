@@ -14,8 +14,15 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   const location = useLocation();
   const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
   
-  // Routes COMPLÈTEMENT publiques - aucune vérification d'authentification
-  const fullyPublicRoutes = ['/', '/affichage-dossier', '/mes-directives', '/directives-acces'];
+  // Routes COMPLÈTEMENT publiques - AUCUNE vérification d'authentification
+  const fullyPublicRoutes = [
+    '/', 
+    '/affichage-dossier', 
+    '/mes-directives', 
+    '/directives-acces',
+    '/acces-institution',
+    '/acces-institution-simple'
+  ];
   
   console.log("ProtectedRoute check:", {
     pathname: location.pathname,
@@ -30,9 +37,9 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     }
   }, [isLoading]);
 
-  // BYPASS COMPLET pour les routes publiques
+  // BYPASS COMPLET pour les routes publiques - AUCUNE VÉRIFICATION
   if (fullyPublicRoutes.includes(location.pathname)) {
-    console.log("ProtectedRoute: Route publique, accès direct autorisé");
+    console.log("ProtectedRoute: Route publique, accès direct autorisé sans vérification");
     return <>{children}</>;
   }
 

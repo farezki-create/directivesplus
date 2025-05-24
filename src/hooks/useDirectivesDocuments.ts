@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
 import { detectFileType } from "@/utils/documentUtils";
 import { downloadDocument, printDocument } from "@/utils/document-operations";
 import { useDocumentOperations } from "@/hooks/useDocumentOperations";
@@ -22,7 +21,6 @@ export interface Document {
 
 export const useDirectivesDocuments = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
-  const navigate = useNavigate();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddOptions, setShowAddOptions] = useState(false);
@@ -41,15 +39,20 @@ export const useDirectivesDocuments = () => {
   } = useDocumentOperations(fetchDocuments);
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      navigate("/auth", { state: { from: "/mes-directives" } });
-    } else if (isAuthenticated && user) {
+    // SUPPRESSION de la redirection automatique vers /auth
+    // Ce hook peut être utilisé dans des contextes publics
+    if (isAuthenticated && user && !isLoading) {
       fetchDocuments();
+    } else {
+      setLoading(false);
     }
-  }, [isAuthenticated, isLoading, user, navigate]);
+  }, [isAuthenticated, isLoading, user]);
 
   async function fetchDocuments() {
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
     
     try {
       setLoading(true);

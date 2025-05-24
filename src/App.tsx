@@ -45,12 +45,14 @@ function App() {
     <AuthProvider>
       <Routes>
         {/* ========== ROUTES PUBLIQUES ABSOLUES ========== */}
-        {/* Ces routes ne passent JAMAIS par ProtectedRoute */}
+        {/* Ces routes ne passent JAMAIS par ProtectedRoute et sont accessibles sans authentification */}
         <Route path="/" element={<Index />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/affichage-dossier" element={<AffichageDossierRedirect />} />
         <Route path="/mes-directives" element={<DirectivesAcces />} />
         <Route path="/directives-acces" element={<DirectivesAcces />} />
+        <Route path="/acces-institution" element={<InstitutionAccess />} />
+        <Route path="/acces-institution-simple" element={<InstitutionAccessSimple />} />
         
         {/* Autres routes publiques */}
         <Route path="/avis-general" element={<AvisGeneral />} />
@@ -70,8 +72,6 @@ function App() {
         <Route path="/en-savoir-plus" element={<EnSavoirPlus />} />
         <Route path="/mentions-legales" element={<LegalMentions />} />
         <Route path="/acces-partage" element={<SharedAccessPageContainer />} />
-        <Route path="/acces-institution" element={<InstitutionAccess />} />
-        <Route path="/acces-institution-simple" element={<InstitutionAccessSimple />} />
         <Route path="/dashboard" element={<Navigate to="/rediger" replace />} />
         
         {/* Routes avec accès alternatif via PlaceholderPage */}

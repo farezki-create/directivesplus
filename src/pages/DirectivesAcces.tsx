@@ -37,8 +37,7 @@ const DirectivesAcces = () => {
     currentPath: window.location.pathname
   });
 
-  // SUPPRESSION COMPLÈTE des redirections automatiques vers /auth
-  // Cette page est maintenant complètement publique
+  // AUCUNE REDIRECTION VERS /auth - Cette page est complètement publique
 
   const handleReturnHome = () => {
     clearDossierActif();
@@ -50,7 +49,6 @@ const DirectivesAcces = () => {
   };
 
   // CAS 1: Pas de dossier actif ET pas d'utilisateur authentifié
-  // On affiche un message informatif au lieu de rediriger
   if (!dossierActif && !isAuthenticated) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -108,7 +106,6 @@ const DirectivesAcces = () => {
               </CardContent>
             </Card>
 
-            {/* Section documents personnels */}
             <PersonalDocumentsSection
               isAuthenticated={isAuthenticated}
               user={user}
@@ -122,7 +119,6 @@ const DirectivesAcces = () => {
               onDelete={handleDelete}
             />
 
-            {/* Informations de sécurité */}
             <SecurityAlert />
           </div>
         </main>
@@ -143,19 +139,15 @@ const DirectivesAcces = () => {
       <main className="container mx-auto px-4 py-8 flex-grow">
         <div className="max-w-4xl mx-auto space-y-6">
           
-          {/* En-tête avec informations du patient */}
           <PatientHeader 
             patientInfo={patientInfo}
             onReturnHome={handleReturnHome}
           />
 
-          {/* Statistiques */}
           <StatisticsCards directivesCount={directives.length} />
 
-          {/* Contenu des directives */}
           <DirectivesContent directives={directives} />
 
-          {/* Section documents personnels si connecté */}
           {isAuthenticated && (
             <PersonalDocumentsSection
               isAuthenticated={isAuthenticated}
@@ -171,7 +163,6 @@ const DirectivesAcces = () => {
             />
           )}
 
-          {/* Informations de sécurité */}
           <SecurityAlert />
         </div>
       </main>
