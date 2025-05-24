@@ -5,6 +5,9 @@ export type { ShareableDocument } from "@/hooks/sharing/useUnifiedDocumentSharin
 // Type alias pour compatibilité avec les anciens composants
 export type Document = ShareableDocument;
 
+// Import du type pour utilisation locale
+import type { ShareableDocument } from "@/hooks/sharing/useUnifiedDocumentSharing";
+
 // Types pour les actions sur les documents
 export interface DocumentActions {
   onView: (filePath: string, contentType?: string) => void;

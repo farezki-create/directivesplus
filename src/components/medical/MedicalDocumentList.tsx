@@ -1,34 +1,24 @@
 
 import { useState } from "react";
-import DocumentCard from "@/components/documents/DocumentCard";
+import { DocumentCardRefactored } from "@/components/documents/card/DocumentCardRefactored";
 import EmptyDocumentsState from "@/components/documents/EmptyDocumentsState";
 import { Button } from "@/components/ui/button";
 import { FolderPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-
-interface Document {
-  id: string;
-  file_name: string;
-  file_path: string;
-  created_at: string;
-  description?: string;
-  file_type?: string;
-  user_id: string;
-  is_private?: boolean; // This is for UI purposes only
-}
+import { ShareableDocument } from "@/hooks/sharing/useUnifiedDocumentSharing";
 
 interface MedicalDocumentListProps {
-  documents: Document[];
-  loading?: boolean; // Add loading prop
+  documents: ShareableDocument[];
+  loading?: boolean;
   onDownload: (filePath: string, fileName: string) => void;
   onPrint: (filePath: string, fileType?: string) => void;
   onView: (filePath: string, fileType?: string) => void;
   onDelete: (documentId: string) => void;
   onVisibilityChange?: (documentId: string, isPrivate: boolean) => void;
-  documentToDelete?: string | null; // Make optional
-  setDocumentToDelete?: (id: string | null) => void; // Make optional
-  confirmDelete?: (id: string) => void; // Make optional
+  documentToDelete?: string | null;
+  setDocumentToDelete?: (id: string | null) => void;
+  confirmDelete?: (id: string) => void;
 }
 
 const MedicalDocumentList = ({
@@ -45,7 +35,7 @@ const MedicalDocumentList = ({
 }: MedicalDocumentListProps) => {
   const [sendingToDirectives, setSendingToDirectives] = useState<string | null>(null);
 
-  const handleSendToDirectives = async (document: Document) => {
+  const handleSendToDirectives = async (document: ShareableDocument) => {
     setSendingToDirectives(document.id);
     
     try {
@@ -97,13 +87,15 @@ const MedicalDocumentList = ({
     <div className="grid gap-6">
       {documents.map((doc) => (
         <div key={doc.id} className="border rounded-lg p-6 bg-white">
-          <DocumentCard 
+          <DocumentCardRefactored 
             document={doc}
             onDownload={onDownload}
             onPrint={onPrint}
             onView={onView}
             onDelete={onDelete}
             onVisibilityChange={onVisibilityChange}
+            showPrint={true}
+            showShare={false}
           />
           
           <div className="mt-4 pt-4 border-t">
