@@ -4,6 +4,7 @@
  */
 
 export const normalizeString = (str: string): string => {
+  if (!str) return '';
   return str
     .toLowerCase()
     .trim()
@@ -13,10 +14,20 @@ export const normalizeString = (str: string): string => {
 };
 
 export const compareNames = (input: string, profile: string): boolean => {
+  if (!input || !profile) {
+    console.log("Empty input or profile name:", { input, profile });
+    return false;
+  }
+  
   const normalizedInput = normalizeString(input);
   const normalizedProfile = normalizeString(profile);
   
-  console.log("Comparing names:", { input, normalizedInput, profile, normalizedProfile });
+  console.log("Comparing names:", { 
+    original_input: input, 
+    normalized_input: normalizedInput, 
+    original_profile: profile, 
+    normalized_profile: normalizedProfile 
+  });
   
   // Comparaison exacte d'abord
   if (normalizedInput === normalizedProfile) {
@@ -25,16 +36,26 @@ export const compareNames = (input: string, profile: string): boolean => {
   }
   
   // Comparaison avec variations communes
-  const inputParts = normalizedInput.split(" ");
-  const profileParts = normalizedProfile.split(" ");
+  const inputParts = normalizedInput.split(" ").filter(part => part.length > 0);
+  const profileParts = normalizedProfile.split(" ").filter(part => part.length > 0);
   
-  // Vérifier si tous les mots de l'input sont dans le profil
-  const result = inputParts.every(inputPart => 
+  console.log("Name parts comparison:", { inputParts, profileParts });
+  
+  // Vérifier si tous les mots de l'input sont dans le profil ou vice versa
+  const inputInProfile = inputParts.every(inputPart => 
     profileParts.some(profilePart => 
       profilePart.includes(inputPart) || inputPart.includes(profilePart)
     )
   );
   
-  console.log("Flexible match result:", result);
+  const profileInInput = profileParts.every(profilePart => 
+    inputParts.some(inputPart => 
+      inputPart.includes(profilePart) || profilePart.includes(inputPart)
+    )
+  );
+  
+  const result = inputInProfile || profileInInput;
+  
+  console.log("Flexible match result:", { inputInProfile, profileInInput, finalResult: result });
   return result;
 };

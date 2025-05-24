@@ -19,11 +19,16 @@ interface ProfileMatchResult {
 }
 
 export const validateInstitutionCodes = async (institutionCode: string) => {
+  console.log("=== VALIDATING INSTITUTION CODES ===");
+  console.log("Institution code to validate:", institutionCode);
+  
   const { data: allValidCodes, error: codeCheckError } = await supabase
     .from('directives')
     .select('id, user_id, institution_code, institution_code_expires_at')
     .eq('institution_code', institutionCode)
     .gt('institution_code_expires_at', new Date().toISOString());
+
+  console.log("Query result for institution codes:", { allValidCodes, codeCheckError });
 
   if (codeCheckError) {
     console.error("Error checking institution codes:", codeCheckError);
@@ -38,6 +43,7 @@ export const validateInstitutionCodes = async (institutionCode: string) => {
     );
   }
 
+  console.log("Valid institution codes found:", allValidCodes);
   return allValidCodes;
 };
 
@@ -45,39 +51,50 @@ export const validateProfileMatches = async (
   validCodes: any[],
   cleanedValues: CleanedValues
 ): Promise<{ matchAttempts: ProfileMatchResult[], foundProfiles: number }> => {
+  console.log("=== VALIDATING PROFILE MATCHES ===");
+  console.log("Valid codes to check:", validCodes);
+  console.log("Cleaned values for matching:", cleanedValues);
+  
   let foundProfiles = 0;
   let matchAttempts: ProfileMatchResult[] = [];
 
   for (const codeData of validCodes) {
     console.log("=== Checking user profile for user_id:", codeData.user_id, "===");
     
-    const { data: profile, error: profileError } = await supabase
+    // Utiliser une requête plus simple pour récupérer le profil
+    const { data: profiles, error: profileError } = await supabase
       .from('profiles')
-      .select('first_name, last_name, birth_date')
-      .eq('id', codeData.user_id)
-      .maybeSingle();
+      .select('*')
+      .eq('id', codeData.user_id);
+
+    console.log("Profile query result:", { profiles, profileError, user_id: codeData.user_id });
 
     if (profileError) {
       console.error("Error fetching profile:", profileError);
       continue;
     }
 
-    if (!profile) {
+    if (!profiles || profiles.length === 0) {
       console.log("No profile found for user_id:", codeData.user_id);
       continue;
     }
 
+    const profile = profiles[0];
     foundProfiles++;
     console.log("Profile found:", profile);
 
+    // Vérifications avec normalisation
     const lastNameMatch = compareNames(cleanedValues.lastName, profile.last_name || '');
     const firstNameMatch = compareNames(cleanedValues.firstName, profile.first_name || '');
     const birthDateMatch = profile.birth_date === cleanedValues.birthDate;
 
     console.log("=== Comparison results ===");
-    console.log("Last name match:", lastNameMatch);
-    console.log("First name match:", firstNameMatch);
-    console.log("Birth date match:", birthDateMatch);
+    console.log("Input last name:", cleanedValues.lastName, "vs Profile last name:", profile.last_name, "=> Match:", lastNameMatch);
+    console.log("Input first name:", cleanedValues.firstName, "vs Profile first name:", profile.first_name, "=> Match:", firstNameMatch);
+    console.log("Input birth date:", cleanedValues.birthDate, "vs Profile birth date:", profile.birth_date, "=> Match:", birthDateMatch);
+
+    const allMatch = lastNameMatch && firstNameMatch && birthDateMatch;
+    console.log("All fields match:", allMatch);
 
     matchAttempts.push({
       user_id: codeData.user_id,
@@ -85,9 +102,13 @@ export const validateProfileMatches = async (
       lastNameMatch,
       firstNameMatch,
       birthDateMatch,
-      allMatch: lastNameMatch && firstNameMatch && birthDateMatch
+      allMatch
     });
   }
 
+  console.log("=== PROFILE VALIDATION SUMMARY ===");
+  console.log("Total profiles found:", foundProfiles);
+  console.log("Match attempts:", matchAttempts);
+  
   return { matchAttempts, foundProfiles };
 };

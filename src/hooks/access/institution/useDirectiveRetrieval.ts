@@ -40,34 +40,42 @@ export const retrieveDirectivesByInstitutionCode = async (
   cleanedValues: CleanedValues,
   originalValues: OriginalValues
 ): Promise<DirectiveRecord[]> => {
-  console.log("=== Starting directive retrieval ===");
+  console.log("=== STARTING DIRECTIVE RETRIEVAL ===");
   console.log("Cleaned values:", cleanedValues);
   console.log("Original values:", originalValues);
   
-  // Vérifier les codes d'institution valides
-  const allValidCodes = await validateInstitutionCodes(cleanedValues.institutionCode);
-  console.log(`Found ${allValidCodes.length} valid institution codes`);
+  try {
+    // Vérifier les codes d'institution valides
+    const allValidCodes = await validateInstitutionCodes(cleanedValues.institutionCode);
+    console.log(`Found ${allValidCodes.length} valid institution codes`);
 
-  // Valider les correspondances de profils
-  const { matchAttempts, foundProfiles } = await validateProfileMatches(allValidCodes, cleanedValues);
+    // Valider les correspondances de profils
+    const { matchAttempts, foundProfiles } = await validateProfileMatches(allValidCodes, cleanedValues);
+    console.log("Match attempts completed:", { matchAttempts, foundProfiles });
 
-  // Chercher une correspondance parfaite
-  const perfectMatch = matchAttempts.find(attempt => attempt.allMatch);
-  
-  if (perfectMatch) {
-    const directiveId = allValidCodes.find(code => code.user_id === perfectMatch.user_id)?.id;
-    if (directiveId) {
-      const directiveRecord = await retrieveUserDocuments(perfectMatch.user_id, directiveId);
-      return [directiveRecord];
+    // Chercher une correspondance parfaite
+    const perfectMatch = matchAttempts.find(attempt => attempt.allMatch);
+    
+    if (perfectMatch) {
+      console.log("Perfect match found:", perfectMatch);
+      const directiveId = allValidCodes.find(code => code.user_id === perfectMatch.user_id)?.id;
+      if (directiveId) {
+        console.log("Retrieving documents for directive ID:", directiveId);
+        const directiveRecord = await retrieveUserDocuments(perfectMatch.user_id, directiveId);
+        return [directiveRecord];
+      }
     }
+
+    console.log("=== FINAL ANALYSIS ===");
+    console.log("Total valid codes:", allValidCodes.length);
+    console.log("Profiles found:", foundProfiles);
+    console.log("Match attempts:", matchAttempts);
+
+    // Générer le message d'erreur approprié
+    const errorMessage = generateErrorMessage(foundProfiles, matchAttempts);
+    throw new Error(errorMessage);
+  } catch (error) {
+    console.error("Error in retrieveDirectivesByInstitutionCode:", error);
+    throw error;
   }
-
-  console.log("=== FINAL ANALYSIS ===");
-  console.log("Total valid codes:", allValidCodes.length);
-  console.log("Profiles found:", foundProfiles);
-  console.log("Match attempts:", matchAttempts);
-
-  // Générer le message d'erreur approprié
-  const errorMessage = generateErrorMessage(foundProfiles, matchAttempts);
-  throw new Error(errorMessage);
 };
