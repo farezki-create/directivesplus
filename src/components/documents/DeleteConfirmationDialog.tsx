@@ -12,30 +12,30 @@ import {
 } from "@/components/ui/alert-dialog";
 
 interface DeleteConfirmationDialogProps {
-  documentId: string | null;
-  onOpenChange: (open: boolean) => void;
-  onConfirmDelete: () => void;
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  documentName: string;
 }
 
 const DeleteConfirmationDialog: FC<DeleteConfirmationDialogProps> = ({
-  documentId,
-  onOpenChange,
-  onConfirmDelete,
+  isOpen,
+  onClose,
+  onConfirm,
+  documentName,
 }) => {
-  const isOpen = !!documentId;
-  
   return (
-    <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
+    <AlertDialog open={isOpen} onOpenChange={onClose}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
           <AlertDialogDescription>
-            Êtes-vous sûr de vouloir supprimer ce document ? Cette action est irréversible.
+            Êtes-vous sûr de vouloir supprimer {documentName} ? Cette action est irréversible.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Annuler</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirmDelete} className="bg-red-600 hover:bg-red-700">
+          <AlertDialogAction onClick={onConfirm} className="bg-red-600 hover:bg-red-700">
             Supprimer
           </AlertDialogAction>
         </AlertDialogFooter>

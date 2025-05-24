@@ -37,7 +37,7 @@ const DirectivesAcces = () => {
   };
 
   const handleDeleteWrapper = (documentId: string) => {
-    handleDelete();
+    handleDelete(documentId);
   };
 
   const handleDownloadWrapper = (doc: any) => {

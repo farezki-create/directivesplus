@@ -5,8 +5,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Document } from "@/types/documents";
 
+// Export the Document type for use in other components
+export type { Document } from "@/types/documents";
+
 export const useDirectivesDocuments = () => {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showAddOptions, setShowAddOptions] = useState(false);
@@ -139,6 +142,8 @@ export const useDirectivesDocuments = () => {
   };
 
   return {
+    user,
+    isAuthenticated,
     documents,
     isLoading,
     showAddOptions,
