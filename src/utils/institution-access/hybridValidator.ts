@@ -32,10 +32,10 @@ export const validateInstitutionAccessHybrid = async (
         success: true,
         message: `Accès autorisé pour ${profile.first_name} ${profile.last_name}`,
         patientData: {
-          user_id: profile.id,
+          user_id: profile.user_id,
           first_name: profile.first_name,
           last_name: profile.last_name,
-          birth_date: profile.birth_date,
+          birth_date: profile.birthdate,
           directives: []
         }
       };
