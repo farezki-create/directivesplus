@@ -3,7 +3,7 @@ import React, { useEffect } from "react";
 import { useDocumentTransfer } from "@/hooks/useDocumentTransfer";
 import DirectivesDocumentList from "@/components/documents/DirectivesDocumentList";
 import TransferStatusDialog from "@/components/documents/TransferStatusDialog";
-import type { ShareableDocument } from "@/hooks/sharing/types";
+import type { ShareableDocument } from "@/types/sharing";
 
 interface DirectivesSharedFolderHandlerProps {
   documents: ShareableDocument[];

@@ -1,5 +1,5 @@
 
-import type { ShareableDocument } from "../../types";
+import type { ShareableDocument } from "@/types/sharing";
 
 /**
  * Détermine le type de document pour la contrainte DB

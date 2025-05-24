@@ -1,5 +1,5 @@
 
-import type { ShareableDocument } from "@/hooks/sharing/types";
+import type { ShareableDocument } from "@/types/sharing";
 
 export const transformDossierDocuments = (dossierDocuments: any, userId: string): ShareableDocument[] => {
   console.log("=== DEBUG transformDossierDocuments ===");
