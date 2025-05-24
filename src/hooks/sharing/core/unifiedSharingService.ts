@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import type { ShareableDocument, ShareOptions } from "../types";
 
@@ -30,7 +29,9 @@ export class UnifiedSharingService {
     try {
       const { accessType = 'personal', expiresInDays = 365 } = options;
       
-      console.log("Génération code d'accès:", { document: document.id, accessType, expiresInDays });
+      console.log("=== GÉNÉRATION CODE D'ACCÈS ===");
+      console.log("Document:", { id: document.id, source: document.source, file_type: document.file_type });
+      console.log("Options:", { accessType, expiresInDays });
       
       // Calculer la date d'expiration
       const expiresAt = new Date();
@@ -61,11 +62,6 @@ export class UnifiedSharingService {
       if (error) {
         console.error("Erreur génération code:", error);
         return { success: false, error: error.message };
-      }
-
-      // Pour les codes institution, maintenir compatibilité avec l'ancien système
-      if (accessType === 'institution' && document.source === 'directives') {
-        await this.updateDirectiveInstitutionCode(document.id, data.access_code, expiresAt);
       }
 
       console.log("Code généré avec succès:", data.access_code);
@@ -233,19 +229,5 @@ export class UnifiedSharingService {
     }
     // Par défaut, considérer comme PDF
     return 'pdf_documents';
-  }
-
-  private static async updateDirectiveInstitutionCode(
-    directiveId: string,
-    institutionCode: string,
-    expiresAt: Date
-  ): Promise<void> {
-    await supabase
-      .from('directives')
-      .update({
-        institution_code: institutionCode,
-        institution_code_expires_at: expiresAt.toISOString()
-      })
-      .eq('id', directiveId);
   }
 }

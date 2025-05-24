@@ -87,7 +87,7 @@ export const AccessCodeGenerator = ({ onCodeGenerated }: AccessCodeGeneratorProp
         console.log("Directive existante utilisée:", directiveId);
       }
 
-      // Créer le document partageable
+      // Créer le document partageable avec la structure correcte
       const shareableDocument = {
         id: directiveId,
         file_name: "Directives anticipées",
@@ -101,7 +101,7 @@ export const AccessCodeGenerator = ({ onCodeGenerated }: AccessCodeGeneratorProp
 
       console.log("Document partageable créé:", shareableDocument);
 
-      // Générer le code d'accès (validité 12 mois)
+      // Générer le code d'accès (validité 12 mois = 365 jours)
       const code = await generateInstitutionCode(shareableDocument, 365);
       
       if (code) {
@@ -112,6 +112,8 @@ export const AccessCodeGenerator = ({ onCodeGenerated }: AccessCodeGeneratorProp
           title: "Code généré",
           description: "Code d'accès valable 12 mois créé avec succès"
         });
+      } else {
+        throw new Error("Échec de la génération du code d'accès");
       }
     } catch (error: any) {
       console.error("Erreur génération code:", error);

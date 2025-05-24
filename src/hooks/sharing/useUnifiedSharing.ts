@@ -81,10 +81,14 @@ export const useUnifiedSharing = (): UseUnifiedSharingReturn => {
     setError(null);
     
     try {
+      console.log("Hook generateInstitutionCode appelé avec:", { document, expiresInDays });
+      
       const result = await UnifiedSharingService.generateAccessCode(document, {
         accessType: 'institution',
         expiresInDays
       });
+      
+      console.log("Résultat du service:", result);
       
       if (result.success && result.code) {
         toast({
@@ -102,6 +106,7 @@ export const useUnifiedSharing = (): UseUnifiedSharingReturn => {
         return null;
       }
     } catch (err: any) {
+      console.error("Erreur dans generateInstitutionCode:", err);
       setError(err.message);
       toast({
         title: "Erreur",
