@@ -15,6 +15,9 @@ interface PublicDirectivesViewProps {
   setPreviewDocument: (path: string | null) => void;
   handlePreviewDownload: (filePath: string) => void;
   handlePreviewPrint: (filePath: string) => void;
+  showAddOptions: boolean;
+  setShowAddOptions: (show: boolean) => void;
+  onUploadComplete: () => void;
 }
 
 const PublicDirectivesView: React.FC<PublicDirectivesViewProps> = ({
@@ -27,7 +30,10 @@ const PublicDirectivesView: React.FC<PublicDirectivesViewProps> = ({
   previewDocument,
   setPreviewDocument,
   handlePreviewDownload,
-  handlePreviewPrint
+  handlePreviewPrint,
+  showAddOptions,
+  setShowAddOptions,
+  onUploadComplete
 }) => {
   return (
     <div className="min-h-screen flex flex-col">
@@ -55,10 +61,10 @@ const PublicDirectivesView: React.FC<PublicDirectivesViewProps> = ({
         
         <DirectivesPageContent
           documents={documents}
-          showAddOptions={false}
-          setShowAddOptions={() => {}}
-          userId=""
-          onUploadComplete={() => {}}
+          showAddOptions={showAddOptions}
+          setShowAddOptions={setShowAddOptions}
+          userId={dossierActif?.userId || ""}
+          onUploadComplete={onUploadComplete}
           onDownload={onDownload}
           onPrint={onPrint}
           onView={onView}

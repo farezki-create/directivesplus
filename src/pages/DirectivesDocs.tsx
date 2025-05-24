@@ -9,6 +9,7 @@ import PublicDirectivesView from "@/components/directives/PublicDirectivesView";
 import DirectivesAccessFormView from "@/components/directives/DirectivesAccessFormView";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { useState } from "react";
 
 const DirectivesDocs = () => {
   const { user, profile, isAuthenticated, isLoading: authLoading } = useAuth();
@@ -20,6 +21,9 @@ const DirectivesDocs = () => {
     urlParams,
     institutionAccess
   } = usePublicDirectivesAccess(isAuthenticated);
+  
+  // État local pour les options d'ajout dans la vue publique
+  const [showAddOptionsPublic, setShowAddOptionsPublic] = useState(false);
   
   console.log("DirectivesDocs - Auth state:", { userId: user?.id, hasProfile: !!profile, isAuthenticated, isLoading: authLoading });
   console.log("DirectivesDocs - Dossier actif:", dossierActif);
@@ -107,6 +111,9 @@ const DirectivesDocs = () => {
         setPreviewDocument={setPreviewDocument}
         handlePreviewDownload={handlePreviewDownload}
         handlePreviewPrint={handlePreviewPrint}
+        showAddOptions={showAddOptionsPublic}
+        setShowAddOptions={setShowAddOptionsPublic}
+        onUploadComplete={handleUploadComplete}
       />
     );
   }
