@@ -90,19 +90,29 @@ export const useSharedDocument = () => {
           console.log("5. RPC non disponible ou erreur:", rpcErr);
         }
 
-        // 6. Recherche dans toutes les tables avec des codes d'accès
-        const tables = ['shared_documents', 'document_access_codes', 'profiles'];
-        for (const table of tables) {
-          try {
-            const { data: tableData, error: tableError } = await supabase
-              .from(table)
-              .select('*')
-              .or(`access_code.eq.${shareCode},medical_access_code.eq.${shareCode}`);
-            console.log(`6. Recherche dans ${table}:`, { tableData, tableError });
-          } catch (err) {
-            console.log(`6. Erreur recherche ${table}:`, err);
-          }
-        }
+        // 6. Recherche explicite dans chaque table avec les bons types
+        console.log("6. Recherche explicite dans chaque table:");
+        
+        // Recherche dans shared_documents avec différentes conditions
+        const { data: sharedDocsData, error: sharedDocsError } = await supabase
+          .from('shared_documents')
+          .select('*')
+          .or(`access_code.eq.${shareCode}`);
+        console.log("6a. shared_documents:", { sharedDocsData, sharedDocsError });
+
+        // Recherche dans document_access_codes avec différentes conditions
+        const { data: docAccessData, error: docAccessError } = await supabase
+          .from('document_access_codes')
+          .select('*')
+          .or(`access_code.eq.${shareCode}`);
+        console.log("6b. document_access_codes:", { docAccessData, docAccessError });
+
+        // Recherche dans profiles avec différentes conditions
+        const { data: profilesAccessData, error: profilesAccessError } = await supabase
+          .from('profiles')
+          .select('*')
+          .or(`medical_access_code.eq.${shareCode}`);
+        console.log("6c. profiles:", { profilesAccessData, profilesAccessError });
 
         // Logique de traitement du résultat
         if (exactMatch && exactMatch.length > 0) {
