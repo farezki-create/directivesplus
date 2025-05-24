@@ -1,6 +1,6 @@
 
 import { Dispatch, SetStateAction } from "react";
-import { getAuthUserDossier } from "@/api/dossier/userDossierAccess";
+import { getUserDossier } from "@/api/dossier/userDossierAccess";
 import type { Dossier } from "../types/dossierTypes";
 
 /**
@@ -16,11 +16,23 @@ export const useAuthenticatedDossier = (setLoading: Dispatch<SetStateAction<bool
     setLoading(true);
     try {
       // First try to use the local API function rather than the edge function
-      const result = await getAuthUserDossier(userId, accessType as "medical" | "directive");
+      const result = await getUserDossier(userId);
       
       if (result.success && result.dossier) {
         console.log("Successfully loaded dossier from local API:", result.dossier);
-        return result.dossier;
+        
+        // Convert to the expected Dossier type
+        const convertedDossier: Dossier = {
+          id: result.dossier.id,
+          userId: result.dossier.userId,
+          isFullAccess: true,
+          isDirectivesOnly: false,
+          isMedicalOnly: false,
+          profileData: result.dossier.profileData,
+          contenu: result.dossier.contenu
+        };
+        
+        return convertedDossier;
       }
       
       // Fallback to the Edge Function with user ID if local API fails
@@ -66,12 +78,18 @@ export const useAuthenticatedDossier = (setLoading: Dispatch<SetStateAction<bool
       
       console.log("Successfully loaded dossier from edge function:", edgeResult.dossier);
       
-      // Ensure userId is set
-      if (edgeResult.dossier) {
-        edgeResult.dossier.userId = edgeResult.dossier.userId || "";
-      }
+      // Convert to the expected Dossier type
+      const convertedDossier: Dossier = {
+        id: edgeResult.dossier.id || userId,
+        userId: edgeResult.dossier.userId || userId,
+        isFullAccess: true,
+        isDirectivesOnly: false,
+        isMedicalOnly: false,
+        profileData: edgeResult.dossier.profileData,
+        contenu: edgeResult.dossier.contenu || { documents: [] }
+      };
       
-      return edgeResult.dossier;
+      return convertedDossier;
     } catch (error) {
       console.error("Error in edge function dossier retrieval:", error);
       return null;

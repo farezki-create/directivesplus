@@ -2,17 +2,7 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-
-export interface Dossier {
-  id: string;
-  userId: string;
-  contenu: any;
-  profileData?: {
-    first_name?: string;
-    last_name?: string;
-    birth_date?: string;
-  };
-}
+import type { Dossier } from "./types/dossierTypes";
 
 export const useVerifierCodeAcces = () => {
   const [loading, setLoading] = useState(false);
@@ -36,7 +26,18 @@ export const useVerifierCodeAcces = () => {
       const result = await response.json();
       
       if (result.success && result.dossier) {
-        return result.dossier;
+        // Convert to the expected Dossier type
+        const convertedDossier: Dossier = {
+          id: result.dossier.id,
+          userId: result.dossier.userId,
+          isFullAccess: true,
+          isDirectivesOnly: false,
+          isMedicalOnly: false,
+          profileData: result.dossier.profileData,
+          contenu: result.dossier.contenu || { documents: [] }
+        };
+        
+        return convertedDossier;
       } else {
         toast({
           title: "Code d'accès invalide",
@@ -71,16 +72,22 @@ export const useVerifierCodeAcces = () => {
         return null;
       }
 
-      return {
+      // Convert to the expected Dossier type
+      const convertedDossier: Dossier = {
         id: data.id,
         userId: data.id,
-        contenu: { documents: [] },
+        isFullAccess: true,
+        isDirectivesOnly: false,
+        isMedicalOnly: false,
         profileData: {
           first_name: data.first_name,
           last_name: data.last_name,
           birth_date: data.birth_date
-        }
+        },
+        contenu: { documents: [] }
       };
+
+      return convertedDossier;
     } catch (error) {
       console.error("Erreur lors de la récupération du dossier utilisateur:", error);
       return null;
