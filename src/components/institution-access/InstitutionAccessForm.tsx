@@ -33,7 +33,7 @@ export const InstitutionAccessForm = () => {
     const validationResult = await validateAccess(form);
     
     if (validationResult.success && validationResult.patientData) {
-      // Créer un dossier pour le store
+      // Créer un dossier pour le store conforme au type Dossier
       const dossier = {
         id: `institution-${validationResult.patientData.user_id}`,
         userId: validationResult.patientData.user_id,
