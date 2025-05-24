@@ -66,24 +66,28 @@ export class UnifiedAccessValidationService {
         }
       }
 
-      // Transformer les données en format unifié
-      const documents: ShareableDocument[] = data.map(doc => ({
-        id: doc.document_id,
-        file_name: doc.document_data?.file_name || 'Document',
-        file_path: doc.document_data?.file_path || '',
-        created_at: doc.document_data?.created_at || doc.shared_at,
-        user_id: doc.user_id,
-        file_type: doc.document_data?.file_type || 'unknown',
-        source: doc.document_data?.source || doc.document_type,
-        content: doc.document_data?.content,
-        description: doc.document_data?.description,
-        content_type: doc.document_data?.content_type,
-        is_private: doc.document_data?.is_private,
-        external_id: doc.document_data?.external_id,
-        file_size: doc.document_data?.file_size,
-        updated_at: doc.document_data?.updated_at,
-        shared_at: doc.shared_at
-      }));
+      // Transformer les données en format unifié avec type safety
+      const documents: ShareableDocument[] = data.map(doc => {
+        // Cast document_data en objet pour accéder aux propriétés
+        const docData = doc.document_data as any;
+        
+        return {
+          id: doc.document_id,
+          file_name: docData?.file_name || 'Document',
+          file_path: docData?.file_path || '',
+          created_at: docData?.created_at || doc.shared_at,
+          user_id: doc.user_id,
+          file_type: docData?.file_type || 'unknown',
+          source: docData?.source || doc.document_type,
+          content: docData?.content,
+          description: docData?.description,
+          content_type: docData?.content_type,
+          is_private: docData?.is_private,
+          external_id: docData?.external_id,
+          file_size: docData?.file_size,
+          updated_at: docData?.updated_at
+        };
+      });
 
       return {
         success: true,
