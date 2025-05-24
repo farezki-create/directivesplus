@@ -57,36 +57,37 @@ export async function verifyAccessCode(
         console.log("RPC verification successful:", sharedProfiles);
         const profile = sharedProfiles[0];
         
-        // Get associated documents - check both tables
-        console.log("Fetching documents for user_id:", profile.user_id);
+        // Get the real user_id from the profile
+        const realUserId = profile.user_id;
+        console.log("Real user ID found:", realUserId);
         
-        // Fetch PDF documents
+        // Fetch REAL PDF documents from the database
         const { data: pdfDocuments, error: pdfDocsError } = await supabase
           .from('pdf_documents')
           .select('*')
-          .eq('user_id', profile.user_id)
+          .eq('user_id', realUserId)
           .order('created_at', { ascending: false });
         
         if (pdfDocsError) {
           console.error("Error fetching PDF documents:", pdfDocsError);
         } else {
-          console.log("PDF documents found:", pdfDocuments?.length || 0, pdfDocuments);
+          console.log("Real PDF documents found:", pdfDocuments?.length || 0);
         }
         
-        // Fetch directives documents
+        // Fetch REAL directives documents from the database
         const { data: directivesDocuments, error: directivesDocsError } = await supabase
           .from('directives')
           .select('*')
-          .eq('user_id', profile.user_id)
+          .eq('user_id', realUserId)
           .order('created_at', { ascending: false });
         
         if (directivesDocsError) {
           console.error("Error fetching directives documents:", directivesDocsError);
         } else {
-          console.log("Directives documents found:", directivesDocuments?.length || 0, directivesDocuments);
+          console.log("Real directives documents found:", directivesDocuments?.length || 0);
         }
         
-        // Combine all documents
+        // Combine all REAL documents (no test data)
         const allDocuments = [
           ...(pdfDocuments || []).map(doc => ({
             ...doc,
@@ -95,7 +96,7 @@ export async function verifyAccessCode(
           })),
           ...(directivesDocuments || []).map(doc => ({
             id: doc.id,
-            file_name: 'Directive anticipée',
+            file_name: doc.content?.title || doc.content?.titre || 'Directive anticipée',
             file_path: doc.id, // Use directive ID as path
             created_at: doc.created_at,
             updated_at: doc.updated_at,
@@ -108,15 +109,15 @@ export async function verifyAccessCode(
           }))
         ];
         
-        console.log("Total documents combined:", allDocuments.length, allDocuments);
+        console.log("Total REAL documents found:", allDocuments.length);
         
         // Determine access type from identifier
         const accessTypeInfo = determineAccessType(bruteForceIdentifier);
         
-        // Build dossier object with documents
+        // Build dossier object with REAL documents
         const dossier = {
           id: profile.id,
-          userId: profile.user_id,
+          userId: realUserId,
           isFullAccess: true,
           isDirectivesOnly: accessTypeInfo.isDirectivesOnly,
           isMedicalOnly: accessTypeInfo.isMedicalOnly,
@@ -138,12 +139,12 @@ export async function verifyAccessCode(
         // Log successful access
         await logAccessAttempt(
           supabase,
-          profile.user_id,
+          realUserId,
           true,
-          `Accès via code: ${accessCode}, Identifiant: ${bruteForceIdentifier || 'direct'}, Documents: ${allDocuments.length}`
+          `Accès via code: ${accessCode}, Identifiant: ${bruteForceIdentifier || 'direct'}, Vrais documents: ${allDocuments.length}`
         );
         
-        console.log("Created dossier from RPC verification with documents:", JSON.stringify(dossier, null, 2));
+        console.log("Created dossier with REAL documents:", JSON.stringify(dossier, null, 2));
         
         return {
           success: true,
@@ -156,7 +157,7 @@ export async function verifyAccessCode(
     }
   }
 
-  // Standard verification with shared profiles
+  // Standard verification with shared profiles for real documents
   const { data: sharedProfiles, error: sharedProfileError } = await supabase
     .from('shared_profiles')
     .select('*')
@@ -170,36 +171,37 @@ export async function verifyAccessCode(
     const profile = sharedProfiles[0];
     console.log("Found shared profile:", profile);
     
-    // Get associated documents - check both tables
-    console.log("Fetching documents for user_id:", profile.user_id);
+    // Get the real user_id from the profile
+    const realUserId = profile.user_id;
+    console.log("Real user ID from shared profile:", realUserId);
     
-    // Fetch PDF documents
+    // Fetch REAL PDF documents from the database
     const { data: pdfDocuments, error: pdfDocsError } = await supabase
       .from('pdf_documents')
       .select('*')
-      .eq('user_id', profile.user_id)
+      .eq('user_id', realUserId)
       .order('created_at', { ascending: false });
     
     if (pdfDocsError) {
       console.error("Error fetching PDF documents:", pdfDocsError);
     } else {
-      console.log("PDF documents found:", pdfDocuments?.length || 0, pdfDocuments);
+      console.log("Real PDF documents found:", pdfDocuments?.length || 0);
     }
     
-    // Fetch directives documents
+    // Fetch REAL directives documents from the database
     const { data: directivesDocuments, error: directivesDocsError } = await supabase
       .from('directives')
       .select('*')
-      .eq('user_id', profile.user_id)
+      .eq('user_id', realUserId)
       .order('created_at', { ascending: false });
     
     if (directivesDocsError) {
       console.error("Error fetching directives documents:", directivesDocsError);
     } else {
-      console.log("Directives documents found:", directivesDocuments?.length || 0, directivesDocuments);
+      console.log("Real directives documents found:", directivesDocuments?.length || 0);
     }
     
-    // Combine all documents
+    // Combine all REAL documents (no test data)
     const allDocuments = [
       ...(pdfDocuments || []).map(doc => ({
         ...doc,
@@ -208,7 +210,7 @@ export async function verifyAccessCode(
       })),
       ...(directivesDocuments || []).map(doc => ({
         id: doc.id,
-        file_name: 'Directive anticipée',
+        file_name: doc.content?.title || doc.content?.titre || 'Directive anticipée',
         file_path: doc.id, // Use directive ID as path
         created_at: doc.created_at,
         updated_at: doc.updated_at,
@@ -221,15 +223,15 @@ export async function verifyAccessCode(
       }))
     ];
     
-    console.log("Total documents combined:", allDocuments.length, allDocuments);
+    console.log("Total REAL documents found:", allDocuments.length);
     
     // Determine access type from identifier
     const accessTypeInfo = determineAccessType(bruteForceIdentifier);
     
-    // Build dossier object with documents
+    // Build dossier object with REAL documents
     const dossier = {
       id: profile.id,
-      userId: profile.user_id,
+      userId: realUserId,
       isFullAccess: true,
       isDirectivesOnly: accessTypeInfo.isDirectivesOnly,
       isMedicalOnly: accessTypeInfo.isMedicalOnly,
@@ -251,12 +253,12 @@ export async function verifyAccessCode(
     // Log successful access
     await logAccessAttempt(
       supabase,
-      profile.user_id,
+      realUserId,
       true,
-      `Accès via code: ${accessCode}, Identifiant: ${bruteForceIdentifier || 'direct'}, Documents: ${allDocuments.length}`
+      `Accès via code: ${accessCode}, Identifiant: ${bruteForceIdentifier || 'direct'}, Vrais documents: ${allDocuments.length}`
     );
     
-    console.log("Created dossier from shared profile with documents:", JSON.stringify(dossier, null, 2));
+    console.log("Created dossier with REAL documents:", JSON.stringify(dossier, null, 2));
     
     return {
       success: true,
