@@ -15,7 +15,7 @@ export const SimpleCodeAccessForm = () => {
   const { setDossierActif } = useDossierStore();
   const { loading, result, validateAccess } = useSimpleCodeAccess();
   
-  const [accessCode, setAccessCode] = useState("TEST123"); // Code de test pré-rempli
+  const [accessCode, setAccessCode] = useState("TEST123");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,7 +29,7 @@ export const SimpleCodeAccessForm = () => {
       return;
     }
     
-    console.log("=== SOUMISSION FORMULAIRE SIMPLE ===");
+    console.log("=== SOUMISSION FORMULAIRE SIMPLE CORRIGÉE ===");
     console.log("Code saisi:", accessCode);
     
     const validationResult = await validateAccess(accessCode.trim());
@@ -69,6 +69,15 @@ export const SimpleCodeAccessForm = () => {
       
       // Redirection vers la page des directives
       navigate("/mes-directives");
+    } else {
+      console.log("=== ÉCHEC - Détails ===");
+      console.log("Résultat complet:", validationResult);
+      
+      toast({
+        title: "Accès refusé",
+        description: validationResult.message,
+        variant: "destructive"
+      });
     }
   };
 
@@ -87,7 +96,7 @@ export const SimpleCodeAccessForm = () => {
       <Alert className="bg-green-50 border-green-200">
         <AlertDescription className="text-green-800">
           <strong>Code de test disponible :</strong> TEST123<br />
-          <span className="text-sm">Ce code permet de tester l'accès</span>
+          <span className="text-sm">Ce code permet de tester l'accès aux directives de FARID AREZKI</span>
         </AlertDescription>
       </Alert>
 

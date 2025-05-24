@@ -24,28 +24,36 @@ export const useSimpleCodeAccess = () => {
     setResult(null);
 
     try {
-      console.log("=== VALIDATION ACCÈS SIMPLE ===");
+      console.log("=== VALIDATION ACCÈS SIMPLE CORRIGÉE ===");
       console.log("Code d'accès:", accessCode);
 
-      // D'abord essayer avec shared_profiles
-      const { data: sharedProfiles, error: sharedError } = await supabase
+      // Première tentative : recherche dans shared_profiles
+      const { data: sharedProfile, error: sharedError } = await supabase
         .from('shared_profiles')
         .select('*')
         .eq('access_code', accessCode.toUpperCase())
         .maybeSingle();
 
-      console.log("Résultat shared_profiles:", { sharedProfiles, sharedError });
+      console.log("Résultat shared_profiles:", { sharedProfile, sharedError });
 
-      if (sharedProfiles) {
+      if (sharedProfile) {
+        // Récupérer les directives pour cet utilisateur
+        const { data: directives, error: directivesError } = await supabase
+          .from('directives')
+          .select('*')
+          .eq('user_id', sharedProfile.user_id);
+
+        console.log("Directives trouvées pour shared_profile:", { directives, directivesError });
+
         const result: AccessResult = {
           success: true,
-          message: `Accès autorisé pour ${sharedProfiles.first_name} ${sharedProfiles.last_name}`,
+          message: `Accès autorisé pour ${sharedProfile.first_name} ${sharedProfile.last_name}`,
           patientData: {
-            id: sharedProfiles.id,
-            first_name: sharedProfiles.first_name,
-            last_name: sharedProfiles.last_name,
-            birth_date: sharedProfiles.birthdate,
-            directives: []
+            id: sharedProfile.user_id,
+            first_name: sharedProfile.first_name,
+            last_name: sharedProfile.last_name,
+            birth_date: sharedProfile.birthdate,
+            directives: directives || []
           }
         };
 
@@ -54,32 +62,33 @@ export const useSimpleCodeAccess = () => {
         return result;
       }
 
-      // Essayer avec user_profiles pour les codes d'institution
-      const { data: userProfiles, error: userError } = await supabase
+      // Deuxième tentative : recherche par code d'institution dans user_profiles
+      const { data: userProfile, error: userError } = await supabase
         .from('user_profiles')
         .select('*')
         .eq('institution_shared_code', accessCode.toUpperCase())
         .maybeSingle();
 
-      console.log("Résultat user_profiles:", { userProfiles, userError });
+      console.log("Résultat user_profiles:", { userProfile, userError });
 
-      if (userProfiles) {
-        // Récupérer les directives associées
+      if (userProfile) {
+        // Récupérer les directives avec le même code d'institution
         const { data: directives, error: directivesError } = await supabase
           .from('directives')
           .select('*')
-          .eq('user_id', userProfiles.id);
+          .eq('user_id', userProfile.id)
+          .eq('institution_code', accessCode.toUpperCase());
 
-        console.log("Directives trouvées:", { directives, directivesError });
+        console.log("Directives trouvées pour user_profile:", { directives, directivesError });
 
         const result: AccessResult = {
           success: true,
-          message: `Accès autorisé pour ${userProfiles.first_name} ${userProfiles.last_name}`,
+          message: `Accès autorisé pour ${userProfile.first_name} ${userProfile.last_name}`,
           patientData: {
-            id: userProfiles.id,
-            first_name: userProfiles.first_name,
-            last_name: userProfiles.last_name,
-            birth_date: userProfiles.birth_date,
+            id: userProfile.id,
+            first_name: userProfile.first_name,
+            last_name: userProfile.last_name,
+            birth_date: userProfile.birth_date,
             directives: directives || []
           }
         };
@@ -90,6 +99,7 @@ export const useSimpleCodeAccess = () => {
       }
 
       // Aucun résultat trouvé
+      console.log("Aucun résultat trouvé pour le code:", accessCode);
       const result: AccessResult = {
         success: false,
         message: "Code d'accès invalide ou expiré"
