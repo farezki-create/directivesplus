@@ -429,5 +429,3 @@ export class AccessCodeManager {
     return result;
   }
 }
-
-export type { AccessCodeValidation, AccessCodeResult, AccessCodeOptions, PersonalInfo };
