@@ -1,4 +1,5 @@
 
+import { useMemo } from "react";
 import { useDossierStore } from "@/store/dossierStore";
 
 /**
@@ -8,20 +9,27 @@ import { useDossierStore } from "@/store/dossierStore";
 export const useReadOnlyAccess = (isAuthenticated: boolean) => {
   const { dossierActif } = useDossierStore();
   
-  // Un utilisateur a un accès "équivalent authentifié" s'il est vraiment authentifié 
-  // OU s'il a un accès par code d'accès
-  const hasEquivalentAuth = isAuthenticated || !!dossierActif;
-  
-  // Seuls les utilisateurs vraiment authentifiés peuvent écrire
-  const hasWriteAccess = isAuthenticated;
-  
-  // L'accès par code donne un accès lecture seule
-  const isReadOnlyAccess = !!dossierActif && !isAuthenticated;
+  // Memoize les calculs d'accès pour éviter les recalculs
+  const accessInfo = useMemo(() => {
+    // Un utilisateur a un accès "équivalent authentifié" s'il est vraiment authentifié 
+    // OU s'il a un accès par code d'accès
+    const hasEquivalentAuth = isAuthenticated || !!dossierActif;
+    
+    // Seuls les utilisateurs vraiment authentifiés peuvent écrire
+    const hasWriteAccess = isAuthenticated;
+    
+    // L'accès par code donne un accès lecture seule
+    const isReadOnlyAccess = !!dossierActif && !isAuthenticated;
+    
+    return {
+      hasEquivalentAuth,
+      hasWriteAccess,
+      isReadOnlyAccess
+    };
+  }, [isAuthenticated, dossierActif]);
   
   return {
-    hasEquivalentAuth,
-    hasWriteAccess,
-    isReadOnlyAccess,
+    ...accessInfo,
     dossierActif
   };
 };

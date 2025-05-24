@@ -1,4 +1,5 @@
 
+import React, { memo } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,58 +9,59 @@ interface DirectivesGridProps {
   readOnly?: boolean;
 }
 
-const DirectivesGrid = ({ readOnly = false }: DirectivesGridProps) => {
-  const sections = [
-    {
-      title: "Avis général",
-      description: "Vos préférences générales de fin de vie",
-      icon: FileText,
-      href: "/avis-general",
-      color: "bg-blue-50 border-blue-200",
-      iconColor: "text-blue-600"
-    },
-    {
-      title: "Goûts et peurs",
-      description: "Vos préférences personnelles et appréhensions",
-      icon: Heart,
-      href: "/gouts-peurs",
-      color: "bg-rose-50 border-rose-200",
-      iconColor: "text-rose-600"
-    },
-    {
-      title: "Maintien en vie",
-      description: "Vos souhaits concernant les soins de maintien en vie",
-      icon: Brain,
-      href: "/maintien-vie",
-      color: "bg-green-50 border-green-200",
-      iconColor: "text-green-600"
-    },
-    {
-      title: "Maladie avancée",
-      description: "Vos directives en cas de maladie grave",
-      icon: Stethoscope,
-      href: "/maladie-avancee",
-      color: "bg-purple-50 border-purple-200",
-      iconColor: "text-purple-600"
-    },
-    {
-      title: "Personne de confiance",
-      description: "Désignez votre personne de confiance",
-      icon: Users,
-      href: "/personne-confiance",
-      color: "bg-orange-50 border-orange-200",
-      iconColor: "text-orange-600"
-    },
-    {
-      title: "Synthèse",
-      description: "Votre document final de directives anticipées",
-      icon: FileSignature,
-      href: "/synthese",
-      color: "bg-indigo-50 border-indigo-200",
-      iconColor: "text-indigo-600"
-    }
-  ];
+// Memoize les sections pour éviter les recréations
+const sections = [
+  {
+    title: "Avis général",
+    description: "Vos préférences générales de fin de vie",
+    icon: FileText,
+    href: "/avis-general",
+    color: "bg-blue-50 border-blue-200",
+    iconColor: "text-blue-600"
+  },
+  {
+    title: "Goûts et peurs",
+    description: "Vos préférences personnelles et appréhensions",
+    icon: Heart,
+    href: "/gouts-peurs",
+    color: "bg-rose-50 border-rose-200",
+    iconColor: "text-rose-600"
+  },
+  {
+    title: "Maintien en vie",
+    description: "Vos souhaits concernant les soins de maintien en vie",
+    icon: Brain,
+    href: "/maintien-vie",
+    color: "bg-green-50 border-green-200",
+    iconColor: "text-green-600"
+  },
+  {
+    title: "Maladie avancée",
+    description: "Vos directives en cas de maladie grave",
+    icon: Stethoscope,
+    href: "/maladie-avancee",
+    color: "bg-purple-50 border-purple-200",
+    iconColor: "text-purple-600"
+  },
+  {
+    title: "Personne de confiance",
+    description: "Désignez votre personne de confiance",
+    icon: Users,
+    href: "/personne-confiance",
+    color: "bg-orange-50 border-orange-200",
+    iconColor: "text-orange-600"
+  },
+  {
+    title: "Synthèse",
+    description: "Votre document final de directives anticipées",
+    icon: FileSignature,
+    href: "/synthese",
+    color: "bg-indigo-50 border-indigo-200",
+    iconColor: "text-indigo-600"
+  }
+];
 
+const DirectivesGrid = memo(({ readOnly = false }: DirectivesGridProps) => {
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
       {sections.map((section) => {
@@ -99,6 +101,8 @@ const DirectivesGrid = ({ readOnly = false }: DirectivesGridProps) => {
       })}
     </div>
   );
-};
+});
+
+DirectivesGrid.displayName = "DirectivesGrid";
 
 export default DirectivesGrid;
