@@ -42,6 +42,8 @@ const DossierView: React.FC<DossierViewProps> = ({
   };
 
   console.log("DossierView - showDocuments:", showDocuments, "documents:", documents);
+  console.log("DossierView - dossierActif:", dossierActif);
+  console.log("DossierView - dossierActif.contenu?.documents:", dossierActif?.contenu?.documents);
 
   return (
     <div className="min-h-screen bg-gray-50">
