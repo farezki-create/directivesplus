@@ -1,22 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import type { ShareableDocument } from "@/types/sharing";
-
-export interface ValidationRequest {
-  accessCode: string;
-  personalInfo?: {
-    firstName?: string;
-    lastName?: string;
-    birthDate?: string;
-  };
-}
-
-export interface ValidationResult {
-  success: boolean;
-  documents?: ShareableDocument[];
-  message?: string;
-  error?: string;
-}
+import type { ShareableDocument, ValidationRequest, ValidationResult } from "@/types/sharing";
 
 /**
  * Service de validation des codes d'accès

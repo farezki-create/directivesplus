@@ -1,17 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import type { ShareableDocument } from "@/types/sharing";
-
-export interface AccessCodeOptions {
-  expiresInDays?: number;
-  accessType?: 'personal' | 'institution';
-}
-
-export interface AccessCodeResult {
-  success: boolean;
-  code?: string;
-  error?: string;
-}
+import type { ShareableDocument, AccessCodeOptions, AccessCodeResult } from "@/types/sharing";
 
 /**
  * Service de gestion des codes d'accès
@@ -114,6 +103,29 @@ export class AccessCodeService {
       }
 
       return { success: true };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Régénère un code d'accès en révoquant l'ancien et en créant un nouveau
+   */
+  static async regenerateCode(
+    currentCode: string, 
+    document: ShareableDocument, 
+    options: AccessCodeOptions = {}
+  ): Promise<AccessCodeResult> {
+    try {
+      // Révoquer l'ancien code
+      const revokeResult = await this.revokeCode(currentCode);
+      if (!revokeResult.success) {
+        return { success: false, error: "Impossible de révoquer l'ancien code" };
+      }
+
+      // Générer un nouveau code
+      const newCodeResult = await this.generateCode(document, options);
+      return newCodeResult;
     } catch (error: any) {
       return { success: false, error: error.message };
     }
