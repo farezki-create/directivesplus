@@ -1,9 +1,13 @@
 
-import React from "react";
+import React, { useState } from "react";
 import AppNavigation from "@/components/AppNavigation";
 import { InstitutionAccessFormSimple } from "@/components/institution-access/InstitutionAccessFormSimple";
+import { AccessCodeDiagnostic } from "@/components/diagnosis/AccessCodeDiagnostic";
+import { Button } from "@/components/ui/button";
 
 const AccesInstitution = () => {
+  const [showDiagnostic, setShowDiagnostic] = useState(false);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <AppNavigation />
@@ -17,9 +21,22 @@ const AccesInstitution = () => {
             <p className="text-lg text-gray-600">
               Accès sécurisé pour les professionnels de santé avec vérification d'identité
             </p>
+            
+            <div className="mt-4">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowDiagnostic(!showDiagnostic)}
+              >
+                {showDiagnostic ? "Masquer" : "Afficher"} le diagnostic
+              </Button>
+            </div>
           </div>
           
-          <InstitutionAccessFormSimple />
+          {showDiagnostic ? (
+            <AccessCodeDiagnostic />
+          ) : (
+            <InstitutionAccessFormSimple />
+          )}
         </div>
       </main>
       

@@ -3,7 +3,7 @@ import { CodeGenerationService } from "./codeGeneration";
 import { ValidationService } from "./validation";
 import { DiagnosticService } from "./diagnostic";
 import { CodeManagementService } from "./codeManagement";
-import { AnonymousValidationService } from "./anonymousValidation";
+import { SimpleValidationService } from "./simpleValidation";
 import type { 
   PersonalInfo, 
   AccessCodeOptions, 
@@ -13,7 +13,7 @@ import type {
 
 /**
  * Service unifié pour la gestion des codes d'accès
- * Orchestration des différents services spécialisés
+ * Version simplifiée avec logs détaillés
  */
 export class AccessCodeService {
   
@@ -61,61 +61,32 @@ export class AccessCodeService {
     return CodeManagementService.createTemporaryCode(userId, options);
   }
 
-  // ============ VALIDATION DE CODES ============
+  // ============ VALIDATION DE CODES (SIMPLIFIÉE) ============
 
   /**
-   * Valide un code d'accès (temporaire ou fixe) avec fallback anonyme
+   * Valide un code d'accès avec logging détaillé
    */
   static async validateCode(
     accessCode: string,
     personalInfo?: PersonalInfo
   ): Promise<AccessValidationResult> {
+    console.log("=== VALIDATION ACCESS CODE SERVICE ===");
+    console.log("Code reçu:", accessCode);
+    console.log("Infos reçues:", personalInfo);
+    
     try {
-      console.log("=== VALIDATION CODE D'ACCÈS AMÉLIORÉE ===");
-      console.log("Code:", accessCode, "Infos:", personalInfo);
-
-      // 1. Tentative validation RPC si infos complètes
-      if (personalInfo?.firstName && personalInfo?.lastName) {
-        console.log("🔍 Tentative validation RPC...");
-        const rpcResult = await AnonymousValidationService.validateViaRPC(accessCode, personalInfo);
-        if (rpcResult.success) {
-          console.log("✅ Validation RPC réussie");
-          return rpcResult;
-        }
-      }
-
-      // 2. Tentative validation anonyme via Edge Function
-      console.log("🔍 Tentative validation anonyme...");
-      const anonymousResult = await AnonymousValidationService.validateCodeAnonymously(accessCode, personalInfo);
-      if (anonymousResult.success) {
-        console.log("✅ Validation anonyme réussie");
-        return anonymousResult;
-      }
-
-      // 3. Fallback vers validation classique (si utilisateur connecté)
-      console.log("🔍 Fallback validation classique...");
+      // Utiliser le service de validation simplifié
+      const result = await SimpleValidationService.validateAccessCode(accessCode, personalInfo);
       
-      // Tentative code temporaire
-      const temporaryResult = await ValidationService.validateTemporaryCode(accessCode, personalInfo);
-      if (temporaryResult.success) {
-        return temporaryResult;
-      }
-
-      // Tentative code fixe (si infos personnelles fournies)
-      if (personalInfo?.firstName && personalInfo?.lastName) {
-        const fixedResult = await ValidationService.validateFixedCode(accessCode, personalInfo);
-        if (fixedResult.success) {
-          return fixedResult;
-        }
-      }
-
-      return {
-        success: false,
-        error: "Code d'accès invalide ou expiré. Vérifiez que le code est correct et qu'il n'a pas expiré."
-      };
-
+      console.log("=== RÉSULTAT FINAL ===");
+      console.log("Succès:", result.success);
+      console.log("Message:", result.message || result.error);
+      console.log("Documents:", result.documents?.length || 0);
+      
+      return result;
+      
     } catch (error: any) {
-      console.error("💥 Erreur validation:", error);
+      console.error("💥 Erreur AccessCodeService:", error);
       return {
         success: false,
         error: "Erreur technique lors de la validation"
