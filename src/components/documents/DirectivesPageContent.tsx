@@ -1,18 +1,15 @@
 
 import React from "react";
-import { ShareableDocument } from "@/types/sharing";
-import DirectivesPageContainer from "./directives/DirectivesPageContainer";
+import DirectivesDocumentList from "./DirectivesDocumentList";
+import { Document } from "@/types/documents";
 
 interface DirectivesPageContentProps {
-  documents: ShareableDocument[];
-  showAddOptions: boolean;
-  setShowAddOptions: (show: boolean) => void;
-  userId: string;
-  onUploadComplete: (url: string, fileName: string, isPrivate: boolean) => void;
+  documents: Document[];
   onDownload: (filePath: string, fileName: string) => void;
   onPrint: (filePath: string, contentType?: string) => void;
   onView: (filePath: string, contentType?: string) => void;
   onDelete: (documentId: string) => void;
+  onVisibilityChange?: (documentId: string, isPrivate: boolean) => void;
   accessCode?: string | null;
   profile?: {
     first_name?: string;
@@ -21,12 +18,27 @@ interface DirectivesPageContentProps {
   };
 }
 
-/**
- * Main entry point component for the directives page
- * This is kept for backward compatibility and delegates to the container component
- */
-const DirectivesPageContent: React.FC<DirectivesPageContentProps> = (props) => {
-  return <DirectivesPageContainer {...props} />;
+const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
+  documents,
+  onDownload,
+  onPrint,
+  onView,
+  onDelete,
+  onVisibilityChange,
+  accessCode,
+  profile
+}) => {
+  return (
+    <DirectivesDocumentList 
+      documents={documents}
+      onDownload={onDownload}
+      onPrint={onPrint}
+      onView={onView}
+      onDelete={onDelete}
+      onVisibilityChange={onVisibilityChange}
+      showPrint={true}
+    />
+  );
 };
 
 export default DirectivesPageContent;

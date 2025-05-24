@@ -1,8 +1,8 @@
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Hospital, Loader2, Copy, Check, Shield, Share2 } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { Hospital } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Info } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -11,9 +11,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useSharing } from "@/hooks/sharing/useSharing";
-import { supabase } from "@/integrations/supabase/client";
 
 interface ShareInstitutionCodeButtonProps {
   directiveId?: string;
@@ -21,68 +18,8 @@ interface ShareInstitutionCodeButtonProps {
 }
 
 const ShareInstitutionCodeButton = ({ directiveId, userId }: ShareInstitutionCodeButtonProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [code, setCode] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const { generateGlobalCode, isGenerating } = useSharing();
-
-  const handleGenerateCode = async () => {
-    setError(null);
-    try {
-      let targetUserId = userId;
-      
-      if (!targetUserId) {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          throw new Error("User not authenticated");
-        }
-        targetUserId = user.id;
-      }
-
-      // Générer un code global pour tous les documents de l'utilisateur
-      const generatedCode = await generateGlobalCode(targetUserId, {
-        expiresInDays: 30,
-        accessType: 'institution'
-      });
-      
-      if (generatedCode) {
-        setCode(generatedCode);
-      } else {
-        setError("Une erreur est survenue lors de la génération du code");
-      }
-    } catch (err: any) {
-      console.error("Erreur génération code:", err);
-      setError(err.message || "Une erreur est survenue lors de la génération du code");
-    }
-  };
-
-  const copyToClipboard = () => {
-    if (code) {
-      navigator.clipboard.writeText(code);
-      setCopied(true);
-      toast({
-        title: "Code copié",
-        description: "Le code d'accès a été copié dans le presse-papier."
-      });
-      
-      setTimeout(() => {
-        setCopied(false);
-      }, 2000);
-    }
-  };
-
-  const handleOpenChange = (open: boolean) => {
-    setIsOpen(open);
-    if (!open) {
-      setCode(null);
-      setError(null);
-      setCopied(false);
-    }
-  };
-
   return (
-    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+    <Dialog>
       <DialogTrigger asChild>
         <Button variant="outline" className="flex items-center gap-2">
           <Hospital className="h-4 w-4" />
@@ -96,82 +33,18 @@ const ShareInstitutionCodeButton = ({ directiveId, userId }: ShareInstitutionCod
             Code d'accès professionnel
           </DialogTitle>
           <DialogDescription>
-            Générez un code temporaire sécurisé pour permettre à un professionnel de santé 
-            ou une institution médicale d'accéder à tous vos documents.
+            Fonctionnalité temporairement désactivée
           </DialogDescription>
         </DialogHeader>
         
-        <div className="py-4 space-y-4">
-          {!code && !error && (
-            <Alert className="bg-blue-50 border-blue-200">
-              <Shield className="h-4 w-4 text-blue-600" />
-              <AlertDescription className="text-blue-800">
-                Ce code permettra à un professionnel de santé d'accéder à tous vos documents avec vos informations
-                personnelles (nom, prénom, date de naissance). Le code sera valide pendant 30 jours.
-              </AlertDescription>
-            </Alert>
-          )}
-          
-          {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-          
-          {code && (
-            <div className="space-y-4">
-              <Alert className="bg-green-50 border-green-200">
-                <Check className="h-4 w-4 text-green-600" />
-                <AlertDescription className="text-green-800">
-                  <strong>Code généré avec succès !</strong><br />
-                  Partagez ce code avec votre professionnel de santé ou institution médicale.
-                </AlertDescription>
-              </Alert>
-              
-              <div className="flex items-center justify-between p-4 border-2 border-green-200 rounded-lg bg-green-50">
-                <span className="font-mono text-xl tracking-[0.2em] font-bold text-green-800">
-                  {code}
-                </span>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={copyToClipboard}
-                  className="text-green-600 hover:text-green-700 hover:bg-green-100"
-                >
-                  {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                </Button>
-              </div>
-
-              <Alert>
-                <Shield className="h-4 w-4" />
-                <AlertDescription>
-                  <strong>Important :</strong> Ce code donne accès à tous vos documents. 
-                  Ne le partagez qu'avec des professionnels de santé de confiance.
-                </AlertDescription>
-              </Alert>
-            </div>
-          )}
-        </div>
-        
-        <div className="flex justify-end gap-2">
-          {!code ? (
-            <Button 
-              onClick={handleGenerateCode}
-              disabled={isGenerating}
-              className="flex items-center gap-2"
-            >
-              {isGenerating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              <Share2 className="h-4 w-4" />
-              Générer un code
-            </Button>
-          ) : (
-            <Button
-              variant="outline"
-              onClick={() => setIsOpen(false)}
-            >
-              Fermer
-            </Button>
-          )}
+        <div className="py-4">
+          <Alert>
+            <Info className="h-4 w-4" />
+            <AlertDescription>
+              Le système de partage a été temporairement désactivé pour simplification.
+              Une nouvelle version plus simple sera bientôt disponible.
+            </AlertDescription>
+          </Alert>
         </div>
       </DialogContent>
     </Dialog>

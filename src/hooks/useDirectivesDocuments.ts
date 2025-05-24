@@ -1,158 +1,171 @@
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect } from "react";
+import { useDossierDocuments } from "@/hooks/directives/useDossierDocuments";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/AuthContext";
-import { useDocumentOperations } from "./useDocumentOperations";
-import { useDossierDocuments } from "./directives/useDossierDocuments";
-import { useSupabaseDocuments } from "./directives/useSupabaseDocuments";
-import { ShareableDocument } from "@/types/sharing";
-
-export interface Document extends ShareableDocument {
-  // Hérite de ShareableDocument pour compatibilité complète
-}
+import { Document } from "@/types/documents";
 
 export const useDirectivesDocuments = () => {
   const { user, isAuthenticated } = useAuth();
-  const [documents, setDocuments] = useState<ShareableDocument[]>([]);
+  const { documents: dossierDocuments, isLoading: dossierLoading } = useDossierDocuments();
+  const [documents, setDocuments] = useState<Document[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showAddOptions, setShowAddOptions] = useState(false);
-  
-  // Ref pour éviter les rechargements multiples
-  const isRefreshingRef = useRef(false);
+  const [previewDocument, setPreviewDocument] = useState<string | null>(null);
+  const [documentToDelete, setDocumentToDelete] = useState<string | null>(null);
 
-  // Document operations
-  const {
-    previewDocument,
-    setPreviewDocument,
-    documentToDelete,
-    setDocumentToDelete,
-    confirmDelete,
-    handleDelete,
-    handleDownload,
-    handlePrint,
-    handleView
-  } = useDocumentOperations(() => refreshDocuments());
-
-  // Dossier documents handler
-  const { getDossierDocuments, mergeDocuments, dossierActif } = useDossierDocuments();
-  
-  // Supabase documents handler  
-  const { fetchSupabaseDocuments } = useSupabaseDocuments();
-
-  const refreshDocuments = useCallback(async () => {
-    // Éviter les rechargements multiples simultanés
-    if (isRefreshingRef.current) {
-      console.log("useDirectivesDocuments - Refresh déjà en cours, abandon");
-      return;
-    }
-
-    console.log("=== REFRESH DOCUMENTS START ===");
-    isRefreshingRef.current = true;
-    setIsLoading(true);
-    
-    try {
-      let allDocuments: ShareableDocument[] = [];
-      
-      // Si on a un dossier actif, récupérer ses documents
-      if (dossierActif) {
-        console.log("useDirectivesDocuments - Dossier actif détecté, récupération des documents du dossier");
-        const dossierDocuments = getDossierDocuments();
-        console.log("useDirectivesDocuments - Documents du dossier récupérés:", dossierDocuments?.length);
-        allDocuments = dossierDocuments || [];
+  // Charger les documents depuis Supabase pour les utilisateurs authentifiés
+  useEffect(() => {
+    const loadUserDocuments = async () => {
+      if (!isAuthenticated || !user?.id) {
+        setIsLoading(false);
+        return;
       }
-      
-      // Si on a un utilisateur authentifié, récupérer aussi les documents Supabase
-      if (user?.id) {
-        console.log("useDirectivesDocuments - Utilisateur authentifié détecté, récupération des documents Supabase");
-        const supabaseDocuments = await fetchSupabaseDocuments(user.id);
-        console.log("useDirectivesDocuments - Documents Supabase récupérés:", supabaseDocuments?.length);
-        
-        if (dossierActif) {
-          // Fusionner les documents du dossier avec ceux de Supabase
-          allDocuments = mergeDocuments(supabaseDocuments);
+
+      try {
+        const { data, error } = await supabase
+          .from('pdf_documents')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error("Erreur lors du chargement des documents:", error);
+          setDocuments([]);
         } else {
-          // Utiliser uniquement les documents Supabase
-          allDocuments = supabaseDocuments;
+          setDocuments(data || []);
         }
+      } catch (error) {
+        console.error("Erreur lors du chargement des documents:", error);
+        setDocuments([]);
+      } finally {
+        setIsLoading(false);
       }
-      
-      console.log("useDirectivesDocuments - Total documents finaux:", allDocuments?.length);
-      
-      setDocuments(allDocuments || []);
-      
+    };
+
+    const loadDossierDocuments = () => {
+      if (!isAuthenticated && dossierDocuments.length > 0) {
+        setDocuments(dossierDocuments);
+        setIsLoading(false);
+      }
+    };
+
+    if (isAuthenticated) {
+      loadUserDocuments();
+    } else {
+      loadDossierDocuments();
+    }
+  }, [isAuthenticated, user, dossierDocuments]);
+
+  const handleDownload = async (filePath: string, fileName: string) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('pdf-storage')
+        .download(filePath);
+
+      if (error) throw error;
+
+      const url = URL.createObjectURL(data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     } catch (error) {
-      console.error("Erreur lors du rafraîchissement des documents:", error);
+      console.error("Erreur lors du téléchargement:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de charger les documents",
+        description: "Impossible de télécharger le fichier",
         variant: "destructive"
       });
-      setDocuments([]);
+    }
+  };
+
+  const handlePrint = async (filePath: string, contentType?: string) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('pdf-storage')
+        .download(filePath);
+
+      if (error) throw error;
+
+      const url = URL.createObjectURL(data);
+      const printWindow = window.open(url, '_blank');
+      if (printWindow) {
+        printWindow.onload = () => {
+          printWindow.print();
+        };
+      }
+    } catch (error) {
+      console.error("Erreur lors de l'impression:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'imprimer le fichier",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleView = (filePath: string, contentType?: string) => {
+    setPreviewDocument(filePath);
+  };
+
+  const handleDelete = async () => {
+    if (!documentToDelete) return;
+
+    try {
+      const { error } = await supabase
+        .from('pdf_documents')
+        .delete()
+        .eq('id', documentToDelete);
+
+      if (error) throw error;
+
+      setDocuments(prev => prev.filter(doc => doc.id !== documentToDelete));
+      toast({
+        title: "Document supprimé",
+        description: "Le document a été supprimé avec succès"
+      });
+    } catch (error) {
+      console.error("Erreur lors de la suppression:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer le document",
+        variant: "destructive"
+      });
     } finally {
-      setIsLoading(false);
-      isRefreshingRef.current = false;
-      console.log("=== REFRESH DOCUMENTS END ===");
+      setDocumentToDelete(null);
     }
-  }, [user?.id, dossierActif?.id, getDossierDocuments, fetchSupabaseDocuments, mergeDocuments]);
+  };
 
-  // Effet principal pour charger les documents - avec dépendances stables
-  useEffect(() => {
-    console.log("useDirectivesDocuments - useEffect triggered");
-    console.log("useDirectivesDocuments - user?.id:", user?.id);
-    console.log("useDirectivesDocuments - dossierActif:", !!dossierActif);
-    
-    // Charger les documents si on a soit un utilisateur, soit un dossier actif
-    if (user?.id || dossierActif) {
-      refreshDocuments();
-    } else {
-      console.log("useDirectivesDocuments - Aucune source de données, arrêt du chargement");
-      setIsLoading(false);
-      setDocuments([]);
+  const confirmDelete = (documentId: string) => {
+    setDocumentToDelete(documentId);
+  };
+
+  const handleUploadComplete = () => {
+    if (isAuthenticated && user?.id) {
+      // Recharger les documents
+      window.location.reload();
     }
-  }, [user?.id, dossierActif?.id]); // Dépendances stables
+  };
 
-  const handleUploadComplete = useCallback((url: string, fileName: string, isPrivate: boolean) => {
-    console.log("Document upload complete, refreshing...");
-    refreshDocuments();
-    toast({
-      title: "Document téléchargé",
-      description: `${fileName} a été ajouté avec succès` + (isPrivate ? " (privé)" : "")
-    });
-  }, [refreshDocuments]);
-
-  const handlePreviewDownload = useCallback((filePath: string) => {
-    if (previewDocument) {
-      const doc = documents.find(d => d.file_path === filePath);
-      if (doc) {
-        handleDownload(doc);
-      }
+  const handlePreviewDownload = (filePath: string) => {
+    const document = documents.find(doc => doc.file_path === filePath);
+    if (document) {
+      handleDownload(filePath, document.file_name);
     }
-  }, [previewDocument, documents, handleDownload]);
+  };
 
-  const handlePreviewPrint = useCallback((filePath: string) => {
-    if (previewDocument) {
-      const doc = documents.find(d => d.file_path === filePath);
-      if (doc) {
-        handlePrint(doc);
-      }
-    }
-  }, [previewDocument, documents, handlePrint]);
-
-  console.log("useDirectivesDocuments - État final:", {
-    documentsCount: documents.length,
-    isLoading,
-    hasUser: !!user?.id,
-    hasDossier: !!dossierActif
-  });
+  const handlePreviewPrint = (filePath: string) => {
+    handlePrint(filePath);
+  };
 
   return {
-    // Auth state
-    user,
-    isAuthenticated,
-    // Documents
     documents,
-    isLoading,
+    isLoading: isLoading || dossierLoading,
     showAddOptions,
     setShowAddOptions,
     previewDocument,
@@ -162,11 +175,10 @@ export const useDirectivesDocuments = () => {
     handleDownload,
     handlePrint,
     handleView,
-    confirmDelete,
     handleDelete,
+    confirmDelete,
     handleUploadComplete,
     handlePreviewDownload,
-    handlePreviewPrint,
-    refreshDocuments
+    handlePreviewPrint
   };
 };

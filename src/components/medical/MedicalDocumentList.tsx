@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button";
 import { FolderPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { ShareableDocument } from "@/types/sharing";
+import { Document } from "@/types/documents";
 
 interface MedicalDocumentListProps {
-  documents: ShareableDocument[];
+  documents: Document[];
   loading?: boolean;
   onDownload: (filePath: string, fileName: string) => void;
   onPrint: (filePath: string, fileType?: string) => void;
@@ -35,7 +35,7 @@ const MedicalDocumentList = ({
 }: MedicalDocumentListProps) => {
   const [sendingToDirectives, setSendingToDirectives] = useState<string | null>(null);
 
-  const handleSendToDirectives = async (document: ShareableDocument) => {
+  const handleSendToDirectives = async (document: Document) => {
     setSendingToDirectives(document.id);
     
     try {

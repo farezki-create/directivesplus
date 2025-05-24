@@ -1,24 +1,25 @@
 
-import { FC } from "react";
 import { DocumentCardRefactored } from "@/components/documents/card/DocumentCardRefactored";
 import EmptyDocumentsState from "@/components/documents/EmptyDocumentsState";
-import { ShareableDocument } from "@/types/sharing";
+import { Document } from "@/types/documents";
 
 interface DirectivesDocumentListProps {
-  documents: ShareableDocument[];
+  documents: Document[];
+  loading?: boolean;
   onDownload: (filePath: string, fileName: string) => void;
-  onPrint: (filePath: string, contentType?: string) => void;
-  onView: (filePath: string, contentType?: string) => void;
+  onPrint: (filePath: string, fileType?: string) => void;
+  onView: (filePath: string, fileType?: string) => void;
   onDelete: (documentId: string) => void;
   onVisibilityChange?: (documentId: string, isPrivate: boolean) => void;
-  onAddToSharedFolder?: (document: ShareableDocument) => void;
+  onAddToSharedFolder?: (document: Document) => void;
   isAdding?: boolean;
   showPrint?: boolean;
   isAuthenticated?: boolean;
 }
 
-const DirectivesDocumentList: FC<DirectivesDocumentListProps> = ({
+const DirectivesDocumentList = ({
   documents,
+  loading = false,
   onDownload,
   onPrint,
   onView,
@@ -26,39 +27,38 @@ const DirectivesDocumentList: FC<DirectivesDocumentListProps> = ({
   onVisibilityChange,
   onAddToSharedFolder,
   isAdding = false,
-  showPrint = false,
+  showPrint = true,
   isAuthenticated = false
-}) => {
-  if (documents.length === 0) {
-    return <EmptyDocumentsState />;
+}: DirectivesDocumentListProps) => {
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-8">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-directiveplus-600"></div>
+      </div>
+    );
   }
 
-  console.log("DirectivesDocumentList - Rendering", documents.length, "documents");
-  console.log("DirectivesDocumentList - isAuthenticated:", isAuthenticated);
-  
+  if (documents.length === 0) {
+    return <EmptyDocumentsState message="Vous n'avez pas encore ajouté de directives anticipées" />;
+  }
+
   return (
     <div className="grid gap-6">
-      {documents.map((doc) => {
-        console.log(`Rendering document card for: ${doc.file_name}`);
-        return (
-          <DocumentCardRefactored 
-            key={doc.id}
-            document={doc}
-            onDownload={onDownload}
-            onPrint={onPrint}
-            onView={onView}
-            onDelete={onDelete}
-            onVisibilityChange={onVisibilityChange}
-            onAddToSharedFolder={onAddToSharedFolder ? () => {
-              console.log("DocumentCard - Triggering onAddToSharedFolder for:", doc.file_name);
-              onAddToSharedFolder(doc);
-            } : undefined}
-            showPrint={showPrint}
-            showShare={isAuthenticated}
-            isAddingToShared={isAdding}
-          />
-        );
-      })}
+      {documents.map((doc) => (
+        <DocumentCardRefactored 
+          key={doc.id}
+          document={doc}
+          onDownload={onDownload}
+          onPrint={onPrint}
+          onView={onView}
+          onDelete={onDelete}
+          onVisibilityChange={onVisibilityChange}
+          onAddToSharedFolder={onAddToSharedFolder ? () => onAddToSharedFolder(doc) : undefined}
+          showPrint={showPrint}
+          showShare={false}
+          isAddingToShared={isAdding}
+        />
+      ))}
     </div>
   );
 };

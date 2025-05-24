@@ -1,51 +1,49 @@
 
-import { useCallback, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useDossierStore } from "@/store/dossierStore";
-import { transformDossierDocuments } from "./useDirectivesDocumentTransform";
-import type { Document } from "@/hooks/useDirectivesDocuments";
+import { Document } from "@/types/documents";
 
 export const useDossierDocuments = () => {
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { dossierActif } = useDossierStore();
 
-  const getDossierDocuments = useCallback((): Document[] => {
-    console.log("=== DEBUG useDossierDocuments - getDossierDocuments (callback) ===");
-    
-    if (!dossierActif?.contenu?.documents) {
-      console.log("useDossierDocuments - Aucun document dans le dossier actif, retour tableau vide");
-      return [];
-    }
+  useEffect(() => {
+    const loadDocuments = () => {
+      if (dossierActif?.contenu?.documents) {
+        console.log("Documents du dossier:", dossierActif.contenu.documents);
+        
+        // Transform documents to match the Document interface
+        const transformedDocuments: Document[] = dossierActif.contenu.documents.map((doc: any, index: number) => ({
+          id: doc.id || `doc-${index}`,
+          file_name: doc.file_name || doc.fileName || `Document ${index + 1}`,
+          file_path: doc.file_path || doc.filePath || '',
+          file_type: doc.file_type || doc.fileType || 'pdf',
+          content_type: doc.content_type || doc.contentType,
+          user_id: doc.user_id || doc.userId || '',
+          created_at: doc.created_at || doc.createdAt || new Date().toISOString(),
+          description: doc.description,
+          content: doc.content,
+          file_size: doc.file_size || doc.fileSize,
+          updated_at: doc.updated_at || doc.updatedAt,
+          external_id: doc.external_id || doc.externalId
+        }));
+        
+        setDocuments(transformedDocuments);
+        console.log("Documents transformés:", transformedDocuments);
+      } else {
+        console.log("Aucun document dans le dossier actif");
+        setDocuments([]);
+      }
+      setIsLoading(false);
+    };
 
-    console.log("useDossierDocuments - Transformation des documents du dossier...");
-    const dossierDocuments = transformDossierDocuments(dossierActif.contenu.documents, dossierActif.userId);
-    console.log("useDossierDocuments - Documents transformés:", dossierDocuments?.length);
-    return dossierDocuments;
-  }, [dossierActif?.contenu?.documents, dossierActif?.userId]);
-
-  const mergeDocuments = useCallback((supabaseDocuments: Document[]): Document[] => {
-    console.log("=== DEBUG useDossierDocuments - mergeDocuments (callback) ===");
-    
-    // Créer un Set des IDs Supabase pour éviter les doublons
-    const supabaseIds = new Set(supabaseDocuments.map(doc => doc.id));
-    
-    // Combiner les documents Supabase avec ceux du dossier actif s'il y en a
-    let allDocuments = [...supabaseDocuments];
-    
-    if (dossierActif?.contenu?.documents) {
-      console.log("useDossierDocuments - Fusion avec les documents du dossier actif");
-      
-      // Filtrer les doublons - ne garder que les documents du dossier qui ne sont pas déjà dans Supabase
-      const uniqueDossierDocs = getDossierDocuments().filter(doc => !supabaseIds.has(doc.id));
-      console.log("useDossierDocuments - Documents uniques du dossier:", uniqueDossierDocs?.length);
-      allDocuments = [...allDocuments, ...uniqueDossierDocs];
-    }
-    
-    console.log("useDossierDocuments - Tous les documents fusionnés:", allDocuments?.length);
-    return allDocuments;
-  }, [getDossierDocuments, dossierActif?.contenu?.documents]);
+    loadDocuments();
+  }, [dossierActif]);
 
   return {
-    getDossierDocuments,
-    mergeDocuments,
-    dossierActif
+    documents,
+    isLoading,
+    setDocuments
   };
 };

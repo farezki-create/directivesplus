@@ -2,12 +2,11 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Eye, Download, Printer, Trash2, FolderPlus, FileText, Share2, Lock, Unlock } from "lucide-react";
-import { DocumentShareButton } from "../sharing/DocumentShareButton";
-import { ShareableDocument } from "@/types/sharing";
+import { Eye, Download, Printer, Trash2, FolderPlus, FileText, Lock, Unlock } from "lucide-react";
+import { Document } from "@/types/documents";
 
 interface DocumentCardRefactoredProps {
-  document: ShareableDocument;
+  document: Document;
   onDownload: (filePath: string, fileName: string) => void;
   onPrint: (filePath: string, contentType?: string) => void;
   onView: (filePath: string, contentType?: string) => void;
@@ -31,12 +30,6 @@ export const DocumentCardRefactored: React.FC<DocumentCardRefactoredProps> = ({
   showShare = false,
   isAddingToShared = false
 }) => {
-  const handleToggleVisibility = () => {
-    if (onVisibilityChange) {
-      onVisibilityChange(document.id, !document.is_private);
-    }
-  };
-
   const getDocumentIcon = () => {
     switch (document.file_type) {
       case 'directive':
@@ -62,12 +55,6 @@ export const DocumentCardRefactored: React.FC<DocumentCardRefactoredProps> = ({
             )}
             <div className="flex items-center gap-2 mt-2 text-xs text-gray-500">
               <span>Créé le {new Date(document.created_at).toLocaleDateString()}</span>
-              {document.is_private !== undefined && (
-                <span className="flex items-center gap-1">
-                  {document.is_private ? <Lock className="h-3 w-3" /> : <Unlock className="h-3 w-3" />}
-                  {document.is_private ? 'Privé' : 'Accessible'}
-                </span>
-              )}
             </div>
           </div>
         </div>
@@ -104,26 +91,6 @@ export const DocumentCardRefactored: React.FC<DocumentCardRefactoredProps> = ({
             >
               <Printer size={16} />
               Imprimer
-            </Button>
-          )}
-
-          {showShare && (
-            <DocumentShareButton
-              document={document}
-              variant="outline"
-              size="sm"
-            />
-          )}
-
-          {onVisibilityChange && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleToggleVisibility}
-              className="flex items-center gap-1"
-            >
-              {document.is_private ? <Unlock size={16} /> : <Lock size={16} />}
-              {document.is_private ? 'Rendre accessible' : 'Rendre privé'}
             </Button>
           )}
 

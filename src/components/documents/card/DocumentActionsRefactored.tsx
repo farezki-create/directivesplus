@@ -2,11 +2,10 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Download, Eye, Printer, Trash2, FolderPlus } from "lucide-react";
-import { DocumentShareButton } from "../sharing/DocumentShareButton";
-import { ShareableDocument } from "@/types/sharing";
+import { Document } from "@/types/documents";
 
 interface DocumentActionsRefactoredProps {
-  document: ShareableDocument;
+  document: Document;
   onView: () => void;
   onDownload: () => void;
   onPrint: () => void;
@@ -60,14 +59,6 @@ export const DocumentActionsRefactored: React.FC<DocumentActionsRefactoredProps>
           <Printer size={16} />
           Imprimer
         </Button>
-      )}
-
-      {showShare && (
-        <DocumentShareButton
-          document={document}
-          variant="outline"
-          size="sm"
-        />
       )}
 
       {onAddToSharedFolder && (
