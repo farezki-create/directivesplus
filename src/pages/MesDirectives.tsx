@@ -59,7 +59,6 @@ const MesDirectives = () => {
       onDownload={handleDownload}
       onPrint={handlePrint}
       onView={handleView}
-      confirmDelete={confirmDelete}
       documentToDelete={documentToDelete}
       setDocumentToDelete={setDocumentToDelete}
       handleDelete={handleDelete}
