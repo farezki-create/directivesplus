@@ -11,9 +11,17 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "@/hooks/use-toast";
+import { useDossierStore } from "@/store/dossierStore";
 
 const DirectivesDocs = () => {
   const { user, profile, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { clearDossier } = useDossierStore();
+  
+  // Clear any existing dossier data on component mount to force fresh access
+  useEffect(() => {
+    clearDossier();
+  }, [clearDossier]);
+  
   const { 
     publicAccessVerified, 
     publicAccessLoading, 
