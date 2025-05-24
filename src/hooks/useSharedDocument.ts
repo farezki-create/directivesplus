@@ -32,59 +32,97 @@ export const useSharedDocument = () => {
       }
 
       try {
-        console.log("=== CHARGEMENT DOCUMENT PARTAGÉ (MODE SANS SÉCURITÉ) ===");
-        console.log("Code de partage:", shareCode);
+        console.log("=== DIAGNOSTIC COMPLET SHARED DOCUMENTS ===");
+        console.log("Code recherché:", shareCode);
 
-        // Requête ultra-simplifiée - on accepte TOUT document avec ce code
-        const { data, error } = await supabase
+        // 1. Vérifier TOUS les documents partagés
+        const { data: allSharedDocs, error: allError } = await supabase
+          .from('shared_documents')
+          .select('*');
+
+        console.log("1. TOUS les documents partagés:", { allSharedDocs, allError });
+        console.log("1. Nombre total de documents partagés:", allSharedDocs?.length || 0);
+
+        if (allSharedDocs && allSharedDocs.length > 0) {
+          console.log("1. Codes d'accès existants:", allSharedDocs.map(doc => doc.access_code));
+          console.log("1. Types de documents:", allSharedDocs.map(doc => doc.document_type));
+          console.log("1. Status actifs:", allSharedDocs.map(doc => doc.is_active));
+        }
+
+        // 2. Recherche exacte par code
+        const { data: exactMatch, error: exactError } = await supabase
           .from('shared_documents')
           .select('*')
           .eq('access_code', shareCode);
 
-        console.log("Résultat brut de la requête:", { data, error });
+        console.log("2. Recherche exacte par code:", { exactMatch, exactError });
 
-        if (error) {
-          console.error("Erreur Supabase:", error);
-          // Même en cas d'erreur, on continue pour voir ce qu'on peut récupérer
-        }
+        // 3. Recherche insensible à la casse
+        const { data: caseInsensitiveMatch, error: caseError } = await supabase
+          .from('shared_documents')
+          .select('*')
+          .ilike('access_code', shareCode);
 
-        if (!data || data.length === 0) {
-          console.log("Aucun document trouvé - tentative avec tous les documents");
+        console.log("3. Recherche insensible à la casse:", { caseInsensitiveMatch, caseError });
+
+        // 4. Recherche avec LIKE pour débug
+        const { data: likeMatch, error: likeError } = await supabase
+          .from('shared_documents')
+          .select('*')
+          .like('access_code', `%${shareCode}%`);
+
+        console.log("4. Recherche avec LIKE:", { likeMatch, likeError });
+
+        // 5. Vérifier si le code existe mais avec d'autres conditions
+        const { data: codeExists, error: codeError } = await supabase
+          .from('shared_documents')
+          .select('*')
+          .eq('access_code', shareCode)
+          .single();
+
+        console.log("5. Test single() pour le code:", { codeExists, codeError });
+
+        // Utiliser le résultat de la recherche exacte
+        if (exactMatch && exactMatch.length > 0) {
+          const documentData = exactMatch[0];
+          console.log("✅ Document trouvé:", documentData);
+
+          const transformedDocument: SharedDocument = {
+            document_id: documentData.document_id,
+            document_type: documentData.document_type,
+            document_data: documentData.document_data as SharedDocument['document_data'],
+            user_id: documentData.user_id,
+            shared_at: documentData.shared_at
+          };
+
+          console.log("✅ Document transformé:", transformedDocument);
+          setSharedDocument(transformedDocument);
           
-          // Dernière tentative - chercher TOUS les documents partagés pour debug
-          const { data: allDocs, error: allError } = await supabase
-            .from('shared_documents')
-            .select('*');
-            
-          console.log("Tous les documents partagés:", { allDocs, allError });
+          toast({
+            title: "Document trouvé",
+            description: "Accès autorisé au document partagé",
+          });
+        } else {
+          console.log("❌ Aucun document trouvé avec le code exact");
           
-          setError(`Document introuvable avec le code: ${shareCode}`);
-          return;
+          // Diagnostic final
+          console.log("=== DIAGNOSTIC FINAL ===");
+          console.log("Code recherché (type):", typeof shareCode, shareCode);
+          console.log("Code recherché (longueur):", shareCode.length);
+          console.log("Code recherché (trimmed):", shareCode.trim());
+          console.log("Codes existants pour comparaison:", allSharedDocs?.map(doc => ({
+            code: doc.access_code,
+            type: typeof doc.access_code,
+            length: doc.access_code?.length,
+            equal: doc.access_code === shareCode,
+            trimEqual: doc.access_code?.trim() === shareCode.trim()
+          })));
+
+          setError(`Document introuvable. Code recherché: "${shareCode}". Voir logs pour détails.`);
         }
-
-        // Prendre le premier document trouvé (peu importe son statut)
-        const documentData = data[0];
-        console.log("Document trouvé:", documentData);
-
-        // Pas de vérification d'expiration - on affiche le document
-        const transformedDocument: SharedDocument = {
-          document_id: documentData.document_id,
-          document_type: documentData.document_type,
-          document_data: documentData.document_data as SharedDocument['document_data'],
-          user_id: documentData.user_id,
-          shared_at: documentData.shared_at
-        };
-
-        console.log("Document transformé:", transformedDocument);
-        setSharedDocument(transformedDocument);
-        
-        toast({
-          title: "Document trouvé",
-          description: "Accès autorisé au document partagé",
-        });
 
       } catch (err) {
-        console.error("Erreur lors du chargement:", err);
+        console.error("❌ Erreur lors du diagnostic:", err);
         setError(`Erreur technique: ${err}`);
       } finally {
         setLoading(false);
