@@ -100,7 +100,7 @@ const DirectivesAcces = () => {
             onShowDocuments={handleShowDocuments}
             onUploadComplete={handleUploadComplete}
             onDownload={handleDownload}
-            onPrint={onPrint}
+            onPrint={handlePrint}
             onView={handleView}
             onDelete={handleDelete}
           />
