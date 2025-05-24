@@ -43,47 +43,50 @@ export const useQRCodeGeneration = () => {
     setError(null);
 
     try {
-      // Utiliser directement le chemin du fichier PDF pour le QR code
-      let qrCodeUrl = filePath;
-      
-      // Si pas de chemin de fichier direct, utiliser une URL de redirection courte
-      if (!filePath || !filePath.startsWith('http')) {
-        const baseUrl = window.location.origin;
-        qrCodeUrl = `${baseUrl}/pdf-viewer?id=${documentId}`;
-      }
+      // Toujours utiliser l'URL de l'application pour le QR code
+      const appUrl = `https://24c30559-a746-463d-805e-d2330d3a13f4.lovableproject.com/pdf-viewer?id=${documentId}`;
       
       console.log("QR Code generation:", {
         documentId,
         documentName,
-        qrCodeUrl,
-        urlLength: qrCodeUrl.length,
-        isValidLength: validateQRCodeData(qrCodeUrl)
+        appUrl,
+        urlLength: appUrl.length,
+        isValidLength: validateQRCodeData(appUrl)
       });
 
       // Vérifier que l'URL n'est pas trop longue pour le QR code
-      if (!validateQRCodeData(qrCodeUrl)) {
-        // Si l'URL est trop longue, créer une URL de redirection plus courte
-        const baseUrl = window.location.origin;
-        qrCodeUrl = `${baseUrl}/pdf/${documentId}`;
+      if (!validateQRCodeData(appUrl)) {
+        // Utiliser une URL de redirection plus courte
+        const shortUrl = `https://24c30559-a746-463d-805e-d2330d3a13f4.lovableproject.com/pdf/${documentId}`;
         
-        if (!validateQRCodeData(qrCodeUrl)) {
-          throw new Error(`URL trop longue pour le QR code (${qrCodeUrl.length} caractères, maximum ${QR_CODE_LIMITS.M})`);
+        if (!validateQRCodeData(shortUrl)) {
+          throw new Error(`URL trop longue pour le QR code (${shortUrl.length} caractères, maximum ${QR_CODE_LIMITS.M})`);
         }
-      }
-      
-      const qrData: QRCodeData = {
-        documentId,
-        documentName,
-        shareUrl: qrCodeUrl,
-        qrCodeValue: qrCodeUrl,
-        directPdfUrl: filePath || qrCodeUrl
-      };
+        
+        const qrData: QRCodeData = {
+          documentId,
+          documentName,
+          shareUrl: shortUrl,
+          qrCodeValue: shortUrl,
+          directPdfUrl: filePath || appUrl
+        };
 
-      setQrCodeData(qrData);
+        setQrCodeData(qrData);
+      } else {
+        const qrData: QRCodeData = {
+          documentId,
+          documentName,
+          shareUrl: appUrl,
+          qrCodeValue: appUrl,
+          directPdfUrl: filePath || appUrl
+        };
+
+        setQrCodeData(qrData);
+      }
       
       toast({
         title: "QR Code généré",
-        description: `QR Code créé pour ${documentName}`,
+        description: `QR Code créé pour ${documentName} - Ouverture dans l'application`,
       });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Erreur lors de la génération du QR code";

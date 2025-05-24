@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useSearchParams, Navigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,9 +15,20 @@ const PdfViewer = () => {
   const [document, setDocument] = useState<Document | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isExternalBrowser, setIsExternalBrowser] = useState(false);
   
   const { handleDownload } = useDocumentDownload();
   const { handlePrint } = useDocumentPrint();
+
+  // Détecter si on est dans un navigateur externe
+  useEffect(() => {
+    const isInApp = window.location.hostname === 'localhost' || 
+                   window.location.hostname.includes('lovableproject.com') ||
+                   window.location.protocol === 'capacitor:' ||
+                   (window as any).ReactNativeWebView;
+    
+    setIsExternalBrowser(!isInApp);
+  }, []);
 
   // Charger le document depuis la base de données
   useEffect(() => {
@@ -64,6 +74,45 @@ const PdfViewer = () => {
 
     loadDocument();
   }, [documentId]);
+
+  // Si c'est un navigateur externe, afficher un lien vers l'application
+  if (isExternalBrowser) {
+    const appUrl = `https://24c30559-a746-463d-805e-d2330d3a13f4.lovableproject.com/pdf-viewer?id=${documentId}`;
+    
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="container mx-auto px-4 max-w-md">
+          <Card>
+            <CardHeader className="text-center">
+              <CardTitle className="flex items-center justify-center gap-2">
+                <ExternalLink className="h-6 w-6 text-blue-600" />
+                Ouvrir dans l'application
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-center space-y-4">
+              <p className="text-gray-600">
+                Pour une meilleure expérience, veuillez ouvrir ce document dans l'application DirectivePlus.
+              </p>
+              
+              <Button 
+                onClick={() => window.location.href = appUrl}
+                className="w-full"
+                size="lg"
+              >
+                Ouvrir dans l'application
+              </Button>
+              
+              <div className="p-3 bg-blue-50 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  🔗 Ce lien vous redirigera vers l'application pour visualiser le document avec tous les outils disponibles.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   if (!documentId) {
     return <Navigate to="/mes-directives" replace />;
