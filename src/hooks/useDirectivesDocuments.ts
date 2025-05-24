@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -28,6 +28,9 @@ export const useDirectivesDocuments = () => {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showAddOptions, setShowAddOptions] = useState(false);
+  
+  // Ref pour éviter les rechargements multiples
+  const isRefreshingRef = useRef(false);
 
   // Document operations
   const {
@@ -49,7 +52,14 @@ export const useDirectivesDocuments = () => {
   const { fetchSupabaseDocuments } = useSupabaseDocuments();
 
   const refreshDocuments = useCallback(async () => {
+    // Éviter les rechargements multiples simultanés
+    if (isRefreshingRef.current) {
+      console.log("useDirectivesDocuments - Refresh déjà en cours, abandon");
+      return;
+    }
+
     console.log("=== REFRESH DOCUMENTS START ===");
+    isRefreshingRef.current = true;
     setIsLoading(true);
     
     try {
@@ -79,7 +89,6 @@ export const useDirectivesDocuments = () => {
       }
       
       console.log("useDirectivesDocuments - Total documents finaux:", allDocuments?.length);
-      console.log("useDirectivesDocuments - Documents finaux:", allDocuments);
       
       setDocuments(allDocuments || []);
       
@@ -93,11 +102,12 @@ export const useDirectivesDocuments = () => {
       setDocuments([]);
     } finally {
       setIsLoading(false);
+      isRefreshingRef.current = false;
       console.log("=== REFRESH DOCUMENTS END ===");
     }
-  }, [user?.id, dossierActif, getDossierDocuments, fetchSupabaseDocuments, mergeDocuments]);
+  }, [user?.id, dossierActif?.id, getDossierDocuments, fetchSupabaseDocuments, mergeDocuments]);
 
-  // Effet principal pour charger les documents
+  // Effet principal pour charger les documents - avec dépendances stables
   useEffect(() => {
     console.log("useDirectivesDocuments - useEffect triggered");
     console.log("useDirectivesDocuments - user?.id:", user?.id);
@@ -111,7 +121,7 @@ export const useDirectivesDocuments = () => {
       setIsLoading(false);
       setDocuments([]);
     }
-  }, [refreshDocuments]);
+  }, [user?.id, dossierActif?.id]); // Dépendances stables
 
   const handleUploadComplete = useCallback((url: string, fileName: string, isPrivate: boolean) => {
     console.log("Document upload complete, refreshing...");
