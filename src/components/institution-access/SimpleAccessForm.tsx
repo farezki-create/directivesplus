@@ -20,7 +20,7 @@ interface InstitutionAccessFormValues {
 export const SimpleAccessForm = () => {
   const navigate = useNavigate();
   const { setDossierActif } = useDossierStore();
-  const { validateAccess, isValidating } = useUnifiedSharing();
+  const { validateAccessCode, isValidating } = useUnifiedSharing();
   const [result, setResult] = useState<any>(null);
   
   const [form, setForm] = useState<InstitutionAccessFormValues>({
@@ -41,7 +41,7 @@ export const SimpleAccessForm = () => {
     console.log("=== SOUMISSION FORMULAIRE SIMPLE ACCESS ===");
     console.log("Données du formulaire:", form);
     
-    const validationResult = await validateAccess(form.institutionCode, {
+    const validationResult = await validateAccessCode(form.institutionCode, {
       firstName: form.firstName,
       lastName: form.lastName,
       birthDate: form.birthDate
@@ -171,7 +171,7 @@ export const SimpleAccessForm = () => {
             <AlertCircle className="h-5 w-5" />
           )}
           <AlertDescription className={result.success ? "text-green-800" : ""}>
-            {result.message}
+            {result.error || result.message}
             {result.success && result.documents && (
               <div className="mt-2 text-sm">
                 Documents trouvés : {result.documents.length}

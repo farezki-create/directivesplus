@@ -14,11 +14,12 @@ export interface ShareableDocument {
   file_size?: number | null;
   updated_at?: string;
   source?: 'pdf_documents' | 'directives' | 'medical_documents';
+  [key: string]: any; // Index signature pour compatibilité Json
 }
 
 export interface ShareOptions {
   expiresInDays?: number;
-  accessType?: 'public' | 'institution' | 'medical';
+  accessType?: 'personal' | 'institution' | 'medical';
   allowedAccesses?: number;
 }
 

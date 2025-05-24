@@ -25,10 +25,10 @@ export const generateInstitutionAccessCode = async (
     const { data, error } = await supabase
       .from('shared_documents')
       .insert({
-        user_id: document.user_id,
+        user_id: document.user_id!,
         document_id: document.id,
         document_type: 'directives',
-        document_data: document,
+        document_data: document as any, // Cast to any to avoid Json type conflict
         expires_at: expiresAt.toISOString(),
         is_active: true
       })
