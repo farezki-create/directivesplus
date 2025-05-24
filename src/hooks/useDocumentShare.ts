@@ -11,6 +11,11 @@ export const useDocumentShare = () => {
       // Use the shareDocument utility function
       shareDocument(documentId);
       
+      toast({
+        title: "Document partagé",
+        description: "Le lien du document a été copié dans le presse-papiers",
+      });
+      
       console.log("useDocumentShare - Document partagé:", documentId);
     } catch (error) {
       console.error("Erreur lors du partage du document:", error);

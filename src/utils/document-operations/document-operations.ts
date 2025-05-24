@@ -52,23 +52,26 @@ export const printDocument = (filePath: string) => {
 
 /**
  * Share a document via the Web Share API or fallback to copying the link
- * @param filePath Path to the document
+ * @param documentId Document ID for sharing
  * @param title Title for the share dialog
  */
-export const shareDocument = (filePath: string, title = 'Partager ce document') => {
-  console.log("Sharing document:", filePath);
+export const shareDocument = (documentId: string, title = 'Partager ce document') => {
+  console.log("Sharing document:", documentId);
+  
+  // Create a shareable link (you may need to adjust this based on your app structure)
+  const shareUrl = `${window.location.origin}/document/${documentId}`;
   
   // Check if Web Share API is available
   if (navigator.share) {
     navigator.share({
       title: title,
-      url: filePath
+      url: shareUrl
     }).catch(err => {
       console.error("Error sharing:", err);
     });
   } else {
     // Fallback to copying the link
-    navigator.clipboard.writeText(filePath).then(() => {
+    navigator.clipboard.writeText(shareUrl).then(() => {
       console.log("Link copied to clipboard");
       // In a real app, show a toast notification here
     }).catch(err => {

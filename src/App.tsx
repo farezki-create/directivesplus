@@ -49,7 +49,7 @@ function App() {
         <Route path="/" element={<Index />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/affichage-dossier" element={<AffichageDossierRedirect />} />
-        <Route path="/mes-directives" element={<DirectivesAcces />} />
+        <Route path="/mes-directives" element={<DirectivesDocs />} />
         <Route path="/directives-acces" element={<DirectivesAcces />} />
         <Route path="/directives-docs" element={<DirectivesDocs />} />
         <Route path="/acces-institution" element={<InstitutionAccess />} />
