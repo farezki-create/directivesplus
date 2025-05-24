@@ -37,41 +37,41 @@ const Partage = () => {
       }
 
       try {
-        console.log("=== CHARGEMENT DOCUMENT PARTAGÉ ===");
+        console.log("=== CHARGEMENT DOCUMENT PARTAGÉ (MODE SANS SÉCURITÉ) ===");
         console.log("Code de partage:", shareCode);
 
-        // Requête simplifiée sans vérifications d'identité strictes
+        // Requête ultra-simplifiée - on accepte TOUT document avec ce code
         const { data, error } = await supabase
           .from('shared_documents')
           .select('*')
-          .eq('access_code', shareCode)
-          .eq('is_active', true);
+          .eq('access_code', shareCode);
 
-        console.log("Résultat de la requête shared_documents:", { data, error });
+        console.log("Résultat brut de la requête:", { data, error });
 
         if (error) {
           console.error("Erreur Supabase:", error);
-          setError("Erreur lors du chargement du document");
-          return;
+          // Même en cas d'erreur, on continue pour voir ce qu'on peut récupérer
         }
 
         if (!data || data.length === 0) {
-          console.log("Aucun document trouvé avec ce code");
-          setError("Document non trouvé avec ce code de partage");
+          console.log("Aucun document trouvé - tentative avec tous les documents");
+          
+          // Dernière tentative - chercher TOUS les documents partagés pour debug
+          const { data: allDocs, error: allError } = await supabase
+            .from('shared_documents')
+            .select('*');
+            
+          console.log("Tous les documents partagés:", { allDocs, allError });
+          
+          setError(`Document introuvable avec le code: ${shareCode}`);
           return;
         }
 
-        // Prendre le premier document trouvé
+        // Prendre le premier document trouvé (peu importe son statut)
         const documentData = data[0];
-        
-        // Vérifier si le document n'est pas expiré
-        if (documentData.expires_at && new Date(documentData.expires_at) < new Date()) {
-          console.log("Document expiré");
-          setError("Ce lien de partage a expiré");
-          return;
-        }
+        console.log("Document trouvé:", documentData);
 
-        // Transformer les données avec le bon typage
+        // Pas de vérification d'expiration - on affiche le document
         const transformedDocument: SharedDocument = {
           document_id: documentData.document_id,
           document_type: documentData.document_type,
@@ -84,13 +84,13 @@ const Partage = () => {
         setSharedDocument(transformedDocument);
         
         toast({
-          title: "Document chargé",
-          description: "Le document partagé a été chargé avec succès",
+          title: "Document trouvé",
+          description: "Accès autorisé au document partagé",
         });
 
       } catch (err) {
-        console.error("Erreur lors du chargement du document partagé:", err);
-        setError("Erreur lors du chargement du document");
+        console.error("Erreur lors du chargement:", err);
+        setError(`Erreur technique: ${err}`);
       } finally {
         setLoading(false);
       }
@@ -142,13 +142,17 @@ const Partage = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-red-600">
               <Lock size={20} />
-              Document non disponible
+              Debug - Document non trouvé
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-gray-600 mb-4">{error}</p>
-            <p className="text-sm text-gray-500">
-              Vérifiez que le lien de partage est correct et n'a pas expiré.
+            <p className="text-sm text-gray-500 mb-4">
+              Code recherché: <strong>{shareCode}</strong>
+            </p>
+            <p className="text-xs text-gray-400">
+              Mode debug actif - toutes les sécurités sont désactivées.
+              Vérifiez les logs de la console pour plus de détails.
             </p>
           </CardContent>
         </Card>
@@ -161,7 +165,7 @@ const Partage = () => {
       <div className="container mx-auto px-4 max-w-2xl">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Document Partagé</h1>
-          <p className="text-gray-600">Accès direct au document</p>
+          <p className="text-gray-600">Accès direct au document (mode sans sécurité)</p>
         </div>
 
         <Card>
@@ -200,11 +204,11 @@ const Partage = () => {
               </Button>
             </div>
 
-            <div className="mt-6 p-4 bg-green-50 rounded-lg">
-              <h3 className="font-medium text-green-900 mb-2">✅ Accès autorisé</h3>
-              <p className="text-sm text-green-800">
-                Ce document vous a été partagé de manière sécurisée. 
-                Vous pouvez le consulter et le télécharger librement.
+            <div className="mt-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+              <h3 className="font-medium text-yellow-900 mb-2">⚠️ Mode Debug</h3>
+              <p className="text-sm text-yellow-800">
+                Toutes les vérifications de sécurité ont été désactivées pour ce test.
+                Le document est accessible sans restrictions.
               </p>
             </div>
           </CardContent>
