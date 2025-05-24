@@ -24,7 +24,7 @@ export interface Document {
 }
 
 export const useDirectivesDocuments = () => {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showAddOptions, setShowAddOptions] = useState(false);
@@ -148,6 +148,10 @@ export const useDirectivesDocuments = () => {
   });
 
   return {
+    // Auth state
+    user,
+    isAuthenticated,
+    // Documents
     documents,
     isLoading,
     showAddOptions,
