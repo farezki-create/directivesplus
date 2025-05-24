@@ -1,13 +1,8 @@
 
 import { useState } from "react";
 import { toast } from "@/components/ui/use-toast";
-import { 
-  validateInstitutionAccessForm, 
-  cleanInstitutionAccessValues 
-} from "./institution/useInstitutionAccessValidation";
-import { verifyInstitutionCodeExists } from "./institution/useInstitutionCodeVerification";
-import { retrieveDirectivesByInstitutionCode } from "./institution/useDirectiveRetrieval";
-import { logInstitutionAccess } from "./institution/useInstitutionAccessLogging";
+import { validateInstitutionAccessForm, cleanInstitutionAccessValues } from "./institution/useInstitutionAccessValidation";
+import { useNewInstitutionValidation } from "./institution/useInstitutionAccessValidationNew";
 
 export interface InstitutionAccessFormValues {
   lastName: string;
@@ -27,6 +22,7 @@ export const useInstitutionAccess = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [documents, setDocuments] = useState<DirectiveDocument[]>([]);
+  const { validateAccess } = useNewInstitutionValidation();
 
   const verifyInstitutionAccess = async (values: InstitutionAccessFormValues): Promise<boolean> => {
     setLoading(true);
@@ -46,27 +42,39 @@ export const useInstitutionAccess = () => {
       const cleanedValues = cleanInstitutionAccessValues(values);
       console.log("Verifying institution access with cleaned values:", cleanedValues);
 
-      // Vérifier l'existence et la validité du code institution
-      console.log("Step 1: Verifying institution code exists");
-      await verifyInstitutionCodeExists(cleanedValues.institutionCode);
-
-      // Récupérer les directives
-      console.log("Step 2: Retrieving directives");
-      const finalData = await retrieveDirectivesByInstitutionCode(cleanedValues, values);
+      // Utiliser la nouvelle méthode de validation
+      const result = await validateAccess(cleanedValues);
       
-      // Logger l'accès réussi
-      console.log("Step 3: Logging access");
-      const directiveIds = finalData.map(doc => doc.id);
-      await logInstitutionAccess(directiveIds, cleanedValues);
-      
-      setDocuments(finalData);
-      
-      toast({
-        title: "Accès autorisé",
-        description: `${finalData.length} directive(s) trouvée(s) pour le patient`
-      });
-      
-      return true;
+      if (result.success && result.profiles.length > 0) {
+        // Simuler des documents pour les profils trouvés
+        const mockDocuments = result.profiles.map((profile, index) => ({
+          id: `doc_${profile.user_id}_${index}`,
+          user_id: profile.user_id,
+          content: {
+            title: `Directives anticipées - ${profile.first_name} ${profile.last_name}`,
+            patient: {
+              nom: profile.last_name,
+              prenom: profile.first_name,
+              date_naissance: profile.birth_date
+            },
+            documents: []
+          },
+          created_at: new Date().toISOString()
+        }));
+        
+        setDocuments(mockDocuments);
+        
+        toast({
+          title: "Accès autorisé",
+          description: `${result.profiles.length} profil(s) patient(s) trouvé(s)`
+        });
+        
+        return true;
+      } else {
+        setError(result.message);
+        setDocuments([]);
+        return false;
+      }
     } catch (err: any) {
       console.error("Error during institution access verification:", err);
       setError(err.message || "Une erreur inattendue est survenue lors de la vérification de l'accès.");

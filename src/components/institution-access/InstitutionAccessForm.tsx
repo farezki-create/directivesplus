@@ -11,10 +11,10 @@ import { DirectivesDisplay } from "./DirectivesDisplay";
 export const InstitutionAccessForm = () => {
   const { loading, error, documents, verifyInstitutionAccess } = useInstitutionAccess();
   const [form, setForm] = useState<InstitutionAccessFormValues>({
-    lastName: "",
-    firstName: "",
-    birthDate: "",
-    institutionCode: ""
+    lastName: "AREZKI", // Valeur de test pré-remplie
+    firstName: "FARID", // Valeur de test pré-remplie
+    birthDate: "1963-08-13", // Valeur de test pré-remplie
+    institutionCode: "9E5CUV7X" // Valeur de test pré-remplie
   });
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [hasAttempted, setHasAttempted] = useState(false);
@@ -48,26 +48,6 @@ export const InstitutionAccessForm = () => {
   const renderErrorAlert = () => {
     if (!error) return null;
 
-    if (error.includes("Aucun code d'accès institution n'existe")) {
-      return (
-        <Alert className="bg-yellow-50 border-yellow-200">
-          <AlertCircle className="h-5 w-5 text-yellow-600" />
-          <AlertDescription className="text-yellow-800">
-            <strong>Information importante :</strong><br />
-            Il n'y a actuellement aucun code d'accès institution dans la base de données. 
-            <br /><br />
-            Pour tester cette fonctionnalité, vous devez :
-            <ol className="list-decimal list-inside mt-2 space-y-1">
-              <li>Vous connecter à votre compte</li>
-              <li>Créer ou accéder à vos directives</li>
-              <li>Utiliser le bouton "Accès institution" pour générer un code</li>
-              <li>Revenir ici avec ce code généré</li>
-            </ol>
-          </AlertDescription>
-        </Alert>
-      );
-    }
-
     return (
       <Alert variant="destructive">
         <AlertCircle className="h-4 w-4" />
@@ -84,6 +64,16 @@ export const InstitutionAccessForm = () => {
           <AlertDescription className="text-blue-800">
             Cet accès est réservé aux professionnels de santé et institutions médicales autorisés.
             Les accès sont journalisés pour des raisons de sécurité.
+          </AlertDescription>
+        </Alert>
+      </div>
+
+      <div className="mb-4">
+        <Alert className="bg-green-50 border-green-200">
+          <Info className="h-5 w-5 text-green-600" />
+          <AlertDescription className="text-green-800">
+            <strong>Test avec données pré-remplies :</strong><br />
+            AREZKI FARID né le 13/08/1963, code: 9E5CUV7X
           </AlertDescription>
         </Alert>
       </div>
