@@ -8,6 +8,7 @@ import Index from "@/pages/Index";
 import Auth from "@/pages/Auth";
 import Profile from "@/pages/Profile";
 import DirectivesDocs from "@/pages/DirectivesDocs";
+import MesDirectives from "@/pages/MesDirectives";
 import { Navigate } from "react-router-dom";
 import AvisGeneral from "@/pages/AvisGeneral";
 import GoutsPeurs from "@/pages/GoutsPeurs";
@@ -101,6 +102,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Rediger />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/mes-directives-app" 
+          element={
+            <ProtectedRoute>
+              <MesDirectives />
             </ProtectedRoute>
           } 
         />

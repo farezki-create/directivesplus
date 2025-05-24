@@ -1,177 +1,165 @@
 
 import { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import {
-  Home,
-  FileText,
-  Stethoscope,
-  User,
-  Settings,
-  LogOut,
-  IdCard,
-  Shield,
-} from "lucide-react";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { Link, useNavigate } from "react-router-dom";
+import { Menu, X, FileText, Users, Shield, User, LogOut, Home, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 const AppNavigation = () => {
-  const { user, signOut } = useAuth();
+  const [isOpen, setIsOpen] = useState(false);
+  const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  const navigationLinks = [
-    {
-      name: "Accueil",
-      path: "/",
-      icon: "home",
-    },
-    {
-      name: "Mes directives",
-      path: "/mes-directives",
-      icon: "file-text",
-    },
-    {
-      name: "Données médicales",
-      path: "/donnees-medicales",
-      icon: "stethoscope",
-    },
-    {
-      name: "Carte d'accès",
-      path: "/carte-acces",
-      icon: "id-card",
-    },
-  ];
-
-  const profileLinks = [
-    {
-      name: "Mon profil",
-      path: "/profile",
-      icon: "user",
-    },
-    {
-      name: "Paramètres",
-      path: "/settings",
-      icon: "settings",
-    },
-    {
-      name: "Politique de confidentialité",
-      path: "/politique-confidentialite",
-      icon: "shield",
-    },
-  ];
 
   const handleLogout = async () => {
-    await signOut();
-    navigate("/auth");
-  };
-
-  const getIcon = (iconName: string) => {
-    switch (iconName) {
-      case "home":
-        return <Home className="h-4 w-4 mr-2" />;
-      case "file-text":
-        return <FileText className="h-4 w-4 mr-2" />;
-      case "stethoscope":
-        return <Stethoscope className="h-4 w-4 mr-2" />;
-      case "user":
-        return <User className="h-4 w-4 mr-2" />;
-      case "settings":
-        return <Settings className="h-4 w-4 mr-2" />;
-      case "id-card":
-        return <IdCard className="h-4 w-4 mr-2" />;
-      case "shield":
-        return <Shield className="h-4 w-4 mr-2" />;
-      default:
-        return null;
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      toast({
+        title: "Déconnexion réussie",
+        description: "Vous avez été déconnecté avec succès",
+      });
+      
+      navigate("/");
+    } catch (error: any) {
+      toast({
+        title: "Erreur de déconnexion",
+        description: error.message,
+        variant: "destructive"
+      });
     }
   };
 
+  const navItems = [
+    { name: "Accueil", href: "/", icon: Home },
+    { name: "Rédiger", href: "/rediger", icon: FileText, requireAuth: true },
+    { name: "Mes Directives", href: "/mes-directives-app", icon: BookOpen, requireAuth: true },
+    { name: "Données Médicales", href: "/donnees-medicales", icon: Shield },
+    { name: "Témoignages", href: "/testimonials", icon: Users },
+  ];
+
+  const filteredNavItems = navItems.filter(item => 
+    !item.requireAuth || isAuthenticated
+  );
+
   return (
-    <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-      <SheetTrigger asChild>
-        <Button
-          variant="ghost"
-          className="md:hidden absolute top-4 left-4 text-gray-700 hover:bg-gray-100"
-        >
-          Menu
-        </Button>
-      </SheetTrigger>
-      <SheetContent className="w-full sm:w-64">
-        <SheetHeader className="text-left mt-6">
-          <SheetTitle>Navigation</SheetTitle>
-          <SheetDescription>
-            Explorez les différentes sections de votre espace personnel.
-          </SheetDescription>
-        </SheetHeader>
-        <div className="mt-4">
-          <h4 className="mb-2 font-semibold text-sm text-gray-500 uppercase">
-            Navigation
-          </h4>
-          <ul className="space-y-2">
-            {navigationLinks.map((link) => (
-              <li key={link.path}>
-                <Link
-                  to={link.path}
-                  className={`flex items-center px-4 py-2 rounded-md hover:bg-gray-100 ${
-                    location.pathname === link.path
-                      ? "bg-gray-100 font-medium"
-                      : "text-gray-700"
-                  }`}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {getIcon(link.icon)}
-                  {link.name}
-                </Link>
-              </li>
+    <nav className="bg-white shadow-lg sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="flex justify-between h-16">
+          <div className="flex items-center">
+            <Link to="/" className="flex-shrink-0 flex items-center">
+              <span className="text-2xl font-bold text-blue-600">DirectivesPlus</span>
+            </Link>
+          </div>
+
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-8">
+            {filteredNavItems.map((item) => (
+              <Link
+                key={item.name}
+                to={item.href}
+                className="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2"
+              >
+                <item.icon className="h-4 w-4" />
+                {item.name}
+              </Link>
             ))}
-          </ul>
+            
+            {isAuthenticated ? (
+              <div className="flex items-center space-x-4">
+                <Link
+                  to="/profile"
+                  className="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2"
+                >
+                  <User className="h-4 w-4" />
+                  Profil
+                </Link>
+                <Button
+                  onClick={handleLogout}
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-2"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Déconnexion
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-4">
+                <Link
+                  to="/auth"
+                  className="text-blue-600 hover:text-blue-800 px-3 py-2 rounded-md text-sm font-medium"
+                >
+                  Connexion
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* Mobile menu button */}
+          <div className="md:hidden flex items-center">
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="text-gray-600 hover:text-blue-600 p-2 rounded-md"
+            >
+              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
+          </div>
         </div>
 
-        <div className="mt-6">
-          <h4 className="mb-2 font-semibold text-sm text-gray-500 uppercase">
-            Profil
-          </h4>
-          <ul className="space-y-2">
-            {profileLinks.map((link) => (
-              <li key={link.path}>
+        {/* Mobile Navigation */}
+        {isOpen && (
+          <div className="md:hidden">
+            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+              {filteredNavItems.map((item) => (
                 <Link
-                  to={link.path}
-                  className={`flex items-center px-4 py-2 rounded-md hover:bg-gray-100 ${
-                    location.pathname === link.path
-                      ? "bg-gray-100 font-medium"
-                      : "text-gray-700"
-                  }`}
-                  onClick={() => setIsMenuOpen(false)}
+                  key={item.name}
+                  to={item.href}
+                  className="text-gray-600 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium flex items-center gap-2"
+                  onClick={() => setIsOpen(false)}
                 >
-                  {getIcon(link.icon)}
-                  {link.name}
+                  <item.icon className="h-4 w-4" />
+                  {item.name}
                 </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div className="mt-6">
-          <Button
-            variant="ghost"
-            className="w-full justify-start text-red-600 hover:bg-red-50"
-            onClick={handleLogout}
-          >
-            <LogOut className="h-4 w-4 mr-2" />
-            Déconnexion
-          </Button>
-        </div>
-      </SheetContent>
-    </Sheet>
+              ))}
+              
+              {isAuthenticated ? (
+                <>
+                  <Link
+                    to="/profile"
+                    className="text-gray-600 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium flex items-center gap-2"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <User className="h-4 w-4" />
+                    Profil
+                  </Link>
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setIsOpen(false);
+                    }}
+                    className="text-gray-600 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium flex items-center gap-2 w-full text-left"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Déconnexion
+                  </button>
+                </>
+              ) : (
+                <Link
+                  to="/auth"
+                  className="text-blue-600 hover:text-blue-800 block px-3 py-2 rounded-md text-base font-medium"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Connexion
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </nav>
   );
 };
 
