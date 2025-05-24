@@ -2,8 +2,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Hospital, Loader2, Copy, Check, Share2, Shield, AlertTriangle } from "lucide-react";
-import { generateInstitutionCode } from "@/utils/institutionCodeGenerator";
+import { Hospital, Loader2, Copy, Check, Share2, Shield } from "lucide-react";
+import { generateInstitutionAccessCode } from "@/hooks/sharing/institutionSharingService";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -14,6 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import type { ShareableDocument } from "@/hooks/sharing/types";
 
 interface InstitutionAccessSectionProps {
   userId?: string;
@@ -26,7 +27,7 @@ const InstitutionAccessSection = ({ userId }: InstitutionAccessSectionProps) => 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const handleGenerateInstitutionCode = async () => {
-    console.log("=== STARTING INSTITUTION CODE GENERATION ===");
+    console.log("=== GÉNÉRATION CODE INSTITUTION ===");
     console.log("User ID:", userId);
 
     if (!userId) {
@@ -42,24 +43,24 @@ const InstitutionAccessSection = ({ userId }: InstitutionAccessSectionProps) => 
     setIsGenerating(true);
     try {
       // Vérifier d'abord s'il existe des directives pour cet utilisateur
-      console.log("Checking for existing directives...");
+      console.log("Vérification des directives existantes...");
       const { data: existingDirectives, error: checkError } = await supabase
         .from('directives')
-        .select('id')
+        .select('id, content')
         .eq('user_id', userId)
         .limit(1);
       
-      console.log("Existing directives check result:", { existingDirectives, checkError });
+      console.log("Résultat vérification directives:", { existingDirectives, checkError });
       
       if (checkError) {
-        console.error("Error checking directives:", checkError);
+        console.error("Erreur vérification directives:", checkError);
         throw new Error("Erreur lors de la vérification des directives");
       }
       
-      let directiveId: string;
+      let document: ShareableDocument;
       
       if (!existingDirectives || existingDirectives.length === 0) {
-        console.log("No directives found, creating new one...");
+        console.log("Aucune directive trouvée, création d'une nouvelle...");
         // Créer une nouvelle directive minimale
         const { data: newDirective, error: createError } = await supabase
           .from('directives')
@@ -71,28 +72,48 @@ const InstitutionAccessSection = ({ userId }: InstitutionAccessSectionProps) => 
               created_for_institution_access: true
             }
           })
-          .select('id')
+          .select('id, content')
           .single();
           
-        console.log("New directive creation result:", { newDirective, createError });
+        console.log("Résultat création directive:", { newDirective, createError });
           
         if (createError || !newDirective) {
-          console.error("Failed to create directive:", createError);
+          console.error("Échec création directive:", createError);
           throw new Error("Impossible de créer une directive");
         }
         
-        directiveId = newDirective.id;
-        console.log("Created new directive with ID:", directiveId);
+        document = {
+          id: newDirective.id,
+          file_name: "Directives anticipées",
+          file_path: "",
+          created_at: new Date().toISOString(),
+          user_id: userId,
+          file_type: "directive",
+          source: "directives",
+          content: newDirective.content
+        };
+        
+        console.log("Nouvelle directive créée:", document);
       } else {
-        directiveId = existingDirectives[0].id;
-        console.log("Using existing directive with ID:", directiveId);
+        document = {
+          id: existingDirectives[0].id,
+          file_name: "Directives anticipées",
+          file_path: "",
+          created_at: new Date().toISOString(),
+          user_id: userId,
+          file_type: "directive",
+          source: "directives",
+          content: existingDirectives[0].content
+        };
+        
+        console.log("Directive existante utilisée:", document);
       }
       
-      console.log("Generating institution code for directive:", directiveId);
-      const code = await generateInstitutionCode(directiveId);
+      console.log("Génération du code d'accès institution...");
+      const code = await generateInstitutionAccessCode(document, 30); // 30 jours par défaut
       
       if (code) {
-        console.log("Institution code generated successfully:", code);
+        console.log("Code d'accès institution généré:", code);
         setInstitutionCode(code);
         setIsDialogOpen(true);
         toast({
@@ -100,11 +121,11 @@ const InstitutionAccessSection = ({ userId }: InstitutionAccessSectionProps) => 
           description: "Code généré avec succès (valide 30 jours)",
         });
       } else {
-        console.error("Failed to generate institution code");
+        console.error("Échec génération code institution");
         throw new Error("Impossible de générer le code");
       }
     } catch (error) {
-      console.error("Error in handleGenerateInstitutionCode:", error);
+      console.error("Erreur génération code institution:", error);
       toast({
         title: "Erreur",
         description: error instanceof Error ? error.message : "Impossible de générer le code d'accès professionnel",

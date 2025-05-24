@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, CheckCircle, Info } from "lucide-react";
-import { useInstitutionAccess, InstitutionFormData } from "@/hooks/access/institution/useInstitutionAccess";
+import { useInstitutionAccess, type InstitutionFormData } from "@/hooks/sharing/useInstitutionAccess";
 import { useDossierStore } from "@/store/dossierStore";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
@@ -16,10 +16,10 @@ export const InstitutionAccessForm = () => {
   const { loading, result, validateAccess } = useInstitutionAccess();
   
   const [form, setForm] = useState<InstitutionFormData>({
-    lastName: "AREZKI",
-    firstName: "FARID", 
-    birthDate: "1963-08-13",
-    institutionCode: "9E5CUV7X"
+    lastName: "",
+    firstName: "", 
+    birthDate: "",
+    institutionCode: ""
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -30,7 +30,7 @@ export const InstitutionAccessForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    console.log("=== SOUMISSION FORMULAIRE ===");
+    console.log("=== SOUMISSION FORMULAIRE INSTITUTION ===");
     console.log("Données du formulaire:", form);
     
     const validationResult = await validateAccess(form);
@@ -81,42 +81,32 @@ export const InstitutionAccessForm = () => {
         <Info className="h-5 w-5 text-blue-600" />
         <AlertDescription className="text-blue-800">
           <strong>Accès professionnel de santé</strong><br />
-          Saisissez les informations exactes du patient et le code d'accès institution.
-        </AlertDescription>
-      </Alert>
-
-      {/* Données de test */}
-      <Alert className="bg-green-50 border-green-200">
-        <Info className="h-5 w-5 text-green-600" />
-        <AlertDescription className="text-green-800">
-          <strong>Test disponible :</strong><br />
-          Nom: AREZKI, Prénom: FARID<br />
-          Date: 1963-08-13, Code: 9E5CUV7X
+          Saisissez les informations exactes du patient et le code d'accès partagé.
         </AlertDescription>
       </Alert>
 
       {/* Formulaire */}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="lastName">Nom de famille</Label>
+          <Label htmlFor="lastName">Nom de famille du patient</Label>
           <Input
             id="lastName"
             name="lastName"
             value={form.lastName}
             onChange={handleChange}
-            placeholder="NOM (sensible à la casse)"
+            placeholder="NOM"
             required
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="firstName">Prénom</Label>
+          <Label htmlFor="firstName">Prénom du patient</Label>
           <Input
             id="firstName"
             name="firstName"
             value={form.firstName}
             onChange={handleChange}
-            placeholder="Prénom (sensible à la casse)"
+            placeholder="Prénom"
             required
           />
         </div>
@@ -131,19 +121,22 @@ export const InstitutionAccessForm = () => {
             onChange={handleChange}
             required
           />
-          <p className="text-xs text-gray-500">Format: YYYY-MM-DD</p>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="institutionCode">Code d'accès institution</Label>
+          <Label htmlFor="institutionCode">Code d'accès partagé</Label>
           <Input
             id="institutionCode"
             name="institutionCode"
             value={form.institutionCode}
             onChange={handleChange}
-            placeholder="Code d'accès (ex: 9E5CUV7X)"
+            placeholder="Code d'accès (8 caractères)"
+            maxLength={8}
             required
           />
+          <p className="text-xs text-gray-500">
+            Code généré par le patient pour l'accès professionnel
+          </p>
         </div>
 
         <Button 
@@ -166,9 +159,24 @@ export const InstitutionAccessForm = () => {
           )}
           <AlertDescription className={result.success ? "text-green-800" : ""}>
             {result.message}
+            {result.success && result.patientData && (
+              <div className="mt-2 text-sm">
+                Patient : {result.patientData.first_name} {result.patientData.last_name}<br />
+                Date de naissance : {result.patientData.birth_date}<br />
+                Documents trouvés : {result.patientData.directives.length}
+              </div>
+            )}
           </AlertDescription>
         </Alert>
       )}
+
+      {/* Informations de sécurité */}
+      <Alert>
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          <strong>Sécurité :</strong> Les accès sont journalisés pour des raisons de traçabilité et de sécurité.
+        </AlertDescription>
+      </Alert>
     </div>
   );
 };
