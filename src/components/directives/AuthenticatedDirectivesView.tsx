@@ -54,9 +54,8 @@ const AuthenticatedDirectivesView: React.FC<AuthenticatedDirectivesViewProps> = 
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <DirectivesPageHeader 
-            user={user}
-            profile={profile}
             onAddDocument={() => setShowAddOptions(!showAddOptions)}
+            documentsCount={documents.length}
           />
 
           {showAddOptions && user && (
@@ -74,15 +73,17 @@ const AuthenticatedDirectivesView: React.FC<AuthenticatedDirectivesViewProps> = 
             onPrint={onPrint}
             onView={onView}
             onDelete={setDocumentToDelete}
-            isAuthenticated={true} // Passer l'état d'authentification
+            isAuthenticated={true}
           />
         </div>
       </main>
       
       <DeleteConfirmationDialog 
-        isOpen={!!confirmDelete} 
-        onClose={() => setDocumentToDelete(null)} 
-        onConfirm={handleDelete}
+        documentId={documentToDelete}
+        onOpenChange={(open) => {
+          if (!open) setDocumentToDelete(null);
+        }}
+        onConfirmDelete={handleDelete}
       />
 
       <DocumentPreviewDialog 
