@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -89,18 +90,20 @@ export const useDirectivesDocuments = () => {
         updated_at: doc.updated_at || doc.created_at
       }));
       
+      // Créer un Set des IDs Supabase pour éviter les doublons
+      const supabaseIds = new Set(supabaseDocuments.map(doc => doc.id));
+      
       // Combiner les documents Supabase avec ceux du dossier actif s'il y en a
-      let allDocuments = supabaseDocuments;
+      let allDocuments = [...supabaseDocuments];
       
       if (dossierActif?.contenu?.documents) {
         const dossierDocuments = transformDossierDocuments(dossierActif.contenu.documents, dossierActif.userId);
-        // Filtrer les doublons par ID
-        const existingIds = allDocuments.map(doc => doc.id);
-        const newDossierDocs = dossierDocuments.filter(doc => !existingIds.includes(doc.id));
-        allDocuments = [...allDocuments, ...newDossierDocs];
+        // Filtrer les doublons - ne garder que les documents du dossier qui ne sont pas déjà dans Supabase
+        const uniqueDossierDocs = dossierDocuments.filter(doc => !supabaseIds.has(doc.id));
+        allDocuments = [...allDocuments, ...uniqueDossierDocs];
       }
       
-      console.log("useDirectivesDocuments - Tous les documents (Supabase + Dossier):", allDocuments);
+      console.log("useDirectivesDocuments - Tous les documents (Supabase + Dossier uniquement):", allDocuments);
       setDocuments(allDocuments);
     } catch (error: any) {
       console.error("Erreur lors de la récupération des documents:", error);
