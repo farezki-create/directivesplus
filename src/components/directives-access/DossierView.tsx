@@ -41,6 +41,8 @@ const DossierView: React.FC<DossierViewProps> = ({
     window.location.href = "/";
   };
 
+  console.log("DossierView - showDocuments:", showDocuments, "documents:", documents);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <AppNavigation hideEditingFeatures={isCodeAccess} />
