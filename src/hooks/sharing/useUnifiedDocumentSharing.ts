@@ -1,30 +1,14 @@
 
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-
-export interface ShareableDocument {
-  id: string;
-  file_name: string;
-  file_path: string;
-  created_at: string;
-  description?: string;
-  content_type?: string;
-  file_type?: string;
-  user_id?: string;
-  is_private?: boolean;
-  content?: any;
-  external_id?: string | null;
-  file_size?: number | null;
-  updated_at?: string;
-  source?: 'pdf_documents' | 'directives' | 'medical_documents';
-}
-
-export interface ShareOptions {
-  expiresInDays?: number;
-  accessType?: 'public' | 'institution' | 'medical';
-  allowedAccesses?: number;
-}
+import { 
+  createSharedDocument, 
+  getSharedDocuments as fetchSharedDocuments,
+  getSharedDocumentsByAccessCode as fetchSharedDocumentsByAccessCode,
+  deactivateSharedDocument 
+} from "./sharingService";
+import { formatShareMessage } from "./sharingUtils";
+import type { ShareableDocument, ShareOptions } from "./types";
 
 export const useUnifiedDocumentSharing = () => {
   const [isSharing, setIsSharing] = useState<string | null>(null);
@@ -47,56 +31,15 @@ export const useUnifiedDocumentSharing = () => {
     setShareError(null);
 
     try {
-      // Calculer la date d'expiration
-      let expiresAt = null;
-      if (options.expiresInDays) {
-        const date = new Date();
-        date.setDate(date.getDate() + options.expiresInDays);
-        expiresAt = date.toISOString();
+      const accessCode = await createSharedDocument(document, options);
+
+      if (!accessCode) {
+        throw new Error("No access code returned");
       }
-
-      // Déterminer le type de document
-      const documentType = document.source || 
-        (document.file_type === 'directive' ? 'directives' : 'pdf_documents');
-
-      // Créer l'entrée dans shared_documents avec génération automatique du code
-      const { data, error } = await supabase
-        .from('shared_documents')
-        .insert({
-          user_id: document.user_id,
-          document_id: document.id,
-          document_type: documentType,
-          document_data: {
-            id: document.id,
-            file_name: document.file_name,
-            file_path: document.file_path,
-            created_at: document.created_at,
-            description: document.description,
-            content_type: document.content_type,
-            file_type: document.file_type,
-            content: document.content,
-            source: document.source,
-            is_private: document.is_private,
-            external_id: document.external_id,
-            file_size: document.file_size,
-            updated_at: document.updated_at
-          },
-          // Le trigger générera automatiquement l'access_code
-          expires_at: expiresAt,
-          is_active: true
-        })
-        .select()
-        .single();
-
-      if (error) {
-        throw error;
-      }
-
-      const accessCode = data.access_code;
 
       toast({
         title: "Document partagé",
-        description: `${document.file_name} a été partagé. Code d'accès : ${accessCode}`,
+        description: formatShareMessage(document.file_name, accessCode),
       });
 
       return accessCode;
@@ -117,17 +60,7 @@ export const useUnifiedDocumentSharing = () => {
 
   const getSharedDocuments = async (): Promise<any[]> => {
     try {
-      const { data, error } = await supabase
-        .from('shared_documents')
-        .select('*')
-        .eq('is_active', true)
-        .order('shared_at', { ascending: false });
-
-      if (error) {
-        throw error;
-      }
-
-      return data || [];
+      return await fetchSharedDocuments();
     } catch (error) {
       console.error("Erreur lors de la récupération des documents partagés:", error);
       return [];
@@ -141,21 +74,7 @@ export const useUnifiedDocumentSharing = () => {
     birthDate?: string
   ): Promise<any[]> => {
     try {
-      const { data, error } = await supabase.rpc(
-        'get_shared_documents_by_access_code',
-        {
-          input_access_code: accessCode,
-          input_first_name: firstName || null,
-          input_last_name: lastName || null,
-          input_birth_date: birthDate || null
-        }
-      );
-
-      if (error) {
-        throw error;
-      }
-
-      return data || [];
+      return await fetchSharedDocumentsByAccessCode(accessCode, firstName, lastName, birthDate);
     } catch (error) {
       console.error("Erreur lors de la récupération des documents avec code:", error);
       return [];
@@ -164,14 +83,7 @@ export const useUnifiedDocumentSharing = () => {
 
   const stopSharing = async (sharedDocumentId: string): Promise<boolean> => {
     try {
-      const { error } = await supabase
-        .from('shared_documents')
-        .update({ is_active: false })
-        .eq('id', sharedDocumentId);
-
-      if (error) {
-        throw error;
-      }
+      await deactivateSharedDocument(sharedDocumentId);
 
       toast({
         title: "Partage arrêté",
@@ -210,3 +122,6 @@ export const useUnifiedDocumentSharing = () => {
     shareError
   };
 };
+
+// Export types for use in other components
+export type { ShareableDocument, ShareOptions } from "./types";

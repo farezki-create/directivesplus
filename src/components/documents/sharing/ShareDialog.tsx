@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Share2, Check, FolderPlus, Copy } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { useUnifiedDocumentSharing, ShareableDocument } from "@/hooks/sharing/useUnifiedDocumentSharing";
+import { useUnifiedDocumentSharing, type ShareableDocument } from "@/hooks/sharing/useUnifiedDocumentSharing";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface ShareDialogProps {

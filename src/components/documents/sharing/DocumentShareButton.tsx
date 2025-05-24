@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Share2, Loader2 } from "lucide-react";
-import { useUnifiedDocumentSharing, ShareableDocument } from "@/hooks/sharing/useUnifiedDocumentSharing";
+import { useUnifiedDocumentSharing, type ShareableDocument } from "@/hooks/sharing/useUnifiedDocumentSharing";
 import { ShareDialog } from "./ShareDialog";
 
 interface DocumentShareButtonProps {
