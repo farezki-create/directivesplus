@@ -49,7 +49,7 @@ const DocumentCard = ({
   console.log("DocumentCard rendu avec document:", document);
 
   // Determine the correct file type to use
-  const fileType = document.file_type || document.content_type || detectFileTypeFromPath(document.file_path);
+  const fileType = getFileType(document);
 
   return (
     <div className="bg-white rounded-lg border p-4 shadow-sm">
@@ -86,21 +86,46 @@ const DocumentCard = ({
   );
 };
 
-// Helper function to detect file type from path
+// Enhanced helper function to detect file type
+const getFileType = (document: Document): string => {
+  // First, try to use the explicit file_type or content_type from the document
+  if (document.file_type) {
+    return document.file_type;
+  }
+  
+  if (document.content_type) {
+    return document.content_type;
+  }
+  
+  // If file_path is base64 data, try to extract from the data URL
+  if (document.file_path && document.file_path.startsWith('data:')) {
+    const mimeMatch = document.file_path.match(/^data:([^;]+)/);
+    if (mimeMatch) {
+      return mimeMatch[1];
+    }
+  }
+  
+  // Fall back to detecting from file name
+  return detectFileTypeFromPath(document.file_name || document.file_path);
+};
+
+// Helper function to detect file type from path or filename
 const detectFileTypeFromPath = (filePath: string): string => {
   if (!filePath) return "application/pdf"; // Default
   
-  if (filePath.includes('image') || 
-      filePath.endsWith('.jpg') || 
-      filePath.endsWith('.jpeg') || 
-      filePath.endsWith('.png') || 
-      filePath.endsWith('.gif')) {
+  const fileName = filePath.toLowerCase();
+  
+  if (fileName.includes('image') || 
+      fileName.endsWith('.jpg') || 
+      fileName.endsWith('.jpeg') || 
+      fileName.endsWith('.png') || 
+      fileName.endsWith('.gif')) {
     return 'image/jpeg';
-  } else if (filePath.includes('pdf') || filePath.endsWith('.pdf')) {
+  } else if (fileName.includes('pdf') || fileName.endsWith('.pdf')) {
     return 'application/pdf';
-  } else if (filePath.includes('audio') || 
-             filePath.endsWith('.mp3') || 
-             filePath.endsWith('.wav')) {
+  } else if (fileName.includes('audio') || 
+             fileName.endsWith('.mp3') || 
+             fileName.endsWith('.wav')) {
     return 'audio/mpeg';
   }
   return 'application/pdf'; // Default
