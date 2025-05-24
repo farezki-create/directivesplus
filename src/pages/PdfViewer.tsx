@@ -1,9 +1,8 @@
-
 import React, { useEffect, useState } from "react";
 import { useSearchParams, Navigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, Printer, ExternalLink, ArrowLeft, AlertCircle } from "lucide-react";
+import { Download, Printer, ExternalLink, ArrowLeft, AlertCircle, RefreshCw, Globe } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useDocumentDownload } from "@/hooks/useDocumentDownload";
 import { useDocumentPrint } from "@/hooks/useDocumentPrint";
@@ -17,76 +16,177 @@ const PdfViewer = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isExternalBrowser, setIsExternalBrowser] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
   
   const { handleDownload } = useDocumentDownload();
   const { handlePrint } = useDocumentPrint();
 
-  // Détecter si on est dans un navigateur externe
+  // Détection améliorée du navigateur externe
   useEffect(() => {
-    const isInApp = window.location.hostname === 'localhost' || 
-                   window.location.hostname.includes('lovableproject.com') ||
-                   window.location.protocol === 'capacitor:' ||
-                   (window as any).ReactNativeWebView ||
-                   window.location.search.includes('inapp=true');
+    const detectBrowser = () => {
+      const userAgent = navigator.userAgent.toLowerCase();
+      const hostname = window.location.hostname;
+      const protocol = window.location.protocol;
+      const hasInAppParam = window.location.search.includes('inapp=true');
+      
+      // Détection plus précise
+      const isLovableApp = hostname === 'localhost' || 
+                          hostname.includes('lovableproject.com') ||
+                          protocol === 'capacitor:' ||
+                          (window as any).ReactNativeWebView ||
+                          hasInAppParam;
+      
+      // Détection des navigateurs mobiles courants
+      const isMobileBrowser = /android|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+      const isDesktopBrowser = !isMobileBrowser && (
+        userAgent.includes('chrome') || 
+        userAgent.includes('firefox') || 
+        userAgent.includes('safari') || 
+        userAgent.includes('edge')
+      );
+      
+      console.log('Browser detection enhanced:', { 
+        hostname, 
+        protocol,
+        hasInAppParam,
+        isMobileBrowser,
+        isDesktopBrowser,
+        userAgent,
+        isLovableApp 
+      });
+      
+      setIsExternalBrowser(!isLovableApp && (isMobileBrowser || isDesktopBrowser));
+    };
     
-    console.log('Browser detection:', { 
-      hostname: window.location.hostname, 
-      protocol: window.location.protocol,
-      search: window.location.search,
-      isInApp 
-    });
-    
-    setIsExternalBrowser(!isInApp);
+    detectBrowser();
   }, []);
 
-  // Charger le document depuis la base de données
+  // Chargement du document avec plusieurs tentatives
   useEffect(() => {
-    const loadDocument = async () => {
+    const loadDocumentWithRetry = async (attempt = 0) => {
       if (!documentId) return;
       
       try {
         setLoading(true);
-        const { data, error } = await supabase
+        setError(null);
+        
+        console.log(`Tentative ${attempt + 1} de chargement du document:`, documentId);
+        
+        // Tentative 1: pdf_documents
+        let { data, error } = await supabase
           .from('pdf_documents')
           .select('*')
           .eq('id', documentId)
           .single();
 
-        if (error) {
-          console.error('Erreur lors du chargement du document:', error);
-          setError('Document non trouvé');
-          return;
+        console.log('Résultat pdf_documents:', { data, error });
+
+        if (error && error.code !== 'PGRST116') {
+          throw error;
         }
 
-        const transformedDoc: Document = {
-          id: data.id,
-          file_name: data.file_name,
-          file_path: data.file_path,
-          file_type: data.content_type || 'application/pdf',
-          content_type: data.content_type,
-          user_id: data.user_id,
-          created_at: data.created_at,
-          description: data.description,
-          file_size: data.file_size,
-          updated_at: data.updated_at,
-          external_id: data.external_id
-        };
+        if (!data) {
+          // Tentative 2: directives
+          const { data: directiveData, error: directiveError } = await supabase
+            .from('directives')
+            .select('*')
+            .eq('id', documentId)
+            .single();
 
-        setDocument(transformedDoc);
-      } catch (err) {
-        console.error('Erreur:', err);
-        setError('Erreur lors du chargement du document');
+          console.log('Résultat directives:', { directiveData, directiveError });
+
+          if (directiveError && directiveError.code !== 'PGRST116') {
+            throw directiveError;
+          }
+
+          if (!directiveData) {
+            // Tentative 3: shared_documents
+            const { data: sharedData, error: sharedError } = await supabase
+              .from('shared_documents')
+              .select('*')
+              .eq('document_id', documentId)
+              .single();
+
+            console.log('Résultat shared_documents:', { sharedData, sharedError });
+
+            if (sharedError && sharedError.code !== 'PGRST116') {
+              throw sharedError;
+            }
+
+            if (!sharedData) {
+              throw new Error(`Document introuvable avec l'ID: ${documentId}`);
+            }
+
+            // Document trouvé dans shared_documents
+            setDocument({
+              id: sharedData.document_id,
+              file_name: `Document partagé`,
+              file_path: sharedData.document_data?.file_path || '#',
+              file_type: sharedData.document_type || 'application/pdf',
+              content_type: sharedData.document_type,
+              user_id: sharedData.user_id,
+              created_at: sharedData.shared_at,
+              description: 'Document partagé'
+            });
+          } else {
+            // Document trouvé dans directives
+            const content = directiveData.content as any;
+            setDocument({
+              id: directiveData.id,
+              file_name: content?.title || content?.titre || 'Directive anticipée',
+              file_path: `data:application/pdf;base64,${btoa('PDF directive')}`, // Placeholder
+              file_type: 'application/json',
+              content_type: 'application/json',
+              user_id: directiveData.user_id,
+              created_at: directiveData.created_at,
+              description: 'Directive anticipée',
+              content: directiveData.content
+            });
+          }
+        } else {
+          // Document trouvé dans pdf_documents
+          setDocument({
+            id: data.id,
+            file_name: data.file_name,
+            file_path: data.file_path,
+            file_type: data.content_type || 'application/pdf',
+            content_type: data.content_type,
+            user_id: data.user_id,
+            created_at: data.created_at,
+            description: data.description,
+            file_size: data.file_size,
+            updated_at: data.updated_at,
+            external_id: data.external_id
+          });
+        }
+
+        console.log("Document chargé avec succès");
+
+      } catch (err: any) {
+        console.error(`Erreur tentative ${attempt + 1}:`, err);
+        
+        if (attempt < 2) {
+          // Retry après 1 seconde
+          setTimeout(() => {
+            setRetryCount(attempt + 1);
+            loadDocumentWithRetry(attempt + 1);
+          }, 1000 * (attempt + 1));
+          return;
+        }
+        
+        setError(err.message || 'Impossible de charger le document');
       } finally {
         setLoading(false);
       }
     };
 
-    loadDocument();
-  }, [documentId]);
+    loadDocumentWithRetry();
+  }, [documentId, retryCount]);
 
-  // Si c'est un navigateur externe, afficher un lien vers l'application
+  // Solutions pour navigateur externe
   if (isExternalBrowser) {
     const appUrl = `https://24c30559-a746-463d-805e-d2330d3a13f4.lovableproject.com/pdf-viewer?id=${documentId}&inapp=true`;
+    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(appUrl)}`;
     
     return (
       <div className="min-h-screen bg-gray-50 py-8">
@@ -94,23 +194,32 @@ const PdfViewer = () => {
           <Card>
             <CardHeader className="text-center">
               <CardTitle className="flex items-center justify-center gap-2">
-                <ExternalLink className="h-6 w-6 text-blue-600" />
-                Ouvrir dans l'application
+                <Globe className="h-6 w-6 text-blue-600" />
+                Document Médical
               </CardTitle>
             </CardHeader>
             <CardContent className="text-center space-y-4">
-              <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-                <p className="text-yellow-800 font-medium">
-                  ⚠️ Limitation du navigateur
+              <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <p className="text-blue-800 font-medium">
+                  📱 Accès optimisé disponible
                 </p>
-                <p className="text-sm text-yellow-700 mt-1">
-                  Ce PDF ne peut pas être affiché directement dans ce navigateur pour des raisons de sécurité.
+                <p className="text-sm text-blue-700 mt-1">
+                  Pour une meilleure expérience de visualisation, utilisez l'application DirectivePlus.
                 </p>
               </div>
               
-              <p className="text-gray-600">
-                Pour visualiser ce document, veuillez l'ouvrir dans l'application DirectivePlus ou le télécharger.
-              </p>
+              {/* QR Code pour accès rapide */}
+              <div className="p-4 bg-white rounded-lg border">
+                <p className="text-sm text-gray-600 mb-3">Scannez pour ouvrir dans l'app :</p>
+                <img 
+                  src={qrCodeUrl} 
+                  alt="QR Code pour accès direct"
+                  className="mx-auto rounded"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+              </div>
               
               <div className="space-y-3">
                 <Button 
@@ -119,7 +228,19 @@ const PdfViewer = () => {
                   size="lg"
                 >
                   <ExternalLink className="w-4 h-4 mr-2" />
-                  Ouvrir dans l'application
+                  Ouvrir dans DirectivePlus
+                </Button>
+                
+                <Button 
+                  variant="outline"
+                  onClick={() => {
+                    navigator.clipboard.writeText(appUrl);
+                    alert('Lien copié ! Collez-le dans votre navigateur.');
+                  }}
+                  className="w-full"
+                  size="lg"
+                >
+                  📋 Copier le lien
                 </Button>
                 
                 {document && (
@@ -130,28 +251,46 @@ const PdfViewer = () => {
                     size="lg"
                   >
                     <Download className="w-4 h-4 mr-2" />
-                    Télécharger le PDF
+                    Télécharger directement
                   </Button>
                 )}
                 
-                {document && (
-                  <Button 
-                    variant="outline"
-                    onClick={() => window.open(document.file_path, '_blank')}
-                    className="w-full"
-                    size="lg"
-                  >
-                    <ExternalLink className="w-4 h-4 mr-2" />
-                    Ouvrir dans un nouvel onglet
-                  </Button>
-                )}
+                <Button 
+                  variant="outline"
+                  onClick={() => window.open(`https://docs.google.com/gview?url=${encodeURIComponent(document?.file_path || '')}&embedded=true`, '_blank')}
+                  className="w-full"
+                  size="lg"
+                  disabled={!document?.file_path || document.file_path === '#'}
+                >
+                  👁️ Aperçu Google Docs
+                </Button>
               </div>
               
-              <div className="p-3 bg-blue-50 rounded-lg">
-                <p className="text-sm text-blue-800">
-                  💡 <strong>Astuce :</strong> Ajoutez cette page à vos favoris pour un accès rapide.
+              <div className="p-3 bg-green-50 rounded-lg">
+                <p className="text-sm text-green-800">
+                  💡 <strong>Solutions multiples :</strong> QR code, lien direct, téléchargement, ou aperçu en ligne.
                 </p>
               </div>
+
+              {error && (
+                <div className="p-3 bg-red-50 rounded-lg border border-red-200">
+                  <p className="text-sm text-red-800">
+                    ⚠️ {error}
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      setRetryCount(prev => prev + 1);
+                      setError(null);
+                    }}
+                    className="mt-2"
+                  >
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Réessayer
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -168,7 +307,13 @@ const PdfViewer = () => {
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="container mx-auto px-4 max-w-5xl">
           <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+            <div className="text-center space-y-4">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="text-gray-600">
+                Chargement du document... 
+                {retryCount > 0 && ` (Tentative ${retryCount + 1})`}
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -185,14 +330,25 @@ const PdfViewer = () => {
               {error || 'Document non trouvé'}
             </AlertDescription>
           </Alert>
-          <Button 
-            variant="outline" 
-            onClick={() => window.history.back()}
-            className="mt-4"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Retour
-          </Button>
+          <div className="mt-4 space-x-2">
+            <Button 
+              variant="outline" 
+              onClick={() => window.history.back()}
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Retour
+            </Button>
+            <Button 
+              variant="outline"
+              onClick={() => {
+                setRetryCount(prev => prev + 1);
+                setError(null);
+              }}
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Réessayer
+            </Button>
+          </div>
         </div>
       </div>
     );
