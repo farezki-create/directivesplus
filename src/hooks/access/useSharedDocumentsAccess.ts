@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import { useDossierStore } from "@/store/dossierStore";
-import { UnifiedSharingService } from "@/hooks/sharing/core/unifiedSharingService";
+import { SharingService } from "@/hooks/sharing/core/sharingService";
 
 interface AccessFormData {
   accessCode: string;
@@ -30,7 +30,7 @@ export const useSharedDocumentsAccess = () => {
       console.log("=== VALIDATION ACCÈS DOCUMENTS PARTAGÉS (UNIFIÉ) ===");
       console.log("Données:", formData);
 
-      const validationResult = await UnifiedSharingService.validateAccessCode(
+      const validationResult = await SharingService.validateAccessCode(
         formData.accessCode,
         {
           firstName: formData.firstName,
@@ -61,8 +61,7 @@ export const useSharedDocumentsAccess = () => {
               date_naissance: null
             },
             documents: documents.map(doc => ({
-              ...doc.document_data,
-              shared_at: doc.shared_at,
+              ...doc,
               source: 'shared_documents'
             }))
           }

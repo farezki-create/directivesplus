@@ -2,7 +2,7 @@
 import { FC } from "react";
 import { DocumentCardRefactored } from "@/components/documents/card/DocumentCardRefactored";
 import EmptyDocumentsState from "@/components/documents/EmptyDocumentsState";
-import { ShareableDocument } from "@/hooks/sharing/useUnifiedSharing";
+import { ShareableDocument } from "@/hooks/sharing/types";
 
 interface DirectivesDocumentListProps {
   documents: ShareableDocument[];

@@ -4,8 +4,12 @@ import { toast } from "@/hooks/use-toast";
 import { SharingService } from "./core/sharingService";
 import type { ShareableDocument, AccessValidationResult } from "./types";
 
+// Re-export the type for components that need it
+export type { ShareableDocument } from "./types";
+
 export const useUnifiedSharing = () => {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isValidating, setIsValidating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   /**
@@ -97,13 +101,17 @@ export const useUnifiedSharing = () => {
       birthDate?: string;
     }
   ): Promise<AccessValidationResult> => {
+    setIsValidating(true);
     try {
-      return await SharingService.validateAccessCode(accessCode, personalInfo);
+      const result = await SharingService.validateAccessCode(accessCode, personalInfo);
+      return result;
     } catch (err: any) {
       return {
         success: false,
         error: err.message || "Erreur lors de la validation"
       };
+    } finally {
+      setIsValidating(false);
     }
   };
 
@@ -161,6 +169,7 @@ export const useUnifiedSharing = () => {
   return {
     // État
     isGenerating,
+    isValidating,
     error,
     
     // Actions
