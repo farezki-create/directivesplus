@@ -31,15 +31,7 @@ export interface GlobalAccessData {
   total_documents: number;
   generated_at: string;
   documents: ShareableDocument[];
-}
-
-// Structure pour les réponses de la RPC Supabase
-export interface SupabaseSharedDocumentResponse {
-  document_id: string;
-  document_type: string;
-  document_data: GlobalAccessData;
-  user_id: string;
-  shared_at: string;
+  [key: string]: any; // Index signature pour la compatibilité Json de Supabase
 }
 
 export interface ShareOptions {

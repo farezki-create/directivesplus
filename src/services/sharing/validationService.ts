@@ -4,9 +4,19 @@ import type {
   ShareableDocument, 
   ValidationRequest, 
   ValidationResult,
-  SupabaseSharedDocumentResponse,
   GlobalAccessData
 } from "@/types/sharing";
+
+/**
+ * Interface pour les réponses brutes de Supabase
+ */
+interface SupabaseRawResponse {
+  document_id: string;
+  document_type: string;
+  document_data: any; // Utiliser any pour la réception depuis Supabase
+  user_id: string;
+  shared_at: string;
+}
 
 /**
  * Service de validation des codes d'accès - Version refactorisée
@@ -50,8 +60,8 @@ export class ValidationService {
 
       console.log("Données brutes reçues:", data);
 
-      // Traitement avec typage strict
-      const responseData = data[0] as SupabaseSharedDocumentResponse;
+      // Traitement avec assertion de type pour la réponse brute
+      const responseData = data[0] as SupabaseRawResponse;
       
       if (!responseData.document_data) {
         console.error("Aucune donnée de document trouvée");
@@ -61,10 +71,19 @@ export class ValidationService {
         };
       }
 
-      // Conversion sécurisée vers GlobalAccessData
+      // Conversion vers GlobalAccessData avec validation
       const globalData = responseData.document_data as GlobalAccessData;
       
       // Validation de la structure
+      if (!globalData || typeof globalData !== 'object') {
+        console.error("Format de données invalide:", globalData);
+        return {
+          success: false,
+          error: "Format de données invalide"
+        };
+      }
+
+      // Vérification des propriétés requises
       if (globalData.access_type !== 'global' || !Array.isArray(globalData.documents)) {
         console.error("Structure de données globales invalide:", globalData);
         return {

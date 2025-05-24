@@ -131,13 +131,13 @@ export class AccessCodeService {
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + expiresInDays);
 
-      // Créer l'entrée dans shared_documents
+      // Créer l'entrée dans shared_documents avec conversion explicite vers Json
       const { data, error } = await supabase
         .from('shared_documents')
         .insert({
           document_id: userId, // Utiliser userId comme document_id pour l'accès global
           document_type: 'global_access',
-          document_data: globalData,
+          document_data: globalData as any, // Conversion explicite vers Json
           user_id: userId,
           expires_at: expiresAt.toISOString()
         })
