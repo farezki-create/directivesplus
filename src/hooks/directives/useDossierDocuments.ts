@@ -10,29 +10,37 @@ export const useDossierDocuments = () => {
 
   useEffect(() => {
     const loadDocuments = () => {
-      if (dossierActif?.contenu?.documents) {
+      console.log("useDossierDocuments - Chargement des documents...");
+      console.log("Dossier actif:", dossierActif);
+      
+      if (dossierActif?.contenu?.documents && Array.isArray(dossierActif.contenu.documents)) {
         console.log("Documents du dossier:", dossierActif.contenu.documents);
         
         // Transform documents to match the Document interface
-        const transformedDocuments: Document[] = dossierActif.contenu.documents.map((doc: any, index: number) => ({
-          id: doc.id || `doc-${index}`,
-          file_name: doc.file_name || doc.fileName || `Document ${index + 1}`,
-          file_path: doc.file_path || doc.filePath || '',
-          file_type: doc.file_type || doc.fileType || 'pdf',
-          content_type: doc.content_type || doc.contentType,
-          user_id: doc.user_id || doc.userId || '',
-          created_at: doc.created_at || doc.createdAt || new Date().toISOString(),
-          description: doc.description,
-          content: doc.content,
-          file_size: doc.file_size || doc.fileSize,
-          updated_at: doc.updated_at || doc.updatedAt,
-          external_id: doc.external_id || doc.externalId
-        }));
+        const transformedDocuments: Document[] = dossierActif.contenu.documents.map((doc: any, index: number) => {
+          const transformedDoc = {
+            id: doc.id || `doc-${index}`,
+            file_name: doc.file_name || doc.fileName || `Document ${index + 1}`,
+            file_path: doc.file_path || doc.filePath || '',
+            file_type: doc.file_type || doc.fileType || 'pdf',
+            content_type: doc.content_type || doc.contentType,
+            user_id: doc.user_id || doc.userId || '',
+            created_at: doc.created_at || doc.createdAt || new Date().toISOString(),
+            description: doc.description,
+            content: doc.content,
+            file_size: doc.file_size || doc.fileSize,
+            updated_at: doc.updated_at || doc.updatedAt,
+            external_id: doc.external_id || doc.externalId
+          };
+          
+          console.log("Document transformé:", transformedDoc);
+          return transformedDoc;
+        });
         
         setDocuments(transformedDocuments);
         console.log("Documents transformés:", transformedDocuments);
       } else {
-        console.log("Aucun document dans le dossier actif");
+        console.log("Aucun document dans le dossier actif ou structure invalide");
         setDocuments([]);
       }
       setIsLoading(false);

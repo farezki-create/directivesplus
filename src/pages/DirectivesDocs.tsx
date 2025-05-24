@@ -144,25 +144,48 @@ const DirectivesDocs = () => {
 
   // Pour les utilisateurs non authentifiés avec accès public vérifié OU avec un dossier dans le store
   if (!isAuthenticated && (publicAccessVerified || dossierActif)) {
+    // Déterminer les documents à afficher
+    let documentsToDisplay = documents;
+    
+    // Si nous avons un dossier actif, utiliser ses documents
+    if (dossierActif?.contenu?.documents) {
+      documentsToDisplay = dossierActif.contenu.documents.map((doc: any, index: number) => ({
+        id: doc.id || `doc-${index}`,
+        file_name: doc.file_name || doc.fileName || `Document ${index + 1}`,
+        file_path: doc.file_path || doc.filePath || '',
+        file_type: doc.file_type || doc.fileType || 'pdf',
+        content_type: doc.content_type || doc.contentType,
+        user_id: doc.user_id || doc.userId || '',
+        created_at: doc.created_at || doc.createdAt || new Date().toISOString(),
+        description: doc.description,
+        content: doc.content,
+        file_size: doc.file_size || doc.fileSize,
+        updated_at: doc.updated_at || doc.updatedAt,
+        external_id: doc.external_id || doc.externalId
+      }));
+    }
+
+    console.log("Documents à afficher:", documentsToDisplay);
+
     return (
       <PublicDirectivesView
         dossierActif={dossierActif}
         profile={profile}
-        documents={documents}
+        documents={documentsToDisplay}
         onDownload={handleDownload}
         onPrint={handlePrint}
         onView={handleView}
         previewDocument={previewDocument?.file_path || null}
         setPreviewDocument={(filePath: string | null) => {
           if (filePath) {
-            const doc = documents.find(d => d.file_path === filePath);
+            const doc = documentsToDisplay.find(d => d.file_path === filePath);
             setPreviewDocument(doc || null);
           } else {
             setPreviewDocument(null);
           }
         }}
         handlePreviewDownload={(filePath: string) => {
-          const doc = documents.find(d => d.file_path === filePath);
+          const doc = documentsToDisplay.find(d => d.file_path === filePath);
           const fileName = doc?.file_name || 'document';
           handleDownload(filePath, fileName);
         }}
