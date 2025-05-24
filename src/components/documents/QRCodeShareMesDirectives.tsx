@@ -14,7 +14,8 @@ interface QRCodeShareMesDirectivesProps {
 
 export function QRCodeShareMesDirectives({ sharedCode, onClose }: QRCodeShareMesDirectivesProps) {
   const baseUrl = window.location.origin;
-  const url = `${baseUrl}/mes-directives?shared_code=${sharedCode}`;
+  // Modifier l'URL pour pointer vers la page de partage spécifique
+  const url = `${baseUrl}/partage/${sharedCode}`;
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -44,7 +45,7 @@ export function QRCodeShareMesDirectives({ sharedCode, onClose }: QRCodeShareMes
       <CardHeader className="text-center pb-4">
         <CardTitle className="flex items-center justify-center gap-2">
           <QrCode className="h-5 w-5" />
-          Lien d'accès à mes directives
+          Lien d'accès au document
         </CardTitle>
       </CardHeader>
       
@@ -89,7 +90,7 @@ export function QRCodeShareMesDirectives({ sharedCode, onClose }: QRCodeShareMes
             🔒 Accès sécurisé
           </p>
           <p className="text-xs text-blue-700">
-            Ce lien est protégé par le nom, prénom et la date de naissance du patient.
+            Ce lien donne accès uniquement à ce document spécifique.
             L'accès expirera automatiquement dans 30 jours.
           </p>
         </div>
