@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -7,20 +6,14 @@ import { useDocumentViewer } from "./useDocumentViewer";
 import { useDocumentDownload } from "./useDocumentDownload";
 import { useDocumentPrint } from "./useDocumentPrint";
 import { useDocumentDeletion } from "./useDocumentDeletion";
+import { ShareableDocument } from "@/hooks/sharing/types";
 
-interface Document {
-  id: string;
-  file_name: string;
-  file_path: string;
-  created_at: string;
-  description?: string;
-  file_type?: string;
-  user_id: string;
-  is_private?: boolean; // This is for UI purposes only, not stored in DB
+interface Document extends ShareableDocument {
+  // Hérite de ShareableDocument pour compatibilité complète
 }
 
 export const useMedicalDocuments = (user: User | null) => {
-  const [documents, setDocuments] = useState<Document[]>([]);
+  const [documents, setDocuments] = useState<ShareableDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -60,9 +53,11 @@ export const useMedicalDocuments = (user: User | null) => {
       
       console.log("Retrieved documents:", data?.length || 0);
       
-      // Set is_private to false by default for all documents since it's not in the DB
-      const processedDocuments = (data || []).map(doc => ({
+      // Transformer en ShareableDocument
+      const processedDocuments: ShareableDocument[] = (data || []).map(doc => ({
         ...doc,
+        file_type: 'medical' as const,
+        source: 'medical_documents' as const,
         is_private: false // Default value since it's not stored in DB
       }));
       

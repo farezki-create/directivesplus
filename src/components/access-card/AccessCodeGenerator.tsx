@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, Share2, Copy, Check, Calendar, CreditCard } from "lucide-react";
-import { useUnifiedSharing } from "@/hooks/sharing/useUnifiedSharing";
+import { useSharing } from "@/hooks/sharing/useSharing";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -16,7 +16,7 @@ interface AccessCodeGeneratorProps {
 
 export const AccessCodeGenerator = ({ onCodeGenerated }: AccessCodeGeneratorProps) => {
   const { user, profile } = useAuth();
-  const { generateInstitutionCode, isGenerating } = useUnifiedSharing();
+  const { generateInstitutionCode, isGenerating } = useSharing();
   const [accessCode, setAccessCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [showCard, setShowCard] = useState(false);
@@ -94,7 +94,7 @@ export const AccessCodeGenerator = ({ onCodeGenerated }: AccessCodeGeneratorProp
         file_path: "",
         created_at: new Date().toISOString(),
         user_id: user.id,
-        file_type: "directive",
+        file_type: "directive" as const,
         source: "directives" as const,
         content: directiveContent
       };

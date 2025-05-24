@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -6,26 +5,15 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useDocumentOperations } from "./useDocumentOperations";
 import { useDossierDocuments } from "./directives/useDossierDocuments";
 import { useSupabaseDocuments } from "./directives/useSupabaseDocuments";
+import { ShareableDocument } from "@/hooks/sharing/types";
 
-export interface Document {
-  id: string;
-  file_name: string;
-  file_path: string;
-  created_at: string;
-  description?: string;
-  content_type?: string;
-  file_type?: string;
-  user_id?: string;
-  is_private?: boolean;
-  content?: any;
-  external_id?: string | null;
-  file_size?: number | null;
-  updated_at?: string;
+export interface Document extends ShareableDocument {
+  // Hérite de ShareableDocument pour compatibilité complète
 }
 
 export const useDirectivesDocuments = () => {
   const { user, isAuthenticated } = useAuth();
-  const [documents, setDocuments] = useState<Document[]>([]);
+  const [documents, setDocuments] = useState<ShareableDocument[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showAddOptions, setShowAddOptions] = useState(false);
   
@@ -63,7 +51,7 @@ export const useDirectivesDocuments = () => {
     setIsLoading(true);
     
     try {
-      let allDocuments: Document[] = [];
+      let allDocuments: ShareableDocument[] = [];
       
       // Si on a un dossier actif, récupérer ses documents
       if (dossierActif) {
