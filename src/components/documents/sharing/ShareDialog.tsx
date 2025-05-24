@@ -70,7 +70,7 @@ export const ShareDialog: React.FC<ShareDialogProps> = ({
             <ShareDialogContent
               document={document}
               accessCode={accessCode}
-              isSharing={isSharing}
+              isSharing={typeof isSharing === 'string' ? isSharing : null}
               isExtending={isExtending}
               isRegenerating={isRegenerating}
               onShareDocument={handleShareDocument}
