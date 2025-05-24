@@ -3,7 +3,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDossierStore } from "@/store/dossierStore";
-import { useVerifierCodeAcces, Dossier } from "@/hooks/useVerifierCodeAcces";
+import { useVerifierCodeAcces } from "@/hooks/useVerifierCodeAcces";
+import type { Dossier } from "@/hooks/types/dossierTypes";
 import { toast } from "@/hooks/use-toast";
 import { getAuthUserDossier } from "@/api/dossier";
 
