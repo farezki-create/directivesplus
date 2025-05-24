@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, CheckCircle, Info } from "lucide-react";
 import { useAccessCode } from "@/hooks/useAccessCode";
+import { AccessCodeService } from "@/services/accessCode/AccessCodeService";
 import { useDossierStore } from "@/store/dossierStore";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
@@ -22,6 +23,7 @@ export const InstitutionAccessForm = () => {
   const { setDossierActif } = useDossierStore();
   const { validateCode, isValidating } = useAccessCode();
   const [result, setResult] = useState<any>(null);
+  const [diagnosticInfo, setDiagnosticInfo] = useState<any>(null);
   
   const [form, setForm] = useState<InstitutionFormData>({
     lastName: "",
@@ -112,6 +114,27 @@ export const InstitutionAccessForm = () => {
     }
   };
 
+  const handleDiagnostic = async () => {
+    if (!form.firstName || !form.lastName) {
+      toast({
+        title: "Informations manquantes",
+        description: "Veuillez saisir au moins le nom et prénom",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    console.log("🔍 Lancement diagnostic...");
+    const diagnostic = await AccessCodeService.diagnosticSystem({
+      firstName: form.firstName.trim(),
+      lastName: form.lastName.trim(),
+      birthDate: form.birthDate
+    });
+    
+    setDiagnosticInfo(diagnostic);
+    console.log("📋 Diagnostic terminé:", diagnostic);
+  };
+
   return (
     <div className="max-w-md mx-auto space-y-6">
       {/* Info accès professionnel */}
@@ -185,6 +208,41 @@ export const InstitutionAccessForm = () => {
           {isValidating ? "Vérification..." : "Accéder aux directives"}
         </Button>
       </form>
+
+      {/* Bouton de diagnostic */}
+      <div className="space-y-2">
+        <Button 
+          type="button" 
+          variant="outline" 
+          className="w-full"
+          onClick={handleDiagnostic}
+        >
+          🔍 Diagnostic du système
+        </Button>
+        <p className="text-xs text-gray-500 text-center">
+          Cliquez pour diagnostiquer les problèmes d'accès
+        </p>
+      </div>
+
+      {/* Informations de diagnostic */}
+      {diagnosticInfo && (
+        <Alert className="bg-yellow-50 border-yellow-200">
+          <Info className="h-5 w-5 text-yellow-600" />
+          <AlertDescription className="text-yellow-800">
+            <strong>Diagnostic :</strong> {diagnosticInfo.diagnostic}
+            <br />
+            <small>{diagnosticInfo.recommendation}</small>
+            {diagnosticInfo.testUserCreated && (
+              <div className="mt-2 p-2 bg-yellow-100 rounded text-xs">
+                <strong>Données de test créées :</strong><br />
+                Code: <code className="bg-yellow-200 px-1 rounded">{diagnosticInfo.testUserCreated.fixedCode}</code><br />
+                Nom: AREZKI, Prénom: FARID<br />
+                Date: 1963-08-13
+              </div>
+            )}
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Résultat */}
       {result && (
