@@ -64,7 +64,7 @@ const AccessCardPage = () => {
               Carte d'accès professionnelle
             </h1>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Générez un code d'accès sécurisé pour permettre aux professionnels de santé 
+              Votre code d'accès personnel permanent pour permettre aux professionnels de santé 
               d'accéder à vos directives anticipées en cas d'urgence.
             </p>
           </div>
@@ -73,8 +73,8 @@ const AccessCardPage = () => {
           <Alert className="mb-6 bg-blue-50 border-blue-200">
             <Info className="h-5 w-5 text-blue-600" />
             <AlertDescription className="text-blue-800">
-              <strong>Nouveau :</strong> Les codes d'accès sont maintenant valables 12 mois 
-              et peuvent être imprimés au format carte bancaire pour un transport facile.
+              <strong>Code permanent :</strong> Votre code d'accès ne change jamais et peut être 
+              imprimé au format carte bancaire pour un transport facile.
             </AlertDescription>
           </Alert>
           
@@ -104,7 +104,7 @@ const AccessCardPage = () => {
           <div className="mt-8">
             <div className="bg-white rounded-lg p-6 shadow-sm border">
               <h3 className="text-lg font-semibold mb-4 text-directiveplus-800">
-                Comment utiliser votre code d'accès
+                Comment utiliser votre code d'accès permanent
               </h3>
               
               <div className="grid md:grid-cols-3 gap-6">
@@ -112,9 +112,9 @@ const AccessCardPage = () => {
                   <div className="w-12 h-12 bg-directiveplus-100 rounded-full flex items-center justify-center mx-auto mb-3">
                     <span className="text-directiveplus-600 font-bold text-lg">1</span>
                   </div>
-                  <h4 className="font-medium mb-2">Générez votre code</h4>
+                  <h4 className="font-medium mb-2">Code personnel</h4>
                   <p className="text-sm text-gray-600">
-                    Créez un code d'accès sécurisé valable 12 mois
+                    Votre code est unique et ne change jamais
                   </p>
                 </div>
                 
@@ -122,9 +122,9 @@ const AccessCardPage = () => {
                   <div className="w-12 h-12 bg-directiveplus-100 rounded-full flex items-center justify-center mx-auto mb-3">
                     <span className="text-directiveplus-600 font-bold text-lg">2</span>
                   </div>
-                  <h4 className="font-medium mb-2">Partagez avec confiance</h4>
+                  <h4 className="font-medium mb-2">Partagez en confiance</h4>
                   <p className="text-sm text-gray-600">
-                    Transmettez le code uniquement aux professionnels autorisés
+                    Transmettez le code aux professionnels autorisés
                   </p>
                 </div>
                 
@@ -132,9 +132,9 @@ const AccessCardPage = () => {
                   <div className="w-12 h-12 bg-directiveplus-100 rounded-full flex items-center justify-center mx-auto mb-3">
                     <span className="text-directiveplus-600 font-bold text-lg">3</span>
                   </div>
-                  <h4 className="font-medium mb-2">Accès sécurisé</h4>
+                  <h4 className="font-medium mb-2">Accès permanent</h4>
                   <p className="text-sm text-gray-600">
-                    Le professionnel accède à vos directives avec vos informations
+                    Le professionnel accède à vos directives à tout moment
                   </p>
                 </div>
               </div>
