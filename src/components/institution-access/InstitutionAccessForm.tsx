@@ -5,15 +5,23 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, CheckCircle, Info } from "lucide-react";
-import { useInstitutionAccess, type InstitutionFormData } from "@/hooks/sharing/useInstitutionAccess";
+import { validateInstitutionAccess, type InstitutionAccessResult } from "@/hooks/sharing/institutionSharingService";
 import { useDossierStore } from "@/store/dossierStore";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 
+export interface InstitutionFormData {
+  lastName: string;
+  firstName: string;
+  birthDate: string;
+  institutionCode: string;
+}
+
 export const InstitutionAccessForm = () => {
   const navigate = useNavigate();
   const { setDossierActif } = useDossierStore();
-  const { loading, result, validateAccess } = useInstitutionAccess();
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<InstitutionAccessResult | null>(null);
   
   const [form, setForm] = useState<InstitutionFormData>({
     lastName: "",
@@ -25,6 +33,30 @@ export const InstitutionAccessForm = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const validateAccess = async (formData: InstitutionFormData): Promise<InstitutionAccessResult> => {
+    setLoading(true);
+    try {
+      const validationResult = await validateInstitutionAccess(
+        formData.lastName.trim(),
+        formData.firstName.trim(),
+        formData.birthDate,
+        formData.institutionCode.trim()
+      );
+      setResult(validationResult);
+      return validationResult;
+    } catch (error) {
+      console.error("Erreur validation:", error);
+      const errorResult = {
+        success: false,
+        message: "Erreur technique lors de la validation"
+      };
+      setResult(errorResult);
+      return errorResult;
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

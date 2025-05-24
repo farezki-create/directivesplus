@@ -5,7 +5,7 @@ import type { ShareableDocument } from "./types";
 export interface InstitutionAccessResult {
   success: boolean;
   message: string;
-  directiveData?: {
+  patientData?: {
     user_id: string;
     first_name: string;
     last_name: string;
@@ -114,7 +114,7 @@ export const validateInstitutionAccess = async (
     }
 
     // Construire les données du patient
-    const directiveData = {
+    const patientData = {
       user_id: data[0].user_id,
       first_name: profileData.first_name,
       last_name: profileData.last_name,
@@ -122,12 +122,12 @@ export const validateInstitutionAccess = async (
       directives: data.map(doc => doc.document_data)
     };
 
-    console.log("Données patient construites:", directiveData);
+    console.log("Données patient construites:", patientData);
 
     return {
       success: true,
       message: `Accès autorisé pour ${profileData.first_name} ${profileData.last_name}`,
-      directiveData
+      patientData
     };
 
   } catch (error) {
