@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -19,6 +18,9 @@ export interface Document {
   user_id?: string;
   is_private?: boolean;
   content?: any;
+  external_id?: string;
+  file_size?: number;
+  updated_at?: string;
 }
 
 export const useDirectivesDocuments = () => {
@@ -119,7 +121,10 @@ export const useDirectivesDocuments = () => {
         content_type: doc.content_type || 'application/json',
         user_id: doc.user_id || userId,
         is_private: doc.is_private || false,
-        content: cleanContent
+        content: cleanContent,
+        external_id: doc.external_id || null,
+        file_size: doc.file_size || null,
+        updated_at: doc.updated_at || doc.created_at || new Date().toISOString()
       };
       
       console.log("Document transformé:", transformedDoc);
