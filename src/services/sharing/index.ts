@@ -4,15 +4,11 @@ export { AccessCodeService } from './accessCodeService';
 export { ValidationService } from './validationService';
 export { DocumentService } from './documentService';
 
-export type {
+// Export des types depuis le module principal
+export type { 
+  ShareableDocument,
   AccessCodeOptions,
-  AccessCodeResult
-} from './accessCodeService';
-
-export type {
+  AccessCodeResult,
   ValidationRequest,
   ValidationResult
-} from './validationService';
-
-// Export des types depuis le module principal
-export type { ShareableDocument } from '@/types/sharing';
+} from '@/types/sharing';
