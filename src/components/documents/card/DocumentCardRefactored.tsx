@@ -59,7 +59,8 @@ export const DocumentCardRefactored: React.FC<DocumentCardRefactoredProps> = ({
     }
 
     try {
-      openQRCodeModal(document.id, document.file_name);
+      // Passer le file_path pour permettre l'accès direct au PDF
+      openQRCodeModal(document.id, document.file_name, document.file_path);
     } catch (error) {
       console.error("Erreur lors de l'ouverture du modal QR code:", error);
     }
@@ -125,7 +126,7 @@ export const DocumentCardRefactored: React.FC<DocumentCardRefactoredProps> = ({
               disabled={!document.id}
             >
               <QrCode size={16} />
-              QR Code
+              QR Direct
             </Button>
 
             {onAddToSharedFolder && (
@@ -157,6 +158,7 @@ export const DocumentCardRefactored: React.FC<DocumentCardRefactoredProps> = ({
       <QRCodeModal
         documentId={qrCodeModalState.documentId}
         documentName={qrCodeModalState.documentName}
+        filePath={qrCodeModalState.filePath}
         onOpenChange={(open) => {
           if (!open) {
             closeQRCodeModal();

@@ -7,6 +7,7 @@ interface QRCodeData {
   documentName: string;
   shareUrl: string;
   qrCodeValue: string;
+  directPdfUrl: string;
 }
 
 export const useQRCodeGeneration = () => {
@@ -14,7 +15,7 @@ export const useQRCodeGeneration = () => {
   const [qrCodeData, setQrCodeData] = useState<QRCodeData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const generateQRCode = useCallback((documentId: string, documentName: string) => {
+  const generateQRCode = useCallback((documentId: string, documentName: string, filePath?: string) => {
     if (!documentId) {
       setError("ID du document manquant");
       toast({
@@ -30,13 +31,28 @@ export const useQRCodeGeneration = () => {
 
     try {
       const baseUrl = window.location.origin;
-      const shareUrl = `${baseUrl}/document/${documentId}`;
+      
+      // Créer une URL directe vers le PDF si disponible
+      let directPdfUrl = '';
+      let qrCodeValue = '';
+      
+      if (filePath && (filePath.startsWith('http') || filePath.startsWith('data:'))) {
+        // Si on a le chemin direct du fichier, l'utiliser directement
+        directPdfUrl = filePath;
+        qrCodeValue = filePath;
+      } else {
+        // Sinon, utiliser la route de document avec redirection automatique
+        const shareUrl = `${baseUrl}/document/${documentId}`;
+        qrCodeValue = shareUrl;
+        directPdfUrl = shareUrl;
+      }
       
       const qrData: QRCodeData = {
         documentId,
         documentName,
-        shareUrl,
-        qrCodeValue: shareUrl
+        shareUrl: `${baseUrl}/document/${documentId}`,
+        qrCodeValue,
+        directPdfUrl
       };
 
       setQrCodeData(qrData);
@@ -64,13 +80,13 @@ export const useQRCodeGeneration = () => {
   }, []);
 
   const copyShareUrl = useCallback(async () => {
-    if (!qrCodeData?.shareUrl) return;
+    if (!qrCodeData?.directPdfUrl) return;
 
     try {
-      await navigator.clipboard.writeText(qrCodeData.shareUrl);
+      await navigator.clipboard.writeText(qrCodeData.directPdfUrl);
       toast({
         title: "Lien copié",
-        description: "Le lien de partage a été copié dans le presse-papiers",
+        description: "Le lien direct vers le PDF a été copié",
       });
     } catch (err) {
       toast({

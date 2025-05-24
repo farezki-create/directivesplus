@@ -8,12 +8,14 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 interface QRCodeModalProps {
   documentId: string | null;
   documentName?: string;
+  filePath?: string;
   onOpenChange: (open: boolean) => void;
 }
 
 const QRCodeModal: React.FC<QRCodeModalProps> = ({
   documentId,
   documentName = "Document",
+  filePath,
   onOpenChange
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -68,7 +70,7 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({
       <DialogContent className="max-w-md print:max-w-none print:shadow-none">
         <DialogHeader className="print:hidden">
           <DialogTitle>
-            Partager "{documentName}"
+            QR Code direct - "{documentName}"
           </DialogTitle>
         </DialogHeader>
         
@@ -76,6 +78,7 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({
           <QRCodeShareMesDirectives 
             documentId={documentId}
             documentName={documentName}
+            filePath={filePath}
             onClose={() => handleOpenChange(false)}
           />
         )}

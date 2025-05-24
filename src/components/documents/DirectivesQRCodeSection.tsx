@@ -42,7 +42,8 @@ const DirectivesQRCodeSection: React.FC<DirectivesQRCodeSectionProps> = ({
     }
 
     try {
-      openQRCodeModal(document.id, document.file_name);
+      // Passer aussi le file_path pour permettre l'accès direct
+      openQRCodeModal(document.id, document.file_name, document.file_path);
     } catch (error) {
       console.error("Erreur lors de l'ouverture du modal QR code:", error);
     }
@@ -54,12 +55,12 @@ const DirectivesQRCodeSection: React.FC<DirectivesQRCodeSectionProps> = ({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Share2 className="h-5 w-5" />
-            Partage d'urgence
+            Partage direct par QR Code
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-gray-600 mb-4">
-            Générez un QR code pour permettre l'accès direct à vos directives en cas d'urgence médicale.
+            Générez un QR code qui ouvre directement le PDF de vos directives. Plus besoin de code d'accès !
           </p>
           
           {/* Vérification des documents valides */}
@@ -89,16 +90,16 @@ const DirectivesQRCodeSection: React.FC<DirectivesQRCodeSectionProps> = ({
                   disabled={!doc.id}
                 >
                   <QrCode size={16} />
-                  QR Code
+                  QR Code Direct
                 </Button>
               </div>
             ))}
           </div>
           
-          <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-            <p className="text-sm text-blue-800">
-              💡 <strong>Conseil :</strong> Imprimez le QR code et gardez-le dans votre portefeuille 
-              pour un accès rapide en cas d'urgence.
+          <div className="mt-4 p-3 bg-green-50 rounded-lg">
+            <p className="text-sm text-green-800">
+              ✅ <strong>Nouvelle approche :</strong> Le QR code pointe directement vers le PDF. 
+              Scanner = ouverture immédiate du document !
             </p>
           </div>
         </CardContent>
@@ -107,6 +108,7 @@ const DirectivesQRCodeSection: React.FC<DirectivesQRCodeSectionProps> = ({
       <QRCodeModal
         documentId={qrCodeModalState.documentId}
         documentName={qrCodeModalState.documentName}
+        filePath={qrCodeModalState.filePath}
         onOpenChange={(open) => {
           if (!open) {
             closeQRCodeModal();
