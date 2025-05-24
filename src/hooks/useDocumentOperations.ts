@@ -41,8 +41,14 @@ export const useDocumentOperations = (refreshDocuments: () => void) => {
     console.log("useDocumentOperations - handleDownload called with:", file);
     setIsProcessing(true);
     try {
-      await originalHandleDownload(file.file_path, file.file_name);
+      // S'assurer qu'on a les propriétés nécessaires
+      const filePath = file?.file_path || file;
+      const fileName = file?.file_name || file?.name || 'document';
+      
+      console.log("useDocumentOperations - Calling originalHandleDownload with:", filePath, fileName);
+      await originalHandleDownload(filePath, fileName);
     } catch (error) {
+      console.error("useDocumentOperations - Download error:", error);
       await handleError({
         error,
         type: ErrorType.NETWORK,
@@ -61,8 +67,14 @@ export const useDocumentOperations = (refreshDocuments: () => void) => {
     console.log("useDocumentOperations - handlePrint called with:", file);
     setIsProcessing(true);
     try {
-      await originalHandlePrint(file.file_path, file.file_type || file.content_type);
+      // S'assurer qu'on a les propriétés nécessaires
+      const filePath = file?.file_path || file;
+      const fileType = file?.file_type || file?.content_type || 'application/pdf';
+      
+      console.log("useDocumentOperations - Calling originalHandlePrint with:", filePath, fileType);
+      await originalHandlePrint(filePath, fileType);
     } catch (error) {
+      console.error("useDocumentOperations - Print error:", error);
       await handleError({
         error,
         type: ErrorType.UNKNOWN,
@@ -81,9 +93,17 @@ export const useDocumentOperations = (refreshDocuments: () => void) => {
     console.log("useDocumentOperations - handleView called with:", file);
     setIsProcessing(true);
     try {
-      setPreviewDocument(file.file_path);
-      await originalHandleView(file.file_path, file.file_type || file.content_type);
+      // S'assurer qu'on a les propriétés nécessaires
+      const filePath = file?.file_path || file;
+      const fileType = file?.file_type || file?.content_type || 'application/pdf';
+      
+      console.log("useDocumentOperations - Setting preview document:", filePath);
+      setPreviewDocument(filePath);
+      
+      console.log("useDocumentOperations - Calling originalHandleView with:", filePath, fileType);
+      await originalHandleView(filePath, fileType);
     } catch (error) {
+      console.error("useDocumentOperations - View error:", error);
       await handleError({
         error,
         type: ErrorType.NETWORK,
