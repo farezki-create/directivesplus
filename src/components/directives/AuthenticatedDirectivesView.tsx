@@ -102,9 +102,11 @@ const AuthenticatedDirectivesView: React.FC<AuthenticatedDirectivesViewProps> = 
       />
 
       <DeleteConfirmationDialog 
-        isOpen={!!documentToDelete} 
-        onClose={() => setDocumentToDelete(null)} 
-        onConfirm={handleDelete}
+        documentId={documentToDelete} 
+        onOpenChange={(open) => {
+          if (!open) setDocumentToDelete(null);
+        }} 
+        onConfirmDelete={handleDelete}
       />
     </div>
   );
