@@ -89,6 +89,59 @@ const DirectivesDocs = () => {
     return <DirectivesLoadingState />;
   }
 
+  // Si l'utilisateur est authentifié, afficher directement ses documents
+  if (isAuthenticated && user) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <AppNavigation />
+        
+        <main className="flex-grow container mx-auto px-4 py-8">
+          <DirectivesNavigation />
+          
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Mes Directives</h1>
+            <p className="text-gray-600">
+              Gérez vos directives anticipées et documents associés
+            </p>
+          </div>
+          
+          <DirectivesPageContent
+            documents={documents}
+            showAddOptions={showAddOptions}
+            setShowAddOptions={setShowAddOptions}
+            userId={user.id}
+            onUploadComplete={handleUploadComplete}
+            onDownload={handleDownload}
+            onPrint={handlePrint}
+            onView={handleView}
+            onDelete={confirmDelete}
+            profile={profile}
+          />
+        </main>
+        
+        <DeleteConfirmationDialog
+          documentId={documentToDelete}
+          onOpenChange={() => setDocumentToDelete(null)}
+          onConfirmDelete={handleDelete}
+        />
+
+        <DocumentPreviewDialog
+          filePath={previewDocument}
+          onOpenChange={() => setPreviewDocument(null)}
+          onDownload={handlePreviewDownload}
+          onPrint={handlePreviewPrint}
+          showPrint={false}
+        />
+        
+        <footer className="bg-white py-6 border-t mt-auto">
+          <div className="container mx-auto px-4 text-center text-gray-500">
+            <p>© 2025 DirectivesPlus. Tous droits réservés.</p>
+          </div>
+        </footer>
+      </div>
+    );
+  }
+
   // Afficher le formulaire d'accès public si l'utilisateur n'est pas authentifié et n'a pas encore vérifié son accès
   if (!isAuthenticated && !publicAccessVerified) {
     return (
@@ -129,53 +182,12 @@ const DirectivesDocs = () => {
 
   // Rediriger vers la page d'affichage si l'utilisateur a vérifié son accès public
   if (publicAccessVerified) {
-    // Redirection vers dashboard au lieu de affichage-dossier
-    navigate("/dashboard");
+    // Redirection vers mes-directives au lieu de affichage-dossier
+    navigate("/mes-directives");
     return <DirectivesLoadingState />;
   }
 
-  return (
-    <div className="min-h-screen flex flex-col">
-      <AppNavigation />
-      
-      <main className="flex-grow container mx-auto px-4 py-8">
-        <DirectivesNavigation />
-        
-        <DirectivesPageContent
-          documents={documents}
-          showAddOptions={showAddOptions}
-          setShowAddOptions={setShowAddOptions}
-          userId={user?.id || ""}
-          onUploadComplete={handleUploadComplete}
-          onDownload={handleDownload}
-          onPrint={handlePrint}
-          onView={handleView}
-          onDelete={confirmDelete}
-          profile={profile}
-        />
-      </main>
-      
-      <DeleteConfirmationDialog
-        documentId={documentToDelete}
-        onOpenChange={() => setDocumentToDelete(null)}
-        onConfirmDelete={handleDelete}
-      />
-
-      <DocumentPreviewDialog
-        filePath={previewDocument}
-        onOpenChange={() => setPreviewDocument(null)}
-        onDownload={handlePreviewDownload}
-        onPrint={handlePreviewPrint}
-        showPrint={false} // Masquer le bouton imprimer dans la prévisualisation des directives
-      />
-      
-      <footer className="bg-white py-6 border-t mt-auto">
-        <div className="container mx-auto px-4 text-center text-gray-500">
-          <p>© 2025 DirectivesPlus. Tous droits réservés.</p>
-        </div>
-      </footer>
-    </div>
-  );
+  return <DirectivesLoadingState />;
 };
 
 export default DirectivesDocs;
