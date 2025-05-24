@@ -3,6 +3,7 @@ import { CodeGenerationService } from "./codeGeneration";
 import { ValidationService } from "./validation";
 import { DiagnosticService } from "./diagnostic";
 import { CodeManagementService } from "./codeManagement";
+import { AnonymousValidationService } from "./anonymousValidation";
 import type { 
   PersonalInfo, 
   AccessCodeOptions, 
@@ -63,30 +64,44 @@ export class AccessCodeService {
   // ============ VALIDATION DE CODES ============
 
   /**
-   * Valide un code d'accès (temporaire ou fixe)
+   * Valide un code d'accès (temporaire ou fixe) avec fallback anonyme
    */
   static async validateCode(
     accessCode: string,
     personalInfo?: PersonalInfo
   ): Promise<AccessValidationResult> {
     try {
-      console.log("=== VALIDATION CODE D'ACCÈS ===");
+      console.log("=== VALIDATION CODE D'ACCÈS AMÉLIORÉE ===");
       console.log("Code:", accessCode, "Infos:", personalInfo);
 
-      // Effectuer un diagnostic si échec prévu
-      if (personalInfo) {
-        console.log("🔍 Diagnostic avant validation...");
-        const diagnostic = await DiagnosticService.diagnosticSystem(personalInfo);
-        console.log("📊 Résultat diagnostic:", diagnostic);
+      // 1. Tentative validation RPC si infos complètes
+      if (personalInfo?.firstName && personalInfo?.lastName) {
+        console.log("🔍 Tentative validation RPC...");
+        const rpcResult = await AnonymousValidationService.validateViaRPC(accessCode, personalInfo);
+        if (rpcResult.success) {
+          console.log("✅ Validation RPC réussie");
+          return rpcResult;
+        }
       }
 
-      // 1. Tentative code temporaire
+      // 2. Tentative validation anonyme via Edge Function
+      console.log("🔍 Tentative validation anonyme...");
+      const anonymousResult = await AnonymousValidationService.validateCodeAnonymously(accessCode, personalInfo);
+      if (anonymousResult.success) {
+        console.log("✅ Validation anonyme réussie");
+        return anonymousResult;
+      }
+
+      // 3. Fallback vers validation classique (si utilisateur connecté)
+      console.log("🔍 Fallback validation classique...");
+      
+      // Tentative code temporaire
       const temporaryResult = await ValidationService.validateTemporaryCode(accessCode, personalInfo);
       if (temporaryResult.success) {
         return temporaryResult;
       }
 
-      // 2. Tentative code fixe (si infos personnelles fournies)
+      // Tentative code fixe (si infos personnelles fournies)
       if (personalInfo?.firstName && personalInfo?.lastName) {
         const fixedResult = await ValidationService.validateFixedCode(accessCode, personalInfo);
         if (fixedResult.success) {
@@ -96,7 +111,7 @@ export class AccessCodeService {
 
       return {
         success: false,
-        error: "Code d'accès invalide ou expiré"
+        error: "Code d'accès invalide ou expiré. Vérifiez que le code est correct et qu'il n'a pas expiré."
       };
 
     } catch (error: any) {

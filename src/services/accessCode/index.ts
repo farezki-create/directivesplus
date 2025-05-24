@@ -6,6 +6,7 @@ export { ValidationService } from "./validation";
 export { DiagnosticService } from "./diagnostic";
 export { CodeManagementService } from "./codeManagement";
 export { DocumentRetrievalService } from "./documentRetrieval";
+export { AnonymousValidationService } from "./anonymousValidation";
 
 // Réexportation des types
 export type {
