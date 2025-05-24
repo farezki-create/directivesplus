@@ -1,33 +1,25 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import type { ShareableDocument } from "@/types/sharing";
+import type { ShareableDocument } from "@/types/accessCode";
 
 /**
- * Service pour la récupération des documents utilisateur
+ * Service for retrieving user documents
  */
 export class DocumentRetrievalService {
   /**
    * Récupère tous les documents d'un utilisateur
    */
   static async getUserDocuments(userId: string): Promise<ShareableDocument[]> {
-    console.log("=== RÉCUPÉRATION DOCUMENTS UTILISATEUR ===");
-    console.log("User ID:", userId);
+    console.log("📄 Récupération documents pour:", userId);
     
     const documents: ShareableDocument[] = [];
 
     try {
-      // Récupérer les directives
-      console.log("🔍 Récupération des directives...");
-      const { data: directives, error: directivesError } = await supabase
+      // Directives
+      const { data: directives } = await supabase
         .from('directives')
         .select('*')
         .eq('user_id', userId);
-
-      console.log("📄 Directives récupérées:", { count: directives?.length, error: directivesError });
-
-      if (directivesError) {
-        console.error("❌ Erreur directives:", directivesError);
-      }
 
       if (directives) {
         directives.forEach(directive => {
@@ -44,21 +36,13 @@ export class DocumentRetrievalService {
             content_type: 'application/json'
           });
         });
-        console.log("✅ Directives ajoutées:", directives.length);
       }
 
-      // Récupérer les documents PDF
-      console.log("🔍 Récupération des documents PDF...");
-      const { data: pdfDocs, error: pdfError } = await supabase
+      // Documents PDF
+      const { data: pdfDocs } = await supabase
         .from('pdf_documents')
         .select('*')
         .eq('user_id', userId);
-
-      console.log("📄 Documents PDF récupérés:", { count: pdfDocs?.length, error: pdfError });
-
-      if (pdfError) {
-        console.error("❌ Erreur PDF documents:", pdfError);
-      }
 
       if (pdfDocs) {
         pdfDocs.forEach(doc => {
@@ -77,21 +61,13 @@ export class DocumentRetrievalService {
             updated_at: doc.updated_at
           });
         });
-        console.log("✅ Documents PDF ajoutés:", pdfDocs.length);
       }
 
-      // Récupérer les documents médicaux
-      console.log("🔍 Récupération des documents médicaux...");
-      const { data: medicalDocs, error: medicalError } = await supabase
+      // Documents médicaux
+      const { data: medicalDocs } = await supabase
         .from('medical_documents')
         .select('*')
         .eq('user_id', userId);
-
-      console.log("📄 Documents médicaux récupérés:", { count: medicalDocs?.length, error: medicalError });
-
-      if (medicalError) {
-        console.error("❌ Erreur documents médicaux:", medicalError);
-      }
 
       if (medicalDocs) {
         medicalDocs.forEach(doc => {
@@ -108,21 +84,13 @@ export class DocumentRetrievalService {
             file_size: doc.file_size
           });
         });
-        console.log("✅ Documents médicaux ajoutés:", medicalDocs.length);
       }
 
-      console.log("=== TOTAL DOCUMENTS RÉCUPÉRÉS ===");
-      console.log("Nombre total de documents:", documents.length);
-      console.log("Détail par type:", {
-        directives: documents.filter(d => d.source === 'directives').length,
-        pdf: documents.filter(d => d.source === 'pdf_documents').length,
-        medical: documents.filter(d => d.source === 'medical_documents').length
-      });
-
+      console.log("✅ Total documents récupérés:", documents.length);
       return documents;
 
     } catch (error) {
-      console.error("💥 Erreur lors de la récupération des documents:", error);
+      console.error("💥 Erreur récupération documents:", error);
       return [];
     }
   }
