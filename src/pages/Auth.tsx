@@ -1,163 +1,338 @@
 
-import { useState, useEffect } from "react";
-import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { Loader2, Hospital } from "lucide-react";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import Header from "@/components/Header";
-import { LoginForm } from "@/features/auth/LoginForm";
-import { RegisterForm } from "@/features/auth/RegisterForm";
-import { VerificationAlert } from "@/features/auth/VerificationAlert";
-import { ForgotPasswordForm } from "@/features/auth/ForgotPasswordForm";
-import { PasswordResetForm } from "@/features/auth/PasswordResetForm";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ArrowLeft, Mail, Lock, User, Eye, EyeOff } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+import Header from "@/components/Header";
 
 const Auth = () => {
+  const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [searchParams] = useSearchParams();
-  const [verificationSent, setVerificationSent] = useState(false);
-  const [verificationEmail, setVerificationEmail] = useState("");
-  const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const { isAuthenticated, isLoading } = useAuth();
-  const [redirectInProgress, setRedirectInProgress] = useState(false);
-  const [isPasswordReset, setIsPasswordReset] = useState(false);
-  const [resetToken, setResetToken] = useState("");
   
-  // Get the redirect path from location state or default to /dashboard
-  const from = location.state?.from || "/dashboard";
-
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  
+  // Redirect if already authenticated
   useEffect(() => {
-    // Check if the URL contains a recovery token
-    const token = searchParams.get("token");
-    const type = searchParams.get("type");
+    if (!isLoading && isAuthenticated) {
+      const from = location.state?.from || "/rediger";
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, isLoading, navigate, location.state]);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
     
-    if (token && type === "recovery") {
-      setIsPasswordReset(true);
-      setResetToken(token);
-      toast({
-        title: "Réinitialisez votre mot de passe",
-        description: "Veuillez entrer votre nouveau mot de passe.",
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
       });
-    }
-  }, [searchParams]);
-  
-  // Handle verification alert when email is sent
-  const handleVerificationSent = (email: string) => {
-    setVerificationEmail(email);
-    setVerificationSent(true);
-  };
-
-  // Handle successful password reset
-  const handlePasswordResetSuccess = () => {
-    setIsPasswordReset(false);
-    toast({
-      title: "Connexion",
-      description: "Veuillez vous connecter avec votre nouveau mot de passe.",
-    });
-  };
-
-  // Redirect if already authenticated, but only after the auth state has loaded
-  // and prevent redirect loops with a flag
-  useEffect(() => {
-    if (!isLoading && isAuthenticated && !redirectInProgress && !isPasswordReset) {
-      console.log("Auth page: Already authenticated, redirecting to:", from);
-      setRedirectInProgress(true);
       
-      // Use setTimeout to avoid race conditions with React rendering
-      setTimeout(() => {
+      if (error) {
+        setError(error.message);
+        toast({
+          title: "Erreur de connexion",
+          description: error.message,
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Connexion réussie",
+          description: "Vous êtes maintenant connecté"
+        });
+        
+        const from = location.state?.from || "/rediger";
         navigate(from, { replace: true });
-      }, 100);
+      }
+    } catch (error: any) {
+      setError(error.message);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la connexion",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
     }
-  }, [isAuthenticated, isLoading, navigate, from, redirectInProgress, isPasswordReset]);
+  };
 
-  // Show loading while checking auth status
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    
+    if (!firstName.trim() || !lastName.trim()) {
+      setError("Le prénom et le nom sont requis");
+      setLoading(false);
+      return;
+    }
+    
+    try {
+      const { error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: {
+          data: {
+            first_name: firstName.trim(),
+            last_name: lastName.trim(),
+          }
+        }
+      });
+      
+      if (error) {
+        setError(error.message);
+        toast({
+          title: "Erreur d'inscription",
+          description: error.message,
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Inscription réussie",
+          description: "Votre compte a été créé avec succès"
+        });
+        
+        const from = location.state?.from || "/rediger";
+        navigate(from, { replace: true });
+      }
+    } catch (error: any) {
+      setError(error.message);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'inscription",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (isLoading) {
     return (
-      <div className="h-screen flex flex-col items-center justify-center">
-        <Loader2 className="h-12 w-12 animate-spin text-directiveplus-600" />
-        <p className="mt-4 text-gray-600">Vérification de l'authentification...</p>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-directiveplus-600"></div>
       </div>
     );
   }
-
-  // Don't render auth page if already authenticated and redirecting
-  if (isAuthenticated && redirectInProgress && !isPasswordReset) {
-    return (
-      <div className="h-screen flex flex-col items-center justify-center">
-        <Loader2 className="h-12 w-12 animate-spin text-directiveplus-600" />
-        <p className="mt-4 text-gray-600">Redirection en cours...</p>
-      </div>
-    );
-  }
-
-  // Handle toggling forgot password form
-  const handleForgotPassword = () => {
-    setShowForgotPassword(true);
-  };
-
-  const handleCancelForgotPassword = () => {
-    setShowForgotPassword(false);
-  };
 
   return (
-    <>
+    <div className="min-h-screen bg-gray-50">
       <Header />
-      <div className="grid min-h-screen place-items-center py-10">
-        <Card className="w-full max-w-md">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl">Authentification</CardTitle>
-            <CardDescription>Connectez-vous ou créez un compte pour accéder à vos directives.</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-4">
-            {verificationSent && <VerificationAlert email={verificationEmail} />}
+      
+      <main className="container mx-auto px-4 py-8">
+        <div className="max-w-md mx-auto">
+          <Button
+            variant="outline"
+            onClick={() => navigate("/")}
+            className="flex items-center gap-2 mb-6"
+          >
+            <ArrowLeft size={16} />
+            Retour à l'accueil
+          </Button>
+          
+          <Card>
+            <CardHeader className="text-center">
+              <CardTitle>Connexion / Inscription</CardTitle>
+              <CardDescription>
+                Accédez à votre espace personnel DirectivesPlus
+              </CardDescription>
+            </CardHeader>
             
-            {isPasswordReset ? (
-              <PasswordResetForm token={resetToken} onSuccess={handlePasswordResetSuccess} />
-            ) : showForgotPassword ? (
-              <ForgotPasswordForm onCancel={handleCancelForgotPassword} />
-            ) : (
-              <Tabs defaultValue="login">
+            <CardContent>
+              <Tabs defaultValue="login" className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="login">Connexion</TabsTrigger>
-                  <TabsTrigger value="register">Inscription</TabsTrigger>
+                  <TabsTrigger value="login">Se connecter</TabsTrigger>
+                  <TabsTrigger value="signup">S'inscrire</TabsTrigger>
                 </TabsList>
+                
                 <TabsContent value="login">
-                  <LoginForm 
-                    onVerificationSent={handleVerificationSent}
-                    redirectPath={from} 
-                    setRedirectInProgress={setRedirectInProgress}
-                    onForgotPassword={handleForgotPassword}
-                  />
+                  <form onSubmit={handleLogin} className="space-y-4">
+                    <div className="space-y-2">
+                      <label htmlFor="email" className="text-sm font-medium">
+                        Email
+                      </label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <Input
+                          id="email"
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="pl-10"
+                          placeholder="votre@email.com"
+                          required
+                          disabled={loading}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <label htmlFor="password" className="text-sm font-medium">
+                        Mot de passe
+                      </label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <Input
+                          id="password"
+                          type={showPassword ? "text" : "password"}
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="pl-10 pr-10"
+                          placeholder="Votre mot de passe"
+                          required
+                          disabled={loading}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                        >
+                          {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
+                      </div>
+                    </div>
+                    
+                    {error && (
+                      <Alert variant="destructive">
+                        <AlertDescription>{error}</AlertDescription>
+                      </Alert>
+                    )}
+                    
+                    <Button 
+                      type="submit" 
+                      className="w-full" 
+                      disabled={loading}
+                    >
+                      {loading ? "Connexion..." : "Se connecter"}
+                    </Button>
+                  </form>
                 </TabsContent>
-                <TabsContent value="register">
-                  <RegisterForm onVerificationSent={handleVerificationSent} />
+                
+                <TabsContent value="signup">
+                  <form onSubmit={handleSignup} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label htmlFor="firstName" className="text-sm font-medium">
+                          Prénom
+                        </label>
+                        <div className="relative">
+                          <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                          <Input
+                            id="firstName"
+                            type="text"
+                            value={firstName}
+                            onChange={(e) => setFirstName(e.target.value)}
+                            className="pl-10"
+                            placeholder="Prénom"
+                            required
+                            disabled={loading}
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <label htmlFor="lastName" className="text-sm font-medium">
+                          Nom
+                        </label>
+                        <div className="relative">
+                          <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                          <Input
+                            id="lastName"
+                            type="text"
+                            value={lastName}
+                            onChange={(e) => setLastName(e.target.value)}
+                            className="pl-10"
+                            placeholder="Nom"
+                            required
+                            disabled={loading}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <label htmlFor="signupEmail" className="text-sm font-medium">
+                        Email
+                      </label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <Input
+                          id="signupEmail"
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="pl-10"
+                          placeholder="votre@email.com"
+                          required
+                          disabled={loading}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <label htmlFor="signupPassword" className="text-sm font-medium">
+                        Mot de passe
+                      </label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <Input
+                          id="signupPassword"
+                          type={showPassword ? "text" : "password"}
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="pl-10 pr-10"
+                          placeholder="Choisissez un mot de passe"
+                          required
+                          disabled={loading}
+                          minLength={6}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                        >
+                          {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
+                      </div>
+                    </div>
+                    
+                    {error && (
+                      <Alert variant="destructive">
+                        <AlertDescription>{error}</AlertDescription>
+                      </Alert>
+                    )}
+                    
+                    <Button 
+                      type="submit" 
+                      className="w-full" 
+                      disabled={loading}
+                    >
+                      {loading ? "Inscription..." : "S'inscrire"}
+                    </Button>
+                  </form>
                 </TabsContent>
               </Tabs>
-            )}
-            
-            <div className="mt-4 text-center">
-              <Button 
-                variant="ghost" 
-                onClick={() => navigate('/acces-institution')}
-                className="text-directiveplus-600 hover:bg-directiveplus-50 flex items-center mx-auto"
-              >
-                <Hospital className="mr-2" size={16} />
-                Accès pour les professionnels de santé
-              </Button>
-            </div>
-          </CardContent>
-          <CardFooter>
-            <p className="text-xs text-gray-500 text-center w-full">
-              En vous inscrivant, vous acceptez de recevoir un email de vérification.
-            </p>
-          </CardFooter>
-        </Card>
-      </div>
-    </>
+            </CardContent>
+          </Card>
+        </div>
+      </main>
+    </div>
   );
 };
 
