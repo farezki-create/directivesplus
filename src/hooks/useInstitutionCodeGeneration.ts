@@ -13,7 +13,7 @@ export const useInstitutionCodeGeneration = () => {
   const { generateInstitutionCode, isGenerating, error } = useUnifiedSharing();
 
   const handleGenerateInstitutionCode = async (userId: string) => {
-    console.log("=== GÉNÉRATION CODE INSTITUTION (NOUVEAU SYSTÈME) ===");
+    console.log("=== GÉNÉRATION CODE INSTITUTION (SYSTÈME UNIFIÉ) ===");
     console.log("User ID:", userId);
 
     if (!userId) {

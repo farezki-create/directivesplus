@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
-import { useUnifiedSharing } from "@/hooks/sharing/useUnifiedSharing";
+import { SharingService } from "@/hooks/sharing/core/sharingService";
 
 export interface InstitutionAccessFormValues {
   lastName: string;
@@ -25,7 +25,6 @@ export interface InstitutionAccessResponse {
 export const useInstitutionAccessSimple = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<InstitutionAccessResponse | null>(null);
-  const { validateAccessCode } = useUnifiedSharing();
 
   const validateAccess = async (formData: InstitutionAccessFormValues): Promise<InstitutionAccessResponse> => {
     setLoading(true);
@@ -34,7 +33,7 @@ export const useInstitutionAccessSimple = () => {
     try {
       console.log("Validation accès institution simple avec:", formData);
       
-      const validationResult = await validateAccessCode(formData.institutionCode, {
+      const validationResult = await SharingService.validateAccessCode(formData.institutionCode, {
         firstName: formData.firstName,
         lastName: formData.lastName,
         birthDate: formData.birthDate

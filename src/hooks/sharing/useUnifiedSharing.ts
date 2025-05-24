@@ -1,70 +1,44 @@
+
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
-import { UnifiedSharingService } from "./core/unifiedSharingService";
-import type { ShareableDocument, ShareOptions } from "./types";
+import { SharingService } from "./core/sharingService";
+import type { ShareableDocument, AccessValidationResult } from "./types";
 
-export interface UseUnifiedSharingReturn {
-  // Actions principales
-  generatePersonalCode: (document: ShareableDocument, options?: ShareOptions) => Promise<string | null>;
-  generateInstitutionCode: (document: ShareableDocument, expiresInDays?: number) => Promise<string | null>;
-  validateAccessCode: (accessCode: string, personalInfo?: any) => Promise<any>;
-  
-  // Gestion des codes
-  extendCode: (accessCode: string, days?: number) => Promise<boolean>;
-  regenerateCode: (currentCode: string, days?: number) => Promise<string | null>;
-  revokeCode: (accessCode: string) => Promise<boolean>;
-  
-  // États
-  isGenerating: boolean;
-  isValidating: boolean;
-  isExtending: boolean;
-  isRegenerating: boolean;
-  error: string | null;
-}
-
-/**
- * Hook unifié pour toutes les opérations de partage
- */
-export const useUnifiedSharing = (): UseUnifiedSharingReturn => {
+export const useUnifiedSharing = () => {
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isValidating, setIsValidating] = useState(false);
-  const [isExtending, setIsExtending] = useState(false);
-  const [isRegenerating, setIsRegenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  /**
+   * Génère un code d'accès personnel
+   */
   const generatePersonalCode = async (
     document: ShareableDocument,
-    options: ShareOptions = {}
+    expiresInDays: number = 365
   ): Promise<string | null> => {
     setIsGenerating(true);
     setError(null);
     
     try {
-      const result = await UnifiedSharingService.generateAccessCode(document, {
-        ...options,
+      const result = await SharingService.generateAccessCode(document, {
+        expiresInDays,
         accessType: 'personal'
       });
       
       if (result.success && result.code) {
         toast({
           title: "Code généré",
-          description: "Le code d'accès personnel a été généré avec succès"
+          description: "Code d'accès personnel créé avec succès"
         });
         return result.code;
       } else {
-        setError(result.error || "Erreur lors de la génération");
-        toast({
-          title: "Erreur",
-          description: result.error || "Impossible de générer le code",
-          variant: "destructive"
-        });
-        return null;
+        throw new Error(result.error || "Erreur lors de la génération du code");
       }
     } catch (err: any) {
-      setError(err.message);
+      const errorMessage = err.message || "Erreur lors de la génération du code";
+      setError(errorMessage);
       toast({
         title: "Erreur",
-        description: "Une erreur inattendue s'est produite",
+        description: errorMessage,
         variant: "destructive"
       });
       return null;
@@ -73,6 +47,9 @@ export const useUnifiedSharing = (): UseUnifiedSharingReturn => {
     }
   };
 
+  /**
+   * Génère un code d'accès institutionnel
+   */
   const generateInstitutionCode = async (
     document: ShareableDocument,
     expiresInDays: number = 30
@@ -81,36 +58,26 @@ export const useUnifiedSharing = (): UseUnifiedSharingReturn => {
     setError(null);
     
     try {
-      console.log("Hook generateInstitutionCode appelé avec:", { document, expiresInDays });
-      
-      const result = await UnifiedSharingService.generateAccessCode(document, {
-        accessType: 'institution',
-        expiresInDays
+      const result = await SharingService.generateAccessCode(document, {
+        expiresInDays,
+        accessType: 'institution'
       });
-      
-      console.log("Résultat du service:", result);
       
       if (result.success && result.code) {
         toast({
           title: "Code professionnel généré",
-          description: `Code valide pendant ${expiresInDays} jours`
+          description: "Code d'accès institutionnel créé avec succès"
         });
         return result.code;
       } else {
-        setError(result.error || "Erreur lors de la génération");
-        toast({
-          title: "Erreur",
-          description: result.error || "Impossible de générer le code professionnel",
-          variant: "destructive"
-        });
-        return null;
+        throw new Error(result.error || "Erreur lors de la génération du code");
       }
     } catch (err: any) {
-      console.error("Erreur dans generateInstitutionCode:", err);
-      setError(err.message);
+      const errorMessage = err.message || "Erreur lors de la génération du code";
+      setError(errorMessage);
       toast({
         title: "Erreur",
-        description: "Une erreur inattendue s'est produite",
+        description: errorMessage,
         variant: "destructive"
       });
       return null;
@@ -119,224 +86,88 @@ export const useUnifiedSharing = (): UseUnifiedSharingReturn => {
     }
   };
 
+  /**
+   * Valide un code d'accès avec informations personnelles
+   */
   const validateAccessCode = async (
     accessCode: string,
-    personalInfo?: any
-  ): Promise<any> => {
-    setIsValidating(true);
-    setError(null);
-    
+    personalInfo?: {
+      firstName?: string;
+      lastName?: string;
+      birthDate?: string;
+    }
+  ): Promise<AccessValidationResult> => {
     try {
-      const result = await UnifiedSharingService.validateAccessCode(accessCode, personalInfo);
-      
-      if (!result.success) {
-        setError(result.error || "Code invalide");
-      }
-      
-      return result;
+      return await SharingService.validateAccessCode(accessCode, personalInfo);
     } catch (err: any) {
-      setError(err.message);
-      return { success: false, error: err.message };
-    } finally {
-      setIsValidating(false);
+      return {
+        success: false,
+        error: err.message || "Erreur lors de la validation"
+      };
     }
   };
 
-  const extendCode = async (
+  /**
+   * Prolonge un code d'accès
+   */
+  const extendAccessCode = async (
     accessCode: string,
     days: number = 365
   ): Promise<boolean> => {
-    setIsExtending(true);
-    setError(null);
-    
     try {
-      const result = await UnifiedSharingService.extendAccessCode(accessCode, days);
-      
+      const result = await SharingService.extendAccessCode(accessCode, days);
       if (result.success) {
         toast({
           title: "Code prolongé",
-          description: `Le code a été prolongé de ${days} jours`
+          description: `Code d'accès prolongé de ${days} jours`
         });
         return true;
-      } else {
-        setError(result.error || "Erreur lors de la prolongation");
-        toast({
-          title: "Erreur",
-          description: result.error || "Impossible de prolonger le code",
-          variant: "destructive"
-        });
-        return false;
       }
-    } catch (err: any) {
-      setError(err.message);
       return false;
-    } finally {
-      setIsExtending(false);
-    }
-  };
-
-  const regenerateCode = async (
-    currentCode: string,
-    days: number = 365
-  ): Promise<string | null> => {
-    setIsRegenerating(true);
-    setError(null);
-    
-    try {
-      const result = await UnifiedSharingService.regenerateAccessCode(currentCode, days);
-      
-      if (result.success && result.code) {
-        toast({
-          title: "Nouveau code généré",
-          description: "L'ancien code a été désactivé"
-        });
-        return result.code;
-      } else {
-        setError(result.error || "Erreur lors de la régénération");
-        toast({
-          title: "Erreur",
-          description: result.error || "Impossible de régénérer le code",
-          variant: "destructive"
-        });
-        return null;
-      }
     } catch (err: any) {
-      setError(err.message);
-      return null;
-    } finally {
-      setIsRegenerating(false);
+      toast({
+        title: "Erreur",
+        description: "Impossible de prolonger le code",
+        variant: "destructive"
+      });
+      return false;
     }
   };
 
-  const revokeCode = async (accessCode: string): Promise<boolean> => {
-    setError(null);
-    
+  /**
+   * Révoque un code d'accès
+   */
+  const revokeAccessCode = async (accessCode: string): Promise<boolean> => {
     try {
-      const result = await UnifiedSharingService.revokeAccessCode(accessCode);
-      
+      const result = await SharingService.revokeAccessCode(accessCode);
       if (result.success) {
         toast({
           title: "Code révoqué",
-          description: "Le code d'accès a été désactivé"
+          description: "Code d'accès révoqué avec succès"
         });
         return true;
-      } else {
-        setError(result.error || "Erreur lors de la révocation");
-        return false;
       }
+      return false;
     } catch (err: any) {
-      setError(err.message);
+      toast({
+        title: "Erreur",
+        description: "Impossible de révoquer le code",
+        variant: "destructive"
+      });
       return false;
     }
   };
 
   return {
+    // État
+    isGenerating,
+    error,
+    
+    // Actions
     generatePersonalCode,
     generateInstitutionCode,
-    validateAccessCode: async (accessCode: string, personalInfo?: any) => {
-      setIsValidating(true);
-      setError(null);
-      
-      try {
-        const result = await UnifiedSharingService.validateAccessCode(accessCode, personalInfo);
-        
-        if (!result.success) {
-          setError(result.error || "Code invalide");
-        }
-        
-        return result;
-      } catch (err: any) {
-        setError(err.message);
-        return { success: false, error: err.message };
-      } finally {
-        setIsValidating(false);
-      }
-    },
-    extendCode: async (accessCode: string, days: number = 365) => {
-      setIsExtending(true);
-      setError(null);
-      
-      try {
-        const result = await UnifiedSharingService.extendAccessCode(accessCode, days);
-        
-        if (result.success) {
-          toast({
-            title: "Code prolongé",
-            description: `Le code a été prolongé de ${days} jours`
-          });
-          return true;
-        } else {
-          setError(result.error || "Erreur lors de la prolongation");
-          toast({
-            title: "Erreur",
-            description: result.error || "Impossible de prolonger le code",
-            variant: "destructive"
-          });
-          return false;
-        }
-      } catch (err: any) {
-        setError(err.message);
-        return false;
-      } finally {
-        setIsExtending(false);
-      }
-    },
-    regenerateCode: async (currentCode: string, days: number = 365) => {
-      setIsRegenerating(true);
-      setError(null);
-      
-      try {
-        const result = await UnifiedSharingService.regenerateAccessCode(currentCode, days);
-        
-        if (result.success && result.code) {
-          toast({
-            title: "Nouveau code généré",
-            description: "L'ancien code a été désactivé"
-          });
-          return result.code;
-        } else {
-          setError(result.error || "Erreur lors de la régénération");
-          toast({
-            title: "Erreur",
-            description: result.error || "Impossible de régénérer le code",
-            variant: "destructive"
-          });
-          return null;
-        }
-      } catch (err: any) {
-        setError(err.message);
-        return null;
-      } finally {
-        setIsRegenerating(false);
-      }
-    },
-    revokeCode: async (accessCode: string) => {
-      setError(null);
-      
-      try {
-        const result = await UnifiedSharingService.revokeAccessCode(accessCode);
-        
-        if (result.success) {
-          toast({
-            title: "Code révoqué",
-            description: "Le code d'accès a été désactivé"
-          });
-          return true;
-        } else {
-          setError(result.error || "Erreur lors de la révocation");
-          return false;
-        }
-      } catch (err: any) {
-        setError(err.message);
-        return false;
-      }
-    },
-    isGenerating,
-    isValidating,
-    isExtending,
-    isRegenerating,
-    error
+    validateAccessCode,
+    extendAccessCode,
+    revokeAccessCode
   };
 };
-
-export type { ShareableDocument, ShareOptions } from "./types";
