@@ -1062,6 +1062,30 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      debug_institution_access_step_by_step: {
+        Args: {
+          input_last_name: string
+          input_first_name: string
+          input_birth_date: string
+          input_shared_code: string
+        }
+        Returns: {
+          step_name: string
+          found_count: number
+          details: string
+        }[]
+      }
+      debug_patient_by_lastname: {
+        Args: { input_last_name: string }
+        Returns: {
+          user_id: string
+          profile_id: string
+          first_name: string
+          last_name: string
+          birth_date: string
+          institution_shared_code: string
+        }[]
+      }
       generate_random_code: {
         Args: { length: number }
         Returns: string
@@ -1109,6 +1133,21 @@ export type Database = {
           is_full_access: boolean
           user_id: string
           access_code_id: string
+        }[]
+      }
+      get_patient_directives_by_institution_access: {
+        Args: {
+          input_last_name: string
+          input_first_name: string
+          input_birth_date: string
+          input_shared_code: string
+        }
+        Returns: {
+          id: string
+          last_name: string
+          first_name: string
+          birth_date: string
+          institution_shared_code: string
         }[]
       }
       is_admin: {

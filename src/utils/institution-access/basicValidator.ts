@@ -1,145 +1,94 @@
 
 import { supabase } from "@/integrations/supabase/client";
 
-export const validateInstitutionAccess = async (
-  lastName: string,
-  firstName: string,
-  birthDate: string,
-  institutionCode: string
-) => {
-  console.log("=== VALIDATION BASIQUE SANS RPC ===");
-  console.log("Recherche pour:", { lastName, firstName, birthDate, institutionCode });
-  
-  try {
-    // 1. Chercher le profil utilisateur
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('id, first_name, last_name, birth_date')
-      .eq('last_name', lastName.trim())
-      .eq('first_name', firstName.trim())
-      .eq('birth_date', birthDate)
-      .maybeSingle();
-
-    console.log("Résultat recherche profil:", { profile, profileError });
-
-    if (profileError) {
-      console.error("Erreur lors de la recherche du profil:", profileError);
-      throw new Error("Erreur lors de la recherche du profil");
-    }
-
-    if (!profile) {
-      console.log("Aucun profil trouvé avec ces informations");
-      throw new Error("Aucun profil trouvé avec ces informations personnelles");
-    }
-
-    // 2. Chercher les directives avec le code institution
-    const { data: directives, error: directiveError } = await supabase
-      .from('directives')
-      .select('id, user_id, content, created_at')
-      .eq('user_id', profile.id)
-      .eq('institution_code', institutionCode.trim())
-      .gt('institution_code_expires_at', new Date().toISOString());
-
-    console.log("Résultat recherche directives:", { directives, directiveError });
-
-    if (directiveError) {
-      console.error("Erreur lors de la recherche des directives:", directiveError);
-      throw new Error("Erreur lors de la recherche des directives");
-    }
-
-    if (!directives || directives.length === 0) {
-      console.log("Aucune directive trouvée avec ce code institution");
-      throw new Error("Code d'accès institution invalide ou expiré");
-    }
-
-    // 3. Retourner les résultats
-    return [{
-      user_id: profile.id,
-      profile_id: profile.id,
-      first_name: profile.first_name,
-      last_name: profile.last_name,
-      birth_date: profile.birth_date,
-      institution_shared_code: institutionCode,
-      directives: directives
-    }];
-
-  } catch (error) {
-    console.error("Erreur dans validateInstitutionAccess:", error);
-    throw error;
-  }
-};
-
 export const createBasicTestData = async () => {
   console.log("=== CRÉATION DONNÉES DE TEST BASIQUES ===");
   
   try {
-    // Essayer de créer un profil de test simple
-    const testUserId = '550e8400-e29b-41d4-a716-446655440000';
+    // Vérifier si les données existent déjà avec la fonction RPC
+    const { data: existingData, error: checkError } = await supabase.rpc("debug_patient_by_lastname", {
+      input_last_name: 'AREZKI'
+    });
+
+    console.log("Vérification données existantes:", { existingData, checkError });
+
+    if (existingData && existingData.length > 0) {
+      const targetProfile = existingData.find((p: any) => 
+        p.first_name === 'FARID' && 
+        p.birth_date === '1963-08-13' && 
+        p.institution_shared_code === '9E5CUV7X'
+      );
+      
+      if (targetProfile) {
+        console.log("✓ Données de test déjà présentes");
+        return true;
+      }
+    }
+
+    console.log("Données de test non trouvées, vérification dans user_profiles");
     
-    const { data: existingProfile, error: checkError } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('id', testUserId)
-      .maybeSingle();
+    // Vérifier directement dans user_profiles
+    const { data: userProfiles, error: profileError } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('last_name', 'AREZKI')
+      .eq('first_name', 'FARID')
+      .eq('birth_date', '1963-08-13');
 
-    if (checkError) {
-      console.log("Erreur vérification profil existant:", checkError);
-    }
+    console.log("Profils utilisateur trouvés:", { userProfiles, profileError });
 
-    if (!existingProfile) {
-      console.log("Tentative de création du profil de test...");
-      const { error: insertError } = await supabase
-        .from('profiles')
-        .insert({
-          id: testUserId,
-          first_name: 'FARID',
-          last_name: 'AREZKI',
-          birth_date: '1963-08-13'
-        });
-
-      if (insertError) {
-        console.log("Impossible de créer le profil (RLS actif):", insertError);
-      } else {
-        console.log("Profil de test créé avec succès");
-      }
-    }
-
-    // Essayer de créer une directive de test
-    const { data: existingDirective, error: directiveCheckError } = await supabase
-      .from('directives')
-      .select('id')
-      .eq('user_id', testUserId)
-      .eq('institution_code', '9E5CUV7X')
-      .maybeSingle();
-
-    if (!existingDirective && !directiveCheckError) {
-      console.log("Tentative de création de la directive de test...");
-      const { error: directiveInsertError } = await supabase
-        .from('directives')
-        .insert({
-          user_id: testUserId,
-          content: {
-            title: "Directives anticipées - AREZKI FARID",
-            patient: {
-              nom: "AREZKI",
-              prenom: "FARID",
-              date_naissance: "1963-08-13"
-            }
-          },
-          institution_code: '9E5CUV7X',
-          institution_code_expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-        });
-
-      if (directiveInsertError) {
-        console.log("Impossible de créer la directive (RLS actif):", directiveInsertError);
-      } else {
-        console.log("Directive de test créée avec succès");
-      }
+    if (!userProfiles || userProfiles.length === 0) {
+      console.log("Aucun profil de test trouvé dans user_profiles");
+      return false;
     }
 
     return true;
   } catch (error) {
     console.error("Erreur création données de test:", error);
     return false;
+  }
+};
+
+export const validateInstitutionAccess = async (
+  lastName: string,
+  firstName: string,
+  birthDate: string,
+  institutionCode: string
+) => {
+  console.log("=== VALIDATION BASIQUE ACCÈS INSTITUTION ===");
+  console.log("Paramètres:", { lastName, firstName, birthDate, institutionCode });
+
+  try {
+    // Utiliser la fonction RPC principale
+    const { data: rpcResult, error: rpcError } = await supabase.rpc("get_patient_directives_by_institution_access", {
+      input_last_name: lastName,
+      input_first_name: firstName,
+      input_birth_date: birthDate,
+      input_shared_code: institutionCode
+    });
+
+    console.log("Résultat validation RPC:", { rpcResult, rpcError });
+
+    if (rpcError) {
+      throw new Error(`Erreur RPC: ${rpcError.message}`);
+    }
+
+    if (!rpcResult || rpcResult.length === 0) {
+      throw new Error("Aucun profil correspondant trouvé");
+    }
+
+    // Transformer le résultat au format attendu
+    return rpcResult.map((profile: any) => ({
+      user_id: profile.id,
+      first_name: profile.first_name,
+      last_name: profile.last_name,
+      birth_date: profile.birth_date,
+      institution_shared_code: profile.institution_shared_code,
+      directives: [] // Les directives seront récupérées séparément si nécessaire
+    }));
+
+  } catch (error) {
+    console.error("Erreur validation accès:", error);
+    throw error;
   }
 };
