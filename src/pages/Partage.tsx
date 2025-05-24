@@ -23,7 +23,7 @@ interface SharedDocument {
 
 const Partage = () => {
   const { shareCode } = useParams<{ shareCode: string }>();
-  const [document, setDocument] = useState<SharedDocument | null>(null);
+  const [sharedDocument, setSharedDocument] = useState<SharedDocument | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [previewDocument, setPreviewDocument] = useState<string | null>(null);
@@ -55,7 +55,16 @@ const Partage = () => {
           return;
         }
 
-        setDocument(data);
+        // Transformer les données avec le bon typage
+        const transformedDocument: SharedDocument = {
+          document_id: data.document_id,
+          document_type: data.document_type,
+          document_data: data.document_data as SharedDocument['document_data'],
+          user_id: data.user_id,
+          shared_at: data.shared_at
+        };
+
+        setSharedDocument(transformedDocument);
       } catch (err) {
         console.error("Erreur lors du chargement du document partagé:", err);
         setError("Erreur lors du chargement du document");
@@ -103,7 +112,7 @@ const Partage = () => {
     );
   }
 
-  if (error || !document) {
+  if (error || !sharedDocument) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <Card className="max-w-md mx-auto">
@@ -134,12 +143,12 @@ const Partage = () => {
             <div className="flex items-start gap-4">
               <FileText className="h-8 w-8 text-blue-600" />
               <div className="flex-1">
-                <CardTitle className="text-xl">{document.document_data.file_name}</CardTitle>
-                {document.document_data.description && (
-                  <p className="text-sm text-gray-600 mt-1">{document.document_data.description}</p>
+                <CardTitle className="text-xl">{sharedDocument.document_data.file_name}</CardTitle>
+                {sharedDocument.document_data.description && (
+                  <p className="text-sm text-gray-600 mt-1">{sharedDocument.document_data.description}</p>
                 )}
                 <div className="text-xs text-gray-500 mt-2">
-                  Partagé le {new Date(document.shared_at).toLocaleDateString()}
+                  Partagé le {new Date(sharedDocument.shared_at).toLocaleDateString()}
                 </div>
               </div>
             </div>
@@ -148,7 +157,7 @@ const Partage = () => {
           <CardContent>
             <div className="flex gap-3">
               <Button
-                onClick={() => handleView(document.document_data.file_path)}
+                onClick={() => handleView(sharedDocument.document_data.file_path)}
                 className="flex items-center gap-2"
               >
                 <Eye size={16} />
@@ -157,7 +166,7 @@ const Partage = () => {
 
               <Button
                 variant="outline"
-                onClick={() => handleDownload(document.document_data.file_path, document.document_data.file_name)}
+                onClick={() => handleDownload(sharedDocument.document_data.file_path, sharedDocument.document_data.file_name)}
                 className="flex items-center gap-2"
               >
                 <Download size={16} />
@@ -182,8 +191,8 @@ const Partage = () => {
           if (!open) setPreviewDocument(null);
         }}
         onDownload={() => {
-          if (previewDocument) {
-            handleDownload(previewDocument, document.document_data.file_name);
+          if (previewDocument && sharedDocument) {
+            handleDownload(previewDocument, sharedDocument.document_data.file_name);
           }
         }}
         onPrint={() => {

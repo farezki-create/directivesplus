@@ -1,6 +1,6 @@
 
 import React from "react";
-import QRCode from "qrcode.react";
+import { QRCodeSVG } from "qrcode.react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Copy, ExternalLink } from "lucide-react";
@@ -58,7 +58,7 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({
           </div>
 
           <div className="bg-white p-4 rounded-lg border">
-            <QRCode 
+            <QRCodeSVG 
               value={shareUrl} 
               size={200}
               level="M"
