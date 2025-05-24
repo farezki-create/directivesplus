@@ -69,32 +69,47 @@ export const transformDossierDocuments = (dossierDocuments: any, userId: string)
     console.log(`transformDossierDocuments - Transformation du document ${index}:`, doc);
     console.log(`transformDossierDocuments - Type du document ${index}:`, typeof doc);
     
-    // Éviter les références circulaires en créant une copie propre
-    let cleanContent = null;
-    if (doc?.content && typeof doc.content === 'object') {
-      try {
-        cleanContent = JSON.parse(JSON.stringify(doc.content));
-        console.log(`transformDossierDocuments - Contenu nettoyé du document ${index}:`, cleanContent);
-      } catch (error) {
-        console.warn(`transformDossierDocuments - Impossible de sérialiser le contenu du document ${index}:`, error);
-        cleanContent = { title: doc.content?.title || "Contenu indisponible" };
-      }
-    }
+    // Gérer différents types de documents
+    let transformedDoc: Document;
     
-    const transformedDoc: Document = {
-      id: doc?.id || `dossier-doc-${index}`,
-      file_name: doc?.file_name || doc?.title || cleanContent?.title || `Document dossier ${index + 1}`,
-      file_path: doc?.file_path || (cleanContent ? JSON.stringify(cleanContent) : ''),
-      created_at: doc?.created_at || new Date().toISOString(),
-      description: doc?.description || cleanContent?.title || 'Document transféré depuis Directives Doc',
-      content_type: doc?.content_type || 'application/json',
-      user_id: doc?.user_id || userId,
-      is_private: doc?.is_private || false,
-      content: cleanContent,
-      external_id: doc?.external_id || null,
-      file_size: doc?.file_size || null,
-      updated_at: doc?.updated_at || doc?.created_at || new Date().toISOString()
-    };
+    // Si c'est un document directive (a une propriété content et pas de file_path classique)
+    if (doc.source === 'directives' || (doc.content && typeof doc.content === 'object' && !doc.file_path?.startsWith('/'))) {
+      console.log(`transformDossierDocuments - Document ${index} détecté comme directive:`, doc);
+      transformedDoc = {
+        id: doc.id || `directive-${index}`,
+        file_name: doc.file_name || 'Directive anticipée',
+        file_path: `directive://${doc.id}`, // Préfixe spécial pour les directives
+        created_at: doc.created_at || new Date().toISOString(),
+        description: doc.description || 'Directive anticipée',
+        content_type: 'application/json',
+        file_type: 'directive',
+        user_id: doc.user_id || userId,
+        is_private: doc.is_private || false,
+        content: doc.content,
+        external_id: doc.external_id || null,
+        file_size: doc.file_size || null,
+        updated_at: doc.updated_at || doc.created_at || new Date().toISOString()
+      };
+    } 
+    // Si c'est un document PDF classique
+    else {
+      console.log(`transformDossierDocuments - Document ${index} détecté comme PDF:`, doc);
+      transformedDoc = {
+        id: doc.id || `doc-${index}`,
+        file_name: doc.file_name || `Document ${index + 1}`,
+        file_path: doc.file_path || '',
+        created_at: doc.created_at || new Date().toISOString(),
+        description: doc.description || 'Document',
+        content_type: doc.content_type || 'application/pdf',
+        file_type: doc.file_type || doc.content_type || 'application/pdf',
+        user_id: doc.user_id || userId,
+        is_private: doc.is_private || false,
+        content: doc.content || null,
+        external_id: doc.external_id || null,
+        file_size: doc.file_size || null,
+        updated_at: doc.updated_at || doc.created_at || new Date().toISOString()
+      };
+    }
     
     console.log(`transformDossierDocuments - Document ${index} transformé:`, transformedDoc);
     return transformedDoc;

@@ -23,7 +23,16 @@ export async function verifyAccessCode(
   // Parse bruteForceIdentifier to get firstName and lastName if available
   let firstName = '', lastName = '';
   if (bruteForceIdentifier && bruteForceIdentifier.includes('_')) {
-    [firstName, lastName] = bruteForceIdentifier.split('_');
+    const parts = bruteForceIdentifier.split('_');
+    if (parts.length >= 3) {
+      // Format: "directives_public_FIRSTNAME_LASTNAME"
+      firstName = parts[2] || '';
+      lastName = parts[3] || '';
+    } else if (parts.length >= 2) {
+      // Format: "FIRSTNAME_LASTNAME"
+      firstName = parts[0] || '';
+      lastName = parts[1] || '';
+    }
     console.log(`Parsed identifier: firstName=${firstName}, lastName=${lastName}`);
   }
 
@@ -37,7 +46,7 @@ export async function verifyAccessCode(
         {
           input_lastname: lastName,
           input_firstname: firstName,
-          input_birthdate: null, // We might not have birthdate 
+          input_birthdate: null,
           input_access_code: accessCode,
         }
       );
@@ -48,21 +57,63 @@ export async function verifyAccessCode(
         console.log("RPC verification successful:", sharedProfiles);
         const profile = sharedProfiles[0];
         
-        // Get associated documents if any
-        const { data: documents, error: docsError } = await supabase
+        // Get associated documents - check both tables
+        console.log("Fetching documents for user_id:", profile.user_id);
+        
+        // Fetch PDF documents
+        const { data: pdfDocuments, error: pdfDocsError } = await supabase
           .from('pdf_documents')
           .select('*')
           .eq('user_id', profile.user_id)
           .order('created_at', { ascending: false });
         
-        if (docsError) {
-          console.error("Error fetching documents:", docsError);
+        if (pdfDocsError) {
+          console.error("Error fetching PDF documents:", pdfDocsError);
+        } else {
+          console.log("PDF documents found:", pdfDocuments?.length || 0, pdfDocuments);
         }
+        
+        // Fetch directives documents
+        const { data: directivesDocuments, error: directivesDocsError } = await supabase
+          .from('directives')
+          .select('*')
+          .eq('user_id', profile.user_id)
+          .order('created_at', { ascending: false });
+        
+        if (directivesDocsError) {
+          console.error("Error fetching directives documents:", directivesDocsError);
+        } else {
+          console.log("Directives documents found:", directivesDocuments?.length || 0, directivesDocuments);
+        }
+        
+        // Combine all documents
+        const allDocuments = [
+          ...(pdfDocuments || []).map(doc => ({
+            ...doc,
+            file_type: doc.content_type || 'application/pdf',
+            source: 'pdf_documents'
+          })),
+          ...(directivesDocuments || []).map(doc => ({
+            id: doc.id,
+            file_name: 'Directive anticipée',
+            file_path: doc.id, // Use directive ID as path
+            created_at: doc.created_at,
+            updated_at: doc.updated_at,
+            description: 'Directive anticipée',
+            content_type: 'application/json',
+            file_type: 'directive',
+            user_id: doc.user_id,
+            content: doc.content,
+            source: 'directives'
+          }))
+        ];
+        
+        console.log("Total documents combined:", allDocuments.length, allDocuments);
         
         // Determine access type from identifier
         const accessTypeInfo = determineAccessType(bruteForceIdentifier);
         
-        // Build dossier object
+        // Build dossier object with documents
         const dossier = {
           id: profile.id,
           userId: profile.user_id,
@@ -75,7 +126,7 @@ export async function verifyAccessCode(
             birth_date: profile.birthdate
           },
           contenu: {
-            documents: documents || [],
+            documents: allDocuments,
             patient: {
               nom: profile.last_name,
               prenom: profile.first_name,
@@ -89,10 +140,10 @@ export async function verifyAccessCode(
           supabase,
           profile.user_id,
           true,
-          `Accès via code: ${accessCode}, Identifiant: ${bruteForceIdentifier || 'direct'}`
+          `Accès via code: ${accessCode}, Identifiant: ${bruteForceIdentifier || 'direct'}, Documents: ${allDocuments.length}`
         );
         
-        console.log("Created dossier from RPC verification:", JSON.stringify(dossier, null, 2));
+        console.log("Created dossier from RPC verification with documents:", JSON.stringify(dossier, null, 2));
         
         return {
           success: true,
@@ -119,21 +170,63 @@ export async function verifyAccessCode(
     const profile = sharedProfiles[0];
     console.log("Found shared profile:", profile);
     
-    // Get associated documents if any
-    const { data: documents, error: docsError } = await supabase
+    // Get associated documents - check both tables
+    console.log("Fetching documents for user_id:", profile.user_id);
+    
+    // Fetch PDF documents
+    const { data: pdfDocuments, error: pdfDocsError } = await supabase
       .from('pdf_documents')
       .select('*')
       .eq('user_id', profile.user_id)
       .order('created_at', { ascending: false });
     
-    if (docsError) {
-      console.error("Error fetching documents:", docsError);
+    if (pdfDocsError) {
+      console.error("Error fetching PDF documents:", pdfDocsError);
+    } else {
+      console.log("PDF documents found:", pdfDocuments?.length || 0, pdfDocuments);
     }
+    
+    // Fetch directives documents
+    const { data: directivesDocuments, error: directivesDocsError } = await supabase
+      .from('directives')
+      .select('*')
+      .eq('user_id', profile.user_id)
+      .order('created_at', { ascending: false });
+    
+    if (directivesDocsError) {
+      console.error("Error fetching directives documents:", directivesDocsError);
+    } else {
+      console.log("Directives documents found:", directivesDocuments?.length || 0, directivesDocuments);
+    }
+    
+    // Combine all documents
+    const allDocuments = [
+      ...(pdfDocuments || []).map(doc => ({
+        ...doc,
+        file_type: doc.content_type || 'application/pdf',
+        source: 'pdf_documents'
+      })),
+      ...(directivesDocuments || []).map(doc => ({
+        id: doc.id,
+        file_name: 'Directive anticipée',
+        file_path: doc.id, // Use directive ID as path
+        created_at: doc.created_at,
+        updated_at: doc.updated_at,
+        description: 'Directive anticipée',
+        content_type: 'application/json',
+        file_type: 'directive',
+        user_id: doc.user_id,
+        content: doc.content,
+        source: 'directives'
+      }))
+    ];
+    
+    console.log("Total documents combined:", allDocuments.length, allDocuments);
     
     // Determine access type from identifier
     const accessTypeInfo = determineAccessType(bruteForceIdentifier);
     
-    // Build dossier object
+    // Build dossier object with documents
     const dossier = {
       id: profile.id,
       userId: profile.user_id,
@@ -146,7 +239,7 @@ export async function verifyAccessCode(
         birth_date: profile.birthdate
       },
       contenu: {
-        documents: documents || [],
+        documents: allDocuments,
         patient: {
           nom: profile.last_name,
           prenom: profile.first_name,
@@ -160,10 +253,10 @@ export async function verifyAccessCode(
       supabase,
       profile.user_id,
       true,
-      `Accès via code: ${accessCode}, Identifiant: ${bruteForceIdentifier || 'direct'}`
+      `Accès via code: ${accessCode}, Identifiant: ${bruteForceIdentifier || 'direct'}, Documents: ${allDocuments.length}`
     );
     
-    console.log("Created dossier from shared profile:", JSON.stringify(dossier, null, 2));
+    console.log("Created dossier from shared profile with documents:", JSON.stringify(dossier, null, 2));
     
     return {
       success: true,
