@@ -1,8 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Download, Printer, Eye, Trash2, FolderPlus } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Download, Eye, Printer, Trash2, Plus } from "lucide-react";
 
 interface DocumentActionsProps {
   onView: () => void;
@@ -14,9 +13,6 @@ interface DocumentActionsProps {
   isAddingToShared?: boolean;
 }
 
-/**
- * Component that displays action buttons for a document
- */
 const DocumentActions: React.FC<DocumentActionsProps> = ({
   onView,
   onDownload,
@@ -26,89 +22,79 @@ const DocumentActions: React.FC<DocumentActionsProps> = ({
   showPrint = true,
   isAddingToShared = false
 }) => {
+  console.log("DocumentActions rendered with:", {
+    hasAddToSharedFolder: !!onAddToSharedFolder,
+    showPrint,
+    isAddingToShared
+  });
+
   return (
-    <div className="flex items-center space-x-2">
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              onClick={onView}
-              variant="outline"
-              size="icon"
-              className="h-8 w-8"
-              aria-label="Voir le document"
-            >
-              <Eye className="h-4 w-4" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Voir</TooltipContent>
-        </Tooltip>
-
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              onClick={onDownload}
-              variant="outline"
-              size="icon"
-              className="h-8 w-8"
-              aria-label="Télécharger le document"
-            >
-              <Download className="h-4 w-4" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Télécharger</TooltipContent>
-        </Tooltip>
-
-        {showPrint && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                onClick={onPrint}
-                variant="outline"
-                size="icon"
-                className="h-8 w-8"
-                aria-label="Imprimer le document"
-              >
-                <Printer className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Imprimer</TooltipContent>
-          </Tooltip>
-        )}
-
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              onClick={onDelete}
-              variant="outline"
-              size="icon"
-              className="h-8 w-8"
-              aria-label="Supprimer le document"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Supprimer</TooltipContent>
-        </Tooltip>
-
-        {onAddToSharedFolder && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                onClick={onAddToSharedFolder}
-                variant="outline"
-                size="icon"
-                className="h-8 w-8"
-                disabled={isAddingToShared}
-                aria-label="Ajouter au dossier partagé"
-              >
-                <FolderPlus className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Ajouter au dossier partagé</TooltipContent>
-          </Tooltip>
-        )}
-      </TooltipProvider>
+    <div className="flex items-center gap-2">
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => {
+          console.log("DocumentActions - View button clicked");
+          onView();
+        }}
+        className="h-8 w-8 p-0"
+      >
+        <Eye className="h-4 w-4" />
+      </Button>
+      
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => {
+          console.log("DocumentActions - Download button clicked");
+          onDownload();
+        }}
+        className="h-8 w-8 p-0"
+      >
+        <Download className="h-4 w-4" />
+      </Button>
+      
+      {showPrint && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            console.log("DocumentActions - Print button clicked");
+            onPrint();
+          }}
+          className="h-8 w-8 p-0"
+        >
+          <Printer className="h-4 w-4" />
+        </Button>
+      )}
+      
+      {onAddToSharedFolder && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            console.log("DocumentActions - Add to shared folder button clicked");
+            onAddToSharedFolder();
+          }}
+          disabled={isAddingToShared}
+          className="h-8 w-8 p-0 text-green-600 hover:text-green-700"
+          title="Ajouter à Mes Directives"
+        >
+          <Plus className="h-4 w-4" />
+        </Button>
+      )}
+      
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => {
+          console.log("DocumentActions - Delete button clicked");
+          onDelete();
+        }}
+        className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+      >
+        <Trash2 className="h-4 w-4" />
+      </Button>
     </div>
   );
 };

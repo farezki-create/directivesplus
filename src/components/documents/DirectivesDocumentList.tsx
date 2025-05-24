@@ -13,6 +13,7 @@ interface Document {
   file_type?: string;
   user_id?: string;
   is_private?: boolean;
+  content?: any;
 }
 
 interface DirectivesDocumentListProps {
@@ -43,23 +44,31 @@ const DirectivesDocumentList: FC<DirectivesDocumentListProps> = ({
   }
 
   console.log("DirectivesDocumentList - Rendering", documents.length, "documents");
+  console.log("DirectivesDocumentList - onAddToSharedFolder function:", !!onAddToSharedFolder);
+  console.log("DirectivesDocumentList - isAdding:", isAdding);
   
   return (
     <div className="grid gap-6">
-      {documents.map((doc) => (
-        <DocumentCard 
-          key={doc.id}
-          document={doc}
-          onDownload={onDownload}
-          onPrint={onPrint}
-          onView={onView}
-          onDelete={onDelete}
-          onVisibilityChange={onVisibilityChange}
-          onAddToSharedFolder={onAddToSharedFolder ? () => onAddToSharedFolder(doc) : undefined}
-          showPrint={showPrint}
-          isAddingToShared={isAdding}
-        />
-      ))}
+      {documents.map((doc) => {
+        console.log(`Rendering document card for: ${doc.file_name} with addToSharedFolder: ${!!onAddToSharedFolder}`);
+        return (
+          <DocumentCard 
+            key={doc.id}
+            document={doc}
+            onDownload={onDownload}
+            onPrint={onPrint}
+            onView={onView}
+            onDelete={onDelete}
+            onVisibilityChange={onVisibilityChange}
+            onAddToSharedFolder={onAddToSharedFolder ? () => {
+              console.log("DocumentCard - Triggering onAddToSharedFolder for:", doc.file_name);
+              onAddToSharedFolder(doc);
+            } : undefined}
+            showPrint={showPrint}
+            isAddingToShared={isAdding}
+          />
+        );
+      })}
     </div>
   );
 };

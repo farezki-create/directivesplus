@@ -36,10 +36,12 @@ export const useDocumentTransfer = () => {
   const navigate = useNavigate();
 
   const updateStatus = (phase: TransferStatus['phase'], message: string, progress: number) => {
+    console.log(`Transfer status update: ${phase} - ${message} (${progress}%)`);
     setTransferStatus({ phase, message, progress });
   };
 
   const downloadDocumentToClipboard = async (document: TransferDocument): Promise<Blob> => {
+    console.log("Starting document download for:", document.file_name);
     updateStatus('downloading', 'Téléchargement du document en cours...', 25);
     
     // Simuler le téléchargement avec un délai réaliste
@@ -48,6 +50,7 @@ export const useDocumentTransfer = () => {
     let documentBlob: Blob;
     
     if (document.content) {
+      console.log("Processing directive content");
       // Si c'est une directive avec du contenu structuré
       const documentContent = {
         title: document.content.title || 'Directive Anticipée',
@@ -60,6 +63,7 @@ export const useDocumentTransfer = () => {
       const jsonContent = JSON.stringify(documentContent, null, 2);
       documentBlob = new Blob([jsonContent], { type: 'application/json' });
     } else {
+      console.log("Processing regular document file");
       // Pour les autres types de documents
       try {
         if (document.file_path.startsWith('data:')) {
@@ -82,6 +86,7 @@ export const useDocumentTransfer = () => {
       }
     }
     
+    console.log("Document downloaded successfully, size:", documentBlob.size);
     updateStatus('processing', 'Document téléchargé, préparation du transfert...', 50);
     await new Promise(resolve => setTimeout(resolve, 500));
     
@@ -89,7 +94,12 @@ export const useDocumentTransfer = () => {
   };
 
   const transferToMesDirectives = async (document: TransferDocument, documentBlob: Blob) => {
+    console.log("Starting transfer to Mes Directives");
     updateStatus('transferring', 'Transfert vers "Mes Directives" en cours...', 75);
+    
+    // Déterminer l'utilisateur - soit authentifié soit anonyme
+    const currentUserId = user?.id || "anonymous";
+    console.log("Transfer user ID:", currentUserId);
     
     // Créer un document virtuel compatible avec le système
     const transferredDocument = {
@@ -100,11 +110,11 @@ export const useDocumentTransfer = () => {
       description: document.description || document.content?.title || "Document transféré",
       content_type: document.content_type || 'application/pdf',
       is_shared: true,
-      user_id: user?.id || "anonymous",
+      user_id: currentUserId,
       original_directive: document.content ? document : undefined
     };
 
-    // Créer le profil utilisateur
+    // Créer le profil utilisateur - gérer les cas authentifiés et non authentifiés
     const profileData = isAuthenticated && user ? {
       first_name: user?.user_metadata?.first_name || "Utilisateur",
       last_name: user?.user_metadata?.last_name || "Connecté",
@@ -115,10 +125,12 @@ export const useDocumentTransfer = () => {
       birth_date: null,
     };
 
+    console.log("Creating dossier with profile:", profileData);
+
     // Créer le dossier avec le document transféré
     const dossierWithTransferredDocument = {
       id: `transferred-dossier-${Date.now()}`,
-      userId: user?.id || "anonymous",
+      userId: currentUserId,
       isFullAccess: true,
       isDirectivesOnly: true,
       isMedicalOnly: false,
@@ -136,6 +148,7 @@ export const useDocumentTransfer = () => {
     // Simuler le temps de traitement
     await new Promise(resolve => setTimeout(resolve, 1000));
     
+    console.log("Setting dossier actif:", dossierWithTransferredDocument.id);
     // Stocker le dossier dans le store
     setDossierActif(dossierWithTransferredDocument);
     
@@ -145,13 +158,19 @@ export const useDocumentTransfer = () => {
       timestamp: Date.now()
     }));
     
+    console.log("Document marked as added in sessionStorage");
     updateStatus('completed', 'Document transféré avec succès !', 100);
     
     return transferredDocument;
   };
 
   const transferDocument = async (document: TransferDocument) => {
-    if (isTransferring) return;
+    if (isTransferring) {
+      console.log("Transfer already in progress, skipping");
+      return;
+    }
+    
+    console.log("Starting document transfer process for:", document.file_name);
     
     try {
       setIsTransferring(true);
@@ -166,6 +185,7 @@ export const useDocumentTransfer = () => {
       // Attendre un moment pour montrer le succès
       await new Promise(resolve => setTimeout(resolve, 1000));
       
+      console.log("Transfer completed, redirecting to /mes-directives");
       // Rediriger vers mes-directives
       navigate('/mes-directives');
       
@@ -174,7 +194,7 @@ export const useDocumentTransfer = () => {
         description: `${transferredDocument.file_name} a été ajouté à vos directives`,
       });
       
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erreur lors du transfert:", error);
       updateStatus('error', `Erreur: ${error.message}`, 0);
       

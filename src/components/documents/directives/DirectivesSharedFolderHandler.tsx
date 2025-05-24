@@ -50,14 +50,32 @@ const DirectivesSharedFolderHandler: React.FC<DirectivesSharedFolderHandlerProps
   useEffect(() => {
     console.log("DirectivesSharedFolderHandler rendered:", { 
       documentsCount: documents.length, 
-      hasAccessCode: !!accessCode
+      hasAccessCode: !!accessCode,
+      hasProfile: !!profile
     });
-  }, [documents.length, accessCode]);
+    console.log("DirectivesSharedFolderHandler - Transfer status:", transferStatus);
+    console.log("DirectivesSharedFolderHandler - Is transferring:", isTransferring);
+  }, [documents.length, accessCode, profile, transferStatus, isTransferring]);
 
   const handleAddToSharedFolder = async (document: Document) => {
-    console.log("Démarrage du transfert fiable pour le document:", document);
-    await transferDocument(document);
+    console.log("DirectivesSharedFolderHandler - handleAddToSharedFolder called for:", document.file_name);
+    console.log("Document details:", {
+      id: document.id,
+      file_name: document.file_name,
+      content_type: document.content_type,
+      has_content: !!document.content
+    });
+    
+    try {
+      console.log("Démarrage du transfert fiable pour le document:", document.file_name);
+      await transferDocument(document);
+      console.log("Transfert terminé avec succès pour:", document.file_name);
+    } catch (error) {
+      console.error("Erreur lors du transfert:", error);
+    }
   };
+
+  console.log("DirectivesSharedFolderHandler - Rendering with handleAddToSharedFolder function");
 
   return (
     <>
@@ -72,11 +90,14 @@ const DirectivesSharedFolderHandler: React.FC<DirectivesSharedFolderHandlerProps
           console.log("DirectivesPageContent - Changement de visibilité:", id, isPrivate);
         }}
         isAdding={isTransferring}
+        showPrint={true}
       />
       
       <TransferStatusDialog
         isOpen={isTransferring}
-        onOpenChange={() => {}} // Empêcher la fermeture manuelle pendant le transfert
+        onOpenChange={() => {
+          console.log("TransferStatusDialog - onOpenChange called, but ignoring to prevent manual close during transfer");
+        }} // Empêcher la fermeture manuelle pendant le transfert
         status={transferStatus}
       />
     </>
