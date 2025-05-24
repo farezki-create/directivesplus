@@ -16,7 +16,7 @@ export const SimpleAccessForm = () => {
   const { loading, result, validateAccess } = useSimpleAccess();
   
   const [form, setForm] = useState<SimpleAccessFormData>({
-    accessCode: "LC8SVMBK" // Code généré récemment pour le test
+    accessCode: "TEST123" // Code de test corrigé
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -103,7 +103,7 @@ export const SimpleAccessForm = () => {
       {/* Code de test visible */}
       <Alert className="bg-green-50 border-green-200">
         <AlertDescription className="text-green-800">
-          <strong>Code de test disponible :</strong> LC8SVMBK<br />
+          <strong>Code de test disponible :</strong> TEST123<br />
           <span className="text-sm">Ce code permet de tester l'accès aux directives de FARID AREZKI</span>
         </AlertDescription>
       </Alert>
