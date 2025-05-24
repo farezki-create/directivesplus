@@ -1,4 +1,3 @@
-
 import { determineAccessType } from "./accessTypeUtils.ts";
 import { fetchUserProfile } from "./profileService.ts";
 import { logAccessAttempt } from "./loggingService.ts";
@@ -103,39 +102,16 @@ export async function verifyAccessCode(
           
           console.log("Authentic directives documents found:", authenticDirectives.length);
           
-          // Use authentic directives only, or create placeholder if none exist
-          const finalDirectives = authenticDirectives?.length > 0 ? authenticDirectives : [
-            {
-              id: `generated-${Date.now()}`,
-              file_name: "Directives anticipées",
-              file_path: `generated-${Date.now()}`,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-              description: "Directives anticipées authentiques",
-              content_type: "application/json",
-              file_type: "directive",
-              user_id: realUserId,
-              content: {
-                type: "directive_anticipee",
-                titre: "Directives anticipées authentiques",
-                contenu: `Directives anticipées pour ${profile.first_name} ${profile.last_name}, né(e) le ${profile.birthdate}. Ces directives expriment mes volontés concernant mes soins de santé.`,
-                date_creation: new Date().toISOString().split('T')[0],
-                authentique: true
-              },
-              source: "directives"
-            }
-          ];
-          
-          // Combine all REAL documents (no test data)
+          // Combine all REAL documents (no test data and no placeholders)
           const allDocuments = [
             ...(pdfDocuments || []).map(doc => ({
               ...doc,
               file_type: doc.content_type || 'application/pdf',
               source: 'pdf_documents'
             })),
-            ...finalDirectives.map(doc => ({
+            ...authenticDirectives.map(doc => ({
               id: doc.id,
-              file_name: doc.content?.title || doc.content?.titre || doc.file_name || 'Directive anticipée',
+              file_name: doc.content?.title || doc.content?.titre || 'Directive anticipée',
               file_path: doc.id, // Use directive ID as path
               created_at: doc.created_at,
               updated_at: doc.updated_at,
@@ -150,10 +126,15 @@ export async function verifyAccessCode(
           
           console.log("Total AUTHENTIC documents found:", allDocuments.length);
           
+          // If no documents at all, return empty but valid access
+          if (allDocuments.length === 0) {
+            console.log("No documents found for user, but access is valid");
+          }
+          
           // Determine access type from identifier
           const accessTypeInfo = determineAccessType(bruteForceIdentifier);
           
-          // Build dossier object with AUTHENTIC documents
+          // Build dossier object with REAL documents only
           const dossier = {
             id: profile.id,
             userId: realUserId,
@@ -183,7 +164,7 @@ export async function verifyAccessCode(
             `Accès via code: ${accessCode}, Identifiant: ${bruteForceIdentifier || 'direct'}, Documents authentiques: ${allDocuments.length}`
           );
           
-          console.log("Created dossier with AUTHENTIC documents:", JSON.stringify(dossier, null, 2));
+          console.log("Created dossier with REAL documents only:", JSON.stringify(dossier, null, 2));
           
           return {
             success: true,
@@ -257,39 +238,16 @@ export async function verifyAccessCode(
       
       console.log("Authentic directives documents found:", authenticDirectives.length);
       
-      // Use authentic directives only, or create placeholder if none exist
-      const finalDirectives = authenticDirectives?.length > 0 ? authenticDirectives : [
-        {
-          id: `generated-${Date.now()}`,
-          file_name: "Directives anticipées",
-          file_path: `generated-${Date.now()}`,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          description: "Directives anticipées authentiques",
-          content_type: "application/json",
-          file_type: "directive",
-          user_id: realUserId,
-          content: {
-            type: "directive_anticipee",
-            titre: "Directives anticipées authentiques",
-            contenu: `Directives anticipées pour ${profile.first_name} ${profile.last_name}, né(e) le ${profile.birthdate}. Ces directives expriment mes volontés concernant mes soins de santé.`,
-            date_creation: new Date().toISOString().split('T')[0],
-            authentique: true
-          },
-          source: "directives"
-        }
-      ];
-      
-      // Combine all REAL documents (no test data)
+      // Combine all REAL documents (no test data and no placeholders)
       const allDocuments = [
         ...(pdfDocuments || []).map(doc => ({
           ...doc,
           file_type: doc.content_type || 'application/pdf',
           source: 'pdf_documents'
         })),
-        ...finalDirectives.map(doc => ({
+        ...authenticDirectives.map(doc => ({
           id: doc.id,
-          file_name: doc.content?.title || doc.content?.titre || doc.file_name || 'Directive anticipée',
+          file_name: doc.content?.title || doc.content?.titre || 'Directive anticipée',
           file_path: doc.id, // Use directive ID as path
           created_at: doc.created_at,
           updated_at: doc.updated_at,
@@ -304,10 +262,15 @@ export async function verifyAccessCode(
       
       console.log("Total AUTHENTIC documents found:", allDocuments.length);
       
+      // If no documents at all, return empty but valid access
+      if (allDocuments.length === 0) {
+        console.log("No documents found for user, but access is valid");
+      }
+      
       // Determine access type from identifier
       const accessTypeInfo = determineAccessType(bruteForceIdentifier);
       
-      // Build dossier object with AUTHENTIC documents
+      // Build dossier object with REAL documents only
       const dossier = {
         id: profile.id,
         userId: realUserId,
@@ -337,7 +300,7 @@ export async function verifyAccessCode(
         `Accès via code: ${accessCode}, Identifiant: ${bruteForceIdentifier || 'direct'}, Documents authentiques: ${allDocuments.length}`
       );
       
-      console.log("Created dossier with AUTHENTIC documents:", JSON.stringify(dossier, null, 2));
+      console.log("Created dossier with REAL documents only:", JSON.stringify(dossier, null, 2));
       
       return {
         success: true,
