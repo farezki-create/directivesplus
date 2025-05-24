@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import AppNavigation from "@/components/AppNavigation";
 import DirectivesGrid from "@/components/DirectivesGrid";
+import InfoSteps from "@/components/InfoSteps";
 import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
@@ -72,6 +73,8 @@ const Rediger = () => {
             Rédigez vos directives anticipées et désignez vos personnes de confiance en quelques étapes simples et sécurisées.
           </p>
         </div>
+        
+        <InfoSteps />
         
         <DirectivesGrid />
       </main>
