@@ -10,7 +10,8 @@ export const normalizeString = (str: string): string => {
     .trim()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "") // Supprime les accents
-    .replace(/\s+/g, " "); // Normalise les espaces
+    .replace(/\s+/g, " ") // Normalise les espaces
+    .replace(/[^\w\s]/g, ""); // Supprime la ponctuation
 };
 
 export const compareNames = (input: string, profile: string): boolean => {
@@ -35,23 +36,63 @@ export const compareNames = (input: string, profile: string): boolean => {
     return true;
   }
   
-  // Comparaison avec variations communes (noms composés, etc.)
-  const inputParts = normalizedInput.split(" ").filter(part => part.length > 0);
-  const profileParts = normalizedProfile.split(" ").filter(part => part.length > 0);
+  // Comparaison flexible pour les noms composés
+  const inputParts = normalizedInput.split(" ").filter(part => part.length > 1);
+  const profileParts = normalizedProfile.split(" ").filter(part => part.length > 1);
   
   console.log("Name parts comparison:", { inputParts, profileParts });
   
-  // Si l'un contient tous les mots de l'autre
-  const inputContainsProfile = profileParts.every(profilePart => 
-    inputParts.some(inputPart => inputPart.includes(profilePart))
+  // Vérifier si tous les mots principaux correspondent (dans n'importe quel ordre)
+  const inputContainsAllProfile = profileParts.every(profilePart => 
+    inputParts.some(inputPart => 
+      inputPart.includes(profilePart) || profilePart.includes(inputPart) || 
+      levenshteinDistance(inputPart, profilePart) <= 1
+    )
   );
   
-  const profileContainsInput = inputParts.every(inputPart => 
-    profileParts.some(profilePart => profilePart.includes(inputPart))
+  const profileContainsAllInput = inputParts.every(inputPart => 
+    profileParts.some(profilePart => 
+      profilePart.includes(inputPart) || inputPart.includes(profilePart) ||
+      levenshteinDistance(inputPart, profilePart) <= 1
+    )
   );
   
-  const result = inputContainsProfile || profileContainsInput;
+  const result = inputContainsAllProfile || profileContainsAllInput;
   
-  console.log("Flexible match result:", { inputContainsProfile, profileContainsInput, finalResult: result });
+  console.log("Flexible match result:", { 
+    inputContainsAllProfile, 
+    profileContainsAllInput, 
+    finalResult: result 
+  });
+  
   return result;
 };
+
+// Fonction pour calculer la distance de Levenshtein (pour gérer les petites fautes de frappe)
+function levenshteinDistance(str1: string, str2: string): number {
+  const matrix = [];
+
+  for (let i = 0; i <= str2.length; i++) {
+    matrix[i] = [i];
+  }
+
+  for (let j = 0; j <= str1.length; j++) {
+    matrix[0][j] = j;
+  }
+
+  for (let i = 1; i <= str2.length; i++) {
+    for (let j = 1; j <= str1.length; j++) {
+      if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+        matrix[i][j] = matrix[i - 1][j - 1];
+      } else {
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j - 1] + 1,
+          matrix[i][j - 1] + 1,
+          matrix[i - 1][j] + 1
+        );
+      }
+    }
+  }
+
+  return matrix[str2.length][str1.length];
+}

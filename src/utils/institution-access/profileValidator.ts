@@ -61,44 +61,65 @@ export const validateProfileMatches = async (
   for (const codeData of validCodes) {
     console.log("=== Checking user profile for user_id:", codeData.user_id, "===");
     
-    // Requête plus robuste pour récupérer le profil
-    const { data: profile, error: profileError } = await supabase
+    // Utiliser une requête plus simple et directe
+    const { data: profiles, error: profileError } = await supabase
       .from('profiles')
       .select('*')
-      .eq('id', codeData.user_id)
-      .maybeSingle();
+      .eq('id', codeData.user_id);
 
-    console.log("Profile query result:", { profile, profileError, user_id: codeData.user_id });
+    console.log("Profile query result:", { 
+      profiles, 
+      profileError, 
+      user_id: codeData.user_id,
+      profilesLength: profiles?.length || 0 
+    });
 
     if (profileError) {
       console.error("Error fetching profile:", profileError);
       continue;
     }
 
-    if (!profile) {
+    if (!profiles || profiles.length === 0) {
       console.log("No profile found for user_id:", codeData.user_id);
       continue;
     }
 
+    const profile = profiles[0]; // Prendre le premier profil trouvé
     foundProfiles++;
     console.log("Profile found:", profile);
 
-    // Conversion de la date pour comparaison
+    // Normalisation et conversion de la date
     let profileBirthDate = profile.birth_date;
-    if (profileBirthDate && typeof profileBirthDate === 'string') {
-      // Assurons-nous que la date est au bon format
-      profileBirthDate = profileBirthDate.split('T')[0]; // Garde seulement YYYY-MM-DD
+    if (profileBirthDate) {
+      // S'assurer que la date est au format YYYY-MM-DD
+      if (typeof profileBirthDate === 'string') {
+        profileBirthDate = profileBirthDate.split('T')[0];
+      } else if (profileBirthDate instanceof Date) {
+        profileBirthDate = profileBirthDate.toISOString().split('T')[0];
+      }
     }
 
-    // Vérifications avec normalisation améliorée
+    console.log("=== DETAILED COMPARISON ===");
+    console.log("Input data:", {
+      lastName: cleanedValues.lastName,
+      firstName: cleanedValues.firstName,
+      birthDate: cleanedValues.birthDate
+    });
+    console.log("Profile data:", {
+      lastName: profile.last_name,
+      firstName: profile.first_name,
+      birthDate: profileBirthDate
+    });
+
+    // Comparaisons avec normalisation
     const lastNameMatch = compareNames(cleanedValues.lastName, profile.last_name || '');
     const firstNameMatch = compareNames(cleanedValues.firstName, profile.first_name || '');
     const birthDateMatch = profileBirthDate === cleanedValues.birthDate;
 
     console.log("=== Comparison results ===");
-    console.log("Input last name:", cleanedValues.lastName, "vs Profile last name:", profile.last_name, "=> Match:", lastNameMatch);
-    console.log("Input first name:", cleanedValues.firstName, "vs Profile first name:", profile.first_name, "=> Match:", firstNameMatch);
-    console.log("Input birth date:", cleanedValues.birthDate, "vs Profile birth date:", profileBirthDate, "=> Match:", birthDateMatch);
+    console.log("Last name match:", lastNameMatch, `("${cleanedValues.lastName}" vs "${profile.last_name}")`);
+    console.log("First name match:", firstNameMatch, `("${cleanedValues.firstName}" vs "${profile.first_name}")`);
+    console.log("Birth date match:", birthDateMatch, `("${cleanedValues.birthDate}" vs "${profileBirthDate}")`);
 
     const allMatch = lastNameMatch && firstNameMatch && birthDateMatch;
     console.log("All fields match:", allMatch);
@@ -111,11 +132,18 @@ export const validateProfileMatches = async (
       birthDateMatch,
       allMatch
     });
+
+    console.log("=== Match attempt summary ===");
+    console.log("User ID:", codeData.user_id);
+    console.log("Perfect match:", allMatch);
+    console.log("Partial matches:", { lastNameMatch, firstNameMatch, birthDateMatch });
   }
 
   console.log("=== PROFILE VALIDATION SUMMARY ===");
   console.log("Total profiles found:", foundProfiles);
-  console.log("Match attempts:", matchAttempts);
+  console.log("Total match attempts:", matchAttempts.length);
+  console.log("Perfect matches:", matchAttempts.filter(m => m.allMatch).length);
+  console.log("Name-only matches:", matchAttempts.filter(m => m.lastNameMatch && m.firstNameMatch && !m.birthDateMatch).length);
   
   return { matchAttempts, foundProfiles };
 };
