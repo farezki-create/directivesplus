@@ -11,6 +11,7 @@ import { AlertCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "@/hooks/use-toast";
 import { useDossierStore } from "@/store/dossierStore";
+import { Document } from "@/types/documents";
 
 const DirectivesDocs = () => {
   const { user, profile, isAuthenticated, isLoading: authLoading } = useAuth();
@@ -33,6 +34,9 @@ const DirectivesDocs = () => {
   // État local pour les options d'ajout dans la vue publique
   const [showAddOptionsPublic, setShowAddOptionsPublic] = useState(false);
   
+  // Local state for preview document
+  const [previewDocument, setPreviewDocument] = useState<Document | null>(null);
+  
   console.log("DirectivesDocs - Auth state:", { userId: user?.id, hasProfile: !!profile, isAuthenticated, isLoading: authLoading });
   console.log("DirectivesDocs - Dossier actif:", dossierActif);
   console.log("DirectivesDocs - URL params:", urlParams);
@@ -43,18 +47,13 @@ const DirectivesDocs = () => {
     documents,
     showAddOptions,
     setShowAddOptions,
-    previewDocument,
-    setPreviewDocument,
     documentToDelete,
     setDocumentToDelete,
     handleDownload,
     handlePrint,
     handleView,
-    confirmDelete,
     handleDelete,
     handleUploadComplete,
-    handlePreviewDownload,
-    handlePreviewPrint
   } = useDirectivesDocuments();
 
   // Gérer l'affichage du toast pour document ajouté
@@ -87,6 +86,15 @@ const DirectivesDocs = () => {
     // For this context, we don't have the specific parameters,
     // so we'll call refresh documents directly
     window.location.reload();
+  };
+
+  // Preview handlers
+  const handlePreviewDownload = (filePath: string, fileName: string) => {
+    handleDownload(filePath, fileName);
+  };
+
+  const handlePreviewPrint = (filePath: string, fileType?: string) => {
+    handlePrint(filePath, fileType);
   };
 
   // Si l'utilisateur est en train de se connecter, afficher un état de chargement
