@@ -24,7 +24,7 @@ const DirectivesDocs = () => {
   const navigate = useNavigate();
   const { verifierCode } = useVerifierCodeAcces();
   
-  console.log("DirectivesDocs - Auth state:", { userId: user?.id, hasProfile: !!profile, isAuthenticated });
+  console.log("DirectivesDocs - Auth state:", { userId: user?.id, hasProfile: !!profile, isAuthenticated, isLoading: authLoading });
   
   const {
     isLoading: documentsLoading,

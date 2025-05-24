@@ -20,6 +20,7 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     '/affichage-dossier', 
     '/mes-directives', 
     '/directives-acces',
+    '/directives-docs',
     '/acces-institution',
     '/acces-institution-simple'
   ];

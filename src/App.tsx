@@ -51,6 +51,7 @@ function App() {
         <Route path="/affichage-dossier" element={<AffichageDossierRedirect />} />
         <Route path="/mes-directives" element={<DirectivesAcces />} />
         <Route path="/directives-acces" element={<DirectivesAcces />} />
+        <Route path="/directives-docs" element={<DirectivesDocs />} />
         <Route path="/acces-institution" element={<InstitutionAccess />} />
         <Route path="/acces-institution-simple" element={<InstitutionAccessSimple />} />
         
@@ -84,14 +85,6 @@ function App() {
           element={
             <ProtectedRoute>
               <Profile />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/directives-docs" 
-          element={
-            <ProtectedRoute>
-              <DirectivesDocs />
             </ProtectedRoute>
           } 
         />
