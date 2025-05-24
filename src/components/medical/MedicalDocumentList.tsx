@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { DocumentCardRefactored } from "@/components/documents/card/DocumentCardRefactored";
 import EmptyDocumentsState from "@/components/documents/EmptyDocumentsState";
@@ -6,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { FolderPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { ShareableDocument } from "@/hooks/sharing/useUnifiedDocumentSharing";
+import { ShareableDocument } from "@/hooks/sharing/useUnifiedSharing";
 
 interface MedicalDocumentListProps {
   documents: ShareableDocument[];

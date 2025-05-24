@@ -1,9 +1,8 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Download, Eye, Printer, Trash2, FolderPlus } from "lucide-react";
 import { DocumentShareButton } from "../sharing/DocumentShareButton";
-import { ShareableDocument } from "@/hooks/sharing/useUnifiedDocumentSharing";
+import { ShareableDocument } from "@/hooks/sharing/useUnifiedSharing";
 
 interface DocumentActionsRefactoredProps {
   document: ShareableDocument;

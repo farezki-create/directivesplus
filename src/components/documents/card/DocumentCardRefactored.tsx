@@ -1,9 +1,8 @@
-
 import React, { useState } from "react";
 import DocumentHeader from "@/components/documents/card/DocumentHeader";
 import { DocumentActionsRefactored } from "./DocumentActionsRefactored";
 import { detectDocumentType } from "../preview/documentUtils";
-import { ShareableDocument } from "@/hooks/sharing/useUnifiedDocumentSharing";
+import { ShareableDocument } from "@/hooks/sharing/useUnifiedSharing";
 
 interface DocumentCardRefactoredProps {
   document: ShareableDocument;
