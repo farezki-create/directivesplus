@@ -1,44 +1,21 @@
 
 import { useState, useEffect } from "react";
-import { useDossierDocuments } from "@/hooks/directives/useDossierDocuments";
-import { useAuth } from "@/contexts/AuthContext";
-import { useDocumentOperations } from "@/hooks/useDocumentOperations";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Document } from "@/types/documents";
 
-export type { Document } from "@/types/documents";
-
 export const useDirectivesDocuments = () => {
-  const { user, isAuthenticated } = useAuth();
-  const { documents: dossierDocuments, isLoading: dossierLoading } = useDossierDocuments();
+  const { user } = useAuth();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showAddOptions, setShowAddOptions] = useState(false);
+  const [previewDocument, setPreviewDocument] = useState<Document | null>(null);
+  const [documentToDelete, setDocumentToDelete] = useState<string | null>(null);
 
-  // Use the document operations hook for all document actions
-  const {
-    previewDocument,
-    setPreviewDocument,
-    documentToDelete,
-    setDocumentToDelete,
-    handleDownload,
-    handlePrint,
-    handleView,
-    handleDelete: handleDeleteOperation,
-    confirmDelete
-  } = useDocumentOperations(() => {
-    // Refresh documents after operations
-    if (isAuthenticated && user?.id) {
-      loadUserDocuments();
-    }
-  });
-
-  const loadUserDocuments = async () => {
-    if (!isAuthenticated || !user?.id) {
-      setIsLoading(false);
-      return;
-    }
+  // Load documents
+  const loadDocuments = async () => {
+    if (!user?.id) return;
 
     try {
       const { data, error } = await supabase
@@ -48,113 +25,126 @@ export const useDirectivesDocuments = () => {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error("Erreur lors du chargement des documents:", error);
-        setDocuments([]);
-      } else {
-        const transformedDocuments: Document[] = (data || []).map(doc => ({
-          ...doc,
-          file_type: doc.content_type || 'pdf'
-        }));
-        setDocuments(transformedDocuments);
+        console.error('Error loading documents:', error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger les documents",
+          variant: "destructive"
+        });
+        return;
       }
+
+      setDocuments(data || []);
     } catch (error) {
-      console.error("Erreur lors du chargement des documents:", error);
-      setDocuments([]);
+      console.error('Error loading documents:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    if (isAuthenticated) {
-      loadUserDocuments();
-    } else if (dossierDocuments.length > 0) {
-      setDocuments(dossierDocuments);
-      setIsLoading(false);
-    } else {
-      setIsLoading(false);
+    loadDocuments();
+  }, [user?.id]);
+
+  const handleUploadComplete = () => {
+    loadDocuments();
+    setShowAddOptions(false);
+    toast({
+      title: "Document ajouté",
+      description: "Votre document a été ajouté avec succès",
+    });
+  };
+
+  const handleDownload = (filePath: string, fileName: string) => {
+    try {
+      const link = document.createElement('a');
+      link.href = filePath;
+      link.download = fileName;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast({
+        title: "Téléchargement commencé",
+        description: `${fileName} est en cours de téléchargement`,
+      });
+    } catch (error) {
+      console.error("Erreur lors du téléchargement:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de télécharger le document",
+        variant: "destructive"
+      });
     }
-  }, [isAuthenticated, user, dossierDocuments]);
+  };
 
-  const handleDelete = async () => {
-    if (!documentToDelete) return;
+  const handlePrint = (filePath: string, fileType?: string) => {
+    const printWindow = window.open(filePath, '_blank');
+    if (printWindow) {
+      printWindow.onload = () => {
+        printWindow.print();
+      };
+    }
+  };
 
+  const handleView = (filePath: string, fileType?: string) => {
+    window.open(filePath, '_blank');
+  };
+
+  const handleDelete = async (documentId: string) => {
     try {
       const { error } = await supabase
         .from('pdf_documents')
         .delete()
-        .eq('id', documentToDelete);
+        .eq('id', documentId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error deleting document:', error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de supprimer le document",
+          variant: "destructive"
+        });
+        return;
+      }
 
-      setDocuments(prev => prev.filter(doc => doc.id !== documentToDelete));
+      await loadDocuments();
       toast({
         title: "Document supprimé",
-        description: "Le document a été supprimé avec succès"
+        description: "Le document a été supprimé avec succès",
       });
     } catch (error) {
-      console.error("Erreur lors de la suppression:", error);
+      console.error('Error deleting document:', error);
       toast({
         title: "Erreur",
         description: "Impossible de supprimer le document",
         variant: "destructive"
       });
-    } finally {
-      setDocumentToDelete(null);
     }
   };
 
-  const handleUploadComplete = () => {
-    if (isAuthenticated && user?.id) {
-      loadUserDocuments();
-    }
+  const handlePreviewDownload = (filePath: string, fileName: string) => {
+    handleDownload(filePath, fileName);
   };
 
-  const handlePreviewDownload = (filePath: string) => {
-    const document = documents.find(doc => doc.file_path === filePath);
-    if (document) {
-      handleDownload(document, document.file_name);
-    }
-  };
-
-  const handlePreviewPrint = (filePath: string) => {
-    const document = documents.find(doc => doc.file_path === filePath);
-    if (document) {
-      handlePrint(document);
-    }
+  const handlePreviewPrint = (filePath: string, fileType?: string) => {
+    handlePrint(filePath, fileType);
   };
 
   return {
-    user,
-    isAuthenticated,
     documents,
-    isLoading: isLoading || dossierLoading,
+    isLoading,
     showAddOptions,
     setShowAddOptions,
     previewDocument,
     setPreviewDocument,
     documentToDelete,
     setDocumentToDelete,
-    handleDownload: (filePath: string, fileName: string) => {
-      const document = documents.find(doc => doc.file_path === filePath);
-      if (document) {
-        handleDownload(document, fileName);
-      }
-    },
-    handlePrint: (filePath: string, contentType?: string) => {
-      const document = documents.find(doc => doc.file_path === filePath);
-      if (document) {
-        handlePrint(document, contentType);
-      }
-    },
-    handleView: (filePath: string, contentType?: string) => {
-      const document = documents.find(doc => doc.file_path === filePath);
-      if (document) {
-        handleView(document, contentType);
-      }
-    },
+    handleDownload,
+    handlePrint,
+    handleView,
     handleDelete,
-    confirmDelete,
     handleUploadComplete,
     handlePreviewDownload,
     handlePreviewPrint
