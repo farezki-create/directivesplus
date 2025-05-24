@@ -142,34 +142,41 @@ const DirectivesDocs = () => {
     );
   }
 
-  // Afficher le formulaire d'accès public si l'utilisateur n'est pas authentifié et n'a pas encore vérifié son accès
-  if (!isAuthenticated && !publicAccessVerified) {
+  // Pour les utilisateurs non authentifiés avec accès public vérifié
+  if (!isAuthenticated && publicAccessVerified) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen flex flex-col">
         <AppNavigation />
         
-        <main className="container mx-auto px-4 py-8">
-          <div className="max-w-md mx-auto">
-            <h1 className="text-2xl font-bold text-center mb-6">
-              Accès aux directives anticipées
-            </h1>
-            
-            <PublicDirectivesAccessForm 
-              onSubmit={handlePublicAccess} 
-              loading={publicAccessLoading} 
-            />
-
-            <div className="mt-8 text-center">
-              <p className="text-sm text-gray-500">
-                Si vous avez un compte, vous pouvez également{" "}
-                <a href="/auth" className="text-directiveplus-600 hover:underline">
-                  vous connecter
-                </a>
-                {" "}pour accéder à vos directives.
-              </p>
-            </div>
+        <main className="flex-grow container mx-auto px-4 py-8">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Directives Anticipées</h1>
+            <p className="text-gray-600">
+              Accès aux directives anticipées via code d'accès
+            </p>
           </div>
+          
+          <DirectivesPageContent
+            documents={documents}
+            showAddOptions={false}
+            setShowAddOptions={() => {}}
+            userId=""
+            onUploadComplete={() => {}}
+            onDownload={handleDownload}
+            onPrint={handlePrint}
+            onView={handleView}
+            onDelete={() => {}}
+            profile={profile}
+          />
         </main>
+        
+        <DocumentPreviewDialog
+          filePath={previewDocument}
+          onOpenChange={() => setPreviewDocument(null)}
+          onDownload={handlePreviewDownload}
+          onPrint={handlePreviewPrint}
+          showPrint={false}
+        />
         
         <footer className="bg-white py-6 border-t mt-auto">
           <div className="container mx-auto px-4 text-center text-gray-500">
@@ -180,14 +187,41 @@ const DirectivesDocs = () => {
     );
   }
 
-  // Rediriger vers la page d'affichage si l'utilisateur a vérifié son accès public
-  if (publicAccessVerified) {
-    // Redirection vers mes-directives au lieu de affichage-dossier
-    navigate("/mes-directives");
-    return <DirectivesLoadingState />;
-  }
+  // Afficher le formulaire d'accès public si l'utilisateur n'est pas authentifié
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <AppNavigation />
+      
+      <main className="container mx-auto px-4 py-8">
+        <div className="max-w-md mx-auto">
+          <h1 className="text-2xl font-bold text-center mb-6">
+            Accès aux directives anticipées
+          </h1>
+          
+          <PublicDirectivesAccessForm 
+            onSubmit={handlePublicAccess} 
+            loading={publicAccessLoading} 
+          />
 
-  return <DirectivesLoadingState />;
+          <div className="mt-8 text-center">
+            <p className="text-sm text-gray-500">
+              Si vous avez un compte, vous pouvez également{" "}
+              <a href="/auth" className="text-directiveplus-600 hover:underline">
+                vous connecter
+              </a>
+              {" "}pour accéder à vos directives.
+            </p>
+          </div>
+        </div>
+      </main>
+      
+      <footer className="bg-white py-6 border-t mt-auto">
+        <div className="container mx-auto px-4 text-center text-gray-500">
+          <p>© 2025 DirectivesPlus. Tous droits réservés.</p>
+        </div>
+      </footer>
+    </div>
+  );
 };
 
 export default DirectivesDocs;
