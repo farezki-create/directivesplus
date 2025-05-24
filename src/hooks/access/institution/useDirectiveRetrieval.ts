@@ -66,6 +66,21 @@ export const retrieveDirectivesByInstitutionCode = async (
       }
     }
 
+    // Si aucune correspondance parfaite, chercher une correspondance partielle raisonnable
+    const partialMatch = matchAttempts.find(attempt => 
+      attempt.lastNameMatch && attempt.firstNameMatch
+    );
+    
+    if (partialMatch && !partialMatch.birthDateMatch) {
+      console.log("Partial match found (name match but birth date mismatch):", partialMatch);
+      throw new Error(
+        "Les informations ne correspondent pas exactement au profil du patient. " +
+        `Nom et prénom correspondent, mais la date de naissance saisie (${cleanedValues.birthDate}) ` +
+        `ne correspond pas à celle du profil (${partialMatch.profile.birth_date}). ` +
+        "Veuillez vérifier la date de naissance."
+      );
+    }
+
     console.log("=== FINAL ANALYSIS ===");
     console.log("Total valid codes:", allValidCodes.length);
     console.log("Profiles found:", foundProfiles);

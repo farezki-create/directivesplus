@@ -61,37 +61,44 @@ export const validateProfileMatches = async (
   for (const codeData of validCodes) {
     console.log("=== Checking user profile for user_id:", codeData.user_id, "===");
     
-    // Utiliser une requête plus simple pour récupérer le profil
-    const { data: profiles, error: profileError } = await supabase
+    // Requête plus robuste pour récupérer le profil
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('*')
-      .eq('id', codeData.user_id);
+      .eq('id', codeData.user_id)
+      .maybeSingle();
 
-    console.log("Profile query result:", { profiles, profileError, user_id: codeData.user_id });
+    console.log("Profile query result:", { profile, profileError, user_id: codeData.user_id });
 
     if (profileError) {
       console.error("Error fetching profile:", profileError);
       continue;
     }
 
-    if (!profiles || profiles.length === 0) {
+    if (!profile) {
       console.log("No profile found for user_id:", codeData.user_id);
       continue;
     }
 
-    const profile = profiles[0];
     foundProfiles++;
     console.log("Profile found:", profile);
 
-    // Vérifications avec normalisation
+    // Conversion de la date pour comparaison
+    let profileBirthDate = profile.birth_date;
+    if (profileBirthDate && typeof profileBirthDate === 'string') {
+      // Assurons-nous que la date est au bon format
+      profileBirthDate = profileBirthDate.split('T')[0]; // Garde seulement YYYY-MM-DD
+    }
+
+    // Vérifications avec normalisation améliorée
     const lastNameMatch = compareNames(cleanedValues.lastName, profile.last_name || '');
     const firstNameMatch = compareNames(cleanedValues.firstName, profile.first_name || '');
-    const birthDateMatch = profile.birth_date === cleanedValues.birthDate;
+    const birthDateMatch = profileBirthDate === cleanedValues.birthDate;
 
     console.log("=== Comparison results ===");
     console.log("Input last name:", cleanedValues.lastName, "vs Profile last name:", profile.last_name, "=> Match:", lastNameMatch);
     console.log("Input first name:", cleanedValues.firstName, "vs Profile first name:", profile.first_name, "=> Match:", firstNameMatch);
-    console.log("Input birth date:", cleanedValues.birthDate, "vs Profile birth date:", profile.birth_date, "=> Match:", birthDateMatch);
+    console.log("Input birth date:", cleanedValues.birthDate, "vs Profile birth date:", profileBirthDate, "=> Match:", birthDateMatch);
 
     const allMatch = lastNameMatch && firstNameMatch && birthDateMatch;
     console.log("All fields match:", allMatch);

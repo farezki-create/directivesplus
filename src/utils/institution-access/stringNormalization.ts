@@ -35,27 +35,23 @@ export const compareNames = (input: string, profile: string): boolean => {
     return true;
   }
   
-  // Comparaison avec variations communes
+  // Comparaison avec variations communes (noms composés, etc.)
   const inputParts = normalizedInput.split(" ").filter(part => part.length > 0);
   const profileParts = normalizedProfile.split(" ").filter(part => part.length > 0);
   
   console.log("Name parts comparison:", { inputParts, profileParts });
   
-  // Vérifier si tous les mots de l'input sont dans le profil ou vice versa
-  const inputInProfile = inputParts.every(inputPart => 
-    profileParts.some(profilePart => 
-      profilePart.includes(inputPart) || inputPart.includes(profilePart)
-    )
+  // Si l'un contient tous les mots de l'autre
+  const inputContainsProfile = profileParts.every(profilePart => 
+    inputParts.some(inputPart => inputPart.includes(profilePart))
   );
   
-  const profileInInput = profileParts.every(profilePart => 
-    inputParts.some(inputPart => 
-      inputPart.includes(profilePart) || profilePart.includes(inputPart)
-    )
+  const profileContainsInput = inputParts.every(inputPart => 
+    profileParts.some(profilePart => profilePart.includes(inputPart))
   );
   
-  const result = inputInProfile || profileInInput;
+  const result = inputContainsProfile || profileContainsInput;
   
-  console.log("Flexible match result:", { inputInProfile, profileInInput, finalResult: result });
+  console.log("Flexible match result:", { inputContainsProfile, profileContainsInput, finalResult: result });
   return result;
 };
