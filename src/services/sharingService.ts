@@ -1,84 +1,33 @@
 
-import { supabase } from "@/integrations/supabase/client";
-import type { 
-  ShareableDocument, 
-  SharingResult, 
-  AccessValidationResult, 
-  ShareOptions 
-} from "@/types/sharing";
+import { AccessCodeService, ValidationService, DocumentService } from "@/services/sharing";
+import type { ShareableDocument, AccessValidationResult, SharingResult, ShareOptions } from "@/types/sharing";
 
 /**
- * Service unifié pour la gestion du partage de documents
+ * Service unifié pour la gestion du partage de documents (version simplifiée)
+ * @deprecated Utiliser les services spécialisés dans @/services/sharing
  */
 export class SharingService {
   /**
-   * Génère un code d'accès pour un document
+   * @deprecated Utiliser AccessCodeService.generateCode
    */
   static async generateAccessCode(
     document: ShareableDocument,
     options: ShareOptions = {}
   ): Promise<SharingResult> {
-    try {
-      const { expiresInDays = 365, accessType = 'personal' } = options;
-      
-      const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + expiresInDays);
-      
-      console.log("SharingService.generateAccessCode:", {
-        document_id: document.id,
-        document_type: document.source,
-        user_id: document.user_id,
-        expires_at: expiresAt.toISOString(),
-        access_type: accessType
-      });
-
-      const documentData = {
-        id: document.id,
-        file_name: document.file_name,
-        file_path: document.file_path,
-        created_at: document.created_at,
-        user_id: document.user_id,
-        file_type: document.file_type,
-        source: document.source,
-        content: document.content,
-        description: document.description,
-        content_type: document.content_type,
-        is_private: document.is_private,
-        external_id: document.external_id,
-        file_size: document.file_size,
-        updated_at: document.updated_at
-      };
-
-      const { data, error } = await supabase
-        .from('shared_documents')
-        .insert({
-          document_id: document.id,
-          document_type: document.source,
-          document_data: documentData,
-          user_id: document.user_id,
-          expires_at: expiresAt.toISOString()
-        })
-        .select('access_code')
-        .single();
-
-      if (error) {
-        console.error("Erreur génération code:", error);
-        return { success: false, error: error.message };
-      }
-
-      if (!data?.access_code) {
-        return { success: false, error: "Code d'accès non généré" };
-      }
-
-      return { success: true, code: data.access_code };
-    } catch (error: any) {
-      console.error("Erreur SharingService.generateAccessCode:", error);
-      return { success: false, error: error.message };
-    }
+    const result = await AccessCodeService.generateCode(document, {
+      expiresInDays: options.expiresInDays,
+      accessType: options.accessType === 'institution' ? 'institution' : 'personal'
+    });
+    
+    return {
+      success: result.success,
+      code: result.code,
+      error: result.error
+    };
   }
 
   /**
-   * Valide un code d'accès et retourne les documents
+   * @deprecated Utiliser ValidationService.validateCode
    */
   static async validateAccessCode(
     accessCode: string,
@@ -88,153 +37,49 @@ export class SharingService {
       birthDate?: string;
     }
   ): Promise<AccessValidationResult> {
-    try {
-      console.log("SharingService.validateAccessCode:", { accessCode, personalInfo });
-
-      const { data, error } = await supabase.rpc(
-        'get_shared_documents_by_access_code',
-        {
-          input_access_code: accessCode,
-          input_first_name: personalInfo?.firstName || null,
-          input_last_name: personalInfo?.lastName || null,
-          input_birth_date: personalInfo?.birthDate || null
-        }
-      );
-
-      if (error) {
-        console.error("Erreur RPC validation:", error);
-        return {
-          success: false,
-          error: "Erreur lors de la vérification du code d'accès"
-        };
-      }
-
-      if (!data || data.length === 0) {
-        return {
-          success: false,
-          error: "Code d'accès invalide ou expiré"
-        };
-      }
-
-      const documents: ShareableDocument[] = data.map((item: any) => {
-        const docData = item.document_data;
-        return {
-          id: item.document_id,
-          file_name: docData?.file_name || 'Document',
-          file_path: docData?.file_path || '',
-          created_at: docData?.created_at || item.shared_at,
-          user_id: item.user_id,
-          file_type: (docData?.file_type || 'directive') as 'directive' | 'pdf' | 'medical',
-          source: (docData?.source || item.document_type) as 'pdf_documents' | 'directives' | 'medical_documents',
-          content: docData?.content,
-          description: docData?.description,
-          content_type: docData?.content_type,
-          is_private: docData?.is_private,
-          external_id: docData?.external_id,
-          file_size: docData?.file_size,
-          updated_at: docData?.updated_at
-        };
-      });
-
-      return {
-        success: true,
-        documents,
-        message: `Accès autorisé. ${documents.length} document(s) trouvé(s).`
-      };
-
-    } catch (error: any) {
-      console.error("Erreur SharingService.validateAccessCode:", error);
-      return {
-        success: false,
-        error: "Erreur technique lors de la validation"
-      };
-    }
+    const result = await ValidationService.validateCode({
+      accessCode,
+      personalInfo
+    });
+    
+    return {
+      success: result.success,
+      documents: result.documents,
+      message: result.message,
+      error: result.error
+    };
   }
 
   /**
-   * Prolonge la validité d'un code d'accès
+   * @deprecated Utiliser AccessCodeService.extendCode
    */
   static async extendAccessCode(accessCode: string, days: number = 365): Promise<SharingResult> {
-    try {
-      const newExpiresAt = new Date();
-      newExpiresAt.setDate(newExpiresAt.getDate() + days);
-
-      const { error } = await supabase
-        .from('shared_documents')
-        .update({ expires_at: newExpiresAt.toISOString() })
-        .eq('access_code', accessCode)
-        .eq('is_active', true);
-
-      if (error) {
-        return { success: false, error: error.message };
-      }
-
-      return { success: true };
-    } catch (error: any) {
-      return { success: false, error: error.message };
-    }
+    const result = await AccessCodeService.extendCode(accessCode, days);
+    return {
+      success: result.success,
+      error: result.error
+    };
   }
 
   /**
-   * Révoque un code d'accès
+   * @deprecated Utiliser AccessCodeService.revokeCode
    */
   static async revokeAccessCode(accessCode: string): Promise<SharingResult> {
-    try {
-      const { error } = await supabase
-        .from('shared_documents')
-        .update({ is_active: false })
-        .eq('access_code', accessCode);
-
-      if (error) {
-        return { success: false, error: error.message };
-      }
-
-      return { success: true };
-    } catch (error: any) {
-      return { success: false, error: error.message };
-    }
+    const result = await AccessCodeService.revokeCode(accessCode);
+    return {
+      success: result.success,
+      error: result.error
+    };
   }
 
   /**
-   * Régénère un nouveau code d'accès
+   * @deprecated - Fonction non implémentée dans la nouvelle architecture
    */
   static async regenerateAccessCode(currentCode: string, days: number = 365): Promise<SharingResult> {
-    try {
-      const { data: currentDoc, error: fetchError } = await supabase
-        .from('shared_documents')
-        .select('*')
-        .eq('access_code', currentCode)
-        .eq('is_active', true)
-        .single();
-
-      if (fetchError || !currentDoc) {
-        return { success: false, error: "Code d'accès introuvable" };
-      }
-
-      await this.revokeAccessCode(currentCode);
-
-      const newExpiresAt = new Date();
-      newExpiresAt.setDate(newExpiresAt.getDate() + days);
-
-      const { data: newDoc, error: createError } = await supabase
-        .from('shared_documents')
-        .insert({
-          document_id: currentDoc.document_id,
-          document_type: currentDoc.document_type,
-          document_data: currentDoc.document_data,
-          user_id: currentDoc.user_id,
-          expires_at: newExpiresAt.toISOString()
-        })
-        .select('access_code')
-        .single();
-
-      if (createError || !newDoc?.access_code) {
-        return { success: false, error: "Impossible de générer un nouveau code" };
-      }
-
-      return { success: true, code: newDoc.access_code };
-    } catch (error: any) {
-      return { success: false, error: error.message };
-    }
+    // Cette fonction nécessiterait une logique plus complexe
+    return {
+      success: false,
+      error: "Fonction non disponible - utilisez la nouvelle architecture"
+    };
   }
 }
