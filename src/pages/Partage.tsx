@@ -37,34 +37,57 @@ const Partage = () => {
       }
 
       try {
+        console.log("=== CHARGEMENT DOCUMENT PARTAGÉ ===");
+        console.log("Code de partage:", shareCode);
+
+        // Requête simplifiée sans vérifications d'identité strictes
         const { data, error } = await supabase
           .from('shared_documents')
           .select('*')
           .eq('access_code', shareCode)
-          .eq('is_active', true)
-          .single();
+          .eq('is_active', true);
 
-        if (error || !data) {
-          setError("Document non trouvé ou code de partage invalide");
+        console.log("Résultat de la requête shared_documents:", { data, error });
+
+        if (error) {
+          console.error("Erreur Supabase:", error);
+          setError("Erreur lors du chargement du document");
           return;
         }
 
+        if (!data || data.length === 0) {
+          console.log("Aucun document trouvé avec ce code");
+          setError("Document non trouvé avec ce code de partage");
+          return;
+        }
+
+        // Prendre le premier document trouvé
+        const documentData = data[0];
+        
         // Vérifier si le document n'est pas expiré
-        if (data.expires_at && new Date(data.expires_at) < new Date()) {
+        if (documentData.expires_at && new Date(documentData.expires_at) < new Date()) {
+          console.log("Document expiré");
           setError("Ce lien de partage a expiré");
           return;
         }
 
         // Transformer les données avec le bon typage
         const transformedDocument: SharedDocument = {
-          document_id: data.document_id,
-          document_type: data.document_type,
-          document_data: data.document_data as SharedDocument['document_data'],
-          user_id: data.user_id,
-          shared_at: data.shared_at
+          document_id: documentData.document_id,
+          document_type: documentData.document_type,
+          document_data: documentData.document_data as SharedDocument['document_data'],
+          user_id: documentData.user_id,
+          shared_at: documentData.shared_at
         };
 
+        console.log("Document transformé:", transformedDocument);
         setSharedDocument(transformedDocument);
+        
+        toast({
+          title: "Document chargé",
+          description: "Le document partagé a été chargé avec succès",
+        });
+
       } catch (err) {
         console.error("Erreur lors du chargement du document partagé:", err);
         setError("Erreur lors du chargement du document");
@@ -119,11 +142,14 @@ const Partage = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-red-600">
               <Lock size={20} />
-              Accès refusé
+              Document non disponible
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-gray-600">{error}</p>
+            <p className="text-gray-600 mb-4">{error}</p>
+            <p className="text-sm text-gray-500">
+              Vérifiez que le lien de partage est correct et n'a pas expiré.
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -135,7 +161,7 @@ const Partage = () => {
       <div className="container mx-auto px-4 max-w-2xl">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Document Partagé</h1>
-          <p className="text-gray-600">Accès sécurisé à un document médical</p>
+          <p className="text-gray-600">Accès direct au document</p>
         </div>
 
         <Card>
@@ -174,11 +200,11 @@ const Partage = () => {
               </Button>
             </div>
 
-            <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-              <h3 className="font-medium text-blue-900 mb-2">⚠️ Information importante</h3>
-              <p className="text-sm text-blue-800">
-                Ce document médical vous a été partagé de manière sécurisée. 
-                Veuillez le traiter avec la confidentialité requise pour des données de santé.
+            <div className="mt-6 p-4 bg-green-50 rounded-lg">
+              <h3 className="font-medium text-green-900 mb-2">✅ Accès autorisé</h3>
+              <p className="text-sm text-green-800">
+                Ce document vous a été partagé de manière sécurisée. 
+                Vous pouvez le consulter et le télécharger librement.
               </p>
             </div>
           </CardContent>
@@ -196,7 +222,6 @@ const Partage = () => {
           }
         }}
         onPrint={() => {
-          // Impression directe depuis la preview
           if (previewDocument) {
             const printWindow = window.open(previewDocument, '_blank');
             if (printWindow) {
