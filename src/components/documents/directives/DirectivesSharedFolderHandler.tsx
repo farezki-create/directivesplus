@@ -4,8 +4,21 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { useDossierStore } from "@/store/dossierStore";
 import { useAuth } from "@/contexts/AuthContext";
-import { Document } from "@/hooks/useDirectivesDocuments";
 import DirectivesDocumentList from "@/components/documents/DirectivesDocumentList";
+
+// Interface mise à jour pour inclure la propriété content
+interface Document {
+  id: string;
+  file_name: string;
+  file_path: string;
+  created_at: string;
+  description?: string;
+  content_type?: string;
+  file_type?: string;
+  user_id?: string;
+  is_private?: boolean;
+  content?: any; // Ajout de la propriété content
+}
 
 interface DirectivesSharedFolderHandlerProps {
   documents: Document[];
@@ -56,7 +69,7 @@ const DirectivesSharedFolderHandler: React.FC<DirectivesSharedFolderHandlerProps
       const virtualDocument = {
         id: document.id,
         file_name: `Directive_${new Date().toLocaleDateString('fr-FR').replace(/\//g, '-')}.pdf`,
-        file_path: `data:application/pdf;base64,${btoa('Document directive virtuel')}`, // URL de données fictive
+        file_path: `data:application/pdf;base64,${btoa('Document directive virtuel')}`,
         created_at: document.created_at || new Date().toISOString(),
         description: document.content?.title || "Directive anticipée",
         content_type: "application/pdf",
