@@ -41,12 +41,14 @@ export const ShareDialog: React.FC<ShareDialogProps> = ({
   React.useEffect(() => {
     const fetchUserProfile = async () => {
       if (document.user_id) {
-        const { data } = await supabase
+        console.log("Récupération profil utilisateur:", document.user_id);
+        const { data, error } = await supabase
           .from('profiles')
           .select('first_name, last_name, birth_date')
           .eq('id', document.user_id)
           .single();
         
+        console.log("Profil utilisateur récupéré:", { data, error });
         if (data) {
           setUserProfile(data);
         }
@@ -59,15 +61,25 @@ export const ShareDialog: React.FC<ShareDialogProps> = ({
   }, [open, document.user_id]);
 
   const handleShareDocument = async () => {
+    console.log("Partage document:", document);
     const code = await shareDocument(document, { expiresInDays: 365 });
     if (code) {
+      console.log("Code généré:", code);
       setAccessCode(code);
     }
   };
 
   const handleExtendCode = async () => {
-    if (!accessCode) return;
+    if (!accessCode) {
+      toast({
+        title: "Erreur", 
+        description: "Aucun code d'accès à prolonger",
+        variant: "destructive"
+      });
+      return;
+    }
     
+    console.log("Prolongation code:", accessCode);
     const success = await extendAccessCode(accessCode, 365);
     if (success) {
       toast({
@@ -78,10 +90,19 @@ export const ShareDialog: React.FC<ShareDialogProps> = ({
   };
 
   const handleRegenerateCode = async () => {
-    if (!accessCode) return;
+    if (!accessCode) {
+      toast({
+        title: "Erreur",
+        description: "Aucun code d'accès à régénérer", 
+        variant: "destructive"
+      });
+      return;
+    }
     
+    console.log("Régénération code:", accessCode);
     const newCode = await regenerateCode(accessCode, 365);
     if (newCode) {
+      console.log("Nouveau code généré:", newCode);
       setAccessCode(newCode);
     }
   };
@@ -169,7 +190,7 @@ export const ShareDialog: React.FC<ShareDialogProps> = ({
                       className="flex items-center gap-2"
                     >
                       <RefreshCw className="h-4 w-4" />
-                      Nouveau code
+                      {isRegenerating ? "Génération..." : "Nouveau code"}
                     </Button>
                   </div>
 

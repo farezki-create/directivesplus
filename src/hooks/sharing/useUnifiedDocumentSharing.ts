@@ -36,6 +36,7 @@ export const useUnifiedDocumentSharing = () => {
     setShareError(null);
 
     try {
+      console.log("Partage document:", document, options);
       const accessCode = await createSharedDocument(document, options);
 
       if (!accessCode) {
@@ -54,7 +55,7 @@ export const useUnifiedDocumentSharing = () => {
       setShareError(error.message);
       toast({
         title: "Erreur",
-        description: "Impossible de partager le document",
+        description: "Impossible de partager le document: " + error.message,
         variant: "destructive"
       });
       return null;
@@ -67,8 +68,18 @@ export const useUnifiedDocumentSharing = () => {
     accessCode: string,
     additionalDays: number = 365
   ): Promise<boolean> => {
+    if (!accessCode) {
+      toast({
+        title: "Erreur",
+        description: "Code d'accès manquant",
+        variant: "destructive"
+      });
+      return false;
+    }
+
     setIsExtending(true);
     try {
+      console.log("Prolongation code d'accès:", accessCode, additionalDays);
       const success = await extendSharedDocumentExpiry(accessCode, additionalDays);
       
       if (success) {
@@ -89,7 +100,7 @@ export const useUnifiedDocumentSharing = () => {
       console.error("Erreur prolongation:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de prolonger le code d'accès",
+        description: "Impossible de prolonger le code d'accès: " + error.message,
         variant: "destructive"
       });
       return false;
@@ -102,8 +113,18 @@ export const useUnifiedDocumentSharing = () => {
     currentAccessCode: string,
     expiresInDays: number = 365
   ): Promise<string | null> => {
+    if (!currentAccessCode) {
+      toast({
+        title: "Erreur",
+        description: "Code d'accès actuel manquant",
+        variant: "destructive"
+      });
+      return null;
+    }
+
     setIsRegenerating(true);
     try {
+      console.log("Régénération code d'accès:", currentAccessCode, expiresInDays);
       const newCode = await regenerateAccessCode(currentAccessCode, expiresInDays);
       
       if (newCode) {
@@ -124,7 +145,7 @@ export const useUnifiedDocumentSharing = () => {
       console.error("Erreur régénération:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de régénérer le code d'accès",
+        description: "Impossible de régénérer le code d'accès: " + error.message,
         variant: "destructive"
       });
       return null;
@@ -194,12 +215,14 @@ export const useUnifiedDocumentSharing = () => {
     setShareError(null);
 
     try {
+      console.log("Génération code institution:", document, expiresInDays);
       const accessCode = await generateInstitutionAccessCode(document, expiresInDays);
 
       if (!accessCode) {
         throw new Error("No access code returned");
       }
 
+      console.log("Code institution généré avec succès:", accessCode);
       return accessCode;
     } catch (error: any) {
       console.error("Erreur lors de la génération du code institution:", error);

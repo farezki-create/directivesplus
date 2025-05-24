@@ -5,7 +5,7 @@ import type { ShareableDocument } from "./types";
 export interface InstitutionAccessResult {
   success: boolean;
   message: string;
-  patientData?: {
+  directiveData?: {
     user_id: string;
     first_name: string;
     last_name: string;
@@ -22,13 +22,17 @@ export const generateInstitutionAccessCode = async (
     throw new Error("Document must have a user_id to generate institution code");
   }
 
+  console.log("Génération code institution pour document:", document);
+
   // Calculer la date d'expiration
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + expiresInDays);
 
-  // Déterminer le type de document
-  const documentType = document.source || 
-    (document.file_type === 'directive' ? 'directives' : 'pdf_documents');
+  // Déterminer le type de document - doit correspondre à la contrainte check
+  let documentType = 'directives'; // Valeur par défaut
+  if (document.source === 'pdf_documents' || document.file_type === 'pdf') {
+    documentType = 'pdf_documents';
+  }
 
   // Créer une entrée dans shared_documents avec un code d'accès institution
   const { data, error } = await supabase
@@ -110,7 +114,7 @@ export const validateInstitutionAccess = async (
     }
 
     // Construire les données du patient
-    const patientData = {
+    const directiveData = {
       user_id: data[0].user_id,
       first_name: profileData.first_name,
       last_name: profileData.last_name,
@@ -118,12 +122,12 @@ export const validateInstitutionAccess = async (
       directives: data.map(doc => doc.document_data)
     };
 
-    console.log("Données patient construites:", patientData);
+    console.log("Données patient construites:", directiveData);
 
     return {
       success: true,
       message: `Accès autorisé pour ${profileData.first_name} ${profileData.last_name}`,
-      patientData
+      directiveData
     };
 
   } catch (error) {

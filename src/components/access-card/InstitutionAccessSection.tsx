@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Hospital, Loader2, Copy, Check, Share2, Shield } from "lucide-react";
-import { generateInstitutionAccessCode } from "@/hooks/sharing/institutionSharingService";
+import { useUnifiedDocumentSharing } from "@/hooks/sharing/useUnifiedDocumentSharing";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -25,6 +25,7 @@ const InstitutionAccessSection = ({ userId }: InstitutionAccessSectionProps) => 
   const [isGenerating, setIsGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { generateInstitutionCode } = useUnifiedDocumentSharing();
 
   const handleGenerateInstitutionCode = async () => {
     console.log("=== GÉNÉRATION CODE INSTITUTION ===");
@@ -110,7 +111,7 @@ const InstitutionAccessSection = ({ userId }: InstitutionAccessSectionProps) => 
       }
       
       console.log("Génération du code d'accès institution...");
-      const code = await generateInstitutionAccessCode(document, 30); // 30 jours par défaut
+      const code = await generateInstitutionCode(document, 30); // 30 jours par défaut
       
       if (code) {
         console.log("Code d'accès institution généré:", code);
