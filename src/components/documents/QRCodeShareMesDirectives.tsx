@@ -34,6 +34,7 @@ export function QRCodeShareMesDirectives({
   // Générer le QR code au montage du composant
   useEffect(() => {
     if (documentId && documentName) {
+      console.log("Génération QR code pour:", { documentId, documentName, filePath });
       generateQRCode(documentId, documentName, filePath);
     }
   }, [documentId, documentName, filePath, generateQRCode]);
@@ -59,8 +60,9 @@ export function QRCodeShareMesDirectives({
   };
 
   const handleTestLink = () => {
-    if (qrCodeData?.directPdfUrl) {
-      window.open(qrCodeData.directPdfUrl, '_blank');
+    if (qrCodeData?.qrCodeValue) {
+      console.log("Test du lien QR code:", qrCodeData.qrCodeValue);
+      window.open(qrCodeData.qrCodeValue, '_blank');
     }
   };
 
@@ -79,6 +81,16 @@ export function QRCodeShareMesDirectives({
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>{error}</AlertDescription>
           </Alert>
+          
+          <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+            <p className="text-sm text-blue-800 font-medium mb-1">
+              💡 Solution alternative
+            </p>
+            <p className="text-xs text-blue-700">
+              L'URL du document est trop longue pour un QR code. Utilisez le lien de partage classique ou contactez le support.
+            </p>
+          </div>
+          
           {onClose && (
             <Button onClick={onClose} className="mt-4 w-full">
               Fermer
@@ -112,20 +124,23 @@ export function QRCodeShareMesDirectives({
       <CardHeader className="text-center pb-4">
         <CardTitle className="flex items-center justify-center gap-2">
           <QrCode className="h-5 w-5" />
-          Accès direct - {qrCodeData.documentName}
+          Accès rapide - {qrCodeData.documentName}
         </CardTitle>
       </CardHeader>
       
       <CardContent className="space-y-4 text-center">
-        {/* QR Code */}
+        {/* QR Code avec gestion d'erreur */}
         <div className="flex justify-center">
           {qrCodeData.qrCodeValue ? (
-            <QRCodeSVG 
-              value={qrCodeData.qrCodeValue} 
-              size={160}
-              level="M"
-              includeMargin={true}
-            />
+            <div className="p-4 bg-white rounded-lg border">
+              <QRCodeSVG 
+                value={qrCodeData.qrCodeValue} 
+                size={160}
+                level="M"
+                includeMargin={true}
+                className="w-full h-auto"
+              />
+            </div>
           ) : (
             <div className="w-40 h-40 bg-gray-200 flex items-center justify-center rounded">
               <AlertCircle className="h-8 w-8 text-gray-400" />
@@ -135,10 +150,10 @@ export function QRCodeShareMesDirectives({
         
         {/* URL de partage */}
         <div className="space-y-2">
-          <label className="text-sm font-medium">Lien d'accès direct :</label>
+          <label className="text-sm font-medium">Lien d'accès :</label>
           <div className="flex items-center gap-2">
             <Input 
-              value={qrCodeData.directPdfUrl} 
+              value={qrCodeData.qrCodeValue || ''} 
               readOnly 
               className="text-xs bg-gray-50" 
             />
@@ -162,7 +177,7 @@ export function QRCodeShareMesDirectives({
             size="sm"
           >
             <ExternalLink className="w-4 h-4 mr-2" /> 
-            Tester le lien
+            Tester
           </Button>
           
           <Button 
@@ -187,30 +202,27 @@ export function QRCodeShareMesDirectives({
           <Alert className="bg-green-50 border-green-200">
             <CheckCircle2 className="h-4 w-4 text-green-600" />
             <AlertDescription className="text-green-800">
-              QR Code prêt - Le lien pointe directement vers le PDF
+              QR Code prêt - Scanner pour accéder au document
             </AlertDescription>
           </Alert>
         )}
 
         {/* Informations d'usage */}
-        <div className="p-3 bg-blue-50 rounded-lg">
+        <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
           <p className="text-sm text-blue-800 font-medium mb-1">
-            🔗 Accès direct au PDF
+            📱 Comment utiliser ce QR code
           </p>
           <p className="text-xs text-blue-700">
-            Scanner le QR code ou cliquer sur le lien ouvre directement le document PDF.
-            Plus de problème d'accès - ouverture immédiate.
+            Scannez avec l'appareil photo de votre téléphone ou une app QR code pour accéder directement au document.
           </p>
         </div>
 
-        <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-          <p className="text-sm text-green-800 font-medium mb-1">
-            ⚡ Nouvelle approche simplifiée
+        <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
+          <p className="text-sm text-amber-800 font-medium mb-1">
+            🔗 Lien optimisé
           </p>
-          <p className="text-xs text-green-700">
-            • Lien direct vers le fichier PDF<br/>
-            • Pas de base de données intermédiaire<br/>
-            • Ouverture instantanée du document
+          <p className="text-xs text-amber-700">
+            Ce QR code utilise un lien court pour une meilleure compatibilité et rapidité d'accès.
           </p>
         </div>
       </CardContent>

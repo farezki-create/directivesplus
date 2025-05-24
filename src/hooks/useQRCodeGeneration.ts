@@ -10,10 +10,28 @@ interface QRCodeData {
   directPdfUrl: string;
 }
 
+// Limites de capacité des QR codes selon le niveau de correction d'erreur
+const QR_CODE_LIMITS = {
+  L: 2953,  // Low
+  M: 2331,  // Medium
+  Q: 1663,  // Quartile
+  H: 1273   // High
+};
+
 export const useQRCodeGeneration = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [qrCodeData, setQrCodeData] = useState<QRCodeData | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const validateQRCodeData = (data: string): boolean => {
+    // Utiliser la limite Medium (M) qui est un bon compromis
+    return data.length <= QR_CODE_LIMITS.M;
+  };
+
+  const createShortUrl = (documentId: string): string => {
+    const baseUrl = window.location.origin;
+    return `${baseUrl}/document/${documentId}`;
+  };
 
   const generateQRCode = useCallback((documentId: string, documentName: string, filePath?: string) => {
     if (!documentId) {
@@ -32,26 +50,38 @@ export const useQRCodeGeneration = () => {
     try {
       const baseUrl = window.location.origin;
       
-      // Créer une URL directe vers le PDF si disponible
-      let directPdfUrl = '';
-      let qrCodeValue = '';
+      // Toujours utiliser l'URL courte pour le QR code
+      const shortUrl = createShortUrl(documentId);
       
-      if (filePath && (filePath.startsWith('http') || filePath.startsWith('data:'))) {
-        // Si on a le chemin direct du fichier, l'utiliser directement
-        directPdfUrl = filePath;
-        qrCodeValue = filePath;
-      } else {
-        // Sinon, utiliser la route de document avec redirection automatique
-        const shareUrl = `${baseUrl}/document/${documentId}`;
-        qrCodeValue = shareUrl;
-        directPdfUrl = shareUrl;
+      console.log("QR Code generation:", {
+        documentId,
+        documentName,
+        shortUrl,
+        urlLength: shortUrl.length,
+        isValidLength: validateQRCodeData(shortUrl)
+      });
+
+      // Vérifier que l'URL n'est pas trop longue pour le QR code
+      if (!validateQRCodeData(shortUrl)) {
+        throw new Error(`URL trop longue pour le QR code (${shortUrl.length} caractères, maximum ${QR_CODE_LIMITS.M})`);
+      }
+      
+      let directPdfUrl = shortUrl;
+      
+      // Si on a un chemin de fichier direct et qu'il n'est pas trop long, l'utiliser comme URL directe
+      if (filePath && (filePath.startsWith('http') || filePath.startsWith('/')) && !filePath.startsWith('data:')) {
+        if (validateQRCodeData(filePath)) {
+          directPdfUrl = filePath;
+        } else {
+          console.warn("Chemin du fichier trop long, utilisation de l'URL de redirection");
+        }
       }
       
       const qrData: QRCodeData = {
         documentId,
         documentName,
-        shareUrl: `${baseUrl}/document/${documentId}`,
-        qrCodeValue,
+        shareUrl: shortUrl,
+        qrCodeValue: shortUrl, // Toujours utiliser l'URL courte pour le QR code
         directPdfUrl
       };
 
@@ -62,7 +92,8 @@ export const useQRCodeGeneration = () => {
         description: `QR Code créé pour ${documentName}`,
       });
     } catch (err) {
-      const errorMessage = "Erreur lors de la génération du QR code";
+      const errorMessage = err instanceof Error ? err.message : "Erreur lors de la génération du QR code";
+      console.error("Erreur génération QR code:", err);
       setError(errorMessage);
       toast({
         title: "Erreur",
@@ -86,7 +117,7 @@ export const useQRCodeGeneration = () => {
       await navigator.clipboard.writeText(qrCodeData.directPdfUrl);
       toast({
         title: "Lien copié",
-        description: "Le lien direct vers le PDF a été copié",
+        description: "Le lien a été copié dans le presse-papiers",
       });
     } catch (err) {
       toast({
