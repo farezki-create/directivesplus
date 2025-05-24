@@ -31,28 +31,14 @@ const DirectivesAcces = () => {
     handleDelete
   } = useDirectivesDocuments();
 
-  useEffect(() => {
-    console.log("DirectivesAcces - Dossier actif:", dossierActif);
-    console.log("DirectivesAcces - Authentifié:", isAuthenticated);
-    
-    // UNIQUEMENT rediriger si pas de dossier ET pas d'utilisateur authentifié
-    // Si il y a un dossier actif, on autorise l'accès même sans authentification
-    if (!dossierActif && !isAuthenticated) {
-      console.log("Aucun dossier actif et pas authentifié, redirection vers l'accueil");
-      navigate("/");
-      return;
-    }
+  console.log("DirectivesAcces - État:", {
+    dossierActif: !!dossierActif,
+    isAuthenticated,
+    currentPath: window.location.pathname
+  });
 
-    // Si utilisateur authentifié mais pas de dossier, on reste sur la page
-    if (isAuthenticated && !dossierActif) {
-      console.log("Utilisateur authentifié sans dossier actif - affichage de la page");
-    }
-
-    // Si dossier actif (avec ou sans authentification), on reste sur la page
-    if (dossierActif) {
-      console.log("Dossier actif présent - affichage de la page");
-    }
-  }, [dossierActif, isAuthenticated, navigate]);
+  // SUPPRESSION COMPLÈTE des redirections automatiques vers /auth
+  // Cette page est maintenant complètement publique
 
   const handleReturnHome = () => {
     clearDossierActif();
@@ -63,7 +49,8 @@ const DirectivesAcces = () => {
     setShowDocuments(true);
   };
 
-  // Si pas de dossier actif ET pas d'utilisateur authentifié
+  // CAS 1: Pas de dossier actif ET pas d'utilisateur authentifié
+  // On affiche un message informatif au lieu de rediriger
   if (!dossierActif && !isAuthenticated) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -71,10 +58,25 @@ const DirectivesAcces = () => {
         <main className="container mx-auto px-4 py-8 flex-grow flex items-center justify-center">
           <Card className="max-w-md">
             <CardContent className="p-6 text-center">
-              <p className="text-gray-600 mb-4">Aucun dossier patient actif.</p>
-              <Button onClick={() => navigate("/")} variant="outline">
-                Retour à l'accueil
-              </Button>
+              <h2 className="text-xl font-semibold mb-4">Accès aux directives anticipées</h2>
+              <p className="text-gray-600 mb-4">
+                Pour consulter des directives anticipées, vous pouvez :
+              </p>
+              <div className="space-y-3">
+                <Button 
+                  onClick={() => navigate("/auth")} 
+                  className="w-full"
+                >
+                  Me connecter à mon compte
+                </Button>
+                <Button 
+                  onClick={() => navigate("/")} 
+                  variant="outline"
+                  className="w-full"
+                >
+                  Saisir un code d'accès
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </main>
@@ -83,7 +85,7 @@ const DirectivesAcces = () => {
     );
   }
 
-  // Si utilisateur authentifié mais pas de dossier, afficher les documents personnels uniquement
+  // CAS 2: Utilisateur authentifié mais pas de dossier actif
   if (!dossierActif && isAuthenticated) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -130,7 +132,7 @@ const DirectivesAcces = () => {
     );
   }
 
-  // Cas avec dossier actif (avec ou sans authentification)
+  // CAS 3: Dossier actif (avec ou sans authentification)
   const patientInfo = extractPatientInfo(dossierActif);
   const directives = dossierActif.contenu?.documents || [];
 

@@ -44,10 +44,15 @@ function App() {
   return (
     <AuthProvider>
       <Routes>
-        {/* Routes publiques, accessibles sans authentification */}
+        {/* ========== ROUTES PUBLIQUES ABSOLUES ========== */}
+        {/* Ces routes ne passent JAMAIS par ProtectedRoute */}
         <Route path="/" element={<Index />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/affichage-dossier" element={<AffichageDossierRedirect />} />
+        <Route path="/mes-directives" element={<DirectivesAcces />} />
+        <Route path="/directives-acces" element={<DirectivesAcces />} />
+        
+        {/* Autres routes publiques */}
         <Route path="/avis-general" element={<AvisGeneral />} />
         <Route path="/gouts-peurs" element={<GoutsPeurs />} />
         <Route path="/maintien-vie" element={<MaintienVie />} />
@@ -67,15 +72,13 @@ function App() {
         <Route path="/acces-partage" element={<SharedAccessPageContainer />} />
         <Route path="/acces-institution" element={<InstitutionAccess />} />
         <Route path="/acces-institution-simple" element={<InstitutionAccessSimple />} />
-        {/* Rendre /mes-directives et /directives-acces complètement publiques */}
-        <Route path="/mes-directives" element={<DirectivesAcces />} />
-        <Route path="/directives-acces" element={<DirectivesAcces />} />
         <Route path="/dashboard" element={<Navigate to="/rediger" replace />} />
         
         {/* Routes avec accès alternatif via PlaceholderPage */}
         <Route path="/:pageId" element={<PlaceholderPage />} />
         
-        {/* Routes protégées, nécessitant une authentification */}
+        {/* ========== ROUTES PROTÉGÉES ========== */}
+        {/* Ces routes nécessitent une authentification */}
         <Route 
           path="/profile" 
           element={

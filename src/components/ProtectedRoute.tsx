@@ -10,36 +10,33 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
-  const { isAuthenticated, isLoading, profile, session } = useAuth();
+  const { isAuthenticated, isLoading, profile } = useAuth();
   const location = useLocation();
-  const [searchParams] = useSearchParams();
-  const [isRedirecting, setIsRedirecting] = useState(false);
   const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
   
-  // Liste des routes VRAIMENT publiques (ne nécessitent jamais d'authentification)
-  const publicRoutes = ['/', '/affichage-dossier', '/mes-directives', '/directives-acces'];
-  const hasCodeParam = searchParams.has("code");
+  // Routes COMPLÈTEMENT publiques - aucune vérification d'authentification
+  const fullyPublicRoutes = ['/', '/affichage-dossier', '/mes-directives', '/directives-acces'];
   
+  console.log("ProtectedRoute check:", {
+    pathname: location.pathname,
+    isPublic: fullyPublicRoutes.includes(location.pathname),
+    isAuthenticated,
+    isLoading
+  });
+
   useEffect(() => {
-    console.log("ProtectedRoute for", location.pathname, {
-      isAuthenticated,
-      isLoading,
-      hasCodeParam,
-      isPublicRoute: publicRoutes.includes(location.pathname)
-    });
-    
-    // Marquer l'authentification comme vérifiée une fois le chargement terminé
     if (!isLoading) {
       setHasCheckedAuth(true);
     }
-    
-    // Réinitialiser l'état de redirection si l'authentification réussit
-    if (isAuthenticated && isRedirecting) {
-      setIsRedirecting(false);
-    }
-  }, [isAuthenticated, isLoading, location.pathname, isRedirecting, session, searchParams, hasCodeParam]);
+  }, [isLoading]);
 
-  // Afficher l'indicateur de chargement pendant la vérification de l'état d'authentification
+  // BYPASS COMPLET pour les routes publiques
+  if (fullyPublicRoutes.includes(location.pathname)) {
+    console.log("ProtectedRoute: Route publique, accès direct autorisé");
+    return <>{children}</>;
+  }
+
+  // Afficher l'indicateur de chargement pendant la vérification
   if (isLoading || !hasCheckedAuth) {
     console.log("ProtectedRoute: Chargement de l'état d'authentification...");
     return (
@@ -50,42 +47,26 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     );
   }
 
-  // Si c'est une route publique, autoriser l'accès SANS CONDITION
-  if (publicRoutes.includes(location.pathname)) {
-    console.log("ProtectedRoute: Route publique, accès autorisé sans vérification d'authentification");
-    return <>{children}</>;
-  }
-  
-  // Si l'utilisateur est authentifié, autoriser l'accès
-  if (isAuthenticated) {
-    console.log("ProtectedRoute: Utilisateur authentifié, accès autorisé pour", location.pathname);
-    
-    // Vérifier l'accès basé sur le rôle si requiredRole est fourni
-    if (requiredRole && profile) {
-      const userRoles = profile.roles || [];
-      const hasRequiredRole = Array.isArray(userRoles) 
-        ? userRoles.includes(requiredRole)
-        : userRoles === requiredRole;
-      
-      if (!hasRequiredRole && !isRedirecting) {
-        console.log(`ProtectedRoute: L'utilisateur n'a pas le rôle requis: ${requiredRole}`);
-        setIsRedirecting(true);
-        return <Navigate to="/" state={{ from: location.pathname }} replace />;
-      }
-    }
-    
-    return <>{children}</>;
-  }
-
-  // Empêcher la boucle de navigation en vérifiant si nous redirigeons déjà
-  if (!isAuthenticated && !isRedirecting) {
-    // Stocker le chemin actuel pour rediriger après la connexion
-    console.log("ProtectedRoute: Non authentifié, redirection vers auth depuis:", location.pathname);
-    setIsRedirecting(true);
+  // Pour les routes protégées, vérifier l'authentification
+  if (!isAuthenticated) {
+    console.log("ProtectedRoute: Non authentifié, redirection vers /auth");
     return <Navigate to="/auth" state={{ from: location.pathname }} replace />;
   }
 
-  console.log("ProtectedRoute: Authentifié, affichage du contenu protégé pour", location.pathname);
+  // Vérifier le rôle si requis
+  if (requiredRole && profile) {
+    const userRoles = profile.roles || [];
+    const hasRequiredRole = Array.isArray(userRoles) 
+      ? userRoles.includes(requiredRole)
+      : userRoles === requiredRole;
+    
+    if (!hasRequiredRole) {
+      console.log(`ProtectedRoute: Rôle insuffisant: ${requiredRole}`);
+      return <Navigate to="/" state={{ from: location.pathname }} replace />;
+    }
+  }
+
+  console.log("ProtectedRoute: Accès autorisé");
   return <>{children}</>;
 };
 
