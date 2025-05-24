@@ -57,7 +57,7 @@ export const ShareDialogContent: React.FC<ShareDialogContentProps> = ({
           className="flex items-center gap-2 w-full"
         >
           <FolderPlus className="h-4 w-4" />
-          {isSharing === document.id ? "Génération du code en cours..." : "Générer le code d'accès global"}
+          {isSharing === document.id ? "Enregistrement en cours..." : "Enregistrement dans le dossier partagé"}
         </Button>
       </div>
     );
