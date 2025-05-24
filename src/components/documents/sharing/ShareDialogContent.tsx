@@ -37,8 +37,8 @@ export const ShareDialogContent: React.FC<ShareDialogContentProps> = ({
         <Alert>
           <FolderPlus className="h-4 w-4" />
           <AlertDescription>
-            <strong>Document :</strong> {document.file_name}<br />
-            Un code d'accès unique sera généré avec une validité d'1 an.
+            <strong>Partage global :</strong> Tous vos documents<br />
+            Un code d'accès unique sera généré pour tous vos documents avec une validité d'1 an.
           </AlertDescription>
         </Alert>
 
@@ -48,7 +48,7 @@ export const ShareDialogContent: React.FC<ShareDialogContentProps> = ({
           className="flex items-center gap-2 w-full"
         >
           <FolderPlus className="h-4 w-4" />
-          {isSharing === document.id ? "Partage en cours..." : "Partager le document"}
+          {isSharing === document.id ? "Génération du code en cours..." : "Générer le code d'accès"}
         </Button>
       </div>
     );
@@ -59,9 +59,9 @@ export const ShareDialogContent: React.FC<ShareDialogContentProps> = ({
       <Alert className="bg-green-50 border-green-200">
         <Check className="h-4 w-4 text-green-600" />
         <AlertDescription className="text-green-800">
-          <strong>Document partagé avec succès !</strong><br />
-          Code d'accès généré : <strong className="font-mono text-lg">{accessCode}</strong><br />
-          <span className="text-sm">Valable pendant 1 an</span>
+          <strong>Code d'accès global généré avec succès !</strong><br />
+          Code d'accès : <strong className="font-mono text-lg">{accessCode}</strong><br />
+          <span className="text-sm">Valable pendant 1 an - Donne accès à tous vos documents</span>
         </AlertDescription>
       </Alert>
 
@@ -77,8 +77,9 @@ export const ShareDialogContent: React.FC<ShareDialogContentProps> = ({
 
       <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded">
         <strong>Instructions :</strong><br />
+        • Ce code donne accès à TOUS vos documents (directives, PDF, documents médicaux)<br />
         • Partagez ce code uniquement avec les personnes autorisées<br />
-        • Le code permet d'accéder au document sans connexion<br />
+        • Le code permet d'accéder aux documents sans connexion<br />
         • Vous pouvez prolonger ou régénérer le code à tout moment<br />
         • La carte d'accès peut être imprimée au format carte bancaire
       </div>

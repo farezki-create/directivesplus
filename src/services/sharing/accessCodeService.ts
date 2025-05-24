@@ -19,7 +19,7 @@ export class AccessCodeService {
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + expiresInDays);
       
-      // Récupérer tous les documents de l'utilisateur
+      // Récupérer tous les documents de l'utilisateur avec structure normalisée
       const { data: pdfDocs, error: pdfError } = await supabase
         .from('pdf_documents')
         .select('*')
@@ -40,22 +40,66 @@ export class AccessCodeService {
         return { success: false, error: "Erreur lors de la récupération des documents" };
       }
 
-      // Créer une entrée globale dans shared_documents avec tous les documents
-      const allDocuments = [
-        ...(pdfDocs || []).map(doc => ({ ...doc, source: 'pdf_documents', file_type: 'pdf' })),
-        ...(directives || []).map(doc => ({ ...doc, source: 'directives', file_type: 'directive' })),
-        ...(medicalDocs || []).map(doc => ({ ...doc, source: 'medical_documents', file_type: 'medical' }))
+      // Normaliser la structure des documents pour assurer la cohérence
+      const normalizedDocuments = [
+        ...(pdfDocs || []).map(doc => ({
+          id: doc.id,
+          file_name: doc.file_name,
+          file_path: doc.file_path,
+          created_at: doc.created_at,
+          user_id: doc.user_id || userId,
+          file_type: 'pdf',
+          source: 'pdf_documents',
+          description: doc.description || 'Document PDF',
+          content_type: doc.content_type || 'application/pdf',
+          is_private: false,
+          external_id: doc.external_id,
+          file_size: doc.file_size,
+          updated_at: doc.updated_at || doc.created_at
+        })),
+        ...(directives || []).map(doc => ({
+          id: doc.id,
+          file_name: `Directive - ${new Date(doc.created_at).toLocaleDateString()}`,
+          file_path: `directive-${doc.id}`,
+          created_at: doc.created_at,
+          user_id: doc.user_id,
+          file_type: 'directive',
+          source: 'directives',
+          content: doc.content,
+          description: 'Directive anticipée',
+          content_type: 'application/json',
+          is_private: false,
+          updated_at: doc.updated_at || doc.created_at
+        })),
+        ...(medicalDocs || []).map(doc => ({
+          id: doc.id,
+          file_name: doc.file_name,
+          file_path: doc.file_path,
+          created_at: doc.created_at,
+          user_id: doc.user_id,
+          file_type: 'medical',
+          source: 'medical_documents',
+          description: doc.description || 'Document médical',
+          content_type: doc.file_type || 'application/pdf',
+          is_private: false,
+          file_size: doc.file_size,
+          updated_at: doc.created_at
+        }))
       ];
 
+      console.log(`Génération code global: ${normalizedDocuments.length} documents trouvés pour l'utilisateur ${userId}`);
+
+      // Créer l'entrée dans shared_documents avec structure simplifiée
       const { data, error } = await supabase
         .from('shared_documents')
         .insert({
-          document_id: `global-${userId}`, // ID global pour tous les documents
+          document_id: userId, // Utiliser directement l'userId comme document_id
           document_type: 'global_access',
           document_data: {
             access_type: 'global',
             user_id: userId,
-            documents: allDocuments
+            total_documents: normalizedDocuments.length,
+            documents: normalizedDocuments
           },
           user_id: userId,
           expires_at: expiresAt.toISOString()
@@ -72,6 +116,7 @@ export class AccessCodeService {
         return { success: false, error: "Code d'accès non généré" };
       }
 
+      console.log(`Code d'accès global généré: ${data.access_code} pour ${normalizedDocuments.length} documents`);
       return { success: true, code: data.access_code };
     } catch (error: any) {
       console.error("Erreur AccessCodeService.generateGlobalCode:", error);
