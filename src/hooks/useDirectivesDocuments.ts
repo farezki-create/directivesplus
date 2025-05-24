@@ -6,7 +6,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Document } from "@/types/documents";
 
-// Re-export Document type for backwards compatibility
 export type { Document } from "@/types/documents";
 
 export const useDirectivesDocuments = () => {
@@ -18,7 +17,6 @@ export const useDirectivesDocuments = () => {
   const [previewDocument, setPreviewDocument] = useState<string | null>(null);
   const [documentToDelete, setDocumentToDelete] = useState<string | null>(null);
 
-  // Charger les documents depuis Supabase pour les utilisateurs authentifiés
   useEffect(() => {
     const loadUserDocuments = async () => {
       if (!isAuthenticated || !user?.id) {
@@ -37,10 +35,9 @@ export const useDirectivesDocuments = () => {
           console.error("Erreur lors du chargement des documents:", error);
           setDocuments([]);
         } else {
-          // Transform to match Document interface
           const transformedDocuments: Document[] = (data || []).map(doc => ({
             ...doc,
-            file_type: doc.content_type || 'pdf' // Add missing file_type
+            file_type: doc.content_type || 'pdf'
           }));
           setDocuments(transformedDocuments);
         }
@@ -155,7 +152,6 @@ export const useDirectivesDocuments = () => {
 
   const handleUploadComplete = () => {
     if (isAuthenticated && user?.id) {
-      // Recharger les documents
       window.location.reload();
     }
   };

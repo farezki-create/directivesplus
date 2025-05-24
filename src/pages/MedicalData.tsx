@@ -27,7 +27,6 @@ const MedicalData = () => {
     onDeleteComplete: () => window.location.reload()
   });
 
-  // Show loading state while auth is loading
   if (isLoading || documentsLoading) {
     return (
       <div className="h-screen flex items-center justify-center">

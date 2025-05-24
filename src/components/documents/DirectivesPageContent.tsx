@@ -5,8 +5,6 @@ import { Document } from "@/types/documents";
 
 interface DirectivesPageContentProps {
   documents: Document[];
-  showAddOptions?: boolean;
-  setShowAddOptions?: (show: boolean) => void;
   userId?: string;
   onUploadComplete?: (url: string, fileName: string, isPrivate: boolean) => void;
   onDownload: (filePath: string, fileName: string) => void;
@@ -24,8 +22,6 @@ interface DirectivesPageContentProps {
 
 const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
   documents,
-  showAddOptions,
-  setShowAddOptions,
   userId,
   onUploadComplete,
   onDownload,

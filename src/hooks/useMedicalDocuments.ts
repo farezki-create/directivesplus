@@ -28,7 +28,6 @@ export const useMedicalDocuments = () => {
           console.error("Erreur lors du chargement des documents médicaux:", error);
           setDocuments([]);
         } else {
-          // Transform to match Document interface
           const transformedDocuments: Document[] = (data || []).map(doc => ({
             ...doc,
             file_type: doc.file_type || 'pdf',
@@ -48,7 +47,6 @@ export const useMedicalDocuments = () => {
   }, [user]);
 
   const handleUploadComplete = () => {
-    // Recharger la page pour actualiser la liste
     window.location.reload();
   };
 

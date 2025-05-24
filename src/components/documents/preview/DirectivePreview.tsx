@@ -11,7 +11,6 @@ const DirectivePreview = ({ filePath }: DirectivePreviewProps) => {
   const [directiveContent, setDirectiveContent] = useState<any>(null);
 
   useEffect(() => {
-    // Find the directive document by ID (filePath is the directive ID)
     if (dossierActif?.contenu?.documents) {
       const directive = dossierActif.contenu.documents.find(
         (doc: any) => doc.id === filePath && doc.file_type === 'directive'

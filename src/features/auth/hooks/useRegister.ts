@@ -2,13 +2,11 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/AuthContext";
 import { z } from "zod";
 import { registerFormSchema } from "../schemas";
 
 export const useRegister = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const { user } = useAuth();
 
   const register = async (values: z.infer<typeof registerFormSchema>) => {
     setIsLoading(true);

@@ -11,7 +11,6 @@ const DirectivesAcces = () => {
   const { dossierActif } = useDossierStore();
   const { showDocuments, setShowDocuments } = useDirectivesAccessState();
 
-  // Hook pour les documents (si l'utilisateur est connecté)
   const {
     user,
     isAuthenticated,
@@ -33,19 +32,14 @@ const DirectivesAcces = () => {
     setShowDocuments(true);
   };
 
-  // Wrapper function to handle upload completion
   const handleUploadCompleteWrapper = () => {
-    // For this context, we don't have the specific parameters,
-    // so we'll call refresh documents directly
     window.location.reload();
   };
 
-  // Wrapper function to handle delete with correct signature
   const handleDeleteWrapper = (documentId: string) => {
     handleDelete();
   };
 
-  // Wrapper function to handle download with correct signature  
   const handleDownloadWrapper = (doc: any) => {
     handleDownload(doc.file_path, doc.file_name);
   };
