@@ -16,6 +16,14 @@ export interface AccessCodeValidation {
   error?: string;
 }
 
+export interface AccessCodeResult {
+  success: boolean;
+  code?: string;
+  documents?: ShareableDocument[];
+  message?: string;
+  error?: string;
+}
+
 export interface PersonalInfo {
   firstName: string;
   lastName: string;

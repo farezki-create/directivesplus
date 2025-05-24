@@ -1,8 +1,19 @@
-
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import { UnifiedAccessCodeService, type AccessCodeResult } from "@/services/accessCode/UnifiedAccessCodeService";
 import type { AccessCodeOptions, PersonalInfo } from "@/services/accessCode/types";
+
+/**
+ * Génère un code aléatoire de la longueur spécifiée
+ */
+export const generateRandomCode = (length: number = 8): string => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+};
 
 /**
  * Hook principal pour toute la gestion des codes d'accès
