@@ -32,14 +32,19 @@ export const AccessCodeGenerator = ({ onCodeGenerated }: AccessCodeGeneratorProp
     }
 
     try {
-      // Vérifier s'il existe des directives
-      const { data: directives, error } = await supabase
+      console.log("=== DÉBUT GÉNÉRATION CODE D'ACCÈS ===");
+      console.log("User ID:", user.id);
+
+      // Vérifier ou créer une directive
+      let { data: directives, error: checkError } = await supabase
         .from('directives')
         .select('id, content, created_at')
         .eq('user_id', user.id)
+        .eq('is_active', true)
         .limit(1);
 
-      if (error) {
+      if (checkError) {
+        console.error("Erreur vérification directives:", checkError);
         throw new Error("Erreur lors de la vérification des directives");
       }
 
@@ -47,7 +52,8 @@ export const AccessCodeGenerator = ({ onCodeGenerated }: AccessCodeGeneratorProp
       let directiveContent: any;
 
       if (!directives || directives.length === 0) {
-        // Créer une directive minimale
+        console.log("Création d'une nouvelle directive...");
+        
         const { data: newDirective, error: createError } = await supabase
           .from('directives')
           .insert({
@@ -55,21 +61,30 @@ export const AccessCodeGenerator = ({ onCodeGenerated }: AccessCodeGeneratorProp
             content: {
               title: "Directives anticipées",
               created_at: new Date().toISOString(),
+              patient: {
+                nom: profile.last_name || '',
+                prenom: profile.first_name || '',
+                date_naissance: profile.birth_date || ''
+              },
               created_for_access: true
-            }
+            },
+            is_active: true
           })
           .select('id, content')
           .single();
 
         if (createError || !newDirective) {
+          console.error("Erreur création directive:", createError);
           throw new Error("Impossible de créer une directive");
         }
 
         directiveId = newDirective.id;
         directiveContent = newDirective.content;
+        console.log("Nouvelle directive créée:", directiveId);
       } else {
         directiveId = directives[0].id;
         directiveContent = directives[0].content;
+        console.log("Directive existante utilisée:", directiveId);
       }
 
       // Créer le document partageable
@@ -79,15 +94,18 @@ export const AccessCodeGenerator = ({ onCodeGenerated }: AccessCodeGeneratorProp
         file_path: "",
         created_at: new Date().toISOString(),
         user_id: user.id,
-        file_type: "directive" as const,
+        file_type: "directive",
         source: "directives" as const,
         content: directiveContent
       };
+
+      console.log("Document partageable créé:", shareableDocument);
 
       // Générer le code d'accès (validité 12 mois)
       const code = await generateInstitutionCode(shareableDocument, 365);
       
       if (code) {
+        console.log("Code généré avec succès:", code);
         setAccessCode(code);
         onCodeGenerated?.(code);
         toast({

@@ -38,6 +38,8 @@ export class UnifiedSharingService {
 
       // Déterminer le type de document pour la contrainte DB
       const documentType = this.determineDocumentType(document);
+      
+      console.log("Type de document déterminé:", documentType);
 
       // Créer l'entrée dans shared_documents (source unique de vérité)
       const { data, error } = await supabase
@@ -49,7 +51,7 @@ export class UnifiedSharingService {
           document_data: {
             ...document,
             access_type: accessType
-          },
+          } as any,
           expires_at: expiresAt.toISOString(),
           is_active: true
         })
@@ -225,9 +227,11 @@ export class UnifiedSharingService {
 
   // Méthodes utilitaires privées
   private static determineDocumentType(document: ShareableDocument): string {
+    // Vérifier explicitement que c'est une directive
     if (document.source === 'directives' || document.file_type === 'directive') {
       return 'directives';
     }
+    // Par défaut, considérer comme PDF
     return 'pdf_documents';
   }
 
