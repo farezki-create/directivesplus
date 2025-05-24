@@ -1,9 +1,8 @@
-
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import { UnifiedCodeGenerationService } from "./services/unifiedCodeGeneration";
 import { UnifiedAccessValidationService } from "./services/unifiedAccessValidation";
-import type { ShareableDocument, ShareOptions, AccessCodeValidationResult } from "./types";
+import type { ShareableDocument, ShareOptions, AccessCodeValidationResult } from "./types/index";
 
 /**
  * Hook unifié pour toutes les opérations de partage

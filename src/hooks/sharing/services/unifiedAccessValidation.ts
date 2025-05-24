@@ -1,6 +1,5 @@
-
 import { supabase } from "@/integrations/supabase/client";
-import type { AccessCodeValidationResult, ShareableDocument } from "../types";
+import type { AccessCodeValidationResult, ShareableDocument } from "../types/index";
 
 /**
  * Service unifié pour la validation des codes d'accès
