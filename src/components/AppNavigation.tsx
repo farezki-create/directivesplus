@@ -7,7 +7,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
-const AppNavigation = () => {
+interface AppNavigationProps {
+  hideEditingFeatures?: boolean;
+}
+
+const AppNavigation = ({ hideEditingFeatures = false }: AppNavigationProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -34,15 +38,21 @@ const AppNavigation = () => {
 
   const navItems = [
     { name: "Accueil", href: "/", icon: Home },
-    { name: "Rédiger", href: "/rediger", icon: FileText, requireAuth: true },
-    { name: "Mes Directives", href: "/mes-directives-app", icon: BookOpen, requireAuth: true },
+    { name: "Rédiger", href: "/rediger", icon: FileText, requireAuth: true, hideInCodeAccess: true },
+    { name: "Mes Directives", href: "/mes-directives-app", icon: BookOpen, requireAuth: true, hideInCodeAccess: true },
     { name: "Données Médicales", href: "/donnees-medicales", icon: Shield },
     { name: "Témoignages", href: "/testimonials", icon: Users },
   ];
 
-  const filteredNavItems = navItems.filter(item => 
-    !item.requireAuth || isAuthenticated
-  );
+  const filteredNavItems = navItems.filter(item => {
+    // Masquer les éléments qui nécessitent une auth si pas authentifié
+    if (item.requireAuth && !isAuthenticated) return false;
+    
+    // Masquer les éléments d'édition si on est en mode accès par code
+    if (hideEditingFeatures && item.hideInCodeAccess) return false;
+    
+    return true;
+  });
 
   return (
     <nav className="bg-white shadow-lg sticky top-0 z-50">
@@ -67,7 +77,7 @@ const AppNavigation = () => {
               </Link>
             ))}
             
-            {isAuthenticated ? (
+            {isAuthenticated && !hideEditingFeatures ? (
               <div className="flex items-center space-x-4">
                 <Link
                   to="/profile"
@@ -86,7 +96,7 @@ const AppNavigation = () => {
                   Déconnexion
                 </Button>
               </div>
-            ) : (
+            ) : !isAuthenticated && !hideEditingFeatures ? (
               <div className="flex items-center space-x-4">
                 <Link
                   to="/auth"
@@ -95,7 +105,7 @@ const AppNavigation = () => {
                   Connexion
                 </Link>
               </div>
-            )}
+            ) : null}
           </div>
 
           {/* Mobile menu button */}
@@ -125,7 +135,7 @@ const AppNavigation = () => {
                 </Link>
               ))}
               
-              {isAuthenticated ? (
+              {isAuthenticated && !hideEditingFeatures ? (
                 <>
                   <Link
                     to="/profile"
@@ -146,7 +156,7 @@ const AppNavigation = () => {
                     Déconnexion
                   </button>
                 </>
-              ) : (
+              ) : !isAuthenticated && !hideEditingFeatures ? (
                 <Link
                   to="/auth"
                   className="text-blue-600 hover:text-blue-800 block px-3 py-2 rounded-md text-base font-medium"
@@ -154,7 +164,7 @@ const AppNavigation = () => {
                 >
                   Connexion
                 </Link>
-              )}
+              ) : null}
             </div>
           </div>
         )}

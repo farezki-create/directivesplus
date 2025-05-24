@@ -1,10 +1,8 @@
 
 import React from "react";
 import AppNavigation from "@/components/AppNavigation";
-import DirectivesNavigation from "@/components/documents/DirectivesNavigation";
-import DirectivesPageContent from "@/components/documents/DirectivesPageContent";
-import DeleteConfirmationDialog from "@/components/documents/DeleteConfirmationDialog";
-import DocumentPreviewDialog from "@/components/documents/DocumentPreviewDialog";
+import DirectivesPageContainer from "@/components/documents/directives/DirectivesPageContainer";
+import { useDossierStore } from "@/store/dossierStore";
 
 interface AuthenticatedDirectivesViewProps {
   user: any;
@@ -13,15 +11,15 @@ interface AuthenticatedDirectivesViewProps {
   showAddOptions: boolean;
   setShowAddOptions: (show: boolean) => void;
   onUploadComplete: () => void;
-  onDownload: (filePath: string, fileName: string) => void;
-  onPrint: (filePath: string, contentType?: string) => void;
-  onView: (filePath: string, contentType?: string) => void;
-  confirmDelete: (documentId: string) => void;
-  documentToDelete: string | null;
-  setDocumentToDelete: (id: string | null) => void;
+  onDownload: (doc: any) => void;
+  onPrint: (doc: any) => void;
+  onView: (doc: any) => void;
+  confirmDelete: any;
+  documentToDelete: any;
+  setDocumentToDelete: (doc: any) => void;
   handleDelete: () => void;
-  previewDocument: string | null;
-  setPreviewDocument: (path: string | null) => void;
+  previewDocument: any;
+  setPreviewDocument: (doc: any) => void;
   handlePreviewDownload: (filePath: string) => void;
   handlePreviewPrint: (filePath: string) => void;
 }
@@ -45,53 +43,34 @@ const AuthenticatedDirectivesView: React.FC<AuthenticatedDirectivesViewProps> = 
   handlePreviewDownload,
   handlePreviewPrint
 }) => {
-  return (
-    <div className="min-h-screen flex flex-col">
-      <AppNavigation />
-      
-      <main className="flex-grow container mx-auto px-4 py-8">
-        <DirectivesNavigation />
-        
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Mes Directives</h1>
-          <p className="text-gray-600">
-            Gérez vos directives anticipées et documents associés
-          </p>
-        </div>
-        
-        <DirectivesPageContent
-          documents={documents}
-          showAddOptions={showAddOptions}
-          setShowAddOptions={setShowAddOptions}
-          userId={user.id}
-          onUploadComplete={onUploadComplete}
-          onDownload={onDownload}
-          onPrint={onPrint}
-          onView={onView}
-          onDelete={confirmDelete}
-          profile={profile}
-        />
-      </main>
-      
-      <DeleteConfirmationDialog
-        documentId={documentToDelete}
-        onOpenChange={() => setDocumentToDelete(null)}
-        onConfirmDelete={handleDelete}
-      />
+  const { dossierActif } = useDossierStore();
+  
+  // Si on est en accès par code (dossier actif sans authentification complète)
+  const isCodeAccess = dossierActif && !user;
 
-      <DocumentPreviewDialog
-        filePath={previewDocument}
-        onOpenChange={() => setPreviewDocument(null)}
-        onDownload={handlePreviewDownload}
-        onPrint={handlePreviewPrint}
-        showPrint={false}
-      />
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <AppNavigation hideEditingFeatures={isCodeAccess} />
       
-      <footer className="bg-white py-6 border-t mt-auto">
-        <div className="container mx-auto px-4 text-center text-gray-500">
-          <p>© 2025 DirectivesPlus. Tous droits réservés.</p>
-        </div>
-      </footer>
+      <DirectivesPageContainer
+        user={user}
+        profile={profile}
+        documents={documents}
+        showAddOptions={showAddOptions}
+        setShowAddOptions={setShowAddOptions}
+        onUploadComplete={onUploadComplete}
+        onDownload={onDownload}
+        onPrint={onPrint}
+        onView={onView}
+        confirmDelete={confirmDelete}
+        documentToDelete={documentToDelete}
+        setDocumentToDelete={setDocumentToDelete}
+        handleDelete={handleDelete}
+        previewDocument={previewDocument}
+        setPreviewDocument={setPreviewDocument}
+        handlePreviewDownload={handlePreviewDownload}
+        handlePreviewPrint={handlePreviewPrint}
+      />
     </div>
   );
 };
