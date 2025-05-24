@@ -15,55 +15,50 @@ const Index = () => {
       <Header />
       <Hero />
 
-      {/* Section Accès Professionnel */}
-      <section className="py-16 bg-white">
+      {/* Section Accès Professionnel - Version compacte */}
+      <section className="py-12 bg-white">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Accès Professionnel aux Directives
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-3">
+              Accès Professionnel
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Solution d'accès sécurisé pour les professionnels de santé et les institutions médicales
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Solution d'accès sécurisé pour les professionnels de santé
             </p>
           </div>
 
-          <div className="flex justify-center max-w-2xl mx-auto">
-            {/* Accès Institution Standard */}
+          <div className="flex justify-center max-w-lg mx-auto">
             <Card className="border-2 border-blue-200 hover:border-blue-300 transition-colors">
-              <CardHeader className="text-center">
-                <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-                  <Hospital className="h-8 w-8 text-blue-600" />
+              <CardHeader className="text-center pb-4">
+                <div className="mx-auto w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-3">
+                  <Hospital className="h-6 w-6 text-blue-600" />
                 </div>
-                <CardTitle className="text-xl text-blue-800">
-                  Accès Professionnel
+                <CardTitle className="text-lg text-blue-800">
+                  Accès Institution
                 </CardTitle>
-                <CardDescription>
-                  Validation complète avec identité patient
+                <CardDescription className="text-sm">
+                  Validation avec identité patient complète
                 </CardDescription>
               </CardHeader>
-              <CardContent className="text-center space-y-4">
-                <p className="text-sm text-gray-600">
-                  Accès avec vérification d'identité complète : nom, prénom, 
-                  date de naissance et code d'accès institution.
+              <CardContent className="text-center space-y-3 pt-0">
+                <p className="text-xs text-gray-600">
+                  Accès avec vérification : nom, prénom, date de naissance et code institution.
                 </p>
                 <Link to="/acces-institution">
                   <Button className="w-full bg-blue-600 hover:bg-blue-700">
-                    Accès Professionnel
+                    Accéder
                   </Button>
                 </Link>
               </CardContent>
             </Card>
           </div>
 
-          {/* Informations supplémentaires */}
-          <div className="mt-12 text-center">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 max-w-2xl mx-auto">
-              <h3 className="font-semibold text-blue-900 mb-2">
-                Information pour les professionnels
-              </h3>
-              <p className="text-blue-800 text-sm">
-                Les codes d'accès sont fournis directement par les patients. 
-                L'accès nécessite une vérification complète de l'identité du patient.
+          {/* Information compacte */}
+          <div className="mt-8 text-center">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-lg mx-auto">
+              <p className="text-blue-800 text-xs">
+                <strong>Pour les professionnels :</strong> Les codes d'accès sont fournis par les patients. 
+                Vérification d'identité complète requise.
               </p>
             </div>
           </div>
