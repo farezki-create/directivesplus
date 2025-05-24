@@ -1,13 +1,11 @@
 
-import React, { useState } from "react";
+import React from "react";
 import AppNavigation from "@/components/AppNavigation";
-import { InstitutionAccessFormSimple } from "@/components/institution-access/InstitutionAccessFormSimple";
-import { AccessCodeDiagnostic } from "@/components/diagnosis/AccessCodeDiagnostic";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Info } from "lucide-react";
 
 const AccesInstitution = () => {
-  const [showDiagnostic, setShowDiagnostic] = useState(false);
-
   return (
     <div className="min-h-screen bg-gray-50">
       <AppNavigation />
@@ -19,24 +17,24 @@ const AccesInstitution = () => {
               Accès aux directives anticipées
             </h1>
             <p className="text-lg text-gray-600">
-              Accès sécurisé pour les professionnels de santé avec vérification d'identité
+              Fonctionnalité temporairement désactivée
             </p>
-            
-            <div className="mt-4">
-              <Button 
-                variant="outline" 
-                onClick={() => setShowDiagnostic(!showDiagnostic)}
-              >
-                {showDiagnostic ? "Masquer" : "Afficher"} le diagnostic
-              </Button>
-            </div>
           </div>
           
-          {showDiagnostic ? (
-            <AccessCodeDiagnostic />
-          ) : (
-            <InstitutionAccessFormSimple />
-          )}
+          <Card>
+            <CardHeader>
+              <CardTitle>Service en cours de refactorisation</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Alert>
+                <Info className="h-4 w-4" />
+                <AlertDescription>
+                  Le système d'accès par codes de partage a été désactivé pour simplification.
+                  Une nouvelle version plus simple sera bientôt disponible.
+                </AlertDescription>
+              </Alert>
+            </CardContent>
+          </Card>
         </div>
       </main>
       

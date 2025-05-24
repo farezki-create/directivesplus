@@ -1,9 +1,20 @@
 
-// Types unifiés pour tous les documents dans l'application
-export type { ShareableDocument } from "@/types/sharing";
+// Types simplifiés pour les documents dans l'application
 
-// Type alias pour compatibilité avec les anciens composants
-export type Document = import("@/types/sharing").ShareableDocument;
+export interface Document {
+  id: string;
+  file_name: string;
+  file_path: string;
+  created_at: string;
+  user_id: string;
+  file_type: string;
+  content?: any;
+  description?: string;
+  content_type?: string;
+  external_id?: string;
+  file_size?: number;
+  updated_at?: string;
+}
 
 // Types pour les actions sur les documents
 export interface DocumentActions {
@@ -12,12 +23,10 @@ export interface DocumentActions {
   onPrint: (filePath: string, contentType?: string) => void;
   onDelete: (documentId: string) => void;
   onVisibilityChange?: (documentId: string, isPrivate: boolean) => void;
-  onAddToSharedFolder?: (document: import("@/types/sharing").ShareableDocument) => void;
 }
 
 // Types pour les options d'affichage
 export interface DocumentDisplayOptions {
   showPrint?: boolean;
-  showShare?: boolean;
   isAddingToShared?: boolean;
 }
