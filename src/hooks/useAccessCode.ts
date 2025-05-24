@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import { UnifiedAccessCodeService, type AccessCodeResult } from "@/services/accessCode/UnifiedAccessCodeService";
@@ -89,17 +90,28 @@ export const useAccessCode = () => {
     accessCode: string,
     personalInfo?: PersonalInfo
   ): Promise<AccessCodeResult> => {
+    console.log("=== HOOK VALIDATION CODE D'ACCÈS ===");
+    console.log("Code à valider:", accessCode);
+    console.log("Infos personnelles:", personalInfo);
+    
     setIsValidating(true);
     
     try {
+      console.log("🚀 Début validation via UnifiedAccessCodeService...");
       const result = await UnifiedAccessCodeService.validateCode(accessCode, personalInfo);
+      console.log("📊 Résultat validation:", result);
       
       if (result.success) {
+        console.log("✅ Validation réussie:", result.message);
+        console.log("📄 Documents trouvés:", result.documents?.length || 0);
+        
         toast({
           title: "✅ Accès autorisé",
           description: result.message
         });
       } else {
+        console.error("❌ Validation échouée:", result.error);
+        
         toast({
           title: "❌ Accès refusé",
           description: result.error,
@@ -109,6 +121,8 @@ export const useAccessCode = () => {
       
       return result;
     } catch (error: any) {
+      console.error("💥 Erreur technique validation:", error);
+      
       const errorResult: AccessCodeResult = {
         success: false,
         error: "Erreur technique lors de la validation"
