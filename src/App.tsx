@@ -1,4 +1,3 @@
-
 import { Route, Routes } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -30,6 +29,7 @@ import EnSavoirPlus from "@/pages/EnSavoirPlus";
 import SharedAccessPageContainer from "@/pages/SharedAccessPage";
 import InstitutionAccess from "@/pages/InstitutionAccess";
 import DirectivesAcces from "@/pages/DirectivesAcces";
+import InstitutionAccessSimple from "@/pages/InstitutionAccessSimple";
 
 // Import Admin
 import Admin from "@/pages/Admin";
@@ -65,6 +65,7 @@ function App() {
         <Route path="/mentions-legales" element={<LegalMentions />} />
         <Route path="/acces-partage" element={<SharedAccessPageContainer />} />
         <Route path="/acces-institution" element={<InstitutionAccess />} />
+        <Route path="/acces-institution-simple" element={<InstitutionAccessSimple />} />
         <Route path="/mes-directives" element={<DirectivesAcces />} />
         <Route path="/directives-acces" element={<DirectivesAcces />} />
         <Route path="/dashboard" element={<Navigate to="/rediger" replace />} />
