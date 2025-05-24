@@ -1,13 +1,13 @@
 
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
-import { AccessCodeService } from "@/services/accessCode/AccessCodeService";
+import { AccessCodeService } from "@/services/accessCode";
 import type { 
   PersonalInfo, 
   AccessCodeOptions, 
   AccessValidationResult,
   CodeGenerationResult 
-} from "@/types/accessCode";
+} from "@/services/accessCode";
 
 /**
  * Génère un code aléatoire de la longueur spécifiée
@@ -225,4 +225,4 @@ export const useAccessCode = () => {
 };
 
 // Export des types pour compatibilité
-export type { AccessValidationResult, AccessCodeOptions, PersonalInfo } from "@/types/accessCode";
+export type { AccessValidationResult, AccessCodeOptions, PersonalInfo } from "@/services/accessCode";

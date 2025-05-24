@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle, AlertCircle, Shield } from "lucide-react";
 import { useUnifiedAccessCode } from "@/hooks/useUnifiedAccessCode";
-import type { PersonalInfo } from "@/services/accessCode/AccessCodeManager";
+import type { PersonalInfo } from "@/types/accessCode";
 
 interface AccessCodeValidationFormProps {
   onValidationSuccess?: (documents: any[]) => void;
