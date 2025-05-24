@@ -23,6 +23,7 @@ const ExternalBrowserView: React.FC<ExternalBrowserViewProps> = ({
   onDownload
 }) => {
   const appUrl = `https://24c30559-a746-463d-805e-d2330d3a13f4.lovableproject.com/pdf-viewer?id=${documentId}&inapp=true`;
+  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(appUrl)}`;
   
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -40,7 +41,24 @@ const ExternalBrowserView: React.FC<ExternalBrowserViewProps> = ({
                 📄 Votre document est prêt
               </p>
               <p className="text-sm text-blue-700 mt-2">
-                Cliquez sur le bouton ci-dessous pour ouvrir votre document médical dans DirectivePlus.
+                Utilisez le QR code ou le bouton ci-dessous pour ouvrir votre document dans DirectivePlus.
+              </p>
+            </div>
+            
+            {/* QR Code pour accès rapide */}
+            <div className="p-4 bg-white rounded-lg border">
+              <p className="text-sm text-gray-600 mb-3 font-medium">📱 Scannez avec votre téléphone :</p>
+              <img 
+                src={qrCodeUrl} 
+                alt="QR Code pour accès direct au document"
+                className="mx-auto rounded border"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  console.error('Erreur chargement QR Code');
+                }}
+              />
+              <p className="text-xs text-gray-500 mt-2">
+                Ouverture directe dans l'application
               </p>
             </div>
             
@@ -90,7 +108,7 @@ const ExternalBrowserView: React.FC<ExternalBrowserViewProps> = ({
             
             <div className="p-3 bg-green-50 rounded-lg">
               <p className="text-sm text-green-800">
-                ✅ <strong>Accès sécurisé :</strong> Votre document médical est accessible directement et en toute sécurité.
+                ✅ <strong>Accès double :</strong> QR code pour mobile ou bouton direct pour ordinateur.
               </p>
             </div>
           </CardContent>
