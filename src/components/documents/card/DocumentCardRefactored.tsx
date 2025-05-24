@@ -51,29 +51,44 @@ export const DocumentCardRefactored: React.FC<DocumentCardRefactoredProps> = ({
   };
 
   const handleGenerateQRCode = async () => {
+    console.log("=== DÉBUT GÉNÉRATION QR CODE ===");
+    console.log("Document:", document);
+    
     setIsGeneratingShareCode(true);
     try {
       const newShareCode = generateShareCode();
+      console.log("Code de partage généré:", newShareCode);
       
-      // Stocker le code de partage dans shared_documents avec un document_type valide
-      const { error } = await supabase
+      // Préparer les données à insérer
+      const insertData = {
+        document_id: document.id,
+        user_id: document.user_id,
+        document_type: 'pdf_document', // Utiliser le type générique
+        document_data: {
+          file_name: document.file_name,
+          file_path: document.file_path,
+          content_type: document.content_type,
+          description: document.description
+        },
+        access_code: newShareCode,
+        expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // Expire dans 30 jours
+      };
+      
+      console.log("Données à insérer dans shared_documents:", insertData);
+
+      const { data, error } = await supabase
         .from('shared_documents')
-        .insert({
-          document_id: document.id,
-          user_id: document.user_id,
-          document_type: 'directive', // Utiliser 'directive' au lieu de 'pdf_document'
-          document_data: {
-            file_name: document.file_name,
-            file_path: document.file_path,
-            content_type: document.content_type,
-            description: document.description
-          },
-          access_code: newShareCode,
-          expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // Expire dans 30 jours
-        });
+        .insert(insertData)
+        .select(); // Ajouter select pour voir les données insérées
 
-      if (error) throw error;
+      console.log("Résultat de l'insertion:", { data, error });
 
+      if (error) {
+        console.error("Erreur détaillée:", error);
+        throw error;
+      }
+
+      console.log("Document partagé créé avec succès:", data);
       setShareCode(newShareCode);
       
       toast({
@@ -81,14 +96,20 @@ export const DocumentCardRefactored: React.FC<DocumentCardRefactoredProps> = ({
         description: "Le code de partage a été créé avec succès",
       });
     } catch (error) {
-      console.error("Erreur lors de la génération du code QR:", error);
+      console.error("=== ERREUR LORS DE LA GÉNÉRATION DU CODE QR ===");
+      console.error("Type d'erreur:", typeof error);
+      console.error("Erreur complète:", error);
+      console.error("Message d'erreur:", error?.message);
+      console.error("Détails de l'erreur:", JSON.stringify(error, null, 2));
+      
       toast({
         title: "Erreur",
-        description: "Impossible de générer le code de partage",
+        description: `Impossible de générer le code de partage: ${error?.message || 'Erreur inconnue'}`,
         variant: "destructive"
       });
     } finally {
       setIsGeneratingShareCode(false);
+      console.log("=== FIN GÉNÉRATION QR CODE ===");
     }
   };
 
