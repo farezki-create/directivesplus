@@ -12,7 +12,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useUnifiedDocumentSharing, type ShareableDocument } from "@/hooks/sharing/useUnifiedDocumentSharing";
+import { useUnifiedSharing, type ShareableDocument } from "@/hooks/sharing/useUnifiedSharing";
 import { supabase } from "@/integrations/supabase/client";
 
 interface ShareInstitutionCodeButtonProps {
@@ -21,14 +21,12 @@ interface ShareInstitutionCodeButtonProps {
 
 const ShareInstitutionCodeButton = ({ directiveId }: ShareInstitutionCodeButtonProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [code, setCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { generateInstitutionCode } = useUnifiedDocumentSharing();
+  const { generateInstitutionCode, isGenerating } = useUnifiedSharing();
 
   const handleGenerateCode = async () => {
-    setIsLoading(true);
     setError(null);
     try {
       // Get the current user
@@ -81,8 +79,6 @@ const ShareInstitutionCodeButton = ({ directiveId }: ShareInstitutionCodeButtonP
         description: "Impossible de générer le code d'accès",
         variant: "destructive"
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -187,10 +183,10 @@ const ShareInstitutionCodeButton = ({ directiveId }: ShareInstitutionCodeButtonP
           {!code ? (
             <Button 
               onClick={handleGenerateCode}
-              disabled={isLoading}
+              disabled={isGenerating}
               className="flex items-center gap-2"
             >
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isGenerating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               <Share2 className="h-4 w-4" />
               Générer un code
             </Button>

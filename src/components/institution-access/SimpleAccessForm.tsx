@@ -5,15 +5,23 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, CheckCircle, Info } from "lucide-react";
-import { useInstitutionAccessSimple, InstitutionAccessFormValues } from "@/hooks/access/institution/useInstitutionAccessSimple";
+import { useUnifiedSharing } from "@/hooks/sharing/useUnifiedSharing";
 import { useDossierStore } from "@/store/dossierStore";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 
+interface InstitutionAccessFormValues {
+  lastName: string;
+  firstName: string;
+  birthDate: string;
+  institutionCode: string;
+}
+
 export const SimpleAccessForm = () => {
   const navigate = useNavigate();
   const { setDossierActif } = useDossierStore();
-  const { loading, result, validateAccess } = useInstitutionAccessSimple();
+  const { validateAccess, isValidating } = useUnifiedSharing();
+  const [result, setResult] = useState<any>(null);
   
   const [form, setForm] = useState<InstitutionAccessFormValues>({
     lastName: "",
@@ -33,30 +41,35 @@ export const SimpleAccessForm = () => {
     console.log("=== SOUMISSION FORMULAIRE SIMPLE ACCESS ===");
     console.log("Données du formulaire:", form);
     
-    const validationResult = await validateAccess(form);
+    const validationResult = await validateAccess(form.institutionCode, {
+      firstName: form.firstName,
+      lastName: form.lastName,
+      birthDate: form.birthDate
+    });
     
     console.log("Résultat de validation:", validationResult);
+    setResult(validationResult);
     
-    if (validationResult.success && validationResult.directiveData) {
-      // Créer un dossier pour le store conforme au type Dossier
+    if (validationResult.success && validationResult.documents) {
+      // Créer un dossier pour le store
       const dossier = {
-        id: `institution-${validationResult.directiveData.user_id}`,
-        userId: validationResult.directiveData.user_id,
+        id: `institution-${validationResult.documents[0]?.user_id || 'unknown'}`,
+        userId: validationResult.documents[0]?.user_id || '',
         isFullAccess: true,
         isDirectivesOnly: false,
         isMedicalOnly: false,
         profileData: {
-          first_name: validationResult.directiveData.first_name,
-          last_name: validationResult.directiveData.last_name,
-          birth_date: validationResult.directiveData.birth_date
+          first_name: form.firstName,
+          last_name: form.lastName,
+          birth_date: form.birthDate
         },
         contenu: {
           patient: {
-            nom: validationResult.directiveData.last_name,
-            prenom: validationResult.directiveData.first_name,
-            date_naissance: validationResult.directiveData.birth_date
+            nom: form.lastName,
+            prenom: form.firstName,
+            date_naissance: form.birthDate
           },
-          documents: validationResult.directiveData.directives || []
+          documents: validationResult.documents || []
         }
       };
       
@@ -142,9 +155,9 @@ export const SimpleAccessForm = () => {
         <Button 
           type="submit" 
           className="w-full"
-          disabled={loading}
+          disabled={isValidating}
         >
-          {loading ? "Vérification..." : "Accéder aux directives"}
+          {isValidating ? "Vérification..." : "Accéder aux directives"}
         </Button>
       </form>
 
@@ -159,11 +172,9 @@ export const SimpleAccessForm = () => {
           )}
           <AlertDescription className={result.success ? "text-green-800" : ""}>
             {result.message}
-            {result.success && result.directiveData && (
+            {result.success && result.documents && (
               <div className="mt-2 text-sm">
-                Patient : {result.directiveData.first_name} {result.directiveData.last_name}<br />
-                Date de naissance : {result.directiveData.birth_date}<br />
-                Documents trouvés : {result.directiveData.directives.length}
+                Documents trouvés : {result.documents.length}
               </div>
             )}
           </AlertDescription>

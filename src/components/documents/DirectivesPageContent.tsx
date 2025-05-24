@@ -1,6 +1,6 @@
 
 import React from "react";
-import { ShareableDocument } from "@/hooks/sharing/useUnifiedDocumentSharing";
+import { ShareableDocument } from "@/hooks/sharing/useUnifiedSharing";
 import DirectivesPageContainer from "./directives/DirectivesPageContainer";
 
 interface DirectivesPageContentProps {
