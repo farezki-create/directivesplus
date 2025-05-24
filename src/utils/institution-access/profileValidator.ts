@@ -77,6 +77,81 @@ const normalizeBirthDate = (dateValue: any): string => {
   return '';
 };
 
+// Nouvelle fonction pour récupérer le profil avec plusieurs approches
+const fetchUserProfile = async (userId: string): Promise<any | null> => {
+  console.log("=== ATTEMPTING PROFILE RETRIEVAL ===");
+  console.log("Trying to fetch profile for user_id:", userId);
+
+  // Approche 1: Requête directe simple
+  console.log("Approach 1: Direct profiles query");
+  const { data: directProfiles, error: directError } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', userId);
+
+  console.log("Direct query result:", { 
+    directProfiles, 
+    directError, 
+    count: directProfiles?.length || 0 
+  });
+
+  if (directProfiles && directProfiles.length > 0) {
+    console.log("SUCCESS: Profile found via direct query");
+    return directProfiles[0];
+  }
+
+  // Approche 2: Vérifier dans auth.users via RPC (si disponible)
+  console.log("Approach 2: Checking auth.users existence");
+  try {
+    const { data: authCheck, error: authError } = await supabase.auth.admin.getUserById(userId);
+    console.log("Auth user check:", { authCheck, authError });
+  } catch (error) {
+    console.log("Auth admin check not available:", error);
+  }
+
+  // Approche 3: Requête avec différents filtres
+  console.log("Approach 3: Alternative profile queries");
+  
+  // Essayer sans filtre pour voir s'il y a des profils
+  const { data: allProfiles, error: allError } = await supabase
+    .from('profiles')
+    .select('id, first_name, last_name, birth_date')
+    .limit(5);
+    
+  console.log("Sample profiles in database:", { 
+    allProfiles, 
+    allError, 
+    count: allProfiles?.length || 0 
+  });
+
+  // Approche 4: Créer un profil minimal si l'utilisateur existe dans auth
+  console.log("Approach 4: Attempting to create missing profile");
+  try {
+    const { data: insertedProfile, error: insertError } = await supabase
+      .from('profiles')
+      .insert({
+        id: userId,
+        first_name: null,
+        last_name: null,
+        birth_date: null
+      })
+      .select()
+      .single();
+
+    if (insertedProfile && !insertError) {
+      console.log("SUCCESS: Created minimal profile:", insertedProfile);
+      return insertedProfile;
+    } else {
+      console.log("Failed to create profile:", insertError);
+    }
+  } catch (error) {
+    console.log("Profile creation failed:", error);
+  }
+
+  console.log("FAILURE: All profile retrieval approaches failed");
+  return null;
+};
+
 export const validateProfileMatches = async (
   validCodes: any[],
   cleanedValues: CleanedValues
@@ -89,34 +164,18 @@ export const validateProfileMatches = async (
   let matchAttempts: ProfileMatchResult[] = [];
 
   for (const codeData of validCodes) {
-    console.log("=== Checking user profile for user_id:", codeData.user_id, "===");
+    console.log("=== Processing user_id:", codeData.user_id, "===");
     
-    // Utiliser une requête plus simple et directe
-    const { data: profiles, error: profileError } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', codeData.user_id);
+    // Utiliser la nouvelle fonction de récupération de profil
+    const profile = await fetchUserProfile(codeData.user_id);
 
-    console.log("Profile query result:", { 
-      profiles, 
-      profileError, 
-      user_id: codeData.user_id,
-      profilesLength: profiles?.length || 0 
-    });
-
-    if (profileError) {
-      console.error("Error fetching profile:", profileError);
-      continue;
-    }
-
-    if (!profiles || profiles.length === 0) {
+    if (!profile) {
       console.log("No profile found for user_id:", codeData.user_id);
       continue;
     }
 
-    const profile = profiles[0]; // Prendre le premier profil trouvé
     foundProfiles++;
-    console.log("Profile found:", profile);
+    console.log("Profile found and loaded:", profile);
 
     // Normalisation de la date avec la nouvelle fonction
     const profileBirthDate = normalizeBirthDate(profile.birth_date);

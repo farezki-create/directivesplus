@@ -1,7 +1,7 @@
-
 import { validateInstitutionCodes, validateProfileMatches } from "@/utils/institution-access/profileValidator";
 import { retrieveUserDocuments } from "@/utils/institution-access/documentRetrieval";
 import { generateErrorMessage } from "@/utils/institution-access/errorMessages";
+import { runInstitutionAccessDiagnostics } from "@/utils/institution-access/diagnostics";
 
 interface CleanedValues {
   lastName: string;
@@ -45,6 +45,9 @@ export const retrieveDirectivesByInstitutionCode = async (
   console.log("Original values:", originalValues);
   
   try {
+    // Exécuter les diagnostics en premier
+    await runInstitutionAccessDiagnostics(cleanedValues.institutionCode);
+
     // Vérifier les codes d'institution valides
     const allValidCodes = await validateInstitutionCodes(cleanedValues.institutionCode);
     console.log(`Found ${allValidCodes.length} valid institution codes`);
