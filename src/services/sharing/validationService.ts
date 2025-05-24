@@ -1,17 +1,15 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import type { ShareableDocument, ValidationRequest, ValidationResult } from "@/types/sharing";
-
-// Type pour la structure des données globales
-interface GlobalDocumentData {
-  access_type: 'global';
-  user_id: string;
-  total_documents: number;
-  documents: any[];
-}
+import type { 
+  ShareableDocument, 
+  ValidationRequest, 
+  ValidationResult,
+  SupabaseSharedDocumentResponse,
+  GlobalAccessData
+} from "@/types/sharing";
 
 /**
- * Service de validation des codes d'accès
+ * Service de validation des codes d'accès - Version refactorisée
  */
 export class ValidationService {
   /**
@@ -52,70 +50,41 @@ export class ValidationService {
 
       console.log("Données brutes reçues:", data);
 
-      // Extraire les documents de la première entrée (global_access)
-      const firstEntry = data[0];
-      const documentData = firstEntry.document_data as any;
+      // Traitement avec typage strict
+      const responseData = data[0] as SupabaseSharedDocumentResponse;
       
-      console.log("Document data structure:", documentData);
-
-      // Vérifier si c'est un accès global avec des documents
-      if (documentData?.access_type === 'global' && Array.isArray(documentData?.documents)) {
-        const globalData = documentData as GlobalDocumentData;
-        const documents: ShareableDocument[] = globalData.documents.map((doc: any) => ({
-          id: doc.id,
-          file_name: doc.file_name || 'Document',
-          file_path: doc.file_path || '',
-          created_at: doc.created_at || firstEntry.shared_at,
-          user_id: doc.user_id || firstEntry.user_id,
-          file_type: doc.file_type || 'pdf',
-          source: doc.source || 'pdf_documents',
-          content: doc.content,
-          description: doc.description,
-          content_type: doc.content_type,
-          is_private: doc.is_private || false,
-          external_id: doc.external_id,
-          file_size: doc.file_size,
-          updated_at: doc.updated_at
-        }));
-
-        console.log(`Documents extraits: ${documents.length} documents trouvés`);
-        console.log("Documents détails:", documents.map(d => ({ name: d.file_name, type: d.file_type })));
-
+      if (!responseData.document_data) {
+        console.error("Aucune donnée de document trouvée");
         return {
-          success: true,
-          documents,
-          message: `Accès autorisé. ${documents.length} document(s) trouvé(s).`
-        };
-      } else {
-        // Fallback pour l'ancien format de données
-        console.log("Format de données non reconnu, tentative de récupération alternative");
-        
-        const documents: ShareableDocument[] = data.map((item: any) => {
-          const docData = item.document_data as any;
-          return {
-            id: item.document_id,
-            file_name: docData?.file_name || 'Document',
-            file_path: docData?.file_path || '',
-            created_at: docData?.created_at || item.shared_at,
-            user_id: item.user_id,
-            file_type: (docData?.file_type || 'pdf') as 'directive' | 'pdf' | 'medical',
-            source: (docData?.source || item.document_type) as 'pdf_documents' | 'directives' | 'medical_documents',
-            content: docData?.content,
-            description: docData?.description,
-            content_type: docData?.content_type,
-            is_private: docData?.is_private,
-            external_id: docData?.external_id,
-            file_size: docData?.file_size,
-            updated_at: docData?.updated_at
-          };
-        });
-
-        return {
-          success: true,
-          documents,
-          message: `Accès autorisé. ${documents.length} document(s) trouvé(s).`
+          success: false,
+          error: "Structure de données invalide"
         };
       }
+
+      // Conversion sécurisée vers GlobalAccessData
+      const globalData = responseData.document_data as GlobalAccessData;
+      
+      // Validation de la structure
+      if (globalData.access_type !== 'global' || !Array.isArray(globalData.documents)) {
+        console.error("Structure de données globales invalide:", globalData);
+        return {
+          success: false,
+          error: "Format de données invalide"
+        };
+      }
+
+      console.log(`Documents extraits: ${globalData.documents.length} documents trouvés`);
+      console.log("Documents détails:", globalData.documents.map(d => ({ 
+        name: d.file_name, 
+        type: d.file_type,
+        source: d.source 
+      })));
+
+      return {
+        success: true,
+        documents: globalData.documents,
+        message: `Accès autorisé. ${globalData.documents.length} document(s) trouvé(s).`
+      };
 
     } catch (error: any) {
       console.error("Erreur ValidationService.validateCode:", error);

@@ -1,6 +1,6 @@
 
 /**
- * Types unifiés pour le système de partage
+ * Types unifiés pour le système de partage - Version refactorisée
  */
 
 export type DocumentSource = 'pdf_documents' | 'directives' | 'medical_documents';
@@ -22,6 +22,24 @@ export interface ShareableDocument {
   external_id?: string;
   file_size?: number;
   updated_at?: string;
+}
+
+// Structure stricte pour les données globales dans Supabase
+export interface GlobalAccessData {
+  access_type: 'global';
+  user_id: string;
+  total_documents: number;
+  generated_at: string;
+  documents: ShareableDocument[];
+}
+
+// Structure pour les réponses de la RPC Supabase
+export interface SupabaseSharedDocumentResponse {
+  document_id: string;
+  document_type: string;
+  document_data: GlobalAccessData;
+  user_id: string;
+  shared_at: string;
 }
 
 export interface ShareOptions {
@@ -48,7 +66,7 @@ export interface SharedDocument {
   user_id: string;
   document_id: string;
   document_type: string;
-  document_data: any;
+  document_data: GlobalAccessData;
   access_code: string;
   expires_at: string | null;
   shared_at: string;
