@@ -7,6 +7,8 @@ import DirectivesLoadingState from "@/components/documents/DirectivesLoadingStat
 import AuthenticatedDirectivesView from "@/components/directives/AuthenticatedDirectivesView";
 import PublicDirectivesView from "@/components/directives/PublicDirectivesView";
 import DirectivesAccessFormView from "@/components/directives/DirectivesAccessFormView";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 const DirectivesDocs = () => {
   const { user, profile, isAuthenticated, isLoading: authLoading } = useAuth();
@@ -14,11 +16,15 @@ const DirectivesDocs = () => {
     publicAccessVerified, 
     publicAccessLoading, 
     dossierActif, 
-    handlePublicAccess 
+    handlePublicAccess,
+    urlParams,
+    institutionAccess
   } = usePublicDirectivesAccess(isAuthenticated);
   
   console.log("DirectivesDocs - Auth state:", { userId: user?.id, hasProfile: !!profile, isAuthenticated, isLoading: authLoading });
   console.log("DirectivesDocs - Dossier actif:", dossierActif);
+  console.log("DirectivesDocs - URL params:", urlParams);
+  console.log("DirectivesDocs - Institution access:", institutionAccess);
   
   const {
     isLoading: documentsLoading,
@@ -39,11 +45,27 @@ const DirectivesDocs = () => {
     handlePreviewPrint
   } = useDirectivesDocuments();
 
-  const isLoading = authLoading || documentsLoading;
+  const isLoading = authLoading || documentsLoading || publicAccessLoading;
 
   // Si l'utilisateur est en train de se connecter, afficher un état de chargement
   if (isLoading) {
     return <DirectivesLoadingState />;
+  }
+
+  // Afficher l'erreur d'accès par institution si présente
+  if (urlParams.hasAllParams && institutionAccess.error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="max-w-md mx-auto p-6">
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              {institutionAccess.error}
+            </AlertDescription>
+          </Alert>
+        </div>
+      </div>
+    );
   }
 
   // Si l'utilisateur est authentifié, afficher directement ses documents
