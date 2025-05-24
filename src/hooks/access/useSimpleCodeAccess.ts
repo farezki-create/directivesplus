@@ -66,10 +66,7 @@ export const useSimpleCodeAccess = () => {
       // Deuxième tentative : recherche par code d'institution dans directives directement
       const { data: directivesByCode, error: directivesError } = await supabase
         .from('directives')
-        .select(`
-          *,
-          profiles!inner(id, first_name, last_name, birth_date)
-        `)
+        .select('*')
         .eq('institution_code', accessCode.toUpperCase())
         .gt('institution_code_expires_at', new Date().toISOString());
 
@@ -77,23 +74,33 @@ export const useSimpleCodeAccess = () => {
 
       if (directivesByCode && directivesByCode.length > 0) {
         const directive = directivesByCode[0];
-        const userProfile = directive.profiles;
+        
+        // Récupérer le profil de l'utilisateur séparément
+        const { data: userProfile, error: profileError } = await supabase
+          .from('profiles')
+          .select('id, first_name, last_name, birth_date')
+          .eq('id', directive.user_id)
+          .maybeSingle();
 
-        const result: AccessResult = {
-          success: true,
-          message: `Accès autorisé pour ${userProfile.first_name} ${userProfile.last_name}`,
-          patientData: {
-            id: directive.user_id,
-            first_name: userProfile.first_name,
-            last_name: userProfile.last_name,
-            birth_date: userProfile.birth_date,
-            directives: directivesByCode
-          }
-        };
+        console.log("Profil utilisateur trouvé:", { userProfile, profileError });
 
-        setResult(result);
-        setLoading(false);
-        return result;
+        if (userProfile) {
+          const result: AccessResult = {
+            success: true,
+            message: `Accès autorisé pour ${userProfile.first_name} ${userProfile.last_name}`,
+            patientData: {
+              id: directive.user_id,
+              first_name: userProfile.first_name,
+              last_name: userProfile.last_name,
+              birth_date: userProfile.birth_date,
+              directives: directivesByCode
+            }
+          };
+
+          setResult(result);
+          setLoading(false);
+          return result;
+        }
       }
 
       // Troisième tentative : recherche dans user_profiles

@@ -69,10 +69,7 @@ export const useSimpleAccess = () => {
       // Deuxième tentative : recherche directe dans la table directives
       const { data: directives, error: directivesError } = await supabase
         .from('directives')
-        .select(`
-          *,
-          profiles!inner(id, first_name, last_name, birth_date)
-        `)
+        .select('*')
         .eq('institution_code', formData.accessCode.trim())
         .gt('institution_code_expires_at', new Date().toISOString());
 
@@ -80,23 +77,33 @@ export const useSimpleAccess = () => {
 
       if (directives && directives.length > 0) {
         const directive = directives[0];
-        const userProfile = directive.profiles;
+        
+        // Récupérer le profil de l'utilisateur séparément
+        const { data: userProfile, error: profileError } = await supabase
+          .from('profiles')
+          .select('id, first_name, last_name, birth_date')
+          .eq('id', directive.user_id)
+          .maybeSingle();
 
-        const successResult: SimpleAccessResult = {
-          success: true,
-          message: `Accès autorisé pour ${userProfile.first_name} ${userProfile.last_name}`,
-          patientData: {
-            user_id: directive.user_id,
-            first_name: userProfile.first_name,
-            last_name: userProfile.last_name,
-            birth_date: userProfile.birth_date,
-            directives: directives
-          }
-        };
+        console.log("Profil utilisateur trouvé:", { userProfile, profileError });
 
-        console.log("Validation réussie:", successResult);
-        setResult(successResult);
-        return successResult;
+        if (userProfile) {
+          const successResult: SimpleAccessResult = {
+            success: true,
+            message: `Accès autorisé pour ${userProfile.first_name} ${userProfile.last_name}`,
+            patientData: {
+              user_id: directive.user_id,
+              first_name: userProfile.first_name,
+              last_name: userProfile.last_name,
+              birth_date: userProfile.birth_date,
+              directives: directives
+            }
+          };
+
+          console.log("Validation réussie:", successResult);
+          setResult(successResult);
+          return successResult;
+        }
       }
 
       // Troisième tentative : recherche dans user_profiles
