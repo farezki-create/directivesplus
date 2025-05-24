@@ -37,19 +37,26 @@ export const InstitutionAccessFormSimple = () => {
     if (validationResult.success && validationResult.directiveData) {
       console.log("Formulaire: Succès, redirection vers mes-directives");
       
-      // Créer un dossier simplifié pour le store
+      // Créer un dossier conforme au type Dossier
       const dossier = {
         id: `institution-${validationResult.directiveData.user_id}`,
-        contenu_dossier: {
+        userId: validationResult.directiveData.user_id,
+        isFullAccess: true,
+        isDirectivesOnly: false,
+        isMedicalOnly: false,
+        profileData: {
+          first_name: validationResult.directiveData.first_name,
+          last_name: validationResult.directiveData.last_name,
+          birth_date: validationResult.directiveData.birth_date
+        },
+        contenu: {
           patient: {
             nom: validationResult.directiveData.last_name,
             prenom: validationResult.directiveData.first_name,
             date_naissance: validationResult.directiveData.birth_date
           },
-          directives: validationResult.directiveData.directives,
-          access_type: "institution"
-        },
-        cree_le: new Date().toISOString()
+          documents: validationResult.directiveData.directives || []
+        }
       };
       
       // Mettre à jour le store
