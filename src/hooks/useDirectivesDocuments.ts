@@ -44,24 +44,42 @@ export const useDirectivesDocuments = () => {
   } = useDocumentOperations(fetchDocuments);
 
   useEffect(() => {
+    console.log("useDirectivesDocuments - useEffect déclenché");
+    console.log("useDirectivesDocuments - isAuthenticated:", isAuthenticated);
+    console.log("useDirectivesDocuments - isLoading:", isLoading);
+    console.log("useDirectivesDocuments - user:", user);
+    console.log("useDirectivesDocuments - dossierActif:", dossierActif);
+    
     if (isAuthenticated && user && !isLoading) {
+      console.log("useDirectivesDocuments - Utilisateur authentifié, récupération documents");
       fetchDocuments();
     } else if (!isAuthenticated && !isLoading) {
+      console.log("useDirectivesDocuments - Utilisateur non connecté, chargement documents dossier");
       // Pour les utilisateurs non connectés, utiliser les documents du dossier actif
       loadDossierDocuments();
     }
   }, [isAuthenticated, isLoading, user, dossierActif]);
 
   async function fetchDocuments() {
-    if (!user) return;
+    console.log("useDirectivesDocuments - fetchDocuments appelé");
+    if (!user) {
+      console.log("useDirectivesDocuments - Pas d'utilisateur, abandon");
+      return;
+    }
     
     const supabaseDocuments = await fetchSupabaseDocuments(user.id);
+    console.log("useDirectivesDocuments - Documents Supabase récupérés:", supabaseDocuments);
     const allDocuments = mergeDocuments(supabaseDocuments);
+    console.log("useDirectivesDocuments - Tous documents après fusion:", allDocuments);
     setDocuments(allDocuments);
   }
 
   function loadDossierDocuments() {
+    console.log("useDirectivesDocuments - loadDossierDocuments appelé");
     const dossierDocuments = getDossierDocuments();
+    console.log("useDirectivesDocuments - Documents du dossier récupérés:", dossierDocuments);
+    console.log("useDirectivesDocuments - Type des documents:", typeof dossierDocuments);
+    console.log("useDirectivesDocuments - Est un tableau:", Array.isArray(dossierDocuments));
     setDocuments(dossierDocuments);
   }
 
