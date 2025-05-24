@@ -4,6 +4,7 @@ import { toast } from "@/hooks/use-toast";
 import { useDossierStore } from "@/store/dossierStore";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface TransferDocument {
   id: string;
@@ -40,149 +41,109 @@ export const useDocumentTransfer = () => {
     setTransferStatus({ phase, message, progress });
   };
 
-  const downloadDocumentToClipboard = async (document: TransferDocument): Promise<Blob> => {
-    console.log("Starting document download for:", document.file_name);
-    updateStatus('downloading', 'Téléchargement du document en cours...', 25);
-    
-    // Simuler le téléchargement avec un délai réaliste
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    let documentBlob: Blob;
-    
-    if (document.content) {
-      console.log("Processing directive content");
-      // Si c'est une directive avec du contenu structuré
-      const documentContent = {
-        title: document.content.title || 'Directive Anticipée',
-        content: document.content,
-        created_at: document.created_at,
-        type: 'directive'
-      };
-      
-      // Créer un document PDF simulé
-      const jsonContent = JSON.stringify(documentContent, null, 2);
-      documentBlob = new Blob([jsonContent], { type: 'application/json' });
-    } else {
-      console.log("Processing regular document file");
-      // Pour les autres types de documents
-      try {
-        if (document.file_path && document.file_path.startsWith('data:')) {
-          // Décoder le base64
-          const base64Data = document.file_path.split(',')[1];
-          const binaryString = atob(base64Data);
-          const bytes = new Uint8Array(binaryString.length);
-          for (let i = 0; i < binaryString.length; i++) {
-            bytes[i] = binaryString.charCodeAt(i);
-          }
-          documentBlob = new Blob([bytes], { type: document.content_type || 'application/pdf' });
-        } else {
-          // Créer un document de substitution
-          const substituteContent = `Document: ${document.file_name || 'Document sans nom'}\nCréé le: ${document.created_at}\nDescription: ${document.description || 'Aucune description'}`;
-          documentBlob = new Blob([substituteContent], { type: 'text/plain' });
-        }
-      } catch (error) {
-        console.error("Erreur lors du téléchargement:", error);
-        // Créer un document de fallback
-        const fallbackContent = `Document: ${document.file_name || 'Document'}\nErreur de récupération: ${error}`;
-        documentBlob = new Blob([fallbackContent], { type: 'text/plain' });
-      }
-    }
-    
-    console.log("Document downloaded successfully, size:", documentBlob.size);
-    updateStatus('processing', 'Document téléchargé, préparation du transfert...', 50);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    return documentBlob;
-  };
-
-  const transferToMesDirectives = async (document: TransferDocument, documentBlob: Blob) => {
+  const transferToMesDirectives = async (document: TransferDocument) => {
     console.log("Starting transfer to Mes Directives");
     updateStatus('transferring', 'Transfert vers "Mes Directives" en cours...', 75);
     
-    // Déterminer l'utilisateur - soit authentifié soit anonyme
     const currentUserId = user?.id || "anonymous";
     console.log("Transfer user ID:", currentUserId);
     
-    // Créer un document virtuel compatible avec le système
-    const transferredDocument = {
-      id: `transferred-${document.id}-${Date.now()}`,
-      file_name: document.file_name || `Document_${new Date().toLocaleDateString('fr-FR').replace(/\//g, '-')}.pdf`,
-      file_path: `data:${document.content_type || 'application/pdf'};base64,${await blobToBase64(documentBlob)}`,
-      created_at: new Date().toISOString(),
-      description: document.description || document.content?.title || "Document transféré depuis Directives Doc",
-      content_type: document.content_type || 'application/pdf',
-      is_shared: true,
-      user_id: currentUserId,
-      original_directive: document.content ? document : undefined
-    };
+    if (isAuthenticated && user) {
+      // Pour les utilisateurs connectés, sauvegarder dans Supabase
+      try {
+        const documentData = {
+          user_id: user.id,
+          file_name: document.file_name || `Document_${new Date().toLocaleDateString('fr-FR').replace(/\//g, '-')}`,
+          file_path: document.content ? JSON.stringify(document.content) : document.file_path,
+          description: document.description || document.content?.title || "Document transféré depuis Directives Doc",
+          content_type: document.content ? 'application/json' : (document.content_type || 'application/pdf'),
+          external_id: `transferred-${document.id}`
+        };
 
-    // Créer le profil utilisateur
-    const profileData = isAuthenticated && user ? {
-      first_name: user?.user_metadata?.first_name || "Utilisateur",
-      last_name: user?.user_metadata?.last_name || "Connecté",
-      birth_date: user?.user_metadata?.birth_date || null,
-    } : {
-      first_name: "Accès",
-      last_name: "Public",
-      birth_date: null,
-    };
+        console.log("Saving document to Supabase:", documentData);
+        
+        const { data, error } = await supabase
+          .from('pdf_documents')
+          .insert([documentData])
+          .select()
+          .single();
 
-    console.log("Creating dossier with profile:", profileData);
-
-    // Préparer le nouveau dossier ou mettre à jour l'existant
-    let updatedDossier;
-    
-    if (dossierActif) {
-      // Ajouter le document au dossier existant
-      console.log("Adding document to existing dossier:", dossierActif.id);
-      const existingDocuments = dossierActif.contenu?.documents || [];
-      updatedDossier = {
-        ...dossierActif,
-        contenu: {
-          ...dossierActif.contenu,
-          documents: [...existingDocuments, transferredDocument]
+        if (error) {
+          console.error("Erreur Supabase:", error);
+          throw error;
         }
-      };
+
+        console.log("Document sauvegardé avec succès dans Supabase:", data);
+        
+        updateStatus('completed', 'Document transféré avec succès !', 100);
+        return data;
+        
+      } catch (error) {
+        console.error("Erreur lors de la sauvegarde Supabase:", error);
+        throw error;
+      }
     } else {
-      // Créer un nouveau dossier
-      console.log("Creating new dossier");
-      updatedDossier = {
-        id: `transferred-dossier-${Date.now()}`,
-        userId: currentUserId,
-        isFullAccess: true,
-        isDirectivesOnly: true,
-        isMedicalOnly: false,
-        profileData: profileData,
-        contenu: {
-          patient: {
-            nom: profileData.last_name,
-            prenom: profileData.first_name,
-            date_naissance: profileData.birth_date || null,
-          },
-          documents: [transferredDocument]
-        }
+      // Pour les utilisateurs non connectés, utiliser le dossierStore
+      const transferredDocument = {
+        id: `transferred-${document.id}-${Date.now()}`,
+        file_name: document.file_name || `Document_${new Date().toLocaleDateString('fr-FR').replace(/\//g, '-')}`,
+        file_path: document.content ? JSON.stringify(document.content) : document.file_path,
+        created_at: new Date().toISOString(),
+        description: document.description || document.content?.title || "Document transféré depuis Directives Doc",
+        content_type: document.content ? 'application/json' : (document.content_type || 'application/pdf'),
+        is_shared: true,
+        user_id: currentUserId,
+        content: document.content
       };
-    }
 
-    // Simuler le temps de traitement
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    console.log("Setting dossier actif:", updatedDossier.id);
-    console.log("Documents in dossier:", updatedDossier.contenu.documents?.length);
-    
-    // Stocker le dossier dans le store
-    setDossierActif(updatedDossier);
-    
-    // Marquer le document comme ajouté pour le toast
-    sessionStorage.setItem('documentAdded', JSON.stringify({
-      fileName: transferredDocument.file_name,
-      timestamp: Date.now()
-    }));
-    
-    console.log("Document marked as added in sessionStorage");
-    updateStatus('completed', 'Document transféré avec succès !', 100);
-    
-    return transferredDocument;
+      const profileData = {
+        first_name: "Accès",
+        last_name: "Public",
+        birth_date: null,
+      };
+
+      console.log("Creating dossier with profile:", profileData);
+
+      let updatedDossier;
+      
+      if (dossierActif) {
+        console.log("Adding document to existing dossier:", dossierActif.id);
+        const existingDocuments = dossierActif.contenu?.documents || [];
+        updatedDossier = {
+          ...dossierActif,
+          contenu: {
+            ...dossierActif.contenu,
+            documents: [...existingDocuments, transferredDocument]
+          }
+        };
+      } else {
+        console.log("Creating new dossier");
+        updatedDossier = {
+          id: `transferred-dossier-${Date.now()}`,
+          userId: currentUserId,
+          isFullAccess: true,
+          isDirectivesOnly: true,
+          isMedicalOnly: false,
+          profileData: profileData,
+          contenu: {
+            patient: {
+              nom: profileData.last_name,
+              prenom: profileData.first_name,
+              date_naissance: profileData.birth_date || null,
+            },
+            documents: [transferredDocument]
+          }
+        };
+      }
+
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      console.log("Setting dossier actif:", updatedDossier.id);
+      setDossierActif(updatedDossier);
+      
+      updateStatus('completed', 'Document transféré avec succès !', 100);
+      return transferredDocument;
+    }
   };
 
   const transferDocument = async (document: TransferDocument) => {
@@ -193,27 +154,25 @@ export const useDocumentTransfer = () => {
     
     console.log("Starting document transfer process for:", document.file_name || document.id);
     console.log("Document details:", document);
+    console.log("User authenticated:", isAuthenticated);
     
     try {
       setIsTransferring(true);
-      updateStatus('downloading', 'Initialisation du transfert...', 0);
+      updateStatus('downloading', 'Initialisation du transfert...', 25);
       
-      // Phase 1: Téléchargement
-      const documentBlob = await downloadDocumentToClipboard(document);
+      await new Promise(resolve => setTimeout(resolve, 500));
+      updateStatus('processing', 'Préparation du document...', 50);
       
-      // Phase 2: Transfert
-      const transferredDocument = await transferToMesDirectives(document, documentBlob);
+      const transferredDocument = await transferToMesDirectives(document);
       
-      // Attendre un moment pour montrer le succès
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       console.log("Transfer completed, redirecting to /mes-directives");
-      // Rediriger vers mes-directives
       navigate('/mes-directives');
       
       toast({
         title: "Transfert réussi",
-        description: `${transferredDocument.file_name} a été ajouté à vos directives`,
+        description: `Le document a été ajouté à vos directives`,
       });
       
     } catch (error: any) {
@@ -227,7 +186,6 @@ export const useDocumentTransfer = () => {
       });
     } finally {
       setIsTransferring(false);
-      // Réinitialiser le statut après 3 secondes
       setTimeout(() => {
         setTransferStatus({ phase: 'idle', message: '', progress: 0 });
       }, 3000);
@@ -239,17 +197,4 @@ export const useDocumentTransfer = () => {
     transferStatus,
     isTransferring
   };
-};
-
-// Fonction utilitaire pour convertir Blob en base64
-const blobToBase64 = (blob: Blob): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      resolve(result.split(',')[1]); // Retourner seulement la partie base64
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
 };
