@@ -1,18 +1,16 @@
+
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "./contexts/AuthContext";
-import { Home } from "./pages/Home";
-import { Profile } from "./pages/Profile";
-import { authRoutes } from "./routes/auth";
-import { dashboardRoutes } from "./routes/dashboard";
-import { adminRoutes } from "./routes/admin";
-import { DirectivesAcces } from "./pages/DirectivesAcces";
+import Home from "./pages/Index";
+import Profile from "./pages/Profile";
+import DirectivesAcces from "./pages/DirectivesAcces";
 import MesDirectives from "./pages/MesDirectives";
 import Partage from "./pages/Partage";
 import DirectDocument from "./pages/DirectDocument";
-import { QueryClient, QueryClientProvider } from "react-query";
-import { Sonner } from "./components/ui/sonner";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Toaster as Sonner } from "sonner";
 import PdfViewer from "./pages/PdfViewer";
 import PdfDirect from "./pages/PdfDirect";
 
@@ -26,9 +24,6 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/profile" element={<Profile />} />
-            {authRoutes}
-            {dashboardRoutes}
-            {adminRoutes}
             <Route path="/directives-acces" element={<DirectivesAcces />} />
             <Route path="/mes-directives" element={<MesDirectives />} />
             <Route path="/partage" element={<Partage />} />
