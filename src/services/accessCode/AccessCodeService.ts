@@ -22,13 +22,22 @@ export class AccessCodeService {
    * Génère un code fixe reproductible basé sur l'ID utilisateur
    */
   static generateFixedCode(userId: string): string {
-    const hash = CryptoJS.SHA256(userId).toString();
+    console.log("🔑 Génération code fixe pour userId:", userId);
+    
+    // Créer un hash SHA256 de l'ID utilisateur
+    const hash = CryptoJS.SHA256(`fixed-${userId}`).toString();
+    
+    // Prendre les 8 premiers caractères et les convertir en majuscules
     let code = hash.substring(0, 8).toUpperCase();
     
-    return code
+    // Remplacer certains caractères pour éviter la confusion
+    code = code
       .replace(/0/g, 'O')
       .replace(/1/g, 'I')
       .replace(/5/g, 'S');
+    
+    console.log("🔑 Code fixe généré:", code);
+    return code;
   }
 
   /**
@@ -198,6 +207,7 @@ export class AccessCodeService {
           const birthDateMatch = !personalInfo.birthDate || profile.birth_date === personalInfo.birthDate;
 
           if (!firstNameMatch || !lastNameMatch || !birthDateMatch) {
+            console.log("❌ Informations personnelles incorrectes");
             return { success: false, error: "Informations personnelles incorrectes" };
           }
         }
@@ -229,24 +239,47 @@ export class AccessCodeService {
   ): Promise<AccessValidationResult> {
     try {
       console.log("🔍 Validation code fixe");
+      console.log("Recherche profils avec:", {
+        firstName: personalInfo.firstName,
+        lastName: personalInfo.lastName,
+        birthDate: personalInfo.birthDate
+      });
 
+      // Rechercher tous les profils correspondants
       const { data: profiles, error } = await supabase
         .from('profiles')
         .select('id, first_name, last_name, birth_date')
-        .ilike('first_name', personalInfo.firstName)
-        .ilike('last_name', personalInfo.lastName);
+        .ilike('first_name', personalInfo.firstName.trim())
+        .ilike('last_name', personalInfo.lastName.trim());
+
+      console.log("👥 Profils trouvés:", profiles?.length || 0);
 
       if (error || !profiles || profiles.length === 0) {
-        return { success: false, error: "Patient non trouvé" };
+        console.log("⚠️ Aucun profil trouvé");
+        return { success: false, error: "Patient non trouvé dans la base de données" };
       }
 
+      // Vérifier chaque profil
       for (const profile of profiles) {
+        console.log("🔍 Vérification profil:", {
+          id: profile.id,
+          name: `${profile.first_name} ${profile.last_name}`,
+          birth_date: profile.birth_date
+        });
+
+        // Vérifier la date de naissance si fournie
         if (personalInfo.birthDate && profile.birth_date !== personalInfo.birthDate) {
+          console.log("❌ Date de naissance ne correspond pas");
           continue;
         }
 
+        // Générer le code fixe attendu pour ce profil
         const expectedCode = this.generateFixedCode(profile.id);
+        console.log("🔑 Code attendu:", expectedCode, "vs fourni:", accessCode);
+
         if (expectedCode === accessCode) {
+          console.log("✅ Code fixe validé pour:", profile.id);
+          
           const documents = await this.getUserDocuments(profile.id);
           
           return {
@@ -259,6 +292,7 @@ export class AccessCodeService {
         }
       }
 
+      console.log("❌ Aucun code fixe correspondant trouvé");
       return { success: false, error: "Code d'accès invalide" };
 
     } catch (error: any) {

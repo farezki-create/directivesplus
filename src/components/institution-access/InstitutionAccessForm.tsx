@@ -38,19 +38,38 @@ export const InstitutionAccessForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    console.log("=== SOUMISSION FORMULAIRE INSTITUTION (NOUVELLE ARCHITECTURE) ===");
-    console.log("Données du formulaire:", form);
-    
-    const validationResult = await validateCode(form.institutionCode, {
-      firstName: form.firstName,
+    console.log("=== SOUMISSION FORMULAIRE INSTITUTION (DÉBOGAGE COMPLET) ===");
+    console.log("Données du formulaire:", {
       lastName: form.lastName,
+      firstName: form.firstName,
+      birthDate: form.birthDate,
+      institutionCode: form.institutionCode
+    });
+    
+    // Validation des champs
+    if (!form.lastName.trim() || !form.firstName.trim() || !form.birthDate || !form.institutionCode.trim()) {
+      console.error("❌ Champs manquants");
+      setResult({
+        success: false,
+        error: "Tous les champs sont obligatoires"
+      });
+      return;
+    }
+
+    console.log("🔍 Début validation avec AccessCodeService...");
+    
+    const validationResult = await validateCode(form.institutionCode.trim(), {
+      firstName: form.firstName.trim(),
+      lastName: form.lastName.trim(),
       birthDate: form.birthDate
     });
     
-    console.log("Résultat de validation:", validationResult);
+    console.log("📊 Résultat de validation complet:", validationResult);
     setResult(validationResult);
     
     if (validationResult.success && validationResult.documents) {
+      console.log("✅ Validation réussie - Documents trouvés:", validationResult.documents.length);
+      
       // Créer un dossier pour le store avec la nouvelle structure
       const dossier = {
         id: `institution-${validationResult.userId || 'unknown'}`,
@@ -74,7 +93,7 @@ export const InstitutionAccessForm = () => {
         }
       };
       
-      console.log("Dossier créé (nouvelle architecture):", dossier);
+      console.log("📁 Dossier créé pour navigation:", dossier);
       setDossierActif(dossier);
       
       toast({
@@ -84,7 +103,12 @@ export const InstitutionAccessForm = () => {
       
       navigate("/mes-directives");
     } else {
-      console.error("Échec de validation:", validationResult.error);
+      console.error("❌ Échec de validation:", validationResult.error);
+      toast({
+        title: "Accès refusé",
+        description: validationResult.error || "Code d'accès invalide",
+        variant: "destructive"
+      });
     }
   };
 
@@ -178,6 +202,8 @@ export const InstitutionAccessForm = () => {
                 Documents trouvés : {result.documents.length}
                 <br />
                 Type d'accès : {result.accessType}
+                <br />
+                Utilisateur : {result.userId}
               </div>
             )}
           </AlertDescription>
@@ -191,6 +217,16 @@ export const InstitutionAccessForm = () => {
           <strong>Sécurité :</strong> Les accès sont journalisés pour des raisons de traçabilité et de sécurité.
         </AlertDescription>
       </Alert>
+
+      {/* Debug info en développement */}
+      {process.env.NODE_ENV === 'development' && (
+        <Alert className="bg-gray-50 border-gray-200">
+          <Info className="h-4 w-4" />
+          <AlertDescription className="text-xs">
+            <strong>Debug:</strong> Vérifiez la console pour les détails de validation
+          </AlertDescription>
+        </Alert>
+      )}
     </div>
   );
 };
