@@ -30,20 +30,10 @@ export const useSimpleAccess = () => {
       console.log("=== VALIDATION SIMPLE AVEC CODE D'ACCÈS ===");
       console.log("Code d'accès saisi:", formData.accessCode);
 
-      // Vérification du code d'accès dans les directives
+      // Recherche directe dans la table directives
       const { data: directives, error } = await supabase
         .from('directives')
-        .select(`
-          id,
-          user_id,
-          content,
-          created_at,
-          profiles:user_id (
-            first_name,
-            last_name,
-            birth_date
-          )
-        `)
+        .select('*')
         .eq('institution_code', formData.accessCode.trim())
         .gt('institution_code_expires_at', new Date().toISOString());
 
@@ -64,14 +54,20 @@ export const useSimpleAccess = () => {
         return errorResult;
       }
 
-      // Récupération des données du premier résultat
+      // Récupération du profil utilisateur séparément
       const directive = directives[0];
-      const profile = directive.profiles as any;
-
       console.log("Directive trouvée:", directive);
-      console.log("Profil associé:", profile);
 
-      if (!profile) {
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', directive.user_id)
+        .single();
+
+      console.log("Profil trouvé:", { profile, profileError });
+
+      if (profileError || !profile) {
+        console.error("Erreur profil:", profileError);
         const errorResult: SimpleAccessResult = {
           success: false,
           message: "Profil patient non trouvé"
