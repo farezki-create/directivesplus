@@ -78,7 +78,10 @@ const AuthenticatedDirectivesView: React.FC<AuthenticatedDirectivesViewProps> = 
         <DocumentPreviewDialog
           document={previewDocument}
           onClose={() => setPreviewDocument(null)}
-          onDownload={handlePreviewDownload}
+          onDownload={(filePath: string) => {
+            const fileName = previewDocument?.file_name || 'document';
+            handlePreviewDownload(filePath, fileName);
+          }}
           onPrint={handlePreviewPrint}
         />
 
