@@ -1,7 +1,7 @@
 
 import { useDirectivesDocuments } from "@/hooks/useDirectivesDocuments";
 import { useAuth } from "@/contexts/AuthContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useVerifierCodeAcces } from "@/hooks/useVerifierCodeAcces";
 import { validateAccessCode, validateDossierResponse } from "@/utils/api/accessCodeValidation";
 import { useDossierStore } from "@/store/dossierStore";
@@ -20,11 +20,12 @@ const DirectivesDocs = () => {
   const { user, profile, isAuthenticated, isLoading: authLoading } = useAuth();
   const [publicAccessVerified, setPublicAccessVerified] = useState(false);
   const [publicAccessLoading, setPublicAccessLoading] = useState(false);
-  const { setDossierActif } = useDossierStore();
+  const { dossierActif, setDossierActif } = useDossierStore();
   const navigate = useNavigate();
   const { verifierCode } = useVerifierCodeAcces();
   
   console.log("DirectivesDocs - Auth state:", { userId: user?.id, hasProfile: !!profile, isAuthenticated, isLoading: authLoading });
+  console.log("DirectivesDocs - Dossier actif:", dossierActif);
   
   const {
     isLoading: documentsLoading,
@@ -44,6 +45,14 @@ const DirectivesDocs = () => {
     handlePreviewDownload,
     handlePreviewPrint
   } = useDirectivesDocuments();
+
+  // Vérifier si nous avons déjà un accès public vérifié via le store
+  useEffect(() => {
+    if (!isAuthenticated && dossierActif && !publicAccessVerified) {
+      console.log("Accès public déjà vérifié via le store dossier");
+      setPublicAccessVerified(true);
+    }
+  }, [dossierActif, isAuthenticated, publicAccessVerified]);
 
   const isLoading = authLoading || documentsLoading;
 
@@ -142,8 +151,8 @@ const DirectivesDocs = () => {
     );
   }
 
-  // Pour les utilisateurs non authentifiés avec accès public vérifié
-  if (!isAuthenticated && publicAccessVerified) {
+  // Pour les utilisateurs non authentifiés avec accès public vérifié OU avec un dossier dans le store
+  if (!isAuthenticated && (publicAccessVerified || dossierActif)) {
     return (
       <div className="min-h-screen flex flex-col">
         <AppNavigation />
@@ -154,6 +163,18 @@ const DirectivesDocs = () => {
             <p className="text-gray-600">
               Accès aux directives anticipées via code d'accès
             </p>
+            {dossierActif && dossierActif.profileData && (
+              <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <p className="text-sm text-blue-800">
+                  <strong>Patient:</strong> {dossierActif.profileData.first_name} {dossierActif.profileData.last_name}
+                </p>
+                {dossierActif.profileData.birth_date && (
+                  <p className="text-sm text-blue-800">
+                    <strong>Date de naissance:</strong> {new Date(dossierActif.profileData.birth_date).toLocaleDateString('fr-FR')}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
           
           <DirectivesPageContent
@@ -187,7 +208,7 @@ const DirectivesDocs = () => {
     );
   }
 
-  // Afficher le formulaire d'accès public si l'utilisateur n'est pas authentifié
+  // Afficher le formulaire d'accès public si l'utilisateur n'est pas authentifié et n'a pas d'accès vérifié
   return (
     <div className="min-h-screen bg-gray-50">
       <AppNavigation />
