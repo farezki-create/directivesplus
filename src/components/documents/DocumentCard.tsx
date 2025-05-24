@@ -59,8 +59,8 @@ const DocumentCard = ({
     
     // Si c'est une directive transformée, afficher le contenu de la directive
     if (document.original_directive) {
-      const directiveContent = document.original_directive.content;
-      console.log("Affichage directive:", directiveContent);
+      const directiveContent = document.original_directive.content || document.original_directive;
+      console.log("Affichage directive transférée:", directiveContent);
       
       // Créer une nouvelle fenêtre pour afficher le contenu de la directive
       const newWindow = window.open('', '_blank');
@@ -74,14 +74,19 @@ const DocumentCard = ({
                 h1 { color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
                 .content { margin-top: 20px; }
                 .date { color: #666; font-size: 0.9em; }
+                .metadata { background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 10px 0; }
               </style>
             </head>
             <body>
-              <h1>${directiveContent?.title || 'Directive Anticipée'}</h1>
+              <h1>${directiveContent?.title || 'Directive Anticipée Transférée'}</h1>
               <div class="date">Créé le: ${new Date(document.created_at).toLocaleDateString('fr-FR')}</div>
+              <div class="metadata">
+                <strong>Document transféré depuis:</strong> Mes Directives Doc<br>
+                <strong>Type:</strong> ${document.description || 'Directive anticipée'}<br>
+                <strong>Statut:</strong> Document accessible
+              </div>
               <div class="content">
-                <p>Contenu de la directive:</p>
-                <pre>${JSON.stringify(directiveContent, null, 2)}</pre>
+                ${directiveContent ? JSON.stringify(directiveContent, null, 2) : 'Contenu de la directive non disponible'}
               </div>
             </body>
           </html>
@@ -100,7 +105,7 @@ const DocumentCard = ({
     
     // Si c'est une directive transformée, télécharger le contenu formaté
     if (document.original_directive) {
-      const directiveContent = document.original_directive.content;
+      const directiveContent = document.original_directive.content || document.original_directive;
       const content = JSON.stringify(directiveContent, null, 2);
       const blob = new Blob([content], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
@@ -124,7 +129,7 @@ const DocumentCard = ({
     
     // Si c'est une directive transformée, imprimer le contenu formaté
     if (document.original_directive) {
-      const directiveContent = document.original_directive.content;
+      const directiveContent = document.original_directive.content || document.original_directive;
       const printWindow = window.open('', '_blank');
       if (printWindow) {
         printWindow.document.write(`
@@ -136,14 +141,19 @@ const DocumentCard = ({
                 h1 { color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
                 .content { margin-top: 20px; }
                 .date { color: #666; font-size: 0.9em; }
+                .metadata { background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 10px 0; }
                 @media print { body { margin: 0; } }
               </style>
             </head>
             <body>
-              <h1>${directiveContent?.title || 'Directive Anticipée'}</h1>
+              <h1>${directiveContent?.title || 'Directive Anticipée Transférée'}</h1>
               <div class="date">Créé le: ${new Date(document.created_at).toLocaleDateString('fr-FR')}</div>
+              <div class="metadata">
+                <strong>Document transféré depuis:</strong> Mes Directives Doc<br>
+                <strong>Type:</strong> ${document.description || 'Directive anticipée'}<br>
+                <strong>Statut:</strong> Document accessible
+              </div>
               <div class="content">
-                <p>Contenu de la directive:</p>
                 <pre>${JSON.stringify(directiveContent, null, 2)}</pre>
               </div>
               <script>
