@@ -5,7 +5,9 @@ import {
   createSharedDocument, 
   getSharedDocuments as fetchSharedDocuments,
   getSharedDocumentsByAccessCode as fetchSharedDocumentsByAccessCode,
-  deactivateSharedDocument 
+  deactivateSharedDocument,
+  extendSharedDocumentExpiry,
+  regenerateAccessCode
 } from "./sharingService";
 import { generateInstitutionAccessCode } from "./institutionSharingService";
 import { formatShareMessage } from "./sharingUtils";
@@ -14,6 +16,8 @@ import type { ShareableDocument, ShareOptions } from "./types";
 export const useUnifiedDocumentSharing = () => {
   const [isSharing, setIsSharing] = useState<string | null>(null);
   const [shareError, setShareError] = useState<string | null>(null);
+  const [isExtending, setIsExtending] = useState<boolean>(false);
+  const [isRegenerating, setIsRegenerating] = useState<boolean>(false);
 
   const shareDocument = async (
     document: ShareableDocument, 
@@ -56,6 +60,76 @@ export const useUnifiedDocumentSharing = () => {
       return null;
     } finally {
       setIsSharing(null);
+    }
+  };
+
+  const extendAccessCode = async (
+    accessCode: string,
+    additionalDays: number = 365
+  ): Promise<boolean> => {
+    setIsExtending(true);
+    try {
+      const success = await extendSharedDocumentExpiry(accessCode, additionalDays);
+      
+      if (success) {
+        toast({
+          title: "Code prolongé",
+          description: `Le code d'accès a été prolongé de ${additionalDays} jours`,
+        });
+      } else {
+        toast({
+          title: "Erreur",
+          description: "Impossible de prolonger le code d'accès",
+          variant: "destructive"
+        });
+      }
+      
+      return success;
+    } catch (error: any) {
+      console.error("Erreur prolongation:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de prolonger le code d'accès",
+        variant: "destructive"
+      });
+      return false;
+    } finally {
+      setIsExtending(false);
+    }
+  };
+
+  const regenerateCode = async (
+    currentAccessCode: string,
+    expiresInDays: number = 365
+  ): Promise<string | null> => {
+    setIsRegenerating(true);
+    try {
+      const newCode = await regenerateAccessCode(currentAccessCode, expiresInDays);
+      
+      if (newCode) {
+        toast({
+          title: "Code régénéré",
+          description: `Nouveau code d'accès généré : ${newCode}`,
+        });
+      } else {
+        toast({
+          title: "Erreur",
+          description: "Impossible de régénérer le code d'accès",
+          variant: "destructive"
+        });
+      }
+      
+      return newCode;
+    } catch (error: any) {
+      console.error("Erreur régénération:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de régénérer le code d'accès",
+        variant: "destructive"
+      });
+      return null;
+    } finally {
+      setIsRegenerating(false);
     }
   };
 
@@ -142,8 +216,12 @@ export const useUnifiedDocumentSharing = () => {
     getSharedDocuments,
     getSharedDocumentsByAccessCode,
     stopSharing,
+    extendAccessCode,
+    regenerateCode,
     isSharing,
-    shareError
+    shareError,
+    isExtending,
+    isRegenerating
   };
 };
 

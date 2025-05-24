@@ -8,7 +8,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Share2, Check, FolderPlus, Copy, RefreshCw, CreditCard } from "lucide-react";
+import { Share2, Check, FolderPlus, Copy, RefreshCw, CreditCard, Clock } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useUnifiedDocumentSharing, type ShareableDocument } from "@/hooks/sharing/useUnifiedDocumentSharing";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -29,7 +29,14 @@ export const ShareDialog: React.FC<ShareDialogProps> = ({
   const [accessCode, setAccessCode] = useState<string | null>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [showCard, setShowCard] = useState(false);
-  const { shareDocument, isSharing } = useUnifiedDocumentSharing();
+  const { 
+    shareDocument, 
+    isSharing, 
+    extendAccessCode, 
+    regenerateCode,
+    isExtending,
+    isRegenerating
+  } = useUnifiedDocumentSharing();
 
   React.useEffect(() => {
     const fetchUserProfile = async () => {
@@ -52,34 +59,30 @@ export const ShareDialog: React.FC<ShareDialogProps> = ({
   }, [open, document.user_id]);
 
   const handleShareDocument = async () => {
-    const code = await shareDocument(document, { expiresInDays: 365 }); // 1 an par défaut
+    const code = await shareDocument(document, { expiresInDays: 365 });
     if (code) {
       setAccessCode(code);
     }
   };
 
-  const handleRegenerateCode = async () => {
-    // Désactiver l'ancien code s'il existe
-    if (accessCode) {
-      const { error } = await supabase
-        .from('shared_documents')
-        .update({ is_active: false })
-        .eq('access_code', accessCode)
-        .eq('document_id', document.id);
-      
-      if (error) {
-        console.error('Erreur lors de la désactivation de l\'ancien code:', error);
-      }
-    }
-
-    // Générer un nouveau code
-    const code = await shareDocument(document, { expiresInDays: 365 });
-    if (code) {
-      setAccessCode(code);
+  const handleExtendCode = async () => {
+    if (!accessCode) return;
+    
+    const success = await extendAccessCode(accessCode, 365);
+    if (success) {
       toast({
-        title: "Code régénéré",
-        description: "Un nouveau code d'accès a été généré avec une validité d'1 an"
+        title: "Code prolongé",
+        description: "Le code d'accès a été prolongé d'1 an supplémentaire"
       });
+    }
+  };
+
+  const handleRegenerateCode = async () => {
+    if (!accessCode) return;
+    
+    const newCode = await regenerateCode(accessCode, 365);
+    if (newCode) {
+      setAccessCode(newCode);
     }
   };
 
@@ -105,14 +108,14 @@ export const ShareDialog: React.FC<ShareDialogProps> = ({
       onOpenChange(newOpen);
       if (!newOpen) resetDialog();
     }}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Share2 className="h-5 w-5" />
             Partager le document
           </DialogTitle>
           <DialogDescription>
-            Partager ce document et générer un code d'accès valable 1 an pour les personnes autorisées.
+            Partager ce document et gérer le code d'accès valable 1 an pour les personnes autorisées.
           </DialogDescription>
         </DialogHeader>
         
@@ -149,25 +152,36 @@ export const ShareDialog: React.FC<ShareDialogProps> = ({
                     </AlertDescription>
                   </Alert>
 
-                  <div className="flex gap-2">
+                  <div className="grid grid-cols-2 gap-2">
                     <Button 
                       onClick={handleCopyCode}
                       variant="outline"
-                      className="flex items-center gap-2 flex-1"
+                      className="flex items-center gap-2"
                     >
                       <Copy className="h-4 w-4" />
-                      Copier le code
+                      Copier
                     </Button>
 
                     <Button 
                       onClick={handleRegenerateCode}
                       variant="outline"
+                      disabled={isRegenerating}
                       className="flex items-center gap-2"
                     >
                       <RefreshCw className="h-4 w-4" />
-                      Régénérer
+                      Nouveau code
                     </Button>
                   </div>
+
+                  <Button 
+                    onClick={handleExtendCode}
+                    variant="outline"
+                    disabled={isExtending}
+                    className="flex items-center gap-2 w-full"
+                  >
+                    <Clock className="h-4 w-4" />
+                    {isExtending ? "Prolongation..." : "Prolonger d'1 an"}
+                  </Button>
 
                   <Button 
                     onClick={() => setShowCard(true)}
@@ -203,7 +217,7 @@ export const ShareDialog: React.FC<ShareDialogProps> = ({
                 <strong>Instructions :</strong><br />
                 • Partagez ce code uniquement avec les personnes autorisées<br />
                 • Le code permet d'accéder au document sans connexion<br />
-                • Vous pouvez régénérer un nouveau code à tout moment<br />
+                • Vous pouvez prolonger ou régénérer le code à tout moment<br />
                 • La carte d'accès peut être imprimée au format carte bancaire
               </div>
             </div>
