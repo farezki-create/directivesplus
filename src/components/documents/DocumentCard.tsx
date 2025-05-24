@@ -12,6 +12,8 @@ interface Document {
   file_type?: string;
   content_type?: string;
   is_private?: boolean;
+  user_id?: string;
+  original_directive?: any; // Pour les directives transformées en documents
 }
 
 interface DocumentCardProps {
@@ -51,6 +53,116 @@ const DocumentCard = ({
   // Determine the correct file type to use
   const fileType = getFileType(document);
 
+  // Gérer l'affichage pour les directives transformées
+  const handleView = () => {
+    console.log("DocumentCard - onView appelé pour:", document.file_path);
+    
+    // Si c'est une directive transformée, afficher le contenu de la directive
+    if (document.original_directive) {
+      const directiveContent = document.original_directive.content;
+      console.log("Affichage directive:", directiveContent);
+      
+      // Créer une nouvelle fenêtre pour afficher le contenu de la directive
+      const newWindow = window.open('', '_blank');
+      if (newWindow) {
+        newWindow.document.write(`
+          <html>
+            <head>
+              <title>${directiveContent?.title || 'Directive Anticipée'}</title>
+              <style>
+                body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+                h1 { color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
+                .content { margin-top: 20px; }
+                .date { color: #666; font-size: 0.9em; }
+              </style>
+            </head>
+            <body>
+              <h1>${directiveContent?.title || 'Directive Anticipée'}</h1>
+              <div class="date">Créé le: ${new Date(document.created_at).toLocaleDateString('fr-FR')}</div>
+              <div class="content">
+                <p>Contenu de la directive:</p>
+                <pre>${JSON.stringify(directiveContent, null, 2)}</pre>
+              </div>
+            </body>
+          </html>
+        `);
+        newWindow.document.close();
+      }
+      return;
+    }
+    
+    // Comportement normal pour les autres documents
+    onView(document.file_path, fileType);
+  };
+
+  const handleDownload = () => {
+    console.log("DocumentCard - onDownload appelé:", document.file_path, document.file_name);
+    
+    // Si c'est une directive transformée, télécharger le contenu formaté
+    if (document.original_directive) {
+      const directiveContent = document.original_directive.content;
+      const content = JSON.stringify(directiveContent, null, 2);
+      const blob = new Blob([content], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = document.file_name.replace('.pdf', '.json');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      return;
+    }
+    
+    // Comportement normal pour les autres documents
+    onDownload(document.file_path, document.file_name);
+  };
+
+  const handlePrint = () => {
+    console.log("DocumentCard - onPrint appelé:", document.file_path, fileType);
+    
+    // Si c'est une directive transformée, imprimer le contenu formaté
+    if (document.original_directive) {
+      const directiveContent = document.original_directive.content;
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.write(`
+          <html>
+            <head>
+              <title>${directiveContent?.title || 'Directive Anticipée'}</title>
+              <style>
+                body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+                h1 { color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
+                .content { margin-top: 20px; }
+                .date { color: #666; font-size: 0.9em; }
+                @media print { body { margin: 0; } }
+              </style>
+            </head>
+            <body>
+              <h1>${directiveContent?.title || 'Directive Anticipée'}</h1>
+              <div class="date">Créé le: ${new Date(document.created_at).toLocaleDateString('fr-FR')}</div>
+              <div class="content">
+                <p>Contenu de la directive:</p>
+                <pre>${JSON.stringify(directiveContent, null, 2)}</pre>
+              </div>
+              <script>
+                window.onload = function() {
+                  setTimeout(function() { window.print(); }, 500);
+                }
+              </script>
+            </body>
+          </html>
+        `);
+        printWindow.document.close();
+      }
+      return;
+    }
+    
+    // Comportement normal pour les autres documents
+    onPrint(document.file_path, fileType);
+  };
+
   return (
     <div className="bg-white rounded-lg border p-4 shadow-sm">
       <div className="flex items-start justify-between mb-4">
@@ -61,18 +173,9 @@ const DocumentCard = ({
         />
         
         <DocumentActions
-          onView={() => {
-            console.log("DocumentCard - onView appelé pour:", document.file_path);
-            onView(document.file_path, fileType);
-          }}
-          onDownload={() => {
-            console.log("DocumentCard - onDownload appelé:", document.file_path, document.file_name);
-            onDownload(document.file_path, document.file_name);
-          }}
-          onPrint={() => {
-            console.log("DocumentCard - onPrint appelé:", document.file_path, fileType);
-            onPrint(document.file_path, fileType);
-          }}
+          onView={handleView}
+          onDownload={handleDownload}
+          onPrint={handlePrint}
           onDelete={() => {
             console.log("DocumentCard - onDelete appelé pour ID:", document.id);
             onDelete(document.id);

@@ -49,21 +49,24 @@ const DirectivesSharedFolderHandler: React.FC<DirectivesSharedFolderHandlerProps
 
   const handleAddToSharedFolder = async (document: Document) => {
     try {
-      console.log("Ajout au dossier partagé:", document);
+      console.log("Ajout au dossier partagé - document original:", document);
       setIsAdding(true);
 
-      // Préparer les informations du document
-      const documentForStorage = {
+      // Créer un document PDF virtuel à partir du document directive
+      const virtualDocument = {
         id: document.id,
-        file_name: document.file_name,
-        file_path: document.file_path,
+        file_name: `Directive_${new Date().toLocaleDateString('fr-FR').replace(/\//g, '-')}.pdf`,
+        file_path: `data:application/pdf;base64,${btoa('Document directive virtuel')}`, // URL de données fictive
         created_at: document.created_at || new Date().toISOString(),
-        description: document.description || "",
-        content_type: document.content_type || "application/pdf",
-        is_shared: true
+        description: document.content?.title || "Directive anticipée",
+        content_type: "application/pdf",
+        is_shared: true,
+        user_id: document.user_id || "anonymous",
+        // Stocker le contenu original de la directive
+        original_directive: document
       };
 
-      console.log("Document préparé pour stockage:", documentForStorage);
+      console.log("Document virtuel créé:", virtualDocument);
 
       // Créer un dossier temporaire avec le document
       const profileData = isAuthenticated && user ? {
@@ -89,7 +92,7 @@ const DirectivesSharedFolderHandler: React.FC<DirectivesSharedFolderHandlerProps
             prenom: profileData.first_name,
             date_naissance: profileData.birth_date || null,
           },
-          documents: [documentForStorage]
+          documents: [virtualDocument]
         }
       };
 
@@ -100,7 +103,7 @@ const DirectivesSharedFolderHandler: React.FC<DirectivesSharedFolderHandlerProps
 
       // Marquer le document comme ajouté dans sessionStorage pour affichage du toast
       sessionStorage.setItem('documentAdded', JSON.stringify({
-        fileName: document.file_name,
+        fileName: virtualDocument.file_name,
         timestamp: Date.now()
       }));
 
@@ -108,7 +111,7 @@ const DirectivesSharedFolderHandler: React.FC<DirectivesSharedFolderHandlerProps
       await new Promise(resolve => setTimeout(resolve, 500));
 
       // Rediriger vers /mes-directives
-      console.log("Redirection vers /mes-directives avec document:", document.file_name);
+      console.log("Redirection vers /mes-directives avec document:", virtualDocument.file_name);
       navigate('/mes-directives');
 
       toast({
