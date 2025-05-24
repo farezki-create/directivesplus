@@ -12,15 +12,15 @@ export interface Document {
   file_name: string;
   file_path: string;
   created_at: string;
-  description?: string;
-  content_type?: string;
+  description: string;
+  content_type: string;
   file_type?: string;
-  user_id?: string;
+  user_id: string;
   is_private?: boolean;
   content?: any;
-  external_id?: string;
-  file_size?: number;
-  updated_at?: string;
+  external_id: string | null;
+  file_size: number | null;
+  updated_at: string;
 }
 
 export const useDirectivesDocuments = () => {
@@ -72,8 +72,25 @@ export const useDirectivesDocuments = () => {
       
       console.log("useDirectivesDocuments - Documents récupérés depuis Supabase:", data);
       
+      // Transform Supabase documents to match our Document interface
+      const supabaseDocuments: Document[] = (data || []).map(doc => ({
+        id: doc.id,
+        file_name: doc.file_name,
+        file_path: doc.file_path,
+        created_at: doc.created_at,
+        description: doc.description || 'Document',
+        content_type: doc.content_type || 'application/pdf',
+        file_type: doc.content_type || 'application/pdf',
+        user_id: doc.user_id || user.id,
+        is_private: false,
+        content: null,
+        external_id: doc.external_id || null,
+        file_size: doc.file_size || null,
+        updated_at: doc.updated_at || doc.created_at
+      }));
+      
       // Combiner les documents Supabase avec ceux du dossier actif s'il y en a
-      let allDocuments = data || [];
+      let allDocuments = supabaseDocuments;
       
       if (dossierActif?.contenu?.documents) {
         const dossierDocuments = transformDossierDocuments(dossierActif.contenu.documents, dossierActif.userId);
