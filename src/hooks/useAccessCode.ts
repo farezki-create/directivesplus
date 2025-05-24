@@ -18,7 +18,7 @@ export const generateRandomCode = (length: number = 8): string => {
 
 /**
  * Hook principal pour toute la gestion des codes d'accès
- * Remplace useUnifiedAccessCode, useSharing, etc.
+ * Version optimisée utilisant le service unifié
  */
 export const useAccessCode = () => {
   const [isGenerating, setIsGenerating] = useState(false);

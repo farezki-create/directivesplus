@@ -2,227 +2,137 @@
 import { supabase } from "@/integrations/supabase/client";
 import { DocumentRetrievalService } from "./documentRetrieval";
 import { CodeGenerationService } from "./codeGeneration";
-import type { AccessCodeOptions, PersonalInfo, TemporaryAccessData } from "./types";
+import type { AccessCodeResult, PersonalInfo, AccessCodeOptions } from "./types";
 import type { ShareableDocument } from "@/types/sharing";
 
-export interface AccessCodeResult {
-  success: boolean;
-  code?: string;
-  documents?: ShareableDocument[];
-  message?: string;
-  error?: string;
-}
-
 /**
- * Service unifié pour tous les codes d'accès
- * Centralise toute la logique de génération, validation et gestion
+ * Service unifié pour la gestion des codes d'accès
+ * Centralise toute la logique de validation et génération
  */
 export class UnifiedAccessCodeService {
+  
   /**
-   * Génère un code d'accès fixe (permanent) pour un utilisateur
+   * Génère un code fixe pour un utilisateur
    */
   static getFixedCode(userId: string): string {
-    console.log("🔧 Génération code fixe pour:", userId);
-    const code = CodeGenerationService.generateFixedCode(userId);
-    console.log("✅ Code fixe généré:", code);
-    return code;
+    return CodeGenerationService.generateFixedCode(userId);
   }
 
   /**
-   * Génère un code temporaire pour partager tous les documents d'un utilisateur
+   * Génère un code temporaire et l'enregistre
    */
   static async generateTemporaryCode(
-    userId: string,
+    userId: string, 
     options: AccessCodeOptions = {}
   ): Promise<AccessCodeResult> {
     try {
-      console.log("🔄 Début génération code temporaire pour userId:", userId);
-      console.log("📋 Options:", options);
-      
-      const { expiresInDays = 30 } = options;
-      
+      console.log("=== GÉNÉRATION CODE TEMPORAIRE ===");
+      console.log("User ID:", userId);
+      console.log("Options:", options);
+
+      const expiresInDays = options.expiresInDays || 30;
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + expiresInDays);
+
       // Récupérer tous les documents de l'utilisateur
       const documents = await DocumentRetrievalService.getUserDocuments(userId);
-      console.log("📄 Documents récupérés:", documents.length);
-      
+      console.log("📄 Documents récupérés pour le code:", documents.length);
+
       if (documents.length === 0) {
-        console.warn("⚠️ Aucun document trouvé pour l'utilisateur:", userId);
+        console.log("⚠️ Aucun document trouvé pour l'utilisateur");
         return {
           success: false,
-          error: "Aucun document trouvé pour générer un code de partage"
+          error: "Aucun document à partager trouvé"
         };
       }
 
-      // Créer la structure de données pour le partage
-      const shareData: TemporaryAccessData = {
-        access_type: 'temporary',
+      // Générer un code d'accès aléatoire
+      const accessCode = this.generateRandomCode();
+      console.log("🔑 Code généré:", accessCode);
+
+      // Préparer les données pour l'insertion
+      const documentData = {
+        access_type: 'global',
         user_id: userId,
         total_documents: documents.length,
         generated_at: new Date().toISOString(),
-        documents: documents.map(doc => ({
-          id: doc.id,
-          file_name: doc.file_name,
-          file_path: doc.file_path,
-          created_at: doc.created_at,
-          user_id: doc.user_id,
-          file_type: doc.file_type,
-          source: doc.source,
-          description: doc.description || '',
-          content_type: doc.content_type || '',
-          content: doc.content,
-          external_id: doc.external_id,
-          file_size: doc.file_size,
-          updated_at: doc.updated_at,
-          is_private: doc.is_private
-        }))
+        documents: documents
       };
 
-      // Calculer la date d'expiration
-      const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + expiresInDays);
-      
-      console.log("💾 Insertion dans shared_documents...");
-      
-      // Créer l'entrée dans shared_documents
+      console.log("💾 Préparation insertion en base...");
+
+      // Insérer dans la table shared_documents
       const { data, error } = await supabase
         .from('shared_documents')
         .insert({
-          document_id: userId,
-          document_type: 'temporary_access',
-          document_data: shareData as any,
+          access_code: accessCode,
           user_id: userId,
-          expires_at: expiresAt.toISOString()
+          document_type: 'global',
+          document_id: userId, // Utiliser userId comme document_id pour les accès globaux
+          document_data: documentData,
+          expires_at: expiresAt.toISOString(),
+          is_active: true
         })
-        .select('access_code, id, shared_at')
+        .select()
         .single();
 
       if (error) {
         console.error("❌ Erreur insertion:", error);
-        return { 
-          success: false, 
-          error: `Erreur lors de la génération: ${error.message}` 
-        };
-      }
-
-      if (!data?.access_code) {
-        console.error("❌ Aucun code d'accès généré");
         return {
           success: false,
-          error: "Erreur: aucun code d'accès généré"
+          error: `Erreur lors de l'enregistrement: ${error.message}`
         };
       }
 
-      console.log("✅ Code temporaire généré:", data.access_code);
-      console.log("📋 ID enregistrement:", data.id);
-      console.log("🕐 Date de partage:", data.shared_at);
+      console.log("✅ Code temporaire enregistré avec succès:", data);
 
-      // Vérification supplémentaire
-      const verification = await this.verifyCodeExists(data.access_code);
-      if (!verification.success) {
-        console.error("❌ Vérification échouée:", verification.error);
-        return {
-          success: false,
-          error: "Erreur: impossible de vérifier l'enregistrement"
-        };
-      }
-
-      console.log("🎉 Génération code temporaire terminée avec succès");
-      
-      return { 
-        success: true, 
-        code: data.access_code,
-        message: `Code temporaire créé avec succès. ${documents.length} document(s) partagé(s).`
+      return {
+        success: true,
+        code: accessCode,
+        message: `Code temporaire généré avec succès. Expire le ${expiresAt.toLocaleDateString()}.`
       };
 
     } catch (error: any) {
-      console.error("💥 Erreur technique génération:", error);
-      return { 
-        success: false, 
-        error: `Erreur technique: ${error.message}` 
+      console.error("💥 Erreur génération code temporaire:", error);
+      return {
+        success: false,
+        error: "Erreur technique lors de la génération"
       };
     }
   }
 
   /**
-   * Valide un code d'accès (fixe ou temporaire)
+   * Valide un code d'accès (temporaire ou fixe)
    */
   static async validateCode(
     accessCode: string,
     personalInfo?: PersonalInfo
   ): Promise<AccessCodeResult> {
     try {
-      console.log("🔍 Validation code d'accès:", accessCode);
-      console.log("👤 Infos personnelles fournies:", !!personalInfo);
+      console.log("=== VALIDATION CODE D'ACCÈS UNIFIÉ ===");
+      console.log("Code:", accessCode);
+      console.log("Infos personnelles:", personalInfo);
 
-      // 1. Essayer d'abord avec les codes temporaires
-      if (personalInfo) {
-        console.log("🔄 Test codes temporaires avec RPC...");
-        
-        const { data: rpcData, error: rpcError } = await supabase.rpc(
-          'get_shared_documents_by_access_code',
-          {
-            input_access_code: accessCode,
-            input_first_name: personalInfo.firstName,
-            input_last_name: personalInfo.lastName,
-            input_birth_date: personalInfo.birthDate
-          }
-        );
+      // 1. Tentative avec codes temporaires
+      const temporaryResult = await this.validateTemporaryCode(accessCode, personalInfo);
+      if (temporaryResult.success) {
+        console.log("✅ Validation réussie avec code temporaire");
+        return temporaryResult;
+      }
 
-        if (!rpcError && rpcData && rpcData.length > 0) {
-          const responseData = rpcData[0];
-          
-          if (responseData.document_data && typeof responseData.document_data === 'object') {
-            const documentData = responseData.document_data as any;
-            if (documentData.documents && Array.isArray(documentData.documents)) {
-              console.log("✅ Code temporaire validé:", documentData.documents.length, "document(s)");
-              return {
-                success: true,
-                documents: documentData.documents as ShareableDocument[],
-                message: `Accès autorisé. ${documentData.documents.length} document(s) trouvé(s).`
-              };
-            }
-          }
+      // 2. Tentative avec codes fixes (si infos personnelles fournies)
+      if (personalInfo?.firstName && personalInfo?.lastName) {
+        const fixedResult = await this.validateFixedCode(accessCode, personalInfo);
+        if (fixedResult.success) {
+          console.log("✅ Validation réussie avec code fixe");
+          return fixedResult;
         }
       }
 
-      // 2. Essayer avec les codes fixes
-      if (personalInfo) {
-        console.log("🔄 Test codes fixes...");
-        
-        const { data: profiles, error: profileError } = await supabase
-          .from('profiles')
-          .select('id, first_name, last_name, birth_date')
-          .ilike('first_name', personalInfo.firstName)
-          .ilike('last_name', personalInfo.lastName);
-
-        if (!profileError && profiles && profiles.length > 0) {
-          for (const profile of profiles) {
-            if (personalInfo.birthDate && profile.birth_date !== personalInfo.birthDate) {
-              continue;
-            }
-
-            const expectedCode = CodeGenerationService.generateFixedCode(profile.id);
-            console.log("🔍 Code attendu pour", profile.first_name, profile.last_name, ":", expectedCode);
-            
-            if (expectedCode === accessCode) {
-              console.log("✅ Code fixe validé pour:", profile.id);
-              
-              const documents = await DocumentRetrievalService.getUserDocuments(profile.id);
-              
-              return {
-                success: true,
-                documents: documents,
-                message: `Accès autorisé. ${documents.length} document(s) trouvé(s).`
-              };
-            }
-          }
-        }
-      }
-
-      console.log("❌ Validation échouée");
+      console.log("❌ Validation échouée pour tous les types de codes");
       return {
         success: false,
-        error: "Code d'accès invalide ou informations incorrectes"
+        error: "Code d'accès invalide ou expiré"
       };
 
     } catch (error: any) {
@@ -235,72 +145,140 @@ export class UnifiedAccessCodeService {
   }
 
   /**
-   * Vérifie qu'un code existe bien en base
+   * Valide un code temporaire via RPC
    */
-  private static async verifyCodeExists(accessCode: string): Promise<AccessCodeResult> {
+  private static async validateTemporaryCode(
+    accessCode: string,
+    personalInfo?: PersonalInfo
+  ): Promise<AccessCodeResult> {
     try {
-      const { data, error } = await supabase
-        .from('shared_documents')
-        .select('id, access_code, is_active, expires_at')
-        .eq('access_code', accessCode)
-        .single();
+      console.log("🔍 Validation code temporaire via RPC");
 
-      if (error || !data) {
+      const { data, error } = await supabase.rpc(
+        'get_shared_documents_by_access_code',
+        {
+          input_access_code: accessCode,
+          input_first_name: personalInfo?.firstName || null,
+          input_last_name: personalInfo?.lastName || null,
+          input_birth_date: personalInfo?.birthDate || null
+        }
+      );
+
+      if (error) {
+        console.error("❌ Erreur RPC:", error);
+        return { success: false, error: "Erreur lors de la vérification" };
+      }
+
+      if (!data || data.length === 0) {
+        console.log("⚠️ Aucun résultat via RPC");
+        return { success: false, error: "Code non trouvé" };
+      }
+
+      const result = data[0];
+      console.log("📊 Résultat RPC:", result);
+
+      if (result.document_data && result.document_data.documents) {
         return {
-          success: false,
-          error: "Code non trouvé en base de données"
+          success: true,
+          documents: result.document_data.documents as ShareableDocument[],
+          message: `Accès autorisé. ${result.document_data.documents.length} document(s) trouvé(s).`
         };
       }
 
-      console.log("✅ Code vérifié en base:", {
-        id: data.id,
-        access_code: data.access_code,
-        is_active: data.is_active,
-        expires_at: data.expires_at
-      });
+      return { success: false, error: "Structure de données invalide" };
 
-      return { success: true };
     } catch (error: any) {
-      return {
-        success: false,
-        error: error.message
-      };
+      console.error("💥 Erreur validation code temporaire:", error);
+      return { success: false, error: "Erreur technique" };
+    }
+  }
+
+  /**
+   * Valide un code fixe
+   */
+  private static async validateFixedCode(
+    accessCode: string,
+    personalInfo: PersonalInfo
+  ): Promise<AccessCodeResult> {
+    try {
+      console.log("🔍 Validation code fixe");
+
+      // Rechercher le profil utilisateur
+      const { data: profiles, error } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, birth_date')
+        .ilike('first_name', personalInfo.firstName)
+        .ilike('last_name', personalInfo.lastName);
+
+      if (error) {
+        console.error("❌ Erreur recherche profils:", error);
+        return { success: false, error: "Erreur lors de la recherche" };
+      }
+
+      if (!profiles || profiles.length === 0) {
+        console.log("⚠️ Aucun profil trouvé");
+        return { success: false, error: "Patient non trouvé" };
+      }
+
+      // Vérifier le code fixe pour chaque profil
+      for (const profile of profiles) {
+        // Vérifier la date de naissance si fournie
+        if (personalInfo.birthDate && profile.birth_date !== personalInfo.birthDate) {
+          continue;
+        }
+
+        const expectedCode = CodeGenerationService.generateFixedCode(profile.id);
+        console.log("🔑 Code attendu:", expectedCode, "Code fourni:", accessCode);
+
+        if (expectedCode === accessCode) {
+          console.log("✅ Code fixe validé pour:", profile.id);
+          
+          // Récupérer les documents
+          const documents = await DocumentRetrievalService.getUserDocuments(profile.id);
+          
+          return {
+            success: true,
+            documents: documents,
+            message: `Accès autorisé. ${documents.length} document(s) trouvé(s).`
+          };
+        }
+      }
+
+      return { success: false, error: "Code d'accès invalide" };
+
+    } catch (error: any) {
+      console.error("💥 Erreur validation code fixe:", error);
+      return { success: false, error: "Erreur technique" };
     }
   }
 
   /**
    * Prolonge un code temporaire
    */
-  static async extendCode(
-    accessCode: string,
-    additionalDays: number = 30
-  ): Promise<AccessCodeResult> {
+  static async extendCode(accessCode: string, additionalDays: number): Promise<AccessCodeResult> {
     try {
       const newExpiresAt = new Date();
       newExpiresAt.setDate(newExpiresAt.getDate() + additionalDays);
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('shared_documents')
         .update({ expires_at: newExpiresAt.toISOString() })
         .eq('access_code', accessCode)
-        .eq('is_active', true);
+        .eq('is_active', true)
+        .select()
+        .single();
 
       if (error) {
-        return { 
-          success: false, 
-          error: `Erreur lors de la prolongation: ${error.message}` 
-        };
+        return { success: false, error: "Code non trouvé ou expiré" };
       }
 
-      return { 
+      return {
         success: true,
-        message: `Code prolongé de ${additionalDays} jours`
+        message: `Code prolongé jusqu'au ${newExpiresAt.toLocaleDateString()}`
       };
+
     } catch (error: any) {
-      return { 
-        success: false, 
-        error: `Erreur technique: ${error.message}` 
-      };
+      return { success: false, error: "Erreur lors de la prolongation" };
     }
   }
 
@@ -315,21 +293,27 @@ export class UnifiedAccessCodeService {
         .eq('access_code', accessCode);
 
       if (error) {
-        return { 
-          success: false, 
-          error: `Erreur lors de la révocation: ${error.message}` 
-        };
+        return { success: false, error: "Erreur lors de la révocation" };
       }
 
-      return { 
-        success: true,
-        message: "Code révoqué avec succès"
-      };
+      return { success: true, message: "Code révoqué avec succès" };
+
     } catch (error: any) {
-      return { 
-        success: false, 
-        error: `Erreur technique: ${error.message}` 
-      };
+      return { success: false, error: "Erreur lors de la révocation" };
     }
   }
+
+  /**
+   * Génère un code aléatoire
+   */
+  private static generateRandomCode(length: number = 8): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  }
 }
+
+export type { AccessCodeResult, AccessCodeOptions, PersonalInfo };
