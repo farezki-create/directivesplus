@@ -8,14 +8,15 @@ import { Copy, Printer, QrCode } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 interface QRCodeShareMesDirectivesProps {
-  sharedCode: string;
+  documentId: string;
+  documentName: string;
   onClose?: () => void;
 }
 
-export function QRCodeShareMesDirectives({ sharedCode, onClose }: QRCodeShareMesDirectivesProps) {
+export function QRCodeShareMesDirectives({ documentId, documentName, onClose }: QRCodeShareMesDirectivesProps) {
   const baseUrl = window.location.origin;
-  // Utiliser un lien direct sans nécessiter de saisie manuelle
-  const url = `${baseUrl}/partage/${sharedCode}`;
+  // Lien direct vers le document sans code
+  const url = `${baseUrl}/document/${documentId}`;
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -45,7 +46,7 @@ export function QRCodeShareMesDirectives({ sharedCode, onClose }: QRCodeShareMes
       <CardHeader className="text-center pb-4">
         <CardTitle className="flex items-center justify-center gap-2">
           <QrCode className="h-5 w-5" />
-          Accès direct aux directives
+          Partage direct - {documentName}
         </CardTitle>
       </CardHeader>
       
@@ -76,7 +77,7 @@ export function QRCodeShareMesDirectives({ sharedCode, onClose }: QRCodeShareMes
         <div className="flex gap-2 justify-center">
           <Button onClick={handlePrint} variant="outline" size="sm">
             <Printer className="w-4 h-4 mr-2" /> 
-            Imprimer
+            Imprimer QR Code
           </Button>
           {onClose && (
             <Button onClick={onClose} variant="default" size="sm">
@@ -87,11 +88,11 @@ export function QRCodeShareMesDirectives({ sharedCode, onClose }: QRCodeShareMes
 
         <div className="p-3 bg-blue-50 rounded-lg">
           <p className="text-sm text-blue-800 font-medium mb-1">
-            🔒 Accès direct sécurisé
+            🔓 Accès direct simplifié
           </p>
           <p className="text-xs text-blue-700">
-            Scanner le QR code ou cliquer sur le lien donne un accès immédiat aux directives.
-            Idéal pour les situations d'urgence médicale.
+            Scanner le QR code ou cliquer sur le lien ouvre directement le document.
+            Aucun code à saisir - idéal pour les urgences médicales.
           </p>
         </div>
 
