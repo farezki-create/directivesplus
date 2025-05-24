@@ -20,25 +20,22 @@ export const useSharingActions = (state: {
   resetError: () => void;
 }) => {
   /**
-   * Génère un code d'accès personnel
+   * Génère un code d'accès global pour tous les documents de l'utilisateur
    */
-  const generatePersonalCode = async (
-    document: ShareableDocument,
+  const generateGlobalCode = async (
+    userId: string,
     options: AccessCodeOptions = {}
   ): Promise<string | null> => {
     state.setIsGenerating(true);
     state.resetError();
     
     try {
-      const result = await AccessCodeService.generateCode(document, {
-        ...options,
-        accessType: 'personal'
-      });
+      const result = await AccessCodeService.generateGlobalCode(userId, options);
       
       if (result.success && result.code) {
         toast({
-          title: "Code généré",
-          description: "Code d'accès personnel créé avec succès"
+          title: "Code d'accès généré",
+          description: "Code global créé pour tous vos documents"
         });
         return result.code;
       } else {
@@ -59,42 +56,29 @@ export const useSharingActions = (state: {
   };
 
   /**
-   * Génère un code d'accès institutionnel
+   * Génère un code d'accès personnel (utilise le code global)
+   */
+  const generatePersonalCode = async (
+    document: ShareableDocument,
+    options: AccessCodeOptions = {}
+  ): Promise<string | null> => {
+    return generateGlobalCode(document.user_id, {
+      ...options,
+      accessType: 'personal'
+    });
+  };
+
+  /**
+   * Génère un code d'accès institutionnel (utilise le code global)
    */
   const generateInstitutionCode = async (
     document: ShareableDocument,
     expiresInDays: number = 30
   ): Promise<string | null> => {
-    state.setIsGenerating(true);
-    state.resetError();
-    
-    try {
-      const result = await AccessCodeService.generateCode(document, {
-        expiresInDays,
-        accessType: 'institution'
-      });
-      
-      if (result.success && result.code) {
-        toast({
-          title: "Code professionnel généré",
-          description: "Code d'accès institutionnel créé avec succès"
-        });
-        return result.code;
-      } else {
-        throw new Error(result.error || "Erreur lors de la génération du code");
-      }
-    } catch (err: any) {
-      const errorMessage = err.message || "Erreur lors de la génération du code";
-      state.setError(errorMessage);
-      toast({
-        title: "Erreur",
-        description: errorMessage,
-        variant: "destructive"
-      });
-      return null;
-    } finally {
-      state.setIsGenerating(false);
-    }
+    return generateGlobalCode(document.user_id, {
+      expiresInDays,
+      accessType: 'institution'
+    });
   };
 
   /**
@@ -147,7 +131,7 @@ export const useSharingActions = (state: {
   };
 
   /**
-   * Régénère un nouveau code d'accès
+   * Régénère un nouveau code d'accès global
    */
   const regenerateCode = async (
     currentCode: string, 
@@ -158,12 +142,16 @@ export const useSharingActions = (state: {
     state.resetError();
     
     try {
-      const result = await AccessCodeService.regenerateCode(currentCode, document, options);
+      const result = await AccessCodeService.regenerateGlobalCode(
+        currentCode, 
+        document.user_id, 
+        options
+      );
       
       if (result.success && result.code) {
         toast({
           title: "Code régénéré",
-          description: "Nouveau code d'accès créé avec succès"
+          description: "Nouveau code d'accès global créé avec succès"
         });
         return result.code;
       } else {
@@ -186,6 +174,7 @@ export const useSharingActions = (state: {
   return {
     generatePersonalCode,
     generateInstitutionCode,
+    generateGlobalCode,
     validateCode,
     extendCode,
     regenerateCode

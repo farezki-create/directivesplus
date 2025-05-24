@@ -3,7 +3,6 @@ import { useSharing } from "@/hooks/sharing/useSharing";
 import InstitutionAccessCard from "./InstitutionAccessCard";
 import InstitutionCodeDialog from "./InstitutionCodeDialog";
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
 interface InstitutionAccessSectionProps {
@@ -14,39 +13,16 @@ const InstitutionAccessSection = ({ userId }: InstitutionAccessSectionProps) => 
   const [institutionCode, setInstitutionCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const { generateInstitutionCode, isGenerating } = useSharing();
+  const { generateGlobalCode, isGenerating } = useSharing();
 
   const handleGenerateInstitutionCode = async (userId: string) => {
     try {
-      // Get the user's directives
-      const { data: directives, error } = await supabase
-        .from('directives')
-        .select('*')
-        .eq('user_id', userId)
-        .limit(1);
-
-      if (error || !directives || directives.length === 0) {
-        toast({
-          title: "Aucune directive trouvée",
-          description: "Vous devez d'abord créer des directives anticipées",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      const directive = directives[0];
-      const shareableDocument = {
-        id: directive.id,
-        file_name: "Directives anticipées",
-        file_path: "",
-        created_at: directive.created_at,
-        user_id: directive.user_id,
-        file_type: "directive" as const,
-        source: "directives" as const,
-        content: directive.content
-      };
-
-      const code = await generateInstitutionCode(shareableDocument, 30);
+      // Générer un code global pour tous les documents de l'utilisateur
+      const code = await generateGlobalCode(userId, {
+        expiresInDays: 30,
+        accessType: 'institution'
+      });
+      
       if (code) {
         setInstitutionCode(code);
         setIsDialogOpen(true);

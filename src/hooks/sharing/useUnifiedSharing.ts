@@ -5,7 +5,8 @@ import { DocumentService } from "@/services/sharing";
 import type { 
   ShareableDocument, 
   ValidationRequest, 
-  ValidationResult 
+  ValidationResult,
+  AccessCodeOptions
 } from "@/types/sharing";
 
 /**
@@ -44,6 +45,16 @@ export const useUnifiedSharing = () => {
     }
   };
 
+  /**
+   * Génère un code d'accès global pour tous les documents de l'utilisateur
+   */
+  const generateGlobalAccessCode = async (
+    userId: string,
+    options: AccessCodeOptions = {}
+  ): Promise<string | null> => {
+    return actions.generateGlobalCode(userId, options);
+  };
+
   return {
     // État
     isGenerating: state.isGenerating,
@@ -55,6 +66,8 @@ export const useUnifiedSharing = () => {
     // Actions
     generatePersonalCode: actions.generatePersonalCode,
     generateInstitutionCode: actions.generateInstitutionCode,
+    generateGlobalCode: actions.generateGlobalCode,
+    generateGlobalAccessCode, // Alias plus explicite
     validateCode: actions.validateCode,
     validateAccessCode, // Alias pour compatibilité
     extendCode: actions.extendCode,
@@ -64,4 +77,4 @@ export const useUnifiedSharing = () => {
 };
 
 // Export des types pour compatibilité
-export type { ShareableDocument, ValidationRequest, ValidationResult } from "@/types/sharing";
+export type { ShareableDocument, ValidationRequest, ValidationResult, AccessCodeOptions } from "@/types/sharing";
