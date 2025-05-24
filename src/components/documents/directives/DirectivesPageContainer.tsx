@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Document } from "@/hooks/useDirectivesDocuments";
+import { Document } from "@/types/documents";
 import DirectivesPageHeader from "@/components/documents/DirectivesPageHeader";
 import DirectivesAddDocumentSection from "@/components/documents/DirectivesAddDocumentSection";
 import DirectivesDocumentList from "@/components/documents/DirectivesDocumentList";
@@ -23,7 +23,7 @@ interface DirectivesPageContainerProps {
   showAddOptions: boolean;
   setShowAddOptions: (show: boolean) => void;
   userId: string;
-  onUploadComplete: (url: string, fileName: string, isPrivate: boolean) => void;
+  onUploadComplete: () => void;
   onDownload: (filePath: string, fileName: string) => void;
   onPrint: (filePath: string, contentType?: string) => void;
   onView: (filePath: string, contentType?: string) => void;
@@ -140,7 +140,8 @@ const DirectivesPageContainer: React.FC<DirectivesPageContainerProps> = ({
 
       {showAddOptions && userId && (
         <DirectivesAddDocumentSection 
-          userId={userId}
+          showAddOptions={showAddOptions}
+          setShowAddOptions={setShowAddOptions}
           onUploadComplete={onUploadComplete}
         />
       )}

@@ -40,7 +40,7 @@ export const useDirectivesDocuments = () => {
       // Transform data to match Document interface
       const transformedDocuments: Document[] = (data || []).map(doc => ({
         ...doc,
-        file_type: doc.file_type || 'pdf' // Add default file_type if missing
+        file_type: doc.content_type || 'pdf' // Use content_type as file_type fallback
       }));
 
       setDocuments(transformedDocuments);
@@ -133,6 +133,10 @@ export const useDirectivesDocuments = () => {
     }
   };
 
+  const confirmDelete = (documentId: string) => {
+    setDocumentToDelete(documentId);
+  };
+
   const handlePreviewDownload = (filePath: string, fileName: string) => {
     handleDownload(filePath, fileName);
   };
@@ -156,6 +160,7 @@ export const useDirectivesDocuments = () => {
     handlePrint,
     handleView,
     handleDelete,
+    confirmDelete,
     handleUploadComplete,
     handlePreviewDownload,
     handlePreviewPrint
