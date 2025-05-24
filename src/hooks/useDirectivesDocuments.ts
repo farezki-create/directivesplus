@@ -1,5 +1,4 @@
-
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDocumentOperations } from "@/hooks/useDocumentOperations";
 import { useSupabaseDocuments } from "@/hooks/directives/useSupabaseDocuments";
@@ -31,21 +30,6 @@ export const useDirectivesDocuments = () => {
   const { fetchSupabaseDocuments, loading: supabaseLoading } = useSupabaseDocuments();
   const { getDossierDocuments, mergeDocuments, dossierActif } = useDossierDocuments();
 
-  // Memoize la fonction fetchDocuments pour éviter les recréations
-  const fetchDocuments = useCallback(async () => {
-    if (!user) return;
-    
-    const supabaseDocuments = await fetchSupabaseDocuments(user.id);
-    const allDocuments = mergeDocuments(supabaseDocuments);
-    setDocuments(allDocuments);
-  }, [user, fetchSupabaseDocuments, mergeDocuments]);
-
-  // Memoize la fonction loadDossierDocuments
-  const loadDossierDocuments = useCallback(() => {
-    const dossierDocuments = getDossierDocuments();
-    setDocuments(dossierDocuments);
-  }, [getDossierDocuments]);
-
   // Use the combined document operations hook
   const {
     previewDocument,
@@ -59,32 +43,45 @@ export const useDirectivesDocuments = () => {
     handleDelete
   } = useDocumentOperations(fetchDocuments);
 
-  // Optimiser les effets avec des dépendances plus précises
   useEffect(() => {
     if (isAuthenticated && user && !isLoading) {
       fetchDocuments();
-    } else if (!isAuthenticated && !isLoading && dossierActif) {
+    } else if (!isAuthenticated && !isLoading) {
+      // Pour les utilisateurs non connectés, utiliser les documents du dossier actif
       loadDossierDocuments();
     }
-  }, [isAuthenticated, isLoading, user?.id, dossierActif?.id, fetchDocuments, loadDossierDocuments]);
+  }, [isAuthenticated, isLoading, user, dossierActif]);
 
-  const handleUploadComplete = useCallback(() => {
+  async function fetchDocuments() {
+    if (!user) return;
+    
+    const supabaseDocuments = await fetchSupabaseDocuments(user.id);
+    const allDocuments = mergeDocuments(supabaseDocuments);
+    setDocuments(allDocuments);
+  }
+
+  function loadDossierDocuments() {
+    const dossierDocuments = getDossierDocuments();
+    setDocuments(dossierDocuments);
+  }
+
+  const handleUploadComplete = () => {
     if (isAuthenticated && user) {
       fetchDocuments();
     } else {
       loadDossierDocuments();
     }
-  }, [isAuthenticated, user, fetchDocuments, loadDossierDocuments]);
+  };
 
-  const handlePreviewDownload = useCallback((filePath: string) => {
+  const handlePreviewDownload = (filePath: string) => {
     const fileName = filePath.split('/').pop() || 'document';
     downloadDocument(filePath);
-  }, []);
+  };
 
-  const handlePreviewPrint = useCallback((filePath: string) => {
+  const handlePreviewPrint = (filePath: string) => {
     console.log("handlePreviewPrint appelé pour:", filePath);
     printDocument(filePath);
-  }, []);
+  };
 
   return {
     user,

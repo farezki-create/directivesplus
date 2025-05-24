@@ -1,17 +1,15 @@
 
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Menu, X, FileText, Users, Shield, User, LogOut, Home, BookOpen, Eye } from "lucide-react";
+import { Menu, X, FileText, Users, Shield, User, LogOut, Home, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { useReadOnlyAccess } from "@/hooks/useReadOnlyAccess";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
 const AppNavigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user, isAuthenticated } = useAuth();
-  const { hasEquivalentAuth, isReadOnlyAccess, dossierActif } = useReadOnlyAccess(isAuthenticated);
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -36,14 +34,14 @@ const AppNavigation = () => {
 
   const navItems = [
     { name: "Accueil", href: "/", icon: Home },
-    { name: "Rédiger", href: "/rediger", icon: FileText, requireEquivalentAuth: true },
-    { name: "Mes Directives", href: "/mes-directives-app", icon: BookOpen, requireEquivalentAuth: true },
+    { name: "Rédiger", href: "/rediger", icon: FileText, requireAuth: true },
+    { name: "Mes Directives", href: "/mes-directives-app", icon: BookOpen, requireAuth: true },
     { name: "Données Médicales", href: "/donnees-medicales", icon: Shield },
     { name: "Témoignages", href: "/testimonials", icon: Users },
   ];
 
   const filteredNavItems = navItems.filter(item => 
-    !item.requireEquivalentAuth || hasEquivalentAuth
+    !item.requireAuth || isAuthenticated
   );
 
   return (
@@ -69,16 +67,6 @@ const AppNavigation = () => {
               </Link>
             ))}
             
-            {/* Indicateur d'accès en lecture seule */}
-            {isReadOnlyAccess && dossierActif && (
-              <div className="flex items-center gap-2 px-3 py-1 bg-blue-50 rounded-full border border-blue-200">
-                <Eye className="h-4 w-4 text-blue-600" />
-                <span className="text-xs text-blue-800 font-medium">
-                  {dossierActif.profileData?.first_name} {dossierActif.profileData?.last_name}
-                </span>
-              </div>
-            )}
-            
             {isAuthenticated ? (
               <div className="flex items-center space-x-4">
                 <Link
@@ -98,7 +86,7 @@ const AppNavigation = () => {
                   Déconnexion
                 </Button>
               </div>
-            ) : !isReadOnlyAccess && (
+            ) : (
               <div className="flex items-center space-x-4">
                 <Link
                   to="/auth"
@@ -125,16 +113,6 @@ const AppNavigation = () => {
         {isOpen && (
           <div className="md:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-              {/* Indicateur mobile pour l'accès en lecture seule */}
-              {isReadOnlyAccess && dossierActif && (
-                <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-md border border-blue-200 mb-2">
-                  <Eye className="h-4 w-4 text-blue-600" />
-                  <span className="text-sm text-blue-800 font-medium">
-                    Consultation: {dossierActif.profileData?.first_name} {dossierActif.profileData?.last_name}
-                  </span>
-                </div>
-              )}
-              
               {filteredNavItems.map((item) => (
                 <Link
                   key={item.name}
@@ -168,7 +146,7 @@ const AppNavigation = () => {
                     Déconnexion
                   </button>
                 </>
-              ) : !isReadOnlyAccess && (
+              ) : (
                 <Link
                   to="/auth"
                   className="text-blue-600 hover:text-blue-800 block px-3 py-2 rounded-md text-base font-medium"
