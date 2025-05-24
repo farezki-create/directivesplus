@@ -1,85 +1,9 @@
 
 import React from "react";
-import { useSearchParams, Navigate } from "react-router-dom";
-import { useDocumentDownload } from "@/hooks/useDocumentDownload";
-import { useDocumentPrint } from "@/hooks/useDocumentPrint";
-import { useBrowserDetection } from "@/hooks/useBrowserDetection";
-import { useDocumentLoader } from "@/hooks/useDocumentLoader";
-import ExternalBrowserView from "@/components/pdf-viewer/ExternalBrowserView";
-import PdfViewerContent from "@/components/pdf-viewer/PdfViewerContent";
-import LoadingState from "@/components/pdf-viewer/LoadingState";
-import ErrorState from "@/components/pdf-viewer/ErrorState";
+import PdfViewerContainer from "@/components/pdf-viewer/PdfViewerContainer";
 
 const PdfViewer = () => {
-  const [searchParams] = useSearchParams();
-  const documentId = searchParams.get('id');
-  
-  const { isExternalBrowser } = useBrowserDetection();
-  const { document, loading, error, retryCount, setRetryCount, setError } = useDocumentLoader(documentId);
-  const { handleDownload } = useDocumentDownload();
-  const { handlePrint } = useDocumentPrint();
-
-  const handleRetry = () => {
-    setRetryCount(prev => prev + 1);
-    setError(null);
-  };
-
-  const handleDownloadPdf = () => {
-    if (document) {
-      handleDownload(document.file_path, document.file_name);
-    }
-  };
-
-  const handlePrintPdf = () => {
-    if (document) {
-      handlePrint(document.file_path, document.content_type);
-    }
-  };
-
-  const handleOpenExternal = () => {
-    if (document) {
-      window.open(document.file_path, '_blank');
-    }
-  };
-
-  const handleGoBack = () => {
-    window.history.back();
-  };
-
-  if (!documentId) {
-    return <Navigate to="/mes-directives" replace />;
-  }
-
-  if (isExternalBrowser) {
-    return (
-      <ExternalBrowserView 
-        documentId={documentId}
-        document={document}
-        error={error}
-        retryCount={retryCount}
-        onRetry={handleRetry}
-        onDownload={handleDownload}
-      />
-    );
-  }
-
-  if (loading) {
-    return <LoadingState retryCount={retryCount} />;
-  }
-
-  if (error || !document) {
-    return <ErrorState error={error} onRetry={handleRetry} />;
-  }
-
-  return (
-    <PdfViewerContent 
-      document={document}
-      onDownload={handleDownloadPdf}
-      onPrint={handlePrintPdf}
-      onOpenExternal={handleOpenExternal}
-      onGoBack={handleGoBack}
-    />
-  );
+  return <PdfViewerContainer />;
 };
 
 export default PdfViewer;
