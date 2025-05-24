@@ -1,31 +1,20 @@
 
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Shield } from "lucide-react";
 
 const AccessCardHeader = () => {
-  const navigate = useNavigate();
-
   return (
-    <>
-      <div className="mb-6">
-        <Button
-          variant="outline"
-          onClick={() => navigate("/rediger")}
-          className="flex items-center gap-2"
-        >
-          <ArrowLeft size={16} />
-          Retour au tableau de bord
-        </Button>
+    <div className="text-center mb-8">
+      <div className="flex items-center justify-center gap-3 mb-4">
+        <Shield className="h-8 w-8 text-directiveplus-600" />
+        <h1 className="text-3xl font-bold text-directiveplus-800">
+          Accès Professionnel
+        </h1>
       </div>
-
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">Carte d'accès</h1>
-        <p className="text-gray-600 mt-2">
-          Préparez votre carte d'accès pour les professionnels de santé.
-        </p>
-      </div>
-    </>
+      <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+        Générez un code sécurisé pour permettre aux professionnels de santé 
+        d'accéder à vos directives anticipées.
+      </p>
+    </div>
   );
 };
 

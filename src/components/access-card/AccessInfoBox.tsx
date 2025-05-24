@@ -1,15 +1,49 @@
 
+import { Card, CardContent } from "@/components/ui/card";
+import { Shield, Clock, Key, Hospital } from "lucide-react";
+
 const AccessInfoBox = () => {
   return (
-    <div className="mt-10 bg-blue-50 border border-blue-200 rounded-lg p-4">
-      <h3 className="font-medium text-blue-800">Pourquoi utiliser une carte d'accès?</h3>
-      <ul className="list-disc list-inside mt-2 text-blue-700 space-y-1 text-sm">
-        <li>Pratique pour communiquer rapidement vos codes d'accès aux professionnels de santé</li>
-        <li>Format carte bancaire, facile à conserver dans votre portefeuille</li>
-        <li>Solution d'urgence pour accéder à vos directives anticipées et données médicales</li>
-        <li>Personnalisable selon vos besoins (directives, données médicales ou les deux)</li>
-      </ul>
-    </div>
+    <Card className="bg-blue-50 border-blue-200">
+      <CardContent className="p-6">
+        <h3 className="text-lg font-semibold text-blue-800 mb-4 flex items-center gap-2">
+          <Shield className="h-5 w-5" />
+          Informations importantes sur l'accès professionnel
+        </h3>
+        
+        <div className="space-y-4 text-sm text-blue-700">
+          <div className="flex items-start gap-3">
+            <Key className="h-4 w-4 mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="font-medium">Code sécurisé</p>
+              <p>Le code d'accès institution permet aux professionnels de santé autorisés d'accéder à vos directives anticipées de manière sécurisée.</p>
+            </div>
+          </div>
+          
+          <div className="flex items-start gap-3">
+            <Clock className="h-4 w-4 mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="font-medium">Validité limitée</p>
+              <p>Chaque code est valable pendant 30 jours maximum et peut être révoqué à tout moment.</p>
+            </div>
+          </div>
+          
+          <div className="flex items-start gap-3">
+            <Hospital className="h-4 w-4 mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="font-medium">Usage professionnel</p>
+              <p>Ne partagez ce code qu'avec des professionnels de santé de confiance dans un cadre médical approprié.</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="mt-4 p-3 bg-blue-100 rounded-md">
+          <p className="text-xs text-blue-800">
+            <strong>Traçabilité :</strong> Tous les accès via ce code sont journalisés pour des raisons de sécurité et de conformité réglementaire.
+          </p>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

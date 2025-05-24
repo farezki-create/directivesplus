@@ -18,36 +18,13 @@ export const generateRandomCode = (length: number): string => {
 };
 
 /**
- * Hook for managing access codes
+ * Hook for managing access codes - simplifié pour ne gérer que les codes institution
  */
 export const useAccessCode = () => {
-  const [directiveCode, setDirectiveCode] = useState<string | null>(null);
-  const [medicalCode, setMedicalCode] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
-  /**
-   * Generate new access codes
-   */
-  const generateCodes = () => {
-    setLoading(true);
-    
-    // Generate new codes
-    const newDirectiveCode = generateRandomCode(8); 
-    const newMedicalCode = generateRandomCode(8);
-    
-    setDirectiveCode(newDirectiveCode);
-    setMedicalCode(newMedicalCode);
-    setLoading(false);
-    
-    return { directiveCode: newDirectiveCode, medicalCode: newMedicalCode };
-  };
-
   return {
-    directiveCode,
-    medicalCode,
     loading,
-    generateCodes,
-    setDirectiveCode,
-    setMedicalCode
+    setLoading
   };
 };
