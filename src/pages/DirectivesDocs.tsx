@@ -152,9 +152,20 @@ const DirectivesDocs = () => {
         onDownload={handleDownload}
         onPrint={handlePrint}
         onView={handleView}
-        previewDocument={previewDocument}
-        setPreviewDocument={setPreviewDocument}
-        handlePreviewDownload={handlePreviewDownload}
+        previewDocument={previewDocument?.file_path || null}
+        setPreviewDocument={(filePath: string | null) => {
+          if (filePath) {
+            const doc = documents.find(d => d.file_path === filePath);
+            setPreviewDocument(doc || null);
+          } else {
+            setPreviewDocument(null);
+          }
+        }}
+        handlePreviewDownload={(filePath: string) => {
+          const doc = documents.find(d => d.file_path === filePath);
+          const fileName = doc?.file_name || 'document';
+          handleDownload(filePath, fileName);
+        }}
         handlePreviewPrint={handlePreviewPrint}
         showAddOptions={showAddOptionsPublic}
         setShowAddOptions={setShowAddOptionsPublic}
