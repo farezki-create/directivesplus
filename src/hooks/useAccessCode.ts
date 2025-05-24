@@ -1,24 +1,16 @@
 
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
-import { UnifiedAccessCodeService, type AccessCodeResult } from "@/services/accessCode/UnifiedAccessCodeService";
-import type { AccessCodeOptions, PersonalInfo } from "@/services/accessCode/types";
+import { AccessCodeService } from "@/services/accessCode/AccessCodeService";
+import type { 
+  PersonalInfo, 
+  AccessCodeOptions, 
+  AccessValidationResult,
+  CodeGenerationResult 
+} from "@/types/accessCode";
 
 /**
- * Génère un code aléatoire de la longueur spécifiée
- */
-export const generateRandomCode = (length: number = 8): string => {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let result = '';
-  for (let i = 0; i < length; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return result;
-};
-
-/**
- * Hook principal pour toute la gestion des codes d'accès
- * Version optimisée utilisant le service unifié
+ * Hook unifié et simplifié pour la gestion des codes d'accès
  */
 export const useAccessCode = () => {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -30,7 +22,7 @@ export const useAccessCode = () => {
    * Obtient le code d'accès fixe d'un utilisateur
    */
   const getFixedCode = (userId: string): string => {
-    const code = UnifiedAccessCodeService.getFixedCode(userId);
+    const code = AccessCodeService.generateFixedCode(userId);
     setCurrentCode(code);
     return code;
   };
@@ -45,33 +37,26 @@ export const useAccessCode = () => {
     setIsGenerating(true);
     
     try {
-      console.log("🚀 Hook: Début génération code temporaire...");
-      const result = await UnifiedAccessCodeService.generateTemporaryCode(userId, options);
+      const result = await AccessCodeService.createTemporaryCode(userId, options);
       
       if (result.success && result.code) {
         setCurrentCode(result.code);
         
-        console.log("🎉 Hook: Code généré avec succès:", result.code);
-        
         toast({
           title: "✅ Code temporaire créé",
-          description: result.message || `Code ${result.code} généré avec succès`
+          description: result.message
         });
         
         return result.code;
       } else {
-        console.error("❌ Hook: Échec génération:", result.error);
-        
         toast({
           title: "❌ Erreur de génération",
-          description: result.error || "Impossible de générer le code",
+          description: result.error,
           variant: "destructive"
         });
         return null;
       }
     } catch (error: any) {
-      console.error("💥 Hook: Erreur technique:", error);
-      
       toast({
         title: "❌ Erreur technique",
         description: "Erreur technique lors de la génération",
@@ -89,29 +74,18 @@ export const useAccessCode = () => {
   const validateCode = async (
     accessCode: string,
     personalInfo?: PersonalInfo
-  ): Promise<AccessCodeResult> => {
-    console.log("=== HOOK VALIDATION CODE D'ACCÈS ===");
-    console.log("Code à valider:", accessCode);
-    console.log("Infos personnelles:", personalInfo);
-    
+  ): Promise<AccessValidationResult> => {
     setIsValidating(true);
     
     try {
-      console.log("🚀 Début validation via UnifiedAccessCodeService...");
-      const result = await UnifiedAccessCodeService.validateCode(accessCode, personalInfo);
-      console.log("📊 Résultat validation:", result);
+      const result = await AccessCodeService.validateCode(accessCode, personalInfo);
       
       if (result.success) {
-        console.log("✅ Validation réussie:", result.message);
-        console.log("📄 Documents trouvés:", result.documents?.length || 0);
-        
         toast({
           title: "✅ Accès autorisé",
           description: result.message
         });
       } else {
-        console.error("❌ Validation échouée:", result.error);
-        
         toast({
           title: "❌ Accès refusé",
           description: result.error,
@@ -121,9 +95,7 @@ export const useAccessCode = () => {
       
       return result;
     } catch (error: any) {
-      console.error("💥 Erreur technique validation:", error);
-      
-      const errorResult: AccessCodeResult = {
+      const errorResult: AccessValidationResult = {
         success: false,
         error: "Erreur technique lors de la validation"
       };
@@ -150,7 +122,7 @@ export const useAccessCode = () => {
     setIsExtending(true);
     
     try {
-      const result = await UnifiedAccessCodeService.extendCode(accessCode, additionalDays);
+      const result = await AccessCodeService.extendCode(accessCode, additionalDays);
       
       if (result.success) {
         toast({
@@ -183,7 +155,7 @@ export const useAccessCode = () => {
    */
   const revokeCode = async (accessCode: string): Promise<boolean> => {
     try {
-      const result = await UnifiedAccessCodeService.revokeCode(accessCode);
+      const result = await AccessCodeService.revokeCode(accessCode);
       
       if (result.success) {
         toast({
@@ -240,4 +212,5 @@ export const useAccessCode = () => {
   };
 };
 
-export type { AccessCodeResult, AccessCodeOptions, PersonalInfo } from "@/services/accessCode/types";
+// Export des types pour compatibilité
+export type { AccessValidationResult, AccessCodeOptions, PersonalInfo } from "@/types/accessCode";

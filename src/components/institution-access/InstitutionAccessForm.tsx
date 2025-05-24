@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, CheckCircle, Info } from "lucide-react";
-import { useUnifiedAccessCode } from "@/hooks/useUnifiedAccessCode";
+import { useAccessCode } from "@/hooks/useAccessCode";
 import { useDossierStore } from "@/store/dossierStore";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
@@ -20,7 +20,7 @@ export interface InstitutionFormData {
 export const InstitutionAccessForm = () => {
   const navigate = useNavigate();
   const { setDossierActif } = useDossierStore();
-  const { validateCode, isValidating } = useUnifiedAccessCode();
+  const { validateCode, isValidating } = useAccessCode();
   const [result, setResult] = useState<any>(null);
   
   const [form, setForm] = useState<InstitutionFormData>({
@@ -38,7 +38,7 @@ export const InstitutionAccessForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    console.log("=== SOUMISSION FORMULAIRE INSTITUTION ===");
+    console.log("=== SOUMISSION FORMULAIRE INSTITUTION (NOUVELLE ARCHITECTURE) ===");
     console.log("Données du formulaire:", form);
     
     const validationResult = await validateCode(form.institutionCode, {
@@ -51,10 +51,10 @@ export const InstitutionAccessForm = () => {
     setResult(validationResult);
     
     if (validationResult.success && validationResult.documents) {
-      // Créer un dossier pour le store
+      // Créer un dossier pour le store avec la nouvelle structure
       const dossier = {
-        id: `institution-${validationResult.documents[0]?.user_id || 'unknown'}`,
-        userId: validationResult.documents[0]?.user_id || '',
+        id: `institution-${validationResult.userId || 'unknown'}`,
+        userId: validationResult.userId || '',
         isFullAccess: true,
         isDirectivesOnly: false,
         isMedicalOnly: false,
@@ -69,16 +69,17 @@ export const InstitutionAccessForm = () => {
             prenom: form.firstName,
             date_naissance: form.birthDate
           },
-          documents: validationResult.documents || []
+          documents: validationResult.documents,
+          accessType: validationResult.accessType || 'institution'
         }
       };
       
-      console.log("Dossier créé:", dossier);
+      console.log("Dossier créé (nouvelle architecture):", dossier);
       setDossierActif(dossier);
       
       toast({
         title: "Accès autorisé",
-        description: "Accès aux directives autorisé"
+        description: `${validationResult.documents.length} document(s) accessible(s)`
       });
       
       navigate("/mes-directives");
@@ -175,6 +176,8 @@ export const InstitutionAccessForm = () => {
             {result.success && result.documents && (
               <div className="mt-2 text-sm">
                 Documents trouvés : {result.documents.length}
+                <br />
+                Type d'accès : {result.accessType}
               </div>
             )}
           </AlertDescription>
