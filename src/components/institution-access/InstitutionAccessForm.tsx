@@ -19,7 +19,7 @@ export const InstitutionAccessForm = () => {
     lastName: "AREZKI",
     firstName: "FARID", 
     birthDate: "1963-08-13",
-    institutionCode: "9E5CUV7X"
+    institutionCode: "9E5CUV7X" // Code corrigé
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -141,7 +141,9 @@ export const InstitutionAccessForm = () => {
             name="institutionCode"
             value={form.institutionCode}
             onChange={handleChange}
-            placeholder="Code d'accès (ex: 9E5CUV7X)"
+            placeholder="Code à 8 caractères"
+            className="text-center font-mono tracking-widest"
+            maxLength={8}
             required
           />
         </div>
@@ -155,10 +157,12 @@ export const InstitutionAccessForm = () => {
         </Button>
       </form>
 
-      {/* Résultat */}
+      {/* Résultat de la validation */}
       {result && (
-        <Alert variant={result.success ? "default" : "destructive"} 
-               className={result.success ? "bg-green-50 border-green-200" : ""}>
+        <Alert 
+          variant={result.success ? "default" : "destructive"} 
+          className={result.success ? "bg-green-50 border-green-200" : ""}
+        >
           {result.success ? (
             <CheckCircle className="h-5 w-5 text-green-600" />
           ) : (
@@ -166,9 +170,27 @@ export const InstitutionAccessForm = () => {
           )}
           <AlertDescription className={result.success ? "text-green-800" : ""}>
             {result.message}
+            {result.success && result.patientData && (
+              <div className="mt-2 text-sm">
+                Patient : {result.patientData.first_name} {result.patientData.last_name}<br />
+                Date de naissance : {result.patientData.birth_date}<br />
+                Directives trouvées : {result.patientData.directives?.length || 0}
+              </div>
+            )}
           </AlertDescription>
         </Alert>
       )}
+
+      {/* Instructions d'utilisation */}
+      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+        <h3 className="font-medium text-gray-900 mb-2">Instructions</h3>
+        <ul className="text-sm text-gray-600 space-y-1">
+          <li>• Saisissez le nom de famille exactement comme enregistré</li>
+          <li>• Saisissez le prénom exactement comme enregistré</li>
+          <li>• Utilisez le format de date YYYY-MM-DD</li>
+          <li>• Le code d'accès est sensible à la casse</li>
+        </ul>
+      </div>
     </div>
   );
 };
