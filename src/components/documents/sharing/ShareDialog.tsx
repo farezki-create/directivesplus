@@ -12,7 +12,7 @@ import { Share2 } from "lucide-react";
 import { ShareDialogContent } from "./ShareDialogContent";
 import { ShareDialogCard } from "./ShareDialogCard";
 import { useShareDialogLogic } from "./useShareDialogLogic";
-import type { ShareableDocument } from "@/hooks/sharing/useUnifiedDocumentSharing";
+import type { ShareableDocument } from "@/hooks/sharing/useUnifiedSharing";
 
 interface ShareDialogProps {
   open: boolean;
@@ -70,7 +70,7 @@ export const ShareDialog: React.FC<ShareDialogProps> = ({
             <ShareDialogContent
               document={document}
               accessCode={accessCode}
-              isSharing={typeof isSharing === 'string' ? isSharing : null}
+              isSharing={isSharing ? document.id : null}
               isExtending={isExtending}
               isRegenerating={isRegenerating}
               onShareDocument={handleShareDocument}

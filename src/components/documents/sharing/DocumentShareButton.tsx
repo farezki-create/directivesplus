@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Share2, Loader2 } from "lucide-react";
-import { useUnifiedDocumentSharing, type ShareableDocument } from "@/hooks/sharing/useUnifiedDocumentSharing";
+import { useUnifiedSharing, type ShareableDocument } from "@/hooks/sharing/useUnifiedSharing";
 import { ShareDialog } from "./ShareDialog";
 
 interface DocumentShareButtonProps {
@@ -19,9 +19,7 @@ export const DocumentShareButton: React.FC<DocumentShareButtonProps> = ({
   className = ""
 }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const { isSharing } = useUnifiedDocumentSharing();
-
-  const isCurrentDocumentSharing = isSharing === document.id;
+  const { isGenerating } = useUnifiedSharing();
 
   return (
     <>
@@ -29,15 +27,15 @@ export const DocumentShareButton: React.FC<DocumentShareButtonProps> = ({
         variant={variant}
         size={size}
         onClick={() => setIsDialogOpen(true)}
-        disabled={isCurrentDocumentSharing}
+        disabled={isGenerating}
         className={`flex items-center gap-1 ${className}`}
       >
-        {isCurrentDocumentSharing ? (
+        {isGenerating ? (
           <Loader2 className="h-4 w-4 animate-spin" />
         ) : (
           <Share2 className="h-4 w-4" />
         )}
-        {isCurrentDocumentSharing ? "Partage..." : "Partager"}
+        {isGenerating ? "Partage..." : "Partager"}
       </Button>
 
       <ShareDialog

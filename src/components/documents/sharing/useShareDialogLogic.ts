@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { toast } from "@/hooks/use-toast";
-import { useUnifiedDocumentSharing, type ShareableDocument } from "@/hooks/sharing/useUnifiedDocumentSharing";
+import { useUnifiedSharing, type ShareableDocument } from "@/hooks/sharing/useUnifiedSharing";
 import { supabase } from "@/integrations/supabase/client";
 
 export const useShareDialogLogic = (document: ShareableDocument, open: boolean) => {
@@ -10,13 +10,13 @@ export const useShareDialogLogic = (document: ShareableDocument, open: boolean) 
   const [showCard, setShowCard] = useState(false);
   
   const { 
-    shareDocument, 
-    isSharing, 
-    extendAccessCode, 
+    generatePersonalCode,
+    extendCode,
     regenerateCode,
+    isGenerating,
     isExtending,
     isRegenerating
-  } = useUnifiedDocumentSharing();
+  } = useUnifiedSharing();
 
   React.useEffect(() => {
     const fetchUserProfile = async () => {
@@ -42,7 +42,7 @@ export const useShareDialogLogic = (document: ShareableDocument, open: boolean) 
 
   const handleShareDocument = async () => {
     console.log("Partage document:", document);
-    const code = await shareDocument(document, { expiresInDays: 365 });
+    const code = await generatePersonalCode(document, { expiresInDays: 365 });
     if (code) {
       console.log("Code généré:", code);
       setAccessCode(code);
@@ -60,7 +60,7 @@ export const useShareDialogLogic = (document: ShareableDocument, open: boolean) 
     }
     
     console.log("Prolongation code:", accessCode);
-    const success = await extendAccessCode(accessCode, 365);
+    const success = await extendCode(accessCode, 365);
     if (success) {
       toast({
         title: "Code prolongé",
@@ -110,7 +110,7 @@ export const useShareDialogLogic = (document: ShareableDocument, open: boolean) 
     showCard,
     setShowCard,
     userName,
-    isSharing,
+    isSharing: isGenerating,
     isExtending,
     isRegenerating,
     handleShareDocument,
