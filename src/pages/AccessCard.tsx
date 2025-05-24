@@ -11,6 +11,7 @@ import AccessInfoBox from "@/components/access-card/AccessInfoBox";
 import PageFooter from "@/components/access-card/PageFooter";
 import AppNavigation from "@/components/AppNavigation";
 import LoadingState from "@/components/questionnaire/LoadingState";
+import BackButton from "@/components/ui/back-button";
 import { toast } from "@/components/ui/use-toast";
 
 const AccessCardPage = () => {
@@ -54,6 +55,12 @@ const AccessCardPage = () => {
       
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="max-w-3xl mx-auto">
+          <BackButton 
+            className="mb-6" 
+            label="Retour au tableau de bord"
+            onClick={() => navigate("/dashboard")}
+          />
+          
           <AccessCardHeader />
           
           <ProfileWarning 
