@@ -1,13 +1,13 @@
 
 import type { ShareableDocument, ShareOptions } from "../types";
 import type { SharingResult, AccessValidationResult } from "./types";
-import { AccessCodeGeneratorService } from "./services/accessCodeGenerator";
-import { AccessCodeValidatorService } from "./services/accessCodeValidator";
-import { AccessCodeManagerService } from "./services/accessCodeManager";
+import { CodeGenerationService } from "./services/codeGenerationService";
+import { CodeValidationService } from "./services/codeValidationService";
+import { CodeManagementService } from "./services/codeManagementService";
 
 /**
  * Service central unifié pour toutes les opérations de partage
- * Remplace tous les services fragmentés existants
+ * Utilise maintenant une architecture modulaire avec des services spécialisés
  */
 export class UnifiedSharingService {
   
@@ -18,7 +18,13 @@ export class UnifiedSharingService {
     document: ShareableDocument,
     options: ShareOptions & { accessType?: 'personal' | 'institution' } = {}
   ): Promise<SharingResult> {
-    return AccessCodeGeneratorService.generateAccessCode(document, options);
+    const { accessType = 'personal' } = options;
+    
+    if (accessType === 'institution') {
+      return CodeGenerationService.generateInstitutionCode(document, options);
+    }
+    
+    return CodeGenerationService.generatePersonalCode(document, options);
   }
 
   /**
@@ -32,7 +38,7 @@ export class UnifiedSharingService {
       birthDate?: string;
     }
   ): Promise<AccessValidationResult> {
-    return AccessCodeValidatorService.validateAccessCode(accessCode, personalInfo);
+    return CodeValidationService.validateCode(accessCode, personalInfo);
   }
 
   /**
@@ -42,7 +48,7 @@ export class UnifiedSharingService {
     accessCode: string,
     additionalDays: number = 365
   ): Promise<SharingResult> {
-    return AccessCodeManagerService.extendAccessCode(accessCode, additionalDays);
+    return CodeManagementService.extendCode(accessCode, additionalDays);
   }
 
   /**
@@ -52,13 +58,13 @@ export class UnifiedSharingService {
     currentCode: string,
     expiresInDays: number = 365
   ): Promise<SharingResult> {
-    return AccessCodeManagerService.regenerateAccessCode(currentCode, expiresInDays);
+    return CodeManagementService.regenerateCode(currentCode, expiresInDays);
   }
 
   /**
    * Révoque un code d'accès
    */
   static async revokeAccessCode(accessCode: string): Promise<SharingResult> {
-    return AccessCodeManagerService.revokeAccessCode(accessCode);
+    return CodeManagementService.revokeCode(accessCode);
   }
 }
