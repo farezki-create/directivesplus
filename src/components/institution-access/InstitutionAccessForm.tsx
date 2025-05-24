@@ -30,7 +30,12 @@ export const InstitutionAccessForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log("=== SOUMISSION FORMULAIRE ===");
+    console.log("Données du formulaire:", form);
+    
     const validationResult = await validateAccess(form);
+    
+    console.log("Résultat de validation:", validationResult);
     
     if (validationResult.success && validationResult.patientData) {
       // Créer un dossier pour le store conforme au type Dossier
@@ -55,6 +60,7 @@ export const InstitutionAccessForm = () => {
         }
       };
       
+      console.log("Dossier créé:", dossier);
       setDossierActif(dossier);
       
       toast({
@@ -63,6 +69,8 @@ export const InstitutionAccessForm = () => {
       });
       
       navigate("/mes-directives");
+    } else {
+      console.error("Échec de validation:", validationResult.message);
     }
   };
 
@@ -73,7 +81,7 @@ export const InstitutionAccessForm = () => {
         <Info className="h-5 w-5 text-blue-600" />
         <AlertDescription className="text-blue-800">
           <strong>Accès professionnel de santé</strong><br />
-          Saisissez les informations du patient et le code d'accès institution.
+          Saisissez les informations exactes du patient et le code d'accès institution.
         </AlertDescription>
       </Alert>
 
@@ -81,9 +89,9 @@ export const InstitutionAccessForm = () => {
       <Alert className="bg-green-50 border-green-200">
         <Info className="h-5 w-5 text-green-600" />
         <AlertDescription className="text-green-800">
-          <strong>Données de test :</strong><br />
-          AREZKI FARID, né le 13/08/1963<br />
-          Code : 9E5CUV7X
+          <strong>Test disponible :</strong><br />
+          Nom: AREZKI, Prénom: FARID<br />
+          Date: 1963-08-13, Code: 9E5CUV7X
         </AlertDescription>
       </Alert>
 
@@ -96,7 +104,7 @@ export const InstitutionAccessForm = () => {
             name="lastName"
             value={form.lastName}
             onChange={handleChange}
-            placeholder="NOM"
+            placeholder="NOM (sensible à la casse)"
             required
           />
         </div>
@@ -108,7 +116,7 @@ export const InstitutionAccessForm = () => {
             name="firstName"
             value={form.firstName}
             onChange={handleChange}
-            placeholder="Prénom"
+            placeholder="Prénom (sensible à la casse)"
             required
           />
         </div>
@@ -123,6 +131,7 @@ export const InstitutionAccessForm = () => {
             onChange={handleChange}
             required
           />
+          <p className="text-xs text-gray-500">Format: YYYY-MM-DD</p>
         </div>
 
         <div className="space-y-2">
@@ -132,7 +141,7 @@ export const InstitutionAccessForm = () => {
             name="institutionCode"
             value={form.institutionCode}
             onChange={handleChange}
-            placeholder="Code d'accès"
+            placeholder="Code d'accès (ex: 9E5CUV7X)"
             required
           />
         </div>

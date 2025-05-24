@@ -23,12 +23,23 @@ export const validateInstitutionAccess = async (
   console.log("Recherche:", { lastName, firstName, birthDate, institutionCode });
 
   try {
-    // 1. Recherche du profil patient avec correspondance exacte
+    // Normaliser les données d'entrée
+    const normalizedLastName = lastName.trim().toUpperCase();
+    const normalizedFirstName = firstName.trim().toUpperCase();
+    const normalizedCode = institutionCode.trim().toUpperCase();
+
+    console.log("Données normalisées:", { 
+      normalizedLastName, 
+      normalizedFirstName, 
+      birthDate, 
+      normalizedCode 
+    });
+
+    // 1. Recherche du profil patient avec correspondance flexible
     const { data: profiles, error: profileError } = await supabase
       .from('profiles')
       .select('*')
-      .eq('last_name', lastName.trim())
-      .eq('first_name', firstName.trim())
+      .or(`and(upper(last_name).eq.${normalizedLastName},upper(first_name).eq.${normalizedFirstName}),and(last_name.ilike.%${normalizedLastName}%,first_name.ilike.%${normalizedFirstName}%)`)
       .eq('birth_date', birthDate);
 
     console.log("Profils trouvés:", profiles);
@@ -42,20 +53,40 @@ export const validateInstitutionAccess = async (
     }
 
     if (!profiles || profiles.length === 0) {
+      console.log("Aucun profil trouvé. Recherche alternative...");
+      
+      // Recherche alternative avec ILIKE pour plus de flexibilité
+      const { data: alternativeProfiles, error: altError } = await supabase
+        .from('profiles')
+        .select('*')
+        .ilike('last_name', `%${lastName.trim()}%`)
+        .ilike('first_name', `%${firstName.trim()}%`);
+
+      console.log("Recherche alternative:", alternativeProfiles);
+
+      if (!alternativeProfiles || alternativeProfiles.length === 0) {
+        return {
+          success: false,
+          message: "Aucun patient trouvé avec ces informations. Vérifiez l'orthographe du nom, prénom et la date de naissance (format: YYYY-MM-DD)."
+        };
+      }
+    }
+
+    const profile = profiles && profiles.length > 0 ? profiles[0] : null;
+    
+    if (!profile) {
       return {
         success: false,
-        message: "Aucun patient trouvé avec ces informations (nom, prénom, date de naissance)"
+        message: "Aucun patient trouvé avec ces informations exactes"
       };
     }
 
-    const profile = profiles[0];
-
-    // 2. Vérification du code institution
+    // 2. Vérification du code institution avec correspondance flexible
     const { data: directives, error: directiveError } = await supabase
       .from('directives')
       .select('*')
       .eq('user_id', profile.id)
-      .eq('institution_code', institutionCode.trim())
+      .or(`institution_code.eq.${normalizedCode},upper(institution_code).eq.${normalizedCode}`)
       .gt('institution_code_expires_at', new Date().toISOString());
 
     console.log(`Directives trouvées pour ${profile.id}:`, directives);
@@ -69,9 +100,18 @@ export const validateInstitutionAccess = async (
     }
 
     if (!directives || directives.length === 0) {
+      // Vérifier si des codes existent pour ce patient
+      const { data: allCodes } = await supabase
+        .from('directives')
+        .select('institution_code, institution_code_expires_at')
+        .eq('user_id', profile.id)
+        .not('institution_code', 'is', null);
+
+      console.log("Tous les codes pour ce patient:", allCodes);
+
       return {
         success: false,
-        message: "Code d'accès institution invalide ou expiré"
+        message: "Code d'accès institution invalide ou expiré pour ce patient. Vérifiez le code et sa date d'expiration."
       };
     }
 
@@ -91,7 +131,7 @@ export const validateInstitutionAccess = async (
     console.error("Erreur validation:", error);
     return {
       success: false,
-      message: "Erreur technique lors de la validation"
+      message: "Erreur technique lors de la validation. Vérifiez les informations saisies."
     };
   }
 };
