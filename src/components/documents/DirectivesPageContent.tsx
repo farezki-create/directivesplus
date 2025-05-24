@@ -1,10 +1,10 @@
 
 import React from "react";
-import { Document } from "@/hooks/useDirectivesDocuments";
+import { ShareableDocument } from "@/hooks/sharing/useUnifiedDocumentSharing";
 import DirectivesPageContainer from "./directives/DirectivesPageContainer";
 
 interface DirectivesPageContentProps {
-  documents: Document[];
+  documents: ShareableDocument[];
   showAddOptions: boolean;
   setShowAddOptions: (show: boolean) => void;
   userId: string;

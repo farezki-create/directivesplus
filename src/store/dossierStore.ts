@@ -7,16 +7,16 @@ export type { Dossier } from '@/hooks/types/dossierTypes';
 
 interface DossierStore {
   dossierActif: Dossier | null;
-  decryptedContent: any; // Adding the missing property
+  decryptedContent: any;
   setDossierActif: (dossier: Dossier) => void;
   clearDossierActif: () => void;
-  setDecryptedContent: (content: any) => void; // Add setter function for the new property
-  clearDecryptedContent: () => void; // Add function to clear the content
+  setDecryptedContent: (content: any) => void;
+  clearDecryptedContent: () => void;
 }
 
 export const useDossierStore = create<DossierStore>((set) => ({
   dossierActif: null,
-  decryptedContent: null, // Initialize with null
+  decryptedContent: null,
   setDossierActif: (dossier) => set({ dossierActif: dossier }),
   clearDossierActif: () => set({ dossierActif: null }),
   setDecryptedContent: (content) => set({ decryptedContent: content }),
