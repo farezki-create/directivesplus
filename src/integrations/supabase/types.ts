@@ -963,7 +963,7 @@ export type Database = {
       }
       shared_documents: {
         Row: {
-          access_code: string
+          access_code: string | null
           document_data: Json
           document_id: string
           document_type: string
@@ -974,7 +974,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          access_code: string
+          access_code?: string | null
           document_data: Json
           document_id: string
           document_type: string
@@ -985,7 +985,7 @@ export type Database = {
           user_id: string
         }
         Update: {
-          access_code?: string
+          access_code?: string | null
           document_data?: Json
           document_id?: string
           document_type?: string
@@ -1150,6 +1150,10 @@ export type Database = {
         Args: { length: number }
         Returns: string
       }
+      generate_shared_access_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       generate_unique_access_code: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -1212,6 +1216,21 @@ export type Database = {
           first_name: string
           birth_date: string
           institution_shared_code: string
+        }[]
+      }
+      get_shared_documents_by_access_code: {
+        Args: {
+          input_access_code: string
+          input_first_name?: string
+          input_last_name?: string
+          input_birth_date?: string
+        }
+        Returns: {
+          document_id: string
+          document_type: string
+          document_data: Json
+          user_id: string
+          shared_at: string
         }[]
       }
       is_admin: {

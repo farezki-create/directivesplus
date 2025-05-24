@@ -8,7 +8,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Share2, Check, FolderPlus } from "lucide-react";
+import { Share2, Check, FolderPlus, Copy } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useUnifiedDocumentSharing, ShareableDocument } from "@/hooks/sharing/useUnifiedDocumentSharing";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -24,18 +24,28 @@ export const ShareDialog: React.FC<ShareDialogProps> = ({
   onOpenChange,
   document
 }) => {
-  const [shared, setShared] = useState(false);
+  const [accessCode, setAccessCode] = useState<string | null>(null);
   const { shareDocument, isSharing } = useUnifiedDocumentSharing();
 
   const handleShareDocument = async () => {
-    const success = await shareDocument(document);
-    if (success) {
-      setShared(true);
+    const code = await shareDocument(document);
+    if (code) {
+      setAccessCode(code);
+    }
+  };
+
+  const handleCopyCode = () => {
+    if (accessCode) {
+      navigator.clipboard.writeText(accessCode);
+      toast({
+        title: "Code copié",
+        description: "Le code d'accès a été copié dans le presse-papiers"
+      });
     }
   };
 
   const resetDialog = () => {
-    setShared(false);
+    setAccessCode(null);
   };
 
   return (
@@ -50,18 +60,18 @@ export const ShareDialog: React.FC<ShareDialogProps> = ({
             Partager le document
           </DialogTitle>
           <DialogDescription>
-            Ajouter ce document au dossier partagé pour qu'il soit accessible aux personnes autorisées.
+            Partager ce document et générer un code d'accès pour les personnes autorisées.
           </DialogDescription>
         </DialogHeader>
         
         <div className="py-4 space-y-4">
-          {!shared ? (
+          {!accessCode ? (
             <div className="space-y-4">
               <Alert>
                 <FolderPlus className="h-4 w-4" />
                 <AlertDescription>
                   <strong>Document :</strong> {document.file_name}<br />
-                  Le document sera ajouté au dossier partagé et sera accessible aux personnes autorisées.
+                  Un code d'accès unique sera généré pour partager ce document.
                 </AlertDescription>
               </Alert>
 
@@ -71,7 +81,7 @@ export const ShareDialog: React.FC<ShareDialogProps> = ({
                 className="flex items-center gap-2 w-full"
               >
                 <FolderPlus className="h-4 w-4" />
-                {isSharing === document.id ? "Partage en cours..." : "Ajouter au dossier partagé"}
+                {isSharing === document.id ? "Partage en cours..." : "Partager le document"}
               </Button>
             </div>
           ) : (
@@ -80,9 +90,25 @@ export const ShareDialog: React.FC<ShareDialogProps> = ({
                 <Check className="h-4 w-4 text-green-600" />
                 <AlertDescription className="text-green-800">
                   <strong>Document partagé avec succès !</strong><br />
-                  Le document a été ajouté au dossier partagé.
+                  Code d'accès généré : <strong className="font-mono text-lg">{accessCode}</strong>
                 </AlertDescription>
               </Alert>
+
+              <Button 
+                onClick={handleCopyCode}
+                variant="outline"
+                className="flex items-center gap-2 w-full"
+              >
+                <Copy className="h-4 w-4" />
+                Copier le code d'accès
+              </Button>
+
+              <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded">
+                <strong>Instructions :</strong><br />
+                • Partagez ce code uniquement avec les personnes autorisées<br />
+                • Le code permet d'accéder au document sans connexion<br />
+                • Gardez ce code en sécurité
+              </div>
             </div>
           )}
         </div>
@@ -92,7 +118,7 @@ export const ShareDialog: React.FC<ShareDialogProps> = ({
             variant="outline"
             onClick={() => onOpenChange(false)}
           >
-            {shared ? "Fermer" : "Annuler"}
+            {accessCode ? "Fermer" : "Annuler"}
           </Button>
         </div>
       </DialogContent>
