@@ -45,6 +45,17 @@ const AuthenticatedDirectivesView: React.FC<AuthenticatedDirectivesViewProps> = 
   handlePreviewDownload,
   handlePreviewPrint,
 }) => {
+  
+  const handleAddDocumentClick = () => {
+    console.log("Bouton Ajouter un document cliqué");
+    setShowAddOptions(!showAddOptions);
+  };
+
+  const handleDeleteAllDocuments = documents.length > 0 ? () => {
+    console.log("Demande de suppression de tous les documents");
+    // Cette fonction serait implémentée dans le composant parent
+  } : undefined;
+
   return (
     <div className="min-h-screen flex flex-col">
       <AppNavigation />
@@ -52,7 +63,8 @@ const AuthenticatedDirectivesView: React.FC<AuthenticatedDirectivesViewProps> = 
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <DirectivesPageHeader 
-            onAddDocument={() => setShowAddOptions(!showAddOptions)}
+            onAddDocument={handleAddDocumentClick}
+            onDeleteAllDocuments={handleDeleteAllDocuments}
             documentsCount={documents.length}
           />
 
@@ -60,6 +72,7 @@ const AuthenticatedDirectivesView: React.FC<AuthenticatedDirectivesViewProps> = 
             <DirectivesAddDocumentSection
               userId={user.id}
               onUploadComplete={(url: string, fileName: string, isPrivate: boolean) => {
+                console.log("Document uploadé:", fileName);
                 onUploadComplete();
               }}
             />
