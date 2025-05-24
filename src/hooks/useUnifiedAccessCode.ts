@@ -207,3 +207,5 @@ export const useUnifiedAccessCode = () => {
     copyCode
   };
 };
+
+export type { AccessCodeValidation, AccessCodeOptions, PersonalInfo } from "@/services/accessCode/AccessCodeManager";

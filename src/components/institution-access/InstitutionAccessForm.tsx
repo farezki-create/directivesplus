@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, CheckCircle, Info } from "lucide-react";
-import { useSharing } from "@/hooks/sharing/useSharing";
+import { useUnifiedAccessCode } from "@/hooks/useUnifiedAccessCode";
 import { useDossierStore } from "@/store/dossierStore";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
@@ -20,7 +20,7 @@ export interface InstitutionFormData {
 export const InstitutionAccessForm = () => {
   const navigate = useNavigate();
   const { setDossierActif } = useDossierStore();
-  const { validateCode, isValidating } = useSharing();
+  const { validateCode, isValidating } = useUnifiedAccessCode();
   const [result, setResult] = useState<any>(null);
   
   const [form, setForm] = useState<InstitutionFormData>({
@@ -41,20 +41,17 @@ export const InstitutionAccessForm = () => {
     console.log("=== SOUMISSION FORMULAIRE INSTITUTION ===");
     console.log("Données du formulaire:", form);
     
-    const validationResult = await validateCode({
-      accessCode: form.institutionCode,
-      personalInfo: {
-        firstName: form.firstName,
-        lastName: form.lastName,
-        birthDate: form.birthDate
-      }
+    const validationResult = await validateCode(form.institutionCode, {
+      firstName: form.firstName,
+      lastName: form.lastName,
+      birthDate: form.birthDate
     });
     
     console.log("Résultat de validation:", validationResult);
     setResult(validationResult);
     
     if (validationResult.success && validationResult.documents) {
-      // Créer un dossier pour le store conforme au type Dossier
+      // Créer un dossier pour le store
       const dossier = {
         id: `institution-${validationResult.documents[0]?.user_id || 'unknown'}`,
         userId: validationResult.documents[0]?.user_id || '',
@@ -174,7 +171,7 @@ export const InstitutionAccessForm = () => {
             <AlertCircle className="h-5 w-5" />
           )}
           <AlertDescription className={result.success ? "text-green-800" : ""}>
-            {result.error || "Validation réussie"}
+            {result.error || result.message}
             {result.success && result.documents && (
               <div className="mt-2 text-sm">
                 Documents trouvés : {result.documents.length}
