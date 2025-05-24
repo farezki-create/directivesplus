@@ -1,10 +1,11 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Eye, Download, Printer, Trash2, FolderPlus, FileText, Lock, Unlock, QrCode } from "lucide-react";
+import { Eye, Download, Printer, Trash2, FolderPlus, FileText, QrCode } from "lucide-react";
 import { Document } from "@/types/documents";
 import QRCodeModal from "@/components/documents/QRCodeModal";
+import { useQRCodeModal } from "@/hooks/useQRCodeModal";
 
 interface DocumentCardRefactoredProps {
   document: Document;
@@ -31,7 +32,12 @@ export const DocumentCardRefactored: React.FC<DocumentCardRefactoredProps> = ({
   showShare = false,
   isAddingToShared = false
 }) => {
-  const [selectedDocumentForQR, setSelectedDocumentForQR] = useState<string | null>(null);
+  const { 
+    qrCodeModalState, 
+    isQRCodeModalOpen, 
+    openQRCodeModal, 
+    closeQRCodeModal 
+  } = useQRCodeModal();
 
   const getDocumentIcon = () => {
     switch (document.file_type) {
@@ -47,7 +53,16 @@ export const DocumentCardRefactored: React.FC<DocumentCardRefactoredProps> = ({
   };
 
   const handleGenerateQRCode = () => {
-    setSelectedDocumentForQR(document.id);
+    if (!document.id) {
+      console.error("DocumentCardRefactored: Document sans ID", document);
+      return;
+    }
+
+    try {
+      openQRCodeModal(document.id, document.file_name);
+    } catch (error) {
+      console.error("Erreur lors de l'ouverture du modal QR code:", error);
+    }
   };
 
   return (
@@ -107,6 +122,7 @@ export const DocumentCardRefactored: React.FC<DocumentCardRefactoredProps> = ({
               size="sm"
               onClick={handleGenerateQRCode}
               className="flex items-center gap-1"
+              disabled={!document.id}
             >
               <QrCode size={16} />
               QR Code
@@ -139,9 +155,13 @@ export const DocumentCardRefactored: React.FC<DocumentCardRefactoredProps> = ({
       </Card>
 
       <QRCodeModal
-        documentId={selectedDocumentForQR}
-        onOpenChange={(open) => !open && setSelectedDocumentForQR(null)}
-        documentName={document.file_name}
+        documentId={qrCodeModalState.documentId}
+        documentName={qrCodeModalState.documentName}
+        onOpenChange={(open) => {
+          if (!open) {
+            closeQRCodeModal();
+          }
+        }}
       />
     </>
   );
