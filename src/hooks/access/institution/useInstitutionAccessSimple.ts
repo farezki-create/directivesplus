@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
-import { validateInstitutionAccess, type InstitutionAccessResult } from "@/hooks/sharing/institutionSharingService";
+import { useUnifiedSharing } from "@/hooks/sharing/useUnifiedSharing";
 
 export interface InstitutionAccessFormValues {
   lastName: string;
@@ -25,6 +25,7 @@ export interface InstitutionAccessResponse {
 export const useInstitutionAccessSimple = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<InstitutionAccessResponse | null>(null);
+  const { validateAccessCode } = useUnifiedSharing();
 
   const validateAccess = async (formData: InstitutionAccessFormValues): Promise<InstitutionAccessResponse> => {
     setLoading(true);
@@ -33,24 +34,23 @@ export const useInstitutionAccessSimple = () => {
     try {
       console.log("Validation accès institution simple avec:", formData);
       
-      const validationResult = await validateInstitutionAccess(
-        formData.lastName.trim(),
-        formData.firstName.trim(),
-        formData.birthDate,
-        formData.institutionCode.trim()
-      );
+      const validationResult = await validateAccessCode(formData.institutionCode, {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        birthDate: formData.birthDate
+      });
 
       console.log("Résultat validation simple:", validationResult);
 
       const response: InstitutionAccessResponse = {
         success: validationResult.success,
-        message: validationResult.message,
-        directiveData: validationResult.patientData ? {
-          user_id: validationResult.patientData.user_id,
-          first_name: validationResult.patientData.first_name,
-          last_name: validationResult.patientData.last_name,
-          birth_date: validationResult.patientData.birth_date,
-          directives: validationResult.patientData.directives || []
+        message: validationResult.success ? "Accès autorisé" : (validationResult.error || "Accès refusé"),
+        directiveData: validationResult.documents ? {
+          user_id: validationResult.documents[0]?.user_id || '',
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          birth_date: formData.birthDate,
+          directives: validationResult.documents || []
         } : undefined
       };
 

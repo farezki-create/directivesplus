@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, CheckCircle, Info } from "lucide-react";
-import { validateInstitutionAccess, type InstitutionAccessResult } from "@/hooks/sharing/institutionSharingService";
+import { useUnifiedSharing } from "@/hooks/sharing/useUnifiedSharing";
 import { useDossierStore } from "@/store/dossierStore";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
@@ -20,8 +20,8 @@ export interface InstitutionFormData {
 export const InstitutionAccessForm = () => {
   const navigate = useNavigate();
   const { setDossierActif } = useDossierStore();
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<InstitutionAccessResult | null>(null);
+  const { validateAccessCode, isValidating } = useUnifiedSharing();
+  const [result, setResult] = useState<any>(null);
   
   const [form, setForm] = useState<InstitutionFormData>({
     lastName: "",
@@ -35,60 +35,41 @@ export const InstitutionAccessForm = () => {
     setForm(prev => ({ ...prev, [name]: value }));
   };
 
-  const validateAccess = async (formData: InstitutionFormData): Promise<InstitutionAccessResult> => {
-    setLoading(true);
-    try {
-      const validationResult = await validateInstitutionAccess(
-        formData.lastName.trim(),
-        formData.firstName.trim(),
-        formData.birthDate,
-        formData.institutionCode.trim()
-      );
-      setResult(validationResult);
-      return validationResult;
-    } catch (error) {
-      console.error("Erreur validation:", error);
-      const errorResult = {
-        success: false,
-        message: "Erreur technique lors de la validation"
-      };
-      setResult(errorResult);
-      return errorResult;
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     console.log("=== SOUMISSION FORMULAIRE INSTITUTION ===");
     console.log("Données du formulaire:", form);
     
-    const validationResult = await validateAccess(form);
+    const validationResult = await validateAccessCode(form.institutionCode, {
+      firstName: form.firstName,
+      lastName: form.lastName,
+      birthDate: form.birthDate
+    });
     
     console.log("Résultat de validation:", validationResult);
+    setResult(validationResult);
     
-    if (validationResult.success && validationResult.patientData) {
+    if (validationResult.success && validationResult.documents) {
       // Créer un dossier pour le store conforme au type Dossier
       const dossier = {
-        id: `institution-${validationResult.patientData.user_id}`,
-        userId: validationResult.patientData.user_id,
+        id: `institution-${validationResult.documents[0]?.user_id || 'unknown'}`,
+        userId: validationResult.documents[0]?.user_id || '',
         isFullAccess: true,
         isDirectivesOnly: false,
         isMedicalOnly: false,
         profileData: {
-          first_name: validationResult.patientData.first_name,
-          last_name: validationResult.patientData.last_name,
-          birth_date: validationResult.patientData.birth_date
+          first_name: form.firstName,
+          last_name: form.lastName,
+          birth_date: form.birthDate
         },
         contenu: {
           patient: {
-            nom: validationResult.patientData.last_name,
-            prenom: validationResult.patientData.first_name,
-            date_naissance: validationResult.patientData.birth_date
+            nom: form.lastName,
+            prenom: form.firstName,
+            date_naissance: form.birthDate
           },
-          documents: validationResult.patientData.directives || []
+          documents: validationResult.documents || []
         }
       };
       
@@ -97,12 +78,12 @@ export const InstitutionAccessForm = () => {
       
       toast({
         title: "Accès autorisé",
-        description: validationResult.message
+        description: "Accès aux directives autorisé"
       });
       
       navigate("/mes-directives");
     } else {
-      console.error("Échec de validation:", validationResult.message);
+      console.error("Échec de validation:", validationResult.error);
     }
   };
 
@@ -174,9 +155,9 @@ export const InstitutionAccessForm = () => {
         <Button 
           type="submit" 
           className="w-full"
-          disabled={loading}
+          disabled={isValidating}
         >
-          {loading ? "Vérification..." : "Accéder aux directives"}
+          {isValidating ? "Vérification..." : "Accéder aux directives"}
         </Button>
       </form>
 
@@ -190,12 +171,10 @@ export const InstitutionAccessForm = () => {
             <AlertCircle className="h-5 w-5" />
           )}
           <AlertDescription className={result.success ? "text-green-800" : ""}>
-            {result.message}
-            {result.success && result.patientData && (
+            {result.error || "Validation réussie"}
+            {result.success && result.documents && (
               <div className="mt-2 text-sm">
-                Patient : {result.patientData.first_name} {result.patientData.last_name}<br />
-                Date de naissance : {result.patientData.birth_date}<br />
-                Documents trouvés : {result.patientData.directives.length}
+                Documents trouvés : {result.documents.length}
               </div>
             )}
           </AlertDescription>

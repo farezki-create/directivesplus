@@ -1,5 +1,5 @@
 
-import { generateInstitutionAccessCode } from "@/hooks/sharing/institutionSharingService";
+import { useUnifiedSharing } from "@/hooks/sharing/useUnifiedSharing";
 import { supabase } from "@/integrations/supabase/client";
 import type { ShareableDocument } from "@/hooks/sharing/types";
 
@@ -35,8 +35,9 @@ export const generateInstitutionCode = async (directiveId: string): Promise<stri
       content: directive.content
     };
 
-    // Generate the institution access code
-    const code = await generateInstitutionAccessCode(shareableDocument, 30);
+    // Use the unified sharing service
+    const { generateInstitutionCode } = useUnifiedSharing();
+    const code = await generateInstitutionCode(shareableDocument, 30);
     return code;
   } catch (error) {
     console.error("Error generating institution code:", error);

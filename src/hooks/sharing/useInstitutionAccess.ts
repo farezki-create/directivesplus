@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
-import { validateInstitutionAccess, type InstitutionAccessResult } from "./institutionSharingService";
+import { useUnifiedSharing } from "./useUnifiedSharing";
 
 export interface InstitutionFormData {
   lastName: string;
@@ -12,21 +12,21 @@ export interface InstitutionFormData {
 
 export const useInstitutionAccess = () => {
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<InstitutionAccessResult | null>(null);
+  const [result, setResult] = useState<any>(null);
+  const { validateAccessCode } = useUnifiedSharing();
 
-  const validateAccess = async (formData: InstitutionFormData): Promise<InstitutionAccessResult> => {
+  const validateAccess = async (formData: InstitutionFormData) => {
     setLoading(true);
     setResult(null);
 
     try {
       console.log("Validation accès institution avec:", formData);
       
-      const validationResult = await validateInstitutionAccess(
-        formData.lastName.trim(),
-        formData.firstName.trim(),
-        formData.birthDate,
-        formData.institutionCode.trim()
-      );
+      const validationResult = await validateAccessCode(formData.institutionCode, {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        birthDate: formData.birthDate
+      });
 
       console.log("Résultat validation:", validationResult);
       setResult(validationResult);
@@ -34,12 +34,12 @@ export const useInstitutionAccess = () => {
       if (validationResult.success) {
         toast({
           title: "Accès autorisé",
-          description: validationResult.message,
+          description: "Accès aux directives autorisé",
         });
       } else {
         toast({
           title: "Accès refusé",
-          description: validationResult.message,
+          description: validationResult.error || "Code invalide",
           variant: "destructive"
         });
       }
@@ -47,7 +47,7 @@ export const useInstitutionAccess = () => {
       return validationResult;
     } catch (error) {
       console.error("Erreur hook institution:", error);
-      const errorResult: InstitutionAccessResult = {
+      const errorResult = {
         success: false,
         message: "Erreur technique lors de la validation"
       };

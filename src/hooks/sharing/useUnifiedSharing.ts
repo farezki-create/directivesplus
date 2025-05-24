@@ -25,7 +25,6 @@ export interface UseUnifiedSharingReturn {
 
 /**
  * Hook unifié pour toutes les opérations de partage
- * Remplace tous les hooks fragmentés existants
  */
 export const useUnifiedSharing = (): UseUnifiedSharingReturn => {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -242,5 +241,4 @@ export const useUnifiedSharing = (): UseUnifiedSharingReturn => {
   };
 };
 
-// Export des types pour compatibilité
 export type { ShareableDocument, ShareOptions } from "./types";
