@@ -75,6 +75,13 @@ const DirectivesDocs = () => {
 
   const isLoading = authLoading || documentsLoading || publicAccessLoading;
 
+  // Wrapper function to handle upload completion
+  const handleUploadCompleteWrapper = () => {
+    // For this context, we don't have the specific parameters,
+    // so we'll call refresh documents directly
+    window.location.reload();
+  };
+
   // Si l'utilisateur est en train de se connecter, afficher un état de chargement
   if (isLoading) {
     return <DirectivesLoadingState />;
@@ -105,7 +112,7 @@ const DirectivesDocs = () => {
         documents={documents}
         showAddOptions={showAddOptions}
         setShowAddOptions={setShowAddOptions}
-        onUploadComplete={handleUploadComplete}
+        onUploadComplete={handleUploadCompleteWrapper}
         onDownload={handleDownload}
         onPrint={handlePrint}
         onView={handleView}
@@ -137,7 +144,7 @@ const DirectivesDocs = () => {
         handlePreviewPrint={handlePreviewPrint}
         showAddOptions={showAddOptionsPublic}
         setShowAddOptions={setShowAddOptionsPublic}
-        onUploadComplete={handleUploadComplete}
+        onUploadComplete={handleUploadCompleteWrapper}
       />
     );
   }

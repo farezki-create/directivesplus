@@ -31,6 +31,13 @@ const MesDirectives = () => {
   console.log("MesDirectives - Auth state:", { userId: user?.id, hasProfile: !!profile, isAuthenticated, isLoading: authLoading });
   console.log("MesDirectives - Documents:", documents.length);
 
+  // Wrapper function to handle upload completion
+  const handleUploadCompleteWrapper = () => {
+    // For this context, we don't have the specific parameters,
+    // so we'll call refresh documents directly
+    window.location.reload();
+  };
+
   // Rediriger vers la page de connexion si non authentifié
   if (!authLoading && !isAuthenticated) {
     return <Navigate to="/auth" replace />;
@@ -48,7 +55,7 @@ const MesDirectives = () => {
       documents={documents}
       showAddOptions={showAddOptions}
       setShowAddOptions={setShowAddOptions}
-      onUploadComplete={handleUploadComplete}
+      onUploadComplete={handleUploadCompleteWrapper}
       onDownload={handleDownload}
       onPrint={handlePrint}
       onView={handleView}

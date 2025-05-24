@@ -33,6 +33,13 @@ const DirectivesAcces = () => {
     setShowDocuments(true);
   };
 
+  // Wrapper function to handle upload completion
+  const handleUploadCompleteWrapper = () => {
+    // For this context, we don't have the specific parameters,
+    // so we'll call refresh documents directly
+    window.location.reload();
+  };
+
   // CAS 1: Pas de dossier actif ET pas d'utilisateur authentifié
   if (!dossierActif && !isAuthenticated) {
     return <NoAccessView />;
@@ -44,7 +51,7 @@ const DirectivesAcces = () => {
       <AuthenticatedView
         user={user}
         documents={documents}
-        onUploadComplete={handleUploadComplete}
+        onUploadComplete={handleUploadCompleteWrapper}
         onDownload={handleDownload}
         onPrint={handlePrint}
         onView={handleView}
@@ -60,7 +67,7 @@ const DirectivesAcces = () => {
       user={user}
       showDocuments={showDocuments}
       documents={documents}
-      onUploadComplete={handleUploadComplete}
+      onUploadComplete={handleUploadCompleteWrapper}
       onDownload={handleDownload}
       onPrint={handlePrint}
       onView={handleView}
