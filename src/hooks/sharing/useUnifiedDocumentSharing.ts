@@ -147,7 +147,7 @@ export const useUnifiedDocumentSharing = () => {
           input_access_code: accessCode,
           input_first_name: firstName || null,
           input_last_name: lastName || null,
-          input_birth_date: birthDate ? new Date(birthDate) : null
+          input_birth_date: birthDate || null
         }
       );
 
