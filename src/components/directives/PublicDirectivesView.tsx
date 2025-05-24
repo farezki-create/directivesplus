@@ -71,8 +71,6 @@ const PublicDirectivesView: React.FC<PublicDirectivesViewProps> = ({
         
         <DirectivesPageContent
           documents={allDocuments}
-          showAddOptions={showAddOptions}
-          setShowAddOptions={setShowAddOptions}
           userId={dossierActif?.userId || ""}
           onUploadComplete={onUploadComplete}
           onDownload={onDownload}

@@ -28,7 +28,6 @@ import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import ReportDataBreach from "@/pages/ReportDataBreach";
 import AccessCard from "@/pages/AccessCard";
 import EnSavoirPlus from "@/pages/EnSavoirPlus";
-import SharedAccessPageContainer from "@/pages/SharedAccessPage";
 import InstitutionAccess from "@/pages/InstitutionAccess";
 import DirectivesAcces from "@/pages/DirectivesAcces";
 import InstitutionAccessSimple from "@/pages/InstitutionAccessSimple";
@@ -74,7 +73,6 @@ function App() {
         <Route path="/carte-acces" element={<AccessCard />} />
         <Route path="/en-savoir-plus" element={<EnSavoirPlus />} />
         <Route path="/mentions-legales" element={<LegalMentions />} />
-        <Route path="/acces-partage" element={<SharedAccessPageContainer />} />
         <Route path="/dashboard" element={<Navigate to="/rediger" replace />} />
         
         {/* Routes avec accès alternatif via PlaceholderPage */}

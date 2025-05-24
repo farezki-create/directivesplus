@@ -50,8 +50,6 @@ const PersonalDocumentsSection: React.FC<PersonalDocumentsSectionProps> = ({
         ) : (
           <DirectivesPageContent
             documents={documents}
-            showAddOptions={false}
-            setShowAddOptions={() => {}}
             userId={user.id}
             onUploadComplete={onUploadComplete}
             onDownload={onDownload}
