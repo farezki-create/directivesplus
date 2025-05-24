@@ -24,6 +24,18 @@ export interface PersonalInfo {
 }
 
 /**
+ * Structure pour les données stockées dans Supabase (compatible avec Json)
+ */
+interface TemporaryAccessData {
+  access_type: string;
+  user_id: string;
+  total_documents: number;
+  generated_at: string;
+  documents: any[]; // Utilisation d'any[] pour la compatibilité Json
+  [key: string]: any; // Index signature pour la compatibilité
+}
+
+/**
  * Gestionnaire unifié pour tous les codes d'accès
  * - Codes fixes basés sur l'ID utilisateur (permanents)
  * - Codes temporaires pour partage
@@ -153,13 +165,28 @@ export class AccessCodeManager {
         };
       }
 
-      // Créer la structure de données
-      const shareData = {
+      // Créer la structure de données compatible avec Json
+      const shareData: TemporaryAccessData = {
         access_type: 'temporary',
         user_id: userId,
         total_documents: documents.length,
         generated_at: new Date().toISOString(),
-        documents: documents
+        documents: documents.map(doc => ({
+          id: doc.id,
+          file_name: doc.file_name,
+          file_path: doc.file_path,
+          created_at: doc.created_at,
+          user_id: doc.user_id,
+          file_type: doc.file_type,
+          source: doc.source,
+          description: doc.description || '',
+          content_type: doc.content_type || '',
+          content: doc.content,
+          external_id: doc.external_id,
+          file_size: doc.file_size,
+          updated_at: doc.updated_at,
+          is_private: doc.is_private
+        }))
       };
 
       // Calculer la date d'expiration
@@ -172,7 +199,7 @@ export class AccessCodeManager {
         .insert({
           document_id: userId,
           document_type: 'temporary_access',
-          document_data: shareData,
+          document_data: shareData as any, // Cast vers any pour la compatibilité
           user_id: userId,
           expires_at: expiresAt.toISOString()
         })
@@ -225,12 +252,17 @@ export class AccessCodeManager {
 
         if (!rpcError && rpcData && rpcData.length > 0) {
           const responseData = rpcData[0];
-          if (responseData.document_data?.documents) {
-            return {
-              success: true,
-              documents: responseData.document_data.documents,
-              message: `Accès autorisé. ${responseData.document_data.documents.length} document(s) trouvé(s).`
-            };
+          
+          // Vérification du type et accès sécurisé aux propriétés
+          if (responseData.document_data && typeof responseData.document_data === 'object') {
+            const documentData = responseData.document_data as any;
+            if (documentData.documents && Array.isArray(documentData.documents)) {
+              return {
+                success: true,
+                documents: documentData.documents as ShareableDocument[],
+                message: `Accès autorisé. ${documentData.documents.length} document(s) trouvé(s).`
+              };
+            }
           }
         }
       }
