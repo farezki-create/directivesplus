@@ -1,7 +1,6 @@
 
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
-import { useUnifiedDocumentSharing } from "@/hooks/sharing/useUnifiedDocumentSharing";
 import { supabase } from "@/integrations/supabase/client";
 import type { ShareableDocument } from "@/hooks/sharing/types";
 
@@ -10,10 +9,54 @@ export const useInstitutionCodeGeneration = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const { generateInstitutionCode } = useUnifiedDocumentSharing();
+  const [shareError, setShareError] = useState<string | null>(null);
+
+  const generateInstitutionCode = async (
+    document: ShareableDocument, 
+    expiresInDays: number = 30
+  ): Promise<string | null> => {
+    console.log("=== GÉNÉRATION CODE INSTITUTION (UNIFIED) ===");
+    console.log("Document:", document, "Expires in days:", expiresInDays);
+
+    setIsGenerating(true);
+    setShareError(null);
+
+    try {
+      // Calculate expiration date
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + expiresInDays);
+
+      // Update the directive with institution code
+      const institutionCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+      
+      const { error: updateError } = await supabase
+        .from('directives')
+        .update({
+          institution_code: institutionCode,
+          institution_code_expires_at: expiresAt.toISOString()
+        })
+        .eq('id', document.id)
+        .eq('user_id', document.user_id);
+
+      if (updateError) {
+        console.error("Erreur mise à jour directive:", updateError);
+        throw new Error("Impossible de générer le code d'accès");
+      }
+
+      console.log("Code d'accès institution généré:", institutionCode);
+      return institutionCode;
+    } catch (error) {
+      console.error("Erreur génération code institution:", error);
+      const errorMessage = error instanceof Error ? error.message : "Impossible de générer le code d'accès professionnel";
+      setShareError(errorMessage);
+      throw error;
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const handleGenerateInstitutionCode = async (userId: string) => {
-    console.log("=== GÉNÉRATION CODE INSTITUTION ===");
+    console.log("=== GÉNÉRATION CODE INSTITUTION (UI) ===");
     console.log("User ID:", userId);
 
     if (!userId) {
@@ -144,6 +187,12 @@ export const useInstitutionCodeGeneration = () => {
   };
 
   return {
+    // Original unified interface
+    generateInstitutionCode,
+    isSharing: isGenerating,
+    shareError,
+    
+    // UI-specific interface
     institutionCode,
     isGenerating,
     copied,
