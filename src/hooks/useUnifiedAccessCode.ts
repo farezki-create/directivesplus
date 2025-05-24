@@ -32,26 +32,35 @@ export const useUnifiedAccessCode = () => {
     setIsGenerating(true);
     
     try {
+      console.log("🔄 Début génération code temporaire...");
       const result = await AccessCodeManager.generateTemporaryCode(userId, options);
       
       if (result.success && result.code) {
         setCurrentCode(result.code);
+        
+        console.log("✅ Code temporaire généré avec succès:", result.code);
+        
         toast({
-          title: "Code temporaire généré",
-          description: `Code valide ${options.expiresInDays || 30} jours`
+          title: "✅ Code temporaire créé avec succès",
+          description: `Code ${result.code} valide ${options.expiresInDays || 30} jours - Enregistrement confirmé en base de données`
         });
+        
         return result.code;
       } else {
+        console.error("❌ Échec génération:", result.error);
+        
         toast({
-          title: "Erreur",
+          title: "❌ Erreur de génération",
           description: result.error || "Impossible de générer le code",
           variant: "destructive"
         });
         return null;
       }
     } catch (error: any) {
+      console.error("❌ Erreur technique:", error);
+      
       toast({
-        title: "Erreur",
+        title: "❌ Erreur technique",
         description: "Erreur technique lors de la génération",
         variant: "destructive"
       });

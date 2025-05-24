@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import type { ShareableDocument } from "@/types/sharing";
 
@@ -153,12 +152,18 @@ export class AccessCodeManager {
     options: AccessCodeOptions = {}
   ): Promise<{ success: boolean; code?: string; error?: string }> {
     try {
+      console.log("=== GÉNÉRATION CODE TEMPORAIRE ===");
+      console.log("User ID:", userId);
+      console.log("Options:", options);
+      
       const { expiresInDays = 30 } = options;
       
       // Récupérer tous les documents de l'utilisateur
       const documents = await this.getUserDocuments(userId);
+      console.log("Documents trouvés:", documents.length);
       
       if (documents.length === 0) {
+        console.warn("Aucun document trouvé pour l'utilisateur:", userId);
         return {
           success: false,
           error: "Aucun document trouvé pour générer un code de partage"
@@ -192,7 +197,10 @@ export class AccessCodeManager {
       // Calculer la date d'expiration
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + expiresInDays);
+      console.log("Date d'expiration:", expiresAt.toISOString());
 
+      console.log("Insertion dans shared_documents...");
+      
       // Créer l'entrée dans shared_documents
       const { data, error } = await supabase
         .from('shared_documents')
@@ -203,15 +211,48 @@ export class AccessCodeManager {
           user_id: userId,
           expires_at: expiresAt.toISOString()
         })
-        .select('access_code')
+        .select('access_code, id, shared_at')
         .single();
 
       if (error) {
+        console.error("Erreur lors de l'insertion:", error);
         return { 
           success: false, 
           error: `Erreur lors de la génération: ${error.message}` 
         };
       }
+
+      if (!data || !data.access_code) {
+        console.error("Aucune donnée retournée après insertion");
+        return {
+          success: false,
+          error: "Erreur: aucun code d'accès généré"
+        };
+      }
+
+      console.log("✅ PARTAGE ENREGISTRÉ AVEC SUCCÈS");
+      console.log("Code d'accès généré:", data.access_code);
+      console.log("ID d'enregistrement:", data.id);
+      console.log("Date de partage:", data.shared_at);
+      console.log("Nombre de documents partagés:", documents.length);
+
+      // Vérification supplémentaire : confirmer que l'enregistrement existe
+      const { data: verification, error: verifyError } = await supabase
+        .from('shared_documents')
+        .select('id, access_code, is_active, expires_at')
+        .eq('access_code', data.access_code)
+        .single();
+
+      if (verifyError || !verification) {
+        console.error("Erreur lors de la vérification:", verifyError);
+        return {
+          success: false,
+          error: "Erreur: impossible de vérifier l'enregistrement"
+        };
+      }
+
+      console.log("✅ VÉRIFICATION CONFIRMÉE");
+      console.log("Enregistrement vérifié:", verification);
 
       return { 
         success: true, 
@@ -219,6 +260,7 @@ export class AccessCodeManager {
       };
 
     } catch (error: any) {
+      console.error("Erreur technique lors de la génération:", error);
       return { 
         success: false, 
         error: `Erreur technique: ${error.message}` 
