@@ -28,14 +28,6 @@ const MedicalData = () => {
     onDeleteComplete: fetchDocuments
   });
 
-  // Handle redirect for non-authenticated users in useEffect
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      console.log("User not authenticated, redirecting to auth page");
-      navigate("/auth", { state: { from: "/donnees-medicales" } });
-    }
-  }, [isLoading, isAuthenticated, navigate]);
-
   // Show loading state while auth is loading
   if (isLoading || loading) {
     return (
@@ -45,12 +37,7 @@ const MedicalData = () => {
     );
   }
 
-  // Don't render anything if not authenticated (will redirect via useEffect)
-  if (!isAuthenticated) {
-    return null;
-  }
-
-  console.log("Medical page - Auth state:", { userId: user?.id, hasProfile: !!profile });
+  console.log("Medical page - Auth state:", { userId: user?.id, hasProfile: !!profile, isAuthenticated });
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -71,7 +58,23 @@ const MedicalData = () => {
           
           <MedicalHeader onAddDocument={() => setShowAddOptions(!showAddOptions)} />
 
-          {documents.length > 0 && (
+          {!isAuthenticated && (
+            <Alert className="mb-6">
+              <Info className="h-4 w-4" />
+              <AlertDescription>
+                Pour accéder à vos données médicales, vous devez être connecté ou utiliser un code d'accès médical.
+                <Button 
+                  variant="link" 
+                  className="p-0 h-auto ml-2"
+                  onClick={() => navigate("/medical-access")}
+                >
+                  Accéder avec un code
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {isAuthenticated && documents.length > 0 && (
             <Alert className="mb-6">
               <Info className="h-4 w-4" />
               <AlertDescription>
@@ -81,7 +84,7 @@ const MedicalData = () => {
             </Alert>
           )}
 
-          {showAddOptions && user && (
+          {isAuthenticated && showAddOptions && user && (
             <div className="mb-8">
               <DocumentUploader 
                 userId={user.id}
@@ -91,20 +94,41 @@ const MedicalData = () => {
             </div>
           )}
           
-          <MedicalDocumentList
-            documents={documents}
-            onDownload={documentActions.handleDownload}
-            onPrint={documentActions.handlePrint}
-            onView={documentActions.handleView}
-            onDelete={documentActions.confirmDelete}
-            onVisibilityChange={documentActions.handleVisibilityChange}
-          />
+          {isAuthenticated ? (
+            <MedicalDocumentList
+              documents={documents}
+              onDownload={documentActions.handleDownload}
+              onPrint={documentActions.handlePrint}
+              onView={documentActions.handleView}
+              onDelete={documentActions.confirmDelete}
+              onVisibilityChange={documentActions.handleVisibilityChange}
+            />
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-gray-600 mb-4">
+                Connectez-vous pour voir vos documents médicaux ou utilisez un code d'accès.
+              </p>
+              <div className="flex gap-4 justify-center">
+                <Button onClick={() => navigate("/auth")}>
+                  Se connecter
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => navigate("/medical-access")}
+                >
+                  Accès avec code
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </main>
       
-      <MedicalDocumentActions
-        {...documentActions}
-      />
+      {isAuthenticated && (
+        <MedicalDocumentActions
+          {...documentActions}
+        />
+      )}
       
       <footer className="bg-white py-6 border-t mt-auto">
         <div className="container mx-auto px-4 text-center text-gray-500">

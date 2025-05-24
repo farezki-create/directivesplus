@@ -55,6 +55,7 @@ function App() {
         <Route path="/directives-docs" element={<DirectivesDocs />} />
         <Route path="/acces-institution" element={<InstitutionAccess />} />
         <Route path="/acces-institution-simple" element={<InstitutionAccessSimple />} />
+        <Route path="/donnees-medicales" element={<MedicalData />} />
         
         {/* Autres routes publiques */}
         <Route path="/avis-general" element={<AvisGeneral />} />
@@ -112,10 +113,6 @@ function App() {
               <MesDirectives />
             </ProtectedRoute>
           } 
-        />
-        <Route 
-          path="/donnees-medicales" 
-          element={<MedicalData />}
         />
         <Route 
           path="/synthese" 
