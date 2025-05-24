@@ -27,13 +27,31 @@ export class SharingService {
         expires_at: expiresAt.toISOString()
       });
 
+      // Préparer les données du document au format JSON
+      const documentData = {
+        id: document.id,
+        file_name: document.file_name,
+        file_path: document.file_path,
+        created_at: document.created_at,
+        user_id: document.user_id,
+        file_type: document.file_type,
+        source: document.source,
+        content: document.content,
+        description: document.description,
+        content_type: document.content_type,
+        is_private: document.is_private,
+        external_id: document.external_id,
+        file_size: document.file_size,
+        updated_at: document.updated_at
+      };
+
       // Insérer dans shared_documents
       const { data, error } = await supabase
         .from('shared_documents')
         .insert({
           document_id: document.id,
           document_type: document.source,
-          document_data: document,
+          document_data: documentData,
           user_id: document.user_id,
           expires_at: expiresAt.toISOString()
         })
