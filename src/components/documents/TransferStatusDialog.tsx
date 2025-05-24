@@ -1,8 +1,7 @@
-
 import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle, XCircle, Download, Upload, FileTransfer } from "lucide-react";
+import { CheckCircle, XCircle, Download, Upload, ArrowRightLeft } from "lucide-react";
 import { TransferStatus } from "@/hooks/useDocumentTransfer";
 
 interface TransferStatusDialogProps {
@@ -21,7 +20,7 @@ const TransferStatusDialog: React.FC<TransferStatusDialogProps> = ({
       case 'downloading':
         return <Download className="h-6 w-6 text-blue-500 animate-spin" />;
       case 'processing':
-        return <FileTransfer className="h-6 w-6 text-yellow-500 animate-pulse" />;
+        return <ArrowRightLeft className="h-6 w-6 text-yellow-500 animate-pulse" />;
       case 'transferring':
         return <Upload className="h-6 w-6 text-purple-500 animate-bounce" />;
       case 'completed':
