@@ -1,3 +1,4 @@
+
 import { Route, Routes } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -66,6 +67,7 @@ function App() {
         <Route path="/acces-partage" element={<SharedAccessPageContainer />} />
         <Route path="/acces-institution" element={<InstitutionAccess />} />
         <Route path="/acces-institution-simple" element={<InstitutionAccessSimple />} />
+        {/* Rendre /mes-directives et /directives-acces complètement publiques */}
         <Route path="/mes-directives" element={<DirectivesAcces />} />
         <Route path="/directives-acces" element={<DirectivesAcces />} />
         <Route path="/dashboard" element={<Navigate to="/rediger" replace />} />

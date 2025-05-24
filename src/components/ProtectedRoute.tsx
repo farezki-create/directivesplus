@@ -16,8 +16,8 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
   
-  // Liste explicite des routes publiques
-  const publicRoutes = ['/directives-acces', '/', '/mes-directives', '/auth', '/directives-acces', '/affichage-dossier'];
+  // Liste des routes publiques - ne pas inclure /mes-directives et /directives-acces
+  const publicRoutes = ['/', '/affichage-dossier'];
   const hasCodeParam = searchParams.has("code");
   
   useEffect(() => {
@@ -56,12 +56,6 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     return <>{children}</>;
   }
   
-  // Exception spéciale: autoriser l'accès direct à /mes-directives avec un code d'accès dans l'URL
-  if (location.pathname === "/mes-directives" && hasCodeParam) {
-    console.log("ProtectedRoute: Accès direct aux directives avec code, autorisation spéciale");
-    return <>{children}</>;
-  }
-
   // Si l'utilisateur est authentifié, autoriser l'accès
   if (isAuthenticated) {
     console.log("ProtectedRoute: Utilisateur authentifié, accès autorisé pour", location.pathname);

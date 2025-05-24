@@ -33,13 +33,20 @@ const DirectivesAcces = () => {
 
   useEffect(() => {
     console.log("DirectivesAcces - Dossier actif:", dossierActif);
+    console.log("DirectivesAcces - Authentifié:", isAuthenticated);
     
-    // Si pas de dossier actif, rediriger vers l'accueil
-    if (!dossierActif) {
-      console.log("Aucun dossier actif, redirection vers l'accueil");
+    // Si pas de dossier actif ET pas d'utilisateur authentifié, rediriger vers l'accueil
+    if (!dossierActif && !isAuthenticated) {
+      console.log("Aucun dossier actif et pas authentifié, redirection vers l'accueil");
       navigate("/");
+      return;
     }
-  }, [dossierActif, navigate]);
+
+    // Si utilisateur authentifié mais pas de dossier, ne pas rediriger automatiquement
+    if (isAuthenticated && !dossierActif) {
+      console.log("Utilisateur authentifié sans dossier actif - affichage de la page");
+    }
+  }, [dossierActif, isAuthenticated, navigate]);
 
   const handleReturnHome = () => {
     clearDossierActif();
@@ -50,7 +57,8 @@ const DirectivesAcces = () => {
     setShowDocuments(true);
   };
 
-  if (!dossierActif) {
+  // Afficher la page même s'il n'y a pas de dossier actif mais que l'utilisateur est authentifié
+  if (!dossierActif && !isAuthenticated) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
         <PageHeader />
@@ -69,6 +77,54 @@ const DirectivesAcces = () => {
     );
   }
 
+  // Si utilisateur authentifié mais pas de dossier, afficher les documents personnels uniquement
+  if (!dossierActif && isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <PageHeader />
+        
+        <main className="container mx-auto px-4 py-8 flex-grow">
+          <div className="max-w-4xl mx-auto space-y-6">
+            
+            <Card className="border-blue-200 bg-blue-50">
+              <CardContent className="p-6">
+                <h2 className="text-xl font-bold text-blue-800 mb-2">
+                  Mes Documents Personnels
+                </h2>
+                <p className="text-blue-700 mb-4">
+                  Vous êtes connecté. Consultez vos documents personnels ci-dessous.
+                </p>
+                <Button onClick={handleReturnHome} variant="outline" size="sm">
+                  Retour à l'accueil
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Section documents personnels */}
+            <PersonalDocumentsSection
+              isAuthenticated={isAuthenticated}
+              user={user}
+              showDocuments={true}
+              documents={documents}
+              onShowDocuments={handleShowDocuments}
+              onUploadComplete={handleUploadComplete}
+              onDownload={handleDownload}
+              onPrint={handlePrint}
+              onView={handleView}
+              onDelete={handleDelete}
+            />
+
+            {/* Informations de sécurité */}
+            <SecurityAlert />
+          </div>
+        </main>
+        
+        <PageFooter />
+      </div>
+    );
+  }
+
+  // Cas normal avec dossier actif
   const patientInfo = extractPatientInfo(dossierActif);
   const directives = dossierActif.contenu?.documents || [];
 
