@@ -1036,6 +1036,30 @@ export type Database = {
         }
         Relationships: []
       }
+      user_profiles: {
+        Row: {
+          birth_date: string | null
+          first_name: string | null
+          id: string
+          institution_shared_code: string | null
+          last_name: string | null
+        }
+        Insert: {
+          birth_date?: string | null
+          first_name?: string | null
+          id: string
+          institution_shared_code?: string | null
+          last_name?: string | null
+        }
+        Update: {
+          birth_date?: string | null
+          first_name?: string | null
+          id?: string
+          institution_shared_code?: string | null
+          last_name?: string | null
+        }
+        Relationships: []
+      }
       user_signatures: {
         Row: {
           created_at: string | null
