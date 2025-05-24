@@ -16,8 +16,8 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
   
-  // Liste des routes publiques - ne pas inclure /mes-directives et /directives-acces
-  const publicRoutes = ['/', '/affichage-dossier'];
+  // Liste des routes VRAIMENT publiques (ne nécessitent jamais d'authentification)
+  const publicRoutes = ['/', '/affichage-dossier', '/mes-directives', '/directives-acces'];
   const hasCodeParam = searchParams.has("code");
   
   useEffect(() => {
@@ -50,15 +50,30 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     );
   }
 
-  // Si c'est une route publique, autoriser l'accès sans authentification
+  // Si c'est une route publique, autoriser l'accès SANS CONDITION
   if (publicRoutes.includes(location.pathname)) {
-    console.log("ProtectedRoute: Route publique, accès autorisé");
+    console.log("ProtectedRoute: Route publique, accès autorisé sans vérification d'authentification");
     return <>{children}</>;
   }
   
   // Si l'utilisateur est authentifié, autoriser l'accès
   if (isAuthenticated) {
     console.log("ProtectedRoute: Utilisateur authentifié, accès autorisé pour", location.pathname);
+    
+    // Vérifier l'accès basé sur le rôle si requiredRole est fourni
+    if (requiredRole && profile) {
+      const userRoles = profile.roles || [];
+      const hasRequiredRole = Array.isArray(userRoles) 
+        ? userRoles.includes(requiredRole)
+        : userRoles === requiredRole;
+      
+      if (!hasRequiredRole && !isRedirecting) {
+        console.log(`ProtectedRoute: L'utilisateur n'a pas le rôle requis: ${requiredRole}`);
+        setIsRedirecting(true);
+        return <Navigate to="/" state={{ from: location.pathname }} replace />;
+      }
+    }
+    
     return <>{children}</>;
   }
 
@@ -68,21 +83,6 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     console.log("ProtectedRoute: Non authentifié, redirection vers auth depuis:", location.pathname);
     setIsRedirecting(true);
     return <Navigate to="/auth" state={{ from: location.pathname }} replace />;
-  }
-
-  // Vérifier l'accès basé sur le rôle si requiredRole est fourni
-  if (requiredRole && profile) {
-    const userRoles = profile.roles || [];
-    const hasRequiredRole = Array.isArray(userRoles) 
-      ? userRoles.includes(requiredRole)
-      : userRoles === requiredRole;
-    
-    if (!hasRequiredRole && !isRedirecting) {
-      console.log(`ProtectedRoute: L'utilisateur n'a pas le rôle requis: ${requiredRole}`);
-      setIsRedirecting(true);
-      // Rediriger vers l'accueil au lieu du dashboard
-      return <Navigate to="/" state={{ from: location.pathname }} replace />;
-    }
   }
 
   console.log("ProtectedRoute: Authentifié, affichage du contenu protégé pour", location.pathname);

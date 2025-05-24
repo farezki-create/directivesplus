@@ -35,16 +35,22 @@ const DirectivesAcces = () => {
     console.log("DirectivesAcces - Dossier actif:", dossierActif);
     console.log("DirectivesAcces - Authentifié:", isAuthenticated);
     
-    // Si pas de dossier actif ET pas d'utilisateur authentifié, rediriger vers l'accueil
+    // UNIQUEMENT rediriger si pas de dossier ET pas d'utilisateur authentifié
+    // Si il y a un dossier actif, on autorise l'accès même sans authentification
     if (!dossierActif && !isAuthenticated) {
       console.log("Aucun dossier actif et pas authentifié, redirection vers l'accueil");
       navigate("/");
       return;
     }
 
-    // Si utilisateur authentifié mais pas de dossier, ne pas rediriger automatiquement
+    // Si utilisateur authentifié mais pas de dossier, on reste sur la page
     if (isAuthenticated && !dossierActif) {
       console.log("Utilisateur authentifié sans dossier actif - affichage de la page");
+    }
+
+    // Si dossier actif (avec ou sans authentification), on reste sur la page
+    if (dossierActif) {
+      console.log("Dossier actif présent - affichage de la page");
     }
   }, [dossierActif, isAuthenticated, navigate]);
 
@@ -57,7 +63,7 @@ const DirectivesAcces = () => {
     setShowDocuments(true);
   };
 
-  // Afficher la page même s'il n'y a pas de dossier actif mais que l'utilisateur est authentifié
+  // Si pas de dossier actif ET pas d'utilisateur authentifié
   if (!dossierActif && !isAuthenticated) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -124,7 +130,7 @@ const DirectivesAcces = () => {
     );
   }
 
-  // Cas normal avec dossier actif
+  // Cas avec dossier actif (avec ou sans authentification)
   const patientInfo = extractPatientInfo(dossierActif);
   const directives = dossierActif.contenu?.documents || [];
 
@@ -148,18 +154,20 @@ const DirectivesAcces = () => {
           <DirectivesContent directives={directives} />
 
           {/* Section documents personnels si connecté */}
-          <PersonalDocumentsSection
-            isAuthenticated={isAuthenticated}
-            user={user}
-            showDocuments={showDocuments}
-            documents={documents}
-            onShowDocuments={handleShowDocuments}
-            onUploadComplete={handleUploadComplete}
-            onDownload={handleDownload}
-            onPrint={handlePrint}
-            onView={handleView}
-            onDelete={handleDelete}
-          />
+          {isAuthenticated && (
+            <PersonalDocumentsSection
+              isAuthenticated={isAuthenticated}
+              user={user}
+              showDocuments={showDocuments}
+              documents={documents}
+              onShowDocuments={handleShowDocuments}
+              onUploadComplete={handleUploadComplete}
+              onDownload={handleDownload}
+              onPrint={handlePrint}
+              onView={handleView}
+              onDelete={handleDelete}
+            />
+          )}
 
           {/* Informations de sécurité */}
           <SecurityAlert />
