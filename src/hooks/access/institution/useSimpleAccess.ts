@@ -27,106 +27,120 @@ export const useSimpleAccess = () => {
     setResult(null);
 
     try {
-      console.log("=== VALIDATION SIMPLE AVEC CODE D'ACCÈS ===");
+      console.log("=== VALIDATION SIMPLE INSTITUTION MISE À JOUR ===");
       console.log("Code d'accès saisi:", formData.accessCode);
 
-      // Recherche directe dans la table directives
-      const { data: directives, error } = await supabase
-        .from('directives')
+      // Première tentative : recherche dans shared_profiles
+      const { data: sharedProfile, error: sharedError } = await supabase
+        .from('shared_profiles')
         .select('*')
+        .eq('access_code', formData.accessCode.toUpperCase())
+        .gt('expires_at', new Date().toISOString())
+        .maybeSingle();
+
+      console.log("Résultat shared_profiles:", { sharedProfile, sharedError });
+
+      if (sharedProfile) {
+        // Récupérer les directives pour cet utilisateur
+        const { data: directives, error: directivesError } = await supabase
+          .from('directives')
+          .select('*')
+          .eq('user_id', sharedProfile.user_id);
+
+        console.log("Directives trouvées pour shared_profile:", { directives, directivesError });
+
+        const successResult: SimpleAccessResult = {
+          success: true,
+          message: `Accès autorisé pour ${sharedProfile.first_name} ${sharedProfile.last_name}`,
+          patientData: {
+            user_id: sharedProfile.user_id,
+            first_name: sharedProfile.first_name,
+            last_name: sharedProfile.last_name,
+            birth_date: sharedProfile.birthdate,
+            directives: directives || []
+          }
+        };
+
+        console.log("Validation réussie:", successResult);
+        setResult(successResult);
+        return successResult;
+      }
+
+      // Deuxième tentative : recherche directe dans la table directives
+      const { data: directives, error: directivesError } = await supabase
+        .from('directives')
+        .select(`
+          *,
+          user_profiles!inner(id, first_name, last_name, birth_date)
+        `)
         .eq('institution_code', formData.accessCode.trim())
         .gt('institution_code_expires_at', new Date().toISOString());
 
-      console.log("Résultat recherche directives:", { directives, error });
+      console.log("Résultat recherche directives:", { directives, directivesError });
 
-      if (error) {
-        console.error("Erreur lors de la recherche:", error);
-        throw new Error("Erreur lors de la recherche dans la base de données");
-      }
+      if (directives && directives.length > 0) {
+        const directive = directives[0];
+        const userProfile = directive.user_profiles;
 
-      if (!directives || directives.length === 0) {
-        console.log("Aucune directive trouvée avec ce code");
-        const errorResult: SimpleAccessResult = {
-          success: false,
-          message: "Code d'accès invalide ou expiré. Veuillez vérifier le code saisi."
+        const successResult: SimpleAccessResult = {
+          success: true,
+          message: `Accès autorisé pour ${userProfile.first_name} ${userProfile.last_name}`,
+          patientData: {
+            user_id: directive.user_id,
+            first_name: userProfile.first_name,
+            last_name: userProfile.last_name,
+            birth_date: userProfile.birth_date,
+            directives: directives
+          }
         };
-        setResult(errorResult);
-        return errorResult;
+
+        console.log("Validation réussie:", successResult);
+        setResult(successResult);
+        return successResult;
       }
 
-      const directive = directives[0];
-      console.log("Directive trouvée:", directive);
-
-      // Tentative de récupération du profil dans la table profiles
-      let profile = null;
-
-      const { data: profileData, error: profileErr } = await supabase
-        .from('profiles')
+      // Troisième tentative : recherche dans user_profiles
+      const { data: userProfile, error: userProfileError } = await supabase
+        .from('user_profiles')
         .select('*')
-        .eq('id', directive.user_id)
+        .eq('institution_shared_code', formData.accessCode.trim())
         .maybeSingle();
 
-      if (profileErr) {
-        console.error("Erreur lors de la recherche dans profiles:", profileErr);
-      } else if (profileData) {
-        profile = profileData;
-        console.log("Profil trouvé dans profiles:", profile);
-      }
+      console.log("Résultat user_profiles:", { userProfile, userProfileError });
 
-      // Si pas trouvé dans profiles, essayer dans user_profiles
-      if (!profile) {
-        console.log("Profil non trouvé dans profiles, recherche dans user_profiles...");
-        const { data: userProfileData, error: userProfileErr } = await supabase
-          .from('user_profiles')
+      if (userProfile) {
+        // Récupérer toutes les directives pour cet utilisateur
+        const { data: userDirectives, error: userDirectivesError } = await supabase
+          .from('directives')
           .select('*')
-          .eq('id', directive.user_id)
-          .maybeSingle();
+          .eq('user_id', userProfile.id);
 
-        if (userProfileErr) {
-          console.error("Erreur lors de la recherche dans user_profiles:", userProfileErr);
-        } else if (userProfileData) {
-          profile = userProfileData;
-          console.log("Profil trouvé dans user_profiles:", profile);
-        }
-      }
+        console.log("Directives trouvées pour user_profile:", { userDirectives, userDirectivesError });
 
-      // Si toujours pas de profil, utiliser des données de test pour le user_id connu
-      if (!profile && directive.user_id === "5a476fae-7295-435a-80e2-25532e9dda8a") {
-        console.log("Utilisation des données de test pour l'utilisateur connu");
-        profile = {
-          id: directive.user_id,
-          first_name: "FARID",
-          last_name: "AREZKI",
-          birth_date: "1963-08-13"
+        const successResult: SimpleAccessResult = {
+          success: true,
+          message: `Accès autorisé pour ${userProfile.first_name} ${userProfile.last_name}`,
+          patientData: {
+            user_id: userProfile.id,
+            first_name: userProfile.first_name,
+            last_name: userProfile.last_name,
+            birth_date: userProfile.birth_date,
+            directives: userDirectives || []
+          }
         };
+
+        console.log("Validation réussie:", successResult);
+        setResult(successResult);
+        return successResult;
       }
 
-      if (!profile) {
-        console.error("Aucun profil trouvé pour l'utilisateur:", directive.user_id);
-        const errorResult: SimpleAccessResult = {
-          success: false,
-          message: "Profil patient non trouvé. Veuillez contacter l'administrateur."
-        };
-        setResult(errorResult);
-        return errorResult;
-      }
-
-      // Succès - construction du résultat avec une structure de données cohérente
-      const successResult: SimpleAccessResult = {
-        success: true,
-        message: `Accès autorisé pour ${profile.first_name} ${profile.last_name}`,
-        patientData: {
-          user_id: directive.user_id,
-          first_name: profile.first_name,
-          last_name: profile.last_name,
-          birth_date: profile.birth_date,
-          directives: directives
-        }
+      console.log("Aucune directive trouvée avec ce code");
+      const errorResult: SimpleAccessResult = {
+        success: false,
+        message: "Code d'accès invalide ou expiré. Veuillez vérifier le code saisi."
       };
-
-      console.log("Validation réussie:", successResult);
-      setResult(successResult);
-      return successResult;
+      setResult(errorResult);
+      return errorResult;
 
     } catch (error) {
       console.error("Erreur validation simple:", error);

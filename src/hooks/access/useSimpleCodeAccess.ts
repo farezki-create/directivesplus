@@ -24,7 +24,7 @@ export const useSimpleCodeAccess = () => {
     setResult(null);
 
     try {
-      console.log("=== VALIDATION ACCÈS SIMPLE CORRIGÉE ===");
+      console.log("=== VALIDATION ACCÈS SIMPLE MISE À JOUR ===");
       console.log("Code d'accès:", accessCode);
 
       // Première tentative : recherche dans shared_profiles
@@ -32,6 +32,7 @@ export const useSimpleCodeAccess = () => {
         .from('shared_profiles')
         .select('*')
         .eq('access_code', accessCode.toUpperCase())
+        .gt('expires_at', new Date().toISOString())
         .maybeSingle();
 
       console.log("Résultat shared_profiles:", { sharedProfile, sharedError });
@@ -62,7 +63,40 @@ export const useSimpleCodeAccess = () => {
         return result;
       }
 
-      // Deuxième tentative : recherche par code d'institution dans user_profiles
+      // Deuxième tentative : recherche par code d'institution dans directives directement
+      const { data: directivesByCode, error: directivesError } = await supabase
+        .from('directives')
+        .select(`
+          *,
+          user_profiles!inner(id, first_name, last_name, birth_date)
+        `)
+        .eq('institution_code', accessCode.toUpperCase())
+        .gt('institution_code_expires_at', new Date().toISOString());
+
+      console.log("Résultat directives par code:", { directivesByCode, directivesError });
+
+      if (directivesByCode && directivesByCode.length > 0) {
+        const directive = directivesByCode[0];
+        const userProfile = directive.user_profiles;
+
+        const result: AccessResult = {
+          success: true,
+          message: `Accès autorisé pour ${userProfile.first_name} ${userProfile.last_name}`,
+          patientData: {
+            id: directive.user_id,
+            first_name: userProfile.first_name,
+            last_name: userProfile.last_name,
+            birth_date: userProfile.birth_date,
+            directives: directivesByCode
+          }
+        };
+
+        setResult(result);
+        setLoading(false);
+        return result;
+      }
+
+      // Troisième tentative : recherche dans user_profiles
       const { data: userProfile, error: userError } = await supabase
         .from('user_profiles')
         .select('*')
@@ -76,8 +110,7 @@ export const useSimpleCodeAccess = () => {
         const { data: directives, error: directivesError } = await supabase
           .from('directives')
           .select('*')
-          .eq('user_id', userProfile.id)
-          .eq('institution_code', accessCode.toUpperCase());
+          .eq('user_id', userProfile.id);
 
         console.log("Directives trouvées pour user_profile:", { directives, directivesError });
 
