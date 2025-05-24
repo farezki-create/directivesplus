@@ -66,7 +66,20 @@ const DirectivesAcces = () => {
     );
   }
 
-  const patientData = dossierActif.profileData || dossierActif.contenu?.patient;
+  // Normalisation des données patient pour gérer les différentes structures
+  const getPatientInfo = () => {
+    const profileData = dossierActif.profileData;
+    const patientData = dossierActif.contenu?.patient;
+    
+    // Priorité aux données du profil, puis aux données du contenu
+    const firstName = profileData?.first_name || (patientData && 'prenom' in patientData ? patientData.prenom : '') || (patientData && 'first_name' in patientData ? patientData.first_name : '');
+    const lastName = profileData?.last_name || (patientData && 'nom' in patientData ? patientData.nom : '') || (patientData && 'last_name' in patientData ? patientData.last_name : '');
+    const birthDate = profileData?.birth_date || (patientData && 'date_naissance' in patientData ? patientData.date_naissance : '') || (patientData && 'birth_date' in patientData ? patientData.birth_date : '');
+    
+    return { firstName, lastName, birthDate };
+  };
+
+  const patientInfo = getPatientInfo();
   const directives = dossierActif.contenu?.documents || [];
 
   return (
@@ -106,13 +119,13 @@ const DirectivesAcces = () => {
                 <div>
                   <p className="text-sm font-medium text-green-800">Patient</p>
                   <p className="text-green-700">
-                    {patientData?.prenom || patientData?.first_name} {patientData?.nom || patientData?.last_name}
+                    {patientInfo.firstName} {patientInfo.lastName}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-green-800">Date de naissance</p>
                   <p className="text-green-700">
-                    {patientData?.date_naissance || patientData?.birth_date}
+                    {patientInfo.birthDate}
                   </p>
                 </div>
               </div>
