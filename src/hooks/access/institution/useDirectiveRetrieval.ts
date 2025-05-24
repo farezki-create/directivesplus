@@ -1,6 +1,7 @@
-import { validateInstitutionCodes, validateProfileMatches } from "@/utils/institution-access/profileValidator";
+
+import { validateInstitutionCodes } from "@/utils/institution-access/profileValidator";
+import { findMatchingProfiles } from "@/utils/institution-access/profileMatcher";
 import { retrieveUserDocuments } from "@/utils/institution-access/documentRetrieval";
-import { generateErrorMessage } from "@/utils/institution-access/errorMessages";
 import { runInstitutionAccessDiagnostics } from "@/utils/institution-access/diagnostics";
 
 interface CleanedValues {
@@ -36,94 +37,106 @@ interface DirectiveRecord {
   created_at: string;
 }
 
+const generateDetailedErrorMessage = (
+  foundProfiles: number,
+  matches: any[],
+  cleanedValues: CleanedValues
+): string => {
+  console.log("=== GÉNÉRATION MESSAGE D'ERREUR ===");
+  console.log("Profils trouvés:", foundProfiles);
+  console.log("Correspondances:", matches.length);
+  
+  if (foundProfiles === 0) {
+    return "Aucun profil patient trouvé dans la base de données pour ce code d'accès. " +
+           "Vérifiez que le patient a bien créé son compte et complété son profil sur la plateforme.";
+  }
+  
+  const perfectMatches = matches.filter(m => m.allMatch);
+  if (perfectMatches.length > 0) {
+    return "Correspondance trouvée mais erreur inattendue. Contactez le support technique.";
+  }
+  
+  const nameMatches = matches.filter(m => m.lastNameMatch && m.firstNameMatch);
+  if (nameMatches.length > 0) {
+    const example = nameMatches[0];
+    return `Les nom et prénom correspondent au profil du patient, mais la date de naissance ne correspond pas.\n` +
+           `Date saisie: ${cleanedValues.birthDate}\n` +
+           `Date dans le profil: ${example.profile.birth_date || 'non renseignée'}\n` +
+           `Vérifiez que la date de naissance est correcte et au format YYYY-MM-DD.`;
+  }
+  
+  const partialMatches = {
+    lastName: matches.filter(m => m.lastNameMatch && !m.firstNameMatch).length,
+    firstName: matches.filter(m => !m.lastNameMatch && m.firstNameMatch).length,
+    birthDate: matches.filter(m => !m.lastNameMatch && !m.firstNameMatch && m.birthDateMatch).length
+  };
+  
+  if (partialMatches.lastName > 0 || partialMatches.firstName > 0 || partialMatches.birthDate > 0) {
+    let message = "Correspondances partielles trouvées mais aucune correspondance complète:\n";
+    if (partialMatches.lastName > 0) message += `• ${partialMatches.lastName} correspondance(s) de nom de famille\n`;
+    if (partialMatches.firstName > 0) message += `• ${partialMatches.firstName} correspondance(s) de prénom\n`;
+    if (partialMatches.birthDate > 0) message += `• ${partialMatches.birthDate} correspondance(s) de date de naissance\n`;
+    message += "\nVérifiez l'orthographe exacte de tous les champs.";
+    return message;
+  }
+  
+  return "Aucune correspondance trouvée avec les informations fournies.\n" +
+         "Vérifiez que:\n" +
+         "• Le nom de famille est correctement orthographié\n" +
+         "• Le prénom est correctement orthographié\n" +
+         "• La date de naissance est au format YYYY-MM-DD\n" +
+         "• Le patient a bien créé et complété son profil sur la plateforme";
+};
+
 export const retrieveDirectivesByInstitutionCode = async (
   cleanedValues: CleanedValues,
   originalValues: OriginalValues
 ): Promise<DirectiveRecord[]> => {
-  console.log("=== STARTING DIRECTIVE RETRIEVAL ===");
-  console.log("Cleaned values:", cleanedValues);
-  console.log("Original values:", originalValues);
+  console.log("=== DÉBUT RÉCUPÉRATION DIRECTIVES ===");
+  console.log("Valeurs nettoyées:", cleanedValues);
+  console.log("Valeurs originales:", originalValues);
   
   try {
-    // Exécuter les diagnostics en premier
+    // Diagnostics préliminaires
     await runInstitutionAccessDiagnostics(cleanedValues.institutionCode);
 
-    // Vérifier les codes d'institution valides
-    const allValidCodes = await validateInstitutionCodes(cleanedValues.institutionCode);
-    console.log(`Found ${allValidCodes.length} valid institution codes`);
+    // Validation des codes d'institution
+    const validCodes = await validateInstitutionCodes(cleanedValues.institutionCode);
+    console.log(`Codes d'institution valides trouvés: ${validCodes.length}`);
 
-    // Valider les correspondances de profils
-    const { matchAttempts, foundProfiles } = await validateProfileMatches(allValidCodes, cleanedValues);
-    console.log("Match attempts completed:", { matchAttempts, foundProfiles });
+    if (validCodes.length === 0) {
+      throw new Error("Code d'accès institution invalide ou expiré.");
+    }
 
-    // Chercher une correspondance parfaite
-    const perfectMatch = matchAttempts.find(attempt => attempt.allMatch);
+    // Recherche des profils correspondants avec la nouvelle logique
+    const { matches, foundProfiles } = await findMatchingProfiles(validCodes, cleanedValues);
+
+    // Vérification des correspondances parfaites
+    const perfectMatch = matches.find(match => match.allMatch);
     
     if (perfectMatch) {
-      console.log("=== PERFECT MATCH FOUND! ===");
-      console.log("Perfect match details:", perfectMatch);
+      console.log("=== CORRESPONDANCE PARFAITE TROUVÉE! ===");
+      console.log("Détails correspondance:", perfectMatch);
       
-      const directiveId = allValidCodes.find(code => code.user_id === perfectMatch.user_id)?.id;
+      const directiveId = validCodes.find(code => code.user_id === perfectMatch.user_id)?.id;
       if (directiveId) {
-        console.log("Retrieving documents for directive ID:", directiveId);
+        console.log("Récupération documents pour directive ID:", directiveId);
         const directiveRecord = await retrieveUserDocuments(perfectMatch.user_id, directiveId);
-        console.log("Documents retrieved successfully:", directiveRecord);
+        console.log("Documents récupérés avec succès:", directiveRecord);
         return [directiveRecord];
       } else {
-        console.error("No directive ID found for perfect match user");
+        console.error("Aucun ID de directive trouvé pour la correspondance parfaite");
         throw new Error("Erreur: directive non trouvée pour cet utilisateur");
       }
     }
 
-    // Si aucune correspondance parfaite, analyser les correspondances partielles
-    const nameMatches = matchAttempts.filter(attempt => 
-      attempt.lastNameMatch && attempt.firstNameMatch
-    );
-    
-    if (nameMatches.length > 0) {
-      console.log("=== NAME MATCHES FOUND BUT DATE MISMATCH ===");
-      console.log("Name matches:", nameMatches);
-      
-      const mismatchDetails = nameMatches.map(match => ({
-        user_id: match.user_id,
-        input_date: cleanedValues.birthDate,
-        profile_date: match.profile.birth_date,
-        profile_name: `${match.profile.first_name} ${match.profile.last_name}`
-      }));
-      
-      console.log("Date mismatch details:", mismatchDetails);
-      
-      throw new Error(
-        "Les informations ne correspondent pas exactement au profil du patient. " +
-        `Nom et prénom correspondent, mais la date de naissance saisie (${cleanedValues.birthDate}) ` +
-        `ne correspond pas à celle du profil. Veuillez vérifier la date de naissance.`
-      );
-    }
-
-    // Analyser les correspondances partielles par champ
-    const partialMatches = {
-      lastNameOnly: matchAttempts.filter(m => m.lastNameMatch && !m.firstNameMatch),
-      firstNameOnly: matchAttempts.filter(m => !m.lastNameMatch && m.firstNameMatch),
-      birthDateOnly: matchAttempts.filter(m => !m.lastNameMatch && !m.firstNameMatch && m.birthDateMatch)
-    };
-
-    console.log("=== PARTIAL MATCHES ANALYSIS ===");
-    console.log("Last name only matches:", partialMatches.lastNameOnly.length);
-    console.log("First name only matches:", partialMatches.firstNameOnly.length);
-    console.log("Birth date only matches:", partialMatches.birthDateOnly.length);
-
-    console.log("=== FINAL ANALYSIS ===");
-    console.log("Total valid codes:", allValidCodes.length);
-    console.log("Profiles found:", foundProfiles);
-    console.log("Perfect matches:", matchAttempts.filter(m => m.allMatch).length);
-    console.log("Name matches:", nameMatches.length);
-    console.log("No matches found - generating error message");
-
-    // Générer le message d'erreur approprié
-    const errorMessage = generateErrorMessage(foundProfiles, matchAttempts);
+    // Aucune correspondance parfaite trouvée
+    console.log("=== AUCUNE CORRESPONDANCE PARFAITE ===");
+    const errorMessage = generateDetailedErrorMessage(foundProfiles, matches, cleanedValues);
     throw new Error(errorMessage);
+    
   } catch (error) {
-    console.error("Error in retrieveDirectivesByInstitutionCode:", error);
+    console.error("Erreur dans retrieveDirectivesByInstitutionCode:", error);
     throw error;
   }
 };
