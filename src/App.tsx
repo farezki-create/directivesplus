@@ -1,127 +1,46 @@
+import React from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from 'react-query';
+import { Toaster } from "@/components/ui/toaster"
+import { AuthProvider } from './contexts/AuthContext';
+import Dashboard from './pages/Dashboard';
+import DirectivesDocs from './pages/DirectivesDocs';
+import MedicalDocs from './pages/MedicalDocs';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import LandingPage from './pages/LandingPage';
+import Profile from './pages/Profile';
+import DirectivesAcces from './pages/DirectivesAcces';
+import EditProfile from './pages/EditProfile';
+import Partage from "@/pages/Partage";
 
-import { Route, Routes } from "react-router-dom";
-import { Toaster } from "@/components/ui/sonner";
-import { AuthProvider } from "@/contexts/AuthContext";
-
-// Import pages
-import Index from "@/pages/Index";
-import Auth from "@/pages/Auth";
-import Profile from "@/pages/Profile";
-import DirectivesDocs from "@/pages/DirectivesDocs";
-import MesDirectives from "@/pages/MesDirectives";
-import { Navigate } from "react-router-dom";
-import AvisGeneral from "@/pages/AvisGeneral";
-import GoutsPeurs from "@/pages/GoutsPeurs";
-import MaintienVie from "@/pages/MaintienVie";
-import MaladieAvancee from "@/pages/MaladieAvancee";
-import ExemplesPhrases from "@/pages/ExemplesPhrases";
-import PersonneConfiance from "@/pages/PersonneConfiance";
-import Testimonials from "@/pages/Testimonials";
-import Soutenir from "@/pages/Soutenir";
-import Rediger from "@/pages/Rediger";
-import MedicalData from "@/pages/MedicalData";
-import Synthesis from "@/pages/Synthesis";
-import MedicalAccess from "@/pages/MedicalAccess";
-import PlaceholderPage from "@/pages/PlaceholderPage";
-import LegalMentions from "@/pages/LegalMentions";
-import PrivacyPolicy from "@/pages/PrivacyPolicy";
-import ReportDataBreach from "@/pages/ReportDataBreach";
-import AccessCard from "@/pages/AccessCard";
-import EnSavoirPlus from "@/pages/EnSavoirPlus";
-import InstitutionAccess from "@/pages/InstitutionAccess";
-import DirectivesAcces from "@/pages/DirectivesAcces";
-import InstitutionAccessSimple from "@/pages/InstitutionAccessSimple";
-
-// Import Admin
-import Admin from "@/pages/Admin";
-import NotFound from "@/pages/NotFound";
-import AffichageDossierRedirect from "@/pages/AffichageDossierRedirect";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
-
-import "./App.css";
+const queryClient = new QueryClient();
 
 function App() {
   return (
-    <AuthProvider>
-      <Routes>
-        {/* ========== ROUTES PUBLIQUES ABSOLUES ========== */}
-        {/* Ces routes ne passent JAMAIS par ProtectedRoute et sont accessibles sans authentification */}
-        <Route path="/" element={<Index />} />
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/affichage-dossier" element={<AffichageDossierRedirect />} />
-        <Route path="/mes-directives" element={<DirectivesDocs />} />
-        <Route path="/directives-acces" element={<DirectivesAcces />} />
-        <Route path="/directives-docs" element={<DirectivesDocs />} />
-        <Route path="/acces-institution" element={<InstitutionAccess />} />
-        <Route path="/acces-institution-simple" element={<InstitutionAccessSimple />} />
-        <Route path="/donnees-medicales" element={<MedicalData />} />
-        
-        {/* Autres routes publiques */}
-        <Route path="/avis-general" element={<AvisGeneral />} />
-        <Route path="/gouts-peurs" element={<GoutsPeurs />} />
-        <Route path="/maintien-vie" element={<MaintienVie />} />
-        <Route path="/maladie-avancee" element={<MaladieAvancee />} />
-        <Route path="/exemples-phrases" element={<ExemplesPhrases />} />
-        <Route path="/personne-confiance" element={<PersonneConfiance />} />
-        <Route path="/testimonials" element={<Testimonials />} />
-        <Route path="/commentaires" element={<Testimonials />} />
-        <Route path="/soutenir" element={<Soutenir />} />
-        <Route path="/legal" element={<LegalMentions />} />
-        <Route path="/confidentialite" element={<PrivacyPolicy />} />
-        <Route path="/report-breach" element={<ReportDataBreach />} />
-        <Route path="/medical-access" element={<MedicalAccess />} />
-        <Route path="/carte-acces" element={<AccessCard />} />
-        <Route path="/en-savoir-plus" element={<EnSavoirPlus />} />
-        <Route path="/mentions-legales" element={<LegalMentions />} />
-        <Route path="/dashboard" element={<Navigate to="/rediger" replace />} />
-        
-        {/* Routes avec accès alternatif via PlaceholderPage */}
-        <Route path="/:pageId" element={<PlaceholderPage />} />
-        
-        {/* ========== ROUTES PROTÉGÉES ========== */}
-        {/* Ces routes nécessitent une authentification */}
-        <Route 
-          path="/profile" 
-          element={
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/admin" 
-          element={
-            <ProtectedRoute requiredRole="admin">
-              <Admin />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/rediger" 
-          element={
-            <ProtectedRoute>
-              <Rediger />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/mes-directives-app" 
-          element={
-            <ProtectedRoute>
-              <MesDirectives />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/synthese" 
-          element={<Synthesis />}
-        />
-        
-        {/* Page non trouvée */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <div className="min-h-screen bg-gray-50">
+          <AuthProvider>
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/directives" element={<DirectivesDocs />} />
+              <Route path="/medical" element={<MedicalDocs />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/edit-profile" element={<EditProfile />} />
+              <Route path="/directives-acces" element={<DirectivesAcces />} />
+              
+              {/* Route publique pour le partage de documents */}
+              <Route path="/partage/:shareCode" element={<Partage />} />
+            </Routes>
+          </AuthProvider>
+        </div>
+      </BrowserRouter>
       <Toaster />
-    </AuthProvider>
+    </QueryClientProvider>
   );
 }
 
