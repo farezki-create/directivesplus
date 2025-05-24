@@ -5,13 +5,13 @@ import { Info } from "lucide-react";
 import DirectivesAccessForm from "@/components/access/DirectivesAccessForm";
 
 interface DirectivesAccessFormViewProps {
-  onSubmit: (formData: any) => void;
-  loading: boolean;
+  onSubmit?: (accessCode: string, formData: any) => Promise<void>;
+  loading?: boolean;
 }
 
 const DirectivesAccessFormView: React.FC<DirectivesAccessFormViewProps> = ({
   onSubmit,
-  loading
+  loading = false
 }) => {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
