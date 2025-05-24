@@ -7,8 +7,9 @@ import AppNavigation from "@/components/AppNavigation";
 import DirectivesGrid from "@/components/DirectivesGrid";
 import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Eye } from "lucide-react";
+import { ArrowLeft, Eye, Shield, Clock, Users, FileText, Heart } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 const Rediger = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -86,15 +87,118 @@ const Rediger = () => {
           <h1 className="text-3xl md:text-4xl font-bold text-directiveplus-800 mb-4">
             {isReadOnlyAccess ? "Consultation des directives anticipées" : "Vos directives anticipées en toute simplicité"}
           </h1>
-          <p className="text-gray-600 text-lg">
+          <p className="text-gray-600 text-lg mb-8">
             {isReadOnlyAccess 
               ? "Consultez les directives anticipées et les personnes de confiance désignées."
               : "Rédigez vos directives anticipées et désignez vos personnes de confiance en quelques étapes simples et sécurisées."
             }
           </p>
+
+          {/* Section explicative - seulement pour les utilisateurs authentifiés */}
+          {!isReadOnlyAccess && (
+            <div className="grid gap-6 md:grid-cols-3 mb-12">
+              <Card className="bg-white border-blue-200">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-center mb-2">
+                    <div className="p-2 rounded-lg bg-blue-50">
+                      <FileText className="h-6 w-6 text-blue-600" />
+                    </div>
+                  </div>
+                  <CardTitle className="text-lg text-center">Simple et guidé</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-center">
+                    Notre questionnaire vous guide étape par étape pour rédiger vos directives en toute simplicité.
+                  </CardDescription>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-white border-green-200">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-center mb-2">
+                    <div className="p-2 rounded-lg bg-green-50">
+                      <Shield className="h-6 w-6 text-green-600" />
+                    </div>
+                  </div>
+                  <CardTitle className="text-lg text-center">Sécurisé</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-center">
+                    Vos données sont chiffrées et stockées de manière sécurisée. Vous gardez le contrôle total.
+                  </CardDescription>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-white border-purple-200">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-center mb-2">
+                    <div className="p-2 rounded-lg bg-purple-50">
+                      <Users className="h-6 w-6 text-purple-600" />
+                    </div>
+                  </div>
+                  <CardTitle className="text-lg text-center">Accessible</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-center">
+                    Générez un code d'accès pour permettre aux professionnels de santé de consulter vos directives.
+                  </CardDescription>
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </div>
         
         <DirectivesGrid readOnly={isReadOnlyAccess} />
+
+        {/* Section Carte d'accès - seulement pour les utilisateurs authentifiés */}
+        {!isReadOnlyAccess && (
+          <div className="max-w-4xl mx-auto mt-16">
+            <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+              <CardHeader className="text-center">
+                <div className="flex items-center justify-center gap-3 mb-4">
+                  <Shield className="h-8 w-8 text-blue-600" />
+                  <CardTitle className="text-2xl text-blue-800">
+                    Accès Professionnel Sécurisé
+                  </CardTitle>
+                </div>
+                <CardDescription className="text-lg text-blue-700">
+                  Permettez aux professionnels de santé d'accéder à vos directives en cas d'urgence
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="flex items-start gap-3">
+                    <Clock className="h-5 w-5 text-blue-600 mt-1 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-medium text-blue-800">Accès immédiat</h4>
+                      <p className="text-sm text-blue-600">
+                        Les professionnels peuvent consulter vos directives instantanément avec votre code d'accès.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <Heart className="h-5 w-5 text-blue-600 mt-1 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-medium text-blue-800">Respect de vos volontés</h4>
+                      <p className="text-sm text-blue-600">
+                        Vos directives et personnes de confiance sont clairement accessibles en cas de besoin.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="text-center">
+                  <Button 
+                    onClick={() => navigate("/carte-acces")}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3"
+                  >
+                    <Shield className="h-4 w-4 mr-2" />
+                    Générer ma carte d'accès
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </main>
       
       <footer className="bg-white py-6 border-t">
