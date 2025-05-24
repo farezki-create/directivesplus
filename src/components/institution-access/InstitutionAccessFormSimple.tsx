@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,17 +10,40 @@ import { useDossierStore } from "@/store/dossierStore";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 
+// Fonction pour générer le code fixe (même logique que dans AccessCodeGenerator)
+const generateFixedCode = (userId: string): string => {
+  const baseCode = userId.replace(/-/g, '').substring(0, 8).toUpperCase();
+  const paddedCode = baseCode.padEnd(8, '0');
+  
+  return paddedCode
+    .replace(/0/g, 'O')
+    .replace(/1/g, 'I')
+    .replace(/5/g, 'S')
+    .substring(0, 8);
+};
+
 export const InstitutionAccessFormSimple = () => {
   const navigate = useNavigate();
   const { setDossierActif } = useDossierStore();
   const { loading, result, validateAccess } = useInstitutionAccessSimple();
+  const [testCode, setTestCode] = useState<string>("");
+  
+  // ID utilisateur de test pour AREZKI FARID (simulé)
+  const testUserId = "5a476fae-7295-435a-80e2-25532e9dda8a";
   
   const [form, setForm] = useState<InstitutionAccessFormValues>({
-    lastName: "AREZKI", // Données de test pré-remplies
-    firstName: "FARID",
+    lastName: "AREZKI",
+    firstName: "FARID", 
     birthDate: "1963-08-13",
-    institutionCode: "9E5CUV7X"
+    institutionCode: ""
   });
+
+  // Générer le code de test au montage du composant
+  useEffect(() => {
+    const generatedCode = generateFixedCode(testUserId);
+    setTestCode(generatedCode);
+    setForm(prev => ({ ...prev, institutionCode: generatedCode }));
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -37,7 +60,6 @@ export const InstitutionAccessFormSimple = () => {
     if (validationResult.success && validationResult.directiveData) {
       console.log("Formulaire: Succès, redirection vers mes-directives");
       
-      // Créer un dossier conforme au type Dossier
       const dossier = {
         id: `institution-${validationResult.directiveData.user_id}`,
         userId: validationResult.directiveData.user_id,
@@ -59,16 +81,13 @@ export const InstitutionAccessFormSimple = () => {
         }
       };
       
-      // Mettre à jour le store
       setDossierActif(dossier);
       
-      // Toast de succès
       toast({
         title: "Accès autorisé",
         description: validationResult.message
       });
       
-      // Rediriger vers mes-directives
       navigate("/mes-directives");
     }
   };
@@ -84,13 +103,18 @@ export const InstitutionAccessFormSimple = () => {
         </AlertDescription>
       </Alert>
 
-      {/* Données de test */}
+      {/* Données de test avec le bon code */}
       <Alert className="bg-green-50 border-green-200">
         <Info className="h-5 w-5 text-green-600" />
         <AlertDescription className="text-green-800">
           <strong>Test disponible :</strong><br />
           AREZKI FARID, né le 13/08/1963<br />
-          Code : 9E5CUV7X
+          Code : <strong className="font-mono text-lg">{testCode}</strong>
+          {testCode && (
+            <div className="text-xs mt-1 text-green-600">
+              Code généré automatiquement basé sur l'ID utilisateur
+            </div>
+          )}
         </AlertDescription>
       </Alert>
 
@@ -142,6 +166,9 @@ export const InstitutionAccessFormSimple = () => {
             placeholder="Code d'accès"
             required
           />
+          <p className="text-xs text-gray-500">
+            Code permanent généré automatiquement pour le patient
+          </p>
         </div>
 
         <Button 
