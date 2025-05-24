@@ -2,7 +2,7 @@
 import { useDocumentSharing } from "./useDocumentSharing";
 import { useAccessCodeManagement } from "./useAccessCodeManagement";
 import { useSharedDocumentRetrieval } from "./useSharedDocumentRetrieval";
-import { useInstitutionCodeGeneration } from "./useInstitutionCodeGeneration";
+import { useInstitutionCodeGeneration } from "../useInstitutionCodeGeneration";
 
 export const useUnifiedDocumentSharing = () => {
   const { shareDocument, isSharing: isDocumentSharing, shareError } = useDocumentSharing();
