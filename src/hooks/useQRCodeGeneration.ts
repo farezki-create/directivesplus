@@ -28,11 +28,6 @@ export const useQRCodeGeneration = () => {
     return data.length <= QR_CODE_LIMITS.M;
   };
 
-  const createShortUrl = (documentId: string): string => {
-    const baseUrl = window.location.origin;
-    return `${baseUrl}/document/${documentId}`;
-  };
-
   const generateQRCode = useCallback((documentId: string, documentName: string, filePath?: string) => {
     if (!documentId) {
       setError("ID du document manquant");
@@ -48,41 +43,40 @@ export const useQRCodeGeneration = () => {
     setError(null);
 
     try {
-      const baseUrl = window.location.origin;
+      // Utiliser directement le chemin du fichier PDF pour le QR code
+      let qrCodeUrl = filePath;
       
-      // Toujours utiliser l'URL courte pour le QR code
-      const shortUrl = createShortUrl(documentId);
+      // Si pas de chemin de fichier direct, utiliser une URL de redirection courte
+      if (!filePath || !filePath.startsWith('http')) {
+        const baseUrl = window.location.origin;
+        qrCodeUrl = `${baseUrl}/pdf-viewer?id=${documentId}`;
+      }
       
       console.log("QR Code generation:", {
         documentId,
         documentName,
-        shortUrl,
-        urlLength: shortUrl.length,
-        isValidLength: validateQRCodeData(shortUrl)
+        qrCodeUrl,
+        urlLength: qrCodeUrl.length,
+        isValidLength: validateQRCodeData(qrCodeUrl)
       });
 
       // Vérifier que l'URL n'est pas trop longue pour le QR code
-      if (!validateQRCodeData(shortUrl)) {
-        throw new Error(`URL trop longue pour le QR code (${shortUrl.length} caractères, maximum ${QR_CODE_LIMITS.M})`);
-      }
-      
-      let directPdfUrl = shortUrl;
-      
-      // Si on a un chemin de fichier direct et qu'il n'est pas trop long, l'utiliser comme URL directe
-      if (filePath && (filePath.startsWith('http') || filePath.startsWith('/')) && !filePath.startsWith('data:')) {
-        if (validateQRCodeData(filePath)) {
-          directPdfUrl = filePath;
-        } else {
-          console.warn("Chemin du fichier trop long, utilisation de l'URL de redirection");
+      if (!validateQRCodeData(qrCodeUrl)) {
+        // Si l'URL est trop longue, créer une URL de redirection plus courte
+        const baseUrl = window.location.origin;
+        qrCodeUrl = `${baseUrl}/pdf/${documentId}`;
+        
+        if (!validateQRCodeData(qrCodeUrl)) {
+          throw new Error(`URL trop longue pour le QR code (${qrCodeUrl.length} caractères, maximum ${QR_CODE_LIMITS.M})`);
         }
       }
       
       const qrData: QRCodeData = {
         documentId,
         documentName,
-        shareUrl: shortUrl,
-        qrCodeValue: shortUrl, // Toujours utiliser l'URL courte pour le QR code
-        directPdfUrl
+        shareUrl: qrCodeUrl,
+        qrCodeValue: qrCodeUrl,
+        directPdfUrl: filePath || qrCodeUrl
       };
 
       setQrCodeData(qrData);

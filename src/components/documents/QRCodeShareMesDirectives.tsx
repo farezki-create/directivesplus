@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/button";
@@ -62,7 +61,8 @@ export function QRCodeShareMesDirectives({
   const handleTestLink = () => {
     if (qrCodeData?.qrCodeValue) {
       console.log("Test du lien QR code:", qrCodeData.qrCodeValue);
-      window.open(qrCodeData.qrCodeValue, '_blank');
+      // Ouvrir dans l'application courante au lieu d'un nouvel onglet
+      window.location.href = qrCodeData.qrCodeValue;
     }
   };
 
@@ -177,7 +177,7 @@ export function QRCodeShareMesDirectives({
             size="sm"
           >
             <ExternalLink className="w-4 h-4 mr-2" /> 
-            Tester
+            Tester dans l'app
           </Button>
           
           <Button 
@@ -202,7 +202,7 @@ export function QRCodeShareMesDirectives({
           <Alert className="bg-green-50 border-green-200">
             <CheckCircle2 className="h-4 w-4 text-green-600" />
             <AlertDescription className="text-green-800">
-              QR Code prêt - Scanner pour accéder au document
+              QR Code prêt - Scanner pour ouvrir le PDF dans l'application
             </AlertDescription>
           </Alert>
         )}
@@ -213,16 +213,16 @@ export function QRCodeShareMesDirectives({
             📱 Comment utiliser ce QR code
           </p>
           <p className="text-xs text-blue-700">
-            Scannez avec l'appareil photo de votre téléphone ou une app QR code pour accéder directement au document.
+            Scannez avec l'appareil photo de votre téléphone pour ouvrir le PDF directement dans l'application.
           </p>
         </div>
 
-        <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
-          <p className="text-sm text-amber-800 font-medium mb-1">
-            🔗 Lien optimisé
+        <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+          <p className="text-sm text-green-800 font-medium mb-1">
+            🔗 Ouverture dans l'application
           </p>
-          <p className="text-xs text-amber-700">
-            Ce QR code utilise un lien court pour une meilleure compatibilité et rapidité d'accès.
+          <p className="text-xs text-green-700">
+            Le QR code ouvre maintenant le PDF systématiquement dans l'application avec tous les outils de visualisation.
           </p>
         </div>
       </CardContent>
