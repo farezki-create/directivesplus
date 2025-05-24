@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { AccessCodeValidationResult, ShareableDocument } from "../types/index";
+import type { AccessCodeValidationResult, ShareableDocument } from "../types";
 
 /**
  * Service unifié pour la validation des codes d'accès
@@ -77,7 +77,7 @@ export class UnifiedAccessValidationService {
           created_at: docData?.created_at || doc.shared_at,
           user_id: doc.user_id,
           file_type: docData?.file_type || 'unknown',
-          source: docData?.source || doc.document_type,
+          source: (docData?.source || doc.document_type) as 'pdf_documents' | 'directives' | 'medical_documents',
           content: docData?.content,
           description: docData?.description,
           content_type: docData?.content_type,

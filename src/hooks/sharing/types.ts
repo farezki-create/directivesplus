@@ -33,3 +33,15 @@ export interface SharedDocument {
   expires_at?: string;
   is_active: boolean;
 }
+
+export interface AccessCodeValidationResult {
+  success: boolean;
+  message: string;
+  documents?: ShareableDocument[];
+  patientData?: {
+    user_id: string;
+    first_name: string;
+    last_name: string;
+    birth_date: string;
+  };
+}
