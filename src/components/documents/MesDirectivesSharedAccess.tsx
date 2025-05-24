@@ -19,12 +19,17 @@ interface SharedDocumentData {
   description?: string;
 }
 
-interface SharedDocument {
+// Type pour les données retournées par Supabase
+interface SupabaseSharedDocument {
   document_id: string;
   document_type: string;
-  document_data: SharedDocumentData;
+  document_data: any; // Utiliser any temporairement pour éviter les problèmes de type Json
   user_id: string;
   shared_at: string;
+  expires_at?: string;
+  is_active: boolean;
+  access_code: string;
+  id: string;
 }
 
 export function MesDirectivesSharedAccess() {
@@ -91,7 +96,7 @@ export function MesDirectivesSharedAccess() {
       }
 
       // Transformer les documents partagés en format Document avec typage correct
-      const transformedDocuments: Document[] = validDocuments.map((sharedDoc: SharedDocument, index) => {
+      const transformedDocuments: Document[] = validDocuments.map((sharedDoc: SupabaseSharedDocument) => {
         const docData = sharedDoc.document_data as SharedDocumentData;
         return {
           id: sharedDoc.document_id,
