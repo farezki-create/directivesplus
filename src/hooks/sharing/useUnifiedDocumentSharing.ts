@@ -7,6 +7,7 @@ import {
   getSharedDocumentsByAccessCode as fetchSharedDocumentsByAccessCode,
   deactivateSharedDocument 
 } from "./sharingService";
+import { generateInstitutionAccessCode } from "./institutionSharingService";
 import { formatShareMessage } from "./sharingUtils";
 import type { ShareableDocument, ShareOptions } from "./types";
 
@@ -106,10 +107,33 @@ export const useUnifiedDocumentSharing = () => {
     document: ShareableDocument,
     expiresInDays: number = 30
   ): Promise<string | null> => {
-    return await shareDocument(document, { 
-      expiresInDays, 
-      accessType: 'institution' 
-    });
+    if (!document.user_id) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de générer le code d'accès",
+        variant: "destructive"
+      });
+      return null;
+    }
+
+    setIsSharing(document.id);
+    setShareError(null);
+
+    try {
+      const accessCode = await generateInstitutionAccessCode(document, expiresInDays);
+
+      if (!accessCode) {
+        throw new Error("No access code returned");
+      }
+
+      return accessCode;
+    } catch (error: any) {
+      console.error("Erreur lors de la génération du code institution:", error);
+      setShareError(error.message);
+      throw error;
+    } finally {
+      setIsSharing(null);
+    }
   };
 
   return {

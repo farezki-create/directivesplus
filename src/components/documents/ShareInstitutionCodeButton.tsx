@@ -12,9 +12,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { generateInstitutionAccessCode } from "@/hooks/sharing/institutionSharingService";
+import { useUnifiedDocumentSharing, type ShareableDocument } from "@/hooks/sharing/useUnifiedDocumentSharing";
 import { supabase } from "@/integrations/supabase/client";
-import type { ShareableDocument } from "@/hooks/sharing/types";
 
 interface ShareInstitutionCodeButtonProps {
   directiveId: string;
@@ -26,6 +25,7 @@ const ShareInstitutionCodeButton = ({ directiveId }: ShareInstitutionCodeButtonP
   const [code, setCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { generateInstitutionCode } = useUnifiedDocumentSharing();
 
   const handleGenerateCode = async () => {
     setIsLoading(true);
@@ -61,8 +61,8 @@ const ShareInstitutionCodeButton = ({ directiveId }: ShareInstitutionCodeButtonP
         content: directive.content
       };
 
-      // Generate the institution access code
-      const generatedCode = await generateInstitutionAccessCode(shareableDocument, 30);
+      // Generate the institution access code using the unified service
+      const generatedCode = await generateInstitutionCode(shareableDocument, 30);
       
       if (generatedCode) {
         setCode(generatedCode);
@@ -74,6 +74,7 @@ const ShareInstitutionCodeButton = ({ directiveId }: ShareInstitutionCodeButtonP
         setError("Une erreur est survenue lors de la génération du code");
       }
     } catch (err: any) {
+      console.error("Erreur génération code:", err);
       setError(err.message || "Une erreur est survenue lors de la génération du code");
       toast({
         title: "Erreur",

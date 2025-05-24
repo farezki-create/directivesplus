@@ -48,9 +48,11 @@ export const generateInstitutionAccessCode = async (
     .single();
 
   if (error) {
+    console.error("Erreur génération code institution:", error);
     throw error;
   }
 
+  console.log("Code institution généré:", data.access_code);
   return data.access_code;
 };
 
@@ -61,6 +63,9 @@ export const validateInstitutionAccess = async (
   accessCode: string
 ): Promise<InstitutionAccessResult> => {
   try {
+    console.log("=== VALIDATION ACCÈS INSTITUTION ===");
+    console.log("Paramètres:", { lastName, firstName, birthDate, accessCode });
+
     // Utiliser la fonction RPC existante pour obtenir les documents partagés
     const { data, error } = await supabase.rpc(
       'get_shared_documents_by_access_code',
@@ -71,6 +76,8 @@ export const validateInstitutionAccess = async (
         input_birth_date: birthDate
       }
     );
+
+    console.log("Résultat RPC:", { data, error });
 
     if (error) {
       console.error("Erreur RPC:", error);
@@ -83,7 +90,7 @@ export const validateInstitutionAccess = async (
     if (!data || data.length === 0) {
       return {
         success: false,
-        message: "Aucun document trouvé avec ces informations"
+        message: "Aucun document trouvé avec ces informations. Vérifiez le code d'accès et les informations personnelles."
       };
     }
 
@@ -95,6 +102,7 @@ export const validateInstitutionAccess = async (
       .single();
 
     if (profileError || !profileData) {
+      console.error("Erreur profil:", profileError);
       return {
         success: false,
         message: "Impossible de récupérer les informations du patient"
@@ -109,6 +117,8 @@ export const validateInstitutionAccess = async (
       birth_date: profileData.birth_date,
       directives: data.map(doc => doc.document_data)
     };
+
+    console.log("Données patient construites:", patientData);
 
     return {
       success: true,

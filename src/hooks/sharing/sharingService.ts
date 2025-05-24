@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import type { ShareableDocument, ShareOptions, SharedDocument } from "./types";
 
@@ -22,6 +23,13 @@ export const createSharedDocument = async (
   const documentType = document.source || 
     (document.file_type === 'directive' ? 'directives' : 'pdf_documents');
 
+  console.log("Création document partagé:", {
+    user_id: document.user_id,
+    document_id: document.id,
+    document_type: documentType,
+    expires_at: expiresAt
+  });
+
   // Create entry in shared_documents with automatic code generation
   const { data, error } = await supabase
     .from('shared_documents')
@@ -42,7 +50,8 @@ export const createSharedDocument = async (
         is_private: document.is_private,
         external_id: document.external_id,
         file_size: document.file_size,
-        updated_at: document.updated_at
+        updated_at: document.updated_at,
+        access_type: options.accessType || 'public'
       },
       expires_at: expiresAt,
       is_active: true
@@ -51,9 +60,11 @@ export const createSharedDocument = async (
     .single();
 
   if (error) {
+    console.error("Erreur création document partagé:", error);
     throw error;
   }
 
+  console.log("Document partagé créé avec succès:", data);
   return data.access_code;
 };
 
@@ -77,6 +88,8 @@ export const getSharedDocumentsByAccessCode = async (
   lastName?: string,
   birthDate?: string
 ): Promise<any[]> => {
+  console.log("Recherche documents avec code:", { accessCode, firstName, lastName, birthDate });
+
   const { data, error } = await supabase.rpc(
     'get_shared_documents_by_access_code',
     {
@@ -86,6 +99,8 @@ export const getSharedDocumentsByAccessCode = async (
       input_birth_date: birthDate || null
     }
   );
+
+  console.log("Résultat recherche documents:", { data, error });
 
   if (error) {
     throw error;
