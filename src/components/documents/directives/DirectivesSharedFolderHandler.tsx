@@ -106,9 +106,9 @@ const DirectivesSharedFolderHandler: React.FC<DirectivesSharedFolderHandlerProps
         // Attendre un moment pour laisser le temps au state de se mettre à jour
         await new Promise(resolve => setTimeout(resolve, 800));
         
-        // Rediriger vers la page dashboard au lieu de affichage-dossier
-        console.log("Redirection vers dashboard pour utilisateur connecté avec document:", document.file_name);
-        navigate('/dashboard');
+        // Rediriger vers /mes-directives au lieu de /dashboard
+        console.log("Redirection vers /mes-directives pour utilisateur connecté avec document:", document.file_name);
+        navigate('/mes-directives');
 
         toast({
           title: "Document ajouté",
@@ -146,9 +146,9 @@ const DirectivesSharedFolderHandler: React.FC<DirectivesSharedFolderHandlerProps
       // Attendre un moment pour laisser le temps au state de se mettre à jour
       await new Promise(resolve => setTimeout(resolve, 800));
       
-      // Rediriger vers la page dashboard au lieu de affichage-dossier
-      console.log("Redirection vers dashboard");
-      navigate('/dashboard');
+      // Rediriger vers /mes-directives au lieu de /dashboard
+      console.log("Redirection vers /mes-directives");
+      navigate('/mes-directives');
 
       toast({
         title: "Document ajouté",

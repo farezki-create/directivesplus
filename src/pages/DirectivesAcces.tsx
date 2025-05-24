@@ -13,6 +13,7 @@ import StatisticsCards from "@/components/directives-access/StatisticsCards";
 import DirectivesContent from "@/components/directives-access/DirectivesContent";
 import SecurityAlert from "@/components/directives-access/SecurityAlert";
 import PersonalDocumentsSection from "@/components/directives-access/PersonalDocumentsSection";
+import { toast } from "@/hooks/use-toast";
 
 const DirectivesAcces = () => {
   const navigate = useNavigate();
@@ -36,6 +37,31 @@ const DirectivesAcces = () => {
     isAuthenticated,
     currentPath: window.location.pathname
   });
+
+  // Gérer l'ajout de document depuis le dossier partagé
+  useEffect(() => {
+    const directAccessCode = sessionStorage.getItem('directAccessCode');
+    const documentData = sessionStorage.getItem('documentData');
+    
+    if (directAccessCode && documentData && dossierActif) {
+      try {
+        const parsedDocuments = JSON.parse(documentData);
+        console.log("Document ajouté depuis le dossier partagé:", parsedDocuments);
+        
+        // Nettoyer le sessionStorage
+        sessionStorage.removeItem('directAccessCode');
+        sessionStorage.removeItem('documentData');
+        
+        // Afficher un toast de confirmation
+        toast({
+          title: "Document ajouté avec succès",
+          description: "Le document a été ajouté à vos directives et est maintenant accessible",
+        });
+      } catch (error) {
+        console.error("Erreur lors du traitement du document ajouté:", error);
+      }
+    }
+  }, [dossierActif]);
 
   // AUCUNE REDIRECTION VERS /auth - Cette page est complètement publique
 
