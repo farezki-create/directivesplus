@@ -39,7 +39,7 @@ const AppNavigation = ({ hideEditingFeatures = false }: AppNavigationProps) => {
   const navItems = [
     { name: "Accueil", href: "/", icon: Home },
     { name: "Rédiger", href: "/rediger", icon: FileText, requireAuth: true, hideInCodeAccess: true },
-    { name: "Mes Directives", href: "/mes-directives-app", icon: BookOpen, requireAuth: true, hideInCodeAccess: true },
+    { name: "Mes Directives", href: "/mes-directives", icon: BookOpen, requireAuth: true, hideInCodeAccess: true },
     { name: "Données Médicales", href: "/donnees-medicales", icon: Shield },
     { name: "Témoignages", href: "/testimonials", icon: Users },
   ];
