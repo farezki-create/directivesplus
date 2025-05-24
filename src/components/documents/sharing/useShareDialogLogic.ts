@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { toast } from "@/hooks/use-toast";
-import { useUnifiedSharing, type ShareableDocument } from "@/hooks/sharing/useUnifiedSharing";
+import { useSharing, type ShareableDocument } from "@/hooks/sharing/useSharing";
 import { supabase } from "@/integrations/supabase/client";
 
 export const useShareDialogLogic = (document: ShareableDocument, open: boolean) => {
@@ -16,7 +16,7 @@ export const useShareDialogLogic = (document: ShareableDocument, open: boolean) 
     isGenerating,
     isExtending,
     isRegenerating
-  } = useUnifiedSharing();
+  } = useSharing();
 
   React.useEffect(() => {
     const fetchUserProfile = async () => {

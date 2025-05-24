@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Share2, Loader2 } from "lucide-react";
-import { useUnifiedSharing, type ShareableDocument } from "@/hooks/sharing/useUnifiedSharing";
+import { useSharing, type ShareableDocument } from "@/hooks/sharing/useSharing";
 import { ShareDialog } from "./ShareDialog";
 
 interface DocumentShareButtonProps {
@@ -19,7 +19,7 @@ export const DocumentShareButton: React.FC<DocumentShareButtonProps> = ({
   className = ""
 }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const { isGenerating } = useUnifiedSharing();
+  const { isGenerating } = useSharing();
 
   return (
     <>

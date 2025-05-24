@@ -1,26 +1,37 @@
 
+// Types unifiés pour le système de partage
 export interface ShareableDocument {
   id: string;
   file_name: string;
-  file_path: string;
+  file_path?: string;
   created_at: string;
+  user_id: string;
+  file_type: 'directive' | 'pdf' | 'medical';
+  source: 'directives' | 'pdf_documents' | 'medical_documents';
+  content?: any;
   description?: string;
   content_type?: string;
-  file_type?: string;
-  user_id?: string;
   is_private?: boolean;
-  content?: any;
-  external_id?: string | null;
-  file_size?: number | null;
+  external_id?: string;
+  file_size?: number;
   updated_at?: string;
-  source?: 'pdf_documents' | 'directives' | 'medical_documents';
-  [key: string]: any; // Index signature pour compatibilité Json
 }
 
 export interface ShareOptions {
   expiresInDays?: number;
-  accessType?: 'personal' | 'institution' | 'medical';
-  allowedAccesses?: number;
+  accessType?: 'personal' | 'institution';
+}
+
+export interface SharingResult {
+  success: boolean;
+  code?: string;
+  error?: string;
+}
+
+export interface AccessValidationResult {
+  success: boolean;
+  documents?: any[];
+  error?: string;
 }
 
 export interface SharedDocument {
@@ -33,16 +44,4 @@ export interface SharedDocument {
   shared_at: string;
   expires_at?: string;
   is_active: boolean;
-}
-
-export interface AccessCodeValidationResult {
-  success: boolean;
-  message: string;
-  documents?: ShareableDocument[];
-  patientData?: {
-    user_id: string;
-    first_name: string;
-    last_name: string;
-    birth_date: string;
-  };
 }

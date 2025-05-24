@@ -1,5 +1,5 @@
 
-import { useUnifiedSharing } from "@/hooks/sharing/useUnifiedSharing";
+import { useSharing } from "@/hooks/sharing/useSharing";
 import InstitutionAccessCard from "./InstitutionAccessCard";
 import InstitutionCodeDialog from "./InstitutionCodeDialog";
 import { useState } from "react";
@@ -14,7 +14,7 @@ const InstitutionAccessSection = ({ userId }: InstitutionAccessSectionProps) => 
   const [institutionCode, setInstitutionCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const { generateInstitutionCode, isGenerating } = useUnifiedSharing();
+  const { generateInstitutionCode, isGenerating } = useSharing();
 
   const handleGenerateInstitutionCode = async (userId: string) => {
     try {

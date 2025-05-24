@@ -12,7 +12,7 @@ import { Share2 } from "lucide-react";
 import { ShareDialogContent } from "./ShareDialogContent";
 import { ShareDialogCard } from "./ShareDialogCard";
 import { useShareDialogLogic } from "./useShareDialogLogic";
-import type { ShareableDocument } from "@/hooks/sharing/useUnifiedSharing";
+import type { ShareableDocument } from "@/hooks/sharing/useSharing";
 
 interface ShareDialogProps {
   open: boolean;

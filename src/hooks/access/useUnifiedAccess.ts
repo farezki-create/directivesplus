@@ -1,9 +1,9 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useDossierStore } from "@/store/dossierStore";
+import { SharingService } from "@/hooks/sharing/core/sharingService";
 
 export interface AccessFormData {
   firstName: string;
@@ -38,35 +38,42 @@ export const useUnifiedAccess = () => {
     setError(null);
     
     try {
-      // Essayer d'abord avec la table shared_profiles
-      const { data: sharedProfile, error: profileError } = await supabase
-        .from("shared_profiles")
-        .select("*, medical_profile_id")
-        .eq("first_name", formData.firstName.trim())
-        .eq("last_name", formData.lastName.trim())
-        .eq("birthdate", formData.birthDate)
-        .eq("access_code", formData.accessCode.trim())
-        .maybeSingle();
+      // Utiliser le service unifié pour la validation
+      const validationResult = await SharingService.validateAccessCode(
+        formData.accessCode,
+        {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          birthDate: formData.birthDate
+        }
+      );
 
-      if (sharedProfile) {
+      if (validationResult.success && validationResult.documents) {
+        const documents = validationResult.documents;
+        const firstDoc = documents[0];
+        
         const dossier = {
-          id: sharedProfile.id,
-          userId: sharedProfile.user_id,
-          medical_profile_id: sharedProfile.medical_profile_id,
+          id: `shared-access-${formData.accessCode}`,
+          userId: firstDoc.user_id,
           isFullAccess: accessType === 'full',
           isDirectivesOnly: accessType === 'directives',
           isMedicalOnly: accessType === 'medical',
           profileData: {
-            first_name: sharedProfile.first_name,
-            last_name: sharedProfile.last_name,
-            birth_date: sharedProfile.birthdate
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            birth_date: formData.birthDate
           },
           contenu: {
             patient: {
-              nom: sharedProfile.last_name,
-              prenom: sharedProfile.first_name,
-              date_naissance: sharedProfile.birthdate
-            }
+              nom: formData.lastName,
+              prenom: formData.firstName,
+              date_naissance: formData.birthDate
+            },
+            documents: documents.map(doc => ({
+              ...doc.document_data,
+              shared_at: doc.shared_at,
+              source: 'shared_documents'
+            }))
           }
         };
         
@@ -79,39 +86,11 @@ export const useUnifiedAccess = () => {
         
         navigate(redirectPath, { replace: true });
         return true;
-      }
-
-      // Fallback vers l'edge function
-      const response = await fetch("https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/verifierCodeAcces", {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          accessCode: formData.accessCode,
-          patientName: `${formData.firstName} ${formData.lastName}`,
-          patientBirthDate: formData.birthDate,
-          bruteForceIdentifier: `${accessType}_access_${formData.firstName}_${formData.lastName}`
-        })
-      });
-      
-      const result = await response.json();
-      
-      if (result.success) {
-        setDossierActif(result.dossier);
-        
-        toast({
-          title: "Accès autorisé",
-          description: "Vous avez accès aux données demandées",
-        });
-        
-        navigate(redirectPath, { replace: true });
-        return true;
       } else {
         setError("Informations incorrectes ou accès expiré");
         toast({
           title: "Accès refusé",
-          description: result.error || "Code d'accès invalide ou données incorrectes",
+          description: validationResult.error || "Code d'accès invalide ou données incorrectes",
           variant: "destructive"
         });
         return false;
