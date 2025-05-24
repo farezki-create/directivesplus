@@ -1,7 +1,11 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useVerifierCodeAcces } from "@/hooks/useVerifierCodeAcces";
+import { useDossierStore } from "@/store/dossierStore";
+import { toast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
   lastName: z.string().min(1, "Le nom est requis"),
@@ -17,6 +21,9 @@ export const useDirectivesAccessForm = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [remainingAttempts, setRemainingAttempts] = useState<number | null>(null);
   const [blockedAccess, setBlockedAccess] = useState(false);
+  
+  const { verifierCode } = useVerifierCodeAcces();
+  const { setDossierActif } = useDossierStore();
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -34,14 +41,42 @@ export const useDirectivesAccessForm = () => {
     
     try {
       const values = form.getValues();
-      console.log("Form submission with values:", values);
+      console.log("Tentative de vérification du code d'accès:", values);
       
-      // Since we're keeping only institution access, redirect to institution access page
-      window.location.href = '/acces-institution';
+      // Créer l'identifiant pour le brute force protection
+      const bruteForceIdentifier = `directives_public_${values.firstName}_${values.lastName}`;
+      
+      // Vérifier le code d'accès
+      const result = await verifierCode(values.accessCode, bruteForceIdentifier);
+      
+      if (result) {
+        console.log("Code d'accès vérifié avec succès:", result);
+        
+        // Stocker le dossier dans le store
+        setDossierActif(result);
+        
+        // Afficher une notification de succès
+        toast({
+          title: "Accès autorisé",
+          description: "Vous avez accès aux directives anticipées",
+        });
+        
+        // Rediriger vers la page des directives
+        window.location.href = '/directives-docs';
+      } else {
+        console.log("Échec de la vérification du code d'accès");
+        setErrorMessage("Code d'accès invalide ou expiré. Vérifiez vos informations.");
+      }
       
     } catch (error) {
-      console.error("Error during form submission:", error);
-      setErrorMessage("Une erreur est survenue lors de la soumission");
+      console.error("Erreur lors de la vérification du code d'accès:", error);
+      setErrorMessage("Une erreur est survenue lors de la vérification. Réessayez.");
+      
+      toast({
+        title: "Erreur d'accès",
+        description: "Impossible de vérifier votre accès aux directives",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }

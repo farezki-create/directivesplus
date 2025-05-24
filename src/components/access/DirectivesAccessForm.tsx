@@ -33,7 +33,7 @@ const DirectivesAccessForm: React.FC<DirectivesAccessFormProps> = ({ onSubmit })
       try {
         setLoading(true);
         const values = form.getValues();
-        console.log("Soumission du formulaire avec les valeurs:", values);
+        console.log("Soumission du formulaire avec gestionnaire personnalisé:", values);
         await onSubmit(values.accessCode, values);
       } catch (error) {
         console.error("Erreur lors de la soumission du formulaire:", error);
@@ -41,7 +41,8 @@ const DirectivesAccessForm: React.FC<DirectivesAccessFormProps> = ({ onSubmit })
         setLoading(false);
       }
     } else {
-      // Sinon, utilisez le gestionnaire par défaut
+      // Sinon, utilisez le gestionnaire par défaut qui vérifie le code d'accès
+      console.log("Utilisation du gestionnaire par défaut pour la vérification");
       await handleSubmit();
     }
   };
