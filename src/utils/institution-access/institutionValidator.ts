@@ -19,57 +19,76 @@ export const validateInstitutionAccess = async (
   birthDate: string,
   institutionCode: string
 ): Promise<InstitutionValidationResult> => {
-  console.log("=== VALIDATION ACCÈS INSTITUTION (RPC) ===");
+  console.log("=== VALIDATION ACCÈS INSTITUTION (CORRIGÉE) ===");
   console.log("Recherche:", { lastName, firstName, birthDate, institutionCode });
 
   try {
-    // Utiliser la fonction RPC pour la validation
-    const { data: rpcResult, error: rpcError } = await supabase.rpc("get_patient_directives_by_institution_access", {
-      input_last_name: lastName.trim(),
-      input_first_name: firstName.trim(),
-      input_birth_date: birthDate,
-      input_shared_code: institutionCode.trim()
-    });
+    // Rechercher d'abord dans la table profiles pour trouver l'utilisateur
+    const { data: profiles, error: profileError } = await supabase
+      .from('profiles')
+      .select('id, first_name, last_name, birth_date')
+      .eq('last_name', lastName.trim())
+      .eq('first_name', firstName.trim())
+      .eq('birth_date', birthDate);
 
-    console.log("Résultat RPC:", { rpcResult, rpcError });
+    console.log("Profils trouvés:", { profiles, profileError });
 
-    if (rpcError) {
-      console.error("Erreur RPC:", rpcError);
+    if (profileError) {
+      console.error("Erreur recherche profil:", profileError);
       return {
         success: false,
-        message: "Erreur lors de la vérification du code d'accès institution."
+        message: "Erreur lors de la recherche du profil patient."
       };
     }
 
-    if (!rpcResult || !Array.isArray(rpcResult) || rpcResult.length === 0) {
-      console.log("Aucun profil trouvé avec la fonction RPC");
-      
-      // Diagnostic étape par étape
-      const { data: debugData } = await supabase.rpc("debug_institution_access_step_by_step", {
-        input_last_name: lastName.trim(),
-        input_first_name: firstName.trim(),
-        input_birth_date: birthDate,
-        input_shared_code: institutionCode.trim()
-      });
-
-      console.log("Diagnostic étape par étape:", debugData);
-      
+    if (!profiles || profiles.length === 0) {
       return {
         success: false,
-        message: "Code d'accès institution invalide ou informations patient incorrectes. Vérifiez l'orthographe du nom, prénom, la date de naissance (format: YYYY-MM-DD) et le code d'accès."
+        message: "Aucun patient trouvé avec ces nom, prénom et date de naissance."
       };
     }
 
-    const profile = rpcResult[0];
-    console.log("Profil trouvé:", profile);
-
-    // Récupérer les directives associées
+    // Ensuite chercher dans directives avec le code institution
     const { data: directives, error: directiveError } = await supabase
       .from('directives')
-      .select('*')
-      .eq('user_id', profile.id);
+      .select('id, user_id, content, created_at')
+      .eq('user_id', profiles[0].id)
+      .eq('institution_code', institutionCode.trim())
+      .gt('institution_code_expires_at', new Date().toISOString());
 
-    console.log("Directives trouvées:", { directives, directiveError });
+    console.log("Directives avec code institution:", { directives, directiveError });
+
+    if (directiveError) {
+      console.error("Erreur recherche directives:", directiveError);
+      return {
+        success: false,
+        message: "Erreur lors de la vérification du code d'accès."
+      };
+    }
+
+    if (!directives || directives.length === 0) {
+      // Vérifier si le code existe mais est expiré
+      const { data: expiredDirectives } = await supabase
+        .from('directives')
+        .select('institution_code_expires_at')
+        .eq('user_id', profiles[0].id)
+        .eq('institution_code', institutionCode.trim());
+
+      if (expiredDirectives && expiredDirectives.length > 0) {
+        return {
+          success: false,
+          message: "Le code d'accès institution a expiré. Demandez au patient de générer un nouveau code."
+        };
+      }
+
+      return {
+        success: false,
+        message: "Code d'accès institution invalide pour ce patient."
+      };
+    }
+
+    const profile = profiles[0];
+    console.log("Validation réussie pour:", profile);
 
     return {
       success: true,
