@@ -26,6 +26,7 @@ interface DirectivesDocumentListProps {
   onAddToSharedFolder?: (document: Document) => void;
   isAdding?: boolean;
   showPrint?: boolean;
+  isAuthenticated?: boolean; // Nouveau prop pour savoir si l'utilisateur est connecté
 }
 
 const DirectivesDocumentList: FC<DirectivesDocumentListProps> = ({
@@ -37,7 +38,8 @@ const DirectivesDocumentList: FC<DirectivesDocumentListProps> = ({
   onVisibilityChange,
   onAddToSharedFolder,
   isAdding = false,
-  showPrint = false
+  showPrint = false,
+  isAuthenticated = false
 }) => {
   if (documents.length === 0) {
     return <EmptyDocumentsState />;
@@ -46,6 +48,7 @@ const DirectivesDocumentList: FC<DirectivesDocumentListProps> = ({
   console.log("DirectivesDocumentList - Rendering", documents.length, "documents");
   console.log("DirectivesDocumentList - onAddToSharedFolder function:", !!onAddToSharedFolder);
   console.log("DirectivesDocumentList - isAdding:", isAdding);
+  console.log("DirectivesDocumentList - isAuthenticated:", isAuthenticated);
   
   return (
     <div className="grid gap-6">
@@ -66,6 +69,7 @@ const DirectivesDocumentList: FC<DirectivesDocumentListProps> = ({
             } : undefined}
             showPrint={showPrint}
             isAddingToShared={isAdding}
+            showShareButton={isAuthenticated} // Afficher le bouton partager seulement si connecté
           />
         );
       })}

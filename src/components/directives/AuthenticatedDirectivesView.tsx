@@ -1,27 +1,29 @@
 
 import React from "react";
 import AppNavigation from "@/components/AppNavigation";
-import DirectivesPageContainer from "@/components/documents/directives/DirectivesPageContainer";
-import DocumentPreviewDialog from "@/components/documents/DocumentPreviewDialog";
+import DirectivesPageHeader from "@/components/documents/DirectivesPageHeader";
+import DirectivesAddDocumentSection from "@/components/documents/DirectivesAddDocumentSection";
+import DirectivesDocumentList from "@/components/documents/DirectivesDocumentList";
 import DeleteConfirmationDialog from "@/components/documents/DeleteConfirmationDialog";
-import { useDossierStore } from "@/store/dossierStore";
+import DocumentPreviewDialog from "@/components/documents/DocumentPreviewDialog";
+import { Document } from "@/hooks/useDirectivesDocuments";
 
 interface AuthenticatedDirectivesViewProps {
   user: any;
   profile: any;
-  documents: any[];
+  documents: Document[];
   showAddOptions: boolean;
   setShowAddOptions: (show: boolean) => void;
   onUploadComplete: () => void;
-  onDownload: (doc: any) => void;
-  onPrint: (doc: any) => void;
-  onView: (doc: any) => void;
-  confirmDelete: any;
-  documentToDelete: any;
-  setDocumentToDelete: (doc: any) => void;
-  handleDelete: () => void;
-  previewDocument: any;
-  setPreviewDocument: (doc: any) => void;
+  onDownload: (filePath: string, fileName: string) => void;
+  onPrint: (filePath: string, contentType?: string) => void;
+  onView: (filePath: string, contentType?: string) => void;
+  confirmDelete: string | null;
+  documentToDelete: string | null;
+  setDocumentToDelete: (id: string | null) => void;
+  handleDelete: () => Promise<void>;
+  previewDocument: string | null;
+  setPreviewDocument: (path: string | null) => void;
   handlePreviewDownload: (filePath: string) => void;
   handlePreviewPrint: (filePath: string) => void;
 }
@@ -43,80 +45,60 @@ const AuthenticatedDirectivesView: React.FC<AuthenticatedDirectivesViewProps> = 
   previewDocument,
   setPreviewDocument,
   handlePreviewDownload,
-  handlePreviewPrint
+  handlePreviewPrint,
 }) => {
-  const { dossierActif } = useDossierStore();
-  
-  // Si on est en accès par code (dossier actif sans authentification complète)
-  const isCodeAccess = dossierActif && !user;
-
-  const handleUploadCompleteWrapper = (url: string, fileName: string, isPrivate: boolean) => {
-    console.log("AuthenticatedDirectivesView - handleUploadCompleteWrapper called:", url, fileName, isPrivate);
-    onUploadComplete();
-  };
-
-  const handleDownloadWrapper = (filePath: string, fileName: string) => {
-    console.log("AuthenticatedDirectivesView - handleDownloadWrapper called:", filePath, fileName);
-    // Créer un objet document avec les propriétés attendues
-    const docObject = { file_path: filePath, file_name: fileName };
-    onDownload(docObject);
-  };
-
-  const handlePrintWrapper = (filePath: string, contentType?: string) => {
-    console.log("AuthenticatedDirectivesView - handlePrintWrapper called:", filePath, contentType);
-    // Créer un objet document avec les propriétés attendues
-    const docObject = { file_path: filePath, content_type: contentType, file_type: contentType };
-    onPrint(docObject);
-  };
-
-  const handleViewWrapper = (filePath: string, contentType?: string) => {
-    console.log("AuthenticatedDirectivesView - handleViewWrapper called:", filePath, contentType);
-    // Créer un objet document avec les propriétés attendues
-    const docObject = { file_path: filePath, content_type: contentType, file_type: contentType };
-    onView(docObject);
-  };
-
-  const handleDeleteWrapper = (documentId: string) => {
-    console.log("AuthenticatedDirectivesView - handleDeleteWrapper called:", documentId);
-    confirmDelete(documentId);
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <AppNavigation hideEditingFeatures={isCodeAccess} />
+    <div className="min-h-screen flex flex-col">
+      <AppNavigation />
       
-      <DirectivesPageContainer
-        userId={user?.id || ""}
-        profile={profile}
-        documents={documents}
-        showAddOptions={showAddOptions}
-        setShowAddOptions={setShowAddOptions}
-        onUploadComplete={handleUploadCompleteWrapper}
-        onDownload={handleDownloadWrapper}
-        onPrint={handlePrintWrapper}
-        onView={handleViewWrapper}
-        onDelete={handleDeleteWrapper}
-        accessCode={null}
+      <main className="flex-grow container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto">
+          <DirectivesPageHeader 
+            user={user}
+            profile={profile}
+            onAddDocument={() => setShowAddOptions(!showAddOptions)}
+          />
+
+          {showAddOptions && user && (
+            <DirectivesAddDocumentSection
+              userId={user.id}
+              onUploadComplete={(url: string, fileName: string, isPrivate: boolean) => {
+                onUploadComplete();
+              }}
+            />
+          )}
+          
+          <DirectivesDocumentList
+            documents={documents}
+            onDownload={onDownload}
+            onPrint={onPrint}
+            onView={onView}
+            onDelete={setDocumentToDelete}
+            isAuthenticated={true} // Passer l'état d'authentification
+          />
+        </div>
+      </main>
+      
+      <DeleteConfirmationDialog 
+        isOpen={!!confirmDelete} 
+        onClose={() => setDocumentToDelete(null)} 
+        onConfirm={handleDelete}
       />
 
       <DocumentPreviewDialog 
         filePath={previewDocument} 
         onOpenChange={(open) => {
-          console.log("DocumentPreviewDialog - onOpenChange called:", open);
           if (!open) setPreviewDocument(null);
-        }} 
+        }}
         onDownload={handlePreviewDownload}
         onPrint={handlePreviewPrint}
       />
-
-      <DeleteConfirmationDialog 
-        documentId={documentToDelete} 
-        onOpenChange={(open) => {
-          console.log("DeleteConfirmationDialog - onOpenChange called:", open);
-          if (!open) setDocumentToDelete(null);
-        }} 
-        onConfirmDelete={handleDelete}
-      />
+      
+      <footer className="bg-white py-6 border-t">
+        <div className="container mx-auto px-4 text-center text-gray-500">
+          <p>© 2025 DirectivesPlus. Tous droits réservés.</p>
+        </div>
+      </footer>
     </div>
   );
 };

@@ -961,6 +961,42 @@ export type Database = {
         }
         Relationships: []
       }
+      shared_documents: {
+        Row: {
+          access_code: string
+          document_data: Json
+          document_id: string
+          document_type: string
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          shared_at: string
+          user_id: string
+        }
+        Insert: {
+          access_code: string
+          document_data: Json
+          document_id: string
+          document_type: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          shared_at?: string
+          user_id: string
+        }
+        Update: {
+          access_code?: string
+          document_data?: Json
+          document_id?: string
+          document_type?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          shared_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       shared_profiles: {
         Row: {
           access_code: string
@@ -1112,6 +1148,10 @@ export type Database = {
       }
       generate_random_code: {
         Args: { length: number }
+        Returns: string
+      }
+      generate_unique_access_code: {
+        Args: Record<PropertyKey, never>
         Returns: string
       }
       get_directives_by_institution_code: {

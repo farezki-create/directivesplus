@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import DocumentHeader from "@/components/documents/card/DocumentHeader";
 import DocumentActions from "@/components/documents/card/DocumentActions";
 import { detectDocumentType } from "./preview/documentUtils";
+import { useDocumentSharing, ShareableDocument } from "@/hooks/useDocumentSharing";
 
 interface Document {
   id: string;
@@ -26,6 +27,7 @@ interface DocumentCardProps {
   onAddToSharedFolder?: () => void;
   showPrint?: boolean;
   isAddingToShared?: boolean;
+  showShareButton?: boolean; // Nouveau prop pour contrôler l'affichage du bouton partager
 }
 
 const DocumentCard = ({
@@ -37,15 +39,39 @@ const DocumentCard = ({
   onVisibilityChange,
   onAddToSharedFolder,
   showPrint = true,
-  isAddingToShared = false
+  isAddingToShared = false,
+  showShareButton = false
 }: DocumentCardProps) => {
   const [isPrivate, setIsPrivate] = useState(document.is_private || false);
+  const { shareDocument, isSharing } = useDocumentSharing();
   
   const handleVisibilityChange = (documentId: string, checked: boolean) => {
     setIsPrivate(checked);
     if (onVisibilityChange) {
       onVisibilityChange(documentId, checked);
     }
+  };
+
+  const handleShare = async () => {
+    if (!document.user_id) {
+      console.error("Document sans user_id, impossible de partager");
+      return;
+    }
+
+    const shareableDoc: ShareableDocument = {
+      id: document.id,
+      file_name: document.file_name,
+      file_path: document.file_path,
+      created_at: document.created_at,
+      description: document.description,
+      content_type: document.content_type,
+      file_type: document.file_type,
+      user_id: document.user_id,
+      content: document.original_directive?.content,
+      source: document.file_type === 'directive' ? 'directives' : 'pdf_documents'
+    };
+
+    await shareDocument(shareableDoc);
   };
 
   console.log("DocumentCard rendu avec document:", document);
@@ -197,8 +223,10 @@ const DocumentCard = ({
             onDelete(document.id);
           }}
           onAddToSharedFolder={onAddToSharedFolder}
+          onShare={showShareButton ? handleShare : undefined}
           showPrint={showPrint}
           isAddingToShared={isAddingToShared}
+          isSharing={isSharing === document.id}
         />
       </div>
     </div>
