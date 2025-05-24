@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useSearchParams, Navigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,7 +26,15 @@ const PdfViewer = () => {
     const isInApp = window.location.hostname === 'localhost' || 
                    window.location.hostname.includes('lovableproject.com') ||
                    window.location.protocol === 'capacitor:' ||
-                   (window as any).ReactNativeWebView;
+                   (window as any).ReactNativeWebView ||
+                   window.location.search.includes('inapp=true');
+    
+    console.log('Browser detection:', { 
+      hostname: window.location.hostname, 
+      protocol: window.location.protocol,
+      search: window.location.search,
+      isInApp 
+    });
     
     setIsExternalBrowser(!isInApp);
   }, []);
@@ -77,7 +86,7 @@ const PdfViewer = () => {
 
   // Si c'est un navigateur externe, afficher un lien vers l'application
   if (isExternalBrowser) {
-    const appUrl = `https://24c30559-a746-463d-805e-d2330d3a13f4.lovableproject.com/pdf-viewer?id=${documentId}`;
+    const appUrl = `https://24c30559-a746-463d-805e-d2330d3a13f4.lovableproject.com/pdf-viewer?id=${documentId}&inapp=true`;
     
     return (
       <div className="min-h-screen bg-gray-50 py-8">
@@ -90,21 +99,57 @@ const PdfViewer = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="text-center space-y-4">
+              <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                <p className="text-yellow-800 font-medium">
+                  ⚠️ Limitation du navigateur
+                </p>
+                <p className="text-sm text-yellow-700 mt-1">
+                  Ce PDF ne peut pas être affiché directement dans ce navigateur pour des raisons de sécurité.
+                </p>
+              </div>
+              
               <p className="text-gray-600">
-                Pour une meilleure expérience, veuillez ouvrir ce document dans l'application DirectivePlus.
+                Pour visualiser ce document, veuillez l'ouvrir dans l'application DirectivePlus ou le télécharger.
               </p>
               
-              <Button 
-                onClick={() => window.location.href = appUrl}
-                className="w-full"
-                size="lg"
-              >
-                Ouvrir dans l'application
-              </Button>
+              <div className="space-y-3">
+                <Button 
+                  onClick={() => window.location.href = appUrl}
+                  className="w-full"
+                  size="lg"
+                >
+                  <ExternalLink className="w-4 h-4 mr-2" />
+                  Ouvrir dans l'application
+                </Button>
+                
+                {document && (
+                  <Button 
+                    variant="outline"
+                    onClick={() => handleDownload(document.file_path, document.file_name)}
+                    className="w-full"
+                    size="lg"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Télécharger le PDF
+                  </Button>
+                )}
+                
+                {document && (
+                  <Button 
+                    variant="outline"
+                    onClick={() => window.open(document.file_path, '_blank')}
+                    className="w-full"
+                    size="lg"
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    Ouvrir dans un nouvel onglet
+                  </Button>
+                )}
+              </div>
               
               <div className="p-3 bg-blue-50 rounded-lg">
                 <p className="text-sm text-blue-800">
-                  🔗 Ce lien vous redirigera vers l'application pour visualiser le document avec tous les outils disponibles.
+                  💡 <strong>Astuce :</strong> Ajoutez cette page à vos favoris pour un accès rapide.
                 </p>
               </div>
             </CardContent>
@@ -220,12 +265,28 @@ const PdfViewer = () => {
           
           <CardContent>
             <div className="border rounded-lg overflow-hidden bg-white">
-              <iframe 
-                src={document.file_path}
+              <object 
+                data={document.file_path}
+                type="application/pdf"
                 className="w-full h-[80vh]"
                 title={document.file_name}
-                allow="fullscreen"
-              />
+              >
+                <div className="p-8 text-center">
+                  <p className="text-gray-600 mb-4">
+                    Votre navigateur ne peut pas afficher ce PDF directement.
+                  </p>
+                  <div className="space-y-2">
+                    <Button onClick={handleDownloadPdf} className="mr-2">
+                      <Download className="w-4 h-4 mr-2" />
+                      Télécharger
+                    </Button>
+                    <Button variant="outline" onClick={handleOpenExternal}>
+                      <ExternalLink className="w-4 h-4 mr-2" />
+                      Ouvrir dans un nouvel onglet
+                    </Button>
+                  </div>
+                </div>
+              </object>
             </div>
             
             <div className="mt-4 p-3 bg-blue-50 rounded-lg">

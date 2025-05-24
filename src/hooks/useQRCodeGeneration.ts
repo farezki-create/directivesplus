@@ -43,8 +43,8 @@ export const useQRCodeGeneration = () => {
     setError(null);
 
     try {
-      // Toujours utiliser l'URL de l'application pour le QR code
-      const appUrl = `https://24c30559-a746-463d-805e-d2330d3a13f4.lovableproject.com/pdf-viewer?id=${documentId}`;
+      // Toujours utiliser l'URL de l'application pour le QR code avec le paramètre inapp=true
+      const appUrl = `https://24c30559-a746-463d-805e-d2330d3a13f4.lovableproject.com/pdf-viewer?id=${documentId}&inapp=true`;
       
       console.log("QR Code generation:", {
         documentId,
@@ -56,8 +56,8 @@ export const useQRCodeGeneration = () => {
 
       // Vérifier que l'URL n'est pas trop longue pour le QR code
       if (!validateQRCodeData(appUrl)) {
-        // Utiliser une URL de redirection plus courte
-        const shortUrl = `https://24c30559-a746-463d-805e-d2330d3a13f4.lovableproject.com/pdf/${documentId}`;
+        // Utiliser une URL de redirection plus courte avec le paramètre inapp
+        const shortUrl = `https://24c30559-a746-463d-805e-d2330d3a13f4.lovableproject.com/pdf/${documentId}?inapp=true`;
         
         if (!validateQRCodeData(shortUrl)) {
           throw new Error(`URL trop longue pour le QR code (${shortUrl.length} caractères, maximum ${QR_CODE_LIMITS.M})`);
@@ -86,7 +86,7 @@ export const useQRCodeGeneration = () => {
       
       toast({
         title: "QR Code généré",
-        description: `QR Code créé pour ${documentName} - Ouverture dans l'application`,
+        description: `QR Code créé pour ${documentName} - Ouverture garantie dans l'application`,
       });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Erreur lors de la génération du QR code";
@@ -108,10 +108,10 @@ export const useQRCodeGeneration = () => {
   }, []);
 
   const copyShareUrl = useCallback(async () => {
-    if (!qrCodeData?.directPdfUrl) return;
+    if (!qrCodeData?.qrCodeValue) return;
 
     try {
-      await navigator.clipboard.writeText(qrCodeData.directPdfUrl);
+      await navigator.clipboard.writeText(qrCodeData.qrCodeValue);
       toast({
         title: "Lien copié",
         description: "Le lien a été copié dans le presse-papiers",
