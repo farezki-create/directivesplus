@@ -12,7 +12,6 @@ import { toast } from "@/components/ui/use-toast";
 
 /**
  * Page unifiée pour la gestion des codes d'accès
- * Remplace AccessCardPage et autres pages similaires
  */
 const AccessCodePage = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -28,6 +27,12 @@ const AccessCodePage = () => {
       navigate("/auth", { state: { from: "/codes-acces" } });
     }
   }, [isAuthenticated, isLoading, navigate]);
+
+  useEffect(() => {
+    console.log("📋 Page AccessCode chargée");
+    console.log("👤 Utilisateur connecté:", !!user);
+    console.log("🔐 Authentifié:", isAuthenticated);
+  }, [user, isAuthenticated]);
 
   if (isLoading) {
     return <LoadingState loading={true} message="Chargement en cours..." />;
@@ -59,9 +64,9 @@ const AccessCodePage = () => {
           <Alert className="mb-6 bg-blue-50 border-blue-200">
             <Info className="h-5 w-5 text-blue-600" />
             <AlertDescription className="text-blue-800">
-              <strong>Système unifié :</strong> Deux types de codes sont disponibles - 
+              <strong>Système unifié et audité :</strong> Deux types de codes sont disponibles - 
               permanent (toujours le même) et temporaire (avec expiration). 
-              Choisissez selon vos besoins de partage.
+              Tous les partages sont maintenant confirmés en base de données.
             </AlertDescription>
           </Alert>
           
@@ -92,7 +97,7 @@ const AccessCodePage = () => {
                     <li>• Expire automatiquement (30 jours)</li>
                     <li>• Pour un partage ponctuel</li>
                     <li>• Peut être révoqué à tout moment</li>
-                    <li>• Sécurité renforcée</li>
+                    <li>• Enregistrement confirmé en base</li>
                   </ul>
                 </div>
               </div>

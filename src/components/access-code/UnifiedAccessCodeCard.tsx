@@ -5,12 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Copy, Share2, Clock, Shield, CreditCard, Check } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useUnifiedAccessCode } from "@/hooks/useUnifiedAccessCode";
+import { useAccessCode } from "@/hooks/useAccessCode";
 import { AccessCard } from "@/components/documents/sharing/AccessCard";
 
 /**
  * Composant unifié pour la gestion des codes d'accès
- * Remplace tous les autres composants de codes d'accès
  */
 export const UnifiedAccessCodeCard = () => {
   const { user, profile } = useAuth();
@@ -20,7 +19,7 @@ export const UnifiedAccessCodeCard = () => {
     getFixedCode, 
     generateTemporaryCode, 
     copyCode 
-  } = useUnifiedAccessCode();
+  } = useAccessCode();
   
   const [fixedCode, setFixedCode] = useState<string | null>(null);
   const [showCard, setShowCard] = useState(false);
@@ -43,10 +42,12 @@ export const UnifiedAccessCodeCard = () => {
   const handleGenerateTemporaryCode = async () => {
     if (!user?.id) return;
     
+    console.log("🎬 Composant: Début génération code temporaire");
     await generateTemporaryCode(user.id, {
       expiresInDays: 30,
       requirePersonalInfo: true
     });
+    console.log("🏁 Composant: Fin génération code temporaire");
   };
 
   const userName = profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : 'Utilisateur';
@@ -177,12 +178,12 @@ export const UnifiedAccessCodeCard = () => {
             variant="outline"
           >
             <Share2 className="h-4 w-4" />
-            {isGenerating ? "Génération..." : "Générer un code temporaire"}
+            {isGenerating ? "Génération en cours..." : "Générer un code temporaire"}
           </Button>
         </CardContent>
       </Card>
 
-      {/* Informations */}
+      {/* Informations de debug */}
       <Alert>
         <Shield className="h-4 w-4" />
         <AlertDescription>
