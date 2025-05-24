@@ -33,30 +33,20 @@ export const useUnifiedDocumentSharing = () => {
   const shareDocument = async (
     document: ShareableDocument, 
     options: ShareOptions = {}
-  ): Promise<string | null> => {
+  ): Promise<boolean> => {
     if (!document.user_id) {
       toast({
         title: "Erreur",
         description: "Impossible de partager ce document",
         variant: "destructive"
       });
-      return null;
+      return false;
     }
 
     setIsSharing(document.id);
     setShareError(null);
 
     try {
-      // Générer un code d'accès unique
-      const { data: codeData, error: codeError } = await supabase
-        .rpc('generate_unique_access_code');
-
-      if (codeError) {
-        throw codeError;
-      }
-
-      const accessCode = codeData;
-
       // Calculer la date d'expiration
       let expiresAt = null;
       if (options.expiresInDays) {
@@ -69,7 +59,7 @@ export const useUnifiedDocumentSharing = () => {
       const documentType = document.source || 
         (document.file_type === 'directive' ? 'directives' : 'pdf_documents');
 
-      // Créer l'entrée dans shared_documents
+      // Créer l'entrée dans shared_documents sans code d'accès
       const { data, error } = await supabase
         .from('shared_documents')
         .insert({
@@ -91,7 +81,7 @@ export const useUnifiedDocumentSharing = () => {
             file_size: document.file_size,
             updated_at: document.updated_at
           },
-          access_code: accessCode,
+          access_code: null, // Pas de code d'accès
           expires_at: expiresAt,
           is_active: true
         })
@@ -104,10 +94,10 @@ export const useUnifiedDocumentSharing = () => {
 
       toast({
         title: "Document partagé",
-        description: `Code d'accès généré : ${accessCode}`,
+        description: `${document.file_name} a été ajouté au dossier partagé`,
       });
 
-      return accessCode;
+      return true;
 
     } catch (error: any) {
       console.error("Erreur lors du partage du document:", error);
@@ -117,7 +107,7 @@ export const useUnifiedDocumentSharing = () => {
         description: "Impossible de partager le document",
         variant: "destructive"
       });
-      return null;
+      return false;
     } finally {
       setIsSharing(null);
     }
@@ -155,7 +145,7 @@ export const useUnifiedDocumentSharing = () => {
 
       toast({
         title: "Partage arrêté",
-        description: "Le document n'est plus accessible via le code d'accès",
+        description: "Le document a été retiré du dossier partagé",
       });
 
       return true;
@@ -174,10 +164,12 @@ export const useUnifiedDocumentSharing = () => {
     document: ShareableDocument,
     expiresInDays: number = 30
   ): Promise<string | null> => {
-    return shareDocument(document, { 
+    // Cette fonction pourrait générer un code si nécessaire pour l'accès institutionnel
+    const success = await shareDocument(document, { 
       expiresInDays, 
       accessType: 'institution' 
     });
+    return success ? "shared" : null;
   };
 
   return {
