@@ -40,6 +40,11 @@ const DirectivesAcces = () => {
     window.location.reload();
   };
 
+  // Wrapper function to handle delete with correct signature
+  const handleDeleteWrapper = (documentId: string) => {
+    handleDelete();
+  };
+
   // CAS 1: Pas de dossier actif ET pas d'utilisateur authentifié
   if (!dossierActif && !isAuthenticated) {
     return <NoAccessView />;
@@ -55,7 +60,7 @@ const DirectivesAcces = () => {
         onDownload={handleDownload}
         onPrint={handlePrint}
         onView={handleView}
-        onDelete={(documentId: string) => handleDelete()}
+        onDelete={handleDeleteWrapper}
       />
     );
   }
@@ -71,7 +76,7 @@ const DirectivesAcces = () => {
       onDownload={handleDownload}
       onPrint={handlePrint}
       onView={handleView}
-      onDelete={(documentId: string) => handleDelete()}
+      onDelete={handleDeleteWrapper}
       onShowDocuments={handleShowDocuments}
     />
   );

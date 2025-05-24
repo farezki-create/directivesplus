@@ -19,17 +19,16 @@ const MedicalData = () => {
   
   const {
     documents,
-    loading,
-    fetchDocuments,
+    isLoading: documentsLoading,
     handleUploadComplete
-  } = useMedicalDocuments(user);
+  } = useMedicalDocuments();
 
   const documentActions = useMedicalDocumentActions({
-    onDeleteComplete: fetchDocuments
+    onDeleteComplete: () => window.location.reload()
   });
 
   // Show loading state while auth is loading
-  if (isLoading || loading) {
+  if (isLoading || documentsLoading) {
     return (
       <div className="h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-directiveplus-600"></div>

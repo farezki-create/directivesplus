@@ -31,7 +31,8 @@ export const useMedicalDocuments = () => {
           // Transform to match Document interface
           const transformedDocuments: Document[] = (data || []).map(doc => ({
             ...doc,
-            file_type: doc.content_type || 'pdf'
+            file_type: doc.file_type || 'pdf',
+            content_type: doc.file_type || 'application/pdf'
           }));
           setDocuments(transformedDocuments);
         }

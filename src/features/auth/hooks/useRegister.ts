@@ -8,7 +8,7 @@ import { registerFormSchema } from "../schemas";
 
 export const useRegister = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const { refreshUser } = useAuth();
+  const { user } = useAuth();
 
   const register = async (values: z.infer<typeof registerFormSchema>) => {
     setIsLoading(true);
@@ -22,7 +22,7 @@ export const useRegister = () => {
             first_name: values.firstName,
             last_name: values.lastName,
             birth_date: values.birthDate,
-            phone: values.phone,
+            phone_number: values.phoneNumber,
             address: values.address,
           }
         }
@@ -35,9 +35,6 @@ export const useRegister = () => {
         description: "Votre compte a été créé avec succès. Vous pouvez maintenant vous connecter.",
       });
 
-      // Refresh user data after successful registration
-      await refreshUser();
-      
       return { success: true, user: data.user };
     } catch (error: any) {
       console.error("Registration error:", error);

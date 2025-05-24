@@ -29,15 +29,15 @@ export const RegisterForm = ({ onVerificationSent }: RegisterFormProps) => {
     },
   });
 
-  const { handleSignUp, loading } = useRegister(onVerificationSent);
+  const { register, isLoading } = useRegister();
 
   return (
-    <FormLayout form={form} onSubmit={handleSignUp}>
+    <FormLayout form={form} onSubmit={register}>
       <PersonalInfoFields form={form} />
       <ContactInfoFields form={form} />
       <PasswordFields form={form} />
       <FormSubmitButton 
-        loading={loading} 
+        loading={isLoading} 
         label="S'inscrire" 
         loadingLabel="Inscription..." 
       />
