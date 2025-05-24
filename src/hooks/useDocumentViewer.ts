@@ -3,6 +3,7 @@ import { useCallback } from "react";
 import { useDocumentPreview } from "./useDocumentPreview";
 import { toast } from "@/hooks/use-toast";
 import { viewDocument } from "@/utils/document-operations";
+import { detectDocumentType } from "@/components/documents/preview/documentUtils";
 
 /**
  * Hook that combines document viewing and preview capabilities
@@ -17,6 +18,15 @@ export const useDocumentViewer = () => {
       
       if (!filePath) {
         throw new Error("Chemin de fichier invalide");
+      }
+      
+      const { isDirective } = detectDocumentType(filePath);
+      
+      // For directives, always show in preview mode (they don't have external URLs)
+      if (isDirective || fileType === "directive") {
+        console.log("useDocumentViewer - Affichage directive en mode preview:", filePath);
+        setPreviewDocument(filePath);
+        return;
       }
       
       // Set the preview document

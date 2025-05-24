@@ -1,7 +1,7 @@
-
 import React, { useState } from "react";
 import DocumentHeader from "@/components/documents/card/DocumentHeader";
 import DocumentActions from "@/components/documents/card/DocumentActions";
+import { detectDocumentType } from "./preview/documentUtils";
 
 interface Document {
   id: string;
@@ -52,10 +52,16 @@ const DocumentCard = ({
 
   // Determine the correct file type to use
   const fileType = getFileType(document);
+  const { isDirective } = detectDocumentType(document.file_path);
 
-  // Gérer l'affichage pour les directives transformées
   const handleView = () => {
     console.log("DocumentCard - onView appelé pour:", document.file_path);
+    
+    // Si c'est une directive, passer le type directive pour un traitement spécial
+    if (isDirective || document.file_type === 'directive') {
+      onView(document.file_path, 'directive');
+      return;
+    }
     
     // Si c'est une directive transformée, afficher le contenu de la directive
     if (document.original_directive) {
