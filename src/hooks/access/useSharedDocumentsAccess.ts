@@ -1,8 +1,8 @@
 
 import { useState } from "react";
-import { useSharedDocumentRetrieval } from "@/hooks/sharing/useSharedDocumentRetrieval";
 import { toast } from "@/hooks/use-toast";
 import { useDossierStore } from "@/store/dossierStore";
+import { UnifiedSharingService } from "@/hooks/sharing/core/unifiedSharingService";
 
 interface AccessFormData {
   accessCode: string;
@@ -20,7 +20,6 @@ interface AccessResult {
 export const useSharedDocumentsAccess = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AccessResult | null>(null);
-  const { getSharedDocumentsByAccessCode } = useSharedDocumentRetrieval();
   const { setDossierActif } = useDossierStore();
 
   const validateAccess = async (formData: AccessFormData): Promise<AccessResult> => {
@@ -28,19 +27,23 @@ export const useSharedDocumentsAccess = () => {
     setResult(null);
 
     try {
-      console.log("=== VALIDATION ACCÈS DOCUMENTS PARTAGÉS ===");
+      console.log("=== VALIDATION ACCÈS DOCUMENTS PARTAGÉS (UNIFIÉ) ===");
       console.log("Données:", formData);
 
-      const documents = await getSharedDocumentsByAccessCode(
+      const validationResult = await UnifiedSharingService.validateAccessCode(
         formData.accessCode,
-        formData.firstName,
-        formData.lastName,
-        formData.birthDate
+        {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          birthDate: formData.birthDate
+        }
       );
 
-      console.log("Documents trouvés:", documents);
+      console.log("Résultat validation:", validationResult);
 
-      if (documents.length > 0) {
+      if (validationResult.success && validationResult.documents) {
+        const documents = validationResult.documents;
+        
         // Créer un dossier temporaire avec les documents partagés
         const firstDoc = documents[0];
         const dossier = {
@@ -78,7 +81,7 @@ export const useSharedDocumentsAccess = () => {
       } else {
         const result: AccessResult = {
           success: false,
-          message: "Code d'accès invalide ou aucun document trouvé."
+          message: validationResult.error || "Code d'accès invalide ou aucun document trouvé."
         };
 
         setResult(result);

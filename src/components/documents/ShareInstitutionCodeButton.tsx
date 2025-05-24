@@ -64,21 +64,12 @@ const ShareInstitutionCodeButton = ({ directiveId }: ShareInstitutionCodeButtonP
       
       if (generatedCode) {
         setCode(generatedCode);
-        toast({
-          title: "Code généré avec succès",
-          description: "Le code d'accès professionnel a été généré et est valable pendant 30 jours."
-        });
       } else {
         setError("Une erreur est survenue lors de la génération du code");
       }
     } catch (err: any) {
       console.error("Erreur génération code:", err);
       setError(err.message || "Une erreur est survenue lors de la génération du code");
-      toast({
-        title: "Erreur",
-        description: "Impossible de générer le code d'accès",
-        variant: "destructive"
-      });
     }
   };
 

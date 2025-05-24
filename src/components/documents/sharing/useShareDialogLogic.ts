@@ -110,7 +110,7 @@ export const useShareDialogLogic = (document: ShareableDocument, open: boolean) 
     showCard,
     setShowCard,
     userName,
-    isSharing: isGenerating ? document.id : null, // Fix: Return document.id when generating, null otherwise
+    isSharing: isGenerating ? document.id : null,
     isExtending,
     isRegenerating,
     handleShareDocument,
