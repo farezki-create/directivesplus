@@ -1,5 +1,4 @@
 
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
 /**
@@ -7,6 +6,8 @@ import { toast } from "@/hooks/use-toast";
  */
 export const viewDocument = async (filePath: string, contentType?: string) => {
   try {
+    console.log("viewDocument appelé avec:", filePath, contentType);
+    
     if (filePath.startsWith('data:')) {
       // Data URL - ouvrir directement
       const newWindow = window.open();
@@ -16,16 +17,8 @@ export const viewDocument = async (filePath: string, contentType?: string) => {
       return;
     }
 
-    // URL de fichier stocké
-    const { data } = await supabase.storage
-      .from('documents')
-      .createSignedUrl(filePath, 3600);
-
-    if (data?.signedUrl) {
-      window.open(data.signedUrl, '_blank');
-    } else {
-      throw new Error('Impossible de générer l\'URL du document');
-    }
+    // URL de fichier stocké - ouvrir directement
+    window.open(filePath, '_blank');
   } catch (error) {
     console.error('Erreur lors de l\'affichage du document:', error);
     toast({
@@ -41,6 +34,8 @@ export const viewDocument = async (filePath: string, contentType?: string) => {
  */
 export const downloadDocument = async (filePath: string, fileName: string) => {
   try {
+    console.log("downloadDocument appelé avec:", filePath, fileName);
+    
     if (filePath.startsWith('data:')) {
       // Data URL - téléchargement direct
       const link = document.createElement('a');
@@ -49,24 +44,27 @@ export const downloadDocument = async (filePath: string, fileName: string) => {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      
+      toast({
+        title: "Téléchargement commencé",
+        description: `${fileName} est en cours de téléchargement`,
+      });
       return;
     }
 
-    // URL de fichier stocké
-    const { data } = await supabase.storage
-      .from('documents')
-      .createSignedUrl(filePath, 3600);
-
-    if (data?.signedUrl) {
-      const link = document.createElement('a');
-      link.href = data.signedUrl;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } else {
-      throw new Error('Impossible de générer l\'URL de téléchargement');
-    }
+    // URL de fichier stocké - téléchargement direct
+    const link = document.createElement('a');
+    link.href = filePath;
+    link.download = fileName;
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast({
+      title: "Téléchargement commencé",
+      description: `${fileName} est en cours de téléchargement`,
+    });
   } catch (error) {
     console.error('Erreur lors du téléchargement:', error);
     toast({
@@ -82,42 +80,59 @@ export const downloadDocument = async (filePath: string, fileName: string) => {
  */
 export const printDocument = async (filePath: string, contentType?: string) => {
   try {
+    console.log("printDocument appelé avec:", filePath, contentType);
+    
     if (filePath.startsWith('data:')) {
       // Data URL - impression directe
-      const printWindow = window.open();
+      const printWindow = window.open('', '_blank');
       if (printWindow) {
-        if (contentType?.includes('image')) {
-          printWindow.document.write(`<img src="${filePath}" onload="window.print();window.close();" />`);
+        if (filePath.includes('application/pdf')) {
+          printWindow.document.write(`
+            <html>
+              <head><title>Impression du document</title></head>
+              <body style="margin:0;">
+                <iframe src="${filePath}" width="100%" height="100%" frameborder="0"></iframe>
+                <script>
+                  window.onload = function() {
+                    setTimeout(function() {
+                      window.print();
+                    }, 1000);
+                  };
+                </script>
+              </body>
+            </html>
+          `);
         } else {
-          printWindow.location.href = filePath;
-          printWindow.onload = () => {
-            printWindow.print();
-          };
+          printWindow.document.write(`
+            <html>
+              <head><title>Impression du document</title></head>
+              <body>
+                <img src="${filePath}" style="max-width:100%;" onload="window.print();" />
+              </body>
+            </html>
+          `);
         }
+        printWindow.document.close();
+      } else {
+        throw new Error('Impossible d\'ouvrir la fenêtre d\'impression');
       }
       return;
     }
 
-    // URL de fichier stocké
-    const { data } = await supabase.storage
-      .from('documents')
-      .createSignedUrl(filePath, 3600);
-
-    if (data?.signedUrl) {
-      const printWindow = window.open(data.signedUrl);
-      if (printWindow) {
-        printWindow.onload = () => {
-          printWindow.print();
-        };
-      }
+    // URL de fichier stocké - impression directe
+    const printWindow = window.open(filePath, '_blank');
+    if (printWindow) {
+      printWindow.onload = () => {
+        printWindow.print();
+      };
     } else {
-      throw new Error('Impossible de générer l\'URL d\'impression');
+      throw new Error('Impossible d\'ouvrir la fenêtre d\'impression');
     }
   } catch (error) {
     console.error('Erreur lors de l\'impression:', error);
     toast({
       title: "Erreur",
-      description: "Impossible d'imprimer le document",
+      description: "Impossible d'imprimer le document. Vérifiez que les popups sont autorisés.",
       variant: "destructive"
     });
   }

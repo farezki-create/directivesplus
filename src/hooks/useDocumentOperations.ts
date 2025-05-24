@@ -36,17 +36,25 @@ export const useDocumentOperations = (refreshDocuments: () => void) => {
   const { handleDownload: originalHandleDownload } = useDocumentDownload();
   const { handlePrint: originalHandlePrint } = useDocumentPrint();
   
-  // Wrapper for download with error handling
-  const handleDownload = async (file: any) => {
-    console.log("useDocumentOperations - handleDownload called with:", file);
+  // Wrapper for download with improved parameter handling
+  const handleDownload = async (filePathOrDocument: any, fileName?: string) => {
+    console.log("useDocumentOperations - handleDownload called with:", filePathOrDocument, fileName);
     setIsProcessing(true);
     try {
-      // S'assurer qu'on a les propriétés nécessaires
-      const filePath = file?.file_path || file;
-      const fileName = file?.file_name || file?.name || 'document';
+      let filePath: string;
+      let finalFileName: string;
       
-      console.log("useDocumentOperations - Calling originalHandleDownload with:", filePath, fileName);
-      await originalHandleDownload(filePath, fileName);
+      // Handle both document objects and direct file paths
+      if (typeof filePathOrDocument === 'string') {
+        filePath = filePathOrDocument;
+        finalFileName = fileName || 'document.pdf';
+      } else {
+        filePath = filePathOrDocument?.file_path || filePathOrDocument;
+        finalFileName = fileName || filePathOrDocument?.file_name || 'document.pdf';
+      }
+      
+      console.log("useDocumentOperations - Processing download:", filePath, finalFileName);
+      await originalHandleDownload(filePath, finalFileName);
     } catch (error) {
       console.error("useDocumentOperations - Download error:", error);
       await handleError({
@@ -62,16 +70,24 @@ export const useDocumentOperations = (refreshDocuments: () => void) => {
     }
   };
   
-  // Wrapper for print with error handling
-  const handlePrint = async (file: any) => {
-    console.log("useDocumentOperations - handlePrint called with:", file);
+  // Wrapper for print with improved parameter handling
+  const handlePrint = async (filePathOrDocument: any, contentType?: string) => {
+    console.log("useDocumentOperations - handlePrint called with:", filePathOrDocument, contentType);
     setIsProcessing(true);
     try {
-      // S'assurer qu'on a les propriétés nécessaires
-      const filePath = file?.file_path || file;
-      const fileType = file?.file_type || file?.content_type || 'application/pdf';
+      let filePath: string;
+      let fileType: string;
       
-      console.log("useDocumentOperations - Calling originalHandlePrint with:", filePath, fileType);
+      // Handle both document objects and direct file paths
+      if (typeof filePathOrDocument === 'string') {
+        filePath = filePathOrDocument;
+        fileType = contentType || 'application/pdf';
+      } else {
+        filePath = filePathOrDocument?.file_path || filePathOrDocument;
+        fileType = contentType || filePathOrDocument?.content_type || filePathOrDocument?.file_type || 'application/pdf';
+      }
+      
+      console.log("useDocumentOperations - Processing print:", filePath, fileType);
       await originalHandlePrint(filePath, fileType);
     } catch (error) {
       console.error("useDocumentOperations - Print error:", error);
@@ -88,19 +104,27 @@ export const useDocumentOperations = (refreshDocuments: () => void) => {
     }
   };
   
-  // Enhanced view with error handling
-  const handleView = async (file: any) => {
-    console.log("useDocumentOperations - handleView called with:", file);
+  // Enhanced view with improved parameter handling
+  const handleView = async (filePathOrDocument: any, contentType?: string) => {
+    console.log("useDocumentOperations - handleView called with:", filePathOrDocument, contentType);
     setIsProcessing(true);
     try {
-      // S'assurer qu'on a les propriétés nécessaires
-      const filePath = file?.file_path || file;
-      const fileType = file?.file_type || file?.content_type || 'application/pdf';
+      let filePath: string;
+      let fileType: string;
+      
+      // Handle both document objects and direct file paths
+      if (typeof filePathOrDocument === 'string') {
+        filePath = filePathOrDocument;
+        fileType = contentType || 'application/pdf';
+      } else {
+        filePath = filePathOrDocument?.file_path || filePathOrDocument;
+        fileType = contentType || filePathOrDocument?.content_type || filePathOrDocument?.file_type || 'application/pdf';
+      }
       
       console.log("useDocumentOperations - Setting preview document:", filePath);
       setPreviewDocument(filePath);
       
-      console.log("useDocumentOperations - Calling originalHandleView with:", filePath, fileType);
+      console.log("useDocumentOperations - Processing view:", filePath, fileType);
       await originalHandleView(filePath, fileType);
     } catch (error) {
       console.error("useDocumentOperations - View error:", error);
