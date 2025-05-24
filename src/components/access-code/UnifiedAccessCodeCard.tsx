@@ -24,6 +24,7 @@ export const UnifiedAccessCodeCard = () => {
   const [fixedCode, setFixedCode] = useState<string | null>(null);
   const [showCard, setShowCard] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
 
   // Charger le code fixe au montage
   useEffect(() => {
@@ -32,6 +33,18 @@ export const UnifiedAccessCodeCard = () => {
       setFixedCode(code);
     }
   }, [user?.id, getFixedCode]);
+
+  // Afficher la confirmation et masquer après 3 secondes
+  useEffect(() => {
+    if (currentCode && !isGenerating) {
+      setShowConfirmation(true);
+      const timer = setTimeout(() => {
+        setShowConfirmation(false);
+      }, 3000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [currentCode, isGenerating]);
 
   const handleCopyCode = (code: string) => {
     copyCode(code);
@@ -51,6 +64,60 @@ export const UnifiedAccessCodeCard = () => {
   };
 
   const userName = profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : 'Utilisateur';
+
+  // Affichage de la confirmation d'enregistrement
+  if (showConfirmation && currentCode) {
+    return (
+      <Card className="border-green-200 bg-green-50">
+        <CardContent className="p-6">
+          <div className="text-center space-y-4">
+            <div className="flex justify-center">
+              <div className="rounded-full bg-green-100 p-3">
+                <Check className="h-8 w-8 text-green-600" />
+              </div>
+            </div>
+            
+            <div>
+              <h3 className="text-lg font-semibold text-green-800 mb-2">
+                ✅ Code temporaire enregistré avec succès !
+              </h3>
+              <p className="text-green-700 mb-4">
+                Votre code d'accès temporaire a été généré et enregistré en base de données.
+              </p>
+              
+              <div className="bg-white p-4 rounded-lg border border-green-200 mb-4">
+                <span className="font-mono text-xl tracking-[0.2em] font-bold text-green-800">
+                  {currentCode}
+                </span>
+              </div>
+              
+              <p className="text-sm text-green-600">
+                Ce code est valable 30 jours et donne accès à tous vos documents.
+              </p>
+            </div>
+            
+            <div className="flex gap-2 justify-center">
+              <Button 
+                onClick={() => handleCopyCode(currentCode)}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <Copy className="h-4 w-4" />
+                Copier le code
+              </Button>
+              
+              <Button 
+                onClick={() => setShowConfirmation(false)}
+                className="flex items-center gap-2"
+              >
+                Continuer
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (showCard && fixedCode) {
     return (
@@ -155,7 +222,7 @@ export const UnifiedAccessCodeCard = () => {
             </AlertDescription>
           </Alert>
 
-          {currentCode && (
+          {currentCode && !showConfirmation && (
             <div className="flex items-center justify-between p-4 border-2 border-blue-200 rounded-lg bg-blue-50">
               <span className="font-mono text-xl tracking-[0.2em] font-bold text-blue-800">
                 {currentCode}
