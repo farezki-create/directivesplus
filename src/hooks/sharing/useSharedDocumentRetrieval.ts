@@ -1,10 +1,9 @@
 
 import { 
   getSharedDocuments,
-  getSharedDocumentsByAccessCode,
   deactivateSharedDocument
 } from "./services/sharedDocumentService";
-import { getSharedDocumentsByAccessCode as getDocsByCode } from "./services/documentRetrievalService";
+import { getSharedDocumentsByAccessCode } from "./services/documentRetrievalService";
 import { toast } from "@/hooks/use-toast";
 
 export const useSharedDocumentRetrieval = () => {
@@ -24,7 +23,7 @@ export const useSharedDocumentRetrieval = () => {
     birthDate?: string
   ): Promise<any[]> => {
     try {
-      return await getDocsByCode(accessCode, firstName, lastName, birthDate);
+      return await getSharedDocumentsByAccessCode(accessCode, firstName, lastName, birthDate);
     } catch (error) {
       console.error("Erreur lors de la récupération des documents avec code:", error);
       return [];
