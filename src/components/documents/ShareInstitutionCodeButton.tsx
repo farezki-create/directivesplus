@@ -1,9 +1,8 @@
 
 import { useState } from "react";
-import { generateInstitutionCode } from "@/utils/institutionCodeGenerator";
 import { Button } from "@/components/ui/button";
 import { Hospital, Loader2, Copy, Check, Shield, Share2 } from "lucide-react";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -13,6 +12,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { generateInstitutionAccessCode } from "@/hooks/sharing/institutionSharingService";
+import { supabase } from "@/integrations/supabase/client";
+import type { ShareableDocument } from "@/hooks/sharing/types";
 
 interface ShareInstitutionCodeButtonProps {
   directiveId: string;
@@ -29,7 +31,39 @@ const ShareInstitutionCodeButton = ({ directiveId }: ShareInstitutionCodeButtonP
     setIsLoading(true);
     setError(null);
     try {
-      const generatedCode = await generateInstitutionCode(directiveId);
+      // Get the current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error("User not authenticated");
+      }
+
+      // Get the directive to create a shareable document
+      const { data: directive, error: directiveError } = await supabase
+        .from('directives')
+        .select('id, content, created_at')
+        .eq('id', directiveId)
+        .eq('user_id', user.id)
+        .single();
+
+      if (directiveError || !directive) {
+        throw new Error("Directive not found");
+      }
+
+      // Create a shareable document object
+      const shareableDocument: ShareableDocument = {
+        id: directive.id,
+        file_name: "Directives anticipées",
+        file_path: "",
+        created_at: directive.created_at,
+        user_id: user.id,
+        file_type: "directive",
+        source: "directives",
+        content: directive.content
+      };
+
+      // Generate the institution access code
+      const generatedCode = await generateInstitutionAccessCode(shareableDocument, 30);
+      
       if (generatedCode) {
         setCode(generatedCode);
         toast({
