@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { DocumentRetrievalService } from "./documentRetrieval";
 import { CodeGenerationService } from "./codeGeneration";
@@ -50,13 +49,28 @@ export class UnifiedAccessCodeService {
       const accessCode = this.generateRandomCode();
       console.log("🔑 Code généré:", accessCode);
 
-      // Préparer les données pour l'insertion
+      // Préparer les données pour l'insertion (compatible Json)
       const documentData = {
         access_type: 'global',
         user_id: userId,
         total_documents: documents.length,
         generated_at: new Date().toISOString(),
-        documents: documents
+        documents: documents.map(doc => ({
+          id: doc.id,
+          file_name: doc.file_name,
+          file_path: doc.file_path,
+          created_at: doc.created_at,
+          user_id: doc.user_id,
+          file_type: doc.file_type,
+          source: doc.source,
+          content: doc.content,
+          description: doc.description,
+          content_type: doc.content_type,
+          is_private: doc.is_private,
+          external_id: doc.external_id,
+          file_size: doc.file_size,
+          updated_at: doc.updated_at
+        }))
       };
 
       console.log("💾 Préparation insertion en base...");
@@ -69,7 +83,7 @@ export class UnifiedAccessCodeService {
           user_id: userId,
           document_type: 'global',
           document_id: userId, // Utiliser userId comme document_id pour les accès globaux
-          document_data: documentData,
+          document_data: documentData as any, // Cast explicite pour compatibilité Json
           expires_at: expiresAt.toISOString(),
           is_active: true
         })
@@ -177,12 +191,16 @@ export class UnifiedAccessCodeService {
       const result = data[0];
       console.log("📊 Résultat RPC:", result);
 
-      if (result.document_data && result.document_data.documents) {
-        return {
-          success: true,
-          documents: result.document_data.documents as ShareableDocument[],
-          message: `Accès autorisé. ${result.document_data.documents.length} document(s) trouvé(s).`
-        };
+      // Typage correct pour accéder aux propriétés de document_data
+      if (result.document_data && typeof result.document_data === 'object') {
+        const documentData = result.document_data as any;
+        if (documentData.documents && Array.isArray(documentData.documents)) {
+          return {
+            success: true,
+            documents: documentData.documents as ShareableDocument[],
+            message: `Accès autorisé. ${documentData.documents.length} document(s) trouvé(s).`
+          };
+        }
       }
 
       return { success: false, error: "Structure de données invalide" };
