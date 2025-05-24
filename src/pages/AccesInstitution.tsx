@@ -1,7 +1,7 @@
 
 import React from "react";
 import AppNavigation from "@/components/AppNavigation";
-import { SimpleCodeAccessForm } from "@/components/access/SimpleCodeAccessForm";
+import { InstitutionAccessFormSimple } from "@/components/institution-access/InstitutionAccessFormSimple";
 
 const AccesInstitution = () => {
   return (
@@ -15,11 +15,11 @@ const AccesInstitution = () => {
               Accès aux directives anticipées
             </h1>
             <p className="text-lg text-gray-600">
-              Interface simplifiée pour les professionnels de santé
+              Accès sécurisé pour les professionnels de santé avec vérification d'identité
             </p>
           </div>
           
-          <SimpleCodeAccessForm />
+          <InstitutionAccessFormSimple />
         </div>
       </main>
       
