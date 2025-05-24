@@ -31,8 +31,15 @@ export const RegisterForm = ({ onVerificationSent }: RegisterFormProps) => {
 
   const { register, isLoading } = useRegister();
 
+  const handleSubmit = async (values: RegisterFormValues) => {
+    const result = await register(values);
+    if (result.success) {
+      onVerificationSent(values.email);
+    }
+  };
+
   return (
-    <FormLayout form={form} onSubmit={register}>
+    <FormLayout form={form} onSubmit={handleSubmit}>
       <PersonalInfoFields form={form} />
       <ContactInfoFields form={form} />
       <PasswordFields form={form} />

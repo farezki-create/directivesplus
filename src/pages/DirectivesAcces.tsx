@@ -45,6 +45,11 @@ const DirectivesAcces = () => {
     handleDelete();
   };
 
+  // Wrapper function to handle download with correct signature  
+  const handleDownloadWrapper = (doc: any) => {
+    handleDownload(doc.file_path, doc.file_name);
+  };
+
   // CAS 1: Pas de dossier actif ET pas d'utilisateur authentifié
   if (!dossierActif && !isAuthenticated) {
     return <NoAccessView />;
@@ -57,7 +62,7 @@ const DirectivesAcces = () => {
         user={user}
         documents={documents}
         onUploadComplete={handleUploadCompleteWrapper}
-        onDownload={handleDownload}
+        onDownload={handleDownloadWrapper}
         onPrint={handlePrint}
         onView={handleView}
         onDelete={handleDeleteWrapper}
@@ -73,7 +78,7 @@ const DirectivesAcces = () => {
       showDocuments={showDocuments}
       documents={documents}
       onUploadComplete={handleUploadCompleteWrapper}
-      onDownload={handleDownload}
+      onDownload={handleDownloadWrapper}
       onPrint={handlePrint}
       onView={handleView}
       onDelete={handleDeleteWrapper}
