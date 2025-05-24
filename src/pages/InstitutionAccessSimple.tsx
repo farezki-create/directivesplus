@@ -5,7 +5,7 @@ import { InstitutionAccessFormSimple } from "@/components/institution-access/Ins
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import BackButton from "@/components/ui/back-button";
 
-export default function InstitutionAccess() {
+export default function InstitutionAccessSimple() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <PageHeader />
