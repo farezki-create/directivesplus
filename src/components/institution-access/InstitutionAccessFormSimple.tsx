@@ -43,6 +43,7 @@ export const InstitutionAccessFormSimple = () => {
     const generatedCode = generateFixedCode(testUserId);
     setTestCode(generatedCode);
     setForm(prev => ({ ...prev, institutionCode: generatedCode }));
+    console.log("Code de test généré:", generatedCode);
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,9 +54,12 @@ export const InstitutionAccessFormSimple = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    console.log("Formulaire: Soumission avec:", form);
+    console.log("=== SOUMISSION FORMULAIRE INSTITUTION ===");
+    console.log("Données du formulaire:", form);
     
     const validationResult = await validateAccess(form);
+    
+    console.log("Résultat de validation:", validationResult);
     
     if (validationResult.success && validationResult.directiveData) {
       console.log("Formulaire: Succès, redirection vers mes-directives");
@@ -89,6 +93,8 @@ export const InstitutionAccessFormSimple = () => {
       });
       
       navigate("/mes-directives");
+    } else {
+      console.error("Échec de validation:", validationResult.message);
     }
   };
 
