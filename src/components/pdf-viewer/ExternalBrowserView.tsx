@@ -23,7 +23,6 @@ const ExternalBrowserView: React.FC<ExternalBrowserViewProps> = ({
   onDownload
 }) => {
   const appUrl = `https://24c30559-a746-463d-805e-d2330d3a13f4.lovableproject.com/pdf-viewer?id=${documentId}&inapp=true`;
-  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(appUrl)}`;
   
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -35,80 +34,43 @@ const ExternalBrowserView: React.FC<ExternalBrowserViewProps> = ({
               Document Médical
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-center space-y-4">
+          <CardContent className="text-center space-y-6">
             <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <p className="text-blue-800 font-medium">
-                📱 Accès optimisé disponible
+              <p className="text-blue-800 font-medium text-lg">
+                📄 Votre document est prêt
               </p>
-              <p className="text-sm text-blue-700 mt-1">
-                Pour une meilleure expérience de visualisation, utilisez l'application DirectivePlus.
+              <p className="text-sm text-blue-700 mt-2">
+                Cliquez sur le bouton ci-dessous pour ouvrir votre document médical dans DirectivePlus.
               </p>
-            </div>
-            
-            {/* QR Code pour accès rapide */}
-            <div className="p-4 bg-white rounded-lg border">
-              <p className="text-sm text-gray-600 mb-3">Scannez pour ouvrir dans l'app :</p>
-              <img 
-                src={qrCodeUrl} 
-                alt="QR Code pour accès direct"
-                className="mx-auto rounded"
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none';
-                }}
-              />
             </div>
             
             <div className="space-y-3">
               <Button 
-                onClick={() => window.location.href = appUrl}
-                className="w-full"
+                onClick={() => window.open(appUrl, '_blank')}
+                className="w-full bg-blue-600 hover:bg-blue-700"
                 size="lg"
               >
-                <ExternalLink className="w-4 h-4 mr-2" />
-                Ouvrir dans DirectivePlus
+                <ExternalLink className="w-5 h-5 mr-2" />
+                Ouvrir mon document
               </Button>
               
-              <Button 
-                variant="outline"
-                onClick={() => {
-                  navigator.clipboard.writeText(appUrl);
-                  alert('Lien copié ! Collez-le dans votre navigateur.');
-                }}
-                className="w-full"
-                size="lg"
-              >
-                📋 Copier le lien
-              </Button>
+              <p className="text-xs text-gray-600">
+                Le document s'ouvrira dans une nouvelle fenêtre avec l'application DirectivePlus
+              </p>
               
               {document && (
                 <Button 
                   variant="outline"
                   onClick={() => onDownload(document.file_path, document.file_name)}
                   className="w-full"
-                  size="lg"
+                  size="sm"
                 >
                   <Download className="w-4 h-4 mr-2" />
-                  Télécharger directement
+                  Télécharger en cas de problème
                 </Button>
               )}
-              
-              <Button 
-                variant="outline"
-                onClick={() => window.open(`https://docs.google.com/gview?url=${encodeURIComponent(document?.file_path || '')}&embedded=true`, '_blank')}
-                className="w-full"
-                size="lg"
-                disabled={!document?.file_path || document.file_path === '#'}
-              >
-                👁️ Aperçu Google Docs
-              </Button>
             </div>
             
-            <div className="p-3 bg-green-50 rounded-lg">
-              <p className="text-sm text-green-800">
-                💡 <strong>Solutions multiples :</strong> QR code, lien direct, téléchargement, ou aperçu en ligne.
-              </p>
-            </div>
-
             {error && (
               <div className="p-3 bg-red-50 rounded-lg border border-red-200">
                 <p className="text-sm text-red-800">
@@ -125,6 +87,12 @@ const ExternalBrowserView: React.FC<ExternalBrowserViewProps> = ({
                 </Button>
               </div>
             )}
+            
+            <div className="p-3 bg-green-50 rounded-lg">
+              <p className="text-sm text-green-800">
+                ✅ <strong>Accès sécurisé :</strong> Votre document médical est accessible directement et en toute sécurité.
+              </p>
+            </div>
           </CardContent>
         </Card>
       </div>
