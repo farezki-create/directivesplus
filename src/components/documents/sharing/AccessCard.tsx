@@ -97,7 +97,6 @@ export const AccessCard: React.FC<AccessCardProps> = ({
       const pdf = new jsPDF('landscape', 'mm', [85.6, 53.98]);
       pdf.addImage(imgData, 'PNG', 0, 0, 85.6, 53.98);
       
-      // Ouvrir le PDF pour impression
       const pdfBlob = pdf.output('blob');
       const pdfUrl = URL.createObjectURL(pdfBlob);
       const printWindow = window.open(pdfUrl, '_blank');
@@ -105,13 +104,11 @@ export const AccessCard: React.FC<AccessCardProps> = ({
       if (printWindow) {
         printWindow.onload = () => {
           printWindow.print();
-          // Nettoyer l'URL après l'impression
           setTimeout(() => {
             URL.revokeObjectURL(pdfUrl);
           }, 1000);
         };
       } else {
-        // Fallback si popup bloquée
         const link = document.createElement('a');
         link.href = pdfUrl;
         link.download = `carte-acces-${name.replace(/\s+/g, '-').toLowerCase()}.pdf`;
@@ -146,41 +143,65 @@ export const AccessCard: React.FC<AccessCardProps> = ({
           padding: '20px',
           color: 'white',
           fontFamily: 'Arial, sans-serif',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
+          boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+          position: 'relative',
+          overflow: 'hidden'
         }}
       >
+        {/* Motif de fond décoratif */}
+        <div 
+          className="absolute inset-0 opacity-10"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          }}
+        />
+        
         {/* Logo/Titre */}
-        <div className="text-xs font-bold mb-2 opacity-90">
+        <div className="text-xs font-bold mb-3 opacity-90 relative z-10">
           DIRECTIVES ANTICIPÉES
         </div>
         
         {/* Nom */}
-        <div className="text-lg font-bold mb-1 tracking-wide">
+        <div className="text-lg font-bold mb-2 tracking-wide relative z-10">
           {name.toUpperCase()}
         </div>
         
         {/* Date de naissance */}
         {birthDate && (
-          <div className="text-sm opacity-80 mb-4">
+          <div className="text-sm opacity-80 mb-4 relative z-10">
             Né(e) le {new Date(birthDate).toLocaleDateString('fr-FR')}
           </div>
         )}
         
-        {/* Codes d'accès */}
-        <div className="space-y-2">
+        {/* Code d'accès - Centré et mis en évidence */}
+        <div className="relative z-10">
           {directivesCode && (
-            <div>
-              <div className="text-xs opacity-80">CODE DIRECTIVES</div>
-              <div className="text-lg font-mono tracking-[0.2em] font-bold">
+            <div className="text-center">
+              <div className="text-xs opacity-80 mb-1">CODE D'ACCÈS</div>
+              <div 
+                className="text-2xl font-mono tracking-[0.2em] font-bold p-2 rounded"
+                style={{
+                  backgroundColor: 'rgba(255,255,255,0.2)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255,255,255,0.3)'
+                }}
+              >
                 {directivesCode}
               </div>
             </div>
           )}
           
           {medicalCode && (
-            <div>
-              <div className="text-xs opacity-80">CODE MÉDICAL</div>
-              <div className="text-lg font-mono tracking-[0.2em] font-bold">
+            <div className="text-center">
+              <div className="text-xs opacity-80 mb-1">CODE MÉDICAL</div>
+              <div 
+                className="text-2xl font-mono tracking-[0.2em] font-bold p-2 rounded"
+                style={{
+                  backgroundColor: 'rgba(255,255,255,0.2)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255,255,255,0.3)'
+                }}
+              >
                 {medicalCode}
               </div>
             </div>
@@ -189,7 +210,7 @@ export const AccessCard: React.FC<AccessCardProps> = ({
         
         {/* Puce décorative */}
         <div 
-          className="absolute top-5 right-5 w-8 h-6 bg-white bg-opacity-20 rounded"
+          className="absolute top-5 right-5 w-10 h-7 rounded relative z-10"
           style={{ 
             background: 'linear-gradient(145deg, rgba(255,255,255,0.3), rgba(255,255,255,0.1))',
             border: '1px solid rgba(255,255,255,0.2)'
@@ -197,8 +218,13 @@ export const AccessCard: React.FC<AccessCardProps> = ({
         />
         
         {/* Texte de sécurité */}
-        <div className="absolute bottom-2 right-4 text-xs opacity-60">
-          ACCÈS SÉCURISÉ
+        <div className="absolute bottom-3 right-5 text-xs opacity-60 relative z-10">
+          ACCÈS SÉCURISÉ • VALIDITÉ 12 MOIS
+        </div>
+        
+        {/* Logo DirectivesPlus discret */}
+        <div className="absolute bottom-3 left-5 text-xs opacity-50 relative z-10">
+          DirectivesPlus
         </div>
       </div>
       
@@ -226,7 +252,7 @@ export const AccessCard: React.FC<AccessCardProps> = ({
       
       <div className="text-xs text-gray-500 text-center px-4">
         <CreditCard className="h-4 w-4 inline mr-1" />
-        Carte au format standard 85,6 × 53,98 mm
+        Carte au format standard 85,6 × 53,98 mm • Valable 12 mois
       </div>
     </div>
   );
