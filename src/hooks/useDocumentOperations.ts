@@ -18,7 +18,7 @@ export const useDocumentOperations = (refreshDocuments: () => void) => {
   const { 
     previewDocument, 
     setPreviewDocument, 
-    handleView 
+    handleView: originalHandleView
   } = useDocumentViewer();
   
   // Document deletion operations
@@ -38,6 +38,7 @@ export const useDocumentOperations = (refreshDocuments: () => void) => {
   
   // Wrapper for download with error handling
   const handleDownload = async (file: any) => {
+    console.log("useDocumentOperations - handleDownload called with:", file);
     setIsProcessing(true);
     try {
       await originalHandleDownload(file.file_path, file.file_name);
@@ -57,9 +58,10 @@ export const useDocumentOperations = (refreshDocuments: () => void) => {
   
   // Wrapper for print with error handling
   const handlePrint = async (file: any) => {
+    console.log("useDocumentOperations - handlePrint called with:", file);
     setIsProcessing(true);
     try {
-      await originalHandlePrint(file.file_path, file.file_type);
+      await originalHandlePrint(file.file_path, file.file_type || file.content_type);
     } catch (error) {
       await handleError({
         error,
@@ -75,10 +77,12 @@ export const useDocumentOperations = (refreshDocuments: () => void) => {
   };
   
   // Enhanced view with error handling
-  const handleViewWithErrorHandling = async (file: any) => {
+  const handleView = async (file: any) => {
+    console.log("useDocumentOperations - handleView called with:", file);
     setIsProcessing(true);
     try {
-      await handleView(file);
+      setPreviewDocument(file.file_path);
+      await originalHandleView(file.file_path, file.file_type || file.content_type);
     } catch (error) {
       await handleError({
         error,
@@ -117,6 +121,6 @@ export const useDocumentOperations = (refreshDocuments: () => void) => {
     // Other document operations with enhanced error handling
     handleDownload,
     handlePrint,
-    handleView: handleViewWithErrorHandling
+    handleView
   };
 };

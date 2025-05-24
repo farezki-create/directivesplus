@@ -2,6 +2,8 @@
 import React from "react";
 import AppNavigation from "@/components/AppNavigation";
 import DirectivesPageContainer from "@/components/documents/directives/DirectivesPageContainer";
+import DocumentPreviewDialog from "@/components/documents/DocumentPreviewDialog";
+import DeleteConfirmationDialog from "@/components/documents/DeleteConfirmationDialog";
 import { useDossierStore } from "@/store/dossierStore";
 
 interface AuthenticatedDirectivesViewProps {
@@ -53,19 +55,23 @@ const AuthenticatedDirectivesView: React.FC<AuthenticatedDirectivesViewProps> = 
   };
 
   const handleDownloadWrapper = (filePath: string, fileName: string) => {
+    console.log("AuthenticatedDirectivesView - handleDownloadWrapper called:", filePath, fileName);
     onDownload({ file_path: filePath, file_name: fileName });
   };
 
   const handlePrintWrapper = (filePath: string, contentType?: string) => {
+    console.log("AuthenticatedDirectivesView - handlePrintWrapper called:", filePath, contentType);
     onPrint({ file_path: filePath, content_type: contentType });
   };
 
   const handleViewWrapper = (filePath: string, contentType?: string) => {
+    console.log("AuthenticatedDirectivesView - handleViewWrapper called:", filePath, contentType);
     onView({ file_path: filePath, content_type: contentType });
   };
 
   const handleDeleteWrapper = (documentId: string) => {
-    onView({ id: documentId });
+    console.log("AuthenticatedDirectivesView - handleDeleteWrapper called:", documentId);
+    confirmDelete(documentId);
   };
 
   return (
@@ -84,6 +90,21 @@ const AuthenticatedDirectivesView: React.FC<AuthenticatedDirectivesViewProps> = 
         onView={handleViewWrapper}
         onDelete={handleDeleteWrapper}
         accessCode={null}
+      />
+
+      <DocumentPreviewDialog 
+        filePath={previewDocument} 
+        onOpenChange={(open) => {
+          if (!open) setPreviewDocument(null);
+        }} 
+        onDownload={handlePreviewDownload}
+        onPrint={handlePreviewPrint}
+      />
+
+      <DeleteConfirmationDialog 
+        isOpen={!!documentToDelete} 
+        onClose={() => setDocumentToDelete(null)} 
+        onConfirm={handleDelete}
       />
     </div>
   );
