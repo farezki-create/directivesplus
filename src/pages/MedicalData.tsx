@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import AppNavigation from "@/components/AppNavigation";
@@ -28,18 +28,26 @@ const MedicalData = () => {
     onDeleteComplete: fetchDocuments
   });
 
-  // Redirect if not authenticated
-  if (!isLoading && !isAuthenticated) {
-    navigate("/auth", { state: { from: "/donnees-medicales" } });
-    return null;
-  }
+  // Handle redirect for non-authenticated users in useEffect
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      console.log("User not authenticated, redirecting to auth page");
+      navigate("/auth", { state: { from: "/donnees-medicales" } });
+    }
+  }, [isLoading, isAuthenticated, navigate]);
 
+  // Show loading state while auth is loading
   if (isLoading || loading) {
     return (
       <div className="h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-directiveplus-600"></div>
       </div>
     );
+  }
+
+  // Don't render anything if not authenticated (will redirect via useEffect)
+  if (!isAuthenticated) {
+    return null;
   }
 
   console.log("Medical page - Auth state:", { userId: user?.id, hasProfile: !!profile });
