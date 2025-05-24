@@ -1,37 +1,119 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useSearchParams, Navigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, Printer, ExternalLink, ArrowLeft } from "lucide-react";
+import { Download, Printer, ExternalLink, ArrowLeft, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useDocumentDownload } from "@/hooks/useDocumentDownload";
 import { useDocumentPrint } from "@/hooks/useDocumentPrint";
+import { supabase } from "@/integrations/supabase/client";
+import { Document } from "@/types/documents";
 
 const PdfViewer = () => {
   const [searchParams] = useSearchParams();
   const documentId = searchParams.get('id');
+  const [document, setDocument] = useState<Document | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
   const { handleDownload } = useDocumentDownload();
   const { handlePrint } = useDocumentPrint();
 
-  // Pour cette démonstration, nous allons simuler la récupération du PDF
-  // En production, vous devriez récupérer les informations du document depuis la base de données
-  const mockPdfUrl = "https://example.com/document.pdf"; // Remplacez par la vraie URL du PDF
-  const mockDocumentName = "Document PDF";
+  // Charger le document depuis la base de données
+  useEffect(() => {
+    const loadDocument = async () => {
+      if (!documentId) return;
+      
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('pdf_documents')
+          .select('*')
+          .eq('id', documentId)
+          .single();
+
+        if (error) {
+          console.error('Erreur lors du chargement du document:', error);
+          setError('Document non trouvé');
+          return;
+        }
+
+        const transformedDoc: Document = {
+          id: data.id,
+          file_name: data.file_name,
+          file_path: data.file_path,
+          file_type: data.content_type || 'application/pdf',
+          content_type: data.content_type,
+          user_id: data.user_id,
+          created_at: data.created_at,
+          description: data.description,
+          file_size: data.file_size,
+          updated_at: data.updated_at,
+          external_id: data.external_id
+        };
+
+        setDocument(transformedDoc);
+      } catch (err) {
+        console.error('Erreur:', err);
+        setError('Erreur lors du chargement du document');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadDocument();
+  }, [documentId]);
 
   if (!documentId) {
     return <Navigate to="/mes-directives" replace />;
   }
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="container mx-auto px-4 max-w-5xl">
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !document) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="container mx-auto px-4 max-w-5xl">
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              {error || 'Document non trouvé'}
+            </AlertDescription>
+          </Alert>
+          <Button 
+            variant="outline" 
+            onClick={() => window.history.back()}
+            className="mt-4"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Retour
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   const handleDownloadPdf = () => {
-    handleDownload(mockPdfUrl, mockDocumentName);
+    handleDownload(document.file_path, document.file_name);
   };
 
   const handlePrintPdf = () => {
-    handlePrint(mockPdfUrl, 'application/pdf');
+    handlePrint(document.file_path, document.content_type);
   };
 
   const handleOpenExternal = () => {
-    window.open(mockPdfUrl, '_blank');
+    window.open(document.file_path, '_blank');
   };
 
   const handleGoBack = () => {
@@ -53,7 +135,7 @@ const PdfViewer = () => {
                 >
                   <ArrowLeft className="w-4 h-4" />
                 </Button>
-                Visualisation PDF - {mockDocumentName}
+                Visualisation PDF - {document.file_name}
               </CardTitle>
               
               <div className="flex gap-2">
@@ -90,9 +172,9 @@ const PdfViewer = () => {
           <CardContent>
             <div className="border rounded-lg overflow-hidden bg-white">
               <iframe 
-                src={mockPdfUrl}
+                src={document.file_path}
                 className="w-full h-[80vh]"
-                title={mockDocumentName}
+                title={document.file_name}
                 allow="fullscreen"
               />
             </div>
