@@ -48,28 +48,42 @@ const AuthenticatedDirectivesView: React.FC<AuthenticatedDirectivesViewProps> = 
   // Si on est en accès par code (dossier actif sans authentification complète)
   const isCodeAccess = dossierActif && !user;
 
+  const handleUploadCompleteWrapper = (url: string, fileName: string, isPrivate: boolean) => {
+    onUploadComplete();
+  };
+
+  const handleDownloadWrapper = (filePath: string, fileName: string) => {
+    onDownload({ file_path: filePath, file_name: fileName });
+  };
+
+  const handlePrintWrapper = (filePath: string, contentType?: string) => {
+    onPrint({ file_path: filePath, content_type: contentType });
+  };
+
+  const handleViewWrapper = (filePath: string, contentType?: string) => {
+    onView({ file_path: filePath, content_type: contentType });
+  };
+
+  const handleDeleteWrapper = (documentId: string) => {
+    onView({ id: documentId });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <AppNavigation hideEditingFeatures={isCodeAccess} />
       
       <DirectivesPageContainer
-        user={user}
+        userId={user?.id || ""}
         profile={profile}
         documents={documents}
         showAddOptions={showAddOptions}
         setShowAddOptions={setShowAddOptions}
-        onUploadComplete={onUploadComplete}
-        onDownload={onDownload}
-        onPrint={onPrint}
-        onView={onView}
-        confirmDelete={confirmDelete}
-        documentToDelete={documentToDelete}
-        setDocumentToDelete={setDocumentToDelete}
-        handleDelete={handleDelete}
-        previewDocument={previewDocument}
-        setPreviewDocument={setPreviewDocument}
-        handlePreviewDownload={handlePreviewDownload}
-        handlePreviewPrint={handlePreviewPrint}
+        onUploadComplete={handleUploadCompleteWrapper}
+        onDownload={handleDownloadWrapper}
+        onPrint={handlePrintWrapper}
+        onView={handleViewWrapper}
+        onDelete={handleDeleteWrapper}
+        accessCode={null}
       />
     </div>
   );

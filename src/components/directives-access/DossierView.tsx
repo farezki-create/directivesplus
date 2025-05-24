@@ -5,6 +5,7 @@ import DirectivesContent from "./DirectivesContent";
 import PatientHeader from "./PatientHeader";
 import SecurityAlert from "./SecurityAlert";
 import { useDossierStore } from "@/store/dossierStore";
+import { extractPatientInfo } from "@/utils/patient/patientInfoExtractor";
 
 interface DossierViewProps {
   isAuthenticated: boolean;
@@ -36,6 +37,10 @@ const DossierView: React.FC<DossierViewProps> = ({
   // Déterminer si on est en accès par code (pas d'utilisateur authentifié mais dossier actif)
   const isCodeAccess = dossierActif && !isAuthenticated;
 
+  const handleReturnHome = () => {
+    window.location.href = "/";
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <AppNavigation hideEditingFeatures={isCodeAccess} />
@@ -44,8 +49,8 @@ const DossierView: React.FC<DossierViewProps> = ({
         {dossierActif && (
           <>
             <PatientHeader 
-              patient={dossierActif.contenu?.patient} 
-              dossier={dossierActif}
+              patientInfo={extractPatientInfo(dossierActif.contenu?.patient)}
+              onReturnHome={handleReturnHome}
             />
             
             <SecurityAlert />
@@ -61,13 +66,7 @@ const DossierView: React.FC<DossierViewProps> = ({
               </div>
             ) : (
               <DirectivesContent
-                documents={documents}
-                onDownload={onDownload}
-                onPrint={onPrint}
-                onView={onView}
-                onDelete={onDelete}
-                isAuthenticated={isAuthenticated}
-                onUploadComplete={onUploadComplete}
+                directives={documents}
               />
             )}
           </>
