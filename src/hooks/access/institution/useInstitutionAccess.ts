@@ -1,6 +1,7 @@
 
 import { useState } from "react";
-import { validateInstitutionAccess, InstitutionValidationResult } from "@/utils/institution-access/institutionValidator";
+import { validateInstitutionAccessHybrid } from "@/utils/institution-access/hybridValidator";
+import { InstitutionValidationResult } from "@/utils/institution-access/institutionValidator";
 
 export interface InstitutionFormData {
   lastName: string;
@@ -18,7 +19,7 @@ export const useInstitutionAccess = () => {
     setResult(null);
 
     try {
-      const validationResult = await validateInstitutionAccess(
+      const validationResult = await validateInstitutionAccessHybrid(
         formData.lastName,
         formData.firstName,
         formData.birthDate,
