@@ -8,7 +8,6 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useCalendarState } from "@/hooks/useCalendarState";
 
 interface DatePickerFieldProps {
   birthdate: Date | undefined;
@@ -17,15 +16,51 @@ interface DatePickerFieldProps {
 }
 
 export const DatePickerField = ({ birthdate, setBirthdate, disabled = false }: DatePickerFieldProps) => {
-  const {
-    calendarDate,
-    months,
-    years,
-    handleMonthChange,
-    handleYearChange,
-    decrementMonth,
-    incrementMonth
-  } = useCalendarState();
+  const [calendarDate, setCalendarDate] = useState<Date>(birthdate || new Date(1980, 0, 1));
+
+  // Générer la liste des années (de 1900 à année actuelle)
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: currentYear - 1899 }, (_, i) => currentYear - i);
+
+  // Liste des mois
+  const months = [
+    { value: 0, label: "Janvier" },
+    { value: 1, label: "Février" },
+    { value: 2, label: "Mars" },
+    { value: 3, label: "Avril" },
+    { value: 4, label: "Mai" },
+    { value: 5, label: "Juin" },
+    { value: 6, label: "Juillet" },
+    { value: 7, label: "Août" },
+    { value: 8, label: "Septembre" },
+    { value: 9, label: "Octobre" },
+    { value: 10, label: "Novembre" },
+    { value: 11, label: "Décembre" }
+  ];
+
+  const handleMonthChange = (monthIndex: string) => {
+    const newDate = new Date(calendarDate);
+    newDate.setMonth(Number(monthIndex));
+    setCalendarDate(newDate);
+  };
+
+  const handleYearChange = (year: string) => {
+    const newDate = new Date(calendarDate);
+    newDate.setFullYear(Number(year));
+    setCalendarDate(newDate);
+  };
+
+  const decrementMonth = () => {
+    const newDate = new Date(calendarDate);
+    newDate.setMonth(newDate.getMonth() - 1);
+    setCalendarDate(newDate);
+  };
+
+  const incrementMonth = () => {
+    const newDate = new Date(calendarDate);
+    newDate.setMonth(newDate.getMonth() + 1);
+    setCalendarDate(newDate);
+  };
 
   return (
     <div className="space-y-1">
@@ -51,12 +86,13 @@ export const DatePickerField = ({ birthdate, setBirthdate, disabled = false }: D
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
-          <div className="p-2 flex items-center justify-between bg-muted/20">
+          <div className="flex items-center justify-between px-2 py-2 bg-muted/20 border-b">
             <Button
               variant="outline"
               size="icon"
               className="h-7 w-7"
               onClick={decrementMonth}
+              disabled={disabled}
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
@@ -64,11 +100,12 @@ export const DatePickerField = ({ birthdate, setBirthdate, disabled = false }: D
               <Select
                 value={calendarDate.getMonth().toString()}
                 onValueChange={handleMonthChange}
+                disabled={disabled}
               >
-                <SelectTrigger className="h-7 w-[100px]">
+                <SelectTrigger className="h-7 w-[110px]">
                   <SelectValue placeholder="Mois" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white z-50">
                   {months.map((month) => (
                     <SelectItem key={month.value} value={month.value.toString()}>
                       {month.label}
@@ -79,11 +116,12 @@ export const DatePickerField = ({ birthdate, setBirthdate, disabled = false }: D
               <Select
                 value={calendarDate.getFullYear().toString()}
                 onValueChange={handleYearChange}
+                disabled={disabled}
               >
-                <SelectTrigger className="h-7 w-[100px]">
+                <SelectTrigger className="h-7 w-[75px]">
                   <SelectValue placeholder="Année" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="h-56 overflow-y-auto bg-white z-50">
                   {years.map((year) => (
                     <SelectItem key={year} value={year.toString()}>
                       {year}
@@ -97,6 +135,7 @@ export const DatePickerField = ({ birthdate, setBirthdate, disabled = false }: D
               size="icon"
               className="h-7 w-7"
               onClick={incrementMonth}
+              disabled={disabled}
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
@@ -108,7 +147,7 @@ export const DatePickerField = ({ birthdate, setBirthdate, disabled = false }: D
             disabled={(date) => date > new Date() || disabled}
             initialFocus
             month={calendarDate}
-            onMonthChange={date => calendarDate.setMonth(date.getMonth())}
+            onMonthChange={setCalendarDate}
           />
         </PopoverContent>
       </Popover>
