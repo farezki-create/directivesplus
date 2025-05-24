@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { toast } from "@/components/ui/use-toast";
 import { validateInstitutionAccessForm, cleanInstitutionAccessValues } from "./institution/useInstitutionAccessValidation";
-import { useNewInstitutionValidation } from "./institution/useInstitutionAccessValidationNew";
+import { useSimpleInstitutionValidation } from "./institution/useSimpleInstitutionValidation";
 
 export interface InstitutionAccessFormValues {
   lastName: string;
@@ -22,14 +22,14 @@ export const useInstitutionAccess = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [documents, setDocuments] = useState<DirectiveDocument[]>([]);
-  const { validateAccess } = useNewInstitutionValidation();
+  const { validateAccess } = useSimpleInstitutionValidation();
 
   const verifyInstitutionAccess = async (values: InstitutionAccessFormValues): Promise<boolean> => {
     setLoading(true);
     setError(null);
     
     try {
-      console.log("Starting institution access verification with values:", values);
+      console.log("Starting simple institution access verification with values:", values);
       
       // Validation des données d'entrée
       const validationErrors = validateInstitutionAccessForm(values);
@@ -42,25 +42,41 @@ export const useInstitutionAccess = () => {
       const cleanedValues = cleanInstitutionAccessValues(values);
       console.log("Verifying institution access with cleaned values:", cleanedValues);
 
-      // Utiliser la nouvelle méthode de validation
+      // Utiliser la validation simplifiée
       const result = await validateAccess(cleanedValues);
       
       if (result.success && result.profiles.length > 0) {
-        // Simuler des documents pour les profils trouvés
-        const mockDocuments = result.profiles.map((profile, index) => ({
-          id: `doc_${profile.user_id}_${index}`,
-          user_id: profile.user_id,
-          content: {
-            title: `Directives anticipées - ${profile.first_name} ${profile.last_name}`,
-            patient: {
-              nom: profile.last_name,
-              prenom: profile.first_name,
-              date_naissance: profile.birth_date
-            },
-            documents: []
-          },
-          created_at: new Date().toISOString()
-        }));
+        // Créer des documents basés sur les directives trouvées
+        const mockDocuments = [];
+        
+        for (const profile of result.profiles) {
+          if (profile.directives && profile.directives.length > 0) {
+            for (const directive of profile.directives) {
+              mockDocuments.push({
+                id: directive.id,
+                user_id: directive.user_id,
+                content: directive.content,
+                created_at: directive.created_at
+              });
+            }
+          } else {
+            // Fallback si pas de directives spécifiques
+            mockDocuments.push({
+              id: `doc_${profile.user_id}`,
+              user_id: profile.user_id,
+              content: {
+                title: `Directives anticipées - ${profile.first_name} ${profile.last_name}`,
+                patient: {
+                  nom: profile.last_name,
+                  prenom: profile.first_name,
+                  date_naissance: profile.birth_date
+                },
+                documents: []
+              },
+              created_at: new Date().toISOString()
+            });
+          }
+        }
         
         setDocuments(mockDocuments);
         
