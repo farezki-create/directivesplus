@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import type { ShareableDocument, ShareOptions, SharedDocument } from "./types";
 
@@ -10,13 +9,14 @@ export const createSharedDocument = async (
     throw new Error("Document must have a user_id to be shared");
   }
 
-  // Calculate expiration date
+  // Calculate expiration date - default to 1 year if not specified
   let expiresAt = null;
-  if (options.expiresInDays) {
-    const date = new Date();
-    date.setDate(date.getDate() + options.expiresInDays);
-    expiresAt = date.toISOString();
-  }
+  const defaultExpiryDays = 365; // 1 an par défaut
+  const expiryDays = options.expiresInDays || defaultExpiryDays;
+  
+  const date = new Date();
+  date.setDate(date.getDate() + expiryDays);
+  expiresAt = date.toISOString();
 
   // Determine document type
   const documentType = document.source || 
