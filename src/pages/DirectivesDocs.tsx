@@ -88,12 +88,32 @@ const DirectivesDocs = () => {
     window.location.reload();
   };
 
+  // Enhanced view handler that sets preview document
+  const handleViewDocument = (filePath: string, fileType?: string) => {
+    console.log("DirectivesDocs - handleViewDocument appelé avec:", filePath, fileType);
+    
+    // Find the document by file_path
+    const document = documents.find(doc => doc.file_path === filePath);
+    if (document) {
+      console.log("DirectivesDocs - Document trouvé pour preview:", document);
+      setPreviewDocument(document);
+    } else {
+      console.error("DirectivesDocs - Document non trouvé pour le chemin:", filePath);
+      // Fallback: call the original view handler
+      handleView(filePath, fileType);
+    }
+  };
+
   // Preview handlers
-  const handlePreviewDownload = (filePath: string, fileName: string) => {
+  const handlePreviewDownload = (filePath: string) => {
+    const document = previewDocument || documents.find(doc => doc.file_path === filePath);
+    const fileName = document?.file_name || 'document.pdf';
+    console.log("DirectivesDocs - handlePreviewDownload:", filePath, fileName);
     handleDownload(filePath, fileName);
   };
 
   const handlePreviewPrint = (filePath: string, fileType?: string) => {
+    console.log("DirectivesDocs - handlePreviewPrint:", filePath, fileType);
     handlePrint(filePath, fileType);
   };
 
@@ -130,7 +150,7 @@ const DirectivesDocs = () => {
         onUploadComplete={handleUploadCompleteWrapper}
         onDownload={handleDownload}
         onPrint={handlePrint}
-        onView={handleView}
+        onView={handleViewDocument}
         documentToDelete={documentToDelete}
         setDocumentToDelete={setDocumentToDelete}
         handleDelete={handleDelete}
