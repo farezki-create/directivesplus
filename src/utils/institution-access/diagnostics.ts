@@ -73,8 +73,22 @@ export const runInstitutionAccessDiagnostics = async (institutionCode: string) =
     console.error("✗ Code spécifique ÉCHEC:", error);
   }
 
-  // Test 6: État authentification
-  console.log("Test 6: État authentification");
+  // Test 6: Test de la fonction debug
+  console.log("Test 6: Fonction debug RPC");
+  try {
+    const { data, error } = await supabase.rpc("debug_institution_access_step_by_step" as any, {
+      input_last_name: "AREZKI",
+      input_first_name: "FARID",
+      input_birth_date: "1963-08-13",
+      input_shared_code: institutionCode
+    });
+    console.log("✓ Debug RPC:", { data, error });
+  } catch (error) {
+    console.error("✗ Debug RPC ÉCHEC:", error);
+  }
+
+  // Test 7: État authentification
+  console.log("Test 7: État authentification");
   try {
     const { data: { session }, error } = await supabase.auth.getSession();
     console.log("✓ Session auth:", { 

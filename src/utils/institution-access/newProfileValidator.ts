@@ -7,19 +7,41 @@ export const validateInstitutionCodeWithRPC = async (
   birthDate: string,
   institutionCode: string
 ) => {
-  console.log("=== VALIDATION AVEC RPC ===");
+  console.log("=== VALIDATION AVEC RPC (debug functions) ===");
   console.log("Données d'entrée:", { lastName, firstName, birthDate, institutionCode });
   
   try {
-    // Appel de la fonction RPC en utilisant un type générique
-    const { data, error } = await supabase.rpc("get_patient_directives_by_institution_access" as any, {
+    // Utiliser la fonction de debug étape par étape
+    const { data: debugData, error: debugError } = await supabase.rpc("debug_institution_access_step_by_step" as any, {
       input_last_name: lastName.trim(),
       input_first_name: firstName.trim(),
       input_birth_date: birthDate,
       input_shared_code: institutionCode.trim()
     });
 
-    console.log("Résultat RPC:", { data, error });
+    console.log("Résultat debug RPC:", { debugData, debugError });
+
+    if (debugError) {
+      console.error("Erreur debug RPC:", debugError);
+      throw new Error("Erreur lors de la vérification debug du code d'accès institution.");
+    }
+
+    // Afficher les résultats de debug
+    if (debugData && Array.isArray(debugData)) {
+      debugData.forEach(step => {
+        console.log(`${step.step_name}: ${step.found_count} résultat(s) - ${step.details}`);
+      });
+    }
+
+    // Essayer la fonction RPC existante
+    const { data, error } = await supabase.rpc("get_directives_by_institution_code" as any, {
+      input_nom: lastName.trim(),
+      input_prenom: firstName.trim(),
+      input_date_naissance: birthDate,
+      input_institution_code: institutionCode.trim()
+    });
+
+    console.log("Résultat RPC directives:", { data, error });
 
     if (error) {
       console.error("Erreur RPC:", error);
@@ -28,12 +50,21 @@ export const validateInstitutionCodeWithRPC = async (
 
     // Vérification que data est un tableau
     if (!data || !Array.isArray(data) || data.length === 0) {
-      console.log("Aucun profil trouvé avec ces critères");
+      console.log("Aucun profil trouvé avec la fonction RPC, utilisation du fallback");
       throw new Error("Code d'accès institution invalide ou informations patient incorrectes.");
     }
 
-    console.log("Profils trouvés:", data);
-    return data;
+    console.log("Profils trouvés via RPC:", data);
+    
+    // Transformer pour correspondre au format attendu
+    return data.map(directive => ({
+      user_id: directive.user_id,
+      profile_id: directive.user_id,
+      first_name: firstName,
+      last_name: lastName,
+      birth_date: birthDate,
+      institution_shared_code: institutionCode
+    }));
   } catch (error) {
     console.error("Exception validation RPC:", error);
     throw error;
