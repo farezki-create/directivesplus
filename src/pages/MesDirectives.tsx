@@ -2,11 +2,14 @@
 import React from "react";
 import { useDirectivesDocuments } from "@/hooks/useDirectivesDocuments";
 import { useAuth } from "@/contexts/AuthContext";
-import { Navigate } from "react-router-dom";
+import { Navigate, useSearchParams } from "react-router-dom";
 import AuthenticatedDirectivesView from "@/components/directives/AuthenticatedDirectivesView";
 import DirectivesLoadingState from "@/components/documents/DirectivesLoadingState";
+import { MesDirectivesSharedAccess } from "@/components/documents/MesDirectivesSharedAccess";
 
 const MesDirectives = () => {
+  const [searchParams] = useSearchParams();
+  const sharedCode = searchParams.get('shared_code');
   const { user, profile, isAuthenticated, isLoading: authLoading } = useAuth();
   
   const {
@@ -29,6 +32,11 @@ const MesDirectives = () => {
 
   console.log("MesDirectives - Auth state:", { userId: user?.id, hasProfile: !!profile, isAuthenticated, isLoading: authLoading });
   console.log("MesDirectives - Documents:", documents.length);
+
+  // Si un code de partage est présent dans l'URL, afficher la vue de partage
+  if (sharedCode) {
+    return <MesDirectivesSharedAccess />;
+  }
 
   // Wrapper function to handle upload completion
   const handleUploadCompleteWrapper = () => {
