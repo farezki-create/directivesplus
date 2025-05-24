@@ -25,11 +25,11 @@ export const createBasicTestData = async () => {
       }
     }
 
-    console.log("Données de test non trouvées, vérification dans user_profiles");
+    console.log("Données de test non trouvées, vérification dans profiles");
     
-    // Vérifier directement dans user_profiles
+    // Vérifier directement dans profiles
     const { data: userProfiles, error: profileError } = await supabase
-      .from('user_profiles')
+      .from('profiles')
       .select('*')
       .eq('last_name', 'AREZKI')
       .eq('first_name', 'FARID')
@@ -38,7 +38,7 @@ export const createBasicTestData = async () => {
     console.log("Profils utilisateur trouvés:", { userProfiles, profileError });
 
     if (!userProfiles || userProfiles.length === 0) {
-      console.log("Aucun profil de test trouvé dans user_profiles");
+      console.log("Aucun profil de test trouvé dans profiles");
       return false;
     }
 

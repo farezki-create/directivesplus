@@ -8,22 +8,22 @@ export const runInstitutionAccessDiagnostics = async (institutionCode: string) =
   // Test 1: Connexion Supabase
   console.log("Test 1: Connexion Supabase");
   try {
-    const { data, error } = await supabase.from('user_profiles').select('count').limit(1);
+    const { data, error } = await supabase.from('profiles').select('count').limit(1);
     console.log("✓ Connexion Supabase OK:", { data, error });
   } catch (error) {
     console.error("✗ Connexion Supabase ÉCHEC:", error);
   }
 
-  // Test 2: Permissions table user_profiles
-  console.log("Test 2: Permissions table user_profiles");
+  // Test 2: Permissions table profiles
+  console.log("Test 2: Permissions table profiles");
   try {
     const { data, error } = await supabase
-      .from('user_profiles')
+      .from('profiles')
       .select('id, first_name, last_name, birth_date')
       .limit(3);
-    console.log("✓ Accès user_profiles OK:", { count: data?.length, error });
+    console.log("✓ Accès profiles OK:", { count: data?.length, error });
   } catch (error) {
-    console.error("✗ Accès user_profiles ÉCHEC:", error);
+    console.error("✗ Accès profiles ÉCHEC:", error);
   }
 
   // Test 3: Test de la fonction debug RPC simple
