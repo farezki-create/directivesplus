@@ -34,7 +34,13 @@ export const useDirectivesDocuments = () => {
         return;
       }
 
-      setDocuments(data || []);
+      // Transform data to match Document interface
+      const transformedDocuments: Document[] = (data || []).map(doc => ({
+        ...doc,
+        file_type: doc.file_type || 'pdf' // Add default file_type if missing
+      }));
+
+      setDocuments(transformedDocuments);
     } catch (error) {
       console.error('Error loading documents:', error);
     } finally {
