@@ -13,12 +13,18 @@ export const useDirectivesDocuments = () => {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showAddOptions, setShowAddOptions] = useState(false);
-  const [previewDocument, setPreviewDocument] = useState<Document | null>(null);
   const [documentToDelete, setDocumentToDelete] = useState<string | null>(null);
 
   // Load documents
   const loadDocuments = async () => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      console.log("useDirectivesDocuments - Pas d'utilisateur connecté");
+      setDocuments([]);
+      setIsLoading(false);
+      return;
+    }
+
+    console.log("useDirectivesDocuments - Chargement des documents pour user:", user.id);
 
     try {
       const { data, error } = await supabase
@@ -34,18 +40,37 @@ export const useDirectivesDocuments = () => {
           description: "Impossible de charger les documents",
           variant: "destructive"
         });
+        setDocuments([]);
         return;
       }
 
+      console.log("useDirectivesDocuments - Documents chargés:", data);
+
       // Transform data to match Document interface
-      const transformedDocuments: Document[] = (data || []).map(doc => ({
-        ...doc,
-        file_type: doc.content_type || 'pdf' // Use content_type as file_type fallback
-      }));
+      const transformedDocuments: Document[] = (data || []).map(doc => {
+        const transformedDoc: Document = {
+          id: doc.id,
+          file_name: doc.file_name,
+          file_path: doc.file_path,
+          file_type: doc.content_type || 'application/pdf',
+          content_type: doc.content_type,
+          user_id: doc.user_id,
+          created_at: doc.created_at,
+          description: doc.description,
+          file_size: doc.file_size,
+          updated_at: doc.updated_at,
+          external_id: doc.external_id
+        };
+        
+        console.log("useDirectivesDocuments - Document transformé:", transformedDoc);
+        return transformedDoc;
+      });
 
       setDocuments(transformedDocuments);
+      console.log("useDirectivesDocuments - Total documents:", transformedDocuments.length);
     } catch (error) {
       console.error('Error loading documents:', error);
+      setDocuments([]);
     } finally {
       setIsLoading(false);
     }
@@ -66,6 +91,8 @@ export const useDirectivesDocuments = () => {
 
   const handleDownload = (filePath: string, fileName: string) => {
     try {
+      console.log("useDirectivesDocuments - handleDownload:", filePath, fileName);
+      
       const link = document.createElement('a');
       link.href = filePath;
       link.download = fileName;
@@ -89,15 +116,26 @@ export const useDirectivesDocuments = () => {
   };
 
   const handlePrint = (filePath: string, fileType?: string) => {
+    console.log("useDirectivesDocuments - handlePrint:", filePath, fileType);
+    
     const printWindow = window.open(filePath, '_blank');
     if (printWindow) {
       printWindow.onload = () => {
         printWindow.print();
       };
+    } else {
+      toast({
+        title: "Erreur",
+        description: "Impossible d'ouvrir la fenêtre d'impression. Vérifiez que les popups sont autorisés.",
+        variant: "destructive"
+      });
     }
   };
 
   const handleView = (filePath: string, fileType?: string) => {
+    console.log("useDirectivesDocuments - handleView:", filePath, fileType);
+    
+    // Pour les PDFs et autres documents, ouvrir dans un nouvel onglet
     window.open(filePath, '_blank');
   };
 
@@ -133,18 +171,6 @@ export const useDirectivesDocuments = () => {
     }
   };
 
-  const confirmDelete = (documentId: string) => {
-    setDocumentToDelete(documentId);
-  };
-
-  const handlePreviewDownload = (filePath: string, fileName: string) => {
-    handleDownload(filePath, fileName);
-  };
-
-  const handlePreviewPrint = (filePath: string, fileType?: string) => {
-    handlePrint(filePath, fileType);
-  };
-
   return {
     user,
     isAuthenticated,
@@ -152,17 +178,12 @@ export const useDirectivesDocuments = () => {
     isLoading,
     showAddOptions,
     setShowAddOptions,
-    previewDocument,
-    setPreviewDocument,
     documentToDelete,
     setDocumentToDelete,
     handleDownload,
     handlePrint,
     handleView,
     handleDelete,
-    confirmDelete,
-    handleUploadComplete,
-    handlePreviewDownload,
-    handlePreviewPrint
+    handleUploadComplete
   };
 };

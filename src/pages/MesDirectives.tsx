@@ -6,6 +6,7 @@ import { Navigate, useSearchParams } from "react-router-dom";
 import AuthenticatedDirectivesView from "@/components/directives/AuthenticatedDirectivesView";
 import DirectivesLoadingState from "@/components/documents/DirectivesLoadingState";
 import { MesDirectivesSharedAccess } from "@/components/documents/MesDirectivesSharedAccess";
+import { Document } from "@/types/documents";
 
 const MesDirectives = () => {
   const [searchParams] = useSearchParams();
@@ -17,8 +18,6 @@ const MesDirectives = () => {
     documents,
     showAddOptions,
     setShowAddOptions,
-    previewDocument,
-    setPreviewDocument,
     documentToDelete,
     setDocumentToDelete,
     handleDownload,
@@ -26,9 +25,10 @@ const MesDirectives = () => {
     handleView,
     handleDelete,
     handleUploadComplete,
-    handlePreviewDownload,
-    handlePreviewPrint
   } = useDirectivesDocuments();
+
+  // Local state for preview document
+  const [previewDocument, setPreviewDocument] = React.useState<Document | null>(null);
 
   console.log("MesDirectives - Auth state:", { userId: user?.id, hasProfile: !!profile, isAuthenticated, isLoading: authLoading });
   console.log("MesDirectives - Documents:", documents.length);
@@ -41,6 +41,35 @@ const MesDirectives = () => {
   // Wrapper function to handle upload completion
   const handleUploadCompleteWrapper = () => {
     handleUploadComplete();
+  };
+
+  // Enhanced view handler that sets preview document
+  const handleViewDocument = (filePath: string, fileType?: string) => {
+    console.log("MesDirectives - handleViewDocument appelé avec:", filePath, fileType);
+    
+    // Find the document by file_path
+    const document = documents.find(doc => doc.file_path === filePath);
+    if (document) {
+      console.log("MesDirectives - Document trouvé pour preview:", document);
+      setPreviewDocument(document);
+    } else {
+      console.error("MesDirectives - Document non trouvé pour le chemin:", filePath);
+      // Fallback: call the original view handler
+      handleView(filePath, fileType);
+    }
+  };
+
+  // Preview handlers
+  const handlePreviewDownload = (filePath: string) => {
+    const document = previewDocument || documents.find(doc => doc.file_path === filePath);
+    const fileName = document?.file_name || 'document.pdf';
+    console.log("MesDirectives - handlePreviewDownload:", filePath, fileName);
+    handleDownload(filePath, fileName);
+  };
+
+  const handlePreviewPrint = (filePath: string, fileType?: string) => {
+    console.log("MesDirectives - handlePreviewPrint:", filePath, fileType);
+    handlePrint(filePath, fileType);
   };
 
   // Rediriger vers la page de connexion si non authentifié
@@ -63,7 +92,7 @@ const MesDirectives = () => {
       onUploadComplete={handleUploadCompleteWrapper}
       onDownload={handleDownload}
       onPrint={handlePrint}
-      onView={handleView}
+      onView={handleViewDocument}
       documentToDelete={documentToDelete}
       setDocumentToDelete={setDocumentToDelete}
       handleDelete={handleDelete}
