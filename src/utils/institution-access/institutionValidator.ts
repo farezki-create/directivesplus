@@ -19,11 +19,11 @@ export const validateInstitutionAccess = async (
   birthDate: string,
   institutionCode: string
 ): Promise<InstitutionValidationResult> => {
-  console.log("=== VALIDATION ACCÈS INSTITUTION (CORRIGÉE) ===");
-  console.log("Recherche:", { lastName, firstName, birthDate, institutionCode });
+  console.log("=== VALIDATION SIMPLIFIÉE ACCÈS INSTITUTION ===");
+  console.log("Paramètres:", { lastName, firstName, birthDate, institutionCode });
 
   try {
-    // Rechercher d'abord dans la table profiles pour trouver l'utilisateur
+    // D'abord, vérifier si l'utilisateur existe dans profiles
     const { data: profiles, error: profileError } = await supabase
       .from('profiles')
       .select('id, first_name, last_name, birth_date')
@@ -48,11 +48,13 @@ export const validateInstitutionAccess = async (
       };
     }
 
-    // Ensuite chercher dans directives avec le code institution
+    const profile = profiles[0];
+
+    // Vérifier le code d'accès institution dans directives
     const { data: directives, error: directiveError } = await supabase
       .from('directives')
-      .select('id, user_id, content, created_at')
-      .eq('user_id', profiles[0].id)
+      .select('id, content, created_at')
+      .eq('user_id', profile.id)
       .eq('institution_code', institutionCode.trim())
       .gt('institution_code_expires_at', new Date().toISOString());
 
@@ -71,7 +73,7 @@ export const validateInstitutionAccess = async (
       const { data: expiredDirectives } = await supabase
         .from('directives')
         .select('institution_code_expires_at')
-        .eq('user_id', profiles[0].id)
+        .eq('user_id', profile.id)
         .eq('institution_code', institutionCode.trim());
 
       if (expiredDirectives && expiredDirectives.length > 0) {
@@ -87,7 +89,6 @@ export const validateInstitutionAccess = async (
       };
     }
 
-    const profile = profiles[0];
     console.log("Validation réussie pour:", profile);
 
     return {
