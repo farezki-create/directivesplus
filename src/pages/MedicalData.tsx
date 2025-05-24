@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -8,7 +9,8 @@ import MedicalDocumentList from "@/components/medical/MedicalDocumentList";
 import MedicalDocumentActions, { useMedicalDocumentActions } from "@/components/medical/MedicalDocumentActions";
 import { useMedicalDocuments } from "@/hooks/useMedicalDocuments";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Info } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const MedicalData = () => {
   const { user, isAuthenticated, isLoading, profile } = useAuth();
@@ -60,6 +62,16 @@ const MedicalData = () => {
           </div>
           
           <MedicalHeader onAddDocument={() => setShowAddOptions(!showAddOptions)} />
+
+          {documents.length > 0 && (
+            <Alert className="mb-6">
+              <Info className="h-4 w-4" />
+              <AlertDescription>
+                Vous pouvez transférer vos documents médicaux vers vos directives anticipées 
+                pour qu'ils soient accessibles via un code d'accès aux professionnels de santé.
+              </AlertDescription>
+            </Alert>
+          )}
 
           {showAddOptions && user && (
             <div className="mb-8">
