@@ -3,14 +3,17 @@ import { ReactNode, useEffect, useState } from "react";
 import { Navigate, useLocation, useSearchParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useReadOnlyAccess } from "@/hooks/useReadOnlyAccess";
 
 interface ProtectedRouteProps {
   children: ReactNode;
   requiredRole?: string;
+  requireWriteAccess?: boolean; // Nouvelle prop pour indiquer si l'écriture est requise
 }
 
-const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
+const ProtectedRoute = ({ children, requiredRole, requireWriteAccess = false }: ProtectedRouteProps) => {
   const { isAuthenticated, isLoading, profile } = useAuth();
+  const { hasEquivalentAuth, hasWriteAccess } = useReadOnlyAccess(isAuthenticated);
   const location = useLocation();
   const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
   
@@ -29,6 +32,9 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     pathname: location.pathname,
     isPublic: fullyPublicRoutes.includes(location.pathname),
     isAuthenticated,
+    hasEquivalentAuth,
+    hasWriteAccess,
+    requireWriteAccess,
     isLoading
   });
 
@@ -55,14 +61,20 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     );
   }
 
-  // Pour les routes protégées, vérifier l'authentification
-  if (!isAuthenticated) {
-    console.log("ProtectedRoute: Non authentifié, redirection vers /auth");
+  // Pour les routes protégées, vérifier l'accès équivalent à l'authentification
+  if (!hasEquivalentAuth) {
+    console.log("ProtectedRoute: Aucun accès (ni authentifié ni code d'accès), redirection vers /auth");
     return <Navigate to="/auth" state={{ from: location.pathname }} replace />;
   }
 
-  // Vérifier le rôle si requis
-  if (requiredRole && profile) {
+  // Si l'accès en écriture est requis mais que l'utilisateur n'a qu'un accès lecture seule
+  if (requireWriteAccess && !hasWriteAccess) {
+    console.log("ProtectedRoute: Accès en écriture requis mais utilisateur en lecture seule");
+    return <Navigate to="/mes-directives" state={{ from: location.pathname }} replace />;
+  }
+
+  // Vérifier le rôle si requis (uniquement pour les utilisateurs vraiment authentifiés)
+  if (requiredRole && profile && isAuthenticated) {
     const userRoles = profile.roles || [];
     const hasRequiredRole = Array.isArray(userRoles) 
       ? userRoles.includes(requiredRole)

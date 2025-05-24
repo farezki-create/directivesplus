@@ -1,168 +1,102 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { ShieldCheck, BookOpenCheck, UserCog, FileText, CreditCard, Activity } from "lucide-react";
 
-const DirectivesGrid = () => {
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { FileText, Users, Heart, Brain, Stethoscope, FileSignature, Eye, Lock } from "lucide-react";
+
+interface DirectivesGridProps {
+  readOnly?: boolean;
+}
+
+const DirectivesGrid = ({ readOnly = false }: DirectivesGridProps) => {
+  const sections = [
+    {
+      title: "Avis général",
+      description: "Vos préférences générales de fin de vie",
+      icon: FileText,
+      href: "/avis-general",
+      color: "bg-blue-50 border-blue-200",
+      iconColor: "text-blue-600"
+    },
+    {
+      title: "Goûts et peurs",
+      description: "Vos préférences personnelles et appréhensions",
+      icon: Heart,
+      href: "/gouts-peurs",
+      color: "bg-rose-50 border-rose-200",
+      iconColor: "text-rose-600"
+    },
+    {
+      title: "Maintien en vie",
+      description: "Vos souhaits concernant les soins de maintien en vie",
+      icon: Brain,
+      href: "/maintien-vie",
+      color: "bg-green-50 border-green-200",
+      iconColor: "text-green-600"
+    },
+    {
+      title: "Maladie avancée",
+      description: "Vos directives en cas de maladie grave",
+      icon: Stethoscope,
+      href: "/maladie-avancee",
+      color: "bg-purple-50 border-purple-200",
+      iconColor: "text-purple-600"
+    },
+    {
+      title: "Personne de confiance",
+      description: "Désignez votre personne de confiance",
+      icon: Users,
+      href: "/personne-confiance",
+      color: "bg-orange-50 border-orange-200",
+      iconColor: "text-orange-600"
+    },
+    {
+      title: "Synthèse",
+      description: "Votre document final de directives anticipées",
+      icon: FileSignature,
+      href: "/synthese",
+      color: "bg-indigo-50 border-indigo-200",
+      iconColor: "text-indigo-600"
+    }
+  ];
+
   return (
-    <div className="space-y-8">
-      {/* Questionnaires Grid - 6 premiers éléments */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Link to="/avis-general" className="group">
-          <div className="bg-white border rounded-lg p-6 shadow-sm transition-all hover:shadow-md flex flex-col items-center justify-center text-center h-full">
-            <div className="bg-blue-100 p-3 rounded-full mb-4">
-              <ShieldCheck className="h-6 w-6 text-blue-600" />
-            </div>
-            <h3 className="font-semibold text-lg mb-2">
-              <span className="inline-flex items-center justify-center bg-blue-600 text-white rounded-full h-6 w-6 mr-2 text-sm">1</span>
-              Avis Général
-            </h3>
-            <p className="text-gray-600 text-sm">
-              Exprimez vos préférences générales concernant votre santé et vos soins.
-            </p>
-          </div>
-        </Link>
-
-        <Link to="/maintien-vie" className="group">
-          <div className="bg-white border rounded-lg p-6 shadow-sm transition-all hover:shadow-md flex flex-col items-center justify-center text-center h-full">
-            <div className="bg-green-100 p-3 rounded-full mb-4">
-              <BookOpenCheck className="h-6 w-6 text-green-600" />
-            </div>
-            <h3 className="font-semibold text-lg mb-2">
-              <span className="inline-flex items-center justify-center bg-green-600 text-white rounded-full h-6 w-6 mr-2 text-sm">2</span>
-              Maintien en Vie
-            </h3>
-            <p className="text-gray-600 text-sm">
-              Spécifiez vos souhaits concernant les traitements de maintien en vie.
-            </p>
-          </div>
-        </Link>
-
-        <Link to="/maladie-avancee" className="group">
-          <div className="bg-white border rounded-lg p-6 shadow-sm transition-all hover:shadow-md flex flex-col items-center justify-center text-center h-full">
-            <div className="bg-yellow-100 p-3 rounded-full mb-4">
-              <UserCog className="h-6 w-6 text-yellow-600" />
-            </div>
-            <h3 className="font-semibold text-lg mb-2">
-              <span className="inline-flex items-center justify-center bg-yellow-600 text-white rounded-full h-6 w-6 mr-2 text-sm">3</span>
-              Maladie Avancée
-            </h3>
-            <p className="text-gray-600 text-sm">
-              Indiquez vos préférences pour les soins en cas de maladie grave.
-            </p>
-          </div>
-        </Link>
+    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {sections.map((section) => {
+        const Icon = section.icon;
         
-        <Link to="/gouts-peurs" className="group">
-          <div className="bg-white border rounded-lg p-6 shadow-sm transition-all hover:shadow-md flex flex-col items-center justify-center text-center h-full">
-            <div className="bg-indigo-100 p-3 rounded-full mb-4">
-              <UserCog className="h-6 w-6 text-indigo-600" />
-            </div>
-            <h3 className="font-semibold text-lg mb-2">
-              <span className="inline-flex items-center justify-center bg-indigo-600 text-white rounded-full h-6 w-6 mr-2 text-sm">4</span>
-              Goûts et Peurs
-            </h3>
-            <p className="text-gray-600 text-sm">
-              Partagez vos préférences personnelles et vos craintes concernant les soins.
-            </p>
-          </div>
-        </Link>
-
-        <Link to="/exemples-phrases" className="group">
-          <div className="bg-white border rounded-lg p-6 shadow-sm transition-all hover:shadow-md flex flex-col items-center justify-center text-center h-full">
-            <div className="bg-teal-100 p-3 rounded-full mb-4">
-              <UserCog className="h-6 w-6 text-teal-600" />
-            </div>
-            <h3 className="font-semibold text-lg mb-2">
-              <span className="inline-flex items-center justify-center bg-teal-600 text-white rounded-full h-6 w-6 mr-2 text-sm">5</span>
-              Exemples de Phrases
-            </h3>
-            <p className="text-gray-600 text-sm">
-              Inspirez-vous d'exemples pour rédiger vos directives.
-            </p>
-          </div>
-        </Link>
-
-        <Link to="/personne-confiance" className="group">
-          <div className="bg-white border rounded-lg p-6 shadow-sm transition-all hover:shadow-md flex flex-col items-center justify-center text-center h-full">
-            <div className="bg-purple-100 p-3 rounded-full mb-4">
-              <UserCog className="h-6 w-6 text-purple-600" />
-            </div>
-            <h3 className="font-semibold text-lg mb-2">
-              <span className="inline-flex items-center justify-center bg-purple-600 text-white rounded-full h-6 w-6 mr-2 text-sm">6</span>
-              Personne de Confiance
-            </h3>
-            <p className="text-gray-600 text-sm">
-              Désignez une personne de confiance pour vous représenter.
-            </p>
-          </div>
-        </Link>
-      </div>
-      
-      {/* Ligne de Synthèse */}
-      <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
-        <Link to="/synthese" className="group">
-          <div className="bg-white border rounded-lg p-6 shadow-sm transition-all hover:shadow-md flex flex-col items-center justify-center text-center h-full">
-            <div className="bg-blue-100 p-3 rounded-full mb-4">
-              <FileText className="h-6 w-6 text-blue-600" />
-            </div>
-            <h3 className="font-semibold text-lg mb-2">
-              <span className="inline-flex items-center justify-center bg-blue-600 text-white rounded-full h-6 w-6 mr-2 text-sm">7</span>
-              Synthèse
-            </h3>
-            <p className="text-gray-600 text-sm">
-              Générer une synthèse complète de vos directives et la télécharger au format PDF.
-            </p>
-          </div>
-        </Link>
-      </div>
-      
-      {/* Ligne des documents et carte d'accès - Réarrangement */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Link to="/directives-docs" className="group">
-          <div className="bg-white border rounded-lg p-6 shadow-sm transition-all hover:shadow-md flex flex-col items-center justify-center text-center h-full">
-            <div className="bg-orange-100 p-3 rounded-full mb-4">
-              <FileText className="h-6 w-6 text-orange-600" />
-            </div>
-            <h3 className="font-semibold text-lg mb-2">
-              Mes Directives
-            </h3>
-            <p className="text-gray-600 text-sm">
-              Visualisez, imprimez et partagez vos directives anticipées.
-            </p>
-          </div>
-        </Link>
-
-        <Link to="/carte-acces" className="group">
-          <div className="bg-white border rounded-lg p-6 shadow-sm transition-all hover:shadow-md flex flex-col items-center justify-center text-center h-full">
-            <div className="bg-blue-100 p-3 rounded-full mb-4">
-              <CreditCard className="h-6 w-6 text-blue-600" />
-            </div>
-            <h3 className="font-semibold text-lg mb-2">
-              Carte d'Accès
-            </h3>
-            <p className="text-gray-600 text-sm">
-              Générez votre carte d'accès au format carte bancaire pour partager vos codes.
-            </p>
-          </div>
-        </Link>
-      </div>
-      
-      {/* Ligne de Données Médicales - Placée en dernier */}
-      <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
-        <Link to="/donnees-medicales" className="group">
-          <div className="bg-white border rounded-lg p-6 shadow-sm transition-all hover:shadow-md flex flex-col items-center justify-center text-center h-full">
-            <div className="bg-green-100 p-3 rounded-full mb-4">
-              <Activity className="h-6 w-6 text-green-600" />
-            </div>
-            <h3 className="font-semibold text-lg mb-2">
-              Mes Données Médicales
-            </h3>
-            <p className="text-gray-600 text-sm">
-              Gérez et partagez vos données médicales essentielles en toute sécurité.
-            </p>
-          </div>
-        </Link>
-      </div>
+        return (
+          <Card key={section.title} className={`transition-all hover:shadow-lg ${section.color}`}>
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-lg bg-white ${section.iconColor}`}>
+                  <Icon size={24} />
+                </div>
+                {readOnly && (
+                  <div className="flex items-center gap-1 text-xs text-gray-500">
+                    {section.href === "/synthese" ? <Eye size={12} /> : <Lock size={12} />}
+                    {section.href === "/synthese" ? "Consultation" : "Lecture seule"}
+                  </div>
+                )}
+              </div>
+              <CardTitle className="text-lg">{section.title}</CardTitle>
+              <CardDescription className="text-sm">
+                {section.description}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <Button asChild variant="outline" className="w-full">
+                <Link to={section.href}>
+                  {readOnly 
+                    ? (section.href === "/synthese" ? "Consulter" : "Voir") 
+                    : "Commencer"
+                  }
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
   );
 };

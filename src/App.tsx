@@ -80,24 +80,8 @@ function App() {
         {/* Routes avec accès alternatif via PlaceholderPage */}
         <Route path="/:pageId" element={<PlaceholderPage />} />
         
-        {/* ========== ROUTES PROTÉGÉES ========== */}
-        {/* Ces routes nécessitent une authentification */}
-        <Route 
-          path="/profile" 
-          element={
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/admin" 
-          element={
-            <ProtectedRoute requiredRole="admin">
-              <Admin />
-            </ProtectedRoute>
-          } 
-        />
+        {/* ========== ROUTES AVEC ACCÈS ÉQUIVALENT AUTHENTIFIÉ ========== */}
+        {/* Ces routes acceptent l'authentification OU l'accès par code */}
         <Route 
           path="/rediger" 
           element={
@@ -116,7 +100,30 @@ function App() {
         />
         <Route 
           path="/synthese" 
-          element={<Synthesis />}
+          element={
+            <ProtectedRoute>
+              <Synthesis />
+            </ProtectedRoute>
+          }
+        />
+        
+        {/* ========== ROUTES NÉCESSITANT UNE VRAIE AUTHENTIFICATION ========== */}
+        {/* Ces routes nécessitent une authentification réelle (pas juste un code d'accès) */}
+        <Route 
+          path="/profile" 
+          element={
+            <ProtectedRoute requireWriteAccess={true}>
+              <Profile />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin" 
+          element={
+            <ProtectedRoute requiredRole="admin" requireWriteAccess={true}>
+              <Admin />
+            </ProtectedRoute>
+          } 
         />
         
         {/* Page non trouvée */}
