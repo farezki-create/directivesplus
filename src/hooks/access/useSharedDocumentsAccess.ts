@@ -1,5 +1,6 @@
+
 import { useState } from "react";
-import { useUnifiedSharing } from "@/hooks/sharing/useUnifiedSharing";
+import { useSharedDocumentRetrieval } from "@/hooks/sharing/useSharedDocumentRetrieval";
 import { toast } from "@/hooks/use-toast";
 import { useDossierStore } from "@/store/dossierStore";
 
@@ -19,7 +20,7 @@ interface AccessResult {
 export const useSharedDocumentsAccess = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AccessResult | null>(null);
-  const { getSharedDocumentsByAccessCode } = useUnifiedSharing();
+  const { getSharedDocumentsByAccessCode } = useSharedDocumentRetrieval();
   const { setDossierActif } = useDossierStore();
 
   const validateAccess = async (formData: AccessFormData): Promise<AccessResult> => {
