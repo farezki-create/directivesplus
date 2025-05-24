@@ -59,13 +59,8 @@ export const DocumentCardRefactored: React.FC<DocumentCardRefactoredProps> = ({
       const newShareCode = generateShareCode();
       console.log("Code de partage généré:", newShareCode);
       
-      // Déterminer le type de document correct
-      let documentType = 'document';
-      if (document.file_type === 'directive') {
-        documentType = 'directive';
-      } else if (document.content_type?.includes('pdf')) {
-        documentType = 'document';
-      }
+      // Utiliser "pdf_document" comme type de document pour tous les documents PDF
+      const documentType = 'pdf_document';
       
       // Préparer les données à insérer
       const insertData = {
