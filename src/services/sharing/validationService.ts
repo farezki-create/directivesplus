@@ -2,6 +2,14 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { ShareableDocument, ValidationRequest, ValidationResult } from "@/types/sharing";
 
+// Type pour la structure des données globales
+interface GlobalDocumentData {
+  access_type: 'global';
+  user_id: string;
+  total_documents: number;
+  documents: any[];
+}
+
 /**
  * Service de validation des codes d'accès
  */
@@ -46,13 +54,14 @@ export class ValidationService {
 
       // Extraire les documents de la première entrée (global_access)
       const firstEntry = data[0];
-      const documentData = firstEntry.document_data;
+      const documentData = firstEntry.document_data as any;
       
       console.log("Document data structure:", documentData);
 
       // Vérifier si c'est un accès global avec des documents
-      if (documentData?.access_type === 'global' && documentData?.documents) {
-        const documents: ShareableDocument[] = documentData.documents.map((doc: any) => ({
+      if (documentData?.access_type === 'global' && Array.isArray(documentData?.documents)) {
+        const globalData = documentData as GlobalDocumentData;
+        const documents: ShareableDocument[] = globalData.documents.map((doc: any) => ({
           id: doc.id,
           file_name: doc.file_name || 'Document',
           file_path: doc.file_path || '',
@@ -82,7 +91,7 @@ export class ValidationService {
         console.log("Format de données non reconnu, tentative de récupération alternative");
         
         const documents: ShareableDocument[] = data.map((item: any) => {
-          const docData = item.document_data;
+          const docData = item.document_data as any;
           return {
             id: item.document_id,
             file_name: docData?.file_name || 'Document',
