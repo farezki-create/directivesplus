@@ -53,41 +53,80 @@ const DirectivesPageContainer: React.FC<DirectivesPageContainerProps> = ({
   profile
 }) => {
   const [showDeleteAllDialog, setShowDeleteAllDialog] = React.useState(false);
+  const [isDeleting, setIsDeleting] = React.useState(false);
 
   const handleDeleteAllDocuments = async () => {
-    if (!userId || documents.length === 0) return;
+    console.log("=== DÉBUT SUPPRESSION DE TOUS LES DOCUMENTS ===");
+    console.log("UserId:", userId);
+    console.log("Nombre de documents à supprimer:", documents.length);
+    console.log("Liste des documents:", documents);
+
+    if (!userId || documents.length === 0) {
+      console.log("Aucun utilisateur ou aucun document à supprimer");
+      setShowDeleteAllDialog(false);
+      return;
+    }
+
+    setIsDeleting(true);
 
     try {
-      console.log("Suppression de tous les documents pour l'utilisateur:", userId);
-      
       // Supprimer tous les documents PDF de l'utilisateur
-      const { error } = await supabase
+      console.log("Tentative de suppression des documents PDF...");
+      const { data: deletedPdfDocs, error: pdfError } = await supabase
         .from('pdf_documents')
         .delete()
-        .eq('user_id', userId);
+        .eq('user_id', userId)
+        .select();
 
-      if (error) {
-        console.error("Erreur lors de la suppression des documents:", error);
-        throw error;
+      console.log("Résultat suppression PDF:", { deletedPdfDocs, pdfError });
+
+      if (pdfError) {
+        console.error("Erreur lors de la suppression des documents PDF:", pdfError);
+        throw pdfError;
       }
+
+      // Supprimer tous les documents des directives de l'utilisateur
+      console.log("Tentative de suppression des directives...");
+      const { data: deletedDirectives, error: directivesError } = await supabase
+        .from('directives')
+        .delete()
+        .eq('user_id', userId)
+        .select();
+
+      console.log("Résultat suppression directives:", { deletedDirectives, directivesError });
+
+      if (directivesError) {
+        console.error("Erreur lors de la suppression des directives:", directivesError);
+        throw directivesError;
+      }
+
+      const totalDeleted = (deletedPdfDocs?.length || 0) + (deletedDirectives?.length || 0);
+      console.log("Total des documents supprimés:", totalDeleted);
 
       toast({
         title: "Documents supprimés",
-        description: `${documents.length} document${documents.length > 1 ? 's' : ''} supprimé${documents.length > 1 ? 's' : ''} avec succès`
+        description: `${totalDeleted} document${totalDeleted > 1 ? 's' : ''} supprimé${totalDeleted > 1 ? 's' : ''} avec succès`
       });
 
       // Recharger la page pour actualiser la liste
+      console.log("Rechargement de la page...");
       window.location.reload();
       
     } catch (error) {
-      console.error("Erreur lors de la suppression de tous les documents:", error);
+      console.error("=== ERREUR LORS DE LA SUPPRESSION ===");
+      console.error("Détails de l'erreur:", error);
+      console.error("Type d'erreur:", typeof error);
+      console.error("Message d'erreur:", error?.message);
+      
       toast({
         title: "Erreur",
-        description: "Impossible de supprimer tous les documents",
+        description: `Impossible de supprimer tous les documents: ${error?.message || 'Erreur inconnue'}`,
         variant: "destructive"
       });
     } finally {
+      setIsDeleting(false);
       setShowDeleteAllDialog(false);
+      console.log("=== FIN SUPPRESSION DE TOUS LES DOCUMENTS ===");
     }
   };
 
@@ -126,12 +165,13 @@ const DirectivesPageContainer: React.FC<DirectivesPageContainerProps> = ({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>Annuler</AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleDeleteAllDocuments}
+              disabled={isDeleting}
               className="bg-red-600 hover:bg-red-700"
             >
-              Supprimer tout ({documents.length})
+              {isDeleting ? "Suppression..." : `Supprimer tout (${documents.length})`}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
