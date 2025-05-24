@@ -1,6 +1,5 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { validateWithTestData, searchInUserProfiles, getTestPatientData } from "./testDataManager";
 import { InstitutionValidationResult } from "./institutionValidator";
 
 export const validateInstitutionAccessHybrid = async (
@@ -13,39 +12,21 @@ export const validateInstitutionAccessHybrid = async (
   console.log("Paramètres:", { lastName, firstName, birthDate, institutionCode });
 
   try {
-    // Méthode 1: Vérifier avec les données de test en dur
-    const isTestDataValid = await validateWithTestData(lastName, firstName, birthDate, institutionCode);
+    // Chercher dans user_profiles (données RPC)
+    console.log("Recherche dans user_profiles...");
+    const { data: userProfilesData, error: userProfilesError } = await supabase.rpc(
+      'verify_access_identity',
+      {
+        input_lastname: lastName.trim(),
+        input_firstname: firstName.trim(),
+        input_birthdate: birthDate,
+        input_access_code: institutionCode.trim()
+      }
+    );
     
-    if (isTestDataValid) {
-      console.log("✓ Validation réussie avec données de test");
-      const testData = getTestPatientData();
-      
-      return {
-        success: true,
-        message: `Accès autorisé pour ${testData.first_name} ${testData.last_name} (données de test)`,
-        patientData: {
-          user_id: testData.id,
-          first_name: testData.first_name,
-          last_name: testData.last_name,
-          birth_date: testData.birth_date,
-          directives: [{
-            id: "test-directive-1",
-            content: {
-              title: "Directives anticipées de test",
-              content: "Ceci est un document de test pour l'accès institution"
-            },
-            created_at: new Date().toISOString()
-          }]
-        }
-      };
-    }
-
-    // Méthode 2: Chercher dans user_profiles (données RPC)
-    const userProfilesResult = await searchInUserProfiles(lastName, firstName, birthDate, institutionCode);
-    
-    if (userProfilesResult.data && userProfilesResult.data.length > 0) {
+    if (userProfilesData && userProfilesData.length > 0) {
       console.log("✓ Validation réussie avec user_profiles");
-      const profile = userProfilesResult.data[0];
+      const profile = userProfilesData[0];
       
       return {
         success: true,
@@ -60,7 +41,7 @@ export const validateInstitutionAccessHybrid = async (
       };
     }
 
-    // Méthode 3: Chercher dans profiles + directives (méthode originale)
+    // Chercher dans profiles + directives (méthode originale)
     console.log("Recherche dans profiles + directives...");
     
     const { data: profiles, error: profileError } = await supabase

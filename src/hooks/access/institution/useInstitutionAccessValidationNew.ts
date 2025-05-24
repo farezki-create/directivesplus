@@ -1,6 +1,5 @@
 
 import { validateInstitutionCodeWithRPC, validateWithExistingProfiles } from "@/utils/institution-access/newProfileValidator";
-import { createTestDataForInstitutionAccess } from "@/utils/institution-access/testDataCreator";
 import { runInstitutionAccessDiagnostics } from "@/utils/institution-access/diagnostics";
 
 export interface InstitutionAccessFormValues {
@@ -15,9 +14,6 @@ export const useNewInstitutionValidation = () => {
   const validateAccess = async (values: InstitutionAccessFormValues) => {
     console.log("=== DÉBUT VALIDATION NOUVELLE APPROCHE ===");
     console.log("Valeurs:", values);
-    
-    // Créer les données de test si nécessaire
-    await createTestDataForInstitutionAccess();
     
     // Exécuter les diagnostics
     await runInstitutionAccessDiagnostics(values.institutionCode);
