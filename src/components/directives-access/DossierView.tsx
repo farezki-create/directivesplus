@@ -41,9 +41,22 @@ const DossierView: React.FC<DossierViewProps> = ({
     window.location.href = "/";
   };
 
-  console.log("DossierView - showDocuments:", showDocuments, "documents:", documents);
+  console.log("=== DEBUG DossierView ===");
+  console.log("DossierView - showDocuments:", showDocuments);
+  console.log("DossierView - documents reçus:", documents);
+  console.log("DossierView - Type des documents:", typeof documents);
+  console.log("DossierView - Est un tableau documents:", Array.isArray(documents));
+  console.log("DossierView - Longueur documents:", documents?.length);
   console.log("DossierView - dossierActif:", dossierActif);
   console.log("DossierView - dossierActif.contenu?.documents:", dossierActif?.contenu?.documents);
+  
+  // Analyse plus poussée des documents reçus
+  if (documents) {
+    console.log("DossierView - Premier document:", documents[0]);
+    documents.forEach((doc, index) => {
+      console.log(`DossierView - Document ${index}:`, doc);
+    });
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -69,9 +82,24 @@ const DossierView: React.FC<DossierViewProps> = ({
                 </button>
               </div>
             ) : (
-              <DirectivesContent
-                directives={documents}
-              />
+              <>
+                <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <h3 className="font-semibold text-yellow-800">Debug Info - DossierView</h3>
+                  <p><strong>Documents type:</strong> {typeof documents}</p>
+                  <p><strong>Is array:</strong> {Array.isArray(documents) ? 'Oui' : 'Non'}</p>
+                  <p><strong>Length:</strong> {documents?.length || 'undefined'}</p>
+                  <details className="mt-2">
+                    <summary className="cursor-pointer text-yellow-700">Voir documents détaillés</summary>
+                    <pre className="mt-2 p-2 bg-yellow-100 rounded text-xs overflow-auto">
+                      {JSON.stringify(documents, null, 2)}
+                    </pre>
+                  </details>
+                </div>
+                
+                <DirectivesContent
+                  directives={documents}
+                />
+              </>
             )}
           </>
         )}
