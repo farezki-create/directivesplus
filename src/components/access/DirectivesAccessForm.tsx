@@ -12,18 +12,22 @@ import { useDirectivesAccessForm } from "@/hooks/access/useDirectivesAccessForm"
 
 interface DirectivesAccessFormProps {
   onSubmit?: (accessCode: string, formData: any) => Promise<void>;
+  loading?: boolean;
 }
 
-const DirectivesAccessForm: React.FC<DirectivesAccessFormProps> = ({ onSubmit }) => {
+const DirectivesAccessForm: React.FC<DirectivesAccessFormProps> = ({ onSubmit, loading: externalLoading }) => {
   const {
     form,
-    loading,
+    loading: internalLoading,
     setLoading,
     handleSubmit,
     errorMessage,
     remainingAttempts,
     blockedAccess
   } = useDirectivesAccessForm();
+
+  // Use external loading if provided, otherwise use internal loading
+  const isLoading = externalLoading !== undefined ? externalLoading : internalLoading;
 
   const onFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,7 +58,7 @@ const DirectivesAccessForm: React.FC<DirectivesAccessFormProps> = ({ onSubmit })
           <CardContent className="space-y-4 pt-4">
             <DirectivesFormFields 
               form={form}
-              loading={loading}
+              loading={isLoading}
               blockedAccess={blockedAccess}
               errorMessage={errorMessage}
               remainingAttempts={remainingAttempts}
@@ -65,9 +69,9 @@ const DirectivesAccessForm: React.FC<DirectivesAccessFormProps> = ({ onSubmit })
             <Button 
               type="submit" 
               className="w-full"
-              disabled={loading || blockedAccess}
+              disabled={isLoading || blockedAccess}
             >
-              {loading ? "Vérification..." : "Accéder aux directives anticipées"}
+              {isLoading ? "Vérification..." : "Accéder aux directives anticipées"}
             </Button>
           </CardFooter>
         </form>
