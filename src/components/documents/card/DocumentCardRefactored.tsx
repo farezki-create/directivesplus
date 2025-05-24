@@ -55,13 +55,13 @@ export const DocumentCardRefactored: React.FC<DocumentCardRefactoredProps> = ({
     try {
       const newShareCode = generateShareCode();
       
-      // Stocker le code de partage dans shared_documents
+      // Stocker le code de partage dans shared_documents avec un document_type valide
       const { error } = await supabase
         .from('shared_documents')
         .insert({
           document_id: document.id,
           user_id: document.user_id,
-          document_type: 'pdf_document',
+          document_type: 'directive', // Utiliser 'directive' au lieu de 'pdf_document'
           document_data: {
             file_name: document.file_name,
             file_path: document.file_path,
