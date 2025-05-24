@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Heart, Shield, Users, FileText, Hospital, Key } from "lucide-react";
@@ -7,8 +8,10 @@ import Hero from "@/components/Hero";
 import Features from "@/components/Features";
 import Testimonials from "@/components/Testimonials";
 import Footer from "@/components/Footer";
+
 const Index = () => {
-  return <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <Header />
       <Hero />
 
@@ -26,7 +29,30 @@ const Index = () => {
 
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {/* Accès Institution Simplifié */}
-            
+            <Card className="border-2 border-green-200 hover:border-green-300 transition-colors">
+              <CardHeader className="text-center">
+                <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                  <Key className="h-8 w-8 text-green-600" />
+                </div>
+                <CardTitle className="text-xl text-green-800">
+                  Accès Simplifié
+                </CardTitle>
+                <CardDescription>
+                  Accès rapide avec code d'accès uniquement
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="text-center space-y-4">
+                <p className="text-sm text-gray-600">
+                  Accès direct avec le code d'accès fourni par le patient. 
+                  Idéal pour les situations d'urgence ou consultation rapide.
+                </p>
+                <Link to="/acces-institution-simple">
+                  <Button className="w-full bg-green-600 hover:bg-green-700">
+                    Accès Simplifié
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
 
             {/* Accès Institution Standard */}
             <Card className="border-2 border-blue-200 hover:border-blue-300 transition-colors">
@@ -73,6 +99,8 @@ const Index = () => {
       <Features />
       <Testimonials />
       <Footer />
-    </div>;
+    </div>
+  );
 };
+
 export default Index;
