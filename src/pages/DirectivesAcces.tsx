@@ -4,12 +4,15 @@ import { useNavigate } from "react-router-dom";
 import { useDossierStore } from "@/store/dossierStore";
 import PageHeader from "@/components/layout/PageHeader";
 import PageFooter from "@/components/layout/PageFooter";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { User, FileText, Info } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import DirectivesPageContent from "@/components/documents/DirectivesPageContent";
 import { useDirectivesDocuments } from "@/hooks/useDirectivesDocuments";
+import { extractPatientInfo } from "@/utils/patient/patientInfoExtractor";
+import PatientHeader from "@/components/directives-access/PatientHeader";
+import StatisticsCards from "@/components/directives-access/StatisticsCards";
+import DirectivesContent from "@/components/directives-access/DirectivesContent";
+import SecurityAlert from "@/components/directives-access/SecurityAlert";
+import PersonalDocumentsSection from "@/components/directives-access/PersonalDocumentsSection";
 
 const DirectivesAcces = () => {
   const navigate = useNavigate();
@@ -66,49 +69,7 @@ const DirectivesAcces = () => {
     );
   }
 
-  // Normalisation des données patient pour gérer les différentes structures
-  const getPatientInfo = (): { firstName: string; lastName: string; birthDate: string } => {
-    const profileData = dossierActif.profileData;
-    const patientData = dossierActif.contenu?.patient;
-    
-    // Fonction helper pour extraire en toute sécurité les valeurs string
-    const getStringValue = (value: any): string => {
-      return typeof value === 'string' ? value : '';
-    };
-    
-    // Priorité aux données du profil, puis aux données du contenu
-    let firstName = '';
-    let lastName = '';
-    let birthDate = '';
-    
-    if (profileData?.first_name) {
-      firstName = getStringValue(profileData.first_name);
-    } else if (patientData && 'prenom' in patientData) {
-      firstName = getStringValue(patientData.prenom);
-    } else if (patientData && 'first_name' in patientData) {
-      firstName = getStringValue(patientData.first_name);
-    }
-    
-    if (profileData?.last_name) {
-      lastName = getStringValue(profileData.last_name);
-    } else if (patientData && 'nom' in patientData) {
-      lastName = getStringValue(patientData.nom);
-    } else if (patientData && 'last_name' in patientData) {
-      lastName = getStringValue(patientData.last_name);
-    }
-    
-    if (profileData?.birth_date) {
-      birthDate = getStringValue(profileData.birth_date);
-    } else if (patientData && 'date_naissance' in patientData) {
-      birthDate = getStringValue(patientData.date_naissance);
-    } else if (patientData && 'birth_date' in patientData) {
-      birthDate = getStringValue(patientData.birth_date);
-    }
-    
-    return { firstName, lastName, birthDate };
-  };
-
-  const patientInfo = getPatientInfo();
+  const patientInfo = extractPatientInfo(dossierActif);
   const directives = dossierActif.contenu?.documents || [];
 
   return (
@@ -119,168 +80,33 @@ const DirectivesAcces = () => {
         <div className="max-w-4xl mx-auto space-y-6">
           
           {/* En-tête avec informations du patient */}
-          <Card className="border-green-200 bg-green-50">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <User className="h-6 w-6 text-green-600" />
-                  <div>
-                    <CardTitle className="text-green-800">
-                      Dossier Patient - Accès Autorisé
-                    </CardTitle>
-                    <p className="text-green-700 text-sm mt-1">
-                      Consultation des directives anticipées
-                    </p>
-                  </div>
-                </div>
-                <Button 
-                  onClick={handleReturnHome}
-                  variant="outline"
-                  size="sm"
-                  className="border-green-300 text-green-700 hover:bg-green-100"
-                >
-                  Fermer l'accès
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm font-medium text-green-800">Patient</p>
-                  <p className="text-green-700">
-                    {patientInfo.firstName} {patientInfo.lastName}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-green-800">Date de naissance</p>
-                  <p className="text-green-700">
-                    {patientInfo.birthDate}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <PatientHeader 
+            patientInfo={patientInfo}
+            onReturnHome={handleReturnHome}
+          />
 
           {/* Statistiques */}
-          <div className="grid md:grid-cols-3 gap-4">
-            <Card>
-              <CardContent className="p-4 text-center">
-                <FileText className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-                <p className="text-2xl font-bold text-blue-600">{directives.length}</p>
-                <p className="text-sm text-gray-600">Document(s) trouvé(s)</p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-4 text-center">
-                <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                  <span className="text-green-600 font-bold">✓</span>
-                </div>
-                <p className="text-2xl font-bold text-green-600">Autorisé</p>
-                <p className="text-sm text-gray-600">Accès validé</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-4 text-center">
-                <Info className="h-8 w-8 text-gray-600 mx-auto mb-2" />
-                <p className="text-2xl font-bold text-gray-600">Simple</p>
-                <p className="text-sm text-gray-600">Mode d'accès</p>
-              </CardContent>
-            </Card>
-          </div>
+          <StatisticsCards directivesCount={directives.length} />
 
           {/* Contenu des directives */}
-          {directives.length > 0 ? (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="h-5 w-5" />
-                  Directives Anticipées
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {directives.map((directive, index) => (
-                    <div key={directive.id || index} className="border rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-medium">
-                          {directive.content?.title || directive.titre || `Document ${index + 1}`}
-                        </h3>
-                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                          {directive.created_at ? new Date(directive.created_at).toLocaleDateString('fr-FR') : 'Date inconnue'}
-                        </span>
-                      </div>
-                      
-                      {/* Affichage du contenu selon le type */}
-                      {directive.content && typeof directive.content === 'object' ? (
-                        <div className="text-sm text-gray-600">
-                          <pre className="whitespace-pre-wrap bg-gray-50 p-3 rounded">
-                            {JSON.stringify(directive.content, null, 2)}
-                          </pre>
-                        </div>
-                      ) : directive.contenu ? (
-                        <div className="text-sm text-gray-700">
-                          {directive.contenu}
-                        </div>
-                      ) : (
-                        <p className="text-sm text-gray-500 italic">
-                          Contenu de la directive disponible
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <Alert className="border-amber-200 bg-amber-50">
-              <Info className="h-4 w-4 text-amber-600" />
-              <AlertDescription className="text-amber-800">
-                Aucun document de directives anticipées trouvé pour ce patient.
-              </AlertDescription>
-            </Alert>
-          )}
+          <DirectivesContent directives={directives} />
 
           {/* Section documents personnels si connecté */}
-          {isAuthenticated && user && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Mes Documents Personnels</CardTitle>
-                <p className="text-sm text-gray-600">
-                  Vous êtes connecté. Vous pouvez également consulter vos propres documents.
-                </p>
-              </CardHeader>
-              <CardContent>
-                {!showDocuments ? (
-                  <Button onClick={handleShowDocuments} variant="outline" className="w-full">
-                    Afficher mes documents personnels
-                  </Button>
-                ) : (
-                  <DirectivesPageContent
-                    documents={documents}
-                    showAddOptions={false}
-                    setShowAddOptions={() => {}}
-                    userId={user.id}
-                    onUploadComplete={handleUploadComplete}
-                    onDownload={handleDownload}
-                    onPrint={handlePrint}
-                    onView={handleView}
-                    onDelete={handleDelete}
-                  />
-                )}
-              </CardContent>
-            </Card>
-          )}
+          <PersonalDocumentsSection
+            isAuthenticated={isAuthenticated}
+            user={user}
+            showDocuments={showDocuments}
+            documents={documents}
+            onShowDocuments={handleShowDocuments}
+            onUploadComplete={handleUploadComplete}
+            onDownload={handleDownload}
+            onPrint={onPrint}
+            onView={handleView}
+            onDelete={handleDelete}
+          />
 
           {/* Informations de sécurité */}
-          <Alert>
-            <Info className="h-4 w-4" />
-            <AlertDescription>
-              <strong>Information de sécurité :</strong> Cet accès a été journalisé. 
-              La consultation de ce dossier est tracée conformément aux exigences réglementaires.
-            </AlertDescription>
-          </Alert>
+          <SecurityAlert />
         </div>
       </main>
       
