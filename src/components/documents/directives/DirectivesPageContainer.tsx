@@ -5,6 +5,18 @@ import DirectivesPageHeader from "@/components/documents/DirectivesPageHeader";
 import DirectivesAddDocumentSection from "@/components/documents/DirectivesAddDocumentSection";
 import DirectivesDocumentList from "@/components/documents/DirectivesDocumentList";
 import DirectivesSharedFolderHandler from "./DirectivesSharedFolderHandler";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface DirectivesPageContainerProps {
   documents: Document[];
@@ -40,10 +52,51 @@ const DirectivesPageContainer: React.FC<DirectivesPageContainerProps> = ({
   accessCode,
   profile
 }) => {
+  const [showDeleteAllDialog, setShowDeleteAllDialog] = React.useState(false);
+
+  const handleDeleteAllDocuments = async () => {
+    if (!userId || documents.length === 0) return;
+
+    try {
+      console.log("Suppression de tous les documents pour l'utilisateur:", userId);
+      
+      // Supprimer tous les documents PDF de l'utilisateur
+      const { error } = await supabase
+        .from('pdf_documents')
+        .delete()
+        .eq('user_id', userId);
+
+      if (error) {
+        console.error("Erreur lors de la suppression des documents:", error);
+        throw error;
+      }
+
+      toast({
+        title: "Documents supprimés",
+        description: `${documents.length} document${documents.length > 1 ? 's' : ''} supprimé${documents.length > 1 ? 's' : ''} avec succès`
+      });
+
+      // Recharger la page pour actualiser la liste
+      window.location.reload();
+      
+    } catch (error) {
+      console.error("Erreur lors de la suppression de tous les documents:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer tous les documents",
+        variant: "destructive"
+      });
+    } finally {
+      setShowDeleteAllDialog(false);
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto">
       <DirectivesPageHeader 
-        onAddDocument={() => setShowAddOptions(!showAddOptions)} 
+        onAddDocument={() => setShowAddOptions(!showAddOptions)}
+        onDeleteAllDocuments={userId ? () => setShowDeleteAllDialog(true) : undefined}
+        documentsCount={documents.length}
       />
 
       {showAddOptions && userId && (
@@ -62,6 +115,27 @@ const DirectivesPageContainer: React.FC<DirectivesPageContainerProps> = ({
         accessCode={accessCode}
         profile={profile}
       />
+
+      <AlertDialog open={showDeleteAllDialog} onOpenChange={setShowDeleteAllDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer tous les documents</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir supprimer tous vos {documents.length} document{documents.length > 1 ? 's' : ''} ? 
+              Cette action est irréversible et supprimera tous les documents associés à votre compte.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteAllDocuments}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Supprimer tout ({documents.length})
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
