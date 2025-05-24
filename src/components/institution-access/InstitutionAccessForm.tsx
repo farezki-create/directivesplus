@@ -1,122 +1,165 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, Info, CheckCircle } from "lucide-react";
-import { InstitutionAccessFormValues, useInstitutionAccess } from "@/hooks/access/useInstitutionAccess";
-import { validateInstitutionAccessForm } from "@/hooks/access/institution/useInstitutionAccessValidation";
-import { FormFields } from "./FormFields";
-import { DirectivesDisplay } from "./DirectivesDisplay";
+import { AlertCircle, CheckCircle, Info } from "lucide-react";
+import { useInstitutionAccess, InstitutionFormData } from "@/hooks/access/institution/useInstitutionAccess";
+import { useDossierStore } from "@/store/dossierStore";
+import { useNavigate } from "react-router-dom";
+import { toast } from "@/hooks/use-toast";
 
 export const InstitutionAccessForm = () => {
-  const { loading, error, documents, verifyInstitutionAccess } = useInstitutionAccess();
-  const [form, setForm] = useState<InstitutionAccessFormValues>({
-    lastName: "AREZKI", // Valeur de test pré-remplie
-    firstName: "FARID", // Valeur de test pré-remplie
-    birthDate: "1963-08-13", // Valeur de test pré-remplie
-    institutionCode: "9E5CUV7X" // Valeur de test pré-remplie
+  const navigate = useNavigate();
+  const { setDossierActif } = useDossierStore();
+  const { loading, result, validateAccess } = useInstitutionAccess();
+  
+  const [form, setForm] = useState<InstitutionFormData>({
+    lastName: "AREZKI",
+    firstName: "FARID", 
+    birthDate: "1963-08-13",
+    institutionCode: "9E5CUV7X"
   });
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
-  const [hasAttempted, setHasAttempted] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
-    
-    // Clear validation error for this field
-    if (validationErrors[name]) {
-      setValidationErrors({ ...validationErrors, [name]: "" });
-    }
+    setForm(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setHasAttempted(true);
     
-    const errors = validateInstitutionAccessForm(form);
-    if (Object.keys(errors).length > 0) {
-      setValidationErrors(errors);
-      return;
-    }
+    const validationResult = await validateAccess(form);
     
-    const success = await verifyInstitutionAccess(form);
-    if (success) {
-      console.log("Institution access verification successful");
+    if (validationResult.success && validationResult.patientData) {
+      // Créer un dossier pour le store
+      const dossier = {
+        id: `institution-${validationResult.patientData.user_id}`,
+        userId: validationResult.patientData.user_id,
+        isFullAccess: true,
+        isDirectivesOnly: false,
+        isMedicalOnly: false,
+        profileData: {
+          first_name: validationResult.patientData.first_name,
+          last_name: validationResult.patientData.last_name,
+          birth_date: validationResult.patientData.birth_date
+        },
+        contenu: {
+          patient: {
+            nom: validationResult.patientData.last_name,
+            prenom: validationResult.patientData.first_name,
+            date_naissance: validationResult.patientData.birth_date
+          },
+          documents: validationResult.patientData.directives || []
+        }
+      };
+      
+      setDossierActif(dossier);
+      
+      toast({
+        title: "Accès autorisé",
+        description: validationResult.message
+      });
+      
+      navigate("/mes-directives");
     }
-  };
-
-  const renderErrorAlert = () => {
-    if (!error) return null;
-
-    return (
-      <Alert variant="destructive">
-        <AlertCircle className="h-4 w-4" />
-        <AlertDescription className="whitespace-pre-line">{error}</AlertDescription>
-      </Alert>
-    );
   };
 
   return (
-    <div className="max-w-md mx-auto">
-      <div className="mb-6">
-        <Alert className="bg-blue-50 border-blue-200">
-          <Info className="h-5 w-5 text-blue-600" />
-          <AlertDescription className="text-blue-800">
-            Cet accès est réservé aux professionnels de santé et institutions médicales autorisés.
-            Les accès sont journalisés pour des raisons de sécurité.
-          </AlertDescription>
-        </Alert>
-      </div>
+    <div className="max-w-md mx-auto space-y-6">
+      {/* Info accès professionnel */}
+      <Alert className="bg-blue-50 border-blue-200">
+        <Info className="h-5 w-5 text-blue-600" />
+        <AlertDescription className="text-blue-800">
+          <strong>Accès professionnel de santé</strong><br />
+          Saisissez les informations du patient et le code d'accès institution.
+        </AlertDescription>
+      </Alert>
 
-      <div className="mb-4">
-        <Alert className="bg-green-50 border-green-200">
-          <Info className="h-5 w-5 text-green-600" />
-          <AlertDescription className="text-green-800">
-            <strong>Test avec données pré-remplies :</strong><br />
-            AREZKI FARID né le 13/08/1963, code: 9E5CUV7X
-          </AlertDescription>
-        </Alert>
-      </div>
+      {/* Données de test */}
+      <Alert className="bg-green-50 border-green-200">
+        <Info className="h-5 w-5 text-green-600" />
+        <AlertDescription className="text-green-800">
+          <strong>Données de test :</strong><br />
+          AREZKI FARID, né le 13/08/1963<br />
+          Code : 9E5CUV7X
+        </AlertDescription>
+      </Alert>
 
-      {documents.length > 0 && (
-        <div className="mb-6">
-          <Alert className="bg-green-50 border-green-200">
-            <CheckCircle className="h-5 w-5 text-green-600" />
-            <AlertDescription className="text-green-800">
-              <strong>Accès autorisé :</strong> {documents.length} directive(s) trouvée(s) pour ce patient.
-            </AlertDescription>
-          </Alert>
-        </div>
-      )}
-
+      {/* Formulaire */}
       <form onSubmit={handleSubmit} className="space-y-4">
-        {renderErrorAlert()}
-        
-        <FormFields 
-          form={form} 
-          validationErrors={validationErrors} 
-          onChange={handleChange} 
-        />
-        
+        <div className="space-y-2">
+          <Label htmlFor="lastName">Nom de famille</Label>
+          <Input
+            id="lastName"
+            name="lastName"
+            value={form.lastName}
+            onChange={handleChange}
+            placeholder="NOM"
+            required
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="firstName">Prénom</Label>
+          <Input
+            id="firstName"
+            name="firstName"
+            value={form.firstName}
+            onChange={handleChange}
+            placeholder="Prénom"
+            required
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="birthDate">Date de naissance</Label>
+          <Input
+            id="birthDate"
+            name="birthDate"
+            type="date"
+            value={form.birthDate}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="institutionCode">Code d'accès institution</Label>
+          <Input
+            id="institutionCode"
+            name="institutionCode"
+            value={form.institutionCode}
+            onChange={handleChange}
+            placeholder="Code d'accès"
+            required
+          />
+        </div>
+
         <Button 
           type="submit" 
           className="w-full"
           disabled={loading}
         >
-          {loading ? "Vérification en cours..." : "Accéder aux directives"}
+          {loading ? "Vérification..." : "Accéder aux directives"}
         </Button>
-
-        {hasAttempted && !loading && !error && documents.length === 0 && (
-          <Alert className="bg-gray-50 border-gray-200">
-            <Info className="h-4 w-4 text-gray-600" />
-            <AlertDescription className="text-gray-700">
-              Vérification terminée. Aucun résultat trouvé.
-            </AlertDescription>
-          </Alert>
-        )}
       </form>
-      
-      <DirectivesDisplay documents={documents} />
+
+      {/* Résultat */}
+      {result && (
+        <Alert variant={result.success ? "default" : "destructive"} 
+               className={result.success ? "bg-green-50 border-green-200" : ""}>
+          {result.success ? (
+            <CheckCircle className="h-5 w-5 text-green-600" />
+          ) : (
+            <AlertCircle className="h-5 w-5" />
+          )}
+          <AlertDescription className={result.success ? "text-green-800" : ""}>
+            {result.message}
+          </AlertDescription>
+        </Alert>
+      )}
     </div>
   );
 };
