@@ -46,7 +46,7 @@ export const SimpleAccessForm = () => {
     if (validationResult.success && validationResult.patientData) {
       console.log("=== SUCCÈS - CRÉATION DU DOSSIER ===");
       
-      // Créer un dossier pour le store
+      // Créer un dossier structuré pour le store
       const dossier = {
         id: `simple-access-${validationResult.patientData.user_id}`,
         userId: validationResult.patientData.user_id,
@@ -62,7 +62,11 @@ export const SimpleAccessForm = () => {
           patient: {
             nom: validationResult.patientData.last_name,
             prenom: validationResult.patientData.first_name,
-            date_naissance: validationResult.patientData.birth_date
+            date_naissance: validationResult.patientData.birth_date,
+            // Ajout d'informations additionnelles pour compatibilité
+            first_name: validationResult.patientData.first_name,
+            last_name: validationResult.patientData.last_name,
+            birth_date: validationResult.patientData.birth_date
           },
           documents: validationResult.patientData.directives || []
         }

@@ -59,7 +59,6 @@ export const useSimpleAccess = () => {
 
       // Tentative de récupération du profil dans la table profiles
       let profile = null;
-      let profileError = null;
 
       const { data: profileData, error: profileErr } = await supabase
         .from('profiles')
@@ -112,7 +111,7 @@ export const useSimpleAccess = () => {
         return errorResult;
       }
 
-      // Succès - construction du résultat
+      // Succès - construction du résultat avec une structure de données cohérente
       const successResult: SimpleAccessResult = {
         success: true,
         message: `Accès autorisé pour ${profile.first_name} ${profile.last_name}`,
