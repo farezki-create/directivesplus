@@ -29,7 +29,13 @@ export const useDossierDocuments = () => {
       if (!Array.isArray(dossierActif.contenu.documents)) {
         console.log("useDossierDocuments - ATTENTION: documents n'est pas un tableau!");
         console.log("useDossierDocuments - Type détaillé:", Object.prototype.toString.call(dossierActif.contenu.documents));
-        console.log("useDossierDocuments - Constructor:", dossierActif.contenu.documents.constructor.name);
+        
+        // Vérification de l'existence de constructor de manière sécurisée
+        const documentsData = dossierActif.contenu.documents as any;
+        if (documentsData && typeof documentsData === 'object' && documentsData.constructor) {
+          console.log("useDossierDocuments - Constructor:", documentsData.constructor.name);
+        }
+        
         console.log("useDossierDocuments - Clés de l'objet:", Object.keys(dossierActif.contenu.documents));
         
         // Essayer de trouver des propriétés qui pourraient être des documents
