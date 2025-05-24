@@ -11,8 +11,8 @@ export const validateInstitutionCodeWithRPC = async (
   console.log("Données d'entrée:", { lastName, firstName, birthDate, institutionCode });
   
   try {
-    // Appel de la fonction RPC pour récupérer le profil patient
-    const { data, error } = await supabase.rpc("get_patient_directives_by_institution_access", {
+    // Appel de la fonction RPC en utilisant un type générique
+    const { data, error } = await supabase.rpc("get_patient_directives_by_institution_access" as any, {
       input_last_name: lastName.trim(),
       input_first_name: firstName.trim(),
       input_birth_date: birthDate,
@@ -26,7 +26,8 @@ export const validateInstitutionCodeWithRPC = async (
       throw new Error("Erreur lors de la vérification du code d'accès institution.");
     }
 
-    if (!data || data.length === 0) {
+    // Vérification que data est un tableau
+    if (!data || !Array.isArray(data) || data.length === 0) {
       console.log("Aucun profil trouvé avec ces critères");
       throw new Error("Code d'accès institution invalide ou informations patient incorrectes.");
     }
