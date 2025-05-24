@@ -22,20 +22,18 @@ export const useDocumentViewer = () => {
       
       const { isDirective } = detectDocumentType(filePath);
       
-      // For directives, always show in preview mode (they don't have external URLs)
-      if (isDirective || fileType === "directive") {
-        console.log("useDocumentViewer - Affichage directive en mode preview:", filePath);
+      // Pour les directives et la prévisualisation, on affiche seulement dans la modal
+      if (isDirective || fileType === "directive" || fileType === "preview") {
+        console.log("useDocumentViewer - Affichage en mode preview uniquement:", filePath);
         setPreviewDocument(filePath);
         return;
       }
       
-      // Set the preview document
+      // Set the preview document pour tous les cas
       setPreviewDocument(filePath);
       
-      // For external viewing, use the viewDocument utility function
-      if (fileType !== "preview") {
-        viewDocument(filePath);
-      }
+      // Pour les autres types de documents, on peut aussi ouvrir en externe si demandé explicitement
+      // Mais par défaut, on reste sur la prévisualisation uniquement
       
       console.log("useDocumentViewer - Document prévisualisé:", filePath);
     } catch (error) {
