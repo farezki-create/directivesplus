@@ -1,7 +1,7 @@
 
 import { useCallback } from "react";
 import { toast } from "@/hooks/use-toast";
-import { shareDocument } from "@/utils/document-operations";
+import { shareDocument } from "@/utils/document-operations.ts";
 
 export const useDocumentShare = () => {
   const handleShare = useCallback((documentId: string) => {
