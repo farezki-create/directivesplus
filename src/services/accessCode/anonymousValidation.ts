@@ -17,12 +17,16 @@ export class AnonymousValidationService {
     try {
       console.log("🔍 Validation anonyme du code:", accessCode);
       
+      // Utiliser les constantes directes au lieu des propriétés protégées
+      const SUPABASE_URL = "https://kytqqjnecezkxyhmmjrz.supabase.co";
+      const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5dHFxam5lY2V6a3h5aG1tanJ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzcxOTc5MjUsImV4cCI6MjA1Mjc3MzkyNX0.uocoNg-le-iv0pw7c99mthQ6gxGHyXGyQqgxo9_3CPc";
+      
       // Utiliser la fonction Edge pour contourner les politiques RLS
-      const response = await fetch(`${supabase.supabaseUrl}/functions/v1/verifierCodeAcces`, {
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/verifierCodeAcces`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabase.supabaseKey}`,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
         },
         body: JSON.stringify({
           accessCode,
@@ -77,10 +81,13 @@ export class AnonymousValidationService {
     try {
       console.log("🔍 Tentative validation RPC");
       
+      // Convertir la date en string si elle existe
+      const birthDateString = personalInfo.birthDate ? new Date(personalInfo.birthDate).toISOString().split('T')[0] : null;
+      
       const { data, error } = await supabase.rpc('verify_access_identity', {
         input_lastname: personalInfo.lastName,
         input_firstname: personalInfo.firstName,
-        input_birthdate: personalInfo.birthDate ? new Date(personalInfo.birthDate) : null,
+        input_birthdate: birthDateString,
         input_access_code: accessCode,
       });
 
