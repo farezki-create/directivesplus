@@ -7,7 +7,7 @@ export const validateInstitutionCodeWithRPC = async (
   birthDate: string,
   institutionCode: string
 ) => {
-  console.log("=== VALIDATION AVEC RPC (debug functions) ===");
+  console.log("=== VALIDATION AVEC RPC (user_profiles) ===");
   console.log("Données d'entrée:", { lastName, firstName, birthDate, institutionCode });
   
   try {
@@ -33,12 +33,12 @@ export const validateInstitutionCodeWithRPC = async (
       });
     }
 
-    // Essayer la fonction RPC existante
-    const { data, error } = await supabase.rpc("get_directives_by_institution_code" as any, {
-      input_nom: lastName.trim(),
-      input_prenom: firstName.trim(),
-      input_date_naissance: birthDate,
-      input_institution_code: institutionCode.trim()
+    // Essayer la fonction RPC principale
+    const { data, error } = await supabase.rpc("get_patient_directives_by_institution_access" as any, {
+      input_last_name: lastName.trim(),
+      input_first_name: firstName.trim(),
+      input_birth_date: birthDate,
+      input_shared_code: institutionCode.trim()
     });
 
     console.log("Résultat RPC directives:", { data, error });
@@ -71,73 +71,46 @@ export const validateInstitutionCodeWithRPC = async (
   }
 };
 
-// Fonction de fallback pour utiliser la table profiles existante
+// Fonction de fallback pour utiliser la table user_profiles
 export const validateWithExistingProfiles = async (
   lastName: string,
   firstName: string,
   birthDate: string,
   institutionCode: string
 ) => {
-  console.log("=== FALLBACK AVEC TABLE PROFILES ===");
+  console.log("=== FALLBACK AVEC TABLE USER_PROFILES ===");
   
   try {
-    // D'abord, chercher dans la table directives pour le code institution
-    const { data: directivesData, error: directivesError } = await supabase
-      .from('directives')
-      .select('id, user_id, institution_code, institution_code_expires_at')
-      .eq('institution_code', institutionCode)
-      .gt('institution_code_expires_at', new Date().toISOString());
-
-    console.log("Directives trouvées:", { directivesData, directivesError });
-
-    if (directivesError || !directivesData || directivesData.length === 0) {
-      throw new Error("Code d'accès institution invalide ou expiré.");
-    }
-
-    // Ensuite, vérifier les profils correspondants
-    const userIds = directivesData.map(d => d.user_id);
-    
+    // Rechercher directement dans user_profiles
     const { data: profilesData, error: profilesError } = await supabase
-      .from('profiles')
-      .select('id, first_name, last_name, birth_date')
-      .in('id', userIds);
+      .from('user_profiles')
+      .select('*')
+      .eq('last_name', lastName.trim())
+      .eq('first_name', firstName.trim())
+      .eq('birth_date', birthDate)
+      .eq('institution_shared_code', institutionCode.trim());
 
-    console.log("Profils trouvés:", { profilesData, profilesError });
+    console.log("Profils trouvés dans user_profiles:", { profilesData, profilesError });
 
-    if (profilesError || !profilesData) {
-      throw new Error("Erreur lors de la vérification des profils.");
+    if (profilesError) {
+      console.error("Erreur recherche user_profiles:", profilesError);
+      throw new Error("Erreur lors de la recherche des profils.");
     }
 
-    // Filtrer les profils qui correspondent aux critères
-    const matchingProfiles = profilesData.filter(profile => {
-      const nameMatch = profile.last_name?.toLowerCase().trim() === lastName.toLowerCase().trim() &&
-                       profile.first_name?.toLowerCase().trim() === firstName.toLowerCase().trim();
-      const dateMatch = profile.birth_date === birthDate;
-      
-      console.log("Vérification profil:", {
-        profile: profile,
-        nameMatch,
-        dateMatch,
-        criteria: { lastName, firstName, birthDate }
-      });
-      
-      return nameMatch && dateMatch;
-    });
-
-    if (matchingProfiles.length === 0) {
+    if (!profilesData || profilesData.length === 0) {
       throw new Error("Aucun profil patient trouvé correspondant aux informations fournies.");
     }
 
-    console.log("Profils correspondants:", matchingProfiles);
+    console.log("Profils correspondants:", profilesData);
     
     // Retourner dans le même format que la fonction RPC
-    return matchingProfiles.map(profile => ({
-      user_id: profile.id,
+    return profilesData.map(profile => ({
+      user_id: profile.user_id,
       profile_id: profile.id,
       first_name: profile.first_name,
       last_name: profile.last_name,
       birth_date: profile.birth_date,
-      institution_shared_code: institutionCode
+      institution_shared_code: profile.institution_shared_code
     }));
 
   } catch (error) {
