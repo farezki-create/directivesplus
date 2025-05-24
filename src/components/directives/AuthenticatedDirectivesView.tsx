@@ -47,14 +47,19 @@ const AuthenticatedDirectivesView: React.FC<AuthenticatedDirectivesViewProps> = 
 }) => {
   
   const handleAddDocumentClick = () => {
-    console.log("Bouton Ajouter un document cliqué");
-    setShowAddOptions(!showAddOptions);
+    console.log("Bouton Ajouter un document cliqué - État actuel:", showAddOptions);
+    const newState = !showAddOptions;
+    console.log("Nouveau état showAddOptions:", newState);
+    setShowAddOptions(newState);
   };
 
   const handleDeleteAllDocuments = documents.length > 0 ? () => {
     console.log("Demande de suppression de tous les documents");
     // Cette fonction serait implémentée dans le composant parent
   } : undefined;
+
+  console.log("AuthenticatedDirectivesView - rendu avec showAddOptions:", showAddOptions);
+  console.log("AuthenticatedDirectivesView - user:", !!user);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -69,13 +74,19 @@ const AuthenticatedDirectivesView: React.FC<AuthenticatedDirectivesViewProps> = 
           />
 
           {showAddOptions && user && (
-            <DirectivesAddDocumentSection
-              userId={user.id}
-              onUploadComplete={(url: string, fileName: string, isPrivate: boolean) => {
-                console.log("Document uploadé:", fileName);
-                onUploadComplete();
-              }}
-            />
+            <div className="mb-8">
+              <div className="p-4 border border-gray-200 rounded-lg bg-gray-50">
+                <h3 className="text-lg font-medium mb-4">Ajouter un document</h3>
+                <DirectivesAddDocumentSection
+                  userId={user.id}
+                  onUploadComplete={(url: string, fileName: string, isPrivate: boolean) => {
+                    console.log("Document uploadé:", fileName);
+                    onUploadComplete();
+                    setShowAddOptions(false); // Fermer la section après upload
+                  }}
+                />
+              </div>
+            </div>
           )}
           
           <DirectivesDocumentList
