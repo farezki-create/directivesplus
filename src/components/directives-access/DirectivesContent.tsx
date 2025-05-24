@@ -10,9 +10,6 @@ const DirectivesContent: React.FC<DirectivesContentProps> = ({ directives }) => 
   console.log("DirectivesContent - Type des données:", typeof directives);
   console.log("DirectivesContent - Est un tableau:", Array.isArray(directives));
   
-  // Normaliser les données - gérer différents formats possibles
-  let normalizedDirectives = [];
-  
   if (!directives) {
     console.log("DirectivesContent - Aucune donnée fournie");
     return (
@@ -22,26 +19,20 @@ const DirectivesContent: React.FC<DirectivesContentProps> = ({ directives }) => 
     );
   }
   
-  // Si c'est déjà un tableau, l'utiliser directement
-  if (Array.isArray(directives)) {
-    normalizedDirectives = directives;
-  }
-  // Si c'est un objet unique, le mettre dans un tableau
-  else if (typeof directives === 'object') {
-    normalizedDirectives = [directives];
-  }
-  // Si c'est une chaîne, créer un objet simple
-  else if (typeof directives === 'string') {
-    normalizedDirectives = [{
-      id: 'string-directive',
-      content: directives,
-      content_type: 'text/plain'
-    }];
+  // Si ce n'est pas un tableau, on affiche un message d'erreur
+  if (!Array.isArray(directives)) {
+    console.log("DirectivesContent - Les données ne sont pas un tableau:", directives);
+    return (
+      <div className="text-center py-8">
+        <p className="text-red-500">Format de données non supporté</p>
+        <pre className="mt-4 p-4 bg-gray-50 rounded text-xs overflow-auto">
+          {JSON.stringify(directives, null, 2)}
+        </pre>
+      </div>
+    );
   }
   
-  console.log("DirectivesContent - Données normalisées:", normalizedDirectives);
-  
-  if (normalizedDirectives.length === 0) {
+  if (directives.length === 0) {
     return (
       <div className="text-center py-8">
         <p className="text-gray-500">Aucune directive disponible</p>
@@ -51,7 +42,7 @@ const DirectivesContent: React.FC<DirectivesContentProps> = ({ directives }) => 
 
   return (
     <div className="space-y-6">
-      {normalizedDirectives.map((directive, index) => {
+      {directives.map((directive, index) => {
         console.log("DirectivesContent - Rendu directive:", directive);
         
         const directiveId = directive.id || `directive-${index}`;
