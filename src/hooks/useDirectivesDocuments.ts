@@ -6,6 +6,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Document } from "@/types/documents";
 
+// Re-export Document type for backwards compatibility
+export type { Document } from "@/types/documents";
+
 export const useDirectivesDocuments = () => {
   const { user, isAuthenticated } = useAuth();
   const { documents: dossierDocuments, isLoading: dossierLoading } = useDossierDocuments();
@@ -34,7 +37,12 @@ export const useDirectivesDocuments = () => {
           console.error("Erreur lors du chargement des documents:", error);
           setDocuments([]);
         } else {
-          setDocuments(data || []);
+          // Transform to match Document interface
+          const transformedDocuments: Document[] = (data || []).map(doc => ({
+            ...doc,
+            file_type: doc.content_type || 'pdf' // Add missing file_type
+          }));
+          setDocuments(transformedDocuments);
         }
       } catch (error) {
         console.error("Erreur lors du chargement des documents:", error);
@@ -164,6 +172,8 @@ export const useDirectivesDocuments = () => {
   };
 
   return {
+    user,
+    isAuthenticated,
     documents,
     isLoading: isLoading || dossierLoading,
     showAddOptions,

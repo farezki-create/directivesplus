@@ -1,13 +1,13 @@
 
 import { useEffect, useState } from "react";
-import { useDossierDocuments } from "@/hooks/directives/useDossierDocuments";
+import { useDossierStore } from "@/store/dossierStore";
 
 interface DirectivePreviewProps {
   filePath: string;
 }
 
 const DirectivePreview = ({ filePath }: DirectivePreviewProps) => {
-  const { dossierActif } = useDossierDocuments();
+  const { dossierActif } = useDossierStore();
   const [directiveContent, setDirectiveContent] = useState<any>(null);
 
   useEffect(() => {

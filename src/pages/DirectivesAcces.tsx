@@ -55,7 +55,7 @@ const DirectivesAcces = () => {
         onDownload={handleDownload}
         onPrint={handlePrint}
         onView={handleView}
-        onDelete={handleDelete}
+        onDelete={(documentId: string) => handleDelete()}
       />
     );
   }
@@ -71,7 +71,7 @@ const DirectivesAcces = () => {
       onDownload={handleDownload}
       onPrint={handlePrint}
       onView={handleView}
-      onDelete={handleDelete}
+      onDelete={(documentId: string) => handleDelete()}
       onShowDocuments={handleShowDocuments}
     />
   );
