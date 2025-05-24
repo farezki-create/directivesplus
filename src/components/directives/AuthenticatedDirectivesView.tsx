@@ -18,7 +18,6 @@ interface AuthenticatedDirectivesViewProps {
   onDownload: (filePath: string, fileName: string) => void;
   onPrint: (filePath: string, contentType?: string) => void;
   onView: (filePath: string, contentType?: string) => void;
-  confirmDelete: string | null;
   documentToDelete: string | null;
   setDocumentToDelete: (id: string | null) => void;
   handleDelete: () => Promise<void>;
@@ -38,7 +37,6 @@ const AuthenticatedDirectivesView: React.FC<AuthenticatedDirectivesViewProps> = 
   onDownload,
   onPrint,
   onView,
-  confirmDelete,
   documentToDelete,
   setDocumentToDelete,
   handleDelete,
