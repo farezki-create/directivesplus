@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Hospital, Loader2, Copy, Check, Share2, Shield, AlertTriangle } from "lucide-react";
 import { generateInstitutionCode } from "@/utils/institutionCodeGenerator";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
@@ -26,7 +26,11 @@ const InstitutionAccessSection = ({ userId }: InstitutionAccessSectionProps) => 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const handleGenerateInstitutionCode = async () => {
+    console.log("=== STARTING INSTITUTION CODE GENERATION ===");
+    console.log("User ID:", userId);
+
     if (!userId) {
+      console.error("No user ID provided");
       toast({
         title: "Erreur",
         description: "Utilisateur non authentifié",
@@ -37,60 +41,58 @@ const InstitutionAccessSection = ({ userId }: InstitutionAccessSectionProps) => 
 
     setIsGenerating(true);
     try {
-      // Check for real directives first (not test directives)
-      const { data: realDirectives, error: directivesError } = await supabase
+      // Vérifier d'abord s'il existe des directives pour cet utilisateur
+      console.log("Checking for existing directives...");
+      const { data: existingDirectives, error: checkError } = await supabase
         .from('directives')
-        .select('id, content')
+        .select('id')
         .eq('user_id', userId)
         .limit(1);
       
-      if (directivesError) {
+      console.log("Existing directives check result:", { existingDirectives, checkError });
+      
+      if (checkError) {
+        console.error("Error checking directives:", checkError);
         throw new Error("Erreur lors de la vérification des directives");
       }
       
       let directiveId: string;
       
-      if (!realDirectives || realDirectives.length === 0) {
-        // Create a minimal directive for this user
+      if (!existingDirectives || existingDirectives.length === 0) {
+        console.log("No directives found, creating new one...");
+        // Créer une nouvelle directive minimale
         const { data: newDirective, error: createError } = await supabase
           .from('directives')
           .insert({
             user_id: userId,
             content: { 
               title: "Directives anticipées",
-              created_at: new Date().toISOString()
+              created_at: new Date().toISOString(),
+              created_for_institution_access: true
             }
           })
           .select('id')
           .single();
           
+        console.log("New directive creation result:", { newDirective, createError });
+          
         if (createError || !newDirective) {
+          console.error("Failed to create directive:", createError);
           throw new Error("Impossible de créer une directive");
         }
         
         directiveId = newDirective.id;
+        console.log("Created new directive with ID:", directiveId);
       } else {
-        // Filter out test directives
-        const nonTestDirectives = realDirectives.filter(directive => {
-          const content = directive.content as any;
-          return !content?.created_for_institution_access;
-        });
-        
-        if (nonTestDirectives.length === 0) {
-          toast({
-            title: "Directives manquantes",
-            description: "Vous devez d'abord créer vos directives anticipées pour générer un code d'accès professionnel.",
-            variant: "destructive"
-          });
-          return;
-        }
-        
-        directiveId = nonTestDirectives[0].id;
+        directiveId = existingDirectives[0].id;
+        console.log("Using existing directive with ID:", directiveId);
       }
       
+      console.log("Generating institution code for directive:", directiveId);
       const code = await generateInstitutionCode(directiveId);
       
       if (code) {
+        console.log("Institution code generated successfully:", code);
         setInstitutionCode(code);
         setIsDialogOpen(true);
         toast({
@@ -98,9 +100,11 @@ const InstitutionAccessSection = ({ userId }: InstitutionAccessSectionProps) => 
           description: "Code généré avec succès (valide 30 jours)",
         });
       } else {
+        console.error("Failed to generate institution code");
         throw new Error("Impossible de générer le code");
       }
     } catch (error) {
+      console.error("Error in handleGenerateInstitutionCode:", error);
       toast({
         title: "Erreur",
         description: error instanceof Error ? error.message : "Impossible de générer le code d'accès professionnel",
@@ -146,14 +150,6 @@ const InstitutionAccessSection = ({ userId }: InstitutionAccessSectionProps) => 
             Générez un code temporaire sécurisé pour permettre à un professionnel de santé 
             ou une institution médicale d'accéder à vos directives anticipées.
           </p>
-          
-          <Alert className="bg-amber-50 border-amber-200">
-            <AlertTriangle className="h-4 w-4 text-amber-600" />
-            <AlertDescription className="text-amber-800">
-              <strong>Important :</strong> Assurez-vous d'avoir rédigé vos directives anticipées 
-              avant de générer un code d'accès professionnel.
-            </AlertDescription>
-          </Alert>
           
           <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-md">
             <Shield className="h-4 w-4 text-blue-600" />
