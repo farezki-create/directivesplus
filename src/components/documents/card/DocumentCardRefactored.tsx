@@ -59,11 +59,19 @@ export const DocumentCardRefactored: React.FC<DocumentCardRefactoredProps> = ({
       const newShareCode = generateShareCode();
       console.log("Code de partage généré:", newShareCode);
       
+      // Déterminer le type de document correct
+      let documentType = 'document';
+      if (document.file_type === 'directive') {
+        documentType = 'directive';
+      } else if (document.content_type?.includes('pdf')) {
+        documentType = 'document';
+      }
+      
       // Préparer les données à insérer
       const insertData = {
         document_id: document.id,
         user_id: document.user_id,
-        document_type: 'pdf_document', // Utiliser le type générique
+        document_type: documentType,
         document_data: {
           file_name: document.file_name,
           file_path: document.file_path,
@@ -79,7 +87,7 @@ export const DocumentCardRefactored: React.FC<DocumentCardRefactoredProps> = ({
       const { data, error } = await supabase
         .from('shared_documents')
         .insert(insertData)
-        .select(); // Ajouter select pour voir les données insérées
+        .select();
 
       console.log("Résultat de l'insertion:", { data, error });
 
@@ -95,7 +103,7 @@ export const DocumentCardRefactored: React.FC<DocumentCardRefactoredProps> = ({
         title: "Code QR généré",
         description: "Le code de partage a été créé avec succès",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("=== ERREUR LORS DE LA GÉNÉRATION DU CODE QR ===");
       console.error("Type d'erreur:", typeof error);
       console.error("Erreur complète:", error);

@@ -56,15 +56,29 @@ export function MesDirectivesSharedAccess() {
 
     setIsVerifying(true);
     try {
+      console.log("=== DÉBUT VÉRIFICATION ACCÈS ===");
+      console.log("Code de partage:", sharedCode);
+      console.log("Données du formulaire:", formData);
+
       const { data: sharedDocuments, error } = await supabase
         .from('shared_documents')
         .select('*')
         .eq('access_code', sharedCode)
         .eq('is_active', true);
 
-      if (error || !sharedDocuments || sharedDocuments.length === 0) {
+      console.log("Résultat de la requête shared_documents:", { sharedDocuments, error });
+
+      if (error) {
+        console.error("Erreur lors de la requête shared_documents:", error);
+        throw new Error(`Erreur de base de données: ${error.message}`);
+      }
+
+      if (!sharedDocuments || sharedDocuments.length === 0) {
+        console.log("Aucun document partagé trouvé avec ce code");
         throw new Error("Code d'accès invalide ou expiré");
       }
+
+      console.log("Documents partagés trouvés:", sharedDocuments.length);
 
       // Vérifier l'identité avec le profil de l'utilisateur
       const { data: profile, error: profileError } = await supabase
@@ -73,7 +87,10 @@ export function MesDirectivesSharedAccess() {
         .eq('id', sharedDocuments[0].user_id)
         .single();
 
+      console.log("Profil utilisateur:", { profile, profileError });
+
       if (profileError || !profile) {
+        console.error("Erreur lors de la récupération du profil:", profileError);
         throw new Error("Impossible de vérifier l'identité");
       }
 
@@ -81,6 +98,18 @@ export function MesDirectivesSharedAccess() {
       const firstNameMatch = profile.first_name?.toLowerCase().trim() === formData.firstName.toLowerCase().trim();
       const lastNameMatch = profile.last_name?.toLowerCase().trim() === formData.lastName.toLowerCase().trim();
       const birthDateMatch = profile.birth_date === formData.birthDate;
+
+      console.log("Vérification identité:", {
+        firstNameMatch,
+        lastNameMatch,
+        birthDateMatch,
+        profileData: {
+          first_name: profile.first_name,
+          last_name: profile.last_name,
+          birth_date: profile.birth_date
+        },
+        formData
+      });
 
       if (!firstNameMatch || !lastNameMatch || !birthDateMatch) {
         throw new Error("Les informations fournies ne correspondent pas");
@@ -90,6 +119,8 @@ export function MesDirectivesSharedAccess() {
       const validDocuments = sharedDocuments.filter(doc => 
         !doc.expires_at || new Date(doc.expires_at) > new Date()
       );
+
+      console.log("Documents valides (non expirés):", validDocuments.length);
 
       if (validDocuments.length === 0) {
         throw new Error("Tous les documents partagés ont expiré");
@@ -113,6 +144,8 @@ export function MesDirectivesSharedAccess() {
         };
       });
 
+      console.log("Documents transformés:", transformedDocuments);
+
       setDocuments(transformedDocuments);
       setIsVerified(true);
       
@@ -121,8 +154,12 @@ export function MesDirectivesSharedAccess() {
         description: `${transformedDocuments.length} document(s) disponible(s)`,
       });
 
+      console.log("=== FIN VÉRIFICATION ACCÈS (SUCCÈS) ===");
+
     } catch (error: any) {
-      console.error("Erreur lors de la vérification:", error);
+      console.error("=== ERREUR LORS DE LA VÉRIFICATION ===");
+      console.error("Erreur complète:", error);
+      console.error("Message d'erreur:", error.message);
       toast({
         title: "Accès refusé",
         description: error.message || "Impossible de vérifier l'accès",
