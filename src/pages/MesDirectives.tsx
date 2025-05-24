@@ -21,7 +21,6 @@ const MesDirectives = () => {
     handleDownload,
     handlePrint,
     handleView,
-    confirmDelete,
     handleDelete,
     handleUploadComplete,
     handlePreviewDownload,
@@ -33,9 +32,7 @@ const MesDirectives = () => {
 
   // Wrapper function to handle upload completion
   const handleUploadCompleteWrapper = () => {
-    // For this context, we don't have the specific parameters,
-    // so we'll call refresh documents directly
-    window.location.reload();
+    handleUploadComplete();
   };
 
   // Rediriger vers la page de connexion si non authentifié
