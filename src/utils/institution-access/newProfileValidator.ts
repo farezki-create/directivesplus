@@ -7,7 +7,7 @@ export const validateInstitutionCodeWithRPC = async (
   birthDate: string,
   institutionCode: string
 ) => {
-  console.log("=== VALIDATION AVEC RPC (user_profiles) ===");
+  console.log("=== VALIDATION AVEC RPC ===");
   console.log("Données d'entrée:", { lastName, firstName, birthDate, institutionCode });
   
   try {
@@ -28,7 +28,7 @@ export const validateInstitutionCodeWithRPC = async (
 
     // Afficher les résultats de debug
     if (debugData && Array.isArray(debugData)) {
-      debugData.forEach(step => {
+      debugData.forEach((step: any) => {
         console.log(`${step.step_name}: ${step.found_count} résultat(s) - ${step.details}`);
       });
     }
@@ -57,7 +57,7 @@ export const validateInstitutionCodeWithRPC = async (
     console.log("Profils trouvés via RPC:", data);
     
     // Transformer pour correspondre au format attendu
-    return data.map(directive => ({
+    return data.map((directive: any) => ({
       user_id: directive.user_id,
       profile_id: directive.user_id,
       first_name: firstName,
@@ -71,42 +71,49 @@ export const validateInstitutionCodeWithRPC = async (
   }
 };
 
-// Fonction de fallback pour utiliser la table user_profiles
+// Fonction de fallback pour utiliser les fonctions RPC
 export const validateWithExistingProfiles = async (
   lastName: string,
   firstName: string,
   birthDate: string,
   institutionCode: string
 ) => {
-  console.log("=== FALLBACK AVEC TABLE USER_PROFILES ===");
+  console.log("=== FALLBACK AVEC FONCTION RPC DEBUG ===");
   
   try {
-    // Rechercher directement dans user_profiles
-    const { data: profilesData, error: profilesError } = await supabase
-      .from('user_profiles')
-      .select('*')
-      .eq('last_name', lastName.trim())
-      .eq('first_name', firstName.trim())
-      .eq('birth_date', birthDate)
-      .eq('institution_shared_code', institutionCode.trim());
+    // Utiliser la fonction debug pour chercher le profil
+    const { data: profilesData, error: profilesError } = await supabase.rpc("debug_patient_by_lastname" as any, {
+      input_last_name: lastName.trim()
+    });
 
-    console.log("Profils trouvés dans user_profiles:", { profilesData, profilesError });
+    console.log("Profils trouvés via debug RPC:", { profilesData, profilesError });
 
     if (profilesError) {
-      console.error("Erreur recherche user_profiles:", profilesError);
+      console.error("Erreur recherche debug RPC:", profilesError);
       throw new Error("Erreur lors de la recherche des profils.");
     }
 
-    if (!profilesData || profilesData.length === 0) {
+    if (!profilesData || !Array.isArray(profilesData) || profilesData.length === 0) {
       throw new Error("Aucun profil patient trouvé correspondant aux informations fournies.");
     }
 
-    console.log("Profils correspondants:", profilesData);
+    // Filtrer les profils correspondants
+    const matchingProfiles = profilesData.filter((profile: any) => 
+      profile.first_name === firstName.trim() &&
+      profile.birth_date === birthDate &&
+      profile.institution_shared_code === institutionCode.trim()
+    );
+
+    console.log("Profils correspondants après filtrage:", matchingProfiles);
     
+    if (matchingProfiles.length === 0) {
+      throw new Error("Aucun profil patient trouvé correspondant aux informations fournies.");
+    }
+
     // Retourner dans le même format que la fonction RPC
-    return profilesData.map(profile => ({
+    return matchingProfiles.map((profile: any) => ({
       user_id: profile.user_id,
-      profile_id: profile.id,
+      profile_id: profile.profile_id,
       first_name: profile.first_name,
       last_name: profile.last_name,
       birth_date: profile.birth_date,

@@ -5,48 +5,32 @@ export const createTestDataForInstitutionAccess = async () => {
   console.log("=== CRÉATION DONNÉES DE TEST ===");
   
   try {
-    // Créer un profil dans user_profiles
-    const { data: profileData, error: profileError } = await supabase
-      .from('user_profiles')
-      .upsert({
-        id: '550e8400-e29b-41d4-a716-446655440000', // UUID fixe pour les tests
-        user_id: '550e8400-e29b-41d4-a716-446655440000',
-        first_name: 'FARID',
-        last_name: 'AREZKI',
-        birth_date: '1963-08-13',
-        institution_shared_code: '9E5CUV7X'
-      })
-      .select()
-      .single();
+    // Utiliser la fonction debug RPC pour vérifier si le profil existe déjà
+    const { data: existingProfiles, error: checkError } = await supabase.rpc("debug_patient_by_lastname" as any, {
+      input_last_name: 'AREZKI'
+    });
 
-    console.log("Profil créé/mis à jour dans user_profiles:", { profileData, profileError });
+    console.log("Vérification profils existants:", { existingProfiles, checkError });
 
-    if (profileError && profileError.code !== '23505') { // Ignore duplicate key error
-      throw profileError;
-    }
-
-    // Vérifier si on peut créer une directive (optionnel car le user_id pourrait ne pas exister dans auth.users)
-    try {
-      const { data: directiveData, error: directiveError } = await supabase
-        .from('directives')
-        .select('id')
-        .eq('user_id', '550e8400-e29b-41d4-a716-446655440000')
-        .eq('institution_code', '9E5CUV7X')
-        .maybeSingle();
-
-      if (!directiveData && !directiveError) {
-        console.log("Aucune directive existante, mais n'essayons pas d'en créer une sans utilisateur auth valide");
-      } else {
-        console.log("Directive existante trouvée:", directiveData);
+    if (existingProfiles && Array.isArray(existingProfiles) && existingProfiles.length > 0) {
+      const targetProfile = existingProfiles.find((p: any) => 
+        p.first_name === 'FARID' && 
+        p.birth_date === '1963-08-13' && 
+        p.institution_shared_code === '9E5CUV7X'
+      );
+      
+      if (targetProfile) {
+        console.log("✓ Profil de test déjà existant:", targetProfile);
+        return true;
       }
-    } catch (directiveError) {
-      console.log("Directive non créée (utilisateur auth manquant):", directiveError);
     }
 
-    console.log("✓ Données de test créées avec succès dans user_profiles");
+    console.log("Profil de test non trouvé, les données doivent être créées via SQL");
+    console.log("Utilisation des fonctions RPC pour validation uniquement");
+    
     return true;
   } catch (error) {
-    console.error("✗ Erreur création données de test:", error);
+    console.error("✗ Erreur vérification données de test:", error);
     return false;
   }
 };

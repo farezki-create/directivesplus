@@ -8,70 +8,43 @@ export const runInstitutionAccessDiagnostics = async (institutionCode: string) =
   // Test 1: Connexion Supabase
   console.log("Test 1: Connexion Supabase");
   try {
-    const { data, error } = await supabase.from('user_profiles').select('count').limit(1);
+    const { data, error } = await supabase.from('profiles').select('count').limit(1);
     console.log("✓ Connexion Supabase OK:", { data, error });
   } catch (error) {
     console.error("✗ Connexion Supabase ÉCHEC:", error);
   }
 
-  // Test 2: Permissions table user_profiles
-  console.log("Test 2: Permissions table user_profiles");
+  // Test 2: Permissions table profiles
+  console.log("Test 2: Permissions table profiles");
   try {
     const { data, error } = await supabase
-      .from('user_profiles')
-      .select('id, user_id, last_name, first_name, institution_shared_code')
+      .from('profiles')
+      .select('id, first_name, last_name, birth_date')
       .limit(3);
-    console.log("✓ Accès user_profiles OK:", { count: data?.length, error });
+    console.log("✓ Accès profiles OK:", { count: data?.length, error });
   } catch (error) {
-    console.error("✗ Accès user_profiles ÉCHEC:", error);
+    console.error("✗ Accès profiles ÉCHEC:", error);
   }
 
-  // Test 3: Codes institution existants dans user_profiles
-  console.log("Test 3: Codes institution dans user_profiles");
-  try {
-    const { data, error } = await supabase
-      .from('user_profiles')
-      .select('institution_shared_code, user_id, last_name, first_name')
-      .not('institution_shared_code', 'is', null);
-    console.log("✓ Codes institution:", { 
-      total: data?.length || 0,
-      error 
-    });
-  } catch (error) {
-    console.error("✗ Recherche codes institution ÉCHEC:", error);
-  }
-
-  // Test 4: Recherche code spécifique
-  console.log("Test 4: Recherche code spécifique");
-  try {
-    const { data, error } = await supabase
-      .from('user_profiles')
-      .select('*')
-      .eq('institution_shared_code', institutionCode);
-    console.log("✓ Code spécifique:", { trouvé: data?.length || 0, error });
-    
-    if (data && data.length > 0) {
-      data.forEach(d => {
-        console.log(`- User ${d.user_id}: ${d.first_name} ${d.last_name} (${d.birth_date})`);
-      });
-    }
-  } catch (error) {
-    console.error("✗ Code spécifique ÉCHEC:", error);
-  }
-
-  // Test 5: Test de la fonction debug
-  console.log("Test 5: Fonction debug RPC");
+  // Test 3: Test de la fonction debug RPC simple
+  console.log("Test 3: Fonction debug RPC simple");
   try {
     const { data, error } = await supabase.rpc("debug_patient_by_lastname" as any, {
       input_last_name: "AREZKI"
     });
-    console.log("✓ Debug RPC:", { data, error });
+    console.log("✓ Debug RPC simple:", { data, error });
+    
+    if (data && Array.isArray(data) && data.length > 0) {
+      data.forEach((profile: any) => {
+        console.log(`- Profile ${profile.profile_id}: ${profile.first_name} ${profile.last_name} (${profile.birth_date}) - Code: ${profile.institution_shared_code}`);
+      });
+    }
   } catch (error) {
-    console.error("✗ Debug RPC ÉCHEC:", error);
+    console.error("✗ Debug RPC simple ÉCHEC:", error);
   }
 
-  // Test 6: Test fonction debug étape par étape
-  console.log("Test 6: Fonction debug étape par étape");
+  // Test 4: Test fonction debug étape par étape
+  console.log("Test 4: Fonction debug étape par étape");
   try {
     const { data, error } = await supabase.rpc("debug_institution_access_step_by_step" as any, {
       input_last_name: "AREZKI",
@@ -80,8 +53,34 @@ export const runInstitutionAccessDiagnostics = async (institutionCode: string) =
       input_shared_code: institutionCode
     });
     console.log("✓ Debug étape par étape:", { data, error });
+    
+    if (data && Array.isArray(data)) {
+      data.forEach((step: any) => {
+        console.log(`${step.step_name}: ${step.found_count} résultat(s) - ${step.details}`);
+      });
+    }
   } catch (error) {
     console.error("✗ Debug étape par étape ÉCHEC:", error);
+  }
+
+  // Test 5: Test de la fonction RPC principale
+  console.log("Test 5: Fonction RPC principale");
+  try {
+    const { data, error } = await supabase.rpc("get_patient_directives_by_institution_access" as any, {
+      input_last_name: "AREZKI",
+      input_first_name: "FARID",
+      input_birth_date: "1963-08-13",
+      input_shared_code: institutionCode
+    });
+    console.log("✓ RPC principale:", { data, error });
+    
+    if (data && Array.isArray(data) && data.length > 0) {
+      data.forEach((directive: any) => {
+        console.log(`- Directive ${directive.id}: User ${directive.user_id}`);
+      });
+    }
+  } catch (error) {
+    console.error("✗ RPC principale ÉCHEC:", error);
   }
 
   console.log("=== FIN DIAGNOSTICS ===");
