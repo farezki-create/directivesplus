@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import type { AccessCodeValidationResult } from "../types";
+import type { AccessCodeValidationResult, ShareableDocument } from "../types";
 
 /**
  * Service unifié pour la validation des codes d'accès
@@ -67,9 +67,21 @@ export class UnifiedAccessValidationService {
       }
 
       // Transformer les données en format unifié
-      const documents = data.map(doc => ({
+      const documents: ShareableDocument[] = data.map(doc => ({
         id: doc.document_id,
-        ...doc.document_data,
+        file_name: doc.document_data?.file_name || 'Document',
+        file_path: doc.document_data?.file_path || '',
+        created_at: doc.document_data?.created_at || doc.shared_at,
+        user_id: doc.user_id,
+        file_type: doc.document_data?.file_type || 'unknown',
+        source: doc.document_data?.source || doc.document_type,
+        content: doc.document_data?.content,
+        description: doc.document_data?.description,
+        content_type: doc.document_data?.content_type,
+        is_private: doc.document_data?.is_private,
+        external_id: doc.document_data?.external_id,
+        file_size: doc.document_data?.file_size,
+        updated_at: doc.document_data?.updated_at,
         shared_at: doc.shared_at
       }));
 
