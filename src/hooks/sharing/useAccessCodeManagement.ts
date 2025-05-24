@@ -1,10 +1,9 @@
-
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import { 
   extendSharedDocumentExpiry,
   regenerateAccessCode
-} from "./sharingService";
+} from "./services/accessCodeService";
 
 export const useAccessCodeManagement = () => {
   const [isExtending, setIsExtending] = useState<boolean>(false);

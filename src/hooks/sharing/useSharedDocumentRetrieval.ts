@@ -1,29 +1,30 @@
 
 import { 
-  getSharedDocuments as fetchSharedDocuments,
-  getSharedDocumentsByAccessCode as fetchSharedDocumentsByAccessCode,
+  getSharedDocuments,
+  getSharedDocumentsByAccessCode,
   deactivateSharedDocument
-} from "./sharingService";
+} from "./services/sharedDocumentService";
+import { getSharedDocumentsByAccessCode as getDocsByCode } from "./services/documentRetrievalService";
 import { toast } from "@/hooks/use-toast";
 
 export const useSharedDocumentRetrieval = () => {
-  const getSharedDocuments = async (): Promise<any[]> => {
+  const getSharedDocumentsWrapper = async (): Promise<any[]> => {
     try {
-      return await fetchSharedDocuments();
+      return await getSharedDocuments();
     } catch (error) {
       console.error("Erreur lors de la récupération des documents partagés:", error);
       return [];
     }
   };
 
-  const getSharedDocumentsByAccessCode = async (
+  const getSharedDocumentsByAccessCodeWrapper = async (
     accessCode: string,
     firstName?: string,
     lastName?: string,
     birthDate?: string
   ): Promise<any[]> => {
     try {
-      return await fetchSharedDocumentsByAccessCode(accessCode, firstName, lastName, birthDate);
+      return await getDocsByCode(accessCode, firstName, lastName, birthDate);
     } catch (error) {
       console.error("Erreur lors de la récupération des documents avec code:", error);
       return [];
@@ -52,8 +53,8 @@ export const useSharedDocumentRetrieval = () => {
   };
 
   return {
-    getSharedDocuments,
-    getSharedDocumentsByAccessCode,
+    getSharedDocuments: getSharedDocumentsWrapper,
+    getSharedDocumentsByAccessCode: getSharedDocumentsByAccessCodeWrapper,
     stopSharing
   };
 };

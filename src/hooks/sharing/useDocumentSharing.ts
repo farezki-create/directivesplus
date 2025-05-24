@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
-import { createSharedDocument } from "./sharingService";
+import { createSharedDocument } from "./services/sharedDocumentService";
 import { formatShareMessage } from "./sharingUtils";
 import type { ShareableDocument, ShareOptions } from "./types";
 
