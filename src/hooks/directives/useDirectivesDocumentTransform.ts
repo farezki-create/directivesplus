@@ -1,7 +1,7 @@
 
-import type { Document } from "@/hooks/useDirectivesDocuments";
+import type { ShareableDocument } from "@/hooks/sharing/types";
 
-export const transformDossierDocuments = (dossierDocuments: any, userId: string): Document[] => {
+export const transformDossierDocuments = (dossierDocuments: any, userId: string): ShareableDocument[] => {
   console.log("=== DEBUG transformDossierDocuments ===");
   console.log("transformDossierDocuments - Début transformation");
   console.log("transformDossierDocuments - Documents reçus:", dossierDocuments);
@@ -70,7 +70,7 @@ export const transformDossierDocuments = (dossierDocuments: any, userId: string)
     console.log(`transformDossierDocuments - Type du document ${index}:`, typeof doc);
     
     // Gérer différents types de documents
-    let transformedDoc: Document;
+    let transformedDoc: ShareableDocument;
     
     // Si c'est un document directive (a une propriété content et pas de file_path classique)
     if (doc.source === 'directives' || (doc.content && typeof doc.content === 'object' && !doc.file_path?.startsWith('/'))) {
@@ -80,10 +80,11 @@ export const transformDossierDocuments = (dossierDocuments: any, userId: string)
         file_name: doc.file_name || 'Directive anticipée',
         file_path: `directive://${doc.id}`, // Préfixe spécial pour les directives
         created_at: doc.created_at || new Date().toISOString(),
+        user_id: doc.user_id || userId,
+        file_type: 'directive' as const,
+        source: 'directives' as const,
         description: doc.description || 'Directive anticipée',
         content_type: 'application/json',
-        file_type: 'directive',
-        user_id: doc.user_id || userId,
         is_private: doc.is_private || false,
         content: doc.content,
         external_id: doc.external_id || null,
@@ -99,10 +100,11 @@ export const transformDossierDocuments = (dossierDocuments: any, userId: string)
         file_name: doc.file_name || `Document ${index + 1}`,
         file_path: doc.file_path || '',
         created_at: doc.created_at || new Date().toISOString(),
+        user_id: doc.user_id || userId,
+        file_type: (doc.file_type || doc.content_type || 'pdf') as 'directive' | 'pdf' | 'medical',
+        source: 'pdf_documents' as const,
         description: doc.description || 'Document',
         content_type: doc.content_type || 'application/pdf',
-        file_type: doc.file_type || doc.content_type || 'application/pdf',
-        user_id: doc.user_id || userId,
         is_private: doc.is_private || false,
         content: doc.content || null,
         external_id: doc.external_id || null,

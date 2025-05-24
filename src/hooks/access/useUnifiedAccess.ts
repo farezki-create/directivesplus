@@ -70,8 +70,7 @@ export const useUnifiedAccess = () => {
               date_naissance: formData.birthDate
             },
             documents: documents.map(doc => ({
-              ...doc.document_data,
-              shared_at: doc.shared_at,
+              ...doc,
               source: 'shared_documents'
             }))
           }

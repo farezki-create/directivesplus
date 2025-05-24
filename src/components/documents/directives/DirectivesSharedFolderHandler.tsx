@@ -3,23 +3,10 @@ import React, { useEffect } from "react";
 import { useDocumentTransfer } from "@/hooks/useDocumentTransfer";
 import DirectivesDocumentList from "@/components/documents/DirectivesDocumentList";
 import TransferStatusDialog from "@/components/documents/TransferStatusDialog";
-
-// Interface mise à jour pour inclure la propriété content
-interface Document {
-  id: string;
-  file_name: string;
-  file_path: string;
-  created_at: string;
-  description?: string;
-  content_type?: string;
-  file_type?: string;
-  user_id?: string;
-  is_private?: boolean;
-  content?: any; // Ajout de la propriété content
-}
+import type { ShareableDocument } from "@/hooks/sharing/types";
 
 interface DirectivesSharedFolderHandlerProps {
-  documents: Document[];
+  documents: ShareableDocument[];
   onDownload: (filePath: string, fileName: string) => void;
   onPrint: (filePath: string, contentType?: string) => void;
   onView: (filePath: string, contentType?: string) => void;
@@ -57,7 +44,7 @@ const DirectivesSharedFolderHandler: React.FC<DirectivesSharedFolderHandlerProps
     console.log("DirectivesSharedFolderHandler - Is transferring:", isTransferring);
   }, [documents.length, accessCode, profile, transferStatus, isTransferring]);
 
-  const handleAddToSharedFolder = async (document: Document) => {
+  const handleAddToSharedFolder = async (document: ShareableDocument) => {
     console.log("DirectivesSharedFolderHandler - handleAddToSharedFolder called for:", document.file_name);
     console.log("Document details:", {
       id: document.id,

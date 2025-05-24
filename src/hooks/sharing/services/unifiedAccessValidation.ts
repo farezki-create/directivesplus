@@ -113,7 +113,7 @@ export class UnifiedAccessValidationService {
     firstName: string,
     birthDate: string,
     accessCode: string
-  ): Promise<AccessCodeValidationResult> {
+  ): Promise<AccessValidationResult> {
     return this.validateAccessCode(accessCode, {
       firstName,
       lastName,

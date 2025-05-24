@@ -2,12 +2,12 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import type { Document } from "@/hooks/useDirectivesDocuments";
+import type { ShareableDocument } from "@/hooks/sharing/types";
 
 export const useSupabaseDocuments = () => {
   const [loading, setLoading] = useState(true);
 
-  const fetchSupabaseDocuments = async (userId: string): Promise<Document[]> => {
+  const fetchSupabaseDocuments = async (userId: string): Promise<ShareableDocument[]> => {
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -20,16 +20,17 @@ export const useSupabaseDocuments = () => {
       
       console.log("useSupabaseDocuments - Documents récupérés depuis Supabase:", data);
       
-      // Transform Supabase documents to match our Document interface
-      const supabaseDocuments: Document[] = (data || []).map(doc => ({
+      // Transform Supabase documents to match our ShareableDocument interface
+      const supabaseDocuments: ShareableDocument[] = (data || []).map(doc => ({
         id: doc.id,
         file_name: doc.file_name,
         file_path: doc.file_path,
         created_at: doc.created_at,
+        user_id: doc.user_id || userId,
+        file_type: 'pdf' as const,
+        source: 'pdf_documents' as const,
         description: doc.description || 'Document',
         content_type: doc.content_type || 'application/pdf',
-        file_type: doc.content_type || 'application/pdf',
-        user_id: doc.user_id || userId,
         is_private: false,
         content: null,
         external_id: doc.external_id || null,
