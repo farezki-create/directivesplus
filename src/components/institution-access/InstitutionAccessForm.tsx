@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,7 +19,7 @@ export interface InstitutionFormData {
 export const InstitutionAccessForm = () => {
   const navigate = useNavigate();
   const { setDossierActif } = useDossierStore();
-  const { validateAccessCode, isValidating } = useSharing();
+  const { validateCode, isValidating } = useSharing();
   const [result, setResult] = useState<any>(null);
   
   const [form, setForm] = useState<InstitutionFormData>({
@@ -41,10 +40,13 @@ export const InstitutionAccessForm = () => {
     console.log("=== SOUMISSION FORMULAIRE INSTITUTION ===");
     console.log("Données du formulaire:", form);
     
-    const validationResult = await validateAccessCode(form.institutionCode, {
-      firstName: form.firstName,
-      lastName: form.lastName,
-      birthDate: form.birthDate
+    const validationResult = await validateCode({
+      accessCode: form.institutionCode,
+      personalInfo: {
+        firstName: form.firstName,
+        lastName: form.lastName,
+        birthDate: form.birthDate
+      }
     });
     
     console.log("Résultat de validation:", validationResult);

@@ -6,7 +6,14 @@ import { useUnifiedSharing } from "./useUnifiedSharing";
  * @deprecated Utiliser useUnifiedSharing directement
  */
 export const useSharing = () => {
-  return useUnifiedSharing();
+  const unifiedSharing = useUnifiedSharing();
+  
+  return {
+    ...unifiedSharing,
+    // Alias pour compatibilité avec l'ancienne interface
+    isSharing: unifiedSharing.isGenerating,
+    shareError: unifiedSharing.error
+  };
 };
 
 // Re-export des types pour compatibilité

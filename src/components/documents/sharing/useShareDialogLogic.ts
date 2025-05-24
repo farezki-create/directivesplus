@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import { useSharing } from "@/hooks/sharing/useSharing";
@@ -81,10 +80,15 @@ export const useShareDialogLogic = (document: ShareableDocument, open: boolean) 
     }
     
     console.log("Régénération code:", accessCode);
-    const newCode = await regenerateCode(accessCode, 365);
+    // Pour l'instant, on génère simplement un nouveau code pour le même document
+    const newCode = await generatePersonalCode(document, { expiresInDays: 365 });
     if (newCode) {
       console.log("Nouveau code généré:", newCode);
       setAccessCode(newCode);
+      // Révoquer l'ancien code en arrière-plan
+      if (regenerateCode) {
+        regenerateCode(accessCode, 365);
+      }
     }
   };
 

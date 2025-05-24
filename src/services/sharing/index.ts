@@ -13,3 +13,6 @@ export type {
   ValidationRequest,
   ValidationResult
 } from './validationService';
+
+// Export des types depuis le module principal
+export type { ShareableDocument } from '@/types/sharing';
