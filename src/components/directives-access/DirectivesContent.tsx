@@ -2,13 +2,46 @@
 import React from "react";
 
 interface DirectivesContentProps {
-  directives: any[];
+  directives: any;
 }
 
 const DirectivesContent: React.FC<DirectivesContentProps> = ({ directives }) => {
-  console.log("DirectivesContent - Rendu des directives:", directives);
+  console.log("DirectivesContent - Données reçues:", directives);
+  console.log("DirectivesContent - Type des données:", typeof directives);
+  console.log("DirectivesContent - Est un tableau:", Array.isArray(directives));
   
-  if (!directives || directives.length === 0) {
+  // Normaliser les données - gérer différents formats possibles
+  let normalizedDirectives = [];
+  
+  if (!directives) {
+    console.log("DirectivesContent - Aucune donnée fournie");
+    return (
+      <div className="text-center py-8">
+        <p className="text-gray-500">Aucune directive disponible</p>
+      </div>
+    );
+  }
+  
+  // Si c'est déjà un tableau, l'utiliser directement
+  if (Array.isArray(directives)) {
+    normalizedDirectives = directives;
+  }
+  // Si c'est un objet unique, le mettre dans un tableau
+  else if (typeof directives === 'object') {
+    normalizedDirectives = [directives];
+  }
+  // Si c'est une chaîne, créer un objet simple
+  else if (typeof directives === 'string') {
+    normalizedDirectives = [{
+      id: 'string-directive',
+      content: directives,
+      content_type: 'text/plain'
+    }];
+  }
+  
+  console.log("DirectivesContent - Données normalisées:", normalizedDirectives);
+  
+  if (normalizedDirectives.length === 0) {
     return (
       <div className="text-center py-8">
         <p className="text-gray-500">Aucune directive disponible</p>
@@ -18,18 +51,22 @@ const DirectivesContent: React.FC<DirectivesContentProps> = ({ directives }) => 
 
   return (
     <div className="space-y-6">
-      {directives.map((directive, index) => {
+      {normalizedDirectives.map((directive, index) => {
         console.log("DirectivesContent - Rendu directive:", directive);
         
+        const directiveId = directive.id || `directive-${index}`;
+        const fileName = directive.file_name || directive.title || directive.name || `Document ${index + 1}`;
+        const createdAt = directive.created_at || directive.date_creation;
+        
         return (
-          <div key={directive.id || index} className="bg-white rounded-lg shadow-sm border overflow-hidden">
+          <div key={directiveId} className="bg-white rounded-lg shadow-sm border overflow-hidden">
             <div className="bg-gray-50 p-4 border-b">
               <h3 className="font-medium text-gray-900">
-                {directive.file_name || directive.description || `Document ${index + 1}`}
+                {fileName}
               </h3>
-              {directive.created_at && (
+              {createdAt && (
                 <p className="text-sm text-gray-500 mt-1">
-                  Créé le {new Date(directive.created_at).toLocaleDateString('fr-FR')}
+                  Créé le {new Date(createdAt).toLocaleDateString('fr-FR')}
                 </p>
               )}
             </div>
@@ -57,7 +94,23 @@ const DirectivesContent: React.FC<DirectivesContentProps> = ({ directives }) => 
                   <iframe 
                     src={directive.file_path}
                     className="w-full h-full border rounded"
-                    title={directive.file_name || "Document PDF"}
+                    title={fileName}
+                  />
+                </div>
+              ) : directive.content_type === 'text/plain' && directive.content ? (
+                /* Gérer le contenu texte simple */
+                <div className="prose max-w-none">
+                  <p className="text-gray-700 whitespace-pre-wrap">
+                    {directive.content}
+                  </p>
+                </div>
+              ) : directive.file_path ? (
+                /* Gérer les fichiers avec chemin */
+                <div className="w-full h-96">
+                  <iframe 
+                    src={directive.file_path}
+                    className="w-full h-full border rounded"
+                    title={fileName}
                   />
                 </div>
               ) : (
@@ -65,8 +118,13 @@ const DirectivesContent: React.FC<DirectivesContentProps> = ({ directives }) => 
                 <div className="text-gray-600">
                   <p>Type de document : {directive.content_type || 'Non spécifié'}</p>
                   <p className="mt-2 text-sm">
-                    {directive.description || 'Aucune description disponible'}
+                    {directive.description || directive.content || 'Aucune description disponible'}
                   </p>
+                  {directive.content && typeof directive.content === 'object' && (
+                    <pre className="mt-4 p-4 bg-gray-50 rounded text-xs overflow-auto">
+                      {JSON.stringify(directive.content, null, 2)}
+                    </pre>
+                  )}
                 </div>
               )}
             </div>
