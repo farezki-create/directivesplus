@@ -1,9 +1,10 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { AnonymousValidationService } from "./anonymousValidation";
 import type { PersonalInfo, AccessValidationResult } from "@/types/accessCode";
 
 /**
- * Service de validation simplifié avec logs détaillés
+ * Service de validation simplifié avec fallback vers Edge Function
  */
 export class SimpleValidationService {
   
@@ -11,30 +12,36 @@ export class SimpleValidationService {
     accessCode: string,
     personalInfo?: PersonalInfo
   ): Promise<AccessValidationResult> {
-    console.log("=== DÉBUT VALIDATION SIMPLIFIÉE ===");
+    console.log("=== DÉBUT VALIDATION SIMPLIFIÉE (NOUVELLE VERSION) ===");
     console.log("Code d'accès:", accessCode);
     console.log("Infos personnelles:", personalInfo);
     
     try {
-      // 1. Vérifier d'abord dans shared_documents
-      console.log("🔍 Étape 1: Recherche dans shared_documents");
+      // 1. Essayer d'abord l'Edge Function qui contourne les politiques RLS
+      if (personalInfo?.firstName && personalInfo?.lastName) {
+        console.log("🚀 Étape 1: Utilisation de l'Edge Function");
+        const edgeResult = await AnonymousValidationService.validateCodeAnonymously(
+          accessCode, 
+          personalInfo
+        );
+        
+        if (edgeResult.success) {
+          console.log("✅ Succès via Edge Function");
+          return edgeResult;
+        }
+        
+        console.log("❌ Échec Edge Function:", edgeResult.error);
+      }
+
+      // 2. Fallback: Vérifier dans shared_documents (peut fonctionner si RLS est moins restrictive)
+      console.log("🔍 Étape 2: Fallback shared_documents");
       const sharedResult = await this.checkSharedDocuments(accessCode, personalInfo);
       if (sharedResult.success) {
         console.log("✅ Trouvé dans shared_documents");
         return sharedResult;
       }
-      
-      // 2. Vérifier dans user_profiles avec institution_shared_code
-      if (personalInfo?.firstName && personalInfo?.lastName) {
-        console.log("🔍 Étape 2: Recherche dans user_profiles");
-        const profileResult = await this.checkUserProfiles(accessCode, personalInfo);
-        if (profileResult.success) {
-          console.log("✅ Trouvé dans user_profiles");
-          return profileResult;
-        }
-      }
-      
-      // 3. Vérifier via RPC verify_access_identity
+
+      // 3. Essayer la fonction RPC si disponible
       if (personalInfo?.firstName && personalInfo?.lastName) {
         console.log("🔍 Étape 3: Tentative RPC verify_access_identity");
         const rpcResult = await this.checkViaRPC(accessCode, personalInfo);
@@ -44,10 +51,10 @@ export class SimpleValidationService {
         }
       }
       
-      console.log("❌ Aucune méthode n'a fonctionné");
+      console.log("❌ Toutes les méthodes ont échoué - Problème probable: politiques RLS");
       return {
         success: false,
-        error: "Code d'accès invalide ou informations incorrectes"
+        error: "Code d'accès invalide ou informations incorrectes. Si le problème persiste, contactez le support technique."
       };
       
     } catch (error: any) {
@@ -91,7 +98,7 @@ export class SimpleValidationService {
         return { success: false, error: "Code expiré" };
       }
       
-      // Si des infos personnelles sont fournies, vérifier le profil
+      // Si des infos personnelles sont fournies, essayer de vérifier le profil
       if (personalInfo?.firstName && personalInfo?.lastName) {
         console.log("👤 Vérification du profil utilisateur:", document.user_id);
         
@@ -132,75 +139,6 @@ export class SimpleValidationService {
       
     } catch (error: any) {
       console.error("💥 Erreur checkSharedDocuments:", error);
-      return { success: false, error: "Erreur technique" };
-    }
-  }
-  
-  private static async checkUserProfiles(
-    accessCode: string,
-    personalInfo: PersonalInfo
-  ): Promise<AccessValidationResult> {
-    console.log("👥 Recherche dans user_profiles");
-    console.log("Critères:", {
-      firstName: personalInfo.firstName,
-      lastName: personalInfo.lastName,
-      birthDate: personalInfo.birthDate,
-      code: accessCode
-    });
-    
-    try {
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('institution_shared_code', accessCode);
-        
-      console.log("👥 Résultat user_profiles (par code):", { data, error });
-      
-      if (error) {
-        console.error("❌ Erreur user_profiles:", error);
-        return { success: false, error: error.message };
-      }
-      
-      if (!data || data.length === 0) {
-        console.log("👥 Aucun profil avec ce code d'institution");
-        return { success: false, error: "Code d'institution non trouvé" };
-      }
-      
-      // Vérifier les infos personnelles
-      for (const profile of data) {
-        console.log("🔍 Vérification profil:", {
-          profileFirstName: profile.first_name,
-          profileLastName: profile.last_name,
-          profileBirthDate: profile.birth_date,
-          inputFirstName: personalInfo.firstName,
-          inputLastName: personalInfo.lastName,
-          inputBirthDate: personalInfo.birthDate
-        });
-        
-        const firstNameMatch = profile.first_name?.toLowerCase() === personalInfo.firstName.toLowerCase();
-        const lastNameMatch = profile.last_name?.toLowerCase() === personalInfo.lastName.toLowerCase();
-        const birthDateMatch = !personalInfo.birthDate || profile.birth_date === personalInfo.birthDate;
-        
-        console.log("🔍 Correspondances profil:", { firstNameMatch, lastNameMatch, birthDateMatch });
-        
-        if (firstNameMatch && lastNameMatch && birthDateMatch) {
-          console.log("✅ Profil correspondant trouvé");
-          
-          return {
-            success: true,
-            documents: [], // Les documents seraient à récupérer séparément
-            message: "Accès autorisé via profil utilisateur",
-            userId: profile.id,
-            accessType: 'institution'
-          };
-        }
-      }
-      
-      console.log("❌ Aucun profil ne correspond aux critères");
-      return { success: false, error: "Informations personnelles incorrectes" };
-      
-    } catch (error: any) {
-      console.error("💥 Erreur checkUserProfiles:", error);
       return { success: false, error: "Erreur technique" };
     }
   }

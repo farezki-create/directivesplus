@@ -36,8 +36,10 @@ export class AnonymousValidationService {
         })
       });
 
+      console.log("📡 Response status:", response.status);
+
       if (!response.ok) {
-        console.error("Erreur Edge Function:", response.status);
+        console.error("Erreur Edge Function:", response.status, response.statusText);
         return {
           success: false,
           error: "Erreur technique lors de la validation"
