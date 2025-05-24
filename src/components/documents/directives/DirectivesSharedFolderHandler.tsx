@@ -52,8 +52,8 @@ const DirectivesSharedFolderHandler: React.FC<DirectivesSharedFolderHandlerProps
       console.log("Ajout au dossier partagé:", document);
       setIsAdding(true);
 
-      // Prepare a documents list for the dossier with complete document information
-      const documentsList = [{
+      // Préparer les informations du document
+      const documentForStorage = {
         id: document.id,
         file_name: document.file_name,
         file_path: document.file_path,
@@ -61,99 +61,61 @@ const DirectivesSharedFolderHandler: React.FC<DirectivesSharedFolderHandlerProps
         description: document.description || "",
         content_type: document.content_type || "application/pdf",
         is_shared: true
-      }];
+      };
 
-      console.log("Document prepared for storage:", documentsList[0]);
+      console.log("Document préparé pour stockage:", documentForStorage);
 
-      // Pour les utilisateurs authentifiés, on peut ignorer la vérification de code
-      if (isAuthenticated && user) {
-        // Afficher un toast de chargement
-        toast({
-          title: "Traitement en cours",
-          description: "Préparation du document pour le dossier partagé...",
-        });
-        
-        // Ensure we have default values for all required fields in profileData
-        const userProfileData = {
-          first_name: (user?.user_metadata?.first_name || profile?.first_name || "Inconnu") as string,
-          last_name: (user?.user_metadata?.last_name || profile?.last_name || "Inconnu") as string,
-          birth_date: (user?.user_metadata?.birth_date || profile?.birth_date || null) as string,
-        };
-        
-        // Créer un dossier minimal avec les infos utilisateur et le document sélectionné
-        const minimalDossier = {
-          id: `auth-${Date.now()}`,
-          userId: user.id || "",
-          isFullAccess: true,
-          isDirectivesOnly: true,
-          isMedicalOnly: false,
-          profileData: userProfileData,
-          contenu: {
-            patient: {
-              nom: userProfileData.last_name,
-              prenom: userProfileData.first_name,
-              date_naissance: userProfileData.birth_date || null,
-            },
-            documents: documentsList // Use the documents list format
-          }
-        };
-        
-        console.log("Dossier créé:", minimalDossier);
-        
-        // Stocker les informations dans le store
-        setDossierActif(minimalDossier);
-        
-        // Attendre un moment pour laisser le temps au state de se mettre à jour
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
-        // Rediriger vers /mes-directives au lieu de /dashboard
-        console.log("Redirection vers /mes-directives pour utilisateur connecté avec document:", document.file_name);
-        navigate('/mes-directives');
+      // Créer un dossier temporaire avec le document
+      const profileData = isAuthenticated && user ? {
+        first_name: user?.user_metadata?.first_name || profile?.first_name || "Utilisateur",
+        last_name: user?.user_metadata?.last_name || profile?.last_name || "Connecté",
+        birth_date: user?.user_metadata?.birth_date || profile?.birth_date || null,
+      } : {
+        first_name: profile?.first_name || "Accès",
+        last_name: profile?.last_name || "Public",
+        birth_date: profile?.birth_date || null,
+      };
 
-        toast({
-          title: "Document ajouté",
-          description: "Document ajouté au dossier partagé avec succès",
-        });
-        return;
-      }
+      const temporaryDossier = {
+        id: `shared-document-${Date.now()}`,
+        userId: user?.id || "anonymous",
+        isFullAccess: true,
+        isDirectivesOnly: true,
+        isMedicalOnly: false,
+        profileData: profileData,
+        contenu: {
+          patient: {
+            nom: profileData.last_name,
+            prenom: profileData.first_name,
+            date_naissance: profileData.birth_date || null,
+          },
+          documents: [documentForStorage]
+        }
+      };
 
-      // Pour les utilisateurs non authentifiés, on garde le comportement existant
-      if (!accessCode) {
-        toast({
-          title: "Erreur",
-          description: "Aucun code d'accès n'est disponible pour ce document",
-          variant: "destructive"
-        });
-        return;
-      }
+      console.log("Dossier temporaire créé:", temporaryDossier);
 
-      // Afficher un toast de chargement
-      toast({
-        title: "Traitement en cours",
-        description: "Préparation du document pour le dossier partagé...",
-      });
-      
-      // Stocker le code d'accès et les documents dans sessionStorage pour la redirection
-      sessionStorage.setItem('directAccessCode', accessCode);
-      sessionStorage.setItem('documentData', JSON.stringify(documentsList));
-      
-      console.log("Code d'accès stocké:", accessCode);
-      console.log("Documents stockés:", documentsList);
-      
-      // Réinitialiser l'état du dossier actif pour forcer un nouveau chargement
-      setDossierActif(null);
-      
+      // Stocker le dossier dans le store
+      setDossierActif(temporaryDossier);
+
+      // Marquer le document comme ajouté dans sessionStorage pour affichage du toast
+      sessionStorage.setItem('documentAdded', JSON.stringify({
+        fileName: document.file_name,
+        timestamp: Date.now()
+      }));
+
       // Attendre un moment pour laisser le temps au state de se mettre à jour
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      // Rediriger vers /mes-directives au lieu de /dashboard
-      console.log("Redirection vers /mes-directives");
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Rediriger vers /mes-directives
+      console.log("Redirection vers /mes-directives avec document:", document.file_name);
       navigate('/mes-directives');
 
       toast({
         title: "Document ajouté",
         description: "Document ajouté au dossier partagé avec succès",
       });
+
     } catch (error) {
       console.error("Erreur lors de l'ajout au dossier partagé:", error);
       toast({

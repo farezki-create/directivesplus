@@ -35,6 +35,16 @@ const PublicDirectivesView: React.FC<PublicDirectivesViewProps> = ({
   setShowAddOptions,
   onUploadComplete
 }) => {
+  // Extraire les documents du dossier actif s'ils existent
+  const dossierDocuments = dossierActif?.contenu?.documents || [];
+  
+  // Combiner les documents du dossier avec les documents utilisateur (si authentifié)
+  const allDocuments = [...dossierDocuments, ...documents];
+
+  console.log("PublicDirectivesView - Documents du dossier:", dossierDocuments);
+  console.log("PublicDirectivesView - Documents utilisateur:", documents);
+  console.log("PublicDirectivesView - Tous les documents:", allDocuments);
+
   return (
     <div className="min-h-screen flex flex-col">
       <AppNavigation />
@@ -43,7 +53,7 @@ const PublicDirectivesView: React.FC<PublicDirectivesViewProps> = ({
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Directives Anticipées</h1>
           <p className="text-gray-600">
-            Accès aux directives anticipées via code d'accès
+            {dossierActif ? "Documents ajoutés à vos directives" : "Accès aux directives anticipées via code d'accès"}
           </p>
           {dossierActif && dossierActif.profileData && (
             <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
@@ -60,7 +70,7 @@ const PublicDirectivesView: React.FC<PublicDirectivesViewProps> = ({
         </div>
         
         <DirectivesPageContent
-          documents={documents}
+          documents={allDocuments}
           showAddOptions={showAddOptions}
           setShowAddOptions={setShowAddOptions}
           userId={dossierActif?.userId || ""}

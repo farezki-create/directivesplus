@@ -9,7 +9,8 @@ import PublicDirectivesView from "@/components/directives/PublicDirectivesView";
 import DirectivesAccessFormView from "@/components/directives/DirectivesAccessFormView";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { toast } from "@/hooks/use-toast";
 
 const DirectivesDocs = () => {
   const { user, profile, isAuthenticated, isLoading: authLoading } = useAuth();
@@ -48,6 +49,29 @@ const DirectivesDocs = () => {
     handlePreviewDownload,
     handlePreviewPrint
   } = useDirectivesDocuments();
+
+  // Gérer l'affichage du toast pour document ajouté
+  useEffect(() => {
+    const documentAdded = sessionStorage.getItem('documentAdded');
+    
+    if (documentAdded && dossierActif) {
+      try {
+        const addedDocInfo = JSON.parse(documentAdded);
+        console.log("Document détecté comme ajouté:", addedDocInfo);
+        
+        // Nettoyer le sessionStorage
+        sessionStorage.removeItem('documentAdded');
+        
+        // Afficher un toast de confirmation
+        toast({
+          title: "Document ajouté avec succès",
+          description: `${addedDocInfo.fileName} est maintenant accessible dans vos directives`,
+        });
+      } catch (error) {
+        console.error("Erreur lors du traitement du document ajouté:", error);
+      }
+    }
+  }, [dossierActif]);
 
   const isLoading = authLoading || documentsLoading || publicAccessLoading;
 
