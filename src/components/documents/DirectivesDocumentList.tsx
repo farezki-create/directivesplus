@@ -1,32 +1,20 @@
 
 import { FC } from "react";
-import DocumentCard from "@/components/documents/DocumentCard";
+import { DocumentCardRefactored } from "@/components/documents/card/DocumentCardRefactored";
 import EmptyDocumentsState from "@/components/documents/EmptyDocumentsState";
-
-interface Document {
-  id: string;
-  file_name: string;
-  file_path: string;
-  created_at: string;
-  description?: string;
-  content_type?: string;
-  file_type?: string;
-  user_id?: string;
-  is_private?: boolean;
-  content?: any;
-}
+import { ShareableDocument } from "@/hooks/sharing/useUnifiedDocumentSharing";
 
 interface DirectivesDocumentListProps {
-  documents: Document[];
+  documents: ShareableDocument[];
   onDownload: (filePath: string, fileName: string) => void;
   onPrint: (filePath: string, contentType?: string) => void;
   onView: (filePath: string, contentType?: string) => void;
   onDelete: (documentId: string) => void;
   onVisibilityChange?: (documentId: string, isPrivate: boolean) => void;
-  onAddToSharedFolder?: (document: Document) => void;
+  onAddToSharedFolder?: (document: ShareableDocument) => void;
   isAdding?: boolean;
   showPrint?: boolean;
-  isAuthenticated?: boolean; // Nouveau prop pour savoir si l'utilisateur est connecté
+  isAuthenticated?: boolean;
 }
 
 const DirectivesDocumentList: FC<DirectivesDocumentListProps> = ({
@@ -46,16 +34,14 @@ const DirectivesDocumentList: FC<DirectivesDocumentListProps> = ({
   }
 
   console.log("DirectivesDocumentList - Rendering", documents.length, "documents");
-  console.log("DirectivesDocumentList - onAddToSharedFolder function:", !!onAddToSharedFolder);
-  console.log("DirectivesDocumentList - isAdding:", isAdding);
   console.log("DirectivesDocumentList - isAuthenticated:", isAuthenticated);
   
   return (
     <div className="grid gap-6">
       {documents.map((doc) => {
-        console.log(`Rendering document card for: ${doc.file_name} with addToSharedFolder: ${!!onAddToSharedFolder}`);
+        console.log(`Rendering document card for: ${doc.file_name}`);
         return (
-          <DocumentCard 
+          <DocumentCardRefactored 
             key={doc.id}
             document={doc}
             onDownload={onDownload}
@@ -68,8 +54,8 @@ const DirectivesDocumentList: FC<DirectivesDocumentListProps> = ({
               onAddToSharedFolder(doc);
             } : undefined}
             showPrint={showPrint}
+            showShare={isAuthenticated}
             isAddingToShared={isAdding}
-            showShareButton={isAuthenticated} // Afficher le bouton partager seulement si connecté
           />
         );
       })}
