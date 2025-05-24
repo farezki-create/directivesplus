@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useDossierDocuments } from "@/hooks/directives/useDossierDocuments";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDocumentOperations } from "@/hooks/useDocumentOperations";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Document } from "@/types/documents";
@@ -14,109 +15,66 @@ export const useDirectivesDocuments = () => {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showAddOptions, setShowAddOptions] = useState(false);
-  const [previewDocument, setPreviewDocument] = useState<string | null>(null);
-  const [documentToDelete, setDocumentToDelete] = useState<string | null>(null);
 
-  useEffect(() => {
-    const loadUserDocuments = async () => {
-      if (!isAuthenticated || !user?.id) {
-        setIsLoading(false);
-        return;
-      }
+  // Use the document operations hook for all document actions
+  const {
+    previewDocument,
+    setPreviewDocument,
+    documentToDelete,
+    setDocumentToDelete,
+    handleDownload,
+    handlePrint,
+    handleView,
+    handleDelete: handleDeleteOperation,
+    confirmDelete
+  } = useDocumentOperations(() => {
+    // Refresh documents after operations
+    if (isAuthenticated && user?.id) {
+      loadUserDocuments();
+    }
+  });
 
-      try {
-        const { data, error } = await supabase
-          .from('pdf_documents')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false });
+  const loadUserDocuments = async () => {
+    if (!isAuthenticated || !user?.id) {
+      setIsLoading(false);
+      return;
+    }
 
-        if (error) {
-          console.error("Erreur lors du chargement des documents:", error);
-          setDocuments([]);
-        } else {
-          const transformedDocuments: Document[] = (data || []).map(doc => ({
-            ...doc,
-            file_type: doc.content_type || 'pdf'
-          }));
-          setDocuments(transformedDocuments);
-        }
-      } catch (error) {
+    try {
+      const { data, error } = await supabase
+        .from('pdf_documents')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
         console.error("Erreur lors du chargement des documents:", error);
         setDocuments([]);
-      } finally {
-        setIsLoading(false);
+      } else {
+        const transformedDocuments: Document[] = (data || []).map(doc => ({
+          ...doc,
+          file_type: doc.content_type || 'pdf'
+        }));
+        setDocuments(transformedDocuments);
       }
-    };
+    } catch (error) {
+      console.error("Erreur lors du chargement des documents:", error);
+      setDocuments([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    const loadDossierDocuments = () => {
-      if (!isAuthenticated && dossierDocuments.length > 0) {
-        setDocuments(dossierDocuments);
-        setIsLoading(false);
-      }
-    };
-
+  useEffect(() => {
     if (isAuthenticated) {
       loadUserDocuments();
+    } else if (dossierDocuments.length > 0) {
+      setDocuments(dossierDocuments);
+      setIsLoading(false);
     } else {
-      loadDossierDocuments();
+      setIsLoading(false);
     }
   }, [isAuthenticated, user, dossierDocuments]);
-
-  const handleDownload = async (filePath: string, fileName: string) => {
-    try {
-      const { data, error } = await supabase.storage
-        .from('pdf-storage')
-        .download(filePath);
-
-      if (error) throw error;
-
-      const url = URL.createObjectURL(data);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error("Erreur lors du téléchargement:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de télécharger le fichier",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handlePrint = async (filePath: string, contentType?: string) => {
-    try {
-      const { data, error } = await supabase.storage
-        .from('pdf-storage')
-        .download(filePath);
-
-      if (error) throw error;
-
-      const url = URL.createObjectURL(data);
-      const printWindow = window.open(url, '_blank');
-      if (printWindow) {
-        printWindow.onload = () => {
-          printWindow.print();
-        };
-      }
-    } catch (error) {
-      console.error("Erreur lors de l'impression:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible d'imprimer le fichier",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleView = (filePath: string, contentType?: string) => {
-    setPreviewDocument(filePath);
-  };
 
   const handleDelete = async () => {
     if (!documentToDelete) return;
@@ -146,25 +104,24 @@ export const useDirectivesDocuments = () => {
     }
   };
 
-  const confirmDelete = (documentId: string) => {
-    setDocumentToDelete(documentId);
-  };
-
   const handleUploadComplete = () => {
     if (isAuthenticated && user?.id) {
-      window.location.reload();
+      loadUserDocuments();
     }
   };
 
   const handlePreviewDownload = (filePath: string) => {
     const document = documents.find(doc => doc.file_path === filePath);
     if (document) {
-      handleDownload(filePath, document.file_name);
+      handleDownload(document, document.file_name);
     }
   };
 
   const handlePreviewPrint = (filePath: string) => {
-    handlePrint(filePath);
+    const document = documents.find(doc => doc.file_path === filePath);
+    if (document) {
+      handlePrint(document);
+    }
   };
 
   return {
@@ -178,9 +135,24 @@ export const useDirectivesDocuments = () => {
     setPreviewDocument,
     documentToDelete,
     setDocumentToDelete,
-    handleDownload,
-    handlePrint,
-    handleView,
+    handleDownload: (filePath: string, fileName: string) => {
+      const document = documents.find(doc => doc.file_path === filePath);
+      if (document) {
+        handleDownload(document, fileName);
+      }
+    },
+    handlePrint: (filePath: string, contentType?: string) => {
+      const document = documents.find(doc => doc.file_path === filePath);
+      if (document) {
+        handlePrint(document, contentType);
+      }
+    },
+    handleView: (filePath: string, contentType?: string) => {
+      const document = documents.find(doc => doc.file_path === filePath);
+      if (document) {
+        handleView(document, contentType);
+      }
+    },
     handleDelete,
     confirmDelete,
     handleUploadComplete,
