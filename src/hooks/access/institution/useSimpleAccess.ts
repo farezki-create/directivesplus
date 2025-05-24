@@ -71,7 +71,7 @@ export const useSimpleAccess = () => {
         .from('directives')
         .select(`
           *,
-          user_profiles!inner(id, first_name, last_name, birth_date)
+          profiles!inner(id, first_name, last_name, birth_date)
         `)
         .eq('institution_code', formData.accessCode.trim())
         .gt('institution_code_expires_at', new Date().toISOString());
@@ -80,7 +80,7 @@ export const useSimpleAccess = () => {
 
       if (directives && directives.length > 0) {
         const directive = directives[0];
-        const userProfile = directive.user_profiles;
+        const userProfile = directive.profiles;
 
         const successResult: SimpleAccessResult = {
           success: true,

@@ -68,7 +68,7 @@ export const useSimpleCodeAccess = () => {
         .from('directives')
         .select(`
           *,
-          user_profiles!inner(id, first_name, last_name, birth_date)
+          profiles!inner(id, first_name, last_name, birth_date)
         `)
         .eq('institution_code', accessCode.toUpperCase())
         .gt('institution_code_expires_at', new Date().toISOString());
@@ -77,7 +77,7 @@ export const useSimpleCodeAccess = () => {
 
       if (directivesByCode && directivesByCode.length > 0) {
         const directive = directivesByCode[0];
-        const userProfile = directive.user_profiles;
+        const userProfile = directive.profiles;
 
         const result: AccessResult = {
           success: true,
