@@ -4,10 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Shield, AlertCircle, FileText } from "lucide-react";
+import { Shield, AlertCircle, FileText, Clock, User } from "lucide-react";
 import { DocumentCardRefactored } from "./card/DocumentCardRefactored";
 import AppNavigation from "@/components/AppNavigation";
 import { Document } from "@/types/documents";
@@ -19,11 +16,10 @@ interface SharedDocumentData {
   description?: string;
 }
 
-// Type pour les données retournées par Supabase
 interface SupabaseSharedDocument {
   document_id: string;
   document_type: string;
-  document_data: any; // Utiliser any temporairement pour éviter les problèmes de type Json
+  document_data: any;
   user_id: string;
   shared_at: string;
   expires_at?: string;
@@ -35,152 +31,92 @@ interface SupabaseSharedDocument {
 export function MesDirectivesSharedAccess() {
   const [searchParams] = useSearchParams();
   const sharedCode = searchParams.get('shared_code');
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [isVerified, setIsVerified] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [documents, setDocuments] = useState<Document[]>([]);
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    birthDate: ''
-  });
+  const [error, setError] = useState<string | null>(null);
+  const [ownerInfo, setOwnerInfo] = useState<any>(null);
 
-  const handleVerifyAccess = async () => {
-    if (!sharedCode || !formData.firstName || !formData.lastName || !formData.birthDate) {
-      toast({
-        title: "Informations manquantes",
-        description: "Veuillez remplir tous les champs",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setIsVerifying(true);
-    try {
-      console.log("=== DÉBUT VÉRIFICATION ACCÈS ===");
-      console.log("Code de partage:", sharedCode);
-      console.log("Données du formulaire:", formData);
-
-      const { data: sharedDocuments, error } = await supabase
-        .from('shared_documents')
-        .select('*')
-        .eq('access_code', sharedCode)
-        .eq('is_active', true);
-
-      console.log("Résultat de la requête shared_documents:", { sharedDocuments, error });
-
-      if (error) {
-        console.error("Erreur lors de la requête shared_documents:", error);
-        throw new Error(`Erreur de base de données: ${error.message}`);
+  useEffect(() => {
+    const loadSharedDocuments = async () => {
+      if (!sharedCode) {
+        setError("Code de partage manquant dans l'URL");
+        setIsLoading(false);
+        return;
       }
 
-      if (!sharedDocuments || sharedDocuments.length === 0) {
-        console.log("Aucun document partagé trouvé avec ce code");
-        throw new Error("Code d'accès invalide ou expiré");
+      try {
+        console.log("=== ACCÈS DIRECT AUX DOCUMENTS PARTAGÉS ===");
+        console.log("Code de partage:", sharedCode);
+
+        // Récupération directe des documents partagés
+        const { data: sharedDocuments, error } = await supabase
+          .from('shared_documents')
+          .select('*')
+          .eq('access_code', sharedCode)
+          .eq('is_active', true);
+
+        console.log("Documents partagés trouvés:", { sharedDocuments, error });
+
+        if (error) {
+          console.error("Erreur lors de la requête:", error);
+          throw new Error(`Erreur de base de données: ${error.message}`);
+        }
+
+        if (!sharedDocuments || sharedDocuments.length === 0) {
+          throw new Error("Aucun document trouvé avec ce code de partage");
+        }
+
+        // Vérifier que les documents ne sont pas expirés
+        const validDocuments = sharedDocuments.filter(doc => 
+          !doc.expires_at || new Date(doc.expires_at) > new Date()
+        );
+
+        if (validDocuments.length === 0) {
+          throw new Error("Ce lien de partage a expiré");
+        }
+
+        // Récupérer les informations du propriétaire pour affichage
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('first_name, last_name')
+          .eq('id', validDocuments[0].user_id)
+          .single();
+
+        setOwnerInfo(profile);
+
+        // Transformer les documents
+        const transformedDocuments: Document[] = validDocuments.map((sharedDoc: SupabaseSharedDocument) => {
+          const docData = sharedDoc.document_data as SharedDocumentData;
+          return {
+            id: sharedDoc.document_id,
+            user_id: sharedDoc.user_id,
+            file_name: docData.file_name,
+            file_path: docData.file_path,
+            file_type: 'pdf',
+            content_type: docData.content_type || 'application/pdf',
+            created_at: sharedDoc.shared_at,
+            description: docData.description,
+            file_size: null,
+            updated_at: null,
+            external_id: null
+          };
+        });
+
+        setDocuments(transformedDocuments);
+        console.log("Accès direct accordé, documents disponibles:", transformedDocuments.length);
+
+      } catch (error: any) {
+        console.error("Erreur lors du chargement:", error);
+        setError(error.message || "Impossible d'accéder aux documents");
+      } finally {
+        setIsLoading(false);
       }
+    };
 
-      console.log("Documents partagés trouvés:", sharedDocuments.length);
-
-      // Vérifier l'identité avec le profil de l'utilisateur
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', sharedDocuments[0].user_id)
-        .single();
-
-      console.log("Profil utilisateur:", { profile, profileError });
-
-      if (profileError || !profile) {
-        console.error("Erreur lors de la récupération du profil:", profileError);
-        throw new Error("Impossible de vérifier l'identité");
-      }
-
-      // Vérifier que l'identité correspond
-      const firstNameMatch = profile.first_name?.toLowerCase().trim() === formData.firstName.toLowerCase().trim();
-      const lastNameMatch = profile.last_name?.toLowerCase().trim() === formData.lastName.toLowerCase().trim();
-      const birthDateMatch = profile.birth_date === formData.birthDate;
-
-      console.log("Vérification identité:", {
-        firstNameMatch,
-        lastNameMatch,
-        birthDateMatch,
-        profileData: {
-          first_name: profile.first_name,
-          last_name: profile.last_name,
-          birth_date: profile.birth_date
-        },
-        formData
-      });
-
-      if (!firstNameMatch || !lastNameMatch || !birthDateMatch) {
-        throw new Error("Les informations fournies ne correspondent pas");
-      }
-
-      // Vérifier que les documents ne sont pas expirés
-      const validDocuments = sharedDocuments.filter(doc => 
-        !doc.expires_at || new Date(doc.expires_at) > new Date()
-      );
-
-      console.log("Documents valides (non expirés):", validDocuments.length);
-
-      if (validDocuments.length === 0) {
-        throw new Error("Tous les documents partagés ont expiré");
-      }
-
-      // Transformer les documents partagés en format Document avec typage correct
-      const transformedDocuments: Document[] = validDocuments.map((sharedDoc: SupabaseSharedDocument) => {
-        const docData = sharedDoc.document_data as SharedDocumentData;
-        return {
-          id: sharedDoc.document_id,
-          user_id: sharedDoc.user_id,
-          file_name: docData.file_name,
-          file_path: docData.file_path,
-          file_type: 'pdf',
-          content_type: docData.content_type || 'application/pdf',
-          created_at: sharedDoc.shared_at,
-          description: docData.description,
-          file_size: null,
-          updated_at: null,
-          external_id: null
-        };
-      });
-
-      console.log("Documents transformés:", transformedDocuments);
-
-      setDocuments(transformedDocuments);
-      setIsVerified(true);
-      
-      toast({
-        title: "Accès autorisé",
-        description: `${transformedDocuments.length} document(s) disponible(s)`,
-      });
-
-      console.log("=== FIN VÉRIFICATION ACCÈS (SUCCÈS) ===");
-
-    } catch (error: any) {
-      console.error("=== ERREUR LORS DE LA VÉRIFICATION ===");
-      console.error("Erreur complète:", error);
-      console.error("Message d'erreur:", error.message);
-      toast({
-        title: "Accès refusé",
-        description: error.message || "Impossible de vérifier l'accès",
-        variant: "destructive"
-      });
-    } finally {
-      setIsVerifying(false);
-    }
-  };
-
-  const handleDocumentAction = (action: string) => {
-    // Actions limitées en mode lecture seule
-    toast({
-      title: "Action non disponible",
-      description: "Seule la consultation est autorisée via ce lien de partage",
-      variant: "destructive"
-    });
-  };
+    loadSharedDocuments();
+  }, [sharedCode]);
 
   const handleDocumentDownload = (filePath: string, fileName: string) => {
-    // Permettre le téléchargement
     const link = window.document.createElement('a');
     link.href = filePath;
     link.download = fileName;
@@ -188,10 +124,14 @@ export function MesDirectivesSharedAccess() {
     window.document.body.appendChild(link);
     link.click();
     window.document.body.removeChild(link);
+    
+    toast({
+      title: "Téléchargement commencé",
+      description: `${fileName} est en cours de téléchargement`,
+    });
   };
 
   const handleDocumentPrint = (filePath: string) => {
-    // Permettre l'impression
     const printWindow = window.open(filePath, '_blank');
     if (printWindow) {
       printWindow.onload = () => {
@@ -201,8 +141,15 @@ export function MesDirectivesSharedAccess() {
   };
 
   const handleDocumentView = (filePath: string) => {
-    // Permettre la visualisation
     window.open(filePath, '_blank');
+  };
+
+  const handleRestrictedAction = () => {
+    toast({
+      title: "Action non disponible",
+      description: "Seules la consultation, l'impression et le téléchargement sont autorisées",
+      variant: "destructive"
+    });
   };
 
   if (!sharedCode) {
@@ -214,12 +161,12 @@ export function MesDirectivesSharedAccess() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-red-600">
                 <AlertCircle size={20} />
-                Code manquant
+                Lien invalide
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-gray-600">
-                Aucun code de partage n'a été fourni dans l'URL.
+                Le lien de partage semble être incomplet ou invalide.
               </p>
             </CardContent>
           </Card>
@@ -228,66 +175,34 @@ export function MesDirectivesSharedAccess() {
     );
   }
 
-  if (!isVerified) {
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="text-gray-600">Chargement des directives anticipées...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
     return (
       <div className="min-h-screen bg-gray-50">
         <AppNavigation hideEditingFeatures={true} />
         <div className="container mx-auto px-4 py-8">
           <Card className="max-w-md mx-auto">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shield size={20} />
-                Accès sécurisé aux directives
+              <CardTitle className="flex items-center gap-2 text-red-600">
+                <AlertCircle size={20} />
+                Accès impossible
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-gray-600">
-                Pour accéder aux documents partagés, veuillez confirmer votre identité :
-              </p>
-              
-              <div className="space-y-3">
-                <div>
-                  <Label htmlFor="firstName">Prénom</Label>
-                  <Input
-                    id="firstName"
-                    value={formData.firstName}
-                    onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
-                    placeholder="Votre prénom"
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="lastName">Nom de famille</Label>
-                  <Input
-                    id="lastName"
-                    value={formData.lastName}
-                    onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
-                    placeholder="Votre nom de famille"
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="birthDate">Date de naissance</Label>
-                  <Input
-                    id="birthDate"
-                    type="date"
-                    value={formData.birthDate}
-                    onChange={(e) => setFormData(prev => ({ ...prev, birthDate: e.target.value }))}
-                  />
-                </div>
-              </div>
-
-              <Button 
-                onClick={handleVerifyAccess} 
-                disabled={isVerifying}
-                className="w-full"
-              >
-                {isVerifying ? "Vérification..." : "Accéder aux documents"}
-              </Button>
-
+            <CardContent>
+              <p className="text-gray-600 mb-4">{error}</p>
               <div className="p-3 bg-blue-50 rounded-lg">
                 <p className="text-xs text-blue-800">
-                  🔒 Vos informations sont utilisées uniquement pour vérifier votre identité et ne sont pas stockées.
+                  Ce lien peut avoir expiré ou être invalide. Contactez la personne qui vous a partagé ces directives pour obtenir un nouveau lien.
                 </p>
               </div>
             </CardContent>
@@ -302,15 +217,46 @@ export function MesDirectivesSharedAccess() {
       <AppNavigation hideEditingFeatures={true} />
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
+          {/* Header avec informations */}
           <div className="mb-6 text-center">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              Documents partagés
-            </h1>
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <Shield className="h-6 w-6 text-green-600" />
+              <h1 className="text-2xl font-bold text-gray-900">
+                Directives anticipées
+              </h1>
+            </div>
+            
+            {ownerInfo && (
+              <div className="flex items-center justify-center gap-2 text-gray-600 mb-2">
+                <User className="h-4 w-4" />
+                <span>{ownerInfo.first_name} {ownerInfo.last_name}</span>
+              </div>
+            )}
+            
             <p className="text-gray-600">
-              Vous consultez {documents.length} document(s) en mode lecture seule
+              Accès en consultation seulement • {documents.length} document(s) disponible(s)
             </p>
           </div>
 
+          {/* Alerte d'urgence */}
+          <Card className="mb-6 border-red-200 bg-red-50">
+            <CardContent className="pt-6">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
+                <div>
+                  <h3 className="font-medium text-red-900 mb-1">
+                    ⚠️ Document d'urgence médicale
+                  </h3>
+                  <p className="text-sm text-red-800">
+                    Ces directives anticipées contiennent des informations importantes sur les volontés 
+                    de la personne concernant ses soins médicaux en cas d'incapacité à s'exprimer.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Liste des documents */}
           {documents.length === 0 ? (
             <Card>
               <CardContent className="text-center py-8">
@@ -327,13 +273,31 @@ export function MesDirectivesSharedAccess() {
                   onDownload={handleDocumentDownload}
                   onPrint={handleDocumentPrint}
                   onView={handleDocumentView}
-                  onDelete={() => handleDocumentAction('delete')}
+                  onDelete={handleRestrictedAction}
                   showPrint={true}
                   showShare={false}
                 />
               ))}
             </div>
           )}
+
+          {/* Footer informatif */}
+          <Card className="mt-6 bg-blue-50 border-blue-200">
+            <CardContent className="pt-6">
+              <div className="flex items-start gap-3">
+                <Clock className="h-5 w-5 text-blue-600 mt-0.5" />
+                <div>
+                  <h3 className="font-medium text-blue-900 mb-1">
+                    Accès temporaire
+                  </h3>
+                  <p className="text-sm text-blue-800">
+                    Ce lien de partage est valable pendant 30 jours. Aucune identification n'est requise 
+                    pour faciliter l'accès en situation d'urgence.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

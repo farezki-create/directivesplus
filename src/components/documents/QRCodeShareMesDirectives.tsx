@@ -14,7 +14,7 @@ interface QRCodeShareMesDirectivesProps {
 
 export function QRCodeShareMesDirectives({ sharedCode, onClose }: QRCodeShareMesDirectivesProps) {
   const baseUrl = window.location.origin;
-  // Modifier l'URL pour pointer vers la page de partage spécifique
+  // Utiliser un lien direct sans nécessiter de saisie manuelle
   const url = `${baseUrl}/partage/${sharedCode}`;
   const [copied, setCopied] = useState(false);
 
@@ -45,7 +45,7 @@ export function QRCodeShareMesDirectives({ sharedCode, onClose }: QRCodeShareMes
       <CardHeader className="text-center pb-4">
         <CardTitle className="flex items-center justify-center gap-2">
           <QrCode className="h-5 w-5" />
-          Lien d'accès au document
+          Accès direct aux directives
         </CardTitle>
       </CardHeader>
       
@@ -55,7 +55,7 @@ export function QRCodeShareMesDirectives({ sharedCode, onClose }: QRCodeShareMes
         </div>
         
         <div className="space-y-2">
-          <label className="text-sm font-medium">Lien de partage :</label>
+          <label className="text-sm font-medium">Lien d'accès direct :</label>
           <div className="flex items-center gap-2">
             <Input 
               value={url} 
@@ -87,11 +87,22 @@ export function QRCodeShareMesDirectives({ sharedCode, onClose }: QRCodeShareMes
 
         <div className="p-3 bg-blue-50 rounded-lg">
           <p className="text-sm text-blue-800 font-medium mb-1">
-            🔒 Accès sécurisé
+            🔒 Accès direct sécurisé
           </p>
           <p className="text-xs text-blue-700">
-            Ce lien donne accès uniquement à ce document spécifique.
-            L'accès expirera automatiquement dans 30 jours.
+            Scanner le QR code ou cliquer sur le lien donne un accès immédiat aux directives.
+            Idéal pour les situations d'urgence médicale.
+          </p>
+        </div>
+
+        <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+          <p className="text-sm text-green-800 font-medium mb-1">
+            ⚡ Usage recommandé
+          </p>
+          <p className="text-xs text-green-700">
+            • Gardez ce QR code dans votre portefeuille<br/>
+            • Collez-le sur votre frigo ou tableau de bord<br/>
+            • Partagez le lien avec vos proches et médecins
           </p>
         </div>
       </CardContent>
