@@ -5,9 +5,6 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Eye, Download, Printer, Trash2, FolderPlus, FileText, Lock, Unlock, QrCode } from "lucide-react";
 import { Document } from "@/types/documents";
 import QRCodeModal from "@/components/documents/QRCodeModal";
-import { generateShareCode } from "@/utils/shareCodeGenerator";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
 
 interface DocumentCardRefactoredProps {
   document: Document;
@@ -34,8 +31,7 @@ export const DocumentCardRefactored: React.FC<DocumentCardRefactoredProps> = ({
   showShare = false,
   isAddingToShared = false
 }) => {
-  const [shareCode, setShareCode] = useState<string | null>(null);
-  const [isGeneratingShareCode, setIsGeneratingShareCode] = useState(false);
+  const [selectedDocumentForQR, setSelectedDocumentForQR] = useState<string | null>(null);
 
   const getDocumentIcon = () => {
     switch (document.file_type) {
@@ -50,70 +46,8 @@ export const DocumentCardRefactored: React.FC<DocumentCardRefactoredProps> = ({
     }
   };
 
-  const handleGenerateQRCode = async () => {
-    console.log("=== DÉBUT GÉNÉRATION QR CODE ===");
-    console.log("Document:", document);
-    
-    setIsGeneratingShareCode(true);
-    try {
-      const newShareCode = generateShareCode();
-      console.log("Code de partage généré:", newShareCode);
-      
-      // Utiliser "pdf_document" comme type de document pour tous les documents PDF
-      const documentType = 'pdf_document';
-      
-      // Préparer les données à insérer
-      const insertData = {
-        document_id: document.id,
-        user_id: document.user_id,
-        document_type: documentType,
-        document_data: {
-          file_name: document.file_name,
-          file_path: document.file_path,
-          content_type: document.content_type,
-          description: document.description
-        },
-        access_code: newShareCode,
-        expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // Expire dans 30 jours
-      };
-      
-      console.log("Données à insérer dans shared_documents:", insertData);
-
-      const { data, error } = await supabase
-        .from('shared_documents')
-        .insert(insertData)
-        .select();
-
-      console.log("Résultat de l'insertion:", { data, error });
-
-      if (error) {
-        console.error("Erreur détaillée:", error);
-        throw error;
-      }
-
-      console.log("Document partagé créé avec succès:", data);
-      setShareCode(newShareCode);
-      
-      toast({
-        title: "Code QR généré",
-        description: "Le code de partage a été créé avec succès",
-      });
-    } catch (error: any) {
-      console.error("=== ERREUR LORS DE LA GÉNÉRATION DU CODE QR ===");
-      console.error("Type d'erreur:", typeof error);
-      console.error("Erreur complète:", error);
-      console.error("Message d'erreur:", error?.message);
-      console.error("Détails de l'erreur:", JSON.stringify(error, null, 2));
-      
-      toast({
-        title: "Erreur",
-        description: `Impossible de générer le code de partage: ${error?.message || 'Erreur inconnue'}`,
-        variant: "destructive"
-      });
-    } finally {
-      setIsGeneratingShareCode(false);
-      console.log("=== FIN GÉNÉRATION QR CODE ===");
-    }
+  const handleGenerateQRCode = () => {
+    setSelectedDocumentForQR(document.id);
   };
 
   return (
@@ -172,11 +106,10 @@ export const DocumentCardRefactored: React.FC<DocumentCardRefactoredProps> = ({
               variant="outline"
               size="sm"
               onClick={handleGenerateQRCode}
-              disabled={isGeneratingShareCode}
               className="flex items-center gap-1"
             >
               <QrCode size={16} />
-              {isGeneratingShareCode ? "Génération..." : "QR Code"}
+              QR Code
             </Button>
 
             {onAddToSharedFolder && (
@@ -206,8 +139,8 @@ export const DocumentCardRefactored: React.FC<DocumentCardRefactoredProps> = ({
       </Card>
 
       <QRCodeModal
-        sharedCode={shareCode}
-        onOpenChange={(open) => !open && setShareCode(null)}
+        documentId={selectedDocumentForQR}
+        onOpenChange={(open) => !open && setSelectedDocumentForQR(null)}
         documentName={document.file_name}
       />
     </>

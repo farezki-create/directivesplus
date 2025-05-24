@@ -1,30 +1,32 @@
 
 import React from "react";
+import { User } from "@supabase/supabase-js";
 import AppNavigation from "@/components/AppNavigation";
 import DirectivesPageHeader from "@/components/documents/DirectivesPageHeader";
+import DirectivesPageContent from "@/components/documents/DirectivesPageContent";
 import DirectivesAddDocumentSection from "@/components/documents/DirectivesAddDocumentSection";
-import DirectivesDocumentList from "@/components/documents/DirectivesDocumentList";
-import DeleteConfirmationDialog from "@/components/documents/DeleteConfirmationDialog";
+import DirectivesQRCodeSection from "@/components/documents/DirectivesQRCodeSection";
 import DocumentPreviewDialog from "@/components/documents/DocumentPreviewDialog";
-import { Document } from "@/hooks/useDirectivesDocuments";
+import DeleteConfirmationDialog from "@/components/documents/DeleteConfirmationDialog";
+import { Document } from "@/types/documents";
 
 interface AuthenticatedDirectivesViewProps {
-  user: any;
+  user: User | null;
   profile: any;
   documents: Document[];
   showAddOptions: boolean;
   setShowAddOptions: (show: boolean) => void;
   onUploadComplete: () => void;
   onDownload: (filePath: string, fileName: string) => void;
-  onPrint: (filePath: string, contentType?: string) => void;
-  onView: (filePath: string, contentType?: string) => void;
+  onPrint: (filePath: string, fileType?: string) => void;
+  onView: (filePath: string, fileType?: string) => void;
   documentToDelete: string | null;
   setDocumentToDelete: (id: string | null) => void;
-  handleDelete: () => Promise<void>;
-  previewDocument: string | null;
-  setPreviewDocument: (path: string | null) => void;
-  handlePreviewDownload: (filePath: string) => void;
-  handlePreviewPrint: (filePath: string) => void;
+  handleDelete: (id: string) => void;
+  previewDocument: Document | null;
+  setPreviewDocument: (doc: Document | null) => void;
+  handlePreviewDownload: (filePath: string, fileName: string) => void;
+  handlePreviewPrint: (filePath: string, fileType?: string) => void;
 }
 
 const AuthenticatedDirectivesView: React.FC<AuthenticatedDirectivesViewProps> = ({
@@ -43,85 +45,55 @@ const AuthenticatedDirectivesView: React.FC<AuthenticatedDirectivesViewProps> = 
   previewDocument,
   setPreviewDocument,
   handlePreviewDownload,
-  handlePreviewPrint,
+  handlePreviewPrint
 }) => {
-  
-  const handleAddDocumentClick = () => {
-    console.log("Bouton Ajouter un document cliqué - État actuel:", showAddOptions);
-    const newState = !showAddOptions;
-    console.log("Nouveau état showAddOptions:", newState);
-    setShowAddOptions(newState);
-  };
-
-  const handleDeleteAllDocuments = documents.length > 0 ? () => {
-    console.log("Demande de suppression de tous les documents");
-    // Cette fonction serait implémentée dans le composant parent
-  } : undefined;
-
-  console.log("AuthenticatedDirectivesView - rendu avec showAddOptions:", showAddOptions);
-  console.log("AuthenticatedDirectivesView - user:", !!user);
-
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen bg-gray-50">
       <AppNavigation />
-      
-      <main className="flex-grow container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <DirectivesPageHeader 
-            onAddDocument={handleAddDocumentClick}
-            onDeleteAllDocuments={handleDeleteAllDocuments}
-            documentsCount={documents.length}
-          />
+      <div className="container mx-auto px-4 py-8">
+        <DirectivesPageHeader
+          onAddDocument={() => setShowAddOptions(true)}
+          documentsCount={documents.length}
+        />
 
-          {showAddOptions && user && (
-            <div className="mb-8">
-              <div className="p-4 border border-gray-200 rounded-lg bg-gray-50">
-                <h3 className="text-lg font-medium mb-4">Ajouter un document</h3>
-                <DirectivesAddDocumentSection
-                  userId={user.id}
-                  onUploadComplete={(url: string, fileName: string, isPrivate: boolean) => {
-                    console.log("Document uploadé:", fileName);
-                    onUploadComplete();
-                    setShowAddOptions(false); // Fermer la section après upload
-                  }}
-                />
-              </div>
-            </div>
-          )}
-          
-          <DirectivesDocumentList
-            documents={documents}
-            onDownload={onDownload}
-            onPrint={onPrint}
-            onView={onView}
-            onDelete={setDocumentToDelete}
-            isAuthenticated={true}
-          />
-        </div>
-      </main>
-      
-      <DeleteConfirmationDialog 
-        documentId={documentToDelete}
-        onOpenChange={(open) => {
-          if (!open) setDocumentToDelete(null);
-        }}
-        onConfirmDelete={handleDelete}
-      />
+        <DirectivesQRCodeSection documents={documents} />
 
-      <DocumentPreviewDialog 
-        filePath={previewDocument} 
-        onOpenChange={(open) => {
-          if (!open) setPreviewDocument(null);
-        }}
-        onDownload={handlePreviewDownload}
-        onPrint={handlePreviewPrint}
-      />
-      
-      <footer className="bg-white py-6 border-t">
-        <div className="container mx-auto px-4 text-center text-gray-500">
-          <p>© 2025 DirectivesPlus. Tous droits réservés.</p>
-        </div>
-      </footer>
+        <DirectivesPageContent
+          documents={documents}
+          userId={user?.id}
+          onUploadComplete={onUploadComplete}
+          onDownload={onDownload}
+          onPrint={onPrint}
+          onView={onView}
+          onDelete={setDocumentToDelete}
+          profile={profile}
+        />
+
+        <DirectivesAddDocumentSection
+          showAddOptions={showAddOptions}
+          setShowAddOptions={setShowAddOptions}
+          onUploadComplete={onUploadComplete}
+        />
+
+        <DocumentPreviewDialog
+          document={previewDocument}
+          onClose={() => setPreviewDocument(null)}
+          onDownload={handlePreviewDownload}
+          onPrint={handlePreviewPrint}
+        />
+
+        <DeleteConfirmationDialog
+          isOpen={!!documentToDelete}
+          onClose={() => setDocumentToDelete(null)}
+          onConfirm={() => {
+            if (documentToDelete) {
+              handleDelete(documentToDelete);
+              setDocumentToDelete(null);
+            }
+          }}
+          documentName={documents.find(d => d.id === documentToDelete)?.file_name || "ce document"}
+        />
+      </div>
     </div>
   );
 };

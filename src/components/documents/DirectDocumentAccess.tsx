@@ -8,6 +8,12 @@ import { Shield, AlertCircle, FileText, Clock, User, Download, Eye, Printer } fr
 import { Button } from "@/components/ui/button";
 import AppNavigation from "@/components/AppNavigation";
 
+interface DirectiveContent {
+  title?: string;
+  titre?: string;
+  [key: string]: any;
+}
+
 export function DirectDocumentAccess() {
   const { documentId } = useParams<{ documentId: string }>();
   const [isLoading, setIsLoading] = useState(true);
@@ -50,9 +56,10 @@ export function DirectDocumentAccess() {
             throw new Error("Document non trouvé");
           }
 
+          const content = directiveDoc.content as DirectiveContent;
           setDocument({
             ...directiveDoc,
-            file_name: directiveDoc.content?.title || directiveDoc.content?.titre || 'Directive anticipée',
+            file_name: content?.title || content?.titre || 'Directive anticipée',
             file_path: `/directive/${directiveDoc.id}`,
             content_type: 'application/json',
             isDirective: true
