@@ -47,6 +47,36 @@ export const validateInstitutionCodes = async (institutionCode: string) => {
   return allValidCodes;
 };
 
+// Fonction utilitaire pour normaliser les dates
+const normalizeBirthDate = (dateValue: any): string => {
+  if (!dateValue) {
+    return '';
+  }
+  
+  // Si c'est déjà une string au bon format
+  if (typeof dateValue === 'string') {
+    // Extraire seulement la partie date si c'est un timestamp ISO
+    return dateValue.includes('T') ? dateValue.split('T')[0] : dateValue;
+  }
+  
+  // Si c'est un objet Date
+  if (dateValue instanceof Date && !isNaN(dateValue.getTime())) {
+    return dateValue.toISOString().split('T')[0];
+  }
+  
+  // Essayer de créer une Date à partir de la valeur
+  try {
+    const date = new Date(dateValue);
+    if (!isNaN(date.getTime())) {
+      return date.toISOString().split('T')[0];
+    }
+  } catch (error) {
+    console.warn("Could not parse date value:", dateValue);
+  }
+  
+  return '';
+};
+
 export const validateProfileMatches = async (
   validCodes: any[],
   cleanedValues: CleanedValues
@@ -88,16 +118,8 @@ export const validateProfileMatches = async (
     foundProfiles++;
     console.log("Profile found:", profile);
 
-    // Normalisation et conversion de la date
-    let profileBirthDate = profile.birth_date;
-    if (profileBirthDate) {
-      // S'assurer que la date est au format YYYY-MM-DD
-      if (typeof profileBirthDate === 'string') {
-        profileBirthDate = profileBirthDate.split('T')[0];
-      } else if (profileBirthDate instanceof Date) {
-        profileBirthDate = profileBirthDate.toISOString().split('T')[0];
-      }
-    }
+    // Normalisation de la date avec la nouvelle fonction
+    const profileBirthDate = normalizeBirthDate(profile.birth_date);
 
     console.log("=== DETAILED COMPARISON ===");
     console.log("Input data:", {
