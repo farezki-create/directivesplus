@@ -13,6 +13,7 @@ export interface AccessCodeOptions {
   expiresInDays?: number;
   accessType?: 'global' | 'institution' | 'personal';
   description?: string;
+  requirePersonalInfo?: boolean;
 }
 
 export interface AccessValidationResult {

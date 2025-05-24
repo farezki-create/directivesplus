@@ -10,6 +10,18 @@ import type {
 } from "@/types/accessCode";
 
 /**
+ * Génère un code aléatoire de la longueur spécifiée
+ */
+export const generateRandomCode = (length: number = 8): string => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+};
+
+/**
  * Hook unifié et simplifié pour la gestion des codes d'accès
  */
 export const useAccessCode = () => {
