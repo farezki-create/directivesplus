@@ -1,4 +1,3 @@
-
 import { useDirectivesDocuments } from "@/hooks/useDirectivesDocuments";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePublicDirectivesAccess } from "@/hooks/usePublicDirectivesAccess";
@@ -15,12 +14,12 @@ import { useDossierStore } from "@/store/dossierStore";
 
 const DirectivesDocs = () => {
   const { user, profile, isAuthenticated, isLoading: authLoading } = useAuth();
-  const { clearDossier } = useDossierStore();
+  const { clearDossierActif } = useDossierStore();
   
   // Clear any existing dossier data on component mount to force fresh access
   useEffect(() => {
-    clearDossier();
-  }, [clearDossier]);
+    clearDossierActif();
+  }, [clearDossierActif]);
   
   const { 
     publicAccessVerified, 
