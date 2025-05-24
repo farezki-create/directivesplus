@@ -1,5 +1,5 @@
 
-import { validateInstitutionAccessWithProfiles, createTestProfileAndDirective } from "@/utils/institution-access/simpleValidator";
+import { validateInstitutionAccess, createBasicTestData } from "@/utils/institution-access/basicValidator";
 
 export interface InstitutionAccessFormValues {
   lastName: string;
@@ -11,14 +11,14 @@ export interface InstitutionAccessFormValues {
 export const useSimpleInstitutionValidation = () => {
   
   const validateAccess = async (values: InstitutionAccessFormValues) => {
-    console.log("=== VALIDATION SIMPLE ===");
+    console.log("=== VALIDATION SIMPLE NOUVELLE VERSION ===");
     console.log("Valeurs:", values);
     
     // Essayer de créer les données de test
-    await createTestProfileAndDirective();
+    await createBasicTestData();
     
     try {
-      const profiles = await validateInstitutionAccessWithProfiles(
+      const profiles = await validateInstitutionAccess(
         values.lastName,
         values.firstName,
         values.birthDate,

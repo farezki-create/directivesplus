@@ -7,7 +7,7 @@ export const validateInstitutionAccessWithProfiles = async (
   birthDate: string,
   institutionCode: string
 ) => {
-  console.log("=== VALIDATION SIMPLE AVEC TABLES EXISTANTES ===");
+  console.log("=== VALIDATION AVEC TABLES EXISTANTES ===");
   console.log("Données:", { lastName, firstName, birthDate, institutionCode });
   
   try {
