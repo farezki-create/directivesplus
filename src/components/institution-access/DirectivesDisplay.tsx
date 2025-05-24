@@ -1,8 +1,9 @@
 
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, Download, Eye } from "lucide-react";
+import { FileText, Download, Eye, Calendar, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 interface DirectiveDocument {
   id: string;
@@ -18,8 +19,7 @@ interface DirectiveRecord {
   id: string;
   user_id: string;
   content: {
-    documents?: DirectiveDocument[];
-    [key: string]: any;
+    documents: DirectiveDocument[];
   };
   created_at: string;
 }
@@ -29,11 +29,14 @@ interface DirectivesDisplayProps {
 }
 
 export const DirectivesDisplay: React.FC<DirectivesDisplayProps> = ({ documents }) => {
+  console.log("DirectivesDisplay - Received documents:", documents);
+
   if (documents.length === 0) {
     return null;
   }
 
   const handleDownload = (filePath: string, fileName: string) => {
+    console.log("Downloading document:", { filePath, fileName });
     const link = document.createElement('a');
     link.href = filePath;
     link.download = fileName;
@@ -44,63 +47,114 @@ export const DirectivesDisplay: React.FC<DirectivesDisplayProps> = ({ documents 
   };
 
   const handleView = (filePath: string) => {
+    console.log("Viewing document:", filePath);
     window.open(filePath, '_blank');
   };
 
+  const formatFileSize = (filePath: string) => {
+    // Essayer d'extraire la taille depuis le chemin ou retourner une valeur par défaut
+    return "PDF";
+  };
+
+  // Extraire tous les documents de tous les records
+  const allDocuments = documents.reduce((acc, record) => {
+    if (record.content?.documents) {
+      return [...acc, ...record.content.documents];
+    }
+    return acc;
+  }, [] as DirectiveDocument[]);
+
+  console.log("All extracted documents:", allDocuments);
+
   return (
     <div className="mt-6 space-y-4">
-      <h3 className="text-lg font-semibold text-green-800 mb-4">
-        Directives anticipées trouvées
-      </h3>
+      <div className="flex items-center gap-2 mb-4">
+        <User className="h-5 w-5 text-green-600" />
+        <h3 className="text-lg font-semibold text-green-800">
+          Documents trouvés ({allDocuments.length})
+        </h3>
+      </div>
       
-      {documents.map((record) => {
-        const docs = record.content.documents || [];
-        
-        return (
-          <div key={record.id} className="space-y-3">
-            {docs.map((doc) => (
-              <Card key={doc.id} className="border-green-200">
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <FileText className="h-5 w-5 text-green-600" />
-                    {doc.file_name}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm text-gray-600">
-                      <p>Créé le: {new Date(doc.created_at).toLocaleDateString('fr-FR')}</p>
+      {allDocuments.length === 0 ? (
+        <Card className="border-amber-200 bg-amber-50">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3 text-amber-800">
+              <FileText className="h-6 w-6" />
+              <div>
+                <p className="font-medium">Aucun document trouvé</p>
+                <p className="text-sm">Ce patient n'a pas encore uploadé de documents PDF.</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-4">
+          {allDocuments.map((doc, index) => (
+            <Card key={`${doc.id}-${index}`} className="border-green-200 hover:shadow-md transition-shadow">
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <FileText className="h-6 w-6 text-green-600 flex-shrink-0" />
+                    <div>
+                      <CardTitle className="text-base font-medium text-gray-900">
+                        {doc.file_name}
+                      </CardTitle>
                       {doc.description && (
-                        <p className="mt-1">{doc.description}</p>
+                        <p className="text-sm text-gray-600 mt-1">{doc.description}</p>
                       )}
                     </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleView(doc.file_path)}
-                        className="flex items-center gap-1"
-                      >
-                        <Eye className="h-4 w-4" />
-                        Voir
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDownload(doc.file_path, doc.file_name)}
-                        className="flex items-center gap-1"
-                      >
-                        <Download className="h-4 w-4" />
-                        Télécharger
-                      </Button>
-                    </div>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        );
-      })}
+                  <Badge variant="secondary" className="bg-green-100 text-green-800">
+                    {formatFileSize(doc.file_path)}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4 text-sm text-gray-600">
+                    <div className="flex items-center gap-1">
+                      <Calendar className="h-4 w-4" />
+                      <span>Créé le {new Date(doc.created_at).toLocaleDateString('fr-FR')}</span>
+                    </div>
+                    {doc.content_type && (
+                      <Badge variant="outline" className="text-xs">
+                        {doc.content_type}
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleView(doc.file_path)}
+                      className="flex items-center gap-1 text-green-600 border-green-200 hover:bg-green-50"
+                    >
+                      <Eye className="h-4 w-4" />
+                      Consulter
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDownload(doc.file_path, doc.file_name)}
+                      className="flex items-center gap-1 text-blue-600 border-blue-200 hover:bg-blue-50"
+                    >
+                      <Download className="h-4 w-4" />
+                      Télécharger
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+      
+      <div className="mt-6 p-4 bg-gray-50 rounded-lg border">
+        <p className="text-sm text-gray-600">
+          <strong>Information :</strong> Cet accès a été journalisé pour des raisons de sécurité et de traçabilité. 
+          Tous les documents affichés appartiennent au patient dont les informations ont été vérifiées.
+        </p>
+      </div>
     </div>
   );
 };

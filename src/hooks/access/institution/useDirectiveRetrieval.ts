@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 interface CleanedValues {
@@ -28,9 +27,10 @@ interface DirectiveDocument {
 interface DirectiveRecord {
   id: string;
   user_id: string;
-  content: any;
+  content: {
+    documents: DirectiveDocument[];
+  };
   created_at: string;
-  documents?: DirectiveDocument[];
 }
 
 // Fonction pour normaliser les chaînes de caractères
@@ -108,7 +108,7 @@ export const retrieveDirectivesByInstitutionCode = async (
   for (const codeData of allValidCodes) {
     console.log("=== Checking user profile for user_id:", codeData.user_id, "===");
     
-    // Récupérer le profil de l'utilisateur avec maybeSingle() pour éviter l'erreur
+    // Récupérer le profil de l'utilisateur
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('first_name, last_name, birth_date')
@@ -155,30 +155,37 @@ export const retrieveDirectivesByInstitutionCode = async (
     if (lastNameMatch && firstNameMatch && birthDateMatch) {
       console.log("=== PROFILE MATCH FOUND! ===");
       
-      // Chercher les documents PDF pour cet utilisateur
+      // Récupérer TOUS les documents PDF pour cet utilisateur
       const { data: documentsData, error: documentsError } = await supabase
         .from('pdf_documents')
-        .select('*')
-        .eq('user_id', codeData.user_id);
+        .select('id, file_name, file_path, created_at, description, content_type, user_id')
+        .eq('user_id', codeData.user_id)
+        .order('created_at', { ascending: false });
 
       if (documentsError) {
         console.error("Error fetching documents:", documentsError);
         continue;
       }
 
-      console.log("Documents found:", documentsData?.length || 0);
-
+      console.log("PDF Documents found:", documentsData?.length || 0);
       if (documentsData && documentsData.length > 0) {
-        console.log("=== RETURNING DOCUMENTS ===");
-        return [{
-          id: codeData.id,
-          user_id: codeData.user_id,
-          content: { documents: documentsData },
-          created_at: documentsData[0].created_at
-        }];
-      } else {
-        console.log("No documents found for this user");
+        console.log("Documents details:", documentsData);
       }
+
+      // Retourner les documents dans le format attendu par DirectivesDisplay
+      const directiveRecord: DirectiveRecord = {
+        id: codeData.id,
+        user_id: codeData.user_id,
+        content: {
+          documents: documentsData || []
+        },
+        created_at: documentsData && documentsData.length > 0 ? documentsData[0].created_at : new Date().toISOString()
+      };
+
+      console.log("=== RETURNING DIRECTIVE RECORD ===");
+      console.log("Directive record:", directiveRecord);
+      
+      return [directiveRecord];
     }
   }
 
