@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import { useDossierStore } from "@/store/dossierStore";
-import { SharingService } from "@/hooks/sharing/core/sharingService";
+import { SharingService } from "@/services/sharingService";
 
 interface AccessFormData {
   accessCode: string;
@@ -44,7 +44,6 @@ export const useSharedDocumentsAccess = () => {
       if (validationResult.success && validationResult.documents) {
         const documents = validationResult.documents;
         
-        // Créer un dossier temporaire avec les documents partagés
         const firstDoc = documents[0];
         const dossier = {
           id: `shared-access-${formData.accessCode}`,

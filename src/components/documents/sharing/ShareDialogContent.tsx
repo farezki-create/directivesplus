@@ -1,9 +1,10 @@
+
 import React from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { FolderPlus, Check } from "lucide-react";
 import { ShareDialogActions } from "./ShareDialogActions";
-import type { ShareableDocument } from "@/hooks/sharing/types";
+import type { ShareableDocument } from "@/types/sharing";
 
 interface ShareDialogContentProps {
   document: ShareableDocument;

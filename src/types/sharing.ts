@@ -1,13 +1,20 @@
 
-// Types unifiés pour le système de partage
+/**
+ * Types unifiés pour le système de partage
+ */
+
+export type DocumentSource = 'pdf_documents' | 'directives' | 'medical_documents';
+export type DocumentType = 'directive' | 'pdf' | 'medical';
+export type AccessType = 'personal' | 'institution' | 'public';
+
 export interface ShareableDocument {
   id: string;
   file_name: string;
-  file_path: string; // Obligatoire pour compatibilité
+  file_path: string;
   created_at: string;
   user_id: string;
-  file_type: 'directive' | 'pdf' | 'medical';
-  source: 'directives' | 'pdf_documents' | 'medical_documents';
+  file_type: DocumentType;
+  source: DocumentSource;
   content?: any;
   description?: string;
   content_type?: string;
@@ -19,7 +26,8 @@ export interface ShareableDocument {
 
 export interface ShareOptions {
   expiresInDays?: number;
-  accessType?: 'personal' | 'institution';
+  accessType?: AccessType;
+  requirePersonalInfo?: boolean;
 }
 
 export interface SharingResult {
@@ -31,27 +39,18 @@ export interface SharingResult {
 export interface AccessValidationResult {
   success: boolean;
   documents?: ShareableDocument[];
-  error?: string;
   message?: string;
-  patientData?: {
-    user_id: string;
-    first_name?: string;
-    last_name?: string;
-    birth_date?: string;
-  };
+  error?: string;
 }
-
-// Alias pour compatibilité avec AccessCodeValidationResult
-export type AccessCodeValidationResult = AccessValidationResult;
 
 export interface SharedDocument {
   id: string;
-  access_code: string;
+  user_id: string;
   document_id: string;
   document_type: string;
   document_data: any;
-  user_id: string;
+  access_code: string;
+  expires_at: string | null;
   shared_at: string;
-  expires_at?: string;
   is_active: boolean;
 }

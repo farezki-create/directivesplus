@@ -1,11 +1,14 @@
 
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
-import { SharingService } from "./core/sharingService";
-import type { ShareableDocument, ShareOptions } from "./types";
+import { SharingService } from "@/services/sharingService";
+import type { ShareableDocument, AccessValidationResult } from "@/types/sharing";
+
+// Re-export types for backward compatibility
+export type { ShareableDocument } from "@/types/sharing";
 
 /**
- * Hook simplifié pour toutes les opérations de partage
+ * Hook unifié pour la gestion du partage
  */
 export const useSharing = () => {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -14,39 +17,37 @@ export const useSharing = () => {
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  /**
+   * Génère un code d'accès personnel
+   */
   const generatePersonalCode = async (
     document: ShareableDocument,
-    options: ShareOptions = {}
+    options: { expiresInDays?: number } = {}
   ): Promise<string | null> => {
     setIsGenerating(true);
     setError(null);
     
     try {
       const result = await SharingService.generateAccessCode(document, {
-        ...options,
+        expiresInDays: options.expiresInDays || 365,
         accessType: 'personal'
       });
       
       if (result.success && result.code) {
         toast({
           title: "Code généré",
-          description: "Le code d'accès personnel a été généré avec succès"
+          description: "Code d'accès personnel créé avec succès"
         });
         return result.code;
       } else {
-        setError(result.error || "Erreur lors de la génération");
-        toast({
-          title: "Erreur",
-          description: result.error || "Impossible de générer le code",
-          variant: "destructive"
-        });
-        return null;
+        throw new Error(result.error || "Erreur lors de la génération du code");
       }
     } catch (err: any) {
-      setError(err.message);
+      const errorMessage = err.message || "Erreur lors de la génération du code";
+      setError(errorMessage);
       toast({
         title: "Erreur",
-        description: "Une erreur inattendue s'est produite",
+        description: errorMessage,
         variant: "destructive"
       });
       return null;
@@ -55,6 +56,9 @@ export const useSharing = () => {
     }
   };
 
+  /**
+   * Génère un code d'accès institutionnel
+   */
   const generateInstitutionCode = async (
     document: ShareableDocument,
     expiresInDays: number = 30
@@ -64,30 +68,25 @@ export const useSharing = () => {
     
     try {
       const result = await SharingService.generateAccessCode(document, {
-        accessType: 'institution',
-        expiresInDays
+        expiresInDays,
+        accessType: 'institution'
       });
       
       if (result.success && result.code) {
         toast({
           title: "Code professionnel généré",
-          description: `Code valide pendant ${expiresInDays} jours`
+          description: "Code d'accès institutionnel créé avec succès"
         });
         return result.code;
       } else {
-        setError(result.error || "Erreur lors de la génération");
-        toast({
-          title: "Erreur",
-          description: result.error || "Impossible de générer le code professionnel",
-          variant: "destructive"
-        });
-        return null;
+        throw new Error(result.error || "Erreur lors de la génération du code");
       }
     } catch (err: any) {
-      setError(err.message);
+      const errorMessage = err.message || "Erreur lors de la génération du code";
+      setError(errorMessage);
       toast({
         title: "Erreur",
-        description: "Une erreur inattendue s'est produite",
+        description: errorMessage,
         variant: "destructive"
       });
       return null;
@@ -96,130 +95,104 @@ export const useSharing = () => {
     }
   };
 
+  /**
+   * Valide un code d'accès
+   */
   const validateAccessCode = async (
     accessCode: string,
-    personalInfo?: any
-  ) => {
+    personalInfo?: {
+      firstName?: string;
+      lastName?: string;
+      birthDate?: string;
+    }
+  ): Promise<AccessValidationResult> => {
     setIsValidating(true);
-    setError(null);
-    
     try {
       const result = await SharingService.validateAccessCode(accessCode, personalInfo);
-      
-      if (!result.success) {
-        setError(result.error || "Code invalide");
-      }
-      
       return result;
     } catch (err: any) {
-      setError(err.message);
-      return { success: false, error: err.message };
+      return {
+        success: false,
+        error: err.message || "Erreur lors de la validation"
+      };
     } finally {
       setIsValidating(false);
     }
   };
 
+  /**
+   * Prolonge un code d'accès
+   */
   const extendCode = async (
     accessCode: string,
     days: number = 365
   ): Promise<boolean> => {
     setIsExtending(true);
-    setError(null);
-    
     try {
       const result = await SharingService.extendAccessCode(accessCode, days);
-      
       if (result.success) {
         toast({
           title: "Code prolongé",
-          description: `Le code a été prolongé de ${days} jours`
+          description: `Code d'accès prolongé de ${days} jours`
         });
         return true;
-      } else {
-        setError(result.error || "Erreur lors de la prolongation");
-        toast({
-          title: "Erreur",
-          description: result.error || "Impossible de prolonger le code",
-          variant: "destructive"
-        });
-        return false;
       }
+      return false;
     } catch (err: any) {
-      setError(err.message);
+      toast({
+        title: "Erreur",
+        description: "Impossible de prolonger le code",
+        variant: "destructive"
+      });
       return false;
     } finally {
       setIsExtending(false);
     }
   };
 
+  /**
+   * Régénère un code d'accès
+   */
   const regenerateCode = async (
     currentCode: string,
     days: number = 365
   ): Promise<string | null> => {
     setIsRegenerating(true);
-    setError(null);
-    
     try {
       const result = await SharingService.regenerateAccessCode(currentCode, days);
-      
       if (result.success && result.code) {
         toast({
-          title: "Nouveau code généré",
-          description: "L'ancien code a été désactivé"
+          title: "Code régénéré",
+          description: "Nouveau code d'accès créé avec succès"
         });
         return result.code;
-      } else {
-        setError(result.error || "Erreur lors de la régénération");
-        toast({
-          title: "Erreur",
-          description: result.error || "Impossible de régénérer le code",
-          variant: "destructive"
-        });
-        return null;
       }
+      return null;
     } catch (err: any) {
-      setError(err.message);
+      toast({
+        title: "Erreur",
+        description: "Impossible de régénérer le code",
+        variant: "destructive"
+      });
       return null;
     } finally {
       setIsRegenerating(false);
     }
   };
 
-  const revokeCode = async (accessCode: string): Promise<boolean> => {
-    setError(null);
-    
-    try {
-      const result = await SharingService.revokeAccessCode(accessCode);
-      
-      if (result.success) {
-        toast({
-          title: "Code révoqué",
-          description: "Le code d'accès a été désactivé"
-        });
-        return true;
-      } else {
-        setError(result.error || "Erreur lors de la révocation");
-        return false;
-      }
-    } catch (err: any) {
-      setError(err.message);
-      return false;
-    }
-  };
-
   return {
-    generatePersonalCode,
-    generateInstitutionCode,
-    validateAccessCode,
-    extendCode,
-    regenerateCode,
-    revokeCode,
+    // État
     isGenerating,
     isValidating,
     isExtending,
     isRegenerating,
-    error
+    error,
+    
+    // Actions
+    generatePersonalCode,
+    generateInstitutionCode,
+    validateAccessCode,
+    extendCode,
+    regenerateCode
   };
 };
-
-export type { ShareableDocument, ShareOptions } from "./types";

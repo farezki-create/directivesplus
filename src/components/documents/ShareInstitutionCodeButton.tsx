@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Hospital, Loader2, Copy, Check, Shield, Share2 } from "lucide-react";
@@ -12,7 +11,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useUnifiedSharing, type ShareableDocument } from "@/hooks/sharing/useUnifiedSharing";
+import { useSharing } from "@/hooks/sharing/useSharing";
+import type { ShareableDocument } from "@/types/sharing";
 import { supabase } from "@/integrations/supabase/client";
 
 interface ShareInstitutionCodeButtonProps {
@@ -24,18 +24,16 @@ const ShareInstitutionCodeButton = ({ directiveId }: ShareInstitutionCodeButtonP
   const [code, setCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { generateInstitutionCode, isGenerating } = useUnifiedSharing();
+  const { generateInstitutionCode, isGenerating } = useSharing();
 
   const handleGenerateCode = async () => {
     setError(null);
     try {
-      // Get the current user
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         throw new Error("User not authenticated");
       }
 
-      // Get the directive to create a shareable document
       const { data: directive, error: directiveError } = await supabase
         .from('directives')
         .select('id, content, created_at')
@@ -47,7 +45,6 @@ const ShareInstitutionCodeButton = ({ directiveId }: ShareInstitutionCodeButtonP
         throw new Error("Directive not found");
       }
 
-      // Create a shareable document object
       const shareableDocument: ShareableDocument = {
         id: directive.id,
         file_name: "Directives anticipées",
@@ -59,7 +56,6 @@ const ShareInstitutionCodeButton = ({ directiveId }: ShareInstitutionCodeButtonP
         content: directive.content
       };
 
-      // Generate the institution access code using the unified service
       const generatedCode = await generateInstitutionCode(shareableDocument, 30);
       
       if (generatedCode) {
@@ -91,7 +87,6 @@ const ShareInstitutionCodeButton = ({ directiveId }: ShareInstitutionCodeButtonP
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
     if (!open) {
-      // Reset state when dialog closes
       setCode(null);
       setError(null);
       setCopied(false);

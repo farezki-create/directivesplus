@@ -1,33 +1,37 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import type { ShareableDocument, SharingResult, AccessValidationResult } from "../types";
+import type { 
+  ShareableDocument, 
+  SharingResult, 
+  AccessValidationResult, 
+  ShareOptions 
+} from "@/types/sharing";
 
+/**
+ * Service unifié pour la gestion du partage de documents
+ */
 export class SharingService {
   /**
    * Génère un code d'accès pour un document
    */
   static async generateAccessCode(
     document: ShareableDocument,
-    options: {
-      expiresInDays?: number;
-      accessType?: 'personal' | 'institution';
-    } = {}
+    options: ShareOptions = {}
   ): Promise<SharingResult> {
     try {
-      const { expiresInDays = 365, accessType = 'institution' } = options;
+      const { expiresInDays = 365, accessType = 'personal' } = options;
       
-      // Calculer la date d'expiration
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + expiresInDays);
       
-      console.log("SharingService.generateAccessCode - Création document partagé:", {
+      console.log("SharingService.generateAccessCode:", {
         document_id: document.id,
         document_type: document.source,
         user_id: document.user_id,
-        expires_at: expiresAt.toISOString()
+        expires_at: expiresAt.toISOString(),
+        access_type: accessType
       });
 
-      // Préparer les données du document au format JSON
       const documentData = {
         id: document.id,
         file_name: document.file_name,
@@ -45,7 +49,6 @@ export class SharingService {
         updated_at: document.updated_at
       };
 
-      // Insérer dans shared_documents
       const { data, error } = await supabase
         .from('shared_documents')
         .insert({
@@ -67,10 +70,7 @@ export class SharingService {
         return { success: false, error: "Code d'accès non généré" };
       }
 
-      return {
-        success: true,
-        code: data.access_code
-      };
+      return { success: true, code: data.access_code };
     } catch (error: any) {
       console.error("Erreur SharingService.generateAccessCode:", error);
       return { success: false, error: error.message };
@@ -91,7 +91,6 @@ export class SharingService {
     try {
       console.log("SharingService.validateAccessCode:", { accessCode, personalInfo });
 
-      // Utiliser la fonction RPC existante
       const { data, error } = await supabase.rpc(
         'get_shared_documents_by_access_code',
         {
@@ -117,7 +116,6 @@ export class SharingService {
         };
       }
 
-      // Transformer les données brutes en ShareableDocument
       const documents: ShareableDocument[] = data.map((item: any) => {
         const docData = item.document_data;
         return {
@@ -202,7 +200,6 @@ export class SharingService {
    */
   static async regenerateAccessCode(currentCode: string, days: number = 365): Promise<SharingResult> {
     try {
-      // D'abord récupérer le document associé
       const { data: currentDoc, error: fetchError } = await supabase
         .from('shared_documents')
         .select('*')
@@ -214,10 +211,8 @@ export class SharingService {
         return { success: false, error: "Code d'accès introuvable" };
       }
 
-      // Désactiver l'ancien code
       await this.revokeAccessCode(currentCode);
 
-      // Créer un nouveau document partagé
       const newExpiresAt = new Date();
       newExpiresAt.setDate(newExpiresAt.getDate() + days);
 
@@ -237,10 +232,7 @@ export class SharingService {
         return { success: false, error: "Impossible de générer un nouveau code" };
       }
 
-      return {
-        success: true,
-        code: newDoc.access_code
-      };
+      return { success: true, code: newDoc.access_code };
     } catch (error: any) {
       return { success: false, error: error.message };
     }

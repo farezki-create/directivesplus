@@ -1,7 +1,8 @@
 
 import React, { useState } from "react";
 import { toast } from "@/hooks/use-toast";
-import { useSharing, type ShareableDocument } from "@/hooks/sharing/useSharing";
+import { useSharing } from "@/hooks/sharing/useSharing";
+import type { ShareableDocument } from "@/types/sharing";
 import { supabase } from "@/integrations/supabase/client";
 
 export const useShareDialogLogic = (document: ShareableDocument, open: boolean) => {
