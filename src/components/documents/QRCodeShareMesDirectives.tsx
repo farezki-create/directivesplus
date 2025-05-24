@@ -1,10 +1,10 @@
 
 import { useState } from "react";
-import QRCode from "qrcode.react";
+import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CopyIcon, PrinterIcon, QrCode } from "lucide-react";
+import { Copy, Printer, QrCode } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 interface QRCodeShareMesDirectivesProps {
@@ -50,7 +50,7 @@ export function QRCodeShareMesDirectives({ sharedCode, onClose }: QRCodeShareMes
       
       <CardContent className="space-y-4 text-center">
         <div className="flex justify-center">
-          <QRCode value={url} size={160} />
+          <QRCodeSVG value={url} size={160} />
         </div>
         
         <div className="space-y-2">
@@ -67,14 +67,14 @@ export function QRCodeShareMesDirectives({ sharedCode, onClose }: QRCodeShareMes
               onClick={handleCopy}
               className="flex-shrink-0"
             >
-              <CopyIcon className="w-4 h-4" />
+              <Copy className="w-4 h-4" />
             </Button>
           </div>
         </div>
 
         <div className="flex gap-2 justify-center">
           <Button onClick={handlePrint} variant="outline" size="sm">
-            <PrinterIcon className="w-4 h-4 mr-2" /> 
+            <Printer className="w-4 h-4 mr-2" /> 
             Imprimer
           </Button>
           {onClose && (

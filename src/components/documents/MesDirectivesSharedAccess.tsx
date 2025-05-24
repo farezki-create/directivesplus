@@ -12,15 +12,17 @@ import { DocumentCardRefactored } from "./card/DocumentCardRefactored";
 import AppNavigation from "@/components/AppNavigation";
 import { Document } from "@/types/documents";
 
+interface SharedDocumentData {
+  file_name: string;
+  file_path: string;
+  content_type?: string;
+  description?: string;
+}
+
 interface SharedDocument {
   document_id: string;
   document_type: string;
-  document_data: {
-    file_name: string;
-    file_path: string;
-    content_type?: string;
-    description?: string;
-  };
+  document_data: SharedDocumentData;
   user_id: string;
   shared_at: string;
 }
@@ -88,20 +90,23 @@ export function MesDirectivesSharedAccess() {
         throw new Error("Tous les documents partagés ont expiré");
       }
 
-      // Transformer les documents partagés en format Document
-      const transformedDocuments: Document[] = validDocuments.map((sharedDoc, index) => ({
-        id: sharedDoc.document_id,
-        user_id: sharedDoc.user_id,
-        file_name: sharedDoc.document_data.file_name,
-        file_path: sharedDoc.document_data.file_path,
-        file_type: 'pdf',
-        content_type: sharedDoc.document_data.content_type || 'application/pdf',
-        created_at: sharedDoc.shared_at,
-        description: sharedDoc.document_data.description,
-        file_size: null,
-        updated_at: null,
-        external_id: null
-      }));
+      // Transformer les documents partagés en format Document avec typage correct
+      const transformedDocuments: Document[] = validDocuments.map((sharedDoc: SharedDocument, index) => {
+        const docData = sharedDoc.document_data as SharedDocumentData;
+        return {
+          id: sharedDoc.document_id,
+          user_id: sharedDoc.user_id,
+          file_name: docData.file_name,
+          file_path: docData.file_path,
+          file_type: 'pdf',
+          content_type: docData.content_type || 'application/pdf',
+          created_at: sharedDoc.shared_at,
+          description: docData.description,
+          file_size: null,
+          updated_at: null,
+          external_id: null
+        };
+      });
 
       setDocuments(transformedDocuments);
       setIsVerified(true);
@@ -130,6 +135,32 @@ export function MesDirectivesSharedAccess() {
       description: "Seule la consultation est autorisée via ce lien de partage",
       variant: "destructive"
     });
+  };
+
+  const handleDocumentDownload = (filePath: string, fileName: string) => {
+    // Permettre le téléchargement
+    const link = window.document.createElement('a');
+    link.href = filePath;
+    link.download = fileName;
+    link.target = '_blank';
+    window.document.body.appendChild(link);
+    link.click();
+    window.document.body.removeChild(link);
+  };
+
+  const handleDocumentPrint = (filePath: string) => {
+    // Permettre l'impression
+    const printWindow = window.open(filePath, '_blank');
+    if (printWindow) {
+      printWindow.onload = () => {
+        printWindow.print();
+      };
+    }
+  };
+
+  const handleDocumentView = (filePath: string) => {
+    // Permettre la visualisation
+    window.open(filePath, '_blank');
   };
 
   if (!sharedCode) {
@@ -251,29 +282,9 @@ export function MesDirectivesSharedAccess() {
                 <DocumentCardRefactored
                   key={document.id}
                   document={document}
-                  onDownload={(filePath, fileName) => {
-                    // Permettre le téléchargement
-                    const link = document.createElement('a');
-                    link.href = filePath;
-                    link.download = fileName;
-                    link.target = '_blank';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                  }}
-                  onPrint={(filePath) => {
-                    // Permettre l'impression
-                    const printWindow = window.open(filePath, '_blank');
-                    if (printWindow) {
-                      printWindow.onload = () => {
-                        printWindow.print();
-                      };
-                    }
-                  }}
-                  onView={(filePath) => {
-                    // Permettre la visualisation
-                    window.open(filePath, '_blank');
-                  }}
+                  onDownload={handleDocumentDownload}
+                  onPrint={handleDocumentPrint}
+                  onView={handleDocumentView}
                   onDelete={() => handleDocumentAction('delete')}
                   showPrint={true}
                   showShare={false}
