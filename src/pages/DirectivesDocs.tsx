@@ -6,6 +6,7 @@ import { usePublicDirectivesAccess } from "@/hooks/usePublicDirectivesAccess";
 import DirectivesLoadingState from "@/components/documents/DirectivesLoadingState";
 import AuthenticatedDirectivesView from "@/components/directives/AuthenticatedDirectivesView";
 import PublicDirectivesView from "@/components/directives/PublicDirectivesView";
+import DirectivesAccessFormView from "@/components/directives/DirectivesAccessFormView";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -155,18 +156,12 @@ const DirectivesDocs = () => {
     );
   }
 
-  // Redirection vers la page d'accès si l'utilisateur n'est pas authentifié et n'a pas d'accès vérifié
+  // Afficher le formulaire d'accès public si l'utilisateur n'est pas authentifié et n'a pas d'accès vérifié
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="max-w-md mx-auto p-6">
-        <Alert>
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            Accès non autorisé. Veuillez vous authentifier pour accéder aux directives.
-          </AlertDescription>
-        </Alert>
-      </div>
-    </div>
+    <DirectivesAccessFormView
+      onSubmit={handlePublicAccess}
+      loading={publicAccessLoading}
+    />
   );
 };
 
