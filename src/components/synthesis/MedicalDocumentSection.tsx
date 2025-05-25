@@ -1,3 +1,4 @@
+
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import DocumentUploader from "@/components/documents/DocumentUploader";
@@ -133,15 +134,17 @@ const MedicalDocumentSection = ({ userId, onUploadComplete, onDocumentAdd, onDoc
       }
 
       toast({
-        title: "Document supprimé",
-        description: "Le document médical a été supprimé avec succès"
+        title: "Supprimé",
+        description: "Document supprimé",
+        duration: 2000
       });
     } catch (error: any) {
       console.error('Erreur lors de la suppression du document:', error);
       toast({
         title: "Erreur",
         description: "Impossible de supprimer le document médical",
-        variant: "destructive"
+        variant: "destructive",
+        duration: 2000
       });
     } finally {
       // Retirer l'ID du document des suppressions en cours
