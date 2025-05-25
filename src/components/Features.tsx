@@ -82,16 +82,6 @@ const Features = () => {
             </div>
           ))}
         </div>
-        
-        {/* Call to Action */}
-        <div className="mt-16 text-center">
-          <a 
-            href="#" 
-            className="bg-directiveplus-600 hover:bg-directiveplus-700 text-white px-8 py-3 rounded-md inline-block font-medium transition-colors duration-200"
-          >
-            Voir toutes les fonctionnalités
-          </a>
-        </div>
       </div>
     </section>
   );
