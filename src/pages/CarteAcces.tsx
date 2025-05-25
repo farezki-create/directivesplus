@@ -10,6 +10,7 @@ import { useAccessCard } from "@/hooks/useAccessCard";
 import AccessCard from "@/components/carte-acces/AccessCard";
 import ActionButtons from "@/components/carte-acces/ActionButtons";
 import InstructionsCard from "@/components/carte-acces/InstructionsCard";
+import { InstitutionCodeSection } from "@/components/directives/InstitutionCodeSection";
 
 const CarteAcces = () => {
   const { isAuthenticated, isLoading, profile } = useAuth();
@@ -72,7 +73,7 @@ const CarteAcces = () => {
           <ActionButtons onPrint={handlePrint} onDownload={handleDownload} />
 
           {/* Carte d'accès format bancaire */}
-          <div className="flex justify-center">
+          <div className="flex justify-center mb-8">
             <AccessCard
               firstName={firstName}
               lastName={lastName}
@@ -83,6 +84,11 @@ const CarteAcces = () => {
           </div>
 
           <InstructionsCard codeAcces={codeAcces} />
+
+          {/* Section Accès Institution */}
+          <div className="mt-8">
+            <InstitutionCodeSection />
+          </div>
         </div>
       </main>
       
