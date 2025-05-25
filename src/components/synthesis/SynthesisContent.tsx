@@ -1,3 +1,4 @@
+
 import { useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
@@ -61,11 +62,9 @@ const SynthesisContent = ({ profileData, userId }: SynthesisContentProps) => {
     );
   };
 
+  // Fonction simplifiée pour éviter les doublons
   const handleMedicalDocumentUpload = () => {
-    toast({
-      title: "Document médical ajouté",
-      description: "Le document médical sera intégré dans votre PDF de directives anticipées"
-    });
+    console.log("Document médical ajouté - pas d'action supplémentaire nécessaire");
   };
 
   const handleDocumentAdd = (documentInfo: any) => {
