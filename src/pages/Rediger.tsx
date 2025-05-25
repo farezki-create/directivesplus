@@ -5,7 +5,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import AppNavigation from "@/components/AppNavigation";
 import DirectivesGrid from "@/components/DirectivesGrid";
 import InfoSteps from "@/components/InfoSteps";
-import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 
@@ -23,14 +22,9 @@ const Rediger = () => {
       return;
     }
     
-    // Only show welcome toast if user is authenticated and loaded
+    // Log user authentication without showing toast
     if (!isLoading && isAuthenticated && user) {
       console.log("User authenticated:", user.id);
-      // Show a welcome toast when authenticated user arrives
-      toast({
-        title: "Bienvenue sur la page de rédaction",
-        description: "Vous pouvez commencer à rédiger vos directives.",
-      });
     }
   }, [isAuthenticated, isLoading, navigate, user, location.pathname]);
 
