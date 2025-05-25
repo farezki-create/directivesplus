@@ -36,14 +36,14 @@ const PdfViewer = () => {
       <ErrorState 
         error="ID du document manquant"
         onRetry={handleRetry}
-        onGoBack={handleGoBack}
+        documentId={documentId}
       />
     );
   }
 
   // État de chargement
   if (loading) {
-    return <LoadingState />;
+    return <LoadingState retryCount={retryCount} />;
   }
 
   // État d'erreur
@@ -52,8 +52,7 @@ const PdfViewer = () => {
       <ErrorState 
         error={error}
         onRetry={handleRetry}
-        onGoBack={handleGoBack}
-        retryCount={retryCount}
+        documentId={documentId}
       />
     );
   }
