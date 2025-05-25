@@ -67,7 +67,6 @@ const DirectivesGrid = () => {
       icon: BookOpen,
       path: "/synthesis",
       color: "bg-emerald-50 hover:bg-emerald-100 border-emerald-200",
-      buttonText: "Voir la synthèse",
       badgeColor: "bg-blue-100 text-blue-600"
     },
     {
@@ -76,7 +75,6 @@ const DirectivesGrid = () => {
       icon: FileText,
       path: "/mes-directives",
       color: "bg-orange-50 hover:bg-orange-100 border-orange-200",
-      buttonText: "Accéder aux directives",
       badgeColor: "bg-orange-100 text-orange-600"
     }
   ];
@@ -89,7 +87,6 @@ const DirectivesGrid = () => {
       icon: CreditCard,
       path: "/carte-acces",
       color: "bg-yellow-50 hover:bg-yellow-100 border-yellow-200",
-      buttonText: "Générer la carte",
       badgeColor: "bg-yellow-100 text-yellow-600"
     });
   }
@@ -127,9 +124,13 @@ const DirectivesGrid = () => {
       {/* Section des actions finales */}
       <div className="border-t pt-8">
         <h3 className="text-xl font-semibold mb-6 text-center text-gray-800">Actions finales</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
           {bottomCards.map((card, index) => (
-            <Card key={index} className={`cursor-pointer transition-all duration-200 ${card.color} relative`}>
+            <Card 
+              key={index} 
+              className={`cursor-pointer transition-all duration-200 ${card.color} relative`}
+              onClick={() => navigate(card.path)}
+            >
               {/* Badge numéroté pour les actions finales */}
               <div className={`absolute -top-3 -left-3 w-8 h-8 rounded-full ${card.badgeColor} flex items-center justify-center text-sm font-bold shadow-sm`}>
                 {index + 7}
@@ -142,13 +143,9 @@ const DirectivesGrid = () => {
                 <CardDescription className="text-gray-600">{card.description}</CardDescription>
               </CardHeader>
               <CardContent>
-                <Button 
-                  onClick={() => navigate(card.path)}
-                  className="w-full bg-slate-700 hover:bg-slate-800 text-white border-0 rounded-lg transition-all duration-200 hover:shadow-md"
-                  variant="default"
-                >
-                  {card.buttonText}
-                </Button>
+                <div className="text-sm text-gray-500">
+                  Cliquez sur la carte pour accéder
+                </div>
               </CardContent>
             </Card>
           ))}

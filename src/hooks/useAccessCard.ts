@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import jsPDF from "jspdf";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useAccessCard = () => {
   const { user, profile } = useAuth();
@@ -15,11 +16,44 @@ export const useAccessCard = () => {
       const generatedCode = `DA${user.id.substring(0, 8).toUpperCase()}`;
       setCodeAcces(generatedCode);
       
-      // Utiliser l'URL correcte pour accéder aux directives via le code d'accès
-      const qrUrl = `${window.location.origin}/institution-access?code=${generatedCode}`;
-      setQrCodeUrl(qrUrl);
+      // Récupérer le document des directives anticipées pour le QR code
+      fetchDirectivesDocument(user.id);
     }
   }, [user, profile]);
+
+  const fetchDirectivesDocument = async (userId: string) => {
+    try {
+      const { data: documents, error } = await supabase
+        .from('pdf_documents')
+        .select('id, file_name')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (error) {
+        console.error("Erreur lors de la récupération du document:", error);
+        // Fallback vers l'URL d'accès institution si pas de document
+        const fallbackUrl = `${window.location.origin}/institution-access?code=${codeAcces}`;
+        setQrCodeUrl(fallbackUrl);
+        return;
+      }
+
+      if (documents && documents.length > 0) {
+        // QR code pointant vers le document des directives anticipées
+        const directiveUrl = `${window.location.origin}/pdf-viewer?id=${documents[0].id}`;
+        setQrCodeUrl(directiveUrl);
+      } else {
+        // Fallback vers l'URL d'accès institution si pas de document
+        const fallbackUrl = `${window.location.origin}/institution-access?code=${codeAcces}`;
+        setQrCodeUrl(fallbackUrl);
+      }
+    } catch (error) {
+      console.error("Erreur lors de la récupération du document:", error);
+      // Fallback vers l'URL d'accès institution
+      const fallbackUrl = `${window.location.origin}/institution-access?code=${codeAcces}`;
+      setQrCodeUrl(fallbackUrl);
+    }
+  };
 
   const handlePrint = () => {
     // Masquer les éléments non imprimables
