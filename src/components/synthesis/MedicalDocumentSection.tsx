@@ -1,3 +1,4 @@
+
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import DocumentUploader from "@/components/documents/DocumentUploader";
@@ -81,10 +82,6 @@ const MedicalDocumentSection = ({ userId, onUploadComplete, onDocumentAdd, onDoc
     }
 
     try {
-      // Calculate file size from data URL
-      const base64Data = url.split(',')[1];
-      const fileSize = base64Data ? Math.round((base64Data.length * 3) / 4) : 0;
-      
       // Ajouter directement dans medical_documents pour simplifier
       const { data, error } = await supabase
         .from('medical_documents')
@@ -93,8 +90,7 @@ const MedicalDocumentSection = ({ userId, onUploadComplete, onDocumentAdd, onDoc
           file_name: fileName,
           file_path: url,
           description: `Document médical de synthèse: ${fileName}`,
-          file_type: url.startsWith('data:application/pdf') ? 'pdf' : 'image',
-          file_size: fileSize
+          file_type: url.startsWith('data:application/pdf') ? 'pdf' : 'image'
         })
         .select()
         .single();
