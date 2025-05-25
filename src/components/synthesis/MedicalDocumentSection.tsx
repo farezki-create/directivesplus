@@ -5,7 +5,8 @@ import DocumentUploader from "@/components/documents/DocumentUploader";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { Trash, Eye } from "lucide-react";
+import { Trash, Eye, FileText } from "lucide-react";
+import DocumentPreviewDialog from "@/components/documents/DocumentPreviewDialog";
 
 interface MedicalDocumentSectionProps {
   userId?: string;
@@ -109,9 +110,12 @@ const MedicalDocumentSection = ({ userId, onUploadComplete, onDocumentAdd, onDoc
       onDocumentAdd(newDocument);
       onUploadComplete();
 
+      // Ouvrir immédiatement le document pour incorporation dans la synthèse
+      setPreviewDocument(url);
+
       toast({
-        title: "Document ajouté",
-        description: "Le document médical a été ajouté et sera inclus dans votre PDF de directives anticipées"
+        title: "Document ajouté et ouvert",
+        description: "Le document médical a été ajouté et est maintenant ouvert pour incorporation dans votre synthèse"
       });
     } catch (error: any) {
       console.error('Erreur lors de l\'ajout du document:', error);
@@ -175,8 +179,6 @@ const MedicalDocumentSection = ({ userId, onUploadComplete, onDocumentAdd, onDoc
   const handlePreviewDocument = (document: any) => {
     if (document.file_path) {
       setPreviewDocument(document.file_path);
-      // Ouvrir dans une nouvelle fenêtre pour prévisualisation
-      window.open(document.file_path, '_blank');
     } else {
       toast({
         title: "Aperçu non disponible",
@@ -186,69 +188,99 @@ const MedicalDocumentSection = ({ userId, onUploadComplete, onDocumentAdd, onDoc
     }
   };
 
+  const handleIncorporateDocument = (document: any) => {
+    // Ouvrir le document pour incorporation
+    setPreviewDocument(document.file_path);
+    
+    toast({
+      title: "Document ouvert pour incorporation",
+      description: "Le document est maintenant ouvert pour incorporation dans votre synthèse",
+      duration: 3000
+    });
+  };
+
   return (
-    <Card className="mb-6">
-      <CardHeader className="pb-2">
-        <CardTitle>Documents médicaux</CardTitle>
-        <p className="text-sm text-gray-600">
-          Ajoutez vos documents médicaux qui seront automatiquement intégrés dans votre PDF de directives anticipées.
-          Les documents sont immédiatement disponibles pour inclusion.
-        </p>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <DocumentUploader
-            userId={userId}
-            onUploadComplete={handleDocumentUpload}
-            documentType="medical"
-          />
-          
-          {uploadedDocuments.length > 0 && (
-            <div className="mt-4">
-              <h4 className="text-sm font-medium mb-2">Documents médicaux ajoutés :</h4>
-              <div className="space-y-3">
-                {uploadedDocuments.map((doc) => (
-                  <div key={doc.id} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border">
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-blue-900">{doc.name}</p>
-                      <p className="text-xs text-blue-600">
-                        Ajouté le {new Date(doc.created_at).toLocaleDateString('fr-FR')}
-                      </p>
-                      <p className="text-xs text-gray-600 mt-1">
-                        ✅ Sera inclus automatiquement dans le PDF
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {doc.file_path && (
+    <>
+      <Card className="mb-6">
+        <CardHeader className="pb-2">
+          <CardTitle>Documents médicaux</CardTitle>
+          <p className="text-sm text-gray-600">
+            Ajoutez vos documents médicaux qui seront automatiquement intégrés dans votre PDF de directives anticipées.
+            Les documents sont immédiatement ouverts pour incorporation après l'import.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <DocumentUploader
+              userId={userId}
+              onUploadComplete={handleDocumentUpload}
+              documentType="medical"
+            />
+            
+            {uploadedDocuments.length > 0 && (
+              <div className="mt-4">
+                <h4 className="text-sm font-medium mb-2">Documents médicaux ajoutés :</h4>
+                <div className="space-y-3">
+                  {uploadedDocuments.map((doc) => (
+                    <div key={doc.id} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border">
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-blue-900">{doc.name}</p>
+                        <p className="text-xs text-blue-600">
+                          Ajouté le {new Date(doc.created_at).toLocaleDateString('fr-FR')}
+                        </p>
+                        <p className="text-xs text-gray-600 mt-1">
+                          ✅ Sera inclus automatiquement dans le PDF
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {doc.file_path && (
+                          <>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handlePreviewDocument(doc)}
+                              className="text-blue-600 hover:text-blue-700 hover:bg-blue-100"
+                            >
+                              <Eye size={14} />
+                              Voir
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleIncorporateDocument(doc)}
+                              className="text-green-600 hover:text-green-700 hover:bg-green-100"
+                            >
+                              <FileText size={14} />
+                              Incorporer
+                            </Button>
+                          </>
+                        )}
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handlePreviewDocument(doc)}
-                          className="text-blue-600 hover:text-blue-700 hover:bg-blue-100"
+                          onClick={() => handleDeleteDocument(doc.id)}
+                          disabled={deletingDocuments.has(doc.id)}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
                         >
-                          <Eye size={14} />
-                          Voir
+                          <Trash size={14} />
+                          {deletingDocuments.has(doc.id) ? "..." : "Supprimer"}
                         </Button>
-                      )}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDeleteDocument(doc.id)}
-                        disabled={deletingDocuments.has(doc.id)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                      >
-                        <Trash size={14} />
-                        {deletingDocuments.has(doc.id) ? "..." : "Supprimer"}
-                      </Button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      <DocumentPreviewDialog
+        filePath={previewDocument}
+        onOpenChange={(open) => !open && setPreviewDocument(null)}
+        showPrint={false}
+      />
+    </>
   );
 };
 
