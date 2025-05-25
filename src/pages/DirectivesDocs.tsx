@@ -5,6 +5,7 @@ import { usePublicDirectivesAccess } from "@/hooks/usePublicDirectivesAccess";
 import { useDirectivesState } from "@/hooks/directives/useDirectivesState";
 import { useDirectivesDocumentHandlers } from "@/components/directives/DirectivesDocumentHandlers";
 import { DirectivesAccessManager } from "@/components/directives/DirectivesAccessManager";
+import type { Document } from "@/types/documents";
 
 const DirectivesDocs = () => {
   const { user, profile, isAuthenticated, isLoading: authLoading } = useAuth();

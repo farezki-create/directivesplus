@@ -6,7 +6,7 @@ import { Navigate, useSearchParams } from "react-router-dom";
 import AuthenticatedDirectivesView from "@/components/directives/AuthenticatedDirectivesView";
 import DirectivesLoadingState from "@/components/documents/DirectivesLoadingState";
 import { MesDirectivesSharedAccess } from "@/components/documents/MesDirectivesSharedAccess";
-import { Document } from "@/types/documents";
+import type { Document } from "@/types/documents";
 
 const MesDirectives = () => {
   const [searchParams] = useSearchParams();
