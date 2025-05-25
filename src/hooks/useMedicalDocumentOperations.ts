@@ -127,6 +127,12 @@ export const useMedicalDocumentOperations = ({
         title: "Document ajouté",
         description: "Le document médical a été ajouté et sera inclus dans votre PDF de directives anticipées"
       });
+
+      // Ouvrir automatiquement le document après l'ajout
+      setTimeout(() => {
+        handlePreviewDocument(newDocument);
+      }, 500);
+
     } catch (error: any) {
       console.error('Erreur lors de l\'ajout du document:', error);
       toast({
