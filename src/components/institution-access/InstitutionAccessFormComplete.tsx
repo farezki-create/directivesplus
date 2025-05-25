@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,13 +28,31 @@ export const InstitutionAccessFormComplete: React.FC = () => {
     Boolean(submitted && formData.lastName && formData.firstName && formData.birthDate && formData.institutionCode)
   );
 
+  // Reset submitted state if there's an error
+  useEffect(() => {
+    if (institutionAccess.error && submitted) {
+      console.log("Erreur détectée, reset du state submitted");
+      const timer = setTimeout(() => {
+        setSubmitted(false);
+      }, 2000); // Reset après 2 secondes pour permettre à l'utilisateur de voir l'erreur
+      
+      return () => clearTimeout(timer);
+    }
+  }, [institutionAccess.error, submitted]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // Si l'utilisateur modifie le formulaire après une erreur, reset l'état
+    if (institutionAccess.error && submitted) {
+      setSubmitted(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("Soumission du formulaire avec les données:", formData);
     setSubmitted(true);
   };
 
@@ -44,6 +62,15 @@ export const InstitutionAccessFormComplete: React.FC = () => {
   };
 
   const isFormValid = formData.lastName && formData.firstName && formData.birthDate && formData.institutionCode;
+  const isLoading = submitted && institutionAccess.loading;
+
+  console.log("État du formulaire:", { 
+    submitted, 
+    loading: institutionAccess.loading, 
+    error: institutionAccess.error,
+    accessGranted: institutionAccess.accessGranted,
+    isFormValid
+  });
 
   // Si l'accès est accordé, afficher les options de consultation
   if (institutionAccess.accessGranted) {
@@ -130,7 +157,7 @@ export const InstitutionAccessFormComplete: React.FC = () => {
             onChange={handleChange}
             placeholder="NOM"
             required
-            disabled={institutionAccess.loading}
+            disabled={isLoading}
           />
         </div>
 
@@ -143,7 +170,7 @@ export const InstitutionAccessFormComplete: React.FC = () => {
             onChange={handleChange}
             placeholder="Prénom"
             required
-            disabled={institutionAccess.loading}
+            disabled={isLoading}
           />
         </div>
 
@@ -156,7 +183,7 @@ export const InstitutionAccessFormComplete: React.FC = () => {
             value={formData.birthDate}
             onChange={handleChange}
             required
-            disabled={institutionAccess.loading}
+            disabled={isLoading}
           />
         </div>
 
@@ -169,7 +196,7 @@ export const InstitutionAccessFormComplete: React.FC = () => {
             onChange={handleChange}
             placeholder="Code fourni par le patient"
             required
-            disabled={institutionAccess.loading}
+            disabled={isLoading}
           />
         </div>
 
@@ -185,9 +212,9 @@ export const InstitutionAccessFormComplete: React.FC = () => {
         <Button 
           type="submit" 
           className="w-full"
-          disabled={!isFormValid || institutionAccess.loading}
+          disabled={!isFormValid || isLoading}
         >
-          {institutionAccess.loading ? (
+          {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Vérification en cours...
