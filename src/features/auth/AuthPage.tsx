@@ -22,9 +22,11 @@ const AuthPage = () => {
   const [pendingEmail, setPendingEmail] = useState("");
   const [redirectInProgress, setRedirectInProgress] = useState(false);
   
-  // Check for password reset token in URL
-  const resetToken = searchParams.get('access_token');
+  // Check for password reset token in URL - support both access_token and token
+  const accessToken = searchParams.get('access_token');
+  const token = searchParams.get('token');
   const type = searchParams.get('type');
+  const resetToken = accessToken || token;
   
   // Redirect if already authenticated
   useEffect(() => {
@@ -34,9 +36,10 @@ const AuthPage = () => {
     }
   }, [isAuthenticated, isLoading, navigate, location.state, redirectInProgress]);
 
-  // Handle password reset flow
+  // Handle password reset flow - check for both recovery and password_recovery types
   useEffect(() => {
-    if (resetToken && type === 'recovery') {
+    if (resetToken && (type === 'recovery' || type === 'password_recovery')) {
+      console.log("Password reset token detected:", { resetToken, type });
       setShowPasswordReset(true);
       setShowForgotPassword(false);
       setShowEmailVerification(false);
@@ -75,11 +78,15 @@ const AuthPage = () => {
     setShowForgotPassword(false);
     setShowPasswordReset(false);
     setShowEmailVerification(false);
+    // Clear URL parameters
+    navigate('/auth', { replace: true });
   };
 
   const handlePasswordResetSuccess = () => {
     setShowPasswordReset(false);
     setShowForgotPassword(false);
+    // Clear URL parameters
+    navigate('/auth', { replace: true });
     toast({
       title: "Mot de passe modifié",
       description: "Votre mot de passe a été modifié avec succès. Vous pouvez maintenant vous connecter.",

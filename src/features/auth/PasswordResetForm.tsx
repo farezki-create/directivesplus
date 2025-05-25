@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, EyeIcon, EyeOffIcon } from "lucide-react";
@@ -32,6 +32,7 @@ export const PasswordResetForm = ({ token, onSuccess }: PasswordResetFormProps) 
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [sessionEstablished, setSessionEstablished] = useState(false);
 
   const form = useForm<PasswordResetValues>({
     resolver: zodResolver(passwordResetSchema),
@@ -41,22 +42,87 @@ export const PasswordResetForm = ({ token, onSuccess }: PasswordResetFormProps) 
     },
   });
 
+  // Establish session with the reset token
+  useEffect(() => {
+    const establishSession = async () => {
+      try {
+        console.log("Establishing session with token:", token.substring(0, 10) + "...");
+        
+        // Try to set the session using the token
+        const { data, error } = await supabase.auth.setSession({
+          access_token: token,
+          refresh_token: token, // Sometimes the same token is used for both
+        });
+
+        if (error) {
+          console.error("Error setting session:", error);
+          toast({
+            title: "Lien invalide",
+            description: "Le lien de réinitialisation est invalide ou a expiré.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        if (data.session) {
+          console.log("Session established successfully");
+          setSessionEstablished(true);
+        } else {
+          console.error("No session returned from setSession");
+          toast({
+            title: "Erreur de session",
+            description: "Impossible d'établir la session. Veuillez réessayer.",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        console.error("Error in establishSession:", error);
+        toast({
+          title: "Erreur",
+          description: "Une erreur est survenue lors de l'initialisation.",
+          variant: "destructive",
+        });
+      }
+    };
+
+    if (token) {
+      establishSession();
+    }
+  }, [token]);
+
   const handleSubmit = async (values: PasswordResetValues) => {
+    if (!sessionEstablished) {
+      toast({
+        title: "Session non établie",
+        description: "Veuillez attendre que la session soit établie.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
-      console.log("Updating password with token");
+      console.log("Updating password...");
       
       const { error } = await supabase.auth.updateUser({ 
         password: values.password 
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error updating password:", error);
+        throw error;
+      }
+      
+      console.log("Password updated successfully");
       
       toast({
         title: "Mot de passe réinitialisé",
         description: "Votre mot de passe a été mis à jour avec succès.",
       });
+      
+      // Sign out to clear the session and force re-login
+      await supabase.auth.signOut();
       
       onSuccess();
     } catch (error: any) {
@@ -70,6 +136,15 @@ export const PasswordResetForm = ({ token, onSuccess }: PasswordResetFormProps) 
       setLoading(false);
     }
   };
+
+  if (!sessionEstablished) {
+    return (
+      <div className="text-center space-y-4">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600 mx-auto"></div>
+        <p className="text-gray-600">Vérification du lien de réinitialisation...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
