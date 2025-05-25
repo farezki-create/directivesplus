@@ -2,7 +2,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, CheckCircle, Eye } from "lucide-react";
+import { CheckCircle, Eye } from "lucide-react";
 import { AccessibleDataCard } from "./AccessibleDataCard";
 
 interface SuccessViewProps {
@@ -29,11 +29,6 @@ export const SuccessView: React.FC<SuccessViewProps> = ({ patientData }) => {
           </p>
           
           <div className="flex flex-col gap-3 mt-6">
-            <div className="flex items-center justify-center gap-2 text-sm text-green-600">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Redirection automatique en cours...
-            </div>
-            
             <Button 
               onClick={() => window.location.href = "/directives-acces"}
               className="w-full bg-blue-600 hover:bg-blue-700"

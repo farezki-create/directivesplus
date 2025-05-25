@@ -39,15 +39,9 @@ export const useInstitutionAccessForm = () => {
     }
   }, [institutionAccess.error, submitted]);
 
-  // Redirection automatique après succès
-  useEffect(() => {
-    if (institutionAccess.accessGranted) {
-      console.log("Accès accordé, redirection vers /directives-acces");
-      setTimeout(() => {
-        window.location.href = "/directives-acces";
-      }, 2000);
-    }
-  }, [institutionAccess.accessGranted]);
+  // SUPPRESSION de la redirection automatique - elle ne doit plus avoir lieu
+  // L'accès se fait maintenant via le composant SuccessView qui affiche les informations
+  // et permet à l'utilisateur de choisir quand accéder aux directives
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
