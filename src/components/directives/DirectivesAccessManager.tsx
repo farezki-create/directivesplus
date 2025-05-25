@@ -22,15 +22,15 @@ interface DirectivesAccessManagerProps {
   setShowAddOptions: (show: boolean) => void;
   showAddOptionsPublic: boolean;
   setShowAddOptionsPublic: (show: boolean) => void;
-  documentToDelete: string | null;
-  setDocumentToDelete: (id: string | null) => void;
+  documentToDelete: Document | null;
+  setDocumentToDelete: (doc: Document | null) => void;
   previewDocument: Document | null;
   setPreviewDocument: (doc: Document | null) => void;
   handleUploadCompleteWrapper: () => void;
   handleDownload: (filePath: string, fileName: string) => void;
   handlePrint: (filePath: string, fileType?: string) => void;
   handleViewDocument: (filePath: string, fileType?: string) => void;
-  handleDelete: (id: string) => void;
+  handleDelete: (document: Document) => Promise<void>;
   handlePreviewDownload: (filePath: string) => void;
   handlePreviewPrint: (filePath: string, fileType?: string) => void;
 }

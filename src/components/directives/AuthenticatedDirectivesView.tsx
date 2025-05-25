@@ -1,10 +1,10 @@
 
 import React from "react";
 import AppNavigation from "@/components/AppNavigation";
-import { DirectivesPageHeader } from "@/components/documents/DirectivesPageHeader";
-import { DirectivesPageContent } from "@/components/documents/DirectivesPageContent";
-import { DocumentPreviewDialog } from "@/components/documents/DocumentPreviewDialog";
-import { DeleteConfirmationDialog } from "@/components/documents/DeleteConfirmationDialog";
+import DirectivesPageHeader from "@/components/documents/DirectivesPageHeader";
+import DirectivesPageContent from "@/components/documents/DirectivesPageContent";
+import DocumentPreviewDialog from "@/components/documents/DocumentPreviewDialog";
+import DeleteConfirmationDialog from "@/components/documents/DeleteConfirmationDialog";
 import { Document } from "@/types/documents";
 
 interface AuthenticatedDirectivesViewProps {
@@ -51,18 +51,19 @@ const AuthenticatedDirectivesView: React.FC<AuthenticatedDirectivesViewProps> = 
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
           <DirectivesPageHeader 
-            user={user}
-            profile={profile}
+            onAddDocument={() => setShowAddOptions(true)}
+            documentsCount={documents.length}
           />
           
           <DirectivesPageContent
             documents={documents}
-            showAddOptions={showAddOptions}
-            setShowAddOptions={setShowAddOptions}
-            onUploadComplete={onUploadComplete}
             onDownload={onDownload}
             onPrint={onPrint}
             onView={onView}
+            onDelete={(documentId: string) => {
+              const doc = documents.find(d => d.id === documentId);
+              if (doc) setDocumentToDelete(doc);
+            }}
           />
         </div>
       </main>
@@ -70,8 +71,7 @@ const AuthenticatedDirectivesView: React.FC<AuthenticatedDirectivesViewProps> = 
       {/* Document Preview Dialog */}
       {previewDocument && (
         <DocumentPreviewDialog
-          document={previewDocument}
-          isOpen={!!previewDocument}
+          filePath={previewDocument.file_path}
           onOpenChange={(open) => !open && setPreviewDocument(null)}
           onDownload={handlePreviewDownload}
           onPrint={handlePreviewPrint}
@@ -81,10 +81,10 @@ const AuthenticatedDirectivesView: React.FC<AuthenticatedDirectivesViewProps> = 
       {/* Delete Confirmation Dialog */}
       {documentToDelete && (
         <DeleteConfirmationDialog
-          document={documentToDelete}
           isOpen={!!documentToDelete}
-          onOpenChange={(open) => !open && setDocumentToDelete(null)}
+          onClose={() => setDocumentToDelete(null)}
           onConfirm={() => handleDelete(documentToDelete)}
+          documentName={documentToDelete.file_name}
         />
       )}
     </div>

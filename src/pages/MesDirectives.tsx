@@ -72,6 +72,12 @@ const MesDirectives = () => {
     handlePrint(filePath, fileType);
   };
 
+  // Enhanced delete handler that accepts Document object
+  const handleDeleteDocument = async (document: Document) => {
+    console.log("MesDirectives - handleDeleteDocument appelé avec:", document);
+    await handleDelete(document.id);
+  };
+
   // Rediriger vers la page de connexion si non authentifié
   if (!authLoading && !isAuthenticated) {
     return <Navigate to="/auth" replace />;
@@ -95,7 +101,7 @@ const MesDirectives = () => {
       onView={handleViewDocument}
       documentToDelete={documentToDelete}
       setDocumentToDelete={setDocumentToDelete}
-      handleDelete={handleDelete}
+      handleDelete={handleDeleteDocument}
       previewDocument={previewDocument}
       setPreviewDocument={setPreviewDocument}
       handlePreviewDownload={handlePreviewDownload}
