@@ -8,6 +8,7 @@ import ExamplesSection from "./ExamplesSection";
 import TrustedPersonsSection from "./TrustedPersonsSection";
 import ProfileSection from "./ProfileSection";
 import FreeTextSection from "./FreeTextSection";
+import MedicalDocumentSection from "./MedicalDocumentSection";
 import ActionButtons from "./ActionButtons";
 import { DocumentHeader } from "./DocumentHeader";
 import { useSynthesisData } from "@/hooks/useSynthesisData";
@@ -59,6 +60,13 @@ const SynthesisContent = ({ profileData, userId }: SynthesisContentProps) => {
     );
   };
 
+  const handleMedicalDocumentUpload = () => {
+    toast({
+      title: "Document médical ajouté",
+      description: "Le document médical sera intégré dans votre PDF de directives anticipées"
+    });
+  };
+
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
       <DocumentHeader />
@@ -75,6 +83,12 @@ const SynthesisContent = ({ profileData, userId }: SynthesisContentProps) => {
           <FreeTextSection 
             freeText={freeText}
             setFreeText={setFreeText}
+          />
+          
+          {/* Nouvelle section pour le document médical */}
+          <MedicalDocumentSection 
+            userId={userId}
+            onUploadComplete={handleMedicalDocumentUpload}
           />
           
           <div className="space-y-4" ref={signatureRef}>

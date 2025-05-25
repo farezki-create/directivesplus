@@ -11,6 +11,7 @@ import {
   addSignatureFooter, 
   checkPageBreak 
 } from "./pdf";
+import { getMedicalDocuments, renderMedicalDocuments } from "./pdf/medicalDocuments";
 import { savePdfToDatabase } from "./pdfStorage";
 
 // Interface for PDF generation data
@@ -82,13 +83,20 @@ export const generatePDF = async (data: PdfData): Promise<string> => {
     // Render questionnaire responses
     yPosition = checkPageBreak(pdf, layout, yPosition);
     yPosition = renderQuestionnaires(pdf, layout, yPosition, data.responses, translateResponse);
-    
-    // Removed example phrases and custom phrases sections
 
     // Render free text section if available
     if (data.freeText) {
       yPosition = checkPageBreak(pdf, layout, yPosition);
       yPosition = renderFreeText(pdf, layout, yPosition, data.freeText);
+    }
+    
+    // Récupérer et ajouter les documents médicaux si un userId est fourni
+    if (data.userId) {
+      const medicalDocuments = await getMedicalDocuments(data.userId);
+      if (medicalDocuments.length > 0) {
+        yPosition = checkPageBreak(pdf, layout, yPosition);
+        yPosition = renderMedicalDocuments(pdf, layout, yPosition, medicalDocuments);
+      }
     }
     
     // Add signature after all content

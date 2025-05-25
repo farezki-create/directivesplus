@@ -8,3 +8,4 @@ export * from "./healthcareDirectives";
 export * from "./questionnaires";
 export * from "./documentSections";
 export * from "./signatures";
+export * from "./medicalDocuments";
