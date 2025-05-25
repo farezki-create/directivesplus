@@ -10,13 +10,13 @@ export const usePdfViewerState = () => {
   const documentId = searchParams.get('id');
   
   const { isExternalBrowser } = useBrowserDetection();
-  const { document, loading, error, retryCount, setRetryCount, setError } = useDocumentLoader(documentId);
+  const { document, loading, error, retryCount, retryLoad, setError } = useDocumentLoader(documentId);
   const { handleDownload } = useDocumentDownload();
   const { handlePrint } = useDocumentPrint();
 
   const handleRetry = () => {
-    setRetryCount(prev => prev + 1);
-    setError(null);
+    console.log("usePdfViewerState: Retry manuel déclenché");
+    retryLoad();
   };
 
   const handleDownloadPdf = () => {

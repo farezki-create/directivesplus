@@ -45,7 +45,7 @@ const PdfViewerContainer = () => {
   }
 
   if (error || !document) {
-    return <ErrorState error={error} onRetry={handleRetry} />;
+    return <ErrorState error={error} onRetry={handleRetry} documentId={documentId} />;
   }
 
   return (
