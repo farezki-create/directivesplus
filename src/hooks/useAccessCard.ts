@@ -15,8 +15,8 @@ export const useAccessCard = () => {
       const generatedCode = `DA${user.id.substring(0, 8).toUpperCase()}`;
       setCodeAcces(generatedCode);
       
-      // Créer l'URL pour le QR code qui pointe vers les directives
-      const qrUrl = `${window.location.origin}/mes-directives?access=${generatedCode}`;
+      // Utiliser l'URL correcte pour accéder aux directives via le code d'accès
+      const qrUrl = `${window.location.origin}/institution-access?code=${generatedCode}`;
       setQrCodeUrl(qrUrl);
     }
   }, [user, profile]);

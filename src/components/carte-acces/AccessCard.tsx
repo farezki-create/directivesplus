@@ -35,7 +35,7 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
             {qrCodeUrl && (
               <QRCodeSVG 
                 value={qrCodeUrl}
-                size={80}
+                size={100}
                 level="M"
                 fgColor="#ffffff"
                 bgColor="transparent"
