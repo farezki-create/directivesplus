@@ -32,35 +32,31 @@ export const useAccessCard = () => {
 
       if (error) {
         console.error("Erreur lors de la récupération du document:", error);
-        // Fallback vers l'URL d'accès institution si pas de document
-        const fallbackUrl = `${window.location.origin}/institution-access?code=${codeAcces}`;
+        // Fallback vers l'URL d'accès direct si pas de document
+        const fallbackUrl = `${window.location.origin}/direct-document?id=${userId}`;
         setQrCodeUrl(fallbackUrl);
         return;
       }
 
       if (documents && documents.length > 0) {
         // QR code pointant vers le document des directives anticipées
-        const directiveUrl = `${window.location.origin}/pdf-viewer?id=${documents[0].id}`;
+        const directiveUrl = `${window.location.origin}/direct-document?id=${documents[0].id}`;
         setQrCodeUrl(directiveUrl);
       } else {
-        // Fallback vers l'URL d'accès institution si pas de document
-        const fallbackUrl = `${window.location.origin}/institution-access?code=${codeAcces}`;
+        // Fallback vers l'URL d'accès direct si pas de document
+        const fallbackUrl = `${window.location.origin}/direct-document?id=${userId}`;
         setQrCodeUrl(fallbackUrl);
       }
     } catch (error) {
       console.error("Erreur lors de la récupération du document:", error);
-      // Fallback vers l'URL d'accès institution
-      const fallbackUrl = `${window.location.origin}/institution-access?code=${codeAcces}`;
+      // Fallback vers l'URL d'accès direct
+      const fallbackUrl = `${window.location.origin}/direct-document?id=${userId}`;
       setQrCodeUrl(fallbackUrl);
     }
   };
 
   const handlePrint = () => {
-    // Masquer les éléments non imprimables
-    const nonPrintElements = document.querySelectorAll('.print\\:hidden');
-    nonPrintElements.forEach(el => (el as HTMLElement).style.display = 'none');
-    
-    // Style spécial pour l'impression
+    // Créer un style spécialement optimisé pour l'impression
     const printStyle = document.createElement('style');
     printStyle.innerHTML = `
       @media print {
@@ -68,30 +64,84 @@ export const useAccessCard = () => {
           size: 85.6mm 53.98mm;
           margin: 0;
         }
+        
+        body {
+          margin: 0;
+          padding: 0;
+          background: white !important;
+        }
+        
         body * {
           visibility: hidden;
         }
+        
         #access-card, #access-card * {
           visibility: visible;
         }
+        
         #access-card {
-          position: absolute;
-          left: 0;
-          top: 0;
+          position: absolute !important;
+          left: 0 !important;
+          top: 0 !important;
           width: 85.6mm !important;
           height: 53.98mm !important;
+          margin: 0 !important;
+          padding: 0 !important;
           transform: none !important;
+          border-radius: 8px !important;
+          background: linear-gradient(135deg, #4338ca, #312e81) !important;
+          color: white !important;
+          font-size: 3mm !important;
+          box-sizing: border-box !important;
+        }
+        
+        #access-card .absolute {
+          position: absolute !important;
+        }
+        
+        #access-card .relative {
+          position: relative !important;
+        }
+        
+        /* Masquer les éléments non essentiels pour l'impression */
+        .print\\:hidden {
+          display: none !important;
+        }
+        
+        /* Assurer que le QR code reste visible */
+        #access-card svg {
+          width: 28mm !important;
+          height: 28mm !important;
+        }
+        
+        /* Ajuster la taille des textes */
+        #access-card h1, #access-card h2, #access-card h3 {
+          font-size: 4mm !important;
+          line-height: 1.2 !important;
+        }
+        
+        #access-card p, #access-card div {
+          font-size: 3mm !important;
+          line-height: 1.1 !important;
+        }
+        
+        /* Code d'accès en gros */
+        #access-card .text-xl {
+          font-size: 5mm !important;
+          font-weight: bold !important;
+          letter-spacing: 1mm !important;
         }
       }
     `;
+    
     document.head.appendChild(printStyle);
     
+    // Lancer l'impression
     window.print();
     
-    // Restaurer l'affichage après impression
+    // Nettoyer après impression
     setTimeout(() => {
       document.head.removeChild(printStyle);
-      nonPrintElements.forEach(el => (el as HTMLElement).style.display = '');
     }, 1000);
     
     toast({
