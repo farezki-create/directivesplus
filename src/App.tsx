@@ -11,6 +11,7 @@ import Partage from "./pages/Partage";
 import DirectDocument from "./pages/DirectDocument";
 import Auth from "./pages/Auth";
 import Rediger from "./pages/Rediger";
+import AvisGeneral from "./pages/AvisGeneral";
 import GoutsPeurs from "./pages/GoutsPeurs";
 import MaintienVie from "./pages/MaintienVie";
 import MaladieAvancee from "./pages/MaladieAvancee";
@@ -48,6 +49,7 @@ function App() {
               <Route path="/donnees-medicales" element={<MedicalData />} />
               
               {/* Routes des questionnaires */}
+              <Route path="/avis-general" element={<AvisGeneral />} />
               <Route path="/gouts-peurs" element={<GoutsPeurs />} />
               <Route path="/maintien-vie" element={<MaintienVie />} />
               <Route path="/maladie-avancee" element={<MaladieAvancee />} />
@@ -56,6 +58,7 @@ function App() {
               
               {/* Autres pages */}
               <Route path="/synthesis" element={<Synthesis />} />
+              <Route path="/synthese" element={<Synthesis />} />
               <Route path="/testimonials" element={<Testimonials />} />
               <Route path="/report-data-breach" element={<ReportDataBreach />} />
               <Route path="/soutenir" element={<Soutenir />} />
