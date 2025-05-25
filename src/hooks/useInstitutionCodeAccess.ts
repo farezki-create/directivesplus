@@ -12,13 +12,13 @@ interface PatientInfo {
   birth_date: string;
 }
 
-// Interface pour typer la réponse complète de la fonction SQL
-interface InstitutionAccessResponse {
+// Interface pour typer la réponse brute de Supabase
+interface SupabaseAccessResponse {
   access_granted: boolean;
   user_id: string;
-  patient_info: PatientInfo;
-  directives: any[];
-  documents: any[];
+  patient_info: any; // Json type from Supabase
+  directives: any; // Json type from Supabase
+  documents: any; // Json type from Supabase
 }
 
 export const useInstitutionCodeAccess = (
@@ -74,7 +74,7 @@ export const useInstitutionCodeAccess = (
           return;
         }
 
-        const result = accessResult[0] as InstitutionAccessResponse;
+        const result = accessResult[0] as SupabaseAccessResponse;
         
         if (!result.access_granted) {
           setState(prev => ({
@@ -84,6 +84,13 @@ export const useInstitutionCodeAccess = (
           }));
           return;
         }
+
+        // Conversion sécurisée des données patient
+        const patientInfo: PatientInfo = {
+          first_name: result.patient_info?.first_name || prenom || '',
+          last_name: result.patient_info?.last_name || nom || '',
+          birth_date: result.patient_info?.birth_date || naissance || '',
+        };
 
         // Normaliser et combiner les directives et documents
         const directiveItems: DirectiveItem[] = [];
@@ -121,9 +128,9 @@ export const useInstitutionCodeAccess = (
 
         // Créer un dossier normalisé pour le store avec typage correct
         const profileData = {
-          first_name: result.patient_info?.first_name || prenom,
-          last_name: result.patient_info?.last_name || nom,
-          birth_date: result.patient_info?.birth_date || naissance,
+          first_name: patientInfo.first_name,
+          last_name: patientInfo.last_name,
+          birth_date: patientInfo.birth_date,
         };
 
         const dossier = {
@@ -151,7 +158,7 @@ export const useInstitutionCodeAccess = (
           loading: false,
           accessGranted: true,
           directiveItems,
-          patientData: result.patient_info
+          patientData: patientInfo
         }));
 
         toast({
