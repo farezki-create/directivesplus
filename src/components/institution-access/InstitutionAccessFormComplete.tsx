@@ -36,7 +36,7 @@ export const InstitutionAccessFormComplete: React.FC = () => {
       
       <InstitutionForm
         formData={formData}
-        isFormValid={isFormValid}
+        isFormValid={!!isFormValid}
         isLoading={isLoading}
         error={institutionAccess.error}
         onSubmit={handleSubmit}
