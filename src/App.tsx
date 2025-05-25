@@ -24,6 +24,7 @@ import Testimonials from "./pages/Testimonials";
 import EnSavoirPlus from "./pages/EnSavoirPlus";
 import PdfViewer from "./pages/PdfViewer";
 import Soutenir from "./pages/Soutenir";
+import Comments from "./pages/Comments";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -56,6 +57,7 @@ function App() {
               <Route path="/en-savoir-plus" element={<EnSavoirPlus />} />
               <Route path="/pdf-viewer" element={<PdfViewer />} />
               <Route path="/soutenir" element={<Soutenir />} />
+              <Route path="/commentaires" element={<Comments />} />
               {/* Redirection pour les anciennes URLs */}
               <Route path="/directives-acces" element={<MesDirectives />} />
               <Route path="/affichage-dossier" element={<NotFound />} />

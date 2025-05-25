@@ -10,6 +10,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Mail, Lock, User, Eye, EyeOff } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { RegisterForm } from "@/features/auth/RegisterForm";
+import { EmailVerificationForm } from "@/features/auth/EmailVerificationForm";
 import Header from "@/components/Header";
 
 const Auth = () => {
@@ -24,6 +26,8 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showEmailVerification, setShowEmailVerification] = useState(false);
+  const [pendingEmail, setPendingEmail] = useState("");
   
   // Redirect if already authenticated
   useEffect(() => {
@@ -103,13 +107,12 @@ const Auth = () => {
           variant: "destructive"
         });
       } else {
+        setPendingEmail(email);
+        setShowEmailVerification(true);
         toast({
-          title: "Inscription réussie",
-          description: "Votre compte a été créé avec succès"
+          title: "Email de vérification envoyé",
+          description: "Vérifiez votre boîte email pour le code de vérification",
         });
-        
-        const from = location.state?.from || "/rediger";
-        navigate(from, { replace: true });
       }
     } catch (error: any) {
       setError(error.message);
@@ -123,10 +126,57 @@ const Auth = () => {
     }
   };
 
+  const handleVerificationSent = (email: string) => {
+    setPendingEmail(email);
+    setShowEmailVerification(true);
+  };
+
+  const handleVerificationComplete = () => {
+    setShowEmailVerification(false);
+    toast({
+      title: "Compte activé",
+      description: "Votre compte a été activé avec succès !",
+    });
+    const from = location.state?.from || "/rediger";
+    navigate(from, { replace: true });
+  };
+
+  const handleBackToRegister = () => {
+    setShowEmailVerification(false);
+    setPendingEmail("");
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-directiveplus-600"></div>
+      </div>
+    );
+  }
+
+  if (showEmailVerification) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        
+        <main className="container mx-auto px-4 py-8">
+          <div className="max-w-md mx-auto">
+            <Button
+              variant="outline"
+              onClick={() => navigate("/")}
+              className="flex items-center gap-2 mb-6"
+            >
+              <ArrowLeft size={16} />
+              Retour à l'accueil
+            </Button>
+            
+            <EmailVerificationForm
+              email={pendingEmail}
+              onVerificationComplete={handleVerificationComplete}
+              onBackToRegister={handleBackToRegister}
+            />
+          </div>
+        </main>
       </div>
     );
   }
@@ -225,107 +275,7 @@ const Auth = () => {
                 </TabsContent>
                 
                 <TabsContent value="signup">
-                  <form onSubmit={handleSignup} className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <label htmlFor="firstName" className="text-sm font-medium">
-                          Prénom
-                        </label>
-                        <div className="relative">
-                          <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                          <Input
-                            id="firstName"
-                            type="text"
-                            value={firstName}
-                            onChange={(e) => setFirstName(e.target.value)}
-                            className="pl-10"
-                            placeholder="Prénom"
-                            required
-                            disabled={loading}
-                          />
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <label htmlFor="lastName" className="text-sm font-medium">
-                          Nom
-                        </label>
-                        <div className="relative">
-                          <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                          <Input
-                            id="lastName"
-                            type="text"
-                            value={lastName}
-                            onChange={(e) => setLastName(e.target.value)}
-                            className="pl-10"
-                            placeholder="Nom"
-                            required
-                            disabled={loading}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <label htmlFor="signupEmail" className="text-sm font-medium">
-                        Email
-                      </label>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                        <Input
-                          id="signupEmail"
-                          type="email"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          className="pl-10"
-                          placeholder="votre@email.com"
-                          required
-                          disabled={loading}
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <label htmlFor="signupPassword" className="text-sm font-medium">
-                        Mot de passe
-                      </label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                        <Input
-                          id="signupPassword"
-                          type={showPassword ? "text" : "password"}
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          className="pl-10 pr-10"
-                          placeholder="Choisissez un mot de passe"
-                          required
-                          disabled={loading}
-                          minLength={6}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
-                        >
-                          {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                        </button>
-                      </div>
-                    </div>
-                    
-                    {error && (
-                      <Alert variant="destructive">
-                        <AlertDescription>{error}</AlertDescription>
-                      </Alert>
-                    )}
-                    
-                    <Button 
-                      type="submit" 
-                      className="w-full" 
-                      disabled={loading}
-                    >
-                      {loading ? "Inscription..." : "S'inscrire"}
-                    </Button>
-                  </form>
+                  <RegisterForm onVerificationSent={handleVerificationSent} />
                 </TabsContent>
               </Tabs>
             </CardContent>
