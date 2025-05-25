@@ -6,6 +6,7 @@ import PatientHeader from "./PatientHeader";
 import SecurityAlert from "./SecurityAlert";
 import { useDossierStore } from "@/store/dossierStore";
 import { extractPatientInfo } from "@/utils/patient/patientInfoExtractor";
+import { DirectiveItem } from "@/types/directives";
 
 interface DossierViewProps {
   isAuthenticated: boolean;
@@ -41,21 +42,49 @@ const DossierView: React.FC<DossierViewProps> = ({
     window.location.href = "/";
   };
 
-  // Extraire les directives du dossier actif
-  const getDirectivesFromDossier = () => {
-    if (!dossierActif?.contenu) return null;
-    
-    // Vérifier s'il y a des directives dans le contenu
-    if (dossierActif.contenu.directives && Array.isArray(dossierActif.contenu.directives)) {
-      return dossierActif.contenu.directives;
+  // Extraire les directives du dossier actif avec la nouvelle structure normalisée
+  const getDirectivesFromDossier = (): DirectiveItem[] => {
+    if (!dossierActif?.contenu?.directives) {
+      return [];
     }
     
-    // Vérifier s'il y a des documents
-    if (dossierActif.contenu.documents && Array.isArray(dossierActif.contenu.documents)) {
-      return dossierActif.contenu.documents;
+    const directives = dossierActif.contenu.directives;
+    
+    // Si c'est déjà au bon format (DirectiveItem[])
+    if (Array.isArray(directives) && directives.length > 0 && directives[0].type) {
+      return directives as DirectiveItem[];
     }
     
-    return null;
+    // Sinon, essayer de normaliser l'ancien format
+    const normalizedDirectives: DirectiveItem[] = [];
+    
+    if (Array.isArray(directives)) {
+      directives.forEach((item: any, index: number) => {
+        if (item.file_path) {
+          // C'est un document
+          normalizedDirectives.push({
+            id: item.id || `doc-${index}`,
+            type: 'document',
+            file_path: item.file_path,
+            file_name: item.file_name || `Document ${index + 1}`,
+            content_type: item.content_type,
+            file_size: item.file_size,
+            description: item.description,
+            created_at: item.created_at || new Date().toISOString()
+          });
+        } else if (item.content) {
+          // C'est une directive textuelle
+          normalizedDirectives.push({
+            id: item.id || `directive-${index}`,
+            type: 'directive',
+            content: item.content,
+            created_at: item.created_at || new Date().toISOString()
+          });
+        }
+      });
+    }
+    
+    return normalizedDirectives;
   };
 
   const directives = getDirectivesFromDossier();
@@ -90,23 +119,7 @@ const DossierView: React.FC<DossierViewProps> = ({
                 </button>
               </div>
             ) : (
-              <>
-                {directives && directives.length > 0 ? (
-                  <DirectivesContent
-                    directives={directives}
-                  />
-                ) : (
-                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 text-center">
-                    <h3 className="text-lg font-medium text-amber-800 mb-2">
-                      Aucune directive disponible
-                    </h3>
-                    <p className="text-amber-700">
-                      Ce patient n'a pas encore enregistré de directives anticipées 
-                      ou elles ne sont pas disponibles via ce mode d'accès.
-                    </p>
-                  </div>
-                )}
-              </>
+              <DirectivesContent directives={directives} />
             )}
           </>
         )}

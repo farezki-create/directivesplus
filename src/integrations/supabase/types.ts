@@ -1290,6 +1290,21 @@ export type Database = {
           access_code_id: string
         }[]
       }
+      get_institution_directives_complete: {
+        Args: {
+          input_last_name: string
+          input_first_name: string
+          input_birth_date: string
+          input_institution_code: string
+        }
+        Returns: {
+          access_granted: boolean
+          user_id: string
+          patient_info: Json
+          directives: Json
+          documents: Json
+        }[]
+      }
       get_patient_directives_by_institution: {
         Args: {
           input_last_name: string

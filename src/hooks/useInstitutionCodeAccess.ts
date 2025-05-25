@@ -3,13 +3,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useDossierStore } from "@/store/dossierStore";
 import { toast } from "@/hooks/use-toast";
-
-interface InstitutionAccessState {
-  accessGranted: boolean;
-  loading: boolean;
-  error: string | null;
-  patientData: any | null;
-}
+import { DirectiveItem, InstitutionAccessState } from "@/types/directives";
 
 export const useInstitutionCodeAccess = (
   code: string | null,
@@ -22,7 +16,8 @@ export const useInstitutionCodeAccess = (
     accessGranted: false,
     loading: false,
     error: null,
-    patientData: null
+    patientData: null,
+    directiveItems: []
   });
   
   const { setDossierActif } = useDossierStore();
@@ -39,22 +34,33 @@ export const useInstitutionCodeAccess = (
       try {
         console.log("Tentative d'accès par code institution:", { code, nom, prenom, naissance });
 
-        // D'abord vérifier l'accès avec la fonction existante
-        const { data: accessData, error: accessError } = await supabase
-          .rpc('verify_institution_access', {
+        // Utiliser la nouvelle fonction SQL sécurisée
+        const { data: accessResult, error: accessError } = await supabase
+          .rpc('get_institution_directives_complete', {
             input_last_name: nom,
             input_first_name: prenom,
             input_birth_date: naissance,
             input_institution_code: code,
           });
 
-        console.log("Résultat vérification accès:", { accessData, accessError });
+        console.log("Résultat accès complet:", { accessResult, accessError });
 
         if (accessError) {
           throw new Error(accessError.message);
         }
 
-        if (!accessData || !Array.isArray(accessData) || accessData.length === 0) {
+        if (!accessResult || !Array.isArray(accessResult) || accessResult.length === 0) {
+          setState(prev => ({
+            ...prev,
+            loading: false,
+            error: "Erreur lors de la récupération des données. Veuillez réessayer."
+          }));
+          return;
+        }
+
+        const result = accessResult[0];
+        
+        if (!result.access_granted) {
           setState(prev => ({
             ...prev,
             loading: false,
@@ -63,35 +69,13 @@ export const useInstitutionCodeAccess = (
           return;
         }
 
-        const accessInfo = accessData[0];
-        const userId = accessInfo.user_id;
-
-        // Récupérer les directives directement de la table
-        const { data: directivesData, error: directivesError } = await supabase
-          .from('directives')
-          .select('*')
-          .eq('user_id', userId)
-          .eq('is_active', true)
-          .order('created_at', { ascending: false });
-
-        console.log("Résultat directives:", { directivesData, directivesError });
-
-        // Récupérer les documents PDF
-        const { data: documentsData, error: documentsError } = await supabase
-          .from('pdf_documents')
-          .select('*')
-          .eq('user_id', userId)
-          .order('created_at', { ascending: false });
-
-        console.log("Résultat documents:", { documentsData, documentsError });
-
-        // Préparer le contenu des directives
-        let directivesContent = [];
+        // Normaliser et combiner les directives et documents
+        const directiveItems: DirectiveItem[] = [];
         
         // Ajouter les directives textuelles
-        if (directivesData && Array.isArray(directivesData)) {
-          directivesData.forEach(directive => {
-            directivesContent.push({
+        if (result.directives && Array.isArray(result.directives)) {
+          result.directives.forEach((directive: any) => {
+            directiveItems.push({
               id: directive.id,
               type: 'directive',
               content: directive.content,
@@ -101,41 +85,39 @@ export const useInstitutionCodeAccess = (
         }
         
         // Ajouter les documents PDF
-        if (documentsData && Array.isArray(documentsData) && documentsData.length > 0) {
-          const documentsList = documentsData.map(doc => ({
-            id: doc.id,
-            file_name: doc.file_name,
-            file_path: doc.file_path,
-            file_type: doc.content_type || 'pdf',
-            content_type: doc.content_type,
-            user_id: doc.user_id,
-            created_at: doc.created_at,
-            description: doc.description,
-            file_size: doc.file_size
-          }));
-          directivesContent = [...directivesContent, ...documentsList];
+        if (result.documents && Array.isArray(result.documents)) {
+          result.documents.forEach((document: any) => {
+            directiveItems.push({
+              id: document.id,
+              type: 'document',
+              file_path: document.file_path,
+              file_name: document.file_name,
+              content_type: document.content_type,
+              file_size: document.file_size,
+              description: document.description,
+              created_at: document.created_at
+            });
+          });
         }
 
-        // Créer un dossier pour le store
+        // Trier par date de création (plus récent en premier)
+        directiveItems.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+        // Créer un dossier normalisé pour le store
         const dossier = {
-          id: `institution-access-${userId || 'unknown'}`,
-          userId: userId || '',
+          id: `institution-access-${result.user_id}`,
+          userId: result.user_id || '',
           isFullAccess: true,
           isDirectivesOnly: false,
           isMedicalOnly: false,
-          profileData: {
-            first_name: prenom,
-            last_name: nom,
-            birth_date: naissance
-          },
+          profileData: result.patient_info,
           contenu: {
             patient: {
-              nom: nom,
-              prenom: prenom,
-              date_naissance: naissance
+              nom: result.patient_info?.last_name || nom,
+              prenom: result.patient_info?.first_name || prenom,
+              date_naissance: result.patient_info?.birth_date || naissance
             },
-            directives: directivesContent,
-            documents: documentsData || []
+            directives: directiveItems
           }
         };
 
@@ -146,17 +128,13 @@ export const useInstitutionCodeAccess = (
           ...prev,
           loading: false,
           accessGranted: true,
-          patientData: {
-            user_id: userId,
-            first_name: prenom,
-            last_name: nom,
-            birth_date: naissance
-          }
+          directiveItems,
+          patientData: result.patient_info
         }));
 
         toast({
           title: "Accès autorisé",
-          description: `Accès aux directives de ${prenom} ${nom}`,
+          description: `Accès aux directives de ${result.patient_info?.first_name} ${result.patient_info?.last_name}`,
         });
 
       } catch (error: any) {
