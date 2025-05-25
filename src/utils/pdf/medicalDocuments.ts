@@ -11,8 +11,6 @@ export const getMedicalDocuments = async (userId: string): Promise<any[]> => {
   const { supabase } = await import("@/integrations/supabase/client");
   
   try {
-    let allDocuments: any[] = [];
-
     console.log("Récupération depuis medical_documents...");
     
     // Récupérer UNIQUEMENT depuis medical_documents (système principal)
@@ -22,27 +20,30 @@ export const getMedicalDocuments = async (userId: string): Promise<any[]> => {
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
-    if (!medicalError && medicalDocs && medicalDocs.length > 0) {
-      console.log("Documents trouvés dans medical_documents:", medicalDocs.length);
-      
-      const medicalDocuments = medicalDocs.map(doc => ({
-        id: doc.id,
-        file_name: doc.file_name,
-        description: doc.description || `Document médical: ${doc.file_name}`,
-        created_at: doc.created_at,
-        user_id: doc.user_id,
-        content: doc.file_path, // Le contenu est directement dans file_path
-        file_type: doc.file_type
-      }));
-      
-      allDocuments = [...medicalDocuments];
+    if (medicalError) {
+      console.error("Erreur lors de la récupération depuis medical_documents:", medicalError);
+      return [];
     }
 
-    // SUPPRESSION DE LA RÉCUPÉRATION DEPUIS questionnaire_responses
-    // pour éviter les doublons et les anciens documents supprimés
+    if (!medicalDocs || medicalDocs.length === 0) {
+      console.log("Aucun document trouvé dans medical_documents");
+      return [];
+    }
 
-    console.log("Total des documents médicaux récupérés:", allDocuments.length);
-    return allDocuments;
+    console.log("Documents trouvés dans medical_documents:", medicalDocs.length);
+    
+    const medicalDocuments = medicalDocs.map(doc => ({
+      id: doc.id,
+      file_name: doc.file_name,
+      description: doc.description || `Document médical: ${doc.file_name}`,
+      created_at: doc.created_at,
+      user_id: doc.user_id,
+      content: doc.file_path, // Le contenu est directement dans file_path
+      file_type: doc.file_type
+    }));
+
+    console.log("Total des documents médicaux récupérés:", medicalDocuments.length);
+    return medicalDocuments;
 
   } catch (error) {
     console.error('Erreur lors de la récupération des documents médicaux:', error);

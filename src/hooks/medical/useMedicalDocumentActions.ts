@@ -33,21 +33,21 @@ export const useMedicalDocumentActions = ({
     setDeletingDocuments(prev => new Set([...prev, documentId]));
 
     try {
-      // Delete from medical_documents
+      console.log("Suppression du document:", documentId);
+      
+      // Delete from medical_documents only (simplified)
       const { error: medicalError } = await supabase
         .from('medical_documents')
         .delete()
         .eq('id', documentId)
         .eq('user_id', userId);
 
-      // Also delete from questionnaire_responses if it's an old document
-      const { error: questionnaireError } = await supabase
-        .from('questionnaire_responses')
-        .delete()
-        .eq('user_id', userId)
-        .eq('questionnaire_type', 'medical-documents')
-        .eq('question_id', documentId);
+      if (medicalError) {
+        console.error("Erreur lors de la suppression:", medicalError);
+        throw medicalError;
+      }
 
+      // Update the UI immediately
       setUploadedDocuments(prev => prev.filter(doc => doc.id !== documentId));
 
       if (onDocumentRemove) {
@@ -56,9 +56,11 @@ export const useMedicalDocumentActions = ({
 
       toast({
         title: "Supprimé",
-        description: "Document supprimé",
+        description: "Document supprimé avec succès",
         duration: 2000
       });
+      
+      console.log("Document supprimé avec succès");
     } catch (error: any) {
       console.error('Erreur lors de la suppression du document:', error);
       toast({

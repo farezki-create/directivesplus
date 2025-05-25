@@ -16,22 +16,28 @@ export const useMedicalDocumentState = (userId?: string) => {
   const [deletingDocuments, setDeletingDocuments] = useState<Set<string>>(new Set());
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
-  // Fetch medical documents from both medical_documents and questionnaires
+  // Fetch medical documents from medical_documents table only (simplified)
   useEffect(() => {
     const fetchMedicalDocuments = async () => {
       if (!userId) return;
       
       try {
+        console.log("Récupération des documents depuis medical_documents uniquement");
+        
         // Fetch from medical_documents (new simplified system)
         const { data: medicalDocs, error: medicalError } = await supabase
           .from('medical_documents')
           .select('*')
-          .eq('user_id', userId);
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false });
 
-        let allDocuments: MedicalDocument[] = [];
+        if (medicalError) {
+          console.error('Erreur lors de la récupération des documents médicaux:', medicalError);
+          return;
+        }
 
-        if (!medicalError && medicalDocs) {
-          allDocuments = medicalDocs.map(doc => ({
+        if (medicalDocs && medicalDocs.length > 0) {
+          const documents = medicalDocs.map(doc => ({
             id: doc.id,
             name: doc.file_name,
             description: doc.description || `Document médical: ${doc.file_name}`,
@@ -39,28 +45,16 @@ export const useMedicalDocumentState = (userId?: string) => {
             file_path: doc.file_path,
             file_type: doc.file_type
           }));
+          
+          console.log("Documents chargés:", documents.length);
+          setUploadedDocuments(documents);
+        } else {
+          console.log("Aucun document trouvé");
+          setUploadedDocuments([]);
         }
-
-        // Also fetch from questionnaire_responses (old system)
-        const { data: questionnaireData, error: questionnaireError } = await supabase
-          .from('questionnaire_responses')
-          .select('*')
-          .eq('user_id', userId)
-          .eq('questionnaire_type', 'medical-documents');
-        
-        if (!questionnaireError && questionnaireData) {
-          const questionnaireDocuments = questionnaireData.map(item => ({
-            id: item.question_id,
-            name: item.question_text,
-            description: item.response,
-            created_at: item.created_at
-          }));
-          allDocuments = [...allDocuments, ...questionnaireDocuments];
-        }
-
-        setUploadedDocuments(allDocuments);
       } catch (error) {
         console.error('Erreur lors de la récupération des documents médicaux:', error);
+        setUploadedDocuments([]);
       }
     };
     
