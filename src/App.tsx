@@ -56,6 +56,9 @@ function App() {
               <Route path="/testimonials" element={<Testimonials />} />
               <Route path="/en-savoir-plus" element={<EnSavoirPlus />} />
               <Route path="/pdf-viewer" element={<PdfViewer />} />
+              {/* Redirection pour les anciennes URLs */}
+              <Route path="/affichage-dossier" element={<NotFound />} />
+              <Route path="/affichage-dossier-redirect" element={<NotFound />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
