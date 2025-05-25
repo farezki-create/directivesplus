@@ -5,6 +5,22 @@ import { useDossierStore } from "@/store/dossierStore";
 import { toast } from "@/hooks/use-toast";
 import { DirectiveItem, InstitutionAccessState } from "@/types/directives";
 
+// Interface pour typer les données patient retournées par SQL
+interface PatientInfo {
+  first_name: string;
+  last_name: string;
+  birth_date: string;
+}
+
+// Interface pour typer la réponse complète de la fonction SQL
+interface InstitutionAccessResponse {
+  access_granted: boolean;
+  user_id: string;
+  patient_info: PatientInfo;
+  directives: any[];
+  documents: any[];
+}
+
 export const useInstitutionCodeAccess = (
   code: string | null,
   nom: string | null,
@@ -58,7 +74,7 @@ export const useInstitutionCodeAccess = (
           return;
         }
 
-        const result = accessResult[0];
+        const result = accessResult[0] as InstitutionAccessResponse;
         
         if (!result.access_granted) {
           setState(prev => ({
@@ -103,19 +119,25 @@ export const useInstitutionCodeAccess = (
         // Trier par date de création (plus récent en premier)
         directiveItems.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-        // Créer un dossier normalisé pour le store
+        // Créer un dossier normalisé pour le store avec typage correct
+        const profileData = {
+          first_name: result.patient_info?.first_name || prenom,
+          last_name: result.patient_info?.last_name || nom,
+          birth_date: result.patient_info?.birth_date || naissance,
+        };
+
         const dossier = {
           id: `institution-access-${result.user_id}`,
           userId: result.user_id || '',
           isFullAccess: true,
           isDirectivesOnly: false,
           isMedicalOnly: false,
-          profileData: result.patient_info,
+          profileData,
           contenu: {
             patient: {
-              nom: result.patient_info?.last_name || nom,
-              prenom: result.patient_info?.first_name || prenom,
-              date_naissance: result.patient_info?.birth_date || naissance
+              nom: profileData.last_name,
+              prenom: profileData.first_name,
+              date_naissance: profileData.birth_date
             },
             directives: directiveItems
           }
@@ -134,7 +156,7 @@ export const useInstitutionCodeAccess = (
 
         toast({
           title: "Accès autorisé",
-          description: `Accès aux directives de ${result.patient_info?.first_name} ${result.patient_info?.last_name}`,
+          description: `Accès aux directives de ${profileData.first_name} ${profileData.last_name}`,
         });
 
       } catch (error: any) {
