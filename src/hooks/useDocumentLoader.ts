@@ -39,65 +39,82 @@ export const useDocumentLoader = (documentId: string | null) => {
         setLoading(true);
         setError(null);
         
-        console.log(`AUDIT: Début du chargement du document:`, documentId);
-        console.log(`AUDIT: Type du documentId:`, typeof documentId);
-        console.log(`AUDIT: Longueur du documentId:`, documentId.length);
-        console.log(`AUDIT: Format UUID valide:`, /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(documentId));
+        console.log(`AUDIT: ===========================================`);
+        console.log(`AUDIT: DÉMARRAGE AUDIT COMPLET`);
+        console.log(`AUDIT: Document ID recherché: ${documentId}`);
+        console.log(`AUDIT: Type: ${typeof documentId}, Longueur: ${documentId.length}`);
+        console.log(`AUDIT: Format UUID valide: ${/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(documentId)}`);
 
-        // Test de connexion Supabase
+        // AUDIT 0: Vérifier l'authentification
+        console.log("AUDIT: Vérification de l'état d'authentification...");
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        console.log("AUDIT: Session actuelle:", {
+          hasSession: !!session,
+          userId: session?.user?.id,
+          userEmail: session?.user?.email,
+          sessionError
+        });
+
+        // AUDIT 1: Test de connexion Supabase basique
         console.log("AUDIT: Test de connexion Supabase...");
         const { data: testData, error: testError } = await supabase
           .from('pdf_documents')
           .select('count')
           .limit(1);
         
-        console.log("AUDIT: Test connexion résultat:", { testData, testError });
+        console.log("AUDIT: Test connexion - Données:", testData);
+        console.log("AUDIT: Test connexion - Erreur:", testError);
 
-        // Vérifier si la requête a été annulée
         if (abortController.signal.aborted) {
           console.log("AUDIT: Requête annulée après test connexion");
           return;
         }
         
-        // AUDIT 1: Recherche large dans pdf_documents
-        console.log("AUDIT: Recherche LARGE dans pdf_documents (tous les documents)...");
-        const { data: allPdfDocs, error: allPdfError } = await supabase
+        // AUDIT 2: Recherche large dans pdf_documents AVEC détails complets
+        console.log("AUDIT: ====== RECHERCHE DANS PDF_DOCUMENTS ======");
+        const { data: allPdfDocs, error: allPdfError, count: totalCount } = await supabase
           .from('pdf_documents')
-          .select('*')
-          .limit(5);
+          .select('*', { count: 'exact' })
+          .limit(10);
 
-        console.log('AUDIT: Tous les pdf_documents (5 premiers):', { data: allPdfDocs, error: allPdfError });
+        console.log('AUDIT: Recherche large - Nombre total:', totalCount);
+        console.log('AUDIT: Recherche large - Données brutes:', allPdfDocs);
+        console.log('AUDIT: Recherche large - Erreur détaillée:', allPdfError);
 
         if (allPdfDocs && allPdfDocs.length > 0) {
-          console.log("AUDIT: Premier document trouvé:", allPdfDocs[0]);
-          console.log("AUDIT: Comparaison IDs:");
+          console.log("AUDIT: Documents trouvés - comparaison des IDs:");
           allPdfDocs.forEach((doc, index) => {
-            console.log(`  Doc ${index}: ${doc.id} === ${documentId} ? ${doc.id === documentId}`);
+            const idMatch = doc.id === documentId;
+            console.log(`  📄 Doc ${index + 1}: ID="${doc.id}" | Nom="${doc.file_name}" | Match=${idMatch}`);
+            if (idMatch) {
+              console.log(`  ✅ TROUVÉ! Document correspondant:`, doc);
+            }
           });
+        } else {
+          console.log("AUDIT: ❌ Aucun document trouvé dans pdf_documents");
         }
 
-        // AUDIT 2: Recherche spécifique par ID
-        console.log("AUDIT: Recherche SPECIFIQUE dans pdf_documents...");
+        // AUDIT 3: Recherche spécifique par ID dans pdf_documents
+        console.log("AUDIT: Recherche spécifique dans pdf_documents...");
         const { data: pdfData, error: pdfError } = await supabase
           .from('pdf_documents')
           .select('*')
           .eq('id', documentId);
 
-        console.log('AUDIT: Résultat recherche spécifique:', { 
-          data: pdfData, 
-          error: pdfError,
-          dataLength: pdfData?.length,
-          dataType: typeof pdfData
-        });
+        console.log('AUDIT: Recherche spécifique - Données:', pdfData);
+        console.log('AUDIT: Recherche spécifique - Erreur:', pdfError);
+        console.log('AUDIT: Recherche spécifique - Type de données:', typeof pdfData);
+        console.log('AUDIT: Recherche spécifique - Est-ce un array?', Array.isArray(pdfData));
+        console.log('AUDIT: Recherche spécifique - Longueur:', pdfData?.length);
 
         if (abortController.signal.aborted) {
           console.log("AUDIT: Requête annulée après recherche spécifique");
           return;
         }
 
-        // AUDIT 3: Vérification des erreurs
+        // AUDIT 4: Vérification des erreurs
         if (pdfError) {
-          console.error("AUDIT: Erreur dans pdf_documents:", {
+          console.error("AUDIT: ❌ ERREUR dans pdf_documents:", {
             code: pdfError.code,
             message: pdfError.message,
             details: pdfError.details,
@@ -109,37 +126,41 @@ export const useDocumentLoader = (documentId: string | null) => {
           }
         }
 
-        // AUDIT 4: Vérification des données
+        // AUDIT 5: Traitement des données trouvées
         if (pdfData && pdfData.length > 0) {
-          console.log("AUDIT: Document trouvé dans pdf_documents:", pdfData[0]);
+          console.log("AUDIT: ✅ Document trouvé dans pdf_documents:", pdfData[0]);
+          const foundDoc = pdfData[0];
           const newDocument = {
-            id: pdfData[0].id,
-            file_name: pdfData[0].file_name,
-            file_path: pdfData[0].file_path,
-            file_type: pdfData[0].content_type || 'application/pdf',
-            content_type: pdfData[0].content_type,
-            user_id: pdfData[0].user_id,
-            created_at: pdfData[0].created_at,
-            description: pdfData[0].description,
-            file_size: pdfData[0].file_size,
-            updated_at: pdfData[0].updated_at,
-            external_id: pdfData[0].external_id
+            id: foundDoc.id,
+            file_name: foundDoc.file_name,
+            file_path: foundDoc.file_path,
+            file_type: foundDoc.content_type || 'application/pdf',
+            content_type: foundDoc.content_type,
+            user_id: foundDoc.user_id,
+            created_at: foundDoc.created_at,
+            description: foundDoc.description,
+            file_size: foundDoc.file_size,
+            updated_at: foundDoc.updated_at,
+            external_id: foundDoc.external_id
           };
-          console.log("AUDIT: Document final (pdf):", newDocument);
+          console.log("AUDIT: Document formaté:", newDocument);
           setDocument(newDocument);
           setLoading(false);
           loadingRef.current = false;
+          console.log("AUDIT: ===========================================");
           return;
         }
 
-        // Recherche 2: directives
-        console.log("AUDIT: Recherche dans directives...");
+        console.log("AUDIT: ❌ Document non trouvé dans pdf_documents, recherche dans directives...");
+
+        // Recherche dans directives
         const { data: directiveData, error: directiveError } = await supabase
           .from('directives')
           .select('*')
           .eq('id', documentId);
 
-        console.log('AUDIT: Résultat directives:', { data: directiveData, error: directiveError });
+        console.log('AUDIT: Directives - Données:', directiveData);
+        console.log('AUDIT: Directives - Erreur:', directiveError);
 
         if (abortController.signal.aborted) {
           return;
@@ -151,7 +172,7 @@ export const useDocumentLoader = (documentId: string | null) => {
         }
 
         if (directiveData && directiveData.length > 0) {
-          console.log("AUDIT: Document trouvé dans directives");
+          console.log("AUDIT: ✅ Document trouvé dans directives");
           const content = directiveData[0].content as any;
           const newDocument = {
             id: directiveData[0].id,
@@ -171,14 +192,16 @@ export const useDocumentLoader = (documentId: string | null) => {
           return;
         }
 
-        // Recherche 3: shared_documents
-        console.log("AUDIT: Recherche dans shared_documents...");
+        console.log("AUDIT: ❌ Document non trouvé dans directives, recherche dans shared_documents...");
+
+        // Recherche dans shared_documents
         const { data: sharedData, error: sharedError } = await supabase
           .from('shared_documents')
           .select('*')
           .eq('document_id', documentId);
 
-        console.log('AUDIT: Résultat shared_documents:', { data: sharedData, error: sharedError });
+        console.log('AUDIT: Shared documents - Données:', sharedData);
+        console.log('AUDIT: Shared documents - Erreur:', sharedError);
 
         if (abortController.signal.aborted) {
           return;
@@ -190,7 +213,7 @@ export const useDocumentLoader = (documentId: string | null) => {
         }
 
         if (sharedData && sharedData.length > 0) {
-          console.log("AUDIT: Document trouvé dans shared_documents");
+          console.log("AUDIT: ✅ Document trouvé dans shared_documents");
           const documentData = sharedData[0].document_data as any;
           const newDocument = {
             id: sharedData[0].document_id,
@@ -209,9 +232,18 @@ export const useDocumentLoader = (documentId: string | null) => {
           return;
         }
 
-        // AUDIT FINAL: Aucun document trouvé
-        const errorMsg = `AUDIT: Document avec l'ID ${documentId} introuvable dans toutes les tables. Détails de l'audit disponibles dans la console.`;
-        console.error("AUDIT: ÉCHEC COMPLET:", errorMsg);
+        // AUDIT FINAL: Résumé complet
+        console.log("AUDIT: ===========================================");
+        console.log("AUDIT: ❌ ÉCHEC COMPLET - RÉSUMÉ:");
+        console.log(`AUDIT: - Document ID: ${documentId}`);
+        console.log(`AUDIT: - Session utilisateur: ${session ? 'OUI' : 'NON'}`);
+        console.log(`AUDIT: - pdf_documents: ${pdfData?.length || 0} résultats`);
+        console.log(`AUDIT: - directives: ${directiveData?.length || 0} résultats`);
+        console.log(`AUDIT: - shared_documents: ${sharedData?.length || 0} résultats`);
+        console.log("AUDIT: ===========================================");
+        
+        const errorMsg = `Document avec l'ID ${documentId} introuvable dans toutes les tables. Vérifiez que l'ID est correct et que vous avez les permissions d'accès.`;
+        console.error("AUDIT: ERREUR FINALE:", errorMsg);
         throw new Error(errorMsg);
 
       } catch (err: any) {
@@ -220,7 +252,7 @@ export const useDocumentLoader = (documentId: string | null) => {
           return;
         }
 
-        console.error(`AUDIT: Erreur complète:`, {
+        console.error(`AUDIT: ❌ ERREUR DANS LE PROCESSUS:`, {
           error: err,
           message: err.message,
           stack: err.stack,
