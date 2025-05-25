@@ -26,8 +26,15 @@ const DirectivesInfo = () => {
         </div>
         
         <div className="max-w-4xl mx-auto">
-          {/* Hero Section */}
+          {/* Hero Section with Image */}
           <div className="text-center mb-12">
+            <div className="mb-8 flex justify-center">
+              <img 
+                src="/lovable-uploads/86bce663-cca0-4ea4-bc23-6aefb0b92745.png" 
+                alt="Directives Anticipées - Document et stylo" 
+                className="w-64 h-auto rounded-lg shadow-sm"
+              />
+            </div>
             <h1 className="text-4xl font-bold mb-4 text-directiveplus-800">
               Les Directives Anticipées
             </h1>
