@@ -114,7 +114,7 @@ const DirectivesGrid = () => {
             <CardContent>
               <Button 
                 onClick={() => navigate(card.path)}
-                className="w-full"
+                className="w-full bg-slate-700 hover:bg-slate-800 text-white border-0 rounded-lg transition-all duration-200 hover:shadow-md"
                 variant="default"
               >
                 Commencer
@@ -144,7 +144,7 @@ const DirectivesGrid = () => {
               <CardContent>
                 <Button 
                   onClick={() => navigate(card.path)}
-                  className="w-full"
+                  className="w-full bg-slate-700 hover:bg-slate-800 text-white border-0 rounded-lg transition-all duration-200 hover:shadow-md"
                   variant="default"
                 >
                   {card.buttonText}

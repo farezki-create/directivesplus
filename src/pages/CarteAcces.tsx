@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { QRCodeSVG } from "qrcode.react";
 import { ArrowLeft, Download, Printer, CreditCard } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import jsPDF from "jspdf";
 
 const CarteAcces = () => {
   const { user, isAuthenticated, isLoading, profile } = useAuth();
@@ -39,15 +40,61 @@ const CarteAcces = () => {
   }, [isAuthenticated, user, profile]);
 
   const handlePrint = () => {
-    window.print();
+    const cardElement = document.getElementById('access-card');
+    if (cardElement) {
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.write(`
+          <html>
+            <head>
+              <title>Carte d'Accès - DirectivesPlus</title>
+              <style>
+                body { margin: 0; font-family: Arial, sans-serif; }
+                .card { width: 85.6mm; height: 53.98mm; padding: 8px; box-sizing: border-box; }
+                @media print {
+                  .card { width: 85.6mm; height: 53.98mm; page-break-inside: avoid; }
+                }
+              </style>
+            </head>
+            <body>
+              <div class="card">${cardElement.innerHTML}</div>
+            </body>
+          </html>
+        `);
+        printWindow.document.close();
+        printWindow.print();
+        
+        toast({
+          title: "Impression lancée",
+          description: "La carte d'accès va être imprimée"
+        });
+      }
+    }
   };
 
   const handleDownload = () => {
-    // Implémenter le téléchargement de la carte en PDF
-    toast({
-      title: "Téléchargement",
-      description: "Fonctionnalité de téléchargement en cours de développement",
-    });
+    const cardElement = document.getElementById('access-card');
+    if (cardElement) {
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: [85.6, 53.98] // Format carte bancaire
+      });
+      
+      pdf.html(cardElement, {
+        callback: function (doc) {
+          doc.save('carte-acces-directivesplus.pdf');
+          toast({
+            title: "Téléchargement réussi",
+            description: "La carte d'accès a été téléchargée en PDF"
+          });
+        },
+        x: 0,
+        y: 0,
+        width: 85.6,
+        windowWidth: 400
+      });
+    }
   };
 
   if (isLoading) {
@@ -94,84 +141,79 @@ const CarteAcces = () => {
 
           {/* Actions d'impression et téléchargement */}
           <div className="flex justify-center gap-4 mb-8 print:hidden">
-            <Button onClick={handlePrint} variant="outline" className="flex items-center gap-2">
+            <Button 
+              onClick={handlePrint} 
+              className="flex items-center gap-2 bg-slate-700 hover:bg-slate-800 text-white"
+            >
               <Printer size={16} />
               Imprimer
             </Button>
-            <Button onClick={handleDownload} variant="outline" className="flex items-center gap-2">
+            <Button 
+              onClick={handleDownload} 
+              className="flex items-center gap-2 bg-slate-700 hover:bg-slate-800 text-white"
+            >
               <Download size={16} />
               Télécharger PDF
             </Button>
           </div>
 
-          {/* Carte d'accès */}
-          <div className="max-w-md mx-auto">
-            <Card className="border-2 border-directiveplus-200 shadow-lg bg-gradient-to-br from-white to-directiveplus-50">
-              <CardHeader className="text-center pb-4">
-                <div className="flex justify-center items-center gap-2 mb-2">
-                  <CreditCard className="h-6 w-6 text-directiveplus-600" />
-                  <span className="text-xl font-bold text-directiveplus-600">DirectivesPlus</span>
-                </div>
-                <CardTitle className="text-lg text-gray-800">
-                  Carte d'Accès Professionnel
-                </CardTitle>
-              </CardHeader>
+          {/* Carte d'accès format bancaire */}
+          <div className="flex justify-center">
+            <div 
+              id="access-card"
+              className="w-[342px] h-[216px] bg-gradient-to-br from-directiveplus-600 to-directiveplus-800 rounded-2xl p-4 text-white shadow-2xl relative overflow-hidden"
+              style={{ aspectRatio: '85.6/53.98' }}
+            >
+              {/* Pattern décoratif */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -translate-y-16 translate-x-16"></div>
+              <div className="absolute bottom-0 left-0 w-24 h-24 bg-white opacity-10 rounded-full translate-y-12 -translate-x-12"></div>
               
-              <CardContent className="space-y-4">
-                {/* Informations personnelles */}
-                <div className="bg-white p-4 rounded-lg border">
-                  <h3 className="font-semibold text-gray-800 mb-3">Informations Patient</h3>
-                  <div className="space-y-2 text-sm">
-                    <div>
-                      <span className="font-medium text-gray-600">Nom :</span>
-                      <span className="ml-2 font-semibold">{lastName}</span>
-                    </div>
-                    <div>
-                      <span className="font-medium text-gray-600">Prénom :</span>
-                      <span className="ml-2 font-semibold">{firstName}</span>
-                    </div>
-                    <div>
-                      <span className="font-medium text-gray-600">Date de naissance :</span>
-                      <span className="ml-2 font-semibold">{birthDate}</span>
-                    </div>
+              {/* Header */}
+              <div className="flex justify-between items-start mb-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <CreditCard className="h-5 w-5" />
+                    <span className="text-sm font-bold">DirectivesPlus</span>
                   </div>
+                  <p className="text-xs opacity-90">Carte d'Accès Professionnel</p>
                 </div>
-
-                {/* Code d'accès institution */}
-                <div className="bg-directiveplus-50 p-4 rounded-lg border border-directiveplus-200">
-                  <h3 className="font-semibold text-directiveplus-800 mb-2">Code d'Accès Institution</h3>
-                  <div className="text-center">
-                    <span className="text-2xl font-mono font-bold text-directiveplus-600">
-                      {codeAcces}
-                    </span>
-                  </div>
-                </div>
-
-                {/* QR Code */}
-                <div className="bg-white p-4 rounded-lg border text-center">
-                  <h3 className="font-semibold text-gray-800 mb-3">Accès Rapide aux Directives</h3>
-                  {qrCodeUrl && (
-                    <div className="flex justify-center">
+                <div className="text-right">
+                  <div className="bg-white bg-opacity-20 rounded p-1">
+                    {qrCodeUrl && (
                       <QRCodeSVG 
                         value={qrCodeUrl}
-                        size={120}
+                        size={40}
                         level="M"
-                        includeMargin={true}
+                        fgColor="#ffffff"
+                        bgColor="transparent"
                       />
-                    </div>
-                  )}
-                  <p className="text-xs text-gray-500 mt-2">
-                    Scanner ce QR code pour accéder aux directives
-                  </p>
+                    )}
+                  </div>
                 </div>
+              </div>
 
-                {/* Informations légales */}
-                <div className="text-xs text-gray-500 text-center p-2 bg-gray-50 rounded">
-                  <p>Document officiel - Usage professionnel uniquement</p>
-                  <p>Accès tracé et sécurisé conforme à la réglementation</p>
+              {/* Informations patient */}
+              <div className="mb-4">
+                <div className="text-xs opacity-75 mb-1">PATIENT</div>
+                <div className="text-sm font-semibold">{lastName.toUpperCase()}</div>
+                <div className="text-sm">{firstName}</div>
+                <div className="text-xs opacity-90">{birthDate}</div>
+              </div>
+
+              {/* Code d'accès */}
+              <div className="absolute bottom-4 left-4 right-4">
+                <div className="flex justify-between items-end">
+                  <div>
+                    <div className="text-xs opacity-75 mb-1">CODE D'ACCÈS</div>
+                    <div className="text-lg font-bold tracking-widest">{codeAcces}</div>
+                  </div>
+                  <div className="text-xs opacity-75 text-right">
+                    <div>Accès sécurisé</div>
+                    <div>Usage professionnel</div>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
 
           {/* Instructions d'utilisation */}
@@ -208,18 +250,6 @@ const CarteAcces = () => {
           <p>© 2025 DirectivesPlus. Tous droits réservés.</p>
         </div>
       </footer>
-
-      {/* Styles d'impression */}
-      <style>{`
-        @media print {
-          body { margin: 0; }
-          .print\\:hidden { display: none !important; }
-          .max-w-md { max-width: 85mm; }
-          .mx-auto { margin: 0 auto; }
-          .shadow-lg { box-shadow: none; }
-          .border-2 { border-width: 1px; }
-        }
-      `}</style>
     </div>
   );
 };
