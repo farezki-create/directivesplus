@@ -142,19 +142,12 @@ export const useMedicalDocumentOperations = ({
       
       toast({
         title: "Document ajouté",
-        description: "Le document médical a été ajouté et sera inclus dans votre PDF de directives anticipées"
+        description: "Le document médical a été ajouté avec succès. Utilisez le bouton 'Voir' pour le prévisualiser."
       });
 
-      // Ouvrir le document automatiquement SANS déclencher d'autres actions
-      setTimeout(() => {
-        handlePreviewDocument(newDocument);
-      }, 300);
-
-      // Notifier la fin de l'upload APRÈS tout le processus
-      setTimeout(() => {
-        onUploadComplete();
-        setIsProcessing(false);
-      }, 800);
+      // Notifier la fin de l'upload immédiatement
+      onUploadComplete();
+      setIsProcessing(false);
 
     } catch (error: any) {
       console.error('Erreur lors de l\'ajout du document:', error);
