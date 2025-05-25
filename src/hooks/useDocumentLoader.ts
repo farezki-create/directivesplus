@@ -48,7 +48,7 @@ export const useDocumentLoader = (documentId: string | null) => {
         
         // Tentative 1: pdf_documents
         console.log("useDocumentLoader: Recherche dans pdf_documents...");
-        let { data, error } = await supabase
+        const { data: pdfData, error: pdfError } = await supabase
           .from('pdf_documents')
           .select('*')
           .eq('id', documentId)
@@ -58,30 +58,32 @@ export const useDocumentLoader = (documentId: string | null) => {
           return;
         }
 
-        console.log('useDocumentLoader: Résultat pdf_documents:', { data, error, errorCode: error?.code });
+        console.log('useDocumentLoader: Résultat pdf_documents:', { data: pdfData, error: pdfError });
 
-        if (error && error.code !== 'PGRST116') {
-          console.error("useDocumentLoader: Erreur dans pdf_documents:", error);
-          throw error;
+        if (pdfError) {
+          console.error("useDocumentLoader: Erreur dans pdf_documents:", pdfError);
+          throw pdfError;
         }
 
-        if (data) {
+        if (pdfData) {
           console.log("useDocumentLoader: Document trouvé dans pdf_documents");
           const newDocument = {
-            id: data.id,
-            file_name: data.file_name,
-            file_path: data.file_path,
-            file_type: data.content_type || 'application/pdf',
-            content_type: data.content_type,
-            user_id: data.user_id,
-            created_at: data.created_at,
-            description: data.description,
-            file_size: data.file_size,
-            updated_at: data.updated_at,
-            external_id: data.external_id
+            id: pdfData.id,
+            file_name: pdfData.file_name,
+            file_path: pdfData.file_path,
+            file_type: pdfData.content_type || 'application/pdf',
+            content_type: pdfData.content_type,
+            user_id: pdfData.user_id,
+            created_at: pdfData.created_at,
+            description: pdfData.description,
+            file_size: pdfData.file_size,
+            updated_at: pdfData.updated_at,
+            external_id: pdfData.external_id
           };
           console.log("useDocumentLoader: Document final (pdf):", newDocument);
           setDocument(newDocument);
+          setLoading(false);
+          loadingRef.current = false;
           return;
         }
 
@@ -97,9 +99,9 @@ export const useDocumentLoader = (documentId: string | null) => {
           return;
         }
 
-        console.log('useDocumentLoader: Résultat directives:', { directiveData, directiveError, errorCode: directiveError?.code });
+        console.log('useDocumentLoader: Résultat directives:', { data: directiveData, error: directiveError });
 
-        if (directiveError && directiveError.code !== 'PGRST116') {
+        if (directiveError) {
           console.error("useDocumentLoader: Erreur dans directives:", directiveError);
           throw directiveError;
         }
@@ -120,6 +122,8 @@ export const useDocumentLoader = (documentId: string | null) => {
           };
           console.log("useDocumentLoader: Document final (directive):", newDocument);
           setDocument(newDocument);
+          setLoading(false);
+          loadingRef.current = false;
           return;
         }
 
@@ -135,9 +139,9 @@ export const useDocumentLoader = (documentId: string | null) => {
           return;
         }
 
-        console.log('useDocumentLoader: Résultat shared_documents:', { sharedData, sharedError, errorCode: sharedError?.code });
+        console.log('useDocumentLoader: Résultat shared_documents:', { data: sharedData, error: sharedError });
 
-        if (sharedError && sharedError.code !== 'PGRST116') {
+        if (sharedError) {
           console.error("useDocumentLoader: Erreur dans shared_documents:", sharedError);
           throw sharedError;
         }
@@ -157,17 +161,13 @@ export const useDocumentLoader = (documentId: string | null) => {
           };
           console.log("useDocumentLoader: Document final (shared):", newDocument);
           setDocument(newDocument);
+          setLoading(false);
+          loadingRef.current = false;
           return;
         }
 
-        // Vérification finale: le document existe-t-il vraiment ?
-        console.log("useDocumentLoader: Vérification de l'existence du document ID:", documentId);
-        
-        // Aucun document trouvé - créer un message d'erreur détaillé
-        const errorMsg = attempt === 0 
-          ? `Document avec l'ID ${documentId} introuvable. Vérifiez que l'ID est correct et que vous avez les permissions d'accès.`
-          : `Document introuvable avec l'ID: ${documentId}`;
-        
+        // Aucun document trouvé
+        const errorMsg = `Document avec l'ID ${documentId} introuvable. Vérifiez que l'ID est correct et que vous avez les permissions d'accès.`;
         console.error("useDocumentLoader:", errorMsg);
         throw new Error(errorMsg);
 
@@ -179,25 +179,12 @@ export const useDocumentLoader = (documentId: string | null) => {
 
         console.error(`useDocumentLoader: Erreur tentative ${attempt + 1}:`, err);
         
-        // Ne plus faire de tentatives multiples automatiques
-        if (attempt === 0 && !err.message?.includes('introuvable')) {
-          const delay = 1000;
-          console.log(`useDocumentLoader: Nouvelle tentative dans ${delay}ms...`);
-          setTimeout(() => {
-            if (!abortController.signal.aborted) {
-              setRetryCount(attempt + 1);
-              loadDocumentWithRetry(attempt + 1);
-            }
-          }, delay);
-          return;
-        }
-        
+        // Plus de tentatives automatiques - nous savons que le document existe
         const errorMessage = err.message || 'Impossible de charger le document';
         console.error("useDocumentLoader: Erreur finale:", errorMessage);
         setError(errorMessage);
-      } finally {
-        loadingRef.current = false;
         setLoading(false);
+        loadingRef.current = false;
       }
     };
 
@@ -210,14 +197,14 @@ export const useDocumentLoader = (documentId: string | null) => {
       }
       loadingRef.current = false;
     };
-  }, [documentId]); // Retirer retryCount des dépendances pour éviter les boucles
+  }, [documentId, retryCount]); // Ajouter retryCount comme dépendance
 
   // Fonction manuelle de retry
   const retryLoad = () => {
     if (!loadingRef.current) {
+      console.log("useDocumentLoader: Retry manuel déclenché");
       setRetryCount(prev => prev + 1);
       setError(null);
-      // Relancer le useEffect en changeant une dépendance
       setDocument(null);
     }
   };
