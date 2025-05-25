@@ -20,37 +20,33 @@ export const useDirectivesDocumentHandlers = ({
 }: DirectivesDocumentHandlersProps) => {
   
   const handleUploadCompleteWrapper = () => {
-    // For this context, we don't have the specific parameters,
-    // so we'll call refresh documents directly
-    window.location.reload();
+    // Logic handled by parent component
   };
 
-  // Enhanced view handler that sets preview document
   const handleViewDocument = (filePath: string, fileType?: string) => {
-    console.log("DirectivesDocs - handleViewDocument appelé avec:", filePath, fileType);
+    console.log("DirectivesDocumentHandlers - handleViewDocument appelé avec:", filePath, fileType);
     
     // Find the document by file_path
     const document = documents.find(doc => doc.file_path === filePath);
     if (document) {
-      console.log("DirectivesDocs - Document trouvé pour preview:", document);
+      console.log("DirectivesDocumentHandlers - Document trouvé pour preview:", document);
       setPreviewDocument(document);
     } else {
-      console.error("DirectivesDocs - Document non trouvé pour le chemin:", filePath);
+      console.error("DirectivesDocumentHandlers - Document non trouvé pour le chemin:", filePath);
       // Fallback: call the original view handler
       handleView(filePath, fileType);
     }
   };
 
-  // Preview handlers
   const handlePreviewDownload = (filePath: string) => {
     const document = previewDocument || documents.find(doc => doc.file_path === filePath);
     const fileName = document?.file_name || 'document.pdf';
-    console.log("DirectivesDocs - handlePreviewDownload:", filePath, fileName);
+    console.log("DirectivesDocumentHandlers - handlePreviewDownload:", filePath, fileName);
     handleDownload(filePath, fileName);
   };
 
   const handlePreviewPrint = (filePath: string, fileType?: string) => {
-    console.log("DirectivesDocs - handlePreviewPrint:", filePath, fileType);
+    console.log("DirectivesDocumentHandlers - handlePreviewPrint:", filePath, fileType);
     handlePrint(filePath, fileType);
   };
 

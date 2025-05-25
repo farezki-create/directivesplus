@@ -67,7 +67,7 @@ export const DirectivesAccessManager: React.FC<DirectivesAccessManagerProps> = (
   }
 
   // Institution access error
-  if (urlParams.hasAllParams && institutionAccess.error) {
+  if (urlParams?.hasAllParams && institutionAccess?.error) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="max-w-md mx-auto p-6">
@@ -106,30 +106,28 @@ export const DirectivesAccessManager: React.FC<DirectivesAccessManagerProps> = (
     );
   }
 
-  // Public access view
+  // Public access view with proper document transformation
   if (!isAuthenticated && (publicAccessVerified || dossierActif)) {
-    // Determine documents to display
     let documentsToDisplay = documents;
     
-    // If we have an active dossier, use its documents
+    // Transform dossier documents if available
     if (dossierActif?.contenu?.documents) {
-      documentsToDisplay = dossierActif.contenu.documents.map((doc: any, index: number) => ({
+      documentsToDisplay = dossierActif.contenu.documents.map((doc: any, index: number): Document => ({
         id: doc.id || `doc-${index}`,
         file_name: doc.file_name || doc.fileName || `Document ${index + 1}`,
         file_path: doc.file_path || doc.filePath || '',
-        file_type: doc.file_type || doc.fileType || 'pdf',
-        content_type: doc.content_type || doc.contentType,
+        file_type: doc.file_type || doc.fileType || 'application/pdf',
+        content_type: doc.content_type || doc.contentType || 'application/pdf',
         user_id: doc.user_id || doc.userId || '',
         created_at: doc.created_at || doc.createdAt || new Date().toISOString(),
         description: doc.description,
-        content: doc.content,
         file_size: doc.file_size || doc.fileSize,
         updated_at: doc.updated_at || doc.updatedAt,
         external_id: doc.external_id || doc.externalId
       }));
     }
 
-    console.log("Documents à afficher:", documentsToDisplay);
+    console.log("DirectivesAccessManager - Documents à afficher:", documentsToDisplay);
 
     return (
       <PublicDirectivesView

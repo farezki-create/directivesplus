@@ -1,32 +1,32 @@
 
-// Types simplifiés pour les documents dans l'application
-
 export interface Document {
   id: string;
   file_name: string;
   file_path: string;
-  created_at: string;
-  user_id: string;
   file_type: string;
-  content?: any;
-  description?: string;
   content_type?: string;
-  external_id?: string;
+  user_id: string;
+  created_at: string;
+  description?: string;
   file_size?: number;
   updated_at?: string;
+  external_id?: string;
 }
 
-// Types pour les actions sur les documents
-export interface DocumentActions {
-  onView: (filePath: string, contentType?: string) => void;
-  onDownload: (filePath: string, fileName: string) => void;
-  onPrint: (filePath: string, contentType?: string) => void;
-  onDelete: (documentId: string) => void;
-  onVisibilityChange?: (documentId: string, isPrivate: boolean) => void;
-}
+// Type guard pour vérifier si un objet est un Document valide
+export const isDocument = (obj: any): obj is Document => {
+  return obj && 
+    typeof obj.id === 'string' &&
+    typeof obj.file_name === 'string' &&
+    typeof obj.file_path === 'string' &&
+    typeof obj.file_type === 'string' &&
+    typeof obj.user_id === 'string' &&
+    typeof obj.created_at === 'string';
+};
 
-// Types pour les options d'affichage
-export interface DocumentDisplayOptions {
-  showPrint?: boolean;
-  isAddingToShared?: boolean;
+// Type pour les documents partagés
+export interface SharedDocument extends Document {
+  is_shared?: boolean;
+  shared_at?: string;
+  access_code?: string;
 }
