@@ -45,11 +45,10 @@ export const useInstitutionCodeAccess = (
         return;
       }
 
+      console.log("Début de la tentative d'accès par code institution:", { code, nom, prenom, naissance });
       setState(prev => ({ ...prev, loading: true, error: null }));
       
       try {
-        console.log("Tentative d'accès par code institution:", { code, nom, prenom, naissance });
-
         // Utiliser la nouvelle fonction SQL sécurisée
         const { data: accessResult, error: accessError } = await supabase
           .rpc('get_institution_directives_complete', {
@@ -59,22 +58,24 @@ export const useInstitutionCodeAccess = (
             input_institution_code: code,
           });
 
-        console.log("Résultat accès complet:", { accessResult, accessError });
+        console.log("Résultat RPC:", { accessResult, accessError });
 
         if (accessError) {
-          throw new Error(accessError.message);
+          console.error("Erreur RPC:", accessError);
+          throw new Error(`Erreur de base de données: ${accessError.message}`);
         }
 
         if (!accessResult || !Array.isArray(accessResult) || accessResult.length === 0) {
           setState(prev => ({
             ...prev,
             loading: false,
-            error: "Erreur lors de la récupération des données. Veuillez réessayer."
+            error: "Aucun résultat retourné. Vérifiez les informations saisies."
           }));
           return;
         }
 
         const result = accessResult[0] as SupabaseAccessResponse;
+        console.log("Résultat parsé:", result);
         
         if (!result.access_granted) {
           setState(prev => ({
@@ -173,10 +174,21 @@ export const useInstitutionCodeAccess = (
           loading: false,
           error: error.message || "Erreur lors de la vérification du code d'accès"
         }));
+        
+        toast({
+          title: "Erreur d'accès",
+          description: error.message || "Impossible de vérifier le code d'accès",
+          variant: "destructive"
+        });
       }
     };
 
-    tryInstitutionAccess();
+    // Éviter les appels répétés avec un délai
+    const timeoutId = setTimeout(() => {
+      tryInstitutionAccess();
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
   }, [code, nom, prenom, naissance, hasAllParams, setDossierActif]);
 
   return state;
