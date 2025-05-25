@@ -31,19 +31,29 @@ export const useSynthesisActions = (userId?: string) => {
     try {
       setSaving(true);
 
+      console.log("=== DÉBUT SAUVEGARDE ET GÉNÉRATION PDF ===");
+      console.log("UserId utilisé:", userId || user?.id);
+      console.log("Données reçues:", data);
+
       // Vérifier si les données sont valides
       if (!data) {
         throw new Error("Données de directives manquantes");
       }
 
+      // Préparer les données pour le PDF en s'assurant que l'userId est bien passé
+      const pdfData = {
+        ...data,
+        freeText,
+        signature,
+        userId: userId || user?.id, // S'assurer que l'userId est bien défini
+      };
+
+      console.log("Données préparées pour le PDF:", pdfData);
+
       // Générer le PDF avec les données
       let pdfOutput;
       try {
-        pdfOutput = await generatePDF({
-          ...data,
-          freeText,
-          signature,
-        });
+        pdfOutput = await generatePDF(pdfData);
       } catch (pdfError: any) {
         console.error("Erreur lors de la génération du PDF:", pdfError);
         throw new Error("Impossible de générer le PDF: " + (pdfError.message || "Erreur inconnue"));

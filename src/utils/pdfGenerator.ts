@@ -48,7 +48,9 @@ const translateResponse = (response: string): string => {
 // Main PDF generation function
 export const generatePDF = async (data: PdfData): Promise<string> => {
   try {
+    console.log("=== DÉBUT GÉNÉRATION PDF ===");
     console.log("Génération du PDF avec les données:", data);
+    console.log("UserId fourni:", data.userId);
     
     // Create new PDF document
     const pdf = new jsPDF({
@@ -97,24 +99,42 @@ export const generatePDF = async (data: PdfData): Promise<string> => {
       yPosition = renderSignature(pdf, layout, yPosition, data.signature);
     }
     
-    // AJOUTER LES DOCUMENTS MÉDICAUX À LA FIN APRÈS LA SIGNATURE
+    // RÉCUPÉRATION ET AJOUT DES DOCUMENTS MÉDICAUX
+    console.log("=== RÉCUPÉRATION DOCUMENTS MÉDICAUX ===");
+    console.log("UserId disponible:", data.userId);
+    
+    let medicalDocuments: any[] = [];
+    
     if (data.userId) {
-      console.log("=== DÉBUT RÉCUPÉRATION DOCUMENTS MÉDICAUX ===");
-      console.log("Récupération des documents médicaux pour l'utilisateur:", data.userId);
-      
-      const medicalDocuments = await getMedicalDocuments(data.userId);
-      console.log("Documents médicaux récupérés:", medicalDocuments);
-      
-      if (medicalDocuments && medicalDocuments.length > 0) {
-        console.log("=== AJOUT DES DOCUMENTS MÉDICAUX AU PDF ===");
-        yPosition = checkPageBreak(pdf, layout, yPosition);
-        yPosition = renderMedicalDocuments(pdf, layout, yPosition, medicalDocuments);
-        console.log("Documents médicaux ajoutés avec succès, nouvelle position Y:", yPosition);
-      } else {
-        console.log("=== AUCUN DOCUMENT MÉDICAL TROUVÉ ===");
+      console.log("Tentative de récupération des documents médicaux...");
+      try {
+        medicalDocuments = await getMedicalDocuments(data.userId);
+        console.log("Documents médicaux récupérés avec succès:", medicalDocuments.length, medicalDocuments);
+      } catch (error) {
+        console.error("Erreur lors de la récupération des documents médicaux:", error);
+        medicalDocuments = [];
       }
     } else {
-      console.log("=== PAS D'USERID FOURNI ===");
+      console.log("Pas d'userId fourni, skip récupération documents médicaux");
+    }
+    
+    // Vérifier aussi les documents passés en paramètre
+    if (data.medicalDocuments && data.medicalDocuments.length > 0) {
+      console.log("Documents médicaux fournis en paramètre:", data.medicalDocuments);
+      medicalDocuments = [...medicalDocuments, ...data.medicalDocuments];
+    }
+    
+    // RENDU DES DOCUMENTS MÉDICAUX
+    if (medicalDocuments && medicalDocuments.length > 0) {
+      console.log("=== AJOUT DES DOCUMENTS MÉDICAUX AU PDF ===");
+      console.log("Nombre de documents à ajouter:", medicalDocuments.length);
+      
+      yPosition = checkPageBreak(pdf, layout, yPosition);
+      yPosition = renderMedicalDocuments(pdf, layout, yPosition, medicalDocuments);
+      
+      console.log("Documents médicaux ajoutés avec succès au PDF, nouvelle position Y:", yPosition);
+    } else {
+      console.log("=== AUCUN DOCUMENT MÉDICAL À AJOUTER ===");
     }
     
     // Add signature footer on all pages
@@ -123,6 +143,9 @@ export const generatePDF = async (data: PdfData): Promise<string> => {
       pdf.setPage(i);
       addSignatureFooter(pdf, layout, data.signature || null);
     }
+    
+    console.log("=== GÉNÉRATION PDF TERMINÉE ===");
+    console.log("Nombre total de pages:", totalPages);
     
     // Generate PDF output
     const pdfOutput = pdf.output("datauristring");
