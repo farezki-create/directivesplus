@@ -34,7 +34,7 @@ const DirectivesAccess = () => {
             title: "Accès autorisé",
             description: "Vos directives ont été chargées avec succès",
           });
-          navigate("/affichage-dossier", { replace: true });
+          navigate("/mes-directives", { replace: true });
         } else {
           console.error("Failed to load user directives:", authResult.error);
         }
@@ -77,8 +77,8 @@ const DirectivesAccess = () => {
         // Store in dossier store
         setDossierActif(result.dossier);
         
-        // Navigate to dossier viewer
-        navigate("/affichage-dossier", { replace: true });
+        // Navigate to mes-directives instead of affichage-dossier
+        navigate("/mes-directives", { replace: true });
         
         // Success toast
         toast({

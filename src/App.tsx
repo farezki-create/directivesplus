@@ -18,7 +18,6 @@ import PersonneConfiance from "./pages/PersonneConfiance";
 import Synthesis from "./pages/Synthesis";
 import CarteAcces from "./pages/CarteAcces";
 import MesDirectives from "./pages/MesDirectives";
-import DirectivesAccess from "./pages/DirectivesAccess";
 import InstitutionAccess from "./pages/InstitutionAccess";
 import MedicalData from "./pages/MedicalData";
 import Testimonials from "./pages/Testimonials";
@@ -50,13 +49,13 @@ function App() {
               <Route path="/synthesis" element={<Synthesis />} />
               <Route path="/carte-acces" element={<CarteAcces />} />
               <Route path="/mes-directives" element={<MesDirectives />} />
-              <Route path="/directives-acces" element={<DirectivesAccess />} />
               <Route path="/institution-access" element={<InstitutionAccess />} />
               <Route path="/donnees-medicales" element={<MedicalData />} />
               <Route path="/testimonials" element={<Testimonials />} />
               <Route path="/en-savoir-plus" element={<EnSavoirPlus />} />
               <Route path="/pdf-viewer" element={<PdfViewer />} />
               {/* Redirection pour les anciennes URLs */}
+              <Route path="/directives-acces" element={<MesDirectives />} />
               <Route path="/affichage-dossier" element={<NotFound />} />
               <Route path="/affichage-dossier-redirect" element={<NotFound />} />
               <Route path="*" element={<NotFound />} />

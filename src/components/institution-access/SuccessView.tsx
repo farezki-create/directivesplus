@@ -30,7 +30,7 @@ export const SuccessView: React.FC<SuccessViewProps> = ({ patientData }) => {
           
           <div className="flex flex-col gap-3 mt-6">
             <Button 
-              onClick={() => window.location.href = "/directives-acces"}
+              onClick={() => window.location.href = "/mes-directives"}
               className="w-full bg-blue-600 hover:bg-blue-700"
               size="lg"
             >
