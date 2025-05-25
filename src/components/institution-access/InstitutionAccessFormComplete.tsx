@@ -7,7 +7,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, Shield, CheckCircle, FileText, Eye } from "lucide-react";
 import { useInstitutionCodeAccess } from "@/hooks/useInstitutionCodeAccess";
-import { useNavigate } from "react-router-dom";
 
 export const InstitutionAccessFormComplete: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -17,7 +16,6 @@ export const InstitutionAccessFormComplete: React.FC = () => {
     institutionCode: ""
   });
   const [submitted, setSubmitted] = useState(false);
-  const navigate = useNavigate();
 
   // Utiliser le hook d'accès institution
   const institutionAccess = useInstitutionCodeAccess(
@@ -34,11 +32,22 @@ export const InstitutionAccessFormComplete: React.FC = () => {
       console.log("Erreur détectée, reset du state submitted");
       const timer = setTimeout(() => {
         setSubmitted(false);
-      }, 3000); // Reset après 3 secondes pour permettre à l'utilisateur de voir l'erreur
+      }, 3000);
       
       return () => clearTimeout(timer);
     }
   }, [institutionAccess.error, submitted]);
+
+  // Redirection automatique après succès
+  useEffect(() => {
+    if (institutionAccess.accessGranted) {
+      console.log("Accès accordé, redirection vers /directives-acces");
+      // Utiliser window.location.href pour forcer la navigation
+      setTimeout(() => {
+        window.location.href = "/directives-acces";
+      }, 2000); // Délai de 2 secondes pour voir le message de succès
+    }
+  }, [institutionAccess.accessGranted]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -56,11 +65,6 @@ export const InstitutionAccessFormComplete: React.FC = () => {
     setSubmitted(true);
   };
 
-  const handleViewDirectives = () => {
-    // Naviguer vers la page de consultation des directives
-    navigate("/directives-acces");
-  };
-
   const isFormValid = formData.lastName && formData.firstName && formData.birthDate && formData.institutionCode;
   const isLoading = submitted && institutionAccess.loading;
 
@@ -72,7 +76,7 @@ export const InstitutionAccessFormComplete: React.FC = () => {
     isFormValid
   });
 
-  // Si l'accès est accordé, afficher les options de consultation
+  // Si l'accès est accordé, afficher le message de succès avec redirection automatique
   if (institutionAccess.accessGranted) {
     return (
       <div className="space-y-6">
@@ -91,29 +95,18 @@ export const InstitutionAccessFormComplete: React.FC = () => {
             </p>
             
             <div className="flex flex-col gap-3 mt-6">
+              <div className="flex items-center justify-center gap-2 text-sm text-green-600">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Redirection automatique en cours...
+              </div>
+              
               <Button 
-                onClick={handleViewDirectives}
+                onClick={() => window.location.href = "/directives-acces"}
                 className="w-full bg-blue-600 hover:bg-blue-700"
                 size="lg"
               >
                 <Eye className="mr-2 h-5 w-5" />
-                Consulter les directives
-              </Button>
-              
-              <Button 
-                onClick={() => {
-                  setSubmitted(false);
-                  setFormData({
-                    lastName: "",
-                    firstName: "",
-                    birthDate: "",
-                    institutionCode: ""
-                  });
-                }}
-                variant="outline"
-                size="sm"
-              >
-                Nouvel accès
+                Consulter maintenant
               </Button>
             </div>
           </CardContent>
