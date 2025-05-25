@@ -23,6 +23,7 @@ import InstitutionAccess from "./pages/InstitutionAccess";
 import MedicalData from "./pages/MedicalData";
 import Testimonials from "./pages/Testimonials";
 import EnSavoirPlus from "./pages/EnSavoirPlus";
+import PdfViewer from "./pages/PdfViewer";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -54,6 +55,7 @@ function App() {
               <Route path="/donnees-medicales" element={<MedicalData />} />
               <Route path="/testimonials" element={<Testimonials />} />
               <Route path="/en-savoir-plus" element={<EnSavoirPlus />} />
+              <Route path="/pdf-viewer" element={<PdfViewer />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

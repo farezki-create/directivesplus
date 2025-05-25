@@ -56,8 +56,8 @@ export const useQRCodeGeneration = () => {
         qrCodeUrl = filePath;
         console.log("QR Code - Utilisation du filePath direct:", qrCodeUrl);
       } else {
-        // Sinon, utiliser l'URL de l'application pour visualiser le document
-        qrCodeUrl = `https://24c30559-a746-463d-805e-d2330d3a13f4.lovableproject.com/pdf-viewer?id=${documentId}`;
+        // Utiliser l'URL correcte de l'application
+        qrCodeUrl = `${window.location.origin}/pdf-viewer?id=${documentId}`;
         console.log("QR Code - Utilisation de l'URL de l'application:", qrCodeUrl);
       }
       
