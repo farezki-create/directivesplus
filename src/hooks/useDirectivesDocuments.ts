@@ -13,7 +13,7 @@ export const useDirectivesDocuments = () => {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showAddOptions, setShowAddOptions] = useState(false);
-  const [documentToDelete, setDocumentToDelete] = useState<string | null>(null);
+  const [documentToDelete, setDocumentToDelete] = useState<Document | null>(null);
 
   // Load documents
   const loadDocuments = async () => {

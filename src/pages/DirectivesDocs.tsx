@@ -60,6 +60,12 @@ const DirectivesDocs = () => {
 
   const isLoading = authLoading || documentsLoading || publicAccessLoading;
 
+  // Enhanced delete handler that accepts Document object
+  const handleDeleteDocument = async (document: Document) => {
+    console.log("DirectivesDocs - handleDeleteDocument appelé avec:", document);
+    await handleDelete(document.id);
+  };
+
   return (
     <DirectivesAccessManager
       isLoading={isLoading}
@@ -83,7 +89,7 @@ const DirectivesDocs = () => {
       handleDownload={handleDownload}
       handlePrint={handlePrint}
       handleViewDocument={handleViewDocument}
-      handleDelete={handleDelete}
+      handleDelete={handleDeleteDocument}
       handlePreviewDownload={handlePreviewDownload}
       handlePreviewPrint={handlePreviewPrint}
     />
