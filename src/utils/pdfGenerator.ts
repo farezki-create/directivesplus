@@ -12,7 +12,6 @@ import {
   checkPageBreak 
 } from "./pdf";
 import { getMedicalDocuments, renderMedicalDocuments } from "./pdf/medicalDocuments";
-import { savePdfToDatabase } from "./pdfStorage";
 
 // Interface for PDF generation data
 export interface PdfData {
@@ -152,22 +151,8 @@ export const generatePDF = async (data: PdfData): Promise<string> => {
       throw new Error("La génération du PDF a échoué, sortie invalide");
     }
     
-    // Store PDF in database if userId is provided
-    if (data.userId) {
-      const description = "Directives anticipées avec documents médicaux - " + new Date().toLocaleDateString('fr-FR', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-      
-      await savePdfToDatabase({
-        userId: data.userId,
-        pdfOutput,
-        description
-      });
-    }
+    // Ne plus sauvegarder automatiquement ici - la sauvegarde sera gérée par saveDirectivesWithDualStorage
+    console.log("PDF généré avec succès, prêt pour la sauvegarde externe");
     
     return pdfOutput;
   } catch (error) {
