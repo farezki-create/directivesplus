@@ -9,6 +9,7 @@ import DirectivesAcces from "./pages/DirectivesAcces";
 import MesDirectives from "./pages/MesDirectives";
 import Partage from "./pages/Partage";
 import DirectDocument from "./pages/DirectDocument";
+import Auth from "./pages/Auth";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster as Sonner } from "sonner";
 import PdfViewer from "./pages/PdfViewer";
@@ -24,6 +25,7 @@ function App() {
           <div className="min-h-screen bg-background">
             <Routes>
               <Route path="/" element={<Home />} />
+              <Route path="/auth" element={<Auth />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/directives-acces" element={<DirectivesAcces />} />
               <Route path="/mes-directives" element={<MesDirectives />} />
