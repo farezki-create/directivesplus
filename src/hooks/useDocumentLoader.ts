@@ -12,7 +12,7 @@ export const useDocumentLoader = (documentId: string | null) => {
   const loadingRef = useRef(false);
 
   useEffect(() => {
-    const loadDocumentWithRetry = async (attempt = 0) => {
+    const loadDocument = async () => {
       if (!documentId) {
         console.log("useDocumentLoader: Aucun documentId fourni");
         setLoading(false);
@@ -39,20 +39,20 @@ export const useDocumentLoader = (documentId: string | null) => {
         setLoading(true);
         setError(null);
         
-        console.log(`useDocumentLoader: Tentative ${attempt + 1} de chargement du document:`, documentId);
+        console.log(`useDocumentLoader: Chargement du document:`, documentId);
 
         // Vérifier si la requête a été annulée
         if (abortController.signal.aborted) {
           return;
         }
         
-        // Tentative 1: pdf_documents
+        // Recherche 1: pdf_documents
         console.log("useDocumentLoader: Recherche dans pdf_documents...");
         const { data: pdfData, error: pdfError } = await supabase
           .from('pdf_documents')
           .select('*')
           .eq('id', documentId)
-          .maybeSingle();
+          .single();
 
         if (abortController.signal.aborted) {
           return;
@@ -60,7 +60,7 @@ export const useDocumentLoader = (documentId: string | null) => {
 
         console.log('useDocumentLoader: Résultat pdf_documents:', { data: pdfData, error: pdfError });
 
-        if (pdfError) {
+        if (pdfError && pdfError.code !== 'PGRST116') {
           console.error("useDocumentLoader: Erreur dans pdf_documents:", pdfError);
           throw pdfError;
         }
@@ -87,13 +87,13 @@ export const useDocumentLoader = (documentId: string | null) => {
           return;
         }
 
-        // Tentative 2: directives
+        // Recherche 2: directives
         console.log("useDocumentLoader: Recherche dans directives...");
         const { data: directiveData, error: directiveError } = await supabase
           .from('directives')
           .select('*')
           .eq('id', documentId)
-          .maybeSingle();
+          .single();
 
         if (abortController.signal.aborted) {
           return;
@@ -101,7 +101,7 @@ export const useDocumentLoader = (documentId: string | null) => {
 
         console.log('useDocumentLoader: Résultat directives:', { data: directiveData, error: directiveError });
 
-        if (directiveError) {
+        if (directiveError && directiveError.code !== 'PGRST116') {
           console.error("useDocumentLoader: Erreur dans directives:", directiveError);
           throw directiveError;
         }
@@ -127,13 +127,13 @@ export const useDocumentLoader = (documentId: string | null) => {
           return;
         }
 
-        // Tentative 3: shared_documents
+        // Recherche 3: shared_documents
         console.log("useDocumentLoader: Recherche dans shared_documents...");
         const { data: sharedData, error: sharedError } = await supabase
           .from('shared_documents')
           .select('*')
           .eq('document_id', documentId)
-          .maybeSingle();
+          .single();
 
         if (abortController.signal.aborted) {
           return;
@@ -141,7 +141,7 @@ export const useDocumentLoader = (documentId: string | null) => {
 
         console.log('useDocumentLoader: Résultat shared_documents:', { data: sharedData, error: sharedError });
 
-        if (sharedError) {
+        if (sharedError && sharedError.code !== 'PGRST116') {
           console.error("useDocumentLoader: Erreur dans shared_documents:", sharedError);
           throw sharedError;
         }
@@ -177,9 +177,8 @@ export const useDocumentLoader = (documentId: string | null) => {
           return;
         }
 
-        console.error(`useDocumentLoader: Erreur tentative ${attempt + 1}:`, err);
+        console.error(`useDocumentLoader: Erreur:`, err);
         
-        // Plus de tentatives automatiques - nous savons que le document existe
         const errorMessage = err.message || 'Impossible de charger le document';
         console.error("useDocumentLoader: Erreur finale:", errorMessage);
         setError(errorMessage);
@@ -188,7 +187,7 @@ export const useDocumentLoader = (documentId: string | null) => {
       }
     };
 
-    loadDocumentWithRetry();
+    loadDocument();
 
     // Cleanup function
     return () => {
@@ -197,7 +196,7 @@ export const useDocumentLoader = (documentId: string | null) => {
       }
       loadingRef.current = false;
     };
-  }, [documentId, retryCount]); // Ajouter retryCount comme dépendance
+  }, [documentId, retryCount]);
 
   // Fonction manuelle de retry
   const retryLoad = () => {
