@@ -16,12 +16,8 @@ const Hero = () => {
   };
   
   const scrollToInfo = () => {
-    const infoSection = document.getElementById('en-savoir-plus');
-    if (infoSection) {
-      infoSection.scrollIntoView({
-        behavior: 'smooth'
-      });
-    }
+    // Naviguer vers la page d'information sur les directives anticipées
+    navigate("/directives-info");
   };
   
   return <section className="bg-gradient-to-b from-white to-directiveplus-50 section-padding">
