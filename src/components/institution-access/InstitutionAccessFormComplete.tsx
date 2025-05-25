@@ -34,7 +34,7 @@ export const InstitutionAccessFormComplete: React.FC = () => {
       console.log("Erreur détectée, reset du state submitted");
       const timer = setTimeout(() => {
         setSubmitted(false);
-      }, 2000); // Reset après 2 secondes pour permettre à l'utilisateur de voir l'erreur
+      }, 3000); // Reset après 3 secondes pour permettre à l'utilisateur de voir l'erreur
       
       return () => clearTimeout(timer);
     }
