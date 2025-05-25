@@ -22,16 +22,16 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
       <div className="absolute bottom-0 left-0 w-24 h-24 bg-white opacity-5 rounded-full translate-y-12 -translate-x-12"></div>
       
       {/* Header avec logo en haut */}
-      <div className="flex items-center gap-2 mb-4">
-        <CreditCard className="h-5 w-5" />
-        <span className="text-sm font-bold">DirectivesPlus</span>
+      <div className="flex items-center gap-2 mb-2">
+        <CreditCard className="h-4 w-4" />
+        <span className="text-xs font-bold">DirectivesPlus</span>
         <span className="text-xs opacity-90 ml-2">Carte d'Accès aux Directives</span>
       </div>
       
-      {/* Section des coordonnées patient - remontée tout en haut */}
-      <div className="mt-2 mb-8">
-        <div className="bg-white bg-opacity-15 rounded-lg p-4">
-          <div className="text-xs opacity-90 mb-3 tracking-wide uppercase font-medium">PATIENT</div>
+      {/* Section des coordonnées patient - remontée encore plus haut */}
+      <div className="mt-1 mb-12">
+        <div className="bg-white bg-opacity-15 rounded-lg p-3">
+          <div className="text-xs opacity-90 mb-2 tracking-wide uppercase font-medium">PATIENT</div>
           <div className="flex justify-between items-start">
             <div className="flex-1">
               <div className="text-lg font-bold tracking-wide mb-1">{lastName.toUpperCase()}</div>
@@ -43,7 +43,7 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
                 {qrCodeUrl && (
                   <QRCodeSVG 
                     value={qrCodeUrl}
-                    size={80}
+                    size={70}
                     level="M"
                     fgColor="#ffffff"
                     bgColor="transparent"
@@ -55,17 +55,17 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
         </div>
       </div>
 
-      {/* Code d'accès - repositionné tout en bas avec plus d'espace */}
+      {/* Code d'accès - taille très réduite, tout en bas */}
       <div className="absolute bottom-4 left-6 right-6">
-        <div className="bg-white bg-opacity-15 rounded-lg p-4">
+        <div className="bg-white bg-opacity-15 rounded-lg p-3">
           <div className="flex justify-between items-center">
             <div className="flex-1">
-              <div className="text-xs opacity-90 mb-2 tracking-wide uppercase font-medium">CODE D'ACCÈS</div>
-              <div className="bg-white bg-opacity-25 rounded-lg px-4 py-3 inline-block border border-white border-opacity-30">
-                <div className="text-2xl font-bold tracking-[0.4em] text-white font-mono">{codeAcces}</div>
+              <div className="text-xs opacity-90 mb-1 tracking-wide uppercase font-medium">CODE D'ACCÈS</div>
+              <div className="bg-white bg-opacity-25 rounded-lg px-3 py-2 inline-block border border-white border-opacity-30">
+                <div className="text-sm font-bold tracking-[0.2em] text-white font-mono">{codeAcces}</div>
               </div>
             </div>
-            <div className="text-xs opacity-90 text-right leading-relaxed ml-6">
+            <div className="text-xs opacity-90 text-right leading-relaxed ml-4">
               <div className="font-medium">Accès sécurisé</div>
               <div>Usage professionnel</div>
             </div>
