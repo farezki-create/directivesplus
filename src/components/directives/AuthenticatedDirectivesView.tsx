@@ -8,6 +8,7 @@ import DirectivesAddDocumentSection from "@/components/documents/DirectivesAddDo
 import DirectivesQRCodeSection from "@/components/documents/DirectivesQRCodeSection";
 import DocumentPreviewDialog from "@/components/documents/DocumentPreviewDialog";
 import DeleteConfirmationDialog from "@/components/documents/DeleteConfirmationDialog";
+import { InstitutionCodeSection } from "@/components/directives/InstitutionCodeSection";
 import { Document } from "@/types/documents";
 
 interface AuthenticatedDirectivesViewProps {
@@ -58,18 +59,22 @@ const AuthenticatedDirectivesView: React.FC<AuthenticatedDirectivesViewProps> = 
           documentsCount={documents.length}
         />
 
-        <DirectivesQRCodeSection documents={documents} />
+        <div className="space-y-6">
+          <DirectivesQRCodeSection documents={documents} />
 
-        <DirectivesPageContent
-          documents={documents}
-          userId={user?.id}
-          onUploadComplete={onUploadComplete}
-          onDownload={onDownload}
-          onPrint={onPrint}
-          onView={onView}
-          onDelete={setDocumentToDelete}
-          profile={profile}
-        />
+          <DirectivesPageContent
+            documents={documents}
+            userId={user?.id}
+            onUploadComplete={onUploadComplete}
+            onDownload={onDownload}
+            onPrint={onPrint}
+            onView={onView}
+            onDelete={setDocumentToDelete}
+            profile={profile}
+          />
+
+          <InstitutionCodeSection />
+        </div>
 
         <DirectivesAddDocumentSection
           showAddOptions={showAddOptions}

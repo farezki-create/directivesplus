@@ -276,6 +276,89 @@ export type Database = {
         }
         Relationships: []
       }
+      institution_access_codes: {
+        Row: {
+          contact_email: string | null
+          contact_person: string | null
+          contact_phone: string | null
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          institution_code: string
+          institution_name: string | null
+          is_active: boolean | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          contact_email?: string | null
+          contact_person?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          institution_code: string
+          institution_name?: string | null
+          is_active?: boolean | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          contact_email?: string | null
+          contact_person?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          institution_code?: string
+          institution_name?: string | null
+          is_active?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      institution_access_logs: {
+        Row: {
+          access_type: string | null
+          accessed_at: string | null
+          id: string
+          institution_code_id: string
+          institution_name: string | null
+          ip_address: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          access_type?: string | null
+          accessed_at?: string | null
+          id?: string
+          institution_code_id: string
+          institution_name?: string | null
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          access_type?: string | null
+          accessed_at?: string | null
+          id?: string
+          institution_code_id?: string
+          institution_name?: string | null
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "institution_access_logs_institution_code_id_fkey"
+            columns: ["institution_code_id"]
+            isOneToOne: false
+            referencedRelation: "institution_access_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       logs_acces: {
         Row: {
           details: string | null
@@ -1146,6 +1229,10 @@ export type Database = {
           institution_shared_code: string
         }[]
       }
+      generate_institution_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       generate_random_code: {
         Args: { length: number }
         Returns: string
@@ -1201,6 +1288,20 @@ export type Database = {
           is_full_access: boolean
           user_id: string
           access_code_id: string
+        }[]
+      }
+      get_patient_directives_by_institution: {
+        Args: {
+          input_last_name: string
+          input_first_name: string
+          input_birth_date: string
+          input_institution_code: string
+        }
+        Returns: {
+          directive_id: string
+          directive_content: Json
+          created_at: string
+          patient_info: Json
         }[]
       }
       get_patient_directives_by_institution_access: {
@@ -1293,6 +1394,21 @@ export type Database = {
         Returns: {
           document_id: string
           is_full_access: boolean
+        }[]
+      }
+      verify_institution_access: {
+        Args: {
+          input_last_name: string
+          input_first_name: string
+          input_birth_date: string
+          input_institution_code: string
+        }
+        Returns: {
+          user_id: string
+          first_name: string
+          last_name: string
+          birth_date: string
+          institution_code_valid: boolean
         }[]
       }
       verify_medical_data_access: {

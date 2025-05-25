@@ -39,33 +39,51 @@ export const useInstitutionCodeAccess = (
       try {
         console.log("Tentative d'accès par code institution:", { code, nom, prenom, naissance });
 
-        const { data, error } = await supabase.rpc('get_patient_directives_by_institution_access', {
-          input_last_name: nom,
-          input_first_name: prenom,
-          input_birth_date: naissance,
-          input_shared_code: code,
-        });
+        // Utiliser la nouvelle fonction RPC pour vérifier l'accès
+        const { data: verificationData, error: verificationError } = await supabase
+          .rpc('verify_institution_access', {
+            input_last_name: nom,
+            input_first_name: prenom,
+            input_birth_date: naissance,
+            input_institution_code: code,
+          });
 
-        console.log("Résultat RPC institution access:", { data, error });
+        console.log("Résultat vérification institution access:", { verificationData, verificationError });
 
-        if (error) {
-          throw new Error(error.message);
+        if (verificationError) {
+          throw new Error(verificationError.message);
         }
 
-        if (!data || data.length === 0) {
+        if (!verificationData || verificationData.length === 0) {
           setState(prev => ({
             ...prev,
             loading: false,
-            error: "Aucun patient trouvé avec ces informations (nom, prénom, date de naissance)"
+            error: "Accès refusé. Vérifiez le code d'accès et les informations du patient."
           }));
           return;
         }
 
+        const patientInfo = verificationData[0];
+
+        // Récupérer les directives du patient
+        const { data: directivesData, error: directivesError } = await supabase
+          .rpc('get_patient_directives_by_institution', {
+            input_last_name: nom,
+            input_first_name: prenom,
+            input_birth_date: naissance,
+            input_institution_code: code,
+          });
+
+        console.log("Directives récupérées:", { directivesData, directivesError });
+
+        if (directivesError) {
+          console.error("Erreur lors de la récupération des directives:", directivesError);
+        }
+
         // Créer un dossier pour le store
-        const patientInfo = data[0];
         const dossier = {
-          id: `institution-access-${patientInfo.id}`,
-          userId: patientInfo.id,
+          id: `institution-access-${patientInfo.user_id}`,
+          userId: patientInfo.user_id,
           isFullAccess: true,
           isDirectivesOnly: false,
           isMedicalOnly: false,
@@ -79,7 +97,9 @@ export const useInstitutionCodeAccess = (
               nom: patientInfo.last_name,
               prenom: patientInfo.first_name,
               date_naissance: patientInfo.birth_date
-            }
+            },
+            directives: directivesData || [],
+            documents: [] // Les directives institution n'incluent pas les documents pour l'instant
           }
         };
 
