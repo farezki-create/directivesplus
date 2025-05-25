@@ -1,6 +1,6 @@
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { donationConfig } from "@/config/donationConfig";
 
 interface AmountSelectorProps {
   selectedAmount: string | null;
@@ -17,7 +17,12 @@ const AmountSelector = ({
   onCustomAmountChange,
   isRecurring = false
 }: AmountSelectorProps) => {
-  const amounts = isRecurring ? ["5", "10", "15", "25"] : ["10", "20", "50", "100"];
+  const amounts = isRecurring 
+    ? donationConfig.defaultAmounts.recurring 
+    : donationConfig.defaultAmounts.oneTime;
+  
+  const currencySymbol = donationConfig.currencySymbol;
+  const recurringText = isRecurring ? "/mois" : "";
   
   return (
     <div className="space-y-6">
@@ -36,7 +41,7 @@ const AmountSelector = ({
               }
               onClick={() => onAmountClick(amount)}
             >
-              {amount} €{isRecurring ? "/mois" : ""}
+              {amount} {currencySymbol}{recurringText}
             </Button>
           ))}
         </div>
@@ -57,7 +62,7 @@ const AmountSelector = ({
             placeholder="Montant"
           />
           <span className="ml-2 text-lg font-medium">
-            €{isRecurring ? "/mois" : ""}
+            {currencySymbol}{recurringText}
           </span>
         </div>
       </div>

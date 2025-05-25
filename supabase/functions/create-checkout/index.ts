@@ -8,6 +8,19 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Configuration importée (simplifiée pour l'edge function)
+const donationConfig = {
+  currency: 'eur',
+  productNames: {
+    oneTime: "Don à DirectivePlus",
+    recurring: "Don mensuel à DirectivePlus"
+  },
+  descriptions: {
+    oneTime: "Contribution pour soutenir le développement de DirectivePlus",
+    recurring: "Contribution mensuelle pour soutenir DirectivePlus"
+  }
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -27,7 +40,7 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
 
     // Get request body
-    const { amount, currency = 'eur' } = await req.json();
+    const { amount, currency = donationConfig.currency } = await req.json();
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { 
       apiVersion: "2023-10-16" 
@@ -47,8 +60,8 @@ serve(async (req) => {
           price_data: {
             currency,
             product_data: { 
-              name: "Don mensuel à DirectivePlus",
-              description: "Contribution mensuelle pour soutenir DirectivePlus"
+              name: donationConfig.productNames.recurring,
+              description: donationConfig.descriptions.recurring
             },
             unit_amount: amount,
             recurring: { interval: "month" },

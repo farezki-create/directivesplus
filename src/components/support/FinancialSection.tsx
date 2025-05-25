@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { CreditCard, Building, Banknote } from "lucide-react";
 import DonationCard from "@/components/donation/DonationCard";
 import { useDonation } from "@/hooks/useDonation";
+import { donationConfig } from "@/config/donationConfig";
 
 const FinancialSection = () => {
   const oneTimeDonation = useDonation();
@@ -16,7 +17,6 @@ const FinancialSection = () => {
       description: "Paiement sécurisé par carte de crédit ou débit",
       action: "Donner par carte",
       onClick: () => {
-        // Utiliser la fonctionnalité de don avec Stripe
         if (oneTimeDonation.selectedAmount || oneTimeDonation.customAmount) {
           oneTimeDonation.handleDonation(false);
         } else {
@@ -30,7 +30,6 @@ const FinancialSection = () => {
       description: "Utilisez votre compte PayPal pour contribuer facilement",
       action: "Donner via PayPal",
       onClick: () => {
-        // TODO: Intégrer avec PayPal
         alert("Fonctionnalité en cours de développement. Merci de nous contacter par email.");
       }
     },
@@ -42,29 +41,6 @@ const FinancialSection = () => {
       onClick: () => {
         window.open('mailto:contact@directiveplus.fr?subject=Demande coordonnées bancaires', '_blank');
       }
-    }
-  ];
-
-  const contributionLevels = [
-    {
-      amount: "25€",
-      description: "Aide à couvrir les frais d'hébergement pour un mois",
-      impact: "Assure la disponibilité de la plateforme"
-    },
-    {
-      amount: "50€",
-      description: "Contribue au développement de nouvelles fonctionnalités",
-      impact: "Améliore l'expérience utilisateur"
-    },
-    {
-      amount: "100€",
-      description: "Soutient la maintenance et la sécurité de la plateforme",
-      impact: "Garantit la protection des données"
-    },
-    {
-      amount: "250€",
-      description: "Finance les certifications et audits de sécurité",
-      impact: "Renforce la confiance des utilisateurs"
     }
   ];
 
@@ -87,7 +63,7 @@ const FinancialSection = () => {
             Niveaux de contribution suggérés
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {contributionLevels.map((level, index) => (
+            {donationConfig.suggestedLevels.map((level, index) => (
               <Card key={index} className="text-center hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <CardTitle className="text-2xl text-directiveplus-600">{level.amount}</CardTitle>
@@ -159,24 +135,36 @@ const FinancialSection = () => {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="text-center">
-              <div className="text-3xl font-bold text-directiveplus-600 mb-2">60%</div>
-              <h4 className="font-semibold text-directiveplus-700 mb-2">Développement</h4>
+              <div className="text-3xl font-bold text-directiveplus-600 mb-2">
+                {donationConfig.fundUsage.development.percentage}%
+              </div>
+              <h4 className="font-semibold text-directiveplus-700 mb-2">
+                {donationConfig.fundUsage.development.title}
+              </h4>
               <p className="text-sm text-gray-600">
-                Amélioration continue de la plateforme et nouvelles fonctionnalités
+                {donationConfig.fundUsage.development.description}
               </p>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-directiveplus-600 mb-2">25%</div>
-              <h4 className="font-semibold text-directiveplus-700 mb-2">Infrastructure</h4>
+              <div className="text-3xl font-bold text-directiveplus-600 mb-2">
+                {donationConfig.fundUsage.infrastructure.percentage}%
+              </div>
+              <h4 className="font-semibold text-directiveplus-700 mb-2">
+                {donationConfig.fundUsage.infrastructure.title}
+              </h4>
               <p className="text-sm text-gray-600">
-                Hébergement sécurisé, maintenance et support technique
+                {donationConfig.fundUsage.infrastructure.description}
               </p>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-directiveplus-600 mb-2">15%</div>
-              <h4 className="font-semibold text-directiveplus-700 mb-2">Communication</h4>
+              <div className="text-3xl font-bold text-directiveplus-600 mb-2">
+                {donationConfig.fundUsage.communication.percentage}%
+              </div>
+              <h4 className="font-semibold text-directiveplus-700 mb-2">
+                {donationConfig.fundUsage.communication.title}
+              </h4>
               <p className="text-sm text-gray-600">
-                Promotion, documentation et support utilisateur
+                {donationConfig.fundUsage.communication.description}
               </p>
             </div>
           </div>
