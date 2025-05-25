@@ -81,6 +81,10 @@ const MedicalDocumentSection = ({ userId, onUploadComplete, onDocumentAdd, onDoc
     }
 
     try {
+      // Calculer la taille approximative du fichier à partir de la data URL
+      const base64Length = url.length;
+      const estimatedSize = Math.round((base64Length * 3) / 4); // Estimation de la taille en bytes
+
       // Ajouter directement dans medical_documents pour simplifier
       const { data, error } = await supabase
         .from('medical_documents')
@@ -89,7 +93,8 @@ const MedicalDocumentSection = ({ userId, onUploadComplete, onDocumentAdd, onDoc
           file_name: fileName,
           file_path: url,
           description: `Document médical de synthèse: ${fileName}`,
-          file_type: url.startsWith('data:application/pdf') ? 'pdf' : 'image'
+          file_type: url.startsWith('data:application/pdf') ? 'pdf' : 'image',
+          file_size: estimatedSize
         })
         .select()
         .single();
