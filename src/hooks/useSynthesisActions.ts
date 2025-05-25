@@ -69,18 +69,21 @@ export const useSynthesisActions = (userId?: string) => {
           description: "Vos directives anticipées ont été sauvegardées avec succès et sont accessibles via votre code d'accès",
         });
         
-        // Rediriger uniquement vers la page d'affichage du dossier si un code d'accès existe
+        // Rediriger vers la page des directives au lieu de l'affichage-dossier supprimé
         if (result.accessCode) {
-          console.log("Redirection vers affichage-dossier avec le code d'accès:", result.accessCode);
+          console.log("Redirection vers mes-directives avec le code d'accès:", result.accessCode);
           
           // Stocker temporairement le code d'accès dans le sessionStorage
           sessionStorage.setItem('directAccessCode', result.accessCode);
           
-          // Rediriger uniquement vers l'affichage du dossier, avec replace: true pour éviter le retour arrière
-          navigate('/affichage-dossier', { replace: true });
+          // Rediriger vers la page des directives existante
+          navigate('/mes-directives', { replace: true });
           
           // Arrêtons l'exécution ici pour éviter toute redirection supplémentaire
           return result.documentId; 
+        } else {
+          // Si pas de code d'accès, rediriger vers le dashboard
+          navigate('/dashboard', { replace: true });
         }
       } else {
         throw new Error(result.error);
