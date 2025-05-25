@@ -22,6 +22,7 @@ import ReportDataBreach from "./pages/ReportDataBreach";
 import Soutenir from "./pages/Soutenir";
 import NotFound from "./pages/NotFound";
 import AffichageDossierRedirect from "./pages/AffichageDossierRedirect";
+import MedicalData from "./pages/MedicalData";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster as Sonner } from "sonner";
 import PdfViewer from "./pages/PdfViewer";
@@ -44,6 +45,7 @@ function App() {
               <Route path="/mes-directives" element={<MesDirectives />} />
               <Route path="/partage" element={<Partage />} />
               <Route path="/document/:documentId" element={<DirectDocument />} />
+              <Route path="/donnees-medicales" element={<MedicalData />} />
               
               {/* Routes des questionnaires */}
               <Route path="/gouts-peurs" element={<GoutsPeurs />} />
