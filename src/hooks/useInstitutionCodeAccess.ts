@@ -76,8 +76,41 @@ export const useInstitutionCodeAccess = (
 
         console.log("Directives récupérées:", { directivesData, directivesError });
 
-        if (directivesError) {
-          console.error("Erreur lors de la récupération des directives:", directivesError);
+        // Récupérer aussi les documents PDF du patient si disponibles
+        const { data: documentsData, error: documentsError } = await supabase
+          .from('pdf_documents')
+          .select('*')
+          .eq('user_id', patientInfo.user_id)
+          .order('created_at', { ascending: false });
+
+        console.log("Documents récupérés:", { documentsData, documentsError });
+
+        // Préparer le contenu des directives/documents
+        let directivesContent = [];
+        
+        if (directivesData && directivesData.length > 0) {
+          directivesContent = directivesData.map(directive => ({
+            id: directive.directive_id,
+            type: 'directive',
+            content: directive.directive_content,
+            created_at: directive.created_at,
+            patient_info: directive.patient_info
+          }));
+        }
+        
+        if (documentsData && documentsData.length > 0) {
+          const documentsList = documentsData.map(doc => ({
+            id: doc.id,
+            file_name: doc.file_name,
+            file_path: doc.file_path,
+            file_type: doc.file_type || 'pdf',
+            content_type: doc.content_type,
+            user_id: doc.user_id,
+            created_at: doc.created_at,
+            description: doc.description,
+            file_size: doc.file_size
+          }));
+          directivesContent = [...directivesContent, ...documentsList];
         }
 
         // Créer un dossier pour le store
@@ -98,8 +131,8 @@ export const useInstitutionCodeAccess = (
               prenom: patientInfo.first_name,
               date_naissance: patientInfo.birth_date
             },
-            directives: directivesData || [],
-            documents: [] // Les directives institution n'incluent pas les documents pour l'instant
+            directives: directivesContent,
+            documents: documentsData || []
           }
         };
 

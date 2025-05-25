@@ -41,22 +41,30 @@ const DossierView: React.FC<DossierViewProps> = ({
     window.location.href = "/";
   };
 
+  // Extraire les directives du dossier actif
+  const getDirectivesFromDossier = () => {
+    if (!dossierActif?.contenu) return null;
+    
+    // Vérifier s'il y a des directives dans le contenu
+    if (dossierActif.contenu.directives && Array.isArray(dossierActif.contenu.directives)) {
+      return dossierActif.contenu.directives;
+    }
+    
+    // Vérifier s'il y a des documents
+    if (dossierActif.contenu.documents && Array.isArray(dossierActif.contenu.documents)) {
+      return dossierActif.contenu.documents;
+    }
+    
+    return null;
+  };
+
+  const directives = getDirectivesFromDossier();
+  
   console.log("=== DEBUG DossierView ===");
   console.log("DossierView - showDocuments:", showDocuments);
-  console.log("DossierView - documents reçus:", documents);
-  console.log("DossierView - Type des documents:", typeof documents);
-  console.log("DossierView - Est un tableau documents:", Array.isArray(documents));
-  console.log("DossierView - Longueur documents:", documents?.length);
   console.log("DossierView - dossierActif:", dossierActif);
-  console.log("DossierView - dossierActif.contenu?.documents:", dossierActif?.contenu?.documents);
-  
-  // Analyse plus poussée des documents reçus
-  if (documents) {
-    console.log("DossierView - Premier document:", documents[0]);
-    documents.forEach((doc, index) => {
-      console.log(`DossierView - Document ${index}:`, doc);
-    });
-  }
+  console.log("DossierView - directives extraites:", directives);
+  console.log("DossierView - isCodeAccess:", isCodeAccess);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -83,22 +91,21 @@ const DossierView: React.FC<DossierViewProps> = ({
               </div>
             ) : (
               <>
-                <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                  <h3 className="font-semibold text-yellow-800">Debug Info - DossierView</h3>
-                  <p><strong>Documents type:</strong> {typeof documents}</p>
-                  <p><strong>Is array:</strong> {Array.isArray(documents) ? 'Oui' : 'Non'}</p>
-                  <p><strong>Length:</strong> {documents?.length || 'undefined'}</p>
-                  <details className="mt-2">
-                    <summary className="cursor-pointer text-yellow-700">Voir documents détaillés</summary>
-                    <pre className="mt-2 p-2 bg-yellow-100 rounded text-xs overflow-auto">
-                      {JSON.stringify(documents, null, 2)}
-                    </pre>
-                  </details>
-                </div>
-                
-                <DirectivesContent
-                  directives={documents}
-                />
+                {directives && directives.length > 0 ? (
+                  <DirectivesContent
+                    directives={directives}
+                  />
+                ) : (
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 text-center">
+                    <h3 className="text-lg font-medium text-amber-800 mb-2">
+                      Aucune directive disponible
+                    </h3>
+                    <p className="text-amber-700">
+                      Ce patient n'a pas encore enregistré de directives anticipées 
+                      ou elles ne sont pas disponibles via ce mode d'accès.
+                    </p>
+                  </div>
+                )}
               </>
             )}
           </>
