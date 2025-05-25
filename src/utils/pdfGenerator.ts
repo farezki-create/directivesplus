@@ -90,19 +90,19 @@ export const generatePDF = async (data: PdfData): Promise<string> => {
       yPosition = renderFreeText(pdf, layout, yPosition, data.freeText);
     }
     
-    // Récupérer et ajouter les documents médicaux si un userId est fourni
+    // Add signature BEFORE medical documents
+    if (data.signature) {
+      yPosition = checkPageBreak(pdf, layout, yPosition);
+      yPosition = renderSignature(pdf, layout, yPosition, data.signature);
+    }
+    
+    // Récupérer et ajouter les documents médicaux APRÈS la signature, à la fin
     if (data.userId) {
       const medicalDocuments = await getMedicalDocuments(data.userId);
       if (medicalDocuments.length > 0) {
         yPosition = checkPageBreak(pdf, layout, yPosition);
         yPosition = renderMedicalDocuments(pdf, layout, yPosition, medicalDocuments);
       }
-    }
-    
-    // Add signature after all content
-    if (data.signature) {
-      yPosition = checkPageBreak(pdf, layout, yPosition);
-      yPosition = renderSignature(pdf, layout, yPosition, data.signature);
     }
     
     // Add signature footer on all pages
