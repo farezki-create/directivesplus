@@ -3,7 +3,7 @@ import { jsPDF } from "jspdf";
 import { PdfLayout } from "./types";
 
 /**
- * Récupère les documents médicaux depuis medical_documents uniquement (système principal)
+ * Récupère les documents médicaux depuis medical_documents ET questionnaires
  */
 export const getMedicalDocuments = async (userId: string): Promise<any[]> => {
   console.log("getMedicalDocuments - début avec userId:", userId);
@@ -11,39 +11,60 @@ export const getMedicalDocuments = async (userId: string): Promise<any[]> => {
   const { supabase } = await import("@/integrations/supabase/client");
   
   try {
+    let allDocuments: any[] = [];
+
     console.log("Récupération depuis medical_documents...");
     
-    // Récupérer UNIQUEMENT depuis medical_documents (système principal)
+    // 1. Récupérer depuis medical_documents (système principal)
     const { data: medicalDocs, error: medicalError } = await supabase
       .from('medical_documents')
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
-    if (medicalError) {
-      console.error("Erreur lors de la récupération depuis medical_documents:", medicalError);
-      return [];
+    if (!medicalError && medicalDocs && medicalDocs.length > 0) {
+      console.log("Documents trouvés dans medical_documents:", medicalDocs.length);
+      
+      const medicalDocuments = medicalDocs.map(doc => ({
+        id: doc.id,
+        file_name: doc.file_name,
+        description: doc.description || `Document médical: ${doc.file_name}`,
+        created_at: doc.created_at,
+        user_id: doc.user_id,
+        content: doc.file_path, // Le contenu est directement dans file_path
+        file_type: doc.file_type
+      }));
+      
+      allDocuments = [...allDocuments, ...medicalDocuments];
     }
 
-    if (!medicalDocs || medicalDocs.length === 0) {
-      console.log("Aucun document trouvé dans medical_documents");
-      return [];
-    }
-
-    console.log("Documents trouvés dans medical_documents:", medicalDocs.length);
+    console.log("Récupération depuis questionnaire_responses...");
     
-    const medicalDocuments = medicalDocs.map(doc => ({
-      id: doc.id,
-      file_name: doc.file_name,
-      description: doc.description || `Document médical: ${doc.file_name}`,
-      created_at: doc.created_at,
-      user_id: doc.user_id,
-      content: doc.file_path, // Le contenu est directement dans file_path
-      file_type: doc.file_type
-    }));
+    // 2. Récupérer aussi depuis questionnaire_responses (ancien système)
+    const { data: questionnaireData, error: questionnaireError } = await supabase
+      .from('questionnaire_responses')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('questionnaire_type', 'medical-documents')
+      .order('created_at', { ascending: false });
 
-    console.log("Total des documents médicaux récupérés:", medicalDocuments.length);
-    return medicalDocuments;
+    if (!questionnaireError && questionnaireData && questionnaireData.length > 0) {
+      console.log("Documents trouvés dans questionnaire_responses:", questionnaireData.length);
+      
+      const questionnaireDocuments = questionnaireData.map(item => ({
+        id: item.question_id,
+        file_name: item.question_text,
+        description: item.response,
+        created_at: item.created_at,
+        user_id: item.user_id,
+        content: null // Pas de contenu pour les anciens documents
+      }));
+      
+      allDocuments = [...allDocuments, ...questionnaireDocuments];
+    }
+
+    console.log("Total des documents médicaux récupérés:", allDocuments.length);
+    return allDocuments;
 
   } catch (error) {
     console.error('Erreur lors de la récupération des documents médicaux:', error);

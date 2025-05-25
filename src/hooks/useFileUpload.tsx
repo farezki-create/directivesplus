@@ -90,12 +90,10 @@ export const useFileUpload = (userId: string, onUploadComplete: (url: string, fi
 
         const dataUrl = reader.result.toString();
         const fileType = file.type;
-        const fileSize = file.size; // Utiliser la vraie taille du fichier
         const tableName = documentType === 'medical' ? 'medical_documents' : 'pdf_documents';
         
         console.log(`Enregistrement du document dans la table: ${tableName}`);
         console.log(`Type du document: ${fileType}`);
-        console.log(`Taille du fichier: ${fileSize} bytes`);
         
         try {
           // Create document record
@@ -104,7 +102,7 @@ export const useFileUpload = (userId: string, onUploadComplete: (url: string, fi
             file_path: dataUrl,
             description: `Document ${documentType === 'medical' ? 'médical' : ''} (${new Date().toLocaleString('fr-FR')})`,
             file_type: fileType,
-            file_size: fileSize, // Inclure la taille réelle du fichier
+            file_size: file.size,
             user_id: userId
           };
           

@@ -1,4 +1,3 @@
-
 import { useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
@@ -62,20 +61,15 @@ const SynthesisContent = ({ profileData, userId }: SynthesisContentProps) => {
     );
   };
 
-  // Fonction vide pour éviter les actions inutiles
   const handleMedicalDocumentUpload = () => {
-    // Ne rien faire ici - le hook gère tout
+    toast({
+      title: "Document médical ajouté",
+      description: "Le document médical sera intégré dans votre PDF de directives anticipées"
+    });
   };
 
   const handleDocumentAdd = (documentInfo: any) => {
-    setMedicalDocuments(prev => {
-      // Éviter les doublons
-      const exists = prev.some(doc => doc.id === documentInfo.id);
-      if (exists) {
-        return prev;
-      }
-      return [...prev, documentInfo];
-    });
+    setMedicalDocuments(prev => [...prev, documentInfo]);
   };
 
   const handleDocumentRemove = (documentId: string) => {

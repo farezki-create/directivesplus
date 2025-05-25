@@ -1,9 +1,10 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { StableAuthProvider } from "@/contexts/StableAuthContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
@@ -17,7 +18,6 @@ import PersonneConfiance from "./pages/PersonneConfiance";
 import Synthesis from "./pages/Synthesis";
 import CarteAcces from "./pages/CarteAcces";
 import MesDirectives from "./pages/MesDirectives";
-import MesDirectivesStable from "./pages/MesDirectivesStable";
 import InstitutionAccess from "./pages/InstitutionAccess";
 import MedicalData from "./pages/MedicalData";
 import Testimonials from "./pages/Testimonials";
@@ -30,45 +30,47 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <StableAuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/rediger" element={<Rediger />} />
-            <Route path="/avis-general" element={<AvisGeneral />} />
-            <Route path="/maintien-vie" element={<MaintienVie />} />
-            <Route path="/maladie-avancee" element={<MaladieAvancee />} />
-            <Route path="/gouts-peurs" element={<GoutsPeurs />} />
-            <Route path="/personne-confiance" element={<PersonneConfiance />} />
-            <Route path="/synthesis" element={<Synthesis />} />
-            <Route path="/carte-acces" element={<CarteAcces />} />
-            <Route path="/mes-directives" element={<MesDirectivesStable />} />
-            <Route path="/institution-access" element={<InstitutionAccess />} />
-            <Route path="/donnees-medicales" element={<MedicalData />} />
-            <Route path="/testimonials" element={<Testimonials />} />
-            <Route path="/en-savoir-plus" element={<EnSavoirPlus />} />
-            <Route path="/pdf-viewer" element={<PdfViewer />} />
-            <Route path="/soutenir" element={<Soutenir />} />
-            <Route path="/commentaires" element={<Comments />} />
-            <Route path="/directives-info" element={<DirectivesInfo />} />
-            {/* Redirection pour les anciennes URLs */}
-            <Route path="/directives-acces" element={<MesDirectives />} />
-            <Route path="/affichage-dossier" element={<NotFound />} />
-            <Route path="/affichage-dossier-redirect" element={<NotFound />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </StableAuthProvider>
-  </QueryClientProvider>
-);
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/rediger" element={<Rediger />} />
+              <Route path="/avis-general" element={<AvisGeneral />} />
+              <Route path="/maintien-vie" element={<MaintienVie />} />
+              <Route path="/maladie-avancee" element={<MaladieAvancee />} />
+              <Route path="/gouts-peurs" element={<GoutsPeurs />} />
+              <Route path="/personne-confiance" element={<PersonneConfiance />} />
+              <Route path="/synthesis" element={<Synthesis />} />
+              <Route path="/carte-acces" element={<CarteAcces />} />
+              <Route path="/mes-directives" element={<MesDirectives />} />
+              <Route path="/institution-access" element={<InstitutionAccess />} />
+              <Route path="/donnees-medicales" element={<MedicalData />} />
+              <Route path="/testimonials" element={<Testimonials />} />
+              <Route path="/en-savoir-plus" element={<EnSavoirPlus />} />
+              <Route path="/pdf-viewer" element={<PdfViewer />} />
+              <Route path="/soutenir" element={<Soutenir />} />
+              <Route path="/commentaires" element={<Comments />} />
+              <Route path="/directives-info" element={<DirectivesInfo />} />
+              {/* Redirection pour les anciennes URLs */}
+              <Route path="/directives-acces" element={<MesDirectives />} />
+              <Route path="/affichage-dossier" element={<NotFound />} />
+              <Route path="/affichage-dossier-redirect" element={<NotFound />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  );
+}
 
 export default App;
