@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useDossierStore } from "@/store/dossierStore";
@@ -39,22 +38,22 @@ export const useInstitutionCodeAccess = (
       try {
         console.log("Tentative d'accès par code institution:", { code, nom, prenom, naissance });
 
-        // Utiliser la nouvelle fonction RPC pour vérifier l'accès
-        const { data: verificationData, error: verificationError } = await supabase
-          .rpc('verify_institution_access', {
+        // Utiliser la nouvelle fonction RPC sécurisée
+        const { data: directivesData, error: directivesError } = await supabase
+          .rpc('get_institution_directives_secure', {
             input_last_name: nom,
             input_first_name: prenom,
             input_birth_date: naissance,
             input_institution_code: code,
           });
 
-        console.log("Résultat vérification institution access:", { verificationData, verificationError });
+        console.log("Résultat directives sécurisées:", { directivesData, directivesError });
 
-        if (verificationError) {
-          throw new Error(verificationError.message);
+        if (directivesError) {
+          throw new Error(directivesError.message);
         }
 
-        if (!verificationData || verificationData.length === 0) {
+        if (!directivesData || directivesData.length === 0) {
           setState(prev => ({
             ...prev,
             loading: false,
@@ -63,49 +62,34 @@ export const useInstitutionCodeAccess = (
           return;
         }
 
-        const patientInfo = verificationData[0];
+        // Récupérer les infos patient depuis la première directive
+        const firstDirective = directivesData[0];
+        
+        // Extraire les documents PDF du premier résultat
+        const pdfDocuments = firstDirective.pdf_documents || [];
 
-        // Récupérer les directives du patient
-        const { data: directivesData, error: directivesError } = await supabase
-          .rpc('get_patient_directives_by_institution', {
-            input_last_name: nom,
-            input_first_name: prenom,
-            input_birth_date: naissance,
-            input_institution_code: code,
-          });
-
-        console.log("Directives récupérées:", { directivesData, directivesError });
-
-        // Récupérer aussi les documents PDF du patient si disponibles
-        const { data: documentsData, error: documentsError } = await supabase
-          .from('pdf_documents')
-          .select('*')
-          .eq('user_id', patientInfo.user_id)
-          .order('created_at', { ascending: false });
-
-        console.log("Documents récupérés:", { documentsData, documentsError });
-
-        // Préparer le contenu des directives/documents
+        // Préparer le contenu des directives
         let directivesContent = [];
         
-        if (directivesData && directivesData.length > 0) {
-          directivesContent = directivesData.map(directive => ({
+        // Ajouter les directives textuelles
+        directivesData.forEach(directive => {
+          directivesContent.push({
             id: directive.directive_id,
             type: 'directive',
             content: directive.directive_content,
-            created_at: directive.created_at,
-            patient_info: directive.patient_info
-          }));
-        }
+            created_at: directive.created_at
+          });
+        });
         
-        if (documentsData && documentsData.length > 0) {
-          const documentsList = documentsData.map(doc => ({
+        // Ajouter les documents PDF
+        if (pdfDocuments.length > 0) {
+          const documentsList = pdfDocuments.map(doc => ({
             id: doc.id,
             file_name: doc.file_name,
             file_path: doc.file_path,
-            file_type: doc.content_type || 'pdf', // Utiliser content_type au lieu de file_type
+            file_type: doc.content_type || 'pdf',
             content_type: doc.content_type,
-            user_id: doc.user_id,
+            user_id: firstDirective.user_id,
             created_at: doc.created_at,
             description: doc.description,
             file_size: doc.file_size
@@ -115,24 +99,24 @@ export const useInstitutionCodeAccess = (
 
         // Créer un dossier pour le store
         const dossier = {
-          id: `institution-access-${patientInfo.user_id}`,
-          userId: patientInfo.user_id,
+          id: `institution-access-${firstDirective.user_id || 'unknown'}`,
+          userId: firstDirective.user_id || '',
           isFullAccess: true,
           isDirectivesOnly: false,
           isMedicalOnly: false,
           profileData: {
-            first_name: patientInfo.first_name,
-            last_name: patientInfo.last_name,
-            birth_date: patientInfo.birth_date
+            first_name: prenom,
+            last_name: nom,
+            birth_date: naissance
           },
           contenu: {
             patient: {
-              nom: patientInfo.last_name,
-              prenom: patientInfo.first_name,
-              date_naissance: patientInfo.birth_date
+              nom: nom,
+              prenom: prenom,
+              date_naissance: naissance
             },
             directives: directivesContent,
-            documents: documentsData || []
+            documents: pdfDocuments || []
           }
         };
 
@@ -143,12 +127,17 @@ export const useInstitutionCodeAccess = (
           ...prev,
           loading: false,
           accessGranted: true,
-          patientData: patientInfo
+          patientData: {
+            user_id: firstDirective.user_id,
+            first_name: prenom,
+            last_name: nom,
+            birth_date: naissance
+          }
         }));
 
         toast({
           title: "Accès autorisé",
-          description: `Accès aux directives de ${patientInfo.first_name} ${patientInfo.last_name}`,
+          description: `Accès aux directives de ${prenom} ${nom}`,
         });
 
       } catch (error: any) {
