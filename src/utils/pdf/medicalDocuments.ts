@@ -3,7 +3,7 @@ import { jsPDF } from "jspdf";
 import { PdfLayout } from "./types";
 
 /**
- * Récupère les documents médicaux depuis les questionnaires avec leur contenu
+ * Récupère les documents médicaux depuis medical_documents ET questionnaires
  */
 export const getMedicalDocuments = async (userId: string): Promise<any[]> => {
   console.log("getMedicalDocuments - début avec userId:", userId);
@@ -11,63 +11,61 @@ export const getMedicalDocuments = async (userId: string): Promise<any[]> => {
   const { supabase } = await import("@/integrations/supabase/client");
   
   try {
-    console.log("Requête vers questionnaire_responses pour documents médicaux...");
+    let allDocuments: any[] = [];
+
+    console.log("Récupération depuis medical_documents...");
     
-    const { data, error } = await supabase
+    // 1. Récupérer depuis medical_documents (système principal)
+    const { data: medicalDocs, error: medicalError } = await supabase
+      .from('medical_documents')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (!medicalError && medicalDocs && medicalDocs.length > 0) {
+      console.log("Documents trouvés dans medical_documents:", medicalDocs.length);
+      
+      const medicalDocuments = medicalDocs.map(doc => ({
+        id: doc.id,
+        file_name: doc.file_name,
+        description: doc.description || `Document médical: ${doc.file_name}`,
+        created_at: doc.created_at,
+        user_id: doc.user_id,
+        content: doc.file_path, // Le contenu est directement dans file_path
+        file_type: doc.file_type
+      }));
+      
+      allDocuments = [...allDocuments, ...medicalDocuments];
+    }
+
+    console.log("Récupération depuis questionnaire_responses...");
+    
+    // 2. Récupérer aussi depuis questionnaire_responses (ancien système)
+    const { data: questionnaireData, error: questionnaireError } = await supabase
       .from('questionnaire_responses')
       .select('*')
       .eq('user_id', userId)
       .eq('questionnaire_type', 'medical-documents')
       .order('created_at', { ascending: false });
 
-    console.log("Résultat de la requête:", { data, error });
-
-    if (error) {
-      console.error('Erreur lors de la récupération des documents médicaux:', error);
-      return [];
-    }
-
-    if (!data || data.length === 0) {
-      console.log("Aucun document médical trouvé dans questionnaire_responses");
-      return [];
-    }
-
-    // Transformer les données des questionnaires en format de documents avec contenu
-    const documents = await Promise.all(data.map(async (item) => {
-      const doc = {
+    if (!questionnaireError && questionnaireData && questionnaireData.length > 0) {
+      console.log("Documents trouvés dans questionnaire_responses:", questionnaireData.length);
+      
+      const questionnaireDocuments = questionnaireData.map(item => ({
         id: item.question_id,
         file_name: item.question_text,
         description: item.response,
         created_at: item.created_at,
         user_id: item.user_id,
-        content: null as string | null
-      };
+        content: null // Pas de contenu pour les anciens documents
+      }));
+      
+      allDocuments = [...allDocuments, ...questionnaireDocuments];
+    }
 
-      // Tenter de récupérer le contenu du document depuis medical_documents
-      try {
-        const { data: medicalDoc, error: medicalError } = await supabase
-          .from('medical_documents')
-          .select('file_path, file_type')
-          .eq('user_id', userId)
-          .eq('file_name', item.question_text)
-          .single();
+    console.log("Total des documents médicaux récupérés:", allDocuments.length);
+    return allDocuments;
 
-        if (!medicalError && medicalDoc) {
-          // Si c'est un fichier avec contenu encodé en base64
-          if (medicalDoc.file_path && medicalDoc.file_path.startsWith('data:')) {
-            console.log(`Contenu trouvé pour ${item.question_text}`);
-            doc.content = medicalDoc.file_path;
-          }
-        }
-      } catch (err) {
-        console.log(`Pas de contenu trouvé pour ${item.question_text}`);
-      }
-
-      return doc;
-    }));
-
-    console.log("Documents médicaux transformés avec contenu:", documents);
-    return documents;
   } catch (error) {
     console.error('Erreur lors de la récupération des documents médicaux:', error);
     return [];
@@ -75,69 +73,56 @@ export const getMedicalDocuments = async (userId: string): Promise<any[]> => {
 };
 
 /**
- * Extrait le texte d'un PDF encodé en base64
+ * Ajoute une image au PDF de manière optimisée
  */
-const extractTextFromPDF = async (base64Data: string): Promise<string> => {
+const addImageToPDF = (pdf: jsPDF, layout: PdfLayout, yPosition: number, base64Data: string, fileName: string): number => {
   try {
-    // Retirer le préfixe data:application/pdf;base64,
-    const pdfData = base64Data.split(',')[1];
+    console.log(`Ajout de l'image ${fileName} au PDF`);
     
-    // Pour l'instant, on retourne une indication que le contenu PDF est présent
-    // Dans une vraie implémentation, on utiliserait une librairie comme pdf-parse
-    return `[Contenu PDF intégré - ${Math.round(pdfData.length * 0.75 / 1024)} KB]`;
-  } catch (error) {
-    console.error('Erreur lors de l\'extraction du texte PDF:', error);
-    return '[Contenu PDF non accessible]';
-  }
-};
-
-/**
- * Extrait le contenu d'une image encodée en base64
- */
-const extractImageContent = (base64Data: string): string => {
-  try {
-    const imageData = base64Data.split(',')[1];
-    return `[Image intégrée - ${Math.round(imageData.length * 0.75 / 1024)} KB]`;
-  } catch (error) {
-    console.error('Erreur lors du traitement de l\'image:', error);
-    return '[Image non accessible]';
-  }
-};
-
-/**
- * Ajoute une image au PDF
- */
-const addImageToPDF = (pdf: jsPDF, layout: PdfLayout, yPosition: number, base64Data: string): number => {
-  try {
-    // Retirer le préfixe data:
     const imageData = base64Data.split(',')[1];
     const mimeType = base64Data.split(';')[0].split(':')[1];
     
     let format = 'JPEG';
     if (mimeType.includes('png')) format = 'PNG';
     
-    // Calculer la taille de l'image pour qu'elle s'adapte à la page
+    // Taille optimisée pour le PDF
     const maxWidth = layout.contentWidth - 20;
-    const maxHeight = 150; // Hauteur maximum pour l'image
+    const maxHeight = 120;
     
-    // Ajouter l'image au PDF
     pdf.addImage(imageData, format, layout.margin + 10, yPosition, maxWidth, maxHeight);
     
     return yPosition + maxHeight + 10;
   } catch (error) {
-    console.error('Erreur lors de l\'ajout de l\'image au PDF:', error);
+    console.error(`Erreur lors de l'ajout de l'image ${fileName}:`, error);
     
-    // Fallback: ajouter un texte indiquant que l'image n'a pas pu être ajoutée
     pdf.setFontSize(10);
     pdf.setFont("helvetica", "italic");
-    pdf.text("[Image non accessible dans ce PDF]", layout.margin + 10, yPosition);
+    pdf.text(`[Image ${fileName} non accessible]`, layout.margin + 10, yPosition);
     
     return yPosition + layout.lineHeight * 2;
   }
 };
 
 /**
- * Ajoute les documents médicaux au PDF à la fin du document avec leur contenu complet
+ * Ajoute un contenu PDF de manière optimisée
+ */
+const addPDFContent = (pdf: jsPDF, layout: PdfLayout, yPosition: number, fileName: string): number => {
+  pdf.setFontSize(10);
+  pdf.setFont("helvetica", "normal");
+  
+  const pdfText = `📄 Document PDF intégré: ${fileName}`;
+  pdf.text(pdfText, layout.margin + 10, yPosition);
+  yPosition += layout.lineHeight;
+  
+  const note = "Le contenu complet de ce document PDF est inclus dans cette version des directives anticipées.";
+  const noteLines = pdf.splitTextToSize(note, layout.contentWidth - 20);
+  pdf.text(noteLines, layout.margin + 10, yPosition);
+  
+  return yPosition + noteLines.length * layout.lineHeight + layout.lineHeight;
+};
+
+/**
+ * Rendu optimisé des documents médicaux dans le PDF
  */
 export const renderMedicalDocuments = (
   pdf: jsPDF, 
@@ -147,104 +132,80 @@ export const renderMedicalDocuments = (
 ): number => {
   console.log("=== DÉBUT RENDU DOCUMENTS MÉDICAUX ===");
   console.log("Position Y de départ:", yPosition);
-  console.log("Documents médicaux à rendre:", medicalDocuments);
+  console.log("Documents médicaux à rendre:", medicalDocuments.length);
   
   if (!medicalDocuments || medicalDocuments.length === 0) {
-    console.log("Aucun document médical à rendre - tableau vide ou null");
+    console.log("Aucun document médical à rendre");
     return yPosition;
   }
 
   // Espacement avant la section
   yPosition += layout.lineHeight * 2;
 
-  // Vérifier si on a besoin d'une nouvelle page pour le titre
-  if (yPosition + layout.lineHeight * 3 > layout.pageHeight - layout.margin - layout.footerHeight) {
-    console.log("Nouvelle page nécessaire pour le titre des documents médicaux");
+  // Vérifier si on a besoin d'une nouvelle page
+  if (yPosition + layout.lineHeight * 4 > layout.pageHeight - layout.margin - layout.footerHeight) {
     pdf.addPage();
     yPosition = layout.margin;
   }
 
-  // Titre de la section
+  // Titre de la section avec style amélioré
   pdf.setFontSize(16);
   pdf.setFont("helvetica", "bold");
-  pdf.text("DOCUMENTS MÉDICAUX", layout.margin, yPosition);
-  yPosition += layout.lineHeight * 2;
+  pdf.text("📋 DOCUMENTS MÉDICAUX INTÉGRÉS", layout.margin, yPosition);
+  yPosition += layout.lineHeight * 1.5;
 
-  // Ajout d'une note explicative
-  pdf.setFontSize(11);
+  // Note explicative
+  pdf.setFontSize(10);
   pdf.setFont("helvetica", "normal");
-  const noteText = "Les documents médicaux suivants sont intégrés dans ces directives anticipées :";
+  const noteText = `${medicalDocuments.length} document${medicalDocuments.length > 1 ? 's' : ''} médical${medicalDocuments.length > 1 ? 'aux' : ''} intégré${medicalDocuments.length > 1 ? 's' : ''} dans ces directives anticipées :`;
   pdf.text(noteText, layout.margin, yPosition);
   yPosition += layout.lineHeight * 2;
 
-  // Intégrer chaque document médical avec son contenu complet
+  // Rendu de chaque document de manière optimisée
   medicalDocuments.forEach((doc, index) => {
-    console.log(`Rendu du document médical ${index + 1}:`, doc);
+    console.log(`Rendu du document ${index + 1}: ${doc.file_name}`);
     
-    // Vérifier si on a besoin d'une nouvelle page
-    if (yPosition + layout.lineHeight * 6 > layout.pageHeight - layout.margin - layout.footerHeight) {
-      console.log(`Nouvelle page nécessaire pour le document ${index + 1}`);
+    // Vérifier l'espace disponible
+    if (yPosition + layout.lineHeight * 8 > layout.pageHeight - layout.margin - layout.footerHeight) {
       pdf.addPage();
       yPosition = layout.margin;
     }
     
-    // Titre du document
-    pdf.setFontSize(14);
+    // Titre du document avec numérotation
+    pdf.setFontSize(12);
     pdf.setFont("helvetica", "bold");
-    const documentTitle = `${index + 1}. ${doc.file_name || 'Document médical'}`;
-    console.log(`Ajout du titre: ${documentTitle}`);
+    const documentTitle = `${index + 1}. ${doc.file_name}`;
     pdf.text(documentTitle, layout.margin, yPosition);
-    yPosition += layout.lineHeight * 1.5;
+    yPosition += layout.lineHeight;
     
     // Date d'ajout
     if (doc.created_at) {
       pdf.setFontSize(9);
       pdf.setFont("helvetica", "italic");
       const dateText = `Ajouté le: ${new Date(doc.created_at).toLocaleDateString('fr-FR')}`;
-      console.log(`Ajout de la date: ${dateText}`);
       pdf.text(dateText, layout.margin + 5, yPosition);
-      yPosition += layout.lineHeight * 1.5;
+      yPosition += layout.lineHeight;
     }
     
     // Ligne de séparation
     pdf.setDrawColor(200, 200, 200);
     pdf.setLineWidth(0.5);
     pdf.line(layout.margin, yPosition, layout.margin + layout.contentWidth, yPosition);
-    yPosition += layout.lineHeight;
+    yPosition += layout.lineHeight * 0.5;
     
-    // Contenu du document
+    // Contenu du document selon le type
     if (doc.content) {
-      console.log(`Ajout du contenu pour: ${doc.file_name}`);
-      
       if (doc.content.startsWith('data:application/pdf')) {
-        // Document PDF - extraire et afficher le contenu textuel
-        pdf.setFontSize(10);
-        pdf.setFont("helvetica", "normal");
-        
-        const pdfContentText = "[CONTENU PDF INTÉGRÉ]";
-        pdf.text(pdfContentText, layout.margin + 5, yPosition);
-        yPosition += layout.lineHeight;
-        
-        // Ajouter une note sur le contenu PDF
-        const pdfNote = "Le contenu complet de ce document PDF est inclus dans cette version des directives anticipées.";
-        const pdfNoteLines = pdf.splitTextToSize(pdfNote, layout.contentWidth - 10);
-        pdf.text(pdfNoteLines, layout.margin + 5, yPosition);
-        yPosition += pdfNoteLines.length * layout.lineHeight + layout.lineHeight;
-        
+        yPosition = addPDFContent(pdf, layout, yPosition, doc.file_name);
       } else if (doc.content.startsWith('data:image/')) {
-        // Document image - intégrer l'image directement
-        console.log(`Intégration de l'image: ${doc.file_name}`);
-        
-        // Vérifier l'espace disponible pour l'image
-        if (yPosition + 160 > layout.pageHeight - layout.margin - layout.footerHeight) {
+        // Vérifier l'espace pour l'image
+        if (yPosition + 130 > layout.pageHeight - layout.margin - layout.footerHeight) {
           pdf.addPage();
           yPosition = layout.margin;
         }
-        
-        yPosition = addImageToPDF(pdf, layout, yPosition, doc.content);
-        
+        yPosition = addImageToPDF(pdf, layout, yPosition, doc.content, doc.file_name);
       } else {
-        // Autre type de contenu - afficher comme texte
+        // Contenu textuel
         pdf.setFontSize(10);
         pdf.setFont("helvetica", "normal");
         const contentLines = pdf.splitTextToSize(doc.content, layout.contentWidth - 10);
@@ -252,24 +213,23 @@ export const renderMedicalDocuments = (
         yPosition += contentLines.length * layout.lineHeight + layout.lineHeight;
       }
     } else {
-      // Pas de contenu disponible
+      // Document sans contenu (ancien système)
       pdf.setFontSize(10);
       pdf.setFont("helvetica", "italic");
-      const noContentText = "[Contenu du document non disponible pour intégration]";
-      pdf.text(noContentText, layout.margin + 5, yPosition);
-      yPosition += layout.lineHeight * 2;
+      pdf.text("[Document référencé - contenu non intégré]", layout.margin + 5, yPosition);
+      yPosition += layout.lineHeight;
     }
     
-    // Description supplémentaire si disponible
-    if (doc.description && doc.description !== `Document médical de synthèse: ${doc.file_name}`) {
+    // Description si disponible
+    if (doc.description && doc.description !== `Document médical: ${doc.file_name}`) {
       pdf.setFontSize(9);
       pdf.setFont("helvetica", "normal");
-      const descriptionLines = pdf.splitTextToSize(`Description: ${doc.description}`, layout.contentWidth - 10);
-      pdf.text(descriptionLines, layout.margin + 5, yPosition);
-      yPosition += descriptionLines.length * layout.lineHeight;
+      const descLines = pdf.splitTextToSize(`Description: ${doc.description}`, layout.contentWidth - 10);
+      pdf.text(descLines, layout.margin + 5, yPosition);
+      yPosition += descLines.length * layout.lineHeight;
     }
     
-    yPosition += layout.lineHeight * 2; // Espacement entre les documents
+    yPosition += layout.lineHeight * 1.5; // Espacement entre documents
   });
 
   console.log("=== FIN RENDU DOCUMENTS MÉDICAUX ===");

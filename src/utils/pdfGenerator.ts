@@ -93,34 +93,26 @@ export const generatePDF = async (data: PdfData): Promise<string> => {
       yPosition = renderFreeText(pdf, layout, yPosition, data.freeText);
     }
     
-    // Add signature
-    if (data.signature) {
-      yPosition = checkPageBreak(pdf, layout, yPosition);
-      yPosition = renderSignature(pdf, layout, yPosition, data.signature);
-    }
-    
-    // RÉCUPÉRATION ET AJOUT DES DOCUMENTS MÉDICAUX
+    // RÉCUPÉRATION ET AJOUT DES DOCUMENTS MÉDICAUX (SIMPLIFIÉE)
     console.log("=== RÉCUPÉRATION DOCUMENTS MÉDICAUX ===");
     console.log("UserId disponible:", data.userId);
     
     let medicalDocuments: any[] = [];
     
     if (data.userId) {
-      console.log("Tentative de récupération des documents médicaux...");
+      console.log("Récupération des documents médicaux...");
       try {
         medicalDocuments = await getMedicalDocuments(data.userId);
-        console.log("Documents médicaux récupérés avec succès:", medicalDocuments.length, medicalDocuments);
+        console.log("Documents médicaux récupérés:", medicalDocuments.length);
       } catch (error) {
         console.error("Erreur lors de la récupération des documents médicaux:", error);
         medicalDocuments = [];
       }
-    } else {
-      console.log("Pas d'userId fourni, skip récupération documents médicaux");
     }
     
-    // Vérifier aussi les documents passés en paramètre
+    // Ajouter aussi les documents passés en paramètre
     if (data.medicalDocuments && data.medicalDocuments.length > 0) {
-      console.log("Documents médicaux fournis en paramètre:", data.medicalDocuments);
+      console.log("Documents médicaux fournis en paramètre:", data.medicalDocuments.length);
       medicalDocuments = [...medicalDocuments, ...data.medicalDocuments];
     }
     
@@ -132,9 +124,15 @@ export const generatePDF = async (data: PdfData): Promise<string> => {
       yPosition = checkPageBreak(pdf, layout, yPosition);
       yPosition = renderMedicalDocuments(pdf, layout, yPosition, medicalDocuments);
       
-      console.log("Documents médicaux ajoutés avec succès au PDF, nouvelle position Y:", yPosition);
+      console.log("Documents médicaux ajoutés avec succès au PDF");
     } else {
       console.log("=== AUCUN DOCUMENT MÉDICAL À AJOUTER ===");
+    }
+    
+    // Add signature
+    if (data.signature) {
+      yPosition = checkPageBreak(pdf, layout, yPosition);
+      yPosition = renderSignature(pdf, layout, yPosition, data.signature);
     }
     
     // Add signature footer on all pages
@@ -156,7 +154,7 @@ export const generatePDF = async (data: PdfData): Promise<string> => {
     
     // Store PDF in database if userId is provided
     if (data.userId) {
-      const description = "Directives anticipées générées le " + new Date().toLocaleDateString('fr-FR', {
+      const description = "Directives anticipées avec documents médicaux - " + new Date().toLocaleDateString('fr-FR', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',

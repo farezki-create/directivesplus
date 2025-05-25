@@ -5,7 +5,7 @@ import DocumentUploader from "@/components/documents/DocumentUploader";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { Trash } from "lucide-react";
+import { Trash, Eye } from "lucide-react";
 
 interface MedicalDocumentSectionProps {
   userId?: string;
@@ -17,30 +17,51 @@ interface MedicalDocumentSectionProps {
 const MedicalDocumentSection = ({ userId, onUploadComplete, onDocumentAdd, onDocumentRemove }: MedicalDocumentSectionProps) => {
   const [uploadedDocuments, setUploadedDocuments] = useState<any[]>([]);
   const [deletingDocuments, setDeletingDocuments] = useState<Set<string>>(new Set());
+  const [previewDocument, setPreviewDocument] = useState<string | null>(null);
 
-  // Récupérer les documents médicaux existants depuis les questionnaires
+  // Récupérer les documents médicaux depuis medical_documents ET questionnaires
   useEffect(() => {
     const fetchMedicalDocuments = async () => {
       if (!userId) return;
       
       try {
-        const { data, error } = await supabase
+        // Récupérer depuis medical_documents (nouveau système simplifié)
+        const { data: medicalDocs, error: medicalError } = await supabase
+          .from('medical_documents')
+          .select('*')
+          .eq('user_id', userId);
+
+        let allDocuments: any[] = [];
+
+        if (!medicalError && medicalDocs) {
+          allDocuments = medicalDocs.map(doc => ({
+            id: doc.id,
+            name: doc.file_name,
+            description: doc.description || `Document médical: ${doc.file_name}`,
+            created_at: doc.created_at,
+            file_path: doc.file_path,
+            file_type: doc.file_type
+          }));
+        }
+
+        // Récupérer aussi depuis questionnaire_responses (ancien système)
+        const { data: questionnaireData, error: questionnaireError } = await supabase
           .from('questionnaire_responses')
           .select('*')
           .eq('user_id', userId)
           .eq('questionnaire_type', 'medical-documents');
         
-        if (error) throw error;
-        
-        if (data && data.length > 0) {
-          const documents = data.map(item => ({
+        if (!questionnaireError && questionnaireData) {
+          const questionnaireDocuments = questionnaireData.map(item => ({
             id: item.question_id,
             name: item.question_text,
             description: item.response,
             created_at: item.created_at
           }));
-          setUploadedDocuments(documents);
+          allDocuments = [...allDocuments, ...questionnaireDocuments];
         }
+
+        setUploadedDocuments(allDocuments);
       } catch (error) {
         console.error('Erreur lors de la récupération des documents médicaux:', error);
       }
@@ -49,7 +70,7 @@ const MedicalDocumentSection = ({ userId, onUploadComplete, onDocumentAdd, onDoc
     fetchMedicalDocuments();
   }, [userId]);
 
-  const handleDocumentUpload = async (file: File) => {
+  const handleDocumentUpload = async (url: string, fileName: string) => {
     if (!userId) {
       toast({
         title: "Erreur",
@@ -60,27 +81,28 @@ const MedicalDocumentSection = ({ userId, onUploadComplete, onDocumentAdd, onDoc
     }
 
     try {
-      // Créer un UUID pour le document
-      const documentId = crypto.randomUUID();
-      
-      // Ajouter le document aux questionnaires
-      const { error } = await supabase
-        .from('questionnaire_responses')
+      // Ajouter directement dans medical_documents pour simplifier
+      const { data, error } = await supabase
+        .from('medical_documents')
         .insert({
           user_id: userId,
-          questionnaire_type: 'medical-documents',
-          question_id: documentId,
-          question_text: file.name,
-          response: `Document médical de synthèse: ${file.name}. Taille: ${(file.size / 1024).toFixed(1)} KB. Type: ${file.type}.`
-        });
+          file_name: fileName,
+          file_path: url,
+          description: `Document médical de synthèse: ${fileName}`,
+          file_type: url.startsWith('data:application/pdf') ? 'pdf' : 'image'
+        })
+        .select()
+        .single();
 
       if (error) throw error;
 
       const newDocument = {
-        id: documentId,
-        name: file.name,
-        description: `Document médical de synthèse: ${file.name}`,
-        created_at: new Date().toISOString()
+        id: data.id,
+        name: fileName,
+        description: `Document médical de synthèse: ${fileName}`,
+        created_at: data.created_at,
+        file_path: url,
+        file_type: data.file_type
       };
 
       setUploadedDocuments(prev => [...prev, newDocument]);
@@ -89,7 +111,7 @@ const MedicalDocumentSection = ({ userId, onUploadComplete, onDocumentAdd, onDoc
 
       toast({
         title: "Document ajouté",
-        description: "Le document médical a été ajouté à vos questionnaires et sera inclus dans votre PDF de directives anticipées"
+        description: "Le document médical a été ajouté et sera inclus dans votre PDF de directives anticipées"
       });
     } catch (error: any) {
       console.error('Erreur lors de l\'ajout du document:', error);
@@ -102,33 +124,28 @@ const MedicalDocumentSection = ({ userId, onUploadComplete, onDocumentAdd, onDoc
   };
 
   const handleDeleteDocument = async (documentId: string) => {
-    if (!userId) {
-      toast({
-        title: "Erreur",
-        description: "Vous devez être connecté pour supprimer un document",
-        variant: "destructive"
-      });
-      return;
-    }
+    if (!userId) return;
 
-    // Ajouter l'ID du document en cours de suppression
     setDeletingDocuments(prev => new Set([...prev, documentId]));
 
     try {
-      // Supprimer le document de la table questionnaire_responses
-      const { error } = await supabase
+      // Supprimer de medical_documents
+      const { error: medicalError } = await supabase
+        .from('medical_documents')
+        .delete()
+        .eq('id', documentId)
+        .eq('user_id', userId);
+
+      // Supprimer aussi de questionnaire_responses si c'est un ancien document
+      const { error: questionnaireError } = await supabase
         .from('questionnaire_responses')
         .delete()
         .eq('user_id', userId)
         .eq('questionnaire_type', 'medical-documents')
         .eq('question_id', documentId);
 
-      if (error) throw error;
-
-      // Mettre à jour la liste des documents localement
       setUploadedDocuments(prev => prev.filter(doc => doc.id !== documentId));
 
-      // Notifier le composant parent de la suppression
       if (onDocumentRemove) {
         onDocumentRemove(documentId);
       }
@@ -147,7 +164,6 @@ const MedicalDocumentSection = ({ userId, onUploadComplete, onDocumentAdd, onDoc
         duration: 2000
       });
     } finally {
-      // Retirer l'ID du document des suppressions en cours
       setDeletingDocuments(prev => {
         const newSet = new Set(prev);
         newSet.delete(documentId);
@@ -156,54 +172,78 @@ const MedicalDocumentSection = ({ userId, onUploadComplete, onDocumentAdd, onDoc
     }
   };
 
+  const handlePreviewDocument = (document: any) => {
+    if (document.file_path) {
+      setPreviewDocument(document.file_path);
+      // Ouvrir dans une nouvelle fenêtre pour prévisualisation
+      window.open(document.file_path, '_blank');
+    } else {
+      toast({
+        title: "Aperçu non disponible",
+        description: "Ce document ne peut pas être prévisualisé",
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <Card className="mb-6">
       <CardHeader className="pb-2">
-        <CardTitle>Document médical de synthèse</CardTitle>
+        <CardTitle>Documents médicaux</CardTitle>
         <p className="text-sm text-gray-600">
-          Ajoutez un document médical de synthèse des maladies pour compléter vos directives anticipées. 
-          Ce document sera intégré dans votre PDF final.
+          Ajoutez vos documents médicaux qui seront automatiquement intégrés dans votre PDF de directives anticipées.
+          Les documents sont immédiatement disponibles pour inclusion.
         </p>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          <input
-            type="file"
-            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) {
-                handleDocumentUpload(file);
-              }
-            }}
-            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+          <DocumentUploader
+            userId={userId}
+            onUploadComplete={handleDocumentUpload}
+            documentType="medical"
           />
           
           {uploadedDocuments.length > 0 && (
             <div className="mt-4">
-              <h4 className="text-sm font-medium mb-2">Documents ajoutés :</h4>
-              <ul className="space-y-2">
+              <h4 className="text-sm font-medium mb-2">Documents médicaux ajoutés :</h4>
+              <div className="space-y-3">
                 {uploadedDocuments.map((doc) => (
-                  <li key={doc.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                    <div>
-                      <p className="text-sm font-medium">{doc.name}</p>
-                      <p className="text-xs text-gray-500">
+                  <div key={doc.id} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-blue-900">{doc.name}</p>
+                      <p className="text-xs text-blue-600">
                         Ajouté le {new Date(doc.created_at).toLocaleDateString('fr-FR')}
                       </p>
+                      <p className="text-xs text-gray-600 mt-1">
+                        ✅ Sera inclus automatiquement dans le PDF
+                      </p>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDeleteDocument(doc.id)}
-                      disabled={deletingDocuments.has(doc.id)}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                    >
-                      <Trash size={16} />
-                      {deletingDocuments.has(doc.id) ? "Suppression..." : "Supprimer"}
-                    </Button>
-                  </li>
+                    <div className="flex items-center gap-2">
+                      {doc.file_path && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handlePreviewDocument(doc)}
+                          className="text-blue-600 hover:text-blue-700 hover:bg-blue-100"
+                        >
+                          <Eye size={14} />
+                          Voir
+                        </Button>
+                      )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeleteDocument(doc.id)}
+                        disabled={deletingDocuments.has(doc.id)}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash size={14} />
+                        {deletingDocuments.has(doc.id) ? "..." : "Supprimer"}
+                      </Button>
+                    </div>
+                  </div>
                 ))}
-              </ul>
+              </div>
             </div>
           )}
         </div>
