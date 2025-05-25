@@ -2,8 +2,13 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CreditCard, Building, Banknote } from "lucide-react";
+import DonationCard from "@/components/donation/DonationCard";
+import { useDonation } from "@/hooks/useDonation";
 
 const FinancialSection = () => {
+  const oneTimeDonation = useDonation();
+  const recurringDonation = useDonation();
+
   const paymentMethods = [
     {
       icon: <CreditCard className="h-8 w-8 text-directiveplus-600" />,
@@ -11,8 +16,12 @@ const FinancialSection = () => {
       description: "Paiement sécurisé par carte de crédit ou débit",
       action: "Donner par carte",
       onClick: () => {
-        // TODO: Intégrer avec Stripe pour les paiements par carte
-        alert("Fonctionnalité en cours de développement. Merci de nous contacter par email.");
+        // Utiliser la fonctionnalité de don avec Stripe
+        if (oneTimeDonation.selectedAmount || oneTimeDonation.customAmount) {
+          oneTimeDonation.handleDonation(false);
+        } else {
+          alert("Veuillez d'abord sélectionner un montant dans la section ci-dessus.");
+        }
       }
     },
     {
@@ -91,11 +100,34 @@ const FinancialSection = () => {
             ))}
           </div>
         </div>
+
+        {/* Formulaires de don */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+          <DonationCard
+            isRecurring={false}
+            selectedAmount={oneTimeDonation.selectedAmount}
+            customAmount={oneTimeDonation.customAmount}
+            isProcessing={oneTimeDonation.isProcessing}
+            onAmountClick={oneTimeDonation.handleAmountClick}
+            onCustomAmountChange={oneTimeDonation.handleCustomAmountChange}
+            onDonation={() => oneTimeDonation.handleDonation(false)}
+          />
+          
+          <DonationCard
+            isRecurring={true}
+            selectedAmount={recurringDonation.selectedAmount}
+            customAmount={recurringDonation.customAmount}
+            isProcessing={recurringDonation.isProcessing}
+            onAmountClick={recurringDonation.handleAmountClick}
+            onCustomAmountChange={recurringDonation.handleCustomAmountChange}
+            onDonation={() => recurringDonation.handleDonation(true)}
+          />
+        </div>
         
         {/* Méthodes de paiement */}
         <div className="mb-12">
           <h3 className="text-2xl font-semibold text-directiveplus-700 text-center mb-8">
-            Choisissez votre méthode de paiement
+            Autres méthodes de paiement
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {paymentMethods.map((method, index) => (

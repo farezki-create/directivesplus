@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
-import { createDonationSession } from "@/utils/stripeService";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useDonation = () => {
   const [selectedAmount, setSelectedAmount] = useState<string | null>(null);
@@ -35,35 +35,64 @@ export const useDonation = () => {
           description: "Veuillez sélectionner ou saisir un montant valide.",
           variant: "destructive"
         });
+        setIsProcessing(false);
         return;
       }
       
-      // For demo purposes, show a success message instead of actually processing payment
-      toast({
-        title: "Démo de don",
-        description: `Cette démo simule un don ${isRecurring ? 'mensuel' : 'ponctuel'} de ${amount/100}€. En production, vous seriez redirigé vers la page de paiement Stripe.`,
-      });
+      // Check if user is authenticated
+      const { data: { session } } = await supabase.auth.getSession();
       
-      // Simulate processing delay
-      setTimeout(() => {
+      if (!session) {
+        toast({
+          title: "Authentification requise",
+          description: "Veuillez vous connecter pour effectuer un don.",
+          variant: "destructive"
+        });
         setIsProcessing(false);
-        setSelectedAmount(null);
-        setCustomAmount("");
-      }, 1500);
+        return;
+      }
+
+      // Call the appropriate Stripe function
+      const functionName = isRecurring ? 'create-checkout' : 'create-payment';
       
-      // In a real implementation with Stripe backend:
-      // const result = await createDonationSession({ 
-      //   amount, 
-      //   isRecurring 
-      // });
-      // 
-      // if (!result.success) {
-      //   toast({
-      //     title: "Erreur",
-      //     description: result.error || "Une erreur est survenue lors du traitement de votre don.",
-      //     variant: "destructive"
-      //   });
-      // }
+      const { data, error } = await supabase.functions.invoke(functionName, {
+        body: { 
+          amount,
+          currency: 'eur',
+          isRecurring 
+        }
+      });
+
+      if (error) {
+        console.error('Error creating payment session:', error);
+        toast({
+          title: "Erreur",
+          description: "Une erreur est survenue lors de la création de la session de paiement.",
+          variant: "destructive"
+        });
+        setIsProcessing(false);
+        return;
+      }
+
+      if (data?.url) {
+        // Redirect to Stripe Checkout
+        window.open(data.url, '_blank');
+        
+        toast({
+          title: "Redirection vers le paiement",
+          description: "Vous allez être redirigé vers la page de paiement sécurisée.",
+        });
+        
+        // Reset form after successful redirect
+        setTimeout(() => {
+          setSelectedAmount(null);
+          setCustomAmount("");
+          setIsProcessing(false);
+        }, 2000);
+      } else {
+        throw new Error('No checkout URL received');
+      }
+
     } catch (error) {
       console.error("Error processing donation:", error);
       toast({
