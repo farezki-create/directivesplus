@@ -10,9 +10,10 @@ interface MedicalDocumentSectionProps {
   userId?: string;
   onUploadComplete: () => void;
   onDocumentAdd: (documentInfo: any) => void;
+  onDocumentRemove?: (documentId: string) => void;
 }
 
-const MedicalDocumentSection = ({ userId, onUploadComplete, onDocumentAdd }: MedicalDocumentSectionProps) => {
+const MedicalDocumentSection = ({ userId, onUploadComplete, onDocumentAdd, onDocumentRemove }: MedicalDocumentSectionProps) => {
   const [uploadedDocuments, setUploadedDocuments] = useState<any[]>([]);
   const [deletingDocuments, setDeletingDocuments] = useState<Set<string>>(new Set());
 
@@ -123,8 +124,13 @@ const MedicalDocumentSection = ({ userId, onUploadComplete, onDocumentAdd }: Med
 
       if (error) throw error;
 
-      // Mettre à jour la liste des documents
+      // Mettre à jour la liste des documents localement
       setUploadedDocuments(prev => prev.filter(doc => doc.id !== documentId));
+
+      // Notifier le composant parent de la suppression
+      if (onDocumentRemove) {
+        onDocumentRemove(documentId);
+      }
 
       toast({
         title: "Document supprimé",

@@ -1,4 +1,3 @@
-
 import { useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
@@ -73,6 +72,10 @@ const SynthesisContent = ({ profileData, userId }: SynthesisContentProps) => {
     setMedicalDocuments(prev => [...prev, documentInfo]);
   };
 
+  const handleDocumentRemove = (documentId: string) => {
+    setMedicalDocuments(prev => prev.filter(doc => doc.id !== documentId));
+  };
+
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
       <DocumentHeader />
@@ -95,6 +98,7 @@ const SynthesisContent = ({ profileData, userId }: SynthesisContentProps) => {
             userId={userId}
             onUploadComplete={handleMedicalDocumentUpload}
             onDocumentAdd={handleDocumentAdd}
+            onDocumentRemove={handleDocumentRemove}
           />
           
           <div className="space-y-4" ref={signatureRef}>
