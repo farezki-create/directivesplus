@@ -21,15 +21,26 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
       <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -translate-y-16 translate-x-16"></div>
       <div className="absolute bottom-0 left-0 w-24 h-24 bg-white opacity-10 rounded-full translate-y-12 -translate-x-12"></div>
       
-      {/* Header */}
-      <div className="flex justify-between items-start mb-5">
-        <div>
-          <div className="flex items-center gap-2">
+      {/* Header avec logo et coordonnées patient en haut */}
+      <div className="flex justify-between items-start mb-6">
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-4">
             <CreditCard className="h-6 w-6" />
             <span className="text-base font-bold">DirectivesPlus</span>
           </div>
-          <p className="text-sm opacity-90">Carte d'Accès aux Directives</p>
+          <p className="text-sm opacity-90 mb-4">Carte d'Accès aux Directives</p>
+          
+          {/* Informations patient - déplacées en haut */}
+          <div>
+            <div className="text-xs opacity-75 mb-2 tracking-wide uppercase">PATIENT</div>
+            <div className="space-y-1">
+              <div className="text-lg font-bold tracking-wide">{lastName.toUpperCase()}</div>
+              <div className="text-base font-medium">{firstName}</div>
+              <div className="text-sm opacity-90 font-medium">{birthDate}</div>
+            </div>
+          </div>
         </div>
+        
         <div className="text-right">
           <div className="bg-white bg-opacity-20 rounded-lg p-2">
             {qrCodeUrl && (
@@ -45,17 +56,7 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
         </div>
       </div>
 
-      {/* Informations patient - Section améliorée */}
-      <div className="mb-8">
-        <div className="text-xs opacity-75 mb-2 tracking-wide uppercase">PATIENT</div>
-        <div className="space-y-1">
-          <div className="text-lg font-bold tracking-wide">{lastName.toUpperCase()}</div>
-          <div className="text-base font-medium">{firstName}</div>
-          <div className="text-sm opacity-90 font-medium">{birthDate}</div>
-        </div>
-      </div>
-
-      {/* Code d'accès - Section améliorée */}
+      {/* Code d'accès - déplacé en bas */}
       <div className="absolute bottom-5 left-5 right-5">
         <div className="flex justify-between items-end">
           <div className="flex-1">
