@@ -56,7 +56,7 @@ export const useAccessCard = () => {
   };
 
   const handlePrint = () => {
-    // Créer un style spécialement optimisé pour l'impression
+    // Créer un style spécialement optimisé pour l'impression haute qualité
     const printStyle = document.createElement('style');
     printStyle.innerHTML = `
       @media print {
@@ -69,6 +69,8 @@ export const useAccessCard = () => {
           margin: 0;
           padding: 0;
           background: white !important;
+          -webkit-print-color-adjust: exact !important;
+          color-adjust: exact !important;
         }
         
         body * {
@@ -86,13 +88,17 @@ export const useAccessCard = () => {
           width: 85.6mm !important;
           height: 53.98mm !important;
           margin: 0 !important;
-          padding: 0 !important;
+          padding: 5mm !important;
           transform: none !important;
-          border-radius: 8px !important;
+          border-radius: 3mm !important;
           background: linear-gradient(135deg, #4338ca, #312e81) !important;
           color: white !important;
-          font-size: 3mm !important;
+          font-size: 2.8mm !important;
+          font-family: 'Inter', Arial, sans-serif !important;
           box-sizing: border-box !important;
+          line-height: 1.3 !important;
+          -webkit-print-color-adjust: exact !important;
+          color-adjust: exact !important;
         }
         
         #access-card .absolute {
@@ -108,28 +114,59 @@ export const useAccessCard = () => {
           display: none !important;
         }
         
-        /* Assurer que le QR code reste visible */
+        /* QR code optimisé pour l'impression */
         #access-card svg {
-          width: 28mm !important;
-          height: 28mm !important;
+          width: 24mm !important;
+          height: 24mm !important;
+          background: white !important;
+          border-radius: 1mm !important;
+          padding: 1mm !important;
         }
         
-        /* Ajuster la taille des textes */
+        /* Textes optimisés pour l'impression */
         #access-card h1, #access-card h2, #access-card h3 {
-          font-size: 4mm !important;
+          font-size: 3.5mm !important;
           line-height: 1.2 !important;
+          font-weight: bold !important;
         }
         
         #access-card p, #access-card div {
-          font-size: 3mm !important;
-          line-height: 1.1 !important;
+          font-size: 2.8mm !important;
+          line-height: 1.2 !important;
         }
         
-        /* Code d'accès en gros */
-        #access-card .text-xl {
-          font-size: 5mm !important;
-          font-weight: bold !important;
-          letter-spacing: 1mm !important;
+        /* Code d'accès en très gros et lisible */
+        #access-card .text-2xl {
+          font-size: 6mm !important;
+          font-weight: 900 !important;
+          letter-spacing: 1.5mm !important;
+          text-shadow: none !important;
+        }
+        
+        /* Améliorer la lisibilité des petits textes */
+        #access-card .text-xs {
+          font-size: 2.2mm !important;
+          font-weight: 600 !important;
+          letter-spacing: 0.3mm !important;
+        }
+        
+        /* Nom en gros et lisible */
+        #access-card .text-lg {
+          font-size: 4mm !important;
+          font-weight: 800 !important;
+          letter-spacing: 0.5mm !important;
+        }
+        
+        /* Prénom lisible */
+        #access-card .text-base {
+          font-size: 3.2mm !important;
+          font-weight: 600 !important;
+        }
+        
+        /* Date de naissance */
+        #access-card .text-sm {
+          font-size: 2.5mm !important;
+          font-weight: 500 !important;
         }
       }
     `;
@@ -146,7 +183,7 @@ export const useAccessCard = () => {
     
     toast({
       title: "Impression lancée",
-      description: "La carte d'accès va être imprimée au format carte de crédit"
+      description: "La carte d'accès va être imprimée au format carte de crédit haute qualité"
     });
   };
 
