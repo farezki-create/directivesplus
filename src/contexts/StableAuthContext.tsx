@@ -36,7 +36,7 @@ export const StableAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   // Utiliser des refs pour éviter les changements d'état répétitifs
   const lastUserIdRef = useRef<string | null>(null);
   const profileLoadingRef = useRef<boolean>(false);
-  const authListenerRef = useRef<{ subscription: { unsubscribe: () => void } } | null>(null);
+  const authListenerRef = useRef<{ data: { subscription: { unsubscribe: () => void } } } | null>(null);
 
   const loadProfile = async (userId: string) => {
     // Éviter les chargements de profil en parallèle
@@ -117,8 +117,8 @@ export const StableAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
     // Configurer l'écouteur d'état d'authentification
     const setupAuthListener = () => {
-      if (authListenerRef.current?.subscription) {
-        authListenerRef.current.subscription.unsubscribe();
+      if (authListenerRef.current?.data?.subscription) {
+        authListenerRef.current.data.subscription.unsubscribe();
       }
 
       const authListener = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -167,8 +167,8 @@ export const StableAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
     return () => {
       mounted = false;
-      if (authListenerRef.current?.subscription) {
-        authListenerRef.current.subscription.unsubscribe();
+      if (authListenerRef.current?.data?.subscription) {
+        authListenerRef.current.data.subscription.unsubscribe();
       }
     };
   }, []);
