@@ -15,35 +15,48 @@ const DirectivesGrid = () => {
       description: "Exprimez vos valeurs et préférences générales concernant vos soins de santé.",
       icon: Heart,
       path: "/avis-general",
-      color: "bg-blue-50 hover:bg-blue-100 border-blue-200"
+      color: "bg-blue-50 hover:bg-blue-100 border-blue-200",
+      badgeColor: "bg-blue-100 text-blue-600"
     },
     {
       title: "Maintien en vie",
       description: "Précisez vos souhaits concernant les traitements de maintien en vie.",
       icon: FileText,
       path: "/maintien-vie",
-      color: "bg-green-50 hover:bg-green-100 border-green-200"
+      color: "bg-green-50 hover:bg-green-100 border-green-200",
+      badgeColor: "bg-green-100 text-green-600"
     },
     {
       title: "Maladie avancée",
       description: "Définissez vos préférences en cas de maladie grave ou terminale.",
       icon: Heart,
       path: "/maladie-avancee",
-      color: "bg-purple-50 hover:bg-purple-100 border-purple-200"
+      color: "bg-purple-50 hover:bg-purple-100 border-purple-200",
+      badgeColor: "bg-yellow-100 text-yellow-600"
     },
     {
       title: "Goûts et peurs",
       description: "Partagez vos préférences personnelles et vos craintes concernant les soins.",
       icon: Heart,
       path: "/gouts-peurs",
-      color: "bg-orange-50 hover:bg-orange-100 border-orange-200"
+      color: "bg-orange-50 hover:bg-orange-100 border-orange-200",
+      badgeColor: "bg-purple-100 text-purple-600"
     },
     {
       title: "Personne de confiance",
       description: "Désignez une personne de confiance pour vous représenter.",
       icon: Users,
       path: "/personne-confiance",
-      color: "bg-indigo-50 hover:bg-indigo-100 border-indigo-200"
+      color: "bg-indigo-50 hover:bg-indigo-100 border-indigo-200",
+      badgeColor: "bg-pink-100 text-pink-600"
+    },
+    {
+      title: "Exemples de Phrases",
+      description: "Inspirez-vous d'exemples pour rédiger vos directives.",
+      icon: BookOpen,
+      path: "/exemples-phrases",
+      color: "bg-teal-50 hover:bg-teal-100 border-teal-200",
+      badgeColor: "bg-teal-100 text-teal-600"
     }
   ];
 
@@ -54,7 +67,17 @@ const DirectivesGrid = () => {
       icon: BookOpen,
       path: "/synthesis",
       color: "bg-emerald-50 hover:bg-emerald-100 border-emerald-200",
-      buttonText: "Voir la synthèse"
+      buttonText: "Voir la synthèse",
+      badgeColor: "bg-blue-100 text-blue-600"
+    },
+    {
+      title: "Mes Directives",
+      description: "Visualisez, imprimez et partagez vos directives anticipées.",
+      icon: FileText,
+      path: "/mes-directives",
+      color: "bg-orange-50 hover:bg-orange-100 border-orange-200",
+      buttonText: "Accéder aux directives",
+      badgeColor: "bg-orange-100 text-orange-600"
     }
   ];
 
@@ -66,7 +89,8 @@ const DirectivesGrid = () => {
       icon: CreditCard,
       path: "/carte-acces",
       color: "bg-yellow-50 hover:bg-yellow-100 border-yellow-200",
-      buttonText: "Générer la carte"
+      buttonText: "Générer la carte",
+      badgeColor: "bg-yellow-100 text-yellow-600"
     });
   }
 
@@ -75,7 +99,11 @@ const DirectivesGrid = () => {
       {/* Grille principale des questionnaires */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {cards.map((card, index) => (
-          <Card key={index} className={`cursor-pointer transition-all duration-200 ${card.color}`}>
+          <Card key={index} className={`cursor-pointer transition-all duration-200 ${card.color} relative`}>
+            {/* Badge numéroté */}
+            <div className={`absolute -top-3 -left-3 w-8 h-8 rounded-full ${card.badgeColor} flex items-center justify-center text-sm font-bold shadow-sm`}>
+              {index + 1}
+            </div>
             <CardHeader>
               <CardTitle className="flex items-center gap-3">
                 <card.icon className="h-6 w-6" />
@@ -101,7 +129,11 @@ const DirectivesGrid = () => {
         <h3 className="text-xl font-semibold mb-6 text-center">Actions finales</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
           {bottomCards.map((card, index) => (
-            <Card key={index} className={`cursor-pointer transition-all duration-200 ${card.color}`}>
+            <Card key={index} className={`cursor-pointer transition-all duration-200 ${card.color} relative`}>
+              {/* Badge numéroté pour les actions finales */}
+              <div className={`absolute -top-3 -left-3 w-8 h-8 rounded-full ${card.badgeColor} flex items-center justify-center text-sm font-bold shadow-sm`}>
+                {index + 7}
+              </div>
               <CardHeader>
                 <CardTitle className="flex items-center gap-3">
                   <card.icon className="h-6 w-6" />
