@@ -29,7 +29,7 @@ export const useDocumentLoader = (documentId: string | null) => {
           .from('pdf_documents')
           .select('*')
           .eq('id', documentId)
-          .single();
+          .maybeSingle(); // Utilisation de maybeSingle au lieu de single
 
         console.log('useDocumentLoader: Résultat pdf_documents:', { data, error, errorCode: error?.code });
 
@@ -38,78 +38,7 @@ export const useDocumentLoader = (documentId: string | null) => {
           throw error;
         }
 
-        if (!data) {
-          // Tentative 2: directives
-          console.log("useDocumentLoader: Recherche dans directives...");
-          const { data: directiveData, error: directiveError } = await supabase
-            .from('directives')
-            .select('*')
-            .eq('id', documentId)
-            .single();
-
-          console.log('useDocumentLoader: Résultat directives:', { directiveData, directiveError, errorCode: directiveError?.code });
-
-          if (directiveError && directiveError.code !== 'PGRST116') {
-            console.error("useDocumentLoader: Erreur dans directives:", directiveError);
-            throw directiveError;
-          }
-
-          if (!directiveData) {
-            // Tentative 3: shared_documents
-            console.log("useDocumentLoader: Recherche dans shared_documents...");
-            const { data: sharedData, error: sharedError } = await supabase
-              .from('shared_documents')
-              .select('*')
-              .eq('document_id', documentId)
-              .single();
-
-            console.log('useDocumentLoader: Résultat shared_documents:', { sharedData, sharedError, errorCode: sharedError?.code });
-
-            if (sharedError && sharedError.code !== 'PGRST116') {
-              console.error("useDocumentLoader: Erreur dans shared_documents:", sharedError);
-              throw sharedError;
-            }
-
-            if (!sharedData) {
-              const errorMsg = `Document introuvable avec l'ID: ${documentId}`;
-              console.error("useDocumentLoader:", errorMsg);
-              throw new Error(errorMsg);
-            }
-
-            // Document trouvé dans shared_documents
-            console.log("useDocumentLoader: Document trouvé dans shared_documents");
-            const documentData = sharedData.document_data as any;
-            const newDocument = {
-              id: sharedData.document_id,
-              file_name: `Document partagé`,
-              file_path: documentData?.file_path || '#',
-              file_type: sharedData.document_type || 'application/pdf',
-              content_type: sharedData.document_type,
-              user_id: sharedData.user_id,
-              created_at: sharedData.shared_at,
-              description: 'Document partagé'
-            };
-            console.log("useDocumentLoader: Document final (shared):", newDocument);
-            setDocument(newDocument);
-          } else {
-            // Document trouvé dans directives
-            console.log("useDocumentLoader: Document trouvé dans directives");
-            const content = directiveData.content as any;
-            const newDocument = {
-              id: directiveData.id,
-              file_name: content?.title || content?.titre || 'Directive anticipée',
-              file_path: `data:application/pdf;base64,${btoa('PDF directive')}`,
-              file_type: 'application/json',
-              content_type: 'application/json',
-              user_id: directiveData.user_id,
-              created_at: directiveData.created_at,
-              description: 'Directive anticipée',
-              content: directiveData.content
-            };
-            console.log("useDocumentLoader: Document final (directive):", newDocument);
-            setDocument(newDocument);
-          }
-        } else {
+        if (data) {
           // Document trouvé dans pdf_documents
           console.log("useDocumentLoader: Document trouvé dans pdf_documents");
           const newDocument = {
@@ -127,9 +56,82 @@ export const useDocumentLoader = (documentId: string | null) => {
           };
           console.log("useDocumentLoader: Document final (pdf):", newDocument);
           setDocument(newDocument);
+          return;
         }
 
-        console.log("useDocumentLoader: Document chargé avec succès");
+        // Tentative 2: directives
+        console.log("useDocumentLoader: Recherche dans directives...");
+        const { data: directiveData, error: directiveError } = await supabase
+          .from('directives')
+          .select('*')
+          .eq('id', documentId)
+          .maybeSingle(); // Utilisation de maybeSingle
+
+        console.log('useDocumentLoader: Résultat directives:', { directiveData, directiveError, errorCode: directiveError?.code });
+
+        if (directiveError && directiveError.code !== 'PGRST116') {
+          console.error("useDocumentLoader: Erreur dans directives:", directiveError);
+          throw directiveError;
+        }
+
+        if (directiveData) {
+          // Document trouvé dans directives
+          console.log("useDocumentLoader: Document trouvé dans directives");
+          const content = directiveData.content as any;
+          const newDocument = {
+            id: directiveData.id,
+            file_name: content?.title || content?.titre || 'Directive anticipée',
+            file_path: `data:application/pdf;base64,${btoa('PDF directive')}`,
+            file_type: 'application/json',
+            content_type: 'application/json',
+            user_id: directiveData.user_id,
+            created_at: directiveData.created_at,
+            description: 'Directive anticipée',
+            content: directiveData.content
+          };
+          console.log("useDocumentLoader: Document final (directive):", newDocument);
+          setDocument(newDocument);
+          return;
+        }
+
+        // Tentative 3: shared_documents
+        console.log("useDocumentLoader: Recherche dans shared_documents...");
+        const { data: sharedData, error: sharedError } = await supabase
+          .from('shared_documents')
+          .select('*')
+          .eq('document_id', documentId)
+          .maybeSingle(); // Utilisation de maybeSingle
+
+        console.log('useDocumentLoader: Résultat shared_documents:', { sharedData, sharedError, errorCode: sharedError?.code });
+
+        if (sharedError && sharedError.code !== 'PGRST116') {
+          console.error("useDocumentLoader: Erreur dans shared_documents:", sharedError);
+          throw sharedError;
+        }
+
+        if (sharedData) {
+          // Document trouvé dans shared_documents
+          console.log("useDocumentLoader: Document trouvé dans shared_documents");
+          const documentData = sharedData.document_data as any;
+          const newDocument = {
+            id: sharedData.document_id,
+            file_name: `Document partagé`,
+            file_path: documentData?.file_path || '#',
+            file_type: sharedData.document_type || 'application/pdf',
+            content_type: sharedData.document_type,
+            user_id: sharedData.user_id,
+            created_at: sharedData.shared_at,
+            description: 'Document partagé'
+          };
+          console.log("useDocumentLoader: Document final (shared):", newDocument);
+          setDocument(newDocument);
+          return;
+        }
+
+        // Aucun document trouvé
+        const errorMsg = `Document introuvable avec l'ID: ${documentId}`;
+        console.error("useDocumentLoader:", errorMsg);
+        throw new Error(errorMsg);
 
       } catch (err: any) {
         console.error(`useDocumentLoader: Erreur tentative ${attempt + 1}:`, err);

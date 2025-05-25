@@ -24,7 +24,6 @@ export const useQRCodeGeneration = () => {
   const [error, setError] = useState<string | null>(null);
 
   const validateQRCodeData = (data: string): boolean => {
-    // Utiliser la limite Medium (M) qui est un bon compromis
     return data.length <= QR_CODE_LIMITS.M;
   };
 
@@ -43,18 +42,26 @@ export const useQRCodeGeneration = () => {
     setError(null);
 
     try {
-      // Priorité 1: Utiliser le filePath direct si disponible (lien Supabase direct)
-      let qrCodeUrl = filePath;
-      
-      // Priorité 2: Si pas de filePath ou si c'est une data URL, utiliser l'URL de l'app
-      if (!filePath || filePath.startsWith('data:')) {
-        qrCodeUrl = `https://24c30559-a746-463d-805e-d2330d3a13f4.lovableproject.com/pdf/${documentId}`;
-      }
-      
-      console.log("QR Code generation:", {
+      console.log("QR Code generation - Input:", {
         documentId,
         documentName,
         filePath,
+        filePathType: filePath ? (filePath.startsWith('data:') ? 'data-url' : 'url') : 'none'
+      });
+
+      let qrCodeUrl: string;
+      
+      // Si on a un filePath qui est une vraie URL (pas une data URL), l'utiliser directement
+      if (filePath && !filePath.startsWith('data:') && (filePath.startsWith('http') || filePath.startsWith('https'))) {
+        qrCodeUrl = filePath;
+        console.log("QR Code - Utilisation du filePath direct:", qrCodeUrl);
+      } else {
+        // Sinon, utiliser l'URL de l'application pour visualiser le document
+        qrCodeUrl = `https://24c30559-a746-463d-805e-d2330d3a13f4.lovableproject.com/pdf-viewer?id=${documentId}`;
+        console.log("QR Code - Utilisation de l'URL de l'application:", qrCodeUrl);
+      }
+      
+      console.log("QR Code final:", {
         qrCodeUrl,
         urlLength: qrCodeUrl.length,
         isValidLength: validateQRCodeData(qrCodeUrl)
@@ -62,14 +69,7 @@ export const useQRCodeGeneration = () => {
 
       // Vérifier que l'URL n'est pas trop longue pour le QR code
       if (!validateQRCodeData(qrCodeUrl)) {
-        // Si l'URL est trop longue, utiliser une URL courte de redirection
-        const shortUrl = `https://24c30559-a746-463d-805e-d2330d3a13f4.lovableproject.com/pdf/${documentId}`;
-        
-        if (!validateQRCodeData(shortUrl)) {
-          throw new Error(`URL trop longue pour le QR code (${shortUrl.length} caractères, maximum ${QR_CODE_LIMITS.M})`);
-        }
-        
-        qrCodeUrl = shortUrl;
+        throw new Error(`URL trop longue pour le QR code (${qrCodeUrl.length} caractères, maximum ${QR_CODE_LIMITS.M})`);
       }
 
       const qrData: QRCodeData = {
@@ -84,7 +84,7 @@ export const useQRCodeGeneration = () => {
       
       toast({
         title: "QR Code généré",
-        description: `QR Code créé pour ${documentName} - Ouverture universelle garantie`,
+        description: `QR Code créé pour ${documentName} - Compatible tous navigateurs`,
       });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Erreur lors de la génération du QR code";
