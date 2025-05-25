@@ -3,18 +3,19 @@ import { jsPDF } from "jspdf";
 import { PdfLayout } from "./types";
 
 /**
- * Récupère les documents médicaux de l'utilisateur
+ * Récupère les documents médicaux depuis les questionnaires
  */
 export const getMedicalDocuments = async (userId: string): Promise<any[]> => {
   const { supabase } = await import("@/integrations/supabase/client");
   
   try {
-    console.log("Récupération des documents médicaux pour userId:", userId);
+    console.log("Récupération des documents médicaux depuis les questionnaires pour userId:", userId);
     
     const { data, error } = await supabase
-      .from('medical_documents')
+      .from('questionnaire_responses')
       .select('*')
       .eq('user_id', userId)
+      .eq('questionnaire_type', 'medical-documents')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -22,8 +23,17 @@ export const getMedicalDocuments = async (userId: string): Promise<any[]> => {
       return [];
     }
 
-    console.log("Documents médicaux trouvés:", data?.length || 0, data);
-    return data || [];
+    // Transformer les données des questionnaires en format de documents
+    const documents = data?.map(item => ({
+      id: item.question_id,
+      file_name: item.question_text,
+      description: item.response,
+      created_at: item.created_at,
+      user_id: item.user_id
+    })) || [];
+
+    console.log("Documents médicaux trouvés depuis les questionnaires:", documents.length, documents);
+    return documents;
   } catch (error) {
     console.error('Erreur lors de la récupération des documents médicaux:', error);
     return [];
@@ -74,9 +84,10 @@ export const renderMedicalDocuments = (
     if (doc.description) {
       pdf.setFontSize(9);
       pdf.setFont("helvetica", "italic");
-      const description = `   Description: ${doc.description}`;
-      pdf.text(description, layout.margin + 10, yPosition);
-      yPosition += layout.lineHeight;
+      const description = `   ${doc.description}`;
+      const descriptionLines = pdf.splitTextToSize(description, layout.contentWidth - 15);
+      pdf.text(descriptionLines, layout.margin + 10, yPosition);
+      yPosition += descriptionLines.length * layout.lineHeight;
     }
     
     // Date d'ajout

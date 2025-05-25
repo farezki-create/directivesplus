@@ -1,5 +1,5 @@
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import SignatureCanvas from "./SignatureCanvas";
@@ -21,6 +21,7 @@ interface SynthesisContentProps {
 
 const SynthesisContent = ({ profileData, userId }: SynthesisContentProps) => {
   const signatureRef = useRef<HTMLDivElement>(null);
+  const [medicalDocuments, setMedicalDocuments] = useState<any[]>([]);
   
   const { 
     loading, 
@@ -55,7 +56,8 @@ const SynthesisContent = ({ profileData, userId }: SynthesisContentProps) => {
         responses,
         examplePhrases,
         customPhrases,
-        trustedPersons
+        trustedPersons,
+        medicalDocuments
       }
     );
   };
@@ -65,6 +67,10 @@ const SynthesisContent = ({ profileData, userId }: SynthesisContentProps) => {
       title: "Document médical ajouté",
       description: "Le document médical sera intégré dans votre PDF de directives anticipées"
     });
+  };
+
+  const handleDocumentAdd = (documentInfo: any) => {
+    setMedicalDocuments(prev => [...prev, documentInfo]);
   };
 
   return (
@@ -85,10 +91,10 @@ const SynthesisContent = ({ profileData, userId }: SynthesisContentProps) => {
             setFreeText={setFreeText}
           />
           
-          {/* Nouvelle section pour le document médical */}
           <MedicalDocumentSection 
             userId={userId}
             onUploadComplete={handleMedicalDocumentUpload}
+            onDocumentAdd={handleDocumentAdd}
           />
           
           <div className="space-y-4" ref={signatureRef}>

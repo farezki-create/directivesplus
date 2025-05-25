@@ -57,8 +57,8 @@ export const useSynthesisData = (userId?: string) => {
     if (!userId) return;
     
     try {
-      // Get responses from all questionnaire types
-      const questionnaireTypes = ['avis-general', 'maintien-vie', 'maladie-avancee', 'gouts-peurs'];
+      // Get responses from all questionnaire types (including medical documents)
+      const questionnaireTypes = ['avis-general', 'maintien-vie', 'maladie-avancee', 'gouts-peurs', 'medical-documents'];
       let allResponses: Record<string, any> = {};
       
       for (const type of questionnaireTypes) {
