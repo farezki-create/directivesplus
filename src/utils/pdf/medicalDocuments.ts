@@ -9,6 +9,8 @@ export const getMedicalDocuments = async (userId: string): Promise<any[]> => {
   const { supabase } = await import("@/integrations/supabase/client");
   
   try {
+    console.log("Récupération des documents médicaux pour userId:", userId);
+    
     const { data, error } = await supabase
       .from('medical_documents')
       .select('*')
@@ -20,6 +22,7 @@ export const getMedicalDocuments = async (userId: string): Promise<any[]> => {
       return [];
     }
 
+    console.log("Documents médicaux trouvés:", data?.length || 0, data);
     return data || [];
   } catch (error) {
     console.error('Erreur lors de la récupération des documents médicaux:', error);
@@ -36,7 +39,11 @@ export const renderMedicalDocuments = (
   yPosition: number, 
   medicalDocuments: any[]
 ): number => {
+  console.log("Début du rendu des documents médicaux, position Y:", yPosition);
+  console.log("Documents à rendre:", medicalDocuments);
+  
   if (!medicalDocuments || medicalDocuments.length === 0) {
+    console.log("Aucun document médical à rendre");
     return yPosition;
   }
 
@@ -55,6 +62,8 @@ export const renderMedicalDocuments = (
 
   // Liste des documents médicaux
   medicalDocuments.forEach((doc, index) => {
+    console.log(`Rendu du document ${index + 1}:`, doc);
+    
     pdf.setFontSize(10);
     pdf.setFont("helvetica", "normal");
     
@@ -82,5 +91,6 @@ export const renderMedicalDocuments = (
     yPosition += layout.lineHeight * 0.5; // Espacement entre les documents
   });
 
+  console.log("Fin du rendu des documents médicaux, position Y finale:", yPosition);
   return yPosition + layout.lineHeight;
 };

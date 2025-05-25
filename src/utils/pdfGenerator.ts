@@ -98,11 +98,20 @@ export const generatePDF = async (data: PdfData): Promise<string> => {
     
     // Récupérer et ajouter les documents médicaux APRÈS la signature, à la fin
     if (data.userId) {
+      console.log("Récupération des documents médicaux pour l'utilisateur:", data.userId);
       const medicalDocuments = await getMedicalDocuments(data.userId);
+      console.log("Documents médicaux récupérés:", medicalDocuments);
+      
       if (medicalDocuments.length > 0) {
+        console.log("Ajout des documents médicaux au PDF");
         yPosition = checkPageBreak(pdf, layout, yPosition);
         yPosition = renderMedicalDocuments(pdf, layout, yPosition, medicalDocuments);
+        console.log("Documents médicaux ajoutés, nouvelle position Y:", yPosition);
+      } else {
+        console.log("Aucun document médical trouvé");
       }
+    } else {
+      console.log("Pas d'userId fourni, pas de récupération de documents médicaux");
     }
     
     // Add signature footer on all pages
