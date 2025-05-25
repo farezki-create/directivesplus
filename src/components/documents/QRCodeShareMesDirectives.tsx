@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/button";
@@ -61,8 +62,8 @@ export function QRCodeShareMesDirectives({
   const handleTestLink = () => {
     if (qrCodeData?.qrCodeValue) {
       console.log("Test du lien QR code:", qrCodeData.qrCodeValue);
-      // Ouvrir dans l'application courante au lieu d'un nouvel onglet
-      window.location.href = qrCodeData.qrCodeValue;
+      // Ouvrir dans un nouvel onglet pour tester la compatibilité navigateur
+      window.open(qrCodeData.qrCodeValue, '_blank');
     }
   };
 
@@ -113,7 +114,7 @@ export function QRCodeShareMesDirectives({
         </CardHeader>
         <CardContent className="text-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Préparation du code QR...</p>
+          <p className="mt-4 text-gray-600">Préparation du code QR universel...</p>
         </CardContent>
       </Card>
     );
@@ -124,7 +125,7 @@ export function QRCodeShareMesDirectives({
       <CardHeader className="text-center pb-4">
         <CardTitle className="flex items-center justify-center gap-2">
           <QrCode className="h-5 w-5" />
-          Accès rapide - {qrCodeData.documentName}
+          Accès universel - {qrCodeData.documentName}
         </CardTitle>
       </CardHeader>
       
@@ -150,7 +151,7 @@ export function QRCodeShareMesDirectives({
         
         {/* URL de partage */}
         <div className="space-y-2">
-          <label className="text-sm font-medium">Lien d'accès :</label>
+          <label className="text-sm font-medium">Lien universel :</label>
           <div className="flex items-center gap-2">
             <Input 
               value={qrCodeData.qrCodeValue || ''} 
@@ -177,7 +178,7 @@ export function QRCodeShareMesDirectives({
             size="sm"
           >
             <ExternalLink className="w-4 h-4 mr-2" /> 
-            Tester dans l'app
+            Tester le lien
           </Button>
           
           <Button 
@@ -202,27 +203,27 @@ export function QRCodeShareMesDirectives({
           <Alert className="bg-green-50 border-green-200">
             <CheckCircle2 className="h-4 w-4 text-green-600" />
             <AlertDescription className="text-green-800">
-              QR Code prêt - Scanner pour ouvrir le PDF dans l'application
+              ✅ QR Code universel prêt - Fonctionne dans tous les navigateurs et applications
             </AlertDescription>
           </Alert>
         )}
 
         {/* Informations d'usage */}
-        <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-          <p className="text-sm text-blue-800 font-medium mb-1">
-            📱 Comment utiliser ce QR code
+        <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+          <p className="text-sm text-green-800 font-medium mb-1">
+            🌐 QR Code universel
           </p>
-          <p className="text-xs text-blue-700">
-            Scannez avec l'appareil photo de votre téléphone pour ouvrir le PDF directement dans l'application.
+          <p className="text-xs text-green-700">
+            Ce QR code fonctionne maintenant parfaitement dans l'application ET dans tous les navigateurs web.
           </p>
         </div>
 
-        <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-          <p className="text-sm text-green-800 font-medium mb-1">
-            🔗 Ouverture dans l'application
+        <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+          <p className="text-sm text-blue-800 font-medium mb-1">
+            🔗 Compatibilité totale
           </p>
-          <p className="text-xs text-green-700">
-            Le QR code ouvre maintenant le PDF systématiquement dans l'application avec tous les outils de visualisation.
+          <p className="text-xs text-blue-700">
+            Scanner → Ouverture directe du PDF, que ce soit sur mobile, tablette ou ordinateur.
           </p>
         </div>
       </CardContent>

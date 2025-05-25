@@ -22,7 +22,7 @@ const ExternalBrowserView: React.FC<ExternalBrowserViewProps> = ({
   onRetry,
   onDownload
 }) => {
-  const appUrl = `https://24c30559-a746-463d-805e-d2330d3a13f4.lovableproject.com/pdf-viewer?id=${documentId}&inapp=true`;
+  const appUrl = `https://24c30559-a746-463d-805e-d2330d3a13f4.lovableproject.com/pdf/${documentId}`;
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(appUrl)}`;
   
   return (
@@ -36,18 +36,18 @@ const ExternalBrowserView: React.FC<ExternalBrowserViewProps> = ({
             </CardTitle>
           </CardHeader>
           <CardContent className="text-center space-y-4">
-            <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <p className="text-blue-800 font-medium">
-                📱 Accès optimisé disponible
+            <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+              <p className="text-green-800 font-medium">
+                ✅ Accès direct au document
               </p>
-              <p className="text-sm text-blue-700 mt-1">
-                Pour une meilleure expérience de visualisation, utilisez l'application DirectivePlus.
+              <p className="text-sm text-green-700 mt-1">
+                Ce lien fonctionne maintenant dans tous les navigateurs et applications.
               </p>
             </div>
             
-            {/* QR Code pour accès rapide */}
+            {/* QR Code pour accès direct */}
             <div className="p-4 bg-white rounded-lg border">
-              <p className="text-sm text-gray-600 mb-3">Scannez pour ouvrir dans l'app :</p>
+              <p className="text-sm text-gray-600 mb-3">QR Code universel :</p>
               <img 
                 src={qrCodeUrl} 
                 alt="QR Code pour accès direct"
@@ -56,28 +56,46 @@ const ExternalBrowserView: React.FC<ExternalBrowserViewProps> = ({
                   e.currentTarget.style.display = 'none';
                 }}
               />
+              <p className="text-xs text-gray-500 mt-2">
+                Fonctionne dans l'app et le navigateur
+              </p>
             </div>
             
             <div className="space-y-3">
-              <Button 
-                onClick={() => window.location.href = appUrl}
-                className="w-full"
-                size="lg"
-              >
-                <ExternalLink className="w-4 h-4 mr-2" />
-                Ouvrir dans DirectivePlus
-              </Button>
+              {/* Si on a le file_path direct, l'utiliser pour l'ouverture */}
+              {document?.file_path && !document.file_path.startsWith('data:') ? (
+                <Button 
+                  onClick={() => window.open(document.file_path, '_blank')}
+                  className="w-full"
+                  size="lg"
+                >
+                  <ExternalLink className="w-4 h-4 mr-2" />
+                  Ouvrir le PDF directement
+                </Button>
+              ) : (
+                <Button 
+                  onClick={() => window.location.href = appUrl}
+                  className="w-full"
+                  size="lg"
+                >
+                  <ExternalLink className="w-4 h-4 mr-2" />
+                  Ouvrir dans DirectivePlus
+                </Button>
+              )}
               
               <Button 
                 variant="outline"
                 onClick={() => {
-                  navigator.clipboard.writeText(appUrl);
+                  const linkToCopy = document?.file_path && !document.file_path.startsWith('data:') 
+                    ? document.file_path 
+                    : appUrl;
+                  navigator.clipboard.writeText(linkToCopy);
                   alert('Lien copié ! Collez-le dans votre navigateur.');
                 }}
                 className="w-full"
                 size="lg"
               >
-                📋 Copier le lien
+                📋 Copier le lien direct
               </Button>
               
               {document && (
@@ -91,21 +109,11 @@ const ExternalBrowserView: React.FC<ExternalBrowserViewProps> = ({
                   Télécharger directement
                 </Button>
               )}
-              
-              <Button 
-                variant="outline"
-                onClick={() => window.open(`https://docs.google.com/gview?url=${encodeURIComponent(document?.file_path || '')}&embedded=true`, '_blank')}
-                className="w-full"
-                size="lg"
-                disabled={!document?.file_path || document.file_path === '#'}
-              >
-                👁️ Aperçu Google Docs
-              </Button>
             </div>
             
-            <div className="p-3 bg-green-50 rounded-lg">
-              <p className="text-sm text-green-800">
-                💡 <strong>Solutions multiples :</strong> QR code, lien direct, téléchargement, ou aperçu en ligne.
+            <div className="p-3 bg-blue-50 rounded-lg">
+              <p className="text-sm text-blue-800">
+                🔗 <strong>Liens universels :</strong> Fonctionnent maintenant dans tous les contextes - QR code, navigateur, et application.
               </p>
             </div>
 
