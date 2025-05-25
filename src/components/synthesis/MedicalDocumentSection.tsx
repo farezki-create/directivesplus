@@ -1,9 +1,10 @@
-
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import DocumentUploader from "@/components/documents/DocumentUploader";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { Trash } from "lucide-react";
 
 interface MedicalDocumentSectionProps {
   userId?: string;
@@ -13,6 +14,7 @@ interface MedicalDocumentSectionProps {
 
 const MedicalDocumentSection = ({ userId, onUploadComplete, onDocumentAdd }: MedicalDocumentSectionProps) => {
   const [uploadedDocuments, setUploadedDocuments] = useState<any[]>([]);
+  const [deletingDocuments, setDeletingDocuments] = useState<Set<string>>(new Set());
 
   // Récupérer les documents médicaux existants depuis les questionnaires
   useEffect(() => {
@@ -97,6 +99,54 @@ const MedicalDocumentSection = ({ userId, onUploadComplete, onDocumentAdd }: Med
     }
   };
 
+  const handleDeleteDocument = async (documentId: string) => {
+    if (!userId) {
+      toast({
+        title: "Erreur",
+        description: "Vous devez être connecté pour supprimer un document",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Ajouter l'ID du document en cours de suppression
+    setDeletingDocuments(prev => new Set([...prev, documentId]));
+
+    try {
+      // Supprimer le document de la table questionnaire_responses
+      const { error } = await supabase
+        .from('questionnaire_responses')
+        .delete()
+        .eq('user_id', userId)
+        .eq('questionnaire_type', 'medical-documents')
+        .eq('question_id', documentId);
+
+      if (error) throw error;
+
+      // Mettre à jour la liste des documents
+      setUploadedDocuments(prev => prev.filter(doc => doc.id !== documentId));
+
+      toast({
+        title: "Document supprimé",
+        description: "Le document médical a été supprimé avec succès"
+      });
+    } catch (error: any) {
+      console.error('Erreur lors de la suppression du document:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer le document médical",
+        variant: "destructive"
+      });
+    } finally {
+      // Retirer l'ID du document des suppressions en cours
+      setDeletingDocuments(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(documentId);
+        return newSet;
+      });
+    }
+  };
+
   return (
     <Card className="mb-6">
       <CardHeader className="pb-2">
@@ -132,6 +182,16 @@ const MedicalDocumentSection = ({ userId, onUploadComplete, onDocumentAdd }: Med
                         Ajouté le {new Date(doc.created_at).toLocaleDateString('fr-FR')}
                       </p>
                     </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDeleteDocument(doc.id)}
+                      disabled={deletingDocuments.has(doc.id)}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash size={16} />
+                      {deletingDocuments.has(doc.id) ? "Suppression..." : "Supprimer"}
+                    </Button>
                   </li>
                 ))}
               </ul>
