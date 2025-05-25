@@ -23,7 +23,7 @@ export const InstitutionAccessFormComplete: React.FC = () => {
     submitted ? formData.lastName : null,
     submitted ? formData.firstName : null,
     submitted ? formData.birthDate : null,
-    submitted && formData.lastName && formData.firstName && formData.birthDate && formData.institutionCode
+    Boolean(submitted && formData.lastName && formData.firstName && formData.birthDate && formData.institutionCode)
   );
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
