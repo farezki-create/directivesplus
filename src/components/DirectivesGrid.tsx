@@ -2,10 +2,12 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, Users, Heart, BookOpen } from "lucide-react";
+import { FileText, Users, Heart, BookOpen, CreditCard } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const DirectivesGrid = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
 
   const cards = [
     {
@@ -58,6 +60,40 @@ const DirectivesGrid = () => {
     }
   ];
 
+  const bottomCards = [
+    {
+      title: "Synthèse",
+      description: "Consultez et finalisez l'ensemble de vos directives anticipées.",
+      icon: BookOpen,
+      path: "/synthesis",
+      color: "bg-emerald-50 hover:bg-emerald-100 border-emerald-200",
+      buttonText: "Voir la synthèse",
+      badgeColor: "bg-blue-100 text-blue-600"
+    },
+    {
+      title: "Mes Directives",
+      description: "Visualisez, imprimez et partagez vos directives anticipées.",
+      icon: FileText,
+      path: "/mes-directives",
+      color: "bg-orange-50 hover:bg-orange-100 border-orange-200",
+      buttonText: "Accéder aux directives",
+      badgeColor: "bg-orange-100 text-orange-600"
+    }
+  ];
+
+  // Ajouter la carte d'accès seulement si l'utilisateur est connecté
+  if (isAuthenticated) {
+    bottomCards.push({
+      title: "Accès Carte",
+      description: "Générez votre carte d'accès professionnelle avec QR code et informations d'urgence.",
+      icon: CreditCard,
+      path: "/carte-acces",
+      color: "bg-yellow-50 hover:bg-yellow-100 border-yellow-200",
+      buttonText: "Générer la carte",
+      badgeColor: "bg-yellow-100 text-yellow-600"
+    });
+  }
+
   return (
     <div className="space-y-8">
       {/* Grille principale des questionnaires */}
@@ -86,6 +122,37 @@ const DirectivesGrid = () => {
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      {/* Section des actions finales */}
+      <div className="border-t pt-8">
+        <h3 className="text-xl font-semibold mb-6 text-center text-gray-800">Actions finales</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+          {bottomCards.map((card, index) => (
+            <Card key={index} className={`cursor-pointer transition-all duration-200 ${card.color} relative`}>
+              {/* Badge numéroté pour les actions finales */}
+              <div className={`absolute -top-3 -left-3 w-8 h-8 rounded-full ${card.badgeColor} flex items-center justify-center text-sm font-bold shadow-sm`}>
+                {index + 7}
+              </div>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-3 text-gray-800">
+                  <card.icon className="h-6 w-6" />
+                  {card.title}
+                </CardTitle>
+                <CardDescription className="text-gray-600">{card.description}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button 
+                  onClick={() => navigate(card.path)}
+                  className="w-full bg-slate-700 hover:bg-slate-800 text-white border-0 rounded-lg transition-all duration-200 hover:shadow-md"
+                  variant="default"
+                >
+                  {card.buttonText}
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     </div>
   );
