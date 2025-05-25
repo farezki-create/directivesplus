@@ -6,7 +6,7 @@ import AppNavigation from "@/components/AppNavigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { QRCodeSVG } from "qrcode.react";
-import { ArrowLeft, Download, Print, CreditCard } from "lucide-react";
+import { ArrowLeft, Download, Printer, CreditCard } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 const CarteAcces = () => {
@@ -95,7 +95,7 @@ const CarteAcces = () => {
           {/* Actions d'impression et téléchargement */}
           <div className="flex justify-center gap-4 mb-8 print:hidden">
             <Button onClick={handlePrint} variant="outline" className="flex items-center gap-2">
-              <Print size={16} />
+              <Printer size={16} />
               Imprimer
             </Button>
             <Button onClick={handleDownload} variant="outline" className="flex items-center gap-2">
@@ -210,7 +210,7 @@ const CarteAcces = () => {
       </footer>
 
       {/* Styles d'impression */}
-      <style jsx>{`
+      <style>{`
         @media print {
           body { margin: 0; }
           .print\\:hidden { display: none !important; }
