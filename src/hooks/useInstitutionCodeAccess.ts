@@ -103,7 +103,7 @@ export const useInstitutionCodeAccess = (
             id: doc.id,
             file_name: doc.file_name,
             file_path: doc.file_path,
-            file_type: doc.file_type || 'pdf',
+            file_type: doc.content_type || 'pdf', // Utiliser content_type au lieu de file_type
             content_type: doc.content_type,
             user_id: doc.user_id,
             created_at: doc.created_at,

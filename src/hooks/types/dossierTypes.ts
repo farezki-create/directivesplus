@@ -18,6 +18,7 @@ export type Dossier = {
   contenu: {
     document_url?: string;
     documents?: any[];
+    directives?: any[]; // Ajout de la propriété directives
     patient?: {
       nom: string;
       prenom: string;
