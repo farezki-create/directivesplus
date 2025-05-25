@@ -62,13 +62,20 @@ const SynthesisContent = ({ profileData, userId }: SynthesisContentProps) => {
     );
   };
 
-  // Fonction simplifiée pour éviter les doublons
+  // Fonction vide pour éviter les actions inutiles
   const handleMedicalDocumentUpload = () => {
-    console.log("Document médical ajouté - pas d'action supplémentaire nécessaire");
+    // Ne rien faire ici - le hook gère tout
   };
 
   const handleDocumentAdd = (documentInfo: any) => {
-    setMedicalDocuments(prev => [...prev, documentInfo]);
+    setMedicalDocuments(prev => {
+      // Éviter les doublons
+      const exists = prev.some(doc => doc.id === documentInfo.id);
+      if (exists) {
+        return prev;
+      }
+      return [...prev, documentInfo];
+    });
   };
 
   const handleDocumentRemove = (documentId: string) => {

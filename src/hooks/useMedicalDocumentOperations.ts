@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -27,6 +26,7 @@ export const useMedicalDocumentOperations = ({
 }: UseMedicalDocumentOperationsProps) => {
   const [uploadedDocuments, setUploadedDocuments] = useState<MedicalDocument[]>([]);
   const [deletingDocuments, setDeletingDocuments] = useState<Set<string>>(new Set());
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
   // Fetch medical documents from both medical_documents and questionnaires
   useEffect(() => {
@@ -89,7 +89,15 @@ export const useMedicalDocumentOperations = ({
       return;
     }
 
+    // Éviter les doublons en vérifiant si on est déjà en train de traiter
+    if (isProcessing) {
+      console.log("Upload déjà en cours, ignorer cette tentative");
+      return;
+    }
+
     try {
+      setIsProcessing(true);
+      
       // Calculate approximate file size from data URL
       const base64Length = url.length;
       const estimatedSize = Math.round((base64Length * 3) / 4);
@@ -119,7 +127,17 @@ export const useMedicalDocumentOperations = ({
         file_type: data.file_type
       };
 
-      setUploadedDocuments(prev => [...prev, newDocument]);
+      // Mettre à jour la liste une seule fois
+      setUploadedDocuments(prev => {
+        // Vérifier si le document n'existe pas déjà pour éviter les doublons
+        const exists = prev.some(doc => doc.id === newDocument.id);
+        if (exists) {
+          return prev;
+        }
+        return [...prev, newDocument];
+      });
+
+      // Appeler les callbacks une seule fois
       onDocumentAdd(newDocument);
       
       toast({
@@ -127,15 +145,16 @@ export const useMedicalDocumentOperations = ({
         description: "Le document médical a été ajouté et sera inclus dans votre PDF de directives anticipées"
       });
 
-      // Ouvrir automatiquement le document après l'ajout - UNE SEULE FOIS
+      // Ouvrir le document automatiquement SANS déclencher d'autres actions
       setTimeout(() => {
         handlePreviewDocument(newDocument);
-      }, 500);
+      }, 300);
 
-      // Appeler onUploadComplete APRÈS l'ouverture automatique pour éviter les doublons
+      // Notifier la fin de l'upload APRÈS tout le processus
       setTimeout(() => {
         onUploadComplete();
-      }, 1000);
+        setIsProcessing(false);
+      }, 800);
 
     } catch (error: any) {
       console.error('Erreur lors de l\'ajout du document:', error);
@@ -144,6 +163,7 @@ export const useMedicalDocumentOperations = ({
         description: "Impossible d'ajouter le document médical",
         variant: "destructive"
       });
+      setIsProcessing(false);
     }
   };
 
