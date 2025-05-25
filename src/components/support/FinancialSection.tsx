@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { CreditCard, Building, Banknote } from "lucide-react";
 import DonationCard from "@/components/donation/DonationCard";
+import PayPalDonationCard from "@/components/donation/PayPalDonationCard";
 import { useDonation } from "@/hooks/useDonation";
 import { donationConfig } from "@/config/donationConfig";
 
@@ -77,30 +78,46 @@ const FinancialSection = () => {
           </div>
         </div>
 
-        {/* Formulaires de don */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-          <DonationCard
-            isRecurring={false}
-            selectedAmount={oneTimeDonation.selectedAmount}
-            customAmount={oneTimeDonation.customAmount}
-            isProcessing={oneTimeDonation.isProcessing}
-            onAmountClick={oneTimeDonation.handleAmountClick}
-            onCustomAmountChange={oneTimeDonation.handleCustomAmountChange}
-            onDonation={() => oneTimeDonation.handleDonation(false)}
-          />
-          
-          <DonationCard
-            isRecurring={true}
-            selectedAmount={recurringDonation.selectedAmount}
-            customAmount={recurringDonation.customAmount}
-            isProcessing={recurringDonation.isProcessing}
-            onAmountClick={recurringDonation.handleAmountClick}
-            onCustomAmountChange={recurringDonation.handleCustomAmountChange}
-            onDonation={() => recurringDonation.handleDonation(true)}
-          />
+        {/* Formulaires de don - Stripe */}
+        <div className="mb-8">
+          <h3 className="text-2xl font-semibold text-directiveplus-700 text-center mb-8">
+            Dons via Stripe (Carte bancaire)
+          </h3>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <DonationCard
+              isRecurring={false}
+              selectedAmount={oneTimeDonation.selectedAmount}
+              customAmount={oneTimeDonation.customAmount}
+              isProcessing={oneTimeDonation.isProcessing}
+              onAmountClick={oneTimeDonation.handleAmountClick}
+              onCustomAmountChange={oneTimeDonation.handleCustomAmountChange}
+              onDonation={() => oneTimeDonation.handleDonation(false)}
+            />
+            
+            <DonationCard
+              isRecurring={true}
+              selectedAmount={recurringDonation.selectedAmount}
+              customAmount={recurringDonation.customAmount}
+              isProcessing={recurringDonation.isProcessing}
+              onAmountClick={recurringDonation.handleAmountClick}
+              onCustomAmountChange={recurringDonation.handleCustomAmountChange}
+              onDonation={() => recurringDonation.handleDonation(true)}
+            />
+          </div>
+        </div>
+
+        {/* Formulaires de don - PayPal */}
+        <div className="mb-12">
+          <h3 className="text-2xl font-semibold text-directiveplus-700 text-center mb-8">
+            Dons via PayPal (Carte bancaire ou compte PayPal)
+          </h3>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <PayPalDonationCard isRecurring={false} />
+            <PayPalDonationCard isRecurring={true} />
+          </div>
         </div>
         
-        {/* Méthodes de paiement */}
+        {/* Méthodes de paiement alternatives */}
         <div className="mb-12">
           <h3 className="text-2xl font-semibold text-directiveplus-700 text-center mb-8">
             Autres méthodes de paiement
