@@ -1,11 +1,10 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Heart, Shield, Users, FileText, Hospital, Key, Stethoscope } from "lucide-react";
 import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
-import Features from "@/components/Features";
-import Testimonials from "@/components/Testimonials";
 import Footer from "@/components/Footer";
 import { InstitutionAccessFormComplete } from "@/components/institution-access/InstitutionAccessFormComplete";
 
@@ -95,8 +94,6 @@ const Index = () => {
         </div>
       </section>
 
-      <Features />
-      <Testimonials />
       <Footer />
     </div>
   );
