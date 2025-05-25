@@ -6,7 +6,10 @@
 interface RateLimitConfig {
   windowMs: number;
   max: number;
-  message: string;
+  message: {
+    error: string;
+    code: string;
+  };
   standardHeaders: boolean;
   legacyHeaders: boolean;
 }
