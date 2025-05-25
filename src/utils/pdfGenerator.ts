@@ -24,6 +24,7 @@ export interface PdfData {
   freeText: string;
   signature: string | null;
   userId?: string;
+  medicalDocuments?: any[];
 }
 
 // Function to translate response strings from English to French
@@ -90,28 +91,30 @@ export const generatePDF = async (data: PdfData): Promise<string> => {
       yPosition = renderFreeText(pdf, layout, yPosition, data.freeText);
     }
     
-    // Add signature BEFORE medical documents
+    // Add signature
     if (data.signature) {
       yPosition = checkPageBreak(pdf, layout, yPosition);
       yPosition = renderSignature(pdf, layout, yPosition, data.signature);
     }
     
-    // Récupérer et ajouter les documents médicaux APRÈS la signature, à la fin
+    // AJOUTER LES DOCUMENTS MÉDICAUX À LA FIN APRÈS LA SIGNATURE
     if (data.userId) {
+      console.log("=== DÉBUT RÉCUPÉRATION DOCUMENTS MÉDICAUX ===");
       console.log("Récupération des documents médicaux pour l'utilisateur:", data.userId);
+      
       const medicalDocuments = await getMedicalDocuments(data.userId);
       console.log("Documents médicaux récupérés:", medicalDocuments);
       
-      if (medicalDocuments.length > 0) {
-        console.log("Ajout des documents médicaux au PDF");
+      if (medicalDocuments && medicalDocuments.length > 0) {
+        console.log("=== AJOUT DES DOCUMENTS MÉDICAUX AU PDF ===");
         yPosition = checkPageBreak(pdf, layout, yPosition);
         yPosition = renderMedicalDocuments(pdf, layout, yPosition, medicalDocuments);
-        console.log("Documents médicaux ajoutés, nouvelle position Y:", yPosition);
+        console.log("Documents médicaux ajoutés avec succès, nouvelle position Y:", yPosition);
       } else {
-        console.log("Aucun document médical trouvé");
+        console.log("=== AUCUN DOCUMENT MÉDICAL TROUVÉ ===");
       }
     } else {
-      console.log("Pas d'userId fourni, pas de récupération de documents médicaux");
+      console.log("=== PAS D'USERID FOURNI ===");
     }
     
     // Add signature footer on all pages

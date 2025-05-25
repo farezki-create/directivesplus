@@ -41,7 +41,7 @@ export const getMedicalDocuments = async (userId: string): Promise<any[]> => {
 };
 
 /**
- * Ajoute les documents médicaux au PDF
+ * Ajoute les documents médicaux au PDF à la fin du document
  */
 export const renderMedicalDocuments = (
   pdf: jsPDF, 
@@ -50,21 +50,24 @@ export const renderMedicalDocuments = (
   medicalDocuments: any[]
 ): number => {
   console.log("Début du rendu des documents médicaux, position Y:", yPosition);
-  console.log("Documents à rendre:", medicalDocuments);
+  console.log("Documents médicaux à rendre:", medicalDocuments);
   
   if (!medicalDocuments || medicalDocuments.length === 0) {
     console.log("Aucun document médical à rendre");
     return yPosition;
   }
 
+  // Espacement avant la section
+  yPosition += layout.lineHeight;
+
   // Titre de la section
-  pdf.setFontSize(14);
+  pdf.setFontSize(16);
   pdf.setFont("helvetica", "bold");
-  pdf.text("Documents médicaux de synthèse", layout.margin, yPosition);
+  pdf.text("DOCUMENTS MÉDICAUX", layout.margin, yPosition);
   yPosition += layout.lineHeight * 2;
 
   // Ajout d'une note explicative
-  pdf.setFontSize(10);
+  pdf.setFontSize(11);
   pdf.setFont("helvetica", "normal");
   const noteText = "Les documents médicaux suivants complètent ces directives anticipées :";
   pdf.text(noteText, layout.margin, yPosition);
@@ -72,34 +75,40 @@ export const renderMedicalDocuments = (
 
   // Liste des documents médicaux
   medicalDocuments.forEach((doc, index) => {
-    console.log(`Rendu du document ${index + 1}:`, doc);
+    console.log(`Rendu du document médical ${index + 1}:`, doc);
     
-    pdf.setFontSize(10);
-    pdf.setFont("helvetica", "normal");
+    // Vérifier si on a besoin d'une nouvelle page
+    if (yPosition + layout.lineHeight * 4 > layout.pageHeight - layout.margin - layout.footerHeight) {
+      pdf.addPage();
+      yPosition = layout.margin;
+    }
     
-    const documentInfo = `${index + 1}. ${doc.file_name || 'Document médical'}`;
-    pdf.text(documentInfo, layout.margin + 5, yPosition);
-    yPosition += layout.lineHeight;
+    pdf.setFontSize(12);
+    pdf.setFont("helvetica", "bold");
+    
+    const documentTitle = `${index + 1}. ${doc.file_name || 'Document médical'}`;
+    pdf.text(documentTitle, layout.margin, yPosition);
+    yPosition += layout.lineHeight * 1.5;
     
     if (doc.description) {
-      pdf.setFontSize(9);
-      pdf.setFont("helvetica", "italic");
-      const description = `   ${doc.description}`;
-      const descriptionLines = pdf.splitTextToSize(description, layout.contentWidth - 15);
-      pdf.text(descriptionLines, layout.margin + 10, yPosition);
-      yPosition += descriptionLines.length * layout.lineHeight;
+      pdf.setFontSize(10);
+      pdf.setFont("helvetica", "normal");
+      const description = doc.description;
+      const descriptionLines = pdf.splitTextToSize(description, layout.contentWidth - 10);
+      pdf.text(descriptionLines, layout.margin + 5, yPosition);
+      yPosition += descriptionLines.length * layout.lineHeight + layout.lineHeight * 0.5;
     }
     
     // Date d'ajout
     if (doc.created_at) {
-      pdf.setFontSize(8);
-      pdf.setFont("helvetica", "normal");
-      const dateText = `   Ajouté le: ${new Date(doc.created_at).toLocaleDateString('fr-FR')}`;
-      pdf.text(dateText, layout.margin + 10, yPosition);
+      pdf.setFontSize(9);
+      pdf.setFont("helvetica", "italic");
+      const dateText = `Ajouté le: ${new Date(doc.created_at).toLocaleDateString('fr-FR')}`;
+      pdf.text(dateText, layout.margin + 5, yPosition);
       yPosition += layout.lineHeight;
     }
     
-    yPosition += layout.lineHeight * 0.5; // Espacement entre les documents
+    yPosition += layout.lineHeight; // Espacement entre les documents
   });
 
   console.log("Fin du rendu des documents médicaux, position Y finale:", yPosition);
