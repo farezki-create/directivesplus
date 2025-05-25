@@ -105,11 +105,11 @@ const DirectivesGrid = () => {
               {index + 1}
             </div>
             <CardHeader>
-              <CardTitle className="flex items-center gap-3">
+              <CardTitle className="flex items-center gap-3 text-gray-800">
                 <card.icon className="h-6 w-6" />
                 {card.title}
               </CardTitle>
-              <CardDescription>{card.description}</CardDescription>
+              <CardDescription className="text-gray-600">{card.description}</CardDescription>
             </CardHeader>
             <CardContent>
               <Button 
@@ -126,7 +126,7 @@ const DirectivesGrid = () => {
 
       {/* Section des actions finales */}
       <div className="border-t pt-8">
-        <h3 className="text-xl font-semibold mb-6 text-center">Actions finales</h3>
+        <h3 className="text-xl font-semibold mb-6 text-center text-gray-800">Actions finales</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
           {bottomCards.map((card, index) => (
             <Card key={index} className={`cursor-pointer transition-all duration-200 ${card.color} relative`}>
@@ -135,11 +135,11 @@ const DirectivesGrid = () => {
                 {index + 7}
               </div>
               <CardHeader>
-                <CardTitle className="flex items-center gap-3">
+                <CardTitle className="flex items-center gap-3 text-gray-800">
                   <card.icon className="h-6 w-6" />
                   {card.title}
                 </CardTitle>
-                <CardDescription>{card.description}</CardDescription>
+                <CardDescription className="text-gray-600">{card.description}</CardDescription>
               </CardHeader>
               <CardContent>
                 <Button 
