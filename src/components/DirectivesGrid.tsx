@@ -99,7 +99,11 @@ const DirectivesGrid = () => {
       {/* Grille principale des questionnaires */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {cards.map((card, index) => (
-          <Card key={index} className={`cursor-pointer transition-all duration-200 ${card.color} relative`}>
+          <Card 
+            key={index} 
+            className={`cursor-pointer transition-all duration-200 ${card.color} relative`}
+            onClick={() => navigate(card.path)}
+          >
             {/* Badge numéroté */}
             <div className={`absolute -top-3 -left-3 w-8 h-8 rounded-full ${card.badgeColor} flex items-center justify-center text-sm font-bold shadow-sm`}>
               {index + 1}
@@ -112,13 +116,9 @@ const DirectivesGrid = () => {
               <CardDescription className="text-gray-600">{card.description}</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button 
-                onClick={() => navigate(card.path)}
-                className="w-full bg-slate-700 hover:bg-slate-800 text-white border-0 rounded-lg transition-all duration-200 hover:shadow-md"
-                variant="default"
-              >
-                Commencer
-              </Button>
+              <div className="text-sm text-gray-500">
+                Cliquez sur la carte pour accéder
+              </div>
             </CardContent>
           </Card>
         ))}

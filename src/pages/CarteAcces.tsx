@@ -40,36 +40,48 @@ const CarteAcces = () => {
   }, [isAuthenticated, user, profile]);
 
   const handlePrint = () => {
-    const cardElement = document.getElementById('access-card');
-    if (cardElement) {
-      const printWindow = window.open('', '_blank');
-      if (printWindow) {
-        printWindow.document.write(`
-          <html>
-            <head>
-              <title>Carte d'Accès - DirectivesPlus</title>
-              <style>
-                body { margin: 0; font-family: Arial, sans-serif; }
-                .card { width: 85.6mm; height: 53.98mm; padding: 8px; box-sizing: border-box; }
-                @media print {
-                  .card { width: 85.6mm; height: 53.98mm; page-break-inside: avoid; }
-                }
-              </style>
-            </head>
-            <body>
-              <div class="card">${cardElement.innerHTML}</div>
-            </body>
-          </html>
-        `);
-        printWindow.document.close();
-        printWindow.print();
-        
-        toast({
-          title: "Impression lancée",
-          description: "La carte d'accès va être imprimée"
-        });
+    // Masquer les éléments non imprimables
+    const nonPrintElements = document.querySelectorAll('.print\\:hidden');
+    nonPrintElements.forEach(el => (el as HTMLElement).style.display = 'none');
+    
+    // Style spécial pour l'impression
+    const printStyle = document.createElement('style');
+    printStyle.innerHTML = `
+      @media print {
+        @page {
+          size: 85.6mm 53.98mm;
+          margin: 0;
+        }
+        body * {
+          visibility: hidden;
+        }
+        #access-card, #access-card * {
+          visibility: visible;
+        }
+        #access-card {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 85.6mm !important;
+          height: 53.98mm !important;
+          transform: none !important;
+        }
       }
-    }
+    `;
+    document.head.appendChild(printStyle);
+    
+    window.print();
+    
+    // Restaurer l'affichage après impression
+    setTimeout(() => {
+      document.head.removeChild(printStyle);
+      nonPrintElements.forEach(el => (el as HTMLElement).style.display = '');
+    }, 1000);
+    
+    toast({
+      title: "Impression lancée",
+      description: "La carte d'accès va être imprimée au format carte de crédit"
+    });
   };
 
   const handleDownload = () => {
@@ -83,7 +95,7 @@ const CarteAcces = () => {
       
       pdf.html(cardElement, {
         callback: function (doc) {
-          doc.save('carte-acces-directivesplus.pdf');
+          doc.save('carte-acces-directives-anticipees.pdf');
           toast({
             title: "Téléchargement réussi",
             description: "La carte d'accès a été téléchargée en PDF"
@@ -132,7 +144,7 @@ const CarteAcces = () => {
 
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-directiveplus-800 mb-4">
-              Carte d'Accès Professionnelle
+              Carte d'Accès aux Directives Anticipées
             </h1>
             <p className="text-lg text-gray-600">
               Votre carte d'accès aux directives anticipées pour les professionnels de santé
@@ -161,7 +173,7 @@ const CarteAcces = () => {
           <div className="flex justify-center">
             <div 
               id="access-card"
-              className="w-[342px] h-[216px] bg-gradient-to-br from-directiveplus-600 to-directiveplus-800 rounded-2xl p-4 text-white shadow-2xl relative overflow-hidden"
+              className="w-[400px] h-[252px] bg-gradient-to-br from-directiveplus-600 to-directiveplus-800 rounded-2xl p-5 text-white shadow-2xl relative overflow-hidden"
               style={{ aspectRatio: '85.6/53.98' }}
             >
               {/* Pattern décoratif */}
@@ -169,20 +181,20 @@ const CarteAcces = () => {
               <div className="absolute bottom-0 left-0 w-24 h-24 bg-white opacity-10 rounded-full translate-y-12 -translate-x-12"></div>
               
               {/* Header */}
-              <div className="flex justify-between items-start mb-3">
+              <div className="flex justify-between items-start mb-4">
                 <div>
                   <div className="flex items-center gap-2">
-                    <CreditCard className="h-5 w-5" />
-                    <span className="text-sm font-bold">DirectivesPlus</span>
+                    <CreditCard className="h-6 w-6" />
+                    <span className="text-base font-bold">DirectivesPlus</span>
                   </div>
-                  <p className="text-xs opacity-90">Carte d'Accès Professionnel</p>
+                  <p className="text-sm opacity-90">Carte d'Accès aux Directives</p>
                 </div>
                 <div className="text-right">
-                  <div className="bg-white bg-opacity-20 rounded p-1">
+                  <div className="bg-white bg-opacity-20 rounded-lg p-2">
                     {qrCodeUrl && (
                       <QRCodeSVG 
                         value={qrCodeUrl}
-                        size={40}
+                        size={80}
                         level="M"
                         fgColor="#ffffff"
                         bgColor="transparent"
@@ -193,21 +205,21 @@ const CarteAcces = () => {
               </div>
 
               {/* Informations patient */}
-              <div className="mb-4">
-                <div className="text-xs opacity-75 mb-1">PATIENT</div>
-                <div className="text-sm font-semibold">{lastName.toUpperCase()}</div>
-                <div className="text-sm">{firstName}</div>
-                <div className="text-xs opacity-90">{birthDate}</div>
+              <div className="mb-6">
+                <div className="text-sm opacity-75 mb-1">PATIENT</div>
+                <div className="text-base font-semibold">{lastName.toUpperCase()}</div>
+                <div className="text-base">{firstName}</div>
+                <div className="text-sm opacity-90">{birthDate}</div>
               </div>
 
               {/* Code d'accès */}
-              <div className="absolute bottom-4 left-4 right-4">
+              <div className="absolute bottom-5 left-5 right-5">
                 <div className="flex justify-between items-end">
                   <div>
-                    <div className="text-xs opacity-75 mb-1">CODE D'ACCÈS</div>
-                    <div className="text-lg font-bold tracking-widest">{codeAcces}</div>
+                    <div className="text-sm opacity-75 mb-1">CODE D'ACCÈS</div>
+                    <div className="text-xl font-bold tracking-widest">{codeAcces}</div>
                   </div>
-                  <div className="text-xs opacity-75 text-right">
+                  <div className="text-sm opacity-75 text-right">
                     <div>Accès sécurisé</div>
                     <div>Usage professionnel</div>
                   </div>
