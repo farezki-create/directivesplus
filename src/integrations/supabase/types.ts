@@ -1218,6 +1218,21 @@ export type Database = {
           institution_shared_code: string
         }[]
       }
+      get_public_document: {
+        Args: { doc_id: string }
+        Returns: {
+          id: string
+          file_name: string
+          file_path: string
+          content_type: string
+          user_id: string
+          created_at: string
+          description: string
+          file_size: number
+          updated_at: string
+          external_id: string
+        }[]
+      }
       get_shared_documents_by_access_code: {
         Args: {
           input_access_code: string
