@@ -54,7 +54,7 @@ const DirectivesGrid = () => {
       icon: BookOpen,
       path: "/synthesis",
       color: "bg-emerald-50 hover:bg-emerald-100 border-emerald-200",
-      requireAuth: true
+      buttonText: "Voir la synthèse"
     }
   ];
 
@@ -66,7 +66,7 @@ const DirectivesGrid = () => {
       icon: CreditCard,
       path: "/carte-acces",
       color: "bg-yellow-50 hover:bg-yellow-100 border-yellow-200",
-      requireAuth: true
+      buttonText: "Générer la carte"
     });
   }
 
@@ -100,33 +100,26 @@ const DirectivesGrid = () => {
       <div className="border-t pt-8">
         <h3 className="text-xl font-semibold mb-6 text-center">Actions finales</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-          {bottomCards.map((card, index) => {
-            // Filtrer les cartes qui nécessitent une authentification
-            if (card.requireAuth && !isAuthenticated) {
-              return null;
-            }
-            
-            return (
-              <Card key={index} className={`cursor-pointer transition-all duration-200 ${card.color}`}>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-3">
-                    <card.icon className="h-6 w-6" />
-                    {card.title}
-                  </CardTitle>
-                  <CardDescription>{card.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button 
-                    onClick={() => navigate(card.path)}
-                    className="w-full"
-                    variant="default"
-                  >
-                    {card.title === "Synthèse" ? "Voir la synthèse" : "Générer la carte"}
-                  </Button>
-                </CardContent>
-              </Card>
-            );
-          })}
+          {bottomCards.map((card, index) => (
+            <Card key={index} className={`cursor-pointer transition-all duration-200 ${card.color}`}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-3">
+                  <card.icon className="h-6 w-6" />
+                  {card.title}
+                </CardTitle>
+                <CardDescription>{card.description}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button 
+                  onClick={() => navigate(card.path)}
+                  className="w-full"
+                  variant="default"
+                >
+                  {card.buttonText}
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
     </div>
