@@ -46,20 +46,11 @@ export const useQRCodeGeneration = () => {
         documentId,
         documentName,
         filePath,
-        filePathType: filePath ? (filePath.startsWith('data:') ? 'data-url' : 'url') : 'none'
+        currentOrigin: window.location.origin
       });
 
-      let qrCodeUrl: string;
-      
-      // Si on a un filePath qui est une vraie URL (pas une data URL), l'utiliser directement
-      if (filePath && !filePath.startsWith('data:') && (filePath.startsWith('http') || filePath.startsWith('https'))) {
-        qrCodeUrl = filePath;
-        console.log("QR Code - Utilisation du filePath direct:", qrCodeUrl);
-      } else {
-        // Utiliser l'URL correcte de l'application
-        qrCodeUrl = `${window.location.origin}/pdf-viewer?id=${documentId}`;
-        console.log("QR Code - Utilisation de l'URL de l'application:", qrCodeUrl);
-      }
+      // Toujours utiliser l'URL de l'application pour assurer la compatibilité
+      const qrCodeUrl = `${window.location.origin}/pdf-viewer?id=${documentId}`;
       
       console.log("QR Code final:", {
         qrCodeUrl,

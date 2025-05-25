@@ -6,7 +6,7 @@ import { Download, Printer, ExternalLink, ArrowLeft } from "lucide-react";
 import { Document } from "@/types/documents";
 
 interface PdfViewerContentProps {
-  document: Document;
+  document: Document | null;
   onDownload: () => void;
   onPrint: () => void;
   onOpenExternal: () => void;
@@ -20,89 +20,76 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
   onOpenExternal,
   onGoBack
 }) => {
-  return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4 max-w-5xl">
-        <Card className="mb-6">
+  if (!document) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Card className="max-w-md">
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={onGoBack}
-                  className="mr-2"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                </Button>
-                Visualisation PDF - {document.file_name}
-              </CardTitle>
-              
-              <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={onDownload}
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Télécharger
-                </Button>
-                
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={onPrint}
-                >
-                  <Printer className="w-4 h-4 mr-2" />
-                  Imprimer
-                </Button>
-                
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={onOpenExternal}
-                >
-                  <ExternalLink className="w-4 h-4 mr-2" />
-                  Ouvrir dans un nouvel onglet
-                </Button>
-              </div>
-            </div>
+            <CardTitle>Document non trouvé</CardTitle>
           </CardHeader>
-          
           <CardContent>
-            <div className="border rounded-lg overflow-hidden bg-white">
-              <object 
-                data={document.file_path}
-                type="application/pdf"
-                className="w-full h-[80vh]"
-                title={document.file_name}
-              >
-                <div className="p-8 text-center">
-                  <p className="text-gray-600 mb-4">
-                    Votre navigateur ne peut pas afficher ce PDF directement.
-                  </p>
-                  <div className="space-y-2">
-                    <Button onClick={onDownload} className="mr-2">
-                      <Download className="w-4 h-4 mr-2" />
-                      Télécharger
-                    </Button>
-                    <Button variant="outline" onClick={onOpenExternal}>
-                      <ExternalLink className="w-4 h-4 mr-2" />
-                      Ouvrir dans un nouvel onglet
-                    </Button>
-                  </div>
-                </div>
-              </object>
-            </div>
-            
-            <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-              <p className="text-sm text-blue-800">
-                💡 <strong>Accès direct via QR code :</strong> Ce document est accessible directement 
-                sans code d'accès pour une consultation rapide.
-              </p>
-            </div>
+            <p className="text-gray-600 mb-4">
+              Le document demandé n'a pas pu être trouvé.
+            </p>
+            <Button onClick={onGoBack} className="w-full">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Retour
+            </Button>
           </CardContent>
         </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header avec actions */}
+      <div className="bg-white border-b p-4">
+        <div className="container mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button variant="outline" onClick={onGoBack}>
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Retour
+            </Button>
+            <h1 className="text-lg font-semibold">{document.file_name}</h1>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={onDownload}>
+              <Download className="w-4 h-4 mr-2" />
+              Télécharger
+            </Button>
+            <Button variant="outline" onClick={onPrint}>
+              <Printer className="w-4 h-4 mr-2" />
+              Imprimer
+            </Button>
+            <Button variant="outline" onClick={onOpenExternal}>
+              <ExternalLink className="w-4 h-4 mr-2" />
+              Ouvrir
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Contenu du PDF */}
+      <div className="container mx-auto p-4">
+        <div className="bg-white rounded-lg shadow">
+          {document.file_path.startsWith('data:') ? (
+            // PDF en data URL
+            <iframe
+              src={document.file_path}
+              className="w-full h-[80vh]"
+              title={document.file_name}
+            />
+          ) : (
+            // PDF par URL
+            <iframe
+              src={document.file_path}
+              className="w-full h-[80vh]"
+              title={document.file_name}
+            />
+          )}
+        </div>
       </div>
     </div>
   );
