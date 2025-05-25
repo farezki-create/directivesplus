@@ -22,7 +22,7 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
       <div className="absolute bottom-0 left-0 w-24 h-24 bg-white opacity-10 rounded-full translate-y-12 -translate-x-12"></div>
       
       {/* Header */}
-      <div className="flex justify-between items-start mb-4">
+      <div className="flex justify-between items-start mb-5">
         <div>
           <div className="flex items-center gap-2">
             <CreditCard className="h-6 w-6" />
@@ -45,22 +45,26 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
         </div>
       </div>
 
-      {/* Informations patient */}
-      <div className="mb-6">
-        <div className="text-sm opacity-75 mb-1">PATIENT</div>
-        <div className="text-base font-semibold">{lastName.toUpperCase()}</div>
-        <div className="text-base">{firstName}</div>
-        <div className="text-sm opacity-90">{birthDate}</div>
+      {/* Informations patient - Section améliorée */}
+      <div className="mb-8">
+        <div className="text-xs opacity-75 mb-2 tracking-wide uppercase">PATIENT</div>
+        <div className="space-y-1">
+          <div className="text-lg font-bold tracking-wide">{lastName.toUpperCase()}</div>
+          <div className="text-base font-medium">{firstName}</div>
+          <div className="text-sm opacity-90 font-medium">{birthDate}</div>
+        </div>
       </div>
 
-      {/* Code d'accès */}
+      {/* Code d'accès - Section améliorée */}
       <div className="absolute bottom-5 left-5 right-5">
         <div className="flex justify-between items-end">
-          <div>
-            <div className="text-sm opacity-75 mb-1">CODE D'ACCÈS</div>
-            <div className="text-xl font-bold tracking-widest">{codeAcces}</div>
+          <div className="flex-1">
+            <div className="text-xs opacity-75 mb-2 tracking-wide uppercase">CODE D'ACCÈS</div>
+            <div className="bg-white bg-opacity-15 rounded-lg px-3 py-2 inline-block">
+              <div className="text-lg font-bold tracking-[0.2em] text-white">{codeAcces}</div>
+            </div>
           </div>
-          <div className="text-sm opacity-75 text-right">
+          <div className="text-xs opacity-75 text-right leading-relaxed">
             <div>Accès sécurisé</div>
             <div>Usage professionnel</div>
           </div>
