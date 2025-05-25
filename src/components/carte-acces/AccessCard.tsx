@@ -14,65 +14,58 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
   return (
     <div 
       id="access-card"
-      className="w-[400px] h-[252px] bg-gradient-to-br from-directiveplus-600 to-directiveplus-800 rounded-2xl p-6 text-white shadow-2xl relative overflow-hidden border border-directiveplus-500"
+      className="w-[400px] h-[252px] bg-gradient-to-br from-directiveplus-600 to-directiveplus-800 rounded-2xl p-5 text-white shadow-2xl relative overflow-hidden"
       style={{ aspectRatio: '85.6/53.98' }}
     >
-      {/* Pattern décoratif amélioré */}
-      <div className="absolute top-0 right-0 w-40 h-40 bg-white opacity-5 rounded-full -translate-y-20 translate-x-20"></div>
-      <div className="absolute bottom-0 left-0 w-32 h-32 bg-white opacity-5 rounded-full translate-y-16 -translate-x-16"></div>
-      <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-white opacity-3 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
+      {/* Pattern décoratif */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -translate-y-16 translate-x-16"></div>
+      <div className="absolute bottom-0 left-0 w-24 h-24 bg-white opacity-10 rounded-full translate-y-12 -translate-x-12"></div>
       
-      {/* Header amélioré */}
-      <div className="flex justify-between items-start mb-5">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1">
-            <CreditCard className="h-7 w-7 text-white" />
-            <span className="text-lg font-bold tracking-wide">DirectivesPlus</span>
+      {/* Header */}
+      <div className="flex justify-between items-start mb-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <CreditCard className="h-6 w-6" />
+            <span className="text-base font-bold">DirectivesPlus</span>
           </div>
-          <p className="text-sm opacity-90 font-medium">Carte d'Accès aux Directives</p>
+          <p className="text-sm opacity-90">Carte d'Accès aux Directives</p>
         </div>
         <div className="text-right">
-          <div className="bg-white bg-opacity-15 rounded-xl p-3 backdrop-blur-sm border border-white border-opacity-20">
+          <div className="bg-white bg-opacity-20 rounded-lg p-2">
             {qrCodeUrl && (
               <QRCodeSVG 
                 value={qrCodeUrl}
-                size={110}
-                level="H"
+                size={120}
+                level="M"
                 fgColor="#ffffff"
                 bgColor="transparent"
-                includeMargin={false}
               />
             )}
           </div>
         </div>
       </div>
 
-      {/* Informations patient améliorées */}
+      {/* Informations patient */}
       <div className="mb-6">
-        <div className="text-xs opacity-75 mb-2 font-semibold tracking-wider">PATIENT</div>
-        <div className="space-y-1">
-          <div className="text-lg font-bold tracking-wide">{lastName.toUpperCase()}</div>
-          <div className="text-base font-medium">{firstName}</div>
-          <div className="text-sm opacity-90 font-medium">{birthDate}</div>
-        </div>
+        <div className="text-sm opacity-75 mb-1">PATIENT</div>
+        <div className="text-base font-semibold">{lastName.toUpperCase()}</div>
+        <div className="text-base">{firstName}</div>
+        <div className="text-sm opacity-90">{birthDate}</div>
       </div>
 
-      {/* Code d'accès amélioré */}
-      <div className="absolute bottom-6 left-6 right-6">
+      {/* Code d'accès */}
+      <div className="absolute bottom-5 left-5 right-5">
         <div className="flex justify-between items-end">
-          <div className="flex-1">
-            <div className="text-xs opacity-75 mb-2 font-semibold tracking-wider">CODE D'ACCÈS</div>
-            <div className="text-2xl font-bold tracking-[0.2em] text-white drop-shadow-sm">{codeAcces}</div>
+          <div>
+            <div className="text-sm opacity-75 mb-1">CODE D'ACCÈS</div>
+            <div className="text-xl font-bold tracking-widest">{codeAcces}</div>
           </div>
-          <div className="text-xs opacity-75 text-right font-medium">
-            <div className="mb-1">Accès sécurisé</div>
+          <div className="text-sm opacity-75 text-right">
+            <div>Accès sécurisé</div>
             <div>Usage professionnel</div>
           </div>
         </div>
       </div>
-
-      {/* Bord subtil pour améliorer la définition */}
-      <div className="absolute inset-0 rounded-2xl border border-white border-opacity-10 pointer-events-none"></div>
     </div>
   );
 };
