@@ -32,6 +32,9 @@ const MesDirectives = () => {
   // Local state for preview document
   const [previewDocument, setPreviewDocument] = React.useState<Document | null>(null);
 
+  // Vérifier si c'est un accès institution valide
+  const hasInstitutionAccess = sessionStorage.getItem('institutionAccess') === 'true';
+
   console.log("MesDirectives - Auth state:", { 
     userId: user?.id, 
     hasProfile: !!profile, 
@@ -39,7 +42,8 @@ const MesDirectives = () => {
     isLoading: authLoading,
     accessType,
     sharedCode,
-    qrUserId: userId
+    qrUserId: userId,
+    hasInstitutionAccess
   });
   console.log("MesDirectives - Documents:", documents.length);
 
@@ -48,10 +52,10 @@ const MesDirectives = () => {
     return <MesDirectivesSharedAccess />;
   }
 
-  // Afficher un message spécial pour les accès via QR code même sans authentification
-  if (accessType === 'card') {
-    console.log("MesDirectives - Accès via QR code détecté");
-    // Permettre l'accès même si non authentifié pour les QR codes d'urgence
+  // Afficher un message spécial pour les accès via QR code ou institution même sans authentification
+  if (accessType === 'card' || hasInstitutionAccess) {
+    console.log("MesDirectives - Accès via QR code ou institution détecté");
+    // Permettre l'accès même si non authentifié pour les QR codes d'urgence et accès institution
   }
 
   // Wrapper function to handle upload completion
@@ -94,14 +98,14 @@ const MesDirectives = () => {
     await handleDelete(document.id);
   };
 
-  // Pour les accès QR code sans authentification, ne pas rediriger
-  if (accessType === 'card' && !isAuthenticated && !authLoading) {
-    console.log("MesDirectives - Accès QR code sans authentification autorisé");
-    // Continuer sans redirection pour permettre l'accès d'urgence
+  // Pour les accès QR code ou institution sans authentification, ne pas rediriger
+  if ((accessType === 'card' || hasInstitutionAccess) && !isAuthenticated && !authLoading) {
+    console.log("MesDirectives - Accès QR code ou institution sans authentification autorisé");
+    // Continuer sans redirection pour permettre l'accès d'urgence ou institution
   }
-  // Rediriger vers la page de connexion SEULEMENT si pas d'accès QR et non authentifié
-  else if (!authLoading && !isAuthenticated && accessType !== 'card') {
-    // Redirection vers auth seulement pour les accès normaux (non QR)
+  // Rediriger vers la page de connexion SEULEMENT si pas d'accès QR/institution et non authentifié
+  else if (!authLoading && !isAuthenticated && accessType !== 'card' && !hasInstitutionAccess) {
+    // Redirection vers auth seulement pour les accès normaux (non QR/institution)
     window.location.href = '/auth';
     return null;
   }
