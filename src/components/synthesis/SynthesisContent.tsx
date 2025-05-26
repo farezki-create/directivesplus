@@ -1,4 +1,3 @@
-
 import { useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
@@ -9,7 +8,6 @@ import TrustedPersonsSection from "./TrustedPersonsSection";
 import ProfileSection from "./ProfileSection";
 import FreeTextSection from "./FreeTextSection";
 import MedicalDocumentSection from "./MedicalDocumentSection";
-import MedicalDocumentsPreview from "./MedicalDocumentsPreview";
 import ActionButtons from "./ActionButtons";
 import { DocumentHeader } from "./DocumentHeader";
 import { useSynthesisData } from "@/hooks/useSynthesisData";
@@ -23,7 +21,6 @@ interface SynthesisContentProps {
 const SynthesisContent = ({ profileData, userId }: SynthesisContentProps) => {
   const signatureRef = useRef<HTMLDivElement>(null);
   const [medicalDocuments, setMedicalDocuments] = useState<any[]>([]);
-  const [previewDocument, setPreviewDocument] = useState<string | null>(null);
   
   const { 
     loading, 
@@ -79,12 +76,6 @@ const SynthesisContent = ({ profileData, userId }: SynthesisContentProps) => {
     setMedicalDocuments(prev => prev.filter(doc => doc.id !== documentId));
   };
 
-  const handlePreviewDocument = (document: any) => {
-    if (document.file_path) {
-      setPreviewDocument(document.file_path);
-    }
-  };
-
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
       <DocumentHeader />
@@ -103,9 +94,11 @@ const SynthesisContent = ({ profileData, userId }: SynthesisContentProps) => {
             setFreeText={setFreeText}
           />
           
-          <MedicalDocumentsPreview 
-            documents={medicalDocuments}
-            onPreview={handlePreviewDocument}
+          <MedicalDocumentSection 
+            userId={userId}
+            onUploadComplete={handleMedicalDocumentUpload}
+            onDocumentAdd={handleDocumentAdd}
+            onDocumentRemove={handleDocumentRemove}
           />
           
           <div className="space-y-4" ref={signatureRef}>
@@ -130,41 +123,10 @@ const SynthesisContent = ({ profileData, userId }: SynthesisContentProps) => {
         </div>
       </div>
       
-      <MedicalDocumentSection 
-        userId={userId}
-        onUploadComplete={handleMedicalDocumentUpload}
-        onDocumentAdd={handleDocumentAdd}
-        onDocumentRemove={handleDocumentRemove}
-      />
-      
       <ActionButtons 
         onSave={onSave}
         saving={saving}
       />
-
-      {/* Gestion de l'aperçu des documents */}
-      {previewDocument && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setPreviewDocument(null)}>
-          <div className="bg-white p-4 rounded-lg max-w-4xl max-h-[90vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium">Aperçu du document</h3>
-              <button 
-                onClick={() => setPreviewDocument(null)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                ✕
-              </button>
-            </div>
-            {previewDocument.startsWith('data:image/') ? (
-              <img src={previewDocument} alt="Document médical" className="max-w-full h-auto" />
-            ) : previewDocument.startsWith('data:application/pdf') ? (
-              <iframe src={previewDocument} className="w-full h-96" />
-            ) : (
-              <p>Aperçu non disponible pour ce type de fichier</p>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 };
