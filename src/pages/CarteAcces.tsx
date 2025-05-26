@@ -17,8 +17,18 @@ const CarteAcces = () => {
   const navigate = useNavigate();
   const { codeAcces, qrCodeUrl, handlePrint, handleDownload } = useAccessCard();
 
+  console.log("CarteAcces - Render state:", {
+    isAuthenticated,
+    isLoading,
+    profile: profile ? 'present' : 'missing',
+    codeAcces,
+    qrCodeUrl,
+    qrCodeUrlValid: !!qrCodeUrl && qrCodeUrl.length > 0
+  });
+
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
+      console.log("CarteAcces - User not authenticated, redirecting");
       toast({
         title: "Accès refusé",
         description: "Vous devez être connecté pour accéder à cette page",
@@ -29,6 +39,7 @@ const CarteAcces = () => {
   }, [isAuthenticated, isLoading, navigate]);
 
   if (isLoading) {
+    console.log("CarteAcces - Loading state");
     return (
       <div className="h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-directiveplus-600"></div>
@@ -37,12 +48,20 @@ const CarteAcces = () => {
   }
 
   if (!isAuthenticated) {
+    console.log("CarteAcces - Not authenticated, returning null");
     return null;
   }
 
   const firstName = profile?.first_name || "";
   const lastName = profile?.last_name || "";
   const birthDate = profile?.birth_date ? new Date(profile.birth_date).toLocaleDateString('fr-FR') : "";
+
+  console.log("CarteAcces - Profile data:", {
+    firstName,
+    lastName,
+    birthDate,
+    profileComplete: !!(firstName && lastName && birthDate)
+  });
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -82,6 +101,19 @@ const CarteAcces = () => {
               qrCodeUrl={qrCodeUrl}
             />
           </div>
+
+          {/* Debug info - à supprimer en production */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="mb-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <h3 className="font-medium text-yellow-800 mb-2">Debug Info:</h3>
+              <div className="text-sm text-yellow-700 space-y-1">
+                <div>Code d'accès: {codeAcces || 'Non généré'}</div>
+                <div>QR Code URL: {qrCodeUrl || 'Non généré'}</div>
+                <div>URL valide: {qrCodeUrl && qrCodeUrl.length > 0 ? 'Oui' : 'Non'}</div>
+                <div>Profil complet: {firstName && lastName && birthDate ? 'Oui' : 'Non'}</div>
+              </div>
+            </div>
+          )}
 
           <InstructionsCard codeAcces={codeAcces} />
 

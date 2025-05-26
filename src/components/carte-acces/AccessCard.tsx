@@ -11,6 +11,20 @@ interface AccessCardProps {
 }
 
 const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: AccessCardProps) => {
+  console.log("AccessCard - Rendering with:", {
+    firstName,
+    lastName,
+    birthDate,
+    codeAcces,
+    qrCodeUrl,
+    qrCodeUrlLength: qrCodeUrl?.length || 0
+  });
+
+  // Validation des props
+  if (!qrCodeUrl || qrCodeUrl.trim() === '') {
+    console.warn("AccessCard - QR code URL is empty or invalid");
+  }
+
   return (
     <div 
       id="access-card"
@@ -40,14 +54,19 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
             </div>
             <div className="ml-4 flex-shrink-0">
               <div className="bg-white bg-opacity-20 rounded-lg p-2">
-                {qrCodeUrl && (
+                {qrCodeUrl ? (
                   <QRCodeSVG 
                     value={qrCodeUrl}
                     size={70}
                     level="M"
                     fgColor="#ffffff"
                     bgColor="transparent"
+                    includeMargin={false}
                   />
+                ) : (
+                  <div className="w-[70px] h-[70px] bg-white bg-opacity-30 rounded flex items-center justify-center">
+                    <span className="text-xs text-center">QR<br/>Code</span>
+                  </div>
                 )}
               </div>
             </div>
