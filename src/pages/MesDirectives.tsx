@@ -21,12 +21,14 @@ const MesDirectives = () => {
   const hasInstitutionAccess = sessionStorage.getItem('institutionAccess') === 'true';
   const { dossierActif } = useDossierStore();
   
-  // Utiliser soit les documents normaux soit ceux du dossier selon le contexte
+  // TOUJOURS appeler les deux hooks pour éviter les erreurs de hooks conditionnels
   const normalDocuments = useDirectivesDocuments();
   const dossierDocuments = useDossierDocuments();
   
-  // Choisir la source de documents appropriée
-  const documentsData = hasInstitutionAccess && dossierActif ? dossierDocuments : normalDocuments;
+  // Choisir la source de documents appropriée APRÈS avoir appelé tous les hooks
+  const documentsData = React.useMemo(() => {
+    return hasInstitutionAccess && dossierActif ? dossierDocuments : normalDocuments;
+  }, [hasInstitutionAccess, dossierActif, dossierDocuments, normalDocuments]);
   
   const {
     isLoading: documentsLoading,
