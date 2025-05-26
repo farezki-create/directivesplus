@@ -186,3 +186,4 @@ const AppNavigation: React.FC<AppNavigationProps> = ({ hideEditingFeatures = fal
 };
 
 export default AppNavigation;
+export type { AppNavigationProps };
