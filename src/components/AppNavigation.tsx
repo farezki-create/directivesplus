@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,7 +12,11 @@ import {
   CreditCard
 } from "lucide-react";
 
-const AppNavigation = () => {
+interface AppNavigationProps {
+  hideEditingFeatures?: boolean;
+}
+
+const AppNavigation = ({ hideEditingFeatures = false }: AppNavigationProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -38,7 +43,7 @@ const AppNavigation = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
-            {user && (
+            {user && !hideEditingFeatures && (
               <>
                 <Link 
                   to="/rediger" 
@@ -68,13 +73,15 @@ const AppNavigation = () => {
             
             {user ? (
               <div className="flex items-center space-x-4">
-                <Link 
-                  to="/profile" 
-                  className="flex items-center space-x-1 text-gray-700 hover:text-directiveplus-600 transition-colors"
-                >
-                  <User size={16} />
-                  <span>Profil</span>
-                </Link>
+                {!hideEditingFeatures && (
+                  <Link 
+                    to="/profile" 
+                    className="flex items-center space-x-1 text-gray-700 hover:text-directiveplus-600 transition-colors"
+                  >
+                    <User size={16} />
+                    <span>Profil</span>
+                  </Link>
+                )}
                 <Button 
                   variant="outline" 
                   size="sm" 
@@ -110,7 +117,7 @@ const AppNavigation = () => {
         {isMenuOpen && (
           <div className="md:hidden border-t py-4">
             <div className="flex flex-col space-y-4">
-              {user && (
+              {user && !hideEditingFeatures && (
                 <>
                   <Link 
                     to="/rediger" 
@@ -143,14 +150,16 @@ const AppNavigation = () => {
               
               {user ? (
                 <>
-                  <Link 
-                    to="/profile" 
-                    className="flex items-center space-x-2 text-gray-700 hover:text-directiveplus-600 transition-colors"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <User size={16} />
-                    <span>Profil</span>
-                  </Link>
+                  {!hideEditingFeatures && (
+                    <Link 
+                      to="/profile" 
+                      className="flex items-center space-x-2 text-gray-700 hover:text-directiveplus-600 transition-colors"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <User size={16} />
+                      <span>Profil</span>
+                    </Link>
+                  )}
                   <Button 
                     variant="outline" 
                     size="sm" 

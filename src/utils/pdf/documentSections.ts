@@ -107,6 +107,38 @@ export const renderTrustedPersons = (pdf: jsPDF, layout: PdfLayout, yPosition: n
   return yPosition;
 };
 
+export const renderQuestionnaires = (pdf: jsPDF, layout: PdfLayout, yPosition: number, responses: Record<string, any>, translateResponse: (response: string) => string): number => {
+  if (!responses || Object.keys(responses).length === 0) {
+    return yPosition;
+  }
+  
+  pdf.setFontSize(14);
+  pdf.setFont("helvetica", "bold");
+  pdf.text("QUESTIONNAIRES", 20, yPosition);
+  
+  yPosition += layout.lineHeight * 1.5;
+  
+  pdf.setFontSize(12);
+  pdf.setFont("helvetica", "normal");
+  
+  Object.entries(responses).forEach(([question, response]) => {
+    // Check if we need a new page
+    yPosition = checkPageBreak(pdf, layout, yPosition, layout.lineHeight * 3);
+    
+    // Format question
+    const questionLines = pdf.splitTextToSize(`Q: ${question}`, layout.contentWidth);
+    pdf.text(questionLines, 20, yPosition);
+    yPosition += questionLines.length * layout.lineHeight;
+    
+    // Format response
+    const translatedResponse = translateResponse(String(response));
+    pdf.text(`R: ${translatedResponse}`, 30, yPosition);
+    yPosition += layout.lineHeight * 1.5;
+  });
+  
+  return yPosition + layout.lineHeight;
+};
+
 export const renderPhrases = (pdf: jsPDF, layout: PdfLayout, yPosition: number, phrases: string[], title: string): number => {
   if (!phrases || phrases.length === 0) {
     return yPosition;
@@ -151,4 +183,44 @@ export const renderFreeText = (pdf: jsPDF, layout: PdfLayout, yPosition: number,
   pdf.text(textLines, 20, yPosition);
   
   return yPosition + textLines.length * layout.lineHeight + layout.lineHeight;
+};
+
+export const renderSignature = (pdf: jsPDF, layout: PdfLayout, yPosition: number, signature: string): number => {
+  if (!signature) {
+    return yPosition;
+  }
+  
+  pdf.setFontSize(14);
+  pdf.setFont("helvetica", "bold");
+  pdf.text("SIGNATURE", 20, yPosition);
+  
+  yPosition += layout.lineHeight * 1.5;
+  
+  pdf.setFontSize(12);
+  pdf.setFont("helvetica", "normal");
+  
+  // Add signature date
+  pdf.text(`Date: ${new Date().toLocaleDateString('fr-FR')}`, 20, yPosition);
+  yPosition += layout.lineHeight * 2;
+  
+  // Add signature confirmation text
+  pdf.text("Je certifie que les informations ci-dessus reflètent mes volontés.", 20, yPosition);
+  yPosition += layout.lineHeight * 2;
+  
+  // Add signature placeholder or actual signature
+  if (signature.startsWith('data:image')) {
+    try {
+      pdf.addImage(signature, 'PNG', 20, yPosition, 60, 30);
+      yPosition += 35;
+    } catch (error) {
+      console.error('Error adding signature image:', error);
+      pdf.text("Signature électronique capturée", 20, yPosition);
+      yPosition += layout.lineHeight;
+    }
+  } else {
+    pdf.text("Signature électronique capturée", 20, yPosition);
+    yPosition += layout.lineHeight;
+  }
+  
+  return yPosition + layout.lineHeight;
 };
