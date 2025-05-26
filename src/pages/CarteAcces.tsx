@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,12 +10,19 @@ import AccessCard from "@/components/carte-acces/AccessCard";
 import ActionButtons from "@/components/carte-acces/ActionButtons";
 import InstructionsCard from "@/components/carte-acces/InstructionsCard";
 import { InstitutionCodeSection } from "@/components/directives/InstitutionCodeSection";
-
 const CarteAcces = () => {
-  const { isAuthenticated, isLoading, profile } = useAuth();
+  const {
+    isAuthenticated,
+    isLoading,
+    profile
+  } = useAuth();
   const navigate = useNavigate();
-  const { codeAcces, qrCodeUrl, handlePrint, handleDownload } = useAccessCard();
-
+  const {
+    codeAcces,
+    qrCodeUrl,
+    handlePrint,
+    handleDownload
+  } = useAccessCard();
   console.log("CarteAcces - Detailed render state:", {
     isAuthenticated,
     isLoading,
@@ -32,7 +38,6 @@ const CarteAcces = () => {
     origin: window.location.origin,
     pathname: window.location.pathname
   });
-
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       console.log("CarteAcces - User not authenticated, redirecting");
@@ -41,7 +46,11 @@ const CarteAcces = () => {
         description: "Vous devez être connecté pour accéder à cette page",
         variant: "destructive"
       });
-      navigate("/auth", { state: { from: "/carte-acces" } });
+      navigate("/auth", {
+        state: {
+          from: "/carte-acces"
+        }
+      });
     }
   }, [isAuthenticated, isLoading, navigate]);
 
@@ -54,33 +63,26 @@ const CarteAcces = () => {
           console.log("CarteAcces - QR code generation taking too long, showing info");
           toast({
             title: "Génération du QR Code",
-            description: "Le QR code est en cours de génération. Veuillez patienter...",
+            description: "Le QR code est en cours de génération. Veuillez patienter..."
           });
         }
       }, 3000);
-
       return () => clearTimeout(timer);
     }
   }, [isAuthenticated, profile, qrCodeUrl]);
-
   if (isLoading) {
     console.log("CarteAcces - Loading state");
-    return (
-      <div className="h-screen flex items-center justify-center">
+    return <div className="h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-directiveplus-600"></div>
-      </div>
-    );
+      </div>;
   }
-
   if (!isAuthenticated) {
     console.log("CarteAcces - Not authenticated, returning null");
     return null;
   }
-
   const firstName = profile?.first_name || "";
   const lastName = profile?.last_name || "";
   const birthDate = profile?.birth_date ? new Date(profile.birth_date).toLocaleDateString('fr-FR') : "";
-
   console.log("CarteAcces - Final profile data:", {
     firstName,
     lastName,
@@ -89,19 +91,13 @@ const CarteAcces = () => {
     qrCodeFinal: qrCodeUrl,
     qrCodeLength: qrCodeUrl?.length || 0
   });
-
-  return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+  return <div className="min-h-screen flex flex-col bg-gray-50">
       <AppNavigation />
       
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <div className="mb-6">
-            <Button
-              variant="outline"
-              onClick={() => navigate("/rediger")}
-              className="flex items-center gap-2"
-            >
+            <Button variant="outline" onClick={() => navigate("/rediger")} className="flex items-center gap-2">
               <ArrowLeft size={16} />
               Retour
             </Button>
@@ -117,70 +113,25 @@ const CarteAcces = () => {
           </div>
 
           {/* Alerte si QR code pas encore généré */}
-          {(!qrCodeUrl || qrCodeUrl.length < 10) && (
-            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          {(!qrCodeUrl || qrCodeUrl.length < 10) && <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
               <h3 className="font-medium text-blue-800 mb-2">🔄 Génération du QR Code en cours</h3>
               <p className="text-sm text-blue-700">
                 Le QR code de votre carte d'accès est en cours de génération. Cela peut prendre quelques secondes.
               </p>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => window.location.reload()}
-                className="mt-2"
-              >
+              <Button variant="outline" size="sm" onClick={() => window.location.reload()} className="mt-2">
                 Actualiser la page
               </Button>
-            </div>
-          )}
+            </div>}
 
           <ActionButtons onPrint={handlePrint} onDownload={handleDownload} />
 
           {/* Carte d'accès format bancaire */}
           <div className="flex justify-center mb-8">
-            <AccessCard
-              firstName={firstName}
-              lastName={lastName}
-              birthDate={birthDate}
-              codeAcces={codeAcces}
-              qrCodeUrl={qrCodeUrl}
-            />
+            <AccessCard firstName={firstName} lastName={lastName} birthDate={birthDate} codeAcces={codeAcces} qrCodeUrl={qrCodeUrl} />
           </div>
 
           {/* Debug info étendu - visible en development */}
-          {process.env.NODE_ENV === 'development' && (
-            <div className="mb-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <h3 className="font-medium text-yellow-800 mb-2">🐛 Debug Info CarteAcces:</h3>
-              <div className="text-sm text-yellow-700 space-y-1">
-                <div><strong>Code d'accès:</strong> {codeAcces || 'Non généré'}</div>
-                <div><strong>QR Code URL:</strong> {qrCodeUrl || 'Non généré'}</div>
-                <div><strong>URL valide:</strong> {qrCodeUrl && qrCodeUrl.length > 0 ? 'Oui' : 'Non'}</div>
-                <div><strong>URL commence par http:</strong> {qrCodeUrl && qrCodeUrl.startsWith('http') ? 'Oui' : 'Non'}</div>
-                <div><strong>Profil complet:</strong> {firstName && lastName && birthDate ? 'Oui' : 'Non'}</div>
-                <div><strong>Origin actuel:</strong> {window.location.origin}</div>
-                <div><strong>URL complète:</strong> {window.location.href}</div>
-                <button 
-                  onClick={() => {
-                    if (qrCodeUrl) {
-                      console.log("Test manuel du QR Code:", qrCodeUrl);
-                      window.open(qrCodeUrl, '_blank');
-                    } else {
-                      alert('QR Code URL non disponible');
-                    }
-                  }}
-                  className="bg-yellow-600 text-white px-2 py-1 rounded text-xs mr-2"
-                >
-                  Tester QR Code
-                </button>
-                <button 
-                  onClick={() => window.location.reload()}
-                  className="bg-blue-600 text-white px-2 py-1 rounded text-xs"
-                >
-                  Recharger
-                </button>
-              </div>
-            </div>
-          )}
+          {process.env.NODE_ENV === 'development'}
 
           <InstructionsCard codeAcces={codeAcces} />
 
@@ -196,8 +147,6 @@ const CarteAcces = () => {
           <p>© 2025 DirectivesPlus. Tous droits réservés.</p>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 };
-
 export default CarteAcces;
