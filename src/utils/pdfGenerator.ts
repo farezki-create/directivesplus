@@ -1,3 +1,4 @@
+
 import { jsPDF } from "jspdf";
 import { 
   PdfLayout, 
@@ -47,8 +48,24 @@ const translateResponse = (response: string): string => {
 export const generatePDF = async (data: PdfData): Promise<string> => {
   try {
     console.log("=== DÉBUT GÉNÉRATION PDF ===");
-    console.log("Génération du PDF avec les données:", data);
-    console.log("UserId fourni:", data.userId);
+    console.log("Données reçues pour le PDF:", {
+      hasProfileData: !!data.profileData,
+      profileData: data.profileData,
+      hasResponses: !!data.responses,
+      responsesCount: Object.keys(data.responses || {}).length,
+      responses: data.responses,
+      hasExamplePhrases: !!data.examplePhrases,
+      examplePhrasesCount: data.examplePhrases?.length || 0,
+      hasCustomPhrases: !!data.customPhrases,
+      customPhrasesCount: data.customPhrases?.length || 0,
+      hasTrustedPersons: !!data.trustedPersons,
+      trustedPersonsCount: data.trustedPersons?.length || 0,
+      trustedPersons: data.trustedPersons,
+      hasFreeText: !!data.freeText,
+      freeTextLength: data.freeText?.length || 0,
+      hasSignature: !!data.signature,
+      userId: data.userId
+    });
     
     // Create new PDF document
     const pdf = new jsPDF({
@@ -67,6 +84,8 @@ export const generatePDF = async (data: PdfData): Promise<string> => {
       footerHeight: 20
     };
     
+    console.log("Configuration PDF:", layout);
+    
     // ==========================================
     // CHAPITRE 1: DIRECTIVES ANTICIPÉES
     // ==========================================
@@ -82,30 +101,42 @@ export const generatePDF = async (data: PdfData): Promise<string> => {
     yPosition += layout.lineHeight * 1.5;
     
     // Render document header
+    console.log("Rendu de l'en-tête...");
     yPosition = renderHeader(pdf, layout, yPosition);
+    console.log("En-tête rendu, nouvelle position Y:", yPosition);
     
     // Render personal information section
+    console.log("Rendu des informations personnelles...");
     yPosition = checkPageBreak(pdf, layout, yPosition);
     yPosition = renderPersonalInfo(pdf, layout, yPosition, data.profileData);
+    console.log("Informations personnelles rendues, nouvelle position Y:", yPosition);
     
     // Render trusted persons section
+    console.log("Rendu des personnes de confiance...");
     yPosition = checkPageBreak(pdf, layout, yPosition);
     yPosition = renderTrustedPersons(pdf, layout, yPosition, data.trustedPersons);
+    console.log("Personnes de confiance rendues, nouvelle position Y:", yPosition);
     
     // Render questionnaire responses
+    console.log("Rendu des réponses au questionnaire...");
     yPosition = checkPageBreak(pdf, layout, yPosition);
     yPosition = renderQuestionnaires(pdf, layout, yPosition, data.responses, translateResponse);
+    console.log("Réponses rendues, nouvelle position Y:", yPosition);
 
     // Render free text section if available
     if (data.freeText) {
+      console.log("Rendu du texte libre...");
       yPosition = checkPageBreak(pdf, layout, yPosition);
       yPosition = renderFreeText(pdf, layout, yPosition, data.freeText);
+      console.log("Texte libre rendu, nouvelle position Y:", yPosition);
     }
     
     // Add signature for Chapter 1
     if (data.signature) {
+      console.log("Rendu de la signature...");
       yPosition = checkPageBreak(pdf, layout, yPosition);
       yPosition = renderSignature(pdf, layout, yPosition, data.signature);
+      console.log("Signature rendue, nouvelle position Y:", yPosition);
     }
     
     // ==========================================
@@ -121,6 +152,7 @@ export const generatePDF = async (data: PdfData): Promise<string> => {
       try {
         medicalDocuments = await getMedicalDocuments(data.userId);
         console.log("Documents médicaux récupérés:", medicalDocuments.length);
+        console.log("Détails des documents:", medicalDocuments);
       } catch (error) {
         console.error("Erreur lors de la récupération des documents médicaux:", error);
         medicalDocuments = [];
@@ -143,6 +175,7 @@ export const generatePDF = async (data: PdfData): Promise<string> => {
     
     // Add signature footer on all pages
     const totalPages = pdf.getNumberOfPages();
+    console.log("Ajout des pieds de page sur", totalPages, "page(s)");
     for (let i = 1; i <= totalPages; i++) {
       pdf.setPage(i);
       addSignatureFooter(pdf, layout, data.signature || null);
@@ -155,10 +188,15 @@ export const generatePDF = async (data: PdfData): Promise<string> => {
     const pdfOutput = pdf.output("datauristring");
     
     if (!pdfOutput || typeof pdfOutput !== 'string' || pdfOutput.length < 100) {
+      console.error("Erreur: PDF généré invalide", {
+        hasOutput: !!pdfOutput,
+        outputType: typeof pdfOutput,
+        outputLength: pdfOutput?.length || 0
+      });
       throw new Error("La génération du PDF a échoué, sortie invalide");
     }
     
-    console.log("PDF généré avec succès, prêt pour la sauvegarde externe");
+    console.log("PDF généré avec succès, taille:", pdfOutput.length, "caractères");
     
     return pdfOutput;
   } catch (error) {

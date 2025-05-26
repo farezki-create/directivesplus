@@ -34,14 +34,24 @@ export const useSynthesisActions = (userId?: string) => {
 
       console.log("=== DÉBUT SAUVEGARDE ET GÉNÉRATION PDF ===");
       console.log("UserId utilisé:", userId || user?.id);
-      console.log("Données reçues:", data);
+      console.log("Données reçues dans handleSaveAndGeneratePDF:", {
+        freeText,
+        dataKeys: Object.keys(data || {}),
+        data: data,
+        hasProfileData: !!data?.profileData,
+        hasResponses: !!data?.responses,
+        hasExamplePhrases: !!data?.examplePhrases,
+        hasCustomPhrases: !!data?.customPhrases,
+        hasTrustedPersons: !!data?.trustedPersons,
+        signatureFromHook: signature
+      });
 
       // Vérifier si les données sont valides
       if (!data) {
         throw new Error("Données de directives manquantes");
       }
 
-      // Préparer les données pour le PDF - NE PAS inclure medicalDocuments pour éviter les doublons
+      // Préparer les données pour le PDF
       const pdfData = {
         profileData: data.profileData,
         responses: data.responses,
@@ -50,8 +60,7 @@ export const useSynthesisActions = (userId?: string) => {
         trustedPersons: data.trustedPersons,
         freeText,
         signature,
-        userId: userId || user?.id, // S'assurer que l'userId est bien défini
-        // medicalDocuments sera récupéré automatiquement dans generatePDF
+        userId: userId || user?.id,
       };
 
       console.log("Données préparées pour le PDF:", pdfData);
@@ -60,6 +69,7 @@ export const useSynthesisActions = (userId?: string) => {
       let pdfOutput;
       try {
         pdfOutput = await generatePDF(pdfData);
+        console.log("PDF généré avec succès, taille:", pdfOutput.length);
       } catch (pdfError: any) {
         console.error("Erreur lors de la génération du PDF:", pdfError);
         throw new Error("Impossible de générer le PDF: " + (pdfError.message || "Erreur inconnue"));
