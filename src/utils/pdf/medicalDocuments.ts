@@ -38,67 +38,21 @@ export const getMedicalDocuments = async (userId: string): Promise<any[]> => {
       description: doc.description || `Document médical: ${doc.file_name}`,
       created_at: doc.created_at,
       user_id: doc.user_id,
-      content: doc.file_path, // Utiliser file_path comme contenu pour l'instant
+      content: doc.extracted_content || '', // Utiliser le contenu extrait
       file_type: doc.file_type,
-      file_path: doc.file_path
+      file_path: doc.file_path,
+      extracted_content: doc.extracted_content
     }));
     
     console.log("Total des documents médicaux récupérés:", medicalDocuments.length);
+    console.log("Documents avec contenu extrait:", medicalDocuments.filter(d => d.extracted_content).length);
+    
     return medicalDocuments;
 
   } catch (error) {
     console.error('Erreur lors de la récupération des documents médicaux:', error);
     return [];
   }
-};
-
-/**
- * Ajoute une image au PDF de manière optimisée
- */
-const addImageToPDF = (pdf: jsPDF, layout: PdfLayout, yPosition: number, base64Data: string, fileName: string): number => {
-  try {
-    console.log(`Ajout de l'image ${fileName} au PDF`);
-    
-    const imageData = base64Data.split(',')[1];
-    const mimeType = base64Data.split(';')[0].split(':')[1];
-    
-    let format = 'JPEG';
-    if (mimeType.includes('png')) format = 'PNG';
-    
-    // Taille optimisée pour le PDF
-    const maxWidth = layout.contentWidth - 20;
-    const maxHeight = 120;
-    
-    pdf.addImage(imageData, format, layout.margin + 10, yPosition, maxWidth, maxHeight);
-    
-    return yPosition + maxHeight + 10;
-  } catch (error) {
-    console.error(`Erreur lors de l'ajout de l'image ${fileName}:`, error);
-    
-    pdf.setFontSize(10);
-    pdf.setFont("helvetica", "italic");
-    pdf.text(`[Image ${fileName} non accessible]`, layout.margin + 10, yPosition);
-    
-    return yPosition + layout.lineHeight * 2;
-  }
-};
-
-/**
- * Ajoute un contenu PDF de manière optimisée
- */
-const addPDFContent = (pdf: jsPDF, layout: PdfLayout, yPosition: number, fileName: string): number => {
-  pdf.setFontSize(10);
-  pdf.setFont("helvetica", "normal");
-  
-  const pdfText = `📄 Document PDF intégré: ${fileName}`;
-  pdf.text(pdfText, layout.margin + 10, yPosition);
-  yPosition += layout.lineHeight;
-  
-  const note = "Le contenu complet de ce document PDF est inclus dans cette version des directives anticipées.";
-  const noteLines = pdf.splitTextToSize(note, layout.contentWidth - 20);
-  pdf.text(noteLines, layout.margin + 10, yPosition);
-  
-  return yPosition + noteLines.length * layout.lineHeight + layout.lineHeight;
 };
 
 /**
@@ -149,14 +103,13 @@ export const renderMedicalDocumentsChapter = (
   // Rendu de chaque document
   medicalDocuments.forEach((doc, index) => {
     console.log(`Rendu du document ${index + 1}: ${doc.file_name}`, {
-      hasContent: !!doc.content,
-      contentType: typeof doc.content,
-      contentLength: doc.content ? doc.content.length : 0,
+      hasExtractedContent: !!doc.extracted_content,
+      contentLength: doc.extracted_content ? doc.extracted_content.length : 0,
       fileType: doc.file_type
     });
     
     // Vérifier l'espace disponible pour un nouveau document
-    if (yPosition + layout.lineHeight * 10 > layout.pageHeight - layout.margin - layout.footerHeight) {
+    if (yPosition + layout.lineHeight * 15 > layout.pageHeight - layout.margin - layout.footerHeight) {
       pdf.addPage();
       yPosition = layout.margin;
     }
@@ -188,21 +141,38 @@ export const renderMedicalDocumentsChapter = (
     // Réinitialiser la couleur du texte
     pdf.setTextColor(0, 0, 0);
     
-    // Affichage des informations sur le document
-    pdf.setFontSize(10);
+    // Affichage du contenu extrait ou message par défaut
+    pdf.setFontSize(11);
     pdf.setFont("helvetica", "normal");
     
-    const docInfo = `Type: ${doc.file_type || 'Non spécifié'} | Chemin: ${doc.file_path}`;
-    pdf.text(docInfo, layout.margin + 5, yPosition);
-    yPosition += layout.lineHeight;
-    
-    // Pour l'instant, afficher le chemin du fichier en attendant l'implémentation du contenu
-    pdf.setFontSize(9);
-    pdf.setFont("helvetica", "italic");
-    pdf.setTextColor(100, 100, 100);
-    pdf.text("[Le contenu du document sera intégré dans une version ultérieure]", layout.margin + 5, yPosition);
-    pdf.setTextColor(0, 0, 0);
-    yPosition += layout.lineHeight;
+    if (doc.extracted_content && doc.extracted_content.trim()) {
+      console.log(`Ajout du contenu extrait pour ${doc.file_name}`);
+      
+      // Afficher le contenu extrait
+      const contentLines = pdf.splitTextToSize(doc.extracted_content, layout.contentWidth - 10);
+      
+      // Vérifier si on a assez d'espace pour le contenu
+      const neededHeight = contentLines.length * layout.lineHeight;
+      if (yPosition + neededHeight > layout.pageHeight - layout.margin - layout.footerHeight) {
+        pdf.addPage();
+        yPosition = layout.margin;
+      }
+      
+      pdf.text(contentLines, layout.margin + 5, yPosition);
+      yPosition += contentLines.length * layout.lineHeight;
+    } else {
+      console.log(`Pas de contenu extrait pour ${doc.file_name}`);
+      
+      // Message indiquant qu'aucun contenu n'a été extrait
+      pdf.setFontSize(10);
+      pdf.setFont("helvetica", "italic");
+      pdf.setTextColor(150, 150, 150);
+      const noContentText = "Contenu du document non extrait. Le document original est disponible en annexe.";
+      const noContentLines = pdf.splitTextToSize(noContentText, layout.contentWidth - 10);
+      pdf.text(noContentLines, layout.margin + 5, yPosition);
+      yPosition += noContentLines.length * layout.lineHeight;
+      pdf.setTextColor(0, 0, 0);
+    }
     
     // Description si disponible et différente du nom
     if (doc.description && doc.description !== `Document médical: ${doc.file_name}` && doc.description !== doc.file_name) {

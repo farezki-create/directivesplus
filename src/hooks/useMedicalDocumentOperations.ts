@@ -52,8 +52,8 @@ export const useMedicalDocumentOperations = ({
     
     toast({
       title: "Document ajouté",
-      description: "Le contenu du document médical sera affiché ci-dessous et intégré dans vos directives anticipées",
-      duration: 2000
+      description: "Le document médical a été ajouté. Cliquez sur 'Extraire le texte' pour l'intégrer dans vos directives anticipées",
+      duration: 3000
     });
   };
 
@@ -97,11 +97,25 @@ export const useMedicalDocumentOperations = ({
     }
   };
 
+  const updateDocumentContent = async (documentId: string, content: string) => {
+    // Mettre à jour le document dans la liste locale
+    setUploadedDocuments(prev => 
+      prev.map(doc => 
+        doc.id === documentId 
+          ? { ...doc, extracted_content: content }
+          : doc
+      )
+    );
+    
+    console.log("Contenu du document mis à jour:", documentId, content.length, "caractères");
+  };
+
   return {
     uploadedDocuments,
     previewDocument,
     setPreviewDocument,
     handleDocumentUpload,
-    handleDeleteDocument
+    handleDeleteDocument,
+    updateDocumentContent
   };
 };

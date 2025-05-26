@@ -19,6 +19,7 @@ const MedicalDocumentSection = ({ userId, onUploadComplete, onDocumentAdd, onDoc
     setPreviewDocument,
     handleDocumentUpload,
     handleDeleteDocument,
+    updateDocumentContent
   } = useMedicalDocumentOperations({ userId, onUploadComplete, onDocumentAdd, onDocumentRemove });
 
   return (
@@ -27,8 +28,8 @@ const MedicalDocumentSection = ({ userId, onUploadComplete, onDocumentAdd, onDoc
         <CardHeader className="pb-2">
           <CardTitle>Documents médicaux</CardTitle>
           <p className="text-sm text-gray-600">
-            Ajoutez vos documents médicaux PDF. Le contenu sera extrait et affiché ci-dessous, 
-            puis automatiquement intégré dans votre PDF de directives anticipées.
+            Ajoutez vos documents médicaux PDF. Cliquez sur "Extraire le texte" pour que le contenu 
+            soit automatiquement intégré dans votre PDF de directives anticipées.
           </p>
         </CardHeader>
         <CardContent>
@@ -48,6 +49,7 @@ const MedicalDocumentSection = ({ userId, onUploadComplete, onDocumentAdd, onDoc
                     key={doc.id}
                     document={doc}
                     onRemove={handleDeleteDocument}
+                    onContentUpdate={updateDocumentContent}
                   />
                 ))}
               </div>
