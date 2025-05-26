@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,6 +25,7 @@ export const PasswordResetForm = ({ token, onSuccess }: PasswordResetFormProps) 
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [sessionEstablished, setSessionEstablished] = useState(false);
   const [tokenValid, setTokenValid] = useState(false);
+  const [tokenValidating, setTokenValidating] = useState(true);
   const [securityWarning, setSecurityWarning] = useState<string | null>(null);
 
   const form = useForm<ResetPasswordValues>({
@@ -37,13 +39,14 @@ export const PasswordResetForm = ({ token, onSuccess }: PasswordResetFormProps) 
   const password = form.watch("password") || "";
   const passwordValidation = validatePasswordSecurity(password);
 
-  // Valider le token et établir la session
+  // Validation améliorée du token avant affichage
   useEffect(() => {
-    const establishSession = async () => {
+    const validateToken = async () => {
       try {
         console.log("Validating reset token...");
+        setTokenValidating(true);
         
-        // Vérifier l'intégrité du token
+        // Étape 1: Vérification de l'intégrité du token
         if (!validateTokenIntegrity(token)) {
           console.error("Invalid token format");
           toast({
@@ -51,12 +54,13 @@ export const PasswordResetForm = ({ token, onSuccess }: PasswordResetFormProps) 
             description: "Le lien de réinitialisation est malformé ou corrompu.",
             variant: "destructive",
           });
+          setTokenValidating(false);
           return;
         }
         
         setTokenValid(true);
         
-        // Vérifier la protection anti-brute force pour la réinitialisation
+        // Étape 2: Protection anti-brute force
         const bruteForceCheck = checkAuthAttempt(token.substring(0, 20), 'password_reset');
         if (!bruteForceCheck.allowed) {
           toast({
@@ -65,6 +69,7 @@ export const PasswordResetForm = ({ token, onSuccess }: PasswordResetFormProps) 
             variant: "destructive",
             duration: 8000
           });
+          setTokenValidating(false);
           return;
         }
 
@@ -72,46 +77,60 @@ export const PasswordResetForm = ({ token, onSuccess }: PasswordResetFormProps) 
           setSecurityWarning(`Attention: ${bruteForceCheck.remainingAttempts} tentative(s) restante(s) avant blocage.`);
         }
         
-        console.log("Establishing session with token:", token.substring(0, 10) + "...");
+        // Étape 3: Validation de la session avec le token
+        console.log("Establishing session with token validation...");
         
+        // Tentative d'établissement de session pour validation
         const { data, error } = await supabase.auth.setSession({
           access_token: token,
           refresh_token: token,
         });
 
         if (error) {
-          console.error("Error setting session:", error);
+          console.error("Token validation failed:", error);
+          
+          let errorMessage = "Le lien de réinitialisation a expiré ou est invalide.";
+          if (error.message.includes('expired')) {
+            errorMessage = "Le lien de réinitialisation a expiré. Demandez un nouveau lien.";
+          } else if (error.message.includes('invalid')) {
+            errorMessage = "Le lien de réinitialisation est invalide.";
+          }
+          
           toast({
-            title: "Lien expiré",
-            description: "Le lien de réinitialisation a expiré. Demandez un nouveau lien.",
+            title: "Lien de réinitialisation invalide",
+            description: errorMessage,
             variant: "destructive",
           });
+          setTokenValidating(false);
           return;
         }
 
         if (data.session) {
-          console.log("Session established successfully");
+          console.log("Token validated successfully, session established");
           setSessionEstablished(true);
         } else {
-          console.error("No session returned from setSession");
+          console.error("No session returned from token validation");
           toast({
-            title: "Erreur de session",
-            description: "Impossible d'établir la session. Le lien peut être invalide.",
+            title: "Erreur de validation",
+            description: "Impossible de valider le lien de réinitialisation.",
             variant: "destructive",
           });
         }
+        
       } catch (error) {
-        console.error("Error in establishSession:", error);
+        console.error("Error in token validation:", error);
         toast({
           title: "Erreur",
           description: "Une erreur est survenue lors de la validation du lien.",
           variant: "destructive",
         });
+      } finally {
+        setTokenValidating(false);
       }
     };
 
     if (token) {
-      establishSession();
+      validateToken();
     }
   }, [token]);
 
@@ -119,7 +138,7 @@ export const PasswordResetForm = ({ token, onSuccess }: PasswordResetFormProps) 
     if (!sessionEstablished || !tokenValid) {
       toast({
         title: "Session non établie",
-        description: "Veuillez attendre que la session soit établie.",
+        description: "Veuillez attendre que la validation soit terminée.",
         variant: "destructive",
       });
       return;
@@ -182,24 +201,38 @@ export const PasswordResetForm = ({ token, onSuccess }: PasswordResetFormProps) 
     }
   };
 
-  if (!tokenValid) {
+  // État de validation du token
+  if (tokenValidating) {
     return (
       <div className="text-center space-y-4">
         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600 mx-auto"></div>
-        <p className="text-gray-600">Validation du lien de réinitialisation...</p>
+        <p className="text-gray-600">Validation sécurisée du lien de réinitialisation...</p>
+        <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
+          <p className="text-xs text-blue-700">
+            Vérification de l'intégrité et de la validité du token en cours...
+          </p>
+        </div>
       </div>
     );
   }
 
-  if (!sessionEstablished) {
+  if (!tokenValid || !sessionEstablished) {
     return (
       <div className="text-center space-y-4">
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            Le lien de réinitialisation est invalide ou a expiré. Veuillez demander un nouveau lien.
+            Le lien de réinitialisation est invalide, a expiré ou a déjà été utilisé. 
+            Veuillez demander un nouveau lien de réinitialisation.
           </AlertDescription>
         </Alert>
+        <Button 
+          variant="outline" 
+          onClick={() => window.location.href = '/auth'}
+          className="w-full"
+        >
+          Retour à la connexion
+        </Button>
       </div>
     );
   }

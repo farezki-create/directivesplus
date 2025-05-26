@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, Mail, RefreshCw, AlertTriangle, Shield } from "lucide-react";
+import { Loader2, Mail, RefreshCw, AlertTriangle, Shield, Eye, EyeOff } from "lucide-react";
 import { checkAuthAttempt, resetAuthAttempts } from "@/utils/security/authSecurity";
 
 interface EmailVerificationFormProps {
@@ -24,12 +24,10 @@ export const EmailVerificationForm = ({
   const [isVerifying, setIsVerifying] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [error, setError] = useState("");
-  const [maskedCode, setMaskedCode] = useState("");
+  const [showCode, setShowCode] = useState(false);
 
   const handleCodeChange = (value: string) => {
     setCode(value);
-    // Masquer le code saisi pour la sécurité
-    setMaskedCode("*".repeat(value.length));
   };
 
   const handleVerifyCode = async () => {
@@ -140,7 +138,6 @@ export const EmailVerificationForm = ({
       
       // Effacer le code actuel
       setCode("");
-      setMaskedCode("");
       
     } catch (error: any) {
       console.error("Resend error:", error);
@@ -148,6 +145,12 @@ export const EmailVerificationForm = ({
     } finally {
       setIsResending(false);
     }
+  };
+
+  // Fonction pour afficher le code de manière sécurisée
+  const getDisplayCode = () => {
+    if (!code) return "";
+    return showCode ? code : "•".repeat(code.length);
   };
 
   return (
@@ -171,7 +174,7 @@ export const EmailVerificationForm = ({
         <Alert>
           <Shield className="h-4 w-4" />
           <AlertDescription className="text-xs">
-            Ce code expire dans 10 minutes. Saisissez-le rapidement pour des raisons de sécurité.
+            Ce code expire dans 10 minutes. Pour votre sécurité, le code saisi est masqué.
           </AlertDescription>
         </Alert>
         
@@ -198,10 +201,21 @@ export const EmailVerificationForm = ({
               </InputOTP>
             </div>
             
-            {/* Affichage sécurisé du code saisi */}
-            {maskedCode && (
+            {/* Affichage sécurisé du code saisi avec option de masquage */}
+            {code && (
               <div className="text-center">
-                <span className="text-xs text-gray-500">Code saisi: {maskedCode}</span>
+                <div className="flex items-center justify-center gap-2">
+                  <span className="text-xs text-gray-500">
+                    Code saisi: <span className="font-mono">{getDisplayCode()}</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setShowCode(!showCode)}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    {showCode ? <EyeOff size={14} /> : <Eye size={14} />}
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -272,6 +286,7 @@ export const EmailVerificationForm = ({
             <li>• Ne partagez jamais ce code avec personne</li>
             <li>• Ce code expire automatiquement pour votre sécurité</li>
             <li>• Vérifiez l'expéditeur de l'email de vérification</li>
+            <li>• Le code est masqué par défaut pour éviter les regards indiscrets</li>
           </ul>
         </div>
       </CardContent>

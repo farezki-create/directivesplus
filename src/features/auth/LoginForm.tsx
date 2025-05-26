@@ -11,6 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { loginFormSchema, type LoginFormValues } from "./schemas";
 import { checkAuthAttempt, resetAuthAttempts, detectSuspiciousLocation } from "@/utils/security/authSecurity";
+import { clientRateLimiter } from "@/utils/security/rateLimiter";
 
 interface LoginFormProps {
   onVerificationSent: (email: string) => void;
@@ -33,7 +34,22 @@ export const LoginForm = ({ onVerificationSent, redirectPath, setRedirectInProgr
   });
 
   const handleSignIn = async (values: LoginFormValues) => {
-    // Vérifier la protection anti-brute force
+    // Rate limiting côté client (5 tentatives par 15 minutes)
+    const rateLimitKey = `login_${values.email}`;
+    if (!clientRateLimiter.checkLimit(rateLimitKey, 5, 15 * 60 * 1000)) {
+      const remainingTime = clientRateLimiter.getRemainingTime(rateLimitKey);
+      const remainingMinutes = Math.ceil(remainingTime / (1000 * 60));
+      
+      toast({
+        title: "Trop de tentatives",
+        description: `Veuillez patienter ${remainingMinutes} minute(s) avant de réessayer.`,
+        variant: "destructive",
+        duration: 8000
+      });
+      return;
+    }
+
+    // Vérifier la protection anti-brute force serveur
     const bruteForceCheck = checkAuthAttempt(values.email, 'login');
     if (!bruteForceCheck.allowed) {
       toast({
@@ -97,7 +113,7 @@ export const LoginForm = ({ onVerificationSent, redirectPath, setRedirectInProgr
       if (data.user) {
         console.log("Sign in successful, user:", data.user.id);
         
-        // Réinitialiser le compteur de tentatives après succès
+        // Réinitialiser les compteurs après succès
         resetAuthAttempts(values.email, 'login');
         setSecurityWarning(null);
         
@@ -108,7 +124,7 @@ export const LoginForm = ({ onVerificationSent, redirectPath, setRedirectInProgr
         
         setRedirectInProgress(true);
         
-        // Attendre un peu que l'auth state change se propage
+        // Redirection avec délai pour permettre la propagation de l'état
         setTimeout(() => {
           const finalRedirectPath = redirectPath === "/dashboard" ? "/rediger" : redirectPath;
           console.log("Redirecting to:", finalRedirectPath);

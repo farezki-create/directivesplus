@@ -12,7 +12,7 @@ interface ProtectedRouteProps {
 const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   const { isAuthenticated, isLoading, profile } = useAuth();
   const location = useLocation();
-  const [timeoutReached, setTimeoutReached] = useState(false);
+  const [authCheckComplete, setAuthCheckComplete] = useState(false);
   
   // Routes COMPLÈTEMENT publiques - AUCUNE vérification d'authentification
   const fullyPublicRoutes = [
@@ -30,18 +30,8 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     isPublic: fullyPublicRoutes.includes(location.pathname),
     isAuthenticated,
     isLoading,
-    timeoutReached
+    authCheckComplete
   });
-
-  // Timeout de 3 secondes pour éviter les blocages
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      console.log("ProtectedRoute: Timeout atteint, arrêt du chargement");
-      setTimeoutReached(true);
-    }, 3000);
-
-    return () => clearTimeout(timer);
-  }, []);
 
   // BYPASS COMPLET pour les routes publiques - AUCUNE VÉRIFICATION
   if (fullyPublicRoutes.includes(location.pathname)) {
@@ -49,19 +39,22 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     return <>{children}</>;
   }
 
-  // Si timeout atteint et toujours en chargement, traiter comme non authentifié
-  if (timeoutReached && isLoading) {
-    console.log("ProtectedRoute: Timeout atteint, redirection vers /auth");
-    return <Navigate to="/auth" state={{ from: location.pathname }} replace />;
-  }
+  // Gestion intelligente de l'état de chargement sans timeout arbitraire
+  useEffect(() => {
+    // Si on n'est plus en chargement, marquer la vérification comme complète
+    if (!isLoading) {
+      console.log("Auth check completed, loading finished");
+      setAuthCheckComplete(true);
+    }
+  }, [isLoading]);
 
-  // Afficher l'indicateur de chargement pendant la vérification (max 3 secondes)
-  if (isLoading && !timeoutReached) {
-    console.log("ProtectedRoute: Chargement de l'état d'authentification...");
+  // Attendre que la vérification d'auth soit complète
+  if (!authCheckComplete && isLoading) {
+    console.log("ProtectedRoute: Vérification d'authentification en cours...");
     return (
       <div className="h-screen flex flex-col items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-directiveplus-600" />
-        <p className="mt-4 text-gray-600">Connexion en cours...</p>
+        <p className="mt-4 text-gray-600">Vérification de l'authentification...</p>
       </div>
     );
   }
