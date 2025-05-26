@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -61,11 +62,12 @@ export function useProfileData() {
 
         // Try to use the profile from auth context first
         if (authProfile) {
-          console.log("Using profile from auth context:", authProfile);
+          console.log("Using profile from context:", authProfile);
           const enrichedProfile = {
             ...authProfile,
             email: user.email || "",
-            role: user.user_metadata?.role || "patient"
+            role: user.user_metadata?.role || "patient",
+            country: authProfile.country || ""
           };
           
           setProfile(enrichedProfile as Profile);

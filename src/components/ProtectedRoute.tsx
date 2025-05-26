@@ -64,9 +64,12 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   // Vérifier le rôle si requis
   if (requiredRole && profile) {
     const userRoles = profile.roles || [];
+    const userRole = profile.role;
+    
+    // Vérifier si l'utilisateur a le rôle requis (soit dans roles[] soit dans role)
     const hasRequiredRole = Array.isArray(userRoles) 
       ? userRoles.includes(requiredRole)
-      : userRoles === requiredRole;
+      : userRole === requiredRole;
     
     if (!hasRequiredRole) {
       console.log(`ProtectedRoute: Rôle insuffisant: ${requiredRole}`);
