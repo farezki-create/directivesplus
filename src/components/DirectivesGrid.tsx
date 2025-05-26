@@ -67,7 +67,8 @@ const DirectivesGrid = () => {
       icon: BookOpen,
       path: "/synthesis",
       color: "bg-emerald-50 hover:bg-emerald-100 border-emerald-200",
-      badgeColor: "bg-blue-100 text-blue-600"
+      badgeColor: "bg-blue-100 text-blue-600",
+      badgeNumber: 7
     },
     {
       title: "Mes Directives",
@@ -75,7 +76,8 @@ const DirectivesGrid = () => {
       icon: FileText,
       path: "/mes-directives",
       color: "bg-orange-50 hover:bg-orange-100 border-orange-200",
-      badgeColor: "bg-orange-100 text-orange-600"
+      badgeColor: "bg-orange-100 text-orange-600",
+      badgeNumber: 8
     }
   ];
 
@@ -87,7 +89,8 @@ const DirectivesGrid = () => {
       icon: CreditCard,
       path: "/carte-acces",
       color: "bg-yellow-50 hover:bg-yellow-100 border-yellow-200",
-      badgeColor: "bg-yellow-100 text-yellow-600"
+      badgeColor: "bg-yellow-100 text-yellow-600",
+      badgeNumber: 9
     });
   }
 
@@ -133,7 +136,7 @@ const DirectivesGrid = () => {
             >
               {/* Badge numéroté pour les actions finales */}
               <div className={`absolute -top-3 -left-3 w-8 h-8 rounded-full ${card.badgeColor} flex items-center justify-center text-sm font-bold shadow-sm`}>
-                {index + 7}
+                {card.badgeNumber}
               </div>
               <CardHeader>
                 <CardTitle className="flex items-center gap-3 text-gray-800">
