@@ -54,6 +54,11 @@ const Footer = () => {
                   Carte d'accès
                 </Link>
               </li>
+              <li>
+                <Link to="/acces-institution" className="hover:text-white transition-colors">
+                  Accès institutionnel
+                </Link>
+              </li>
             </ul>
           </div>
 

@@ -14,6 +14,8 @@ import Rediger from "./pages/Rediger";
 import EnSavoirPlus from "./pages/EnSavoirPlus";
 import LegalMentions from "./pages/LegalMentions";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import Soutenir from "./pages/Soutenir";
+import InstitutionAccess from "./pages/InstitutionAccess";
 
 function App() {
   const queryClient = new QueryClient();
@@ -35,6 +37,8 @@ function App() {
               <Route path="/en-savoir-plus" element={<EnSavoirPlus />} />
               <Route path="/mentions-legales" element={<LegalMentions />} />
               <Route path="/confidentialite" element={<PrivacyPolicy />} />
+              <Route path="/soutenir" element={<Soutenir />} />
+              <Route path="/acces-institution" element={<InstitutionAccess />} />
             </Routes>
           </div>
         </QueryClientProvider>
