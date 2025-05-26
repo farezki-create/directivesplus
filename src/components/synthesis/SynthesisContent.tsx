@@ -1,5 +1,5 @@
 
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import SignatureCanvas from "./SignatureCanvas";
@@ -20,7 +20,6 @@ interface SynthesisContentProps {
 
 const SynthesisContent = ({ profileData, userId }: SynthesisContentProps) => {
   const signatureRef = useRef<HTMLDivElement>(null);
-  const [medicalDocuments, setMedicalDocuments] = useState<any[]>([]);
   
   const { 
     loading, 
@@ -56,7 +55,7 @@ const SynthesisContent = ({ profileData, userId }: SynthesisContentProps) => {
         examplePhrases,
         customPhrases,
         trustedPersons,
-        medicalDocuments
+        medicalDocuments: [] // Pas de documents médicaux
       }
     );
   };
