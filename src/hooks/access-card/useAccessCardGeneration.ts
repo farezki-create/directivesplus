@@ -29,6 +29,7 @@ export const useAccessCardGeneration = () => {
     try {
       console.log("AccessCardGeneration - Fetching documents for user:", userId);
       
+      // D'abord, essayer de récupérer un document PDF existant
       const { data: documents, error } = await supabase
         .from('pdf_documents')
         .select('id, file_name, file_path, content_type')
@@ -47,26 +48,38 @@ export const useAccessCardGeneration = () => {
         const document = documents[0];
         console.log("AccessCardGeneration - Document found:", document);
         
-        // Créer l'URL appropriée selon le type de document
-        let qrUrl: string;
-        
-        if (document.file_path && document.file_path.startsWith('data:')) {
-          // Pour les documents encodés en base64, utiliser le visualisateur PDF
-          qrUrl = `${window.location.origin}/pdf-viewer?id=${document.id}&source=access-card`;
-          console.log("AccessCardGeneration - Generated QR URL for encoded PDF:", qrUrl);
-        } else {
-          // Pour les autres types, essayer d'abord le visualisateur
-          qrUrl = `${window.location.origin}/pdf-viewer?id=${document.id}&source=access-card`;
-          console.log("AccessCardGeneration - Generated QR URL for stored file:", qrUrl);
-        }
-        
-        // Tester si l'URL est accessible
-        testUrlAccessibility(qrUrl, userId);
+        // Vérifier que le document est accessible
+        await testDocumentAccessibility(document.id, userId);
         
       } else {
-        console.log("AccessCardGeneration - No documents found, using fallback");
-        const fallbackUrl = createFallbackUrl(userId);
-        setQrCodeUrl(fallbackUrl);
+        console.log("AccessCardGeneration - No PDF documents found, checking directives...");
+        
+        // Si pas de PDF, vérifier s'il y a des directives dans la table directives
+        const { data: directives, error: directivesError } = await supabase
+          .from('directives')
+          .select('id, content, created_at')
+          .eq('user_id', userId)
+          .eq('is_active', true)
+          .order('created_at', { ascending: false })
+          .limit(1);
+
+        if (directivesError) {
+          console.error("Erreur lors de la récupération des directives:", directivesError);
+          const fallbackUrl = createFallbackUrl(userId);
+          setQrCodeUrl(fallbackUrl);
+          return;
+        }
+
+        if (directives && directives.length > 0) {
+          console.log("AccessCardGeneration - Directives found, using mes-directives page");
+          // Si on a des directives mais pas de PDF, pointer vers la page mes-directives
+          const directivesUrl = `${window.location.origin}/mes-directives?access=card&user=${userId}`;
+          setQrCodeUrl(directivesUrl);
+        } else {
+          console.log("AccessCardGeneration - No content found, using fallback");
+          const fallbackUrl = createFallbackUrl(userId);
+          setQrCodeUrl(fallbackUrl);
+        }
       }
     } catch (error) {
       console.error("Erreur lors de la récupération du document:", error);
@@ -75,13 +88,32 @@ export const useAccessCardGeneration = () => {
     }
   };
 
-  const testUrlAccessibility = async (url: string, userId: string) => {
+  const testDocumentAccessibility = async (documentId: string, userId: string) => {
     try {
-      // Test simple de l'URL
-      setQrCodeUrl(url);
-      console.log("AccessCardGeneration - URL set successfully:", url);
+      console.log("AccessCardGeneration - Testing document accessibility:", documentId);
+      
+      // Tester l'accès au document via l'API
+      const { data: testDoc, error: testError } = await supabase
+        .from('pdf_documents')
+        .select('id, file_name, file_path')
+        .eq('id', documentId)
+        .eq('user_id', userId)
+        .single();
+
+      if (testError || !testDoc) {
+        console.error("AccessCardGeneration - Document not accessible:", testError);
+        const fallbackUrl = createFallbackUrl(userId);
+        setQrCodeUrl(fallbackUrl);
+        return;
+      }
+
+      // Si le document est accessible, créer l'URL du visualisateur
+      const pdfViewerUrl = `${window.location.origin}/pdf-viewer?id=${documentId}&source=access-card`;
+      console.log("AccessCardGeneration - Document is accessible, setting URL:", pdfViewerUrl);
+      setQrCodeUrl(pdfViewerUrl);
+      
     } catch (error) {
-      console.error("AccessCardGeneration - URL test failed:", error);
+      console.error("AccessCardGeneration - Error testing document accessibility:", error);
       const fallbackUrl = createFallbackUrl(userId);
       setQrCodeUrl(fallbackUrl);
     }

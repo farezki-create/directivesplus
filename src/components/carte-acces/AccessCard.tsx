@@ -1,6 +1,6 @@
 
 import { QRCodeSVG } from "qrcode.react";
-import { CreditCard, AlertCircle } from "lucide-react";
+import { CreditCard, AlertCircle, ExternalLink } from "lucide-react";
 
 interface AccessCardProps {
   firstName: string;
@@ -54,7 +54,7 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
       className="w-[400px] h-[252px] bg-gradient-to-br from-directiveplus-600 to-directiveplus-800 rounded-2xl p-6 text-white shadow-2xl relative overflow-hidden"
       style={{ aspectRatio: '85.6/53.98' }}
     >
-      {/* Pattern décoratif - réduit l'opacité pour moins de distraction */}
+      {/* Pattern décoratif */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full -translate-y-16 translate-x-16"></div>
       <div className="absolute bottom-0 left-0 w-24 h-24 bg-white opacity-5 rounded-full translate-y-12 -translate-x-12"></div>
       
@@ -65,7 +65,7 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
         <span className="text-xs opacity-90 ml-2">Carte d'Accès aux Directives</span>
       </div>
       
-      {/* Section des coordonnées patient - remontée encore plus haut */}
+      {/* Section des coordonnées patient */}
       <div className="mt-1 mb-12">
         <div className="bg-white bg-opacity-15 rounded-lg p-3">
           <div className="text-xs opacity-90 mb-2 tracking-wide uppercase font-medium">PATIENT</div>
@@ -77,7 +77,9 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
             </div>
             <div className="ml-4 flex-shrink-0">
               <div 
-                className="bg-white bg-opacity-20 rounded-lg p-2 cursor-pointer hover:bg-opacity-30 transition-all" 
+                className={`bg-white bg-opacity-20 rounded-lg p-2 transition-all ${
+                  isQrCodeValid ? 'cursor-pointer hover:bg-opacity-30' : 'cursor-not-allowed'
+                }`}
                 onClick={handleQrCodeClick}
                 title={isQrCodeValid ? "Cliquer pour ouvrir les directives" : "QR Code non disponible"}
               >
@@ -97,14 +99,21 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
                 )}
               </div>
               <div className="text-xs text-center mt-1 opacity-75">
-                {isQrCodeValid ? "Cliquer pour ouvrir" : "QR indisponible"}
+                {isQrCodeValid ? (
+                  <div className="flex items-center justify-center gap-1">
+                    <ExternalLink className="w-3 h-3" />
+                    <span>Scanner</span>
+                  </div>
+                ) : (
+                  "Non disponible"
+                )}
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Code d'accès - taille très réduite, tout en bas */}
+      {/* Code d'accès */}
       <div className="absolute bottom-4 left-6 right-6">
         <div className="bg-white bg-opacity-15 rounded-lg p-3">
           <div className="flex justify-between items-center">
