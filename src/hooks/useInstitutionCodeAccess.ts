@@ -86,6 +86,9 @@ export const useInstitutionCodeAccess = (
           return;
         }
 
+        // Marquer l'accès institution en session (comme pour les QR codes)
+        sessionStorage.setItem('institutionAccess', 'true');
+        
         // Conversion sécurisée des données patient
         const patientInfo: PatientInfo = {
           first_name: result.patient_info?.first_name || prenom || '',

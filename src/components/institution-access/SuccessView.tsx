@@ -1,9 +1,10 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, Eye } from "lucide-react";
 import { AccessibleDataCard } from "./AccessibleDataCard";
+import { useNavigate } from "react-router-dom";
 
 interface SuccessViewProps {
   patientData: {
@@ -13,6 +14,22 @@ interface SuccessViewProps {
 }
 
 export const SuccessView: React.FC<SuccessViewProps> = ({ patientData }) => {
+  const navigate = useNavigate();
+
+  // Redirection automatique comme pour les QR codes
+  useEffect(() => {
+    console.log("✅ Accès institution réussi, redirection automatique vers /mes-directives");
+    const timer = setTimeout(() => {
+      navigate("/mes-directives", { replace: true });
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [navigate]);
+
+  const handleDirectAccess = () => {
+    navigate("/mes-directives", { replace: true });
+  };
+
   return (
     <div className="space-y-6">
       <Card className="border-green-200 bg-green-50">
@@ -28,9 +45,13 @@ export const SuccessView: React.FC<SuccessViewProps> = ({ patientData }) => {
             </strong>
           </p>
           
+          <p className="text-sm text-green-600 mb-4">
+            Redirection automatique dans 2 secondes...
+          </p>
+          
           <div className="flex flex-col gap-3 mt-6">
             <Button 
-              onClick={() => window.location.href = "/mes-directives"}
+              onClick={handleDirectAccess}
               className="w-full bg-blue-600 hover:bg-blue-700"
               size="lg"
             >

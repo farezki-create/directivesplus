@@ -32,20 +32,32 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
                       searchParams.get('shared_code') || 
                       searchParams.get('id'); // Pour les liens directs vers des documents
 
+  // Vérifier si c'est un accès institution (présence de tous les paramètres nécessaires)
+  const hasInstitutionAccess = searchParams.get('code') && 
+                               searchParams.get('nom') && 
+                               searchParams.get('prenom') && 
+                               searchParams.get('naissance');
+
+  // Vérifier si on vient de la page d'accès institution (referrer ou session)
+  const comesFromInstitution = document.referrer.includes('/acces-institution') ||
+                               sessionStorage.getItem('institutionAccess') === 'true';
+
   console.log("🔒 ProtectedRoute check:", {
     pathname: location.pathname,
     isPublicRoute: fullyPublicRoutes.includes(location.pathname),
     hasQRAccess,
+    hasInstitutionAccess,
+    comesFromInstitution,
     searchParams: location.search,
     isAuthenticated,
     isLoading,
     authCheckComplete,
-    decision: fullyPublicRoutes.includes(location.pathname) || hasQRAccess ? 'ALLOW_PUBLIC' : 'CHECK_AUTH'
+    decision: fullyPublicRoutes.includes(location.pathname) || hasQRAccess || hasInstitutionAccess || comesFromInstitution ? 'ALLOW_PUBLIC' : 'CHECK_AUTH'
   });
 
-  // BYPASS COMPLET pour les routes publiques OU accès QR code
-  if (fullyPublicRoutes.includes(location.pathname) || hasQRAccess) {
-    console.log("✅ ProtectedRoute: Accès public autorisé - route publique ou QR code détecté");
+  // BYPASS COMPLET pour les routes publiques OU accès QR code OU accès institution
+  if (fullyPublicRoutes.includes(location.pathname) || hasQRAccess || hasInstitutionAccess || comesFromInstitution) {
+    console.log("✅ ProtectedRoute: Accès public autorisé - route publique, QR code ou accès institution détecté");
     return <>{children}</>;
   }
 
