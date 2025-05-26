@@ -5,7 +5,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Menu, X, User, FileText, Heart, Shield } from "lucide-react";
 
-const AppNavigation = () => {
+interface AppNavigationProps {
+  hideEditingFeatures?: boolean;
+}
+
+const AppNavigation: React.FC<AppNavigationProps> = ({ hideEditingFeatures = false }) => {
   const { isAuthenticated, user, signOut } = useAuth();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -38,7 +42,7 @@ const AppNavigation = () => {
               En savoir plus
             </Link>
             
-            {isAuthenticated ? (
+            {isAuthenticated && !hideEditingFeatures ? (
               <>
                 <Link 
                   to="/rediger" 
@@ -71,7 +75,7 @@ const AppNavigation = () => {
                   Déconnexion
                 </Button>
               </>
-            ) : (
+            ) : !isAuthenticated && !hideEditingFeatures ? (
               <>
                 <Link 
                   to="/mes-directives" 
@@ -89,20 +93,22 @@ const AppNavigation = () => {
                   <Button>Connexion</Button>
                 </Link>
               </>
-            )}
+            ) : null}
           </div>
 
           {/* Mobile menu button */}
-          <button 
-            onClick={toggleMenu}
-            className="md:hidden p-2 rounded-md hover:bg-gray-100"
-          >
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          {!hideEditingFeatures && (
+            <button 
+              onClick={toggleMenu}
+              className="md:hidden p-2 rounded-md hover:bg-gray-100"
+            >
+              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          )}
         </div>
 
         {/* Mobile Navigation */}
-        {isMenuOpen && (
+        {isMenuOpen && !hideEditingFeatures && (
           <div className="md:hidden py-4 border-t">
             <div className="flex flex-col space-y-4">
               <Link 
