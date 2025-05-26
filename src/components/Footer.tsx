@@ -1,8 +1,14 @@
 
 import { Link } from "react-router-dom";
-import { Heart } from "lucide-react";
+import { Heart, Shield } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Footer = () => {
+  const { user } = useAuth();
+  
+  // Vérifier si l'utilisateur est admin
+  const isAdmin = user?.email?.endsWith('@directivesplus.fr') || false;
+
   return (
     <footer className="bg-directiveplus-800 text-white py-12">
       <div className="container mx-auto px-4">
@@ -70,6 +76,18 @@ const Footer = () => {
                   Confidentialité
                 </Link>
               </li>
+              {/* Lien admin visible uniquement pour les administrateurs */}
+              {isAdmin && (
+                <li>
+                  <Link 
+                    to="/security-dashboard" 
+                    className="inline-flex items-center hover:text-white transition-colors text-yellow-300"
+                  >
+                    <Shield className="mr-1 h-4 w-4" />
+                    Administration
+                  </Link>
+                </li>
+              )}
             </ul>
           </div>
         </div>
