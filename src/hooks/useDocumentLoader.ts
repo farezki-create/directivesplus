@@ -22,19 +22,45 @@ export const useDocumentLoader = (documentId: string | null) => {
       setLoading(true);
       setError(null);
 
-      // Essayer d'abord dans pdf_documents
+      // Utiliser la fonction publique pour accéder au document
+      // Cette fonction contourne les politiques RLS pour l'accès public
       const { data: pdfDoc, error: pdfError } = await supabase
+        .rpc('get_public_document', { doc_id: id });
+
+      if (pdfDoc && pdfDoc.length > 0 && !pdfError) {
+        console.log("Document trouvé via get_public_document:", pdfDoc[0]);
+        const doc = pdfDoc[0];
+        const transformedDoc: Document = {
+          id: doc.id,
+          file_name: doc.file_name,
+          file_path: doc.file_path,
+          content_type: doc.content_type || 'application/pdf',
+          file_type: doc.content_type?.split('/')[1] || 'pdf',
+          user_id: doc.user_id,
+          created_at: doc.created_at,
+          description: doc.description,
+          file_size: doc.file_size,
+          updated_at: doc.updated_at,
+          external_id: doc.external_id
+        };
+        setDocument(transformedDoc);
+        setLoading(false);
+        return;
+      }
+
+      // Si la fonction RPC échoue, essayer l'accès direct (pour les utilisateurs authentifiés)
+      const { data: directDoc, error: directError } = await supabase
         .from('pdf_documents')
         .select('*')
         .eq('id', id)
         .maybeSingle();
 
-      if (pdfDoc && !pdfError) {
-        console.log("Document trouvé dans pdf_documents:", pdfDoc);
+      if (directDoc && !directError) {
+        console.log("Document trouvé via accès direct:", directDoc);
         const transformedDoc: Document = {
-          ...pdfDoc,
-          file_type: pdfDoc.content_type?.split('/')[1] || 'pdf',
-          content_type: pdfDoc.content_type || 'application/pdf'
+          ...directDoc,
+          file_type: directDoc.content_type?.split('/')[1] || 'pdf',
+          content_type: directDoc.content_type || 'application/pdf'
         };
         setDocument(transformedDoc);
         setLoading(false);
@@ -60,8 +86,8 @@ export const useDocumentLoader = (documentId: string | null) => {
       }
 
       // Si aucun document trouvé
-      if (pdfError || medicalError) {
-        console.error("Erreurs de requête:", { pdfError, medicalError });
+      if (pdfError || directError || medicalError) {
+        console.error("Erreurs de requête:", { pdfError, directError, medicalError });
         throw new Error("Erreur lors de la récupération du document");
       }
 
