@@ -80,7 +80,7 @@ const TextExtractionOptions: React.FC<TextExtractionOptionsProps> = ({
       }
 
       if (finalTranscript) {
-        setExtractedText(prev => prev + ' ' + finalTranscript);
+        setExtractedText(extractedText + ' ' + finalTranscript);
       }
     };
 
@@ -136,7 +136,7 @@ const TextExtractionOptions: React.FC<TextExtractionOptionsProps> = ({
       
       const extractedOcrText = result.data.text;
       if (extractedOcrText.trim()) {
-        setExtractedText(prev => prev + '\n\n' + extractedOcrText);
+        setExtractedText(extractedText + '\n\n' + extractedOcrText);
         toast({
           title: "Texte extrait avec succès",
           description: "Le texte de l'image a été ajouté"
@@ -190,7 +190,7 @@ Notes personnelles:
     try {
       const text = await navigator.clipboard.readText();
       if (text.trim()) {
-        setExtractedText(prev => prev + '\n\n' + text);
+        setExtractedText(extractedText + '\n\n' + text);
         toast({
           title: "Texte collé",
           description: "Le contenu du presse-papier a été ajouté"
