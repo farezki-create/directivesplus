@@ -98,8 +98,8 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
             </div>
             <div className="ml-4 flex-shrink-0">
               <div 
-                className={`bg-white bg-opacity-20 rounded-lg p-2 transition-all ${
-                  isQrCodeValid ? 'cursor-pointer hover:bg-opacity-30' : 'cursor-not-allowed'
+                className={`bg-white rounded-lg p-2 transition-all ${
+                  isQrCodeValid ? 'cursor-pointer hover:bg-gray-50' : 'cursor-not-allowed'
                 }`}
                 onClick={handleQrCodeClick}
               >
@@ -108,8 +108,8 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
                     value={qrCodeUrl}
                     size={70}
                     level="M"
-                    fgColor="#ffffff"
-                    bgColor="transparent"
+                    fgColor="#000000"
+                    bgColor="#ffffff"
                     includeMargin={false}
                   />
                 ) : (

@@ -49,20 +49,11 @@ export const useQRCodeGeneration = () => {
         currentOrigin: window.location.origin
       });
 
-      // Générer l'URL correcte basée sur le type de document
+      // Générer une URL plus courte et optimisée
       let qrCodeUrl: string;
       
-      // Si nous avons un filePath qui commence par "data:", c'est un PDF encodé
-      if (filePath && filePath.startsWith('data:')) {
-        // Pour les PDF encodés, utiliser le visualisateur PDF
-        qrCodeUrl = `${window.location.origin}/pdf-viewer?id=${documentId}`;
-      } else if (filePath && (filePath.startsWith('http://') || filePath.startsWith('https://'))) {
-        // Pour les URLs externes, utiliser directement l'URL
-        qrCodeUrl = filePath;
-      } else {
-        // Par défaut, utiliser le visualisateur PDF
-        qrCodeUrl = `${window.location.origin}/pdf-viewer?id=${documentId}`;
-      }
+      // Utiliser une URL plus courte en utilisant seulement l'ID
+      qrCodeUrl = `${window.location.origin}/pdf-viewer?id=${documentId}`;
       
       console.log("QR Code final:", {
         qrCodeUrl,

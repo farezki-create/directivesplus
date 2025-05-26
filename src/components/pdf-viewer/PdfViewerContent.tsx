@@ -93,15 +93,18 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
             // PDF en data URL
             <iframe
               src={document.file_path}
-              className="w-full h-[80vh]"
+              className="w-full h-[85vh] border-0 rounded-lg"
               title={document.file_name}
+              style={{ minHeight: '800px' }}
             />
           ) : (
-            // PDF par URL
+            // PDF par URL - Ajouter paramètres pour affichage complet
             <iframe
-              src={document.file_path}
-              className="w-full h-[80vh]"
+              src={`${document.file_path}#toolbar=1&navpanes=1&scrollbar=1&page=1&view=FitH`}
+              className="w-full h-[85vh] border-0 rounded-lg"
               title={document.file_name}
+              style={{ minHeight: '800px' }}
+              allow="fullscreen"
             />
           )}
         </div>
