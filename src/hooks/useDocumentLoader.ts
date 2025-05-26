@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Document } from "@/types/documents";
@@ -29,7 +28,7 @@ export const useDocumentLoader = (documentId: string | null) => {
       console.log("📊 État initial:", {
         documentId: id,
         attempt: attempt + 1,
-        supabaseUrl: supabase.supabaseUrl,
+        supabaseUrl: "https://kytqqjnecezkxyhmmjrz.supabase.co",
         timestamp: new Date().toISOString()
       });
 

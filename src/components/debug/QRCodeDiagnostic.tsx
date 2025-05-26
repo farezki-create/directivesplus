@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -36,7 +35,7 @@ const QRCodeDiagnostic: React.FC<QRCodeDiagnosticProps> = ({ documentId, userId 
     setResults([]);
 
     // Étape 1: Vérifier la connexion Supabase
-    addResult("1. Connexion Supabase", true, { url: supabase.supabaseUrl });
+    addResult("1. Connexion Supabase", true, { url: "https://kytqqjnecezkxyhmmjrz.supabase.co" });
 
     // Étape 2: Test accès direct au document sans RLS
     try {
