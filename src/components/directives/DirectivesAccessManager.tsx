@@ -24,8 +24,8 @@ interface DirectivesAccessManagerProps {
   setShowAddOptionsPublic: (show: boolean) => void;
   documentToDelete: Document | null;
   setDocumentToDelete: (doc: Document | null) => void;
-  previewDocument: Document | null;
-  setPreviewDocument: (doc: Document | null) => void;
+  previewDocument: string | null;
+  setPreviewDocument: (filePath: string | null) => void;
   handleUploadCompleteWrapper: () => void;
   handleDownload: (filePath: string, fileName: string) => void;
   handlePrint: (filePath: string, fileType?: string) => void;
@@ -137,15 +137,8 @@ export const DirectivesAccessManager: React.FC<DirectivesAccessManagerProps> = (
         onDownload={handleDownload}
         onPrint={handlePrint}
         onView={handleViewDocument}
-        previewDocument={previewDocument?.file_path || null}
-        setPreviewDocument={(filePath: string | null) => {
-          if (filePath) {
-            const doc = documentsToDisplay.find(d => d.file_path === filePath);
-            setPreviewDocument(doc || null);
-          } else {
-            setPreviewDocument(null);
-          }
-        }}
+        previewDocument={previewDocument}
+        setPreviewDocument={setPreviewDocument}
         handlePreviewDownload={handlePreviewDownload}
         handlePreviewPrint={handlePreviewPrint}
         showAddOptions={showAddOptionsPublic}
