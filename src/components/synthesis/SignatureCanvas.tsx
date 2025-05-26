@@ -1,6 +1,8 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Trash, Save } from "lucide-react";
+import { Trash, Save, Check } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 interface SignatureCanvasProps {
   initialSignature?: string | null;
@@ -11,6 +13,7 @@ const SignatureCanvas = ({ initialSignature, onSave }: SignatureCanvasProps) => 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [hasSignature, setHasSignature] = useState(false);
+  const [isValidated, setIsValidated] = useState(false);
 
   // Initialize canvas and load initial signature if provided
   useEffect(() => {
@@ -37,6 +40,7 @@ const SignatureCanvas = ({ initialSignature, onSave }: SignatureCanvasProps) => 
       img.onload = () => {
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         setHasSignature(true);
+        setIsValidated(true);
       };
       img.src = initialSignature;
     }
@@ -77,6 +81,7 @@ const SignatureCanvas = ({ initialSignature, onSave }: SignatureCanvasProps) => 
 
     setIsDrawing(true);
     setHasSignature(true);
+    setIsValidated(false); // Reset validation when drawing
 
     // Get the coordinates and start a new path
     const { x, y } = getCoordinates(e.nativeEvent);
@@ -124,7 +129,13 @@ const SignatureCanvas = ({ initialSignature, onSave }: SignatureCanvasProps) => 
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     setHasSignature(false);
+    setIsValidated(false);
     onSave(""); // Clear the saved signature
+    
+    toast({
+      title: "Signature effacée",
+      description: "Le canevas de signature a été nettoyé"
+    });
   };
 
   const saveSignature = () => {
@@ -134,8 +145,20 @@ const SignatureCanvas = ({ initialSignature, onSave }: SignatureCanvasProps) => 
     try {
       const signature = canvas.toDataURL("image/png");
       onSave(signature);
+      setIsValidated(true);
+      
+      toast({
+        title: "Signature validée",
+        description: "Votre signature a été enregistrée avec succès",
+        duration: 3000
+      });
     } catch (error) {
       console.error("Error saving signature:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'enregistrer la signature",
+        variant: "destructive"
+      });
       // If there's an error, still provide feedback but with a generic signature
       onSave("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVQI12P4//8/AAX+Av7czFnnAAAAAElFTkSuQmCC");
     }
@@ -156,6 +179,14 @@ const SignatureCanvas = ({ initialSignature, onSave }: SignatureCanvasProps) => 
           onTouchEnd={stopDrawing}
         />
       </div>
+      
+      {isValidated && (
+        <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-md">
+          <Check className="h-5 w-5 text-green-600" />
+          <span className="text-green-800 font-medium">Signature validée et enregistrée</span>
+        </div>
+      )}
+      
       <div className="flex justify-between">
         <Button
           type="button"
@@ -170,10 +201,11 @@ const SignatureCanvas = ({ initialSignature, onSave }: SignatureCanvasProps) => 
           type="button"
           onClick={saveSignature}
           disabled={!hasSignature}
+          variant={isValidated ? "secondary" : "default"}
           className="flex items-center gap-2"
         >
-          <Save size={16} />
-          Valider la signature
+          {isValidated ? <Check size={16} /> : <Save size={16} />}
+          {isValidated ? "Signature validée" : "Valider la signature"}
         </Button>
       </div>
       <p className="text-sm text-gray-500 text-center">
