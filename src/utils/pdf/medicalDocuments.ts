@@ -38,7 +38,7 @@ export const getMedicalDocuments = async (userId: string): Promise<any[]> => {
       description: doc.description || `Document médical: ${doc.file_name}`,
       created_at: doc.created_at,
       user_id: doc.user_id,
-      content: doc.file_content || doc.file_path, // Utiliser file_content en priorité
+      content: doc.file_path, // Utiliser file_path comme contenu pour l'instant
       file_type: doc.file_type,
       file_path: doc.file_path
     }));
@@ -188,38 +188,21 @@ export const renderMedicalDocumentsChapter = (
     // Réinitialiser la couleur du texte
     pdf.setTextColor(0, 0, 0);
     
-    // Contenu du document selon le type
-    if (doc.content && doc.content.length > 0) {
-      console.log(`Traitement du contenu pour ${doc.file_name}:`, doc.content.substring(0, 100) + '...');
-      
-      if (doc.content.startsWith('data:application/pdf')) {
-        yPosition = addPDFContent(pdf, layout, yPosition, doc.file_name);
-      } else if (doc.content.startsWith('data:image/')) {
-        // Vérifier l'espace pour l'image
-        if (yPosition + 130 > layout.pageHeight - layout.margin - layout.footerHeight) {
-          pdf.addPage();
-          yPosition = layout.margin;
-        }
-        yPosition = addImageToPDF(pdf, layout, yPosition, doc.content, doc.file_name);
-      } else {
-        // Contenu textuel ou autre format
-        pdf.setFontSize(10);
-        pdf.setFont("helvetica", "normal");
-        
-        // Afficher le contenu textuel directement
-        const contentLines = pdf.splitTextToSize(doc.content, layout.contentWidth - 10);
-        pdf.text(contentLines, layout.margin + 5, yPosition);
-        yPosition += contentLines.length * layout.lineHeight + layout.lineHeight;
-      }
-    } else {
-      // Document sans contenu disponible
-      pdf.setFontSize(10);
-      pdf.setFont("helvetica", "italic");
-      pdf.setTextColor(150, 150, 150);
-      pdf.text("[Document référencé - contenu non intégré dans cette version]", layout.margin + 5, yPosition);
-      pdf.setTextColor(0, 0, 0);
-      yPosition += layout.lineHeight * 2;
-    }
+    // Affichage des informations sur le document
+    pdf.setFontSize(10);
+    pdf.setFont("helvetica", "normal");
+    
+    const docInfo = `Type: ${doc.file_type || 'Non spécifié'} | Chemin: ${doc.file_path}`;
+    pdf.text(docInfo, layout.margin + 5, yPosition);
+    yPosition += layout.lineHeight;
+    
+    // Pour l'instant, afficher le chemin du fichier en attendant l'implémentation du contenu
+    pdf.setFontSize(9);
+    pdf.setFont("helvetica", "italic");
+    pdf.setTextColor(100, 100, 100);
+    pdf.text("[Le contenu du document sera intégré dans une version ultérieure]", layout.margin + 5, yPosition);
+    pdf.setTextColor(0, 0, 0);
+    yPosition += layout.lineHeight;
     
     // Description si disponible et différente du nom
     if (doc.description && doc.description !== `Document médical: ${doc.file_name}` && doc.description !== doc.file_name) {
