@@ -3,7 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import DocumentPreviewDialog from "@/components/documents/DocumentPreviewDialog";
 import { useMedicalDocumentOperations } from "@/hooks/useMedicalDocumentOperations";
 import MedicalDocumentUploader from "./medical/MedicalDocumentUploader";
-import PdfContentDisplay from "./medical/PdfContentDisplay";
+import PdfContentExtractor from "./medical/PdfContentExtractor";
 
 interface MedicalDocumentSectionProps {
   userId?: string;
@@ -41,10 +41,10 @@ const MedicalDocumentSection = ({ userId, onUploadComplete, onDocumentAdd, onDoc
             {uploadedDocuments.length > 0 && (
               <div className="space-y-4">
                 <h4 className="text-sm font-medium text-gray-700">
-                  Contenu des documents médicaux ajoutés :
+                  Documents médicaux ajoutés :
                 </h4>
                 {uploadedDocuments.map((doc) => (
-                  <PdfContentDisplay
+                  <PdfContentExtractor
                     key={doc.id}
                     document={doc}
                     onRemove={handleDeleteDocument}
