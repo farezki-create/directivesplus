@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { X, FileText, Eye, EyeOff, Copy, Save } from "lucide-react";
+import { X, FileText, Eye, EyeOff, ClipboardPaste, Save } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
@@ -83,34 +83,20 @@ const PdfContentExtractor: React.FC<PdfContentExtractorProps> = ({ document, onR
     }
   };
 
-  // Fonction pour copier le texte par défaut
-  const insertDefaultText = () => {
-    const defaultContent = `CONTENU MÉDICAL - ${document.file_name}
+  // Fonction pour démarrer l'édition avec du texte par défaut
+  const startPasting = () => {
+    const defaultText = `Contenu extrait de ${document.file_name}
 
-📄 Document: ${document.file_name}
-📅 Date: ${new Date(document.created_at).toLocaleDateString('fr-FR')}
+[Collez ici le texte que vous avez copié du PDF ci-dessus]
 
-INSTRUCTIONS POUR L'EXTRACTION:
+Instructions :
 1. Ouvrez le PDF ci-dessus
-2. Sélectionnez le texte important (Ctrl+A pour tout sélectionner)
-3. Copiez le texte (Ctrl+C)
-4. Collez le texte dans cette zone (Ctrl+V)
-5. Modifiez si nécessaire pour ne garder que l'essentiel
-6. Cliquez sur "Sauvegarder"
+2. Sélectionnez et copiez le texte important (Ctrl+C)
+3. Collez le texte ici (Ctrl+V)
+4. Modifiez si nécessaire
+5. Cliquez sur "Sauvegarder"`;
 
-CONTENU À EXTRAIRE:
-[Collez ici le contenu copié du PDF]
-
-Exemples d'informations importantes à inclure:
-- Diagnostic médical
-- Traitements en cours
-- Recommandations médicales
-- Informations sur l'évolution de l'état de santé
-- Instructions particulières
-
-Ces informations complètent mes directives anticipées et doivent être prises en compte par les professionnels de santé.`;
-
-    setExtractedText(defaultContent);
+    setExtractedText(defaultText);
     setIsEditing(true);
   };
 
@@ -157,11 +143,11 @@ Ces informations complètent mes directives anticipées et doivent être prises 
                 {!extractedText && (
                   <Button
                     size="sm"
-                    onClick={insertDefaultText}
-                    className="text-xs"
+                    onClick={startPasting}
+                    className="text-xs bg-green-600 hover:bg-green-700"
                   >
-                    <Copy className="h-3 w-3 mr-1" />
-                    Préparer l'extraction
+                    <ClipboardPaste className="h-3 w-3 mr-1" />
+                    Copier-coller le texte
                   </Button>
                 )}
               </div>
@@ -184,11 +170,11 @@ Ces informations complètent mes directives anticipées et doivent être prises 
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={insertDefaultText}
+                    onClick={startPasting}
                     className="text-xs"
                   >
-                    <Copy className="h-3 w-3 mr-1" />
-                    Commencer
+                    <ClipboardPaste className="h-3 w-3 mr-1" />
+                    Copier-coller
                   </Button>
                 )}
                 {extractedText && !isEditing && (
@@ -237,8 +223,16 @@ Ces informations complètent mes directives anticipées et doivent être prises 
                 {extractedText}
               </div>
             ) : (
-              <div className="text-sm text-gray-500 italic p-3 border rounded bg-gray-50">
-                Aucun contenu extrait. Cliquez sur "Commencer" pour débuter l'extraction.
+              <div className="text-sm text-gray-500 italic p-3 border rounded bg-gray-50 text-center">
+                <p className="mb-2">Aucun contenu extrait.</p>
+                <Button
+                  size="sm"
+                  onClick={startPasting}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  <ClipboardPaste className="h-3 w-3 mr-1" />
+                  Copier-coller le texte du PDF
+                </Button>
               </div>
             )}
           </div>
@@ -249,7 +243,7 @@ Ces informations complètent mes directives anticipées et doivent être prises 
             <span className="mr-1">💡</span>
             {extractedText ? 
               "Contenu prêt pour l'intégration dans votre PDF" : 
-              "Instructions: Ouvrez le PDF ci-dessus, copiez le texte important et collez-le dans la zone d'édition"
+              "Astuce: Ouvrez le PDF ci-dessus, copiez le texte important (Ctrl+A puis Ctrl+C) et cliquez sur 'Copier-coller'"
             }
           </p>
         </div>
