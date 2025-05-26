@@ -1,11 +1,10 @@
+
 import { useAuth } from "@/contexts/AuthContext";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Heart, Shield, FileText, Users, CheckCircle, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 import Footer from "@/components/Footer";
-import SecurityQuickAccess from "@/components/security/SecurityQuickAccess";
-import { securityMonitor } from "@/utils/security/securityMonitor";
 
 const Index = () => {
   const { isAuthenticated } = useAuth();
@@ -13,12 +12,6 @@ const Index = () => {
 
   useEffect(() => {
     setMounted(true);
-    
-    // Ajouter quelques alertes de test pour la démonstration
-    securityMonitor.addTestAlerts();
-    
-    // Ajouter une alerte critique pour tester le système
-    securityMonitor.addAlert('high', 'Test audit de sécurité demandé', 'audit-system');
   }, []);
 
   if (!mounted) {
@@ -155,11 +148,6 @@ const Index = () => {
           </div>
         </div>
       </section>
-
-      {/* Security Quick Access for Admins */}
-      <div className="container mx-auto px-4">
-        <SecurityQuickAccess />
-      </div>
 
       {/* Features Section */}
       <section id="features" className="py-20 bg-white">
