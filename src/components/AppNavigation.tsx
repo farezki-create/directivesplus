@@ -60,7 +60,11 @@ const AppNavigation = ({ hideEditingFeatures = false }: AppNavigationProps) => {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link to="/" className="flex-shrink-0 flex items-center">
-              <span className="text-2xl font-bold text-blue-600">DirectivesPlus</span>
+              <img 
+                src="/lovable-uploads/7d1ec590-c968-4826-bb92-168c52453d25.png" 
+                alt="DirectivesPlus" 
+                className="h-10 w-auto"
+              />
             </Link>
           </div>
 

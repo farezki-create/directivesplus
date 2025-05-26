@@ -81,7 +81,11 @@ const Index = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <h1 className="text-2xl font-bold text-directiveplus-800">DirectivesPlus</h1>
+              <img 
+                src="/lovable-uploads/7d1ec590-c968-4826-bb92-168c52453d25.png" 
+                alt="DirectivesPlus" 
+                className="h-12 w-auto"
+              />
             </div>
             <nav className="hidden md:flex items-center space-x-6">
               <a href="#features" className="text-gray-600 hover:text-directiveplus-600 transition-colors">
