@@ -21,11 +21,14 @@ export const useDossierDocuments = () => {
       if (dossierActif?.contenu) {
         console.log("Structure du contenu dossier:", dossierActif.contenu);
         
+        // Traiter le contenu comme any pour accéder aux propriétés dynamiques
+        const contenu = dossierActif.contenu as any;
+        
         // Vérifier s'il y a des documents dans le dossier
-        if (dossierActif.contenu.documents && Array.isArray(dossierActif.contenu.documents)) {
-          console.log("Documents trouvés dans dossierActif.contenu.documents:", dossierActif.contenu.documents);
+        if (contenu.documents && Array.isArray(contenu.documents)) {
+          console.log("Documents trouvés dans dossierActif.contenu.documents:", contenu.documents);
           
-          foundDocuments = dossierActif.contenu.documents.map((doc: any, index: number) => {
+          foundDocuments = contenu.documents.map((doc: any, index: number) => {
             const transformedDoc: Document = {
               id: doc.id || `doc-${index}`,
               file_name: doc.file_name || doc.fileName || `Document ${index + 1}`,
@@ -46,10 +49,10 @@ export const useDossierDocuments = () => {
         }
         
         // Vérifier s'il y a des directives avec documents intégrés
-        else if (dossierActif.contenu.directives && Array.isArray(dossierActif.contenu.directives)) {
-          console.log("Directives trouvées dans dossierActif.contenu.directives:", dossierActif.contenu.directives);
+        else if (contenu.directives && Array.isArray(contenu.directives)) {
+          console.log("Directives trouvées dans dossierActif.contenu.directives:", contenu.directives);
           
-          foundDocuments = dossierActif.contenu.directives
+          foundDocuments = contenu.directives
             .filter((item: any) => item.type === 'document' || item.file_path || item.filePath)
             .map((item: any, index: number): Document => {
               const transformedDoc: Document = {
@@ -71,11 +74,11 @@ export const useDossierDocuments = () => {
             });
         }
         
-        // Vérifier d'autres structures possibles
-        else if (dossierActif.contenu.pdf_documents && Array.isArray(dossierActif.contenu.pdf_documents)) {
-          console.log("PDF documents trouvés dans dossierActif.contenu.pdf_documents:", dossierActif.contenu.pdf_documents);
+        // Vérifier d'autres structures possibles (pdf_documents)
+        else if (contenu.pdf_documents && Array.isArray(contenu.pdf_documents)) {
+          console.log("PDF documents trouvés dans dossierActif.contenu.pdf_documents:", contenu.pdf_documents);
           
-          foundDocuments = dossierActif.contenu.pdf_documents.map((doc: any, index: number): Document => ({
+          foundDocuments = contenu.pdf_documents.map((doc: any, index: number): Document => ({
             id: doc.id || `pdf-doc-${index}`,
             file_name: doc.file_name || doc.fileName || `Document PDF ${index + 1}`,
             file_path: doc.file_path || doc.filePath || '',
@@ -91,21 +94,21 @@ export const useDossierDocuments = () => {
         }
         
         // Cas où le contenu lui-même pourrait être un document
-        else if (dossierActif.contenu.file_path || dossierActif.contenu.filePath) {
+        else if (contenu.file_path || contenu.filePath) {
           console.log("Document unique trouvé dans le contenu principal");
           
           foundDocuments = [{
-            id: dossierActif.contenu.id || 'main-doc',
-            file_name: dossierActif.contenu.file_name || dossierActif.contenu.fileName || 'Document principal',
-            file_path: dossierActif.contenu.file_path || dossierActif.contenu.filePath,
-            file_type: dossierActif.contenu.file_type || dossierActif.contenu.fileType || 'application/pdf',
-            content_type: dossierActif.contenu.content_type || dossierActif.contenu.contentType || 'application/pdf',
+            id: contenu.id || 'main-doc',
+            file_name: contenu.file_name || contenu.fileName || 'Document principal',
+            file_path: contenu.file_path || contenu.filePath,
+            file_type: contenu.file_type || contenu.fileType || 'application/pdf',
+            content_type: contenu.content_type || contenu.contentType || 'application/pdf',
             user_id: dossierActif.userId || '',
-            created_at: dossierActif.contenu.created_at || dossierActif.contenu.createdAt || new Date().toISOString(),
-            description: dossierActif.contenu.description,
-            file_size: dossierActif.contenu.file_size || dossierActif.contenu.fileSize,
-            updated_at: dossierActif.contenu.updated_at || dossierActif.contenu.updatedAt,
-            external_id: dossierActif.contenu.external_id || dossierActif.contenu.externalId
+            created_at: contenu.created_at || contenu.createdAt || new Date().toISOString(),
+            description: contenu.description,
+            file_size: contenu.file_size || contenu.fileSize,
+            updated_at: contenu.updated_at || contenu.updatedAt,
+            external_id: contenu.external_id || contenu.externalId
           }];
         }
       }
