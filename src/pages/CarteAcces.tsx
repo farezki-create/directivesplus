@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,13 +16,19 @@ const CarteAcces = () => {
   const navigate = useNavigate();
   const { codeAcces, qrCodeUrl, handlePrint, handleDownload } = useAccessCard();
 
-  console.log("CarteAcces - Render state:", {
+  console.log("CarteAcces - Render state détaillé:", {
     isAuthenticated,
     isLoading,
-    profile: profile ? 'present' : 'missing',
+    profile: profile ? {
+      firstName: profile.first_name,
+      lastName: profile.last_name,
+      birthDate: profile.birth_date
+    } : null,
     codeAcces,
     qrCodeUrl,
-    qrCodeUrlValid: !!qrCodeUrl && qrCodeUrl.length > 0
+    qrCodeUrlValid: !!qrCodeUrl && qrCodeUrl.length > 0,
+    currentLocation: window.location.href,
+    origin: window.location.origin
   });
 
   useEffect(() => {
@@ -56,11 +61,12 @@ const CarteAcces = () => {
   const lastName = profile?.last_name || "";
   const birthDate = profile?.birth_date ? new Date(profile.birth_date).toLocaleDateString('fr-FR') : "";
 
-  console.log("CarteAcces - Profile data:", {
+  console.log("CarteAcces - Profile data préparé:", {
     firstName,
     lastName,
     birthDate,
-    profileComplete: !!(firstName && lastName && birthDate)
+    profileComplete: !!(firstName && lastName && birthDate),
+    qrCodeFinal: qrCodeUrl
   });
 
   return (
@@ -102,15 +108,29 @@ const CarteAcces = () => {
             />
           </div>
 
-          {/* Debug info - à supprimer en production */}
+          {/* Debug info étendu - à supprimer en production */}
           {process.env.NODE_ENV === 'development' && (
             <div className="mb-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <h3 className="font-medium text-yellow-800 mb-2">Debug Info:</h3>
+              <h3 className="font-medium text-yellow-800 mb-2">Debug Info Détaillé:</h3>
               <div className="text-sm text-yellow-700 space-y-1">
                 <div>Code d'accès: {codeAcces || 'Non généré'}</div>
                 <div>QR Code URL: {qrCodeUrl || 'Non généré'}</div>
                 <div>URL valide: {qrCodeUrl && qrCodeUrl.length > 0 ? 'Oui' : 'Non'}</div>
+                <div>URL commence par http: {qrCodeUrl && qrCodeUrl.startsWith('http') ? 'Oui' : 'Non'}</div>
                 <div>Profil complet: {firstName && lastName && birthDate ? 'Oui' : 'Non'}</div>
+                <div>Origin actuel: {window.location.origin}</div>
+                <div>URL complète: {window.location.href}</div>
+                <button 
+                  onClick={() => {
+                    if (qrCodeUrl) {
+                      console.log("Test manuel du QR Code:", qrCodeUrl);
+                      window.open(qrCodeUrl, '_blank');
+                    }
+                  }}
+                  className="bg-yellow-600 text-white px-2 py-1 rounded text-xs"
+                >
+                  Tester QR Code manuellement
+                </button>
               </div>
             </div>
           )}

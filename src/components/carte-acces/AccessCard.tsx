@@ -1,6 +1,6 @@
 
 import { QRCodeSVG } from "qrcode.react";
-import { CreditCard } from "lucide-react";
+import { CreditCard, AlertCircle } from "lucide-react";
 
 interface AccessCardProps {
   firstName: string;
@@ -20,8 +20,10 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
     qrCodeUrlLength: qrCodeUrl?.length || 0
   });
 
-  // Validation des props et test du QR code
-  const isQrCodeValid = qrCodeUrl && qrCodeUrl.trim() !== '' && qrCodeUrl.startsWith('http');
+  // Validation améliorée des props
+  const isQrCodeValid = qrCodeUrl && 
+                       qrCodeUrl.trim() !== '' && 
+                       (qrCodeUrl.startsWith('http://') || qrCodeUrl.startsWith('https://'));
   
   if (!isQrCodeValid) {
     console.warn("AccessCard - QR code URL is empty or invalid:", qrCodeUrl);
@@ -30,7 +32,17 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
   const handleQrCodeClick = () => {
     if (isQrCodeValid) {
       console.log("AccessCard - Opening QR URL:", qrCodeUrl);
-      window.open(qrCodeUrl, '_blank');
+      try {
+        // Ouvrir dans un nouvel onglet
+        const newWindow = window.open(qrCodeUrl, '_blank', 'noopener,noreferrer');
+        if (!newWindow) {
+          console.error("AccessCard - Failed to open new window, popup blocked?");
+          // Fallback: essayer de naviguer dans la même fenêtre
+          window.location.href = qrCodeUrl;
+        }
+      } catch (error) {
+        console.error("AccessCard - Error opening URL:", error);
+      }
     } else {
       console.error("AccessCard - Cannot open invalid QR URL:", qrCodeUrl);
     }
@@ -64,7 +76,11 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
               <div className="text-xs opacity-90 font-medium">{birthDate}</div>
             </div>
             <div className="ml-4 flex-shrink-0">
-              <div className="bg-white bg-opacity-20 rounded-lg p-2 cursor-pointer hover:bg-opacity-30 transition-all" onClick={handleQrCodeClick}>
+              <div 
+                className="bg-white bg-opacity-20 rounded-lg p-2 cursor-pointer hover:bg-opacity-30 transition-all" 
+                onClick={handleQrCodeClick}
+                title={isQrCodeValid ? "Cliquer pour ouvrir les directives" : "QR Code non disponible"}
+              >
                 {isQrCodeValid ? (
                   <QRCodeSVG 
                     value={qrCodeUrl}
@@ -76,15 +92,13 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
                   />
                 ) : (
                   <div className="w-[70px] h-[70px] bg-white bg-opacity-30 rounded flex items-center justify-center">
-                    <span className="text-xs text-center">QR<br/>Code</span>
+                    <AlertCircle className="w-6 h-6 text-white opacity-70" />
                   </div>
                 )}
               </div>
-              {isQrCodeValid && (
-                <div className="text-xs text-center mt-1 opacity-75">
-                  Cliquer pour ouvrir
-                </div>
-              )}
+              <div className="text-xs text-center mt-1 opacity-75">
+                {isQrCodeValid ? "Cliquer pour ouvrir" : "QR indisponible"}
+              </div>
             </div>
           </div>
         </div>
