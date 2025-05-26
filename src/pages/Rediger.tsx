@@ -60,8 +60,18 @@ const Rediger = () => {
         
         <InfoSteps />
         
-        {/* Section des documents médicaux */}
-        <div className="max-w-4xl mx-auto mb-8">
+        <DirectivesGrid />
+        
+        {/* Section des documents médicaux intégrée dans le processus de rédaction */}
+        <div className="max-w-4xl mx-auto mt-12">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-directiveplus-800 mb-4">
+              Complétez avec vos documents médicaux
+            </h2>
+            <p className="text-gray-600">
+              Ajoutez vos documents médicaux pour enrichir vos directives anticipées avec vos informations de santé.
+            </p>
+          </div>
           <MedicalDocumentSection 
             userId={user?.id}
             onUploadComplete={handleMedicalDocumentUpload}
@@ -69,8 +79,6 @@ const Rediger = () => {
             onDocumentRemove={handleDocumentRemove}
           />
         </div>
-        
-        <DirectivesGrid />
       </main>
       
       <footer className="bg-white py-6 border-t">
