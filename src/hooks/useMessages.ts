@@ -21,8 +21,14 @@ export const useMessages = (conversationId: string | null) => {
       if (error) throw error;
 
       const messagesWithUserData = data?.map(message => ({
-        ...message,
+        id: message.id,
+        conversation_id: message.conversation_id,
+        user_id: message.user_id,
+        content: message.content,
         message_type: message.message_type as 'text' | 'image' | 'file',
+        created_at: message.created_at,
+        updated_at: message.updated_at,
+        is_read: message.is_read,
         user_profile: {
           first_name: 'Utilisateur',
           last_name: ''

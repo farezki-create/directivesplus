@@ -25,14 +25,19 @@ export const usePosts = () => {
       const { data: { user } } = await supabase.auth.getUser();
       
       const postsWithUserData = data?.map(post => ({
-        ...post,
+        id: post.id,
+        user_id: post.user_id,
+        content: post.content,
+        image_url: post.image_url,
+        created_at: post.created_at,
+        updated_at: post.updated_at,
+        likes_count: post.likes_count || 0,
+        comments_count: post.comments_count || 0,
         user_profile: {
           first_name: 'Utilisateur',
           last_name: ''
         },
-        is_liked: post.post_likes?.some((like: any) => like.user_id === user?.id) || false,
-        likes_count: post.likes_count || 0,
-        comments_count: post.comments_count || 0
+        is_liked: post.post_likes?.some((like: any) => like.user_id === user?.id) || false
       })) || [];
 
       setPosts(postsWithUserData);

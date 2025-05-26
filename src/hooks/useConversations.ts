@@ -37,7 +37,10 @@ export const useConversations = () => {
       const conversationsWithLastMessage = data?.map(conv => ({
         ...conv,
         participants: conv.conversation_participants?.map(participant => ({
-          ...participant,
+          id: participant.id,
+          conversation_id: participant.conversation_id,
+          user_id: participant.user_id,
+          joined_at: participant.joined_at,
           user_profile: {
             first_name: 'Utilisateur',
             last_name: ''
