@@ -1,4 +1,3 @@
-
 import { jsPDF } from "jspdf";
 import { 
   PdfLayout, 
@@ -11,7 +10,7 @@ import {
   addSignatureFooter, 
   checkPageBreak 
 } from "./pdf";
-import { getMedicalDocuments, renderMedicalDocumentsChapter } from "./pdf/medicalDocuments";
+import { getMedicalDocuments, renderMedicalDocumentsChapter } from "./pdf/medicalDocuments/index";
 
 // Interface for PDF generation data
 export interface PdfData {
