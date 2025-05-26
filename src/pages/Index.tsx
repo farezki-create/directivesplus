@@ -81,7 +81,7 @@ const Index = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <img 
-                src="/lovable-uploads/0a786ed1-a905-4b29-be3a-ca3b24d3efae.png" 
+                src="/lovable-uploads/b2a69396-dbf3-4ea1-b931-5306bd7cdcf3.png" 
                 alt="DirectivesPlus Logo" 
                 className="w-10 h-10"
               />
@@ -121,7 +121,7 @@ const Index = () => {
           {/* Logo en grand */}
           <div className="mb-8">
             <img 
-              src="/lovable-uploads/0a786ed1-a905-4b29-be3a-ca3b24d3efae.png" 
+              src="/lovable-uploads/b2a69396-dbf3-4ea1-b931-5306bd7cdcf3.png" 
               alt="DirectivesPlus Logo" 
               className="w-48 h-48 mx-auto mb-6"
             />

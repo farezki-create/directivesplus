@@ -25,7 +25,7 @@ const Hero = () => {
         <div className="flex flex-col items-center text-center">
           {/* Logo */}
           <div className="mb-8 w-full flex justify-center">
-            <img src="/lovable-uploads/0a786ed1-a905-4b29-be3a-ca3b24d3efae.png" alt="DirectivesPlus Logo" className="w-64 h-auto" />
+            <img src="/lovable-uploads/b2a69396-dbf3-4ea1-b931-5306bd7cdcf3.png" alt="DirectivesPlus Logo" className="w-64 h-auto" />
           </div>
           
           {/* Text Content */}
@@ -56,7 +56,7 @@ const Hero = () => {
               {/* Feature 1 - Simple et guidé with image */}
               <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
                 <div className="flex flex-col items-center mb-3">
-                  <img src="/lovable-uploads/0a786ed1-a905-4b29-be3a-ca3b24d3efae.png" alt="Logo DirectivesPlus" className="w-20 h-20 mb-3 object-scale-down" />
+                  <img src="/lovable-uploads/b2a69396-dbf3-4ea1-b931-5306bd7cdcf3.png" alt="Logo DirectivesPlus" className="w-20 h-20 mb-3 object-scale-down" />
                   <h3 className="font-semibold text-lg text-directiveplus-700">Simple et guidé</h3>
                 </div>
                 <p className="text-gray-600">Un processus pas à pas pour vous accompagner dans la rédaction.</p>
@@ -84,7 +84,7 @@ const Hero = () => {
               {/* Feature 3 - Facilement partageable with image */}
               <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
                 <div className="flex flex-col items-center mb-3">
-                  <img src="/lovable-uploads/0a786ed1-a905-4b29-be3a-ca3b24d3efae.png" alt="Logo DirectivesPlus" className="w-20 h-20 mb-3 object-cover" />
+                  <img src="/lovable-uploads/b2a69396-dbf3-4ea1-b931-5306bd7cdcf3.png" alt="Logo DirectivesPlus" className="w-20 h-20 mb-3 object-cover" />
                   <h3 className="font-semibold text-lg text-directiveplus-700">Facilement partageable</h3>
                 </div>
                 <p className="text-gray-600">Télécharger, partager, imprimer: gérez vos directives comme vous le souhaitez.</p>
