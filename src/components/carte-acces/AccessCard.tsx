@@ -1,6 +1,6 @@
 
 import { QRCodeSVG } from "qrcode.react";
-import { CreditCard, AlertCircle, ExternalLink, RefreshCw, TestTube } from "lucide-react";
+import { CreditCard, AlertCircle, ExternalLink, RefreshCw } from "lucide-react";
 
 interface AccessCardProps {
   firstName: string;
@@ -56,17 +56,6 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
   const handleRefreshQrCode = () => {
     console.log("AccessCard - Refreshing page to regenerate QR code");
     window.location.reload();
-  };
-
-  // Test direct du QR code dans la même fenêtre
-  const handleTestQrCodeInApp = () => {
-    console.log("AccessCard - Test QR code dans l'application:", qrCodeUrl);
-    if (qrCodeUrl) {
-      // Navigation directe dans l'application
-      window.location.href = qrCodeUrl;
-    } else {
-      alert('QR Code URL non disponible');
-    }
   };
 
   return (
@@ -157,7 +146,7 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
         </div>
       </div>
 
-      {/* Debug info en development avec test de navigation interne */}
+      {/* Debug info en development sans le bouton Test App */}
       {process.env.NODE_ENV === 'development' && (
         <div className="absolute top-2 left-2 text-xs bg-black bg-opacity-50 p-1 rounded space-y-1">
           <div>QR: {isQrCodeValid ? '✅' : '❌'} | URL: {qrCodeUrl?.length || 0} chars</div>
@@ -168,13 +157,6 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
               className="bg-blue-600 text-white px-1 py-0.5 rounded text-xs hover:bg-blue-700"
             >
               Nouvel onglet
-            </button>
-            <button 
-              onClick={handleTestQrCodeInApp}
-              className="bg-green-600 text-white px-1 py-0.5 rounded text-xs hover:bg-green-700"
-            >
-              <TestTube className="w-3 h-3 inline mr-1" />
-              Test App
             </button>
           </div>
         </div>
