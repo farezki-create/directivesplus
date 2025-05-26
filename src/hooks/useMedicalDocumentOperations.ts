@@ -84,6 +84,9 @@ export const useMedicalDocumentOperations = ({
         onDocumentRemove(documentId);
       }
       
+      // Rafraîchir la liste des documents
+      fetchDocuments();
+      
       toast({
         title: "Document supprimé",
         description: "Le document médical a été retiré des directives anticipées",
