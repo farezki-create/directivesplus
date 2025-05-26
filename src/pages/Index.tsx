@@ -80,11 +80,13 @@ const Index = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <img 
-                src="/lovable-uploads/d5255c41-98e6-44a5-82fd-dac019e499ef.png" 
-                alt="DirectivesPlus" 
-                className="h-12 w-auto"
-              />
+              <div className="bg-white/80 rounded-lg p-2">
+                <img 
+                  src="/lovable-uploads/d5255c41-98e6-44a5-82fd-dac019e499ef.png" 
+                  alt="DirectivesPlus" 
+                  className="h-8 w-auto"
+                />
+              </div>
             </div>
             <nav className="hidden md:flex items-center space-x-6">
               <a href="#features" className="text-gray-600 hover:text-directiveplus-600 transition-colors">
@@ -122,11 +124,13 @@ const Index = () => {
         <div className="container mx-auto text-center">
           {/* Logo au-dessus du titre */}
           <div className="flex justify-center mb-8">
-            <img 
-              src="/lovable-uploads/d5255c41-98e6-44a5-82fd-dac019e499ef.png" 
-              alt="DirectivesPlus" 
-              className="h-80 w-auto opacity-60"
-            />
+            <div className="bg-white/70 rounded-xl p-8 shadow-sm">
+              <img 
+                src="/lovable-uploads/d5255c41-98e6-44a5-82fd-dac019e499ef.png" 
+                alt="DirectivesPlus" 
+                className="h-64 w-auto"
+              />
+            </div>
           </div>
           
           <h3 className="text-5xl font-bold text-gray-900 mb-6">
