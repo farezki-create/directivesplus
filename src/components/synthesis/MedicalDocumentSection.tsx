@@ -3,7 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import DocumentPreviewDialog from "@/components/documents/DocumentPreviewDialog";
 import { useMedicalDocumentOperations } from "@/hooks/useMedicalDocumentOperations";
 import MedicalDocumentUploader from "./medical/MedicalDocumentUploader";
-import MedicalDocumentsList from "./medical/MedicalDocumentsList";
+import PdfContentDisplay from "./medical/PdfContentDisplay";
 
 interface MedicalDocumentSectionProps {
   userId?: string;
@@ -15,13 +15,10 @@ interface MedicalDocumentSectionProps {
 const MedicalDocumentSection = ({ userId, onUploadComplete, onDocumentAdd, onDocumentRemove }: MedicalDocumentSectionProps) => {
   const {
     uploadedDocuments,
-    deletingDocuments,
     previewDocument,
     setPreviewDocument,
     handleDocumentUpload,
     handleDeleteDocument,
-    handlePreviewDocument,
-    handleIncorporateDocument
   } = useMedicalDocumentOperations({ userId, onUploadComplete, onDocumentAdd, onDocumentRemove });
 
   return (
@@ -30,8 +27,8 @@ const MedicalDocumentSection = ({ userId, onUploadComplete, onDocumentAdd, onDoc
         <CardHeader className="pb-2">
           <CardTitle>Documents médicaux</CardTitle>
           <p className="text-sm text-gray-600">
-            Ajoutez vos documents médicaux qui seront automatiquement intégrés dans votre PDF de directives anticipées.
-            Les documents sont immédiatement ouverts pour incorporation après l'import.
+            Ajoutez vos documents médicaux PDF. Le contenu sera extrait et affiché ci-dessous, 
+            puis automatiquement intégré dans votre PDF de directives anticipées.
           </p>
         </CardHeader>
         <CardContent>
@@ -41,13 +38,20 @@ const MedicalDocumentSection = ({ userId, onUploadComplete, onDocumentAdd, onDoc
               onUploadComplete={handleDocumentUpload}
             />
             
-            <MedicalDocumentsList
-              documents={uploadedDocuments}
-              deletingDocuments={deletingDocuments}
-              onPreview={handlePreviewDocument}
-              onIncorporate={handleIncorporateDocument}
-              onDelete={handleDeleteDocument}
-            />
+            {uploadedDocuments.length > 0 && (
+              <div className="space-y-4">
+                <h4 className="text-sm font-medium text-gray-700">
+                  Contenu des documents médicaux ajoutés :
+                </h4>
+                {uploadedDocuments.map((doc) => (
+                  <PdfContentDisplay
+                    key={doc.id}
+                    document={doc}
+                    onRemove={handleDeleteDocument}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

@@ -17,7 +17,6 @@ export const useMedicalDocumentOperations = ({
   onDocumentRemove 
 }: UseMedicalDocumentOperationsProps) => {
   const [uploadedDocuments, setUploadedDocuments] = useState<any[]>([]);
-  const [deletingDocuments, setDeletingDocuments] = useState<Set<string>>(new Set());
   const [previewDocument, setPreviewDocument] = useState<string | null>(null);
 
   const fetchDocuments = async () => {
@@ -51,20 +50,18 @@ export const useMedicalDocumentOperations = ({
     onDocumentAdd(documentInfo);
     onUploadComplete();
     
-    // Toast bref de 2 secondes
     toast({
       title: "Document ajouté",
-      description: "Le document médical a été ajouté aux directives anticipées",
+      description: "Le contenu du document médical sera affiché ci-dessous et intégré dans vos directives anticipées",
       duration: 2000
     });
   };
 
   const handleDeleteDocument = async (documentId: string) => {
-    console.log("Début suppression document:", documentId);
-    setDeletingDocuments(prev => new Set([...prev, documentId]));
+    console.log("Suppression du document:", documentId);
     
     try {
-      // Supprimer directement de la base de données
+      // Supprimer de la base de données
       const { error } = await supabase
         .from('medical_documents')
         .delete()
@@ -82,8 +79,8 @@ export const useMedicalDocumentOperations = ({
       }
       
       toast({
-        title: "Document supprimé",
-        description: "Le document médical a été retiré des directives anticipées",
+        title: "Document retiré",
+        description: "Le document médical a été retiré de vos directives anticipées",
         duration: 2000
       });
     } catch (error) {
@@ -95,46 +92,16 @@ export const useMedicalDocumentOperations = ({
         duration: 2000
       });
       
-      // En cas d'erreur, recharger la liste pour être sûr
+      // En cas d'erreur, recharger la liste
       fetchDocuments();
-    } finally {
-      setDeletingDocuments(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(documentId);
-        return newSet;
-      });
     }
-  };
-
-  const handleView = (filePath: string, fileType?: string) => {
-    console.log("Prévisualisation du document:", filePath);
-    setPreviewDocument(filePath);
-  };
-
-  const handlePreviewDocument = (document: any) => {
-    console.log("Prévisualisation du document:", document);
-    handleView(document.file_path, document.file_type);
-  };
-
-  const handleIncorporateDocument = (document: any) => {
-    console.log("Incorporation du document:", document);
-    onDocumentAdd(document);
-    
-    toast({
-      title: "Document incorporé",
-      description: "Le document sera inclus dans le PDF des directives anticipées",
-      duration: 2000
-    });
   };
 
   return {
     uploadedDocuments,
-    deletingDocuments,
     previewDocument,
     setPreviewDocument,
     handleDocumentUpload,
-    handleDeleteDocument,
-    handlePreviewDocument,
-    handleIncorporateDocument
+    handleDeleteDocument
   };
 };
