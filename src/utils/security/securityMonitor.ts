@@ -145,6 +145,15 @@ class SecurityMonitor {
   addTestAlerts(): void {
     this.addAlert('medium', 'Tentatives de connexion échouées détectées', 'auth-system');
     this.addAlert('low', 'Accès inhabituel depuis une nouvelle IP', 'access-monitor');
+    this.addAlert('high', 'Audit de sécurité lancé automatiquement', 'audit-system');
+  }
+
+  /**
+   * Lance un audit automatique
+   */
+  triggerSecurityAudit(): void {
+    this.addAlert('medium', 'Audit de sécurité programmé démarré', 'audit-scheduler');
+    console.log('🔍 [SECURITY] Audit automatique démarré');
   }
 }
 
