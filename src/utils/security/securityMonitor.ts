@@ -12,6 +12,15 @@ export interface SecurityAlert {
   resolved: boolean;
 }
 
+export interface SecurityMetrics {
+  totalAlerts: number;
+  activeAlerts: number;
+  resolvedAlerts: number;
+  criticalAlerts: number;
+  alertsBySource: Record<string, number>;
+  lastAlertTime?: Date;
+}
+
 class SecurityMonitor {
   private alerts: SecurityAlert[] = [];
   private listeners: Array<(alerts: SecurityAlert[]) => void> = [];
@@ -62,6 +71,36 @@ class SecurityMonitor {
    */
   getAllAlerts(): SecurityAlert[] {
     return [...this.alerts].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+  }
+
+  /**
+   * Obtient les métriques de sécurité
+   */
+  getSecurityMetrics(): SecurityMetrics {
+    const totalAlerts = this.alerts.length;
+    const activeAlerts = this.alerts.filter(a => !a.resolved).length;
+    const resolvedAlerts = this.alerts.filter(a => a.resolved).length;
+    const criticalAlerts = this.alerts.filter(a => a.severity === 'critical' && !a.resolved).length;
+
+    // Calculer les alertes par source
+    const alertsBySource: Record<string, number> = {};
+    this.alerts.forEach(alert => {
+      alertsBySource[alert.source] = (alertsBySource[alert.source] || 0) + 1;
+    });
+
+    // Dernière alerte
+    const lastAlertTime = this.alerts.length > 0 
+      ? this.alerts[this.alerts.length - 1].timestamp 
+      : undefined;
+
+    return {
+      totalAlerts,
+      activeAlerts,
+      resolvedAlerts,
+      criticalAlerts,
+      alertsBySource,
+      lastAlertTime
+    };
   }
 
   /**
