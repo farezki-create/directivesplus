@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,8 +10,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { resetPasswordSchema, type ResetPasswordValues } from "./schemas";
 import PasswordStrengthIndicator from "@/components/ui/password-strength-indicator";
-import { validatePasswordSecurity, validateTokenIntegrity } from "@/utils/security/passwordSecurity";
-import { checkAuthAttempt, resetAuthAttempts } from "@/utils/security/authSecurity";
+import { validatePasswordSecurity } from "@/utils/security/passwordSecurity";
+import { checkAuthAttempt, resetAuthAttempts, validateTokenIntegrity } from "@/utils/security/authSecurity";
 
 interface PasswordResetFormProps {
   token: string;
