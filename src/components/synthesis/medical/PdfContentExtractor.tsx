@@ -2,10 +2,9 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { X, FileText, Eye, EyeOff, Settings } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { X, FileText, Eye, EyeOff } from "lucide-react";
 import { usePdfContentExtraction } from "@/hooks/usePdfContentExtraction";
-import PdfDisplay from "./PdfDisplay";
-import TextExtractionOptions from "./TextExtractionOptions";
 
 interface PdfContentExtractorProps {
   document: {
@@ -21,7 +20,6 @@ interface PdfContentExtractorProps {
 
 const PdfContentExtractor: React.FC<PdfContentExtractorProps> = ({ document, onRemove, onContentUpdate }) => {
   const [showPdf, setShowPdf] = useState(true);
-  const [showExtractionOptions, setShowExtractionOptions] = useState(false);
   
   const {
     extractedText,
@@ -29,8 +27,7 @@ const PdfContentExtractor: React.FC<PdfContentExtractorProps> = ({ document, onR
     isEditing,
     setIsEditing,
     isSaving,
-    saveExtractedContent,
-    startPasting
+    saveExtractedContent
   } = usePdfContentExtraction({ document, onContentUpdate });
 
   return (
@@ -44,15 +41,6 @@ const PdfContentExtractor: React.FC<PdfContentExtractorProps> = ({ document, onR
             </CardTitle>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowExtractionOptions(!showExtractionOptions)}
-              className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-100"
-              title="Options d'extraction avancées"
-            >
-              <Settings className="h-4 w-4" />
-            </Button>
             <Button
               variant="ghost"
               size="sm"
@@ -77,102 +65,87 @@ const PdfContentExtractor: React.FC<PdfContentExtractorProps> = ({ document, onR
       </CardHeader>
       <CardContent className="pt-0">
         <div className="space-y-4">
-          {/* PDF Display */}
+          {/* Aperçu du document PDF */}
           {showPdf && (
-            <PdfDisplay
-              document={document}
-              extractedText={extractedText}
-              onStartPasting={startPasting}
-            />
-          )}
-
-          {/* Options d'extraction avancées */}
-          {showExtractionOptions ? (
-            <TextExtractionOptions
-              extractedText={extractedText}
-              setExtractedText={setExtractedText}
-              onSave={saveExtractedContent}
-              isSaving={isSaving}
-              documentName={document.file_name}
-            />
-          ) : (
-            /* Interface simplifiée existante */
             <div className="bg-white rounded-md border p-4">
-              <div className="flex justify-between items-center mb-2">
-                <h4 className="text-sm font-medium">
-                  {extractedText ? "Contenu extrait" : "Extraire le contenu"}
-                </h4>
-                <div className="flex gap-2">
-                  {!extractedText && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setShowExtractionOptions(true)}
-                      className="text-xs"
-                    >
-                      <Settings className="h-3 w-3 mr-1" />
-                      Plus d'options
-                    </Button>
-                  )}
-                  {extractedText && !isEditing && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setIsEditing(true)}
-                      className="text-xs"
-                    >
-                      Modifier
-                    </Button>
-                  )}
-                  {isEditing && (
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        onClick={saveExtractedContent}
-                        disabled={isSaving}
-                        className="text-xs"
-                      >
-                        {isSaving ? "Sauvegarde..." : "Sauvegarder"}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setIsEditing(false)}
-                        className="text-xs"
-                      >
-                        Annuler
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </div>
-              
-              {isEditing ? (
-                <textarea
-                  value={extractedText}
-                  onChange={(e) => setExtractedText(e.target.value)}
-                  placeholder="Collez ici le contenu copié du PDF..."
-                  className="w-full min-h-64 text-sm font-mono border rounded p-3"
-                />
-              ) : extractedText ? (
-                <div className="text-sm text-gray-700 whitespace-pre-wrap max-h-64 overflow-y-auto border p-3 rounded bg-gray-50">
-                  {extractedText}
-                </div>
-              ) : (
-                <div className="text-sm text-gray-500 italic p-3 border rounded bg-gray-50 text-center">
-                  <p className="mb-2">Aucun contenu extrait.</p>
-                  <Button
-                    size="sm"
-                    onClick={() => setShowExtractionOptions(true)}
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    <Settings className="h-3 w-3 mr-1" />
-                    Choisir une méthode d'extraction
-                  </Button>
-                </div>
-              )}
+              <h4 className="text-sm font-medium mb-2">Aperçu du document</h4>
+              <iframe 
+                src={document.file_path}
+                className="w-full h-96 border rounded"
+                title={document.file_name}
+                style={{ minHeight: '400px' }}
+              />
             </div>
           )}
+
+          {/* Zone de texte simple pour l'extraction */}
+          <div className="bg-white rounded-md border p-4">
+            <div className="flex justify-between items-center mb-2">
+              <h4 className="text-sm font-medium">
+                {extractedText ? "Contenu extrait" : "Extraire le contenu"}
+              </h4>
+              <div className="flex gap-2">
+                {extractedText && !isEditing && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setIsEditing(true)}
+                    className="text-xs"
+                  >
+                    Modifier
+                  </Button>
+                )}
+                {isEditing && (
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      onClick={saveExtractedContent}
+                      disabled={isSaving}
+                      className="text-xs"
+                    >
+                      {isSaving ? "Sauvegarde..." : "Sauvegarder"}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setIsEditing(false)}
+                      className="text-xs"
+                    >
+                      Annuler
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {isEditing ? (
+              <Textarea
+                value={extractedText}
+                onChange={(e) => setExtractedText(e.target.value)}
+                placeholder="Saisissez ou collez ici le contenu du document..."
+                className="min-h-64 text-sm"
+              />
+            ) : extractedText ? (
+              <div className="text-sm text-gray-700 whitespace-pre-wrap max-h-64 overflow-y-auto border p-3 rounded bg-gray-50">
+                {extractedText}
+              </div>
+            ) : (
+              <div className="text-sm text-gray-500 italic p-3 border rounded bg-gray-50 text-center">
+                <p className="mb-2">Aucun contenu extrait.</p>
+                <Button
+                  size="sm"
+                  onClick={() => setIsEditing(true)}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  Ajouter du contenu
+                </Button>
+              </div>
+            )}
+            
+            <div className="mt-2 text-xs text-gray-500">
+              {extractedText.length} caractères
+            </div>
+          </div>
         </div>
         
         <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-md">
@@ -180,7 +153,7 @@ const PdfContentExtractor: React.FC<PdfContentExtractorProps> = ({ document, onR
             <span className="mr-1">💡</span>
             {extractedText ? 
               "Contenu prêt pour l'intégration dans votre PDF" : 
-              "Plusieurs méthodes disponibles : dictée vocale, photo du document, saisie manuelle ou copier-coller"
+              "Saisissez ou copiez-collez le contenu du document ci-dessus"
             }
           </p>
         </div>
