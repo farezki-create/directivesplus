@@ -75,7 +75,7 @@ export const useMedicalDocumentOperations = ({
     setDeletingDocuments(prev => new Set([...prev, documentId]));
     
     try {
-      await originalHandleDelete(documentId);
+      await originalHandleDelete();
       
       // Supprimer de la liste locale
       setUploadedDocuments(prev => prev.filter(doc => doc.id !== documentId));
