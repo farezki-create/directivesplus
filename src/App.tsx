@@ -16,6 +16,16 @@ import LegalMentions from "./pages/LegalMentions";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Soutenir from "./pages/Soutenir";
 import InstitutionAccess from "./pages/InstitutionAccess";
+import AvisGeneral from "./pages/AvisGeneral";
+import MaintienVie from "./pages/MaintienVie";
+import MaladieAvancee from "./pages/MaladieAvancee";
+import GoutsPeurs from "./pages/GoutsPeurs";
+import PersonneConfiance from "./pages/PersonneConfiance";
+import ExemplesPhrases from "./pages/ExemplesPhrases";
+import MesDirectives from "./pages/MesDirectives";
+import DirectivesDocs from "./pages/DirectivesDocs";
+import DirectivesAccess from "./pages/DirectivesAccess";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 function App() {
   const queryClient = new QueryClient();
@@ -39,6 +49,43 @@ function App() {
               <Route path="/confidentialite" element={<PrivacyPolicy />} />
               <Route path="/soutenir" element={<Soutenir />} />
               <Route path="/acces-institution" element={<InstitutionAccess />} />
+              
+              {/* Routes protégées pour les questionnaires */}
+              <Route path="/avis-general" element={
+                <ProtectedRoute>
+                  <AvisGeneral />
+                </ProtectedRoute>
+              } />
+              <Route path="/maintien-vie" element={
+                <ProtectedRoute>
+                  <MaintienVie />
+                </ProtectedRoute>
+              } />
+              <Route path="/maladie-avancee" element={
+                <ProtectedRoute>
+                  <MaladieAvancee />
+                </ProtectedRoute>
+              } />
+              <Route path="/gouts-peurs" element={
+                <ProtectedRoute>
+                  <GoutsPeurs />
+                </ProtectedRoute>
+              } />
+              <Route path="/personne-confiance" element={
+                <ProtectedRoute>
+                  <PersonneConfiance />
+                </ProtectedRoute>
+              } />
+              <Route path="/exemples-phrases" element={
+                <ProtectedRoute>
+                  <ExemplesPhrases />
+                </ProtectedRoute>
+              } />
+              
+              {/* Routes pour les directives */}
+              <Route path="/mes-directives" element={<MesDirectives />} />
+              <Route path="/directives-docs" element={<DirectivesDocs />} />
+              <Route path="/directives-acces" element={<DirectivesAccess />} />
             </Routes>
           </div>
         </QueryClientProvider>
