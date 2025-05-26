@@ -1,105 +1,48 @@
 
 /**
- * Monitoring de sécurité en temps réel
+ * Système de monitoring de sécurité en temps réel
  */
-
-export interface SecurityMetrics {
-  failedLogins: number;
-  suspiciousActivities: number;
-  dataBreaches: number;
-  unauthorizedAccess: number;
-  lastSecurityEvent: Date | null;
-}
 
 export interface SecurityAlert {
   id: string;
-  type: 'authentication' | 'access' | 'data' | 'system';
   severity: 'low' | 'medium' | 'high' | 'critical';
   message: string;
-  timestamp: Date;
   source: string;
+  timestamp: Date;
   resolved: boolean;
 }
 
 class SecurityMonitor {
   private alerts: SecurityAlert[] = [];
-  private metrics: SecurityMetrics = {
-    failedLogins: 0,
-    suspiciousActivities: 0,
-    dataBreaches: 0,
-    unauthorizedAccess: 0,
-    lastSecurityEvent: null
-  };
+  private listeners: Array<(alerts: SecurityAlert[]) => void> = [];
 
   /**
-   * Démarre le monitoring de sécurité
+   * Ajoute une nouvelle alerte de sécurité
    */
-  startMonitoring(): void {
-    console.log("🔒 Démarrage du monitoring de sécurité");
-    
-    // Monitoring des événements d'authentification
-    this.monitorAuthEvents();
-    
-    // Monitoring des accès aux données
-    this.monitorDataAccess();
-    
-    // Monitoring des erreurs système
-    this.monitorSystemErrors();
-  }
-
-  /**
-   * Surveille les événements d'authentification
-   */
-  private monitorAuthEvents(): void {
-    // Cette méthode surveillerait les tentatives de connexion
-    console.log("👁️ Monitoring des événements d'authentification actif");
-  }
-
-  /**
-   * Surveille les accès aux données
-   */
-  private monitorDataAccess(): void {
-    // Cette méthode surveillerait les accès aux données sensibles
-    console.log("👁️ Monitoring des accès aux données actif");
-  }
-
-  /**
-   * Surveille les erreurs système
-   */
-  private monitorSystemErrors(): void {
-    // Cette méthode surveillerait les erreurs système
-    console.log("👁️ Monitoring des erreurs système actif");
-  }
-
-  /**
-   * Ajoute une alerte de sécurité
-   */
-  addAlert(alert: Omit<SecurityAlert, 'id' | 'timestamp' | 'resolved'>): void {
-    const newAlert: SecurityAlert = {
-      ...alert,
-      id: `alert-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+  addAlert(severity: SecurityAlert['severity'], message: string, source: string): void {
+    const alert: SecurityAlert = {
+      id: `alert_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      severity,
+      message,
+      source,
       timestamp: new Date(),
       resolved: false
     };
 
-    this.alerts.unshift(newAlert);
-    this.metrics.lastSecurityEvent = new Date();
+    this.alerts.push(alert);
+    this.notifyListeners();
 
-    console.log(`🚨 Alerte de sécurité: ${alert.severity.toUpperCase()} - ${alert.message}`);
+    // Log critique pour les alertes high/critical
+    if (severity === 'high' || severity === 'critical') {
+      console.error(`[SECURITY ALERT ${severity.toUpperCase()}] ${message} (Source: ${source})`);
+    }
   }
 
   /**
-   * Obtient les alertes actives
+   * Obtient toutes les alertes actives (non résolues)
    */
   getActiveAlerts(): SecurityAlert[] {
     return this.alerts.filter(alert => !alert.resolved);
-  }
-
-  /**
-   * Obtient les métriques de sécurité
-   */
-  getSecurityMetrics(): SecurityMetrics {
-    return { ...this.metrics };
   }
 
   /**
@@ -109,65 +52,69 @@ class SecurityMonitor {
     const alert = this.alerts.find(a => a.id === alertId);
     if (alert) {
       alert.resolved = true;
-      console.log(`✅ Alerte résolue: ${alertId}`);
+      this.notifyListeners();
+      console.log(`[SECURITY] Alert ${alertId} resolved`);
     }
   }
 
   /**
-   * Effectue une vérification de sécurité périodique
+   * Obtient toutes les alertes (résolues et non résolues)
    */
-  async runSecurityCheck(): Promise<{
-    status: 'secure' | 'warning' | 'critical';
-    issues: string[];
-    recommendations: string[];
-  }> {
-    const issues: string[] = [];
-    const recommendations: string[] = [];
-
-    // Vérification des alertes critiques
-    const criticalAlerts = this.getActiveAlerts().filter(a => a.severity === 'critical');
-    if (criticalAlerts.length > 0) {
-      issues.push(`${criticalAlerts.length} alerte(s) critique(s) non résolue(s)`);
-      recommendations.push('Résoudre immédiatement les alertes critiques');
-    }
-
-    // Vérification des métriques
-    if (this.metrics.failedLogins > 10) {
-      issues.push('Nombre élevé de tentatives de connexion échouées');
-      recommendations.push('Renforcer les mesures anti-brute force');
-    }
-
-    const status = criticalAlerts.length > 0 ? 'critical' : 
-                  issues.length > 0 ? 'warning' : 'secure';
-
-    return { status, issues, recommendations };
+  getAllAlerts(): SecurityAlert[] {
+    return [...this.alerts].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
   }
 
   /**
-   * Génère un rapport de sécurité
+   * Ajoute un listener pour les changements d'alertes
    */
-  generateSecurityReport(): {
-    summary: SecurityMetrics;
-    recentAlerts: SecurityAlert[];
-    trends: any;
-  } {
-    const recentAlerts = this.alerts
-      .filter(alert => {
-        const dayAgo = new Date();
-        dayAgo.setDate(dayAgo.getDate() - 1);
-        return alert.timestamp >= dayAgo;
-      })
-      .slice(0, 10);
-
-    return {
-      summary: this.getSecurityMetrics(),
-      recentAlerts,
-      trends: {
-        alertsLast24h: recentAlerts.length,
-        criticalAlertsLast24h: recentAlerts.filter(a => a.severity === 'critical').length
+  addListener(listener: (alerts: SecurityAlert[]) => void): () => void {
+    this.listeners.push(listener);
+    return () => {
+      const index = this.listeners.indexOf(listener);
+      if (index > -1) {
+        this.listeners.splice(index, 1);
       }
     };
   }
+
+  /**
+   * Notifie tous les listeners
+   */
+  private notifyListeners(): void {
+    const activeAlerts = this.getActiveAlerts();
+    this.listeners.forEach(listener => listener(activeAlerts));
+  }
+
+  /**
+   * Nettoie les anciennes alertes résolues
+   */
+  cleanupOldAlerts(): void {
+    const maxAge = 7 * 24 * 60 * 60 * 1000; // 7 jours
+    const now = Date.now();
+    
+    this.alerts = this.alerts.filter(alert => {
+      if (alert.resolved && (now - alert.timestamp.getTime()) > maxAge) {
+        return false;
+      }
+      return true;
+    });
+  }
+
+  /**
+   * Simule quelques alertes de test pour la démonstration
+   */
+  addTestAlerts(): void {
+    this.addAlert('medium', 'Tentatives de connexion échouées détectées', 'auth-system');
+    this.addAlert('low', 'Accès inhabituel depuis une nouvelle IP', 'access-monitor');
+  }
 }
 
+// Instance globale
 export const securityMonitor = new SecurityMonitor();
+
+// Nettoyage automatique toutes les heures
+if (typeof window !== 'undefined') {
+  setInterval(() => {
+    securityMonitor.cleanupOldAlerts();
+  }, 60 * 60 * 1000);
+}
