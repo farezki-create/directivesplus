@@ -96,6 +96,11 @@ function App() {
                   <Synthesis />
                 </ProtectedRoute>
               } />
+              <Route path="/synthesis" element={
+                <ProtectedRoute>
+                  <Synthesis />
+                </ProtectedRoute>
+              } />
               <Route path="/carte-acces" element={
                 <ProtectedRoute>
                   <CarteAcces />
