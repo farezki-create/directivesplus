@@ -98,9 +98,9 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
               style={{ minHeight: '800px' }}
             />
           ) : (
-            // PDF par URL - Ajouter paramètres pour affichage complet
+            // PDF par URL - Paramètres optimisés pour affichage complet
             <iframe
-              src={`${document.file_path}#toolbar=1&navpanes=1&scrollbar=1&page=1&view=FitH`}
+              src={`${document.file_path}#toolbar=1&navpanes=1&scrollbar=1&view=Fit`}
               className="w-full h-[85vh] border-0 rounded-lg"
               title={document.file_name}
               style={{ minHeight: '800px' }}
