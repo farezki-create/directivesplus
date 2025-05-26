@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -20,6 +21,7 @@ const MedicalData = () => {
   
   const {
     documents,
+    setDocuments,
     isLoading: documentsLoading,
     handleUploadComplete
   } = useMedicalDocuments();
@@ -28,7 +30,7 @@ const MedicalData = () => {
     onDeleteComplete: () => window.location.reload()
   });
 
-  // Nouvelle fonction pour gérer la suppression depuis le compilateur
+  // Fonction pour gérer la suppression depuis le compilateur
   const handleDocumentDeleteFromCompiler = (documentId: string) => {
     setDocuments(prev => prev.filter(doc => doc.id !== documentId));
   };
