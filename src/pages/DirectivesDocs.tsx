@@ -3,7 +3,6 @@ import { useDirectivesDocuments } from "@/hooks/useDirectivesDocuments";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePublicDirectivesAccess } from "@/hooks/usePublicDirectivesAccess";
 import { useDirectivesState } from "@/hooks/directives/useDirectivesState";
-import { useDirectivesDocumentHandlers } from "@/components/directives/DirectivesDocumentHandlers";
 import { DirectivesAccessManager } from "@/components/directives/DirectivesAccessManager";
 import type { Document } from "@/types/documents";
 
@@ -40,26 +39,36 @@ const DirectivesDocs = () => {
     handleUploadComplete,
   } = useDirectivesDocuments();
 
-  const {
-    handleUploadCompleteWrapper,
-    handleViewDocument,
-    handlePreviewDownload,
-    handlePreviewPrint
-  } = useDirectivesDocumentHandlers({
-    documents,
-    previewDocument,
-    setPreviewDocument,
-    handleDownload,
-    handlePrint,
-    handleView
-  });
-
   console.log("DirectivesDocs - Auth state:", { userId: user?.id, hasProfile: !!profile, isAuthenticated, isLoading: authLoading });
   console.log("DirectivesDocs - Dossier actif:", dossierActif);
   console.log("DirectivesDocs - URL params:", urlParams);
   console.log("DirectivesDocs - Institution access:", institutionAccess);
 
   const isLoading = authLoading || documentsLoading || publicAccessLoading;
+
+  // Wrapper function to handle upload completion
+  const handleUploadCompleteWrapper = () => {
+    handleUploadComplete();
+  };
+
+  // Enhanced view handler that sets preview document with file_path
+  const handleViewDocument = (filePath: string, fileType?: string) => {
+    console.log("DirectivesDocs - handleViewDocument appelé avec:", filePath, fileType);
+    setPreviewDocument(filePath);
+  };
+
+  // Preview handlers
+  const handlePreviewDownload = (filePath: string) => {
+    const document = documents.find(doc => doc.file_path === filePath);
+    const fileName = document?.file_name || 'document.pdf';
+    console.log("DirectivesDocs - handlePreviewDownload:", filePath, fileName);
+    handleDownload(filePath, fileName);
+  };
+
+  const handlePreviewPrint = (filePath: string, fileType?: string) => {
+    console.log("DirectivesDocs - handlePreviewPrint:", filePath, fileType);
+    handlePrint(filePath, fileType);
+  };
 
   // Enhanced delete handler that accepts Document object
   const handleDeleteDocument = async (document: Document) => {

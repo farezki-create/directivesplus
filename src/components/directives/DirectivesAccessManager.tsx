@@ -82,6 +82,71 @@ export const DirectivesAccessManager: React.FC<DirectivesAccessManagerProps> = (
     );
   }
 
+  // Check for institution access specifically
+  const hasInstitutionAccess = sessionStorage.getItem('institutionAccess') === 'true';
+  console.log("DirectivesAccessManager - Institution access check:", { hasInstitutionAccess, institutionAccess });
+
+  // Institution access view (priorité sur l'authentification normale)
+  if (hasInstitutionAccess && (institutionAccess?.accessGranted || dossierActif)) {
+    console.log("DirectivesAccessManager - Affichage vue institution");
+    
+    let documentsToDisplay = documents;
+    
+    // Transform dossier documents if available
+    if (dossierActif?.contenu?.documents) {
+      documentsToDisplay = dossierActif.contenu.documents.map((doc: any, index: number): Document => ({
+        id: doc.id || `doc-${index}`,
+        file_name: doc.file_name || doc.fileName || `Document ${index + 1}`,
+        file_path: doc.file_path || doc.filePath || '',
+        file_type: doc.file_type || doc.fileType || 'application/pdf',
+        content_type: doc.content_type || doc.contentType || 'application/pdf',
+        user_id: doc.user_id || doc.userId || '',
+        created_at: doc.created_at || doc.createdAt || new Date().toISOString(),
+        description: doc.description,
+        file_size: doc.file_size || doc.fileSize,
+        updated_at: doc.updated_at || doc.updatedAt,
+        external_id: doc.external_id || doc.externalId
+      }));
+    } else if (dossierActif?.contenu?.directives) {
+      // Transform directive items to documents
+      documentsToDisplay = dossierActif.contenu.directives
+        .filter((item: any) => item.type === 'document')
+        .map((item: any, index: number): Document => ({
+          id: item.id || `directive-doc-${index}`,
+          file_name: item.file_name || `Document ${index + 1}`,
+          file_path: item.file_path || '',
+          file_type: item.content_type || 'application/pdf',
+          content_type: item.content_type || 'application/pdf',
+          user_id: dossierActif.userId || '',
+          created_at: item.created_at || new Date().toISOString(),
+          description: item.description,
+          file_size: item.file_size,
+          updated_at: item.updated_at,
+          external_id: item.external_id
+        }));
+    }
+
+    console.log("DirectivesAccessManager - Documents institution à afficher:", documentsToDisplay);
+
+    return (
+      <PublicDirectivesView
+        dossierActif={dossierActif}
+        profile={dossierActif?.profileData || profile}
+        documents={documentsToDisplay}
+        onDownload={handleDownload}
+        onPrint={handlePrint}
+        onView={handleViewDocument}
+        previewDocument={previewDocument}
+        setPreviewDocument={setPreviewDocument}
+        handlePreviewDownload={handlePreviewDownload}
+        handlePreviewPrint={handlePreviewPrint}
+        showAddOptions={showAddOptionsPublic}
+        setShowAddOptions={setShowAddOptionsPublic}
+        onUploadComplete={handleUploadCompleteWrapper}
+      />
+    );
+  }
+
   // Authenticated user view
   if (isAuthenticated && user) {
     return (
@@ -127,7 +192,7 @@ export const DirectivesAccessManager: React.FC<DirectivesAccessManagerProps> = (
       }));
     }
 
-    console.log("DirectivesAccessManager - Documents à afficher:", documentsToDisplay);
+    console.log("DirectivesAccessManager - Documents publics à afficher:", documentsToDisplay);
 
     return (
       <PublicDirectivesView
