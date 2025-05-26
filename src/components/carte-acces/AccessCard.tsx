@@ -115,8 +115,8 @@ const AccessCard = ({
 
       {/* Debug info en development */}
       {process.env.NODE_ENV === 'development' && <div className="absolute top-2 left-2 text-xs bg-black bg-opacity-50 p-1 rounded space-y-1">
-          <div>QR: {isQrCodeValid ? '✅' : '❌'} | URL: {qrCodeUrl?.length || 0} chars</div>
-          <div>Type: {qrCodeUrl?.includes('/pdf-viewer') ? 'PDF' : 'Directives'}</div>
+          
+          
           <div className="flex gap-1">
             
           </div>
