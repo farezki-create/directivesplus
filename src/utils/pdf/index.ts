@@ -7,6 +7,6 @@ export * from './healthcareDirectives';
 export * from './types';
 export * from './helpers';
 
-// Export specific functions from questionnaires and signatures to avoid conflicts
+// Export specific functions with different names to avoid conflicts
 export { formatQuestionnairesSection } from './questionnaires';
 export { addSignatureFooter } from './signatures';
