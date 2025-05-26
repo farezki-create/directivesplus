@@ -1,15 +1,15 @@
 
 import React from "react";
-import { Navigate } from "react-router-dom";
 import { usePdfViewerState } from "@/hooks/usePdfViewerState";
-import ExternalBrowserView from "./ExternalBrowserView";
-import PdfViewerContent from "./PdfViewerContent";
 import LoadingState from "./LoadingState";
 import ErrorState from "./ErrorState";
+import PdfViewerContent from "./PdfViewerContent";
+import ExternalBrowserView from "./ExternalBrowserView";
 
 const PdfViewerContainer = () => {
   const {
     documentId,
+    documentType,
     isExternalBrowser,
     document,
     loading,
@@ -23,37 +23,77 @@ const PdfViewerContainer = () => {
     handleDownload
   } = usePdfViewerState();
 
-  if (!documentId) {
-    return <Navigate to="/mes-directives" replace />;
+  console.log("PdfViewerContainer - State:", {
+    documentId,
+    documentType,
+    isExternalBrowser,
+    hasDocument: !!document,
+    loading,
+    error
+  });
+
+  if (loading) {
+    return <LoadingState />;
   }
 
-  if (isExternalBrowser) {
+  if (error) {
     return (
-      <ExternalBrowserView 
-        documentId={documentId}
-        document={document}
+      <ErrorState 
         error={error}
-        retryCount={retryCount}
         onRetry={handleRetry}
-        onDownload={handleDownload}
+        onGoBack={handleGoBack}
+        retryCount={retryCount}
       />
     );
   }
 
-  if (loading) {
-    return <LoadingState retryCount={retryCount} />;
+  if (!document) {
+    const mockDocument = {
+      id: documentId || '',
+      file_name: 'Document non trouvé',
+      file_path: '',
+      file_type: 'application/pdf',
+      content_type: 'application/pdf',
+      user_id: '',
+      created_at: new Date().toISOString()
+    };
+    
+    return (
+      <ErrorState 
+        error="Document non trouvé"
+        onRetry={handleRetry}
+        onGoBack={handleGoBack}
+        retryCount={retryCount}
+      />
+    );
   }
 
-  if (error || !document) {
-    return <ErrorState error={error} onRetry={handleRetry} documentId={documentId} />;
+  if (isExternalBrowser) {
+    const enhancedDocument = {
+      ...document,
+      file_type: document.file_type || document.content_type || 'application/pdf'
+    };
+    
+    return (
+      <ExternalBrowserView
+        document={enhancedDocument}
+        onDownload={handleDownloadPdf}
+        onPrint={handlePrintPdf}
+        onOpenExternal={handleOpenExternal}
+        onGoBack={handleGoBack}
+      />
+    );
   }
+
+  const enhancedDocument = {
+    ...document,
+    file_type: document.file_type || document.content_type || 'application/pdf'
+  };
 
   return (
-    <PdfViewerContent 
-      document={document}
-      onDownload={handleDownloadPdf}
-      onPrint={handlePrintPdf}
-      onOpenExternal={handleOpenExternal}
+    <PdfViewerContent
+      document={enhancedDocument}
+      onDownload={handleDownload}
       onGoBack={handleGoBack}
     />
   );

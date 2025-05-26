@@ -11,7 +11,8 @@ interface Document {
   id: string;
   file_name: string;
   file_path: string;
-  content_type: string;
+  file_type: string;
+  content_type?: string;
   content?: any;
   user_id: string;
   created_at: string;
@@ -79,6 +80,7 @@ export const usePdfViewerState = () => {
             id: data.id,
             file_name: 'Directives Anticipées',
             file_path: `/directive-viewer/${data.id}`,
+            file_type: 'application/json',
             content_type: 'application/json',
             content: data.content,
             user_id: data.user_id,
@@ -94,7 +96,13 @@ export const usePdfViewerState = () => {
           .single();
 
         if (error) throw error;
-        documentData = data;
+        
+        if (data) {
+          documentData = {
+            ...data,
+            file_type: data.content_type || 'application/pdf'
+          };
+        }
       }
 
       if (!documentData) {
@@ -132,7 +140,7 @@ export const usePdfViewerState = () => {
 
   const handlePrintPdf = () => {
     if (document) {
-      handlePrint(document.file_path, document.content_type);
+      handlePrint(document.file_path, document.file_type);
     }
   };
 

@@ -1,10 +1,9 @@
+
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { QueryClient } from 'react-query';
-import { AuthContextProvider } from './contexts/AuthContext';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AuthProvider } from './contexts/AuthContext';
 import Dashboard from './pages/Dashboard';
-import Questionnaire from './pages/Questionnaire';
-import RedigerDirectives from './pages/RedigerDirectives';
 import MesDirectives from './pages/MesDirectives';
 import CarteAcces from './pages/CarteAcces';
 import Auth from './pages/Auth';
@@ -16,18 +15,18 @@ import PdfViewer from './pages/PdfViewer';
 import DirectiveViewer from './pages/DirectiveViewer';
 import { Toaster } from "@/components/ui/toaster"
 
+const queryClient = new QueryClient();
+
 function App() {
   return (
-    <QueryClient>
+    <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <AuthContextProvider>
+        <AuthProvider>
           <Toaster />
           <Routes>
             <Route path="/" element={<Auth />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/questionnaire" element={<Questionnaire />} />
-            <Route path="/rediger" element={<RedigerDirectives />} />
             <Route path="/mes-directives" element={<MesDirectives />} />
             <Route path="/carte-acces" element={<CarteAcces />} />
             <Route path="/profile" element={<Profile />} />
@@ -37,9 +36,9 @@ function App() {
             <Route path="/pdf-viewer" element={<PdfViewer />} />
             <Route path="/directive-viewer/:directiveId" element={<DirectiveViewer />} />
           </Routes>
-        </AuthContextProvider>
+        </AuthProvider>
       </BrowserRouter>
-    </QueryClient>
+    </QueryClientProvider>
   );
 }
 
