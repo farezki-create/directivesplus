@@ -1,4 +1,3 @@
-
 import { useAuth } from "@/contexts/AuthContext";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -121,6 +120,15 @@ const Index = () => {
       {/* Hero Section */}
       <section className="py-20 px-4">
         <div className="container mx-auto text-center">
+          {/* Logo au-dessus du titre */}
+          <div className="flex justify-center mb-8">
+            <img 
+              src="/lovable-uploads/7d1ec590-c968-4826-bb92-168c52453d25.png" 
+              alt="DirectivesPlus" 
+              className="h-20 w-auto"
+            />
+          </div>
+          
           <h3 className="text-5xl font-bold text-gray-900 mb-6">
             Vos volontés, <span className="text-directiveplus-600">protégées</span> et accessibles
           </h3>
