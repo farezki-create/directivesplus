@@ -43,27 +43,27 @@ const DirectivesGrid = () => {
       badgeColor: "bg-purple-100 text-purple-600"
     },
     {
-      title: "Personne de confiance",
-      description: "Désignez une personne de confiance pour vous représenter.",
-      icon: Users,
-      path: "/personne-confiance",
-      color: "bg-indigo-50 hover:bg-indigo-100 border-indigo-200",
-      badgeColor: "bg-pink-100 text-pink-600"
-    },
-    {
       title: "Exemples de Phrases",
       description: "Inspirez-vous d'exemples pour rédiger vos directives.",
       icon: BookOpen,
       path: "/exemples-phrases",
       color: "bg-teal-50 hover:bg-teal-100 border-teal-200",
       badgeColor: "bg-teal-100 text-teal-600"
+    },
+    {
+      title: "Personne de confiance",
+      description: "Désignez une personne de confiance pour vous représenter.",
+      icon: Users,
+      path: "/personne-confiance",
+      color: "bg-indigo-50 hover:bg-indigo-100 border-indigo-200",
+      badgeColor: "bg-pink-100 text-pink-600"
     }
   ];
 
   const bottomCards = [
     {
       title: "Synthèse",
-      description: "Consultez et finalisez l'ensemble de vos directives anticipées.",
+      description: "Consultez la synthèse, enregistrez, signez et générez le PDF.",
       icon: BookOpen,
       path: "/synthesis",
       color: "bg-emerald-50 hover:bg-emerald-100 border-emerald-200",
@@ -72,7 +72,7 @@ const DirectivesGrid = () => {
     },
     {
       title: "Mes Directives",
-      description: "Visualisez, imprimez et partagez vos directives anticipées.",
+      description: "Consultez mes directives, imprimez, téléchargez et partagez.",
       icon: FileText,
       path: "/mes-directives",
       color: "bg-orange-50 hover:bg-orange-100 border-orange-200",
@@ -84,8 +84,8 @@ const DirectivesGrid = () => {
   // Ajouter la carte d'accès seulement si l'utilisateur est connecté
   if (isAuthenticated) {
     bottomCards.push({
-      title: "Accès Carte",
-      description: "Générez votre carte d'accès professionnelle avec QR code et informations d'urgence.",
+      title: "Carte d'Accès",
+      description: "Carte d'accès avec QR code et code d'accès.",
       icon: CreditCard,
       path: "/carte-acces",
       color: "bg-yellow-50 hover:bg-yellow-100 border-yellow-200",
