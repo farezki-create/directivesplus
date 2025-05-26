@@ -23,15 +23,16 @@ export const useDocumentLoader = (documentId: string | null) => {
       setLoading(true);
       setError(null);
 
-      // MÉTHODE 1: Fonction RPC publique (prioritaire pour QR codes)
-      console.log("🔍 ÉTAPE 1: Test fonction RPC get_public_document");
+      // MÉTHODE PRINCIPALE: Fonction RPC publique (maintenant avec RLS corrigé)
+      console.log("🔍 Utilisation de la fonction RPC get_public_document");
       const { data: rpcDoc, error: rpcError } = await supabase
         .rpc('get_public_document', { doc_id: id });
 
       console.log("📊 Résultat RPC:", { 
         success: !rpcError,
         dataFound: rpcDoc?.length > 0,
-        error: rpcError?.message
+        error: rpcError?.message,
+        data: rpcDoc?.[0]
       });
 
       if (rpcDoc && rpcDoc.length > 0 && !rpcError) {
@@ -57,66 +58,31 @@ export const useDocumentLoader = (documentId: string | null) => {
         return;
       }
 
-      // MÉTHODE 2: Accès authentifié si RPC échoue
-      console.log("🔍 ÉTAPE 2: Test accès authentifié");
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (session) {
-        console.log("🔍 Session trouvée, test accès authentifié");
-        const { data: authDoc, error: authError } = await supabase
+      // MÉTHODE FALLBACK: Accès direct si RPC échoue
+      if (rpcError) {
+        console.log("🔍 RPC a échoué, tentative d'accès direct");
+        const { data: directDoc, error: directError } = await supabase
           .from('pdf_documents')
           .select('*')
           .eq('id', id)
           .maybeSingle();
 
-        console.log("📊 Résultat accès authentifié:", { 
-          success: !authError,
-          found: !!authDoc,
-          error: authError?.message
-        });
-
-        if (authDoc && !authError) {
-          console.log("✅ SUCCESS AUTH: Document trouvé:", authDoc.file_name);
+        if (directDoc && !directError) {
+          console.log("✅ SUCCESS DIRECT: Document trouvé:", directDoc.file_name);
           const transformedDoc: Document = {
-            ...authDoc,
-            file_type: authDoc.content_type?.split('/')[1] || 'pdf',
-            content_type: authDoc.content_type || 'application/pdf'
+            ...directDoc,
+            file_type: directDoc.content_type?.split('/')[1] || 'pdf',
+            content_type: directDoc.content_type || 'application/pdf'
           };
           setDocument(transformedDoc);
           setLoading(false);
-          console.log("✅ DOCUMENT CHARGÉ avec succès via auth");
+          console.log("✅ DOCUMENT CHARGÉ avec succès via accès direct");
           return;
         }
       }
 
-      // MÉTHODE 3: Test dans medical_documents
-      console.log("🔍 ÉTAPE 3: Test dans medical_documents");
-      const { data: medicalDoc, error: medicalError } = await supabase
-        .from('medical_documents')
-        .select('*')
-        .eq('id', id)
-        .maybeSingle();
-
-      console.log("📊 Résultat medical_documents:", { 
-        success: !medicalError,
-        found: !!medicalDoc,
-        error: medicalError?.message
-      });
-
-      if (medicalDoc && !medicalError) {
-        console.log("✅ SUCCESS MEDICAL: Document trouvé:", medicalDoc.file_name);
-        const transformedDoc: Document = {
-          ...medicalDoc,
-          content_type: `application/${medicalDoc.file_type}`
-        };
-        setDocument(transformedDoc);
-        setLoading(false);
-        console.log("✅ DOCUMENT CHARGÉ avec succès via medical");
-        return;
-      }
-
       // ÉCHEC: Aucune méthode n'a fonctionné
-      const finalError = `Document ${id} introuvable dans toutes les sources`;
+      const finalError = `Document ${id} introuvable`;
       console.error("❌ ÉCHEC COMPLET:", finalError);
       throw new Error(finalError);
 
