@@ -1,6 +1,6 @@
 
 import { QRCodeSVG } from "qrcode.react";
-import { CreditCard, AlertCircle, ExternalLink } from "lucide-react";
+import { CreditCard, AlertCircle, ExternalLink, RefreshCw } from "lucide-react";
 
 interface AccessCardProps {
   firstName: string;
@@ -11,23 +11,30 @@ interface AccessCardProps {
 }
 
 const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: AccessCardProps) => {
-  console.log("AccessCard - Rendering with:", {
+  console.log("AccessCard - Rendering with detailed props:", {
     firstName,
     lastName,
     birthDate,
     codeAcces,
     qrCodeUrl,
-    qrCodeUrlLength: qrCodeUrl?.length || 0
+    qrCodeUrlLength: qrCodeUrl?.length || 0,
+    urlStartsWithHttp: qrCodeUrl?.startsWith('http'),
+    currentOrigin: window.location.origin
   });
 
-  // Validation simple de l'URL
+  // Validation robuste de l'URL
   const isQrCodeValid = qrCodeUrl && 
                        qrCodeUrl.trim() !== '' && 
+                       qrCodeUrl.length > 10 &&
                        (qrCodeUrl.startsWith('http://') || qrCodeUrl.startsWith('https://'));
   
-  if (!isQrCodeValid) {
-    console.warn("AccessCard - QR code URL is empty or invalid:", qrCodeUrl);
-  }
+  console.log("AccessCard - QR Code validation:", {
+    hasUrl: !!qrCodeUrl,
+    urlNotEmpty: qrCodeUrl?.trim() !== '',
+    urlLengthOk: qrCodeUrl?.length > 10,
+    startsWithHttp: qrCodeUrl?.startsWith('http'),
+    isValid: isQrCodeValid
+  });
 
   const handleQrCodeClick = () => {
     if (isQrCodeValid) {
@@ -39,8 +46,16 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
         console.error("AccessCard - Error opening URL:", error);
       }
     } else {
-      console.error("AccessCard - Cannot open invalid QR URL:", qrCodeUrl);
+      console.error("AccessCard - Cannot open invalid QR URL:", {
+        url: qrCodeUrl,
+        isValid: isQrCodeValid
+      });
     }
+  };
+
+  const handleRefreshQrCode = () => {
+    console.log("AccessCard - Refreshing page to regenerate QR code");
+    window.location.reload();
   };
 
   return (
@@ -76,7 +91,7 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
                   isQrCodeValid ? 'cursor-pointer hover:bg-opacity-30' : 'cursor-not-allowed'
                 }`}
                 onClick={handleQrCodeClick}
-                title={isQrCodeValid ? "Cliquer pour ouvrir les directives" : "QR Code non disponible"}
+                title={isQrCodeValid ? "Cliquer pour ouvrir les directives" : "QR Code en cours de génération..."}
               >
                 {isQrCodeValid ? (
                   <QRCodeSVG 
@@ -88,8 +103,13 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
                     includeMargin={false}
                   />
                 ) : (
-                  <div className="w-[70px] h-[70px] bg-white bg-opacity-30 rounded flex items-center justify-center">
-                    <AlertCircle className="w-6 h-6 text-white opacity-70" />
+                  <div className="w-[70px] h-[70px] bg-white bg-opacity-30 rounded flex flex-col items-center justify-center">
+                    <AlertCircle className="w-6 h-6 text-white opacity-70 mb-1" />
+                    <RefreshCw 
+                      className="w-4 h-4 text-white opacity-70 cursor-pointer hover:opacity-100" 
+                      onClick={handleRefreshQrCode}
+                      title="Actualiser"
+                    />
                   </div>
                 )}
               </div>
@@ -100,7 +120,7 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
                     <span>Scanner</span>
                   </div>
                 ) : (
-                  "Non disponible"
+                  "Génération..."
                 )}
               </div>
             </div>
@@ -125,6 +145,13 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
           </div>
         </div>
       </div>
+
+      {/* Debug info en development */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="absolute top-2 left-2 text-xs bg-black bg-opacity-50 p-1 rounded">
+          QR: {isQrCodeValid ? '✅' : '❌'} | URL: {qrCodeUrl?.length || 0} chars
+        </div>
+      )}
     </div>
   );
 };
