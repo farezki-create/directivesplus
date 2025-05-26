@@ -125,7 +125,7 @@ const Index = () => {
             <img 
               src="/lovable-uploads/7d1ec590-c968-4826-bb92-168c52453d25.png" 
               alt="DirectivesPlus" 
-              className="h-20 w-auto"
+              className="h-40 w-auto"
             />
           </div>
           
