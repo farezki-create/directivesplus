@@ -87,7 +87,7 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
       </div>
       
       {/* Section des coordonnées patient */}
-      <div className="mt-1 mb-12">
+      <div className="mt-1 mb-10">
         <div className="bg-white bg-opacity-15 rounded-lg p-3">
           <div className="text-xs opacity-90 mb-2 tracking-wide uppercase font-medium">PATIENT</div>
           <div className="flex justify-between items-start">
@@ -98,7 +98,7 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
             </div>
             <div className="ml-4 flex-shrink-0">
               <div 
-                className={`bg-white rounded-lg p-2 transition-all ${
+                className={`bg-white rounded-lg p-3 transition-all ${
                   isQrCodeValid ? 'cursor-pointer hover:bg-gray-50' : 'cursor-not-allowed'
                 }`}
                 onClick={handleQrCodeClick}
@@ -106,14 +106,14 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
                 {isQrCodeValid ? (
                   <QRCodeSVG 
                     value={qrCodeUrl}
-                    size={70}
+                    size={85}
                     level="M"
                     fgColor="#000000"
                     bgColor="#ffffff"
                     includeMargin={false}
                   />
                 ) : (
-                  <div className="w-[70px] h-[70px] bg-white bg-opacity-30 rounded flex flex-col items-center justify-center">
+                  <div className="w-[85px] h-[85px] bg-white bg-opacity-30 rounded flex flex-col items-center justify-center">
                     <AlertCircle className="w-6 h-6 text-white opacity-70 mb-1" />
                     <div 
                       onClick={handleRefreshQrCode}
