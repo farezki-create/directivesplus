@@ -3,6 +3,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './contexts/AuthContext';
+import Index from './pages/Index';
 import Dashboard from './pages/Dashboard';
 import MesDirectives from './pages/MesDirectives';
 import CarteAcces from './pages/CarteAcces';
@@ -13,6 +14,7 @@ import DirectDocument from './pages/DirectDocument';
 import AccessCardPage from './pages/AccessCard';
 import PdfViewer from './pages/PdfViewer';
 import DirectiveViewer from './pages/DirectiveViewer';
+import Rediger from './pages/Rediger';
 import { Toaster } from "@/components/ui/toaster"
 
 const queryClient = new QueryClient();
@@ -24,8 +26,9 @@ function App() {
         <AuthProvider>
           <Toaster />
           <Routes>
-            <Route path="/" element={<Auth />} />
+            <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/rediger" element={<Rediger />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/mes-directives" element={<MesDirectives />} />
             <Route path="/carte-acces" element={<CarteAcces />} />
