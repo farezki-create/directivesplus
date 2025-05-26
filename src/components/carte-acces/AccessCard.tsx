@@ -20,10 +20,21 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
     qrCodeUrlLength: qrCodeUrl?.length || 0
   });
 
-  // Validation des props
-  if (!qrCodeUrl || qrCodeUrl.trim() === '') {
-    console.warn("AccessCard - QR code URL is empty or invalid");
+  // Validation des props et test du QR code
+  const isQrCodeValid = qrCodeUrl && qrCodeUrl.trim() !== '' && qrCodeUrl.startsWith('http');
+  
+  if (!isQrCodeValid) {
+    console.warn("AccessCard - QR code URL is empty or invalid:", qrCodeUrl);
   }
+
+  const handleQrCodeClick = () => {
+    if (isQrCodeValid) {
+      console.log("AccessCard - Opening QR URL:", qrCodeUrl);
+      window.open(qrCodeUrl, '_blank');
+    } else {
+      console.error("AccessCard - Cannot open invalid QR URL:", qrCodeUrl);
+    }
+  };
 
   return (
     <div 
@@ -53,8 +64,8 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
               <div className="text-xs opacity-90 font-medium">{birthDate}</div>
             </div>
             <div className="ml-4 flex-shrink-0">
-              <div className="bg-white bg-opacity-20 rounded-lg p-2">
-                {qrCodeUrl ? (
+              <div className="bg-white bg-opacity-20 rounded-lg p-2 cursor-pointer hover:bg-opacity-30 transition-all" onClick={handleQrCodeClick}>
+                {isQrCodeValid ? (
                   <QRCodeSVG 
                     value={qrCodeUrl}
                     size={70}
@@ -69,6 +80,11 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
                   </div>
                 )}
               </div>
+              {isQrCodeValid && (
+                <div className="text-xs text-center mt-1 opacity-75">
+                  Cliquer pour ouvrir
+                </div>
+              )}
             </div>
           </div>
         </div>

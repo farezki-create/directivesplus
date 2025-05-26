@@ -49,7 +49,7 @@ export const useAccessCardGeneration = () => {
         console.log("AccessCardGeneration - Document found:", document);
         
         // QR code pointant vers le visualisateur PDF avec l'ID du document
-        const directiveUrl = `${window.location.origin}/pdf-viewer?id=${document.id}`;
+        const directiveUrl = `${window.location.origin}/pdf-viewer?id=${document.id}&source=qr`;
         console.log("AccessCardGeneration - Generated QR URL:", directiveUrl);
         setQrCodeUrl(directiveUrl);
       } else {
@@ -67,8 +67,8 @@ export const useAccessCardGeneration = () => {
   };
 
   const createFallbackUrl = (userId: string) => {
-    // URL vers la page d'accès aux directives avec l'ID utilisateur
-    return `${window.location.origin}/mes-directives`;
+    // URL vers la page d'accès aux directives avec l'ID utilisateur en paramètre
+    return `${window.location.origin}/mes-directives?user=${userId}`;
   };
 
   console.log("AccessCardGeneration - Current state:", {
