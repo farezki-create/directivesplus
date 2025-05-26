@@ -17,17 +17,22 @@ export const useQRCodeModal = () => {
   const openQRCodeModal = useCallback((documentId: string, documentName: string = "Document", filePath?: string) => {
     if (!documentId || documentId.trim() === '') {
       console.error("useQRCodeModal: ID du document invalide", { documentId, documentName });
-      return;
+      return false;
     }
 
+    console.log("useQRCodeModal: Ouverture modal pour", { documentId, documentName, filePath });
+
     setModalState({
-      documentId,
-      documentName,
+      documentId: documentId.trim(),
+      documentName: documentName.trim() || "Document",
       filePath
     });
+
+    return true;
   }, []);
 
   const closeQRCodeModal = useCallback(() => {
+    console.log("useQRCodeModal: Fermeture modal");
     setModalState({
       documentId: null,
       documentName: "",
@@ -35,7 +40,7 @@ export const useQRCodeModal = () => {
     });
   }, []);
 
-  const isOpen = modalState.documentId !== null;
+  const isOpen = Boolean(modalState.documentId);
 
   return {
     qrCodeModalState: modalState,

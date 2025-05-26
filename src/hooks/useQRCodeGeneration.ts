@@ -49,8 +49,20 @@ export const useQRCodeGeneration = () => {
         currentOrigin: window.location.origin
       });
 
-      // Toujours utiliser l'URL de l'application pour assurer la compatibilité
-      const qrCodeUrl = `${window.location.origin}/pdf-viewer?id=${documentId}`;
+      // Générer l'URL correcte basée sur le type de document
+      let qrCodeUrl: string;
+      
+      // Si nous avons un filePath qui commence par "data:", c'est un PDF encodé
+      if (filePath && filePath.startsWith('data:')) {
+        // Pour les PDF encodés, utiliser le visualisateur PDF
+        qrCodeUrl = `${window.location.origin}/pdf-viewer?id=${documentId}`;
+      } else if (filePath && (filePath.startsWith('http://') || filePath.startsWith('https://'))) {
+        // Pour les URLs externes, utiliser directement l'URL
+        qrCodeUrl = filePath;
+      } else {
+        // Par défaut, utiliser le visualisateur PDF
+        qrCodeUrl = `${window.location.origin}/pdf-viewer?id=${documentId}`;
+      }
       
       console.log("QR Code final:", {
         qrCodeUrl,
@@ -75,7 +87,7 @@ export const useQRCodeGeneration = () => {
       
       toast({
         title: "QR Code généré",
-        description: `QR Code créé pour ${documentName} - Compatible tous navigateurs`,
+        description: `QR Code créé pour ${documentName}`,
       });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Erreur lors de la génération du QR code";

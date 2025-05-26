@@ -22,7 +22,8 @@ const ExternalBrowserView: React.FC<ExternalBrowserViewProps> = ({
   onRetry,
   onDownload
 }) => {
-  const appUrl = `https://24c30559-a746-463d-805e-d2330d3a13f4.lovableproject.com/pdf-viewer?id=${documentId}`;
+  const baseUrl = window.location.origin;
+  const appUrl = `${baseUrl}/pdf-viewer?id=${documentId}`;
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(appUrl)}`;
   
   return (
@@ -32,16 +33,16 @@ const ExternalBrowserView: React.FC<ExternalBrowserViewProps> = ({
           <CardHeader className="text-center">
             <CardTitle className="flex items-center justify-center gap-2">
               <Globe className="h-6 w-6 text-blue-600" />
-              Document Médical
+              Accès au document
             </CardTitle>
           </CardHeader>
           <CardContent className="text-center space-y-4">
             <div className="p-4 bg-green-50 rounded-lg border border-green-200">
               <p className="text-green-800 font-medium">
-                ✅ Lien direct fonctionnel
+                ✅ Document accessible
               </p>
               <p className="text-sm text-green-700 mt-1">
-                Ce document est maintenant accessible depuis n'importe quel navigateur.
+                {document ? `Document: ${document.file_name}` : "Chargement du document..."}
               </p>
             </div>
             
@@ -72,24 +73,11 @@ const ExternalBrowserView: React.FC<ExternalBrowserViewProps> = ({
                 Ouvrir le document
               </Button>
               
-              {/* Si on a un document avec un file_path direct */}
-              {document?.file_path && !document.file_path.startsWith('data:') && (
-                <Button 
-                  variant="outline"
-                  onClick={() => window.open(document.file_path, '_blank')}
-                  className="w-full"
-                  size="lg"
-                >
-                  <ExternalLink className="w-4 h-4 mr-2" />
-                  Accès direct au PDF
-                </Button>
-              )}
-              
               <Button 
                 variant="outline"
                 onClick={() => {
                   navigator.clipboard.writeText(appUrl);
-                  alert('Lien copié ! Vous pouvez le coller dans votre navigateur.');
+                  alert('Lien copié !');
                 }}
                 className="w-full"
                 size="lg"
@@ -105,14 +93,14 @@ const ExternalBrowserView: React.FC<ExternalBrowserViewProps> = ({
                   size="lg"
                 >
                   <Download className="w-4 h-4 mr-2" />
-                  Télécharger directement
+                  Télécharger
                 </Button>
               )}
             </div>
             
             <div className="p-3 bg-blue-50 rounded-lg">
               <p className="text-sm text-blue-800">
-                🔗 <strong>Accès universel :</strong> Ce lien fonctionne dans tous les navigateurs et applications de scan QR.
+                🔗 <strong>Accès universel :</strong> Ce lien fonctionne dans tous les navigateurs.
               </p>
             </div>
 
@@ -121,15 +109,17 @@ const ExternalBrowserView: React.FC<ExternalBrowserViewProps> = ({
                 <p className="text-sm text-red-800">
                   ⚠️ {error}
                 </p>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={onRetry}
-                  className="mt-2"
-                >
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  Réessayer ({retryCount + 1}/3)
-                </Button>
+                {retryCount < 3 && (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={onRetry}
+                    className="mt-2"
+                  >
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Réessayer ({retryCount + 1}/3)
+                  </Button>
+                )}
               </div>
             )}
           </CardContent>
