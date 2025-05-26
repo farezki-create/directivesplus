@@ -1,6 +1,5 @@
 
 import React from "react";
-import AppNavigation from "@/components/AppNavigation";
 import DirectivesPageHeader from "@/components/documents/DirectivesPageHeader";
 import DirectivesPageContent from "@/components/documents/DirectivesPageContent";
 import DocumentPreviewDialog from "@/components/documents/DocumentPreviewDialog";
@@ -45,28 +44,22 @@ const AuthenticatedDirectivesView: React.FC<AuthenticatedDirectivesViewProps> = 
   handlePreviewPrint,
 }) => {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <AppNavigation />
+    <div className="max-w-6xl mx-auto">
+      <DirectivesPageHeader 
+        onAddDocument={() => setShowAddOptions(true)}
+        documentsCount={documents.length}
+      />
       
-      <main className="container mx-auto px-4 py-8">
-        <div className="max-w-6xl mx-auto">
-          <DirectivesPageHeader 
-            onAddDocument={() => setShowAddOptions(true)}
-            documentsCount={documents.length}
-          />
-          
-          <DirectivesPageContent
-            documents={documents}
-            onDownload={onDownload}
-            onPrint={onPrint}
-            onView={onView}
-            onDelete={(documentId: string) => {
-              const doc = documents.find(d => d.id === documentId);
-              if (doc) setDocumentToDelete(doc);
-            }}
-          />
-        </div>
-      </main>
+      <DirectivesPageContent
+        documents={documents}
+        onDownload={onDownload}
+        onPrint={onPrint}
+        onView={onView}
+        onDelete={(documentId: string) => {
+          const doc = documents.find(d => d.id === documentId);
+          if (doc) setDocumentToDelete(doc);
+        }}
+      />
 
       {/* Document Preview Dialog */}
       {previewDocument && (
