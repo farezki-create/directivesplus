@@ -58,6 +58,17 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
     window.location.reload();
   };
 
+  // Test direct du QR code
+  const handleTestQrCode = () => {
+    console.log("AccessCard - Test direct du QR code:", qrCodeUrl);
+    if (qrCodeUrl) {
+      // Test direct sans validation
+      window.open(qrCodeUrl, '_blank', 'noopener,noreferrer');
+    } else {
+      alert('QR Code URL non disponible');
+    }
+  };
+
   return (
     <div 
       id="access-card"
@@ -150,8 +161,14 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
 
       {/* Debug info en development */}
       {process.env.NODE_ENV === 'development' && (
-        <div className="absolute top-2 left-2 text-xs bg-black bg-opacity-50 p-1 rounded">
-          QR: {isQrCodeValid ? '✅' : '❌'} | URL: {qrCodeUrl?.length || 0} chars
+        <div className="absolute top-2 left-2 text-xs bg-black bg-opacity-50 p-1 rounded space-y-1">
+          <div>QR: {isQrCodeValid ? '✅' : '❌'} | URL: {qrCodeUrl?.length || 0} chars</div>
+          <button 
+            onClick={handleTestQrCode}
+            className="bg-blue-600 text-white px-2 py-1 rounded text-xs hover:bg-blue-700"
+          >
+            Test QR
+          </button>
         </div>
       )}
     </div>
