@@ -12,6 +12,7 @@ import CarteAcces from "./pages/CarteAcces";
 import DirectivesAccess from "./pages/DirectivesAccess";
 import MesDirectives from "./pages/MesDirectives";
 import Profile from "./pages/Profile";
+import AccesInstitution from "./pages/AccesInstitution";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PdfViewer from "./pages/PdfViewer";
 import { Navigate } from "react-router-dom";
@@ -45,6 +46,7 @@ const App = () => (
               } 
             />
             <Route path="/directives-access" element={<DirectivesAccess />} />
+            <Route path="/acces-institution" element={<AccesInstitution />} />
             <Route path="/mes-directives" element={<MesDirectives />} />
             <Route 
               path="/profile" 

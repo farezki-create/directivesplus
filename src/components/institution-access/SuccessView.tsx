@@ -1,68 +1,66 @@
 
 import React, { useEffect } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { CheckCircle, Eye } from "lucide-react";
-import { AccessibleDataCard } from "./AccessibleDataCard";
-import { useNavigate } from "react-router-dom";
+import { Shield, CheckCircle } from "lucide-react";
 
 interface SuccessViewProps {
-  patientData: {
-    first_name?: string;
-    last_name?: string;
+  patientData?: {
+    first_name: string;
+    last_name: string;
+    birth_date: string;
   } | null;
 }
 
 export const SuccessView: React.FC<SuccessViewProps> = ({ patientData }) => {
-  const navigate = useNavigate();
-
-  // Redirection automatique comme pour les QR codes
+  // Redirection automatique après 3 secondes
   useEffect(() => {
-    console.log("✅ Accès institution réussi, redirection automatique vers /mes-directives");
     const timer = setTimeout(() => {
-      navigate("/mes-directives", { replace: true });
-    }, 2000);
+      console.log("Redirection automatique vers /mes-directives");
+      window.location.href = "/mes-directives";
+    }, 3000);
 
     return () => clearTimeout(timer);
-  }, [navigate]);
-
-  const handleDirectAccess = () => {
-    navigate("/mes-directives", { replace: true });
-  };
+  }, []);
 
   return (
     <div className="space-y-6">
-      <Card className="border-green-200 bg-green-50">
-        <CardContent className="p-6 text-center">
-          <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-green-800 mb-2">
-            Accès autorisé
+      <Alert className="bg-green-50 border-green-200">
+        <CheckCircle className="h-5 w-5 text-green-600" />
+        <AlertDescription className="text-green-800">
+          <strong>Accès autorisé</strong><br />
+          {patientData ? (
+            <>
+              Vous avez maintenant accès aux directives anticipées de{" "}
+              <strong>
+                {patientData.first_name} {patientData.last_name}
+              </strong>
+            </>
+          ) : (
+            "Vous avez maintenant accès aux directives anticipées"
+          )}
+        </AlertDescription>
+      </Alert>
+      
+      <div className="text-center">
+        <div className="mb-4">
+          <Shield className="h-12 w-12 text-green-600 mx-auto mb-2" />
+          <h3 className="text-lg font-semibold text-gray-900">
+            Accès Institution Accordé
           </h3>
-          <p className="text-green-700 mb-4">
-            Vous avez maintenant accès aux directives anticipées de{" "}
-            <strong>
-              {patientData?.first_name} {patientData?.last_name}
-            </strong>
+          <p className="text-gray-600 mt-1">
+            Redirection automatique dans 3 secondes...
           </p>
-          
-          <p className="text-sm text-green-600 mb-4">
-            Redirection automatique dans 2 secondes...
-          </p>
-          
-          <div className="flex flex-col gap-3 mt-6">
-            <Button 
-              onClick={handleDirectAccess}
-              className="w-full bg-blue-600 hover:bg-blue-700"
-              size="lg"
-            >
-              <Eye className="mr-2 h-5 w-5" />
-              Consulter maintenant
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      <AccessibleDataCard />
+        </div>
+        
+        <Button 
+          onClick={() => window.location.href = "/mes-directives"}
+          className="bg-blue-600 hover:bg-blue-700"
+          size="lg"
+        >
+          Consulter les directives maintenant
+        </Button>
+      </div>
     </div>
   );
 };
