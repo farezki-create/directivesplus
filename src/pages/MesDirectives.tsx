@@ -8,6 +8,8 @@ import DirectivesLoadingState from "@/components/documents/DirectivesLoadingStat
 import { MesDirectivesSharedAccess } from "@/components/documents/MesDirectivesSharedAccess";
 import { useDossierDocuments } from "@/hooks/directives/useDossierDocuments";
 import { useDossierStore } from "@/store/dossierStore";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import type { Document } from "@/types/documents";
 
 const MesDirectives = () => {
@@ -63,7 +65,15 @@ const MesDirectives = () => {
 
   // Si un code de partage est présent dans l'URL, afficher la vue de partage
   if (sharedCode) {
-    return <MesDirectivesSharedAccess />;
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <main className="container mx-auto py-8">
+          <MesDirectivesSharedAccess />
+        </main>
+        <Footer />
+      </div>
+    );
   }
 
   // Afficher un message spécial pour les accès via QR code ou institution même sans authentification
@@ -126,7 +136,15 @@ const MesDirectives = () => {
 
   // Afficher l'état de chargement
   if (authLoading || documentsLoading) {
-    return <DirectivesLoadingState />;
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <main className="container mx-auto py-8">
+          <DirectivesLoadingState />
+        </main>
+        <Footer />
+      </div>
+    );
   }
 
   // Si c'est un accès institution et qu'il y a des documents, ouvrir directement le premier PDF
@@ -146,24 +164,30 @@ const MesDirectives = () => {
   }, [hasInstitutionAccess, documents, previewDocument]);
 
   return (
-    <AuthenticatedDirectivesView
-      user={hasInstitutionAccess && dossierActif ? { id: dossierActif.userId } : user}
-      profile={hasInstitutionAccess && dossierActif?.profileData ? dossierActif.profileData : profile}
-      documents={documents}
-      showAddOptions={showAddOptions}
-      setShowAddOptions={setShowAddOptions}
-      onUploadComplete={handleUploadCompleteWrapper}
-      onDownload={handleDownload}
-      onPrint={handlePrint}
-      onView={handleViewDocument}
-      documentToDelete={documentToDelete}
-      setDocumentToDelete={setDocumentToDelete}
-      handleDelete={handleDeleteDocument}
-      previewDocument={previewDocument}
-      setPreviewDocument={setPreviewDocument}
-      handlePreviewDownload={handlePreviewDownload}
-      handlePreviewPrint={handlePreviewPrint}
-    />
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      <main className="container mx-auto py-8">
+        <AuthenticatedDirectivesView
+          user={hasInstitutionAccess && dossierActif ? { id: dossierActif.userId } : user}
+          profile={hasInstitutionAccess && dossierActif?.profileData ? dossierActif.profileData : profile}
+          documents={documents}
+          showAddOptions={showAddOptions}
+          setShowAddOptions={setShowAddOptions}
+          onUploadComplete={handleUploadCompleteWrapper}
+          onDownload={handleDownload}
+          onPrint={handlePrint}
+          onView={handleViewDocument}
+          documentToDelete={documentToDelete}
+          setDocumentToDelete={setDocumentToDelete}
+          handleDelete={handleDeleteDocument}
+          previewDocument={previewDocument}
+          setPreviewDocument={setPreviewDocument}
+          handlePreviewDownload={handlePreviewDownload}
+          handlePreviewPrint={handlePreviewPrint}
+        />
+      </main>
+      <Footer />
+    </div>
   );
 };
 
