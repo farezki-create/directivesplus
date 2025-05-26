@@ -13,7 +13,7 @@ import {
 
 const InfoSteps = () => {
   const steps = [
-    { id: 1, text: "Répondre aux 4 questionnaires", icon: <ClipboardList /> },
+    { id: "1,2,3,4", text: "Répondre aux 4 questionnaires", icon: <ClipboardList /> },
     { id: 5, text: "Ajouter un texte libre et des phrases types", icon: <FileText /> },
     { id: 6, text: "Désigner la personne de confiance", icon: <UserCheck /> },
     { id: 7, text: "Consulter la synthèse", icon: <Sparkles /> },
@@ -39,8 +39,8 @@ const InfoSteps = () => {
                     <ClipboardList />
                   </div>
                   <span className="text-sm">
-                    <span className="inline-flex items-center justify-center bg-directiveplus-600 text-white rounded-full h-5 w-5 mr-1.5 text-xs">
-                      1
+                    <span className="inline-flex items-center justify-center bg-directiveplus-600 text-white rounded-full h-5 w-8 mr-1.5 text-xs px-1">
+                      1,2,3,4
                     </span>
                     Répondre aux 4 questionnaires
                   </span>
@@ -114,7 +114,9 @@ const InfoSteps = () => {
                 {step.icon}
               </div>
               <span className="text-sm">
-                <span className="inline-flex items-center justify-center bg-directiveplus-600 text-white rounded-full h-5 w-5 mr-1.5 text-xs">
+                <span className={`inline-flex items-center justify-center bg-directiveplus-600 text-white rounded-full h-5 mr-1.5 text-xs px-1 ${
+                  step.id === "1,2,3,4" ? "w-8" : "w-5"
+                }`}>
                   {step.id}
                 </span>
                 {step.text}
