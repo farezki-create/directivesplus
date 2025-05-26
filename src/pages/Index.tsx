@@ -83,7 +83,7 @@ const Index = () => {
               <img 
                 src="/lovable-uploads/d5255c41-98e6-44a5-82fd-dac019e499ef.png" 
                 alt="DirectivesPlus" 
-                className="h-12 w-auto opacity-90"
+                className="h-12 w-auto opacity-95"
               />
             </div>
             <nav className="hidden md:flex items-center space-x-6">
@@ -125,7 +125,7 @@ const Index = () => {
             <img 
               src="/lovable-uploads/d5255c41-98e6-44a5-82fd-dac019e499ef.png" 
               alt="DirectivesPlus" 
-              className="h-80 w-auto opacity-40"
+              className="h-80 w-auto opacity-50"
             />
           </div>
           
