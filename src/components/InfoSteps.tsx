@@ -16,7 +16,7 @@ const InfoSteps = () => {
     { id: "1,2,3,4", text: "Répondre aux 4 questionnaires", icon: <ClipboardList /> },
     { id: 5, text: "Ajouter un texte libre et des phrases types", icon: <FileText /> },
     { id: 6, text: "Désigner la personne de confiance", icon: <UserCheck /> },
-    { id: 7, text: "Consulter la synthèse, enregistrer, signer et générer le PDF", icon: <Sparkles /> },
+    { id: 7, text: "Consulter la synthèse, ajouter au besoin un texte, signer et enregistrer", icon: <Sparkles /> },
     { id: 8, text: "Consulter mes directives, imprimer, télécharger et partager", icon: <FileText /> },
     { id: 9, text: "Carte d'accès avec QR code et code d'accès", icon: <Share2 /> }
   ];
