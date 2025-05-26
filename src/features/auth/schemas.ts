@@ -1,5 +1,6 @@
 
 import * as z from "zod";
+import { securePasswordSchema } from "@/utils/security/passwordSecurity";
 
 export const registerFormSchema = z.object({
   firstName: z.string().min(2, "Le prénom est requis"),
@@ -12,7 +13,7 @@ export const registerFormSchema = z.object({
   postalCode: z.string().optional(),
   city: z.string().optional(),
   country: z.string().optional(),
-  password: z.string().min(6, "Le mot de passe doit contenir au moins 6 caractères"),
+  password: securePasswordSchema,
   passwordConfirm: z.string(),
 }).refine((data) => data.password === data.passwordConfirm, {
   path: ["passwordConfirm"],
@@ -35,7 +36,7 @@ export const forgotPasswordSchema = z.object({
 export type ForgotPasswordValues = z.infer<typeof forgotPasswordSchema>;
 
 export const resetPasswordSchema = z.object({
-  password: z.string().min(6, "Le mot de passe doit contenir au moins 6 caractères"),
+  password: securePasswordSchema,
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
   path: ["confirmPassword"],
