@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import { Heart, Shield } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,16 +16,8 @@ const Footer = () => {
           {/* Logo and Description */}
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center mb-4">
-              <div className="w-12 h-12 bg-directiveplus-600 rounded-lg flex items-center justify-center p-2 mr-2">
-                <img 
-                  src="/lovable-uploads/abf0ddf7-3dc9-4888-a686-76305831172b.png" 
-                  alt="DirectivesPlus Logo" 
-                  className="w-full h-full object-contain"
-                />
-              </div>
               <div>
                 <h2 className="text-xl font-bold">DirectivesPlus</h2>
-                <p className="text-sm text-gray-300">simplicité et sécurité</p>
               </div>
             </div>
             <p className="mb-4 text-gray-300">

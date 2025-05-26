@@ -24,21 +24,6 @@ const Hero = () => {
   return <section className="bg-gradient-to-b from-white to-directiveplus-50 section-padding">
       <div className="container mx-auto container-padding">
         <div className="flex flex-col items-center text-center">
-          {/* Logo */}
-          <div className="mb-8 w-full flex justify-center flex-col items-center">
-            <div className="w-64 h-64 bg-directiveplus-600 rounded-3xl flex items-center justify-center p-12 mb-4">
-              <img 
-                src="/lovable-uploads/abf0ddf7-3dc9-4888-a686-76305831172b.png" 
-                alt="DirectivesPlus Logo" 
-                className="w-full h-full object-contain"
-              />
-            </div>
-            <div className="text-center">
-              <h1 className="text-4xl font-bold text-directiveplus-800 mb-2">DirectivesPlus</h1>
-              <p className="text-xl text-directiveplus-600">simplicité et sécurité</p>
-            </div>
-          </div>
-          
           {/* Text Content */}
           <div className="max-w-3xl mx-auto animate-fade-in">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4 leading-tight">
@@ -64,16 +49,9 @@ const Hero = () => {
           {/* Features Section */}
           <div className="mt-16 max-w-4xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {/* Feature 1 - Simple et guidé with image */}
+              {/* Feature 1 - Simple et guidé */}
               <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
                 <div className="flex flex-col items-center mb-3">
-                  <div className="w-20 h-20 bg-directiveplus-600 rounded-xl flex items-center justify-center p-3 mb-3">
-                    <img 
-                      src="/lovable-uploads/abf0ddf7-3dc9-4888-a686-76305831172b.png" 
-                      alt="Logo DirectivesPlus" 
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
                   <h3 className="font-semibold text-lg text-directiveplus-700">Simple et guidé</h3>
                 </div>
                 <p className="text-gray-600">Un processus pas à pas pour vous accompagner dans la rédaction.</p>
@@ -98,16 +76,9 @@ const Hero = () => {
                 </p>
               </div>
               
-              {/* Feature 3 - Facilement partageable with image */}
+              {/* Feature 3 - Facilement partageable */}
               <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
                 <div className="flex flex-col items-center mb-3">
-                  <div className="w-20 h-20 bg-directiveplus-600 rounded-xl flex items-center justify-center p-3 mb-3">
-                    <img 
-                      src="/lovable-uploads/abf0ddf7-3dc9-4888-a686-76305831172b.png" 
-                      alt="Logo DirectivesPlus" 
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
                   <h3 className="font-semibold text-lg text-directiveplus-700">Facilement partageable</h3>
                 </div>
                 <p className="text-gray-600">Télécharger, partager, imprimer: gérez vos directives comme vous le souhaitez.</p>
