@@ -50,7 +50,7 @@ const MesDirectives = () => {
   // Déterminer si l'accès doit être autorisé
   const shouldAllowAccess = (accessType === 'card' || hasInstitutionAccess) || isAuthenticated;
 
-  // Si c'est un accès institution et qu'il y a des documents, ouvrir directement le premier PDF
+  // Si c'est un accès institution et qu'il y a des documents, ouvrir automatiquement le premier PDF en prévisualisation
   React.useEffect(() => {
     if (hasInstitutionAccess && documents.length > 0 && !previewDocument && shouldAllowAccess) {
       const firstPdf = documents.find(doc => 
@@ -59,9 +59,9 @@ const MesDirectives = () => {
       );
       
       if (firstPdf) {
-        console.log("MesDirectives - Ouverture automatique du premier PDF:", firstPdf);
-        // Ouvrir directement le PDF dans un nouvel onglet
-        window.open(firstPdf.file_path, '_blank');
+        console.log("MesDirectives - Ouverture automatique du premier PDF en prévisualisation:", firstPdf);
+        // Au lieu d'ouvrir dans un nouvel onglet, utiliser la prévisualisation interne
+        setPreviewDocument(firstPdf);
       }
     }
   }, [hasInstitutionAccess, documents, previewDocument, shouldAllowAccess]);
