@@ -7,10 +7,12 @@ import { ArrowLeft, AlertCircle, RefreshCw, Search, Home } from "lucide-react";
 interface ErrorStateProps {
   error: string | null;
   onRetry: () => void;
+  onGoBack: () => void;
+  retryCount: number;
   documentId?: string | null;
 }
 
-const ErrorState: React.FC<ErrorStateProps> = ({ error, onRetry, documentId }) => {
+const ErrorState: React.FC<ErrorStateProps> = ({ error, onRetry, onGoBack, retryCount, documentId }) => {
   const isDocumentNotFound = error?.includes('introuvable') || error?.includes('not found');
   
   return (
@@ -46,7 +48,7 @@ const ErrorState: React.FC<ErrorStateProps> = ({ error, onRetry, documentId }) =
         <div className="flex flex-wrap gap-3">
           <Button 
             variant="outline" 
-            onClick={() => window.history.back()}
+            onClick={onGoBack}
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Retour

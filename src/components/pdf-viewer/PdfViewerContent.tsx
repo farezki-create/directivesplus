@@ -3,21 +3,26 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Download, Printer, ExternalLink, ArrowLeft } from "lucide-react";
-import { Document } from "@/types/documents";
+
+interface Document {
+  id: string;
+  file_name: string;
+  file_path: string;
+  file_type: string;
+  content_type?: string;
+  user_id: string;
+  created_at: string;
+}
 
 interface PdfViewerContentProps {
-  document: Document | null;
+  document: Document;
   onDownload: () => void;
-  onPrint: () => void;
-  onOpenExternal: () => void;
   onGoBack: () => void;
 }
 
 const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
   document,
   onDownload,
-  onPrint,
-  onOpenExternal,
   onGoBack
 }) => {
   if (!document) {
@@ -41,6 +46,16 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
     );
   }
 
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleOpenExternal = () => {
+    if (document.file_path) {
+      window.open(document.file_path, '_blank');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header avec actions */}
@@ -59,11 +74,11 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
               <Download className="w-4 h-4 mr-2" />
               Télécharger
             </Button>
-            <Button variant="outline" onClick={onPrint}>
+            <Button variant="outline" onClick={handlePrint}>
               <Printer className="w-4 h-4 mr-2" />
               Imprimer
             </Button>
-            <Button variant="outline" onClick={onOpenExternal}>
+            <Button variant="outline" onClick={handleOpenExternal}>
               <ExternalLink className="w-4 h-4 mr-2" />
               Ouvrir
             </Button>

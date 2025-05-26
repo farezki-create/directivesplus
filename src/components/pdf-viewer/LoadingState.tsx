@@ -2,10 +2,10 @@
 import React from "react";
 
 interface LoadingStateProps {
-  retryCount: number;
+  retryCount?: number;
 }
 
-const LoadingState: React.FC<LoadingStateProps> = ({ retryCount }) => {
+const LoadingState: React.FC<LoadingStateProps> = ({ retryCount = 0 }) => {
   const getLoadingMessage = () => {
     if (retryCount === 0) {
       return "Chargement du document...";

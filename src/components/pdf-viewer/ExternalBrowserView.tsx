@@ -3,27 +3,34 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Download, ExternalLink, RefreshCw, Globe } from "lucide-react";
-import { Document } from "@/types/documents";
+
+interface Document {
+  id: string;
+  file_name: string;
+  file_path: string;
+  file_type: string;
+  content_type?: string;
+  user_id: string;
+  created_at: string;
+}
 
 interface ExternalBrowserViewProps {
-  documentId: string;
-  document: Document | null;
-  error: string | null;
-  retryCount: number;
-  onRetry: () => void;
-  onDownload: (filePath: string, fileName: string) => void;
+  document: Document;
+  onDownload: () => void;
+  onPrint: () => void;
+  onOpenExternal: () => void;
+  onGoBack: () => void;
 }
 
 const ExternalBrowserView: React.FC<ExternalBrowserViewProps> = ({
-  documentId,
   document,
-  error,
-  retryCount,
-  onRetry,
-  onDownload
+  onDownload,
+  onPrint,
+  onOpenExternal,
+  onGoBack
 }) => {
   const baseUrl = window.location.origin;
-  const appUrl = `${baseUrl}/pdf-viewer?id=${documentId}`;
+  const appUrl = `${baseUrl}/pdf-viewer?id=${document.id}`;
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(appUrl)}`;
   
   return (
@@ -42,7 +49,7 @@ const ExternalBrowserView: React.FC<ExternalBrowserViewProps> = ({
                 ✅ Document accessible
               </p>
               <p className="text-sm text-green-700 mt-1">
-                {document ? `Document: ${document.file_name}` : "Chargement du document..."}
+                Document: {document.file_name}
               </p>
             </div>
             
@@ -65,7 +72,7 @@ const ExternalBrowserView: React.FC<ExternalBrowserViewProps> = ({
             <div className="space-y-3">
               {/* Bouton principal pour ouvrir dans l'app */}
               <Button 
-                onClick={() => window.location.href = appUrl}
+                onClick={onOpenExternal}
                 className="w-full"
                 size="lg"
               >
@@ -85,17 +92,15 @@ const ExternalBrowserView: React.FC<ExternalBrowserViewProps> = ({
                 📋 Copier le lien
               </Button>
               
-              {document && (
-                <Button 
-                  variant="outline"
-                  onClick={() => onDownload(document.file_path, document.file_name)}
-                  className="w-full"
-                  size="lg"
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Télécharger
-                </Button>
-              )}
+              <Button 
+                variant="outline"
+                onClick={onDownload}
+                className="w-full"
+                size="lg"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Télécharger
+              </Button>
             </div>
             
             <div className="p-3 bg-blue-50 rounded-lg">
@@ -103,25 +108,6 @@ const ExternalBrowserView: React.FC<ExternalBrowserViewProps> = ({
                 🔗 <strong>Accès universel :</strong> Ce lien fonctionne dans tous les navigateurs.
               </p>
             </div>
-
-            {error && (
-              <div className="p-3 bg-red-50 rounded-lg border border-red-200">
-                <p className="text-sm text-red-800">
-                  ⚠️ {error}
-                </p>
-                {retryCount < 3 && (
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={onRetry}
-                    className="mt-2"
-                  >
-                    <RefreshCw className="w-4 h-4 mr-2" />
-                    Réessayer ({retryCount + 1}/3)
-                  </Button>
-                )}
-              </div>
-            )}
           </CardContent>
         </Card>
       </div>

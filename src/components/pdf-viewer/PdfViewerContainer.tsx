@@ -33,7 +33,7 @@ const PdfViewerContainer = () => {
   });
 
   if (loading) {
-    return <LoadingState />;
+    return <LoadingState retryCount={retryCount} />;
   }
 
   if (error) {
@@ -43,27 +43,19 @@ const PdfViewerContainer = () => {
         onRetry={handleRetry}
         onGoBack={handleGoBack}
         retryCount={retryCount}
+        documentId={documentId}
       />
     );
   }
 
   if (!document) {
-    const mockDocument = {
-      id: documentId || '',
-      file_name: 'Document non trouvé',
-      file_path: '',
-      file_type: 'application/pdf',
-      content_type: 'application/pdf',
-      user_id: '',
-      created_at: new Date().toISOString()
-    };
-    
     return (
       <ErrorState 
         error="Document non trouvé"
         onRetry={handleRetry}
         onGoBack={handleGoBack}
         retryCount={retryCount}
+        documentId={documentId}
       />
     );
   }
@@ -93,7 +85,7 @@ const PdfViewerContainer = () => {
   return (
     <PdfViewerContent
       document={enhancedDocument}
-      onDownload={handleDownload}
+      onDownload={handleDownloadPdf}
       onGoBack={handleGoBack}
     />
   );
