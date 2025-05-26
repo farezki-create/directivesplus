@@ -168,7 +168,7 @@ export const renderMedicalDocumentsChapter = (
 
   // Rendu de chaque document
   medicalDocuments.forEach((doc, index) => {
-    console.log(`Rendu du document ${index + 1}: ${doc.file_name}`);
+    console.log(`Rendu du document ${index + 1}: ${doc.file_name}`, doc);
     
     // Vérifier l'espace disponible pour un nouveau document
     if (yPosition + layout.lineHeight * 10 > layout.pageHeight - layout.margin - layout.footerHeight) {
@@ -179,7 +179,8 @@ export const renderMedicalDocumentsChapter = (
     // Titre du document avec numérotation
     pdf.setFontSize(14);
     pdf.setFont("helvetica", "bold");
-    const documentTitle = `Document ${index + 1}: ${doc.file_name}`;
+    pdf.setTextColor(0, 0, 0);
+    const documentTitle = `Document ${index + 1}: ${doc.file_name || 'Document sans titre'}`;
     pdf.text(documentTitle, layout.margin, yPosition);
     yPosition += layout.lineHeight * 1.2;
     
@@ -187,6 +188,7 @@ export const renderMedicalDocumentsChapter = (
     if (doc.created_at) {
       pdf.setFontSize(10);
       pdf.setFont("helvetica", "italic");
+      pdf.setTextColor(100, 100, 100);
       const dateText = `Ajouté le: ${new Date(doc.created_at).toLocaleDateString('fr-FR')}`;
       pdf.text(dateText, layout.margin + 5, yPosition);
       yPosition += layout.lineHeight;
@@ -198,8 +200,13 @@ export const renderMedicalDocumentsChapter = (
     pdf.line(layout.margin, yPosition, layout.margin + layout.contentWidth, yPosition);
     yPosition += layout.lineHeight * 0.8;
     
+    // Réinitialiser la couleur du texte
+    pdf.setTextColor(0, 0, 0);
+    
     // Contenu du document selon le type
     if (doc.content) {
+      console.log(`Traitement du contenu pour ${doc.file_name}:`, doc.content.substring(0, 50) + '...');
+      
       if (doc.content.startsWith('data:application/pdf')) {
         yPosition = addPDFContent(pdf, layout, yPosition, doc.file_name);
       } else if (doc.content.startsWith('data:image/')) {
@@ -210,28 +217,41 @@ export const renderMedicalDocumentsChapter = (
         }
         yPosition = addImageToPDF(pdf, layout, yPosition, doc.content, doc.file_name);
       } else {
-        // Contenu textuel
+        // Contenu textuel ou autre
         pdf.setFontSize(10);
         pdf.setFont("helvetica", "normal");
-        const contentLines = pdf.splitTextToSize(doc.content, layout.contentWidth - 10);
-        pdf.text(contentLines, layout.margin + 5, yPosition);
-        yPosition += contentLines.length * layout.lineHeight + layout.lineHeight;
+        
+        // Si c'est un contenu textuel, l'afficher directement
+        let contentToDisplay = doc.content;
+        if (typeof contentToDisplay === 'string' && contentToDisplay.length > 0) {
+          const contentLines = pdf.splitTextToSize(contentToDisplay, layout.contentWidth - 10);
+          pdf.text(contentLines, layout.margin + 5, yPosition);
+          yPosition += contentLines.length * layout.lineHeight + layout.lineHeight;
+        } else {
+          pdf.setFont("helvetica", "italic");
+          pdf.text("[Contenu du document non disponible]", layout.margin + 5, yPosition);
+          yPosition += layout.lineHeight;
+        }
       }
     } else {
-      // Document sans contenu (ancien système)
+      // Document sans contenu (ancien système ou erreur)
       pdf.setFontSize(10);
       pdf.setFont("helvetica", "italic");
-      pdf.text("[Document référencé - contenu non intégré]", layout.margin + 5, yPosition);
+      pdf.setTextColor(150, 150, 150);
+      pdf.text("[Document référencé - contenu non intégré dans cette version]", layout.margin + 5, yPosition);
+      pdf.setTextColor(0, 0, 0);
       yPosition += layout.lineHeight;
     }
     
-    // Description si disponible
-    if (doc.description && doc.description !== `Document médical: ${doc.file_name}`) {
+    // Description si disponible et différente du nom
+    if (doc.description && doc.description !== `Document médical: ${doc.file_name}` && doc.description !== doc.file_name) {
       pdf.setFontSize(9);
       pdf.setFont("helvetica", "normal");
+      pdf.setTextColor(80, 80, 80);
       const descLines = pdf.splitTextToSize(`Description: ${doc.description}`, layout.contentWidth - 10);
       pdf.text(descLines, layout.margin + 5, yPosition);
       yPosition += descLines.length * layout.lineHeight;
+      pdf.setTextColor(0, 0, 0);
     }
     
     yPosition += layout.lineHeight * 2; // Espacement entre documents
