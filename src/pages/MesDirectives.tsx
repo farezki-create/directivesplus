@@ -44,26 +44,26 @@ const MesDirectives = () => {
     handleUploadComplete,
   } = documentsData;
 
-  // Local state for preview document
-  const [previewDocument, setPreviewDocument] = React.useState<Document | null>(null);
+  // Local state for preview document - utiliser string au lieu de Document
+  const [previewDocument, setPreviewDocument] = React.useState<string | null>(null);
 
   // Déterminer si l'accès doit être autorisé
   const shouldAllowAccess = (accessType === 'card' || hasInstitutionAccess) || isAuthenticated;
 
-  // Ouvrir automatiquement le premier PDF en prévisualisation pour tous les utilisateurs
-  React.useEffect(() => {
-    if (shouldAllowAccess && documents.length > 0 && !previewDocument && !documentsLoading && !authLoading) {
-      const firstPdf = documents.find(doc => 
-        doc.content_type === 'application/pdf' || 
-        doc.file_name.toLowerCase().endsWith('.pdf')
-      );
+  // Enlever l'ouverture automatique pour éviter le problème
+  // React.useEffect(() => {
+  //   if (shouldAllowAccess && documents.length > 0 && !previewDocument && !documentsLoading && !authLoading) {
+  //     const firstPdf = documents.find(doc => 
+  //       doc.content_type === 'application/pdf' || 
+  //       doc.file_name.toLowerCase().endsWith('.pdf')
+  //     );
       
-      if (firstPdf) {
-        console.log("MesDirectives - Ouverture automatique du premier PDF en prévisualisation:", firstPdf);
-        setPreviewDocument(firstPdf);
-      }
-    }
-  }, [shouldAllowAccess, documents, previewDocument, documentsLoading, authLoading]);
+  //     if (firstPdf) {
+  //       console.log("MesDirectives - Ouverture automatique du premier PDF en prévisualisation:", firstPdf);
+  //       setPreviewDocument(firstPdf.file_path);
+  //     }
+  //   }
+  // }, [shouldAllowAccess, documents, previewDocument, documentsLoading, authLoading]);
 
   console.log("MesDirectives - Auth state:", { 
     userId: user?.id, 
@@ -117,25 +117,15 @@ const MesDirectives = () => {
     handleUploadComplete();
   };
 
-  // Enhanced view handler that sets preview document
+  // Enhanced view handler that sets preview document with file_path
   const handleViewDocument = (filePath: string, fileType?: string) => {
     console.log("MesDirectives - handleViewDocument appelé avec:", filePath, fileType);
-    
-    // Find the document by file_path
-    const document = documents.find(doc => doc.file_path === filePath);
-    if (document) {
-      console.log("MesDirectives - Document trouvé pour preview:", document);
-      setPreviewDocument(document);
-    } else {
-      console.error("MesDirectives - Document non trouvé pour le chemin:", filePath);
-      // Fallback: call the original view handler
-      handleView(filePath, fileType);
-    }
+    setPreviewDocument(filePath);
   };
 
   // Preview handlers
   const handlePreviewDownload = (filePath: string) => {
-    const document = previewDocument || documents.find(doc => doc.file_path === filePath);
+    const document = documents.find(doc => doc.file_path === filePath);
     const fileName = document?.file_name || 'document.pdf';
     console.log("MesDirectives - handlePreviewDownload:", filePath, fileName);
     handleDownload(filePath, fileName);

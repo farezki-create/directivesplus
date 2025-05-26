@@ -19,8 +19,8 @@ interface AuthenticatedDirectivesViewProps {
   documentToDelete: Document | null;
   setDocumentToDelete: (doc: Document | null) => void;
   handleDelete: (document: Document) => Promise<void>;
-  previewDocument: Document | null;
-  setPreviewDocument: (doc: Document | null) => void;
+  previewDocument: string | null;
+  setPreviewDocument: (filePath: string | null) => void;
   handlePreviewDownload: (filePath: string) => void;
   handlePreviewPrint: (filePath: string, fileType?: string) => void;
 }
@@ -64,8 +64,11 @@ const AuthenticatedDirectivesView: React.FC<AuthenticatedDirectivesViewProps> = 
       {/* Document Preview Dialog */}
       {previewDocument && (
         <DocumentPreviewDialog
-          filePath={previewDocument.file_path}
-          onOpenChange={(open) => !open && setPreviewDocument(null)}
+          filePath={previewDocument}
+          onOpenChange={(open) => {
+            console.log("AuthenticatedDirectivesView - DocumentPreviewDialog onOpenChange:", open);
+            if (!open) setPreviewDocument(null);
+          }}
           onDownload={handlePreviewDownload}
           onPrint={handlePreviewPrint}
         />
