@@ -35,19 +35,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [initComplete, setInitComplete] = useState(false);
   
   // Cache pour éviter les appels redondants
   const profileCache = useRef<Map<string, Profile>>(new Map());
-  const loadingProfile = useRef<Set<string>>(new Set());
 
   const loadProfile = useCallback(async (userId: string) => {
-    // Éviter les appels multiples simultanés
-    if (loadingProfile.current.has(userId)) {
-      console.log("Profile loading already in progress for user:", userId);
-      return;
-    }
-
     // Vérifier le cache d'abord
     const cachedProfile = profileCache.current.get(userId);
     if (cachedProfile) {
@@ -57,7 +49,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     try {
-      loadingProfile.current.add(userId);
       console.log("Loading profile data for user:", userId);
 
       const { data: profileData, error } = await supabase
@@ -66,27 +57,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .eq('id', userId)
         .single();
 
-      if (error) {
+      if (error && error.code !== 'PGRST116') {
         console.error('Error loading profile:', error);
         return;
       }
 
       if (profileData) {
         console.log("Profile data loaded:", profileData);
-        // Mettre en cache
         profileCache.current.set(userId, profileData);
         setProfile(profileData);
       }
     } catch (error) {
       console.error('Error loading profile:', error);
-    } finally {
-      loadingProfile.current.delete(userId);
     }
   }, []);
 
   const refreshProfile = useCallback(async () => {
     if (user?.id) {
-      // Invalider le cache
       profileCache.current.delete(user.id);
       await loadProfile(user.id);
     }
@@ -94,14 +81,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = useCallback(async () => {
     try {
-      // Nettoyer le cache
       profileCache.current.clear();
-      loadingProfile.current.clear();
-      
       setIsLoading(true);
       await supabase.auth.signOut();
-      
-      // Les états seront mis à jour par l'auth state listener
     } catch (error) {
       console.error('Error signing out:', error);
     } finally {
@@ -113,7 +95,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     console.log("Setting up auth state listener");
     
     let mounted = true;
-    let initTimer: NodeJS.Timeout;
 
     // Configuration du listener d'état d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -122,31 +103,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         console.log("Auth state changed:", event, session?.user?.id);
         
-        // Mettre à jour la session et l'utilisateur
         setSession(session);
         setUser(session?.user ?? null);
 
         if (session?.user) {
-          console.log("User signed in, updating state");
-          // Charger le profil seulement si l'utilisateur est connecté
-          await loadProfile(session.user.id);
+          console.log("User signed in, loading profile");
+          setTimeout(() => {
+            loadProfile(session.user.id);
+          }, 0);
         } else {
           console.log("User signed out, clearing state");
-          // Nettoyer l'état quand l'utilisateur se déconnecte
           setProfile(null);
           profileCache.current.clear();
-          loadingProfile.current.clear();
         }
         
-        // Marquer l'initialisation comme terminée
-        if (!initComplete) {
-          setInitComplete(true);
-        }
         setIsLoading(false);
       }
     );
 
-    // Vérifier la session initiale une seule fois
+    // Vérifier la session initiale
     const checkInitialSession = async () => {
       try {
         const { data: { session: initialSession } } = await supabase.auth.getSession();
@@ -158,35 +133,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (initialSession?.user) {
           setSession(initialSession);
           setUser(initialSession.user);
-          await loadProfile(initialSession.user.id);
+          setTimeout(() => {
+            loadProfile(initialSession.user.id);
+          }, 0);
         }
       } catch (error) {
         console.error('Error checking initial session:', error);
       } finally {
         if (mounted) {
-          setInitComplete(true);
           setIsLoading(false);
         }
       }
     };
 
-    // Timeout de sécurité pour s'assurer que isLoading devient false
-    initTimer = setTimeout(() => {
-      if (mounted && !initComplete) {
-        console.log("Auth init timeout reached, stopping loading");
-        setInitComplete(true);
-        setIsLoading(false);
-      }
-    }, 3000);
-
     checkInitialSession();
 
     return () => {
       mounted = false;
-      clearTimeout(initTimer);
       subscription.unsubscribe();
     };
-  }, [loadProfile, initComplete]);
+  }, [loadProfile]);
 
   const value: AuthContextType = {
     user,

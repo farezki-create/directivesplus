@@ -33,12 +33,12 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     timeoutReached
   });
 
-  // Timeout de sécurité pour éviter le chargement infini
+  // Timeout plus court pour éviter les blocages
   useEffect(() => {
     const timer = setTimeout(() => {
       console.log("ProtectedRoute: Timeout atteint, arrêt du chargement");
       setTimeoutReached(true);
-    }, 5000); // 5 secondes maximum
+    }, 3000); // 3 secondes maximum
 
     return () => clearTimeout(timer);
   }, []);
@@ -55,13 +55,13 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     return <Navigate to="/auth" state={{ from: location.pathname }} replace />;
   }
 
-  // Afficher l'indicateur de chargement pendant la vérification (max 5 secondes)
+  // Afficher l'indicateur de chargement pendant la vérification (max 3 secondes)
   if (isLoading && !timeoutReached) {
     console.log("ProtectedRoute: Chargement de l'état d'authentification...");
     return (
       <div className="h-screen flex flex-col items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-directiveplus-600" />
-        <p className="mt-4 text-gray-600">Vérification de l'authentification...</p>
+        <p className="mt-4 text-gray-600">Connexion en cours...</p>
       </div>
     );
   }
@@ -77,7 +77,6 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     const userRoles = profile.roles || [];
     const userRole = profile.role;
     
-    // Vérifier si l'utilisateur a le rôle requis (soit dans roles[] soit dans role)
     const hasRequiredRole = Array.isArray(userRoles) 
       ? userRoles.includes(requiredRole)
       : userRole === requiredRole;
