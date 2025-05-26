@@ -4,7 +4,7 @@ import AppNavigation from "@/components/AppNavigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Shield } from "lucide-react";
-import { InstitutionAccessForm } from "@/components/institution-access/InstitutionAccessForm";
+import { InstitutionAccessFormComplete } from "@/components/institution-access/InstitutionAccessFormComplete";
 
 const AccesInstitution = () => {
   return (
@@ -30,7 +30,7 @@ const AccesInstitution = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <InstitutionAccessForm />
+              <InstitutionAccessFormComplete />
             </CardContent>
           </Card>
           
