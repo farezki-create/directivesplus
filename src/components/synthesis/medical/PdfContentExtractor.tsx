@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -32,7 +31,7 @@ const PdfContentExtractor: React.FC<PdfContentExtractorProps> = ({ document, onR
   } = usePdfContentExtraction({ document, onContentUpdate });
 
   const handleCopyAll = async () => {
-    if (extractedText) {
+    if (extractedText && extractedText.trim()) {
       try {
         await navigator.clipboard.writeText(extractedText);
         toast({
@@ -48,11 +47,22 @@ const PdfContentExtractor: React.FC<PdfContentExtractorProps> = ({ document, onR
         });
       }
     } else {
-      toast({
-        title: "Aucun contenu",
-        description: "Aucun contenu extrait à copier",
-        variant: "destructive"
-      });
+      // Créer un texte par défaut à copier
+      const defaultText = `Document: ${document.file_name}\nAjouté le: ${new Date(document.created_at).toLocaleDateString('fr-FR')}\n\n[Aucun contenu extrait - Veuillez ajouter le contenu ci-dessous]`;
+      
+      try {
+        await navigator.clipboard.writeText(defaultText);
+        toast({
+          title: "Informations copiées",
+          description: "Les informations du document ont été copiées",
+        });
+      } catch (error) {
+        toast({
+          title: "Erreur",
+          description: "Impossible de copier",
+          variant: "destructive"
+        });
+      }
     }
   };
 
@@ -96,17 +106,15 @@ const PdfContentExtractor: React.FC<PdfContentExtractorProps> = ({ document, onR
             <div className="bg-white rounded-md border p-4">
               <div className="flex justify-between items-center mb-2">
                 <h4 className="text-sm font-medium">Aperçu du document</h4>
-                {extractedText && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={handleCopyAll}
-                    className="flex items-center gap-1 text-xs"
-                  >
-                    <Copy className="h-3 w-3" />
-                    Tout copier
-                  </Button>
-                )}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleCopyAll}
+                  className="flex items-center gap-1 text-xs"
+                >
+                  <Copy className="h-3 w-3" />
+                  Tout copier
+                </Button>
               </div>
               <iframe 
                 src={document.file_path}
