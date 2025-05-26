@@ -16,10 +16,12 @@ interface MedicalDocument {
 
 interface MedicalQRCodeSectionProps {
   documents: MedicalDocument[];
+  hideEditingFeatures?: boolean;
 }
 
 const MedicalQRCodeSection: React.FC<MedicalQRCodeSectionProps> = ({
-  documents
+  documents,
+  hideEditingFeatures = false
 }) => {
   const { 
     qrCodeModalState, 
@@ -87,16 +89,18 @@ const MedicalQRCodeSection: React.FC<MedicalQRCodeSectionProps> = ({
                     Document médical - Créé le {new Date(doc.created_at).toLocaleDateString()}
                   </p>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleGenerateQRCode(doc)}
-                  className="flex items-center gap-2"
-                  disabled={!doc.id}
-                >
-                  <QrCode size={16} />
-                  QR Code Medical
-                </Button>
+                {!hideEditingFeatures && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleGenerateQRCode(doc)}
+                    className="flex items-center gap-2"
+                    disabled={!doc.id}
+                  >
+                    <QrCode size={16} />
+                    QR Code Medical
+                  </Button>
+                )}
               </div>
             ))}
           </div>

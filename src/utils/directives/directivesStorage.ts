@@ -15,6 +15,9 @@ interface DirectivesStorageOptions {
  * - Dans la bibliothèque de documents personnels (pdf_documents)
  * - Dans le système d'accès par code (dossiers_medicaux)
  * 
+ * IMPORTANT: Supprime automatiquement l'ancien document de directives anticipées
+ * pour maintenir un seul document unique.
+ * 
  * @param options Options de stockage des directives
  * @returns Résultat de l'opération
  */
@@ -27,16 +30,39 @@ export const saveDirectivesWithDualStorage = async (
       throw new Error("Aucune donnée PDF n'a été générée. Veuillez réessayer.");
     }
     
-    // 1. Sauvegarde dans la bibliothèque personnelle (pdf_documents)
+    console.log("=== SUPPRESSION DE L'ANCIEN DOCUMENT DE DIRECTIVES ===");
+    
+    // 1. Supprimer l'ancien document de directives anticipées dans pdf_documents
+    try {
+      const { error: deleteError } = await supabase
+        .from('pdf_documents')
+        .delete()
+        .eq('user_id', options.userId)
+        .ilike('description', '%directives anticipées%');
+      
+      if (deleteError) {
+        console.warn("Erreur lors de la suppression de l'ancien document:", deleteError);
+        // Ne pas arrêter le processus, juste logger l'erreur
+      } else {
+        console.log("Ancien document de directives supprimé avec succès");
+      }
+    } catch (deleteErr) {
+      console.warn("Erreur lors de la suppression de l'ancien document:", deleteErr);
+      // Continue le processus même si la suppression échoue
+    }
+    
+    console.log("=== SAUVEGARDE DU NOUVEAU DOCUMENT ===");
+    
+    // 2. Sauvegarde du nouveau document dans la bibliothèque personnelle (pdf_documents)
     const savedData = await savePdfToDatabase({
       userId: options.userId,
       pdfOutput: options.pdfOutput,
       description: options.description
     });
     
-    console.log("Directives sauvegardées dans la bibliothèque personnelle:", savedData);
+    console.log("Nouvelles directives sauvegardées dans la bibliothèque personnelle:", savedData);
     
-    // 2. Sauvegarde dans le système d'accès par code (dossiers_medicaux)
+    // 3. Sauvegarde dans le système d'accès par code (dossiers_medicaux)
     // Vérifier si un code d'accès existe déjà pour cet utilisateur
     const { data: accessCodes } = await supabase
       .from('document_access_codes')
@@ -73,7 +99,7 @@ export const saveDirectivesWithDualStorage = async (
       console.log("Nouveau code d'accès généré:", accessCode);
     }
     
-    // Créer le contenu du dossier médical avec les directives
+    // Créer le contenu du dossier médical avec les nouvelles directives
     const dossierContent = {
       patient: {
         nom: options.profileData?.last_name || "Non renseigné",
@@ -98,7 +124,7 @@ export const saveDirectivesWithDualStorage = async (
       .maybeSingle();
     
     if (existingDossier) {
-      // Mettre à jour le dossier existant
+      // Mettre à jour le dossier existant avec les nouvelles directives
       const { error: updateError } = await supabase
         .from("dossiers_medicaux")
         .update({ contenu_dossier: dossierContent })
@@ -109,9 +135,9 @@ export const saveDirectivesWithDualStorage = async (
         throw new Error("Impossible de mettre à jour le dossier médical: " + updateError.message);
       }
       
-      console.log("Dossier médical existant mis à jour avec les directives:", existingDossier.id);
+      console.log("Dossier médical existant mis à jour avec les nouvelles directives:", existingDossier.id);
     } else {
-      // Créer un nouveau dossier médical - IMPORTANT: nous n'utilisons pas la colonne user_id car elle n'existe pas dans le schéma
+      // Créer un nouveau dossier médical
       const { error: insertError } = await supabase
         .from("dossiers_medicaux")
         .insert({
@@ -129,6 +155,9 @@ export const saveDirectivesWithDualStorage = async (
         }
       }
     }
+    
+    console.log("=== SAUVEGARDE TERMINÉE AVEC SUCCÈS ===");
+    console.log("Ancien document supprimé, nouveau document créé avec ID:", savedData?.[0]?.id);
     
     return { 
       success: true, 
