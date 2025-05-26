@@ -1,120 +1,48 @@
-
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
-import Index from "./pages/Index";
+import React from "react";
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from 'react-query';
+import { AuthProvider } from "./contexts/AuthContext";
 import Auth from "./pages/Auth";
+import DossierMedical from "./pages/DossierMedical";
+import RedigerDirective from "./pages/RedigerDirective";
+import DirectivesList from "./pages/DirectivesList";
+import ViewDirective from "./pages/ViewDirective";
 import Profile from "./pages/Profile";
-import Dashboard from "./pages/Dashboard";
-import Rediger from "./pages/Rediger";
-import AvisGeneral from "./pages/AvisGeneral";
-import MaintienVie from "./pages/MaintienVie";
-import MaladieAvancee from "./pages/MaladieAvancee";
-import GoutsPeurs from "./pages/GoutsPeurs";
-import PersonneConfiance from "./pages/PersonneConfiance";
-import Synthesis from "./pages/Synthesis";
-import CarteAcces from "./pages/CarteAcces";
-import MesDirectives from "./pages/MesDirectives";
-import InstitutionAccess from "./pages/InstitutionAccess";
-import MedicalData from "./pages/MedicalData";
-import Testimonials from "./pages/Testimonials";
-import EnSavoirPlus from "./pages/EnSavoirPlus";
-import PdfViewer from "./pages/PdfViewer";
-import Soutenir from "./pages/Soutenir";
-import Comments from "./pages/Comments";
-import DirectivesInfo from "./pages/DirectivesInfo";
-import NotFound from "./pages/NotFound";
+import Admin from "./pages/Admin";
+import AccessLogs from "./pages/AccessLogs";
+import DataBreachReportPage from "./pages/DataBreachReportPage";
+import SecurityAudit from "./pages/SecurityAudit";
+import SecurityAuditReportPage from "./pages/SecurityAuditReport";
 
-const queryClient = new QueryClient();
+import SecurityAuditDashboardPage from "./pages/SecurityAuditDashboard";
 
 function App() {
+  const queryClient = new QueryClient();
+
   return (
-    <QueryClientProvider client={queryClient}>
+    <Router>
       <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
+        <QueryClientProvider client={queryClient}>
+          <div className="min-h-screen bg-gray-50">
             <Routes>
-              <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
-              <Route path="/profile" element={
-                <ProtectedRoute>
-                  <Profile />
-                </ProtectedRoute>
-              } />
-              <Route path="/dashboard" element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              } />
-              <Route path="/rediger" element={
-                <ProtectedRoute>
-                  <Rediger />
-                </ProtectedRoute>
-              } />
-              <Route path="/avis-general" element={
-                <ProtectedRoute>
-                  <AvisGeneral />
-                </ProtectedRoute>
-              } />
-              <Route path="/maintien-vie" element={
-                <ProtectedRoute>
-                  <MaintienVie />
-                </ProtectedRoute>
-              } />
-              <Route path="/maladie-avancee" element={
-                <ProtectedRoute>
-                  <MaladieAvancee />
-                </ProtectedRoute>
-              } />
-              <Route path="/gouts-peurs" element={
-                <ProtectedRoute>
-                  <GoutsPeurs />
-                </ProtectedRoute>
-              } />
-              <Route path="/personne-confiance" element={
-                <ProtectedRoute>
-                  <PersonneConfiance />
-                </ProtectedRoute>
-              } />
-              <Route path="/synthesis" element={
-                <ProtectedRoute>
-                  <Synthesis />
-                </ProtectedRoute>
-              } />
-              <Route path="/carte-acces" element={
-                <ProtectedRoute>
-                  <CarteAcces />
-                </ProtectedRoute>
-              } />
-              <Route path="/mes-directives" element={<MesDirectives />} />
-              <Route path="/institution-access" element={<InstitutionAccess />} />
-              <Route path="/donnees-medicales" element={
-                <ProtectedRoute>
-                  <MedicalData />
-                </ProtectedRoute>
-              } />
-              <Route path="/testimonials" element={<Testimonials />} />
-              <Route path="/en-savoir-plus" element={<EnSavoirPlus />} />
-              <Route path="/pdf-viewer" element={<PdfViewer />} />
-              <Route path="/soutenir" element={<Soutenir />} />
-              <Route path="/commentaires" element={<Comments />} />
-              <Route path="/directives-info" element={<DirectivesInfo />} />
-              {/* Redirection pour les anciennes URLs */}
-              <Route path="/directives-acces" element={<MesDirectives />} />
-              <Route path="/affichage-dossier" element={<NotFound />} />
-              <Route path="/affichage-dossier-redirect" element={<NotFound />} />
-              <Route path="*" element={<NotFound />} />
+              <Route path="/dossier-medical" element={<DossierMedical />} />
+              <Route path="/rediger" element={<RedigerDirective />} />
+              <Route path="/directives" element={<DirectivesList />} />
+              <Route path="/view-directive/:id" element={<ViewDirective />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/admin" element={<Admin />} />
+              <Route path="/access-logs" element={<AccessLogs />} />
+              <Route path="/data-breach-report" element={<DataBreachReportPage />} />
+              
+              <Route path="/security-audit" element={<SecurityAudit />} />
+              <Route path="/security-audit-report" element={<SecurityAuditReportPage />} />
+              <Route path="/security-dashboard" element={<SecurityAuditDashboardPage />} />
             </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
+          </div>
+        </QueryClientProvider>
       </AuthProvider>
-    </QueryClientProvider>
+    </Router>
   );
 }
 
