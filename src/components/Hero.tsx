@@ -26,7 +26,13 @@ const Hero = () => {
         <div className="flex flex-col items-center text-center">
           {/* Logo */}
           <div className="mb-8 w-full flex justify-center flex-col items-center">
-            <img src="/lovable-uploads/0736fb9f-e3d2-48ea-af2a-fd37ecaf8b1a.png" alt="DirectivesPlus Logo" className="w-64 h-auto mb-4" />
+            <div className="w-64 h-64 bg-directiveplus-600 rounded-3xl flex items-center justify-center p-12 mb-4">
+              <img 
+                src="/lovable-uploads/abf0ddf7-3dc9-4888-a686-76305831172b.png" 
+                alt="DirectivesPlus Logo" 
+                className="w-full h-full object-contain"
+              />
+            </div>
             <div className="text-center">
               <h1 className="text-4xl font-bold text-directiveplus-800 mb-2">DirectivesPlus</h1>
               <p className="text-xl text-directiveplus-600">simplicité et sécurité</p>
@@ -61,7 +67,13 @@ const Hero = () => {
               {/* Feature 1 - Simple et guidé with image */}
               <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
                 <div className="flex flex-col items-center mb-3">
-                  <img src="/lovable-uploads/0736fb9f-e3d2-48ea-af2a-fd37ecaf8b1a.png" alt="Logo DirectivesPlus" className="w-20 h-20 mb-3 object-scale-down" />
+                  <div className="w-20 h-20 bg-directiveplus-600 rounded-xl flex items-center justify-center p-3 mb-3">
+                    <img 
+                      src="/lovable-uploads/abf0ddf7-3dc9-4888-a686-76305831172b.png" 
+                      alt="Logo DirectivesPlus" 
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
                   <h3 className="font-semibold text-lg text-directiveplus-700">Simple et guidé</h3>
                 </div>
                 <p className="text-gray-600">Un processus pas à pas pour vous accompagner dans la rédaction.</p>
@@ -89,7 +101,13 @@ const Hero = () => {
               {/* Feature 3 - Facilement partageable with image */}
               <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
                 <div className="flex flex-col items-center mb-3">
-                  <img src="/lovable-uploads/0736fb9f-e3d2-48ea-af2a-fd37ecaf8b1a.png" alt="Logo DirectivesPlus" className="w-20 h-20 mb-3 object-cover" />
+                  <div className="w-20 h-20 bg-directiveplus-600 rounded-xl flex items-center justify-center p-3 mb-3">
+                    <img 
+                      src="/lovable-uploads/abf0ddf7-3dc9-4888-a686-76305831172b.png" 
+                      alt="Logo DirectivesPlus" 
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
                   <h3 className="font-semibold text-lg text-directiveplus-700">Facilement partageable</h3>
                 </div>
                 <p className="text-gray-600">Télécharger, partager, imprimer: gérez vos directives comme vous le souhaitez.</p>
