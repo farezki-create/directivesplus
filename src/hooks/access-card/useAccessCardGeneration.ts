@@ -20,25 +20,47 @@ export const useAccessCardGeneration = () => {
         generatedCode
       });
       
-      // Générer directement l'URL vers mes-directives avec les paramètres d'accès
-      generateDirectivesUrl(user.id);
+      // Récupérer le premier document de l'utilisateur pour générer l'URL
+      generateDocumentUrl(user.id);
     }
   }, [user, profile]);
 
-  const generateDirectivesUrl = (userId: string) => {
+  const generateDocumentUrl = async (userId: string) => {
     try {
-      console.log("AccessCardGeneration - Generating directives URL for user:", userId);
+      console.log("AccessCardGeneration - Fetching documents for user:", userId);
       
-      // URL simple vers la page mes-directives avec paramètres d'accès
-      const directivesUrl = `${window.location.origin}/mes-directives?access=card&user=${userId}`;
-      
-      console.log("AccessCardGeneration - Generated URL:", directivesUrl);
-      setQrCodeUrl(directivesUrl);
+      // Récupérer le premier document PDF de l'utilisateur
+      const { data: documents, error } = await supabase
+        .from('pdf_documents')
+        .select('id')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (error) {
+        console.error("AccessCardGeneration - Error fetching documents:", error);
+        // URL de fallback vers mes-directives
+        const fallbackUrl = `${window.location.origin}/mes-directives?access=card&user=${userId}`;
+        setQrCodeUrl(fallbackUrl);
+        return;
+      }
+
+      if (documents && documents.length > 0) {
+        // URL directe vers le visualiseur PDF du premier document
+        const documentUrl = `${window.location.origin}/pdf-viewer?id=${documents[0].id}&access=card&user=${userId}`;
+        console.log("AccessCardGeneration - Generated document URL:", documentUrl);
+        setQrCodeUrl(documentUrl);
+      } else {
+        console.log("AccessCardGeneration - No documents found, using fallback URL");
+        // Pas de documents, utiliser l'URL de fallback
+        const fallbackUrl = `${window.location.origin}/mes-directives?access=card&user=${userId}`;
+        setQrCodeUrl(fallbackUrl);
+      }
       
     } catch (error) {
       console.error("AccessCardGeneration - Error generating URL:", error);
       // URL de fallback vers mes-directives
-      const fallbackUrl = `${window.location.origin}/mes-directives`;
+      const fallbackUrl = `${window.location.origin}/mes-directives?access=card&user=${userId}`;
       setQrCodeUrl(fallbackUrl);
     }
   };
