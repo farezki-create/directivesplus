@@ -10,29 +10,41 @@ const LoadingState: React.FC<LoadingStateProps> = ({ retryCount }) => {
     if (retryCount === 0) {
       return "Chargement du document...";
     } else if (retryCount === 1) {
-      return "Recherche dans les directives...";
+      return "Recherche via fonction publique...";
     } else if (retryCount === 2) {
-      return "Recherche dans les documents partagés...";
+      return "Recherche dans les documents médicaux...";
     } else {
       return `Tentative ${retryCount + 1}...`;
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4 max-w-5xl">
-        <div className="flex justify-center items-center h-64">
-          <div className="text-center space-y-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="text-gray-600">
-              {getLoadingMessage()}
+    <div className="bg-white rounded-lg shadow p-6 text-center">
+      <div className="space-y-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600 mx-auto"></div>
+        <div>
+          <p className="text-gray-700 font-medium">
+            {getLoadingMessage()}
+          </p>
+          {retryCount > 0 && (
+            <p className="text-sm text-gray-500 mt-2">
+              Recherche approfondie en cours... (Tentative {retryCount + 1}/3)
             </p>
-            {retryCount > 0 && (
-              <p className="text-sm text-gray-500">
-                Recherche en cours dans différentes sources de données...
-              </p>
-            )}
-          </div>
+          )}
+        </div>
+        
+        {/* Indicateur de progression */}
+        <div className="w-full bg-gray-200 rounded-full h-2">
+          <div 
+            className="bg-blue-600 h-2 rounded-full transition-all duration-500" 
+            style={{ width: `${Math.min(100, (retryCount + 1) * 33)}%` }}
+          ></div>
+        </div>
+        
+        <div className="text-xs text-gray-500">
+          {retryCount === 0 && "Accès via QR code..."}
+          {retryCount === 1 && "Vérification des permissions..."}
+          {retryCount === 2 && "Recherche dans toutes les sources..."}
         </div>
       </div>
     </div>
