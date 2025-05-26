@@ -17,7 +17,7 @@ export const usePdfImageCapture = () => {
     setIsCapturing(true);
     try {
       // Créer un iframe temporaire pour capturer le PDF
-      const iframe = document.createElement('iframe');
+      const iframe = window.document.createElement('iframe');
       iframe.src = doc.file_path;
       iframe.style.width = '794px'; // Format A4
       iframe.style.height = '1123px';
@@ -25,7 +25,7 @@ export const usePdfImageCapture = () => {
       iframe.style.left = '-9999px';
       iframe.style.border = 'none';
       
-      document.body.appendChild(iframe);
+      window.document.body.appendChild(iframe);
       
       // Attendre que l'iframe soit chargé
       await new Promise((resolve) => {
@@ -48,7 +48,7 @@ export const usePdfImageCapture = () => {
       setCapturedImage(imageData);
       
       // Nettoyer
-      document.body.removeChild(iframe);
+      window.document.body.removeChild(iframe);
       
       toast({
         title: "Copie photo créée",
