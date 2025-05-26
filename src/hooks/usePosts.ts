@@ -14,11 +14,7 @@ export const usePosts = () => {
         .from('posts')
         .select(`
           *,
-          profiles!posts_user_id_fkey (
-            first_name,
-            last_name
-          ),
-          post_likes!inner (
+          post_likes (
             user_id
           )
         `)
@@ -30,8 +26,13 @@ export const usePosts = () => {
       
       const postsWithUserData = data?.map(post => ({
         ...post,
-        user_profile: post.profiles,
-        is_liked: post.post_likes?.some((like: any) => like.user_id === user?.id) || false
+        user_profile: {
+          first_name: 'Utilisateur',
+          last_name: ''
+        },
+        is_liked: post.post_likes?.some((like: any) => like.user_id === user?.id) || false,
+        likes_count: post.likes_count || 0,
+        comments_count: post.comments_count || 0
       })) || [];
 
       setPosts(postsWithUserData);

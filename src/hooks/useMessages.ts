@@ -14,13 +14,7 @@ export const useMessages = (conversationId: string | null) => {
     try {
       const { data, error } = await supabase
         .from('messages')
-        .select(`
-          *,
-          profiles!messages_user_id_fkey (
-            first_name,
-            last_name
-          )
-        `)
+        .select('*')
         .eq('conversation_id', conversationId)
         .order('created_at', { ascending: true });
 
@@ -28,7 +22,11 @@ export const useMessages = (conversationId: string | null) => {
 
       const messagesWithUserData = data?.map(message => ({
         ...message,
-        user_profile: message.profiles
+        message_type: message.message_type as 'text' | 'image' | 'file',
+        user_profile: {
+          first_name: 'Utilisateur',
+          last_name: ''
+        }
       })) || [];
 
       setMessages(messagesWithUserData);

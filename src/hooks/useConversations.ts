@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Conversation, Message } from "@/types/social";
+import { Conversation } from "@/types/social";
 import { toast } from "@/hooks/use-toast";
 
 export const useConversations = () => {
@@ -18,20 +18,12 @@ export const useConversations = () => {
         .select(`
           *,
           conversation_participants!inner (
-            user_id,
-            profiles!conversation_participants_user_id_fkey (
-              first_name,
-              last_name
-            )
+            user_id
           ),
           messages (
             content,
             created_at,
-            user_id,
-            profiles!messages_user_id_fkey (
-              first_name,
-              last_name
-            )
+            user_id
           )
         `)
         .eq('conversation_participants.user_id', user.id)
@@ -41,7 +33,17 @@ export const useConversations = () => {
 
       const conversationsWithLastMessage = data?.map(conv => ({
         ...conv,
-        last_message: conv.messages?.[0] || null
+        participants: conv.conversation_participants || [],
+        last_message: conv.messages && conv.messages.length > 0 ? {
+          id: 'temp-id',
+          conversation_id: conv.id,
+          user_id: conv.messages[0].user_id,
+          content: conv.messages[0].content,
+          message_type: 'text' as const,
+          created_at: conv.messages[0].created_at,
+          updated_at: conv.messages[0].created_at,
+          is_read: false
+        } : null
       })) || [];
 
       setConversations(conversationsWithLastMessage);
