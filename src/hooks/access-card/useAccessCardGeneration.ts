@@ -20,58 +20,30 @@ export const useAccessCardGeneration = () => {
         generatedCode
       });
       
-      // Récupérer le premier document de l'utilisateur pour générer l'URL QR
-      generateDocumentQRUrl(user.id);
+      // Générer une URL vers mes-directives avec les paramètres d'accès
+      generateDirectivesAccessUrl(user.id);
     }
   }, [user, profile]);
 
-  const generateDocumentQRUrl = async (userId: string) => {
+  const generateDirectivesAccessUrl = async (userId: string) => {
     try {
-      console.log("AccessCardGeneration - Fetching user documents for QR:", userId);
+      console.log("AccessCardGeneration - Generating directives access URL for:", userId);
       
-      // Récupérer le premier document PDF de l'utilisateur
-      const { data: documents, error } = await supabase
-        .from('pdf_documents')
-        .select('id, file_name, file_path, content_type')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(1);
-
-      console.log("AccessCardGeneration - Documents query result:", {
-        documents,
-        error,
-        documentsCount: documents?.length || 0
+      // URL vers mes-directives avec paramètres d'accès par carte
+      const directivesUrl = `${window.location.origin}/mes-directives?access=card&user=${userId}&source=qr`;
+      
+      console.log("AccessCardGeneration - Generated directives URL:", {
+        directivesUrl,
+        userId,
+        urlLength: directivesUrl.length
       });
-
-      if (error) {
-        console.error("AccessCardGeneration - Error fetching documents:", error);
-        throw error;
-      }
-
-      if (documents && documents.length > 0) {
-        const document = documents[0];
-        // URL directe vers le visualiseur PDF avec paramètres d'accès QR
-        const documentUrl = `${window.location.origin}/pdf-viewer?id=${document.id}&access=card&user=${userId}`;
-        
-        console.log("AccessCardGeneration - Generated QR URL for document:", {
-          documentUrl,
-          documentId: document.id,
-          fileName: document.file_name,
-          urlLength: documentUrl.length
-        });
-        
-        setQrCodeUrl(documentUrl);
-      } else {
-        console.log("AccessCardGeneration - No documents found, creating fallback message");
-        // Pas de documents, URL vers une page d'information
-        const infoUrl = `${window.location.origin}/mes-directives?access=card&user=${userId}&info=no-documents`;
-        setQrCodeUrl(infoUrl);
-      }
+      
+      setQrCodeUrl(directivesUrl);
       
     } catch (error) {
-      console.error("AccessCardGeneration - Exception during document URL generation:", error);
-      // URL de fallback vers mes-directives avec message d'erreur
-      const fallbackUrl = `${window.location.origin}/mes-directives?access=card&user=${userId}&error=generation`;
+      console.error("AccessCardGeneration - Exception during URL generation:", error);
+      // URL de fallback vers mes-directives simple
+      const fallbackUrl = `${window.location.origin}/mes-directives?access=card&error=generation`;
       console.log("AccessCardGeneration - Using fallback URL:", fallbackUrl);
       setQrCodeUrl(fallbackUrl);
     }
