@@ -23,28 +23,29 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     '/directives-docs',
     '/acces-institution',
     '/acces-institution-simple',
-    '/pdf-viewer' // Ajouter pdf-viewer comme route publique
+    '/pdf-viewer' // Route publique pour QR codes
   ];
 
-  // Vérifier si c'est un accès QR code (paramètres access=card ou shared_code)
+  // Vérifier si c'est un accès QR code (paramètres access=card ou shared_code ou id)
   const searchParams = new URLSearchParams(location.search);
   const hasQRAccess = searchParams.get('access') === 'card' || 
                       searchParams.get('shared_code') || 
                       searchParams.get('id'); // Pour les liens directs vers des documents
 
-  console.log("ProtectedRoute check:", {
+  console.log("🔒 ProtectedRoute check:", {
     pathname: location.pathname,
-    isPublic: fullyPublicRoutes.includes(location.pathname),
+    isPublicRoute: fullyPublicRoutes.includes(location.pathname),
     hasQRAccess,
     searchParams: location.search,
     isAuthenticated,
     isLoading,
-    authCheckComplete
+    authCheckComplete,
+    decision: fullyPublicRoutes.includes(location.pathname) || hasQRAccess ? 'ALLOW_PUBLIC' : 'CHECK_AUTH'
   });
 
   // BYPASS COMPLET pour les routes publiques OU accès QR code
   if (fullyPublicRoutes.includes(location.pathname) || hasQRAccess) {
-    console.log("ProtectedRoute: Accès public autorisé - route publique ou QR code détecté");
+    console.log("✅ ProtectedRoute: Accès public autorisé - route publique ou QR code détecté");
     return <>{children}</>;
   }
 
@@ -52,14 +53,14 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   useEffect(() => {
     // Si on n'est plus en chargement, marquer la vérification comme complète
     if (!isLoading) {
-      console.log("Auth check completed, loading finished");
+      console.log("✅ Auth check completed, loading finished");
       setAuthCheckComplete(true);
     }
   }, [isLoading]);
 
   // Attendre que la vérification d'auth soit complète
   if (!authCheckComplete && isLoading) {
-    console.log("ProtectedRoute: Vérification d'authentification en cours...");
+    console.log("⏳ ProtectedRoute: Vérification d'authentification en cours...");
     return (
       <div className="h-screen flex flex-col items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-directiveplus-600" />
@@ -70,7 +71,7 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
 
   // Pour les routes protégées, vérifier l'authentification
   if (!isAuthenticated) {
-    console.log("ProtectedRoute: Non authentifié, redirection vers /auth");
+    console.log("🚫 ProtectedRoute: Non authentifié, redirection vers /auth");
     return <Navigate to="/auth" state={{ from: location.pathname }} replace />;
   }
 
@@ -84,12 +85,12 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
       : userRole === requiredRole;
     
     if (!hasRequiredRole) {
-      console.log(`ProtectedRoute: Rôle insuffisant: ${requiredRole}`);
+      console.log(`🚫 ProtectedRoute: Rôle insuffisant: ${requiredRole}`);
       return <Navigate to="/" state={{ from: location.pathname }} replace />;
     }
   }
 
-  console.log("ProtectedRoute: Accès autorisé");
+  console.log("✅ ProtectedRoute: Accès autorisé");
   return <>{children}</>;
 };
 

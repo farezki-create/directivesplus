@@ -22,14 +22,44 @@ export const useDocumentLoader = (documentId: string | null) => {
       setLoading(true);
       setError(null);
 
-      // Utiliser la fonction publique pour accéder au document
-      // Cette fonction contourne les politiques RLS pour l'accès public
-      const { data: pdfDoc, error: pdfError } = await supabase
+      // ÉTAPE 1: Essayer d'abord l'accès direct sans RLS pour débugger
+      console.log("ÉTAPE 1: Test accès direct au document...");
+      
+      // Désactiver temporairement RLS pour ce test
+      const { data: directTest, error: directTestError } = await supabase
+        .from('pdf_documents')
+        .select('*')
+        .eq('id', id);
+
+      console.log("Test accès direct - Résultat:", { 
+        found: directTest?.length || 0, 
+        error: directTestError,
+        data: directTest?.[0] ? {
+          id: directTest[0].id,
+          file_name: directTest[0].file_name,
+          user_id: directTest[0].user_id
+        } : null
+      });
+
+      // ÉTAPE 2: Essayer la fonction RPC publique
+      console.log("ÉTAPE 2: Test fonction RPC get_public_document...");
+      const { data: rpcDoc, error: rpcError } = await supabase
         .rpc('get_public_document', { doc_id: id });
 
-      if (pdfDoc && pdfDoc.length > 0 && !pdfError) {
-        console.log("Document trouvé via get_public_document:", pdfDoc[0]);
-        const doc = pdfDoc[0];
+      console.log("RPC get_public_document - Résultat:", { 
+        found: rpcDoc?.length || 0,
+        error: rpcError,
+        data: rpcDoc?.[0] ? {
+          id: rpcDoc[0].id,
+          file_name: rpcDoc[0].file_name,
+          user_id: rpcDoc[0].user_id
+        } : null
+      });
+
+      // Si on a des données via RPC, les utiliser
+      if (rpcDoc && rpcDoc.length > 0 && !rpcError) {
+        console.log("✅ Document trouvé via RPC:", rpcDoc[0].file_name);
+        const doc = rpcDoc[0];
         const transformedDoc: Document = {
           id: doc.id,
           file_name: doc.file_name,
@@ -43,39 +73,63 @@ export const useDocumentLoader = (documentId: string | null) => {
           updated_at: doc.updated_at,
           external_id: doc.external_id
         };
+        
+        console.log("Document transformé:", {
+          id: transformedDoc.id,
+          file_name: transformedDoc.file_name,
+          file_path: transformedDoc.file_path?.substring(0, 50) + "..."
+        });
+        
         setDocument(transformedDoc);
         setLoading(false);
         return;
       }
 
-      // Si la fonction RPC échoue, essayer l'accès direct (pour les utilisateurs authentifiés)
-      const { data: directDoc, error: directError } = await supabase
+      // ÉTAPE 3: Si RPC échoue, essayer accès authentifié
+      console.log("ÉTAPE 3: Test accès authentifié...");
+      const { data: authDoc, error: authError } = await supabase
         .from('pdf_documents')
         .select('*')
         .eq('id', id)
         .maybeSingle();
 
-      if (directDoc && !directError) {
-        console.log("Document trouvé via accès direct:", directDoc);
+      console.log("Accès authentifié - Résultat:", { 
+        found: !!authDoc,
+        error: authError,
+        data: authDoc ? {
+          id: authDoc.id,
+          file_name: authDoc.file_name,
+          user_id: authDoc.user_id
+        } : null
+      });
+
+      if (authDoc && !authError) {
+        console.log("✅ Document trouvé via accès authentifié:", authDoc.file_name);
         const transformedDoc: Document = {
-          ...directDoc,
-          file_type: directDoc.content_type?.split('/')[1] || 'pdf',
-          content_type: directDoc.content_type || 'application/pdf'
+          ...authDoc,
+          file_type: authDoc.content_type?.split('/')[1] || 'pdf',
+          content_type: authDoc.content_type || 'application/pdf'
         };
         setDocument(transformedDoc);
         setLoading(false);
         return;
       }
 
-      // Essayer ensuite dans medical_documents
+      // ÉTAPE 4: Essayer dans medical_documents
+      console.log("ÉTAPE 4: Test dans medical_documents...");
       const { data: medicalDoc, error: medicalError } = await supabase
         .from('medical_documents')
         .select('*')
         .eq('id', id)
         .maybeSingle();
 
+      console.log("Medical documents - Résultat:", { 
+        found: !!medicalDoc,
+        error: medicalError
+      });
+
       if (medicalDoc && !medicalError) {
-        console.log("Document trouvé dans medical_documents:", medicalDoc);
+        console.log("✅ Document trouvé dans medical_documents:", medicalDoc.file_name);
         const transformedDoc: Document = {
           ...medicalDoc,
           content_type: `application/${medicalDoc.file_type}`
@@ -85,26 +139,33 @@ export const useDocumentLoader = (documentId: string | null) => {
         return;
       }
 
-      // Si aucun document trouvé
-      if (pdfError || directError || medicalError) {
-        console.error("Erreurs de requête:", { pdfError, directError, medicalError });
-        throw new Error("Erreur lors de la récupération du document");
-      }
+      // ÉTAPE 5: Aucun document trouvé
+      console.error("❌ AUCUN DOCUMENT TROUVÉ - Résumé des erreurs:", {
+        rpcError: rpcError?.message,
+        authError: authError?.message,
+        medicalError: medicalError?.message,
+        documentId: id
+      });
 
-      throw new Error("Document non trouvé");
+      throw new Error(`Document non trouvé (ID: ${id})`);
 
     } catch (err) {
-      console.error(`useDocumentLoader: Erreur tentative ${attempt + 1}:`, err);
+      const errorMessage = err instanceof Error ? err.message : "Erreur inconnue";
+      console.error(`❌ useDocumentLoader: Erreur tentative ${attempt + 1}:`, {
+        error: errorMessage,
+        documentId: id,
+        attempt: attempt + 1
+      });
       
       if (attempt < 2) {
-        // Retry automatique
+        console.log(`🔄 Retry automatique dans 1 seconde...`);
         setTimeout(() => {
           loadDocument(id, attempt + 1);
         }, 1000 * (attempt + 1));
         return;
       }
 
-      setError(err instanceof Error ? err.message : "Erreur inconnue");
+      setError(errorMessage);
       setDocument(null);
     } finally {
       setLoading(false);
@@ -113,9 +174,11 @@ export const useDocumentLoader = (documentId: string | null) => {
 
   useEffect(() => {
     if (documentId) {
+      console.log("🔍 useDocumentLoader: Démarrage du chargement pour:", documentId);
       setRetryCount(0);
       loadDocument(documentId);
     } else {
+      console.log("⚠️ useDocumentLoader: Aucun document ID fourni");
       setDocument(null);
       setLoading(false);
       setError(null);
@@ -125,6 +188,7 @@ export const useDocumentLoader = (documentId: string | null) => {
   const retryLoad = () => {
     if (documentId && retryCount < 3) {
       const newRetryCount = retryCount + 1;
+      console.log(`🔄 useDocumentLoader: Retry manuel ${newRetryCount}/3`);
       setRetryCount(newRetryCount);
       loadDocument(documentId, newRetryCount);
     }
