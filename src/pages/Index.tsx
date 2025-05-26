@@ -1,5 +1,3 @@
-
-
 import { useAuth } from "@/contexts/AuthContext";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -120,15 +118,13 @@ const Index = () => {
       {/* Hero Section */}
       <section className="py-20 px-4">
         <div className="container mx-auto text-center">
-          {/* Logo en grand avec arrière-plan cohérent */}
-          <div className="mb-12">
-            <div className="bg-white/80 backdrop-blur-sm rounded-full p-8 w-48 h-48 mx-auto mb-8 shadow-lg border border-white/20">
-              <img 
-                src="/lovable-uploads/0a786ed1-a905-4b29-be3a-ca3b24d3efae.png" 
-                alt="DirectivesPlus Logo" 
-                className="w-full h-full object-contain"
-              />
-            </div>
+          {/* Logo en grand */}
+          <div className="mb-8">
+            <img 
+              src="/lovable-uploads/0a786ed1-a905-4b29-be3a-ca3b24d3efae.png" 
+              alt="DirectivesPlus Logo" 
+              className="w-48 h-48 mx-auto mb-6"
+            />
           </div>
           
           <h2 className="text-5xl font-bold text-gray-900 mb-6">
