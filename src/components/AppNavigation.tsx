@@ -6,12 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, User, FileText, Heart, Shield } from "lucide-react";
 
 const AppNavigation = () => {
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, user, signOut } = useAuth();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleLogout = async () => {
-    await logout();
+    await signOut();
     navigate("/");
   };
 

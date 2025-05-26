@@ -7,6 +7,7 @@ import DocumentUploader from "@/components/documents/DocumentUploader";
 import MedicalHeader from "@/components/medical/MedicalHeader";
 import MedicalDocumentList from "@/components/medical/MedicalDocumentList";
 import MedicalDocumentActions, { useMedicalDocumentActions } from "@/components/medical/MedicalDocumentActions";
+import MedicalQRCodeSection from "@/components/medical/MedicalQRCodeSection";
 import { useMedicalDocuments } from "@/hooks/useMedicalDocuments";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Info } from "lucide-react";
@@ -90,6 +91,11 @@ const MedicalData = () => {
                 documentType="medical"
               />
             </div>
+          )}
+
+          {/* Section QR Code pour les documents médicaux */}
+          {isAuthenticated && documents.length > 0 && (
+            <MedicalQRCodeSection documents={documents} />
           )}
           
           {isAuthenticated ? (
