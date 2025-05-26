@@ -14,11 +14,11 @@ import {
 
 const AppNavigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    await logout();
+    // Simple navigation to home on logout
     navigate("/");
   };
 

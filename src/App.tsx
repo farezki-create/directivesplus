@@ -10,11 +10,10 @@ import Auth from "./pages/Auth";
 import Rediger from "./pages/Rediger";
 import CarteAcces from "./pages/CarteAcces";
 import DirectivesAccess from "./pages/DirectivesAccess";
-import AffichageDossier from "./pages/AffichageDossier";
 import MesDirectives from "./pages/MesDirectives";
 import Profile from "./pages/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
-import PDFViewer from "./pages/PDFViewer";
+import PdfViewer from "./pages/PdfViewer";
 import { Navigate } from "react-router-dom";
 
 const queryClient = new QueryClient();
@@ -46,7 +45,6 @@ const App = () => (
               } 
             />
             <Route path="/directives-access" element={<DirectivesAccess />} />
-            <Route path="/affichage-dossier" element={<AffichageDossier />} />
             <Route path="/mes-directives" element={<MesDirectives />} />
             <Route 
               path="/profile" 
@@ -56,12 +54,13 @@ const App = () => (
                 </ProtectedRoute>
               } 
             />
-            <Route path="/pdf-viewer" element={<PDFViewer />} />
+            <Route path="/pdf-viewer" element={<PdfViewer />} />
             
-            {/* Redirection pour les anciennes routes médicales */}
+            {/* Redirection pour les anciennes routes */}
             <Route path="/donnees-medicales" element={<Navigate to="/" replace />} />
             <Route path="/medical-access" element={<Navigate to="/" replace />} />
             <Route path="/dashboard" element={<Navigate to="/" replace />} />
+            <Route path="/affichage-dossier" element={<Navigate to="/" replace />} />
           </Routes>
         </TooltipProvider>
       </AuthProvider>
