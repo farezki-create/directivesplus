@@ -38,6 +38,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
   // Cache pour éviter les appels redondants
   const profileCache = useRef<Map<string, Profile>>(new Map());
+  const isInitialized = useRef(false);
 
   const loadProfile = useCallback(async (userId: string) => {
     // Vérifier le cache d'abord
@@ -92,6 +93,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   useEffect(() => {
+    // Éviter la double initialisation
+    if (isInitialized.current) return;
+    isInitialized.current = true;
+
     console.log("Setting up auth state listener");
     
     let mounted = true;
@@ -108,16 +113,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         if (session?.user) {
           console.log("User signed in, loading profile");
+          // Utiliser setTimeout pour éviter les deadlocks
           setTimeout(() => {
-            loadProfile(session.user.id);
-          }, 0);
+            if (mounted) {
+              loadProfile(session.user.id);
+            }
+          }, 100);
         } else {
           console.log("User signed out, clearing state");
           setProfile(null);
           profileCache.current.clear();
         }
         
-        setIsLoading(false);
+        // Marquer comme non-loading après traitement
+        setTimeout(() => {
+          if (mounted) {
+            setIsLoading(false);
+          }
+        }, 200);
       }
     );
 
@@ -134,12 +147,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setSession(initialSession);
           setUser(initialSession.user);
           setTimeout(() => {
-            loadProfile(initialSession.user.id);
-          }, 0);
+            if (mounted) {
+              loadProfile(initialSession.user.id);
+            }
+          }, 100);
+        } else {
+          setIsLoading(false);
         }
       } catch (error) {
         console.error('Error checking initial session:', error);
-      } finally {
         if (mounted) {
           setIsLoading(false);
         }

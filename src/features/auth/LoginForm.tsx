@@ -52,14 +52,12 @@ export const LoginForm = ({ onVerificationSent, redirectPath, setRedirectInProgr
           description: "Vous êtes maintenant connecté.",
         });
         
-        // Redirection simple sans forcer le rechargement
         setRedirectInProgress(true);
         
-        // Petite attente pour que l'état d'auth se mette à jour
-        setTimeout(() => {
-          const finalRedirectPath = redirectPath === "/dashboard" ? "/rediger" : redirectPath;
-          window.location.href = finalRedirectPath;
-        }, 100);
+        // Redirection immédiate
+        const finalRedirectPath = redirectPath === "/dashboard" ? "/rediger" : redirectPath;
+        console.log("Redirecting to:", finalRedirectPath);
+        window.location.href = finalRedirectPath;
       }
     } catch (error: any) {
       console.error("Sign in error:", error);
