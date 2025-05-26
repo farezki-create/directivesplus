@@ -54,15 +54,16 @@ export const LoginForm = ({ onVerificationSent, redirectPath, setRedirectInProgr
         
         setRedirectInProgress(true);
         
-        // Redirection immédiate
-        const finalRedirectPath = redirectPath === "/dashboard" ? "/rediger" : redirectPath;
-        console.log("Redirecting to:", finalRedirectPath);
-        window.location.href = finalRedirectPath;
+        // Attendre un peu que l'auth state change se propage
+        setTimeout(() => {
+          const finalRedirectPath = redirectPath === "/dashboard" ? "/rediger" : redirectPath;
+          console.log("Redirecting to:", finalRedirectPath);
+          window.location.href = finalRedirectPath;
+        }, 500);
       }
     } catch (error: any) {
       console.error("Sign in error:", error);
       
-      // Handle specific error cases
       if (error.message.includes("Email not confirmed")) {
         toast({
           title: "Email non vérifié",

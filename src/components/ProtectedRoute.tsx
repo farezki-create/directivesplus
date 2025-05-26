@@ -33,12 +33,12 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     timeoutReached
   });
 
-  // Timeout de 2 secondes pour éviter les blocages
+  // Timeout de 3 secondes pour éviter les blocages
   useEffect(() => {
     const timer = setTimeout(() => {
       console.log("ProtectedRoute: Timeout atteint, arrêt du chargement");
       setTimeoutReached(true);
-    }, 2000);
+    }, 3000);
 
     return () => clearTimeout(timer);
   }, []);
@@ -55,7 +55,7 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     return <Navigate to="/auth" state={{ from: location.pathname }} replace />;
   }
 
-  // Afficher l'indicateur de chargement pendant la vérification (max 2 secondes)
+  // Afficher l'indicateur de chargement pendant la vérification (max 3 secondes)
   if (isLoading && !timeoutReached) {
     console.log("ProtectedRoute: Chargement de l'état d'authentification...");
     return (

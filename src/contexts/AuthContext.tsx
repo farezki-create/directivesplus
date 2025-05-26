@@ -36,12 +36,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   
-  // Cache pour éviter les appels redondants
+  const hasInitialized = useRef(false);
   const profileCache = useRef<Map<string, Profile>>(new Map());
-  const isInitialized = useRef(false);
 
   const loadProfile = useCallback(async (userId: string) => {
-    // Vérifier le cache d'abord
     const cachedProfile = profileCache.current.get(userId);
     if (cachedProfile) {
       console.log("Using cached profile for user:", userId);
@@ -93,19 +91,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   useEffect(() => {
-    // Éviter la double initialisation
-    if (isInitialized.current) return;
-    isInitialized.current = true;
+    if (hasInitialized.current) return;
+    hasInitialized.current = true;
 
     console.log("Setting up auth state listener");
     
-    let mounted = true;
-
     // Configuration du listener d'état d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (!mounted) return;
-
         console.log("Auth state changed:", event, session?.user?.id);
         
         setSession(session);
@@ -113,24 +106,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         if (session?.user) {
           console.log("User signed in, loading profile");
-          // Utiliser setTimeout pour éviter les deadlocks
-          setTimeout(() => {
-            if (mounted) {
-              loadProfile(session.user.id);
-            }
-          }, 100);
+          await loadProfile(session.user.id);
         } else {
           console.log("User signed out, clearing state");
           setProfile(null);
           profileCache.current.clear();
         }
         
-        // Marquer comme non-loading après traitement
-        setTimeout(() => {
-          if (mounted) {
-            setIsLoading(false);
-          }
-        }, 200);
+        setIsLoading(false);
       }
     );
 
@@ -138,34 +121,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const checkInitialSession = async () => {
       try {
         const { data: { session: initialSession } } = await supabase.auth.getSession();
-        
-        if (!mounted) return;
-
         console.log("Initial session check:", initialSession?.user?.id);
         
         if (initialSession?.user) {
           setSession(initialSession);
           setUser(initialSession.user);
-          setTimeout(() => {
-            if (mounted) {
-              loadProfile(initialSession.user.id);
-            }
-          }, 100);
-        } else {
-          setIsLoading(false);
+          await loadProfile(initialSession.user.id);
         }
+        setIsLoading(false);
       } catch (error) {
         console.error('Error checking initial session:', error);
-        if (mounted) {
-          setIsLoading(false);
-        }
+        setIsLoading(false);
       }
     };
 
     checkInitialSession();
 
     return () => {
-      mounted = false;
       subscription.unsubscribe();
     };
   }, [loadProfile]);
