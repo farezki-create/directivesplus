@@ -9,5 +9,7 @@ export interface PdfData {
   freeText: string;
   signature: string | null;
   userId?: string;
-  medicalDocuments?: any[];
 }
+
+// Legacy alias for backward compatibility
+export interface PDFData extends PdfData {}
