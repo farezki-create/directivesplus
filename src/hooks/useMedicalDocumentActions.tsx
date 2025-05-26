@@ -1,24 +1,37 @@
 
-import { useDocumentDeletion } from "./useDocumentDeletion";
-import { useDocumentPreview } from "./useDocumentPreview";
+import { useState } from "react";
 import { useDocumentVisibility } from "./useDocumentVisibility";
 import { useDocumentDownload } from "./useDocumentDownload";
 import { useDocumentPrint } from "./useDocumentPrint";
-import { useDocumentViewer } from "./useDocumentViewer";
 
 interface UseMedicalDocumentActionsProps {
   onDeleteComplete: () => void;
 }
 
 export const useMedicalDocumentActions = ({ onDeleteComplete }: UseMedicalDocumentActionsProps) => {
-  // Utilisation du hook combiné useDocumentViewer au lieu de useDocumentView et useDocumentPreview séparément
-  const { previewDocument, setPreviewDocument, handleView } = useDocumentViewer();
+  const [previewDocument, setPreviewDocument] = useState<string | null>(null);
+  const [documentToDelete, setDocumentToDelete] = useState<string | null>(null);
   
-  const { documentToDelete, setDocumentToDelete, confirmDelete, handleDelete } = 
-    useDocumentDeletion({ onDeleteComplete, tableName: "medical_documents" });
   const { handleVisibilityChange } = useDocumentVisibility();
   const { handleDownload } = useDocumentDownload();
   const { handlePrint } = useDocumentPrint();
+
+  const handleView = (filePath: string, fileType?: string) => {
+    console.log("useMedicalDocumentActions - handleView:", filePath);
+    setPreviewDocument(filePath);
+  };
+
+  const confirmDelete = (documentId: string) => {
+    console.log("useMedicalDocumentActions - confirmDelete:", documentId);
+    setDocumentToDelete(documentId);
+  };
+
+  const handleDelete = async () => {
+    // Cette fonction sera surchargée par le composant parent
+    console.log("useMedicalDocumentActions - handleDelete appelé");
+    onDeleteComplete();
+    setDocumentToDelete(null);
+  };
 
   console.log("useMedicalDocumentActions - état actuel:", {
     previewDocument,

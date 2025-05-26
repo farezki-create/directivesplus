@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useMedicalDocumentActions } from "./useMedicalDocumentActions";
 
 interface UseMedicalDocumentOperationsProps {
   userId?: string;
@@ -19,18 +18,7 @@ export const useMedicalDocumentOperations = ({
 }: UseMedicalDocumentOperationsProps) => {
   const [uploadedDocuments, setUploadedDocuments] = useState<any[]>([]);
   const [deletingDocuments, setDeletingDocuments] = useState<Set<string>>(new Set());
-
-  const {
-    previewDocument,
-    setPreviewDocument,
-    handleView,
-    handleDelete: originalHandleDelete
-  } = useMedicalDocumentActions({
-    onDeleteComplete: () => {
-      fetchDocuments();
-      onUploadComplete();
-    }
-  });
+  const [previewDocument, setPreviewDocument] = useState<string | null>(null);
 
   const fetchDocuments = async () => {
     if (!userId) return;
@@ -72,10 +60,19 @@ export const useMedicalDocumentOperations = ({
   };
 
   const handleDeleteDocument = async (documentId: string) => {
+    console.log("Début suppression document:", documentId);
     setDeletingDocuments(prev => new Set([...prev, documentId]));
     
     try {
-      await originalHandleDelete();
+      // Supprimer directement de la base de données
+      const { error } = await supabase
+        .from('medical_documents')
+        .delete()
+        .eq('id', documentId);
+      
+      if (error) throw error;
+      
+      console.log("Document supprimé de la base:", documentId);
       
       // Supprimer de la liste locale
       setUploadedDocuments(prev => prev.filter(doc => doc.id !== documentId));
@@ -83,9 +80,6 @@ export const useMedicalDocumentOperations = ({
       if (onDocumentRemove) {
         onDocumentRemove(documentId);
       }
-      
-      // Rafraîchir la liste des documents
-      fetchDocuments();
       
       toast({
         title: "Document supprimé",
@@ -100,6 +94,9 @@ export const useMedicalDocumentOperations = ({
         variant: "destructive",
         duration: 2000
       });
+      
+      // En cas d'erreur, recharger la liste pour être sûr
+      fetchDocuments();
     } finally {
       setDeletingDocuments(prev => {
         const newSet = new Set(prev);
@@ -107,6 +104,11 @@ export const useMedicalDocumentOperations = ({
         return newSet;
       });
     }
+  };
+
+  const handleView = (filePath: string, fileType?: string) => {
+    console.log("Prévisualisation du document:", filePath);
+    setPreviewDocument(filePath);
   };
 
   const handlePreviewDocument = (document: any) => {
