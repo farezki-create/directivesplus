@@ -1,6 +1,6 @@
 
 import { QRCodeSVG } from "qrcode.react";
-import { CreditCard, AlertCircle, ExternalLink, RefreshCw } from "lucide-react";
+import { CreditCard, AlertCircle, ExternalLink, RefreshCw, TestTube } from "lucide-react";
 
 interface AccessCardProps {
   firstName: string;
@@ -58,12 +58,12 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
     window.location.reload();
   };
 
-  // Test direct du QR code
-  const handleTestQrCode = () => {
-    console.log("AccessCard - Test direct du QR code:", qrCodeUrl);
+  // Test direct du QR code dans la même fenêtre
+  const handleTestQrCodeInApp = () => {
+    console.log("AccessCard - Test QR code dans l'application:", qrCodeUrl);
     if (qrCodeUrl) {
-      // Test direct sans validation
-      window.open(qrCodeUrl, '_blank', 'noopener,noreferrer');
+      // Navigation directe dans l'application
+      window.location.href = qrCodeUrl;
     } else {
       alert('QR Code URL non disponible');
     }
@@ -102,7 +102,6 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
                   isQrCodeValid ? 'cursor-pointer hover:bg-opacity-30' : 'cursor-not-allowed'
                 }`}
                 onClick={handleQrCodeClick}
-                title={isQrCodeValid ? "Cliquer pour ouvrir le document" : "QR Code en cours de génération..."}
               >
                 {isQrCodeValid ? (
                   <QRCodeSVG 
@@ -158,17 +157,26 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
         </div>
       </div>
 
-      {/* Debug info en development */}
+      {/* Debug info en development avec test de navigation interne */}
       {process.env.NODE_ENV === 'development' && (
         <div className="absolute top-2 left-2 text-xs bg-black bg-opacity-50 p-1 rounded space-y-1">
           <div>QR: {isQrCodeValid ? '✅' : '❌'} | URL: {qrCodeUrl?.length || 0} chars</div>
           <div>Type: {qrCodeUrl?.includes('/pdf-viewer') ? 'PDF' : 'Directives'}</div>
-          <button 
-            onClick={handleTestQrCode}
-            className="bg-blue-600 text-white px-2 py-1 rounded text-xs hover:bg-blue-700"
-          >
-            Test QR
-          </button>
+          <div className="flex gap-1">
+            <button 
+              onClick={handleQrCodeClick}
+              className="bg-blue-600 text-white px-1 py-0.5 rounded text-xs hover:bg-blue-700"
+            >
+              Nouvel onglet
+            </button>
+            <button 
+              onClick={handleTestQrCodeInApp}
+              className="bg-green-600 text-white px-1 py-0.5 rounded text-xs hover:bg-green-700"
+            >
+              <TestTube className="w-3 h-3 inline mr-1" />
+              Test App
+            </button>
+          </div>
         </div>
       )}
     </div>
