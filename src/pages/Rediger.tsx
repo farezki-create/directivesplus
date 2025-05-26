@@ -51,8 +51,17 @@ const Rediger = () => {
       </main>
       
       <footer className="bg-white py-6 border-t">
-        <div className="container mx-auto px-4 text-center text-gray-500">
-          <p>© 2025 DirectivesPlus. Tous droits réservés.</p>
+        <div className="container mx-auto px-4 text-center">
+          <div className="flex justify-center mb-4">
+            <div className="bg-white/80 rounded-lg p-2">
+              <img 
+                src="/lovable-uploads/d5255c41-98e6-44a5-82fd-dac019e499ef.png" 
+                alt="DirectivesPlus" 
+                className="h-8 w-auto"
+              />
+            </div>
+          </div>
+          <p className="text-gray-500">© 2025 DirectivesPlus. Tous droits réservés.</p>
         </div>
       </footer>
     </div>

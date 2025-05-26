@@ -1,3 +1,4 @@
+
 import { useAuth } from "@/contexts/AuthContext";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -80,11 +81,11 @@ const Index = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <div className="bg-white/80 rounded-lg p-2">
+              <div className="bg-white/80 rounded-lg p-3">
                 <img 
                   src="/lovable-uploads/d5255c41-98e6-44a5-82fd-dac019e499ef.png" 
                   alt="DirectivesPlus" 
-                  className="h-8 w-auto"
+                  className="h-12 w-auto"
                 />
               </div>
             </div>
@@ -124,11 +125,11 @@ const Index = () => {
         <div className="container mx-auto text-center">
           {/* Logo au-dessus du titre */}
           <div className="flex justify-center mb-8">
-            <div className="bg-white/70 rounded-xl p-8 shadow-sm">
+            <div className="bg-white/70 rounded-xl p-12 shadow-sm">
               <img 
                 src="/lovable-uploads/d5255c41-98e6-44a5-82fd-dac019e499ef.png" 
                 alt="DirectivesPlus" 
-                className="h-64 w-auto"
+                className="h-80 w-auto"
               />
             </div>
           </div>
