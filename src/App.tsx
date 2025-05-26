@@ -5,7 +5,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
@@ -42,63 +41,19 @@ function App() {
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
-              <Route path="/profile" element={
-                <ProtectedRoute>
-                  <Profile />
-                </ProtectedRoute>
-              } />
-              <Route path="/dashboard" element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              } />
-              <Route path="/rediger" element={
-                <ProtectedRoute>
-                  <Rediger />
-                </ProtectedRoute>
-              } />
-              <Route path="/avis-general" element={
-                <ProtectedRoute>
-                  <AvisGeneral />
-                </ProtectedRoute>
-              } />
-              <Route path="/maintien-vie" element={
-                <ProtectedRoute>
-                  <MaintienVie />
-                </ProtectedRoute>
-              } />
-              <Route path="/maladie-avancee" element={
-                <ProtectedRoute>
-                  <MaladieAvancee />
-                </ProtectedRoute>
-              } />
-              <Route path="/gouts-peurs" element={
-                <ProtectedRoute>
-                  <GoutsPeurs />
-                </ProtectedRoute>
-              } />
-              <Route path="/personne-confiance" element={
-                <ProtectedRoute>
-                  <PersonneConfiance />
-                </ProtectedRoute>
-              } />
-              <Route path="/synthesis" element={
-                <ProtectedRoute>
-                  <Synthesis />
-                </ProtectedRoute>
-              } />
-              <Route path="/carte-acces" element={
-                <ProtectedRoute>
-                  <CarteAcces />
-                </ProtectedRoute>
-              } />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/rediger" element={<Rediger />} />
+              <Route path="/avis-general" element={<AvisGeneral />} />
+              <Route path="/maintien-vie" element={<MaintienVie />} />
+              <Route path="/maladie-avancee" element={<MaladieAvancee />} />
+              <Route path="/gouts-peurs" element={<GoutsPeurs />} />
+              <Route path="/personne-confiance" element={<PersonneConfiance />} />
+              <Route path="/synthesis" element={<Synthesis />} />
+              <Route path="/carte-acces" element={<CarteAcces />} />
               <Route path="/mes-directives" element={<MesDirectives />} />
               <Route path="/institution-access" element={<InstitutionAccess />} />
-              <Route path="/donnees-medicales" element={
-                <ProtectedRoute>
-                  <MedicalData />
-                </ProtectedRoute>
-              } />
+              <Route path="/donnees-medicales" element={<MedicalData />} />
               <Route path="/testimonials" element={<Testimonials />} />
               <Route path="/en-savoir-plus" element={<EnSavoirPlus />} />
               <Route path="/pdf-viewer" element={<PdfViewer />} />

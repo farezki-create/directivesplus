@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { loginFormSchema, type LoginFormValues } from "./schemas";
+import { cleanupAuthState } from "@/utils/authUtils";
 
 interface LoginFormProps {
   onVerificationSent: (email: string) => void;
@@ -35,32 +36,34 @@ export const LoginForm = ({ onVerificationSent, redirectPath, setRedirectInProgr
     try {
       console.log("Attempting to sign in...");
       
-      const { data, error } = await supabase.auth.signInWithPassword({
+      // Clean up existing auth state first
+      cleanupAuthState();
+      
+      // Try to sign out any existing session
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+      } catch (error) {
+        // Continue even if this fails
+      }
+      
+      // Now sign in
+      const { error } = await supabase.auth.signInWithPassword({
         email: values.email,
         password: values.password,
       });
 
-      if (error) {
-        console.error("Sign in error:", error);
-        throw error;
-      }
+      if (error) throw error;
       
-      if (data.user) {
-        console.log("Sign in successful, user:", data.user.id);
-        toast({
-          title: "Connexion réussie",
-          description: "Vous êtes maintenant connecté.",
-        });
-        
-        // Redirection simple sans forcer le rechargement
-        setRedirectInProgress(true);
-        
-        // Petite attente pour que l'état d'auth se mette à jour
-        setTimeout(() => {
-          const finalRedirectPath = redirectPath === "/dashboard" ? "/rediger" : redirectPath;
-          window.location.href = finalRedirectPath;
-        }, 100);
-      }
+      toast({
+        title: "Connexion réussie",
+        description: "Vous êtes maintenant connecté.",
+      });
+      
+      // Rediriger vers l'accueil au lieu du dashboard
+      const finalRedirectPath = redirectPath === "/dashboard" ? "/" : redirectPath;
+      console.log("Sign in successful, redirecting to:", finalRedirectPath);
+      setRedirectInProgress(true);
+      window.location.href = finalRedirectPath;
     } catch (error: any) {
       console.error("Sign in error:", error);
       
@@ -72,12 +75,6 @@ export const LoginForm = ({ onVerificationSent, redirectPath, setRedirectInProgr
           variant: "destructive",
         });
         onVerificationSent(values.email);
-      } else if (error.message.includes("Invalid login credentials")) {
-        toast({
-          title: "Identifiants incorrects",
-          description: "Email ou mot de passe incorrect.",
-          variant: "destructive",
-        });
       } else {
         toast({
           title: "Erreur de connexion",

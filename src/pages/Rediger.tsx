@@ -1,15 +1,32 @@
 
+import { useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import AppNavigation from "@/components/AppNavigation";
 import DirectivesGrid from "@/components/DirectivesGrid";
 import InfoSteps from "@/components/InfoSteps";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 
 const Rediger = () => {
-  const { isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    // Only redirect if authentication state is loaded and user is not authenticated
+    if (!isLoading && !isAuthenticated) {
+      console.log("User not authenticated, redirecting to auth page");
+      // Pass the current location as state to redirect back after login
+      navigate("/auth", { state: { from: location.pathname }, replace: true });
+      return;
+    }
+    
+    // Log user authentication without showing toast
+    if (!isLoading && isAuthenticated && user) {
+      console.log("User authenticated:", user.id);
+    }
+  }, [isAuthenticated, isLoading, navigate, user, location.pathname]);
 
   // Show loading indicator while checking auth
   if (isLoading) {
@@ -18,6 +35,12 @@ const Rediger = () => {
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-directiveplus-600"></div>
       </div>
     );
+  }
+
+  // Important: Only render page content if authenticated
+  // This prevents flash of content before redirect
+  if (!isAuthenticated) {
+    return null;
   }
 
   return (

@@ -1,6 +1,6 @@
 
 import { ReactNode, useEffect, useState } from "react";
-import { Navigate, useLocation } from "react-router-dom";
+import { Navigate, useLocation, useSearchParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -12,7 +12,7 @@ interface ProtectedRouteProps {
 const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   const { isAuthenticated, isLoading, profile } = useAuth();
   const location = useLocation();
-  const [timeoutReached, setTimeoutReached] = useState(false);
+  const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
   
   // Routes COMPLÈTEMENT publiques - AUCUNE vérification d'authentification
   const fullyPublicRoutes = [
@@ -29,19 +29,14 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     pathname: location.pathname,
     isPublic: fullyPublicRoutes.includes(location.pathname),
     isAuthenticated,
-    isLoading,
-    timeoutReached
+    isLoading
   });
 
-  // Timeout plus court pour éviter les blocages
   useEffect(() => {
-    const timer = setTimeout(() => {
-      console.log("ProtectedRoute: Timeout atteint, arrêt du chargement");
-      setTimeoutReached(true);
-    }, 3000); // 3 secondes maximum
-
-    return () => clearTimeout(timer);
-  }, []);
+    if (!isLoading) {
+      setHasCheckedAuth(true);
+    }
+  }, [isLoading]);
 
   // BYPASS COMPLET pour les routes publiques - AUCUNE VÉRIFICATION
   if (fullyPublicRoutes.includes(location.pathname)) {
@@ -49,19 +44,13 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     return <>{children}</>;
   }
 
-  // Si timeout atteint et toujours en chargement, traiter comme non authentifié
-  if (timeoutReached && isLoading) {
-    console.log("ProtectedRoute: Timeout atteint, redirection vers /auth");
-    return <Navigate to="/auth" state={{ from: location.pathname }} replace />;
-  }
-
-  // Afficher l'indicateur de chargement pendant la vérification (max 3 secondes)
-  if (isLoading && !timeoutReached) {
+  // Afficher l'indicateur de chargement pendant la vérification
+  if (isLoading || !hasCheckedAuth) {
     console.log("ProtectedRoute: Chargement de l'état d'authentification...");
     return (
       <div className="h-screen flex flex-col items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-directiveplus-600" />
-        <p className="mt-4 text-gray-600">Connexion en cours...</p>
+        <p className="mt-4 text-gray-600">Vérification de l'authentification...</p>
       </div>
     );
   }
@@ -77,6 +66,7 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     const userRoles = profile.roles || [];
     const userRole = profile.role;
     
+    // Vérifier si l'utilisateur a le rôle requis (soit dans roles[] soit dans role)
     const hasRequiredRole = Array.isArray(userRoles) 
       ? userRoles.includes(requiredRole)
       : userRole === requiredRole;
