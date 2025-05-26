@@ -1,4 +1,5 @@
 
+
 import { useAuth } from "@/contexts/AuthContext";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -119,6 +120,15 @@ const Index = () => {
       {/* Hero Section */}
       <section className="py-20 px-4">
         <div className="container mx-auto text-center">
+          {/* Logo en grand */}
+          <div className="mb-8">
+            <img 
+              src="/lovable-uploads/0a786ed1-a905-4b29-be3a-ca3b24d3efae.png" 
+              alt="DirectivesPlus Logo" 
+              className="w-32 h-32 mx-auto mb-6"
+            />
+          </div>
+          
           <h2 className="text-5xl font-bold text-gray-900 mb-6">
             Vos volontés, <span className="text-directiveplus-600">protégées</span> et accessibles
           </h2>
@@ -134,9 +144,11 @@ const Index = () => {
                     Commencer gratuitement
                   </Button>
                 </Link>
-                <Button size="lg" variant="outline" className="border-directiveplus-600 text-directiveplus-600 hover:bg-directiveplus-50">
-                  En savoir plus
-                </Button>
+                <Link to="/en-savoir-plus">
+                  <Button size="lg" variant="outline" className="border-directiveplus-600 text-directiveplus-600 hover:bg-directiveplus-50">
+                    En savoir plus
+                  </Button>
+                </Link>
               </>
             ) : (
               <Link to="/rediger">
@@ -242,3 +254,4 @@ const Index = () => {
 };
 
 export default Index;
+

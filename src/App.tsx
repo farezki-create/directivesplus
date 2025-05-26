@@ -11,6 +11,9 @@ import SecurityAuditReportPage from "./pages/SecurityAuditReport";
 import SecurityAuditDashboardPage from "./pages/SecurityAuditDashboard";
 import Index from "./pages/Index";
 import Rediger from "./pages/Rediger";
+import EnSavoirPlus from "./pages/EnSavoirPlus";
+import LegalMentions from "./pages/LegalMentions";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 function App() {
   const queryClient = new QueryClient();
@@ -29,6 +32,9 @@ function App() {
               <Route path="/security-audit" element={<SecurityAudit />} />
               <Route path="/security-audit-report" element={<SecurityAuditReportPage />} />
               <Route path="/security-dashboard" element={<SecurityAuditDashboardPage />} />
+              <Route path="/en-savoir-plus" element={<EnSavoirPlus />} />
+              <Route path="/mentions-legales" element={<LegalMentions />} />
+              <Route path="/confidentialite" element={<PrivacyPolicy />} />
             </Routes>
           </div>
         </QueryClientProvider>
