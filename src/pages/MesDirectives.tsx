@@ -11,6 +11,7 @@ import type { Document } from "@/types/documents";
 const MesDirectives = () => {
   const [searchParams] = useSearchParams();
   const sharedCode = searchParams.get('shared_code');
+  const accessType = searchParams.get('access');
   const { user, profile, isAuthenticated, isLoading: authLoading } = useAuth();
   
   const {
@@ -30,12 +31,24 @@ const MesDirectives = () => {
   // Local state for preview document
   const [previewDocument, setPreviewDocument] = React.useState<Document | null>(null);
 
-  console.log("MesDirectives - Auth state:", { userId: user?.id, hasProfile: !!profile, isAuthenticated, isLoading: authLoading });
+  console.log("MesDirectives - Auth state:", { 
+    userId: user?.id, 
+    hasProfile: !!profile, 
+    isAuthenticated, 
+    isLoading: authLoading,
+    accessType,
+    sharedCode
+  });
   console.log("MesDirectives - Documents:", documents.length);
 
   // Si un code de partage est présent dans l'URL, afficher la vue de partage
   if (sharedCode) {
     return <MesDirectivesSharedAccess />;
+  }
+
+  // Afficher un message spécial pour les accès via QR code
+  if (accessType === 'card' && isAuthenticated) {
+    console.log("MesDirectives - Accès via QR code détecté");
   }
 
   // Wrapper function to handle upload completion

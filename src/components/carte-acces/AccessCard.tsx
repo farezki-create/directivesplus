@@ -20,7 +20,7 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
     qrCodeUrlLength: qrCodeUrl?.length || 0
   });
 
-  // Validation améliorée des props
+  // Validation simple de l'URL
   const isQrCodeValid = qrCodeUrl && 
                        qrCodeUrl.trim() !== '' && 
                        (qrCodeUrl.startsWith('http://') || qrCodeUrl.startsWith('https://'));
@@ -34,12 +34,7 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
       console.log("AccessCard - Opening QR URL:", qrCodeUrl);
       try {
         // Ouvrir dans un nouvel onglet
-        const newWindow = window.open(qrCodeUrl, '_blank', 'noopener,noreferrer');
-        if (!newWindow) {
-          console.error("AccessCard - Failed to open new window, popup blocked?");
-          // Fallback: essayer de naviguer dans la même fenêtre
-          window.location.href = qrCodeUrl;
-        }
+        window.open(qrCodeUrl, '_blank', 'noopener,noreferrer');
       } catch (error) {
         console.error("AccessCard - Error opening URL:", error);
       }
