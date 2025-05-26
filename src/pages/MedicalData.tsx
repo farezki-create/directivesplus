@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,6 +11,7 @@ import { useMedicalDocuments } from "@/hooks/useMedicalDocuments";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Info } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import MedicalDocumentCompiler from "@/components/medical/MedicalDocumentCompiler";
 
 const MedicalData = () => {
   const { user, isAuthenticated, isLoading, profile } = useAuth();
@@ -27,6 +27,11 @@ const MedicalData = () => {
   const documentActions = useMedicalDocumentActions({
     onDeleteComplete: () => window.location.reload()
   });
+
+  // Nouvelle fonction pour gérer la suppression depuis le compilateur
+  const handleDocumentDeleteFromCompiler = (documentId: string) => {
+    setDocuments(prev => prev.filter(doc => doc.id !== documentId));
+  };
 
   if (isLoading || documentsLoading) {
     return (
@@ -93,7 +98,16 @@ const MedicalData = () => {
             </div>
           )}
 
-          {/* Section QR Code pour les documents médicaux */}
+          {/* Section de compilation de documents médicaux */}
+          {isAuthenticated && documents.length > 1 && user && (
+            <MedicalDocumentCompiler
+              documents={documents}
+              userId={user.id}
+              onDocumentDelete={handleDocumentDeleteFromCompiler}
+            />
+          )}
+
+          {/* Section QR Code pour les documents médicaux individuels */}
           {isAuthenticated && documents.length > 0 && (
             <MedicalQRCodeSection documents={documents} />
           )}

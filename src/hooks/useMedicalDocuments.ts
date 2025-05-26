@@ -76,6 +76,7 @@ export const useMedicalDocuments = () => {
 
   return {
     documents,
+    setDocuments, // Export setDocuments pour permettre les mises à jour externes
     isLoading,
     handleUploadComplete,
     handleDelete
