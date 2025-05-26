@@ -25,6 +25,9 @@ import ExemplesPhrases from "./pages/ExemplesPhrases";
 import MesDirectives from "./pages/MesDirectives";
 import DirectivesDocs from "./pages/DirectivesDocs";
 import DirectivesAccess from "./pages/DirectivesAccess";
+import Synthesis from "./pages/Synthesis";
+import CarteAcces from "./pages/CarteAcces";
+import AccessCard from "./pages/AccessCard";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
 function App() {
@@ -86,6 +89,23 @@ function App() {
               <Route path="/mes-directives" element={<MesDirectives />} />
               <Route path="/directives-docs" element={<DirectivesDocs />} />
               <Route path="/directives-acces" element={<DirectivesAccess />} />
+              
+              {/* Routes protégées pour la synthèse et carte d'accès */}
+              <Route path="/synthese" element={
+                <ProtectedRoute>
+                  <Synthesis />
+                </ProtectedRoute>
+              } />
+              <Route path="/carte-acces" element={
+                <ProtectedRoute>
+                  <CarteAcces />
+                </ProtectedRoute>
+              } />
+              <Route path="/access-card" element={
+                <ProtectedRoute>
+                  <AccessCard />
+                </ProtectedRoute>
+              } />
             </Routes>
           </div>
         </QueryClientProvider>
