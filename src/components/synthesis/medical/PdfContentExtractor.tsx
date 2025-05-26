@@ -1,8 +1,9 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { X, FileText, Eye, EyeOff, Copy } from "lucide-react";
+import { X, FileText, Eye, EyeOff, ExternalLink } from "lucide-react";
 import { usePdfContentExtraction } from "@/hooks/usePdfContentExtraction";
 import { toast } from "@/hooks/use-toast";
 
@@ -30,40 +31,13 @@ const PdfContentExtractor: React.FC<PdfContentExtractorProps> = ({ document, onR
     saveExtractedContent
   } = usePdfContentExtraction({ document, onContentUpdate });
 
-  const handleCopyAll = async () => {
-    if (extractedText && extractedText.trim()) {
-      try {
-        await navigator.clipboard.writeText(extractedText);
-        toast({
-          title: "Contenu copié",
-          description: "Le contenu du document a été copié dans le presse-papiers"
-        });
-      } catch (error) {
-        console.error("Erreur lors de la copie:", error);
-        toast({
-          title: "Erreur",
-          description: "Impossible de copier le contenu",
-          variant: "destructive"
-        });
-      }
-    } else {
-      // Créer un texte par défaut à copier
-      const defaultText = `Document: ${document.file_name}\nAjouté le: ${new Date(document.created_at).toLocaleDateString('fr-FR')}\n\n[Aucun contenu extrait - Veuillez ajouter le contenu ci-dessous]`;
-      
-      try {
-        await navigator.clipboard.writeText(defaultText);
-        toast({
-          title: "Informations copiées",
-          description: "Les informations du document ont été copiées",
-        });
-      } catch (error) {
-        toast({
-          title: "Erreur",
-          description: "Impossible de copier",
-          variant: "destructive"
-        });
-      }
-    }
+  const handleSelectAll = () => {
+    window.open(document.file_path, '_blank');
+    toast({
+      title: "Document ouvert",
+      description: "Utilisez Ctrl+A pour tout sélectionner, puis Ctrl+C pour copier le contenu",
+      duration: 5000
+    });
   };
 
   return (
@@ -109,11 +83,11 @@ const PdfContentExtractor: React.FC<PdfContentExtractorProps> = ({ document, onR
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={handleCopyAll}
+                  onClick={handleSelectAll}
                   className="flex items-center gap-1 text-xs"
                 >
-                  <Copy className="h-3 w-3" />
-                  Tout copier
+                  <ExternalLink className="h-3 w-3" />
+                  Ouvrir pour sélectionner
                 </Button>
               </div>
               <iframe 
@@ -200,7 +174,7 @@ const PdfContentExtractor: React.FC<PdfContentExtractorProps> = ({ document, onR
             <span className="mr-1">💡</span>
             {extractedText ? 
               "Contenu prêt pour l'intégration dans votre PDF" : 
-              "Saisissez ou copiez-collez le contenu du document ci-dessus"
+              "Cliquez sur 'Ouvrir pour sélectionner' puis utilisez Ctrl+A et Ctrl+C pour copier le contenu"
             }
           </p>
         </div>
