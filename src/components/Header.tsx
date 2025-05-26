@@ -39,6 +39,15 @@ const Header = () => {
               Accueil
             </Link>
             
+            {isAuthenticated && (
+              <Link
+                to="/community"
+                className="text-gray-700 hover:text-directiveplus-600 transition-colors"
+              >
+                Communauté
+              </Link>
+            )}
+            
             {isAuthenticated ? (
               <>
                 <Link
@@ -94,6 +103,15 @@ const Header = () => {
             >
               Accueil
             </Link>
+            {isAuthenticated && (
+              <Link
+                to="/community"
+                className="text-gray-700 hover:text-directiveplus-600 transition-colors block"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Communauté
+              </Link>
+            )}
             {isAuthenticated ? (
               <>
                 <Link

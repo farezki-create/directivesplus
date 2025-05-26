@@ -21,6 +21,8 @@ import LegalMentions from './pages/LegalMentions';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import Comments from './pages/Comments';
 import Soutenir from './pages/Soutenir';
+import Community from './pages/Community';
+import ChatAssistant from './components/ChatAssistant';
 import { Toaster } from "@/components/ui/toaster"
 
 const queryClient = new QueryClient();
@@ -51,7 +53,9 @@ function App() {
             <Route path="/confidentialite" element={<PrivacyPolicy />} />
             <Route path="/commentaires" element={<Comments />} />
             <Route path="/soutenir" element={<Soutenir />} />
+            <Route path="/community" element={<Community />} />
           </Routes>
+          <ChatAssistant />
         </AuthProvider>
       </BrowserRouter>
     </QueryClientProvider>
