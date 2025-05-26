@@ -9,6 +9,8 @@ import Admin from "./pages/Admin";
 import SecurityAudit from "./pages/SecurityAudit";
 import SecurityAuditReportPage from "./pages/SecurityAuditReport";
 import SecurityAuditDashboardPage from "./pages/SecurityAuditDashboard";
+import Index from "./pages/Index";
+import Rediger from "./pages/Rediger";
 
 function App() {
   const queryClient = new QueryClient();
@@ -19,6 +21,8 @@ function App() {
         <QueryClientProvider client={queryClient}>
           <div className="min-h-screen bg-gray-50">
             <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/rediger" element={<Rediger />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/admin" element={<Admin />} />
