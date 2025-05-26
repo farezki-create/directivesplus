@@ -26,7 +26,7 @@ const MesDirectives = () => {
   const dossierDocuments = useDossierDocuments();
   
   // Choisir la source de documents appropriée
-  const documentsSource = hasInstitutionAccess && dossierActif ? dossierDocuments : normalDocuments;
+  const documentsData = hasInstitutionAccess && dossierActif ? dossierDocuments : normalDocuments;
   
   const {
     isLoading: documentsLoading,
@@ -40,7 +40,7 @@ const MesDirectives = () => {
     handleView,
     handleDelete,
     handleUploadComplete,
-  } = documentsSource;
+  } = documentsData;
 
   // Local state for preview document
   const [previewDocument, setPreviewDocument] = React.useState<Document | null>(null);

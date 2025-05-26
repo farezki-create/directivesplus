@@ -2,10 +2,13 @@
 import { useState, useEffect } from "react";
 import { useDossierStore } from "@/store/dossierStore";
 import { Document } from "@/types/documents";
+import { toast } from "@/hooks/use-toast";
 
 export const useDossierDocuments = () => {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showAddOptions, setShowAddOptions] = useState(false);
+  const [documentToDelete, setDocumentToDelete] = useState<Document | null>(null);
   const { dossierActif } = useDossierStore();
 
   useEffect(() => {
@@ -49,9 +52,90 @@ export const useDossierDocuments = () => {
     loadDocuments();
   }, [dossierActif]);
 
+  // Handlers pour maintenir la compatibilité avec useDirectivesDocuments
+  const handleUploadComplete = () => {
+    // Pour les dossiers institution, on ne peut pas uploader
+    console.log("Upload non disponible pour les dossiers institution");
+    toast({
+      title: "Information",
+      description: "L'ajout de documents n'est pas disponible en mode consultation",
+      variant: "default"
+    });
+  };
+
+  const handleDownload = (filePath: string, fileName: string) => {
+    try {
+      console.log("useDossierDocuments - handleDownload:", filePath, fileName);
+      
+      const link = document.createElement('a');
+      link.href = filePath;
+      link.download = fileName;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast({
+        title: "Téléchargement commencé",
+        description: `${fileName} est en cours de téléchargement`,
+      });
+    } catch (error) {
+      console.error("Erreur lors du téléchargement:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de télécharger le document",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handlePrint = (filePath: string, fileType?: string) => {
+    console.log("useDossierDocuments - handlePrint:", filePath, fileType);
+    
+    const printWindow = window.open(filePath, '_blank');
+    if (printWindow) {
+      printWindow.onload = () => {
+        printWindow.print();
+      };
+    } else {
+      toast({
+        title: "Erreur",
+        description: "Impossible d'ouvrir la fenêtre d'impression. Vérifiez que les popups sont autorisés.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleView = (filePath: string, fileType?: string) => {
+    console.log("useDossierDocuments - handleView:", filePath, fileType);
+    
+    // Pour les PDFs et autres documents, ouvrir dans un nouvel onglet
+    window.open(filePath, '_blank');
+  };
+
+  const handleDelete = async (documentId: string) => {
+    // Pour les dossiers institution, on ne peut pas supprimer
+    console.log("Suppression non disponible pour les dossiers institution");
+    toast({
+      title: "Information",
+      description: "La suppression de documents n'est pas disponible en mode consultation",
+      variant: "default"
+    });
+  };
+
   return {
+    user: null, // Pas d'utilisateur spécifique pour les dossiers
+    isAuthenticated: false, // Mode consultation
     documents,
     isLoading,
-    setDocuments
+    showAddOptions,
+    setShowAddOptions,
+    documentToDelete,
+    setDocumentToDelete,
+    handleDownload,
+    handlePrint,
+    handleView,
+    handleDelete,
+    handleUploadComplete
   };
 };
