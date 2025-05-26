@@ -3,8 +3,8 @@ import { Document } from "@/types/documents";
 
 interface DirectivesDocumentHandlersProps {
   documents: Document[];
-  previewDocument: Document | null;
-  setPreviewDocument: (doc: Document | null) => void;
+  previewDocument: string | null;
+  setPreviewDocument: (filePath: string | null) => void;
   handleDownload: (filePath: string, fileName: string) => void;
   handlePrint: (filePath: string, fileType?: string) => void;
   handleView: (filePath: string, fileType?: string) => void;
@@ -26,20 +26,12 @@ export const useDirectivesDocumentHandlers = ({
   const handleViewDocument = (filePath: string, fileType?: string) => {
     console.log("DirectivesDocumentHandlers - handleViewDocument appelé avec:", filePath, fileType);
     
-    // Find the document by file_path
-    const document = documents.find(doc => doc.file_path === filePath);
-    if (document) {
-      console.log("DirectivesDocumentHandlers - Document trouvé pour preview:", document);
-      setPreviewDocument(document);
-    } else {
-      console.error("DirectivesDocumentHandlers - Document non trouvé pour le chemin:", filePath);
-      // Fallback: call the original view handler
-      handleView(filePath, fileType);
-    }
+    // Set the preview document directly with the file path
+    setPreviewDocument(filePath);
   };
 
   const handlePreviewDownload = (filePath: string) => {
-    const document = previewDocument || documents.find(doc => doc.file_path === filePath);
+    const document = documents.find(doc => doc.file_path === filePath);
     const fileName = document?.file_name || 'document.pdf';
     console.log("DirectivesDocumentHandlers - handlePreviewDownload:", filePath, fileName);
     handleDownload(filePath, fileName);
