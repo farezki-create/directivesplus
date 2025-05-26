@@ -1,6 +1,6 @@
 
 import { QRCodeSVG } from "qrcode.react";
-import { CreditCard, AlertCircle, ExternalLink, RefreshCw } from "lucide-react";
+import { CreditCard, AlertCircle, RefreshCw } from "lucide-react";
 
 interface AccessCardProps {
   firstName: string;
@@ -38,15 +38,15 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
 
   const handleQrCodeClick = () => {
     if (isQrCodeValid) {
-      console.log("AccessCard - Opening QR URL:", qrCodeUrl);
+      console.log("AccessCard - Redirection vers:", qrCodeUrl);
       try {
-        // Ouvrir dans un nouvel onglet
-        window.open(qrCodeUrl, '_blank', 'noopener,noreferrer');
+        // Rediriger dans le même onglet au lieu d'ouvrir un nouvel onglet
+        window.location.href = qrCodeUrl;
       } catch (error) {
-        console.error("AccessCard - Error opening URL:", error);
+        console.error("AccessCard - Error redirecting to URL:", error);
       }
     } else {
-      console.error("AccessCard - Cannot open invalid QR URL:", {
+      console.error("AccessCard - Cannot redirect to invalid QR URL:", {
         url: qrCodeUrl,
         isValid: isQrCodeValid
       });
@@ -115,10 +115,7 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
               </div>
               <div className="text-xs text-center mt-1 opacity-75">
                 {isQrCodeValid ? (
-                  <div className="flex items-center justify-center gap-1">
-                    <ExternalLink className="w-3 h-3" />
-                    <span>Scanner</span>
-                  </div>
+                  <span>Scanner</span>
                 ) : (
                   "Génération..."
                 )}
@@ -146,7 +143,7 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
         </div>
       </div>
 
-      {/* Debug info en development sans le bouton Test App */}
+      {/* Debug info en development */}
       {process.env.NODE_ENV === 'development' && (
         <div className="absolute top-2 left-2 text-xs bg-black bg-opacity-50 p-1 rounded space-y-1">
           <div>QR: {isQrCodeValid ? '✅' : '❌'} | URL: {qrCodeUrl?.length || 0} chars</div>
@@ -156,7 +153,7 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
               onClick={handleQrCodeClick}
               className="bg-blue-600 text-white px-1 py-0.5 rounded text-xs hover:bg-blue-700"
             >
-              Nouvel onglet
+              Rediriger
             </button>
           </div>
         </div>
