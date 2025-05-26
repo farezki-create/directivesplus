@@ -1,3 +1,4 @@
+
 import { useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
@@ -7,7 +8,6 @@ import ExamplesSection from "./ExamplesSection";
 import TrustedPersonsSection from "./TrustedPersonsSection";
 import ProfileSection from "./ProfileSection";
 import FreeTextSection from "./FreeTextSection";
-import MedicalDocumentSection from "./MedicalDocumentSection";
 import ActionButtons from "./ActionButtons";
 import { DocumentHeader } from "./DocumentHeader";
 import { useSynthesisData } from "@/hooks/useSynthesisData";
@@ -61,21 +61,6 @@ const SynthesisContent = ({ profileData, userId }: SynthesisContentProps) => {
     );
   };
 
-  const handleMedicalDocumentUpload = () => {
-    toast({
-      title: "Document médical ajouté",
-      description: "Le document médical sera intégré dans votre PDF de directives anticipées"
-    });
-  };
-
-  const handleDocumentAdd = (documentInfo: any) => {
-    setMedicalDocuments(prev => [...prev, documentInfo]);
-  };
-
-  const handleDocumentRemove = (documentId: string) => {
-    setMedicalDocuments(prev => prev.filter(doc => doc.id !== documentId));
-  };
-
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
       <DocumentHeader />
@@ -92,13 +77,6 @@ const SynthesisContent = ({ profileData, userId }: SynthesisContentProps) => {
           <FreeTextSection 
             freeText={freeText}
             setFreeText={setFreeText}
-          />
-          
-          <MedicalDocumentSection 
-            userId={userId}
-            onUploadComplete={handleMedicalDocumentUpload}
-            onDocumentAdd={handleDocumentAdd}
-            onDocumentRemove={handleDocumentRemove}
           />
           
           <div className="space-y-4" ref={signatureRef}>

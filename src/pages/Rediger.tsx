@@ -3,12 +3,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import AppNavigation from "@/components/AppNavigation";
 import DirectivesGrid from "@/components/DirectivesGrid";
 import InfoSteps from "@/components/InfoSteps";
+import MedicalDocumentSection from "@/components/synthesis/MedicalDocumentSection";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const Rediger = () => {
-  const { isLoading } = useAuth();
+  const { isLoading, user } = useAuth();
   const navigate = useNavigate();
 
   // Show loading indicator while checking auth
@@ -19,6 +20,18 @@ const Rediger = () => {
       </div>
     );
   }
+
+  const handleMedicalDocumentUpload = () => {
+    console.log("Document médical ajouté dans la page rédiger");
+  };
+
+  const handleDocumentAdd = (documentInfo: any) => {
+    console.log("Document ajouté:", documentInfo);
+  };
+
+  const handleDocumentRemove = (documentId: string) => {
+    console.log("Document retiré:", documentId);
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -46,6 +59,16 @@ const Rediger = () => {
         </div>
         
         <InfoSteps />
+        
+        {/* Section des documents médicaux */}
+        <div className="max-w-4xl mx-auto mb-8">
+          <MedicalDocumentSection 
+            userId={user?.id}
+            onUploadComplete={handleMedicalDocumentUpload}
+            onDocumentAdd={handleDocumentAdd}
+            onDocumentRemove={handleDocumentRemove}
+          />
+        </div>
         
         <DirectivesGrid />
       </main>
