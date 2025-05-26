@@ -31,7 +31,7 @@ export const getMedicalDocuments = async (userId: string): Promise<any[]> => {
         description: doc.description || `Document médical: ${doc.file_name}`,
         created_at: doc.created_at,
         user_id: doc.user_id,
-        content: doc.file_path, // Le contenu est directement dans file_path
+        content: doc.file_path,
         file_type: doc.file_type
       }));
       
@@ -57,7 +57,7 @@ export const getMedicalDocuments = async (userId: string): Promise<any[]> => {
         description: item.response,
         created_at: item.created_at,
         user_id: item.user_id,
-        content: null // Pas de contenu pour les anciens documents
+        content: null
       }));
       
       allDocuments = [...allDocuments, ...questionnaireDocuments];
@@ -122,76 +122,81 @@ const addPDFContent = (pdf: jsPDF, layout: PdfLayout, yPosition: number, fileNam
 };
 
 /**
- * Rendu optimisé des documents médicaux dans le PDF
+ * Rendu du chapitre des documents médicaux avec nouvelle page et titre de chapitre
  */
-export const renderMedicalDocuments = (
+export const renderMedicalDocumentsChapter = (
   pdf: jsPDF, 
   layout: PdfLayout, 
-  yPosition: number, 
   medicalDocuments: any[]
-): number => {
-  console.log("=== DÉBUT RENDU DOCUMENTS MÉDICAUX ===");
-  console.log("Position Y de départ:", yPosition);
+): void => {
+  console.log("=== DÉBUT CHAPITRE DOCUMENTS MÉDICAUX ===");
   console.log("Documents médicaux à rendre:", medicalDocuments.length);
   
   if (!medicalDocuments || medicalDocuments.length === 0) {
     console.log("Aucun document médical à rendre");
-    return yPosition;
+    return;
   }
 
-  // Espacement avant la section
-  yPosition += layout.lineHeight * 2;
+  // Ajouter une nouvelle page pour le chapitre des documents médicaux
+  pdf.addPage();
+  let yPosition = layout.margin;
 
-  // Vérifier si on a besoin d'une nouvelle page
-  if (yPosition + layout.lineHeight * 4 > layout.pageHeight - layout.margin - layout.footerHeight) {
-    pdf.addPage();
-    yPosition = layout.margin;
-  }
-
-  // Titre de la section avec style amélioré
-  pdf.setFontSize(16);
+  // Titre du chapitre avec style distinct
+  pdf.setFontSize(20);
   pdf.setFont("helvetica", "bold");
-  pdf.text("📋 DOCUMENTS MÉDICAUX INTÉGRÉS", layout.margin, yPosition);
+  pdf.setTextColor(0, 0, 0);
+  pdf.text("CHAPITRE 2", layout.pageWidth / 2, yPosition, { align: "center" });
   yPosition += layout.lineHeight * 1.5;
 
-  // Note explicative
-  pdf.setFontSize(10);
-  pdf.setFont("helvetica", "normal");
-  const noteText = `${medicalDocuments.length} document${medicalDocuments.length > 1 ? 's' : ''} médical${medicalDocuments.length > 1 ? 'aux' : ''} intégré${medicalDocuments.length > 1 ? 's' : ''} dans ces directives anticipées :`;
-  pdf.text(noteText, layout.margin, yPosition);
+  pdf.setFontSize(18);
+  pdf.text("DOCUMENTS MÉDICAUX ANNEXES", layout.pageWidth / 2, yPosition, { align: "center" });
+  yPosition += layout.lineHeight * 3;
+
+  // Ligne de séparation décorative
+  pdf.setDrawColor(0, 0, 0);
+  pdf.setLineWidth(1);
+  pdf.line(layout.margin, yPosition, layout.margin + layout.contentWidth, yPosition);
   yPosition += layout.lineHeight * 2;
 
-  // Rendu de chaque document de manière optimisée
+  // Introduction du chapitre
+  pdf.setFontSize(12);
+  pdf.setFont("helvetica", "normal");
+  const introText = `Ce chapitre présente les ${medicalDocuments.length} document${medicalDocuments.length > 1 ? 's' : ''} médical${medicalDocuments.length > 1 ? 'aux' : ''} annexe${medicalDocuments.length > 1 ? 's' : ''} joint${medicalDocuments.length > 1 ? 's' : ''} aux directives anticipées pour compléter et préciser les volontés exprimées.`;
+  const introLines = pdf.splitTextToSize(introText, layout.contentWidth);
+  pdf.text(introLines, layout.margin, yPosition);
+  yPosition += introLines.length * layout.lineHeight + layout.lineHeight * 2;
+
+  // Rendu de chaque document
   medicalDocuments.forEach((doc, index) => {
     console.log(`Rendu du document ${index + 1}: ${doc.file_name}`);
     
-    // Vérifier l'espace disponible
-    if (yPosition + layout.lineHeight * 8 > layout.pageHeight - layout.margin - layout.footerHeight) {
+    // Vérifier l'espace disponible pour un nouveau document
+    if (yPosition + layout.lineHeight * 10 > layout.pageHeight - layout.margin - layout.footerHeight) {
       pdf.addPage();
       yPosition = layout.margin;
     }
     
     // Titre du document avec numérotation
-    pdf.setFontSize(12);
+    pdf.setFontSize(14);
     pdf.setFont("helvetica", "bold");
-    const documentTitle = `${index + 1}. ${doc.file_name}`;
+    const documentTitle = `Document ${index + 1}: ${doc.file_name}`;
     pdf.text(documentTitle, layout.margin, yPosition);
-    yPosition += layout.lineHeight;
+    yPosition += layout.lineHeight * 1.2;
     
-    // Date d'ajout
+    // Date d'ajout et informations
     if (doc.created_at) {
-      pdf.setFontSize(9);
+      pdf.setFontSize(10);
       pdf.setFont("helvetica", "italic");
       const dateText = `Ajouté le: ${new Date(doc.created_at).toLocaleDateString('fr-FR')}`;
       pdf.text(dateText, layout.margin + 5, yPosition);
       yPosition += layout.lineHeight;
     }
     
-    // Ligne de séparation
-    pdf.setDrawColor(200, 200, 200);
-    pdf.setLineWidth(0.5);
+    // Ligne de séparation pour le document
+    pdf.setDrawColor(150, 150, 150);
+    pdf.setLineWidth(0.3);
     pdf.line(layout.margin, yPosition, layout.margin + layout.contentWidth, yPosition);
-    yPosition += layout.lineHeight * 0.5;
+    yPosition += layout.lineHeight * 0.8;
     
     // Contenu du document selon le type
     if (doc.content) {
@@ -229,10 +234,22 @@ export const renderMedicalDocuments = (
       yPosition += descLines.length * layout.lineHeight;
     }
     
-    yPosition += layout.lineHeight * 1.5; // Espacement entre documents
+    yPosition += layout.lineHeight * 2; // Espacement entre documents
   });
 
-  console.log("=== FIN RENDU DOCUMENTS MÉDICAUX ===");
-  console.log("Position Y finale:", yPosition);
-  return yPosition + layout.lineHeight;
+  console.log("=== FIN CHAPITRE DOCUMENTS MÉDICAUX ===");
+};
+
+/**
+ * Fonction de compatibilité pour l'ancien système
+ */
+export const renderMedicalDocuments = (
+  pdf: jsPDF, 
+  layout: PdfLayout, 
+  yPosition: number, 
+  medicalDocuments: any[]
+): number => {
+  // Maintenant on utilise le système de chapitre
+  renderMedicalDocumentsChapter(pdf, layout, medicalDocuments);
+  return yPosition; // La position n'est plus pertinente car on crée une nouvelle page
 };

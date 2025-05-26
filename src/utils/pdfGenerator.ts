@@ -1,4 +1,3 @@
-
 import { jsPDF } from "jspdf";
 import { 
   PdfLayout, 
@@ -11,7 +10,7 @@ import {
   addSignatureFooter, 
   checkPageBreak 
 } from "./pdf";
-import { getMedicalDocuments, renderMedicalDocuments } from "./pdf/medicalDocuments";
+import { getMedicalDocuments, renderMedicalDocumentsChapter } from "./pdf/medicalDocuments";
 
 // Interface for PDF generation data
 export interface PdfData {
@@ -68,8 +67,19 @@ export const generatePDF = async (data: PdfData): Promise<string> => {
       footerHeight: 20
     };
     
+    // ==========================================
+    // CHAPITRE 1: DIRECTIVES ANTICIPÉES
+    // ==========================================
+    
     // Start position for content
     let yPosition = 20;
+    
+    // Titre du chapitre principal
+    pdf.setFontSize(20);
+    pdf.setFont("helvetica", "bold");
+    pdf.setTextColor(0, 0, 0);
+    pdf.text("CHAPITRE 1", layout.pageWidth / 2, yPosition, { align: "center" });
+    yPosition += layout.lineHeight * 1.5;
     
     // Render document header
     yPosition = renderHeader(pdf, layout, yPosition);
@@ -92,7 +102,15 @@ export const generatePDF = async (data: PdfData): Promise<string> => {
       yPosition = renderFreeText(pdf, layout, yPosition, data.freeText);
     }
     
-    // RÉCUPÉRATION ET AJOUT DES DOCUMENTS MÉDICAUX (SIMPLIFIÉE)
+    // Add signature for Chapter 1
+    if (data.signature) {
+      yPosition = checkPageBreak(pdf, layout, yPosition);
+      yPosition = renderSignature(pdf, layout, yPosition, data.signature);
+    }
+    
+    // ==========================================
+    // RÉCUPÉRATION DES DOCUMENTS MÉDICAUX
+    // ==========================================
     console.log("=== RÉCUPÉRATION DOCUMENTS MÉDICAUX ===");
     console.log("UserId disponible:", data.userId);
     
@@ -115,23 +133,18 @@ export const generatePDF = async (data: PdfData): Promise<string> => {
       medicalDocuments = [...medicalDocuments, ...data.medicalDocuments];
     }
     
-    // RENDU DES DOCUMENTS MÉDICAUX
+    // ==========================================
+    // CHAPITRE 2: DOCUMENTS MÉDICAUX ANNEXES
+    // ==========================================
     if (medicalDocuments && medicalDocuments.length > 0) {
-      console.log("=== AJOUT DES DOCUMENTS MÉDICAUX AU PDF ===");
+      console.log("=== AJOUT DU CHAPITRE DOCUMENTS MÉDICAUX ===");
       console.log("Nombre de documents à ajouter:", medicalDocuments.length);
       
-      yPosition = checkPageBreak(pdf, layout, yPosition);
-      yPosition = renderMedicalDocuments(pdf, layout, yPosition, medicalDocuments);
+      renderMedicalDocumentsChapter(pdf, layout, medicalDocuments);
       
-      console.log("Documents médicaux ajoutés avec succès au PDF");
+      console.log("Chapitre des documents médicaux ajouté avec succès");
     } else {
       console.log("=== AUCUN DOCUMENT MÉDICAL À AJOUTER ===");
-    }
-    
-    // Add signature
-    if (data.signature) {
-      yPosition = checkPageBreak(pdf, layout, yPosition);
-      yPosition = renderSignature(pdf, layout, yPosition, data.signature);
     }
     
     // Add signature footer on all pages
@@ -151,7 +164,6 @@ export const generatePDF = async (data: PdfData): Promise<string> => {
       throw new Error("La génération du PDF a échoué, sortie invalide");
     }
     
-    // Ne plus sauvegarder automatiquement ici - la sauvegarde sera gérée par saveDirectivesWithDualStorage
     console.log("PDF généré avec succès, prêt pour la sauvegarde externe");
     
     return pdfOutput;
