@@ -2,7 +2,7 @@
 import React from "react";
 import { useDirectivesDocuments } from "@/hooks/useDirectivesDocuments";
 import { useAuth } from "@/contexts/AuthContext";
-import { Navigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import AuthenticatedDirectivesView from "@/components/directives/AuthenticatedDirectivesView";
 import DirectivesLoadingState from "@/components/documents/DirectivesLoadingState";
 import { MesDirectivesSharedAccess } from "@/components/documents/MesDirectivesSharedAccess";
@@ -12,6 +12,7 @@ const MesDirectives = () => {
   const [searchParams] = useSearchParams();
   const sharedCode = searchParams.get('shared_code');
   const accessType = searchParams.get('access');
+  const userId = searchParams.get('user');
   const { user, profile, isAuthenticated, isLoading: authLoading } = useAuth();
   
   const {
@@ -37,7 +38,8 @@ const MesDirectives = () => {
     isAuthenticated, 
     isLoading: authLoading,
     accessType,
-    sharedCode
+    sharedCode,
+    qrUserId: userId
   });
   console.log("MesDirectives - Documents:", documents.length);
 
@@ -46,9 +48,10 @@ const MesDirectives = () => {
     return <MesDirectivesSharedAccess />;
   }
 
-  // Afficher un message spécial pour les accès via QR code
-  if (accessType === 'card' && isAuthenticated) {
+  // Afficher un message spécial pour les accès via QR code même sans authentification
+  if (accessType === 'card') {
     console.log("MesDirectives - Accès via QR code détecté");
+    // Permettre l'accès même si non authentifié pour les QR codes d'urgence
   }
 
   // Wrapper function to handle upload completion
@@ -91,9 +94,16 @@ const MesDirectives = () => {
     await handleDelete(document.id);
   };
 
-  // Rediriger vers la page de connexion si non authentifié
-  if (!authLoading && !isAuthenticated) {
-    return <Navigate to="/auth" replace />;
+  // Pour les accès QR code sans authentification, ne pas rediriger
+  if (accessType === 'card' && !isAuthenticated && !authLoading) {
+    console.log("MesDirectives - Accès QR code sans authentification autorisé");
+    // Continuer sans redirection pour permettre l'accès d'urgence
+  }
+  // Rediriger vers la page de connexion SEULEMENT si pas d'accès QR et non authentifié
+  else if (!authLoading && !isAuthenticated && accessType !== 'card') {
+    // Redirection vers auth seulement pour les accès normaux (non QR)
+    window.location.href = '/auth';
+    return null;
   }
 
   // Afficher l'état de chargement

@@ -22,20 +22,29 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     '/directives-acces',
     '/directives-docs',
     '/acces-institution',
-    '/acces-institution-simple'
+    '/acces-institution-simple',
+    '/pdf-viewer' // Ajouter pdf-viewer comme route publique
   ];
-  
+
+  // Vérifier si c'est un accès QR code (paramètres access=card ou shared_code)
+  const searchParams = new URLSearchParams(location.search);
+  const hasQRAccess = searchParams.get('access') === 'card' || 
+                      searchParams.get('shared_code') || 
+                      searchParams.get('id'); // Pour les liens directs vers des documents
+
   console.log("ProtectedRoute check:", {
     pathname: location.pathname,
     isPublic: fullyPublicRoutes.includes(location.pathname),
+    hasQRAccess,
+    searchParams: location.search,
     isAuthenticated,
     isLoading,
     authCheckComplete
   });
 
-  // BYPASS COMPLET pour les routes publiques - AUCUNE VÉRIFICATION
-  if (fullyPublicRoutes.includes(location.pathname)) {
-    console.log("ProtectedRoute: Route publique, accès direct autorisé sans vérification");
+  // BYPASS COMPLET pour les routes publiques OU accès QR code
+  if (fullyPublicRoutes.includes(location.pathname) || hasQRAccess) {
+    console.log("ProtectedRoute: Accès public autorisé - route publique ou QR code détecté");
     return <>{children}</>;
   }
 
