@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -24,15 +25,19 @@ const Hero = () => {
       <div className="container mx-auto container-padding">
         <div className="flex flex-col items-center text-center">
           {/* Logo */}
-          <div className="mb-8 w-full flex justify-center">
-            <img src="/lovable-uploads/b2a69396-dbf3-4ea1-b931-5306bd7cdcf3.png" alt="DirectivesPlus Logo" className="w-64 h-auto" />
+          <div className="mb-8 w-full flex justify-center flex-col items-center">
+            <img src="/lovable-uploads/0736fb9f-e3d2-48ea-af2a-fd37ecaf8b1a.png" alt="DirectivesPlus Logo" className="w-64 h-auto mb-4" />
+            <div className="text-center">
+              <h1 className="text-4xl font-bold text-directiveplus-800 mb-2">DirectivesPlus</h1>
+              <p className="text-xl text-directiveplus-600">simplicité et sécurité</p>
+            </div>
           </div>
           
           {/* Text Content */}
           <div className="max-w-3xl mx-auto animate-fade-in">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4 leading-tight">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4 leading-tight">
               Vos directives anticipées en toute simplicité
-            </h1>
+            </h2>
             <p className="text-lg md:text-xl text-gray-600 mb-8">
               Une solution complète pour gérer et suivre vos obligations réglementaires 
               en toute simplicité. Sécurisez vos données et améliorez votre conformité.
@@ -56,7 +61,7 @@ const Hero = () => {
               {/* Feature 1 - Simple et guidé with image */}
               <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
                 <div className="flex flex-col items-center mb-3">
-                  <img src="/lovable-uploads/b2a69396-dbf3-4ea1-b931-5306bd7cdcf3.png" alt="Logo DirectivesPlus" className="w-20 h-20 mb-3 object-scale-down" />
+                  <img src="/lovable-uploads/0736fb9f-e3d2-48ea-af2a-fd37ecaf8b1a.png" alt="Logo DirectivesPlus" className="w-20 h-20 mb-3 object-scale-down" />
                   <h3 className="font-semibold text-lg text-directiveplus-700">Simple et guidé</h3>
                 </div>
                 <p className="text-gray-600">Un processus pas à pas pour vous accompagner dans la rédaction.</p>
@@ -84,7 +89,7 @@ const Hero = () => {
               {/* Feature 3 - Facilement partageable with image */}
               <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
                 <div className="flex flex-col items-center mb-3">
-                  <img src="/lovable-uploads/b2a69396-dbf3-4ea1-b931-5306bd7cdcf3.png" alt="Logo DirectivesPlus" className="w-20 h-20 mb-3 object-cover" />
+                  <img src="/lovable-uploads/0736fb9f-e3d2-48ea-af2a-fd37ecaf8b1a.png" alt="Logo DirectivesPlus" className="w-20 h-20 mb-3 object-cover" />
                   <h3 className="font-semibold text-lg text-directiveplus-700">Facilement partageable</h3>
                 </div>
                 <p className="text-gray-600">Télécharger, partager, imprimer: gérez vos directives comme vous le souhaitez.</p>

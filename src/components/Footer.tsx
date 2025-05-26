@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import { Heart, Shield } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,11 +17,14 @@ const Footer = () => {
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center mb-4">
               <img 
-                src="/lovable-uploads/b2a69396-dbf3-4ea1-b931-5306bd7cdcf3.png" 
+                src="/lovable-uploads/0736fb9f-e3d2-48ea-af2a-fd37ecaf8b1a.png" 
                 alt="DirectivesPlus Logo" 
                 className="w-12 h-12 mr-2"
               />
-              <h2 className="text-xl font-bold">DirectivesPlus</h2>
+              <div>
+                <h2 className="text-xl font-bold">DirectivesPlus</h2>
+                <p className="text-sm text-gray-300">simplicité et sécurité</p>
+              </div>
             </div>
             <p className="mb-4 text-gray-300">
               Notre mission est de faciliter la création, le stockage et le partage des directives anticipées pour tous.

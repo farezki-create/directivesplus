@@ -1,7 +1,8 @@
+
 import { useAuth } from "@/contexts/AuthContext";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Heart, Shield, FileText, Users, CheckCircle, Star } from "lucide-react";
+import { Heart, Shield, FileText, Users, CheckCircle, Star, Building2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import Footer from "@/components/Footer";
 
@@ -81,11 +82,14 @@ const Index = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <img 
-                src="/lovable-uploads/b2a69396-dbf3-4ea1-b931-5306bd7cdcf3.png" 
+                src="/lovable-uploads/0736fb9f-e3d2-48ea-af2a-fd37ecaf8b1a.png" 
                 alt="DirectivesPlus Logo" 
                 className="w-10 h-10"
               />
-              <h1 className="text-2xl font-bold text-directiveplus-800">DirectivesPlus</h1>
+              <div>
+                <h1 className="text-2xl font-bold text-directiveplus-800">DirectivesPlus</h1>
+                <p className="text-xs text-directiveplus-600">simplicité et sécurité</p>
+              </div>
             </div>
             <nav className="hidden md:flex items-center space-x-6">
               <a href="#features" className="text-gray-600 hover:text-directiveplus-600 transition-colors">
@@ -97,6 +101,9 @@ const Index = () => {
               <a href="#testimonials" className="text-gray-600 hover:text-directiveplus-600 transition-colors">
                 Témoignages
               </a>
+              <Link to="/acces-institution" className="text-directiveplus-600 hover:text-directiveplus-700 font-medium transition-colors">
+                Accès Institution
+              </Link>
               {!isAuthenticated ? (
                 <Link to="/auth">
                   <Button className="bg-directiveplus-600 hover:bg-directiveplus-700">
@@ -121,15 +128,17 @@ const Index = () => {
           {/* Logo en grand */}
           <div className="mb-8">
             <img 
-              src="/lovable-uploads/b2a69396-dbf3-4ea1-b931-5306bd7cdcf3.png" 
+              src="/lovable-uploads/0736fb9f-e3d2-48ea-af2a-fd37ecaf8b1a.png" 
               alt="DirectivesPlus Logo" 
-              className="w-48 h-48 mx-auto mb-6"
+              className="w-48 h-48 mx-auto mb-4"
             />
+            <h2 className="text-4xl font-bold text-directiveplus-800 mb-2">DirectivesPlus</h2>
+            <p className="text-xl text-directiveplus-600 mb-6">simplicité et sécurité</p>
           </div>
           
-          <h2 className="text-5xl font-bold text-gray-900 mb-6">
+          <h3 className="text-5xl font-bold text-gray-900 mb-6">
             Vos volontés, <span className="text-directiveplus-600">protégées</span> et accessibles
-          </h2>
+          </h3>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
             Créez, stockez et partagez vos directives anticipées en toute sécurité. 
             Assurez-vous que vos souhaits soient respectés, même quand vous ne pouvez plus les exprimer.
@@ -155,6 +164,53 @@ const Index = () => {
                 </Button>
               </Link>
             )}
+          </div>
+        </div>
+      </section>
+
+      {/* Accès Institutionnel Section - Plus visible */}
+      <section className="py-16 bg-directiveplus-50 border-y-2 border-directiveplus-200">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <div className="flex justify-center mb-6">
+              <div className="w-20 h-20 bg-directiveplus-600 rounded-full flex items-center justify-center">
+                <Building2 className="w-10 h-10 text-white" />
+              </div>
+            </div>
+            <h3 className="text-3xl font-bold text-gray-900 mb-4">
+              Accès Institutionnel
+            </h3>
+            <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
+              Professionels de santé et établissements : accédez rapidement et en toute sécurité 
+              aux directives anticipées de vos patients grâce à notre système d'accès institutionnel.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link to="/acces-institution">
+                <Button size="lg" className="bg-directiveplus-600 hover:bg-directiveplus-700">
+                  <Building2 className="mr-2 h-5 w-5" />
+                  Accès Institutionnel
+                </Button>
+              </Link>
+              <Link to="/en-savoir-plus">
+                <Button size="lg" variant="outline" className="border-directiveplus-600 text-directiveplus-600 hover:bg-directiveplus-100">
+                  En savoir plus
+                </Button>
+              </Link>
+            </div>
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
+              <div className="flex items-center justify-center">
+                <CheckCircle className="w-4 h-4 text-green-600 mr-2" />
+                Accès sécurisé par code
+              </div>
+              <div className="flex items-center justify-center">
+                <CheckCircle className="w-4 h-4 text-green-600 mr-2" />
+                Conforme RGPD
+              </div>
+              <div className="flex items-center justify-center">
+                <CheckCircle className="w-4 h-4 text-green-600 mr-2" />
+                Support 24/7
+              </div>
+            </div>
           </div>
         </div>
       </section>
