@@ -39,9 +39,12 @@ const InfoSteps = () => {
                     <ClipboardList />
                   </div>
                   <span className="text-sm">
-                    <span className="inline-flex items-center justify-center bg-directiveplus-600 text-white rounded-full h-5 w-8 mr-1.5 text-xs px-1">
-                      1,2,3,4
-                    </span>
+                    <div className="flex gap-1 mr-1.5 mb-1">
+                      <span className="inline-flex items-center justify-center bg-directiveplus-600 text-white rounded-full h-5 w-5 text-xs">1</span>
+                      <span className="inline-flex items-center justify-center bg-directiveplus-600 text-white rounded-full h-5 w-5 text-xs">2</span>
+                      <span className="inline-flex items-center justify-center bg-directiveplus-600 text-white rounded-full h-5 w-5 text-xs">3</span>
+                      <span className="inline-flex items-center justify-center bg-directiveplus-600 text-white rounded-full h-5 w-5 text-xs">4</span>
+                    </div>
                     Répondre aux 4 questionnaires
                   </span>
                 </div>
@@ -114,11 +117,18 @@ const InfoSteps = () => {
                 {step.icon}
               </div>
               <span className="text-sm">
-                <span className={`inline-flex items-center justify-center bg-directiveplus-600 text-white rounded-full h-5 mr-1.5 text-xs px-1 ${
-                  step.id === "1,2,3,4" ? "w-8" : "w-5"
-                }`}>
-                  {step.id}
-                </span>
+                {step.id === "1,2,3,4" ? (
+                  <div className="flex gap-1 mr-1.5 mb-1">
+                    <span className="inline-flex items-center justify-center bg-directiveplus-600 text-white rounded-full h-5 w-5 text-xs">1</span>
+                    <span className="inline-flex items-center justify-center bg-directiveplus-600 text-white rounded-full h-5 w-5 text-xs">2</span>
+                    <span className="inline-flex items-center justify-center bg-directiveplus-600 text-white rounded-full h-5 w-5 text-xs">3</span>
+                    <span className="inline-flex items-center justify-center bg-directiveplus-600 text-white rounded-full h-5 w-5 text-xs">4</span>
+                  </div>
+                ) : (
+                  <span className="inline-flex items-center justify-center bg-directiveplus-600 text-white rounded-full h-5 w-5 mr-1.5 text-xs">
+                    {step.id}
+                  </span>
+                )}
                 {step.text}
               </span>
             </li>
