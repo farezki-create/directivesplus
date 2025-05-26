@@ -28,6 +28,7 @@ import DirectivesAccess from "./pages/DirectivesAccess";
 import Synthesis from "./pages/Synthesis";
 import CarteAcces from "./pages/CarteAcces";
 import AccessCard from "./pages/AccessCard";
+import MedicalData from "./pages/MedicalData";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
 function App() {
@@ -89,6 +90,10 @@ function App() {
               <Route path="/mes-directives" element={<MesDirectives />} />
               <Route path="/directives-docs" element={<DirectivesDocs />} />
               <Route path="/directives-acces" element={<DirectivesAccess />} />
+              
+              {/* Route pour les données médicales */}
+              <Route path="/donnees-medicales" element={<MedicalData />} />
+              <Route path="/medical-data" element={<MedicalData />} />
               
               {/* Routes protégées pour la synthèse et carte d'accès */}
               <Route path="/synthese" element={

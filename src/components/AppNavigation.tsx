@@ -1,174 +1,176 @@
 
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Menu, X, FileText, Users, Shield, User, LogOut, Home, BookOpen } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { Menu, X, User, FileText, Heart, Shield } from "lucide-react";
 
-interface AppNavigationProps {
-  hideEditingFeatures?: boolean;
-}
-
-const AppNavigation = ({ hideEditingFeatures = false }: AppNavigationProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const { user, isAuthenticated } = useAuth();
+const AppNavigation = () => {
+  const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleLogout = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      
-      toast({
-        title: "Déconnexion réussie",
-        description: "Vous avez été déconnecté avec succès",
-      });
-      
-      navigate("/");
-    } catch (error: any) {
-      toast({
-        title: "Erreur de déconnexion",
-        description: error.message,
-        variant: "destructive"
-      });
-    }
+    await logout();
+    navigate("/");
   };
 
-  const navItems = [
-    { name: "Accueil", href: "/", icon: Home },
-    { name: "Rédiger", href: "/rediger", icon: FileText, requireAuth: true, hideInCodeAccess: true },
-    { name: "Mes Directives", href: "/mes-directives", icon: BookOpen, requireAuth: true, hideInCodeAccess: true },
-    { name: "Données Médicales", href: "/donnees-medicales", icon: Shield },
-    { name: "Témoignages", href: "/testimonials", icon: Users },
-  ];
-
-  const filteredNavItems = navItems.filter(item => {
-    // Masquer les éléments qui nécessitent une auth si pas authentifié
-    if (item.requireAuth && !isAuthenticated) return false;
-    
-    // Masquer les éléments d'édition si on est en mode accès par code
-    if (hideEditingFeatures && item.hideInCodeAccess) return false;
-    
-    return true;
-  });
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
 
   return (
-    <nav className="bg-white shadow-lg sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="flex justify-between h-16">
-          <div className="flex items-center">
-            <Link to="/" className="flex-shrink-0 flex items-center">
-              <img 
-                src="/lovable-uploads/d5255c41-98e6-44a5-82fd-dac019e499ef.png" 
-                alt="DirectivesPlus" 
-                className="h-10 w-auto"
-              />
-            </Link>
-          </div>
+    <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
+      <div className="container mx-auto px-4">
+        <div className="flex justify-between items-center h-16">
+          {/* Logo */}
+          <Link to="/" className="flex items-center space-x-2">
+            <Heart className="h-8 w-8 text-directiveplus-600" />
+            <span className="text-xl font-bold text-directiveplus-700">DirectivesPlus</span>
+          </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            {filteredNavItems.map((item) => (
-              <Link
-                key={item.name}
-                to={item.href}
-                className="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2"
-              >
-                <item.icon className="h-4 w-4" />
-                {item.name}
-              </Link>
-            ))}
+          <div className="hidden md:flex items-center space-x-6">
+            <Link 
+              to="/en-savoir-plus" 
+              className="text-gray-600 hover:text-directiveplus-600 transition-colors"
+            >
+              En savoir plus
+            </Link>
             
-            {isAuthenticated && !hideEditingFeatures ? (
-              <div className="flex items-center space-x-4">
-                <Link
-                  to="/profile"
-                  className="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2"
+            {isAuthenticated ? (
+              <>
+                <Link 
+                  to="/rediger" 
+                  className="text-gray-600 hover:text-directiveplus-600 transition-colors flex items-center gap-2"
                 >
-                  <User className="h-4 w-4" />
+                  <FileText size={16} />
+                  Rédiger
+                </Link>
+                <Link 
+                  to="/donnees-medicales" 
+                  className="text-gray-600 hover:text-directiveplus-600 transition-colors flex items-center gap-2"
+                >
+                  <Shield size={16} />
+                  Données médicales
+                </Link>
+                <Link 
+                  to="/mes-directives" 
+                  className="text-gray-600 hover:text-directiveplus-600 transition-colors"
+                >
+                  Mes directives
+                </Link>
+                <Link 
+                  to="/profile" 
+                  className="text-gray-600 hover:text-directiveplus-600 transition-colors flex items-center gap-2"
+                >
+                  <User size={16} />
                   Profil
                 </Link>
-                <Button
-                  onClick={handleLogout}
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-2"
-                >
-                  <LogOut className="h-4 w-4" />
+                <Button onClick={handleLogout} variant="outline">
                   Déconnexion
                 </Button>
-              </div>
-            ) : !isAuthenticated && !hideEditingFeatures ? (
-              <div className="flex items-center space-x-4">
-                <Link
-                  to="/auth"
-                  className="text-blue-600 hover:text-blue-800 px-3 py-2 rounded-md text-sm font-medium"
+              </>
+            ) : (
+              <>
+                <Link 
+                  to="/mes-directives" 
+                  className="text-gray-600 hover:text-directiveplus-600 transition-colors"
                 >
-                  Connexion
+                  Mes directives
                 </Link>
-              </div>
-            ) : null}
+                <Link 
+                  to="/donnees-medicales" 
+                  className="text-gray-600 hover:text-directiveplus-600 transition-colors"
+                >
+                  Données médicales
+                </Link>
+                <Link to="/auth">
+                  <Button>Connexion</Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden flex items-center">
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="text-gray-600 hover:text-blue-600 p-2 rounded-md"
-            >
-              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
-          </div>
+          <button 
+            onClick={toggleMenu}
+            className="md:hidden p-2 rounded-md hover:bg-gray-100"
+          >
+            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
         </div>
 
         {/* Mobile Navigation */}
-        {isOpen && (
-          <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-              {filteredNavItems.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className="text-gray-600 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium flex items-center gap-2"
-                  onClick={() => setIsOpen(false)}
-                >
-                  <item.icon className="h-4 w-4" />
-                  {item.name}
-                </Link>
-              ))}
+        {isMenuOpen && (
+          <div className="md:hidden py-4 border-t">
+            <div className="flex flex-col space-y-4">
+              <Link 
+                to="/en-savoir-plus" 
+                className="text-gray-600 hover:text-directiveplus-600 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                En savoir plus
+              </Link>
               
-              {isAuthenticated && !hideEditingFeatures ? (
+              {isAuthenticated ? (
                 <>
-                  <Link
-                    to="/profile"
-                    className="text-gray-600 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium flex items-center gap-2"
-                    onClick={() => setIsOpen(false)}
+                  <Link 
+                    to="/rediger" 
+                    className="text-gray-600 hover:text-directiveplus-600 transition-colors flex items-center gap-2"
+                    onClick={() => setIsMenuOpen(false)}
                   >
-                    <User className="h-4 w-4" />
+                    <FileText size={16} />
+                    Rédiger
+                  </Link>
+                  <Link 
+                    to="/donnees-medicales" 
+                    className="text-gray-600 hover:text-directiveplus-600 transition-colors flex items-center gap-2"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Shield size={16} />
+                    Données médicales
+                  </Link>
+                  <Link 
+                    to="/mes-directives" 
+                    className="text-gray-600 hover:text-directiveplus-600 transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Mes directives
+                  </Link>
+                  <Link 
+                    to="/profile" 
+                    className="text-gray-600 hover:text-directiveplus-600 transition-colors flex items-center gap-2"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <User size={16} />
                     Profil
                   </Link>
-                  <button
-                    onClick={() => {
-                      handleLogout();
-                      setIsOpen(false);
-                    }}
-                    className="text-gray-600 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium flex items-center gap-2 w-full text-left"
-                  >
-                    <LogOut className="h-4 w-4" />
+                  <Button onClick={handleLogout} variant="outline" className="w-fit">
                     Déconnexion
-                  </button>
+                  </Button>
                 </>
-              ) : !isAuthenticated && !hideEditingFeatures ? (
-                <Link
-                  to="/auth"
-                  className="text-blue-600 hover:text-blue-800 block px-3 py-2 rounded-md text-base font-medium"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Connexion
-                </Link>
-              ) : null}
+              ) : (
+                <>
+                  <Link 
+                    to="/mes-directives" 
+                    className="text-gray-600 hover:text-directiveplus-600 transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Mes directives
+                  </Link>
+                  <Link 
+                    to="/donnees-medicales" 
+                    className="text-gray-600 hover:text-directiveplus-600 transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Données médicales
+                  </Link>
+                  <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
+                    <Button className="w-fit">Connexion</Button>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         )}
