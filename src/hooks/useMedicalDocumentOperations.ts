@@ -69,9 +69,6 @@ export const useMedicalDocumentOperations = ({
       description: "Le document médical a été ajouté aux directives anticipées",
       duration: 2000
     });
-    
-    // NE PAS ouvrir automatiquement le document
-    // L'utilisateur peut l'ouvrir manuellement s'il le souhaite
   };
 
   const handleDeleteDocument = async (documentId: string) => {
