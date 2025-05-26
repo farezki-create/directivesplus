@@ -16,6 +16,11 @@ import PdfViewer from './pages/PdfViewer';
 import DirectiveViewer from './pages/DirectiveViewer';
 import Rediger from './pages/Rediger';
 import AccesInstitution from './pages/AccesInstitution';
+import EnSavoirPlus from './pages/EnSavoirPlus';
+import LegalMentions from './pages/LegalMentions';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import Comments from './pages/Comments';
+import Soutenir from './pages/Soutenir';
 import { Toaster } from "@/components/ui/toaster"
 
 const queryClient = new QueryClient();
@@ -40,6 +45,12 @@ function App() {
             <Route path="/pdf-viewer" element={<PdfViewer />} />
             <Route path="/directive-viewer/:directiveId" element={<DirectiveViewer />} />
             <Route path="/acces-institution" element={<AccesInstitution />} />
+            <Route path="/en-savoir-plus" element={<EnSavoirPlus />} />
+            <Route path="/mentions-legales" element={<LegalMentions />} />
+            <Route path="/politique-confidentialite" element={<PrivacyPolicy />} />
+            <Route path="/confidentialite" element={<PrivacyPolicy />} />
+            <Route path="/commentaires" element={<Comments />} />
+            <Route path="/soutenir" element={<Soutenir />} />
           </Routes>
         </AuthProvider>
       </BrowserRouter>

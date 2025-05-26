@@ -1,83 +1,93 @@
 
-import React from 'react';
-import { Star } from 'lucide-react';
-import { CommentList } from '@/components/CommentList';
-import { Comment } from '@/components/CommentList';
+import React from "react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Star, User } from "lucide-react";
+
+const mockComments = [
+  {
+    id: 1,
+    name: "Marie Dupont",
+    rating: 5,
+    comment: "Une plateforme excellente qui m'a permis de rédiger mes directives anticipées en toute simplicité. L'interface est claire et le processus bien guidé.",
+    date: "2024-01-15"
+  },
+  {
+    id: 2,
+    name: "Pierre Martin",
+    rating: 4,
+    comment: "Très utile pour organiser mes volontés médicales. La fonction de partage avec les proches est particulièrement appréciable.",
+    date: "2024-01-10"
+  },
+  {
+    id: 3,
+    name: "Sophie Bernard",
+    rating: 5,
+    comment: "Je recommande vivement DirectivesPlus. Cela m'a donné la tranquillité d'esprit de savoir que mes souhaits seront respectés.",
+    date: "2024-01-05"
+  },
+  {
+    id: 4,
+    name: "Jean Moreau",
+    rating: 5,
+    comment: "Interface intuitive et sécurisée. Le service client est également très réactif en cas de questions.",
+    date: "2023-12-28"
+  }
+];
 
 const CommentsList = () => {
-  const comments: Comment[] = [
-    {
-      id: '1',
-      name: 'Marie Dupont',
-      role: 'Utilisatrice',
-      rating: 5,
-      date: '2025-04-15',
-      title: 'Une application qui change tout',
-      content: 'DirectivesPlus m\'a permis de rédiger mes directives anticipées de façon claire et sereine. L\'interface est intuitive et le processus est bien expliqué.',
-      itemType: 'general'
-    },
-    {
-      id: '2',
-      name: 'Thomas Martin',
-      role: 'Professionnel de santé',
-      rating: 4,
-      date: '2025-03-22',
-      title: 'Un outil précieux pour les professionnels',
-      content: 'En tant que médecin, je recommande souvent DirectivesPlus à mes patients. Les directives sont claires, bien structurées et facilement accessibles en cas de besoin.',
-      itemType: 'questionnaires'
-    },
-    {
-      id: '3',
-      name: 'Sophie Lefebvre',
-      role: 'Aidante familiale',
-      rating: 5,
-      date: '2025-02-10',
-      title: 'Simplicité et efficacité',
-      content: 'J\'ai aidé ma mère à remplir ses directives anticipées. Le système de carte d\'accès est particulièrement bien pensé pour partager les informations avec le personnel soignant.',
-      itemType: 'acces'
-    }
-  ];
-
-  // Grouper les commentaires par catégorie
-  const groupedComments = {
-    general: comments.filter(t => t.itemType === 'general') as Comment[],
-    questionnaires: comments.filter(t => t.itemType === 'questionnaires') as Comment[],
-    acces: comments.filter(t => t.itemType === 'acces') as Comment[],
-    medical: comments.filter(t => t.itemType === 'medical') as Comment[]
-  };
-
   return (
-    <div>
-      {/* Avis généraux */}
-      <div className="mb-12">
-        <h2 className="text-2xl font-semibold text-directiveplus-700 mb-6">
-          Avis généraux sur DirectivesPlus
+    <div className="space-y-6">
+      <div className="text-center">
+        <h2 className="text-2xl font-semibold text-directiveplus-700 mb-4">
+          Ce que disent nos utilisateurs
         </h2>
-        <CommentList comments={groupedComments.general} />
+        <div className="flex items-center justify-center gap-2 mb-6">
+          <div className="flex">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <Star key={star} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+            ))}
+          </div>
+          <span className="text-gray-600">4.8/5 basé sur {mockComments.length} avis</span>
+        </div>
       </div>
       
-      {/* Avis sur les questionnaires */}
-      <div className="mb-12">
-        <h2 className="text-2xl font-semibold text-directiveplus-700 mb-6">
-          Avis sur les questionnaires
-        </h2>
-        <CommentList comments={groupedComments.questionnaires} />
-      </div>
-      
-      {/* Avis sur l'accès aux documents */}
-      <div className="mb-12">
-        <h2 className="text-2xl font-semibold text-directiveplus-700 mb-6">
-          Avis sur la carte d'accès et le partage
-        </h2>
-        <CommentList comments={groupedComments.acces} />
-      </div>
-      
-      {/* Avis sur les données médicales */}
-      <div className="mb-12">
-        <h2 className="text-2xl font-semibold text-directiveplus-700 mb-6">
-          Avis sur la gestion des données médicales
-        </h2>
-        <CommentList comments={groupedComments.medical} />
+      <div className="grid gap-6">
+        {mockComments.map((comment) => (
+          <Card key={comment.id} className="shadow-sm">
+            <CardHeader className="pb-3">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="bg-directiveplus-100 rounded-full p-2">
+                    <User className="h-4 w-4 text-directiveplus-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-gray-900">{comment.name}</h4>
+                    <div className="flex items-center gap-2 mt-1">
+                      <div className="flex">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Star
+                            key={star}
+                            className={`h-4 w-4 ${
+                              star <= comment.rating
+                                ? "fill-yellow-400 text-yellow-400"
+                                : "text-gray-300"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <span className="text-sm text-gray-500">
+                        {new Date(comment.date).toLocaleDateString('fr-FR')}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-700 leading-relaxed">{comment.comment}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
     </div>
   );
