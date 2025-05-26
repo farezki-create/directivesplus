@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -34,6 +35,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [initComplete, setInitComplete] = useState(false);
   
   // Cache pour éviter les appels redondants
   const profileCache = useRef<Map<string, Profile>>(new Map());
@@ -111,6 +113,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     console.log("Setting up auth state listener");
     
     let mounted = true;
+    let initTimer: NodeJS.Timeout;
 
     // Configuration du listener d'état d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -135,6 +138,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           loadingProfile.current.clear();
         }
         
+        // Marquer l'initialisation comme terminée
+        if (!initComplete) {
+          setInitComplete(true);
+        }
         setIsLoading(false);
       }
     );
@@ -157,18 +164,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.error('Error checking initial session:', error);
       } finally {
         if (mounted) {
+          setInitComplete(true);
           setIsLoading(false);
         }
       }
     };
 
+    // Timeout de sécurité pour s'assurer que isLoading devient false
+    initTimer = setTimeout(() => {
+      if (mounted && !initComplete) {
+        console.log("Auth init timeout reached, stopping loading");
+        setInitComplete(true);
+        setIsLoading(false);
+      }
+    }, 3000);
+
     checkInitialSession();
 
     return () => {
       mounted = false;
+      clearTimeout(initTimer);
       subscription.unsubscribe();
     };
-  }, [loadProfile]);
+  }, [loadProfile, initComplete]);
 
   const value: AuthContextType = {
     user,
