@@ -3,7 +3,8 @@ import React from "react";
 import AppNavigation from "@/components/AppNavigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Info } from "lucide-react";
+import { Shield } from "lucide-react";
+import { InstitutionAccessForm } from "@/components/institution-access/InstitutionAccessForm";
 
 const AccesInstitution = () => {
   return (
@@ -17,24 +18,33 @@ const AccesInstitution = () => {
               Accès aux directives anticipées
             </h1>
             <p className="text-lg text-gray-600">
-              Fonctionnalité temporairement désactivée
+              Interface sécurisée pour les professionnels de santé
             </p>
           </div>
           
           <Card>
             <CardHeader>
-              <CardTitle>Service en cours de refactorisation</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5 text-blue-600" />
+                Accès Institution - Directives Anticipées
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <Alert>
-                <Info className="h-4 w-4" />
-                <AlertDescription>
-                  Le système d'accès par codes de partage a été désactivé pour simplification.
-                  Une nouvelle version plus simple sera bientôt disponible.
-                </AlertDescription>
-              </Alert>
+              <InstitutionAccessForm />
             </CardContent>
           </Card>
+          
+          {/* Informations de sécurité */}
+          <div className="mt-8">
+            <Alert>
+              <Shield className="h-4 w-4" />
+              <AlertDescription>
+                <strong>Sécurité et confidentialité :</strong> Cet accès est sécurisé et tracé. 
+                Seuls les professionnels de santé autorisés peuvent consulter les directives 
+                avec le consentement du patient via son code d'accès personnel.
+              </AlertDescription>
+            </Alert>
+          </div>
         </div>
       </main>
       

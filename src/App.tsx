@@ -15,6 +15,7 @@ import AccessCardPage from './pages/AccessCard';
 import PdfViewer from './pages/PdfViewer';
 import DirectiveViewer from './pages/DirectiveViewer';
 import Rediger from './pages/Rediger';
+import AccesInstitution from './pages/AccesInstitution';
 import { Toaster } from "@/components/ui/toaster"
 
 const queryClient = new QueryClient();
@@ -38,6 +39,7 @@ function App() {
             <Route path="/access-card" element={<AccessCardPage />} />
             <Route path="/pdf-viewer" element={<PdfViewer />} />
             <Route path="/directive-viewer/:directiveId" element={<DirectiveViewer />} />
+            <Route path="/acces-institution" element={<AccesInstitution />} />
           </Routes>
         </AuthProvider>
       </BrowserRouter>
