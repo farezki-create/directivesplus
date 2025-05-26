@@ -70,9 +70,9 @@ const ExternalBrowserView: React.FC<ExternalBrowserViewProps> = ({
             </div>
             
             <div className="space-y-3">
-              {/* Bouton principal pour ouvrir dans l'app */}
+              {/* Bouton principal pour ouvrir le document */}
               <Button 
-                onClick={onOpenExternal}
+                onClick={() => window.location.href = appUrl}
                 className="w-full"
                 size="lg"
               >
