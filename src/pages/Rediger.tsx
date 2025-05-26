@@ -3,7 +3,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import AppNavigation from "@/components/AppNavigation";
 import DirectivesGrid from "@/components/DirectivesGrid";
 import InfoSteps from "@/components/InfoSteps";
-import MedicalDocumentSection from "@/components/synthesis/MedicalDocumentSection";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -20,18 +19,6 @@ const Rediger = () => {
       </div>
     );
   }
-
-  const handleMedicalDocumentUpload = () => {
-    console.log("Document médical ajouté dans la page rédiger");
-  };
-
-  const handleDocumentAdd = (documentInfo: any) => {
-    console.log("Document ajouté:", documentInfo);
-  };
-
-  const handleDocumentRemove = (documentId: string) => {
-    console.log("Document retiré:", documentId);
-  };
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -61,24 +48,6 @@ const Rediger = () => {
         <InfoSteps />
         
         <DirectivesGrid />
-        
-        {/* Section des documents médicaux intégrée dans le processus de rédaction */}
-        <div className="max-w-4xl mx-auto mt-12">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-directiveplus-800 mb-4">
-              Complétez avec vos documents médicaux
-            </h2>
-            <p className="text-gray-600">
-              Ajoutez vos documents médicaux pour enrichir vos directives anticipées avec vos informations de santé.
-            </p>
-          </div>
-          <MedicalDocumentSection 
-            userId={user?.id}
-            onUploadComplete={handleMedicalDocumentUpload}
-            onDocumentAdd={handleDocumentAdd}
-            onDocumentRemove={handleDocumentRemove}
-          />
-        </div>
       </main>
       
       <footer className="bg-white py-6 border-t">
