@@ -6,6 +6,8 @@ import { useSearchParams } from "react-router-dom";
 import AuthenticatedDirectivesView from "@/components/directives/AuthenticatedDirectivesView";
 import DirectivesLoadingState from "@/components/documents/DirectivesLoadingState";
 import { MesDirectivesSharedAccess } from "@/components/documents/MesDirectivesSharedAccess";
+import { useDossierDocuments } from "@/hooks/directives/useDossierDocuments";
+import { useDossierStore } from "@/store/dossierStore";
 import type { Document } from "@/types/documents";
 
 const MesDirectives = () => {
@@ -14,6 +16,17 @@ const MesDirectives = () => {
   const accessType = searchParams.get('access');
   const userId = searchParams.get('user');
   const { user, profile, isAuthenticated, isLoading: authLoading } = useAuth();
+  
+  // Vérifier si c'est un accès institution valide
+  const hasInstitutionAccess = sessionStorage.getItem('institutionAccess') === 'true';
+  const { dossierActif } = useDossierStore();
+  
+  // Utiliser soit les documents normaux soit ceux du dossier selon le contexte
+  const normalDocuments = useDirectivesDocuments();
+  const dossierDocuments = useDossierDocuments();
+  
+  // Choisir la source de documents appropriée
+  const documentsSource = hasInstitutionAccess && dossierActif ? dossierDocuments : normalDocuments;
   
   const {
     isLoading: documentsLoading,
@@ -27,13 +40,10 @@ const MesDirectives = () => {
     handleView,
     handleDelete,
     handleUploadComplete,
-  } = useDirectivesDocuments();
+  } = documentsSource;
 
   // Local state for preview document
   const [previewDocument, setPreviewDocument] = React.useState<Document | null>(null);
-
-  // Vérifier si c'est un accès institution valide
-  const hasInstitutionAccess = sessionStorage.getItem('institutionAccess') === 'true';
 
   console.log("MesDirectives - Auth state:", { 
     userId: user?.id, 
@@ -43,9 +53,11 @@ const MesDirectives = () => {
     accessType,
     sharedCode,
     qrUserId: userId,
-    hasInstitutionAccess
+    hasInstitutionAccess,
+    hasDossierActif: !!dossierActif,
+    documentsCount: documents.length
   });
-  console.log("MesDirectives - Documents:", documents.length);
+  console.log("MesDirectives - Documents:", documents);
 
   // Si un code de partage est présent dans l'URL, afficher la vue de partage
   if (sharedCode) {
@@ -115,10 +127,26 @@ const MesDirectives = () => {
     return <DirectivesLoadingState />;
   }
 
+  // Si c'est un accès institution et qu'il y a des documents, ouvrir directement le premier PDF
+  React.useEffect(() => {
+    if (hasInstitutionAccess && documents.length > 0 && !previewDocument) {
+      const firstPdf = documents.find(doc => 
+        doc.content_type === 'application/pdf' || 
+        doc.file_name.toLowerCase().endsWith('.pdf')
+      );
+      
+      if (firstPdf) {
+        console.log("MesDirectives - Ouverture automatique du premier PDF:", firstPdf);
+        // Ouvrir directement le PDF dans un nouvel onglet
+        window.open(firstPdf.file_path, '_blank');
+      }
+    }
+  }, [hasInstitutionAccess, documents, previewDocument]);
+
   return (
     <AuthenticatedDirectivesView
-      user={user}
-      profile={profile}
+      user={hasInstitutionAccess && dossierActif ? { id: dossierActif.userId } : user}
+      profile={hasInstitutionAccess && dossierActif?.profileData ? dossierActif.profileData : profile}
       documents={documents}
       showAddOptions={showAddOptions}
       setShowAddOptions={setShowAddOptions}
