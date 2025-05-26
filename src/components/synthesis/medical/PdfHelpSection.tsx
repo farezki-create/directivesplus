@@ -11,8 +11,8 @@ const PdfHelpSection: React.FC<PdfHelpSectionProps> = ({ extractedText }) => {
       <p className="text-xs text-green-700 font-medium flex items-center">
         <span className="mr-1">💡</span>
         {extractedText ? 
-          "Contenu prêt pour l'intégration dans votre PDF" : 
-          "Cliquez sur 'Ouvrir pour sélectionner' puis utilisez Ctrl+A et Ctrl+C pour copier le contenu"
+          "Copie photo prête pour l'intégration dans votre PDF" : 
+          "Créez une copie photo du document pour l'intégrer visuellement dans vos directives"
         }
       </p>
     </div>

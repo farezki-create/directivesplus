@@ -2,10 +2,10 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText } from "lucide-react";
-import { usePdfContentExtraction } from "@/hooks/usePdfContentExtraction";
+import { usePdfImageCapture } from "@/hooks/usePdfImageCapture";
 import PdfHeaderActions from "./PdfHeaderActions";
 import PdfPreviewSection from "./PdfPreviewSection";
-import ContentExtractionSection from "./ContentExtractionSection";
+import PdfImageDisplay from "./PdfImageDisplay";
 import PdfHelpSection from "./PdfHelpSection";
 
 interface PdfContentExtractorProps {
@@ -24,15 +24,17 @@ const PdfContentExtractor: React.FC<PdfContentExtractorProps> = ({ document, onR
   const [showPdf, setShowPdf] = useState(true);
   
   const {
-    extractedText,
-    setExtractedText,
-    isEditing,
-    setIsEditing,
-    isSaving,
-    saveExtractedContent
-  } = usePdfContentExtraction({ document, onContentUpdate });
+    capturedImage,
+    isCapturing,
+    capturePdfAsImage,
+    clearCapturedImage
+  } = usePdfImageCapture();
 
   const handleRemove = () => onRemove(document.id);
+
+  const handleCapture = () => {
+    capturePdfAsImage(document);
+  };
 
   return (
     <Card className="mb-4 border-blue-200 bg-blue-50">
@@ -61,17 +63,16 @@ const PdfContentExtractor: React.FC<PdfContentExtractorProps> = ({ document, onR
             showPdf={showPdf}
           />
 
-          <ContentExtractionSection
-            extractedText={extractedText}
-            setExtractedText={setExtractedText}
-            isEditing={isEditing}
-            setIsEditing={setIsEditing}
-            isSaving={isSaving}
-            saveExtractedContent={saveExtractedContent}
+          <PdfImageDisplay
+            capturedImage={capturedImage}
+            isCapturing={isCapturing}
+            onCapture={handleCapture}
+            onClear={clearCapturedImage}
+            documentName={document.file_name}
           />
         </div>
         
-        <PdfHelpSection extractedText={extractedText} />
+        <PdfHelpSection extractedText={capturedImage || ""} />
       </CardContent>
     </Card>
   );
