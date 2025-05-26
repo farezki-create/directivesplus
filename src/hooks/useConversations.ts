@@ -18,7 +18,10 @@ export const useConversations = () => {
         .select(`
           *,
           conversation_participants!inner (
-            user_id
+            id,
+            user_id,
+            conversation_id,
+            joined_at
           ),
           messages (
             content,
@@ -33,7 +36,13 @@ export const useConversations = () => {
 
       const conversationsWithLastMessage = data?.map(conv => ({
         ...conv,
-        participants: conv.conversation_participants || [],
+        participants: conv.conversation_participants?.map(participant => ({
+          ...participant,
+          user_profile: {
+            first_name: 'Utilisateur',
+            last_name: ''
+          }
+        })) || [],
         last_message: conv.messages && conv.messages.length > 0 ? {
           id: 'temp-id',
           conversation_id: conv.id,
