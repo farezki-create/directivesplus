@@ -3,7 +3,7 @@ import { jsPDF } from "jspdf";
 import { PdfLayout } from "./types";
 
 /**
- * Récupère les documents médicaux depuis medical_documents ET questionnaires
+ * Récupère les documents médicaux depuis medical_documents uniquement
  */
 export const getMedicalDocuments = async (userId: string): Promise<any[]> => {
   console.log("getMedicalDocuments - début avec userId:", userId);
@@ -11,60 +11,40 @@ export const getMedicalDocuments = async (userId: string): Promise<any[]> => {
   const { supabase } = await import("@/integrations/supabase/client");
   
   try {
-    let allDocuments: any[] = [];
-
     console.log("Récupération depuis medical_documents...");
     
-    // 1. Récupérer depuis medical_documents (système principal)
+    // Récupérer uniquement depuis medical_documents (système principal)
     const { data: medicalDocs, error: medicalError } = await supabase
       .from('medical_documents')
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
-    if (!medicalError && medicalDocs && medicalDocs.length > 0) {
-      console.log("Documents trouvés dans medical_documents:", medicalDocs.length);
-      
-      const medicalDocuments = medicalDocs.map(doc => ({
-        id: doc.id,
-        file_name: doc.file_name,
-        description: doc.description || `Document médical: ${doc.file_name}`,
-        created_at: doc.created_at,
-        user_id: doc.user_id,
-        content: doc.file_path,
-        file_type: doc.file_type
-      }));
-      
-      allDocuments = [...allDocuments, ...medicalDocuments];
+    if (medicalError) {
+      console.error('Erreur lors de la récupération des documents médicaux:', medicalError);
+      return [];
     }
 
-    console.log("Récupération depuis questionnaire_responses...");
+    if (!medicalDocs || medicalDocs.length === 0) {
+      console.log("Aucun document médical trouvé");
+      return [];
+    }
+
+    console.log("Documents trouvés dans medical_documents:", medicalDocs.length);
     
-    // 2. Récupérer aussi depuis questionnaire_responses (ancien système)
-    const { data: questionnaireData, error: questionnaireError } = await supabase
-      .from('questionnaire_responses')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('questionnaire_type', 'medical-documents')
-      .order('created_at', { ascending: false });
-
-    if (!questionnaireError && questionnaireData && questionnaireData.length > 0) {
-      console.log("Documents trouvés dans questionnaire_responses:", questionnaireData.length);
-      
-      const questionnaireDocuments = questionnaireData.map(item => ({
-        id: item.question_id,
-        file_name: item.question_text,
-        description: item.response,
-        created_at: item.created_at,
-        user_id: item.user_id,
-        content: null
-      }));
-      
-      allDocuments = [...allDocuments, ...questionnaireDocuments];
-    }
-
-    console.log("Total des documents médicaux récupérés:", allDocuments.length);
-    return allDocuments;
+    const medicalDocuments = medicalDocs.map(doc => ({
+      id: doc.id,
+      file_name: doc.file_name,
+      description: doc.description || `Document médical: ${doc.file_name}`,
+      created_at: doc.created_at,
+      user_id: doc.user_id,
+      content: doc.file_content || doc.file_path, // Utiliser file_content en priorité
+      file_type: doc.file_type,
+      file_path: doc.file_path
+    }));
+    
+    console.log("Total des documents médicaux récupérés:", medicalDocuments.length);
+    return medicalDocuments;
 
   } catch (error) {
     console.error('Erreur lors de la récupération des documents médicaux:', error);
@@ -168,7 +148,12 @@ export const renderMedicalDocumentsChapter = (
 
   // Rendu de chaque document
   medicalDocuments.forEach((doc, index) => {
-    console.log(`Rendu du document ${index + 1}: ${doc.file_name}`, doc);
+    console.log(`Rendu du document ${index + 1}: ${doc.file_name}`, {
+      hasContent: !!doc.content,
+      contentType: typeof doc.content,
+      contentLength: doc.content ? doc.content.length : 0,
+      fileType: doc.file_type
+    });
     
     // Vérifier l'espace disponible pour un nouveau document
     if (yPosition + layout.lineHeight * 10 > layout.pageHeight - layout.margin - layout.footerHeight) {
@@ -204,8 +189,8 @@ export const renderMedicalDocumentsChapter = (
     pdf.setTextColor(0, 0, 0);
     
     // Contenu du document selon le type
-    if (doc.content) {
-      console.log(`Traitement du contenu pour ${doc.file_name}:`, doc.content.substring(0, 50) + '...');
+    if (doc.content && doc.content.length > 0) {
+      console.log(`Traitement du contenu pour ${doc.file_name}:`, doc.content.substring(0, 100) + '...');
       
       if (doc.content.startsWith('data:application/pdf')) {
         yPosition = addPDFContent(pdf, layout, yPosition, doc.file_name);
@@ -217,30 +202,23 @@ export const renderMedicalDocumentsChapter = (
         }
         yPosition = addImageToPDF(pdf, layout, yPosition, doc.content, doc.file_name);
       } else {
-        // Contenu textuel ou autre
+        // Contenu textuel ou autre format
         pdf.setFontSize(10);
         pdf.setFont("helvetica", "normal");
         
-        // Si c'est un contenu textuel, l'afficher directement
-        let contentToDisplay = doc.content;
-        if (typeof contentToDisplay === 'string' && contentToDisplay.length > 0) {
-          const contentLines = pdf.splitTextToSize(contentToDisplay, layout.contentWidth - 10);
-          pdf.text(contentLines, layout.margin + 5, yPosition);
-          yPosition += contentLines.length * layout.lineHeight + layout.lineHeight;
-        } else {
-          pdf.setFont("helvetica", "italic");
-          pdf.text("[Contenu du document non disponible]", layout.margin + 5, yPosition);
-          yPosition += layout.lineHeight;
-        }
+        // Afficher le contenu textuel directement
+        const contentLines = pdf.splitTextToSize(doc.content, layout.contentWidth - 10);
+        pdf.text(contentLines, layout.margin + 5, yPosition);
+        yPosition += contentLines.length * layout.lineHeight + layout.lineHeight;
       }
     } else {
-      // Document sans contenu (ancien système ou erreur)
+      // Document sans contenu disponible
       pdf.setFontSize(10);
       pdf.setFont("helvetica", "italic");
       pdf.setTextColor(150, 150, 150);
       pdf.text("[Document référencé - contenu non intégré dans cette version]", layout.margin + 5, yPosition);
       pdf.setTextColor(0, 0, 0);
-      yPosition += layout.lineHeight;
+      yPosition += layout.lineHeight * 2;
     }
     
     // Description si disponible et différente du nom

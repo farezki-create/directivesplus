@@ -127,12 +127,6 @@ export const generatePDF = async (data: PdfData): Promise<string> => {
       }
     }
     
-    // Ajouter aussi les documents passés en paramètre
-    if (data.medicalDocuments && data.medicalDocuments.length > 0) {
-      console.log("Documents médicaux fournis en paramètre:", data.medicalDocuments.length);
-      medicalDocuments = [...medicalDocuments, ...data.medicalDocuments];
-    }
-    
     // ==========================================
     // CHAPITRE 2: DOCUMENTS MÉDICAUX ANNEXES
     // ==========================================

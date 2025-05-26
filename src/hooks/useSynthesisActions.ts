@@ -24,6 +24,7 @@ export const useSynthesisActions = (userId?: string) => {
         title: "Erreur",
         description: "Vous devez être connecté pour enregistrer vos directives",
         variant: "destructive",
+        duration: 2000
       });
       return;
     }
@@ -40,12 +41,17 @@ export const useSynthesisActions = (userId?: string) => {
         throw new Error("Données de directives manquantes");
       }
 
-      // Préparer les données pour le PDF en s'assurant que l'userId est bien passé
+      // Préparer les données pour le PDF - NE PAS inclure medicalDocuments pour éviter les doublons
       const pdfData = {
-        ...data,
+        profileData: data.profileData,
+        responses: data.responses,
+        examplePhrases: data.examplePhrases,
+        customPhrases: data.customPhrases,
+        trustedPersons: data.trustedPersons,
         freeText,
         signature,
         userId: userId || user?.id, // S'assurer que l'userId est bien défini
+        // medicalDocuments sera récupéré automatiquement dans generatePDF
       };
 
       console.log("Données préparées pour le PDF:", pdfData);
@@ -76,7 +82,8 @@ export const useSynthesisActions = (userId?: string) => {
       if (result.success) {
         toast({
           title: "Directives enregistrées",
-          description: "Vos directives anticipées ont été sauvegardées avec succès et sont accessibles via votre code d'accès",
+          description: "Vos directives anticipées ont été sauvegardées avec succès",
+          duration: 2000
         });
         
         // Rediriger vers la page des directives au lieu de l'affichage-dossier supprimé
@@ -104,6 +111,7 @@ export const useSynthesisActions = (userId?: string) => {
         title: "Erreur",
         description: error.message || "Une erreur s'est produite lors de l'enregistrement",
         variant: "destructive",
+        duration: 2000
       });
       return null;
     } finally {
