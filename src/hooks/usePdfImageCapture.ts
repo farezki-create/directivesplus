@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { toast } from "@/hooks/use-toast";
 
-interface Document {
+interface DocumentType {
   id: string;
   file_name: string;
   file_path: string;
@@ -13,12 +13,12 @@ export const usePdfImageCapture = () => {
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [isCapturing, setIsCapturing] = useState(false);
 
-  const capturePdfAsImage = async (document: Document) => {
+  const capturePdfAsImage = async (doc: DocumentType) => {
     setIsCapturing(true);
     try {
       // Créer un iframe temporaire pour capturer le PDF
       const iframe = document.createElement('iframe');
-      iframe.src = document.file_path;
+      iframe.src = doc.file_path;
       iframe.style.width = '794px'; // Format A4
       iframe.style.height = '1123px';
       iframe.style.position = 'absolute';
