@@ -105,11 +105,13 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
                 ) : (
                   <div className="w-[70px] h-[70px] bg-white bg-opacity-30 rounded flex flex-col items-center justify-center">
                     <AlertCircle className="w-6 h-6 text-white opacity-70 mb-1" />
-                    <RefreshCw 
-                      className="w-4 h-4 text-white opacity-70 cursor-pointer hover:opacity-100" 
-                      onClick={handleRefreshQrCode}
+                    <div 
                       title="Actualiser"
-                    />
+                      onClick={handleRefreshQrCode}
+                      className="cursor-pointer hover:opacity-100"
+                    >
+                      <RefreshCw className="w-4 h-4 text-white opacity-70" />
+                    </div>
                   </div>
                 )}
               </div>
