@@ -114,6 +114,9 @@ const MesDirectives = () => {
     await handleDelete(document.id);
   };
 
+  // Déterminer si l'accès doit être autorisé
+  const shouldAllowAccess = (accessType === 'card' || hasInstitutionAccess) || isAuthenticated;
+
   // Afficher l'état de chargement
   if (authLoading || documentsLoading) {
     return (
@@ -127,9 +130,7 @@ const MesDirectives = () => {
     );
   }
 
-  // Pour les accès QR code ou institution sans authentification, ne pas rediriger
-  const shouldAllowAccess = (accessType === 'card' || hasInstitutionAccess) || isAuthenticated;
-  
+  // Vérifier l'accès avant le rendu principal
   if (!shouldAllowAccess) {
     // Redirection vers auth seulement pour les accès normaux (non QR/institution)
     window.location.href = '/auth';
