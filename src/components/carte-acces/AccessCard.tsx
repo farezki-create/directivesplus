@@ -11,15 +11,14 @@ interface AccessCardProps {
 }
 
 const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: AccessCardProps) => {
-  console.log("AccessCard - Rendering with detailed props:", {
+  console.log("AccessCard - Rendering with props:", {
     firstName,
     lastName,
     birthDate,
     codeAcces,
     qrCodeUrl,
     qrCodeUrlLength: qrCodeUrl?.length || 0,
-    urlStartsWithHttp: qrCodeUrl?.startsWith('http'),
-    currentOrigin: window.location.origin
+    urlType: qrCodeUrl?.includes('/pdf-viewer') ? 'document' : 'directives'
   });
 
   // Validation robuste de l'URL
@@ -33,7 +32,8 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
     urlNotEmpty: qrCodeUrl?.trim() !== '',
     urlLengthOk: qrCodeUrl?.length > 10,
     startsWithHttp: qrCodeUrl?.startsWith('http'),
-    isValid: isQrCodeValid
+    isValid: isQrCodeValid,
+    urlContent: qrCodeUrl
   });
 
   const handleQrCodeClick = () => {
@@ -102,7 +102,7 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
                   isQrCodeValid ? 'cursor-pointer hover:bg-opacity-30' : 'cursor-not-allowed'
                 }`}
                 onClick={handleQrCodeClick}
-                title={isQrCodeValid ? "Cliquer pour ouvrir les directives" : "QR Code en cours de génération..."}
+                title={isQrCodeValid ? "Cliquer pour ouvrir le document" : "QR Code en cours de génération..."}
               >
                 {isQrCodeValid ? (
                   <QRCodeSVG 
@@ -117,7 +117,6 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
                   <div className="w-[70px] h-[70px] bg-white bg-opacity-30 rounded flex flex-col items-center justify-center">
                     <AlertCircle className="w-6 h-6 text-white opacity-70 mb-1" />
                     <div 
-                      title="Actualiser"
                       onClick={handleRefreshQrCode}
                       className="cursor-pointer hover:opacity-100"
                     >
@@ -163,6 +162,7 @@ const AccessCard = ({ firstName, lastName, birthDate, codeAcces, qrCodeUrl }: Ac
       {process.env.NODE_ENV === 'development' && (
         <div className="absolute top-2 left-2 text-xs bg-black bg-opacity-50 p-1 rounded space-y-1">
           <div>QR: {isQrCodeValid ? '✅' : '❌'} | URL: {qrCodeUrl?.length || 0} chars</div>
+          <div>Type: {qrCodeUrl?.includes('/pdf-viewer') ? 'PDF' : 'Directives'}</div>
           <button 
             onClick={handleTestQrCode}
             className="bg-blue-600 text-white px-2 py-1 rounded text-xs hover:bg-blue-700"
