@@ -47,6 +47,25 @@ const MesDirectives = () => {
   // Local state for preview document
   const [previewDocument, setPreviewDocument] = React.useState<Document | null>(null);
 
+  // Déterminer si l'accès doit être autorisé
+  const shouldAllowAccess = (accessType === 'card' || hasInstitutionAccess) || isAuthenticated;
+
+  // Si c'est un accès institution et qu'il y a des documents, ouvrir directement le premier PDF
+  React.useEffect(() => {
+    if (hasInstitutionAccess && documents.length > 0 && !previewDocument && shouldAllowAccess) {
+      const firstPdf = documents.find(doc => 
+        doc.content_type === 'application/pdf' || 
+        doc.file_name.toLowerCase().endsWith('.pdf')
+      );
+      
+      if (firstPdf) {
+        console.log("MesDirectives - Ouverture automatique du premier PDF:", firstPdf);
+        // Ouvrir directement le PDF dans un nouvel onglet
+        window.open(firstPdf.file_path, '_blank');
+      }
+    }
+  }, [hasInstitutionAccess, documents, previewDocument, shouldAllowAccess]);
+
   console.log("MesDirectives - Auth state:", { 
     userId: user?.id, 
     hasProfile: !!profile, 
@@ -72,6 +91,26 @@ const MesDirectives = () => {
         <Footer />
       </div>
     );
+  }
+
+  // Afficher l'état de chargement
+  if (authLoading || documentsLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <main className="container mx-auto py-8">
+          <DirectivesLoadingState />
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Vérifier l'accès avant le rendu principal
+  if (!shouldAllowAccess) {
+    // Redirection vers auth seulement pour les accès normaux (non QR/institution)
+    window.location.href = '/auth';
+    return null;
   }
 
   // Wrapper function to handle upload completion
@@ -113,45 +152,6 @@ const MesDirectives = () => {
     console.log("MesDirectives - handleDeleteDocument appelé avec:", document);
     await handleDelete(document.id);
   };
-
-  // Déterminer si l'accès doit être autorisé
-  const shouldAllowAccess = (accessType === 'card' || hasInstitutionAccess) || isAuthenticated;
-
-  // Afficher l'état de chargement
-  if (authLoading || documentsLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Header />
-        <main className="container mx-auto py-8">
-          <DirectivesLoadingState />
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
-  // Vérifier l'accès avant le rendu principal
-  if (!shouldAllowAccess) {
-    // Redirection vers auth seulement pour les accès normaux (non QR/institution)
-    window.location.href = '/auth';
-    return null;
-  }
-
-  // Si c'est un accès institution et qu'il y a des documents, ouvrir directement le premier PDF
-  React.useEffect(() => {
-    if (hasInstitutionAccess && documents.length > 0 && !previewDocument) {
-      const firstPdf = documents.find(doc => 
-        doc.content_type === 'application/pdf' || 
-        doc.file_name.toLowerCase().endsWith('.pdf')
-      );
-      
-      if (firstPdf) {
-        console.log("MesDirectives - Ouverture automatique du premier PDF:", firstPdf);
-        // Ouvrir directement le PDF dans un nouvel onglet
-        window.open(firstPdf.file_path, '_blank');
-      }
-    }
-  }, [hasInstitutionAccess, documents, previewDocument]);
 
   return (
     <div className="min-h-screen bg-gray-50">
