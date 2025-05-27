@@ -12,7 +12,7 @@ export const useDossierDocuments = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [showAddOptions, setShowAddOptions] = useState(false);
-  const [documentToDelete, setDocumentToDelete] = useState<string | null>(null);
+  const [documentToDelete, setDocumentToDelete] = useState<Document | null>(null);
 
   // Extraire les documents du dossier actif
   useEffect(() => {
@@ -41,6 +41,7 @@ export const useDossierDocuments = () => {
               id: directive.id || `doc-${index}`,
               file_name: directive.file_name || `Document ${index + 1}`,
               file_path: directive.file_path,
+              file_type: directive.content_type || 'application/pdf',
               content_type: directive.content_type || 'application/pdf',
               file_size: directive.file_size || 0,
               user_id: dossierActif.userId,
@@ -53,6 +54,7 @@ export const useDossierDocuments = () => {
               id: directive.id || `directive-${index}`,
               file_name: `Directive ${index + 1}`,
               file_path: `data:application/json;base64,${btoa(JSON.stringify(directive.content))}`,
+              file_type: 'application/json',
               content_type: 'application/json',
               file_size: JSON.stringify(directive.content).length,
               user_id: dossierActif.userId,
