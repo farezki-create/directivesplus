@@ -49,11 +49,16 @@ export const useQRCodeGeneration = () => {
         currentOrigin: window.location.origin
       });
 
-      // Générer une URL plus courte et optimisée
+      // Pour les directives institution, utiliser directement le filePath si disponible
       let qrCodeUrl: string;
       
-      // Utiliser une URL plus courte en utilisant seulement l'ID
-      qrCodeUrl = `${window.location.origin}/pdf-viewer?id=${documentId}`;
+      if (filePath && filePath.startsWith('http')) {
+        // Si on a un lien direct vers le PDF, l'utiliser
+        qrCodeUrl = filePath;
+      } else {
+        // Sinon, utiliser l'URL de visualisation directe
+        qrCodeUrl = `${window.location.origin}/pdf-viewer?id=${documentId}`;
+      }
       
       console.log("QR Code final:", {
         qrCodeUrl,

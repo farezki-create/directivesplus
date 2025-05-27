@@ -170,6 +170,20 @@ export const useInstitutionCodeAccess = (
           description: `Accès aux directives de ${profileData.first_name} ${profileData.last_name}`,
         });
 
+        // Ouvrir automatiquement le premier PDF si disponible
+        const firstPdfDocument = directiveItems.find(item => 
+          item.type === 'document' && 
+          item.file_path && 
+          (item.content_type === 'application/pdf' || item.file_name?.toLowerCase().endsWith('.pdf'))
+        );
+
+        if (firstPdfDocument) {
+          console.log("Ouverture automatique du premier document PDF:", firstPdfDocument);
+          setTimeout(() => {
+            window.open(firstPdfDocument.file_path, '_blank');
+          }, 1000);
+        }
+
       } catch (error: any) {
         console.error("Erreur lors de l'accès par code institution:", error);
         setState(prev => ({

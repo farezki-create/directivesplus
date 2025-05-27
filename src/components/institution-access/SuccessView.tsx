@@ -1,8 +1,8 @@
 
-import React, { useEffect } from "react";
+import React from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Shield, CheckCircle, FileText } from "lucide-react";
+import { Shield, CheckCircle, FileText, ExternalLink } from "lucide-react";
 import { useDossierStore } from "@/store/dossierStore";
 
 interface SuccessViewProps {
@@ -16,16 +16,24 @@ interface SuccessViewProps {
 export const SuccessView: React.FC<SuccessViewProps> = ({ patientData }) => {
   const { dossierActif } = useDossierStore();
 
-  // Redirection automatique vers les directives sans délai
-  useEffect(() => {
-    console.log("SuccessView - Redirection immédiate vers /mes-directives");
-    console.log("Dossier actif:", dossierActif);
-    
-    // Redirection immédiate
-    window.location.href = "/mes-directives";
-  }, [dossierActif]);
+  // Trouver le premier document PDF disponible
+  const firstPdfDocument = dossierActif?.contenu?.directives?.find((item: any) => 
+    item.type === 'document' && 
+    item.file_path && 
+    (item.content_type === 'application/pdf' || item.file_name?.toLowerCase().endsWith('.pdf'))
+  );
 
-  // Affichage pendant le chargement de la redirection
+  const handleOpenDirectPdf = () => {
+    if (firstPdfDocument?.file_path) {
+      console.log("Ouverture directe du PDF:", firstPdfDocument);
+      window.open(firstPdfDocument.file_path, '_blank');
+    }
+  };
+
+  const handleViewAllDirectives = () => {
+    window.location.href = "/mes-directives";
+  };
+
   return (
     <div className="space-y-6">
       <Alert className="bg-green-50 border-green-200">
@@ -53,18 +61,40 @@ export const SuccessView: React.FC<SuccessViewProps> = ({ patientData }) => {
           </h3>
           <p className="text-gray-600 mt-1 flex items-center justify-center gap-2">
             <FileText className="h-4 w-4" />
-            Chargement des directives...
+            Documents disponibles
           </p>
         </div>
         
-        <Button 
-          onClick={() => window.location.href = "/mes-directives"}
-          className="bg-blue-600 hover:bg-blue-700"
-          size="lg"
-        >
-          <FileText className="w-4 h-4 mr-2" />
-          Accéder aux directives maintenant
-        </Button>
+        <div className="space-y-3">
+          {firstPdfDocument && (
+            <Button 
+              onClick={handleOpenDirectPdf}
+              className="bg-blue-600 hover:bg-blue-700 w-full"
+              size="lg"
+            >
+              <ExternalLink className="w-4 h-4 mr-2" />
+              Ouvrir le document principal ({firstPdfDocument.file_name})
+            </Button>
+          )}
+          
+          <Button 
+            onClick={handleViewAllDirectives}
+            variant="outline"
+            className="w-full"
+            size="lg"
+          >
+            <FileText className="w-4 h-4 mr-2" />
+            Voir toutes les directives
+          </Button>
+        </div>
+
+        {firstPdfDocument && (
+          <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+            <p className="text-sm text-blue-800">
+              💡 <strong>Accès direct :</strong> Le document principal s'ouvre automatiquement dans un nouvel onglet.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
