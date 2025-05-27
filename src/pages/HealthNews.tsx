@@ -2,7 +2,7 @@
 import React from 'react';
 import PageHeader from '@/components/layout/PageHeader';
 import PageFooter from '@/components/layout/PageFooter';
-import { construction } from 'lucide-react';
+import { Construction } from 'lucide-react';
 
 const HealthNews = () => {
   return (
@@ -19,7 +19,7 @@ const HealthNews = () => {
             />
             
             <div className="flex items-center justify-center gap-3 mb-6">
-              <construction className="h-8 w-8 text-directiveplus-600" />
+              <Construction className="h-8 w-8 text-directiveplus-600" />
               <h1 className="text-3xl font-bold text-gray-900">
                 Page en construction
               </h1>

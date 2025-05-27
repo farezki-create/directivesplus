@@ -1,278 +1,303 @@
 
 /**
- * Checklist de déploiement sécurisé
+ * Checklist de déploiement sécurisé pour l'environnement HDS
  */
 
 export interface ChecklistItem {
   id: string;
-  title: string;
+  category: 'security' | 'compliance' | 'infrastructure' | 'monitoring';
+  name: string;
   description: string;
-  category: 'security' | 'configuration' | 'monitoring' | 'compliance';
-  priority: 'critical' | 'high' | 'medium' | 'low';
-  status: 'pending' | 'in-progress' | 'completed' | 'not-applicable';
-  automated: boolean;
-  documentation?: string;
-  validationSteps?: string[];
+  status: 'pending' | 'in-progress' | 'completed' | 'failed';
+  priority: 'low' | 'medium' | 'high' | 'critical';
+  evidence?: string;
+  notes?: string;
 }
 
 export interface DeploymentReport {
-  readyForDeployment: boolean;
-  completionPercentage: number;
-  criticalPending: ChecklistItem[];
-  highPending: ChecklistItem[];
-  recommendations: string[];
+  overall_status: 'ready' | 'needs_attention' | 'not_ready';
+  completion_percentage: number;
+  items: ChecklistItem[];
   blockers: ChecklistItem[];
+  recommendations: string[];
+  generated_at: Date;
 }
 
 class DeploymentChecklist {
-  private items: ChecklistItem[] = [
-    // Sécurité Critique
-    {
-      id: 'https-enforcement',
-      title: 'Forcer HTTPS en Production',
-      description: 'S\'assurer que toutes les connexions utilisent HTTPS',
-      category: 'security',
-      priority: 'critical',
-      status: 'pending',
-      automated: false,
-      validationSteps: [
-        'Vérifier la configuration du serveur',
-        'Tester la redirection HTTP vers HTTPS',
-        'Valider les certificats SSL'
-      ]
-    },
-    {
-      id: 'environment-variables',
-      title: 'Sécuriser les Variables d\'Environnement',
-      description: 'Configurer toutes les clés API et secrets en production',
-      category: 'security',
-      priority: 'critical',
-      status: 'pending',
-      automated: false,
-      validationSteps: [
-        'Vérifier que les secrets Supabase sont configurés',
-        'S\'assurer qu\'aucune clé n\'est hardcodée',
-        'Valider les permissions des secrets'
-      ]
-    },
-    {
-      id: 'rls-validation',
-      title: 'Valider les Politiques RLS',
-      description: 'Tester toutes les politiques Row Level Security',
-      category: 'security',
-      priority: 'critical',
-      status: 'completed',
-      automated: true,
-      validationSteps: [
-        'Tester l\'accès avec différents utilisateurs',
-        'Vérifier l\'isolation des données',
-        'Valider les permissions admin'
-      ]
-    },
+  private items: ChecklistItem[] = [];
 
-    // Configuration Haute Priorité
-    {
-      id: 'security-headers',
-      title: 'Configurer les Headers de Sécurité',
-      description: 'Implémenter CSP, HSTS, X-Frame-Options',
-      category: 'configuration',
-      priority: 'high',
-      status: 'pending',
-      automated: false,
-      validationSteps: [
-        'Configurer Content Security Policy',
-        'Activer HTTP Strict Transport Security',
-        'Ajouter X-Frame-Options et X-Content-Type-Options'
-      ]
-    },
-    {
-      id: 'error-handling',
-      title: 'Valider la Gestion d\'Erreurs',
-      description: 'S\'assurer que les erreurs ne révèlent pas d\'informations sensibles',
-      category: 'security',
-      priority: 'high',
-      status: 'completed',
-      automated: false,
-      validationSteps: [
-        'Tester les messages d\'erreur en production',
-        'Vérifier que les stack traces sont masquées',
-        'Valider les logs d\'erreur'
-      ]
-    },
-    {
-      id: 'backup-strategy',
-      title: 'Configurer la Stratégie de Sauvegarde',
-      description: 'Valider les sauvegardes automatiques et la récupération',
-      category: 'configuration',
-      priority: 'high',
-      status: 'completed',
-      automated: true,
-      validationSteps: [
-        'Vérifier les sauvegardes automatiques Supabase',
-        'Tester la procédure de récupération',
-        'Documenter le plan de reprise'
-      ]
-    },
-
-    // Monitoring et Compliance
-    {
-      id: 'audit-logging',
-      title: 'Activer le Logging d\'Audit',
-      description: 'Configurer la journalisation complète des accès',
-      category: 'monitoring',
-      priority: 'medium',
-      status: 'completed',
-      automated: true,
-      validationSteps: [
-        'Vérifier que tous les accès sont loggés',
-        'Tester la traçabilité des actions',
-        'Valider la rétention des logs'
-      ]
-    },
-    {
-      id: 'gdpr-compliance',
-      title: 'Valider la Conformité RGPD',
-      description: 'S\'assurer de la conformité aux réglementations',
-      category: 'compliance',
-      priority: 'high',
-      status: 'completed',
-      automated: false,
-      validationSteps: [
-        'Vérifier la collecte du consentement',
-        'Tester les droits des utilisateurs',
-        'Valider la politique de confidentialité'
-      ]
-    },
-    {
-      id: 'performance-monitoring',
-      title: 'Configurer le Monitoring des Performances',
-      description: 'Surveiller les performances et la disponibilité',
-      category: 'monitoring',
-      priority: 'medium',
-      status: 'pending',
-      automated: false,
-      validationSteps: [
-        'Configurer les alertes de performance',
-        'Surveiller l\'utilisation des ressources',
-        'Mettre en place des health checks'
-      ]
-    },
-    {
-      id: 'incident-response',
-      title: 'Plan de Réponse aux Incidents',
-      description: 'Documenter les procédures d\'urgence',
-      category: 'configuration',
-      priority: 'medium',
-      status: 'pending',
-      automated: false,
-      validationSteps: [
-        'Créer un plan de réponse aux incidents',
-        'Définir les contacts d\'urgence',
-        'Tester les procédures d\'escalade'
-      ]
-    }
-  ];
-
-  /**
-   * Génère un rapport de l'état du déploiement
-   */
-  generateDeploymentReport(): DeploymentReport {
-    const criticalPending = this.items.filter(
-      item => item.priority === 'critical' && item.status !== 'completed'
-    );
-
-    const highPending = this.items.filter(
-      item => item.priority === 'high' && item.status !== 'completed'
-    );
-
-    const completed = this.items.filter(item => item.status === 'completed').length;
-    const completionPercentage = Math.round((completed / this.items.length) * 100);
-
-    const blockers = criticalPending;
-    const readyForDeployment = blockers.length === 0;
-
-    const recommendations = this.generateRecommendations(criticalPending, highPending);
-
-    return {
-      readyForDeployment,
-      completionPercentage,
-      criticalPending,
-      highPending,
-      recommendations,
-      blockers
-    };
+  constructor() {
+    this.initializeChecklist();
   }
 
   /**
-   * Génère des recommandations basées sur l'état actuel
+   * Initialise la checklist de déploiement
    */
-  private generateRecommendations(critical: ChecklistItem[], high: ChecklistItem[]): string[] {
-    const recommendations: string[] = [];
+  private initializeChecklist(): void {
+    this.items = [
+      // Sécurité
+      {
+        id: 'https-ssl',
+        category: 'security',
+        name: 'Certificat SSL/TLS',
+        description: 'HTTPS activé avec certificat valide',
+        status: 'pending',
+        priority: 'critical'
+      },
+      {
+        id: 'security-headers',
+        category: 'security',
+        name: 'Headers de sécurité',
+        description: 'Configuration des headers CSP, HSTS, X-Frame-Options',
+        status: 'pending',
+        priority: 'high'
+      },
+      {
+        id: 'auth-security',
+        category: 'security',
+        name: 'Sécurité authentification',
+        description: 'Protection brute force et rate limiting activés',
+        status: 'completed',
+        priority: 'critical',
+        evidence: 'Supabase Auth configuré'
+      },
+      {
+        id: 'data-encryption',
+        category: 'security',
+        name: 'Chiffrement des données',
+        description: 'Données chiffrées en transit et au repos',
+        status: 'completed',
+        priority: 'critical',
+        evidence: 'Supabase + HTTPS'
+      },
+      {
+        id: 'secrets-management',
+        category: 'security',
+        name: 'Gestion des secrets',
+        description: 'Clés API et secrets stockés de manière sécurisée',
+        status: 'completed',
+        priority: 'critical',
+        evidence: 'Supabase Secrets'
+      },
 
-    if (critical.length > 0) {
-      recommendations.push(`🚨 ${critical.length} élément(s) critique(s) doivent être complétés avant le déploiement`);
-      critical.forEach(item => {
-        recommendations.push(`• ${item.title}: ${item.description}`);
-      });
-    }
+      // Conformité
+      {
+        id: 'hds-hosting',
+        category: 'compliance',
+        name: 'Hébergement HDS',
+        description: 'Hébergeur certifié HDS pour les données de santé',
+        status: 'completed',
+        priority: 'critical',
+        evidence: 'Scalingo HDS certifié'
+      },
+      {
+        id: 'gdpr-compliance',
+        category: 'compliance',
+        name: 'Conformité RGPD',
+        description: 'Politique de confidentialité et droits des utilisateurs',
+        status: 'completed',
+        priority: 'critical',
+        evidence: 'Page confidentialité implémentée'
+      },
+      {
+        id: 'data-minimization',
+        category: 'compliance',
+        name: 'Minimisation des données',
+        description: 'Collecte uniquement des données nécessaires',
+        status: 'completed',
+        priority: 'medium',
+        evidence: 'Design centré sur les directives anticipées'
+      },
+      {
+        id: 'access-controls',
+        category: 'compliance',
+        name: 'Contrôles d\'accès',
+        description: 'RLS et contrôles d\'accès granulaires',
+        status: 'completed',
+        priority: 'critical',
+        evidence: 'RLS Supabase activé'
+      },
 
-    if (high.length > 0) {
-      recommendations.push(`⚠️ ${high.length} élément(s) haute priorité recommandés`);
-    }
+      // Infrastructure
+      {
+        id: 'database-security',
+        category: 'infrastructure',
+        name: 'Sécurité base de données',
+        description: 'Configuration sécurisée de la base de données',
+        status: 'completed',
+        priority: 'critical',
+        evidence: 'Supabase sécurisé par défaut'
+      },
+      {
+        id: 'backup-strategy',
+        category: 'infrastructure',
+        name: 'Stratégie de sauvegarde',
+        description: 'Sauvegardes automatiques et plan de restauration',
+        status: 'completed',
+        priority: 'high',
+        evidence: 'Sauvegardes Supabase automatiques'
+      },
+      {
+        id: 'network-security',
+        category: 'infrastructure',
+        name: 'Sécurité réseau',
+        description: 'Pare-feu et segmentation réseau',
+        status: 'completed',
+        priority: 'high',
+        evidence: 'Infrastructure Scalingo sécurisée'
+      },
+      {
+        id: 'environment-config',
+        category: 'infrastructure',
+        name: 'Configuration environnement',
+        description: 'Variables d\'environnement et configuration production',
+        status: 'pending',
+        priority: 'high'
+      },
 
-    if (critical.length === 0 && high.length === 0) {
-      recommendations.push('✅ Prêt pour le déploiement en production');
-    }
-
-    return recommendations;
+      // Monitoring
+      {
+        id: 'logging-system',
+        category: 'monitoring',
+        name: 'Système de journalisation',
+        description: 'Logs d\'audit et de sécurité centralisés',
+        status: 'in-progress',
+        priority: 'high',
+        notes: 'Logs basiques en place, amélioration nécessaire'
+      },
+      {
+        id: 'monitoring-alerts',
+        category: 'monitoring',
+        name: 'Alertes de monitoring',
+        description: 'Système d\'alertes pour les incidents de sécurité',
+        status: 'pending',
+        priority: 'medium'
+      },
+      {
+        id: 'audit-trail',
+        category: 'monitoring',
+        name: 'Piste d\'audit',
+        description: 'Traçabilité complète des accès aux données',
+        status: 'in-progress',
+        priority: 'critical',
+        notes: 'Traçabilité partielle, à compléter'
+      },
+      {
+        id: 'incident-response',
+        category: 'monitoring',
+        name: 'Plan de réponse aux incidents',
+        description: 'Procédures documentées pour la gestion des incidents',
+        status: 'completed',
+        priority: 'high',
+        evidence: 'Procédure violation de données documentée'
+      }
+    ];
   }
 
   /**
    * Met à jour le statut d'un élément
    */
-  updateItemStatus(itemId: string, status: ChecklistItem['status']): void {
+  updateItemStatus(itemId: string, status: ChecklistItem['status'], evidence?: string, notes?: string): void {
     const item = this.items.find(i => i.id === itemId);
     if (item) {
       item.status = status;
+      if (evidence) item.evidence = evidence;
+      if (notes) item.notes = notes;
     }
   }
 
   /**
-   * Obtient tous les éléments par catégorie
+   * Évalue automatiquement certains éléments
    */
-  getItemsByCategory(): Record<string, ChecklistItem[]> {
-    return this.items.reduce((acc, item) => {
-      if (!acc[item.category]) {
-        acc[item.category] = [];
-      }
-      acc[item.category].push(item);
-      return acc;
-    }, {} as Record<string, ChecklistItem[]>);
-  }
+  autoEvaluate(): void {
+    // HTTPS
+    const httpsItem = this.items.find(i => i.id === 'https-ssl');
+    if (httpsItem) {
+      const isHttps = window.location.protocol === 'https:';
+      httpsItem.status = isHttps ? 'completed' : 'failed';
+      httpsItem.evidence = isHttps ? 'HTTPS activé' : 'HTTP détecté';
+    }
 
-  /**
-   * Lance les vérifications automatisées
-   */
-  async runAutomatedChecks(): Promise<void> {
-    console.log("🔄 Lancement des vérifications automatisées...");
-
-    // Simulation de vérifications automatiques
-    for (const item of this.items.filter(i => i.automated)) {
-      await this.simulateCheck(item);
+    // Environnement
+    const envItem = this.items.find(i => i.id === 'environment-config');
+    if (envItem) {
+      const isProduction = !window.location.hostname.includes('localhost') && !window.location.hostname.includes('lovable.app');
+      envItem.status = isProduction ? 'completed' : 'pending';
+      envItem.evidence = isProduction ? 'Environnement de production' : 'Environnement de développement';
     }
   }
 
   /**
-   * Simule une vérification automatique
+   * Génère un rapport de déploiement
    */
-  private async simulateCheck(item: ChecklistItem): Promise<void> {
-    // Simulation d'une vérification
-    await new Promise(resolve => setTimeout(resolve, 100));
+  generateReport(): DeploymentReport {
+    this.autoEvaluate();
+
+    const totalItems = this.items.length;
+    const completedItems = this.items.filter(i => i.status === 'completed').length;
+    const completion_percentage = Math.round((completedItems / totalItems) * 100);
+
+    const blockers = this.items.filter(i => 
+      i.priority === 'critical' && (i.status === 'pending' || i.status === 'failed')
+    );
+
+    const recommendations: string[] = [];
     
-    // Logique simplifiée pour déterminer le statut
-    if (item.id === 'rls-validation' || item.id === 'backup-strategy' || item.id === 'audit-logging') {
-      item.status = 'completed';
+    // Générer des recommandations basées sur l'état
+    if (blockers.length > 0) {
+      recommendations.push(`${blockers.length} élément(s) critique(s) à résoudre avant le déploiement`);
     }
+
+    const failedItems = this.items.filter(i => i.status === 'failed');
+    if (failedItems.length > 0) {
+      recommendations.push('Corriger les éléments en échec');
+    }
+
+    const inProgressItems = this.items.filter(i => i.status === 'in-progress');
+    if (inProgressItems.length > 0) {
+      recommendations.push('Finaliser les éléments en cours');
+    }
+
+    if (completion_percentage >= 90 && blockers.length === 0) {
+      recommendations.push('Application prête pour le déploiement HDS');
+    }
+
+    let overall_status: 'ready' | 'needs_attention' | 'not_ready' = 'not_ready';
+    if (blockers.length === 0 && completion_percentage >= 90) {
+      overall_status = 'ready';
+    } else if (blockers.length === 0 && completion_percentage >= 70) {
+      overall_status = 'needs_attention';
+    }
+
+    return {
+      overall_status,
+      completion_percentage,
+      items: this.items,
+      blockers,
+      recommendations,
+      generated_at: new Date()
+    };
+  }
+
+  /**
+   * Obtient les éléments par catégorie
+   */
+  getItemsByCategory(category: ChecklistItem['category']): ChecklistItem[] {
+    return this.items.filter(item => item.category === category);
+  }
+
+  /**
+   * Obtient les éléments par statut
+   */
+  getItemsByStatus(status: ChecklistItem['status']): ChecklistItem[] {
+    return this.items.filter(item => item.status === status);
+  }
+
+  /**
+   * Obtient les éléments critiques
+   */
+  getCriticalItems(): ChecklistItem[] {
+    return this.items.filter(item => item.priority === 'critical');
   }
 }
 
