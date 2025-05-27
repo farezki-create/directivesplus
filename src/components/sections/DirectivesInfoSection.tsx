@@ -1,6 +1,6 @@
 
+
 import FAQSection from "./directives-info/FAQSection";
-import CTACard from "./directives-info/CTACard";
 
 const DirectivesInfoSection = () => {
   return (
@@ -18,8 +18,6 @@ const DirectivesInfoSection = () => {
           </div>
 
           <FAQSection />
-
-          <CTACard />
         </div>
       </div>
     </section>
@@ -27,3 +25,4 @@ const DirectivesInfoSection = () => {
 };
 
 export default DirectivesInfoSection;
+

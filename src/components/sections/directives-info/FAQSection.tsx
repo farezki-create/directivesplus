@@ -138,19 +138,21 @@ const FAQSection = () => {
   ];
 
   return (
-    <div className="mb-8">
-      <Accordion type="single" collapsible className="w-full">
-        {faqItems.map((item, index) => (
-          <AccordionItem key={index} value={`item-${index}`} className="border-directiveplus-200">
-            <AccordionTrigger className="text-left hover:text-directiveplus-600">
-              {item.question}
-            </AccordionTrigger>
-            <AccordionContent className="text-gray-600">
-              {item.answer}
-            </AccordionContent>
-          </AccordionItem>
-        ))}
-      </Accordion>
+    <div className="flex justify-center">
+      <div className="w-full max-w-4xl">
+        <Accordion type="single" collapsible className="w-full">
+          {faqItems.map((item, index) => (
+            <AccordionItem key={index} value={`item-${index}`} className="border-directiveplus-200">
+              <AccordionTrigger className="text-left hover:text-directiveplus-600">
+                {item.question}
+              </AccordionTrigger>
+              <AccordionContent className="text-gray-600">
+                {item.answer}
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      </div>
     </div>
   );
 };
