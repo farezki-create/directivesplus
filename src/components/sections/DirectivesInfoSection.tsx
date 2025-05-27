@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { 
   Accordion,
@@ -177,7 +178,26 @@ const DirectivesInfoSection = () => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-            {/* Features Grid */}
+            {/* FAQ Section - Now first */}
+            <div>
+              <h3 className="text-2xl font-semibold text-gray-900 mb-6">
+                Questions fréquentes
+              </h3>
+              <Accordion type="single" collapsible className="w-full">
+                {faqItems.map((item, index) => (
+                  <AccordionItem key={index} value={`item-${index}`} className="border-directiveplus-200">
+                    <AccordionTrigger className="text-left hover:text-directiveplus-600">
+                      {item.question}
+                    </AccordionTrigger>
+                    <AccordionContent className="text-gray-600">
+                      {item.answer}
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </div>
+
+            {/* Features Grid - Now second */}
             <div>
               <h3 className="text-2xl font-semibold text-gray-900 mb-6">
                 Pourquoi c'est important ?
@@ -197,25 +217,6 @@ const DirectivesInfoSection = () => {
                   </Card>
                 ))}
               </div>
-            </div>
-
-            {/* FAQ Section */}
-            <div>
-              <h3 className="text-2xl font-semibold text-gray-900 mb-6">
-                Questions fréquentes
-              </h3>
-              <Accordion type="single" collapsible className="w-full">
-                {faqItems.map((item, index) => (
-                  <AccordionItem key={index} value={`item-${index}`} className="border-directiveplus-200">
-                    <AccordionTrigger className="text-left hover:text-directiveplus-600">
-                      {item.question}
-                    </AccordionTrigger>
-                    <AccordionContent className="text-gray-600">
-                      {item.answer}
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
             </div>
           </div>
 
