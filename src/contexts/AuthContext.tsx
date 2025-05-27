@@ -81,53 +81,64 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [user?.id, loadProfile]);
 
   const signOut = useCallback(async () => {
-    console.log("🚨 DÉBUT DU PROCESSUS DE DÉCONNEXION FORCÉE 🚨");
+    console.log("🚨 === DÉBUT DU PROCESSUS DE DÉCONNEXION RADICALE === 🚨");
     
     try {
-      // 1. ARRÊT IMMÉDIAT - Marquer comme en cours de déconnexion
-      console.log("1. 🛑 Arrêt immédiat de l'état d'authentification");
-      setIsLoading(true);
+      // 1. ARRÊT IMMÉDIAT ET BRUTAL
+      console.log("1. 🛑 ARRÊT IMMÉDIAT - Suppression de tous les états");
       
-      // 2. NETTOYAGE LOCAL IMMÉDIAT ET BRUTAL
-      console.log("2. 🧹 Nettoyage local brutal");
+      // 2. NETTOYAGE LOCAL IMMÉDIAT ET BRUTAL - AVANT TOUT
+      console.log("2. 🧹 NETTOYAGE LOCAL BRUTAL IMMÉDIAT");
+      setIsLoading(true);
       setUser(null);
       setSession(null);
       setProfile(null);
       profileCache.current.clear();
       
-      // 3. NETTOYAGE DU STOCKAGE AVANT MÊME D'ESSAYER SUPABASE
-      console.log("3. 💾 Nettoyage du stockage navigateur");
+      // 3. NETTOYAGE DU STOCKAGE - TRIPLE NETTOYAGE
+      console.log("3. 💾 TRIPLE NETTOYAGE DU STOCKAGE");
       cleanupAuthState();
       
-      // 4. FORCER LA DÉCONNEXION SUPABASE (sans attendre le résultat)
-      console.log("4. ☁️ Tentative de déconnexion Supabase");
-      supabase.auth.signOut({ scope: 'global' }).catch((error) => {
-        console.warn("Erreur Supabase ignorée:", error);
-      });
+      // Nettoyage supplémentaire ultra agressif
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+        console.log("💾 Storage complètement vidé");
+      } catch (e) {
+        console.warn("Erreur lors du nettoyage du storage:", e);
+      }
       
-      // 5. DOUBLE NETTOYAGE POUR ÊTRE SÛR
-      console.log("5. 🔄 Double nettoyage sécurisé");
-      cleanupAuthState();
-      
-      // 6. REDIRECTION IMMÉDIATE ET FORCÉE VERS /auth
-      console.log("6. 🚀 REDIRECTION FORCÉE VERS /auth");
+      // 4. FORCER LA DÉCONNEXION SUPABASE SANS ATTENDRE
+      console.log("4. ☁️ DÉCONNEXION SUPABASE FORCÉE");
       setTimeout(() => {
-        window.location.href = '/auth';
-      }, 100);
+        supabase.auth.signOut({ scope: 'global' }).catch((error) => {
+          console.warn("Erreur Supabase ignorée:", error);
+        });
+      }, 0);
+      
+      // 5. REDIRECTION IMMÉDIATE ET RADICALE
+      console.log("5. 🚀 REDIRECTION RADICALE VERS /auth");
+      
+      // Supprimer tous les écouteurs d'événements potentiels
+      window.removeEventListener('beforeunload', () => {});
+      
+      // Redirection immédiate avec replace pour éviter l'historique
+      window.location.replace('/auth');
       
     } catch (error) {
-      console.error('❌ Erreur critique durant la déconnexion:', error);
+      console.error('❌ ERREUR CRITIQUE - REDIRECTION DE SECOURS:', error);
       
-      // EN CAS D'ERREUR CRITIQUE : FORCER QUAND MÊME LA REDIRECTION VERS /auth
-      console.log("🚨 FORÇAGE EN CAS D'ERREUR VERS /auth");
+      // REDIRECTION DE SECOURS RADICALE
       cleanupAuthState();
+      localStorage.clear();
+      sessionStorage.clear();
       setUser(null);
       setSession(null);
       setProfile(null);
       profileCache.current.clear();
       
-      // Redirection forcée vers /auth même en cas d'erreur critique
-      window.location.href = '/auth';
+      // Redirection de secours
+      window.location.replace('/auth');
     }
   }, []);
 
@@ -144,17 +155,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.log("Auth state changed:", event, session?.user?.id);
         
         if (event === 'SIGNED_OUT' || !session) {
-          console.log("🔥 Event SIGNED_OUT détecté - nettoyage complet immédiat");
-          cleanupAuthState();
+          console.log("🔥 Event SIGNED_OUT détecté - nettoyage immédiat");
           setSession(null);
           setUser(null);
           setProfile(null);
           profileCache.current.clear();
           setIsLoading(false);
-          
           // PAS de redirection automatique ici - on laisse signOut() gérer ça
-          console.log("🔕 Pas de redirection auto - signOut() s'en charge");
         } else if (session?.user) {
+          console.log("✅ Utilisateur connecté:", session.user.id);
           setSession(session);
           setUser(session.user);
           

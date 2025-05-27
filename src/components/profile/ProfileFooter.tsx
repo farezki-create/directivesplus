@@ -13,7 +13,14 @@ export default function ProfileFooter({ onLogout }: ProfileFooterProps) {
   const { signOut } = useAuth();
   
   const handleLogout = async () => {
-    console.log("🔴 ProfileFooter: Bouton déconnexion cliqué");
+    console.log("🔴 === ProfileFooter: BOUTON DÉCONNEXION CLIQUÉ === 🔴");
+    
+    // Empêcher les clics multiples
+    if (isLoggingOut) {
+      console.log("⚠️ Déconnexion déjà en cours, ignore le clic");
+      return;
+    }
+    
     setIsLoggingOut(true);
     
     try {
@@ -21,15 +28,17 @@ export default function ProfileFooter({ onLogout }: ProfileFooterProps) {
         console.log("🔄 ProfileFooter: Utilisation du onLogout custom");
         await onLogout();
       } else {
-        console.log("🔄 ProfileFooter: Utilisation du signOut du contexte");
+        console.log("🔄 ProfileFooter: Utilisation du signOut du contexte AUTH");
         await signOut();
       }
     } catch (error) {
       console.error('❌ ProfileFooter: Erreur lors de la déconnexion:', error);
-      // Même en cas d'erreur, forcer la redirection
-      window.location.href = '/auth';
+      // Même en cas d'erreur, forcer la redirection radicale
+      console.log("🚨 ProfileFooter: REDIRECTION DE SECOURS");
+      window.location.replace('/auth');
     } finally {
-      setIsLoggingOut(false);
+      // Ne pas remettre à false car on va être redirigé
+      console.log("🔚 ProfileFooter: Fin du processus de déconnexion");
     }
   };
   

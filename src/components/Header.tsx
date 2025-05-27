@@ -13,15 +13,17 @@ const Header = () => {
   };
 
   const handleSignOut = async () => {
-    console.log("🔴 Header: Bouton déconnexion cliqué");
+    console.log("🔴 === Header: BOUTON DÉCONNEXION CLIQUÉ === 🔴");
+    
     try {
       await signOut();
       setIsMobileMenuOpen(false);
     } catch (error) {
       console.error('❌ Header: Erreur lors de la déconnexion:', error);
-      // Même en cas d'erreur, fermer le menu et forcer la redirection
+      // Même en cas d'erreur, fermer le menu et forcer la redirection radicale
       setIsMobileMenuOpen(false);
-      window.location.href = '/auth';
+      console.log("🚨 Header: REDIRECTION DE SECOURS");
+      window.location.replace('/auth');
     }
   };
 

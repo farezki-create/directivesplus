@@ -4,56 +4,63 @@
  * Removes all auth-related localStorage and sessionStorage items
  */
 export const cleanupAuthState = () => {
-  console.log("🧹 Nettoyage complet et agressif de l'état d'authentification...");
+  console.log("🧹 === NETTOYAGE ULTRA AGRESSIF DE L'ÉTAT D'AUTHENTIFICATION === 🧹");
   
   try {
-    // Nettoyage BRUTAL de localStorage
+    // Nettoyage BRUTAL et COMPLET de localStorage
+    console.log("💾 Nettoyage localStorage...");
     const localStorageKeys = Object.keys(localStorage);
     console.log(`Found ${localStorageKeys.length} localStorage keys`);
     
     localStorageKeys.forEach((key) => {
-      if (key.startsWith('supabase.auth.') || 
+      if (key.startsWith('supabase') || 
           key.includes('sb-') || 
-          key.startsWith('supabase-auth-token') ||
-          key.includes('supabase') ||
           key.includes('auth') ||
           key.includes('token') ||
-          key.includes('session')) {
+          key.includes('session') ||
+          key.includes('user')) {
         console.log(`🗑️ Suppression localStorage: ${key}`);
         localStorage.removeItem(key);
       }
     });
     
-    // Nettoyage BRUTAL de sessionStorage
+    // Nettoyage BRUTAL et COMPLET de sessionStorage
     if (typeof sessionStorage !== 'undefined') {
+      console.log("💾 Nettoyage sessionStorage...");
       const sessionStorageKeys = Object.keys(sessionStorage);
       console.log(`Found ${sessionStorageKeys.length} sessionStorage keys`);
       
       sessionStorageKeys.forEach((key) => {
-        if (key.startsWith('supabase.auth.') || 
+        if (key.startsWith('supabase') || 
             key.includes('sb-') || 
-            key.startsWith('supabase-auth-token') ||
-            key.includes('supabase') ||
             key.includes('auth') ||
             key.includes('token') ||
-            key.includes('session')) {
+            key.includes('session') ||
+            key.includes('user')) {
           console.log(`🗑️ Suppression sessionStorage: ${key}`);
           sessionStorage.removeItem(key);
         }
       });
     }
     
-    // Nettoyage supplémentaire des cookies si possible
+    // Nettoyage supplémentaire des cookies
     try {
+      console.log("🍪 Nettoyage des cookies...");
       document.cookie.split(";").forEach(function(c) { 
-        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+        const cookieName = c.replace(/^ +/, "").replace(/=.*/, "");
+        if (cookieName.includes('supabase') || 
+            cookieName.includes('sb-') || 
+            cookieName.includes('auth') ||
+            cookieName.includes('token')) {
+          document.cookie = cookieName + "=;expires=" + new Date().toUTCString() + ";path=/"; 
+          console.log(`🗑️ Cookie supprimé: ${cookieName}`);
+        }
       });
-      console.log("🍪 Cookies nettoyés");
     } catch (cookieError) {
       console.warn("Impossible de nettoyer les cookies:", cookieError);
     }
     
-    console.log("✅ Nettoyage d'état terminé avec succès");
+    console.log("✅ === NETTOYAGE D'ÉTAT TERMINÉ AVEC SUCCÈS === ✅");
   } catch (error) {
     console.error('❌ Erreur lors du nettoyage:', error);
   }
@@ -65,8 +72,8 @@ export const cleanupAuthState = () => {
  */
 export const safeNavigate = (url: string) => {
   console.log(`🚀 Navigation sécurisée vers: ${url}`);
-  // Use window.location.href for a full page refresh to ensure clean state
-  window.location.href = url;
+  // Use window.location.replace for a full page refresh and no history entry
+  window.location.replace(url);
 };
 
 /**
