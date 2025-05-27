@@ -39,11 +39,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
   const initialized = useRef(false);
   const profileCache = useRef<Map<string, Profile>>(new Map());
+  const currentUserIdRef = useRef<string | null>(null);
 
-  const loadProfile = useCallback(async (userId: string) => {
-    // Utiliser le cache si disponible
+  const loadProfile = useCallback(async (userId: string, forceRefresh = false) => {
+    // Vérifier que c'est toujours l'utilisateur actuel
+    if (currentUserIdRef.current !== userId) {
+      console.log("Abandoning profile load for old user:", userId);
+      return;
+    }
+
+    // Utiliser le cache si disponible et pas de refresh forcé
     const cachedProfile = profileCache.current.get(userId);
-    if (cachedProfile) {
+    if (cachedProfile && !forceRefresh) {
       console.log("Using cached profile for user:", userId);
       setProfile(cachedProfile);
       return;
@@ -58,6 +65,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .eq('id', userId)
         .single();
 
+      // Vérifier à nouveau que c'est toujours l'utilisateur actuel après la requête
+      if (currentUserIdRef.current !== userId) {
+        console.log("User changed during profile load, discarding result");
+        return;
+      }
+
       if (error && error.code !== 'PGRST116') {
         console.error('Error loading profile:', error);
         return;
@@ -67,16 +80,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.log("Profile data loaded successfully");
         profileCache.current.set(userId, profileData);
         setProfile(profileData);
+      } else {
+        // Aucun profil trouvé, nettoyer l'état
+        setProfile(null);
       }
     } catch (error) {
       console.error('Error loading profile:', error);
+      // En cas d'erreur, ne pas bloquer l'application
+      setProfile(null);
     }
   }, []);
 
   const refreshProfile = useCallback(async () => {
     if (user?.id) {
       profileCache.current.delete(user.id);
-      await loadProfile(user.id);
+      await loadProfile(user.id, true);
     }
   }, [user?.id, loadProfile]);
 
@@ -93,6 +111,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(null);
       setSession(null);
       setProfile(null);
+      currentUserIdRef.current = null;
       profileCache.current.clear();
       
       // 3. NETTOYAGE DU STOCKAGE - TRIPLE NETTOYAGE
@@ -135,6 +154,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(null);
       setSession(null);
       setProfile(null);
+      currentUserIdRef.current = null;
       profileCache.current.clear();
       
       // Redirection de secours
@@ -142,7 +162,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  // Initialisation simplifiée
+  // Initialisation simplifiée et sécurisée
   useEffect(() => {
     if (initialized.current) return;
     initialized.current = true;
@@ -156,20 +176,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         if (event === 'SIGNED_OUT' || !session) {
           console.log("🔥 Event SIGNED_OUT détecté - nettoyage immédiat");
+          currentUserIdRef.current = null;
           setSession(null);
           setUser(null);
           setProfile(null);
           profileCache.current.clear();
           setIsLoading(false);
-          // PAS de redirection automatique ici - on laisse signOut() gérer ça
         } else if (session?.user) {
           console.log("✅ Utilisateur connecté:", session.user.id);
+          const newUserId = session.user.id;
+          
+          // Mettre à jour l'ID utilisateur de référence IMMÉDIATEMENT
+          currentUserIdRef.current = newUserId;
+          
           setSession(session);
           setUser(session.user);
           
-          // Charger le profil de manière différée
+          // Nettoyer le profil si changement d'utilisateur
+          if (profile && profile.id !== newUserId) {
+            setProfile(null);
+          }
+          
+          // Charger le profil de manière différée et sécurisée
           setTimeout(() => {
-            loadProfile(session.user.id);
+            // Vérifier encore une fois que c'est le bon utilisateur
+            if (currentUserIdRef.current === newUserId) {
+              loadProfile(newUserId);
+            }
           }, 0);
         }
         
@@ -182,22 +215,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) {
         console.error('Error checking initial session:', error);
         cleanupAuthState();
+        currentUserIdRef.current = null;
       } else if (initialSession?.user) {
         // Validation basique de la session
         const now = Date.now() / 1000;
         if (initialSession.expires_at && initialSession.expires_at > now) {
           console.log("Valid initial session found");
+          const userId = initialSession.user.id;
+          currentUserIdRef.current = userId;
+          
           setSession(initialSession);
           setUser(initialSession.user);
           
           setTimeout(() => {
-            loadProfile(initialSession.user.id);
+            if (currentUserIdRef.current === userId) {
+              loadProfile(userId);
+            }
           }, 0);
         } else {
           console.log("Session expired, cleaning up");
           cleanupAuthState();
+          currentUserIdRef.current = null;
           supabase.auth.signOut();
         }
+      } else {
+        currentUserIdRef.current = null;
       }
       
       setIsLoading(false);
