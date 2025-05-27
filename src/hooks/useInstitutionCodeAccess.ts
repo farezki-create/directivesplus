@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useDossierStore } from "@/store/dossierStore";
 import { toast } from "@/hooks/use-toast";
 import { DirectiveItem, InstitutionAccessState } from "@/types/directives";
+import { validateProfessionalId } from "@/utils/professional-id-validation";
 
 // Interface pour typer les données patient retournées par SQL
 interface PatientInfo {
@@ -25,6 +26,7 @@ export const useInstitutionCodeAccess = (
   nom: string | null,
   prenom: string | null,
   naissance: string | null,
+  professionalId: string | null,
   hasAllParams: boolean
 ) => {
   const [state, setState] = useState<InstitutionAccessState>({
@@ -39,15 +41,46 @@ export const useInstitutionCodeAccess = (
 
   useEffect(() => {
     const tryInstitutionAccess = async () => {
-      if (!hasAllParams || !code || !nom || !prenom || !naissance) {
-        console.log("Paramètres manquants pour l'accès institution:", { code, nom, prenom, naissance });
+      if (!hasAllParams || !code || !nom || !prenom || !naissance || !professionalId) {
+        console.log("Paramètres manquants pour l'accès institution:", { code, nom, prenom, naissance, professionalId });
         return;
       }
 
-      console.log("Début de la tentative d'accès par code institution:", { code, nom, prenom, naissance });
+      // Valider le numéro professionnel
+      const professionalIdValidation = validateProfessionalId(professionalId);
+      if (!professionalIdValidation.isValid) {
+        setState(prev => ({
+          ...prev,
+          loading: false,
+          error: `Numéro d'identification professionnel invalide: ${professionalIdValidation.error}`
+        }));
+        return;
+      }
+
+      console.log("Début de la tentative d'accès par code institution:", { 
+        code, 
+        nom, 
+        prenom, 
+        naissance, 
+        professionalId: professionalIdValidation.formattedNumber,
+        professionalIdType: professionalIdValidation.type
+      });
+      
       setState(prev => ({ ...prev, loading: true, error: null }));
       
       try {
+        // Journaliser la tentative d'accès avec les informations professionnelles
+        await supabase
+          .from('document_access_logs')
+          .insert({
+            user_id: '00000000-0000-0000-0000-000000000000', // Temporaire jusqu'à l'authentification
+            access_code_id: 'institution_access_attempt',
+            nom_consultant: 'Institution',
+            prenom_consultant: `${professionalIdValidation.type}:${professionalIdValidation.formattedNumber}`,
+            ip_address: 'institution_access',
+            user_agent: `Institution Access Attempt | Patient: ${prenom} ${nom} | Birth: ${naissance} | Code: ${code} | Professional: ${professionalIdValidation.type}:${professionalIdValidation.formattedNumber}`
+          });
+
         // Utiliser la nouvelle fonction SQL sécurisée
         const { data: accessResult, error: accessError } = await supabase
           .rpc('get_institution_directives_complete', {
@@ -61,10 +94,35 @@ export const useInstitutionCodeAccess = (
 
         if (accessError) {
           console.error("Erreur RPC:", accessError);
+          
+          // Logger l'échec d'accès
+          await supabase
+            .from('document_access_logs')
+            .insert({
+              user_id: '00000000-0000-0000-0000-000000000000',
+              access_code_id: 'institution_access_failed',
+              nom_consultant: 'Institution',
+              prenom_consultant: `${professionalIdValidation.type}:${professionalIdValidation.formattedNumber}`,
+              ip_address: 'institution_access',
+              user_agent: `Institution Access FAILED | Patient: ${prenom} ${nom} | Error: ${accessError.message} | Professional: ${professionalIdValidation.type}:${professionalIdValidation.formattedNumber}`
+            });
+          
           throw new Error(`Erreur de base de données: ${accessError.message}`);
         }
 
         if (!accessResult || !Array.isArray(accessResult) || accessResult.length === 0) {
+          // Logger l'échec d'accès - aucun résultat
+          await supabase
+            .from('document_access_logs')
+            .insert({
+              user_id: '00000000-0000-0000-0000-000000000000',
+              access_code_id: 'institution_access_denied',
+              nom_consultant: 'Institution',
+              prenom_consultant: `${professionalIdValidation.type}:${professionalIdValidation.formattedNumber}`,
+              ip_address: 'institution_access',
+              user_agent: `Institution Access DENIED | Patient: ${prenom} ${nom} | Reason: No results | Professional: ${professionalIdValidation.type}:${professionalIdValidation.formattedNumber}`
+            });
+          
           setState(prev => ({
             ...prev,
             loading: false,
@@ -77,6 +135,18 @@ export const useInstitutionCodeAccess = (
         console.log("Résultat parsé:", result);
         
         if (!result.access_granted) {
+          // Logger l'échec d'accès
+          await supabase
+            .from('document_access_logs')
+            .insert({
+              user_id: result.user_id || '00000000-0000-0000-0000-000000000000',
+              access_code_id: 'institution_access_denied',
+              nom_consultant: 'Institution',
+              prenom_consultant: `${professionalIdValidation.type}:${professionalIdValidation.formattedNumber}`,
+              ip_address: 'institution_access',
+              user_agent: `Institution Access DENIED | Patient: ${prenom} ${nom} | Reason: Access not granted | Professional: ${professionalIdValidation.type}:${professionalIdValidation.formattedNumber}`
+            });
+          
           setState(prev => ({
             ...prev,
             loading: false,
@@ -85,8 +155,21 @@ export const useInstitutionCodeAccess = (
           return;
         }
 
+        // Logger l'accès réussi avec toutes les informations
+        await supabase
+          .from('document_access_logs')
+          .insert({
+            user_id: result.user_id,
+            access_code_id: 'institution_access_granted',
+            nom_consultant: 'Institution',
+            prenom_consultant: `${professionalIdValidation.type}:${professionalIdValidation.formattedNumber}`,
+            ip_address: 'institution_access',
+            user_agent: `Institution Access GRANTED | Patient: ${prenom} ${nom} | Professional: ${professionalIdValidation.type}:${professionalIdValidation.formattedNumber} | Documents: ${result.documents?.length || 0} | Directives: ${result.directives?.length || 0}`
+          });
+
         // Marquer l'accès institution en session
         sessionStorage.setItem('institutionAccess', 'true');
+        sessionStorage.setItem('institutionProfessionalId', `${professionalIdValidation.type}:${professionalIdValidation.formattedNumber}`);
         
         // Conversion sécurisée des données patient
         const patientInfo: PatientInfo = {
@@ -166,7 +249,7 @@ export const useInstitutionCodeAccess = (
 
         toast({
           title: "Accès autorisé",
-          description: `Accès aux directives de ${profileData.first_name} ${profileData.last_name}`,
+          description: `Accès aux directives de ${profileData.first_name} ${profileData.last_name} (${professionalIdValidation.type}: ${professionalIdValidation.formattedNumber})`,
         });
 
         // Ouvrir automatiquement le premier PDF dans le viewer interne
@@ -185,6 +268,19 @@ export const useInstitutionCodeAccess = (
 
       } catch (error: any) {
         console.error("Erreur lors de l'accès par code institution:", error);
+        
+        // Logger l'erreur système
+        await supabase
+          .from('document_access_logs')
+          .insert({
+            user_id: '00000000-0000-0000-0000-000000000000',
+            access_code_id: 'institution_access_error',
+            nom_consultant: 'Institution',
+            prenom_consultant: `${professionalIdValidation?.type || 'UNKNOWN'}:${professionalIdValidation?.formattedNumber || professionalId}`,
+            ip_address: 'institution_access',
+            user_agent: `Institution Access ERROR | Patient: ${prenom} ${nom} | Error: ${error.message} | Professional: ${professionalIdValidation?.type || 'UNKNOWN'}:${professionalIdValidation?.formattedNumber || professionalId}`
+          });
+        
         setState(prev => ({
           ...prev,
           loading: false,
@@ -205,7 +301,7 @@ export const useInstitutionCodeAccess = (
     }, 100);
 
     return () => clearTimeout(timeoutId);
-  }, [code, nom, prenom, naissance, hasAllParams, setDossierActif]);
+  }, [code, nom, prenom, naissance, professionalId, hasAllParams, setDossierActif]);
 
   return state;
 };
