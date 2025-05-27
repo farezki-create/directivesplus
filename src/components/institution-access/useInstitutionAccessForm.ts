@@ -45,7 +45,16 @@ export const useInstitutionAccessForm = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    console.log(`Changement dans le champ ${name}:`, value);
+    
+    // Pour le champ professionalId, ne garder que les chiffres
+    if (name === 'professionalId') {
+      const numericValue = value.replace(/[^0-9]/g, '');
+      console.log(`Valeur numérique filtrée pour ${name}:`, numericValue);
+      setFormData(prev => ({ ...prev, [name]: numericValue }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
     
     if (institutionAccess.error && submitted) {
       setSubmitted(false);
@@ -71,14 +80,26 @@ export const useInstitutionAccessForm = () => {
     setSubmitted(true);
   };
 
-  const isFormValid = formData.lastName && 
-                     formData.firstName && 
-                     formData.birthDate && 
-                     formData.institutionCode && 
-                     formData.professionalId &&
-                     validateProfessionalId(formData.professionalId).isValid;
+  // Corriger la validation du formulaire pour retourner un booléen
+  const isFormValid = Boolean(
+    formData.lastName.trim() && 
+    formData.firstName.trim() && 
+    formData.birthDate.trim() && 
+    formData.institutionCode.trim() && 
+    formData.professionalId.trim() &&
+    validateProfessionalId(formData.professionalId).isValid
+  );
   
   const isLoading = submitted && institutionAccess.loading;
+
+  console.log("État du hook useInstitutionAccessForm:", {
+    formData,
+    isFormValid,
+    isLoading,
+    submitted,
+    accessGranted: institutionAccess.accessGranted,
+    error: institutionAccess.error
+  });
 
   return {
     formData,
