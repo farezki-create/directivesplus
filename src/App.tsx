@@ -16,6 +16,18 @@ import AccesInstitution from "./pages/AccesInstitution";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PdfViewer from "./pages/PdfViewer";
 import QuestionnaireSection from "./components/QuestionnaireSection";
+import AvisGeneral from "./pages/AvisGeneral";
+import MaintienVie from "./pages/MaintienVie";
+import MaladieAvancee from "./pages/MaladieAvancee";
+import GoutsPeurs from "./pages/GoutsPeurs";
+import ExemplesPhrases from "./pages/ExemplesPhrases";
+import PersonneConfiance from "./pages/PersonneConfiance";
+import Synthesis from "./pages/Synthesis";
+import EnSavoirPlus from "./pages/EnSavoirPlus";
+import Commentaires from "./pages/Commentaires";
+import MentionsLegales from "./pages/MentionsLegales";
+import Confidentialite from "./pages/Confidentialite";
+import Soutenir from "./pages/Soutenir";
 import { Navigate } from "react-router-dom";
 
 const queryClient = new QueryClient();
@@ -39,7 +51,65 @@ const App = () => (
               } 
             />
             
-            {/* Pages de rédaction de questionnaires */}
+            {/* Pages de questionnaires principales */}
+            <Route 
+              path="/avis-general" 
+              element={
+                <ProtectedRoute>
+                  <AvisGeneral />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/maintien-vie" 
+              element={
+                <ProtectedRoute>
+                  <MaintienVie />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/maladie-avancee" 
+              element={
+                <ProtectedRoute>
+                  <MaladieAvancee />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/gouts-peurs" 
+              element={
+                <ProtectedRoute>
+                  <GoutsPeurs />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/exemples-phrases" 
+              element={
+                <ProtectedRoute>
+                  <ExemplesPhrases />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/personne-confiance" 
+              element={
+                <ProtectedRoute>
+                  <PersonneConfiance />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/synthesis" 
+              element={
+                <ProtectedRoute>
+                  <Synthesis />
+                </ProtectedRoute>
+              } 
+            />
+            
+            {/* Pages de rédaction de questionnaires (anciennes routes) */}
             <Route 
               path="/rediger/maintien-vie" 
               element={
@@ -101,6 +171,13 @@ const App = () => (
               } 
             />
             <Route path="/pdf-viewer" element={<PdfViewer />} />
+            
+            {/* Pages d'information */}
+            <Route path="/en-savoir-plus" element={<EnSavoirPlus />} />
+            <Route path="/commentaires" element={<Commentaires />} />
+            <Route path="/mentions-legales" element={<MentionsLegales />} />
+            <Route path="/confidentialite" element={<Confidentialite />} />
+            <Route path="/soutenir" element={<Soutenir />} />
             
             {/* Redirection pour les anciennes routes */}
             <Route path="/donnees-medicales" element={<Navigate to="/" replace />} />
