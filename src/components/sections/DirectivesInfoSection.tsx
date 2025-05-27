@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { 
   Accordion,
@@ -24,6 +23,22 @@ const DirectivesInfoSection = () => {
     {
       question: "Qui peut rédiger des directives anticipées ?",
       answer: "Toute personne majeure peut rédiger ses directives anticipées. Il n'y a pas d'âge limite et aucune condition médicale particulière n'est requise. C'est un droit pour tous."
+    },
+    {
+      question: "Quel est le poids de mes directives anticipées dans la décision médicale ?",
+      answer: (
+        <div className="space-y-3">
+          <p>En cas d'hospitalisation, vous devez être interrogé sur l'existence de directives anticipées. Les directives anticipées constituent un document essentiel pour la prise de décision médicale en situation de fin de vie.</p>
+          <p>Leur contenu prévaut sur tout autre avis non médical, y compris sur celui de votre personne de confiance et de vos proches.</p>
+          <p>Le médecin a l'obligation de respecter les directives anticipées.</p>
+          <p className="font-semibold">Il existe 2 exceptions :</p>
+          <ul className="list-disc ml-6 space-y-2">
+            <li>En cas d'urgence vitale, pendant le temps nécessaire de l'évaluation complète de la situation.</li>
+            <li>Lorsque les directives anticipées apparaissent manifestement inappropriées ou non conformes à la situation médicale.</li>
+          </ul>
+          <p>Dans ce cas, la décision de refus d'application des directives anticipées est prise de façon collégiale, inscrite dans le dossier médical et portée à la connaissance de la personne de confiance.</p>
+        </div>
+      )
     },
     {
       question: "Les directives anticipées sont-elles obligatoires ?",
