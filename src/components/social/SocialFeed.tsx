@@ -1,26 +1,84 @@
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Heart, MessageCircle, Send, Users, Image, Smile, MoreHorizontal } from "lucide-react";
+import { Heart, MessageCircle, Send, Users, Image, Smile, MoreHorizontal, X } from "lucide-react";
 import { usePosts } from "@/hooks/usePosts";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
+import { toast } from "@/hooks/use-toast";
 
 const SocialFeed = () => {
   const { posts, loading, createPost, toggleLike, addComment } = usePosts();
   const { isAuthenticated, user } = useAuth();
   const [newPostContent, setNewPostContent] = useState("");
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [selectedMood, setSelectedMood] = useState<string>("");
   const [commentContent, setCommentContent] = useState<{ [key: string]: string }>({});
   const [showComments, setShowComments] = useState<{ [key: string]: boolean }>({});
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const moods = [
+    { emoji: "😊", label: "Heureux" },
+    { emoji: "😔", label: "Triste" },
+    { emoji: "😌", label: "Serein" },
+    { emoji: "💪", label: "Fort" },
+    { emoji: "🤔", label: "Pensif" },
+    { emoji: "😇", label: "Paisible" },
+    { emoji: "💛", label: "Reconnaissant" },
+    { emoji: "🌟", label: "Optimiste" }
+  ];
 
   const handleCreatePost = async () => {
-    if (!newPostContent.trim()) return;
-    await createPost(newPostContent);
+    if (!newPostContent.trim() && !selectedImage) return;
+    
+    let imageUrl = undefined;
+    if (selectedImage) {
+      // Pour l'instant, on simule l'upload d'image
+      // En production, il faudrait uploader vers Supabase Storage
+      toast({
+        title: "Info",
+        description: "L'upload d'images sera disponible prochainement"
+      });
+    }
+
+    const contentWithMood = selectedMood 
+      ? `${selectedMood} ${newPostContent}` 
+      : newPostContent;
+
+    await createPost(contentWithMood, imageUrl);
     setNewPostContent("");
+    setSelectedImage(null);
+    setSelectedMood("");
+  };
+
+  const handleImageSelect = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        toast({
+          title: "Erreur",
+          description: "L'image ne doit pas dépasser 5MB",
+          variant: "destructive"
+        });
+        return;
+      }
+      setSelectedImage(file);
+    }
+  };
+
+  const removeSelectedImage = () => {
+    setSelectedImage(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const handleAddComment = async (postId: string) => {
@@ -77,20 +135,90 @@ const SocialFeed = () => {
                 onChange={(e) => setNewPostContent(e.target.value)}
                 className="min-h-[100px] border-gray-200 focus:border-purple-400 resize-none text-lg"
               />
+              
+              {/* Selected Image Preview */}
+              {selectedImage && (
+                <div className="mt-3 relative inline-block">
+                  <img 
+                    src={URL.createObjectURL(selectedImage)} 
+                    alt="Aperçu" 
+                    className="max-w-xs max-h-32 rounded-lg object-cover border"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={removeSelectedImage}
+                    className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-red-500 text-white hover:bg-red-600"
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              )}
+
+              {/* Selected Mood Display */}
+              {selectedMood && (
+                <div className="mt-3 flex items-center space-x-2">
+                  <span className="text-sm text-gray-600">Humeur:</span>
+                  <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm">
+                    {selectedMood}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedMood("")}
+                    className="h-6 w-6 rounded-full"
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              )}
+              
               <div className="flex items-center justify-between mt-4">
                 <div className="flex space-x-2">
-                  <Button variant="ghost" size="sm" className="text-gray-500 hover:text-purple-600">
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    accept="image/*"
+                    className="hidden"
+                  />
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-gray-500 hover:text-purple-600"
+                    onClick={handleImageSelect}
+                  >
                     <Image className="mr-2 h-4 w-4" />
                     Photo
                   </Button>
-                  <Button variant="ghost" size="sm" className="text-gray-500 hover:text-purple-600">
-                    <Smile className="mr-2 h-4 w-4" />
-                    Humeur
-                  </Button>
+                  
+                  {/* Mood Selector */}
+                  <div className="relative group">
+                    <Button variant="ghost" size="sm" className="text-gray-500 hover:text-purple-600">
+                      <Smile className="mr-2 h-4 w-4" />
+                      Humeur
+                    </Button>
+                    <div className="absolute bottom-full left-0 mb-2 bg-white border rounded-lg shadow-lg p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
+                      <div className="grid grid-cols-4 gap-2 w-64">
+                        {moods.map((mood) => (
+                          <Button
+                            key={mood.label}
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setSelectedMood(`${mood.emoji} ${mood.label}`)}
+                            className="flex flex-col items-center p-2 h-auto hover:bg-purple-50"
+                          >
+                            <span className="text-xl mb-1">{mood.emoji}</span>
+                            <span className="text-xs">{mood.label}</span>
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <Button 
                   onClick={handleCreatePost}
-                  disabled={!newPostContent.trim()}
+                  disabled={!newPostContent.trim() && !selectedImage}
                   className="bg-purple-600 hover:bg-purple-700 px-6"
                 >
                   Publier
