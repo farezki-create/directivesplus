@@ -39,19 +39,22 @@ export const InstitutionForm: React.FC<InstitutionFormProps> = ({
   const handleProfessionalIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     
-    // Permettre seulement les chiffres et espaces pour la saisie
-    const cleanValue = value.replace(/[^0-9\s]/g, '');
+    // Permettre seulement les chiffres
+    const cleanValue = value.replace(/[^0-9]/g, '');
     
-    // Créer un événement synthétique avec la valeur nettoyée
+    // Créer un événement synthétique avec la valeur nettoyée et le bon nom
     const syntheticEvent = {
       ...e,
       target: {
         ...e.target,
+        name: 'professionalId',
         value: cleanValue
       }
     } as React.ChangeEvent<HTMLInputElement>;
     
-    // Appeler le onChange parent avec la valeur nettoyée
+    console.log("Événement synthétique créé avec nom:", syntheticEvent.target.name, "et valeur:", syntheticEvent.target.value);
+    
+    // Appeler le onChange parent avec l'événement corrigé
     onChange(syntheticEvent);
     
     // Effectuer la validation seulement si la valeur a une longueur suffisante
@@ -118,11 +121,14 @@ export const InstitutionForm: React.FC<InstitutionFormProps> = ({
         <Input
           id="professionalId"
           name="professionalId"
-          value={formData.professionalId}
+          value={formData.professionalId || ''}
           onChange={handleProfessionalIdChange}
-          placeholder="Ex: 10001234567 (RPPS) ou 123456789 (ADELI/FINESS)"
+          placeholder="Saisissez uniquement des chiffres"
           required
           disabled={isLoading}
+          maxLength={11}
+          inputMode="numeric"
+          pattern="[0-9]*"
           className={professionalIdValidation.error ? "border-red-500" : 
                     professionalIdValidation.isValid ? "border-green-500" : ""}
         />
