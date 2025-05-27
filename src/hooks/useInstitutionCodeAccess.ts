@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useDossierStore } from "@/store/dossierStore";
@@ -86,7 +85,7 @@ export const useInstitutionCodeAccess = (
           return;
         }
 
-        // Marquer l'accès institution en session (comme pour les QR codes)
+        // Marquer l'accès institution en session
         sessionStorage.setItem('institutionAccess', 'true');
         
         // Conversion sécurisée des données patient
@@ -170,7 +169,7 @@ export const useInstitutionCodeAccess = (
           description: `Accès aux directives de ${profileData.first_name} ${profileData.last_name}`,
         });
 
-        // Ouvrir automatiquement le premier PDF si disponible
+        // Ouvrir automatiquement le premier PDF dans le viewer interne
         const firstPdfDocument = directiveItems.find(item => 
           item.type === 'document' && 
           item.file_path && 
@@ -178,9 +177,9 @@ export const useInstitutionCodeAccess = (
         );
 
         if (firstPdfDocument) {
-          console.log("Ouverture automatique du premier document PDF:", firstPdfDocument);
+          console.log("Ouverture automatique dans le viewer interne:", firstPdfDocument);
           setTimeout(() => {
-            window.open(firstPdfDocument.file_path, '_blank');
+            window.location.href = `/pdf-viewer?id=${firstPdfDocument.id}&type=document`;
           }, 1000);
         }
 

@@ -2,7 +2,7 @@
 import React from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Shield, CheckCircle, FileText, ExternalLink } from "lucide-react";
+import { Shield, CheckCircle, FileText } from "lucide-react";
 import { useDossierStore } from "@/store/dossierStore";
 
 interface SuccessViewProps {
@@ -23,15 +23,12 @@ export const SuccessView: React.FC<SuccessViewProps> = ({ patientData }) => {
     (item.content_type === 'application/pdf' || item.file_name?.toLowerCase().endsWith('.pdf'))
   );
 
-  const handleOpenDirectPdf = () => {
-    if (firstPdfDocument?.file_path) {
-      console.log("Ouverture directe du PDF:", firstPdfDocument);
-      window.open(firstPdfDocument.file_path, '_blank');
+  const handleOpenInternalViewer = () => {
+    if (firstPdfDocument?.id) {
+      console.log("Ouverture dans le viewer interne:", firstPdfDocument);
+      // Ouvrir dans le viewer PDF interne de l'application
+      window.location.href = `/pdf-viewer?id=${firstPdfDocument.id}&type=document`;
     }
-  };
-
-  const handleViewAllDirectives = () => {
-    window.location.href = "/mes-directives";
   };
 
   return (
@@ -61,37 +58,27 @@ export const SuccessView: React.FC<SuccessViewProps> = ({ patientData }) => {
           </h3>
           <p className="text-gray-600 mt-1 flex items-center justify-center gap-2">
             <FileText className="h-4 w-4" />
-            Documents disponibles
+            Document disponible
           </p>
         </div>
         
         <div className="space-y-3">
           {firstPdfDocument && (
             <Button 
-              onClick={handleOpenDirectPdf}
+              onClick={handleOpenInternalViewer}
               className="bg-blue-600 hover:bg-blue-700 w-full"
               size="lg"
             >
-              <ExternalLink className="w-4 h-4 mr-2" />
-              Ouvrir le document principal ({firstPdfDocument.file_name})
+              <FileText className="w-4 h-4 mr-2" />
+              Consulter le document ({firstPdfDocument.file_name})
             </Button>
           )}
-          
-          <Button 
-            onClick={handleViewAllDirectives}
-            variant="outline"
-            className="w-full"
-            size="lg"
-          >
-            <FileText className="w-4 h-4 mr-2" />
-            Voir toutes les directives
-          </Button>
         </div>
 
         {firstPdfDocument && (
           <div className="mt-4 p-3 bg-blue-50 rounded-lg">
             <p className="text-sm text-blue-800">
-              💡 <strong>Accès direct :</strong> Le document principal s'ouvre automatiquement dans un nouvel onglet.
+              🔒 <strong>Consultation sécurisée :</strong> Le document s'ouvre dans l'application pour garantir la confidentialité des données.
             </p>
           </div>
         )}
