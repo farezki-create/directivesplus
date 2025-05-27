@@ -96,7 +96,10 @@ export const useSynthesisActions = (userId?: string) => {
           duration: 2000
         });
         
-        // Rediriger vers la page des directives au lieu de l'affichage-dossier supprimé
+        // Attendre un peu pour s'assurer que tout est bien sauvegardé
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        // Rediriger vers la page des directives
         if (result.accessCode) {
           console.log("Redirection vers mes-directives avec le code d'accès:", result.accessCode);
           

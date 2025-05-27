@@ -1,8 +1,8 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, Printer, ExternalLink, ArrowLeft } from "lucide-react";
+import { Download, Printer, ExternalLink, ArrowLeft, Loader2 } from "lucide-react";
 
 interface Document {
   id: string;
@@ -25,6 +25,27 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
   onDownload,
   onGoBack
 }) => {
+  const [pdfLoading, setPdfLoading] = useState(true);
+  const [pdfError, setPdfError] = useState(false);
+
+  useEffect(() => {
+    // Reset loading state when document changes
+    setPdfLoading(true);
+    setPdfError(false);
+  }, [document?.file_path]);
+
+  const handleIframeLoad = () => {
+    console.log("PDF chargé avec succès");
+    setPdfLoading(false);
+    setPdfError(false);
+  };
+
+  const handleIframeError = () => {
+    console.error("Erreur lors du chargement du PDF");
+    setPdfLoading(false);
+    setPdfError(true);
+  };
+
   if (!document) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -70,15 +91,15 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
           </div>
           
           <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={onDownload}>
+            <Button variant="outline" onClick={onDownload} disabled={pdfLoading}>
               <Download className="w-4 h-4 mr-2" />
               Télécharger
             </Button>
-            <Button variant="outline" onClick={handlePrint}>
+            <Button variant="outline" onClick={handlePrint} disabled={pdfLoading}>
               <Printer className="w-4 h-4 mr-2" />
               Imprimer
             </Button>
-            <Button variant="outline" onClick={handleOpenExternal}>
+            <Button variant="outline" onClick={handleOpenExternal} disabled={pdfLoading}>
               <ExternalLink className="w-4 h-4 mr-2" />
               Ouvrir
             </Button>
@@ -88,7 +109,51 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
 
       {/* Contenu du PDF */}
       <div className="container mx-auto p-4">
-        <div className="bg-white rounded-lg shadow">
+        <div className="bg-white rounded-lg shadow relative">
+          {/* État de chargement */}
+          {pdfLoading && (
+            <div className="absolute inset-0 bg-white rounded-lg flex flex-col items-center justify-center z-10">
+              <div className="text-center space-y-4">
+                <Loader2 className="h-12 w-12 animate-spin text-directiveplus-600 mx-auto" />
+                <div className="space-y-2">
+                  <h3 className="text-lg font-medium text-gray-900">
+                    Chargement de vos directives anticipées
+                  </h3>
+                  <p className="text-sm text-gray-600 max-w-md">
+                    Nous préparons l'affichage complet de votre document. 
+                    Cela peut prendre quelques instants selon la taille du fichier...
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <div className="h-2 w-2 bg-directiveplus-600 rounded-full animate-bounce"></div>
+                  <div className="h-2 w-2 bg-directiveplus-600 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                  <div className="h-2 w-2 bg-directiveplus-600 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* État d'erreur */}
+          {pdfError && (
+            <div className="absolute inset-0 bg-white rounded-lg flex flex-col items-center justify-center z-10">
+              <div className="text-center space-y-4">
+                <div className="text-red-500 text-4xl">⚠️</div>
+                <div className="space-y-2">
+                  <h3 className="text-lg font-medium text-gray-900">
+                    Erreur de chargement
+                  </h3>
+                  <p className="text-sm text-gray-600 max-w-md">
+                    Le document n'a pas pu être chargé. Veuillez réessayer ou utiliser le bouton "Ouvrir" ci-dessus.
+                  </p>
+                </div>
+                <Button onClick={() => window.location.reload()} variant="outline">
+                  Réessayer
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* PDF iframe */}
           {document.file_path.startsWith('data:') ? (
             // PDF en data URL
             <iframe
@@ -96,15 +161,19 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
               className="w-full h-[85vh] border-0 rounded-lg"
               title={document.file_name}
               style={{ minHeight: '800px' }}
+              onLoad={handleIframeLoad}
+              onError={handleIframeError}
             />
           ) : (
             // PDF par URL - Paramètres optimisés pour affichage complet
             <iframe
-              src={`${document.file_path}#toolbar=1&navpanes=1&scrollbar=1&view=Fit`}
+              src={`${document.file_path}#toolbar=1&navpanes=1&scrollbar=1&view=Fit&zoom=page-width`}
               className="w-full h-[85vh] border-0 rounded-lg"
               title={document.file_name}
               style={{ minHeight: '800px' }}
               allow="fullscreen"
+              onLoad={handleIframeLoad}
+              onError={handleIframeError}
             />
           )}
         </div>
