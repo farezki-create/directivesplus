@@ -162,11 +162,11 @@ export const DirectivesAccessManager: React.FC<DirectivesAccessManagerProps> = (
         onView={handleViewDocument}
         documentToDelete={documentToDelete}
         setDocumentToDelete={setDocumentToDelete}
-        handleDelete={handleDelete}
+        onDelete={handleDelete}
         previewDocument={previewDocument}
         setPreviewDocument={setPreviewDocument}
-        handlePreviewDownload={handlePreviewDownload}
-        handlePreviewPrint={handlePreviewPrint}
+        onPreviewDownload={handlePreviewDownload}
+        onPreviewPrint={handlePreviewPrint}
       />
     );
   }
