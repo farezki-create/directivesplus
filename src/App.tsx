@@ -15,6 +15,7 @@ import Profile from "./pages/Profile";
 import AccesInstitution from "./pages/AccesInstitution";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PdfViewer from "./pages/PdfViewer";
+import QuestionnaireSection from "./components/QuestionnaireSection";
 import { Navigate } from "react-router-dom";
 
 const queryClient = new QueryClient();
@@ -37,6 +38,49 @@ const App = () => (
                 </ProtectedRoute>
               } 
             />
+            
+            {/* Pages de rédaction de questionnaires */}
+            <Route 
+              path="/rediger/maintien-vie" 
+              element={
+                <ProtectedRoute>
+                  <QuestionnaireSection />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/rediger/maladie-avancee" 
+              element={
+                <ProtectedRoute>
+                  <QuestionnaireSection />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/rediger/gouts-peurs" 
+              element={
+                <ProtectedRoute>
+                  <QuestionnaireSection />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/rediger/personne-confiance" 
+              element={
+                <ProtectedRoute>
+                  <QuestionnaireSection />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/rediger/synthesis" 
+              element={
+                <ProtectedRoute>
+                  <QuestionnaireSection />
+                </ProtectedRoute>
+              } 
+            />
+            
             <Route 
               path="/carte-acces" 
               element={
