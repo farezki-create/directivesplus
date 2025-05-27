@@ -58,9 +58,9 @@ export const PersonalInfoFields = ({ form }: PersonalInfoFieldsProps) => {
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                <SelectItem value="male">Homme</SelectItem>
-                <SelectItem value="female">Femme</SelectItem>
-                <SelectItem value="other">Autre</SelectItem>
+                <SelectItem value="M">Homme</SelectItem>
+                <SelectItem value="F">Femme</SelectItem>
+                <SelectItem value="autre">Autre</SelectItem>
               </SelectContent>
             </Select>
             <FormMessage />
