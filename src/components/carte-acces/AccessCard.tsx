@@ -1,6 +1,6 @@
 
 import { QRCodeSVG } from "qrcode.react";
-import { CreditCard, AlertCircle, RefreshCw } from "lucide-react";
+import { CreditCard, AlertCircle, RefreshCw, Loader2 } from "lucide-react";
 
 interface AccessCardProps {
   firstName: string;
@@ -8,6 +8,8 @@ interface AccessCardProps {
   birthDate: string;
   codeAcces: string;
   qrCodeUrl: string;
+  isGenerating?: boolean;
+  isQrCodeValid?: boolean;
 }
 
 const AccessCard = ({
@@ -15,49 +17,31 @@ const AccessCard = ({
   lastName,
   birthDate,
   codeAcces,
-  qrCodeUrl
+  qrCodeUrl,
+  isGenerating = false,
+  isQrCodeValid = false
 }: AccessCardProps) => {
-  console.log("AccessCard - Rendering with props:", {
+  console.log("AccessCard - Rendering with enhanced props:", {
     firstName,
     lastName,
     birthDate,
     codeAcces,
-    qrCodeUrl,
+    qrCodeUrl: qrCodeUrl?.substring(0, 100) + (qrCodeUrl?.length > 100 ? '...' : ''),
     qrCodeUrlLength: qrCodeUrl?.length || 0,
-    urlType: qrCodeUrl?.includes('/pdf-viewer') ? 'viewer' : qrCodeUrl?.startsWith('http') && qrCodeUrl?.includes('.pdf') ? 'direct_pdf' : 'other'
-  });
-
-  // Validation robuste de l'URL
-  const isQrCodeValid = qrCodeUrl && qrCodeUrl.trim() !== '' && qrCodeUrl.length > 10 && (qrCodeUrl.startsWith('http://') || qrCodeUrl.startsWith('https://'));
-  
-  console.log("AccessCard - QR Code validation:", {
-    hasUrl: !!qrCodeUrl,
-    urlNotEmpty: qrCodeUrl?.trim() !== '',
-    urlLengthOk: qrCodeUrl?.length > 10,
-    startsWithHttp: qrCodeUrl?.startsWith('http'),
-    isValid: isQrCodeValid,
-    urlContent: qrCodeUrl?.substring(0, 100) + (qrCodeUrl?.length > 100 ? '...' : '')
+    isGenerating,
+    isQrCodeValid,
+    urlType: qrCodeUrl?.includes('/pdf-viewer') ? 'viewer' : 
+             qrCodeUrl?.startsWith('http') && qrCodeUrl?.includes('.pdf') ? 'direct_pdf' : 'other'
   });
 
   const handleQrCodeClick = () => {
-    if (isQrCodeValid) {
-      console.log("AccessCard - Opening URL directly:", qrCodeUrl);
+    if (isQrCodeValid && !isGenerating) {
+      console.log("AccessCard - Opening URL:", qrCodeUrl);
       try {
-        // Ouvrir dans un nouvel onglet pour les PDF directs
-        if (qrCodeUrl.includes('.pdf') || qrCodeUrl.includes('supabase')) {
-          window.open(qrCodeUrl, '_blank');
-        } else {
-          // Pour les autres liens, rediriger dans le même onglet
-          window.location.href = qrCodeUrl;
-        }
+        window.open(qrCodeUrl, '_blank');
       } catch (error) {
         console.error("AccessCard - Error opening URL:", error);
       }
-    } else {
-      console.error("AccessCard - Cannot open invalid QR URL:", {
-        url: qrCodeUrl,
-        isValid: isQrCodeValid
-      });
     }
   };
 
@@ -95,10 +79,17 @@ const AccessCard = ({
             </div>
             <div className="ml-4 flex-shrink-0">
               <div 
-                className={`bg-white rounded-lg p-3 transition-all ${isQrCodeValid ? 'cursor-pointer hover:bg-gray-50' : 'cursor-not-allowed'}`} 
+                className={`bg-white rounded-lg p-3 transition-all ${
+                  isQrCodeValid && !isGenerating ? 'cursor-pointer hover:bg-gray-50' : 'cursor-not-allowed'
+                }`} 
                 onClick={handleQrCodeClick}
               >
-                {isQrCodeValid ? (
+                {isGenerating ? (
+                  <div className="w-[85px] h-[85px] bg-white bg-opacity-30 rounded flex flex-col items-center justify-center">
+                    <Loader2 className="w-8 h-8 text-directiveplus-600 animate-spin mb-2" />
+                    <div className="text-xs text-directiveplus-600 font-medium">Génération...</div>
+                  </div>
+                ) : isQrCodeValid ? (
                   <QRCodeSVG 
                     value={qrCodeUrl} 
                     size={85} 
@@ -117,10 +108,12 @@ const AccessCard = ({
                 )}
               </div>
               <div className="text-xs text-center mt-1 opacity-75">
-                {isQrCodeValid ? (
+                {isGenerating ? (
+                  <span>Génération...</span>
+                ) : isQrCodeValid ? (
                   <span>Scanner pour PDF</span>
                 ) : (
-                  "Génération..."
+                  <span>Code non disponible</span>
                 )}
               </div>
             </div>
@@ -139,21 +132,14 @@ const AccessCard = ({
               </div>
             </div>
             <div className="text-xs opacity-90 text-right leading-relaxed ml-4">
-              <div className="font-medium">Accès direct PDF</div>
-              <div>Scanner le QR code</div>
+              <div className="font-medium">
+                {isGenerating ? "Préparation..." : isQrCodeValid ? "Accès direct PDF" : "En attente"}
+              </div>
+              <div>{isQrCodeValid ? "Scanner le QR code" : "QR code en cours"}</div>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Debug info en development */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="absolute top-2 left-2 text-xs bg-black bg-opacity-50 p-1 rounded space-y-1 max-w-[200px]">
-          <div>URL: {qrCodeUrl?.substring(0, 50)}...</div>
-          <div>Valid: {isQrCodeValid ? '✅' : '❌'}</div>
-          <div>Type: {qrCodeUrl?.includes('.pdf') ? 'PDF Direct' : qrCodeUrl?.includes('/pdf-viewer') ? 'Viewer' : 'Other'}</div>
-        </div>
-      )}
     </div>
   );
 };
