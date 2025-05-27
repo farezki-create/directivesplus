@@ -323,6 +323,104 @@ export type Database = {
         }
         Relationships: []
       }
+      health_news: {
+        Row: {
+          category: string | null
+          content: string
+          created_at: string
+          created_by: string | null
+          excerpt: string | null
+          featured_image_url: string | null
+          id: string
+          is_featured: boolean | null
+          publication_date: string | null
+          status: string | null
+          tags: string[] | null
+          title: string
+          updated_at: string
+          view_count: number | null
+        }
+        Insert: {
+          category?: string | null
+          content: string
+          created_at?: string
+          created_by?: string | null
+          excerpt?: string | null
+          featured_image_url?: string | null
+          id?: string
+          is_featured?: boolean | null
+          publication_date?: string | null
+          status?: string | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          view_count?: number | null
+        }
+        Update: {
+          category?: string | null
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          excerpt?: string | null
+          featured_image_url?: string | null
+          id?: string
+          is_featured?: boolean | null
+          publication_date?: string | null
+          status?: string | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          view_count?: number | null
+        }
+        Relationships: []
+      }
+      health_news_media: {
+        Row: {
+          caption: string | null
+          created_at: string
+          display_order: number | null
+          id: string
+          media_name: string
+          media_size: number | null
+          media_type: string
+          media_url: string
+          mime_type: string | null
+          news_id: string | null
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          media_name: string
+          media_size?: number | null
+          media_type: string
+          media_url: string
+          mime_type?: string | null
+          news_id?: string | null
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          media_name?: string
+          media_size?: number | null
+          media_type?: string
+          media_url?: string
+          mime_type?: string | null
+          news_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "health_news_media_news_id_fkey"
+            columns: ["news_id"]
+            isOneToOne: false
+            referencedRelation: "health_news"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       institution_access_codes: {
         Row: {
           contact_email: string | null

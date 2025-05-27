@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -29,6 +30,7 @@ import MentionsLegales from "./pages/MentionsLegales";
 import Confidentialite from "./pages/Confidentialite";
 import Soutenir from "./pages/Soutenir";
 import Admin from "./pages/Admin";
+import HealthNews from "./pages/HealthNews";
 import { Navigate } from "react-router-dom";
 
 const queryClient = new QueryClient();

@@ -46,6 +46,9 @@ const IndexHeader = () => {
             <a href="#testimonials" className="text-gray-600 hover:text-directiveplus-600 transition-colors">
               Témoignages
             </a>
+            <Link to="/actualites-sante" className="text-directiveplus-600 hover:text-directiveplus-700 font-medium transition-colors">
+              Actualités Santé
+            </Link>
             <Link to="/acces-institution" className="text-directiveplus-600 hover:text-directiveplus-700 font-medium transition-colors">
               Accès Institution
             </Link>
