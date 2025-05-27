@@ -1,5 +1,7 @@
+
 import { QRCodeSVG } from "qrcode.react";
 import { CreditCard, AlertCircle, RefreshCw } from "lucide-react";
+
 interface AccessCardProps {
   firstName: string;
   lastName: string;
@@ -7,6 +9,7 @@ interface AccessCardProps {
   codeAcces: string;
   qrCodeUrl: string;
 }
+
 const AccessCard = ({
   firstName,
   lastName,
@@ -21,42 +24,54 @@ const AccessCard = ({
     codeAcces,
     qrCodeUrl,
     qrCodeUrlLength: qrCodeUrl?.length || 0,
-    urlType: qrCodeUrl?.includes('/pdf-viewer') ? 'document' : 'directives'
+    urlType: qrCodeUrl?.includes('/pdf-viewer') ? 'viewer' : qrCodeUrl?.startsWith('http') && qrCodeUrl?.includes('.pdf') ? 'direct_pdf' : 'other'
   });
 
   // Validation robuste de l'URL
   const isQrCodeValid = qrCodeUrl && qrCodeUrl.trim() !== '' && qrCodeUrl.length > 10 && (qrCodeUrl.startsWith('http://') || qrCodeUrl.startsWith('https://'));
+  
   console.log("AccessCard - QR Code validation:", {
     hasUrl: !!qrCodeUrl,
     urlNotEmpty: qrCodeUrl?.trim() !== '',
     urlLengthOk: qrCodeUrl?.length > 10,
     startsWithHttp: qrCodeUrl?.startsWith('http'),
     isValid: isQrCodeValid,
-    urlContent: qrCodeUrl
+    urlContent: qrCodeUrl?.substring(0, 100) + (qrCodeUrl?.length > 100 ? '...' : '')
   });
+
   const handleQrCodeClick = () => {
     if (isQrCodeValid) {
-      console.log("AccessCard - Redirection vers:", qrCodeUrl);
+      console.log("AccessCard - Opening URL directly:", qrCodeUrl);
       try {
-        // Rediriger dans le même onglet au lieu d'ouvrir un nouvel onglet
-        window.location.href = qrCodeUrl;
+        // Ouvrir dans un nouvel onglet pour les PDF directs
+        if (qrCodeUrl.includes('.pdf') || qrCodeUrl.includes('supabase')) {
+          window.open(qrCodeUrl, '_blank');
+        } else {
+          // Pour les autres liens, rediriger dans le même onglet
+          window.location.href = qrCodeUrl;
+        }
       } catch (error) {
-        console.error("AccessCard - Error redirecting to URL:", error);
+        console.error("AccessCard - Error opening URL:", error);
       }
     } else {
-      console.error("AccessCard - Cannot redirect to invalid QR URL:", {
+      console.error("AccessCard - Cannot open invalid QR URL:", {
         url: qrCodeUrl,
         isValid: isQrCodeValid
       });
     }
   };
+
   const handleRefreshQrCode = () => {
     console.log("AccessCard - Refreshing page to regenerate QR code");
     window.location.reload();
   };
-  return <div id="access-card" className="w-[400px] h-[252px] bg-gradient-to-br from-directiveplus-600 to-directiveplus-800 rounded-2xl p-6 text-white shadow-2xl relative overflow-hidden" style={{
-    aspectRatio: '85.6/53.98'
-  }}>
+
+  return (
+    <div 
+      id="access-card" 
+      className="w-[400px] h-[252px] bg-gradient-to-br from-directiveplus-600 to-directiveplus-800 rounded-2xl p-6 text-white shadow-2xl relative overflow-hidden" 
+      style={{ aspectRatio: '85.6/53.98' }}
+    >
       {/* Pattern décoratif */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full -translate-y-16 translate-x-16"></div>
       <div className="absolute bottom-0 left-0 w-24 h-24 bg-white opacity-5 rounded-full translate-y-12 -translate-x-12"></div>
@@ -79,16 +94,34 @@ const AccessCard = ({
               <div className="text-xs opacity-90 font-medium">{birthDate}</div>
             </div>
             <div className="ml-4 flex-shrink-0">
-              <div className={`bg-white rounded-lg p-3 transition-all ${isQrCodeValid ? 'cursor-pointer hover:bg-gray-50' : 'cursor-not-allowed'}`} onClick={handleQrCodeClick}>
-                {isQrCodeValid ? <QRCodeSVG value={qrCodeUrl} size={85} level="M" fgColor="#000000" bgColor="#ffffff" includeMargin={false} /> : <div className="w-[85px] h-[85px] bg-white bg-opacity-30 rounded flex flex-col items-center justify-center">
+              <div 
+                className={`bg-white rounded-lg p-3 transition-all ${isQrCodeValid ? 'cursor-pointer hover:bg-gray-50' : 'cursor-not-allowed'}`} 
+                onClick={handleQrCodeClick}
+              >
+                {isQrCodeValid ? (
+                  <QRCodeSVG 
+                    value={qrCodeUrl} 
+                    size={85} 
+                    level="M" 
+                    fgColor="#000000" 
+                    bgColor="#ffffff" 
+                    includeMargin={false} 
+                  />
+                ) : (
+                  <div className="w-[85px] h-[85px] bg-white bg-opacity-30 rounded flex flex-col items-center justify-center">
                     <AlertCircle className="w-6 h-6 text-white opacity-70 mb-1" />
                     <div onClick={handleRefreshQrCode} className="cursor-pointer hover:opacity-100">
                       <RefreshCw className="w-4 h-4 text-white opacity-70" />
                     </div>
-                  </div>}
+                  </div>
+                )}
               </div>
               <div className="text-xs text-center mt-1 opacity-75">
-                {isQrCodeValid ? <span>Scanner</span> : "Génération..."}
+                {isQrCodeValid ? (
+                  <span>Scanner pour PDF</span>
+                ) : (
+                  "Génération..."
+                )}
               </div>
             </div>
           </div>
@@ -106,21 +139,23 @@ const AccessCard = ({
               </div>
             </div>
             <div className="text-xs opacity-90 text-right leading-relaxed ml-4">
-              <div className="font-medium">Accès sécurisé</div>
-              <div>Usage professionnel</div>
+              <div className="font-medium">Accès direct PDF</div>
+              <div>Scanner le QR code</div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Debug info en development */}
-      {process.env.NODE_ENV === 'development' && <div className="absolute top-2 left-2 text-xs bg-black bg-opacity-50 p-1 rounded space-y-1">
-          
-          
-          <div className="flex gap-1">
-            
-          </div>
-        </div>}
-    </div>;
+      {process.env.NODE_ENV === 'development' && (
+        <div className="absolute top-2 left-2 text-xs bg-black bg-opacity-50 p-1 rounded space-y-1 max-w-[200px]">
+          <div>URL: {qrCodeUrl?.substring(0, 50)}...</div>
+          <div>Valid: {isQrCodeValid ? '✅' : '❌'}</div>
+          <div>Type: {qrCodeUrl?.includes('.pdf') ? 'PDF Direct' : qrCodeUrl?.includes('/pdf-viewer') ? 'Viewer' : 'Other'}</div>
+        </div>
+      )}
+    </div>
+  );
 };
+
 export default AccessCard;

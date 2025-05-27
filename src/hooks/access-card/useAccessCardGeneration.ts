@@ -45,17 +45,17 @@ export const useAccessCardGeneration = () => {
 
       if (!pdfError && pdfDocs && pdfDocs.length > 0) {
         const firstDocument = pdfDocs[0];
-        // URL vers le premier document
-        const documentUrl = `${window.location.origin}/pdf-viewer?id=${firstDocument.id}`;
+        // URL DIRECTE vers le PDF (pas vers le viewer)
+        const directPdfUrl = firstDocument.file_path;
         
-        console.log("AccessCardGeneration - First document URL:", {
-          documentUrl,
+        console.log("AccessCardGeneration - Direct PDF URL:", {
+          directPdfUrl,
           documentId: firstDocument.id,
           fileName: firstDocument.file_name,
-          urlLength: documentUrl.length
+          urlLength: directPdfUrl.length
         });
         
-        setQrCodeUrl(documentUrl);
+        setQrCodeUrl(directPdfUrl);
         return;
       }
 
@@ -113,7 +113,8 @@ export const useAccessCardGeneration = () => {
     hasUser: !!user,
     hasProfile: !!profile,
     isUrlValid: isQrCodeValid,
-    origin: window.location.origin
+    origin: window.location.origin,
+    qrCodeType: qrCodeUrl?.includes('/pdf-viewer') ? 'viewer' : qrCodeUrl?.startsWith('http') ? 'direct_pdf' : 'fallback'
   });
 
   return {
