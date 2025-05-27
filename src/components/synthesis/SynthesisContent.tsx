@@ -47,17 +47,28 @@ const SynthesisContent = ({ profileData, userId }: SynthesisContentProps) => {
   }
 
   const onSave = async () => {
-    await handleSaveAndGeneratePDF(
-      freeText, 
-      {
-        profileData,
-        responses,
-        examplePhrases,
-        customPhrases,
-        trustedPersons,
-        medicalDocuments: [] // Pas de documents médicaux
-      }
-    );
+    console.log("=== DÉBUT ONSAVE DANS SYNTHESIS CONTENT ===");
+    console.log("ProfileData:", profileData);
+    console.log("Responses:", responses);
+    console.log("ExamplePhrases:", examplePhrases);
+    console.log("CustomPhrases:", customPhrases);
+    console.log("TrustedPersons:", trustedPersons);
+    console.log("FreeText:", freeText);
+    console.log("Signature:", !!signature);
+    
+    // Construire l'objet de données complet
+    const completeData = {
+      profileData,
+      responses,
+      examplePhrases,
+      customPhrases,
+      trustedPersons,
+      medicalDocuments: [] // Pas de documents médicaux pour l'instant
+    };
+    
+    console.log("Données complètes à transmettre:", completeData);
+    
+    await handleSaveAndGeneratePDF(freeText, completeData);
   };
 
   return (

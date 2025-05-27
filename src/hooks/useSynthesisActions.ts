@@ -46,24 +46,47 @@ export const useSynthesisActions = (userId?: string) => {
         signatureFromHook: signature
       });
 
+      // Log détaillé des réponses aux questionnaires
+      if (data?.responses) {
+        console.log("=== ANALYSE DÉTAILLÉE DES RÉPONSES ===");
+        console.log("Type des réponses:", typeof data.responses);
+        console.log("Réponses complètes:", JSON.stringify(data.responses, null, 2));
+        Object.entries(data.responses).forEach(([type, questions]) => {
+          console.log(`Questionnaire ${type}:`, questions);
+          if (typeof questions === 'object' && questions !== null) {
+            console.log(`  - Nombre de questions: ${Object.keys(questions).length}`);
+            Object.entries(questions).forEach(([qId, qData]) => {
+              console.log(`  - Question ${qId}:`, qData);
+            });
+          }
+        });
+      }
+
       // Vérifier si les données sont valides
       if (!data) {
         throw new Error("Données de directives manquantes");
       }
 
-      // Préparer les données pour le PDF
+      // Préparer les données pour le PDF avec validation
       const pdfData = {
         profileData: data.profileData,
-        responses: data.responses,
-        examplePhrases: data.examplePhrases,
-        customPhrases: data.customPhrases,
-        trustedPersons: data.trustedPersons,
-        freeText,
+        responses: data.responses || {}, // S'assurer qu'on a au moins un objet vide
+        examplePhrases: data.examplePhrases || [],
+        customPhrases: data.customPhrases || [],
+        trustedPersons: data.trustedPersons || [],
+        freeText: freeText || "",
         signature,
         userId: userId || user?.id,
       };
 
-      console.log("Données préparées pour le PDF:", pdfData);
+      console.log("=== DONNÉES PRÉPARÉES POUR LE PDF ===");
+      console.log("Profile data:", pdfData.profileData);
+      console.log("Responses data:", pdfData.responses);
+      console.log("Example phrases:", pdfData.examplePhrases);
+      console.log("Custom phrases:", pdfData.customPhrases);
+      console.log("Trusted persons:", pdfData.trustedPersons);
+      console.log("Free text length:", pdfData.freeText?.length || 0);
+      console.log("Has signature:", !!pdfData.signature);
 
       // Générer le PDF avec les données
       let pdfOutput;

@@ -108,34 +108,85 @@ export const renderTrustedPersons = (pdf: jsPDF, layout: PdfLayout, yPosition: n
 };
 
 export const renderQuestionnaires = (pdf: jsPDF, layout: PdfLayout, yPosition: number, responses: Record<string, any>, translateResponse: (response: string) => string): number => {
+  console.log("=== DÉBUT RENDU QUESTIONNAIRES DANS PDF ===");
+  console.log("Données des réponses reçues:", responses);
+  console.log("Type des réponses:", typeof responses);
+  console.log("Clés des réponses:", Object.keys(responses || {}));
+  
   if (!responses || Object.keys(responses).length === 0) {
+    console.log("Aucune réponse aux questionnaires trouvée");
     return yPosition;
   }
   
   pdf.setFontSize(14);
   pdf.setFont("helvetica", "bold");
-  pdf.text("QUESTIONNAIRES", 20, yPosition);
+  pdf.text("RÉPONSES AUX QUESTIONNAIRES", 20, yPosition);
   
   yPosition += layout.lineHeight * 1.5;
   
   pdf.setFontSize(12);
-  pdf.setFont("helvetica", "normal");
   
-  Object.entries(responses).forEach(([question, response]) => {
-    // Check if we need a new page
-    yPosition = checkPageBreak(pdf, layout, yPosition, layout.lineHeight * 3);
+  // Fonction pour obtenir le titre français du questionnaire
+  const getQuestionnaireTitle = (type: string) => {
+    switch (type) {
+      case 'avis-general':
+        return "Avis Général";
+      case 'maintien-vie':
+        return "Maintien en Vie";
+      case 'maladie-avancee':
+        return "Maladie Avancée";
+      case 'gouts-peurs':
+        return "Goûts et Préférences";
+      default:
+        return type.charAt(0).toUpperCase() + type.slice(1);
+    }
+  };
+  
+  // Parcourir chaque type de questionnaire
+  Object.entries(responses).forEach(([questionnaireType, questions]) => {
+    console.log(`Traitement du questionnaire: ${questionnaireType}`, questions);
     
-    // Format question
-    const questionLines = pdf.splitTextToSize(`Q: ${question}`, layout.contentWidth);
-    pdf.text(questionLines, 20, yPosition);
-    yPosition += questionLines.length * layout.lineHeight;
+    // Vérifier si nous avons des questions pour ce type
+    if (!questions || typeof questions !== 'object' || Object.keys(questions).length === 0) {
+      console.log(`Aucune question trouvée pour ${questionnaireType}`);
+      return;
+    }
     
-    // Format response
-    const translatedResponse = translateResponse(String(response));
-    pdf.text(`R: ${translatedResponse}`, 30, yPosition);
-    yPosition += layout.lineHeight * 1.5;
+    // Vérifier s'il faut une nouvelle page
+    yPosition = checkPageBreak(pdf, layout, yPosition, layout.lineHeight * 4);
+    
+    // Titre du questionnaire
+    pdf.setFont("helvetica", "bold");
+    pdf.text(getQuestionnaireTitle(questionnaireType), 20, yPosition);
+    yPosition += layout.lineHeight * 1.2;
+    
+    // Parcourir chaque question
+    Object.entries(questions).forEach(([questionId, questionData]: [string, any]) => {
+      console.log(`Question ${questionId}:`, questionData);
+      
+      // Vérifier s'il faut une nouvelle page
+      yPosition = checkPageBreak(pdf, layout, yPosition, layout.lineHeight * 3);
+      
+      // Afficher la question
+      pdf.setFont("helvetica", "bold");
+      const questionText = questionData.question || `Question ${questionId}`;
+      const questionLines = pdf.splitTextToSize(`Q: ${questionText}`, layout.contentWidth - 20);
+      pdf.text(questionLines, 25, yPosition);
+      yPosition += questionLines.length * layout.lineHeight;
+      
+      // Afficher la réponse
+      pdf.setFont("helvetica", "normal");
+      const responseText = questionData.response || "Pas de réponse";
+      const translatedResponse = translateResponse(responseText);
+      const responseLines = pdf.splitTextToSize(`R: ${translatedResponse}`, layout.contentWidth - 40);
+      pdf.text(responseLines, 35, yPosition);
+      yPosition += responseLines.length * layout.lineHeight + layout.lineHeight * 0.5;
+    });
+    
+    yPosition += layout.lineHeight; // Espacement entre les questionnaires
   });
   
+  console.log("=== FIN RENDU QUESTIONNAIRES DANS PDF ===");
   return yPosition + layout.lineHeight;
 };
 
