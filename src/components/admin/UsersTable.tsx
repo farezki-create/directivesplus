@@ -16,10 +16,9 @@ export function UsersTable({ users, onViewDetails }: UsersTableProps) {
       <TableHeader>
         <TableRow>
           <TableHead>Nom</TableHead>
-          <TableHead>Email</TableHead>
-          <TableHead>Rôle</TableHead>
-          <TableHead>Email vérifié</TableHead>
-          <TableHead>CGU acceptées</TableHead>
+          <TableHead>ID Utilisateur</TableHead>
+          <TableHead>Téléphone</TableHead>
+          <TableHead>Ville</TableHead>
           <TableHead>Date d'inscription</TableHead>
           <TableHead className="text-right">Actions</TableHead>
         </TableRow>
@@ -27,7 +26,7 @@ export function UsersTable({ users, onViewDetails }: UsersTableProps) {
       <TableBody>
         {users.length === 0 ? (
           <TableRow>
-            <TableCell colSpan={7} className="text-center py-10">
+            <TableCell colSpan={6} className="text-center py-10">
               Aucun utilisateur trouvé
             </TableCell>
           </TableRow>
@@ -35,17 +34,27 @@ export function UsersTable({ users, onViewDetails }: UsersTableProps) {
           users.map((user) => (
             <TableRow key={user.id}>
               <TableCell>
-                {user.firstName} {user.lastName}
+                <div>
+                  <div className="font-medium">
+                    {user.firstName} {user.lastName}
+                  </div>
+                  {user.birthDate && (
+                    <div className="text-sm text-gray-500">
+                      Né(e) le {new Date(user.birthDate).toLocaleDateString()}
+                    </div>
+                  )}
+                </div>
               </TableCell>
-              <TableCell>{user.email}</TableCell>
               <TableCell>
-                <UserRoleBadge role={user.role} />
+                <div className="font-mono text-xs">
+                  {user.id.substring(0, 8)}...
+                </div>
               </TableCell>
               <TableCell>
-                <StatusBadge status={user.emailVerified} />
+                {user.phoneNumber || "Non renseigné"}
               </TableCell>
               <TableCell>
-                <StatusBadge status={user.termsAccepted} />
+                {user.city ? `${user.city} ${user.postalCode}` : "Non renseigné"}
               </TableCell>
               <TableCell>
                 {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "N/A"}

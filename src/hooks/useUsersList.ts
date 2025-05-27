@@ -4,20 +4,6 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
 
-export interface SupabaseProfile {
-  id: string;
-  first_name: string;
-  last_name: string;
-  birth_date: string;
-  address: string;
-  city: string;
-  country: string;
-  created_at: string;
-  phone_number: string;
-  postal_code: string;
-  medical_access_code: string;
-}
-
 export interface UserProfile {
   id: string;
   email: string;
@@ -40,51 +26,44 @@ export const useUsersList = () => {
 
   const fetchUsers = useCallback(async () => {
     try {
-      const { data: authData, error: authError } = await supabase.auth.admin.listUsers();
+      console.log("🔍 Fetching users from profiles table...");
       
-      if (authError) {
-        throw authError;
-      }
-
-      const { data, error: profilesError } = await supabase
+      // Fetch from profiles table only - accessible data
+      const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('*');
+        .select('*')
+        .order('created_at', { ascending: false });
 
       if (profilesError) {
+        console.error("❌ Error fetching profiles:", profilesError);
         throw profilesError;
       }
 
-      // Explicitly type the profiles data to avoid the 'never' type issue
-      const profiles = data as SupabaseProfile[];
+      console.log("✅ Profiles fetched successfully:", profiles?.length || 0);
 
-      // Map the profiles with auth data
-      // Explicitly type the profile parameter to SupabaseProfile
-      const mappedUsers = profiles.map((profile: SupabaseProfile) => {
-        // Find the matching auth user
-        // Explicitly type the user parameter to avoid the 'never' type issue
-        const authUser = authData.users.find((user: any) => user.id === profile.id);
-        
-        return {
-          id: profile.id,
-          email: authUser?.email || '',
-          firstName: profile.first_name || '',
-          lastName: profile.last_name || '',
-          role: authUser?.user_metadata?.role || '',
-          birthDate: profile.birth_date || '',
-          createdAt: profile.created_at,
-          address: profile.address || '',
-          city: profile.city || '',
-          country: profile.country || '',
-          phoneNumber: profile.phone_number || '',
-          postalCode: profile.postal_code || '',
-          emailVerified: authUser?.email_confirmed_at ? true : false,
-          termsAccepted: authUser?.user_metadata?.terms_accepted || false,
-        };
-      });
+      // Map the profiles data to our UserProfile interface
+      const mappedUsers: UserProfile[] = (profiles || []).map((profile) => ({
+        id: profile.id,
+        email: '', // We can't access auth.users table, so email will be empty
+        firstName: profile.first_name || '',
+        lastName: profile.last_name || '',
+        role: 'user', // Default role since we can't access auth metadata
+        birthDate: profile.birth_date || '',
+        createdAt: profile.created_at,
+        address: profile.address || '',
+        city: profile.city || '',
+        country: profile.country || '',
+        phoneNumber: profile.phone_number || '',
+        postalCode: profile.postal_code || '',
+        emailVerified: false, // Can't determine without auth access
+        termsAccepted: false, // Can't determine without auth access
+      }));
 
+      console.log("✅ Users mapped successfully:", mappedUsers.length);
       setUserProfiles(mappedUsers);
       return mappedUsers;
     } catch (error: any) {
+      console.error("❌ Error in fetchUsers:", error);
       toast.error("Erreur lors du chargement des données utilisateur", {
         description: error.message,
       });
