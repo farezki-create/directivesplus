@@ -30,7 +30,15 @@ export const InstitutionAccessForm: React.FC = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     console.log(`Changement dans le champ ${name}:`, value);
-    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // Pour le champ professionalId, ne garder que les chiffres
+    if (name === 'professionalId') {
+      const numericValue = value.replace(/[^0-9]/g, '');
+      console.log(`Valeur numérique filtrée pour ${name}:`, numericValue);
+      setFormData(prev => ({ ...prev, [name]: numericValue }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
     
     if (institutionAccess.error && submitted) {
       setSubmitted(false);
@@ -131,19 +139,16 @@ export const InstitutionAccessForm: React.FC = () => {
           <Input
             id="professionalId"
             name="professionalId"
-            type="text"
-            inputMode="numeric"
-            pattern="[0-9]*"
             value={formData.professionalId}
             onChange={handleChange}
-            placeholder="RPPS, ADELI ou FINESS (chiffres uniquement)"
+            placeholder="Saisissez uniquement des chiffres"
             required
             disabled={isLoading}
-            autoComplete="off"
             maxLength={11}
+            autoComplete="off"
           />
           <p className="text-xs text-gray-500">
-            RPPS: 11 chiffres | ADELI/FINESS: 9 chiffres
+            RPPS: 11 chiffres | ADELI/FINESS: 9 chiffres (exemple: 12345678901)
           </p>
         </div>
 
