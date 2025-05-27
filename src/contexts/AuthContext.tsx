@@ -81,50 +81,53 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [user?.id, loadProfile]);
 
   const signOut = useCallback(async () => {
-    console.log("=== DÉBUT DU PROCESSUS DE DÉCONNEXION ===");
+    console.log("🚨 DÉBUT DU PROCESSUS DE DÉCONNEXION FORCÉE 🚨");
     
     try {
-      // 1. Nettoyage immédiat de l'état local AVANT tout
-      console.log("1. Nettoyage de l'état local...");
+      // 1. ARRÊT IMMÉDIAT - Marquer comme en cours de déconnexion
+      console.log("1. 🛑 Arrêt immédiat de l'état d'authentification");
       setIsLoading(true);
-      profileCache.current.clear();
-      setProfile(null);
+      
+      // 2. NETTOYAGE LOCAL IMMÉDIAT ET BRUTAL
+      console.log("2. 🧹 Nettoyage local brutal");
       setUser(null);
       setSession(null);
+      setProfile(null);
+      profileCache.current.clear();
       
-      // 2. Nettoyage du stockage navigateur
-      console.log("2. Nettoyage du stockage...");
+      // 3. NETTOYAGE DU STOCKAGE AVANT MÊME D'ESSAYER SUPABASE
+      console.log("3. 💾 Nettoyage du stockage navigateur");
       cleanupAuthState();
       
-      // 3. Tentative de déconnexion Supabase (mais on continue même si ça échoue)
-      console.log("3. Déconnexion Supabase...");
-      try {
-        await supabase.auth.signOut({ scope: 'global' });
-        console.log("Déconnexion Supabase réussie");
-      } catch (supabaseError) {
-        console.error('Erreur Supabase (on continue quand même):', supabaseError);
-      }
+      // 4. FORCER LA DÉCONNEXION SUPABASE (sans attendre le résultat)
+      console.log("4. ☁️ Tentative de déconnexion Supabase");
+      supabase.auth.signOut({ scope: 'global' }).catch((error) => {
+        console.warn("Erreur Supabase ignorée:", error);
+      });
       
-      // 4. Nettoyage final et redirection forcée
-      console.log("4. Redirection forcée...");
-      cleanupAuthState(); // Double nettoyage pour être sûr
+      // 5. DOUBLE NETTOYAGE POUR ÊTRE SÛR
+      console.log("5. 🔄 Double nettoyage sécurisé");
+      cleanupAuthState();
       
-      // Forcer le rechargement complet de la page vers /auth
-      console.log("=== FIN DU PROCESSUS - REDIRECTION ===");
-      window.location.replace('/auth');
+      // 6. REDIRECTION IMMÉDIATE ET FORCÉE
+      console.log("6. 🚀 REDIRECTION FORCÉE IMMÉDIATE");
+      setTimeout(() => {
+        window.location.href = '/auth';
+      }, 100); // Petit délai pour que les logs s'affichent
       
     } catch (error) {
-      console.error('Erreur durant la déconnexion:', error);
+      console.error('❌ Erreur critique durant la déconnexion:', error);
       
-      // En cas d'erreur, forcer quand même la déconnexion locale
+      // EN CAS D'ERREUR CRITIQUE : FORCER QUAND MÊME
+      console.log("🚨 FORÇAGE EN CAS D'ERREUR");
       cleanupAuthState();
-      setProfile(null);
       setUser(null);
       setSession(null);
+      setProfile(null);
       profileCache.current.clear();
       
-      // Redirection forcée même en cas d'erreur
-      window.location.replace('/auth');
+      // Redirection forcée même en cas d'erreur critique
+      window.location.href = '/auth';
     }
   }, []);
 
@@ -141,12 +144,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.log("Auth state changed:", event, session?.user?.id);
         
         if (event === 'SIGNED_OUT' || !session) {
-          console.log("Event SIGNED_OUT détecté - nettoyage complet");
+          console.log("🔥 Event SIGNED_OUT détecté - nettoyage complet immédiat");
           cleanupAuthState();
           setSession(null);
           setUser(null);
           setProfile(null);
           profileCache.current.clear();
+          setIsLoading(false);
+          
+          // Redirection immédiate vers auth si on n'y est pas déjà
+          if (window.location.pathname !== '/auth') {
+            console.log("🚀 Redirection auto vers /auth");
+            window.location.href = '/auth';
+          }
         } else if (session?.user) {
           setSession(session);
           setUser(session.user);

@@ -13,15 +13,21 @@ export default function ProfileFooter({ onLogout }: ProfileFooterProps) {
   const { signOut } = useAuth();
   
   const handleLogout = async () => {
+    console.log("🔴 ProfileFooter: Bouton déconnexion cliqué");
     setIsLoggingOut(true);
+    
     try {
       if (onLogout) {
+        console.log("🔄 ProfileFooter: Utilisation du onLogout custom");
         await onLogout();
       } else {
+        console.log("🔄 ProfileFooter: Utilisation du signOut du contexte");
         await signOut();
       }
     } catch (error) {
-      console.error('Erreur lors de la déconnexion:', error);
+      console.error('❌ ProfileFooter: Erreur lors de la déconnexion:', error);
+      // Même en cas d'erreur, forcer la redirection
+      window.location.href = '/auth';
     } finally {
       setIsLoggingOut(false);
     }
