@@ -31,6 +31,9 @@ import Confidentialite from "./pages/Confidentialite";
 import Soutenir from "./pages/Soutenir";
 import Admin from "./pages/Admin";
 import HealthNews from "./pages/HealthNews";
+import SecurityAudit from "./pages/SecurityAudit";
+import SecurityAuditReport from "./pages/SecurityAuditReport";
+import SecurityAuditDashboard from "./pages/SecurityAuditDashboard";
 import { Navigate } from "react-router-dom";
 
 const queryClient = new QueryClient();
@@ -54,7 +57,7 @@ const App = () => (
               } 
             />
             
-            {/* Admin Route */}
+            {/* Admin Routes */}
             <Route 
               path="/admin" 
               element={
@@ -62,6 +65,38 @@ const App = () => (
                   <Admin />
                 </ProtectedRoute>
               } 
+            />
+            
+            {/* Security Routes */}
+            <Route 
+              path="/security-audit" 
+              element={
+                <ProtectedRoute>
+                  <SecurityAudit />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/security-audit-report" 
+              element={
+                <ProtectedRoute>
+                  <SecurityAuditReport />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/security-dashboard" 
+              element={
+                <ProtectedRoute>
+                  <SecurityAuditDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            
+            {/* Health News Route */}
+            <Route 
+              path="/actualites-sante" 
+              element={<HealthNews />} 
             />
             
             {/* Community Route */}
@@ -132,7 +167,6 @@ const App = () => (
               } 
             />
             
-            {/* Pages de rédaction de questionnaires (anciennes routes) */}
             <Route 
               path="/rediger/maintien-vie" 
               element={
@@ -195,14 +229,12 @@ const App = () => (
             />
             <Route path="/pdf-viewer" element={<PdfViewer />} />
             
-            {/* Pages d'information */}
             <Route path="/en-savoir-plus" element={<EnSavoirPlus />} />
             <Route path="/commentaires" element={<Commentaires />} />
             <Route path="/mentions-legales" element={<MentionsLegales />} />
             <Route path="/confidentialite" element={<Confidentialite />} />
             <Route path="/soutenir" element={<Soutenir />} />
             
-            {/* Redirection pour les anciennes routes */}
             <Route path="/donnees-medicales" element={<Navigate to="/" replace />} />
             <Route path="/medical-access" element={<Navigate to="/" replace />} />
             <Route path="/dashboard" element={<Navigate to="/" replace />} />
