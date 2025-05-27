@@ -81,42 +81,50 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [user?.id, loadProfile]);
 
   const signOut = useCallback(async () => {
+    console.log("=== DÉBUT DU PROCESSUS DE DÉCONNEXION ===");
+    
     try {
-      console.log("Starting logout process...");
+      // 1. Nettoyage immédiat de l'état local AVANT tout
+      console.log("1. Nettoyage de l'état local...");
       setIsLoading(true);
-      
-      // Nettoyage immédiat de l'état local
       profileCache.current.clear();
       setProfile(null);
       setUser(null);
       setSession(null);
       
-      // Nettoyer l'état d'authentification
+      // 2. Nettoyage du stockage navigateur
+      console.log("2. Nettoyage du stockage...");
       cleanupAuthState();
       
-      // Déconnexion Supabase avec scope global
-      const { error } = await supabase.auth.signOut({ scope: 'global' });
-      if (error) {
-        console.error('Error during Supabase sign out:', error);
-        // Continuer même en cas d'erreur
+      // 3. Tentative de déconnexion Supabase (mais on continue même si ça échoue)
+      console.log("3. Déconnexion Supabase...");
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+        console.log("Déconnexion Supabase réussie");
+      } catch (supabaseError) {
+        console.error('Erreur Supabase (on continue quand même):', supabaseError);
       }
       
-      console.log("User signed out successfully");
+      // 4. Nettoyage final et redirection forcée
+      console.log("4. Redirection forcée...");
+      cleanupAuthState(); // Double nettoyage pour être sûr
       
-      // Redirection forcée après nettoyage
-      window.location.href = '/auth';
+      // Forcer le rechargement complet de la page vers /auth
+      console.log("=== FIN DU PROCESSUS - REDIRECTION ===");
+      window.location.replace('/auth');
       
     } catch (error) {
-      console.error('Error during sign out:', error);
+      console.error('Erreur durant la déconnexion:', error);
       
-      // Forcer la déconnexion locale en cas d'erreur
+      // En cas d'erreur, forcer quand même la déconnexion locale
       cleanupAuthState();
       setProfile(null);
       setUser(null);
       setSession(null);
-      window.location.href = '/auth';
-    } finally {
-      setIsLoading(false);
+      profileCache.current.clear();
+      
+      // Redirection forcée même en cas d'erreur
+      window.location.replace('/auth');
     }
   }, []);
 
@@ -133,6 +141,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.log("Auth state changed:", event, session?.user?.id);
         
         if (event === 'SIGNED_OUT' || !session) {
+          console.log("Event SIGNED_OUT détecté - nettoyage complet");
           cleanupAuthState();
           setSession(null);
           setUser(null);

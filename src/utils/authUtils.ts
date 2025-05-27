@@ -1,33 +1,46 @@
 
+
 /**
  * Helper function to clean up Supabase auth state
  * Removes all auth-related localStorage and sessionStorage items
  */
 export const cleanupAuthState = () => {
-  console.log("Cleaning up auth state...");
+  console.log("🧹 Nettoyage complet de l'état d'authentification...");
   
   try {
-    // Clean localStorage items
+    // Nettoyage de localStorage
     const localStorageKeys = Object.keys(localStorage);
+    console.log(`Found ${localStorageKeys.length} localStorage keys`);
+    
     localStorageKeys.forEach((key) => {
-      if (key.startsWith('supabase.auth.') || key.includes('sb-') || key.startsWith('supabase-auth-token')) {
-        console.log(`Removing localStorage key: ${key}`);
+      if (key.startsWith('supabase.auth.') || 
+          key.includes('sb-') || 
+          key.startsWith('supabase-auth-token') ||
+          key.includes('supabase')) {
+        console.log(`🗑️ Suppression localStorage: ${key}`);
         localStorage.removeItem(key);
       }
     });
     
-    // Clean sessionStorage items if available
+    // Nettoyage de sessionStorage
     if (typeof sessionStorage !== 'undefined') {
       const sessionStorageKeys = Object.keys(sessionStorage);
+      console.log(`Found ${sessionStorageKeys.length} sessionStorage keys`);
+      
       sessionStorageKeys.forEach((key) => {
-        if (key.startsWith('supabase.auth.') || key.includes('sb-') || key.startsWith('supabase-auth-token')) {
-          console.log(`Removing sessionStorage key: ${key}`);
+        if (key.startsWith('supabase.auth.') || 
+            key.includes('sb-') || 
+            key.startsWith('supabase-auth-token') ||
+            key.includes('supabase')) {
+          console.log(`🗑️ Suppression sessionStorage: ${key}`);
           sessionStorage.removeItem(key);
         }
       });
     }
+    
+    console.log("✅ Nettoyage d'état terminé");
   } catch (error) {
-    console.error('Error cleaning auth state:', error);
+    console.error('❌ Erreur lors du nettoyage:', error);
   }
 };
 
