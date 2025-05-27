@@ -2,19 +2,27 @@
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { LoaderCircle } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface ProfileFooterProps {
-  onLogout: () => Promise<void>;
+  onLogout?: () => Promise<void>;
 }
 
 export default function ProfileFooter({ onLogout }: ProfileFooterProps) {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { signOut } = useAuth();
   
   const handleLogout = async () => {
     setIsLoggingOut(true);
     try {
-      await onLogout();
+      if (onLogout) {
+        await onLogout();
+      } else {
+        await signOut();
+      }
     } catch (error) {
+      console.error('Erreur lors de la déconnexion:', error);
+    } finally {
       setIsLoggingOut(false);
     }
   };

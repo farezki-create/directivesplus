@@ -12,6 +12,15 @@ const Header = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      setIsMobileMenuOpen(false);
+    } catch (error) {
+      console.error('Erreur lors de la déconnexion:', error);
+    }
+  };
+
   return (
     <header className="bg-white sticky top-0 z-10 border-b shadow-sm">
       <div className="container mx-auto px-4 py-3">
@@ -57,7 +66,7 @@ const Header = () => {
                   Profil
                 </Link>
                 <button
-                  onClick={signOut}
+                  onClick={handleSignOut}
                   className="text-gray-700 hover:text-directiveplus-600 transition-colors"
                 >
                   Déconnexion
@@ -122,10 +131,7 @@ const Header = () => {
                   Profil
                 </Link>
                 <button
-                  onClick={() => {
-                    signOut();
-                    setIsMobileMenuOpen(false);
-                  }}
+                  onClick={handleSignOut}
                   className="text-gray-700 hover:text-directiveplus-600 transition-colors block text-left w-full"
                 >
                   Déconnexion
