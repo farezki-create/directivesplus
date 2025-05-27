@@ -9,6 +9,8 @@ import InstitutionalAccessSection from "@/components/sections/InstitutionalAcces
 import TestimonialsSection from "@/components/sections/TestimonialsSection";
 import CTASection from "@/components/sections/CTASection";
 import Footer from "@/components/Footer";
+import ChatAssistant from "@/components/ChatAssistant";
+import CommunitySection from "@/components/sections/CommunitySection";
 
 const Index = () => {
   const [mounted, setMounted] = useState(false);
@@ -28,10 +30,12 @@ const Index = () => {
       <DirectivesInfoSection />
       <FeaturesSection />
       <HowItWorksSection />
+      <CommunitySection />
       <InstitutionalAccessSection />
       <TestimonialsSection />
       <CTASection />
       <Footer />
+      <ChatAssistant />
     </div>
   );
 };

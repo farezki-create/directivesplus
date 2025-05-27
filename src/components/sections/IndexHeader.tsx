@@ -27,6 +27,9 @@ const IndexHeader = () => {
             <a href="#how-it-works" className="text-gray-600 hover:text-directiveplus-600 transition-colors">
               Comment ça marche
             </a>
+            <a href="#community" className="text-gray-600 hover:text-directiveplus-600 transition-colors">
+              Communauté
+            </a>
             <a href="#testimonials" className="text-gray-600 hover:text-directiveplus-600 transition-colors">
               Témoignages
             </a>
