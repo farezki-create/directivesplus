@@ -29,6 +29,7 @@ export const InstitutionAccessForm: React.FC = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    console.log(`Changement dans le champ ${name}:`, value);
     setFormData(prev => ({ ...prev, [name]: value }));
     
     if (institutionAccess.error && submitted) {
@@ -93,6 +94,7 @@ export const InstitutionAccessForm: React.FC = () => {
             placeholder="NOM"
             required
             disabled={isLoading}
+            autoComplete="family-name"
           />
         </div>
 
@@ -106,6 +108,7 @@ export const InstitutionAccessForm: React.FC = () => {
             placeholder="Prénom"
             required
             disabled={isLoading}
+            autoComplete="given-name"
           />
         </div>
 
@@ -119,6 +122,7 @@ export const InstitutionAccessForm: React.FC = () => {
             onChange={handleChange}
             required
             disabled={isLoading}
+            autoComplete="bday"
           />
         </div>
 
@@ -127,12 +131,20 @@ export const InstitutionAccessForm: React.FC = () => {
           <Input
             id="professionalId"
             name="professionalId"
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
             value={formData.professionalId}
             onChange={handleChange}
-            placeholder="RPPS, ADELI ou FINESS"
+            placeholder="RPPS, ADELI ou FINESS (chiffres uniquement)"
             required
             disabled={isLoading}
+            autoComplete="off"
+            maxLength={11}
           />
+          <p className="text-xs text-gray-500">
+            RPPS: 11 chiffres | ADELI/FINESS: 9 chiffres
+          </p>
         </div>
 
         <div className="space-y-2">
@@ -140,11 +152,13 @@ export const InstitutionAccessForm: React.FC = () => {
           <Input
             id="accessCode"
             name="accessCode"
+            type="text"
             value={formData.accessCode}
             onChange={handleChange}
             placeholder="Code généré par le patient"
             required
             disabled={isLoading}
+            autoComplete="off"
           />
         </div>
 
