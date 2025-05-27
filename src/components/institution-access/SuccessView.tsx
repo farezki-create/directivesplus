@@ -2,7 +2,8 @@
 import React, { useEffect } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Shield, CheckCircle } from "lucide-react";
+import { Shield, CheckCircle, FileText } from "lucide-react";
+import { useDossierStore } from "@/store/dossierStore";
 
 interface SuccessViewProps {
   patientData?: {
@@ -13,16 +14,18 @@ interface SuccessViewProps {
 }
 
 export const SuccessView: React.FC<SuccessViewProps> = ({ patientData }) => {
-  // Redirection automatique après 3 secondes
+  const { dossierActif } = useDossierStore();
+
+  // Redirection automatique vers les directives sans délai
   useEffect(() => {
-    const timer = setTimeout(() => {
-      console.log("Redirection automatique vers /mes-directives");
-      window.location.href = "/mes-directives";
-    }, 3000);
+    console.log("SuccessView - Redirection immédiate vers /mes-directives");
+    console.log("Dossier actif:", dossierActif);
+    
+    // Redirection immédiate
+    window.location.href = "/mes-directives";
+  }, [dossierActif]);
 
-    return () => clearTimeout(timer);
-  }, []);
-
+  // Affichage pendant le chargement de la redirection
   return (
     <div className="space-y-6">
       <Alert className="bg-green-50 border-green-200">
@@ -31,13 +34,13 @@ export const SuccessView: React.FC<SuccessViewProps> = ({ patientData }) => {
           <strong>Accès autorisé</strong><br />
           {patientData ? (
             <>
-              Vous avez maintenant accès aux directives anticipées de{" "}
+              Accès accordé aux directives anticipées de{" "}
               <strong>
                 {patientData.first_name} {patientData.last_name}
               </strong>
             </>
           ) : (
-            "Vous avez maintenant accès aux directives anticipées"
+            "Accès accordé aux directives anticipées"
           )}
         </AlertDescription>
       </Alert>
@@ -48,8 +51,9 @@ export const SuccessView: React.FC<SuccessViewProps> = ({ patientData }) => {
           <h3 className="text-lg font-semibold text-gray-900">
             Accès Institution Accordé
           </h3>
-          <p className="text-gray-600 mt-1">
-            Redirection automatique dans 3 secondes...
+          <p className="text-gray-600 mt-1 flex items-center justify-center gap-2">
+            <FileText className="h-4 w-4" />
+            Chargement des directives...
           </p>
         </div>
         
@@ -58,7 +62,8 @@ export const SuccessView: React.FC<SuccessViewProps> = ({ patientData }) => {
           className="bg-blue-600 hover:bg-blue-700"
           size="lg"
         >
-          Consulter les directives maintenant
+          <FileText className="w-4 h-4 mr-2" />
+          Accéder aux directives maintenant
         </Button>
       </div>
     </div>

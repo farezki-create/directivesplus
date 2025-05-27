@@ -6,7 +6,7 @@ import { useSearchParams } from "react-router-dom";
 import AuthenticatedDirectivesView from "@/components/directives/AuthenticatedDirectivesView";
 import DirectivesLoadingState from "@/components/documents/DirectivesLoadingState";
 import { MesDirectivesSharedAccess } from "@/components/documents/MesDirectivesSharedAccess";
-import { useDossierDocuments } from "@/hooks/directives/useDossierDocuments";
+import { useDossierDocuments } from "@/hooks/useDossierDocuments";
 import { useDossierStore } from "@/store/dossierStore";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -44,26 +44,11 @@ const MesDirectives = () => {
     handleUploadComplete,
   } = documentsData;
 
-  // Local state for preview document - utiliser string au lieu de Document
+  // Local state for preview document
   const [previewDocument, setPreviewDocument] = React.useState<string | null>(null);
 
   // Déterminer si l'accès doit être autorisé
   const shouldAllowAccess = (accessType === 'card' || hasInstitutionAccess) || isAuthenticated;
-
-  // Enlever l'ouverture automatique pour éviter le problème
-  // React.useEffect(() => {
-  //   if (shouldAllowAccess && documents.length > 0 && !previewDocument && !documentsLoading && !authLoading) {
-  //     const firstPdf = documents.find(doc => 
-  //       doc.content_type === 'application/pdf' || 
-  //       doc.file_name.toLowerCase().endsWith('.pdf')
-  //     );
-      
-  //     if (firstPdf) {
-  //       console.log("MesDirectives - Ouverture automatique du premier PDF en prévisualisation:", firstPdf);
-  //       setPreviewDocument(firstPdf.file_path);
-  //     }
-  //   }
-  // }, [shouldAllowAccess, documents, previewDocument, documentsLoading, authLoading]);
 
   console.log("MesDirectives - Auth state:", { 
     userId: user?.id, 
@@ -148,21 +133,27 @@ const MesDirectives = () => {
       <main className="container mx-auto py-8">
         <AuthenticatedDirectivesView
           user={hasInstitutionAccess && dossierActif ? { id: dossierActif.userId } : user}
-          profile={hasInstitutionAccess && dossierActif?.profileData ? dossierActif.profileData : profile}
+          profile={hasInstitutionAccess && dossierActif?.profileData ? {
+            first_name: dossierActif.profileData.first_name,
+            last_name: dossierActif.profileData.last_name,
+            birth_date: dossierActif.profileData.birth_date
+          } : profile}
           documents={documents}
-          showAddOptions={showAddOptions}
-          setShowAddOptions={setShowAddOptions}
-          onUploadComplete={handleUploadCompleteWrapper}
+          isLoading={documentsLoading}
+          onView={handleViewDocument}
           onDownload={handleDownload}
           onPrint={handlePrint}
-          onView={handleViewDocument}
+          onDelete={handleDeleteDocument}
+          onUploadComplete={handleUploadCompleteWrapper}
+          showAddOptions={showAddOptions}
+          setShowAddOptions={setShowAddOptions}
           documentToDelete={documentToDelete}
           setDocumentToDelete={setDocumentToDelete}
-          handleDelete={handleDeleteDocument}
           previewDocument={previewDocument}
           setPreviewDocument={setPreviewDocument}
-          handlePreviewDownload={handlePreviewDownload}
-          handlePreviewPrint={handlePreviewPrint}
+          onPreviewDownload={handlePreviewDownload}
+          onPreviewPrint={handlePreviewPrint}
+          hideUploadForInstitution={hasInstitutionAccess}
         />
       </main>
       <Footer />
