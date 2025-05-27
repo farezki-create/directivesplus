@@ -82,7 +82,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = useCallback(async () => {
     try {
-      console.log("Initiating secure sign out...");
+      console.log("Starting logout process...");
+      setIsLoading(true);
       
       // Nettoyage immédiat de l'état local
       profileCache.current.clear();
@@ -93,21 +94,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Nettoyer l'état d'authentification
       cleanupAuthState();
       
-      // Déconnexion Supabase
+      // Déconnexion Supabase avec scope global
       const { error } = await supabase.auth.signOut({ scope: 'global' });
       if (error) {
-        console.error('Error during sign out:', error);
+        console.error('Error during Supabase sign out:', error);
+        // Continuer même en cas d'erreur
       }
       
       console.log("User signed out successfully");
       
-      // Redirection après nettoyage
-      setTimeout(() => {
-        window.location.href = '/auth';
-      }, 100);
+      // Redirection forcée après nettoyage
+      window.location.href = '/auth';
       
     } catch (error) {
-      console.error('Error signing out:', error);
+      console.error('Error during sign out:', error);
       
       // Forcer la déconnexion locale en cas d'erreur
       cleanupAuthState();
