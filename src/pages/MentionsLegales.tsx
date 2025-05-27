@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
@@ -135,8 +134,7 @@ const MentionsLegales = () => {
             </div>
           )}
           
-          <div className="mt-10 border-t pt-6">
-            <h4 className="font-medium mb-2">Autres informations légales</h4>
+          <div className="mt-10">
             <DataProtectionLinks />
           </div>
         </div>
