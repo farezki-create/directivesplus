@@ -13,6 +13,7 @@ import DirectivesAccess from "./pages/DirectivesAccess";
 import MesDirectives from "./pages/MesDirectives";
 import Profile from "./pages/Profile";
 import AccesInstitution from "./pages/AccesInstitution";
+import Community from "./pages/Community";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PdfViewer from "./pages/PdfViewer";
 import QuestionnaireSection from "./components/QuestionnaireSection";
@@ -47,6 +48,16 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Rediger />
+                </ProtectedRoute>
+              } 
+            />
+            
+            {/* Community Route */}
+            <Route 
+              path="/community" 
+              element={
+                <ProtectedRoute>
+                  <Community />
                 </ProtectedRoute>
               } 
             />
