@@ -12,7 +12,14 @@ const DirectivesInfoSection = () => {
   const faqItems = [
     {
       question: "Qu'est-ce que les directives anticipées ?",
-      answer: "Les directives anticipées sont un document dans lequel vous exprimez vos souhaits concernant vos soins médicaux pour le cas où vous ne pourriez plus exprimer votre volonté. Elles permettent aux équipes soignantes de connaître vos préférences."
+      answer: (
+        <div className="space-y-3">
+          <p>Ce sont des instructions écrites que donne par avance une personne majeure pour le cas où elle serait dans l'incapacité d'exprimer sa volonté.</p>
+          <p>Ces directives anticipées expriment la volonté de la personne relative à sa fin de vie en ce qui concerne les conditions de la poursuite, de la limitation, de l'arrêt ou du refus de traitement ou d'actes médicaux.</p>
+          <p>Ces directives doivent être respectées par l'équipe médicale le moment venu.</p>
+          <p>Vous pouvez les réviser ou les annuler quand vous voulez, c'est l'écrit le plus récent qui fait foi.</p>
+        </div>
+      )
     },
     {
       question: "Qui peut rédiger des directives anticipées ?",
