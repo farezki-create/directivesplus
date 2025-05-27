@@ -1,6 +1,5 @@
 
 import FAQSection from "./directives-info/FAQSection";
-import FeaturesSection from "./directives-info/FeaturesSection";
 import CTACard from "./directives-info/CTACard";
 
 const DirectivesInfoSection = () => {
@@ -18,10 +17,7 @@ const DirectivesInfoSection = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-            <FAQSection />
-            <FeaturesSection />
-          </div>
+          <FAQSection />
 
           <CTACard />
         </div>
