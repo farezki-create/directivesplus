@@ -5,7 +5,20 @@ import { Building2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const IndexHeader = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    console.log("🔴 === IndexHeader: BOUTON DÉCONNEXION CLIQUÉ === 🔴");
+    
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('❌ IndexHeader: Erreur lors de la déconnexion:', error);
+      // Même en cas d'erreur, forcer la redirection radicale
+      console.log("🚨 IndexHeader: REDIRECTION DE SECOURS");
+      window.location.replace('/auth');
+    }
+  };
 
   return (
     <header className="border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
@@ -43,11 +56,12 @@ const IndexHeader = () => {
                 </Button>
               </Link>
             ) : (
-              <Link to="/rediger">
-                <Button className="bg-directiveplus-600 hover:bg-directiveplus-700">
-                  Mes Directives
-                </Button>
-              </Link>
+              <Button 
+                onClick={handleSignOut}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                Déconnexion
+              </Button>
             )}
           </nav>
         </div>
