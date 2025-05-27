@@ -54,6 +54,13 @@ const Header = () => {
               Accueil
             </Link>
             
+            <Link
+              to="/actualites-sante"
+              className="text-gray-700 hover:text-directiveplus-600 transition-colors"
+            >
+              Actualités Santé
+            </Link>
+            
             {isAuthenticated && (
               <Link
                 to="/community"
@@ -117,6 +124,13 @@ const Header = () => {
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Accueil
+            </Link>
+            <Link
+              to="/actualites-sante"
+              className="text-gray-700 hover:text-directiveplus-600 transition-colors block"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Actualités Santé
             </Link>
             {isAuthenticated && (
               <Link
