@@ -30,26 +30,6 @@ const Community = () => {
             Connectez-vous avec d'autres personnes, partagez vos expériences et trouvez du soutien 
             dans votre démarche de planification de soins de santé.
           </p>
-          
-          {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-2xl mx-auto">
-            <div className="text-center">
-              <div className="text-2xl font-bold">150+</div>
-              <div className="text-sm text-blue-100">Membres actifs</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold">500+</div>
-              <div className="text-sm text-blue-100">Messages</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold">24/7</div>
-              <div className="text-sm text-blue-100">Support</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold">100%</div>
-              <div className="text-sm text-blue-100">Bienveillant</div>
-            </div>
-          </div>
         </div>
       </div>
 
