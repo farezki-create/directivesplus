@@ -16,12 +16,13 @@ export const usePublicDirectivesAccess = (isAuthenticated: boolean) => {
   // Récupération des paramètres URL
   const urlParams = useUrlAccessParams();
   
-  // Gestion de l'accès par code d'institution
+  // Gestion de l'accès par code d'institution avec le nouveau paramètre professionalId
   const institutionAccess = useInstitutionCodeAccess(
     urlParams.code,
     urlParams.nom,
     urlParams.prenom,
     urlParams.naissance,
+    null, // professionalId - null car pas disponible dans les paramètres URL
     urlParams.hasAllParams
   );
 

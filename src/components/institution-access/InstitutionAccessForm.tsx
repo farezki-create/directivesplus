@@ -12,17 +12,19 @@ export const InstitutionAccessForm: React.FC = () => {
     lastName: "",
     firstName: "",
     birthDate: "",
-    accessCode: ""
+    accessCode: "",
+    professionalId: ""
   });
   const [submitted, setSubmitted] = useState(false);
 
-  // Utiliser le hook d'accès institution
+  // Utiliser le hook d'accès institution avec le nouveau paramètre professionalId
   const institutionAccess = useInstitutionCodeAccess(
     submitted ? formData.accessCode : null,
     submitted ? formData.lastName : null,
     submitted ? formData.firstName : null,
     submitted ? formData.birthDate : null,
-    Boolean(submitted && formData.lastName && formData.firstName && formData.birthDate && formData.accessCode)
+    submitted ? formData.professionalId : null,
+    Boolean(submitted && formData.lastName && formData.firstName && formData.birthDate && formData.accessCode && formData.professionalId)
   );
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -40,7 +42,7 @@ export const InstitutionAccessForm: React.FC = () => {
     setSubmitted(true);
   };
 
-  const isFormValid = formData.lastName && formData.firstName && formData.birthDate && formData.accessCode;
+  const isFormValid = formData.lastName && formData.firstName && formData.birthDate && formData.accessCode && formData.professionalId;
   const isLoading = submitted && institutionAccess.loading;
 
   // Si l'accès est accordé, afficher le message de succès
@@ -115,6 +117,19 @@ export const InstitutionAccessForm: React.FC = () => {
             type="date"
             value={formData.birthDate}
             onChange={handleChange}
+            required
+            disabled={isLoading}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="professionalId">Numéro d'identification professionnel</Label>
+          <Input
+            id="professionalId"
+            name="professionalId"
+            value={formData.professionalId}
+            onChange={handleChange}
+            placeholder="RPPS, ADELI ou FINESS"
             required
             disabled={isLoading}
           />
