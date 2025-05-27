@@ -38,19 +38,33 @@ export const InstitutionForm: React.FC<InstitutionFormProps> = ({
 
   const handleProfessionalIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    const validation = validateProfessionalId(value);
-    setProfessionalIdValidation(validation);
     
-    // Mettre à jour le formData avec le numéro nettoyé
+    // Permettre seulement les chiffres et espaces pour la saisie
+    const cleanValue = value.replace(/[^0-9\s]/g, '');
+    
+    // Créer un événement synthétique avec la valeur nettoyée
     const syntheticEvent = {
       ...e,
       target: {
         ...e.target,
-        value: validation.formattedNumber
+        value: cleanValue
       }
     } as React.ChangeEvent<HTMLInputElement>;
     
+    // Appeler le onChange parent avec la valeur nettoyée
     onChange(syntheticEvent);
+    
+    // Effectuer la validation seulement si la valeur a une longueur suffisante
+    if (cleanValue.length >= 9) {
+      const validation = validateProfessionalId(cleanValue);
+      setProfessionalIdValidation(validation);
+    } else {
+      setProfessionalIdValidation({
+        isValid: false,
+        type: null,
+        formattedNumber: cleanValue
+      });
+    }
   };
 
   return (
@@ -117,7 +131,7 @@ export const InstitutionForm: React.FC<InstitutionFormProps> = ({
           <div className="flex items-center gap-2 text-sm text-green-600">
             <CheckCircle className="h-4 w-4" />
             <span>
-              Numéro {professionalIdValidation.type} valide: {professionalIdValidation.formattedNumber}
+              Numéro {professionalIdValidation.type} valide: {formatProfessionalId(professionalIdValidation.formattedNumber, professionalIdValidation.type)}
             </span>
           </div>
         )}
