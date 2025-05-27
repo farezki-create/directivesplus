@@ -6,7 +6,7 @@ export interface HealthNews {
   excerpt?: string;
   featured_image_url?: string;
   category: string;
-  status: 'draft' | 'published' | 'archived';
+  status: string; // Changé de 'draft' | 'published' | 'archived' à string
   publication_date?: string;
   created_by?: string;
   created_at: string;
