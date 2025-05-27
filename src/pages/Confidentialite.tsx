@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -106,7 +105,10 @@ const Confidentialite = () => {
                 Les données ne sont jamais partagées avec des tiers sans votre accord explicite.
               </p>
               <p className="mb-2">
-                Vous avez la possibilité de générer un code de partage temporaire que vous pouvez transmettre à un professionnel de santé ou à une institution. Ce code permet d'accéder uniquement aux documents autorisés par vos soins.
+                Vous avez la possibilité de transmettre votre carte d'accès avec QR code pour consulter les directives anticipées à toute personne ou institution que vous jugerez utile. Vous pouvez aussi donner un exemplaire à votre personne de confiance ou votre médecin.
+              </p>
+              <p className="mb-2">
+                Vous avez la possibilité de générer un code de partage qui permet aux professionnels de santé d'accéder aux directives anticipées.
               </p>
             </section>
 
