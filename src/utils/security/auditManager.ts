@@ -6,7 +6,7 @@ export interface SecurityCheck {
   id: string;
   name: string;
   category: string;
-  status: 'pass' | 'fail' | 'warning';
+  status: 'pass' | 'fail' | 'warning' | 'pending';
   score: number;
   details?: string;
   fix?: string;
