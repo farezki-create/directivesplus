@@ -9,7 +9,7 @@ import { ArrowLeft } from "lucide-react";
 
 const MentionsLegales = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'cgu' | 'mentions'>('cgu');
+  const [activeTab, setActiveTab] = useState<'cgu' | 'mentions'>('mentions');
   
   return (
     <div className="min-h-screen flex flex-col">
@@ -29,27 +29,67 @@ const MentionsLegales = () => {
         
         <div className="max-w-4xl mx-auto">
           <h1 className="text-3xl font-bold mb-8 text-center text-directiveplus-800">
-            Informations Légales
+            MENTIONS LÉGALES – APPLICATION DIRECTIVESPLUS
           </h1>
           
           <div className="mb-6 flex border-b">
-            <button 
-              className={`px-4 py-2 font-medium ${activeTab === 'cgu' ? 'border-b-2 border-directiveplus-600 text-directiveplus-700' : 'text-gray-500'}`}
-              onClick={() => setActiveTab('cgu')}
-            >
-              Conditions Générales d'Utilisation
-            </button>
             <button 
               className={`px-4 py-2 font-medium ${activeTab === 'mentions' ? 'border-b-2 border-directiveplus-600 text-directiveplus-700' : 'text-gray-500'}`}
               onClick={() => setActiveTab('mentions')}
             >
               Mentions Légales
             </button>
+            <button 
+              className={`px-4 py-2 font-medium ${activeTab === 'cgu' ? 'border-b-2 border-directiveplus-600 text-directiveplus-700' : 'text-gray-500'}`}
+              onClick={() => setActiveTab('cgu')}
+            >
+              Conditions Générales d'Utilisation
+            </button>
           </div>
+          
+          {activeTab === 'mentions' && (
+            <div className="prose max-w-none">
+              <h2 className="text-xl font-semibold mb-4">Éditeur de l'application</h2>
+              <p>
+                L'application DirectivesPlus est éditée par M. A.F.,<br />
+                Médecin Anesthésiste-Réanimateur,<br />
+                Médecin en Éthique en Santé,<br />
+                Médecin en Douleur Chronique.<br />
+                📧 Email de contact : <a href="mailto:contact@directivesplus.fr" className="text-directiveplus-600 hover:underline">contact@directivesplus.fr</a>
+              </p>
+              
+              <h3 className="text-lg font-medium mt-6 mb-2">Responsable de la publication</h3>
+              <p>M. A.F., éditeur de l'application.</p>
+              
+              <h3 className="text-lg font-medium mt-6 mb-2">Hébergement</h3>
+              <p>
+                L'hébergement est assuré par la société Scalingo,<br />
+                certifiée HDS (Hébergeur de Données de Santé),<br />
+                15 avenue du Rhin, 67100 Strasbourg, France.<br />
+                🔗 Site : <a href="https://scalingo.com" target="_blank" rel="noopener noreferrer" className="text-directiveplus-600 hover:underline">https://scalingo.com</a>
+              </p>
+              
+              <h3 className="text-lg font-medium mt-6 mb-2">Propriété intellectuelle</h3>
+              <p>
+                Tous les éléments de l'application (contenus, graphismes, interface, textes, logos, marques, noms de domaine, base de données, architecture technique) sont protégés par les lois françaises et internationales relatives à la propriété intellectuelle et sont la propriété exclusive de l'éditeur ou de ses partenaires, sauf mention contraire.
+              </p>
+              <p>
+                Toute reproduction totale ou partielle de l'application ou de l'un de ses éléments, sans autorisation écrite préalable, est interdite.
+              </p>
+              
+              <h3 className="text-lg font-medium mt-6 mb-2">Responsabilité</h3>
+              <p>L'éditeur décline toute responsabilité :</p>
+              <ul className="list-disc pl-5 mb-4">
+                <li>En cas d'utilisation non conforme de l'application par les utilisateurs ou professionnels de santé,</li>
+                <li>En cas de perte ou de vol du code d'accès transmis à un tiers par l'utilisateur,</li>
+                <li>En cas de force majeure ou de dysfonctionnements techniques hors de son contrôle raisonnable.</li>
+              </ul>
+            </div>
+          )}
           
           {activeTab === 'cgu' && (
             <div className="prose max-w-none">
-              <h2 className="text-xl font-semibold mb-4">CONDITIONS GÉNÉRALES D'UTILISATION (CGU)</h2>
+              <h2 className="text-xl font-semibold mb-4">🔷 CONDITIONS GÉNÉRALES D'UTILISATION (CGU)</h2>
               
               <h3 className="text-lg font-medium mt-6 mb-2">1. Objet</h3>
               <p>Les présentes Conditions Générales d'Utilisation régissent l'accès et l'utilisation de l'application DirectivesPlus par tout utilisateur (patient ou professionnel de santé).</p>
@@ -92,50 +132,6 @@ const MentionsLegales = () => {
               
               <h3 className="text-lg font-medium mt-6 mb-2">9. Droit applicable</h3>
               <p>Les présentes CGU sont soumises au droit français. En cas de litige, une tentative de médiation sera proposée avant toute action judiciaire.</p>
-            </div>
-          )}
-          
-          {activeTab === 'mentions' && (
-            <div className="prose max-w-none">
-              <h2 className="text-xl font-semibold mb-4">MENTIONS LÉGALES</h2>
-              
-              <h3 className="text-lg font-medium mt-6 mb-2">Éditeur du service</h3>
-              <p>
-                <strong>DirectivesPlus</strong><br />
-                SAS au capital de 15 000 €<br />
-                Siège social : 123 Avenue de la Santé, 75001 Paris<br />
-                SIRET : 123 456 789 00012<br />
-                RCS Paris B 123 456 789<br />
-                Directeur de la publication : Jean Dupont<br />
-                Contact : <a href="mailto:mesdirectives@directivesplus.fr" className="text-directiveplus-600 hover:underline">mesdirectives@directivesplus.fr</a>
-              </p>
-              
-              <h3 className="text-lg font-medium mt-6 mb-2">Hébergement</h3>
-              <p>
-                Les données de santé sont hébergées par un hébergeur certifié de données de santé (HDS) conformément aux dispositions de l'article L.1111-8 du Code de la santé publique.
-              </p>
-              
-              <h3 className="text-lg font-medium mt-6 mb-2">Protection des données personnelles</h3>
-              <p>
-                Conformément au Règlement Général sur la Protection des Données (RGPD) et à la loi Informatique et Libertés, vous disposez d'un droit d'accès, de rectification, d'effacement et de portabilité de vos données personnelles.
-              </p>
-              <p>
-                Pour exercer ces droits ou pour toute question relative au traitement de vos données, vous pouvez contacter notre Délégué à la Protection des Données :
-              </p>
-              <p>
-                Délégué à la Protection des Données<br />
-                Email : dpo@directivesplus.fr<br />
-                Téléphone : 01 XX XX XX XX<br />
-                Adresse : XX rue XXXXX, XXXXX, France
-              </p>
-              <p>
-                Contact : <a href="mailto:mesdirectives@directivesplus.fr" className="text-directiveplus-600 hover:underline">mesdirectives@directivesplus.fr</a>
-              </p>
-              
-              <h3 className="text-lg font-medium mt-6 mb-2">Propriété intellectuelle</h3>
-              <p>
-                L'ensemble du contenu du site et de l'application (textes, images, logos, etc.) est protégé par le droit d'auteur. Toute reproduction non autorisée constitue une contrefaçon.
-              </p>
             </div>
           )}
           
