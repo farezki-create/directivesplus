@@ -28,9 +28,33 @@ export const useHealthNews = () => {
 
       if (error) throw error;
 
-      const newsWithMedia = data?.map(item => ({
-        ...item,
-        media: item.health_news_media || []
+      const newsWithMedia = data?.map((item: any) => ({
+        id: item.id,
+        title: item.title,
+        content: item.content,
+        excerpt: item.excerpt,
+        featured_image_url: item.featured_image_url,
+        category: item.category,
+        status: item.status,
+        publication_date: item.publication_date,
+        created_by: item.created_by,
+        created_at: item.created_at,
+        updated_at: item.updated_at,
+        view_count: item.view_count || 0,
+        tags: item.tags,
+        is_featured: item.is_featured || false,
+        media: item.health_news_media?.map((media: any) => ({
+          id: media.id,
+          news_id: media.news_id,
+          media_type: media.media_type,
+          media_url: media.media_url,
+          media_name: media.media_name,
+          media_size: media.media_size,
+          mime_type: media.mime_type,
+          caption: media.caption,
+          display_order: media.display_order || 0,
+          created_at: media.created_at
+        })) || []
       })) || [];
 
       setNews(newsWithMedia);

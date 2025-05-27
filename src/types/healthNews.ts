@@ -19,8 +19,8 @@ export interface HealthNews {
 
 export interface HealthNewsMedia {
   id: string;
-  news_id: string;
-  media_type: 'image' | 'video' | 'audio' | 'document';
+  news_id?: string;
+  media_type: string; // Changé de 'image' | 'video' | 'audio' | 'document' à string
   media_url: string;
   media_name: string;
   media_size?: number;
