@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Shield } from "lucide-react";
 import { InstitutionAccessFormComplete } from "@/components/institution-access/InstitutionAccessFormComplete";
+import ChatAssistant from "@/components/ChatAssistant";
 
 const AccesInstitution = () => {
   return (
@@ -53,6 +54,8 @@ const AccesInstitution = () => {
           <p>© 2025 DirectivesPlus. Tous droits réservés.</p>
         </div>
       </footer>
+      
+      <ChatAssistant />
     </div>
   );
 };
