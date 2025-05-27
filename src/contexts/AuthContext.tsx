@@ -109,24 +109,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log("5. 🔄 Double nettoyage sécurisé");
       cleanupAuthState();
       
-      // 6. REDIRECTION IMMÉDIATE ET FORCÉE
-      console.log("6. 🚀 REDIRECTION FORCÉE IMMÉDIATE");
+      // 6. REDIRECTION IMMÉDIATE ET FORCÉE VERS /auth
+      console.log("6. 🚀 REDIRECTION FORCÉE VERS /auth");
       setTimeout(() => {
         window.location.href = '/auth';
-      }, 100); // Petit délai pour que les logs s'affichent
+      }, 100);
       
     } catch (error) {
       console.error('❌ Erreur critique durant la déconnexion:', error);
       
-      // EN CAS D'ERREUR CRITIQUE : FORCER QUAND MÊME
-      console.log("🚨 FORÇAGE EN CAS D'ERREUR");
+      // EN CAS D'ERREUR CRITIQUE : FORCER QUAND MÊME LA REDIRECTION VERS /auth
+      console.log("🚨 FORÇAGE EN CAS D'ERREUR VERS /auth");
       cleanupAuthState();
       setUser(null);
       setSession(null);
       setProfile(null);
       profileCache.current.clear();
       
-      // Redirection forcée même en cas d'erreur critique
+      // Redirection forcée vers /auth même en cas d'erreur critique
       window.location.href = '/auth';
     }
   }, []);
@@ -152,11 +152,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           profileCache.current.clear();
           setIsLoading(false);
           
-          // Redirection immédiate vers auth si on n'y est pas déjà
-          if (window.location.pathname !== '/auth') {
-            console.log("🚀 Redirection auto vers /auth");
-            window.location.href = '/auth';
-          }
+          // PAS de redirection automatique ici - on laisse signOut() gérer ça
+          console.log("🔕 Pas de redirection auto - signOut() s'en charge");
         } else if (session?.user) {
           setSession(session);
           setUser(session.user);
