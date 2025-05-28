@@ -1,6 +1,0 @@
-
-*.md
-.vscode
-.git
-node_modules
-tests
