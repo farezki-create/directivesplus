@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -52,7 +51,7 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
     console.log("Téléchargement direct mobile pour:", document.file_name);
     
     // Créer un lien de téléchargement direct
-    const link = document.createElement('a');
+    const link = window.document.createElement('a');
     link.href = document.file_path;
     link.download = document.file_name;
     link.target = '_blank';
@@ -62,9 +61,9 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
       link.rel = 'noopener noreferrer';
     }
     
-    document.body.appendChild(link);
+    window.document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
+    window.document.body.removeChild(link);
   };
 
   const handleIframeLoad = () => {
