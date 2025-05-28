@@ -77,6 +77,28 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
     }
   };
 
+  // Construire l'URL du PDF avec paramètres optimisés pour affichage complet
+  const getPdfViewerUrl = (filePath: string) => {
+    if (filePath.startsWith('data:')) {
+      return filePath;
+    }
+    
+    // Paramètres PDF pour affichage complet et navigation
+    const pdfParams = new URLSearchParams({
+      'toolbar': '1',           // Afficher la barre d'outils
+      'navpanes': '1',          // Afficher le panneau de navigation
+      'scrollbar': '1',         // Afficher la barre de défilement
+      'view': 'FitV',           // Ajustement vertical (affiche toute la largeur)
+      'zoom': 'page-width',     // Zoom adapté à la largeur
+      'pagemode': 'thumbs',     // Afficher les miniatures des pages
+      'search': '',             // Permettre la recherche
+      'nameddest': '',          // Destination nommée
+      'page': '1'               // Commencer à la page 1
+    });
+    
+    return `${filePath}#${pdfParams.toString()}`;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header avec actions */}
@@ -121,7 +143,7 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
                   </h3>
                   <p className="text-sm text-gray-600 max-w-md">
                     Nous préparons l'affichage complet de votre document. 
-                    Cela peut prendre quelques instants selon la taille du fichier...
+                    Toutes les pages seront accessibles...
                   </p>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-gray-500">
@@ -153,29 +175,24 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
             </div>
           )}
 
-          {/* PDF iframe */}
-          {document.file_path.startsWith('data:') ? (
-            // PDF en data URL
-            <iframe
-              src={document.file_path}
-              className="w-full h-[85vh] border-0 rounded-lg"
-              title={document.file_name}
-              style={{ minHeight: '800px' }}
-              onLoad={handleIframeLoad}
-              onError={handleIframeError}
-            />
-          ) : (
-            // PDF par URL - Paramètres optimisés pour affichage complet
-            <iframe
-              src={`${document.file_path}#toolbar=1&navpanes=1&scrollbar=1&view=Fit&zoom=page-width`}
-              className="w-full h-[85vh] border-0 rounded-lg"
-              title={document.file_name}
-              style={{ minHeight: '800px' }}
-              allow="fullscreen"
-              onLoad={handleIframeLoad}
-              onError={handleIframeError}
-            />
-          )}
+          {/* PDF iframe avec paramètres optimisés */}
+          <iframe
+            src={getPdfViewerUrl(document.file_path)}
+            className="w-full h-[90vh] border-0 rounded-lg"
+            title={document.file_name}
+            style={{ minHeight: '900px' }}
+            allow="fullscreen"
+            sandbox="allow-same-origin allow-scripts allow-forms allow-downloads"
+            onLoad={handleIframeLoad}
+            onError={handleIframeError}
+          />
+        </div>
+
+        {/* Instructions pour la navigation */}
+        <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+          <p className="text-sm text-blue-800">
+            📄 <strong>Navigation :</strong> Utilisez la barre d'outils du PDF pour naviguer entre les pages, zoomer, ou rechercher du contenu dans le document.
+          </p>
         </div>
       </div>
     </div>
