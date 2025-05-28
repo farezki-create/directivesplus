@@ -3,7 +3,8 @@ import React from "react";
 import AppNavigation from "@/components/AppNavigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Shield } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Shield, ExternalLink } from "lucide-react";
 import { InstitutionAccessFormComplete } from "@/components/institution-access/InstitutionAccessFormComplete";
 import ChatAssistant from "@/components/ChatAssistant";
 
@@ -34,6 +35,37 @@ const AccesInstitution = () => {
               <InstitutionAccessFormComplete />
             </CardContent>
           </Card>
+          
+          {/* Section Questionnaire */}
+          <div className="mt-8">
+            <Card className="border-blue-200 bg-blue-50">
+              <CardHeader>
+                <CardTitle className="text-lg text-blue-800">
+                  Votre avis nous intéresse
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-blue-700 mb-4">
+                  En tant que professionnel de santé, votre retour d'expérience est précieux pour améliorer notre plateforme.
+                </p>
+                <Button 
+                  asChild
+                  variant="outline"
+                  className="border-blue-600 text-blue-600 hover:bg-blue-100"
+                >
+                  <a 
+                    href="https://framaforms.org/questionnaire-sur-lapplication-de-redaction-des-directives-anticipees-directivesplus-1746994695" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    Répondre au questionnaire
+                  </a>
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
           
           {/* Informations de sécurité */}
           <div className="mt-8">

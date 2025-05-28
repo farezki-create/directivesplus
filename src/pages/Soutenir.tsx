@@ -6,6 +6,9 @@ import Footer from "@/components/Footer";
 import SupportHero from "@/components/support/SupportHero";
 import VolunteerSection from "@/components/support/VolunteerSection";
 import { toast } from "@/hooks/use-toast";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ExternalLink } from "lucide-react";
 
 const Soutenir = () => {
   const [searchParams] = useSearchParams();
@@ -39,6 +42,42 @@ const Soutenir = () => {
       <Header />
       <main className="flex-grow">
         <SupportHero />
+        
+        {/* Section Questionnaire */}
+        <section className="py-12 bg-gray-50">
+          <div className="container mx-auto px-4">
+            <div className="max-w-2xl mx-auto">
+              <Card className="border-directiveplus-200">
+                <CardHeader className="text-center">
+                  <CardTitle className="text-2xl text-directiveplus-700">
+                    Donnez votre avis
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="text-center space-y-4">
+                  <p className="text-gray-600">
+                    Votre opinion nous intéresse ! Aidez-nous à améliorer DirectivesPlus en répondant à notre questionnaire.
+                  </p>
+                  <Button 
+                    asChild
+                    className="bg-directiveplus-600 hover:bg-directiveplus-700"
+                    size="lg"
+                  >
+                    <a 
+                      href="https://framaforms.org/questionnaire-sur-lapplication-de-redaction-des-directives-anticipees-directivesplus-1746994695" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2"
+                    >
+                      <ExternalLink className="h-5 w-5" />
+                      Répondre au questionnaire
+                    </a>
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </section>
+
         <VolunteerSection />
       </main>
       <Footer />
