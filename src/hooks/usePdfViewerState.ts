@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -30,10 +30,15 @@ export const usePdfViewerState = () => {
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
 
-  const documentId = searchParams.get('id');
-  const documentType = searchParams.get('type') || 'pdf';
-  const accessType = searchParams.get('access');
-  const userId = searchParams.get('user');
+  // Memoize search params to prevent unnecessary re-renders
+  const searchParamsData = useMemo(() => ({
+    documentId: searchParams.get('id'),
+    documentType: searchParams.get('type') || 'pdf',
+    accessType: searchParams.get('access'),
+    userId: searchParams.get('user')
+  }), [searchParams]);
+
+  const { documentId, documentType, accessType, userId } = searchParamsData;
 
   console.log("PdfViewerState - Init with params:", {
     documentId,
@@ -43,16 +48,13 @@ export const usePdfViewerState = () => {
     isExternalBrowser
   });
 
-  useEffect(() => {
-    if (documentId) {
-      loadDocument();
-    } else {
+  const loadDocument = useCallback(async () => {
+    if (!documentId) {
       setError("ID de document manquant");
       setLoading(false);
+      return;
     }
-  }, [documentId, documentType, retryCount]);
 
-  const loadDocument = async () => {
     try {
       setLoading(true);
       setError(null);
@@ -126,37 +128,41 @@ export const usePdfViewerState = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [documentId, documentType, accessType, retryCount]);
 
-  const handleRetry = () => {
+  useEffect(() => {
+    loadDocument();
+  }, [loadDocument]);
+
+  const handleRetry = useCallback(() => {
     setRetryCount(prev => prev + 1);
-  };
+  }, []);
 
-  const handleDownloadPdf = () => {
+  const handleDownloadPdf = useCallback(() => {
     if (document) {
       handleDownload(document.file_path, document.file_name);
     }
-  };
+  }, [document, handleDownload]);
 
-  const handlePrintPdf = () => {
+  const handlePrintPdf = useCallback(() => {
     if (document) {
       handlePrint(document.file_path, document.file_type);
     }
-  };
+  }, [document, handlePrint]);
 
-  const handleOpenExternal = () => {
+  const handleOpenExternal = useCallback(() => {
     if (document?.file_path) {
       window.open(document.file_path, '_blank');
     }
-  };
+  }, [document]);
 
-  const handleGoBack = () => {
+  const handleGoBack = useCallback(() => {
     if (accessType === 'card') {
       navigate('/mes-directives');
     } else {
       navigate(-1);
     }
-  };
+  }, [accessType, navigate]);
 
   return {
     documentId,

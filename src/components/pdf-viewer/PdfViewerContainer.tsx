@@ -23,14 +23,17 @@ const PdfViewerContainer = () => {
     handleDownload
   } = usePdfViewerState();
 
-  console.log("PdfViewerContainer - State:", {
-    documentId,
-    documentType,
-    isExternalBrowser,
-    hasDocument: !!document,
-    loading,
-    error
-  });
+  // Only log once when component mounts or critical state changes
+  React.useEffect(() => {
+    console.log("PdfViewerContainer - State:", {
+      documentId,
+      documentType,
+      isExternalBrowser,
+      hasDocument: !!document,
+      loading,
+      error
+    });
+  }, [documentId, document?.id, loading, error]);
 
   if (loading) {
     return <LoadingState retryCount={retryCount} />;

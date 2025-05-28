@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
@@ -37,14 +37,16 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
   const [retryCount, setRetryCount] = useState(0);
   const { isMobile } = useMobileDetection();
 
+  // Reset loading state when document changes
   useEffect(() => {
-    // Reset loading state when document changes
-    setPdfLoading(true);
-    setPdfError(false);
-    setRetryCount(0);
+    if (document?.file_path) {
+      setPdfLoading(true);
+      setPdfError(false);
+      setRetryCount(0);
+    }
   }, [document?.file_path]);
 
-  const handleDirectDownload = () => {
+  const handleDirectDownload = useCallback(() => {
     console.log("Téléchargement direct mobile pour:", document.file_name);
     
     // Créer un lien de téléchargement direct
@@ -61,41 +63,41 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
     window.document.body.appendChild(link);
     link.click();
     window.document.body.removeChild(link);
-  };
+  }, [document.file_name, document.file_path, isMobile]);
 
-  const handleIframeLoad = () => {
+  const handleIframeLoad = useCallback(() => {
     console.log("PDF iframe loaded");
     
-    // Délai pour permettre au PDF de se charger complètement
+    // Délai plus court pour améliorer l'expérience utilisateur
     setTimeout(() => {
       console.log("PDF chargé avec succès après délai");
       setPdfLoading(false);
       setPdfError(false);
-    }, 2000);
-  };
+    }, 1000);
+  }, []);
 
-  const handleIframeError = () => {
+  const handleIframeError = useCallback(() => {
     console.error("Erreur lors du chargement du PDF");
     setPdfLoading(false);
     setPdfError(true);
-  };
+  }, []);
 
-  const handleRetry = () => {
+  const handleRetry = useCallback(() => {
     console.log("Retry PDF loading");
     setPdfLoading(true);
     setPdfError(false);
     setRetryCount(prev => prev + 1);
-  };
+  }, []);
 
-  const handlePrint = () => {
+  const handlePrint = useCallback(() => {
     window.print();
-  };
+  }, []);
 
-  const handleOpenExternal = () => {
+  const handleOpenExternal = useCallback(() => {
     if (document.file_path) {
       window.open(document.file_path, '_blank');
     }
-  };
+  }, [document.file_path]);
 
   if (!document) {
     return (
