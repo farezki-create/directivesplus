@@ -10,6 +10,7 @@ import MobileAlert from "./MobileAlert";
 import PdfLoadingOverlay from "./PdfLoadingOverlay";
 import PdfErrorOverlay from "./PdfErrorOverlay";
 import PdfInstructions from "./PdfInstructions";
+import ChromeBlockedFallback from "./ChromeBlockedFallback";
 
 interface Document {
   id: string;
@@ -34,6 +35,7 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
 }) => {
   const [pdfLoading, setPdfLoading] = useState(true);
   const [pdfError, setPdfError] = useState(false);
+  const [isChromeBlocked, setIsChromeBlocked] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   const { isMobile } = useMobileDetection();
 
@@ -42,6 +44,7 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
     if (document?.file_path) {
       setPdfLoading(true);
       setPdfError(false);
+      setIsChromeBlocked(false);
       setRetryCount(0);
     }
   }, [document?.file_path]);
@@ -68,24 +71,46 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
   const handleIframeLoad = useCallback(() => {
     console.log("PDF iframe loaded");
     
-    // Délai plus court pour améliorer l'expérience utilisateur
+    // Vérifier si l'iframe est réellement chargée ou bloquée
     setTimeout(() => {
+      const iframe = window.document.querySelector(`iframe[title="${document.file_name}"]`) as HTMLIFrameElement;
+      if (iframe) {
+        try {
+          // Tenter d'accéder au contenu de l'iframe pour détecter un blocage
+          const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+          if (!iframeDoc || iframeDoc.title.includes('blocked') || iframeDoc.body?.innerText.includes('bloquée')) {
+            console.log("Chrome a bloqué l'affichage du PDF");
+            setIsChromeBlocked(true);
+            setPdfLoading(false);
+            return;
+          }
+        } catch (error) {
+          console.log("Erreur d'accès à l'iframe, probablement bloqué par Chrome");
+          setIsChromeBlocked(true);
+          setPdfLoading(false);
+          return;
+        }
+      }
+      
       console.log("PDF chargé avec succès après délai");
       setPdfLoading(false);
       setPdfError(false);
-    }, 1000);
-  }, []);
+      setIsChromeBlocked(false);
+    }, 2000);
+  }, [document.file_name]);
 
   const handleIframeError = useCallback(() => {
     console.error("Erreur lors du chargement du PDF");
     setPdfLoading(false);
     setPdfError(true);
+    setIsChromeBlocked(false);
   }, []);
 
   const handleRetry = useCallback(() => {
     console.log("Retry PDF loading");
     setPdfLoading(true);
     setPdfError(false);
+    setIsChromeBlocked(false);
     setRetryCount(prev => prev + 1);
   }, []);
 
@@ -97,6 +122,12 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
     if (document.file_path) {
       window.open(document.file_path, '_blank');
     }
+  }, [document.file_path]);
+
+  const handleUseBrowserPdfViewer = useCallback(() => {
+    // Ouvrir le PDF directement dans le navigateur sans iframe
+    const cleanUrl = document.file_path.split('#')[0]; // Enlever les paramètres PDF
+    window.open(cleanUrl, '_blank');
   }, [document.file_path]);
 
   if (!document) {
@@ -147,17 +178,28 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
             />
           )}
 
-          <iframe
-            key={`pdf-${document.id}-${retryCount}`}
-            src={getPdfUrlWithRetry(document.file_path, retryCount)}
-            className="w-full h-[90vh] border-0 rounded-lg"
-            title={document.file_name}
-            style={{ minHeight: '900px' }}
-            allow="fullscreen"
-            sandbox="allow-same-origin allow-scripts allow-forms allow-downloads"
-            onLoad={handleIframeLoad}
-            onError={handleIframeError}
-          />
+          {isChromeBlocked && (
+            <ChromeBlockedFallback
+              document={document}
+              onDownload={onDownload}
+              onOpenExternal={handleOpenExternal}
+              onUseBrowserViewer={handleUseBrowserPdfViewer}
+            />
+          )}
+
+          {!isChromeBlocked && (
+            <iframe
+              key={`pdf-${document.id}-${retryCount}`}
+              src={getPdfUrlWithRetry(document.file_path, retryCount)}
+              className="w-full h-[90vh] border-0 rounded-lg"
+              title={document.file_name}
+              style={{ minHeight: '900px' }}
+              allow="fullscreen"
+              sandbox="allow-same-origin allow-scripts allow-forms allow-downloads"
+              onLoad={handleIframeLoad}
+              onError={handleIframeError}
+            />
+          )}
         </div>
 
         <PdfInstructions isMobile={isMobile} />
