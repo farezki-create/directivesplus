@@ -1,5 +1,6 @@
 
-# Development files
 *.md
+.vscode
+.git
 node_modules
-src
+tests
