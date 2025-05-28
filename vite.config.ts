@@ -11,7 +11,11 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
-  ],
+    mode === 'development' && (async () => {
+      const { componentTagger } = await import('lovable-tagger');
+      return componentTagger();
+    })(),
+  ].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
