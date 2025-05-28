@@ -44,48 +44,51 @@ const ChromeBlockedFallback: React.FC<ChromeBlockedFallbackProps> = ({
           </h3>
           <p className="text-gray-600">
             Le navigateur a bloqué l'affichage de ce PDF pour des raisons de sécurité. 
-            Choisissez une option ci-dessous pour accéder à votre document.
+            Choisissez votre option préférée ci-dessous :
           </p>
         </div>
 
-        <div className="space-y-3">
-          <Button 
-            onClick={onUseBrowserViewer} 
-            className="w-full bg-blue-600 hover:bg-blue-700"
-            size="lg"
-          >
-            <Eye className="w-5 h-5 mr-2" />
-            Ouvrir avec le lecteur du navigateur
-          </Button>
+        <div className="space-y-4">
+          {/* Options principales : Navigateur ou Téléchargement */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <Button 
+              onClick={onUseBrowserViewer} 
+              className="w-full bg-blue-600 hover:bg-blue-700 h-14"
+              size="lg"
+            >
+              <ExternalLink className="w-5 h-5 mr-2" />
+              <div className="text-left">
+                <div className="font-medium">Ouvrir dans le navigateur</div>
+                <div className="text-xs opacity-90">Lecture en ligne</div>
+              </div>
+            </Button>
+            
+            <Button 
+              onClick={onDownload} 
+              className="w-full bg-green-600 hover:bg-green-700 h-14"
+              size="lg"
+            >
+              <Download className="w-5 h-5 mr-2" />
+              <div className="text-left">
+                <div className="font-medium">Télécharger</div>
+                <div className="text-xs opacity-90">Sauvegarder le fichier</div>
+              </div>
+            </Button>
+          </div>
 
-          <Button 
-            onClick={handleOpenWithGoogleDocs} 
-            className="w-full bg-purple-600 hover:bg-purple-700"
-            size="lg"
-          >
-            <Globe className="w-5 h-5 mr-2" />
-            Ouvrir avec Google Docs Viewer
-          </Button>
-          
-          <Button 
-            onClick={onDownload} 
-            variant="outline" 
-            className="w-full"
-            size="lg"
-          >
-            <Download className="w-5 h-5 mr-2" />
-            Télécharger le PDF
-          </Button>
-          
-          <Button 
-            onClick={onOpenExternal} 
-            variant="outline" 
-            className="w-full"
-            size="lg"
-          >
-            <ExternalLink className="w-5 h-5 mr-2" />
-            Ouvrir dans un nouvel onglet
-          </Button>
+          {/* Option alternative */}
+          <div className="pt-2 border-t border-gray-200">
+            <p className="text-sm text-gray-500 mb-2">Option alternative :</p>
+            <Button 
+              onClick={handleOpenWithGoogleDocs} 
+              variant="outline"
+              className="w-full"
+              size="lg"
+            >
+              <Globe className="w-5 h-5 mr-2" />
+              Ouvrir avec Google Docs Viewer
+            </Button>
+          </div>
         </div>
 
         <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg">

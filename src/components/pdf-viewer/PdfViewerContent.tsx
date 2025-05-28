@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ExternalLink, Download } from "lucide-react";
+import { ArrowLeft, ExternalLink, Download, Globe } from "lucide-react";
 import { useMobileDetection } from "@/hooks/useMobileDetection";
 import { getPdfUrlWithRetry } from "@/utils/pdfUrlBuilder";
 import PdfViewerHeader from "./PdfViewerHeader";
@@ -179,36 +179,51 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
       <div className="container mx-auto p-4">
         <MobileAlert isMobile={isMobile} isTablet={isTablet} />
 
-        {/* Options alternatives d'ouverture */}
+        {/* Options d'ouverture privilégiées */}
         {(showAlternativeOptions || isMobileOrTablet) && (
-          <div className="mb-4 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-            <h3 className="font-medium text-yellow-800 mb-3">Options d'ouverture alternatives</h3>
-            <div className="flex flex-wrap gap-2">
+          <div className="mb-4 p-6 bg-blue-50 rounded-lg border border-blue-200">
+            <h3 className="font-semibold text-blue-900 mb-4 text-center">
+              Choisissez votre option préférée
+            </h3>
+            
+            {/* Options principales */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <Button
                 onClick={handleOpenInNewTab}
-                variant="outline"
-                size="sm"
-                className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                className="bg-blue-600 hover:bg-blue-700 h-16 text-left"
+                size="lg"
               >
-                <ExternalLink className="w-4 h-4 mr-1" />
-                Nouvel onglet
+                <ExternalLink className="w-6 h-6 mr-3" />
+                <div>
+                  <div className="font-semibold">Ouvrir dans le navigateur</div>
+                  <div className="text-sm opacity-90">Lecture en ligne directe</div>
+                </div>
               </Button>
+              
               <Button
                 onClick={handleDirectDownload}
-                variant="outline"
-                size="sm"
-                className="text-green-600 border-green-300 hover:bg-green-50"
+                className="bg-green-600 hover:bg-green-700 h-16 text-left"
+                size="lg"
               >
-                <Download className="w-4 h-4 mr-1" />
-                Télécharger
+                <Download className="w-6 h-6 mr-3" />
+                <div>
+                  <div className="font-semibold">Télécharger</div>
+                  <div className="text-sm opacity-90">Sauvegarder le fichier</div>
+                </div>
               </Button>
+            </div>
+
+            {/* Option alternative */}
+            <div className="pt-3 border-t border-blue-200">
+              <p className="text-sm text-blue-700 mb-2">Option alternative :</p>
               <Button
                 onClick={handleOpenWithGoogleDocs}
                 variant="outline"
                 size="sm"
                 className="text-purple-600 border-purple-300 hover:bg-purple-50"
               >
-                Google Docs
+                <Globe className="w-4 h-4 mr-2" />
+                Google Docs Viewer
               </Button>
             </div>
           </div>
