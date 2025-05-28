@@ -1,10 +1,10 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 
 interface DirectivesPageHeaderProps {
-  onAddDocument: () => void;
+  onAddDocument?: () => void;
   onDeleteAllDocuments?: () => void;
   documentsCount?: number;
 }
@@ -41,14 +41,6 @@ const DirectivesPageHeader: React.FC<DirectivesPageHeaderProps> = ({
               Supprimer tout ({documentsCount})
             </Button>
           )}
-          <Button 
-            onClick={onAddDocument} 
-            className="flex items-center gap-2"
-            type="button"
-          >
-            <Plus className="h-4 w-4" />
-            Ajouter un document
-          </Button>
         </div>
       </div>
     </div>

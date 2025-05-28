@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Document } from "@/types/documents";
 import DirectivesPageHeader from "@/components/documents/DirectivesPageHeader";
@@ -133,7 +132,6 @@ const DirectivesPageContainer: React.FC<DirectivesPageContainerProps> = ({
   return (
     <div className="max-w-4xl mx-auto">
       <DirectivesPageHeader 
-        onAddDocument={() => setShowAddOptions(!showAddOptions)}
         onDeleteAllDocuments={userId ? () => setShowDeleteAllDialog(true) : undefined}
         documentsCount={documents.length}
       />
