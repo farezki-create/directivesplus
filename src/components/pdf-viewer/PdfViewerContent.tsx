@@ -27,23 +27,37 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
 }) => {
   const [pdfLoading, setPdfLoading] = useState(true);
   const [pdfError, setPdfError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     // Reset loading state when document changes
     setPdfLoading(true);
     setPdfError(false);
+    setRetryCount(0);
   }, [document?.file_path]);
 
   const handleIframeLoad = () => {
-    console.log("PDF chargé avec succès");
-    setPdfLoading(false);
-    setPdfError(false);
+    console.log("PDF iframe loaded");
+    
+    // Délai pour permettre au PDF de se charger complètement
+    setTimeout(() => {
+      console.log("PDF chargé avec succès après délai");
+      setPdfLoading(false);
+      setPdfError(false);
+    }, 2000); // Délai de 2 secondes pour le chargement complet
   };
 
   const handleIframeError = () => {
     console.error("Erreur lors du chargement du PDF");
     setPdfLoading(false);
     setPdfError(true);
+  };
+
+  const handleRetry = () => {
+    console.log("Retry PDF loading");
+    setPdfLoading(true);
+    setPdfError(false);
+    setRetryCount(prev => prev + 1);
   };
 
   if (!document) {
@@ -99,6 +113,12 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
     return `${filePath}#${pdfParams.toString()}`;
   };
 
+  // URL avec retry counter pour forcer le rechargement
+  const getPdfUrlWithRetry = (filePath: string) => {
+    const baseUrl = getPdfViewerUrl(filePath);
+    return retryCount > 0 ? `${baseUrl}&retry=${retryCount}` : baseUrl;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header avec actions */}
@@ -143,8 +163,13 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
                   </h3>
                   <p className="text-sm text-gray-600 max-w-md">
                     Nous préparons l'affichage complet de votre document. 
-                    Toutes les pages seront accessibles...
+                    Toutes les pages seront accessibles dans quelques instants...
                   </p>
+                  {retryCount > 0 && (
+                    <p className="text-xs text-orange-600">
+                      Tentative {retryCount + 1} de chargement en cours...
+                    </p>
+                  )}
                 </div>
                 <div className="flex items-center gap-2 text-xs text-gray-500">
                   <div className="h-2 w-2 bg-directiveplus-600 rounded-full animate-bounce"></div>
@@ -167,17 +192,28 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
                   <p className="text-sm text-gray-600 max-w-md">
                     Le document n'a pas pu être chargé. Veuillez réessayer ou utiliser le bouton "Ouvrir" ci-dessus.
                   </p>
+                  {retryCount < 3 && (
+                    <p className="text-xs text-blue-600">
+                      Nouvelle tentative automatique dans quelques secondes...
+                    </p>
+                  )}
                 </div>
-                <Button onClick={() => window.location.reload()} variant="outline">
-                  Réessayer
-                </Button>
+                <div className="flex gap-2">
+                  <Button onClick={handleRetry} variant="outline">
+                    Réessayer
+                  </Button>
+                  <Button onClick={handleOpenExternal} variant="default">
+                    Ouvrir dans un nouvel onglet
+                  </Button>
+                </div>
               </div>
             </div>
           )}
 
           {/* PDF iframe avec paramètres optimisés */}
           <iframe
-            src={getPdfViewerUrl(document.file_path)}
+            key={`pdf-${document.id}-${retryCount}`} // Force reload on retry
+            src={getPdfUrlWithRetry(document.file_path)}
             className="w-full h-[90vh] border-0 rounded-lg"
             title={document.file_name}
             style={{ minHeight: '900px' }}
@@ -192,6 +228,9 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
         <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
           <p className="text-sm text-blue-800">
             📄 <strong>Navigation :</strong> Utilisez la barre d'outils du PDF pour naviguer entre les pages, zoomer, ou rechercher du contenu dans le document.
+          </p>
+          <p className="text-xs text-blue-600 mt-1">
+            💡 <strong>Astuce :</strong> Si le document semble incomplet, attendez quelques secondes que toutes les pages se chargent, ou utilisez le bouton "Ouvrir" pour l'afficher dans un nouvel onglet.
           </p>
         </div>
       </div>
