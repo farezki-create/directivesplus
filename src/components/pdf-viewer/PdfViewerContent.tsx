@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ExternalLink, Download } from "lucide-react";
 import { useMobileDetection } from "@/hooks/useMobileDetection";
 import { getPdfUrlWithRetry } from "@/utils/pdfUrlBuilder";
 import PdfViewerHeader from "./PdfViewerHeader";
@@ -37,7 +37,8 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
   const [pdfError, setPdfError] = useState(false);
   const [isChromeBlocked, setIsChromeBlocked] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
-  const { isMobile } = useMobileDetection();
+  const [showAlternativeOptions, setShowAlternativeOptions] = useState(false);
+  const { isMobile, isTablet, isMobileOrTablet } = useMobileDetection();
 
   // Reset loading state when document changes
   useEffect(() => {
@@ -46,37 +47,44 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
       setPdfError(false);
       setIsChromeBlocked(false);
       setRetryCount(0);
+      setShowAlternativeOptions(false);
     }
   }, [document?.file_path]);
 
   const handleDirectDownload = useCallback(() => {
-    console.log("Téléchargement direct mobile pour:", document.file_name);
+    console.log("Téléchargement direct pour:", document.file_name);
     
-    // Créer un lien de téléchargement direct
     const link = window.document.createElement('a');
     link.href = document.file_path;
     link.download = document.file_name;
     link.target = '_blank';
-    
-    // Pour les appareils mobiles, on force l'ouverture
-    if (isMobile) {
-      link.rel = 'noopener noreferrer';
-    }
+    link.rel = 'noopener noreferrer';
     
     window.document.body.appendChild(link);
     link.click();
     window.document.body.removeChild(link);
-  }, [document.file_name, document.file_path, isMobile]);
+  }, [document.file_name, document.file_path]);
+
+  const handleOpenInNewTab = useCallback(() => {
+    console.log("Ouverture dans un nouvel onglet:", document.file_path);
+    const newWindow = window.open(document.file_path, '_blank', 'noopener,noreferrer');
+    if (!newWindow) {
+      setShowAlternativeOptions(true);
+    }
+  }, [document.file_path]);
+
+  const handleOpenWithGoogleDocs = useCallback(() => {
+    const googleDocsUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(document.file_path)}`;
+    window.open(googleDocsUrl, '_blank', 'noopener,noreferrer');
+  }, [document.file_path]);
 
   const handleIframeLoad = useCallback(() => {
     console.log("PDF iframe loaded");
     
-    // Vérifier si l'iframe est réellement chargée ou bloquée
     setTimeout(() => {
       const iframe = window.document.querySelector(`iframe[title="${document.file_name}"]`) as HTMLIFrameElement;
       if (iframe) {
         try {
-          // Tenter d'accéder au contenu de l'iframe pour détecter un blocage
           const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
           if (!iframeDoc || iframeDoc.title.includes('blocked') || iframeDoc.body?.innerText.includes('bloquée')) {
             console.log("Chrome a bloqué l'affichage du PDF");
@@ -85,25 +93,29 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
             return;
           }
         } catch (error) {
-          console.log("Erreur d'accès à l'iframe, probablement bloqué par Chrome");
+          console.log("Accès iframe bloqué, probablement par Chrome");
           setIsChromeBlocked(true);
           setPdfLoading(false);
           return;
         }
       }
       
-      console.log("PDF chargé avec succès après délai");
       setPdfLoading(false);
       setPdfError(false);
       setIsChromeBlocked(false);
-    }, 2000);
-  }, [document.file_name]);
+    }, isMobileOrTablet ? 3000 : 2000); // Plus de temps sur mobile/tablette
+  }, [document.file_name, isMobileOrTablet]);
 
   const handleIframeError = useCallback(() => {
     console.error("Erreur lors du chargement du PDF");
     setPdfLoading(false);
     setPdfError(true);
     setIsChromeBlocked(false);
+    
+    // Afficher automatiquement les options alternatives après une erreur
+    setTimeout(() => {
+      setShowAlternativeOptions(true);
+    }, 1000);
   }, []);
 
   const handleRetry = useCallback(() => {
@@ -111,6 +123,7 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
     setPdfLoading(true);
     setPdfError(false);
     setIsChromeBlocked(false);
+    setShowAlternativeOptions(false);
     setRetryCount(prev => prev + 1);
   }, []);
 
@@ -125,8 +138,7 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
   }, [document.file_path]);
 
   const handleUseBrowserPdfViewer = useCallback(() => {
-    // Ouvrir le PDF directement dans le navigateur sans iframe
-    const cleanUrl = document.file_path.split('#')[0]; // Enlever les paramètres PDF
+    const cleanUrl = document.file_path.split('#')[0];
     window.open(cleanUrl, '_blank');
   }, [document.file_path]);
 
@@ -165,7 +177,42 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
       />
 
       <div className="container mx-auto p-4">
-        {isMobile && <MobileAlert />}
+        <MobileAlert isMobile={isMobile} isTablet={isTablet} />
+
+        {/* Options alternatives d'ouverture */}
+        {(showAlternativeOptions || isMobileOrTablet) && (
+          <div className="mb-4 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+            <h3 className="font-medium text-yellow-800 mb-3">Options d'ouverture alternatives</h3>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                onClick={handleOpenInNewTab}
+                variant="outline"
+                size="sm"
+                className="text-blue-600 border-blue-300 hover:bg-blue-50"
+              >
+                <ExternalLink className="w-4 h-4 mr-1" />
+                Nouvel onglet
+              </Button>
+              <Button
+                onClick={handleDirectDownload}
+                variant="outline"
+                size="sm"
+                className="text-green-600 border-green-300 hover:bg-green-50"
+              >
+                <Download className="w-4 h-4 mr-1" />
+                Télécharger
+              </Button>
+              <Button
+                onClick={handleOpenWithGoogleDocs}
+                variant="outline"
+                size="sm"
+                className="text-purple-600 border-purple-300 hover:bg-purple-50"
+              >
+                Google Docs
+              </Button>
+            </div>
+          </div>
+        )}
 
         <div className="bg-white rounded-lg shadow relative">
           {pdfLoading && <PdfLoadingOverlay retryCount={retryCount} />}
@@ -193,7 +240,7 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
               src={getPdfUrlWithRetry(document.file_path, retryCount)}
               className="w-full h-[90vh] border-0 rounded-lg"
               title={document.file_name}
-              style={{ minHeight: '900px' }}
+              style={{ minHeight: isMobileOrTablet ? '70vh' : '900px' }}
               allow="fullscreen"
               sandbox="allow-same-origin allow-scripts allow-forms allow-downloads"
               onLoad={handleIframeLoad}
@@ -202,7 +249,7 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
           )}
         </div>
 
-        <PdfInstructions isMobile={isMobile} />
+        <PdfInstructions isMobile={isMobileOrTablet} />
       </div>
     </div>
   );

@@ -3,16 +3,46 @@ import { useState, useEffect } from "react";
 
 export const useMobileDetection = () => {
   const [isMobile, setIsMobile] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
 
   useEffect(() => {
-    const checkMobile = () => {
+    const checkDevice = () => {
       const userAgent = navigator.userAgent.toLowerCase();
-      const mobileKeywords = ['mobile', 'android', 'iphone', 'ipad', 'ipod', 'blackberry', 'windows phone'];
-      return mobileKeywords.some(keyword => userAgent.includes(keyword)) || window.innerWidth <= 768;
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      
+      // Détection mobile plus précise
+      const mobileKeywords = ['mobile', 'android', 'iphone', 'ipod', 'blackberry', 'windows phone'];
+      const tabletKeywords = ['ipad', 'tablet', 'kindle'];
+      
+      const isMobileUA = mobileKeywords.some(keyword => userAgent.includes(keyword));
+      const isTabletUA = tabletKeywords.some(keyword => userAgent.includes(keyword));
+      
+      // Détection par taille d'écran
+      const isMobileSize = width <= 768;
+      const isTabletSize = width > 768 && width <= 1024;
+      
+      // Détection tactile
+      const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      
+      setIsMobile(isMobileUA || (isMobileSize && isTouchDevice));
+      setIsTablet(isTabletUA || (isTabletSize && isTouchDevice));
     };
     
-    setIsMobile(checkMobile());
+    checkDevice();
+    
+    // Réévaluer lors du redimensionnement
+    const handleResize = () => {
+      setTimeout(checkDevice, 100);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  return { isMobile };
+  return { 
+    isMobile, 
+    isTablet, 
+    isMobileOrTablet: isMobile || isTablet 
+  };
 };
