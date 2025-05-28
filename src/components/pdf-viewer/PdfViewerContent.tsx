@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, Printer, ExternalLink, ArrowLeft, Loader2 } from "lucide-react";
+import { Download, Printer, ExternalLink, ArrowLeft, Loader2, Smartphone } from "lucide-react";
 
 interface Document {
   id: string;
@@ -28,6 +28,18 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
   const [pdfLoading, setPdfLoading] = useState(true);
   const [pdfError, setPdfError] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    // Détecter si c'est un appareil mobile
+    const checkMobile = () => {
+      const userAgent = navigator.userAgent.toLowerCase();
+      const mobileKeywords = ['mobile', 'android', 'iphone', 'ipad', 'ipod', 'blackberry', 'windows phone'];
+      return mobileKeywords.some(keyword => userAgent.includes(keyword)) || window.innerWidth <= 768;
+    };
+    
+    setIsMobile(checkMobile());
+  }, []);
 
   useEffect(() => {
     // Reset loading state when document changes
@@ -35,6 +47,25 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
     setPdfError(false);
     setRetryCount(0);
   }, [document?.file_path]);
+
+  const handleDirectDownload = () => {
+    console.log("Téléchargement direct mobile pour:", document.file_name);
+    
+    // Créer un lien de téléchargement direct
+    const link = document.createElement('a');
+    link.href = document.file_path;
+    link.download = document.file_name;
+    link.target = '_blank';
+    
+    // Pour les appareils mobiles, on force l'ouverture
+    if (isMobile) {
+      link.rel = 'noopener noreferrer';
+    }
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const handleIframeLoad = () => {
     console.log("PDF iframe loaded");
@@ -44,7 +75,7 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
       console.log("PDF chargé avec succès après délai");
       setPdfLoading(false);
       setPdfError(false);
-    }, 2000); // Délai de 2 secondes pour le chargement complet
+    }, 2000);
   };
 
   const handleIframeError = () => {
@@ -99,15 +130,15 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
     
     // Paramètres PDF pour affichage complet et navigation
     const pdfParams = new URLSearchParams({
-      'toolbar': '1',           // Afficher la barre d'outils
-      'navpanes': '1',          // Afficher le panneau de navigation
-      'scrollbar': '1',         // Afficher la barre de défilement
-      'view': 'FitV',           // Ajustement vertical (affiche toute la largeur)
-      'zoom': 'page-width',     // Zoom adapté à la largeur
-      'pagemode': 'thumbs',     // Afficher les miniatures des pages
-      'search': '',             // Permettre la recherche
-      'nameddest': '',          // Destination nommée
-      'page': '1'               // Commencer à la page 1
+      'toolbar': '1',
+      'navpanes': '1',
+      'scrollbar': '1',
+      'view': 'FitV',
+      'zoom': 'page-width',
+      'pagemode': 'thumbs',
+      'search': '',
+      'nameddest': '',
+      'page': '1'
     });
     
     return `${filePath}#${pdfParams.toString()}`;
@@ -133,6 +164,12 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
           </div>
           
           <div className="flex items-center gap-2">
+            {isMobile && (
+              <Button onClick={handleDirectDownload} className="bg-green-600 hover:bg-green-700">
+                <Smartphone className="w-4 h-4 mr-2" />
+                Télécharger
+              </Button>
+            )}
             <Button variant="outline" onClick={onDownload} disabled={pdfLoading}>
               <Download className="w-4 h-4 mr-2" />
               Télécharger
@@ -151,6 +188,21 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
 
       {/* Contenu du PDF */}
       <div className="container mx-auto p-4">
+        {/* Alerte spéciale mobile */}
+        {isMobile && (
+          <div className="mb-4 p-4 bg-green-50 rounded-lg border border-green-200">
+            <div className="flex items-center gap-3">
+              <Smartphone className="h-5 w-5 text-green-600" />
+              <div>
+                <h3 className="font-medium text-green-800">Mode Mobile Détecté</h3>
+                <p className="text-sm text-green-700 mt-1">
+                  Pour une meilleure expérience, utilisez le bouton "Télécharger" vert ci-dessus pour ouvrir le PDF dans votre application de lecture par défaut.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="bg-white rounded-lg shadow relative">
           {/* État de chargement */}
           {pdfLoading && (
@@ -232,6 +284,11 @@ const PdfViewerContent: React.FC<PdfViewerContentProps> = ({
           <p className="text-xs text-blue-600 mt-1">
             💡 <strong>Astuce :</strong> Si le document semble incomplet, attendez quelques secondes que toutes les pages se chargent, ou utilisez le bouton "Ouvrir" pour l'afficher dans un nouvel onglet.
           </p>
+          {isMobile && (
+            <p className="text-xs text-green-600 mt-1">
+              📱 <strong>Sur mobile :</strong> Utilisez le bouton vert "Télécharger" en haut pour une meilleure expérience sur téléphone.
+            </p>
+          )}
         </div>
       </div>
     </div>
