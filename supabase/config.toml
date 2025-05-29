@@ -6,3 +6,6 @@ verify_jwt = false
 
 [functions.accessSharedProfile]
 verify_jwt = false
+
+[functions.send-otp-email]
+verify_jwt = false

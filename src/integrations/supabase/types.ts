@@ -536,6 +536,21 @@ export type Database = {
           },
         ]
       }
+      mailer_config: {
+        Row: {
+          config: Json | null
+          id: number
+        }
+        Insert: {
+          config?: Json | null
+          id?: never
+        }
+        Update: {
+          config?: Json | null
+          id?: never
+        }
+        Relationships: []
+      }
       medical_data: {
         Row: {
           access_code: string
