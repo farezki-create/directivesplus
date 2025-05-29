@@ -22,23 +22,47 @@ const AuthPage = () => {
   const [pendingEmail, setPendingEmail] = useState("");
   const [redirectInProgress, setRedirectInProgress] = useState(false);
   
-  // Check for password reset token in URL - support both access_token and token
-  const accessToken = searchParams.get('access_token');
+  // Check for email confirmation in URL hash or search params
+  const accessToken = searchParams.get('access_token') || location.hash.match(/access_token=([^&]+)/)?.[1];
   const token = searchParams.get('token');
-  const type = searchParams.get('type');
+  const type = searchParams.get('type') || location.hash.match(/type=([^&]+)/)?.[1];
   const resetToken = accessToken || token;
+  
+  // Handle email confirmation
+  useEffect(() => {
+    if (accessToken && type === 'signup') {
+      console.log("Email confirmation detected, processing...");
+      
+      // Clear URL parameters to clean up the URL
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, cleanUrl);
+      
+      // Show success message
+      toast({
+        title: "Email confirmé !",
+        description: "Votre email a été confirmé avec succès. Redirection vers votre espace...",
+      });
+      
+      // Redirect to the main app after a short delay
+      setTimeout(() => {
+        navigate("/rediger", { replace: true });
+      }, 2000);
+      
+      return;
+    }
+  }, [accessToken, type, navigate]);
   
   // Redirect if already authenticated
   useEffect(() => {
-    if (!isLoading && isAuthenticated && !redirectInProgress) {
+    if (!isLoading && isAuthenticated && !redirectInProgress && !accessToken) {
       const from = location.state?.from || "/rediger";
       navigate(from, { replace: true });
     }
-  }, [isAuthenticated, isLoading, navigate, location.state, redirectInProgress]);
+  }, [isAuthenticated, isLoading, navigate, location.state, redirectInProgress, accessToken]);
 
   // Handle password reset flow - check for both recovery and password_recovery types
   useEffect(() => {
-    if (resetToken && (type === 'recovery' || type === 'password_recovery')) {
+    if (resetToken && (type === 'recovery' || type === 'password_recovery') && type !== 'signup') {
       console.log("Password reset token detected:", { resetToken, type });
       setShowPasswordReset(true);
       setShowForgotPassword(false);
@@ -97,6 +121,31 @@ const AuthPage = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-directiveplus-600"></div>
+      </div>
+    );
+  }
+
+  // Show confirmation message if email confirmation is in progress
+  if (accessToken && type === 'signup') {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        
+        <main className="container mx-auto px-4 py-8">
+          <div className="max-w-md mx-auto text-center">
+            <div className="bg-white p-8 rounded-lg shadow-sm border">
+              <div className="flex justify-center mb-4">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-directiveplus-600"></div>
+              </div>
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                Confirmation en cours...
+              </h2>
+              <p className="text-gray-600">
+                Votre email a été confirmé avec succès. Redirection vers votre espace dans quelques instants.
+              </p>
+            </div>
+          </div>
+        </main>
       </div>
     );
   }
