@@ -26,7 +26,7 @@ const IndexHeader = () => {
           <div className="flex items-center space-x-2">
             <div className="p-2">
               <img 
-                src="/lovable-uploads/2d4f9812-b93d-4ded-8db3-3557fd6203e5.png" 
+                src="/lovable-uploads/b5d06491-daf5-4c47-84f7-6920d23506ff.png" 
                 alt="DirectivesPlus" 
                 className="h-16 w-auto"
               />

@@ -16,6 +16,13 @@ const AccesInstitution = () => {
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-8">
+            <div className="flex justify-center mb-6">
+              <img 
+                src="/lovable-uploads/b5d06491-daf5-4c47-84f7-6920d23506ff.png" 
+                alt="DirectivesPlus" 
+                className="h-24 w-auto"
+              />
+            </div>
             <h1 className="text-3xl font-bold text-gray-900 mb-4">
               Accès aux directives anticipées
             </h1>

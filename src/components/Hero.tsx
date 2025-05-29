@@ -24,6 +24,15 @@ const Hero = () => {
   return <section className="bg-gradient-to-b from-white to-directiveplus-50 section-padding">
       <div className="container mx-auto container-padding">
         <div className="flex flex-col items-center text-center">
+          {/* Logo */}
+          <div className="mb-8">
+            <img 
+              src="/lovable-uploads/b5d06491-daf5-4c47-84f7-6920d23506ff.png" 
+              alt="DirectivesPlus" 
+              className="h-32 w-auto mx-auto"
+            />
+          </div>
+          
           {/* Text Content */}
           <div className="max-w-3xl mx-auto animate-fade-in">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4 leading-tight">

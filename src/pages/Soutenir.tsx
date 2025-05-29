@@ -49,6 +49,13 @@ const Soutenir = () => {
             <div className="max-w-2xl mx-auto">
               <Card className="border-directiveplus-200">
                 <CardHeader className="text-center">
+                  <div className="flex justify-center mb-4">
+                    <img 
+                      src="/lovable-uploads/b5d06491-daf5-4c47-84f7-6920d23506ff.png" 
+                      alt="DirectivesPlus" 
+                      className="h-16 w-auto"
+                    />
+                  </div>
                   <CardTitle className="text-2xl text-directiveplus-700">
                     Donnez votre avis
                   </CardTitle>
