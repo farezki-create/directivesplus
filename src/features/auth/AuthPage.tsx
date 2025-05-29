@@ -28,10 +28,10 @@ const AuthPage = () => {
   const type = searchParams.get('type') || location.hash.match(/type=([^&]+)/)?.[1];
   const resetToken = accessToken || token;
   
-  // Handle email confirmation
+  // Handle email confirmation via URL (email link clicked)
   useEffect(() => {
     if (accessToken && type === 'signup') {
-      console.log("Email confirmation detected, processing...");
+      console.log("🔗 Email confirmation via URL detected, processing...");
       
       // Clear URL parameters to clean up the URL
       const cleanUrl = window.location.pathname;
@@ -52,32 +52,37 @@ const AuthPage = () => {
     }
   }, [accessToken, type, navigate]);
   
-  // Redirect if already authenticated
+  // Redirect if already authenticated (but not during email confirmation)
   useEffect(() => {
     if (!isLoading && isAuthenticated && !redirectInProgress && !accessToken) {
+      console.log("🔄 User already authenticated, redirecting...");
       const from = location.state?.from || "/rediger";
       navigate(from, { replace: true });
     }
   }, [isAuthenticated, isLoading, navigate, location.state, redirectInProgress, accessToken]);
 
-  // Handle password reset flow - check for both recovery and password_recovery types
+  // Handle password reset flow
   useEffect(() => {
     if (resetToken && (type === 'recovery' || type === 'password_recovery')) {
-      console.log("Password reset token detected:", { resetToken, type });
+      console.log("🔑 Password reset token detected:", { resetToken, type });
       setShowPasswordReset(true);
       setShowForgotPassword(false);
       setShowEmailVerification(false);
     }
   }, [resetToken, type]);
 
+  // Handler when user completes registration and needs OTP verification
   const handleVerificationSent = (email: string) => {
+    console.log("📧 Registration completed, showing OTP verification for:", email);
     setPendingEmail(email);
     setShowEmailVerification(true);
     setShowForgotPassword(false);
     setShowPasswordReset(false);
   };
 
+  // Handler when OTP verification is completed successfully
   const handleVerificationComplete = () => {
+    console.log("✅ OTP verification completed successfully");
     setShowEmailVerification(false);
     toast({
       title: "Compte activé",
@@ -88,17 +93,20 @@ const AuthPage = () => {
   };
 
   const handleBackToRegister = () => {
+    console.log("⬅️ Going back to registration form");
     setShowEmailVerification(false);
     setPendingEmail("");
   };
 
   const handleForgotPassword = () => {
+    console.log("🔒 Showing forgot password form");
     setShowForgotPassword(true);
     setShowEmailVerification(false);
     setShowPasswordReset(false);
   };
 
   const handleBackToLogin = () => {
+    console.log("⬅️ Going back to login form");
     setShowForgotPassword(false);
     setShowPasswordReset(false);
     setShowEmailVerification(false);
@@ -107,6 +115,7 @@ const AuthPage = () => {
   };
 
   const handlePasswordResetSuccess = () => {
+    console.log("✅ Password reset completed successfully");
     setShowPasswordReset(false);
     setShowForgotPassword(false);
     // Clear URL parameters
@@ -150,7 +159,9 @@ const AuthPage = () => {
     );
   }
 
+  // Show OTP verification page (when user registers and needs to enter 6-digit code)
   if (showEmailVerification) {
+    console.log("📱 Rendering OTP verification page for email:", pendingEmail);
     return (
       <EmailVerificationView
         email={pendingEmail}
@@ -160,13 +171,17 @@ const AuthPage = () => {
     );
   }
 
+  // Show forgot password page
   if (showForgotPassword) {
+    console.log("🔒 Rendering forgot password page");
     return (
       <ForgotPasswordView onBackToLogin={handleBackToLogin} />
     );
   }
 
+  // Show password reset page (when user clicks reset link in email)
   if (showPasswordReset && resetToken) {
+    console.log("🔑 Rendering password reset page");
     return (
       <PasswordResetView
         resetToken={resetToken}
@@ -177,6 +192,7 @@ const AuthPage = () => {
 
   const redirectPath = location.state?.from || "/rediger";
 
+  console.log("🏠 Rendering main auth page (login/register)");
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />

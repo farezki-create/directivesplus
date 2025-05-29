@@ -12,6 +12,8 @@ export const useRegister = () => {
     setIsLoading(true);
     
     try {
+      console.log("🚀 Starting registration process for:", values.email);
+      
       const { data, error } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
@@ -26,19 +28,48 @@ export const useRegister = () => {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("❌ Registration error:", error);
+        throw error;
+      }
 
-      toast({
-        title: "Inscription réussie",
-        description: "Votre compte a été créé avec succès. Vous pouvez maintenant vous connecter.",
+      console.log("✅ Registration API call successful:", {
+        userId: data.user?.id,
+        email: data.user?.email,
+        needsVerification: !data.user?.email_confirmed_at
       });
+
+      if (data.user && !data.user.email_confirmed_at) {
+        console.log("📧 User needs email verification, will show OTP input");
+        toast({
+          title: "Inscription réussie",
+          description: "Un code de vérification a été envoyé à votre email. Veuillez vérifier votre boîte de réception.",
+        });
+      } else if (data.user?.email_confirmed_at) {
+        console.log("✅ Email already confirmed, registration complete");
+        toast({
+          title: "Inscription réussie",
+          description: "Votre compte a été créé avec succès. Vous pouvez maintenant vous connecter.",
+        });
+      }
 
       return { success: true, user: data.user };
     } catch (error: any) {
-      console.error("Registration error:", error);
+      console.error("❌ Registration error:", error);
+      
+      let errorMessage = "Une erreur est survenue lors de l'inscription";
+      
+      if (error.message?.includes('already registered')) {
+        errorMessage = "Cette adresse email est déjà utilisée.";
+      } else if (error.message?.includes('password')) {
+        errorMessage = "Le mot de passe ne respecte pas les critères requis.";
+      } else if (error.message?.includes('email')) {
+        errorMessage = "Format d'email invalide.";
+      }
+      
       toast({
         title: "Erreur d'inscription",
-        description: error.message || "Une erreur est survenue lors de l'inscription",
+        description: errorMessage,
         variant: "destructive",
       });
       return { success: false, error: error.message };
