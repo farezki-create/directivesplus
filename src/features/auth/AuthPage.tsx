@@ -19,28 +19,28 @@ const AuthPage = () => {
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [redirectInProgress, setRedirectInProgress] = useState(false);
   
-  // Check for email confirmation in URL hash or search params
+  // Vérification des paramètres URL pour confirmation email et reset mot de passe
   const accessToken = searchParams.get('access_token') || location.hash.match(/access_token=([^&]+)/)?.[1];
   const token = searchParams.get('token');
   const type = searchParams.get('type') || location.hash.match(/type=([^&]+)/)?.[1];
   const resetToken = accessToken || token;
   
-  // Handle email confirmation via URL (email link clicked)
+  // Gestion de la confirmation email via URL
   useEffect(() => {
     if (accessToken && type === 'signup') {
-      console.log("🔗 Email confirmation via URL detected, processing...");
+      console.log("🔗 Confirmation email détectée via URL");
       
-      // Clear URL parameters to clean up the URL
+      // Nettoyer l'URL
       const cleanUrl = window.location.pathname;
       window.history.replaceState({}, document.title, cleanUrl);
       
-      // Show success message
       toast({
         title: "Email confirmé !",
         description: "Votre email a été confirmé avec succès. Redirection vers votre espace...",
+        duration: 4000
       });
       
-      // Redirect to the main app after a short delay
+      // Redirection vers l'application principale
       setTimeout(() => {
         navigate("/rediger", { replace: true });
       }, 2000);
@@ -49,59 +49,63 @@ const AuthPage = () => {
     }
   }, [accessToken, type, navigate]);
   
-  // Redirect if already authenticated (but not during email confirmation)
+  // Redirection si déjà authentifié
   useEffect(() => {
     if (!isLoading && isAuthenticated && !redirectInProgress && !accessToken) {
-      console.log("🔄 User already authenticated, redirecting...");
+      console.log("🔄 Utilisateur déjà authentifié, redirection...");
       const from = location.state?.from || "/rediger";
       navigate(from, { replace: true });
     }
   }, [isAuthenticated, isLoading, navigate, location.state, redirectInProgress, accessToken]);
 
-  // Handle password reset flow
+  // Gestion du reset mot de passe
   useEffect(() => {
     if (resetToken && (type === 'recovery' || type === 'password_recovery')) {
-      console.log("🔑 Password reset token detected:", { resetToken, type });
+      console.log("🔑 Token de reset mot de passe détecté");
       setShowPasswordReset(true);
       setShowForgotPassword(false);
     }
   }, [resetToken, type]);
 
   const handleForgotPassword = () => {
-    console.log("🔒 Showing forgot password form");
+    console.log("🔒 Affichage formulaire mot de passe oublié");
     setShowForgotPassword(true);
     setShowPasswordReset(false);
   };
 
   const handleBackToLogin = () => {
-    console.log("⬅️ Going back to login form");
+    console.log("⬅️ Retour au formulaire de connexion");
     setShowForgotPassword(false);
     setShowPasswordReset(false);
-    // Clear URL parameters
     navigate('/auth', { replace: true });
   };
 
   const handlePasswordResetSuccess = () => {
-    console.log("✅ Password reset completed successfully");
+    console.log("✅ Reset mot de passe réussi");
     setShowPasswordReset(false);
     setShowForgotPassword(false);
-    // Clear URL parameters
     navigate('/auth', { replace: true });
+    
     toast({
       title: "Mot de passe modifié",
       description: "Votre mot de passe a été modifié avec succès. Vous pouvez maintenant vous connecter.",
+      duration: 6000
     });
   };
 
+  // État de chargement
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-directiveplus-600"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-directiveplus-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Vérification de l'authentification...</p>
+        </div>
       </div>
     );
   }
 
-  // Show confirmation message if email confirmation is in progress
+  // Affichage pendant la confirmation email
   if (accessToken && type === 'signup') {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -126,17 +130,13 @@ const AuthPage = () => {
     );
   }
 
-  // Show forgot password page
+  // Page mot de passe oublié
   if (showForgotPassword) {
-    console.log("🔒 Rendering forgot password page");
-    return (
-      <ForgotPasswordView onBackToLogin={handleBackToLogin} />
-    );
+    return <ForgotPasswordView onBackToLogin={handleBackToLogin} />;
   }
 
-  // Show password reset page (when user clicks reset link in email)
+  // Page reset mot de passe
   if (showPasswordReset && resetToken) {
-    console.log("🔑 Rendering password reset page");
     return (
       <PasswordResetView
         resetToken={resetToken}
@@ -147,7 +147,7 @@ const AuthPage = () => {
 
   const redirectPath = location.state?.from || "/rediger";
 
-  console.log("🏠 Rendering main auth page (login/register)");
+  // Page principale d'authentification
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />

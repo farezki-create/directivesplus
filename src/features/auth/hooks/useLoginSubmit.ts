@@ -21,7 +21,7 @@ export const useLoginSubmit = ({
     setLoading(true);
     
     try {
-      console.log("Attempting to sign in...");
+      console.log("🔐 Tentative de connexion pour:", values.email);
       
       const { data, error } = await supabase.auth.signInWithPassword({
         email: values.email,
@@ -29,49 +29,83 @@ export const useLoginSubmit = ({
       });
 
       if (error) {
-        console.error("Sign in error:", error);
+        console.error("❌ Erreur de connexion:", error);
         
-        // Messages d'erreur génériques pour éviter l'énumération d'utilisateurs
         let errorMessage = "Identifiants incorrects. Vérifiez votre email et mot de passe.";
+        let showEmailConfirmationHint = false;
         
-        if (error.message.includes("Email not confirmed")) {
-          errorMessage = "Votre email n'a pas encore été vérifié. Consultez votre boîte de réception.";
+        if (error.message.includes("Email not confirmed") || error.message.includes("email_not_confirmed")) {
+          errorMessage = "Votre email n'a pas encore été vérifié. Consultez votre boîte de réception et cliquez sur le lien de confirmation.";
+          showEmailConfirmationHint = true;
+        } else if (error.message.includes("Invalid login credentials")) {
+          errorMessage = "Email ou mot de passe incorrect. Vérifiez vos informations.";
         } else if (error.message.includes("Too many requests")) {
           errorMessage = "Trop de tentatives de connexion. Veuillez patienter avant de réessayer.";
+        } else if (error.message.includes("signup disabled")) {
+          errorMessage = "Les inscriptions sont temporairement désactivées.";
         }
         
         toast({
           title: "Erreur de connexion",
           description: errorMessage,
           variant: "destructive",
-          duration: 6000
+          duration: showEmailConfirmationHint ? 10000 : 6000
         });
+        
+        // Resend confirmation email option for unconfirmed accounts
+        if (showEmailConfirmationHint) {
+          setTimeout(() => {
+            toast({
+              title: "Besoin d'aide ?",
+              description: "Si vous ne trouvez pas l'email de confirmation, vérifiez vos spams ou contactez le support.",
+              duration: 8000
+            });
+          }, 2000);
+        }
         
         throw error;
       }
       
       if (data.user) {
-        console.log("Sign in successful, user:", data.user.id);
+        console.log("✅ Connexion réussie pour l'utilisateur:", data.user.id);
         
-        // Réinitialiser les compteurs après succès
+        // Vérification de confirmation email
+        if (!data.user.email_confirmed_at) {
+          console.warn("⚠️ Email non confirmé pour l'utilisateur connecté");
+          
+          toast({
+            title: "Email non confirmé",
+            description: "Votre email n'est pas encore confirmé. Consultez votre boîte de réception.",
+            variant: "destructive",
+            duration: 8000
+          });
+          
+          // Déconnexion forcée si email non confirmé
+          await supabase.auth.signOut();
+          return;
+        }
+        
+        // Réinitialiser les compteurs de sécurité
         onSuccessfulLogin(values.email);
         
         toast({
-          title: "Connexion réussie",
-          description: "Vous êtes maintenant connecté.",
+          title: "Connexion réussie !",
+          description: "Redirection vers votre espace personnel...",
+          duration: 3000
         });
         
         setRedirectInProgress(true);
         
-        // Redirection avec délai pour permettre la propagation de l'état
+        // Redirection sécurisée
         setTimeout(() => {
           const finalRedirectPath = redirectPath === "/dashboard" ? "/rediger" : redirectPath;
-          console.log("Redirecting to:", finalRedirectPath);
+          console.log("🚀 Redirection vers:", finalRedirectPath);
           window.location.href = finalRedirectPath;
-        }, 500);
+        }, 1000);
       }
+      
     } catch (error: any) {
-      console.error("Sign in error:", error);
+      console.error("❌ Erreur lors de la connexion:", error);
     } finally {
       setLoading(false);
     }
