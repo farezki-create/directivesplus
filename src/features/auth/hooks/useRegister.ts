@@ -4,11 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { registerFormSchema } from "../schemas";
-import { useSendOTPEmail } from "@/hooks/useSendOTPEmail";
 
 export const useRegister = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const { sendOTPEmail } = useSendOTPEmail();
 
   const register = async (values: z.infer<typeof registerFormSchema>) => {
     setIsLoading(true);
@@ -27,8 +25,6 @@ export const useRegister = () => {
             phone_number: values.phoneNumber,
             address: values.address,
           },
-          // Désactiver l'email automatique de Supabase
-          emailRedirectTo: undefined,
         }
       });
 
@@ -44,22 +40,11 @@ export const useRegister = () => {
       });
 
       if (data.user && !data.user.email_confirmed_at) {
-        console.log("📧 User needs email verification, generating OTP...");
+        console.log("📧 User needs email verification");
         
-        // Générer un OTP et l'envoyer via SendGrid
-        const { data: otpData, error: otpError } = await supabase.auth.resend({
-          type: 'signup',
-          email: values.email,
-        });
-
-        if (otpError) {
-          console.error("❌ Error generating OTP:", otpError);
-          // Continuer même si l'OTP échoue, l'utilisateur peut réessayer
-        }
-
         toast({
           title: "Inscription réussie",
-          description: "Un code de vérification a été envoyé à votre email via notre système sécurisé.",
+          description: "Un email de confirmation a été envoyé à votre adresse. Veuillez cliquer sur le lien pour activer votre compte.",
         });
       } else if (data.user?.email_confirmed_at) {
         console.log("✅ Email already confirmed, registration complete");

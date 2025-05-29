@@ -5,14 +5,12 @@ import { RegisterForm } from "../RegisterForm";
 import { LoginForm } from "../LoginForm";
 
 interface AuthContentProps {
-  onVerificationSent: (email: string) => void;
   redirectPath: string;
   setRedirectInProgress: (value: boolean) => void;
   onForgotPassword: () => void;
 }
 
 export const AuthContent = ({
-  onVerificationSent,
   redirectPath,
   setRedirectInProgress,
   onForgotPassword,
@@ -35,7 +33,6 @@ export const AuthContent = ({
           
           <TabsContent value="login">
             <LoginForm 
-              onVerificationSent={onVerificationSent}
               redirectPath={redirectPath}
               setRedirectInProgress={setRedirectInProgress}
               onForgotPassword={onForgotPassword}
@@ -43,7 +40,7 @@ export const AuthContent = ({
           </TabsContent>
           
           <TabsContent value="signup">
-            <RegisterForm onVerificationSent={onVerificationSent} />
+            <RegisterForm />
           </TabsContent>
         </Tabs>
       </CardContent>

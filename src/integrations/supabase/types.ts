@@ -151,6 +151,24 @@ export type Database = {
         }
         Relationships: []
       }
+      configuration: {
+        Row: {
+          id: number
+          key: string
+          value: string
+        }
+        Insert: {
+          id?: never
+          key: string
+          value: string
+        }
+        Update: {
+          id?: never
+          key?: string
+          value?: string
+        }
+        Relationships: []
+      }
       conversation_participants: {
         Row: {
           conversation_id: string

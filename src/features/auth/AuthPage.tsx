@@ -6,7 +6,6 @@ import { toast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import { BackButton } from "./components/BackButton";
 import { AuthContent } from "./components/AuthContent";
-import { EmailVerificationView } from "./views/EmailVerificationView";
 import { ForgotPasswordView } from "./views/ForgotPasswordView";
 import { PasswordResetView } from "./views/PasswordResetView";
 
@@ -16,10 +15,8 @@ const AuthPage = () => {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   
-  const [showEmailVerification, setShowEmailVerification] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [showPasswordReset, setShowPasswordReset] = useState(false);
-  const [pendingEmail, setPendingEmail] = useState("");
   const [redirectInProgress, setRedirectInProgress] = useState(false);
   
   // Check for email confirmation in URL hash or search params
@@ -67,41 +64,12 @@ const AuthPage = () => {
       console.log("🔑 Password reset token detected:", { resetToken, type });
       setShowPasswordReset(true);
       setShowForgotPassword(false);
-      setShowEmailVerification(false);
     }
   }, [resetToken, type]);
-
-  // Handler when user completes registration and needs OTP verification
-  const handleVerificationSent = (email: string) => {
-    console.log("📧 Registration completed, showing OTP verification for:", email);
-    setPendingEmail(email);
-    setShowEmailVerification(true);
-    setShowForgotPassword(false);
-    setShowPasswordReset(false);
-  };
-
-  // Handler when OTP verification is completed successfully
-  const handleVerificationComplete = () => {
-    console.log("✅ OTP verification completed successfully");
-    setShowEmailVerification(false);
-    toast({
-      title: "Compte activé",
-      description: "Votre compte a été activé avec succès !",
-    });
-    const from = location.state?.from || "/rediger";
-    navigate(from, { replace: true });
-  };
-
-  const handleBackToRegister = () => {
-    console.log("⬅️ Going back to registration form");
-    setShowEmailVerification(false);
-    setPendingEmail("");
-  };
 
   const handleForgotPassword = () => {
     console.log("🔒 Showing forgot password form");
     setShowForgotPassword(true);
-    setShowEmailVerification(false);
     setShowPasswordReset(false);
   };
 
@@ -109,7 +77,6 @@ const AuthPage = () => {
     console.log("⬅️ Going back to login form");
     setShowForgotPassword(false);
     setShowPasswordReset(false);
-    setShowEmailVerification(false);
     // Clear URL parameters
     navigate('/auth', { replace: true });
   };
@@ -159,18 +126,6 @@ const AuthPage = () => {
     );
   }
 
-  // Show OTP verification page (when user registers and needs to enter 6-digit code)
-  if (showEmailVerification) {
-    console.log("📱 Rendering OTP verification page for email:", pendingEmail);
-    return (
-      <EmailVerificationView
-        email={pendingEmail}
-        onVerificationComplete={handleVerificationComplete}
-        onBackToRegister={handleBackToRegister}
-      />
-    );
-  }
-
   // Show forgot password page
   if (showForgotPassword) {
     console.log("🔒 Rendering forgot password page");
@@ -201,7 +156,6 @@ const AuthPage = () => {
         <div className="max-w-md mx-auto">
           <BackButton />
           <AuthContent
-            onVerificationSent={handleVerificationSent}
             redirectPath={redirectPath}
             setRedirectInProgress={setRedirectInProgress}
             onForgotPassword={handleForgotPassword}

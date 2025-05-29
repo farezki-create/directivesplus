@@ -10,10 +10,10 @@ import { FormSubmitButton } from "./components/FormSubmitButton";
 import { useRegister } from "./hooks/useRegister";
 
 interface RegisterFormProps {
-  onVerificationSent: (email: string) => void;
+  onSuccess?: () => void;
 }
 
-export const RegisterForm = ({ onVerificationSent }: RegisterFormProps) => {
+export const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerFormSchema),
     defaultValues: {
@@ -33,8 +33,8 @@ export const RegisterForm = ({ onVerificationSent }: RegisterFormProps) => {
 
   const handleSubmit = async (values: RegisterFormValues) => {
     const result = await register(values);
-    if (result.success) {
-      onVerificationSent(values.email);
+    if (result.success && onSuccess) {
+      onSuccess();
     }
   };
 
