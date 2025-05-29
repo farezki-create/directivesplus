@@ -24,9 +24,9 @@ const IndexHeader = () => {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <div className="bg-white/80 rounded-lg p-2">
+            <div className="p-2">
               <img 
-                src="/lovable-uploads/d5255c41-98e6-44a5-82fd-dac019e499ef.png" 
+                src="/lovable-uploads/2d4f9812-b93d-4ded-8db3-3557fd6203e5.png" 
                 alt="DirectivesPlus" 
                 className="h-16 w-auto"
               />

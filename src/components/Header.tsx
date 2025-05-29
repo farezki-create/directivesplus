@@ -35,7 +35,7 @@ const Header = () => {
             <Link to={isAuthenticated ? "/rediger" : "/"} className="flex items-center">
               <div className="p-2 mr-3">
                 <img 
-                  src="/lovable-uploads/d5255c41-98e6-44a5-82fd-dac019e499ef.png" 
+                  src="/lovable-uploads/2d4f9812-b93d-4ded-8db3-3557fd6203e5.png" 
                   alt="DirectivesPlus" 
                   className="h-10 w-auto"
                 />
