@@ -62,7 +62,7 @@ const AuthPage = () => {
 
   // Handle password reset flow - check for both recovery and password_recovery types
   useEffect(() => {
-    if (resetToken && (type === 'recovery' || type === 'password_recovery') && type !== 'signup') {
+    if (resetToken && (type === 'recovery' || type === 'password_recovery')) {
       console.log("Password reset token detected:", { resetToken, type });
       setShowPasswordReset(true);
       setShowForgotPassword(false);
