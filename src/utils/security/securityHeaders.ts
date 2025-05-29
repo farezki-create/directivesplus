@@ -6,11 +6,11 @@ export const securityHeaders = {
   // Content Security Policy
   'Content-Security-Policy': [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.gpteng.co https://js.stripe.com",
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-    "font-src 'self' https://fonts.gstatic.com",
-    "img-src 'self' data: https:",
-    "connect-src 'self' https://*.supabase.co https://api.stripe.com",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.gpteng.co https://js.stripe.com https://translate.google.com https://translate.googleapis.com",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://www.gstatic.com https://translate.googleapis.com",
+    "font-src 'self' https://fonts.gstatic.com https://www.gstatic.com",
+    "img-src 'self' data: https: https://www.gstatic.com https://translate.googleapis.com",
+    "connect-src 'self' https://*.supabase.co https://api.stripe.com https://translate.googleapis.com",
     "frame-src 'none'",
     "object-src 'none'",
     "base-uri 'self'"
