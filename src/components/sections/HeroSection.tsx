@@ -11,7 +11,7 @@ const HeroSection = () => {
       <div className="container mx-auto text-center">
         {/* Logo au-dessus du titre */}
         <div className="flex justify-center mb-8">
-          <div className="bg-white/70 rounded-xl p-8 shadow-sm">
+          <div className="p-8">
             <img 
               src="/lovable-uploads/d5255c41-98e6-44a5-82fd-dac019e499ef.png" 
               alt="DirectivesPlus" 

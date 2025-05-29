@@ -33,7 +33,7 @@ const Header = () => {
         <div className="flex justify-between items-center">
           <div className="flex items-center">
             <Link to={isAuthenticated ? "/rediger" : "/"} className="flex items-center">
-              <div className="bg-white/80 rounded-lg p-2 mr-3">
+              <div className="p-2 mr-3">
                 <img 
                   src="/lovable-uploads/d5255c41-98e6-44a5-82fd-dac019e499ef.png" 
                   alt="DirectivesPlus" 
