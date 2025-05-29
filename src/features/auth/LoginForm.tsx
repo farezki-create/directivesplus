@@ -11,13 +11,12 @@ import { LoginFormFields } from "./components/LoginFormFields";
 import { SecurityWarningAlert } from "./components/SecurityWarningAlert";
 
 interface LoginFormProps {
-  onVerificationSent: (email: string) => void;
   redirectPath: string;
   setRedirectInProgress: (value: boolean) => void;
   onForgotPassword: () => void;
 }
 
-export const LoginForm = ({ onVerificationSent, redirectPath, setRedirectInProgress, onForgotPassword }: LoginFormProps) => {
+export const LoginForm = ({ redirectPath, setRedirectInProgress, onForgotPassword }: LoginFormProps) => {
   const {
     securityWarning,
     checkSecurityConstraints,
@@ -25,7 +24,6 @@ export const LoginForm = ({ onVerificationSent, redirectPath, setRedirectInProgr
   } = useLoginSecurity();
 
   const { loading, handleSubmit } = useLoginSubmit({
-    onVerificationSent,
     redirectPath,
     setRedirectInProgress,
     onSuccessfulLogin: handleSuccessfulLogin

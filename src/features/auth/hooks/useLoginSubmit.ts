@@ -5,14 +5,12 @@ import { toast } from "@/hooks/use-toast";
 import { LoginFormValues } from "../schemas";
 
 interface UseLoginSubmitProps {
-  onVerificationSent: (email: string) => void;
   redirectPath: string;
   setRedirectInProgress: (value: boolean) => void;
   onSuccessfulLogin: (email: string) => void;
 }
 
 export const useLoginSubmit = ({
-  onVerificationSent,
   redirectPath,
   setRedirectInProgress,
   onSuccessfulLogin
@@ -38,7 +36,6 @@ export const useLoginSubmit = ({
         
         if (error.message.includes("Email not confirmed")) {
           errorMessage = "Votre email n'a pas encore été vérifié. Consultez votre boîte de réception.";
-          onVerificationSent(values.email);
         } else if (error.message.includes("Too many requests")) {
           errorMessage = "Trop de tentatives de connexion. Veuillez patienter avant de réessayer.";
         }
