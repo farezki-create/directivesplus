@@ -14,7 +14,7 @@ interface User {
   id: string;
   email: string;
   created_at: string;
-  roles: string[];
+  roles: UserRole[];
 }
 
 type UserRole = 'admin' | 'moderator' | 'user';
@@ -57,7 +57,7 @@ const UserManagement: React.FC = () => {
         id: user.id,
         email: user.email || 'No email',
         created_at: user.created_at,
-        roles: userRoles?.filter(role => role.user_id === user.id).map(role => role.role) || []
+        roles: userRoles?.filter(role => role.user_id === user.id).map(role => role.role as UserRole) || []
       }));
 
       setUsers(usersWithRoles);
@@ -114,7 +114,7 @@ const UserManagement: React.FC = () => {
     }
   };
 
-  const removeRole = async (userId: string, role: string) => {
+  const removeRole = async (userId: string, role: UserRole) => {
     try {
       const { error } = await supabase
         .from('user_roles')
