@@ -57,8 +57,8 @@ export class SecureDocumentAccess {
       }
 
       if (result.access_granted && result.document_data) {
-        // Type assertion for the document data from JSON
-        const docData = result.document_data as DocumentData;
+        // Type assertion for the document data from JSON - convert to unknown first
+        const docData = result.document_data as unknown as DocumentData;
         return {
           accessGranted: true,
           documentData: {
