@@ -1,4 +1,11 @@
 
+export interface ProfessionalIdValidationResult {
+  isValid: boolean;
+  type?: 'rpps' | 'adeli' | 'finess' | null;
+  formattedNumber?: string;
+  error?: string;
+}
+
 interface ValidationResult {
   isValid: boolean;
   type?: 'rpps' | 'adeli' | 'finess';
@@ -52,6 +59,21 @@ export const validateProfessionalId = (id: string): ValidationResult => {
   }
 
   return { isValid: false, error: 'Numéro professionnel invalide' };
+};
+
+export const formatProfessionalId = (id: string, type?: 'rpps' | 'adeli' | 'finess' | null): string => {
+  if (!type) return id;
+  
+  switch (type) {
+    case 'rpps':
+      return formatRPPS(id);
+    case 'adeli':
+      return formatADELI(id);
+    case 'finess':
+      return id;
+    default:
+      return id;
+  }
 };
 
 const validateRPPS = (rpps: string): boolean => {

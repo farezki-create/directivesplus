@@ -53,7 +53,6 @@ export class InputSanitizer {
     return DOMPurify.sanitize(html, {
       ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u'],
       ALLOWED_ATTR: [],
-      FORBID_SCRIPT: true,
       FORBID_TAGS: ['script', 'object', 'embed', 'form', 'input']
     });
   }

@@ -13,6 +13,14 @@ interface SecureDocumentAccessResult {
   errorMessage?: string;
 }
 
+interface DocumentData {
+  id: string;
+  file_name: string;
+  file_path: string;
+  content_type: string;
+  file_size?: number;
+}
+
 export class SecureDocumentAccess {
   static async validateAccess(
     documentId: string,
@@ -49,7 +57,8 @@ export class SecureDocumentAccess {
       }
 
       if (result.access_granted && result.document_data) {
-        const docData = result.document_data;
+        // Type assertion for the document data from JSON
+        const docData = result.document_data as DocumentData;
         return {
           accessGranted: true,
           documentData: {
