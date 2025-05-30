@@ -13,6 +13,7 @@ import SecurityAudit from '@/pages/SecurityAudit';
 import SecurityAuditReportPage from '@/pages/SecurityAuditReport';
 import SecurityAuditDashboardPage from '@/pages/SecurityAuditDashboard';
 import SecurityDashboard from '@/pages/SecurityDashboard';
+import Rediger from '@/pages/Rediger';
 import { SecurityProvider } from '@/components/security/SecurityProvider';
 import { useSecurityMonitor } from '@/hooks/useSecurityMonitor';
 
@@ -57,6 +58,7 @@ function AppContent() {
         <Route path="/security-audit-report" element={<SecurityAuditReportPage />} />
         <Route path="/security-audit-dashboard" element={<SecurityAuditDashboardPage />} />
         <Route path="/security-dashboard" element={<SecurityDashboard />} />
+        <Route path="/rediger" element={<Rediger />} />
       </Routes>
     </div>
   );
