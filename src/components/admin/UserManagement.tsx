@@ -17,12 +17,14 @@ interface User {
   roles: string[];
 }
 
+type UserRole = 'admin' | 'moderator' | 'user';
+
 const UserManagement: React.FC = () => {
   const { isAdmin } = useSecureAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<string>('');
-  const [selectedRole, setSelectedRole] = useState<'admin' | 'moderator' | 'user'>('user');
+  const [selectedRole, setSelectedRole] = useState<UserRole>('user');
 
   useEffect(() => {
     if (isAdmin) {
@@ -137,6 +139,10 @@ const UserManagement: React.FC = () => {
     }
   };
 
+  const handleRoleChange = (value: string) => {
+    setSelectedRole(value as UserRole);
+  };
+
   if (!isAdmin) {
     return null;
   }
@@ -182,7 +188,7 @@ const UserManagement: React.FC = () => {
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Rôle</label>
-              <Select value={selectedRole} onValueChange={(value: 'admin' | 'moderator' | 'user') => setSelectedRole(value)}>
+              <Select value={selectedRole} onValueChange={handleRoleChange}>
                 <SelectTrigger className="w-40">
                   <SelectValue />
                 </SelectTrigger>

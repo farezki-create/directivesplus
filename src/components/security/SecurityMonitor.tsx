@@ -43,18 +43,29 @@ const SecurityMonitor: React.FC = () => {
           return;
         }
 
-        setEvents(eventsData || []);
+        // Transform the data to match our interface
+        const transformedEvents: SecurityEvent[] = (eventsData || []).map(event => ({
+          id: event.id,
+          event_type: event.event_type,
+          user_id: event.user_id || undefined,
+          ip_address: event.ip_address ? String(event.ip_address) : undefined,
+          risk_level: event.risk_level as 'low' | 'medium' | 'high' | 'critical',
+          created_at: event.created_at,
+          details: event.details
+        }));
+
+        setEvents(transformedEvents);
 
         // Calculate stats
-        const totalEvents = eventsData?.length || 0;
-        const highRiskEvents = eventsData?.filter(e => 
+        const totalEvents = transformedEvents.length;
+        const highRiskEvents = transformedEvents.filter(e => 
           e.risk_level === 'high' || e.risk_level === 'critical'
-        ).length || 0;
-        const recentEvents = eventsData?.filter(e => {
+        ).length;
+        const recentEvents = transformedEvents.filter(e => {
           const eventTime = new Date(e.created_at);
           const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
           return eventTime > oneHourAgo;
-        }).length || 0;
+        }).length;
 
         setStats({
           totalEvents,
@@ -82,12 +93,22 @@ const SecurityMonitor: React.FC = () => {
           table: 'security_audit_logs'
         },
         (payload) => {
-          setEvents(prev => [payload.new as SecurityEvent, ...prev.slice(0, 49)]);
+          const newEvent: SecurityEvent = {
+            id: payload.new.id,
+            event_type: payload.new.event_type,
+            user_id: payload.new.user_id || undefined,
+            ip_address: payload.new.ip_address ? String(payload.new.ip_address) : undefined,
+            risk_level: payload.new.risk_level as 'low' | 'medium' | 'high' | 'critical',
+            created_at: payload.new.created_at,
+            details: payload.new.details
+          };
+          
+          setEvents(prev => [newEvent, ...prev.slice(0, 49)]);
           setStats(prev => ({
             ...prev,
             totalEvents: prev.totalEvents + 1,
             highRiskEvents: prev.highRiskEvents + 
-              (['high', 'critical'].includes((payload.new as SecurityEvent).risk_level) ? 1 : 0),
+              (['high', 'critical'].includes(newEvent.risk_level) ? 1 : 0),
             recentEvents: prev.recentEvents + 1
           }));
         }
