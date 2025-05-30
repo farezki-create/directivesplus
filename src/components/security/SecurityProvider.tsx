@@ -1,13 +1,14 @@
 
 import React, { createContext, useContext, useEffect, ReactNode } from 'react';
 import { useSecurityHeaders } from '@/hooks/useSecurityHeaders';
-import { SessionSecurity } from '@/utils/security/sessionSecurity';
-import { clientRateLimiter } from '@/utils/security/rateLimiter';
+import { EnhancedSessionSecurity } from '@/utils/security/enhancedSessionSecurity';
+import { EnhancedSecurityEventLogger } from '@/utils/security/enhancedSecurityEventLogger';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface SecurityContextType {
-  validateSession: () => boolean;
+  validateSession: () => Promise<boolean>;
   clearSession: () => void;
-  checkRateLimit: (key: string, maxAttempts: number, windowMs: number) => boolean;
+  logSecurityEvent: (eventType: any, details?: any) => Promise<void>;
 }
 
 const SecurityContext = createContext<SecurityContextType | undefined>(undefined);
@@ -17,69 +18,116 @@ interface SecurityProviderProps {
 }
 
 export const SecurityProvider: React.FC<SecurityProviderProps> = ({ children }) => {
+  const { user } = useAuth();
   useSecurityHeaders();
 
   useEffect(() => {
-    // Initialize session security
-    SessionSecurity.initializeSession();
+    if (user) {
+      // Initialize secure session when user is authenticated
+      EnhancedSessionSecurity.initializeSecureSession(user.id);
 
-    // Validate session periodically
-    const interval = setInterval(() => {
-      if (!SessionSecurity.validateSession()) {
-        SessionSecurity.logSecurityEvent('session_validation_failed');
+      // Start periodic session validation
+      const cleanup = EnhancedSessionSecurity.startPeriodicValidation(user.id);
+
+      return cleanup;
+    }
+  }, [user]);
+
+  useEffect(() => {
+    // Monitor for suspicious activity patterns
+    let clickCount = 0;
+    let rapidClickStartTime = 0;
+
+    const handleSuspiciousActivity = async () => {
+      const now = Date.now();
+      
+      if (clickCount === 0) {
+        rapidClickStartTime = now;
       }
-    }, 5 * 60 * 1000); // Check every 5 minutes
-
-    // Log page visibility changes for security monitoring
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        SessionSecurity.logSecurityEvent('page_hidden');
-      } else {
-        SessionSecurity.logSecurityEvent('page_visible');
-        // Re-validate session when page becomes visible
-        SessionSecurity.validateSession();
+      
+      clickCount++;
+      
+      // Reset counter after 10 seconds
+      if (now - rapidClickStartTime > 10000) {
+        clickCount = 1;
+        rapidClickStartTime = now;
+      }
+      
+      // Detect rapid clicking (potential bot behavior)
+      if (clickCount > 20) {
+        await EnhancedSecurityEventLogger.logSuspiciousActivity(
+          'rapid_clicking_detected',
+          user?.id,
+          undefined,
+          navigator.userAgent,
+          { click_count: clickCount, time_window: now - rapidClickStartTime }
+        );
+        clickCount = 0; // Reset to avoid spam
       }
     };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    // Monitor page visibility changes for security
+    const handleVisibilityChange = async () => {
+      if (!document.hidden && user) {
+        // Re-validate session when page becomes visible
+        const isValid = await EnhancedSessionSecurity.validateSecureSession(user.id);
+        if (!isValid) {
+          await EnhancedSecurityEventLogger.logSuspiciousActivity(
+            'session_validation_failed_on_visibility',
+            user.id
+          );
+        }
+      }
+    };
 
-    // Detect suspicious activity
-    let clickCount = 0;
-    const handleSuspiciousActivity = () => {
-      clickCount++;
-      if (clickCount > 100) { // Threshold for suspicious clicking
-        SessionSecurity.logSecurityEvent('suspicious_activity_detected', {
-          type: 'excessive_clicking',
-          count: clickCount
-        });
+    // Monitor for potential XSS attempts
+    const handleScriptInjection = (event: Event) => {
+      const target = event.target as HTMLElement;
+      if (target.innerHTML && target.innerHTML.includes('<script')) {
+        EnhancedSecurityEventLogger.logSuspiciousActivity(
+          'potential_xss_attempt',
+          user?.id,
+          undefined,
+          navigator.userAgent,
+          { element_tag: target.tagName, detected_content: 'script_tag' }
+        );
+        event.preventDefault();
+        event.stopPropagation();
       }
     };
 
     document.addEventListener('click', handleSuspiciousActivity);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener('DOMNodeInserted', handleScriptInjection);
 
     return () => {
-      clearInterval(interval);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
       document.removeEventListener('click', handleSuspiciousActivity);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      document.removeEventListener('DOMNodeInserted', handleScriptInjection);
     };
-  }, []);
+  }, [user]);
 
-  const validateSession = () => {
-    return SessionSecurity.validateSession();
+  const validateSession = async () => {
+    return await EnhancedSessionSecurity.validateSecureSession(user?.id);
   };
 
   const clearSession = () => {
-    SessionSecurity.clearSession();
+    EnhancedSessionSecurity.clearSecureSession();
   };
 
-  const checkRateLimit = (key: string, maxAttempts: number, windowMs: number) => {
-    return clientRateLimiter.checkLimit(key, maxAttempts, windowMs);
+  const logSecurityEvent = async (eventType: any, details?: any) => {
+    await EnhancedSecurityEventLogger.logEvent({
+      eventType,
+      userId: user?.id,
+      success: true,
+      details
+    });
   };
 
   const value: SecurityContextType = {
     validateSession,
     clearSession,
-    checkRateLimit
+    logSecurityEvent
   };
 
   return (

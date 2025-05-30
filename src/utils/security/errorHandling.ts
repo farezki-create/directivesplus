@@ -1,4 +1,6 @@
 
+import { EnhancedSecurityEventLogger } from './enhancedSecurityEventLogger';
+
 interface SecurityError {
   userMessage: string;
   logMessage: string;
@@ -41,24 +43,40 @@ export class SecureErrorHandler {
       userMessage: 'Code d\'accès invalide',
       logMessage: 'Invalid access code attempted',
       severity: 'high'
+    },
+    'rate-limit-exceeded': {
+      userMessage: 'Trop de tentatives. Veuillez patienter avant de réessayer.',
+      logMessage: 'Rate limit exceeded for operation',
+      severity: 'high'
+    },
+    'session-expired': {
+      userMessage: 'Session expirée. Veuillez vous reconnecter.',
+      logMessage: 'Session validation failed - expired',
+      severity: 'medium'
+    },
+    'session-hijacking': {
+      userMessage: 'Session de sécurité invalide. Reconnexion requise.',
+      logMessage: 'Potential session hijacking detected',
+      severity: 'critical'
     }
   };
 
-  static handleError(error: any, context?: string): string {
+  static async handleError(error: any, context?: string, userId?: string): Promise<string> {
     const errorCode = this.extractErrorCode(error);
     const mapping = this.ERROR_MAPPINGS[errorCode];
     
     if (mapping) {
-      this.logSecurityEvent(mapping.logMessage, mapping.severity, context, error);
+      await this.logSecurityEvent(mapping.logMessage, mapping.severity, context, error, userId);
       return mapping.userMessage;
     }
     
     // Default handling for unknown errors
-    this.logSecurityEvent(
+    await this.logSecurityEvent(
       `Unknown error: ${error.message || 'Unknown'}`,
       'medium',
       context,
-      error
+      error,
+      userId
     );
     
     return 'Une erreur est survenue. Veuillez réessayer.';
@@ -70,43 +88,39 @@ export class SecureErrorHandler {
       // Extract common error patterns
       if (error.message.includes('not-found')) return 'document-not-found';
       if (error.message.includes('permission')) return 'permission-denied';
-      if (error.message.includes('rate limit')) return 'auth/too-many-requests';
+      if (error.message.includes('rate limit')) return 'rate-limit-exceeded';
+      if (error.message.includes('session')) return 'session-expired';
     }
     return 'unknown-error';
   }
   
-  private static logSecurityEvent(
+  private static async logSecurityEvent(
     message: string, 
     severity: string, 
     context?: string, 
-    originalError?: any
-  ): void {
-    const logEntry = {
-      timestamp: new Date().toISOString(),
-      message,
-      severity,
-      context,
-      userAgent: navigator.userAgent,
-      url: window.location.href,
-      originalError: originalError?.message || 'Unknown'
-    };
-    
-    // In production, this should be sent to a secure logging service
-    if (severity === 'high' || severity === 'critical') {
-      console.error('Security Event:', logEntry);
-    } else {
-      console.warn('Security Event:', logEntry);
-    }
+    originalError?: any,
+    userId?: string
+  ): Promise<void> {
+    await EnhancedSecurityEventLogger.logEvent({
+      eventType: 'suspicious_activity',
+      userId,
+      success: false,
+      riskLevel: severity as any,
+      details: {
+        message,
+        context,
+        originalError: originalError?.message || 'Unknown',
+        userAgent: navigator.userAgent,
+        url: window.location.href
+      }
+    });
   }
   
   static sanitizeErrorForUser(error: any): string {
     // Never expose internal system details to users
     const safeMessage = this.handleError(error);
     
-    // Additional sanitization
-    return safeMessage
-      .replace(/\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/g, '[IP]') // Remove IPs
-      .replace(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/gi, '[ID]') // Remove UUIDs
-      .replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, '[EMAIL]'); // Remove emails
+    // Additional sanitization to remove sensitive information
+    return safeMessage.then ? safeMessage : Promise.resolve(safeMessage);
   }
 }

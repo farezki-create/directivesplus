@@ -1,4 +1,6 @@
 
+import { ServerSideRateLimit } from './serverSideRateLimit';
+
 interface AccessCodeAttempt {
   count: number;
   lastAttempt: number;
@@ -7,11 +9,26 @@ interface AccessCodeAttempt {
 
 class AccessCodeLimiter {
   private attempts = new Map<string, AccessCodeAttempt>();
-  private readonly maxAttempts = 5;
+  private readonly maxAttempts = 3; // Reduced from 5 for better security
   private readonly windowMs = 15 * 60 * 1000; // 15 minutes
   private readonly blockDurationMs = 30 * 60 * 1000; // 30 minutes
 
-  recordAttempt(identifier: string): { blocked: boolean; remainingAttempts: number } {
+  async recordAttempt(identifier: string, ipAddress?: string, userAgent?: string): Promise<{ blocked: boolean; remainingAttempts: number }> {
+    // Use server-side rate limiting for critical operations
+    const serverResult = await ServerSideRateLimit.checkRateLimit(
+      identifier,
+      'access_code_attempt',
+      this.maxAttempts,
+      this.windowMs / 60000, // Convert to minutes
+      ipAddress,
+      userAgent
+    );
+
+    if (!serverResult.allowed) {
+      return { blocked: true, remainingAttempts: 0 };
+    }
+
+    // Continue with client-side tracking as backup
     const now = Date.now();
     const existing = this.attempts.get(identifier);
 
@@ -75,8 +92,16 @@ class AccessCodeLimiter {
     return Math.max(0, attempt.blockedUntil - Date.now());
   }
 
-  reset(identifier: string): void {
+  async reset(identifier: string, ipAddress?: string, userAgent?: string): Promise<void> {
     this.attempts.delete(identifier);
+    
+    // Record successful attempt in server-side tracking
+    await ServerSideRateLimit.recordSuccessfulAttempt(
+      identifier,
+      'access_code_attempt',
+      ipAddress,
+      userAgent
+    );
   }
 }
 
