@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,66 +29,86 @@ export function DirectDocumentAccess() {
       }
 
       try {
-        console.log("=== ACCÈS DIRECT AU DOCUMENT ===");
+        console.log("=== SECURE DOCUMENT ACCESS ===");
         console.log("Document ID:", documentId);
 
-        // Récupération directe du document PDF
-        const { data: pdfDoc, error: pdfError } = await supabase
-          .from('pdf_documents')
-          .select('*')
-          .eq('id', documentId)
-          .single();
+        // Get client information for audit logging
+        const clientInfo = {
+          ip_address: null, // Would be populated by backend
+          user_agent: navigator.userAgent,
+          session_id: crypto.randomUUID()
+        };
 
-        console.log("Document PDF trouvé:", { pdfDoc, pdfError });
-
-        if (pdfError || !pdfDoc) {
-          // Essayer dans la table directives
-          const { data: directiveDoc, error: directiveError } = await supabase
-            .from('directives')
-            .select('*')
-            .eq('id', documentId)
-            .single();
-
-          console.log("Document directive trouvé:", { directiveDoc, directiveError });
-
-          if (directiveError || !directiveDoc) {
-            throw new Error("Document non trouvé");
-          }
-
-          const content = directiveDoc.content as DirectiveContent;
-          setDocument({
-            ...directiveDoc,
-            file_name: content?.title || content?.titre || 'Directive anticipée',
-            file_path: `/directive/${directiveDoc.id}`,
-            content_type: 'application/json',
-            isDirective: true
+        // Use secure document access function with audit logging
+        const { data: secureAccess, error: secureError } = await supabase
+          .rpc('secure_document_access', {
+            p_document_id: documentId,
+            p_access_method: 'direct_link',
+            p_ip_address: clientInfo.ip_address,
+            p_user_agent: clientInfo.user_agent,
+            p_session_id: clientInfo.session_id
           });
 
-          // Récupérer les infos du propriétaire
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('first_name, last_name')
-            .eq('id', directiveDoc.user_id)
-            .single();
+        if (secureError) {
+          console.error("Secure access error:", secureError);
+          
+          // Log security event for failed access
+          await supabase.rpc('log_security_event_enhanced', {
+            p_event_type: 'document_access_denied',
+            p_ip_address: clientInfo.ip_address,
+            p_user_agent: clientInfo.user_agent,
+            p_details: { 
+              document_id: documentId, 
+              error: secureError.message,
+              access_method: 'direct_link'
+            },
+            p_risk_level: 'high',
+            p_resource_id: documentId,
+            p_resource_type: 'pdf_document'
+          });
 
-          setOwnerInfo(profile);
-        } else {
-          setDocument(pdfDoc);
-
-          // Récupérer les infos du propriétaire
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('first_name, last_name')
-            .eq('id', pdfDoc.user_id)
-            .single();
-
-          setOwnerInfo(profile);
+          throw new Error("Accès non autorisé au document");
         }
 
-        console.log("Accès direct accordé au document");
+        if (!secureAccess || secureAccess.length === 0) {
+          throw new Error("Document non trouvé ou accès refusé");
+        }
+
+        const accessResult = secureAccess[0];
+        if (!accessResult.access_granted) {
+          throw new Error("Accès refusé à ce document");
+        }
+
+        setDocument(accessResult);
+
+        // Get owner information for display
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('first_name, last_name')
+          .eq('id', accessResult.user_id)
+          .single();
+
+        setOwnerInfo(profile);
+
+        // Log successful access
+        await supabase.rpc('log_security_event_enhanced', {
+          p_event_type: 'document_access_granted',
+          p_ip_address: clientInfo.ip_address,
+          p_user_agent: clientInfo.user_agent,
+          p_details: { 
+            document_id: documentId,
+            access_method: 'direct_link',
+            document_name: accessResult.file_name
+          },
+          p_risk_level: 'low',
+          p_resource_id: documentId,
+          p_resource_type: 'pdf_document'
+        });
+
+        console.log("Secure access granted to document");
 
       } catch (error: any) {
-        console.error("Erreur lors du chargement:", error);
+        console.error("Erreur lors du chargement sécurisé:", error);
         setError(error.message || "Impossible d'accéder au document");
       } finally {
         setIsLoading(false);
@@ -99,38 +118,70 @@ export function DirectDocumentAccess() {
     loadDocument();
   }, [documentId]);
 
-  const handleDownload = () => {
-    if (document?.file_path) {
-      const link = window.document.createElement('a');
-      link.href = document.file_path;
-      link.download = document.file_name;
-      link.target = '_blank';
-      window.document.body.appendChild(link);
-      link.click();
-      window.document.body.removeChild(link);
-      
+  const handleSecureAction = async (action: string, handler: () => void) => {
+    try {
+      // Log the action
+      await supabase.rpc('log_security_event_enhanced', {
+        p_event_type: `document_${action}`,
+        p_details: { 
+          document_id: documentId,
+          action: action,
+          document_name: document?.file_name
+        },
+        p_risk_level: 'low',
+        p_resource_id: documentId,
+        p_resource_type: 'pdf_document'
+      });
+
+      handler();
+    } catch (error) {
+      console.error(`Error during ${action}:`, error);
       toast({
-        title: "Téléchargement commencé",
-        description: `${document.file_name} est en cours de téléchargement`,
+        title: "Erreur",
+        description: `Impossible d'effectuer l'action: ${action}`,
+        variant: "destructive"
       });
     }
   };
 
+  const handleDownload = () => {
+    handleSecureAction('download', () => {
+      if (document?.file_path) {
+        const link = window.document.createElement('a');
+        link.href = document.file_path;
+        link.download = document.file_name;
+        link.target = '_blank';
+        window.document.body.appendChild(link);
+        link.click();
+        window.document.body.removeChild(link);
+        
+        toast({
+          title: "Téléchargement commencé",
+          description: `${document.file_name} est en cours de téléchargement`,
+        });
+      }
+    });
+  };
+
   const handleView = () => {
-    if (document?.file_path) {
-      window.open(document.file_path, '_blank');
-    }
+    handleSecureAction('view', () => {
+      if (document?.file_path) {
+        window.open(document.file_path, '_blank');
+      }
+    });
   };
 
   const handlePrint = () => {
-    if (document?.file_path) {
-      const printWindow = window.open(document.file_path, '_blank');
-      if (printWindow) {
-        printWindow.onload = () => {
-          printWindow.print();
-        };
+    handleSecureAction('print', () => {
+      if (document?.file_path) {
+        const printWindow = window.open(document.file_path, '_blank');
+        if (printWindow) {
+          printWindow.onload = () => {
+            printWindow.print();
+          };
+        }
       }
-    }
+    });
   };
 
   if (!documentId) {
@@ -161,7 +212,7 @@ export function DirectDocumentAccess() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center space-y-4">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="text-gray-600">Chargement du document...</p>
+          <p className="text-gray-600">Vérification sécurisée en cours...</p>
         </div>
       </div>
     );
@@ -181,9 +232,9 @@ export function DirectDocumentAccess() {
             </CardHeader>
             <CardContent>
               <p className="text-gray-600 mb-4">{error}</p>
-              <div className="p-3 bg-blue-50 rounded-lg">
-                <p className="text-xs text-blue-800">
-                  Ce document n'est peut-être plus disponible ou le lien est invalide.
+              <div className="p-3 bg-red-50 rounded-lg">
+                <p className="text-xs text-red-800">
+                  Cet accès a été refusé pour des raisons de sécurité. Tous les tentatives d'accès sont enregistrées.
                 </p>
               </div>
             </CardContent>
@@ -203,7 +254,7 @@ export function DirectDocumentAccess() {
             <div className="flex items-center justify-center gap-2 mb-2">
               <Shield className="h-6 w-6 text-green-600" />
               <h1 className="text-2xl font-bold text-gray-900">
-                Document Médical
+                Document Médical Sécurisé
               </h1>
             </div>
             
@@ -215,29 +266,29 @@ export function DirectDocumentAccess() {
             )}
             
             <p className="text-gray-600">
-              Accès direct au document • {document?.file_name}
+              Accès sécurisé • {document?.file_name}
             </p>
           </div>
 
-          {/* Alerte d'urgence */}
+          {/* Enhanced security alert */}
           <Card className="mb-6 border-red-200 bg-red-50">
             <CardContent className="pt-6">
               <div className="flex items-start gap-3">
                 <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
                 <div>
                   <h3 className="font-medium text-red-900 mb-1">
-                    ⚠️ Document médical important
+                    🔒 Document médical protégé
                   </h3>
                   <p className="text-sm text-red-800">
-                    Ce document contient des informations médicales importantes.
-                    Accès réservé aux professionnels de santé autorisés.
+                    Ce document est protégé par des mesures de sécurité avancées. 
+                    Tous les accès sont enregistrés et surveillés en temps réel.
                   </p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Actions sur le document */}
+          {/* Actions on document */}
           <Card className="mb-6">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -269,18 +320,18 @@ export function DirectDocumentAccess() {
             </CardContent>
           </Card>
 
-          {/* Footer informatif */}
+          {/* Enhanced security footer */}
           <Card className="bg-blue-50 border-blue-200">
             <CardContent className="pt-6">
               <div className="flex items-start gap-3">
-                <Clock className="h-5 w-5 text-blue-600 mt-0.5" />
+                <Shield className="h-5 w-5 text-blue-600 mt-0.5" />
                 <div>
                   <h3 className="font-medium text-blue-900 mb-1">
-                    Accès simplifié et sécurisé
+                    Accès sécurisé et surveillé
                   </h3>
                   <p className="text-sm text-blue-800">
-                    Ce lien permet un accès direct au document sans saisie de code.
-                    Conçu pour faciliter l'accès en situation d'urgence médicale.
+                    Ce document est accessible via un lien sécurisé. Toutes les actions sont 
+                    enregistrées avec audit trail complet pour la conformité médicale.
                   </p>
                 </div>
               </div>

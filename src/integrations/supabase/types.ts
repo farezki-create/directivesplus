@@ -9,6 +9,33 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      access_code_attempts: {
+        Row: {
+          access_code: string | null
+          attempt_time: string | null
+          id: string
+          ip_address: unknown
+          success: boolean
+          user_agent: string | null
+        }
+        Insert: {
+          access_code?: string | null
+          attempt_time?: string | null
+          id?: string
+          ip_address: unknown
+          success: boolean
+          user_agent?: string | null
+        }
+        Update: {
+          access_code?: string | null
+          attempt_time?: string | null
+          id?: string
+          ip_address?: unknown
+          success?: boolean
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       access_logs: {
         Row: {
           access_by: string | null
@@ -578,6 +605,51 @@ export type Database = {
         Update: {
           config?: Json | null
           id?: never
+        }
+        Relationships: []
+      }
+      medical_access_audit: {
+        Row: {
+          access_granted: boolean
+          access_method: string
+          accessed_at: string | null
+          additional_context: Json | null
+          failure_reason: string | null
+          id: string
+          ip_address: unknown | null
+          resource_id: string
+          resource_type: string
+          session_id: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          access_granted: boolean
+          access_method: string
+          accessed_at?: string | null
+          additional_context?: Json | null
+          failure_reason?: string | null
+          id?: string
+          ip_address?: unknown | null
+          resource_id: string
+          resource_type: string
+          session_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          access_granted?: boolean
+          access_method?: string
+          accessed_at?: string | null
+          additional_context?: Json | null
+          failure_reason?: string | null
+          id?: string
+          ip_address?: unknown | null
+          resource_id?: string
+          resource_type?: string
+          session_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -1593,6 +1665,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_access_code_rate_limit: {
+        Args: {
+          p_ip_address: unknown
+          p_max_attempts?: number
+          p_window_minutes?: number
+        }
+        Returns: boolean
+      }
       debug_institution_access_step_by_step: {
         Args: {
           input_last_name: string
@@ -1777,6 +1857,36 @@ export type Database = {
           _risk_level?: string
         }
         Returns: undefined
+      }
+      log_security_event_enhanced: {
+        Args: {
+          p_event_type: string
+          p_user_id?: string
+          p_ip_address?: unknown
+          p_user_agent?: string
+          p_details?: Json
+          p_risk_level?: string
+          p_resource_id?: string
+          p_resource_type?: string
+        }
+        Returns: string
+      }
+      secure_document_access: {
+        Args: {
+          p_document_id: string
+          p_access_method: string
+          p_ip_address?: unknown
+          p_user_agent?: string
+          p_session_id?: string
+        }
+        Returns: {
+          id: string
+          file_name: string
+          file_path: string
+          content_type: string
+          user_id: string
+          access_granted: boolean
+        }[]
       }
       validate_and_use_access_code: {
         Args: {

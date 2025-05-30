@@ -1,110 +1,98 @@
 
-import { ReactNode, useEffect, useState } from "react";
-import { Navigate, useLocation } from "react-router-dom";
-import { Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { Navigate, useLocation } from "react-router-dom";
+import { ReactNode } from "react";
 
 interface ProtectedRouteProps {
   children: ReactNode;
-  requiredRole?: string;
+  requireAuth?: boolean;
 }
 
-const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
-  const { isAuthenticated, isLoading, profile } = useAuth();
+const ProtectedRoute = ({ children, requireAuth = true }: ProtectedRouteProps) => {
+  const { isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
-  const [authCheckComplete, setAuthCheckComplete] = useState(false);
-  
-  // Routes COMPLÈTEMENT publiques - AUCUNE vérification d'authentification
-  const fullyPublicRoutes = [
-    '/', 
-    '/affichage-dossier', 
-    '/mes-directives', 
-    '/directives-acces',
-    '/directives-docs',
-    '/acces-institution',
-    '/acces-institution-simple',
-    '/pdf-viewer' // Route publique pour QR codes
-  ];
 
-  // Vérifier si c'est un accès QR code (paramètres access=card ou shared_code ou id)
-  const searchParams = new URLSearchParams(location.search);
-  const hasQRAccess = searchParams.get('access') === 'card' || 
-                      searchParams.get('shared_code') || 
-                      searchParams.get('id'); // Pour les liens directs vers des documents
-
-  // Vérifier si c'est un accès institution (présence de tous les paramètres nécessaires)
-  const hasInstitutionAccess = searchParams.get('code') && 
-                               searchParams.get('nom') && 
-                               searchParams.get('prenom') && 
-                               searchParams.get('naissance');
-
-  // Vérifier si on vient de la page d'accès institution (referrer ou session)
-  const comesFromInstitution = document.referrer.includes('/acces-institution') ||
-                               sessionStorage.getItem('institutionAccess') === 'true';
-
-  console.log("🔒 ProtectedRoute check:", {
-    pathname: location.pathname,
-    isPublicRoute: fullyPublicRoutes.includes(location.pathname),
-    hasQRAccess,
-    hasInstitutionAccess,
-    comesFromInstitution,
-    searchParams: location.search,
-    isAuthenticated,
-    isLoading,
-    authCheckComplete,
-    decision: fullyPublicRoutes.includes(location.pathname) || hasQRAccess || hasInstitutionAccess || comesFromInstitution ? 'ALLOW_PUBLIC' : 'CHECK_AUTH'
-  });
-
-  // BYPASS COMPLET pour les routes publiques OU accès QR code OU accès institution
-  if (fullyPublicRoutes.includes(location.pathname) || hasQRAccess || hasInstitutionAccess || comesFromInstitution) {
-    console.log("✅ ProtectedRoute: Accès public autorisé - route publique, QR code ou accès institution détecté");
-    return <>{children}</>;
-  }
-
-  // Gestion intelligente de l'état de chargement sans timeout arbitraire
-  useEffect(() => {
-    // Si on n'est plus en chargement, marquer la vérification comme complète
-    if (!isLoading) {
-      console.log("✅ Auth check completed, loading finished");
-      setAuthCheckComplete(true);
-    }
-  }, [isLoading]);
-
-  // Attendre que la vérification d'auth soit complète
-  if (!authCheckComplete && isLoading) {
-    console.log("⏳ ProtectedRoute: Vérification d'authentification en cours...");
+  // Show loading state while checking authentication
+  if (isLoading) {
     return (
-      <div className="h-screen flex flex-col items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-directiveplus-600" />
-        <p className="mt-4 text-gray-600">Vérification de l'authentification...</p>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Vérification des permissions...</p>
+        </div>
       </div>
     );
   }
 
-  // Pour les routes protégées, vérifier l'authentification
-  if (!isAuthenticated) {
-    console.log("🚫 ProtectedRoute: Non authentifié, redirection vers /auth");
-    return <Navigate to="/auth" state={{ from: location.pathname }} replace />;
+  // Define routes that should be publicly accessible
+  const publicRoutes = [
+    '/',
+    '/mes-directives',
+    '/directives-access',
+    '/secure-directives-access',
+    '/institution-access',
+    '/carte-acces',
+    '/support',
+    '/legal',
+    '/privacy',
+    '/donation',
+    '/auth'
+  ];
+
+  // Define routes that allow shared access (with special parameters)
+  const sharedAccessRoutes = [
+    '/mes-directives/shared',
+    '/direct-document'
+  ];
+
+  // Check if current route is public
+  const isPublicRoute = publicRoutes.some(route => 
+    location.pathname === route || 
+    location.pathname.startsWith(route + '/')
+  );
+
+  // Check if current route allows shared access
+  const isSharedAccessRoute = sharedAccessRoutes.some(route => 
+    location.pathname.startsWith(route)
+  );
+
+  // Allow access to public routes without authentication
+  if (isPublicRoute) {
+    return <>{children}</>;
   }
 
-  // Vérifier le rôle si requis
-  if (requiredRole && profile) {
-    const userRoles = profile.roles || [];
-    const userRole = profile.role;
+  // Allow shared access routes with proper validation
+  if (isSharedAccessRoute) {
+    const hasValidSharedParams = 
+      location.search.includes('shared_code=') || 
+      location.pathname.includes('/direct-document/');
     
-    const hasRequiredRole = Array.isArray(userRoles) 
-      ? userRoles.includes(requiredRole)
-      : userRole === requiredRole;
-    
-    if (!hasRequiredRole) {
-      console.log(`🚫 ProtectedRoute: Rôle insuffisant: ${requiredRole}`);
-      return <Navigate to="/" state={{ from: location.pathname }} replace />;
+    if (hasValidSharedParams) {
+      // Log the shared access attempt for security monitoring
+      console.log('Shared access attempt:', {
+        path: location.pathname,
+        search: location.search,
+        timestamp: new Date().toISOString()
+      });
+      return <>{children}</>;
     }
+    
+    // If shared route but no valid params, redirect to access form
+    return <Navigate to="/mes-directives" replace />;
   }
 
-  console.log("✅ ProtectedRoute: Accès autorisé");
+  // For protected routes, require authentication
+  if (requireAuth && !isAuthenticated) {
+    // Store the attempted URL for redirect after login
+    return <Navigate to="/auth" state={{ from: location }} replace />;
+  }
+
+  // If user is authenticated but trying to access auth page, redirect to dashboard
+  if (isAuthenticated && location.pathname === '/auth') {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return <>{children}</>;
 };
 
-export { ProtectedRoute };
 export default ProtectedRoute;

@@ -1,101 +1,146 @@
 
-import { checkSecurityAttempt, resetSecurityAttempts, SecurityOperationType } from "./consolidatedSecurity";
+interface AuthAttempt {
+  count: number;
+  lastAttempt: number;
+  lockedUntil?: number;
+}
 
-/**
- * @deprecated Utilisez checkSecurityAttempt depuis consolidatedSecurity
- */
+const authAttempts = new Map<string, AuthAttempt>();
+
+// Enhanced brute force protection
 export const checkAuthAttempt = (
-  identifier: string,
-  type: 'login' | 'email_verification' | 'password_reset' = 'login'
-) => {
-  console.warn('checkAuthAttempt est déprécié. Utilisez checkSecurityAttempt depuis consolidatedSecurity');
-  return checkSecurityAttempt(identifier, type as SecurityOperationType);
-};
-
-/**
- * @deprecated Utilisez resetSecurityAttempts depuis consolidatedSecurity
- */
-export const resetAuthAttempts = (
-  identifier: string,
-  type: 'login' | 'email_verification' | 'password_reset' = 'login'
-) => {
-  console.warn('resetAuthAttempts est déprécié. Utilisez resetSecurityAttempts depuis consolidatedSecurity');
-  resetSecurityAttempts(identifier, type as SecurityOperationType);
-};
-
-/**
- * Génère un code de vérification sécurisé
- */
-export const generateSecureVerificationCode = (length: number = 8): string => {
-  const chars = 'ABCDEFGHIJKLMNPQRSTUVWXYZ23456789';
+  identifier: string, 
+  action: 'login' | 'access_code' = 'login'
+): { allowed: boolean; remainingAttempts: number; lockoutMinutes: number } => {
+  const maxAttempts = action === 'login' ? 5 : 3;
+  const lockoutTime = action === 'login' ? 15 : 30; // minutes
+  const now = Date.now();
   
-  const randomValues = new Uint32Array(length);
-  window.crypto.getRandomValues(randomValues);
+  const attempt = authAttempts.get(identifier);
   
-  let result = '';
-  for (let i = 0; i < length; i++) {
-    result += chars[randomValues[i] % chars.length];
+  if (!attempt) {
+    authAttempts.set(identifier, { count: 1, lastAttempt: now });
+    return { allowed: true, remainingAttempts: maxAttempts - 1, lockoutMinutes: 0 };
   }
   
-  return result;
+  // Check if lockout has expired
+  if (attempt.lockedUntil && now > attempt.lockedUntil) {
+    authAttempts.delete(identifier);
+    return { allowed: true, remainingAttempts: maxAttempts - 1, lockoutMinutes: 0 };
+  }
+  
+  // Check if currently locked
+  if (attempt.lockedUntil && now <= attempt.lockedUntil) {
+    const remainingLockout = Math.ceil((attempt.lockedUntil - now) / (1000 * 60));
+    return { allowed: false, remainingAttempts: 0, lockoutMinutes: remainingLockout };
+  }
+  
+  // Reset count if more than 1 hour has passed
+  if (now - attempt.lastAttempt > 60 * 60 * 1000) {
+    authAttempts.set(identifier, { count: 1, lastAttempt: now });
+    return { allowed: true, remainingAttempts: maxAttempts - 1, lockoutMinutes: 0 };
+  }
+  
+  // Increment attempt count
+  attempt.count++;
+  attempt.lastAttempt = now;
+  
+  if (attempt.count >= maxAttempts) {
+    attempt.lockedUntil = now + (lockoutTime * 60 * 1000);
+    authAttempts.set(identifier, attempt);
+    return { allowed: false, remainingAttempts: 0, lockoutMinutes: lockoutTime };
+  }
+  
+  authAttempts.set(identifier, attempt);
+  return { 
+    allowed: true, 
+    remainingAttempts: maxAttempts - attempt.count, 
+    lockoutMinutes: 0 
+  };
 };
 
-/**
- * Validation de l'intégrité des tokens
- */
-export const validateTokenIntegrity = (token: string): boolean => {
-  if (!token || typeof token !== 'string') return false;
-  
-  if (token.length < 20) return false;
-  if (!/^[A-Za-z0-9._-]+$/.test(token)) return false;
-  
-  return true;
+// Reset auth attempts after successful login
+export const resetAuthAttempts = (identifier: string, action: 'login' | 'access_code' = 'login') => {
+  authAttempts.delete(identifier);
+  console.log(`Reset auth attempts for ${action}:`, identifier);
 };
 
-/**
- * Détection de géolocalisation suspecte (basique)
- */
+// Enhanced geolocation detection
 export const detectSuspiciousLocation = async (): Promise<boolean> => {
   try {
-    const lastLocation = localStorage.getItem('last_login_location');
-    const response = await fetch('https://ipapi.co/json/');
-    const currentLocation = await response.json();
+    // Get user's timezone
+    const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     
-    if (lastLocation) {
-      const last = JSON.parse(lastLocation);
-      const distance = calculateDistance(
-        last.latitude, last.longitude,
-        currentLocation.latitude, currentLocation.longitude
-      );
-      
-      if (distance > 1000) {
-        console.warn('Suspicious location detected:', {
-          lastLocation: last,
-          currentLocation,
-          distance
-        });
-        return true;
-      }
+    // Check for known trusted locations (this would be enhanced with IP geolocation)
+    const trustedTimezones = [
+      'Europe/Paris',
+      'Europe/London',
+      'America/New_York',
+      'America/Los_Angeles'
+    ];
+    
+    const isSuspicious = !trustedTimezones.includes(userTimezone);
+    
+    // Log suspicious location attempt
+    if (isSuspicious) {
+      console.warn('Suspicious location detected:', {
+        timezone: userTimezone,
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent
+      });
     }
     
-    localStorage.setItem('last_login_location', JSON.stringify(currentLocation));
-    return false;
+    return isSuspicious;
   } catch (error) {
-    console.warn('Could not check location:', error);
+    console.error('Error detecting location:', error);
     return false;
   }
 };
 
-/**
- * Calcul de distance entre deux points GPS
- */
-const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
-  const R = 6371; // Rayon de la Terre en km
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
+// Enhanced session security
+export const validateSession = (): boolean => {
+  try {
+    // Check for session hijacking indicators
+    const sessionStart = sessionStorage.getItem('session_start');
+    const sessionUA = sessionStorage.getItem('session_ua');
+    const currentUA = navigator.userAgent;
+    
+    if (!sessionStart) {
+      sessionStorage.setItem('session_start', Date.now().toString());
+      sessionStorage.setItem('session_ua', currentUA);
+      return true;
+    }
+    
+    // Check if user agent changed (potential session hijacking)
+    if (sessionUA && sessionUA !== currentUA) {
+      console.warn('Session validation failed: User agent mismatch');
+      sessionStorage.clear();
+      return false;
+    }
+    
+    // Check session age (max 24 hours)
+    const sessionAge = Date.now() - parseInt(sessionStart);
+    const maxAge = 24 * 60 * 60 * 1000; // 24 hours
+    
+    if (sessionAge > maxAge) {
+      console.warn('Session validation failed: Session expired');
+      sessionStorage.clear();
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Session validation error:', error);
+    return false;
+  }
 };
+
+// Clean up expired attempts periodically
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, attempt] of authAttempts.entries()) {
+    if (attempt.lockedUntil && now > attempt.lockedUntil) {
+      authAttempts.delete(key);
+    }
+  }
+}, 5 * 60 * 1000); // Clean every 5 minutes
