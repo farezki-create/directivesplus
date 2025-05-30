@@ -54,7 +54,8 @@ export const SecureForm: React.FC<SecureFormProps> = ({
 
       await onSubmit(sanitizedData);
     } catch (err: any) {
-      const userMessage = SecureErrorHandler.sanitizeErrorForUser(err);
+      // Fix: Await the promise before setting error
+      const userMessage = await SecureErrorHandler.sanitizeErrorForUser(err);
       setError(userMessage);
     } finally {
       setIsSubmitting(false);
