@@ -74,30 +74,19 @@ const DirectivesDocs = () => {
 
   return (
     <PublicDirectivesView
-      isLoading={isLoading}
-      isAuthenticated={isAuthenticated}
-      user={user}
+      dossierActif={dossierActif}
       profile={profile}
       documents={documents}
-      dossierActif={dossierActif}
-      publicAccessVerified={publicAccessVerified}
-      urlParams={urlParams}
-      institutionAccess={institutionAccess}
-      showAddOptions={showAddOptions}
-      setShowAddOptions={setShowAddOptions}
-      showAddOptionsPublic={showAddOptionsPublic}
-      setShowAddOptionsPublic={setShowAddOptionsPublic}
-      documentToDelete={documentToDelete}
-      setDocumentToDelete={setDocumentToDelete}
+      onDownload={handleDownload}
+      onPrint={handlePrint}
+      onView={handleViewDocument}
       previewDocument={previewDocument}
       setPreviewDocument={setPreviewDocument}
-      handleUploadCompleteWrapper={handleUploadCompleteWrapper}
-      handleDownload={handleDownload}
-      handlePrint={handlePrint}
-      handleViewDocument={handleViewDocument}
-      handleDelete={handleDeleteDocument}
       handlePreviewDownload={handlePreviewDownload}
       handlePreviewPrint={handlePreviewPrint}
+      showAddOptions={showAddOptions}
+      setShowAddOptions={setShowAddOptions}
+      onUploadComplete={handleUploadCompleteWrapper}
     />
   );
 };

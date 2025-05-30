@@ -8,6 +8,7 @@ interface DirectiveDocument {
   created_at: string;
   content_type?: string;
   user_id?: string;
+  content?: any; // Add the content property
 }
 
 interface DirectivesState {
