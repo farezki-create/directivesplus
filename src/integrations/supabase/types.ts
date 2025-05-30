@@ -253,28 +253,37 @@ export type Database = {
         Row: {
           access_code: string
           created_at: string | null
+          current_uses: number | null
           document_id: string | null
           expires_at: string | null
           id: string
           is_full_access: boolean | null
+          last_used_at: string | null
+          max_uses: number | null
           user_id: string
         }
         Insert: {
           access_code: string
           created_at?: string | null
+          current_uses?: number | null
           document_id?: string | null
           expires_at?: string | null
           id?: string
           is_full_access?: boolean | null
+          last_used_at?: string | null
+          max_uses?: number | null
           user_id: string
         }
         Update: {
           access_code?: string
           created_at?: string | null
+          current_uses?: number | null
           document_id?: string | null
           expires_at?: string | null
           id?: string
           is_full_access?: boolean | null
+          last_used_at?: string | null
+          max_uses?: number | null
           user_id?: string
         }
         Relationships: [
@@ -441,6 +450,7 @@ export type Database = {
       }
       institution_access_codes: {
         Row: {
+          auto_expires_at: string | null
           contact_email: string | null
           contact_person: string | null
           contact_phone: string | null
@@ -454,6 +464,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          auto_expires_at?: string | null
           contact_email?: string | null
           contact_person?: string | null
           contact_phone?: string | null
@@ -467,6 +478,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          auto_expires_at?: string | null
           contact_email?: string | null
           contact_person?: string | null
           contact_phone?: string | null
@@ -1363,6 +1375,39 @@ export type Database = {
         }
         Relationships: []
       }
+      security_audit_logs: {
+        Row: {
+          created_at: string | null
+          details: Json | null
+          event_type: string
+          id: string
+          ip_address: unknown | null
+          risk_level: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          details?: Json | null
+          event_type: string
+          id?: string
+          ip_address?: unknown | null
+          risk_level?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          details?: Json | null
+          event_type?: string
+          id?: string
+          ip_address?: unknown | null
+          risk_level?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       shared_documents: {
         Row: {
           access_code: string | null
@@ -1495,6 +1540,30 @@ export type Database = {
           id?: string
           institution_shared_code?: string | null
           last_name?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
         }
         Relationships: []
       }
@@ -1683,9 +1752,44 @@ export type Database = {
           shared_at: string
         }[]
       }
+      has_role: {
+        Args: {
+          _user_id: string
+          _role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: boolean
+      }
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      is_current_user_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      log_security_event: {
+        Args: {
+          _event_type: string
+          _user_id?: string
+          _ip_address?: unknown
+          _user_agent?: string
+          _details?: Json
+          _risk_level?: string
+        }
+        Returns: undefined
+      }
+      validate_and_use_access_code: {
+        Args: {
+          _access_code: string
+          _ip_address?: unknown
+          _user_agent?: string
+        }
+        Returns: {
+          is_valid: boolean
+          document_id: string
+          user_id: string
+          error_message: string
+        }[]
       }
       verify_access_identity: {
         Args: {
@@ -1759,7 +1863,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1874,6 +1978,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+    },
   },
 } as const
