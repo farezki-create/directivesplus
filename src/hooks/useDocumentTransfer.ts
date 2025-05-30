@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
-import { useDossierStore } from "@/store/dossierStore";
+import { useDirectivesStore } from "@/store/directivesStore";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -32,7 +32,7 @@ export const useDocumentTransfer = () => {
     progress: 0
   });
   const [isTransferring, setIsTransferring] = useState(false);
-  const { dossierActif, setDossierActif } = useDossierStore();
+  const { addDocument } = useDirectivesStore();
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
@@ -49,7 +49,6 @@ export const useDocumentTransfer = () => {
     console.log("Transfer user ID:", currentUserId);
     
     if (isAuthenticated && user) {
-      // Pour les utilisateurs connectés, sauvegarder dans Supabase
       try {
         const documentData = {
           user_id: user.id,
@@ -83,7 +82,6 @@ export const useDocumentTransfer = () => {
         throw error;
       }
     } else {
-      // Pour les utilisateurs non connectés, utiliser le dossierStore
       const transferredDocument = {
         id: `transferred-${document.id}-${Date.now()}`,
         file_name: document.file_name || `Document_${new Date().toLocaleDateString('fr-FR').replace(/\//g, '-')}`,
@@ -91,55 +89,14 @@ export const useDocumentTransfer = () => {
         created_at: new Date().toISOString(),
         description: document.description || document.content?.title || "Document transféré depuis Directives Doc",
         content_type: document.content ? 'application/json' : (document.content_type || 'application/pdf'),
-        is_shared: true,
         user_id: currentUserId,
         content: document.content
       };
 
-      const profileData = {
-        first_name: "Accès",
-        last_name: "Public",
-        birth_date: null,
-      };
-
-      console.log("Creating dossier with profile:", profileData);
-
-      let updatedDossier;
-      
-      if (dossierActif) {
-        console.log("Adding document to existing dossier:", dossierActif.id);
-        const existingDocuments = dossierActif.contenu?.documents || [];
-        updatedDossier = {
-          ...dossierActif,
-          contenu: {
-            ...dossierActif.contenu,
-            documents: [...existingDocuments, transferredDocument]
-          }
-        };
-      } else {
-        console.log("Creating new dossier");
-        updatedDossier = {
-          id: `transferred-dossier-${Date.now()}`,
-          userId: currentUserId,
-          isFullAccess: true,
-          isDirectivesOnly: true,
-          isMedicalOnly: false,
-          profileData: profileData,
-          contenu: {
-            patient: {
-              nom: profileData.last_name,
-              prenom: profileData.first_name,
-              date_naissance: profileData.birth_date || null,
-            },
-            documents: [transferredDocument]
-          }
-        };
-      }
-
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      console.log("Setting dossier actif:", updatedDossier.id);
-      setDossierActif(updatedDossier);
+      console.log("Adding document to store:", transferredDocument.id);
+      addDocument(transferredDocument);
       
       updateStatus('completed', 'Document transféré avec succès !', 100);
       return transferredDocument;

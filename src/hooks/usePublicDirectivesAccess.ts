@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useVerifierCodeAcces } from "@/hooks/useVerifierCodeAcces";
 import { validateAccessCode, validateDossierResponse } from "@/utils/api/accessCodeValidation";
-import { useDossierStore } from "@/store/dossierStore";
+import { useDirectivesStore } from "@/store/directivesStore";
 import { toast } from "@/hooks/use-toast";
 import { useUrlAccessParams } from "./useUrlAccessParams";
 import { useInstitutionCodeAccess } from "./useInstitutionCodeAccess";
@@ -10,31 +10,27 @@ import { useInstitutionCodeAccess } from "./useInstitutionCodeAccess";
 export const usePublicDirectivesAccess = (isAuthenticated: boolean) => {
   const [publicAccessVerified, setPublicAccessVerified] = useState(false);
   const [publicAccessLoading, setPublicAccessLoading] = useState(false);
-  const { dossierActif, setDossierActif } = useDossierStore();
+  const { documents, setDocuments } = useDirectivesStore();
   const { verifierCode } = useVerifierCodeAcces();
   
-  // Récupération des paramètres URL
   const urlParams = useUrlAccessParams();
   
-  // Gestion de l'accès par code d'institution avec le nouveau paramètre professionalId
   const institutionAccess = useInstitutionCodeAccess(
     urlParams.code,
     urlParams.nom,
     urlParams.prenom,
     urlParams.naissance,
-    null, // professionalId - null car pas disponible dans les paramètres URL
+    null,
     urlParams.hasAllParams
   );
 
-  // Vérifier si nous avons déjà un accès public vérifié via le store
   useEffect(() => {
-    if (!isAuthenticated && dossierActif && !publicAccessVerified) {
-      console.log("Accès public déjà vérifié via le store dossier");
+    if (!isAuthenticated && documents.length > 0 && !publicAccessVerified) {
+      console.log("Accès public déjà vérifié via le store directives");
       setPublicAccessVerified(true);
     }
-  }, [dossierActif, isAuthenticated, publicAccessVerified]);
+  }, [documents, isAuthenticated, publicAccessVerified]);
 
-  // Marquer comme vérifié si l'accès institution est accordé
   useEffect(() => {
     if (institutionAccess.accessGranted && !publicAccessVerified) {
       console.log("Accès institution accordé, marquage comme vérifié");
@@ -49,7 +45,6 @@ export const usePublicDirectivesAccess = (isAuthenticated: boolean) => {
     try {
       console.log("Vérification de l'accès public:", formData);
       
-      // Vérifier le code d'accès
       const result = await verifierCode(formData.accessCode, 
         `directives_public_${formData.firstName}_${formData.lastName}`);
       
@@ -58,11 +53,11 @@ export const usePublicDirectivesAccess = (isAuthenticated: boolean) => {
         return;
       }
       
-      // Stocker le dossier dans le store
-      setDossierActif(result);
+      if (result?.contenu?.documents) {
+        setDocuments(result.contenu.documents);
+      }
       setPublicAccessVerified(true);
       
-      // Afficher une notification de succès
       toast({
         title: "Accès autorisé",
         description: "Vous avez accès aux directives anticipées",
@@ -79,14 +74,13 @@ export const usePublicDirectivesAccess = (isAuthenticated: boolean) => {
     }
   };
 
-  // État combiné incluant l'accès par institution
   const isAccessVerified = publicAccessVerified || institutionAccess.accessGranted;
   const isLoading = publicAccessLoading || institutionAccess.loading;
 
   return {
     publicAccessVerified: isAccessVerified,
     publicAccessLoading: isLoading,
-    dossierActif,
+    dossierActif: { contenu: { documents } },
     handlePublicAccess,
     urlParams,
     institutionAccess

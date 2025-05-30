@@ -3,7 +3,7 @@ import { useDirectivesDocuments } from "@/hooks/useDirectivesDocuments";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePublicDirectivesAccess } from "@/hooks/usePublicDirectivesAccess";
 import { useDirectivesState } from "@/hooks/directives/useDirectivesState";
-import { DirectivesAccessManager } from "@/components/directives/DirectivesAccessManager";
+import { PublicDirectivesView } from "@/components/directives/PublicDirectivesView";
 import type { Document } from "@/types/documents";
 
 const DirectivesDocs = () => {
@@ -46,18 +46,15 @@ const DirectivesDocs = () => {
 
   const isLoading = authLoading || documentsLoading || publicAccessLoading;
 
-  // Wrapper function to handle upload completion
   const handleUploadCompleteWrapper = () => {
     handleUploadComplete();
   };
 
-  // Enhanced view handler that sets preview document with file_path
   const handleViewDocument = (filePath: string, fileType?: string) => {
     console.log("DirectivesDocs - handleViewDocument appelé avec:", filePath, fileType);
     setPreviewDocument(filePath);
   };
 
-  // Preview handlers
   const handlePreviewDownload = (filePath: string) => {
     const document = documents.find(doc => doc.file_path === filePath);
     const fileName = document?.file_name || 'document.pdf';
@@ -70,14 +67,13 @@ const DirectivesDocs = () => {
     handlePrint(filePath, fileType);
   };
 
-  // Enhanced delete handler that accepts Document object
   const handleDeleteDocument = async (document: Document) => {
     console.log("DirectivesDocs - handleDeleteDocument appelé avec:", document);
     await handleDelete(document.id);
   };
 
   return (
-    <DirectivesAccessManager
+    <PublicDirectivesView
       isLoading={isLoading}
       isAuthenticated={isAuthenticated}
       user={user}

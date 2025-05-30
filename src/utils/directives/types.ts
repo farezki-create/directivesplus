@@ -1,36 +1,22 @@
 
-import { Dossier } from "@/store/dossierStore";
+import { DirectiveDocument, PatientData, DirectiveItem, InstitutionAccessState } from "@/types/directivesTypes";
+import { useDirectivesStore } from "@/store/directivesStore";
 
-/**
- * Types related to directives
- */
+// Re-export types for backward compatibility
+export type { DirectiveDocument, PatientData, DirectiveItem, InstitutionAccessState };
 
-/**
- * Source of the directives data
- */
-export type DirectiveSource = 
-  | 'direct' 
-  | 'content' 
-  | 'contenu' 
-  | 'meta' 
-  | 'pdf_contenu'
-  | 'objet_direct'
-  | 'image miroir';
+// Helper functions for type checking
+export const isDirectiveDocument = (item: any): item is DirectiveDocument => {
+  return item && typeof item.id === 'string' && typeof item.file_name === 'string';
+};
 
-/**
- * Result from directives extraction
- */
-export interface DirectiveExtractResult {
-  directives: any;
-  source: DirectiveSource | string;
-}
+export const isPatientData = (item: any): item is PatientData => {
+  return item && typeof item.first_name === 'string' && typeof item.last_name === 'string';
+};
 
-/**
- * Interface for patient information
- */
-export interface PatientInfo {
-  firstName: string;
-  lastName: string;
-  birthDate: string | null;
-  gender: string | null;
-}
+export const createEmptyDirectivesState = () => {
+  return {
+    documents: [],
+    currentDocument: null
+  };
+};

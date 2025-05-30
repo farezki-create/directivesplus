@@ -2,12 +2,20 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import type { Dossier } from "./types/dossierTypes";
+import type { DirectiveDocument } from "@/types/directivesTypes";
+
+interface VerificationResult {
+  id: string;
+  userId: string;
+  contenu: {
+    documents: DirectiveDocument[];
+  };
+}
 
 export const useVerifierCodeAcces = () => {
   const [loading, setLoading] = useState(false);
 
-  const verifierCode = async (accessCode: string, bruteForceIdentifier: string): Promise<Dossier | null> => {
+  const verifierCode = async (accessCode: string, bruteForceIdentifier: string): Promise<VerificationResult | null> => {
     setLoading(true);
     try {
       const apiUrl = "https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/verifierCodeAcces";
@@ -26,14 +34,9 @@ export const useVerifierCodeAcces = () => {
       const result = await response.json();
       
       if (result.success && result.dossier) {
-        // Convert to the expected Dossier type
-        const convertedDossier: Dossier = {
+        const convertedDossier: VerificationResult = {
           id: result.dossier.id,
           userId: result.dossier.userId,
-          isFullAccess: true,
-          isDirectivesOnly: false,
-          isMedicalOnly: false,
-          profileData: result.dossier.profileData,
           contenu: result.dossier.contenu || { documents: [] }
         };
         
@@ -59,9 +62,8 @@ export const useVerifierCodeAcces = () => {
     }
   };
 
-  const getDossierUtilisateurAuthentifie = async (userId: string, type: string): Promise<Dossier | null> => {
+  const getDossierUtilisateurAuthentifie = async (userId: string, type: string): Promise<VerificationResult | null> => {
     try {
-      // Simuler la récupération d'un dossier pour utilisateur authentifié
       const { data, error } = await supabase
         .from('user_profiles')
         .select('*')
@@ -72,18 +74,9 @@ export const useVerifierCodeAcces = () => {
         return null;
       }
 
-      // Convert to the expected Dossier type
-      const convertedDossier: Dossier = {
+      const convertedDossier: VerificationResult = {
         id: data.id,
         userId: data.id,
-        isFullAccess: true,
-        isDirectivesOnly: false,
-        isMedicalOnly: false,
-        profileData: {
-          first_name: data.first_name,
-          last_name: data.last_name,
-          birth_date: data.birth_date
-        },
         contenu: { documents: [] }
       };
 

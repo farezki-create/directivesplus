@@ -1,24 +1,23 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useDossierStore } from "@/store/dossierStore";
+import { useDirectivesStore } from "@/store/directivesStore";
 import { toast } from "@/hooks/use-toast";
-import { DirectiveItem, InstitutionAccessState } from "@/types/directives";
+import { DirectiveItem, InstitutionAccessState } from "@/types/directivesTypes";
 import { validateProfessionalId } from "@/utils/professional-id-validation";
 
-// Interface pour typer les données patient retournées par SQL
 interface PatientInfo {
   first_name: string;
   last_name: string;
   birth_date: string;
 }
 
-// Interface pour typer la réponse brute de Supabase
 interface SupabaseAccessResponse {
   access_granted: boolean;
   user_id: string;
-  patient_info: any; // Json type from Supabase
-  directives: any; // Json type from Supabase
-  documents: any; // Json type from Supabase
+  patient_info: any;
+  directives: any;
+  documents: any;
 }
 
 export const useInstitutionCodeAccess = (
@@ -37,7 +36,7 @@ export const useInstitutionCodeAccess = (
     directiveItems: []
   });
   
-  const { setDossierActif } = useDossierStore();
+  const { setDocuments } = useDirectivesStore();
 
   useEffect(() => {
     const tryInstitutionAccess = async () => {
@@ -46,7 +45,6 @@ export const useInstitutionCodeAccess = (
         return;
       }
 
-      // Valider le numéro professionnel
       const professionalIdValidation = validateProfessionalId(professionalId);
       if (!professionalIdValidation.isValid) {
         setState(prev => ({
@@ -69,11 +67,10 @@ export const useInstitutionCodeAccess = (
       setState(prev => ({ ...prev, loading: true, error: null }));
       
       try {
-        // Journaliser la tentative d'accès avec les informations professionnelles
         await supabase
           .from('document_access_logs')
           .insert({
-            user_id: '00000000-0000-0000-0000-000000000000', // Temporaire jusqu'à l'authentification
+            user_id: '00000000-0000-0000-0000-000000000000',
             access_code_id: 'institution_access_attempt',
             nom_consultant: 'Institution',
             prenom_consultant: `${professionalIdValidation.type}:${professionalIdValidation.formattedNumber}`,
@@ -81,7 +78,6 @@ export const useInstitutionCodeAccess = (
             user_agent: `Institution Access Attempt | Patient: ${prenom} ${nom} | Birth: ${naissance} | Code: ${code} | Professional: ${professionalIdValidation.type}:${professionalIdValidation.formattedNumber}`
           });
 
-        // Utiliser la nouvelle fonction SQL sécurisée
         const { data: accessResult, error: accessError } = await supabase
           .rpc('get_institution_directives_complete', {
             input_last_name: nom,
@@ -95,7 +91,6 @@ export const useInstitutionCodeAccess = (
         if (accessError) {
           console.error("Erreur RPC:", accessError);
           
-          // Logger l'échec d'accès
           await supabase
             .from('document_access_logs')
             .insert({
@@ -111,7 +106,6 @@ export const useInstitutionCodeAccess = (
         }
 
         if (!accessResult || !Array.isArray(accessResult) || accessResult.length === 0) {
-          // Logger l'échec d'accès - aucun résultat
           await supabase
             .from('document_access_logs')
             .insert({
@@ -135,7 +129,6 @@ export const useInstitutionCodeAccess = (
         console.log("Résultat parsé:", result);
         
         if (!result.access_granted) {
-          // Logger l'échec d'accès
           await supabase
             .from('document_access_logs')
             .insert({
@@ -155,7 +148,6 @@ export const useInstitutionCodeAccess = (
           return;
         }
 
-        // Logger l'accès réussi avec toutes les informations
         await supabase
           .from('document_access_logs')
           .insert({
@@ -167,21 +159,17 @@ export const useInstitutionCodeAccess = (
             user_agent: `Institution Access GRANTED | Patient: ${prenom} ${nom} | Professional: ${professionalIdValidation.type}:${professionalIdValidation.formattedNumber} | Documents: ${result.documents?.length || 0} | Directives: ${result.directives?.length || 0}`
           });
 
-        // Marquer l'accès institution en session
         sessionStorage.setItem('institutionAccess', 'true');
         sessionStorage.setItem('institutionProfessionalId', `${professionalIdValidation.type}:${professionalIdValidation.formattedNumber}`);
         
-        // Conversion sécurisée des données patient
         const patientInfo: PatientInfo = {
           first_name: result.patient_info?.first_name || prenom || '',
           last_name: result.patient_info?.last_name || nom || '',
           birth_date: result.patient_info?.birth_date || naissance || '',
         };
 
-        // Normaliser et combiner les directives et documents
         const directiveItems: DirectiveItem[] = [];
         
-        // Ajouter les directives textuelles
         if (result.directives && Array.isArray(result.directives)) {
           result.directives.forEach((directive: any) => {
             directiveItems.push({
@@ -193,7 +181,6 @@ export const useInstitutionCodeAccess = (
           });
         }
         
-        // Ajouter les documents PDF
         if (result.documents && Array.isArray(result.documents)) {
           result.documents.forEach((document: any) => {
             directiveItems.push({
@@ -209,35 +196,18 @@ export const useInstitutionCodeAccess = (
           });
         }
 
-        // Trier par date de création (plus récent en premier)
         directiveItems.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-        // Créer un dossier normalisé pour le store avec typage correct
-        const profileData = {
-          first_name: patientInfo.first_name,
-          last_name: patientInfo.last_name,
-          birth_date: patientInfo.birth_date,
-        };
+        const documents = directiveItems.map(item => ({
+          id: item.id,
+          file_name: item.file_name || 'Document',
+          file_path: item.file_path || '',
+          created_at: item.created_at,
+          content_type: item.content_type,
+          user_id: result.user_id
+        }));
 
-        const dossier = {
-          id: `institution-access-${result.user_id}`,
-          userId: result.user_id || '',
-          isFullAccess: true,
-          isDirectivesOnly: false,
-          isMedicalOnly: false,
-          profileData,
-          contenu: {
-            patient: {
-              nom: profileData.last_name,
-              prenom: profileData.first_name,
-              date_naissance: profileData.birth_date
-            },
-            directives: directiveItems
-          }
-        };
-
-        console.log("Dossier créé pour accès institution:", dossier);
-        setDossierActif(dossier);
+        setDocuments(documents);
 
         setState(prev => ({
           ...prev,
@@ -249,10 +219,9 @@ export const useInstitutionCodeAccess = (
 
         toast({
           title: "Accès autorisé",
-          description: `Accès aux directives de ${profileData.first_name} ${profileData.last_name} (${professionalIdValidation.type}: ${professionalIdValidation.formattedNumber})`,
+          description: `Accès aux directives de ${patientInfo.first_name} ${patientInfo.last_name} (${professionalIdValidation.type}: ${professionalIdValidation.formattedNumber})`,
         });
 
-        // Ouvrir automatiquement le premier PDF dans le viewer interne
         const firstPdfDocument = directiveItems.find(item => 
           item.type === 'document' && 
           item.file_path && 
@@ -269,7 +238,6 @@ export const useInstitutionCodeAccess = (
       } catch (error: any) {
         console.error("Erreur lors de l'accès par code institution:", error);
         
-        // Logger l'erreur système
         await supabase
           .from('document_access_logs')
           .insert({
@@ -295,13 +263,12 @@ export const useInstitutionCodeAccess = (
       }
     };
 
-    // Éviter les appels répétés avec un délai
     const timeoutId = setTimeout(() => {
       tryInstitutionAccess();
     }, 100);
 
     return () => clearTimeout(timeoutId);
-  }, [code, nom, prenom, naissance, professionalId, hasAllParams, setDossierActif]);
+  }, [code, nom, prenom, naissance, professionalId, hasAllParams, setDocuments]);
 
   return state;
 };

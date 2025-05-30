@@ -6,8 +6,7 @@ import { useSearchParams } from "react-router-dom";
 import AuthenticatedDirectivesView from "@/components/directives/AuthenticatedDirectivesView";
 import DirectivesLoadingState from "@/components/documents/DirectivesLoadingState";
 import { MesDirectivesSharedAccess } from "@/components/documents/MesDirectivesSharedAccess";
-import { useDossierDocuments } from "@/hooks/useDossierDocuments";
-import { useDossierStore } from "@/store/dossierStore";
+import { useDirectivesStore } from "@/store/directivesStore";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import type { Document } from "@/types/documents";
@@ -19,16 +18,8 @@ const MesDirectives = () => {
   const userId = searchParams.get('user');
   const { user, profile, isAuthenticated, isLoading: authLoading } = useAuth();
   
-  // Vérifier si c'est un accès institution valide
   const hasInstitutionAccess = sessionStorage.getItem('institutionAccess') === 'true';
-  const { dossierActif } = useDossierStore();
-  
-  // Toujours appeler les hooks pour éviter les erreurs conditionnelles
-  const normalDocuments = useDirectivesDocuments();
-  const dossierDocuments = useDossierDocuments();
-  
-  // Choisir la source de documents appropriée
-  const documentsData = hasInstitutionAccess && dossierActif ? dossierDocuments : normalDocuments;
+  const { documents: storeDocuments } = useDirectivesStore();
   
   const {
     isLoading: documentsLoading,
@@ -42,12 +33,10 @@ const MesDirectives = () => {
     handleView,
     handleDelete,
     handleUploadComplete,
-  } = documentsData;
+  } = useDirectivesDocuments();
 
-  // Local state for preview document
   const [previewDocument, setPreviewDocument] = React.useState<string | null>(null);
 
-  // Déterminer si l'accès doit être autorisé
   const shouldAllowAccess = (accessType === 'card' || hasInstitutionAccess) || isAuthenticated;
 
   console.log("MesDirectives - Auth state:", { 
@@ -59,12 +48,10 @@ const MesDirectives = () => {
     sharedCode,
     qrUserId: userId,
     hasInstitutionAccess,
-    hasDossierActif: !!dossierActif,
-    documentsCount: documents.length
+    documentsCount: documents.length,
+    storeDocumentsCount: storeDocuments.length
   });
-  console.log("MesDirectives - Documents:", documents);
 
-  // Si un code de partage est présent dans l'URL, afficher la vue de partage
   if (sharedCode) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -77,7 +64,6 @@ const MesDirectives = () => {
     );
   }
 
-  // Afficher l'état de chargement
   if (authLoading || documentsLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -90,25 +76,20 @@ const MesDirectives = () => {
     );
   }
 
-  // Vérifier l'accès avant le rendu principal
   if (!shouldAllowAccess) {
-    // Redirection vers auth seulement pour les accès normaux (non QR/institution)
     window.location.href = '/auth';
     return null;
   }
 
-  // Wrapper function to handle upload completion
   const handleUploadCompleteWrapper = () => {
     handleUploadComplete();
   };
 
-  // Enhanced view handler that sets preview document with file_path
   const handleViewDocument = (filePath: string, fileType?: string) => {
     console.log("MesDirectives - handleViewDocument appelé avec:", filePath, fileType);
     setPreviewDocument(filePath);
   };
 
-  // Preview handlers
   const handlePreviewDownload = (filePath: string) => {
     const document = documents.find(doc => doc.file_path === filePath);
     const fileName = document?.file_name || 'document.pdf';
@@ -121,7 +102,6 @@ const MesDirectives = () => {
     handlePrint(filePath, fileType);
   };
 
-  // Enhanced delete handler that accepts Document object
   const handleDeleteDocument = async (document: Document) => {
     console.log("MesDirectives - handleDeleteDocument appelé avec:", document);
     await handleDelete(document.id);
@@ -132,12 +112,8 @@ const MesDirectives = () => {
       <Header />
       <main className="container mx-auto py-8">
         <AuthenticatedDirectivesView
-          user={hasInstitutionAccess && dossierActif ? { id: dossierActif.userId } : user}
-          profile={hasInstitutionAccess && dossierActif?.profileData ? {
-            first_name: dossierActif.profileData.first_name,
-            last_name: dossierActif.profileData.last_name,
-            birth_date: dossierActif.profileData.birth_date
-          } : profile}
+          user={user}
+          profile={profile}
           documents={documents}
           isLoading={documentsLoading}
           onView={handleViewDocument}

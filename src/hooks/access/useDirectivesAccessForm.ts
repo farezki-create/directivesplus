@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useVerifierCodeAcces } from "@/hooks/useVerifierCodeAcces";
-import { useDossierStore } from "@/store/dossierStore";
+import { useDirectivesStore } from "@/store/directivesStore";
 import { toast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
@@ -23,7 +23,7 @@ export const useDirectivesAccessForm = () => {
   const [blockedAccess, setBlockedAccess] = useState(false);
   
   const { verifierCode } = useVerifierCodeAcces();
-  const { setDossierActif } = useDossierStore();
+  const { setDocuments } = useDirectivesStore();
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -43,25 +43,22 @@ export const useDirectivesAccessForm = () => {
       const values = form.getValues();
       console.log("Tentative de vérification du code d'accès:", values);
       
-      // Créer l'identifiant pour le brute force protection
       const bruteForceIdentifier = `directives_public_${values.firstName}_${values.lastName}`;
       
-      // Vérifier le code d'accès
       const result = await verifierCode(values.accessCode, bruteForceIdentifier);
       
       if (result) {
         console.log("Code d'accès vérifié avec succès:", result);
         
-        // Stocker le dossier dans le store
-        setDossierActif(result);
+        if (result.contenu?.documents) {
+          setDocuments(result.contenu.documents);
+        }
         
-        // Afficher une notification de succès
         toast({
           title: "Accès autorisé",
           description: "Vous avez accès aux directives anticipées",
         });
         
-        // Rediriger vers la page des directives
         window.location.href = '/directives-docs';
       } else {
         console.log("Échec de la vérification du code d'accès");

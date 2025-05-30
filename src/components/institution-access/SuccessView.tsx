@@ -3,7 +3,7 @@ import React from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Shield, CheckCircle, FileText } from "lucide-react";
-import { useDossierStore } from "@/store/dossierStore";
+import { useDirectivesStore } from "@/store/directivesStore";
 
 interface SuccessViewProps {
   patientData?: {
@@ -14,11 +14,9 @@ interface SuccessViewProps {
 }
 
 export const SuccessView: React.FC<SuccessViewProps> = ({ patientData }) => {
-  const { dossierActif } = useDossierStore();
+  const { documents } = useDirectivesStore();
 
-  // Trouver le premier document PDF disponible
-  const firstPdfDocument = dossierActif?.contenu?.directives?.find((item: any) => 
-    item.type === 'document' && 
+  const firstPdfDocument = documents.find((item: any) => 
     item.file_path && 
     (item.content_type === 'application/pdf' || item.file_name?.toLowerCase().endsWith('.pdf'))
   );
@@ -26,7 +24,6 @@ export const SuccessView: React.FC<SuccessViewProps> = ({ patientData }) => {
   const handleOpenInternalViewer = () => {
     if (firstPdfDocument?.id) {
       console.log("Ouverture dans le viewer interne:", firstPdfDocument);
-      // Ouvrir dans le viewer PDF interne de l'application
       window.location.href = `/pdf-viewer?id=${firstPdfDocument.id}&type=document`;
     }
   };

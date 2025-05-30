@@ -5,18 +5,17 @@ import { useAuth } from "@/contexts/AuthContext";
 import Header from "@/components/Header";
 import DirectivesAccessForm from "@/components/access/DirectivesAccessForm";
 import { toast } from "@/components/ui/use-toast";
-import { useDossierStore } from "@/store/dossierStore";
+import { useDirectivesStore } from "@/store/directivesStore";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { InfoIcon } from "lucide-react";
 import { getAuthUserDossier } from "@/api/accessCodeVerification";
 
 const DirectivesAccess = () => {
   const { user, isAuthenticated } = useAuth();
-  const { setDossierActif } = useDossierStore();
+  const { setDocuments } = useDirectivesStore();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   
-  // Auto-load directives for authenticated users
   useEffect(() => {
     const loadUserDirectives = async () => {
       if (!isAuthenticated || !user?.id || isLoading) return;
@@ -25,11 +24,12 @@ const DirectivesAccess = () => {
         setIsLoading(true);
         console.log("Loading directives for authenticated user:", user.id);
         
-        // Get user dossier
         const authResult = await getAuthUserDossier(user.id, "directive");
         
         if (authResult.success) {
-          setDossierActif(authResult.dossier);
+          if (authResult.dossier?.contenu?.documents) {
+            setDocuments(authResult.dossier.contenu.documents);
+          }
           toast({
             title: "Accès autorisé",
             description: "Vos directives ont été chargées avec succès",
@@ -46,13 +46,12 @@ const DirectivesAccess = () => {
     };
     
     loadUserDirectives();
-  }, [isAuthenticated, user, navigate, setDossierActif]);
+  }, [isAuthenticated, user, navigate, setDocuments]);
   
   const handleAccessDirectives = async (accessCode: string, formData: any) => {
     try {
       console.log("Vérification du code d'accès aux directives:", accessCode);
       
-      // Call the API
       const apiUrl = "https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/verifierCodeAcces";
       const bruteForceIdentifier = `directives_access_${formData.firstName}_${formData.lastName}_${formData.birthDate}`;
       
@@ -74,13 +73,12 @@ const DirectivesAccess = () => {
       if (result.success) {
         console.log("Code d'accès aux directives valide, dossier récupéré:", result);
         
-        // Store in dossier store
-        setDossierActif(result.dossier);
+        if (result.dossier?.contenu?.documents) {
+          setDocuments(result.dossier.contenu.documents);
+        }
         
-        // Navigate to mes-directives instead of affichage-dossier
         navigate("/mes-directives", { replace: true });
         
-        // Success toast
         toast({
           title: "Accès autorisé",
           description: "Vous avez accès aux directives anticipées",

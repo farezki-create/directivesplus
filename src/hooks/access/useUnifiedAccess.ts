@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
-import { useDossierStore } from "@/store/dossierStore";
+import { useDirectivesStore } from "@/store/directivesStore";
 
 export interface AccessFormData {
   firstName: string;
@@ -18,7 +18,7 @@ export interface AccessOptions {
 
 export const useUnifiedAccess = () => {
   const navigate = useNavigate();
-  const { setDossierActif } = useDossierStore();
+  const { setDocuments } = useDirectivesStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
