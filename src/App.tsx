@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { QueryClient } from 'react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/contexts/AuthContext';
 import Dossier from '@/pages/Dossier';
@@ -17,9 +18,19 @@ import SecurityDashboard from '@/pages/SecurityDashboard';
 import { SecurityProvider } from '@/components/security/SecurityProvider';
 import { useSecurityMonitor } from '@/hooks/useSecurityMonitor';
 
+// Create a client instance
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 3,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+});
+
 function App() {
   return (
-    <QueryClient>
+    <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AuthProvider>
           <SecurityProvider>
@@ -27,7 +38,7 @@ function App() {
           </SecurityProvider>
         </AuthProvider>
       </BrowserRouter>
-    </QueryClient>
+    </QueryClientProvider>
   );
 }
 
