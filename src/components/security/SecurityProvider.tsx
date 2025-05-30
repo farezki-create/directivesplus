@@ -9,6 +9,7 @@ interface SecurityContextType {
   validateSession: () => Promise<boolean>;
   clearSession: () => void;
   logSecurityEvent: (eventType: any, details?: any) => Promise<void>;
+  checkRateLimit: (key: string, maxAttempts: number, windowMs: number) => boolean;
 }
 
 const SecurityContext = createContext<SecurityContextType | undefined>(undefined);
@@ -124,10 +125,37 @@ export const SecurityProvider: React.FC<SecurityProviderProps> = ({ children }) 
     });
   };
 
+  const checkRateLimit = (key: string, maxAttempts: number, windowMs: number): boolean => {
+    // Simple client-side rate limiting as fallback
+    const now = Date.now();
+    const storageKey = `rate_limit_${key}`;
+    const stored = localStorage.getItem(storageKey);
+    
+    if (!stored) {
+      localStorage.setItem(storageKey, JSON.stringify({ count: 1, start: now }));
+      return true;
+    }
+    
+    const data = JSON.parse(stored);
+    if (now - data.start > windowMs) {
+      localStorage.setItem(storageKey, JSON.stringify({ count: 1, start: now }));
+      return true;
+    }
+    
+    if (data.count >= maxAttempts) {
+      return false;
+    }
+    
+    data.count++;
+    localStorage.setItem(storageKey, JSON.stringify(data));
+    return true;
+  };
+
   const value: SecurityContextType = {
     validateSession,
     clearSession,
-    logSecurityEvent
+    logSecurityEvent,
+    checkRateLimit
   };
 
   return (

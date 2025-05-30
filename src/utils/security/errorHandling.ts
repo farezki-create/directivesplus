@@ -1,4 +1,3 @@
-
 import { EnhancedSecurityEventLogger } from './enhancedSecurityEventLogger';
 
 interface SecurityError {
@@ -116,11 +115,8 @@ export class SecureErrorHandler {
     });
   }
   
-  static sanitizeErrorForUser(error: any): string {
-    // Never expose internal system details to users
-    const safeMessage = this.handleError(error);
-    
-    // Additional sanitization to remove sensitive information
-    return safeMessage.then ? safeMessage : Promise.resolve(safeMessage);
+  static async sanitizeErrorForUser(error: any): Promise<string> {
+    // Return the actual promise instead of the promise itself
+    return await this.handleError(error);
   }
 }

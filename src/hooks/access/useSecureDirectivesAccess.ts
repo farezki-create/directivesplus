@@ -78,7 +78,7 @@ export const useSecureDirectivesAccess = () => {
       
       if (result.isValid) {
         // Success - reset rate limiting
-        accessCodeLimiter.reset(identifier);
+        await accessCodeLimiter.reset(identifier);
         setBlocked(false);
         setRemainingAttempts(null);
         
@@ -103,7 +103,7 @@ export const useSecureDirectivesAccess = () => {
         window.location.href = '/directives-docs';
       } else {
         // Failed attempt
-        const limitResult = accessCodeLimiter.recordAttempt(identifier);
+        const limitResult = await accessCodeLimiter.recordAttempt(identifier);
         setRemainingAttempts(limitResult.remainingAttempts);
         
         if (limitResult.blocked) {
@@ -128,7 +128,7 @@ export const useSecureDirectivesAccess = () => {
       console.error("Erreur lors de la vérification du code d'accès:", error);
       
       // Record failed attempt
-      const limitResult = accessCodeLimiter.recordAttempt(identifier);
+      const limitResult = await accessCodeLimiter.recordAttempt(identifier);
       setRemainingAttempts(limitResult.remainingAttempts);
       
       await logSecurityEvent(

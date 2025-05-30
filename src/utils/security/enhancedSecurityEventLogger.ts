@@ -30,16 +30,19 @@ interface SecurityEventData {
 export class EnhancedSecurityEventLogger {
   static async logEvent(eventData: SecurityEventData): Promise<void> {
     try {
-      await supabase.from('security_events').insert({
+      // Use security_audit_logs table instead of security_events
+      await supabase.from('security_audit_logs').insert({
         event_type: eventData.eventType,
         user_id: eventData.userId,
         ip_address: eventData.ipAddress,
         user_agent: eventData.userAgent,
-        resource_type: eventData.resourceType,
-        resource_id: eventData.resourceId,
-        success: eventData.success,
         risk_level: eventData.riskLevel || 'low',
-        details: eventData.details || {}
+        details: {
+          resource_type: eventData.resourceType,
+          resource_id: eventData.resourceId,
+          success: eventData.success,
+          ...eventData.details
+        } || {}
       });
     } catch (error) {
       console.error('Failed to log security event:', error);

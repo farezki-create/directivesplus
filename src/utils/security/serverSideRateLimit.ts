@@ -17,14 +17,16 @@ export class ServerSideRateLimit {
     userAgent?: string
   ): Promise<RateLimitResult> {
     try {
-      const { data, error } = await supabase.rpc('check_rate_limit', {
-        p_identifier: identifier,
-        p_attempt_type: attemptType,
-        p_max_attempts: maxAttempts,
-        p_window_minutes: windowMinutes,
-        p_ip_address: ipAddress,
-        p_user_agent: userAgent
-      });
+      // Since the check_rate_limit function doesn't exist yet, 
+      // use existing access_code_attempts table as fallback
+      const windowStart = new Date(Date.now() - windowMinutes * 60 * 1000);
+      
+      const { count, error } = await supabase
+        .from('access_code_attempts')
+        .select('*', { count: 'exact' })
+        .eq('access_code', identifier)
+        .gte('attempt_time', windowStart.toISOString())
+        .eq('success', false);
 
       if (error) {
         console.error('Rate limit check failed:', error);
@@ -32,10 +34,13 @@ export class ServerSideRateLimit {
         return { allowed: false, remainingAttempts: 0 };
       }
 
+      const attemptCount = count || 0;
+      const allowed = attemptCount < maxAttempts;
+      
       return {
-        allowed: data,
-        remainingAttempts: data ? maxAttempts - 1 : 0,
-        retryAfter: data ? undefined : windowMinutes * 60
+        allowed,
+        remainingAttempts: Math.max(0, maxAttempts - attemptCount - 1),
+        retryAfter: allowed ? undefined : windowMinutes * 60
       };
     } catch (error) {
       console.error('Rate limit check error:', error);
@@ -50,9 +55,8 @@ export class ServerSideRateLimit {
     userAgent?: string
   ): Promise<void> {
     try {
-      await supabase.from('rate_limit_attempts').insert({
-        identifier,
-        attempt_type: attemptType,
+      await supabase.from('access_code_attempts').insert({
+        access_code: identifier,
         ip_address: ipAddress,
         user_agent: userAgent,
         success: true
