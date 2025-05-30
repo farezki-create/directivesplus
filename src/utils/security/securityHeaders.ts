@@ -1,37 +1,44 @@
 
-/**
- * Configuration des headers de sécurité pour la conformité HDS
- */
 export const securityHeaders = {
   // Content Security Policy
   'Content-Security-Policy': [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.gpteng.co https://js.stripe.com https://translate.google.com https://translate.googleapis.com",
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://www.gstatic.com https://translate.googleapis.com",
-    "font-src 'self' https://fonts.gstatic.com https://www.gstatic.com",
-    "img-src 'self' data: https: https://www.gstatic.com https://translate.googleapis.com",
-    "connect-src 'self' https://*.supabase.co https://api.stripe.com https://translate.googleapis.com",
-    "frame-src 'none'",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://checkout.stripe.com",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "img-src 'self' data: https: blob:",
+    "font-src 'self' https://fonts.gstatic.com",
+    "connect-src 'self' https://api.stripe.com https://*.supabase.co wss://*.supabase.co",
+    "frame-src 'self' https://js.stripe.com https://checkout.stripe.com",
     "object-src 'none'",
-    "base-uri 'self'"
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'"
   ].join('; '),
   
-  // Security headers
-  'X-Content-Type-Options': 'nosniff',
+  // Prevent clickjacking
   'X-Frame-Options': 'DENY',
-  'X-XSS-Protection': '1; mode=block',
-  'Referrer-Policy': 'strict-origin-when-cross-origin',
-  'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
   
-  // HSTS (sera géré par Scalingo en production)
-  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains'
+  // Prevent MIME type sniffing
+  'X-Content-Type-Options': 'nosniff',
+  
+  // XSS Protection
+  'X-XSS-Protection': '1; mode=block',
+  
+  // Referrer Policy
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  
+  // Permissions Policy
+  'Permissions-Policy': [
+    'camera=()',
+    'microphone=()',
+    'geolocation=()',
+    'payment=(self)',
+    'usb=()'
+  ].join(', ')
 };
 
-/**
- * Applique les headers de sécurité à une réponse Express
- */
-export const applySecurityHeaders = (res: any) => {
-  Object.entries(securityHeaders).forEach(([header, value]) => {
-    res.setHeader(header, value);
-  });
+export const applySecurityHeaders = () => {
+  // This would typically be applied at the server level
+  // For client-side, we can only suggest these headers
+  console.log('Security headers should be applied at server level:', securityHeaders);
 };

@@ -1,107 +1,110 @@
 
-// Validation des numéros d'identification professionnels français
-
-export type ProfessionalIdType = 'RPPS' | 'ADELI' | 'FINESS';
-
-export interface ProfessionalIdValidationResult {
+interface ValidationResult {
   isValid: boolean;
-  type: ProfessionalIdType | null;
-  formattedNumber: string;
+  type?: 'rpps' | 'adeli' | 'finess';
+  formattedNumber?: string;
   error?: string;
 }
 
-/**
- * Valide un numéro RPPS (Répertoire Partagé des Professionnels de Santé)
- * Format: 11 chiffres
- */
-export const validateRPPS = (number: string): boolean => {
-  const cleaned = number.replace(/\s/g, '');
-  return /^\d{11}$/.test(cleaned);
+export const validateProfessionalId = (id: string): ValidationResult => {
+  if (!id || typeof id !== 'string') {
+    return { isValid: false, error: 'Numéro professionnel requis' };
+  }
+
+  // Remove all non-digit characters
+  const cleanId = id.replace(/\D/g, '');
+
+  if (cleanId.length < 8 || cleanId.length > 11) {
+    return { isValid: false, error: 'Le numéro professionnel doit contenir entre 8 et 11 chiffres' };
+  }
+
+  // RPPS (Répertoire Partagé des Professionnels de Santé) - 11 digits
+  if (cleanId.length === 11) {
+    if (validateRPPS(cleanId)) {
+      return { 
+        isValid: true, 
+        type: 'rpps', 
+        formattedNumber: formatRPPS(cleanId)
+      };
+    }
+  }
+
+  // ADELI (Automatisation DEs LIstes) - 9 digits
+  if (cleanId.length === 9) {
+    if (validateADELI(cleanId)) {
+      return { 
+        isValid: true, 
+        type: 'adeli', 
+        formattedNumber: formatADELI(cleanId)
+      };
+    }
+  }
+
+  // FINESS (Fichier National des Établissements Sanitaires et Sociaux) - 8 or 9 digits
+  if (cleanId.length === 8 || cleanId.length === 9) {
+    if (validateFINESS(cleanId)) {
+      return { 
+        isValid: true, 
+        type: 'finess', 
+        formattedNumber: cleanId
+      };
+    }
+  }
+
+  return { isValid: false, error: 'Numéro professionnel invalide' };
 };
 
-/**
- * Valide un numéro ADELI (Automatisation DEs LIstes)
- * Format: 9 chiffres
- */
-export const validateADELI = (number: string): boolean => {
-  const cleaned = number.replace(/\s/g, '');
-  return /^\d{9}$/.test(cleaned);
+const validateRPPS = (rpps: string): boolean => {
+  if (rpps.length !== 11) return false;
+  
+  // RPPS uses Luhn algorithm for validation
+  return validateLuhn(rpps);
 };
 
-/**
- * Valide un numéro FINESS (Fichier National des Établissements Sanitaires et Sociaux)
- * Format: 9 chiffres
- */
-export const validateFINESS = (number: string): boolean => {
-  const cleaned = number.replace(/\s/g, '');
-  return /^\d{9}$/.test(cleaned);
+const validateADELI = (adeli: string): boolean => {
+  if (adeli.length !== 9) return false;
+  
+  // Basic format validation for ADELI
+  // First 2 digits represent department (01-95)
+  const dept = parseInt(adeli.substring(0, 2), 10);
+  return dept >= 1 && dept <= 95;
 };
 
-/**
- * Détecte automatiquement le type de numéro et le valide
- */
-export const validateProfessionalId = (number: string): ProfessionalIdValidationResult => {
-  if (!number || number.trim() === '') {
-    return {
-      isValid: false,
-      type: null,
-      formattedNumber: '',
-      error: 'Numéro d\'identification obligatoire'
-    };
-  }
-
-  const cleaned = number.replace(/\s/g, '');
+const validateFINESS = (finess: string): boolean => {
+  if (finess.length < 8 || finess.length > 9) return false;
   
-  // RPPS: 11 chiffres
-  if (cleaned.length === 11 && validateRPPS(cleaned)) {
-    return {
-      isValid: true,
-      type: 'RPPS',
-      formattedNumber: cleaned
-    };
-  }
-  
-  // ADELI: 9 chiffres
-  if (cleaned.length === 9 && validateADELI(cleaned)) {
-    return {
-      isValid: true,
-      type: 'ADELI',
-      formattedNumber: cleaned
-    };
-  }
-  
-  // FINESS: 9 chiffres (mais différent d'ADELI par le contexte)
-  if (cleaned.length === 9 && validateFINESS(cleaned)) {
-    return {
-      isValid: true,
-      type: 'FINESS',
-      formattedNumber: cleaned
-    };
-  }
-  
-  return {
-    isValid: false,
-    type: null,
-    formattedNumber: cleaned,
-    error: 'Format invalide. Attendu: RPPS (11 chiffres), ADELI ou FINESS (9 chiffres)'
-  };
+  // Basic validation - all digits
+  return /^\d+$/.test(finess);
 };
 
-/**
- * Formate un numéro pour l'affichage
- */
-export const formatProfessionalId = (number: string, type: ProfessionalIdType): string => {
-  const cleaned = number.replace(/\s/g, '');
+const validateLuhn = (number: string): boolean => {
+  let sum = 0;
+  let isEven = false;
   
-  switch (type) {
-    case 'RPPS':
-      // Format: XXX XXX XXX XX
-      return cleaned.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1 $2 $3 $4');
-    case 'ADELI':
-    case 'FINESS':
-      // Format: XXX XXX XXX
-      return cleaned.replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3');
-    default:
-      return cleaned;
+  // Loop through digits from right to left
+  for (let i = number.length - 1; i >= 0; i--) {
+    let digit = parseInt(number[i], 10);
+    
+    if (isEven) {
+      digit *= 2;
+      if (digit > 9) {
+        digit -= 9;
+      }
+    }
+    
+    sum += digit;
+    isEven = !isEven;
   }
+  
+  return sum % 10 === 0;
+};
+
+const formatRPPS = (rpps: string): string => {
+  // Format: XX XXX XXX XXX
+  return rpps.replace(/(\d{2})(\d{3})(\d{3})(\d{3})/, '$1 $2 $3 $4');
+};
+
+const formatADELI = (adeli: string): string => {
+  // Format: XX XXX XXXX
+  return adeli.replace(/(\d{2})(\d{3})(\d{4})/, '$1 $2 $3');
 };

@@ -1673,6 +1673,21 @@ export type Database = {
         }
         Returns: boolean
       }
+      check_rate_limit_secure: {
+        Args: {
+          p_identifier: string
+          p_attempt_type: string
+          p_max_attempts?: number
+          p_window_minutes?: number
+          p_ip_address?: unknown
+          p_user_agent?: string
+        }
+        Returns: {
+          allowed: boolean
+          remaining_attempts: number
+          retry_after: number
+        }[]
+      }
       debug_institution_access_step_by_step: {
         Args: {
           input_last_name: string
@@ -1847,6 +1862,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      is_user_admin: {
+        Args: { user_id?: string }
+        Returns: boolean
+      }
       log_security_event: {
         Args: {
           _event_type: string
@@ -1859,6 +1878,19 @@ export type Database = {
         Returns: undefined
       }
       log_security_event_enhanced: {
+        Args: {
+          p_event_type: string
+          p_user_id?: string
+          p_ip_address?: unknown
+          p_user_agent?: string
+          p_details?: Json
+          p_risk_level?: string
+          p_resource_id?: string
+          p_resource_type?: string
+        }
+        Returns: string
+      }
+      log_security_event_secure: {
         Args: {
           p_event_type: string
           p_user_id?: string
@@ -1898,6 +1930,20 @@ export type Database = {
           is_valid: boolean
           document_id: string
           user_id: string
+          error_message: string
+        }[]
+      }
+      validate_secure_document_access: {
+        Args: {
+          p_document_id: string
+          p_access_code?: string
+          p_user_id?: string
+          p_ip_address?: unknown
+          p_user_agent?: string
+        }
+        Returns: {
+          access_granted: boolean
+          document_data: Json
           error_message: string
         }[]
       }

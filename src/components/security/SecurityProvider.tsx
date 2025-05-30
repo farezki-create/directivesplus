@@ -3,13 +3,14 @@ import React, { createContext, useContext, useEffect, ReactNode } from 'react';
 import { useSecurityHeaders } from '@/hooks/useSecurityHeaders';
 import { EnhancedSessionSecurity } from '@/utils/security/enhancedSessionSecurity';
 import { EnhancedSecurityEventLogger } from '@/utils/security/enhancedSecurityEventLogger';
+import { ServerSideRateLimit } from '@/utils/security/serverSideRateLimit';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface SecurityContextType {
   validateSession: () => Promise<boolean>;
   clearSession: () => void;
   logSecurityEvent: (eventType: any, details?: any) => Promise<void>;
-  checkRateLimit: (key: string, maxAttempts: number, windowMs: number) => boolean;
+  checkRateLimit: (key: string, maxAttempts: number, windowMs: number) => Promise<boolean>;
 }
 
 const SecurityContext = createContext<SecurityContextType | undefined>(undefined);
@@ -77,6 +78,8 @@ export const SecurityProvider: React.FC<SecurityProviderProps> = ({ children }) 
             'session_validation_failed_on_visibility',
             user.id
           );
+          // Redirect to login
+          window.location.href = '/auth';
         }
       }
     };
@@ -125,30 +128,15 @@ export const SecurityProvider: React.FC<SecurityProviderProps> = ({ children }) 
     });
   };
 
-  const checkRateLimit = (key: string, maxAttempts: number, windowMs: number): boolean => {
-    // Simple client-side rate limiting as fallback
-    const now = Date.now();
-    const storageKey = `rate_limit_${key}`;
-    const stored = localStorage.getItem(storageKey);
-    
-    if (!stored) {
-      localStorage.setItem(storageKey, JSON.stringify({ count: 1, start: now }));
-      return true;
-    }
-    
-    const data = JSON.parse(stored);
-    if (now - data.start > windowMs) {
-      localStorage.setItem(storageKey, JSON.stringify({ count: 1, start: now }));
-      return true;
-    }
-    
-    if (data.count >= maxAttempts) {
-      return false;
-    }
-    
-    data.count++;
-    localStorage.setItem(storageKey, JSON.stringify(data));
-    return true;
+  const checkRateLimit = async (key: string, maxAttempts: number, windowMs: number): Promise<boolean> => {
+    const windowMinutes = Math.ceil(windowMs / 60000);
+    const result = await ServerSideRateLimit.checkRateLimit(
+      key,
+      'generic_action',
+      maxAttempts,
+      windowMinutes
+    );
+    return result.allowed;
   };
 
   const value: SecurityContextType = {

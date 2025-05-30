@@ -17,30 +17,32 @@ export class ServerSideRateLimit {
     userAgent?: string
   ): Promise<RateLimitResult> {
     try {
-      // Since the check_rate_limit function doesn't exist yet, 
-      // use existing access_code_attempts table as fallback
-      const windowStart = new Date(Date.now() - windowMinutes * 60 * 1000);
-      
-      const { count, error } = await supabase
-        .from('access_code_attempts')
-        .select('*', { count: 'exact' })
-        .eq('access_code', identifier)
-        .gte('attempt_time', windowStart.toISOString())
-        .eq('success', false);
+      // Use the new secure rate limiting function
+      const { data, error } = await supabase
+        .rpc('check_rate_limit_secure', {
+          p_identifier: identifier,
+          p_attempt_type: attemptType,
+          p_max_attempts: maxAttempts,
+          p_window_minutes: windowMinutes,
+          p_ip_address: ipAddress || '127.0.0.1',
+          p_user_agent: userAgent || navigator.userAgent
+        });
 
       if (error) {
-        console.error('Rate limit check failed:', error);
+        console.error('Secure rate limit check failed:', error);
         // Fail secure - deny access if we can't check rate limit
         return { allowed: false, remainingAttempts: 0 };
       }
 
-      const attemptCount = count || 0;
-      const allowed = attemptCount < maxAttempts;
+      const result = data?.[0];
+      if (!result) {
+        return { allowed: false, remainingAttempts: 0 };
+      }
       
       return {
-        allowed,
-        remainingAttempts: Math.max(0, maxAttempts - attemptCount - 1),
-        retryAfter: allowed ? undefined : windowMinutes * 60
+        allowed: result.allowed,
+        remainingAttempts: result.remaining_attempts,
+        retryAfter: result.retry_after || undefined
       };
     } catch (error) {
       console.error('Rate limit check error:', error);
@@ -56,9 +58,8 @@ export class ServerSideRateLimit {
   ): Promise<void> {
     try {
       await supabase.from('access_code_attempts').insert({
-        access_code: identifier,
-        ip_address: ipAddress,
-        user_agent: userAgent,
+        ip_address: ipAddress || '127.0.0.1',
+        user_agent: userAgent || navigator.userAgent,
         success: true
       });
     } catch (error) {

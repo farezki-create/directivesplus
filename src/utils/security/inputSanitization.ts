@@ -1,125 +1,135 @@
+
 import DOMPurify from 'dompurify';
 
 export class InputSanitizer {
-  // Sanitize HTML content
-  static sanitizeHtml(input: string): string {
-    return DOMPurify.sanitize(input, {
+  private static readonly MAX_INPUT_LENGTH = 1000;
+  private static readonly MAX_TEXT_LENGTH = 5000;
+
+  /**
+   * Sanitize form field input based on field type
+   */
+  static sanitizeField(value: string, fieldName: string): string {
+    if (!value || typeof value !== 'string') {
+      return '';
+    }
+
+    // Trim whitespace
+    let sanitized = value.trim();
+
+    // Apply length limits
+    const maxLength = this.getMaxLength(fieldName);
+    if (sanitized.length > maxLength) {
+      sanitized = sanitized.substring(0, maxLength);
+    }
+
+    // Field-specific sanitization
+    switch (fieldName.toLowerCase()) {
+      case 'email':
+        return this.sanitizeEmail(sanitized);
+      case 'phone':
+      case 'telephone':
+        return this.sanitizePhone(sanitized);
+      case 'name':
+      case 'firstname':
+      case 'lastname':
+      case 'first_name':
+      case 'last_name':
+        return this.sanitizeName(sanitized);
+      case 'accesscode':
+      case 'access_code':
+        return this.sanitizeAccessCode(sanitized);
+      case 'birthdate':
+      case 'birth_date':
+        return this.sanitizeDate(sanitized);
+      default:
+        return this.sanitizeText(sanitized);
+    }
+  }
+
+  /**
+   * Sanitize HTML content
+   */
+  static sanitizeHtml(html: string): string {
+    return DOMPurify.sanitize(html, {
       ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u'],
       ALLOWED_ATTR: [],
-      FORBID_TAGS: ['script', 'object', 'embed', 'link', 'style'],
-      FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover']
+      FORBID_SCRIPT: true,
+      FORBID_TAGS: ['script', 'object', 'embed', 'form', 'input']
     });
   }
 
-  // Sanitize plain text input
-  static sanitizeText(input: string): string {
-    if (typeof input !== 'string') return '';
-    
-    return input
-      .replace(/[<>]/g, '') // Remove HTML brackets
-      .replace(/javascript:/gi, '') // Remove javascript protocol
-      .replace(/data:/gi, '') // Remove data protocol
-      .replace(/vbscript:/gi, '') // Remove vbscript protocol
-      .replace(/on\w+\s*=/gi, '') // Remove event handlers
-      .trim()
-      .slice(0, 1000); // Limit length
+  /**
+   * Sanitize plain text (remove HTML/script content)
+   */
+  static sanitizeText(text: string): string {
+    return DOMPurify.sanitize(text, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
   }
 
-  // Sanitize file names
-  static sanitizeFileName(fileName: string): string {
-    return fileName
-      .replace(/[<>:"/\\|?*]/g, '') // Remove invalid file name characters
-      .replace(/\.\./g, '') // Remove directory traversal
-      .replace(/^\./, '') // Remove leading dot
-      .trim()
-      .slice(0, 255); // Limit to 255 characters
+  /**
+   * Sanitize email addresses
+   */
+  private static sanitizeEmail(email: string): string {
+    const sanitized = this.sanitizeText(email);
+    // Basic email validation pattern
+    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailPattern.test(sanitized) ? sanitized : '';
   }
 
-  // Validate and sanitize URLs
-  static sanitizeUrl(url: string): string | null {
-    try {
-      const parsed = new URL(url);
-      
-      // Only allow specific protocols
-      if (!['http:', 'https:', 'mailto:'].includes(parsed.protocol)) {
-        return null;
-      }
-      
-      // Block suspicious patterns
-      if (url.includes('javascript:') || url.includes('data:') || url.includes('vbscript:')) {
-        return null;
-      }
-      
-      return parsed.toString();
-    } catch {
-      return null;
-    }
+  /**
+   * Sanitize phone numbers
+   */
+  private static sanitizePhone(phone: string): string {
+    // Allow only digits, spaces, hyphens, plus, and parentheses
+    return phone.replace(/[^0-9\s\-\+\(\)]/g, '');
   }
 
-  // Sanitize search queries
-  static sanitizeSearchQuery(query: string): string {
-    return query
-      .replace(/[^\w\s\-_.àáâãäåæçèéêëìíîïñòóôõöùúûüý]/gi, '') // Only allow safe characters
-      .replace(/\s+/g, ' ') // Normalize whitespace
-      .trim()
-      .slice(0, 100); // Limit length
+  /**
+   * Sanitize names (allow only letters, spaces, hyphens, apostrophes)
+   */
+  private static sanitizeName(name: string): string {
+    const sanitized = this.sanitizeText(name);
+    return sanitized.replace(/[^a-zA-ZÀ-ÿ\s\-']/g, '');
   }
 
-  // Validate and sanitize phone numbers
-  static sanitizePhoneNumber(phone: string): string {
-    return phone
-      .replace(/[^\d\+\-\(\)\s]/g, '') // Only allow digits, +, -, (), space
-      .trim();
+  /**
+   * Sanitize access codes (alphanumeric only)
+   */
+  private static sanitizeAccessCode(code: string): string {
+    return code.replace(/[^A-Z0-9]/g, '');
   }
 
-  // Sanitize postal codes
-  static sanitizePostalCode(code: string): string {
-    return code
-      .replace(/[^\w\s\-]/g, '') // Only allow alphanumeric, space, dash
-      .trim()
-      .slice(0, 10);
+  /**
+   * Sanitize date strings
+   */
+  private static sanitizeDate(date: string): string {
+    // Allow only digits and hyphens for date format
+    return date.replace(/[^0-9\-]/g, '');
   }
 
-  // Generic field sanitizer based on field type
-  static sanitizeField(value: string, fieldType: string): string {
-    switch (fieldType) {
-      case 'name':
-      case 'firstName':
-      case 'lastName':
-        return value
-          .replace(/[^a-zA-ZÀ-ÿ\s\-'\.]/g, '')
-          .trim()
-          .slice(0, 50);
-      
+  /**
+   * Get maximum length for field types
+   */
+  private static getMaxLength(fieldName: string): number {
+    switch (fieldName.toLowerCase()) {
       case 'email':
-        return value
-          .toLowerCase()
-          .replace(/[^a-z0-9@\.\-_]/g, '')
-          .trim()
-          .slice(0, 254);
-      
+        return 254;
       case 'phone':
-        return this.sanitizePhoneNumber(value);
-      
-      case 'postalCode':
-        return this.sanitizePostalCode(value);
-      
-      case 'address':
-        return value
-          .replace(/[<>]/g, '')
-          .trim()
-          .slice(0, 200);
-      
-      case 'text':
+      case 'telephone':
+        return 20;
+      case 'name':
+      case 'firstname':
+      case 'lastname':
+      case 'first_name':
+      case 'last_name':
+        return 50;
+      case 'accesscode':
+      case 'access_code':
+        return 20;
+      case 'birthdate':
+      case 'birth_date':
+        return 10;
       default:
-        return this.sanitizeText(value);
+        return this.MAX_INPUT_LENGTH;
     }
-  }
-}
-
-// Add DOMPurify as a dependency if not already present
-declare global {
-  interface Window {
-    DOMPurify: any;
   }
 }

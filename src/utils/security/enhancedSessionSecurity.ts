@@ -2,160 +2,135 @@
 import { supabase } from "@/integrations/supabase/client";
 import { EnhancedSecurityEventLogger } from './enhancedSecurityEventLogger';
 
-interface SessionFingerprint {
+interface SessionSecurityData {
+  userId: string;
+  sessionId: string;
+  ipAddress?: string;
   userAgent: string;
-  language: string;
-  timezone: string;
-  screenResolution: string;
-  colorDepth: number;
-  platform: string;
+  fingerprint: string;
+  lastActivity: number;
 }
 
 export class EnhancedSessionSecurity {
-  private static readonly SESSION_FINGERPRINT_KEY = 'secure_session_fingerprint';
-  private static readonly SESSION_START_KEY = 'secure_session_start';
-  private static readonly SESSION_TIMEOUT = 24 * 60 * 60 * 1000; // 24 hours
-  private static readonly SESSION_CHECK_INTERVAL = 5 * 60 * 1000; // 5 minutes
+  private static readonly SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
+  private static readonly FINGERPRINT_KEY = 'session_fingerprint';
+  private static readonly SESSION_KEY = 'secure_session_data';
 
-  static generateFingerprint(): SessionFingerprint {
-    return {
-      userAgent: navigator.userAgent,
-      language: navigator.language,
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      screenResolution: `${screen.width}x${screen.height}`,
-      colorDepth: screen.colorDepth,
-      platform: navigator.platform
-    };
-  }
-
-  static initializeSecureSession(userId?: string): void {
-    const fingerprint = this.generateFingerprint();
-    const sessionStart = Date.now().toString();
-
-    sessionStorage.setItem(this.SESSION_FINGERPRINT_KEY, JSON.stringify(fingerprint));
-    sessionStorage.setItem(this.SESSION_START_KEY, sessionStart);
-
-    // Log session start
-    EnhancedSecurityEventLogger.logEvent({
-      eventType: 'login_attempt',
+  static initializeSecureSession(userId: string): void {
+    const sessionData: SessionSecurityData = {
       userId,
-      success: true,
-      riskLevel: 'low',
-      details: {
-        session_start: true,
-        fingerprint_hash: this.hashFingerprint(fingerprint)
-      }
-    });
+      sessionId: this.generateSessionId(),
+      userAgent: navigator.userAgent,
+      fingerprint: this.generateFingerprint(),
+      lastActivity: Date.now()
+    };
+
+    this.storeSessionData(sessionData);
+    this.logSessionEvent('session_initialized', userId);
   }
 
   static async validateSecureSession(userId?: string): Promise<boolean> {
-    try {
-      const storedFingerprintStr = sessionStorage.getItem(this.SESSION_FINGERPRINT_KEY);
-      const sessionStartStr = sessionStorage.getItem(this.SESSION_START_KEY);
+    const sessionData = this.getSessionData();
+    
+    if (!sessionData || !userId) {
+      await this.logSessionEvent('session_validation_failed_no_data', userId);
+      return false;
+    }
 
-      if (!storedFingerprintStr || !sessionStartStr) {
-        await this.logSecurityEvent('session_validation_failed', userId, 'No session data');
-        return false;
-      }
-
-      const storedFingerprint: SessionFingerprint = JSON.parse(storedFingerprintStr);
-      const sessionStart = parseInt(sessionStartStr);
-      const now = Date.now();
-
-      // Check session age
-      if (now - sessionStart > this.SESSION_TIMEOUT) {
-        await this.logSecurityEvent('session_expired', userId, 'Session timeout');
-        this.clearSecureSession();
-        return false;
-      }
-
-      // Check fingerprint
-      const currentFingerprint = this.generateFingerprint();
-      if (!this.compareFingerprintsSecurely(storedFingerprint, currentFingerprint)) {
-        await this.logSecurityEvent('session_hijacking_detected', userId, 'Fingerprint mismatch');
-        this.clearSecureSession();
-        return false;
-      }
-
-      return true;
-    } catch (error) {
-      console.error('Session validation error:', error);
-      await this.logSecurityEvent('session_validation_error', userId, error.message);
+    // Check user ID match
+    if (sessionData.userId !== userId) {
+      await this.logSessionEvent('session_validation_failed_user_mismatch', userId);
       this.clearSecureSession();
       return false;
     }
-  }
 
-  private static compareFingerprintsSecurely(
-    stored: SessionFingerprint, 
-    current: SessionFingerprint
-  ): boolean {
-    // Allow some flexibility for screen resolution changes (external monitors, etc.)
-    const criticalMatch = stored.userAgent === current.userAgent &&
-                         stored.language === current.language &&
-                         stored.timezone === current.timezone &&
-                         stored.platform === current.platform;
-
-    if (!criticalMatch) {
+    // Check session timeout
+    if (Date.now() - sessionData.lastActivity > this.SESSION_TIMEOUT) {
+      await this.logSessionEvent('session_timeout', userId);
+      this.clearSecureSession();
       return false;
     }
 
-    // Screen resolution can change, but dramatic changes are suspicious
-    const [storedWidth, storedHeight] = stored.screenResolution.split('x').map(Number);
-    const [currentWidth, currentHeight] = current.screenResolution.split('x').map(Number);
-    
-    const resolutionChangeThreshold = 0.5; // 50% change is suspicious
-    const widthChange = Math.abs(currentWidth - storedWidth) / storedWidth;
-    const heightChange = Math.abs(currentHeight - storedHeight) / storedHeight;
-    
-    if (widthChange > resolutionChangeThreshold || heightChange > resolutionChangeThreshold) {
+    // Check fingerprint
+    const currentFingerprint = this.generateFingerprint();
+    if (sessionData.fingerprint !== currentFingerprint) {
+      await this.logSessionEvent('session_fingerprint_mismatch', userId);
+      this.clearSecureSession();
       return false;
     }
+
+    // Update last activity
+    sessionData.lastActivity = Date.now();
+    this.storeSessionData(sessionData);
 
     return true;
   }
 
-  private static hashFingerprint(fingerprint: SessionFingerprint): string {
-    // Simple hash for logging (not cryptographic)
-    const str = JSON.stringify(fingerprint);
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      const char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // Convert to 32-bit integer
-    }
-    return hash.toString(36);
+  static startPeriodicValidation(userId: string): () => void {
+    const interval = setInterval(async () => {
+      const isValid = await this.validateSecureSession(userId);
+      if (!isValid) {
+        // Session invalid, clear and redirect
+        this.clearSecureSession();
+        window.location.href = '/auth';
+      }
+    }, 60000); // Check every minute
+
+    return () => clearInterval(interval);
   }
 
   static clearSecureSession(): void {
-    sessionStorage.removeItem(this.SESSION_FINGERPRINT_KEY);
-    sessionStorage.removeItem(this.SESSION_START_KEY);
+    localStorage.removeItem(this.SESSION_KEY);
+    localStorage.removeItem(this.FINGERPRINT_KEY);
   }
 
-  private static async logSecurityEvent(
-    eventType: string, 
-    userId?: string, 
-    details?: string
-  ): Promise<void> {
-    await EnhancedSecurityEventLogger.logSuspiciousActivity(
-      eventType,
-      userId,
-      undefined, // IP address would be set server-side
+  private static generateSessionId(): string {
+    return Array.from(crypto.getRandomValues(new Uint8Array(16)))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+  }
+
+  private static generateFingerprint(): string {
+    const components = [
       navigator.userAgent,
-      { details }
-    );
+      navigator.language,
+      navigator.platform,
+      screen.width + 'x' + screen.height,
+      new Date().getTimezoneOffset().toString()
+    ];
+    
+    return btoa(components.join('|')).substring(0, 32);
   }
 
-  static startPeriodicValidation(userId?: string): () => void {
-    const intervalId = setInterval(async () => {
-      const isValid = await this.validateSecureSession(userId);
-      if (!isValid) {
-        // Force logout on session validation failure
-        await supabase.auth.signOut();
-        window.location.href = '/auth';
-      }
-    }, this.SESSION_CHECK_INTERVAL);
+  private static storeSessionData(sessionData: SessionSecurityData): void {
+    try {
+      localStorage.setItem(this.SESSION_KEY, JSON.stringify(sessionData));
+    } catch (error) {
+      console.error('Failed to store session data:', error);
+    }
+  }
 
-    return () => clearInterval(intervalId);
+  private static getSessionData(): SessionSecurityData | null {
+    try {
+      const data = localStorage.getItem(this.SESSION_KEY);
+      return data ? JSON.parse(data) : null;
+    } catch (error) {
+      console.error('Failed to retrieve session data:', error);
+      return null;
+    }
+  }
+
+  private static async logSessionEvent(eventType: string, userId?: string): Promise<void> {
+    await EnhancedSecurityEventLogger.logEvent({
+      eventType: 'suspicious_activity',
+      userId,
+      success: false,
+      riskLevel: 'high',
+      details: {
+        session_event: eventType,
+        user_agent: navigator.userAgent,
+        timestamp: new Date().toISOString()
+      }
+    });
   }
 }
