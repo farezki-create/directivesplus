@@ -1552,6 +1552,93 @@ export type Database = {
         }
         Relationships: []
       }
+      sms_codes: {
+        Row: {
+          code: string
+          created_at: string | null
+          phone_number: string
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          phone_number: string
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          phone_number?: string
+        }
+        Relationships: []
+      }
+      sms_rate_limits: {
+        Row: {
+          created_at: string | null
+          id: string
+          sms_count: number | null
+          user_id: string | null
+          window_start: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          sms_count?: number | null
+          user_id?: string | null
+          window_start?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          sms_count?: number | null
+          user_id?: string | null
+          window_start?: string | null
+        }
+        Relationships: []
+      }
+      sms_send_logs: {
+        Row: {
+          brevo_message_id: string | null
+          created_at: string | null
+          error_message: string | null
+          id: string
+          ip_address: unknown | null
+          message_content: string
+          recipient_phone: string
+          sender_name: string | null
+          sent_at: string | null
+          status: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          brevo_message_id?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          ip_address?: unknown | null
+          message_content: string
+          recipient_phone: string
+          sender_name?: string | null
+          sent_at?: string | null
+          status?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          brevo_message_id?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          ip_address?: unknown | null
+          message_content?: string
+          recipient_phone?: string
+          sender_name?: string | null
+          sent_at?: string | null
+          status?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       trusted_persons: {
         Row: {
           address: string | null
@@ -1639,6 +1726,45 @@ export type Database = {
         }
         Relationships: []
       }
+      user_sessions: {
+        Row: {
+          browser_fingerprint: string | null
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          ip_address: unknown | null
+          is_active: boolean | null
+          last_activity: string | null
+          session_token: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          browser_fingerprint?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          is_active?: boolean | null
+          last_activity?: string | null
+          session_token: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          browser_fingerprint?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          is_active?: boolean | null
+          last_activity?: string | null
+          session_token?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_signatures: {
         Row: {
           created_at: string | null
@@ -1687,6 +1813,10 @@ export type Database = {
           remaining_attempts: number
           retry_after: number
         }[]
+      }
+      check_sms_rate_limit: {
+        Args: { p_user_id: string; p_max_sms_per_hour?: number }
+        Returns: boolean
       }
       debug_institution_access_step_by_step: {
         Args: {
@@ -1903,6 +2033,17 @@ export type Database = {
         }
         Returns: string
       }
+      log_sms_attempt: {
+        Args: {
+          p_user_id: string
+          p_recipient_phone: string
+          p_message_content: string
+          p_sender_name: string
+          p_ip_address?: unknown
+          p_user_agent?: string
+        }
+        Returns: string
+      }
       secure_document_access: {
         Args: {
           p_document_id: string
@@ -1919,6 +2060,19 @@ export type Database = {
           user_id: string
           access_granted: boolean
         }[]
+      }
+      send_sms_code: {
+        Args: { phone: string }
+        Returns: undefined
+      }
+      update_sms_status: {
+        Args: {
+          p_log_id: string
+          p_status: string
+          p_brevo_message_id?: string
+          p_error_message?: string
+        }
+        Returns: undefined
       }
       validate_and_use_access_code: {
         Args: {
@@ -1946,6 +2100,15 @@ export type Database = {
           document_data: Json
           error_message: string
         }[]
+      }
+      validate_session_security: {
+        Args: {
+          p_user_id: string
+          p_ip_address: unknown
+          p_user_agent: string
+          p_browser_fingerprint?: string
+        }
+        Returns: boolean
       }
       verify_access_identity: {
         Args: {

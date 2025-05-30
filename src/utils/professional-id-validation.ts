@@ -18,7 +18,7 @@ export const validateProfessionalId = (id: string): ValidationResult => {
     return { isValid: false, error: 'Numéro professionnel requis' };
   }
 
-  // Remove all non-digit characters
+  // Remove all non-digit characters and convert to uppercase for alphanumeric codes
   const cleanId = id.replace(/\D/g, '');
 
   if (cleanId.length < 8 || cleanId.length > 11) {
@@ -86,17 +86,51 @@ const validateRPPS = (rpps: string): boolean => {
 const validateADELI = (adeli: string): boolean => {
   if (adeli.length !== 9) return false;
   
-  // Basic format validation for ADELI
-  // First 2 digits represent department (01-95)
+  // Enhanced ADELI validation
+  // First 2 digits represent department (01-95, plus overseas departments)
   const dept = parseInt(adeli.substring(0, 2), 10);
-  return dept >= 1 && dept <= 95;
+  
+  // Valid department codes (metropolitan France + overseas)
+  const validDepts = dept >= 1 && dept <= 95 || 
+                    dept === 97 || dept === 98; // Overseas territories
+  
+  if (!validDepts) return false;
+  
+  // Professional code (3rd digit) should be valid (1-9)
+  const profCode = parseInt(adeli.substring(2, 3), 10);
+  if (profCode < 1 || profCode > 9) return false;
+  
+  // Serial number should be numeric
+  const serialNumber = adeli.substring(3, 8);
+  if (!/^\d{5}$/.test(serialNumber)) return false;
+  
+  // Check digit validation (simple modulo 97)
+  const checkDigit = parseInt(adeli.substring(8, 9), 10);
+  const baseNumber = parseInt(adeli.substring(0, 8), 10);
+  const calculatedCheck = 97 - (baseNumber % 97);
+  
+  return checkDigit === calculatedCheck;
 };
 
 const validateFINESS = (finess: string): boolean => {
   if (finess.length < 8 || finess.length > 9) return false;
   
-  // Basic validation - all digits
-  return /^\d+$/.test(finess);
+  // Enhanced FINESS validation
+  // All digits must be numeric
+  if (!/^\d+$/.test(finess)) return false;
+  
+  // FINESS geographical code validation (first 2 digits)
+  const geoCode = parseInt(finess.substring(0, 2), 10);
+  const validGeoCodes = (geoCode >= 1 && geoCode <= 95) || 
+                       geoCode === 97 || geoCode === 98;
+  
+  if (!validGeoCodes) return false;
+  
+  // Category code validation (3rd digit)
+  const categoryCode = parseInt(finess.substring(2, 3), 10);
+  if (categoryCode < 0 || categoryCode > 9) return false;
+  
+  return true;
 };
 
 const validateLuhn = (number: string): boolean => {

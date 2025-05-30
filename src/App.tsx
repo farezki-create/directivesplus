@@ -1,252 +1,58 @@
+import React from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { QueryClient } from 'react-query';
+import { Toaster } from '@/components/ui/toaster';
+import { AuthProvider } from '@/contexts/AuthContext';
+import Dossier from '@/pages/Dossier';
+import Home from '@/pages/Home';
+import Auth from '@/pages/Auth';
+import Profile from '@/pages/Profile';
+import SharedProfile from '@/pages/SharedProfile';
+import AccessCode from '@/pages/AccessCode';
+import RLSAudit from '@/pages/RLSAudit';
+import SecurityAudit from '@/pages/SecurityAudit';
+import SecurityAuditReportPage from '@/pages/SecurityAuditReport';
+import SecurityAuditDashboardPage from '@/pages/SecurityAuditDashboard';
+import SecurityDashboard from '@/pages/SecurityDashboard';
+import { SecurityProvider } from '@/components/security/SecurityProvider';
+import { useSecurityMonitor } from '@/hooks/useSecurityMonitor';
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "./contexts/AuthContext";
-import Index from "./pages/Index";
-import Auth from "./pages/Auth";
-import Rediger from "./pages/Rediger";
-import CarteAcces from "./pages/CarteAcces";
-import DirectivesAccess from "./pages/DirectivesAccess";
-import MesDirectives from "./pages/MesDirectives";
-import Profile from "./pages/Profile";
-import AccesInstitution from "./pages/AccesInstitution";
-import Community from "./pages/Community";
-import ProtectedRoute from "./components/ProtectedRoute";
-import PdfViewer from "./pages/PdfViewer";
-import QuestionnaireSection from "./components/QuestionnaireSection";
-import AvisGeneral from "./pages/AvisGeneral";
-import MaintienVie from "./pages/MaintienVie";
-import MaladieAvancee from "./pages/MaladieAvancee";
-import GoutsPeurs from "./pages/GoutsPeurs";
-import ExemplesPhrases from "./pages/ExemplesPhrases";
-import PersonneConfiance from "./pages/PersonneConfiance";
-import Synthesis from "./pages/Synthesis";
-import EnSavoirPlus from "./pages/EnSavoirPlus";
-import Commentaires from "./pages/Commentaires";
-import MentionsLegales from "./pages/MentionsLegales";
-import Confidentialite from "./pages/Confidentialite";
-import PolitiqueSauvegarde from "./pages/PolitiqueSauvegarde";
-import ProcedureViolationDonnees from "./pages/ProcedureViolationDonnees";
-import AnalyseImpactProtectionDonnees from "./pages/AnalyseImpactProtectionDonnees";
-import Soutenir from "./pages/Soutenir";
-import Admin from "./pages/Admin";
-import HealthNews from "./pages/HealthNews";
-import SecurityAudit from "./pages/SecurityAudit";
-import SecurityAuditReport from "./pages/SecurityAuditReport";
-import SecurityAuditDashboard from "./pages/SecurityAuditDashboard";
-import { Navigate } from "react-router-dom";
+function App() {
+  return (
+    <QueryClient>
+      <BrowserRouter>
+        <AuthProvider>
+          <SecurityProvider>
+            <AppContent />
+          </SecurityProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </QueryClient>
+  );
+}
 
-const queryClient = new QueryClient();
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <BrowserRouter>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route 
-              path="/rediger" 
-              element={
-                <ProtectedRoute>
-                  <Rediger />
-                </ProtectedRoute>
-              } 
-            />
-            
-            {/* Admin Routes */}
-            <Route 
-              path="/admin" 
-              element={
-                <ProtectedRoute>
-                  <Admin />
-                </ProtectedRoute>
-              } 
-            />
-            
-            {/* Security Routes */}
-            <Route 
-              path="/security-audit" 
-              element={
-                <ProtectedRoute>
-                  <SecurityAudit />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/security-audit-report" 
-              element={
-                <ProtectedRoute>
-                  <SecurityAuditReport />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/security-dashboard" 
-              element={
-                <ProtectedRoute>
-                  <SecurityAuditDashboard />
-                </ProtectedRoute>
-              } 
-            />
-            
-            {/* Health News Route */}
-            <Route 
-              path="/actualites-sante" 
-              element={<HealthNews />} 
-            />
-            
-            {/* Community Route */}
-            <Route 
-              path="/community" 
-              element={
-                <ProtectedRoute>
-                  <Community />
-                </ProtectedRoute>
-              } 
-            />
-            
-            {/* Pages de questionnaires principales */}
-            <Route 
-              path="/avis-general" 
-              element={
-                <ProtectedRoute>
-                  <AvisGeneral />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/maintien-vie" 
-              element={
-                <ProtectedRoute>
-                  <MaintienVie />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/maladie-avancee" 
-              element={
-                <ProtectedRoute>
-                  <MaladieAvancee />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/gouts-peurs" 
-              element={
-                <ProtectedRoute>
-                  <GoutsPeurs />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/exemples-phrases" 
-              element={
-                <ProtectedRoute>
-                  <ExemplesPhrases />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/personne-confiance" 
-              element={
-                <ProtectedRoute>
-                  <PersonneConfiance />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/synthesis" 
-              element={
-                <ProtectedRoute>
-                  <Synthesis />
-                </ProtectedRoute>
-              } 
-            />
-            
-            <Route 
-              path="/rediger/maintien-vie" 
-              element={
-                <ProtectedRoute>
-                  <QuestionnaireSection />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/rediger/maladie-avancee" 
-              element={
-                <ProtectedRoute>
-                  <QuestionnaireSection />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/rediger/gouts-peurs" 
-              element={
-                <ProtectedRoute>
-                  <QuestionnaireSection />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/rediger/personne-confiance" 
-              element={
-                <ProtectedRoute>
-                  <QuestionnaireSection />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/rediger/synthesis" 
-              element={
-                <ProtectedRoute>
-                  <QuestionnaireSection />
-                </ProtectedRoute>
-              } 
-            />
-            
-            <Route 
-              path="/carte-acces" 
-              element={
-                <ProtectedRoute>
-                  <CarteAcces />
-                </ProtectedRoute>
-              } 
-            />
-            <Route path="/directives-access" element={<DirectivesAccess />} />
-            <Route path="/acces-institution" element={<AccesInstitution />} />
-            <Route path="/mes-directives" element={<MesDirectives />} />
-            <Route 
-              path="/profile" 
-              element={
-                <ProtectedRoute>
-                  <Profile />
-                </ProtectedRoute>
-              } 
-            />
-            <Route path="/pdf-viewer" element={<PdfViewer />} />
-            
-            <Route path="/en-savoir-plus" element={<EnSavoirPlus />} />
-            <Route path="/commentaires" element={<Commentaires />} />
-            <Route path="/mentions-legales" element={<MentionsLegales />} />
-            <Route path="/confidentialite" element={<Confidentialite />} />
-            <Route path="/soutenir" element={<Soutenir />} />
-            
-            <Route path="/donnees-medicales" element={<Navigate to="/" replace />} />
-            <Route path="/medical-access" element={<Navigate to="/" replace />} />
-            <Route path="/dashboard" element={<Navigate to="/" replace />} />
-            <Route path="/affichage-dossier" element={<Navigate to="/" replace />} />
-          </Routes>
-        </TooltipProvider>
-      </AuthProvider>
-    </BrowserRouter>
-  </QueryClientProvider>
-);
+function AppContent() {
+  // Initialize security monitoring
+  useSecurityMonitor();
+  
+  return (
+    <div className="min-h-screen bg-background font-sans antialiased">
+      <Toaster />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/dossier/:id" element={<Dossier />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/shared-profile/:id" element={<SharedProfile />} />
+        <Route path="/access-code/:documentId" element={<AccessCode />} />
+        <Route path="/rls-audit" element={<RLSAudit />} />
+        <Route path="/security-audit" element={<SecurityAudit />} />
+        <Route path="/security-audit-report" element={<SecurityAuditReportPage />} />
+        <Route path="/security-audit-dashboard" element={<SecurityAuditDashboardPage />} />
+        <Route path="/security-dashboard" element={<SecurityDashboard />} />
+      </Routes>
+    </div>
+  );
+}
 
 export default App;
