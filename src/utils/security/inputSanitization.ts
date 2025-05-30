@@ -1,4 +1,3 @@
-
 import DOMPurify from 'dompurify';
 
 export class InputSanitizer {
@@ -7,7 +6,6 @@ export class InputSanitizer {
     return DOMPurify.sanitize(input, {
       ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u'],
       ALLOWED_ATTR: [],
-      FORBID_SCRIPT: true,
       FORBID_TAGS: ['script', 'object', 'embed', 'link', 'style'],
       FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover']
     });
