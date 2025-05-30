@@ -143,7 +143,7 @@ const handler = async (req: Request): Promise<Response> => {
       `;
     }
 
-    // Appel à l'API Resend
+    // Appel à l'API Resend avec l'adresse par défaut vérifiée
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -151,7 +151,7 @@ const handler = async (req: Request): Promise<Response> => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'DirectivesPlus <noreply@directivesplus.fr>',
+        from: 'DirectivesPlus <onboarding@resend.dev>',
         to: [to],
         subject: subject,
         html: htmlContent,
