@@ -4,11 +4,9 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/contexts/AuthContext';
-import Dossier from '@/pages/Dossier';
-import Home from '@/pages/Home';
+import Index from '@/pages/Index';
 import Auth from '@/pages/Auth';
 import Profile from '@/pages/Profile';
-import SharedProfile from '@/pages/SharedProfile';
 import AccessCode from '@/pages/AccessCode';
 import RLSAudit from '@/pages/RLSAudit';
 import SecurityAudit from '@/pages/SecurityAudit';
@@ -50,11 +48,9 @@ function AppContent() {
     <div className="min-h-screen bg-background font-sans antialiased">
       <Toaster />
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/dossier/:id" element={<Dossier />} />
+        <Route path="/" element={<Index />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/profile" element={<Profile />} />
-        <Route path="/shared-profile/:id" element={<SharedProfile />} />
         <Route path="/access-code/:documentId" element={<AccessCode />} />
         <Route path="/rls-audit" element={<RLSAudit />} />
         <Route path="/security-audit" element={<SecurityAudit />} />
