@@ -48,19 +48,15 @@ export const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
     if (result.success) {
       console.log("✅ Inscription réussie:", result);
       
-      // Réinitialiser le formulaire
       form.reset();
       
-      // Afficher le message de succès
       setRegistrationSuccess({
         show: true,
         message: result.message || "Inscription réussie",
         needsEmailConfirmation: result.needsEmailConfirmation || false
       });
       
-      // Appeler le callback de succès si fourni
       if (onSuccess) {
-        // Délai pour permettre à l'utilisateur de voir le message
         setTimeout(() => {
           onSuccess();
         }, result.needsEmailConfirmation ? 3000 : 2000);
@@ -68,7 +64,6 @@ export const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
     }
   };
 
-  // Affichage du message de succès
   if (registrationSuccess.show) {
     return (
       <div className="space-y-4">

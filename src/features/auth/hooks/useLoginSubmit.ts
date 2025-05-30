@@ -52,7 +52,6 @@ export const useLoginSubmit = ({
           duration: showEmailConfirmationHint ? 10000 : 6000
         });
         
-        // Resend confirmation email option for unconfirmed accounts
         if (showEmailConfirmationHint) {
           setTimeout(() => {
             toast({
@@ -69,7 +68,6 @@ export const useLoginSubmit = ({
       if (data.user) {
         console.log("✅ Connexion réussie pour l'utilisateur:", data.user.id);
         
-        // Vérification de confirmation email
         if (!data.user.email_confirmed_at) {
           console.warn("⚠️ Email non confirmé pour l'utilisateur connecté");
           
@@ -80,12 +78,10 @@ export const useLoginSubmit = ({
             duration: 8000
           });
           
-          // Déconnexion forcée si email non confirmé
           await supabase.auth.signOut();
           return;
         }
         
-        // Réinitialiser les compteurs de sécurité
         onSuccessfulLogin(values.email);
         
         toast({
@@ -96,7 +92,6 @@ export const useLoginSubmit = ({
         
         setRedirectInProgress(true);
         
-        // Redirection sécurisée
         setTimeout(() => {
           const finalRedirectPath = redirectPath === "/dashboard" ? "/rediger" : redirectPath;
           console.log("🚀 Redirection vers:", finalRedirectPath);

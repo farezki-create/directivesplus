@@ -14,7 +14,6 @@ export const useRegister = () => {
     try {
       console.log("🚀 Début du processus d'inscription pour:", values.email);
       
-      // Nettoyage préventif de l'état d'authentification
       try {
         await supabase.auth.signOut({ scope: 'global' });
       } catch (e) {
