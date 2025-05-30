@@ -1,4 +1,3 @@
-
 interface AuthAttempt {
   count: number;
   lastAttempt: number;
@@ -10,10 +9,10 @@ const authAttempts = new Map<string, AuthAttempt>();
 // Enhanced brute force protection
 export const checkAuthAttempt = (
   identifier: string, 
-  action: 'login' | 'access_code' = 'login'
+  action: 'login' | 'access_code' | 'password_reset' = 'login'
 ): { allowed: boolean; remainingAttempts: number; lockoutMinutes: number } => {
-  const maxAttempts = action === 'login' ? 5 : 3;
-  const lockoutTime = action === 'login' ? 15 : 30; // minutes
+  const maxAttempts = action === 'login' ? 5 : action === 'access_code' ? 3 : 3;
+  const lockoutTime = action === 'login' ? 15 : action === 'access_code' ? 30 : 30; // minutes
   const now = Date.now();
   
   const attempt = authAttempts.get(identifier);
@@ -60,9 +59,42 @@ export const checkAuthAttempt = (
 };
 
 // Reset auth attempts after successful login
-export const resetAuthAttempts = (identifier: string, action: 'login' | 'access_code' = 'login') => {
+export const resetAuthAttempts = (identifier: string, action: 'login' | 'access_code' | 'password_reset' = 'login') => {
   authAttempts.delete(identifier);
   console.log(`Reset auth attempts for ${action}:`, identifier);
+};
+
+// Token integrity validation
+export const validateTokenIntegrity = (token: string): boolean => {
+  try {
+    // Basic token format validation
+    if (!token || typeof token !== 'string') {
+      return false;
+    }
+    
+    // Check minimum length (tokens should be substantial)
+    if (token.length < 20) {
+      return false;
+    }
+    
+    // Check for obviously malformed tokens
+    if (token.includes(' ') || token.includes('\n') || token.includes('\t')) {
+      return false;
+    }
+    
+    // Basic JWT format check (if it looks like a JWT)
+    if (token.includes('.')) {
+      const parts = token.split('.');
+      if (parts.length !== 3) {
+        return false;
+      }
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Token validation error:', error);
+    return false;
+  }
 };
 
 // Enhanced geolocation detection

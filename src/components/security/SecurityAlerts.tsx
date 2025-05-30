@@ -75,13 +75,14 @@ const SecurityAlerts: React.FC = () => {
           }).length;
 
           // Check for active threats (multiple high-risk events from same IP)
-          const ipCounts = {};
+          const ipCounts: Record<string, number> = {};
           alertsData?.forEach(event => {
             if (event.ip_address && event.risk_level === 'high') {
-              ipCounts[event.ip_address] = (ipCounts[event.ip_address] || 0) + 1;
+              const ipStr = String(event.ip_address);
+              ipCounts[ipStr] = (ipCounts[ipStr] || 0) + 1;
             }
           });
-          const activeThreats = Object.values(ipCounts).filter(count => count > 3).length;
+          const activeThreats = Object.values(ipCounts).filter((count: number) => count > 3).length;
 
           setStats({
             totalEvents,

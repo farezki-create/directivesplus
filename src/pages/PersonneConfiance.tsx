@@ -1,6 +1,6 @@
 
 import AppNavigation from "@/components/AppNavigation";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import TrustedPersonsSection from "@/components/questionnaire/TrustedPersonsSection";
 
 const PersonneConfiance = () => {
