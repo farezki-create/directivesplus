@@ -3,7 +3,7 @@ import { useDirectivesDocuments } from "@/hooks/useDirectivesDocuments";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePublicDirectivesAccess } from "@/hooks/usePublicDirectivesAccess";
 import { useDirectivesState } from "@/hooks/directives/useDirectivesState";
-import { PublicDirectivesView } from "@/components/directives/PublicDirectivesView";
+import PublicDirectivesView from "@/components/directives/PublicDirectivesView";
 import type { Document } from "@/types/documents";
 
 const DirectivesDocs = () => {

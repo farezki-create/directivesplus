@@ -1,9 +1,9 @@
 
 // Main entry point for directive utilities
 // Re-exports all functions from specialized files
-export { extractPatientInfo } from './patientInfo';
-export { checkDirectivesExistence } from './directiveExistence';
-export { getDirectivesFromContent } from './directiveRetrieval';
+export { getPatientInfo, hasPatientInfo, formatPatientName } from './patientInfo';
+export { checkDirectiveExistence, getDirectiveCount, hasValidDirectives } from './directiveExistence';
+export { retrieveDirectives, getDirectiveById, getDirectiveByPath } from './directiveRetrieval';
 
 // Types
-export type { DirectiveSource, DirectiveExtractResult } from './types';
+export type { DirectiveDocument, PatientData, DirectiveItem, InstitutionAccessState } from './types';

@@ -12,6 +12,7 @@ const DirectivePreview = ({ filePath }: DirectivePreviewProps) => {
 
   useEffect(() => {
     if (currentDocument && currentDocument.file_path === filePath) {
+      // Use the content property from the DirectiveDocument if available
       setDirectiveContent(currentDocument.content || {
         title: currentDocument.file_name,
         content: "Contenu de la directive non disponible"
