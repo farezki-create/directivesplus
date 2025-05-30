@@ -1,58 +1,74 @@
 
-/**
- * Rate limiter côté client simple et efficace
- */
-interface RateLimitEntry {
-  attempts: number;
+interface RateLimitRecord {
+  count: number;
   windowStart: number;
+  lastAttempt: number;
+  blockedUntil?: number;
 }
 
 class ClientRateLimiter {
-  private store = new Map<string, RateLimitEntry>();
+  private attempts = new Map<string, RateLimitRecord>();
 
-  /**
-   * Vérifie si une action est autorisée selon les limites
-   */
   checkLimit(key: string, maxAttempts: number, windowMs: number): boolean {
     const now = Date.now();
-    let entry = this.store.get(key);
+    const record = this.attempts.get(key);
 
-    if (!entry || now - entry.windowStart > windowMs) {
-      // Nouvelle fenêtre ou première tentative
-      entry = { attempts: 1, windowStart: now };
-      this.store.set(key, entry);
+    if (!record) {
+      this.attempts.set(key, {
+        count: 1,
+        windowStart: now,
+        lastAttempt: now
+      });
       return true;
     }
 
-    if (entry.attempts >= maxAttempts) {
-      return false; // Limite atteinte
+    // Check if blocked
+    if (record.blockedUntil && now < record.blockedUntil) {
+      return false;
     }
 
-    entry.attempts++;
+    // Reset if window expired
+    if (now - record.windowStart > windowMs) {
+      this.attempts.set(key, {
+        count: 1,
+        windowStart: now,
+        lastAttempt: now
+      });
+      return true;
+    }
+
+    // Check if limit exceeded
+    if (record.count >= maxAttempts) {
+      record.blockedUntil = now + windowMs;
+      this.attempts.set(key, record);
+      return false;
+    }
+
+    // Increment count
+    record.count++;
+    record.lastAttempt = now;
+    this.attempts.set(key, record);
+    
     return true;
   }
 
-  /**
-   * Obtient le temps restant avant la fin de la fenêtre
-   */
   getRemainingTime(key: string): number {
-    const entry = this.store.get(key);
-    if (!entry) return 0;
-
-    const elapsed = Date.now() - entry.windowStart;
-    return Math.max(0, (15 * 60 * 1000) - elapsed); // 15 minutes par défaut
+    const record = this.attempts.get(key);
+    if (!record?.blockedUntil) return 0;
+    
+    return Math.max(0, record.blockedUntil - Date.now());
   }
 
-  /**
-   * Nettoie les entrées expirées
-   */
+  reset(key: string): void {
+    this.attempts.delete(key);
+  }
+
+  // Clean up expired entries
   cleanup(): void {
     const now = Date.now();
-    const maxAge = 24 * 60 * 60 * 1000; // 24 heures
-
-    for (const [key, entry] of this.store.entries()) {
-      if (now - entry.windowStart > maxAge) {
-        this.store.delete(key);
+    for (const [key, record] of this.attempts.entries()) {
+      if (record.blockedUntil && now > record.blockedUntil) {
+        this.attempts.delete(key);
       }
     }
   }
@@ -60,7 +76,7 @@ class ClientRateLimiter {
 
 export const clientRateLimiter = new ClientRateLimiter();
 
-// Nettoyage automatique toutes les heures
+// Clean up every 5 minutes
 setInterval(() => {
   clientRateLimiter.cleanup();
-}, 60 * 60 * 1000);
+}, 5 * 60 * 1000);

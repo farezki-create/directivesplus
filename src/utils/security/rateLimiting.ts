@@ -1,97 +1,83 @@
 
-interface RateLimitEntry {
+interface AccessCodeAttempt {
   count: number;
-  resetTime: number;
+  lastAttempt: number;
+  blockedUntil?: number;
 }
 
-class RateLimiter {
-  private attempts: Map<string, RateLimitEntry> = new Map();
-  private readonly maxAttempts: number;
-  private readonly windowMs: number;
+class AccessCodeLimiter {
+  private attempts = new Map<string, AccessCodeAttempt>();
+  private readonly maxAttempts = 5;
+  private readonly windowMs = 15 * 60 * 1000; // 15 minutes
+  private readonly blockDurationMs = 30 * 60 * 1000; // 30 minutes
 
-  constructor(maxAttempts: number = 5, windowMs: number = 15 * 60 * 1000) {
-    this.maxAttempts = maxAttempts;
-    this.windowMs = windowMs;
+  recordAttempt(identifier: string): { blocked: boolean; remainingAttempts: number } {
+    const now = Date.now();
+    const existing = this.attempts.get(identifier);
+
+    if (!existing) {
+      this.attempts.set(identifier, {
+        count: 1,
+        lastAttempt: now
+      });
+      return { blocked: false, remainingAttempts: this.maxAttempts - 1 };
+    }
+
+    // Check if currently blocked
+    if (existing.blockedUntil && now < existing.blockedUntil) {
+      return { blocked: true, remainingAttempts: 0 };
+    }
+
+    // Reset if window expired
+    if (now - existing.lastAttempt > this.windowMs) {
+      this.attempts.set(identifier, {
+        count: 1,
+        lastAttempt: now
+      });
+      return { blocked: false, remainingAttempts: this.maxAttempts - 1 };
+    }
+
+    // Increment attempt count
+    existing.count++;
+    existing.lastAttempt = now;
+
+    // Check if should block
+    if (existing.count >= this.maxAttempts) {
+      existing.blockedUntil = now + this.blockDurationMs;
+      this.attempts.set(identifier, existing);
+      return { blocked: true, remainingAttempts: 0 };
+    }
+
+    this.attempts.set(identifier, existing);
+    return { 
+      blocked: false, 
+      remainingAttempts: this.maxAttempts - existing.count 
+    };
   }
 
   isBlocked(identifier: string): boolean {
+    const attempt = this.attempts.get(identifier);
+    if (!attempt?.blockedUntil) return false;
+    
     const now = Date.now();
-    const entry = this.attempts.get(identifier);
-
-    if (!entry) {
-      return false;
-    }
-
-    // Reset if window has passed
-    if (now > entry.resetTime) {
+    if (now > attempt.blockedUntil) {
       this.attempts.delete(identifier);
       return false;
     }
-
-    return entry.count >= this.maxAttempts;
-  }
-
-  recordAttempt(identifier: string): { blocked: boolean; remainingAttempts: number; resetTime: number } {
-    const now = Date.now();
-    const entry = this.attempts.get(identifier);
-
-    if (!entry || now > entry.resetTime) {
-      // New window
-      const newEntry: RateLimitEntry = {
-        count: 1,
-        resetTime: now + this.windowMs
-      };
-      this.attempts.set(identifier, newEntry);
-      
-      return {
-        blocked: false,
-        remainingAttempts: this.maxAttempts - 1,
-        resetTime: newEntry.resetTime
-      };
-    } else {
-      // Increment existing
-      entry.count++;
-      this.attempts.set(identifier, entry);
-      
-      return {
-        blocked: entry.count >= this.maxAttempts,
-        remainingAttempts: Math.max(0, this.maxAttempts - entry.count),
-        resetTime: entry.resetTime
-      };
-    }
+    
+    return true;
   }
 
   getRemainingTime(identifier: string): number {
-    const entry = this.attempts.get(identifier);
-    if (!entry) return 0;
+    const attempt = this.attempts.get(identifier);
+    if (!attempt?.blockedUntil) return 0;
     
-    return Math.max(0, entry.resetTime - Date.now());
+    return Math.max(0, attempt.blockedUntil - Date.now());
   }
 
   reset(identifier: string): void {
     this.attempts.delete(identifier);
   }
-
-  cleanup(): void {
-    const now = Date.now();
-    for (const [key, entry] of this.attempts.entries()) {
-      if (now > entry.resetTime) {
-        this.attempts.delete(key);
-      }
-    }
-  }
 }
 
-// Global rate limiters for different operations
-export const accessCodeLimiter = new RateLimiter(5, 15 * 60 * 1000); // 5 attempts per 15 minutes
-export const loginLimiter = new RateLimiter(10, 15 * 60 * 1000); // 10 attempts per 15 minutes
-export const documentAccessLimiter = new RateLimiter(20, 60 * 60 * 1000); // 20 attempts per hour
-
-// Cleanup every 5 minutes
-setInterval(() => {
-  accessCodeLimiter.cleanup();
-  loginLimiter.cleanup();
-  documentAccessLimiter.cleanup();
-}, 5 * 60 * 1000);
-
-export { RateLimiter };
+export const accessCodeLimiter = new AccessCodeLimiter();
