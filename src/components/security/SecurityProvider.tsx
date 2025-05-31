@@ -84,30 +84,39 @@ export const SecurityProvider: React.FC<SecurityProviderProps> = ({ children }) 
       }
     };
 
-    // Monitor for potential XSS attempts
-    const handleScriptInjection = (event: Event) => {
-      const target = event.target as HTMLElement;
-      if (target.innerHTML && target.innerHTML.includes('<script')) {
-        EnhancedSecurityEventLogger.logSuspiciousActivity(
-          'potential_xss_attempt',
-          user?.id,
-          undefined,
-          navigator.userAgent,
-          { element_tag: target.tagName, detected_content: 'script_tag' }
-        );
-        event.preventDefault();
-        event.stopPropagation();
-      }
-    };
+    // Monitor for potential XSS attempts using MutationObserver instead of deprecated DOMNodeInserted
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            const element = node as HTMLElement;
+            if (element.innerHTML && element.innerHTML.includes('<script')) {
+              EnhancedSecurityEventLogger.logSuspiciousActivity(
+                'potential_xss_attempt',
+                user?.id,
+                undefined,
+                navigator.userAgent,
+                { element_tag: element.tagName, detected_content: 'script_tag' }
+              );
+            }
+          }
+        });
+      });
+    });
+
+    // Start observing
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
 
     document.addEventListener('click', handleSuspiciousActivity);
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    document.addEventListener('DOMNodeInserted', handleScriptInjection);
 
     return () => {
+      observer.disconnect();
       document.removeEventListener('click', handleSuspiciousActivity);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
-      document.removeEventListener('DOMNodeInserted', handleScriptInjection);
     };
   }, [user]);
 
