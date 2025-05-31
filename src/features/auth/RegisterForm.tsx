@@ -7,7 +7,7 @@ import { PersonalInfoFields } from "./components/PersonalInfoFields";
 import { ContactInfoFields } from "./components/ContactInfoFields";
 import { PasswordFields } from "./components/PasswordFields";
 import { FormSubmitButton } from "./components/FormSubmitButton";
-import { useRegisterWithCustomEmail } from "./hooks/useRegisterWithCustomEmail";
+import { useRegisterWithSupabase } from "./hooks/useRegisterWithSupabase";
 import { useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle } from "lucide-react";
@@ -38,10 +38,10 @@ export const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
     },
   });
 
-  const { register, isLoading } = useRegisterWithCustomEmail();
+  const { register, isLoading } = useRegisterWithSupabase();
 
   const handleSubmit = async (values: RegisterFormValues) => {
-    console.log("📝 Soumission du formulaire d'inscription avec email personnalisé");
+    console.log("📝 Soumission du formulaire d'inscription avec Supabase uniquement");
     
     const result = await register(values);
     
@@ -52,8 +52,8 @@ export const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
       
       setRegistrationSuccess({
         show: true,
-        message: result.message || "Inscription réussie",
-        needsEmailConfirmation: result.needsEmailConfirmation || false
+        message: result.message,
+        needsEmailConfirmation: result.needsEmailConfirmation
       });
       
       if (onSuccess) {
@@ -74,7 +74,7 @@ export const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
               <p className="font-medium">Inscription réussie !</p>
               {registrationSuccess.needsEmailConfirmation ? (
                 <div className="space-y-1">
-                  <p>Un email de confirmation personnalisé a été envoyé à votre adresse.</p>
+                  <p>Un email de confirmation Supabase a été envoyé à votre adresse.</p>
                   <p className="text-sm">Consultez votre boîte de réception et cliquez sur le lien pour activer votre compte.</p>
                   <p className="text-xs text-green-600">N'oubliez pas de vérifier vos spams si vous ne trouvez pas l'email.</p>
                 </div>
