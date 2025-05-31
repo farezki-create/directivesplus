@@ -7,7 +7,7 @@ import { PersonalInfoFields } from "./components/PersonalInfoFields";
 import { ContactInfoFields } from "./components/ContactInfoFields";
 import { PasswordFields } from "./components/PasswordFields";
 import { FormSubmitButton } from "./components/FormSubmitButton";
-import { useRegisterWithCustomEmail } from "./hooks/useRegisterWithCustomEmail";
+import { useRegisterWithAwsEmail } from "./hooks/useRegisterWithAwsEmail";
 import { useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle } from "lucide-react";
@@ -38,15 +38,15 @@ export const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
     },
   });
 
-  const { register, isLoading } = useRegisterWithCustomEmail();
+  const { register, isLoading } = useRegisterWithAwsEmail();
 
   const handleSubmit = async (values: RegisterFormValues) => {
-    console.log("📝 Soumission du formulaire d'inscription avec email personnalisé");
+    console.log("📝 Soumission du formulaire d'inscription avec AWS SES");
     
     const result = await register(values);
     
     if (result.success) {
-      console.log("✅ Inscription réussie:", result);
+      console.log("✅ Inscription réussie avec AWS SES:", result);
       
       form.reset();
       
@@ -74,7 +74,7 @@ export const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
               <p className="font-medium">Inscription réussie !</p>
               {registrationSuccess.needsEmailConfirmation ? (
                 <div className="space-y-1">
-                  <p>Un email de confirmation personnalisé a été envoyé à votre adresse.</p>
+                  <p>Un email de confirmation a été envoyé via AWS SES à votre adresse.</p>
                   <p className="text-sm">Consultez votre boîte de réception et cliquez sur le lien pour activer votre compte.</p>
                   <p className="text-xs text-green-600">N'oubliez pas de vérifier vos spams si vous ne trouvez pas l'email.</p>
                 </div>
