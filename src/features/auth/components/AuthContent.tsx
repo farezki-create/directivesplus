@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RegisterForm } from "../RegisterForm";
-import { SecureLoginForm } from "./SecureLoginForm";
+import { LoginForm } from "../LoginForm";
 
 interface AuthContentProps {
   redirectPath: string;
@@ -32,7 +32,7 @@ export const AuthContent = ({
           </TabsList>
           
           <TabsContent value="login">
-            <SecureLoginForm 
+            <LoginForm 
               redirectPath={redirectPath}
               setRedirectInProgress={setRedirectInProgress}
               onForgotPassword={onForgotPassword}
