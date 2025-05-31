@@ -1,10 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const resendApiKey = Deno.env.get('RESEND_API_KEY');
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -21,14 +18,17 @@ interface EmailRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  console.log('🚀 Début de la fonction send-otp-email');
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   if (!resendApiKey) {
+    console.error('❌ Clé API Resend manquante');
     return new Response(
-      JSON.stringify({ error: 'Clé API Resend manquante' }),
+      JSON.stringify({ error: 'Configuration manquante : clé API Resend' }),
       {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -37,10 +37,14 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { to, subject, type, confirmationUrl, resetUrl, userName }: EmailRequest = await req.json();
+    const requestBody = await req.text();
+    console.log('📧 Corps de la requête reçu:', requestBody);
+    
+    const { to, subject, type, confirmationUrl, resetUrl, userName }: EmailRequest = JSON.parse(requestBody);
 
     // Validation des données
     if (!to || !subject || !type) {
+      console.error('❌ Paramètres requis manquants:', { to: !!to, subject: !!subject, type: !!type });
       return new Response(
         JSON.stringify({ error: 'Paramètres requis manquants' }),
         {
@@ -49,6 +53,8 @@ const handler = async (req: Request): Promise<Response> => {
         }
       );
     }
+
+    console.log('✅ Validation réussie, préparation de l\'email pour:', to);
 
     let htmlContent = '';
     let textContent = '';
@@ -143,7 +149,9 @@ const handler = async (req: Request): Promise<Response> => {
       `;
     }
 
-    // Appel à l'API Resend avec l'adresse par défaut vérifiée
+    console.log('📤 Envoi de l\'email via Resend...');
+
+    // Appel à l'API Resend avec l'adresse vérifiée par défaut
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -160,14 +168,35 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     const responseData = await response.json();
+    
+    console.log('📨 Réponse Resend:', {
+      status: response.status,
+      ok: response.ok,
+      data: responseData
+    });
 
     if (!response.ok) {
-      console.error('Erreur Resend:', responseData);
+      console.error('❌ Erreur Resend:', responseData);
+      
+      // Gestion spécifique des erreurs Resend
+      let errorMessage = 'Erreur lors de l\'envoi de l\'email';
+      
+      if (responseData.message?.includes('You can only send testing emails')) {
+        errorMessage = 'Configuration Resend : domaine non vérifié. Utilisation de l\'adresse de test.';
+      } else if (responseData.message?.includes('Invalid email')) {
+        errorMessage = 'Adresse email invalide';
+      } else if (responseData.message?.includes('API key')) {
+        errorMessage = 'Clé API Resend invalide';
+      }
       
       return new Response(
         JSON.stringify({ 
-          error: 'Erreur lors de l\'envoi de l\'email',
-          details: responseData 
+          error: errorMessage,
+          details: responseData,
+          debug: {
+            status: response.status,
+            headers: Object.fromEntries(response.headers.entries())
+          }
         }),
         {
           status: response.status,
@@ -176,7 +205,7 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    console.log('Email envoyé avec succès:', responseData);
+    console.log('✅ Email envoyé avec succès:', responseData);
 
     return new Response(
       JSON.stringify({ 
@@ -191,11 +220,19 @@ const handler = async (req: Request): Promise<Response> => {
     );
 
   } catch (error: any) {
-    console.error('Erreur lors de l\'envoi de l\'email:', error);
+    console.error('💥 Erreur dans send-otp-email:', error);
+    
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message || 'Erreur interne du serveur',
+        stack: error.stack,
+        debug: {
+          name: error.name,
+          cause: error.cause
+        }
+      }),
       {
-      status: 500,
+        status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );
