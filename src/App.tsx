@@ -8,12 +8,14 @@ import { AuthProvider } from './contexts/AuthContext';
 import SuiviPalliatif from './pages/SuiviPalliatif';
 import SuiviMultiPatients from './pages/SuiviMultiPatients';
 import PartageSymptomes from "@/pages/PartageSymptomes";
+import Index from './pages/Index';
 
 function App() {
   return (
     <AuthProvider>
       <Router>
         <Routes>
+          <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           
           <Route 
