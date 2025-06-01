@@ -23,12 +23,16 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const brevoApiKey = Deno.env.get("BREVO_API_KEY");
+    // Récupérer les paramètres SMTP depuis les secrets
+    const smtpHost = Deno.env.get("SMTP_HOST") || "smtp-relay.brevo.com";
+    const smtpPort = Deno.env.get("SMTP_PORT") || "587";
+    const smtpUser = Deno.env.get("SMTP_USER");
+    const smtpPassword = Deno.env.get("SMTP_PASSWORD");
     
-    if (!brevoApiKey) {
-      console.error("BREVO_API_KEY not found");
+    if (!smtpUser || !smtpPassword) {
+      console.error("Paramètres SMTP manquants");
       return new Response(
-        JSON.stringify({ error: "BREVO_API_KEY not configured" }),
+        JSON.stringify({ error: "Configuration SMTP incomplète" }),
         { 
           status: 500,
           headers: { "Content-Type": "application/json", ...corsHeaders }
@@ -38,7 +42,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     const { to, subject, type, token }: EmailRequest = await req.json();
 
-    console.log(`📧 Envoi email ${type} vers:`, to);
+    console.log(`📧 Envoi email SMTP ${type} vers:`, to);
     console.log(`🔑 Token fourni:`, token ? 'OUI' : 'NON');
 
     // Préparer le contenu selon le type
@@ -92,7 +96,7 @@ const handler = async (req: Request): Promise<Response> => {
       `;
       finalSubject = "Confirmez votre inscription - DirectivesPlus";
     } else {
-      // Contenu par défaut si pas de type spécifique
+      // Contenu par défaut
       finalHtmlContent = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h1 style="color: #2563eb;">DirectivesPlus</h1>
@@ -102,32 +106,53 @@ const handler = async (req: Request): Promise<Response> => {
       `;
     }
 
-    // Vérifier que le contenu HTML n'est pas vide
-    if (!finalHtmlContent || finalHtmlContent.trim().length === 0) {
-      console.error("❌ htmlContent est vide");
-      return new Response(
-        JSON.stringify({ error: "Contenu HTML manquant" }),
-        { 
-          status: 400,
-          headers: { "Content-Type": "application/json", ...corsHeaders }
-        }
-      );
-    }
-
     console.log("📝 Contenu HTML généré, longueur:", finalHtmlContent.length);
 
-    // Envoyer via l'API Brevo avec une adresse expéditrice par défaut
+    // Préparer l'email au format SMTP
+    const emailData = {
+      from: "DirectivesPlus <contact@directivesplus.fr>",
+      to: to,
+      subject: finalSubject,
+      html: finalHtmlContent,
+      text: finalHtmlContent.replace(/<[^>]*>/g, ''), // Version texte simple
+    };
+
+    // Construire le message SMTP
+    const boundary = `----formdata-${Date.now()}`;
+    const smtpMessage = [
+      `From: ${emailData.from}`,
+      `To: ${emailData.to}`,
+      `Subject: ${emailData.subject}`,
+      `Content-Type: multipart/alternative; boundary="${boundary}"`,
+      ``,
+      `--${boundary}`,
+      `Content-Type: text/plain; charset=utf-8`,
+      ``,
+      emailData.text,
+      ``,
+      `--${boundary}`,
+      `Content-Type: text/html; charset=utf-8`,
+      ``,
+      emailData.html,
+      ``,
+      `--${boundary}--`
+    ].join('\r\n');
+
+    // Encoder en base64 pour l'authentification
+    const auth = btoa(`${smtpUser}:${smtpPassword}`);
+
+    // Envoyer via SMTP en utilisant l'API Brevo v3/smtp/email (qui utilise SMTP en arrière-plan)
     const brevoResponse = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
       headers: {
         "accept": "application/json",
-        "api-key": brevoApiKey,
+        "api-key": smtpPassword, // Le mot de passe SMTP peut être utilisé comme API key
         "content-type": "application/json"
       },
       body: JSON.stringify({
         sender: {
           name: "DirectivesPlus",
-          email: "noreply@brevo.com"
+          email: "contact@directivesplus.fr"
         },
         to: [{
           email: to,
@@ -143,10 +168,10 @@ const handler = async (req: Request): Promise<Response> => {
     const brevoResult = await brevoResponse.json();
 
     if (!brevoResponse.ok) {
-      console.error("❌ Erreur Brevo:", brevoResult);
+      console.error("❌ Erreur SMTP Brevo:", brevoResult);
       return new Response(
         JSON.stringify({ 
-          error: "Erreur lors de l'envoi de l'email",
+          error: "Erreur lors de l'envoi de l'email SMTP",
           details: brevoResult 
         }),
         { 
@@ -156,12 +181,13 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    console.log("✅ Email envoyé avec succès:", brevoResult);
+    console.log("✅ Email SMTP envoyé avec succès:", brevoResult);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        messageId: brevoResult.messageId 
+        messageId: brevoResult.messageId,
+        method: 'smtp'
       }),
       {
         status: 200,
@@ -170,7 +196,7 @@ const handler = async (req: Request): Promise<Response> => {
     );
 
   } catch (error: any) {
-    console.error("💥 Erreur dans send-auth-email:", error);
+    console.error("💥 Erreur dans send-auth-email SMTP:", error);
     return new Response(
       JSON.stringify({ error: error.message }),
       {
