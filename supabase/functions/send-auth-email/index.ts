@@ -113,7 +113,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("📝 Contenu HTML généré, longueur:", finalHtmlContent.length);
 
-    // Envoyer via l'API Brevo
+    // Envoyer via l'API Brevo avec la nouvelle adresse expéditrice
     const brevoResponse = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
       headers: {
@@ -124,7 +124,7 @@ const handler = async (req: Request): Promise<Response> => {
       body: JSON.stringify({
         sender: {
           name: "DirectivesPlus",
-          email: "fann.innovation@gmail.com"
+          email: "contact@directivesplus.fr"
         },
         to: [{
           email: to,
