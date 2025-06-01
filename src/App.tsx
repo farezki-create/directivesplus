@@ -18,6 +18,8 @@ import GoutsPeurs from './pages/GoutsPeurs';
 import PersonneConfiance from './pages/PersonneConfiance';
 import ExemplesPhrases from './pages/ExemplesPhrases';
 import Synthesis from './pages/Synthesis';
+import MesDirectives from './pages/MesDirectives';
+import CarteAcces from './pages/CarteAcces';
 
 function App() {
   return (
@@ -97,6 +99,25 @@ function App() {
             element={
               <ProtectedRoute>
                 <Synthesis />
+              </ProtectedRoute>
+            } 
+          />
+          
+          {/* Pages Mes Directives et Carte d'Accès */}
+          <Route 
+            path="/mes-directives" 
+            element={
+              <ProtectedRoute>
+                <MesDirectives />
+              </ProtectedRoute>
+            } 
+          />
+          
+          <Route 
+            path="/carte-acces" 
+            element={
+              <ProtectedRoute>
+                <CarteAcces />
               </ProtectedRoute>
             } 
           />
