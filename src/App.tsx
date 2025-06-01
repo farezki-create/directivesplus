@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -6,6 +7,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import ScrollToTop from '@/components/ScrollToTop';
 import Index from '@/pages/Index';
 import Auth from '@/pages/Auth';
+import AuthEmailAudit from '@/pages/AuthEmailAudit';
 import Profile from '@/pages/Profile';
 import AccessCode from '@/pages/AccessCode';
 import RLSAudit from '@/pages/RLSAudit';
@@ -98,6 +100,7 @@ function AppContent() {
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/auth" element={<Auth />} />
+        <Route path="/auth-audit" element={<AuthEmailAudit />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/access-code/:documentId" element={<AccessCode />} />
         <Route path="/rls-audit" element={<RLSAudit />} />
