@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -7,7 +8,6 @@ import { BackButton } from "./components/BackButton";
 import { AuthContent } from "./components/AuthContent";
 import { ForgotPasswordView } from "./views/ForgotPasswordView";
 import { PasswordResetView } from "./views/PasswordResetView";
-import SMTPTestComponent from "@/components/debug/SMTPTestComponent";
 
 const AuthPage = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -18,7 +18,6 @@ const AuthPage = () => {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [redirectInProgress, setRedirectInProgress] = useState(false);
-  const [showDebug, setShowDebug] = useState(false);
   
   // Vérification des paramètres URL pour confirmation email et reset mot de passe
   const accessToken = searchParams.get('access_token') || location.hash.match(/access_token=([^&]+)/)?.[1];
@@ -148,7 +147,7 @@ const AuthPage = () => {
 
   const redirectPath = location.state?.from || "/rediger";
 
-  // Page principale d'authentification avec composant de debug
+  // Page principale d'authentification
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -156,19 +155,6 @@ const AuthPage = () => {
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-md mx-auto">
           <BackButton />
-          
-          {/* Bouton pour afficher/masquer le debug SMTP */}
-          <div className="text-center mb-4">
-            <button
-              onClick={() => setShowDebug(!showDebug)}
-              className="text-sm text-blue-600 hover:text-blue-800 underline"
-            >
-              {showDebug ? "Masquer" : "Afficher"} le test SMTP
-            </button>
-          </div>
-
-          {/* Composant de test SMTP */}
-          {showDebug && <SMTPTestComponent />}
           
           <AuthContent
             redirectPath={redirectPath}
