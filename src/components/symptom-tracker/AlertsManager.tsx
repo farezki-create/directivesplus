@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,6 +15,19 @@ interface Alert {
   notifie_a: string[];
   date_declenchement: string;
   statut: 'active' | 'acquittee' | 'resolue';
+  acquittee_par?: string;
+  acquittee_le?: string;
+}
+
+// Type pour les données brutes de Supabase
+interface SupabaseAlert {
+  id: string;
+  patient_id: string;
+  type_alerte: string;
+  details: string;
+  notifie_a: string[];
+  date_declenchement: string;
+  statut: string;
   acquittee_par?: string;
   acquittee_le?: string;
 }
@@ -40,7 +52,14 @@ export default function AlertsManager() {
         console.error("Erreur lors du chargement des alertes:", fetchError);
         setError("Erreur lors du chargement des alertes");
       } else {
-        setAlerts(data || []);
+        // Convertir les données Supabase en type Alert avec validation
+        const typedAlerts: Alert[] = (data as SupabaseAlert[] || []).map(alert => ({
+          ...alert,
+          statut: ['active', 'acquittee', 'resolue'].includes(alert.statut) 
+            ? alert.statut as 'active' | 'acquittee' | 'resolue'
+            : 'active' // valeur par défaut si le statut n'est pas valide
+        }));
+        setAlerts(typedAlerts);
       }
     } catch (err) {
       console.error("Erreur:", err);
