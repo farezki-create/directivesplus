@@ -11,6 +11,13 @@ import PartageSymptomes from "@/pages/PartageSymptomes";
 import Index from './pages/Index';
 import AccesInstitution from './pages/AccesInstitution';
 import Rediger from './pages/Rediger';
+import AvisGeneral from './pages/AvisGeneral';
+import MaintienVie from './pages/MaintienVie';
+import MaladieAvancee from './pages/MaladieAvancee';
+import GoutsPeurs from './pages/GoutsPeurs';
+import PersonneConfiance from './pages/PersonneConfiance';
+import ExemplesPhrases from './pages/ExemplesPhrases';
+import Synthesis from './pages/Synthesis';
 
 function App() {
   return (
@@ -26,6 +33,70 @@ function App() {
             element={
               <ProtectedRoute>
                 <Rediger />
+              </ProtectedRoute>
+            } 
+          />
+          
+          {/* Pages de rédaction des directives */}
+          <Route 
+            path="/avis-general" 
+            element={
+              <ProtectedRoute>
+                <AvisGeneral />
+              </ProtectedRoute>
+            } 
+          />
+          
+          <Route 
+            path="/maintien-vie" 
+            element={
+              <ProtectedRoute>
+                <MaintienVie />
+              </ProtectedRoute>
+            } 
+          />
+          
+          <Route 
+            path="/maladie-avancee" 
+            element={
+              <ProtectedRoute>
+                <MaladieAvancee />
+              </ProtectedRoute>
+            } 
+          />
+          
+          <Route 
+            path="/gouts-peurs" 
+            element={
+              <ProtectedRoute>
+                <GoutsPeurs />
+              </ProtectedRoute>
+            } 
+          />
+          
+          <Route 
+            path="/personne-confiance" 
+            element={
+              <ProtectedRoute>
+                <PersonneConfiance />
+              </ProtectedRoute>
+            } 
+          />
+          
+          <Route 
+            path="/exemples-phrases" 
+            element={
+              <ProtectedRoute>
+                <ExemplesPhrases />
+              </ProtectedRoute>
+            } 
+          />
+          
+          <Route 
+            path="/synthesis" 
+            element={
+              <ProtectedRoute>
+                <Synthesis />
               </ProtectedRoute>
             } 
           />
