@@ -1,16 +1,13 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import AppNavigation from "@/components/AppNavigation";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Calendar, User, AlertTriangle } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
-import { fr } from "date-fns/locale";
-import SymptomEvolutionChart from "@/components/symptom-tracker/SymptomEvolutionChart";
+import { ArrowLeft } from "lucide-react";
+import PatientSelector from "@/components/symptom-tracker/PatientSelector";
+import PatientSymptomsDashboard from "@/components/symptom-tracker/PatientSymptomsDashboard";
 
 interface Patient {
   id: string;
@@ -114,38 +111,6 @@ const SuiviMultiPatients = () => {
     }
   }, [selectedPatient]);
 
-  const getSeverityBadge = (value: number, type: "douleur" | "dyspnee" | "anxiete") => {
-    let color = "bg-gray-100 text-gray-800";
-    let label = "Aucun";
-
-    if (value > 0 && value <= 3) {
-      color = "bg-green-100 text-green-800";
-      label = "Léger";
-    } else if (value > 3 && value <= 6) {
-      color = "bg-yellow-100 text-yellow-800";
-      label = "Modéré";
-    } else if (value > 6) {
-      color = "bg-red-100 text-red-800";
-      label = "Sévère";
-    }
-
-    const typeLabels = {
-      douleur: "Douleur",
-      dyspnee: "Dyspnée",
-      anxiete: "Anxiété"
-    };
-
-    return (
-      <Badge className={color}>
-        {typeLabels[type]}: {value}/10 ({label})
-      </Badge>
-    );
-  };
-
-  const isCriticalSymptom = (symptom: SymptomEntry) => {
-    return symptom.douleur >= 8 || symptom.dyspnee >= 7 || symptom.anxiete >= 8;
-  };
-
   if (isLoading) {
     return (
       <div className="h-screen flex items-center justify-center">
@@ -216,124 +181,20 @@ const SuiviMultiPatients = () => {
           </div>
 
           {/* Sélecteur de patient */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                Sélection du Patient
-              </CardTitle>
-              <CardDescription>
-                Choisissez un patient pour consulter son historique de symptômes
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Select
-                value={selectedPatient?.id || ""}
-                onValueChange={(value) => {
-                  const patient = patients.find(p => p.id === value);
-                  setSelectedPatient(patient || null);
-                }}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="-- Sélectionner un patient --" />
-                </SelectTrigger>
-                <SelectContent>
-                  {patients.map((patient) => (
-                    <SelectItem key={patient.id} value={patient.id}>
-                      {patient.prenom} {patient.nom} ({patient.date_naissance})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </CardContent>
-          </Card>
+          <PatientSelector 
+            patients={patients}
+            selectedPatient={selectedPatient}
+            onPatientSelect={setSelectedPatient}
+          />
 
           {/* Affichage des symptômes */}
           {selectedPatient && (
-            <>
-              {/* Graphique d'évolution */}
-              <SymptomEvolutionChart 
-                symptoms={symptoms} 
-                className="mb-6"
-              />
-
-              {/* Historique détaillé */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5" />
-                    Historique des Symptômes - {selectedPatient.prenom} {selectedPatient.nom}
-                  </CardTitle>
-                  <CardDescription>
-                    Suivi chronologique des évaluations de symptômes
-                  </CardDescription>
-                </CardHeader>
-                
-                <CardContent>
-                  {loading ? (
-                    <div className="text-center py-8">
-                      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-directiveplus-600 mx-auto"></div>
-                      <p className="mt-2 text-gray-600">Chargement des symptômes...</p>
-                    </div>
-                  ) : error ? (
-                    <div className="text-center py-8 text-red-600">
-                      Erreur: {error}
-                    </div>
-                  ) : symptoms.length === 0 ? (
-                    <div className="text-center py-8 text-gray-500">
-                      Aucune évaluation de symptômes enregistrée pour ce patient
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {symptoms.map((symptom) => (
-                        <div
-                          key={symptom.id}
-                          className={`border rounded-lg p-4 ${
-                            isCriticalSymptom(symptom) 
-                              ? 'border-red-200 bg-red-50' 
-                              : 'border-gray-200 bg-white'
-                          }`}
-                        >
-                          <div className="flex justify-between items-start mb-3">
-                            <div className="flex items-center gap-2 text-sm text-gray-600">
-                              <Calendar className="h-4 w-4" />
-                              {formatDistanceToNow(new Date(symptom.created_at), { 
-                                addSuffix: true, 
-                                locale: fr 
-                              })}
-                            </div>
-                            <div className="flex items-center gap-2">
-                              {isCriticalSymptom(symptom) && (
-                                <Badge variant="destructive" className="flex items-center gap-1">
-                                  <AlertTriangle className="h-3 w-3" />
-                                  Critique
-                                </Badge>
-                              )}
-                              <div className="flex items-center gap-1 text-sm text-gray-600">
-                                <User className="h-4 w-4" />
-                                {symptom.auteur}
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="flex flex-wrap gap-2 mb-3">
-                            {getSeverityBadge(symptom.douleur, "douleur")}
-                            {getSeverityBadge(symptom.dyspnee, "dyspnee")}
-                            {getSeverityBadge(symptom.anxiete, "anxiete")}
-                          </div>
-
-                          {symptom.remarque && (
-                            <div className="bg-gray-50 rounded p-3 text-sm">
-                              <strong>Remarques:</strong> {symptom.remarque}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </>
+            <PatientSymptomsDashboard
+              selectedPatient={selectedPatient}
+              symptoms={symptoms}
+              loading={loading}
+              error={error}
+            />
           )}
         </div>
       </main>
