@@ -60,6 +60,7 @@ import ProcedureViolationDonnees from "./pages/ProcedureViolationDonnees";
 import ReportDataBreach from "./pages/ReportDataBreach";
 import SuiviSymptomes from "./pages/SuiviSymptomes";
 import SuiviPalliatif from "./pages/SuiviPalliatif";
+import AlertesSoignants from "./pages/AlertesSoignants";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -77,6 +78,7 @@ function App() {
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/suivi-symptomes" element={<ProtectedRoute><SuiviSymptomes /></ProtectedRoute>} />
           <Route path="/suivi-palliatif" element={<ProtectedRoute><SuiviPalliatif /></ProtectedRoute>} />
+          <Route path="/alertes-soignants" element={<ProtectedRoute><AlertesSoignants /></ProtectedRoute>} />
           <Route path="/directives-info" element={<DirectivesInfo />} />
           <Route path="/rediger" element={<ProtectedRoute><Rediger /></ProtectedRoute>} />
           <Route path="/personne-confiance" element={<ProtectedRoute><PersonneConfiance /></ProtectedRoute>} />

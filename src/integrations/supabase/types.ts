@@ -176,38 +176,39 @@ export type Database = {
       }
       alertes: {
         Row: {
-          date_declenchement: string | null
+          acquittee_le: string | null
+          acquittee_par: string | null
+          date_declenchement: string
           details: string | null
           id: string
           notifie_a: string[] | null
-          patient_id: string | null
-          type_alerte: string | null
+          patient_id: string
+          statut: string
+          type_alerte: string
         }
         Insert: {
-          date_declenchement?: string | null
+          acquittee_le?: string | null
+          acquittee_par?: string | null
+          date_declenchement?: string
           details?: string | null
           id?: string
           notifie_a?: string[] | null
-          patient_id?: string | null
-          type_alerte?: string | null
+          patient_id: string
+          statut?: string
+          type_alerte: string
         }
         Update: {
-          date_declenchement?: string | null
+          acquittee_le?: string | null
+          acquittee_par?: string | null
+          date_declenchement?: string
           details?: string | null
           id?: string
           notifie_a?: string[] | null
-          patient_id?: string | null
-          type_alerte?: string | null
+          patient_id?: string
+          statut?: string
+          type_alerte?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "alertes_patient_id_fkey"
-            columns: ["patient_id"]
-            isOneToOne: false
-            referencedRelation: "patients"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       articles: {
         Row: {
