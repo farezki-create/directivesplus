@@ -10,6 +10,7 @@ import SuiviMultiPatients from './pages/SuiviMultiPatients';
 import PartageSymptomes from "@/pages/PartageSymptomes";
 import Index from './pages/Index';
 import AccesInstitution from './pages/AccesInstitution';
+import Rediger from './pages/Rediger';
 
 function App() {
   return (
@@ -19,6 +20,15 @@ function App() {
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/acces-institution" element={<AccesInstitution />} />
+          
+          <Route 
+            path="/rediger" 
+            element={
+              <ProtectedRoute>
+                <Rediger />
+              </ProtectedRoute>
+            } 
+          />
           
           <Route 
             path="/dashboard" 
