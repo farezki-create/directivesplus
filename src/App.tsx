@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import Auth from './pages/Auth';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -9,6 +9,7 @@ import SuiviMultiPatients from './pages/SuiviMultiPatients';
 import PartageSymptomes from "@/pages/PartageSymptomes";
 import Index from './pages/Index';
 import AccesInstitution from './pages/AccesInstitution';
+import AccesSoinsPalliatifs from './pages/AccesSoinsPalliatifs';
 import Rediger from './pages/Rediger';
 import AvisGeneral from './pages/AvisGeneral';
 import MaintienVie from './pages/MaintienVie';
@@ -37,6 +38,7 @@ function App() {
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/acces-institution" element={<AccesInstitution />} />
+              <Route path="/acces-soins-palliatifs" element={<AccesSoinsPalliatifs />} />
               
               <Route 
                 path="/rediger" 
