@@ -157,14 +157,21 @@ const AuthPage = () => {
         <div className="max-w-md mx-auto">
           <BackButton />
           
-          {/* Bouton pour afficher/masquer le debug SMTP */}
-          <div className="text-center mb-4">
+          {/* Boutons de debug */}
+          <div className="text-center mb-4 space-y-2">
             <button
               onClick={() => setShowDebug(!showDebug)}
-              className="text-sm text-blue-600 hover:text-blue-800 underline"
+              className="text-sm text-blue-600 hover:text-blue-800 underline block mx-auto"
             >
               {showDebug ? "Masquer" : "Afficher"} le test SMTP
             </button>
+            
+            <a
+              href="/auth-audit"
+              className="text-sm text-green-600 hover:text-green-800 underline block mx-auto"
+            >
+              🔍 Audit Email Complet
+            </a>
           </div>
 
           {/* Composant de test SMTP */}
