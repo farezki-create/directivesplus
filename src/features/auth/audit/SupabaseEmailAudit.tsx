@@ -94,9 +94,9 @@ export const SupabaseEmailAudit = () => {
   const auditClientConfig = async () => {
     const issues: string[] = [];
     
-    // Récupérer les valeurs réelles du client Supabase
-    const url = supabase.supabaseUrl;
-    const key = supabase.supabaseKey;
+    // Utiliser les valeurs hardcodées du client Supabase
+    const url = "https://kytqqjnecezkxyhmmjrz.supabase.co";
+    const key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5dHFxam5lY2V6a3h5aG1tanJ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzcxOTc5MjUsImV4cCI6MjA1Mjc3MzkyNX0.uocoNg-le-iv0pw7c99mthQ6gxGHyXGyQqgxo9_3CPc";
     
     // Test de connexion
     let connectionWorks = false;
