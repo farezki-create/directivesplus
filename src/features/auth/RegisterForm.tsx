@@ -41,7 +41,7 @@ export const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
   const { register, isLoading } = useRegisterWithSupabase();
 
   const handleSubmit = async (values: RegisterFormValues) => {
-    console.log("📝 Soumission du formulaire d'inscription avec Supabase uniquement");
+    console.log("📝 Soumission du formulaire d'inscription avec Supabase standard");
     
     const result = await register(values);
     
@@ -56,10 +56,10 @@ export const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
         needsEmailConfirmation: result.needsEmailConfirmation
       });
       
-      if (onSuccess) {
+      if (onSuccess && !result.needsEmailConfirmation) {
         setTimeout(() => {
           onSuccess();
-        }, result.needsEmailConfirmation ? 3000 : 2000);
+        }, 2000);
       }
     }
   };
@@ -74,7 +74,7 @@ export const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
               <p className="font-medium">Inscription réussie !</p>
               {registrationSuccess.needsEmailConfirmation ? (
                 <div className="space-y-1">
-                  <p>Un email de confirmation Supabase a été envoyé à votre adresse.</p>
+                  <p>Un email de confirmation a été envoyé à votre adresse.</p>
                   <p className="text-sm">Consultez votre boîte de réception et cliquez sur le lien pour activer votre compte.</p>
                   <p className="text-xs text-green-600">N'oubliez pas de vérifier vos spams si vous ne trouvez pas l'email.</p>
                 </div>
