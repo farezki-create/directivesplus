@@ -45,8 +45,8 @@ export const useRegisterWithSupabase = () => {
           errorMessage = "Cette adresse email est déjà utilisée";
         } else if (error.message?.includes("password")) {
           errorMessage = "Le mot de passe ne respecte pas les critères requis";
-        } else if (error.message?.includes("rate limit")) {
-          errorMessage = "Trop de tentatives. Veuillez attendre quelques minutes avant de réessayer.";
+        } else if (error.message?.includes("rate limit") || error.message?.includes("email_send_rate_limit")) {
+          errorMessage = "Trop de tentatives d'envoi d'email. Veuillez attendre quelques minutes avant de réessayer.";
         }
         
         return {
