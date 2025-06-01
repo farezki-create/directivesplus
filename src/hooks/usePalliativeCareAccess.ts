@@ -3,35 +3,15 @@ import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
-interface Patient {
-  id: string;
-  name: string;
-  date_of_birth: string;
-}
-
 interface PalliativeCareAccessState {
   loading: boolean;
   error: string | null;
-  accessGranted: boolean;
-  patientData: Patient | null;
-}
-
-interface PatientAccessResult {
-  patient_id: string;
-  access_granted: boolean;
-  patient_info: {
-    id: string;
-    name: string;
-    date_of_birth: string;
-  };
 }
 
 export const usePalliativeCareAccess = () => {
   const [state, setState] = useState<PalliativeCareAccessState>({
     loading: false,
-    error: null,
-    accessGranted: false,
-    patientData: null
+    error: null
   });
 
   const generateAccessCode = useCallback(async (patientId: string) => {
@@ -80,66 +60,8 @@ export const usePalliativeCareAccess = () => {
     }
   }, []);
 
-  const verifyAccess = useCallback(async (
-    lastName: string,
-    firstName: string,
-    birthDate: string,
-    accessCode: string
-  ) => {
-    try {
-      setState(prev => ({ ...prev, loading: true, error: null }));
-
-      const { data, error } = await supabase
-        .rpc('verify_patient_access_with_code', {
-          p_last_name: lastName,
-          p_first_name: firstName,
-          p_birth_date: birthDate,
-          p_access_code: accessCode
-        });
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      const result = data?.[0] as PatientAccessResult;
-      if (!result || !result.access_granted) {
-        setState(prev => ({
-          ...prev,
-          error: "Accès refusé. Vérifiez les informations saisies.",
-          accessGranted: false,
-          patientData: null
-        }));
-        return null;
-      }
-
-      setState(prev => ({
-        ...prev,
-        accessGranted: true,
-        patientData: {
-          id: result.patient_info.id,
-          name: result.patient_info.name,
-          date_of_birth: result.patient_info.date_of_birth
-        }
-      }));
-
-      return result.patient_info;
-    } catch (error: any) {
-      const errorMessage = error.message || "Erreur lors de la vérification";
-      setState(prev => ({ 
-        ...prev, 
-        error: errorMessage,
-        accessGranted: false,
-        patientData: null
-      }));
-      return null;
-    } finally {
-      setState(prev => ({ ...prev, loading: false }));
-    }
-  }, []);
-
   return {
     ...state,
-    generateAccessCode,
-    verifyAccess
+    generateAccessCode
   };
 };
