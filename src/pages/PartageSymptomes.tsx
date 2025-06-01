@@ -18,6 +18,12 @@ interface Patient {
   date_of_birth: string;
 }
 
+interface PatientInfo {
+  id: string;
+  name: string;
+  date_of_birth: string;
+}
+
 const PartageSymptomes = () => {
   const [searchParams] = useSearchParams();
   const prefilledCode = searchParams.get('code') || '';
@@ -57,7 +63,7 @@ const PartageSymptomes = () => {
       formData.firstName,
       formData.birthDate,
       formData.accessCode
-    );
+    ) as PatientInfo | null;
     
     if (result) {
       setPatient({
@@ -99,7 +105,7 @@ const PartageSymptomes = () => {
                   birth_date: patient.date_of_birth
                 }}
                 symptoms={symptoms.map(s => ({
-                  id: s.id,
+                  id: s.id.toString(),
                   douleur: s.severity || 0,
                   dyspnee: 0,
                   anxiete: 0,

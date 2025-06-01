@@ -16,6 +16,16 @@ interface PalliativeCareAccessState {
   patientData: Patient | null;
 }
 
+interface PatientAccessResult {
+  patient_id: string;
+  access_granted: boolean;
+  patient_info: {
+    id: string;
+    name: string;
+    date_of_birth: string;
+  };
+}
+
 export const usePalliativeCareAccess = () => {
   const [state, setState] = useState<PalliativeCareAccessState>({
     loading: false,
@@ -37,11 +47,12 @@ export const usePalliativeCareAccess = () => {
       }
 
       // Mettre à jour le patient avec le nouveau code
+      const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 jours
       const { error: updateError } = await supabase
         .from('patients')
         .update({
           access_code: codeData,
-          access_code_expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 jours
+          access_code_expires_at: expiresAt.toISOString()
         })
         .eq('id', patientId);
 
@@ -90,7 +101,7 @@ export const usePalliativeCareAccess = () => {
         throw new Error(error.message);
       }
 
-      const result = data?.[0];
+      const result = data?.[0] as PatientAccessResult;
       if (!result || !result.access_granted) {
         setState(prev => ({
           ...prev,
@@ -105,7 +116,7 @@ export const usePalliativeCareAccess = () => {
         ...prev,
         accessGranted: true,
         patientData: {
-          id: result.patient_id,
+          id: result.patient_info.id,
           name: result.patient_info.name,
           date_of_birth: result.patient_info.date_of_birth
         }
