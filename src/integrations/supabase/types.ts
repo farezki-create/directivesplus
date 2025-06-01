@@ -916,18 +916,24 @@ export type Database = {
       }
       patients: {
         Row: {
+          access_code: string | null
+          access_code_expires_at: string | null
           created_at: string | null
           date_of_birth: string
           id: string
           name: string
         }
         Insert: {
+          access_code?: string | null
+          access_code_expires_at?: string | null
           created_at?: string | null
           date_of_birth: string
           id?: string
           name: string
         }
         Update: {
+          access_code?: string | null
+          access_code_expires_at?: string | null
           created_at?: string | null
           date_of_birth?: string
           id?: string
@@ -2075,6 +2081,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      generate_patient_access_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       generate_random_code: {
         Args: { length: number }
         Returns: string
@@ -2411,6 +2421,19 @@ export type Database = {
         Returns: {
           is_valid: boolean
           medical_data_content: Json
+        }[]
+      }
+      verify_patient_access_with_code: {
+        Args: {
+          p_last_name: string
+          p_first_name: string
+          p_birth_date: string
+          p_access_code: string
+        }
+        Returns: {
+          patient_id: string
+          access_granted: boolean
+          patient_info: Json
         }[]
       }
       verify_symptom_shared_access: {

@@ -11,12 +11,14 @@ import AccessCard from "@/components/carte-acces/AccessCard";
 import ActionButtons from "@/components/carte-acces/ActionButtons";
 import InstructionsCard from "@/components/carte-acces/InstructionsCard";
 import { InstitutionCodeSection } from "@/components/directives/InstitutionCodeSection";
+import { PalliativeCareAccessCard } from "@/components/carte-acces/PalliativeCareAccessCard";
 
 const CarteAcces = () => {
   const {
     isAuthenticated,
     isLoading,
-    profile
+    profile,
+    user
   } = useAuth();
   const navigate = useNavigate();
   const {
@@ -103,10 +105,10 @@ const CarteAcces = () => {
 
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-directiveplus-800 mb-4">
-              Carte d'Accès aux Directives Anticipées
+              Cartes d'Accès
             </h1>
             <p className="text-lg text-gray-600">
-              Votre carte d'accès aux directives anticipées pour les professionnels de santé
+              Vos cartes d'accès pour les professionnels de santé
             </p>
           </div>
 
@@ -121,22 +123,54 @@ const CarteAcces = () => {
             </div>
           )}
 
-          <ActionButtons onPrint={handlePrint} onDownload={handleDownload} />
+          {/* Grid des cartes */}
+          <div className="space-y-12">
+            {/* Carte d'accès aux directives anticipées */}
+            <div className="space-y-6">
+              <div className="text-center">
+                <h2 className="text-2xl font-bold text-directiveplus-800 mb-2">
+                  Carte d'Accès aux Directives Anticipées
+                </h2>
+                <p className="text-gray-600">
+                  Pour l'accès aux directives anticipées en situation d'urgence
+                </p>
+              </div>
 
-          {/* Carte d'accès format bancaire */}
-          <div className="flex justify-center mb-8">
-            <AccessCard 
-              firstName={firstName} 
-              lastName={lastName} 
-              birthDate={birthDate} 
-              codeAcces={codeAcces} 
-              qrCodeUrl={qrCodeUrl}
-              isGenerating={isGenerating}
-              isQrCodeValid={isQrCodeValid}
-            />
+              <ActionButtons onPrint={handlePrint} onDownload={handleDownload} />
+
+              {/* Carte d'accès format bancaire */}
+              <div className="flex justify-center">
+                <AccessCard 
+                  firstName={firstName} 
+                  lastName={lastName} 
+                  birthDate={birthDate} 
+                  codeAcces={codeAcces} 
+                  qrCodeUrl={qrCodeUrl}
+                  isGenerating={isGenerating}
+                  isQrCodeValid={isQrCodeValid}
+                />
+              </div>
+
+              <InstructionsCard codeAcces={codeAcces} />
+            </div>
+
+            {/* Nouvelle carte d'accès suivi palliatif */}
+            <div className="space-y-6 border-t pt-8">
+              <div className="text-center">
+                <h2 className="text-2xl font-bold text-pink-800 mb-2">
+                  Carte d'Accès Suivi Palliatif
+                </h2>
+                <p className="text-gray-600">
+                  Pour le partage sécurisé du suivi des symptômes avec les professionnels
+                </p>
+              </div>
+
+              <PalliativeCareAccessCard 
+                patientId={user?.id}
+                patientName={firstName && lastName ? `${firstName} ${lastName}` : undefined}
+              />
+            </div>
           </div>
-
-          <InstructionsCard codeAcces={codeAcces} />
 
           {/* Section Accès Institution */}
           <div className="mt-8">
