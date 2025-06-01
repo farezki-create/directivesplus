@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
@@ -21,146 +20,159 @@ import Synthesis from './pages/Synthesis';
 import MesDirectives from './pages/MesDirectives';
 import CarteAcces from './pages/CarteAcces';
 import Profile from './pages/Profile';
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import ScrollToTop from "@/components/ScrollToTop";
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/acces-institution" element={<AccesInstitution />} />
-          
-          <Route 
-            path="/rediger" 
-            element={
-              <ProtectedRoute>
-                <Rediger />
-              </ProtectedRoute>
-            } 
-          />
-          
-          {/* Pages de rédaction des directives */}
-          <Route 
-            path="/avis-general" 
-            element={
-              <ProtectedRoute>
-                <AvisGeneral />
-              </ProtectedRoute>
-            } 
-          />
-          
-          <Route 
-            path="/maintien-vie" 
-            element={
-              <ProtectedRoute>
-                <MaintienVie />
-              </ProtectedRoute>
-            } 
-          />
-          
-          <Route 
-            path="/maladie-avancee" 
-            element={
-              <ProtectedRoute>
-                <MaladieAvancee />
-              </ProtectedRoute>
-            } 
-          />
-          
-          <Route 
-            path="/gouts-peurs" 
-            element={
-              <ProtectedRoute>
-                <GoutsPeurs />
-              </ProtectedRoute>
-            } 
-          />
-          
-          <Route 
-            path="/personne-confiance" 
-            element={
-              <ProtectedRoute>
-                <PersonneConfiance />
-              </ProtectedRoute>
-            } 
-          />
-          
-          <Route 
-            path="/exemples-phrases" 
-            element={
-              <ProtectedRoute>
-                <ExemplesPhrases />
-              </ProtectedRoute>
-            } 
-          />
-          
-          <Route 
-            path="/synthesis" 
-            element={
-              <ProtectedRoute>
-                <Synthesis />
-              </ProtectedRoute>
-            } 
-          />
-          
-          {/* Pages Mes Directives et Carte d'Accès */}
-          <Route 
-            path="/mes-directives" 
-            element={
-              <ProtectedRoute>
-                <MesDirectives />
-              </ProtectedRoute>
-            } 
-          />
-          
-          <Route 
-            path="/carte-acces" 
-            element={
-              <ProtectedRoute>
-                <CarteAcces />
-              </ProtectedRoute>
-            } 
-          />
-          
-          {/* Page Profile */}
-          <Route 
-            path="/profile" 
-            element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            } 
-          />
-          
-          <Route 
-            path="/dashboard" 
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/suivi-palliatif" 
-            element={
-              <ProtectedRoute>
-                <SuiviPalliatif />
-              </ProtectedRoute>
-            } 
-          />
-           <Route 
-            path="/suivi-multi-patients" 
-            element={
-              <ProtectedRoute>
-                <SuiviMultiPatients />
-              </ProtectedRoute>
-            } 
-          />
-          <Route path="/partage/suivi" element={<PartageSymptomes />} />
-        </Routes>
-      </Router>
-    </AuthProvider>
+    <QueryClientProvider client={new QueryClient()}>
+      <TooltipProvider>
+        <BrowserRouter>
+          <ScrollToTop />
+          <AuthProvider>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/acces-institution" element={<AccesInstitution />} />
+              
+              <Route 
+                path="/rediger" 
+                element={
+                  <ProtectedRoute>
+                    <Rediger />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Pages de rédaction des directives */}
+              <Route 
+                path="/avis-general" 
+                element={
+                  <ProtectedRoute>
+                    <AvisGeneral />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/maintien-vie" 
+                element={
+                  <ProtectedRoute>
+                    <MaintienVie />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/maladie-avancee" 
+                element={
+                  <ProtectedRoute>
+                    <MaladieAvancee />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/gouts-peurs" 
+                element={
+                  <ProtectedRoute>
+                    <GoutsPeurs />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/personne-confiance" 
+                element={
+                  <ProtectedRoute>
+                    <PersonneConfiance />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/exemples-phrases" 
+                element={
+                  <ProtectedRoute>
+                    <ExemplesPhrases />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/synthesis" 
+                element={
+                  <ProtectedRoute>
+                    <Synthesis />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Pages Mes Directives et Carte d'Accès */}
+              <Route 
+                path="/mes-directives" 
+                element={
+                  <ProtectedRoute>
+                    <MesDirectives />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/carte-acces" 
+                element={
+                  <ProtectedRoute>
+                    <CarteAcces />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Page Profile */}
+              <Route 
+                path="/profile" 
+                element={
+                  <ProtectedRoute>
+                    <Profile />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/dashboard" 
+                element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/suivi-palliatif" 
+                element={
+                  <ProtectedRoute>
+                    <SuiviPalliatif />
+                  </ProtectedRoute>
+                } 
+              />
+               <Route 
+                path="/suivi-multi-patients" 
+                element={
+                  <ProtectedRoute>
+                    <SuiviMultiPatients />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route path="/partage/suivi" element={<PartageSymptomes />} />
+            </Routes>
+
+            <Toaster />
+            <Sonner />
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
   );
 }
 

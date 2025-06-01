@@ -1,4 +1,3 @@
-
 import React from "react";
 import AppNavigation from "@/components/AppNavigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -70,7 +69,7 @@ const AccesInstitution = () => {
                     Douleur, dyspnée, anxiété - Graphiques d'évolution
                   </p>
                 </div>
-                <Link to="/partage/suivi">
+                <Link to="/acces-soins-palliatifs">
                   <Button 
                     variant="outline" 
                     size="sm"
@@ -85,7 +84,7 @@ const AccesInstitution = () => {
                 <Heart className="h-4 w-4 text-pink-600" />
                 <AlertDescription className="text-pink-800">
                   <strong>Code de partage requis :</strong> Demandez à votre patient son code 
-                  personnel de partage des symptômes pour accéder à son suivi.
+                  personnel de partage des symptômes pour accéder à son suivi et ses directives anticipées.
                 </AlertDescription>
               </Alert>
             </CardContent>
