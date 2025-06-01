@@ -3,7 +3,6 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { RegisterFormValues } from "../schemas";
-import { useBrevoEmail } from "@/hooks/useBrevoEmail";
 
 interface RegisterResult {
   success: boolean;
@@ -14,15 +13,14 @@ interface RegisterResult {
 
 export const useRegisterWithSupabase = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const { sendEmail } = useBrevoEmail();
 
   const register = async (values: RegisterFormValues): Promise<RegisterResult> => {
     setIsLoading(true);
     
     try {
-      console.log("🔐 Inscription avec Supabase + Brevo API");
+      console.log("🔐 Inscription avec Supabase (Brevo SMTP intégré)");
       
-      // 1. Inscription avec Supabase Auth (sans envoi automatique d'email)
+      // Inscription avec Supabase Auth qui utilisera automatiquement Brevo
       const { data, error } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
@@ -68,50 +66,20 @@ export const useRegisterWithSupabase = () => {
       if (data.user) {
         console.log("✅ Utilisateur créé:", data.user.id);
         
-        // 2. Envoyer l'email de confirmation via Brevo API
         if (!data.user.email_confirmed_at) {
-          console.log("📧 Envoi email de confirmation via Brevo...");
-          
-          // Récupérer le token de confirmation depuis la session
-          const confirmationToken = data.session?.access_token || '';
-          
-          const emailResult = await sendEmail({
-            to: values.email,
-            type: 'confirmation',
-            token: confirmationToken,
-            subject: 'Confirmez votre inscription - DirectivesPlus'
+          // Email de confirmation envoyé automatiquement par Supabase via Brevo
+          toast({
+            title: "Inscription réussie !",
+            description: "Un email de confirmation a été envoyé via Brevo. Consultez votre boîte de réception.",
+            duration: 8000
           });
-
-          if (emailResult.success) {
-            toast({
-              title: "Inscription réussie !",
-              description: "Un email de confirmation a été envoyé via Brevo. Consultez votre boîte de réception.",
-              duration: 8000
-            });
-            
-            return {
-              success: true,
-              message: "Inscription réussie ! Vérifiez votre email pour confirmer votre compte.",
-              needsEmailConfirmation: true,
-              user: data.user
-            };
-          } else {
-            console.error("❌ Erreur envoi email Brevo:", emailResult.error);
-            
-            toast({
-              title: "Inscription réussie mais...",
-              description: "Votre compte a été créé mais l'email de confirmation n'a pas pu être envoyé. Contactez le support.",
-              variant: "destructive",
-              duration: 10000
-            });
-            
-            return {
-              success: true,
-              message: "Compte créé mais email non envoyé. Contactez le support.",
-              needsEmailConfirmation: true,
-              user: data.user
-            };
-          }
+          
+          return {
+            success: true,
+            message: "Inscription réussie ! Vérifiez votre email pour confirmer votre compte.",
+            needsEmailConfirmation: true,
+            user: data.user
+          };
         } else {
           // Email confirmé automatiquement (mode développement)
           toast({
