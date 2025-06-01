@@ -95,8 +95,8 @@ export const SupabaseEmailAudit = () => {
     const issues: string[] = [];
     
     // Récupérer les valeurs réelles du client Supabase
-    const url = "https://kytqqjnecezkxyhmmjrz.supabase.co";
-    const key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."; // Clé tronquée pour affichage
+    const url = supabase.supabaseUrl;
+    const key = supabase.supabaseKey;
     
     // Test de connexion
     let connectionWorks = false;
@@ -112,7 +112,7 @@ export const SupabaseEmailAudit = () => {
     // Vérifier si on est en production
     const currentUrl = window.location.origin;
     if (currentUrl.includes('localhost') || currentUrl.includes('lovable.app')) {
-      issues.push('Environnement de développement détecté - Configurer SMTP pour la production');
+      issues.push('Environnement de développement détecté - Configurez SMTP pour la production');
     }
     
     return {
@@ -131,10 +131,9 @@ export const SupabaseEmailAudit = () => {
     
     // Vérifications communes
     if (currentUrl.includes('localhost') || currentUrl.includes('lovable.app')) {
-      issues.push('Pour la production, configurez:');
+      issues.push('Pour la production, configurez dans Supabase Dashboard:');
       issues.push('• Site URL: https://directivesplus.fr');
       issues.push('• Redirect URLs: https://directivesplus.fr/auth');
-      issues.push('• SMTP avec Hostinger (smtp.hostinger.com:587)');
     }
     
     if (!currentUrl.startsWith('https://') && !currentUrl.includes('localhost')) {
@@ -153,16 +152,19 @@ export const SupabaseEmailAudit = () => {
   const auditSMTPConfig = async () => {
     const issues: string[] = [];
     
-    // Recommandations pour la configuration SMTP
-    issues.push('Configuration SMTP recommandée pour Hostinger:');
+    // Instructions spécifiques pour Hostinger
+    issues.push('Configuration SMTP Hostinger pour directivesplus.fr:');
     issues.push('• Host: smtp.hostinger.com');
-    issues.push('• Port: 587 (STARTTLS)');
+    issues.push('• Port: 587 (STARTTLS recommandé)');
     issues.push('• Username: noreply@directivesplus.fr');
-    issues.push('• Sender: DirectivesPlus <noreply@directivesplus.fr>');
+    issues.push('• Password: [mot de passe de l\'email]');
+    issues.push('• Sender Name: DirectivesPlus');
+    issues.push('• Sender Email: noreply@directivesplus.fr');
+    issues.push('⚠️ Créez d\'abord l\'adresse email dans votre panneau Hostinger!');
     
     return {
-      configured: true,
-      provider: 'À configurer: Hostinger SMTP',
+      configured: false,
+      provider: 'Hostinger SMTP (à configurer)',
       issues
     };
   };
@@ -311,20 +313,6 @@ export const SupabaseEmailAudit = () => {
     );
   }
 
-  const getStatusIcon = (status: boolean) => {
-    return status ? 
-      <CheckCircle className="h-4 w-4 text-green-500" /> : 
-      <XCircle className="h-4 w-4 text-red-500" />;
-  };
-
-  const getStatusBadge = (status: boolean, trueText = 'OK', falseText = 'Erreur') => {
-    return (
-      <Badge variant={status ? 'default' : 'destructive'}>
-        {status ? trueText : falseText}
-      </Badge>
-    );
-  };
-
   return (
     <div className="space-y-6">
       {/* En-tête */}
@@ -356,7 +344,7 @@ export const SupabaseEmailAudit = () => {
             <div className="text-center">
               {getStatusIcon(auditResult.smtpConfig.configured)}
               <div className="text-sm font-medium mt-1">SMTP Config</div>
-              {getStatusBadge(auditResult.smtpConfig.configured, 'À configurer', 'Non configuré')}
+              {getStatusBadge(auditResult.smtpConfig.configured, 'Configuré', 'À configurer')}
             </div>
             <div className="text-center">
               {getStatusIcon(auditResult.testResults.emailTest)}
@@ -528,17 +516,39 @@ export const SupabaseEmailAudit = () => {
           <CardTitle>Configuration Hostinger pour directivesplus.fr</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2 text-sm">
-            <p className="font-medium">Dans le Dashboard Supabase → Authentication → Settings → SMTP :</p>
-            <div className="bg-gray-100 p-3 rounded">
-              <div>• Host: <code>smtp.hostinger.com</code></div>
-              <div>• Port: <code>587</code></div>
-              <div>• Username: <code>noreply@directivesplus.fr</code></div>
-              <div>• Password: [mot de passe de l'email]</div>
-              <div>• Sender Name: <code>DirectivesPlus</code></div>
-              <div>• Sender Email: <code>noreply@directivesplus.fr</code></div>
+          <div className="space-y-4">
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <h4 className="font-medium text-blue-900 mb-2">Étape 1: Créer l'adresse email</h4>
+              <p className="text-sm text-blue-800">
+                Dans votre panneau Hostinger → Email → Comptes Email → Créer l'adresse <code>noreply@directivesplus.fr</code>
+              </p>
             </div>
-            <p className="text-orange-600">⚠️ N'oubliez pas de créer l'adresse email dans votre panneau Hostinger d'abord !</p>
+            
+            <div className="bg-green-50 p-4 rounded-lg">
+              <h4 className="font-medium text-green-900 mb-2">Étape 2: Configuration SMTP dans Supabase</h4>
+              <p className="text-sm text-green-800 mb-2">
+                Dashboard Supabase → Authentication → Settings → SMTP Settings :
+              </p>
+              <div className="bg-white p-3 rounded border text-sm font-mono">
+                <div>• Host: <strong>smtp.hostinger.com</strong></div>
+                <div>• Port: <strong>587</strong></div>
+                <div>• Username: <strong>noreply@directivesplus.fr</strong></div>
+                <div>• Password: <strong>[mot de passe de l'email]</strong></div>
+                <div>• Sender Name: <strong>DirectivesPlus</strong></div>
+                <div>• Sender Email: <strong>noreply@directivesplus.fr</strong></div>
+              </div>
+            </div>
+
+            <div className="bg-yellow-50 p-4 rounded-lg">
+              <h4 className="font-medium text-yellow-900 mb-2">Étape 3: URLs de redirection</h4>
+              <p className="text-sm text-yellow-800 mb-2">
+                Dans Authentication → URL Configuration :
+              </p>
+              <div className="bg-white p-3 rounded border text-sm">
+                <div>• Site URL: <strong>https://directivesplus.fr</strong></div>
+                <div>• Redirect URLs: <strong>https://directivesplus.fr/auth</strong></div>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
