@@ -9,7 +9,8 @@ import {
   Menu, 
   X, 
   FileText,
-  CreditCard
+  CreditCard,
+  Activity
 } from "lucide-react";
 
 interface AppNavigationProps {
@@ -59,6 +60,14 @@ const AppNavigation = ({ hideEditingFeatures = false }: AppNavigationProps) => {
                 >
                   <FileText size={16} />
                   <span>Mes Directives</span>
+                </Link>
+                
+                <Link 
+                  to="/suivi-palliatif" 
+                  className="flex items-center space-x-1 text-gray-700 hover:text-directiveplus-600 transition-colors"
+                >
+                  <Activity size={16} />
+                  <span>Suivi Palliatif</span>
                 </Link>
                 
                 <Link 
@@ -135,6 +144,15 @@ const AppNavigation = ({ hideEditingFeatures = false }: AppNavigationProps) => {
                   >
                     <FileText size={16} />
                     <span>Mes Directives</span>
+                  </Link>
+                  
+                  <Link 
+                    to="/suivi-palliatif" 
+                    className="flex items-center space-x-2 text-gray-700 hover:text-directiveplus-600 transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Activity size={16} />
+                    <span>Suivi Palliatif</span>
                   </Link>
                   
                   <Link 
