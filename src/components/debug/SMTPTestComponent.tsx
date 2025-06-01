@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -160,6 +159,64 @@ const SMTPTestComponent = () => {
     }
   };
 
+  const testAuthHook = async () => {
+    if (!testEmail) {
+      setResult({
+        success: false,
+        message: "Veuillez entrer un email de test"
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    setResult(null);
+
+    try {
+      console.log("🎣 Test Auth Hook direct...");
+      
+      const { data, error } = await supabase.functions.invoke('auth-hooks', {
+        body: {
+          type: 'INSERT',
+          table: 'users',
+          record: {
+            id: 'test-user-id',
+            email: testEmail,
+            email_confirmed_at: null,
+            confirmation_token: 'test-token-123'
+          },
+          schema: 'auth'
+        }
+      });
+
+      if (error) {
+        console.error("❌ Erreur Auth Hook:", error);
+        setResult({
+          success: false,
+          message: `Erreur Auth Hook: ${error.message}`,
+          error: error
+        });
+      } else {
+        console.log("✅ Auth Hook réussi:", data);
+        setResult({
+          success: data.success,
+          message: data.success 
+            ? `Auth Hook réussi ! ${data.message}`
+            : `Erreur: ${data.error}`,
+          error: data.success ? null : data
+        });
+      }
+    } catch (error: any) {
+      console.error("💥 Erreur durant le test Auth Hook:", error);
+      setResult({
+        success: false,
+        message: `Erreur technique: ${error.message}`,
+        error: error
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <Card className="w-full max-w-md mx-auto mt-8">
       <CardHeader>
@@ -204,6 +261,14 @@ const SMTPTestComponent = () => {
           >
             {isLoading ? "Envoi..." : "🚀 Test Node.js (Edge Function)"}
           </Button>
+
+          <Button 
+            onClick={testAuthHook}
+            disabled={isLoading}
+            className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+          >
+            {isLoading ? "Envoi..." : "🎣 Test Auth Hook"}
+          </Button>
         </div>
 
         {result && (
@@ -227,6 +292,7 @@ const SMTPTestComponent = () => {
           <ol className="list-decimal list-inside mt-1 space-y-1">
             <li>Testez avec un email réel que vous contrôlez</li>
             <li>Le bouton vert utilise Node.js via Edge Function</li>
+            <li>Le bouton violet teste le Auth Hook personnalisé</li>
             <li>Vérifiez la console du navigateur</li>
             <li>Consultez les logs Supabase (Edge Functions)</li>
             <li>Vérifiez vos spams si le test réussit</li>
