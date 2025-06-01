@@ -1,15 +1,11 @@
+
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import Auth from './pages/Auth';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './contexts/AuthContext';
-import ResetPassword from './pages/ResetPassword';
-import UpdateProfile from './pages/UpdateProfile';
 import SuiviPalliatif from './pages/SuiviPalliatif';
-import CGU from './pages/CGU';
-import MentionsLegales from './pages/MentionsLegales';
-import Accessibilite from './pages/Accessibilite';
 import SuiviMultiPatients from './pages/SuiviMultiPatients';
 import PartageSymptomes from "@/pages/PartageSymptomes";
 
@@ -19,24 +15,12 @@ function App() {
       <Router>
         <Routes>
           <Route path="/auth" element={<Auth />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/cgu" element={<CGU />} />
-          <Route path="/mentions-legales" element={<MentionsLegales />} />
-          <Route path="/accessibilite" element={<Accessibilite />} />
           
           <Route 
             path="/dashboard" 
             element={
               <ProtectedRoute>
                 <Dashboard />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/update-profile" 
-            element={
-              <ProtectedRoute>
-                <UpdateProfile />
               </ProtectedRoute>
             } 
           />

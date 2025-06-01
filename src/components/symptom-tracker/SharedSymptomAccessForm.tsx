@@ -20,6 +20,16 @@ interface SharedSymptomAccessFormProps {
   onAccessGranted: (patient: Patient) => void;
 }
 
+interface VerificationResult {
+  patient_id: string;
+  access_granted: boolean;
+  patient_info: {
+    first_name: string;
+    last_name: string;
+    birth_date: string;
+  };
+}
+
 export default function SharedSymptomAccessForm({ 
   shareCode, 
   onAccessGranted 
@@ -52,7 +62,7 @@ export default function SharedSymptomAccessForm({
         return;
       }
 
-      const result = data?.[0];
+      const result = data?.[0] as VerificationResult;
       if (!result || !result.access_granted) {
         setError("Accès refusé. Vérifiez les informations saisies.");
         return;
