@@ -20,6 +20,7 @@ import ExemplesPhrases from './pages/ExemplesPhrases';
 import Synthesis from './pages/Synthesis';
 import MesDirectives from './pages/MesDirectives';
 import CarteAcces from './pages/CarteAcces';
+import Profile from './pages/Profile';
 
 function App() {
   return (
@@ -118,6 +119,16 @@ function App() {
             element={
               <ProtectedRoute>
                 <CarteAcces />
+              </ProtectedRoute>
+            } 
+          />
+          
+          {/* Page Profile */}
+          <Route 
+            path="/profile" 
+            element={
+              <ProtectedRoute>
+                <Profile />
               </ProtectedRoute>
             } 
           />
