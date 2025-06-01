@@ -1,7 +1,7 @@
 
 import React from "react";
 import AppNavigation from "@/components/AppNavigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Shield, ExternalLink, Heart, Activity } from "lucide-react";
