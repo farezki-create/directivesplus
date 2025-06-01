@@ -60,14 +60,14 @@ export const auditAuthSettings = async () => {
 export const auditSMTPConfig = async () => {
   const issues: string[] = [];
   
-  // Instructions spécifiques pour Hostinger
+  // Instructions spécifiques pour Hostinger avec la nouvelle adresse
   issues.push('Configuration SMTP Hostinger pour directivesplus.fr:');
   issues.push('• Host: smtp.hostinger.com');
   issues.push('• Port: 587 (STARTTLS recommandé)');
-  issues.push('• Username: noreply@directivesplus.fr');
+  issues.push('• Username: contact@directivesplus.fr');
   issues.push('• Password: [mot de passe de l\'email]');
   issues.push('• Sender Name: DirectivesPlus');
-  issues.push('• Sender Email: noreply@directivesplus.fr');
+  issues.push('• Sender Email: contact@directivesplus.fr');
   issues.push('⚠️ Créez d\'abord l\'adresse email dans votre panneau Hostinger!');
   
   return {

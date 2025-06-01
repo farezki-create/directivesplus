@@ -13,7 +13,7 @@ export const ConfigurationInstructions: React.FC = () => {
           <div className="bg-blue-50 p-4 rounded-lg">
             <h4 className="font-medium text-blue-900 mb-2">Étape 1: Créer l'adresse email</h4>
             <p className="text-sm text-blue-800">
-              Dans votre panneau Hostinger → Email → Comptes Email → Créer l'adresse <code>noreply@directivesplus.fr</code>
+              Dans votre panneau Hostinger → Email → Comptes Email → Créer l'adresse <code>contact@directivesplus.fr</code>
             </p>
           </div>
           
@@ -25,10 +25,10 @@ export const ConfigurationInstructions: React.FC = () => {
             <div className="bg-white p-3 rounded border text-sm font-mono">
               <div>• Host: <strong>smtp.hostinger.com</strong></div>
               <div>• Port: <strong>587</strong></div>
-              <div>• Username: <strong>noreply@directivesplus.fr</strong></div>
+              <div>• Username: <strong>contact@directivesplus.fr</strong></div>
               <div>• Password: <strong>[mot de passe de l'email]</strong></div>
               <div>• Sender Name: <strong>DirectivesPlus</strong></div>
-              <div>• Sender Email: <strong>noreply@directivesplus.fr</strong></div>
+              <div>• Sender Email: <strong>contact@directivesplus.fr</strong></div>
             </div>
           </div>
 
