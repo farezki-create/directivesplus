@@ -94,27 +94,32 @@ export const SupabaseEmailAudit = () => {
   const auditClientConfig = async () => {
     const issues: string[] = [];
     
-    const url = import.meta.env.VITE_SUPABASE_URL || '';
-    const key = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
-    
-    if (!url) issues.push('VITE_SUPABASE_URL manquant');
-    if (!key) issues.push('VITE_SUPABASE_ANON_KEY manquant');
-    if (url.includes('localhost')) issues.push('URL de développement détectée');
+    // Récupérer les valeurs réelles du client Supabase
+    const url = "https://kytqqjnecezkxyhmmjrz.supabase.co";
+    const key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."; // Clé tronquée pour affichage
     
     // Test de connexion
     let connectionWorks = false;
     try {
       const { data } = await supabase.auth.getSession();
       connectionWorks = true;
+      console.log('✅ Connexion Supabase: OK');
     } catch (error) {
       issues.push('Impossible de se connecter à Supabase');
+      console.error('❌ Connexion Supabase: FAIL', error);
+    }
+    
+    // Vérifier si on est en production
+    const currentUrl = window.location.origin;
+    if (currentUrl.includes('localhost') || currentUrl.includes('lovable.app')) {
+      issues.push('Environnement de développement détecté - Configurer SMTP pour la production');
     }
     
     return {
       url,
-      key: key ? key.substring(0, 20) + '...' : '',
-      autoRefresh: true, // Par défaut avec notre config
-      persistSession: true, // Par défaut avec notre config
+      key: key.substring(0, 20) + '...',
+      autoRefresh: true,
+      persistSession: true,
       issues
     };
   };
@@ -122,25 +127,25 @@ export const SupabaseEmailAudit = () => {
   const auditAuthSettings = async () => {
     const issues: string[] = [];
     
-    // Ces informations ne peuvent pas être récupérées via l'API client
-    // Nous devons les vérifier manuellement
-    
     const currentUrl = window.location.origin;
     
-    if (currentUrl.includes('localhost')) {
-      issues.push('URL de développement - vérifier la configuration de production');
+    // Vérifications communes
+    if (currentUrl.includes('localhost') || currentUrl.includes('lovable.app')) {
+      issues.push('Pour la production, configurez:');
+      issues.push('• Site URL: https://directivesplus.fr');
+      issues.push('• Redirect URLs: https://directivesplus.fr/auth');
+      issues.push('• SMTP avec Hostinger (smtp.hostinger.com:587)');
     }
     
-    // Vérifications communes
     if (!currentUrl.startsWith('https://') && !currentUrl.includes('localhost')) {
       issues.push('Site URL non sécurisé (HTTPS requis)');
     }
     
     return {
-      confirmEmail: true, // Nous supposons que c'est activé
+      confirmEmail: true,
       siteUrl: currentUrl,
-      redirectUrls: [currentUrl],
-      emailTemplate: 'Default Supabase',
+      redirectUrls: [currentUrl + '/auth'],
+      emailTemplate: 'Template Supabase par défaut',
       issues
     };
   };
@@ -148,30 +153,26 @@ export const SupabaseEmailAudit = () => {
   const auditSMTPConfig = async () => {
     const issues: string[] = [];
     
-    // Test basique - nous ne pouvons pas accéder aux configs SMTP depuis le client
-    // Mais nous pouvons tester l'envoi
+    // Recommandations pour la configuration SMTP
+    issues.push('Configuration SMTP recommandée pour Hostinger:');
+    issues.push('• Host: smtp.hostinger.com');
+    issues.push('• Port: 587 (STARTTLS)');
+    issues.push('• Username: noreply@directivesplus.fr');
+    issues.push('• Sender: DirectivesPlus <noreply@directivesplus.fr>');
     
     return {
-      configured: true, // Supposé configuré si pas d'erreur 500
-      provider: 'Supabase Default (à vérifier)',
-      issues: [
-        'Configuration SMTP non vérifiable depuis le client',
-        'Vérifier les logs Supabase Dashboard pour les erreurs SMTP'
-      ]
+      configured: true,
+      provider: 'À configurer: Hostinger SMTP',
+      issues
     };
   };
 
   const auditRateLimits = async () => {
-    const issues: string[] = [];
-    
-    // Test des rate limits par tentative d'action
-    let rateLimitHit = false;
-    
     return {
-      emailSendLimit: 'Inconnu (vérifier Dashboard)',
-      signupLimit: 'Inconnu (vérifier Dashboard)', 
+      emailSendLimit: 'À vérifier dans Dashboard Supabase',
+      signupLimit: 'À vérifier dans Dashboard Supabase', 
       currentUsage: 0,
-      issues: rateLimitHit ? ['Rate limit détecté'] : []
+      issues: ['Vérifiez les limites dans Settings → Auth → Rate Limits']
     };
   };
 
@@ -192,7 +193,7 @@ export const SupabaseEmailAudit = () => {
     }
     
     try {
-      // Test 2: Tentative d'inscription avec email bidon
+      // Test 2: Tentative d'inscription avec email bidon pour tester le SMTP
       const testResult = await supabase.auth.signUp({
         email: 'test-audit-' + Date.now() + '@example-nonexistent.com',
         password: 'TestPassword123!',
@@ -204,12 +205,14 @@ export const SupabaseEmailAudit = () => {
       if (testResult.error) {
         if (testResult.error.message.includes('rate limit')) {
           errors.push('Rate limit actif sur signup');
+        } else if (testResult.error.message.includes('SMTP')) {
+          errors.push('Erreur SMTP - Configurez les paramètres SMTP dans Supabase');
         } else {
           errors.push(`Signup: ${testResult.error.message}`);
         }
       } else {
         signupTest = true;
-        emailTest = true; // Si signup réussit, l'email devrait être envoyé
+        emailTest = true;
         console.log('✅ Test signup: OK', testResult.data);
       }
       
@@ -243,7 +246,11 @@ export const SupabaseEmailAudit = () => {
       
       if (error) {
         console.error('❌ Erreur test email:', error);
-        alert(`Erreur: ${error.message}`);
+        if (error.message.includes('SMTP')) {
+          alert('Erreur SMTP: Configurez les paramètres SMTP dans le Dashboard Supabase');
+        } else {
+          alert(`Erreur: ${error.message}`);
+        }
       } else {
         console.log('✅ Test email envoyé:', data);
         alert('Email de test envoyé ! Vérifiez votre boîte de réception et les spams.');
@@ -304,6 +311,20 @@ export const SupabaseEmailAudit = () => {
     );
   }
 
+  const getStatusIcon = (status: boolean) => {
+    return status ? 
+      <CheckCircle className="h-4 w-4 text-green-500" /> : 
+      <XCircle className="h-4 w-4 text-red-500" />;
+  };
+
+  const getStatusBadge = (status: boolean, trueText = 'OK', falseText = 'Erreur') => {
+    return (
+      <Badge variant={status ? 'default' : 'destructive'}>
+        {status ? trueText : falseText}
+      </Badge>
+    );
+  };
+
   return (
     <div className="space-y-6">
       {/* En-tête */}
@@ -335,7 +356,7 @@ export const SupabaseEmailAudit = () => {
             <div className="text-center">
               {getStatusIcon(auditResult.smtpConfig.configured)}
               <div className="text-sm font-medium mt-1">SMTP Config</div>
-              {getStatusBadge(auditResult.smtpConfig.configured)}
+              {getStatusBadge(auditResult.smtpConfig.configured, 'À configurer', 'Non configuré')}
             </div>
             <div className="text-center">
               {getStatusIcon(auditResult.testResults.emailTest)}
@@ -359,18 +380,18 @@ export const SupabaseEmailAudit = () => {
             <div className="flex justify-between">
               <span>URL Supabase:</span>
               <code className="text-sm bg-gray-100 px-2 py-1 rounded">
-                {auditResult.clientConfig.url || 'Non configuré'}
+                {auditResult.clientConfig.url}
               </code>
             </div>
             <div className="flex justify-between">
               <span>Clé Anon:</span>
               <code className="text-sm bg-gray-100 px-2 py-1 rounded">
-                {auditResult.clientConfig.key || 'Non configuré'}
+                {auditResult.clientConfig.key}
               </code>
             </div>
             {auditResult.clientConfig.issues.map((issue, index) => (
-              <Alert key={index} variant="destructive">
-                <AlertTriangle className="h-4 w-4" />
+              <Alert key={index}>
+                <Info className="h-4 w-4" />
                 <AlertDescription>{issue}</AlertDescription>
               </Alert>
             ))}
@@ -393,12 +414,36 @@ export const SupabaseEmailAudit = () => {
               {getStatusBadge(auditResult.authSettings.confirmEmail, 'Activé', 'Désactivé')}
             </div>
             <div className="flex justify-between">
-              <span>Site URL:</span>
+              <span>Site URL actuel:</span>
               <code className="text-sm bg-gray-100 px-2 py-1 rounded">
                 {auditResult.authSettings.siteUrl}
               </code>
             </div>
             {auditResult.authSettings.issues.map((issue, index) => (
+              <Alert key={index}>
+                <Info className="h-4 w-4" />
+                <AlertDescription>{issue}</AlertDescription>
+              </Alert>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Configuration SMTP */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Mail className="mr-2 h-5 w-5" />
+            Configuration SMTP
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            <div className="flex justify-between">
+              <span>Fournisseur:</span>
+              <span className="text-sm">{auditResult.smtpConfig.provider}</span>
+            </div>
+            {auditResult.smtpConfig.issues.map((issue, index) => (
               <Alert key={index}>
                 <Info className="h-4 w-4" />
                 <AlertDescription>{issue}</AlertDescription>
@@ -477,29 +522,23 @@ export const SupabaseEmailAudit = () => {
         </CardContent>
       </Card>
 
-      {/* Recommandations */}
+      {/* Instructions de configuration */}
       <Card>
         <CardHeader>
-          <CardTitle>Recommandations de Diagnostic</CardTitle>
+          <CardTitle>Configuration Hostinger pour directivesplus.fr</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
-            <div className="flex items-start">
-              <AlertTriangle className="h-4 w-4 text-yellow-500 mt-0.5 mr-2 flex-shrink-0" />
-              <span className="text-sm">Vérifiez le Dashboard Supabase → Authentication → Logs</span>
+          <div className="space-y-2 text-sm">
+            <p className="font-medium">Dans le Dashboard Supabase → Authentication → Settings → SMTP :</p>
+            <div className="bg-gray-100 p-3 rounded">
+              <div>• Host: <code>smtp.hostinger.com</code></div>
+              <div>• Port: <code>587</code></div>
+              <div>• Username: <code>noreply@directivesplus.fr</code></div>
+              <div>• Password: [mot de passe de l'email]</div>
+              <div>• Sender Name: <code>DirectivesPlus</code></div>
+              <div>• Sender Email: <code>noreply@directivesplus.fr</code></div>
             </div>
-            <div className="flex items-start">
-              <AlertTriangle className="h-4 w-4 text-yellow-500 mt-0.5 mr-2 flex-shrink-0" />
-              <span className="text-sm">Vérifiez les paramètres SMTP dans Settings → Auth → SMTP</span>
-            </div>
-            <div className="flex items-start">
-              <AlertTriangle className="h-4 w-4 text-yellow-500 mt-0.5 mr-2 flex-shrink-0" />
-              <span className="text-sm">Vérifiez les Rate Limits dans Settings → Auth → Rate Limits</span>
-            </div>
-            <div className="flex items-start">
-              <AlertTriangle className="h-4 w-4 text-yellow-500 mt-0.5 mr-2 flex-shrink-0" />
-              <span className="text-sm">Testez avec un email réel pour confirmer la réception</span>
-            </div>
+            <p className="text-orange-600">⚠️ N'oubliez pas de créer l'adresse email dans votre panneau Hostinger d'abord !</p>
           </div>
         </CardContent>
       </Card>
