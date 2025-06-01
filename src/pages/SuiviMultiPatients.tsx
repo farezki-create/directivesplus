@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -180,14 +179,15 @@ const SuiviMultiPatients = () => {
             </p>
           </div>
 
-          {/* Sélecteur de patient */}
+          {/* Sélecteur de patient avec alertes */}
           <PatientSelector 
             patients={patients}
             selectedPatient={selectedPatient}
             onPatientSelect={setSelectedPatient}
+            symptoms={symptoms}
           />
 
-          {/* Affichage des symptômes */}
+          {/* Affichage des symptômes avec alertes critiques */}
           {selectedPatient && (
             <PatientSymptomsDashboard
               selectedPatient={selectedPatient}

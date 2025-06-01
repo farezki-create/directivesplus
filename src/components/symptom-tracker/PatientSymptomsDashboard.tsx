@@ -1,8 +1,10 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar } from "lucide-react";
+import { Calendar, AlertTriangle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import SymptomEvolutionChart from "./SymptomEvolutionChart";
 import SymptomHistoryCard from "./SymptomHistoryCard";
+import CriticalSymptomAlert from "./CriticalSymptomAlert";
 
 interface Patient {
   id: string;
@@ -36,8 +38,43 @@ export default function PatientSymptomsDashboard({
   loading, 
   error 
 }: PatientSymptomsDashboardProps) {
+  
+  const getLatestCriticalStatus = () => {
+    if (symptoms.length === 0) return null;
+    const latestSymptom = symptoms[0]; // Les symptômes sont triés par date DESC
+    return {
+      douleur: latestSymptom.douleur,
+      dyspnee: latestSymptom.dyspnee,
+      anxiete: latestSymptom.anxiete,
+      isCritical: latestSymptom.douleur >= 8 || latestSymptom.dyspnee >= 7 || latestSymptom.anxiete >= 8
+    };
+  };
+
+  const criticalStatus = getLatestCriticalStatus();
+
   return (
     <>
+      {/* Alerte critique pour le patient */}
+      {criticalStatus?.isCritical && (
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <AlertTriangle className="h-6 w-6 text-red-600" />
+              <div>
+                <h3 className="font-semibold text-red-800">
+                  🔥 Patient {selectedPatient.prenom} {selectedPatient.nom} - État critique
+                </h3>
+                <CriticalSymptomAlert 
+                  douleur={criticalStatus.douleur}
+                  dyspnee={criticalStatus.dyspnee}
+                  anxiete={criticalStatus.anxiete}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Graphique d'évolution */}
       <SymptomEvolutionChart 
         symptoms={symptoms} 
@@ -50,6 +87,12 @@ export default function PatientSymptomsDashboard({
           <CardTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5" />
             Historique des Symptômes - {selectedPatient.prenom} {selectedPatient.nom}
+            {criticalStatus?.isCritical && (
+              <Badge variant="destructive" className="flex items-center gap-1">
+                <AlertTriangle className="h-3 w-3" />
+                🔥 Critique
+              </Badge>
+            )}
           </CardTitle>
           <CardDescription>
             Suivi chronologique des évaluations de symptômes

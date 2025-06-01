@@ -1,18 +1,14 @@
-
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Trash2, Calendar, User } from "lucide-react";
 import { useSymptomHistory } from "@/hooks/useSymptomHistory";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Calendar, User, Trash2, AlertTriangle } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
+import CriticalSymptomAlert from "./CriticalSymptomAlert";
 
-interface SymptomHistoryProps {
-  patientId?: string;
-}
-
-export default function SymptomHistory({ patientId }: SymptomHistoryProps) {
-  const { symptoms, loading, error, deleteSymptom } = useSymptomHistory(patientId);
+export default function SymptomHistory() {
+  const { symptoms, loading, error, deleteSymptom } = useSymptomHistory();
 
   const getSeverityBadge = (value: number, type: "douleur" | "dyspnee" | "anxiete") => {
     let color = "bg-gray-100 text-gray-800";
@@ -31,7 +27,7 @@ export default function SymptomHistory({ patientId }: SymptomHistoryProps) {
 
     const typeLabels = {
       douleur: "Douleur",
-      dyspnee: "Dyspnée",
+      dyspnee: "Dyspnée",  
       anxiete: "Anxiété"
     };
 
@@ -43,7 +39,7 @@ export default function SymptomHistory({ patientId }: SymptomHistoryProps) {
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm("Êtes-vous sûr de vouloir supprimer cette entrée ?")) {
+    if (window.confirm("Êtes-vous sûr de vouloir supprimer cette évaluation ?")) {
       await deleteSymptom(id);
     }
   };
@@ -51,8 +47,11 @@ export default function SymptomHistory({ patientId }: SymptomHistoryProps) {
   if (loading) {
     return (
       <Card>
-        <CardContent className="pt-6">
-          <div className="text-center">Chargement de l'historique...</div>
+        <CardContent className="p-6">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-directiveplus-600 mx-auto"></div>
+            <p className="mt-2 text-gray-600">Chargement de l'historique...</p>
+          </div>
         </CardContent>
       </Card>
     );
@@ -61,8 +60,10 @@ export default function SymptomHistory({ patientId }: SymptomHistoryProps) {
   if (error) {
     return (
       <Card>
-        <CardContent className="pt-6">
-          <div className="text-center text-red-600">Erreur: {error}</div>
+        <CardContent className="p-6">
+          <div className="text-center text-red-600">
+            Erreur: {error}
+          </div>
         </CardContent>
       </Card>
     );
@@ -76,7 +77,7 @@ export default function SymptomHistory({ patientId }: SymptomHistoryProps) {
           Historique des Symptômes
         </CardTitle>
         <CardDescription>
-          Vos dernières évaluations de symptômes
+          Suivi chronologique de vos évaluations de symptômes
         </CardDescription>
       </CardHeader>
       
@@ -88,8 +89,15 @@ export default function SymptomHistory({ patientId }: SymptomHistoryProps) {
         ) : (
           <div className="space-y-4">
             {symptoms.map((symptom) => (
-              <div key={symptom.id} className="border rounded-lg p-4 space-y-3">
-                <div className="flex justify-between items-start">
+              <div 
+                key={symptom.id} 
+                className={`border rounded-lg p-4 ${
+                  symptom.douleur >= 8 || symptom.dyspnee >= 7 || symptom.anxiete >= 8
+                    ? 'border-red-200 bg-red-50' 
+                    : 'border-gray-200 bg-white'
+                }`}
+              >
+                <div className="flex justify-between items-start mb-3">
                   <div className="flex items-center gap-2 text-sm text-gray-600">
                     <Calendar className="h-4 w-4" />
                     {formatDistanceToNow(new Date(symptom.created_at), { 
@@ -106,14 +114,21 @@ export default function SymptomHistory({ patientId }: SymptomHistoryProps) {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleDelete(symptom.id)}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      className="text-red-600 hover:text-red-800"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
 
-                <div className="flex flex-wrap gap-2">
+                <CriticalSymptomAlert 
+                  douleur={symptom.douleur}
+                  dyspnee={symptom.dyspnee}
+                  anxiete={symptom.anxiete}
+                  className="mb-3"
+                />
+
+                <div className="flex flex-wrap gap-2 mb-3">
                   {getSeverityBadge(symptom.douleur, "douleur")}
                   {getSeverityBadge(symptom.dyspnee, "dyspnee")}
                   {getSeverityBadge(symptom.anxiete, "anxiete")}
