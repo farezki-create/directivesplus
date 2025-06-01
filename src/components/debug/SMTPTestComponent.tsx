@@ -77,7 +77,7 @@ const SMTPTestComponent = () => {
       
       const { data, error } = await supabase.auth.signUp({
         email: testEmail,
-        password: "TestPassword123!",
+        password: "MyUniqueTest2024$!",
         options: {
           emailRedirectTo: `${window.location.origin}/auth/confirm`
         }
@@ -99,6 +99,57 @@ const SMTPTestComponent = () => {
       }
     } catch (error: any) {
       console.error("💥 Erreur durant le test d'inscription:", error);
+      setResult({
+        success: false,
+        message: `Erreur technique: ${error.message}`,
+        error: error
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const testNodeJSEdgeFunction = async () => {
+    if (!testEmail) {
+      setResult({
+        success: false,
+        message: "Veuillez entrer un email de test"
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    setResult(null);
+
+    try {
+      console.log("🧪 Test SMTP via Edge Function Node.js...");
+      
+      const { data, error } = await supabase.functions.invoke('test-smtp', {
+        body: {
+          recipient_email: testEmail,
+          test_type: 'fetch'
+        }
+      });
+
+      if (error) {
+        console.error("❌ Erreur Edge Function:", error);
+        setResult({
+          success: false,
+          message: `Erreur Edge Function: ${error.message}`,
+          error: error
+        });
+      } else {
+        console.log("✅ Edge Function réussie:", data);
+        setResult({
+          success: data.success,
+          message: data.success 
+            ? `Email envoyé via ${data.method} ! Message ID: ${data.result?.messageId || 'N/A'}`
+            : `Erreur: ${data.error}`,
+          error: data.success ? null : data
+        });
+      }
+    } catch (error: any) {
+      console.error("💥 Erreur durant le test Edge Function:", error);
       setResult({
         success: false,
         message: `Erreur technique: ${error.message}`,
@@ -145,6 +196,14 @@ const SMTPTestComponent = () => {
           >
             {isLoading ? "Envoi..." : "Test Inscription"}
           </Button>
+
+          <Button 
+            onClick={testNodeJSEdgeFunction}
+            disabled={isLoading}
+            className="w-full bg-green-600 hover:bg-green-700 text-white"
+          >
+            {isLoading ? "Envoi..." : "🚀 Test Node.js (Edge Function)"}
+          </Button>
         </div>
 
         {result && (
@@ -167,8 +226,9 @@ const SMTPTestComponent = () => {
           <strong>Instructions :</strong>
           <ol className="list-decimal list-inside mt-1 space-y-1">
             <li>Testez avec un email réel que vous contrôlez</li>
+            <li>Le bouton vert utilise Node.js via Edge Function</li>
             <li>Vérifiez la console du navigateur</li>
-            <li>Consultez les logs Supabase (Auth section)</li>
+            <li>Consultez les logs Supabase (Edge Functions)</li>
             <li>Vérifiez vos spams si le test réussit</li>
           </ol>
         </div>
