@@ -139,6 +139,76 @@ export type Database = {
         }
         Relationships: []
       }
+      agenda: {
+        Row: {
+          commentaire: string | null
+          date_heure: string | null
+          id: string
+          intervenant: string | null
+          patient_id: string | null
+          type_acte: string | null
+        }
+        Insert: {
+          commentaire?: string | null
+          date_heure?: string | null
+          id?: string
+          intervenant?: string | null
+          patient_id?: string | null
+          type_acte?: string | null
+        }
+        Update: {
+          commentaire?: string | null
+          date_heure?: string | null
+          id?: string
+          intervenant?: string | null
+          patient_id?: string | null
+          type_acte?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agenda_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      alertes: {
+        Row: {
+          date_declenchement: string | null
+          details: string | null
+          id: string
+          notifie_a: string[] | null
+          patient_id: string | null
+          type_alerte: string | null
+        }
+        Insert: {
+          date_declenchement?: string | null
+          details?: string | null
+          id?: string
+          notifie_a?: string[] | null
+          patient_id?: string | null
+          type_alerte?: string | null
+        }
+        Update: {
+          date_declenchement?: string | null
+          details?: string | null
+          id?: string
+          notifie_a?: string[] | null
+          patient_id?: string | null
+          type_alerte?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alertes_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       articles: {
         Row: {
           category: string
@@ -843,6 +913,27 @@ export type Database = {
         }
         Relationships: []
       }
+      patients: {
+        Row: {
+          created_at: string | null
+          date_of_birth: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          date_of_birth: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          date_of_birth?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       pdf_documents: {
         Row: {
           content_type: string | null
@@ -881,6 +972,38 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      plan_soins: {
+        Row: {
+          auteur: string | null
+          contenu: string | null
+          date_mise_a_jour: string | null
+          id: string
+          patient_id: string | null
+        }
+        Insert: {
+          auteur?: string | null
+          contenu?: string | null
+          date_mise_a_jour?: string | null
+          id?: string
+          patient_id?: string | null
+        }
+        Update: {
+          auteur?: string | null
+          contenu?: string | null
+          date_mise_a_jour?: string | null
+          id?: string
+          patient_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_soins_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       post_comments: {
         Row: {
@@ -1636,6 +1759,66 @@ export type Database = {
           status?: string
           user_agent?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      symptom_tracking: {
+        Row: {
+          anxiete: number
+          auteur: string
+          created_at: string
+          douleur: number
+          dyspnee: number
+          id: string
+          patient_id: string
+          remarque: string | null
+          updated_at: string
+        }
+        Insert: {
+          anxiete: number
+          auteur?: string
+          created_at?: string
+          douleur: number
+          dyspnee: number
+          id?: string
+          patient_id: string
+          remarque?: string | null
+          updated_at?: string
+        }
+        Update: {
+          anxiete?: number
+          auteur?: string
+          created_at?: string
+          douleur?: number
+          dyspnee?: number
+          id?: string
+          patient_id?: string
+          remarque?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      symptomes: {
+        Row: {
+          created_at: string | null
+          id: number
+          patient_id: string | null
+          severity: number
+          symptom_name: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: never
+          patient_id?: string | null
+          severity: number
+          symptom_name: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: never
+          patient_id?: string | null
+          severity?: number
+          symptom_name?: string
         }
         Relationships: []
       }
