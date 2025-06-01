@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Calendar, User, AlertTriangle } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
+import SymptomEvolutionChart from "@/components/symptom-tracker/SymptomEvolutionChart";
 
 interface Patient {
   id: string;
@@ -250,81 +250,90 @@ const SuiviMultiPatients = () => {
 
           {/* Affichage des symptômes */}
           {selectedPatient && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5" />
-                  Historique des Symptômes - {selectedPatient.prenom} {selectedPatient.nom}
-                </CardTitle>
-                <CardDescription>
-                  Suivi chronologique des évaluations de symptômes
-                </CardDescription>
-              </CardHeader>
-              
-              <CardContent>
-                {loading ? (
-                  <div className="text-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-directiveplus-600 mx-auto"></div>
-                    <p className="mt-2 text-gray-600">Chargement des symptômes...</p>
-                  </div>
-                ) : error ? (
-                  <div className="text-center py-8 text-red-600">
-                    Erreur: {error}
-                  </div>
-                ) : symptoms.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    Aucune évaluation de symptômes enregistrée pour ce patient
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {symptoms.map((symptom) => (
-                      <div
-                        key={symptom.id}
-                        className={`border rounded-lg p-4 ${
-                          isCriticalSymptom(symptom) 
-                            ? 'border-red-200 bg-red-50' 
-                            : 'border-gray-200 bg-white'
-                        }`}
-                      >
-                        <div className="flex justify-between items-start mb-3">
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
-                            <Calendar className="h-4 w-4" />
-                            {formatDistanceToNow(new Date(symptom.created_at), { 
-                              addSuffix: true, 
-                              locale: fr 
-                            })}
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {isCriticalSymptom(symptom) && (
-                              <Badge variant="destructive" className="flex items-center gap-1">
-                                <AlertTriangle className="h-3 w-3" />
-                                Critique
-                              </Badge>
-                            )}
-                            <div className="flex items-center gap-1 text-sm text-gray-600">
-                              <User className="h-4 w-4" />
-                              {symptom.auteur}
+            <>
+              {/* Graphique d'évolution */}
+              <SymptomEvolutionChart 
+                symptoms={symptoms} 
+                className="mb-6"
+              />
+
+              {/* Historique détaillé */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5" />
+                    Historique des Symptômes - {selectedPatient.prenom} {selectedPatient.nom}
+                  </CardTitle>
+                  <CardDescription>
+                    Suivi chronologique des évaluations de symptômes
+                  </CardDescription>
+                </CardHeader>
+                
+                <CardContent>
+                  {loading ? (
+                    <div className="text-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-directiveplus-600 mx-auto"></div>
+                      <p className="mt-2 text-gray-600">Chargement des symptômes...</p>
+                    </div>
+                  ) : error ? (
+                    <div className="text-center py-8 text-red-600">
+                      Erreur: {error}
+                    </div>
+                  ) : symptoms.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      Aucune évaluation de symptômes enregistrée pour ce patient
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {symptoms.map((symptom) => (
+                        <div
+                          key={symptom.id}
+                          className={`border rounded-lg p-4 ${
+                            isCriticalSymptom(symptom) 
+                              ? 'border-red-200 bg-red-50' 
+                              : 'border-gray-200 bg-white'
+                          }`}
+                        >
+                          <div className="flex justify-between items-start mb-3">
+                            <div className="flex items-center gap-2 text-sm text-gray-600">
+                              <Calendar className="h-4 w-4" />
+                              {formatDistanceToNow(new Date(symptom.created_at), { 
+                                addSuffix: true, 
+                                locale: fr 
+                              })}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {isCriticalSymptom(symptom) && (
+                                <Badge variant="destructive" className="flex items-center gap-1">
+                                  <AlertTriangle className="h-3 w-3" />
+                                  Critique
+                                </Badge>
+                              )}
+                              <div className="flex items-center gap-1 text-sm text-gray-600">
+                                <User className="h-4 w-4" />
+                                {symptom.auteur}
+                              </div>
                             </div>
                           </div>
-                        </div>
 
-                        <div className="flex flex-wrap gap-2 mb-3">
-                          {getSeverityBadge(symptom.douleur, "douleur")}
-                          {getSeverityBadge(symptom.dyspnee, "dyspnee")}
-                          {getSeverityBadge(symptom.anxiete, "anxiete")}
-                        </div>
-
-                        {symptom.remarque && (
-                          <div className="bg-gray-50 rounded p-3 text-sm">
-                            <strong>Remarques:</strong> {symptom.remarque}
+                          <div className="flex flex-wrap gap-2 mb-3">
+                            {getSeverityBadge(symptom.douleur, "douleur")}
+                            {getSeverityBadge(symptom.dyspnee, "dyspnee")}
+                            {getSeverityBadge(symptom.anxiete, "anxiete")}
                           </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+
+                          {symptom.remarque && (
+                            <div className="bg-gray-50 rounded p-3 text-sm">
+                              <strong>Remarques:</strong> {symptom.remarque}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </>
           )}
         </div>
       </main>

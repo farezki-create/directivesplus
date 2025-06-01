@@ -5,12 +5,15 @@ import { useAuth } from "@/contexts/AuthContext";
 import AppNavigation from "@/components/AppNavigation";
 import SymptomTracker from "@/components/symptom-tracker/SymptomTracker";
 import SymptomHistory from "@/components/symptom-tracker/SymptomHistory";
+import SymptomEvolutionChart from "@/components/symptom-tracker/SymptomEvolutionChart";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { useSymptomHistory } from "@/hooks/useSymptomHistory";
 
 const SuiviPalliatif = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
+  const { symptoms } = useSymptomHistory();
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -46,7 +49,7 @@ const SuiviPalliatif = () => {
           </Button>
         </div>
         
-        <div className="max-w-4xl mx-auto space-y-8">
+        <div className="max-w-6xl mx-auto space-y-8">
           <div className="text-center">
             <h1 className="text-3xl md:text-4xl font-bold text-directiveplus-800 mb-4">
               Suivi en soins palliatifs
@@ -59,6 +62,11 @@ const SuiviPalliatif = () => {
           {/* Composant de saisie des symptômes */}
           <div>
             <SymptomTracker />
+          </div>
+
+          {/* Graphique d'évolution des symptômes */}
+          <div>
+            <SymptomEvolutionChart symptoms={symptoms} />
           </div>
 
           {/* Historique des symptômes */}
