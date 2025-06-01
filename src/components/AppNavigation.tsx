@@ -10,7 +10,8 @@ import {
   X, 
   FileText,
   CreditCard,
-  Activity
+  Activity,
+  Users
 } from "lucide-react";
 
 interface AppNavigationProps {
@@ -30,6 +31,9 @@ const AppNavigation = ({ hideEditingFeatures = false }: AppNavigationProps) => {
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
+
+  // Vérifier si l'utilisateur est un soignant
+  const isSoignant = user?.email?.endsWith('@directivesplus.fr');
 
   return (
     <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
@@ -69,6 +73,27 @@ const AppNavigation = ({ hideEditingFeatures = false }: AppNavigationProps) => {
                   <Activity size={16} />
                   <span>Suivi Palliatif</span>
                 </Link>
+
+                {/* Navigation pour soignants */}
+                {isSoignant && (
+                  <>
+                    <Link 
+                      to="/alertes-soignants" 
+                      className="flex items-center space-x-1 text-gray-700 hover:text-directiveplus-600 transition-colors"
+                    >
+                      <Activity size={16} />
+                      <span>Alertes</span>
+                    </Link>
+                    
+                    <Link 
+                      to="/suivi-multi-patients" 
+                      className="flex items-center space-x-1 text-gray-700 hover:text-directiveplus-600 transition-colors"
+                    >
+                      <Users size={16} />
+                      <span>Multi-Patients</span>
+                    </Link>
+                  </>
+                )}
                 
                 <Link 
                   to="/carte-acces" 
@@ -154,6 +179,29 @@ const AppNavigation = ({ hideEditingFeatures = false }: AppNavigationProps) => {
                     <Activity size={16} />
                     <span>Suivi Palliatif</span>
                   </Link>
+
+                  {/* Navigation mobile pour soignants */}
+                  {isSoignant && (
+                    <>
+                      <Link 
+                        to="/alertes-soignants" 
+                        className="flex items-center space-x-2 text-gray-700 hover:text-directiveplus-600 transition-colors"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <Activity size={16} />
+                        <span>Alertes</span>
+                      </Link>
+                      
+                      <Link 
+                        to="/suivi-multi-patients" 
+                        className="flex items-center space-x-2 text-gray-700 hover:text-directiveplus-600 transition-colors"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <Users size={16} />
+                        <span>Multi-Patients</span>
+                      </Link>
+                    </>
+                  )}
                   
                   <Link 
                     to="/carte-acces" 

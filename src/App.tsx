@@ -61,6 +61,7 @@ import ReportDataBreach from "./pages/ReportDataBreach";
 import SuiviSymptomes from "./pages/SuiviSymptomes";
 import SuiviPalliatif from "./pages/SuiviPalliatif";
 import AlertesSoignants from "./pages/AlertesSoignants";
+import SuiviMultiPatients from "./pages/SuiviMultiPatients";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -79,6 +80,7 @@ function App() {
           <Route path="/suivi-symptomes" element={<ProtectedRoute><SuiviSymptomes /></ProtectedRoute>} />
           <Route path="/suivi-palliatif" element={<ProtectedRoute><SuiviPalliatif /></ProtectedRoute>} />
           <Route path="/alertes-soignants" element={<ProtectedRoute><AlertesSoignants /></ProtectedRoute>} />
+          <Route path="/suivi-multi-patients" element={<ProtectedRoute><SuiviMultiPatients /></ProtectedRoute>} />
           <Route path="/directives-info" element={<DirectivesInfo />} />
           <Route path="/rediger" element={<ProtectedRoute><Rediger /></ProtectedRoute>} />
           <Route path="/personne-confiance" element={<ProtectedRoute><PersonneConfiance /></ProtectedRoute>} />
