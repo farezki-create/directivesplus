@@ -9,6 +9,7 @@ import SuiviPalliatif from './pages/SuiviPalliatif';
 import SuiviMultiPatients from './pages/SuiviMultiPatients';
 import PartageSymptomes from "@/pages/PartageSymptomes";
 import Index from './pages/Index';
+import AccesInstitution from './pages/AccesInstitution';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/acces-institution" element={<AccesInstitution />} />
           
           <Route 
             path="/dashboard" 
