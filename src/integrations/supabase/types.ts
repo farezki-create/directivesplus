@@ -1763,6 +1763,45 @@ export type Database = {
         }
         Relationships: []
       }
+      symptom_access_logs: {
+        Row: {
+          access_code: string
+          accessed_at: string | null
+          accessor_birth_date: string
+          accessor_first_name: string
+          accessor_name: string
+          id: string
+          ip_address: unknown | null
+          patient_id: string
+          success: boolean
+          user_agent: string | null
+        }
+        Insert: {
+          access_code: string
+          accessed_at?: string | null
+          accessor_birth_date: string
+          accessor_first_name: string
+          accessor_name: string
+          id?: string
+          ip_address?: unknown | null
+          patient_id: string
+          success?: boolean
+          user_agent?: string | null
+        }
+        Update: {
+          access_code?: string
+          accessed_at?: string | null
+          accessor_birth_date?: string
+          accessor_first_name?: string
+          accessor_name?: string
+          id?: string
+          ip_address?: unknown | null
+          patient_id?: string
+          success?: boolean
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       symptom_tracking: {
         Row: {
           anxiete: number
@@ -1773,6 +1812,8 @@ export type Database = {
           id: string
           patient_id: string
           remarque: string | null
+          shared_access_expires_at: string | null
+          symptome_access_code: string | null
           updated_at: string
         }
         Insert: {
@@ -1784,6 +1825,8 @@ export type Database = {
           id?: string
           patient_id: string
           remarque?: string | null
+          shared_access_expires_at?: string | null
+          symptome_access_code?: string | null
           updated_at?: string
         }
         Update: {
@@ -1795,6 +1838,8 @@ export type Database = {
           id?: string
           patient_id?: string
           remarque?: string | null
+          shared_access_expires_at?: string | null
+          symptome_access_code?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -2035,6 +2080,10 @@ export type Database = {
         Returns: string
       }
       generate_shared_access_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      generate_symptom_access_code: {
         Args: Record<PropertyKey, never>
         Returns: string
       }
@@ -2362,6 +2411,19 @@ export type Database = {
         Returns: {
           is_valid: boolean
           medical_data_content: Json
+        }[]
+      }
+      verify_symptom_shared_access: {
+        Args: {
+          input_access_code: string
+          input_last_name: string
+          input_first_name: string
+          input_birth_date: string
+        }
+        Returns: {
+          patient_id: string
+          access_granted: boolean
+          patient_info: Json
         }[]
       }
     }
