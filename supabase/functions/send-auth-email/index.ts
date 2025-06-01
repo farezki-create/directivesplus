@@ -39,6 +39,7 @@ const handler = async (req: Request): Promise<Response> => {
     const { to, subject, type, token }: EmailRequest = await req.json();
 
     console.log(`📧 Envoi email ${type} vers:`, to);
+    console.log(`🔑 Token fourni:`, token ? 'OUI' : 'NON');
 
     // Préparer le contenu selon le type
     let finalHtmlContent = '';
@@ -46,6 +47,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (type === 'confirmation' && token) {
       const confirmUrl = `${req.headers.get('origin')}/auth/confirm?token=${token}&type=signup`;
+      console.log(`🔗 URL de confirmation générée:`, confirmUrl);
+      
       finalHtmlContent = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9fafb;">
           <div style="background-color: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
@@ -113,7 +116,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("📝 Contenu HTML généré, longueur:", finalHtmlContent.length);
 
-    // Envoyer via l'API Brevo avec la nouvelle adresse expéditrice
+    // Envoyer via l'API Brevo avec une adresse expéditrice par défaut
     const brevoResponse = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
       headers: {
@@ -124,7 +127,7 @@ const handler = async (req: Request): Promise<Response> => {
       body: JSON.stringify({
         sender: {
           name: "DirectivesPlus",
-          email: "contact@directivesplus.fr"
+          email: "noreply@brevo.com"
         },
         to: [{
           email: to,
