@@ -93,9 +93,8 @@ export const useLoginSubmit = ({
         setRedirectInProgress(true);
         
         setTimeout(() => {
-          const finalRedirectPath = redirectPath === "/dashboard" ? "/rediger" : redirectPath;
-          console.log("🚀 Redirection vers:", finalRedirectPath);
-          window.location.href = finalRedirectPath;
+          console.log("🚀 Redirection vers /rediger");
+          window.location.href = "/rediger";
         }, 1000);
       }
       
