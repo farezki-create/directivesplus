@@ -18,16 +18,18 @@ const AccesInstitution = () => {
         <div className="max-w-2xl mx-auto">
           <PageHeader />
           
-          {/* 1. Abonnement Institutionnel en premier */}
-          <InstitutionalSubscriptionSection />
-          
-          {/* 2. Demande d'accès */}
+          {/* 1. Demande d'accès avec code patient */}
           <DirectivesAccessSection />
           
-          {/* 3. Soins palliatifs */}
+          {/* 2. Dossier soins palliatifs */}
           <PalliativeCareSection />
           
+          {/* 3. Abonnement Institutionnel */}
+          <InstitutionalSubscriptionSection />
+          
+          {/* 4. Votre avis nous intéresse */}
           <FeedbackSection />
+          
           <SecurityInfoSection />
         </div>
       </main>
