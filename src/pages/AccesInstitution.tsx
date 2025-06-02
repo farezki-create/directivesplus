@@ -1,4 +1,3 @@
-
 import React from "react";
 import AppNavigation from "@/components/AppNavigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -64,6 +63,25 @@ const AccesInstitution = () => {
                     className="border-blue-600 text-blue-600 hover:bg-blue-100"
                   >
                     Demander un accès
+                  </Button>
+                </Link>
+              </div>
+
+              <div className="flex items-center gap-3 p-4 bg-green-100 rounded-lg border border-green-200">
+                <Building2 className="h-6 w-6 text-green-600 flex-shrink-0" />
+                <div className="flex-grow">
+                  <h4 className="font-medium text-green-800">Tableau de bord institution</h4>
+                  <p className="text-sm text-green-700">
+                    Accédez aux patients autorisés pour votre institution
+                  </p>
+                </div>
+                <Link to="/tableau-bord-institution">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="border-green-600 text-green-600 hover:bg-green-100"
+                  >
+                    Tableau de bord
                   </Button>
                 </Link>
               </div>
