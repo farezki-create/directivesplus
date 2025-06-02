@@ -3,9 +3,9 @@ import React from "react";
 import AppNavigation from "@/components/AppNavigation";
 import ChatAssistant from "@/components/ChatAssistant";
 import { PageHeader } from "@/components/acces-institution/PageHeader";
-import { EmrIntegrationSection } from "@/components/acces-institution/EmrIntegrationSection";
 import { InstitutionalSubscriptionSection } from "@/components/acces-institution/InstitutionalSubscriptionSection";
 import { DirectivesAccessSection } from "@/components/acces-institution/DirectivesAccessSection";
+import { EmrIntegrationSection } from "@/components/acces-institution/EmrIntegrationSection";
 import { PalliativeCareSection } from "@/components/acces-institution/PalliativeCareSection";
 import { FeedbackSection } from "@/components/acces-institution/FeedbackSection";
 import { SecurityInfoSection } from "@/components/acces-institution/SecurityInfoSection";
@@ -18,10 +18,17 @@ const AccesInstitution = () => {
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
           <PageHeader />
-          <EmrIntegrationSection />
+          
+          {/* 1. Abonnement Institutionnel en premier */}
           <InstitutionalSubscriptionSection />
+          
+          {/* 2. Demande d'accès */}
           <DirectivesAccessSection />
+          
+          {/* 3. Avantages et intégration */}
+          <EmrIntegrationSection />
           <PalliativeCareSection />
+          
           <FeedbackSection />
           <SecurityInfoSection />
         </div>

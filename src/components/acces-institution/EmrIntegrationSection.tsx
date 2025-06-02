@@ -2,7 +2,9 @@
 import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Database, FileText, Heart, BarChart3, Shield } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Database, FileText, Heart, BarChart3, Shield, ExternalLink } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export const EmrIntegrationSection: React.FC = () => {
   return (
@@ -22,45 +24,84 @@ export const EmrIntegrationSection: React.FC = () => {
           pour un accès transparent aux informations des patients.
         </p>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-purple-200">
-            <FileText className="h-5 w-5 text-purple-600 flex-shrink-0" />
+        {/* Liens directs pour l'intégration */}
+        <div className="grid grid-cols-1 gap-3">
+          <div className="flex items-center gap-3 p-4 bg-white rounded-lg border border-purple-200">
+            <FileText className="h-6 w-6 text-purple-600 flex-shrink-0" />
             <div className="flex-grow">
-              <h4 className="font-medium text-purple-800 text-sm">Directives anticipées</h4>
-              <p className="text-xs text-purple-700">Consultation sécurisée</p>
+              <h4 className="font-medium text-purple-800">Directives anticipées</h4>
+              <p className="text-sm text-purple-700">Accès direct aux directives patients</p>
             </div>
+            <Link to="/acces-institution">
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="border-purple-600 text-purple-600 hover:bg-purple-100"
+              >
+                <ExternalLink className="h-4 w-4 mr-1" />
+                Accéder
+              </Button>
+            </Link>
           </div>
 
-          <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-purple-200">
-            <Heart className="h-5 w-5 text-purple-600 flex-shrink-0" />
+          <div className="flex items-center gap-3 p-4 bg-white rounded-lg border border-purple-200">
+            <Heart className="h-6 w-6 text-purple-600 flex-shrink-0" />
             <div className="flex-grow">
-              <h4 className="font-medium text-purple-800 text-sm">Suivi palliatif</h4>
-              <p className="text-xs text-purple-700">Données en temps réel</p>
+              <h4 className="font-medium text-purple-800">Suivi palliatif</h4>
+              <p className="text-sm text-purple-700">Données symptômes en temps réel</p>
             </div>
+            <Link to="/acces-soins-palliatifs">
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="border-purple-600 text-purple-600 hover:bg-purple-100"
+              >
+                <ExternalLink className="h-4 w-4 mr-1" />
+                Accéder
+              </Button>
+            </Link>
           </div>
 
-          <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-purple-200">
-            <BarChart3 className="h-5 w-5 text-purple-600 flex-shrink-0" />
+          <div className="flex items-center gap-3 p-4 bg-white rounded-lg border border-purple-200">
+            <BarChart3 className="h-6 w-6 text-purple-600 flex-shrink-0" />
             <div className="flex-grow">
-              <h4 className="font-medium text-purple-800 text-sm">Tableau de bord</h4>
-              <p className="text-xs text-purple-700">Vue d'ensemble patients</p>
+              <h4 className="font-medium text-purple-800">Tableau de bord</h4>
+              <p className="text-sm text-purple-700">Vue d'ensemble patients autorisés</p>
             </div>
+            <Link to="/tableau-bord-institution">
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="border-purple-600 text-purple-600 hover:bg-purple-100"
+              >
+                <ExternalLink className="h-4 w-4 mr-1" />
+                Accéder
+              </Button>
+            </Link>
           </div>
 
-          <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-purple-200">
-            <Shield className="h-5 w-5 text-purple-600 flex-shrink-0" />
+          <div className="flex items-center gap-3 p-4 bg-white rounded-lg border border-purple-200">
+            <Shield className="h-6 w-6 text-purple-600 flex-shrink-0" />
             <div className="flex-grow">
-              <h4 className="font-medium text-purple-800 text-sm">Accès sécurisé</h4>
-              <p className="text-xs text-purple-700">Conforme RGPD</p>
+              <h4 className="font-medium text-purple-800">Accès sécurisé</h4>
+              <p className="text-sm text-purple-700">Interface conforme RGPD</p>
             </div>
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="border-purple-600 text-purple-600 hover:bg-purple-100"
+              disabled
+            >
+              Intégré
+            </Button>
           </div>
         </div>
 
         <Alert className="border-purple-200 bg-purple-50">
           <Database className="h-4 w-4 text-purple-600" />
           <AlertDescription className="text-purple-800">
-            <strong>Intégration API disponible :</strong> Connectez DirectivesPlus 
-            à votre logiciel de dossier de soins via notre API sécurisée. 
+            <strong>API disponible :</strong> Intégrez ces fonctionnalités directement 
+            dans votre logiciel de dossier de soins via notre API sécurisée. 
             Documentation technique sur demande.
           </AlertDescription>
         </Alert>
