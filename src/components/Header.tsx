@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
@@ -37,7 +36,7 @@ const Header = () => {
                 <img 
                   src="/lovable-uploads/b5d06491-daf5-4c47-84f7-6920d23506ff.png" 
                   alt="DirectivesPlus" 
-                  className="h-8 sm:h-10 w-auto object-contain"
+                  className="h-10 sm:h-12 w-auto object-contain"
                 />
               </div>
               <span className="text-xl font-bold text-directiveplus-600">

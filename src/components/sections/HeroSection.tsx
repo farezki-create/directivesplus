@@ -15,7 +15,7 @@ const HeroSection = () => {
             <img 
               src="/lovable-uploads/b5d06491-daf5-4c47-84f7-6920d23506ff.png" 
               alt="DirectivesPlus" 
-              className="h-32 sm:h-40 md:h-48 w-auto object-contain"
+              className="h-40 sm:h-44 md:h-48 w-auto object-contain"
             />
           </div>
         </div>
