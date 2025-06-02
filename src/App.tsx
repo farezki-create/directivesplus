@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
@@ -10,6 +11,7 @@ import PartageSymptomes from "@/pages/PartageSymptomes";
 import Index from './pages/Index';
 import AccesInstitution from './pages/AccesInstitution';
 import AccesSoinsPalliatifs from './pages/AccesSoinsPalliatifs';
+import DemandeAbonnementInstitutionnel from './pages/DemandeAbonnementInstitutionnel';
 import Rediger from './pages/Rediger';
 import AvisGeneral from './pages/AvisGeneral';
 import MaintienVie from './pages/MaintienVie';
@@ -39,6 +41,7 @@ function App() {
               <Route path="/auth" element={<Auth />} />
               <Route path="/acces-institution" element={<AccesInstitution />} />
               <Route path="/acces-soins-palliatifs" element={<AccesSoinsPalliatifs />} />
+              <Route path="/demande-abonnement-institutionnel" element={<DemandeAbonnementInstitutionnel />} />
               
               <Route 
                 path="/rediger" 

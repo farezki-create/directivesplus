@@ -1,9 +1,10 @@
+
 import React from "react";
 import AppNavigation from "@/components/AppNavigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Shield, ExternalLink, Heart, Activity } from "lucide-react";
+import { Shield, ExternalLink, Heart, Activity, Building2, UserPlus } from "lucide-react";
 import { InstitutionAccessFormComplete } from "@/components/institution-access/InstitutionAccessFormComplete";
 import ChatAssistant from "@/components/ChatAssistant";
 import { Link } from "react-router-dom";
@@ -30,6 +31,52 @@ const AccesInstitution = () => {
               Interface sécurisée pour les professionnels de santé
             </p>
           </div>
+
+          {/* Section Abonnement Institutionnel */}
+          <Card className="mb-6 border-blue-200 bg-blue-50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Building2 className="h-5 w-5 text-blue-600" />
+                Abonnement Institutionnel
+              </CardTitle>
+              <CardDescription>
+                Accès privilégié pour les établissements de santé
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-gray-600">
+                Les institutions partenaires peuvent accéder directement aux directives 
+                des patients selon les droits accordés par l'administration.
+              </p>
+              
+              <div className="flex items-center gap-3 p-4 bg-blue-100 rounded-lg border border-blue-200">
+                <UserPlus className="h-6 w-6 text-blue-600 flex-shrink-0" />
+                <div className="flex-grow">
+                  <h4 className="font-medium text-blue-800">Demande d'abonnement</h4>
+                  <p className="text-sm text-blue-700">
+                    Établissements de santé, EHPAD, cliniques - Accès sans code
+                  </p>
+                </div>
+                <Link to="/demande-abonnement-institutionnel">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="border-blue-600 text-blue-600 hover:bg-blue-100"
+                  >
+                    Demander un accès
+                  </Button>
+                </Link>
+              </div>
+
+              <Alert className="border-blue-200 bg-blue-50">
+                <Building2 className="h-4 w-4 text-blue-600" />
+                <AlertDescription className="text-blue-800">
+                  <strong>Avantages de l'abonnement :</strong> Accès direct aux directives 
+                  anticipées des patients selon les droits accordés, sans nécessité de code d'accès.
+                </AlertDescription>
+              </Alert>
+            </CardContent>
+          </Card>
 
           {/* Section Directives Anticipées */}
           <Card className="mb-6">

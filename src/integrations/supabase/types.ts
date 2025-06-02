@@ -9,6 +9,42 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      abonnes_institutions: {
+        Row: {
+          created_at: string | null
+          date_validation: string | null
+          email: string
+          est_valide: boolean | null
+          id: string
+          nom: string
+          structure: string
+          telephone: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          date_validation?: string | null
+          email: string
+          est_valide?: boolean | null
+          id?: string
+          nom: string
+          structure: string
+          telephone?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          date_validation?: string | null
+          email?: string
+          est_valide?: boolean | null
+          id?: string
+          nom?: string
+          structure?: string
+          telephone?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       access_code_attempts: {
         Row: {
           access_code: string | null
@@ -447,6 +483,47 @@ export type Database = {
           id?: string
         }
         Relationships: []
+      }
+      droits_acces_nominal: {
+        Row: {
+          abonne_id: string
+          created_by: string | null
+          date_autorisation: string | null
+          id: string
+          notes: string | null
+          patient_naissance: string
+          patient_nom: string
+          patient_prenom: string
+        }
+        Insert: {
+          abonne_id: string
+          created_by?: string | null
+          date_autorisation?: string | null
+          id?: string
+          notes?: string | null
+          patient_naissance: string
+          patient_nom: string
+          patient_prenom: string
+        }
+        Update: {
+          abonne_id?: string
+          created_by?: string | null
+          date_autorisation?: string | null
+          id?: string
+          notes?: string | null
+          patient_naissance?: string
+          patient_nom?: string
+          patient_prenom?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "droits_acces_nominal_abonne_id_fkey"
+            columns: ["abonne_id"]
+            isOneToOne: false
+            referencedRelation: "abonnes_institutions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       health_news: {
         Row: {
@@ -2146,6 +2223,16 @@ export type Database = {
           access_code_id: string
         }[]
       }
+      get_institution_accessible_patients: {
+        Args: { p_institution_email: string }
+        Returns: {
+          patient_nom: string
+          patient_prenom: string
+          patient_naissance: string
+          date_autorisation: string
+          notes: string
+        }[]
+      }
       get_institution_directives_complete: {
         Args: {
           input_last_name: string
@@ -2224,6 +2311,15 @@ export type Database = {
         Args: {
           _user_id: string
           _role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: boolean
+      }
+      institution_has_patient_access: {
+        Args: {
+          p_institution_email: string
+          p_patient_nom: string
+          p_patient_prenom: string
+          p_patient_naissance: string
         }
         Returns: boolean
       }
