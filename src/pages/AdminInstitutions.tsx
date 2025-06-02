@@ -6,9 +6,9 @@ import { useSecureAuth } from "@/hooks/useSecureAuth";
 import { Navigate } from "react-router-dom";
 
 const AdminInstitutions = () => {
-  const { isAdmin, isLoading } = useSecureAuth();
+  const { isAdmin, loading } = useSecureAuth();
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
