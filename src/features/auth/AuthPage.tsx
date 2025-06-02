@@ -8,6 +8,7 @@ import { AuthContent } from "./components/AuthContent";
 import { ForgotPasswordView } from "./views/ForgotPasswordView";
 import { PasswordResetView } from "./views/PasswordResetView";
 import SMTPTestComponent from "@/components/debug/SMTPTestComponent";
+import EmailConfigDiagnostic from "@/components/debug/EmailConfigDiagnostic";
 
 const AuthPage = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -19,6 +20,7 @@ const AuthPage = () => {
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [redirectInProgress, setRedirectInProgress] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
+  const [showDiagnostic, setShowDiagnostic] = useState(false);
   
   // Vérification des paramètres URL pour confirmation email et reset mot de passe
   const accessToken = searchParams.get('access_token') || location.hash.match(/access_token=([^&]+)/)?.[1];
@@ -148,7 +150,7 @@ const AuthPage = () => {
 
   const redirectPath = location.state?.from || "/rediger";
 
-  // Page principale d'authentification avec composant de debug
+  // Page principale d'authentification avec diagnostic
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -157,14 +159,23 @@ const AuthPage = () => {
         <div className="max-w-md mx-auto">
           <BackButton />
           
-          {/* Boutons de debug */}
+          {/* Boutons de debug et diagnostic */}
           <div className="text-center mb-4 space-y-2">
-            <button
-              onClick={() => setShowDebug(!showDebug)}
-              className="text-sm text-blue-600 hover:text-blue-800 underline block mx-auto"
-            >
-              {showDebug ? "Masquer" : "Afficher"} le test SMTP
-            </button>
+            <div className="flex gap-2 justify-center">
+              <button
+                onClick={() => setShowDebug(!showDebug)}
+                className="text-sm text-blue-600 hover:text-blue-800 underline"
+              >
+                {showDebug ? "Masquer" : "Test"} SMTP
+              </button>
+              
+              <button
+                onClick={() => setShowDiagnostic(!showDiagnostic)}
+                className="text-sm text-red-600 hover:text-red-800 underline font-medium"
+              >
+                {showDiagnostic ? "Masquer" : "🔧 Diagnostic"} Complet
+              </button>
+            </div>
             
             <a
               href="/auth-audit"
@@ -174,14 +185,19 @@ const AuthPage = () => {
             </a>
           </div>
 
+          {/* Composant de diagnostic principal */}
+          {showDiagnostic && <EmailConfigDiagnostic />}
+
           {/* Composant de test SMTP */}
           {showDebug && <SMTPTestComponent />}
           
-          <AuthContent
-            redirectPath={redirectPath}
-            setRedirectInProgress={setRedirectInProgress}
-            onForgotPassword={handleForgotPassword}
-          />
+          {!showDiagnostic && !showDebug && (
+            <AuthContent
+              redirectPath={redirectPath}
+              setRedirectInProgress={setRedirectInProgress}
+              onForgotPassword={handleForgotPassword}
+            />
+          )}
         </div>
       </main>
     </div>
