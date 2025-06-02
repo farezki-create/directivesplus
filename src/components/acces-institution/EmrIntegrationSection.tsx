@@ -3,7 +3,7 @@ import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Database, FileText, Heart, BarChart3, Shield, ExternalLink } from "lucide-react";
+import { Database, FileText, Heart, Shield, ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export const EmrIntegrationSection: React.FC = () => {
@@ -51,24 +51,6 @@ export const EmrIntegrationSection: React.FC = () => {
               <p className="text-sm text-purple-700">Données symptômes en temps réel</p>
             </div>
             <Link to="/acces-soins-palliatifs">
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="border-purple-600 text-purple-600 hover:bg-purple-100"
-              >
-                <ExternalLink className="h-4 w-4 mr-1" />
-                Accéder
-              </Button>
-            </Link>
-          </div>
-
-          <div className="flex items-center gap-3 p-4 bg-white rounded-lg border border-purple-200">
-            <BarChart3 className="h-6 w-6 text-purple-600 flex-shrink-0" />
-            <div className="flex-grow">
-              <h4 className="font-medium text-purple-800">Tableau de bord</h4>
-              <p className="text-sm text-purple-700">Vue d'ensemble patients autorisés</p>
-            </div>
-            <Link to="/tableau-bord-institution">
               <Button 
                 variant="outline" 
                 size="sm"

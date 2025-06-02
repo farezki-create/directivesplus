@@ -72,6 +72,7 @@ export const InstitutionalSubscriptionSection: React.FC = () => {
           </Link>
         </div>
 
+        {/* Tableau de bord - uniquement pour les abonnés */}
         <div className="flex items-center gap-3 p-4 bg-green-100 rounded-lg border border-green-200">
           <Building2 className="h-6 w-6 text-green-600 flex-shrink-0" />
           <div className="flex-grow">
