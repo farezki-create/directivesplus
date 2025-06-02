@@ -1,13 +1,14 @@
 
 import React from "react";
 import AppNavigation from "@/components/AppNavigation";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { Shield, ExternalLink, Heart, Activity, Building2, UserPlus, Database, FileText, Users, BarChart3 } from "lucide-react";
-import { InstitutionAccessFormComplete } from "@/components/institution-access/InstitutionAccessFormComplete";
 import ChatAssistant from "@/components/ChatAssistant";
-import { Link } from "react-router-dom";
+import { PageHeader } from "@/components/acces-institution/PageHeader";
+import { EmrIntegrationSection } from "@/components/acces-institution/EmrIntegrationSection";
+import { InstitutionalSubscriptionSection } from "@/components/acces-institution/InstitutionalSubscriptionSection";
+import { DirectivesAccessSection } from "@/components/acces-institution/DirectivesAccessSection";
+import { PalliativeCareSection } from "@/components/acces-institution/PalliativeCareSection";
+import { FeedbackSection } from "@/components/acces-institution/FeedbackSection";
+import { SecurityInfoSection } from "@/components/acces-institution/SecurityInfoSection";
 
 const AccesInstitution = () => {
   return (
@@ -16,250 +17,13 @@ const AccesInstitution = () => {
       
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
-          <div className="text-center mb-8">
-            <div className="flex justify-center mb-6">
-              <img 
-                src="/lovable-uploads/b5d06491-daf5-4c47-84f7-6920d23506ff.png" 
-                alt="DirectivesPlus" 
-                className="h-24 w-auto"
-              />
-            </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">
-              Accès Professionnel
-            </h1>
-            <p className="text-lg text-gray-600">
-              Interface sécurisée pour les professionnels de santé
-            </p>
-          </div>
-
-          {/* Section Intégration Dossier de Soins */}
-          <Card className="mb-6 border-purple-200 bg-purple-50">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Database className="h-5 w-5 text-purple-600" />
-                Intégration Dossier de Soins
-              </CardTitle>
-              <CardDescription>
-                Accès direct aux fonctionnalités depuis votre dossier institutionnel
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-gray-600">
-                Intégrez DirectivesPlus directement dans votre système de dossiers de soins 
-                pour un accès transparent aux informations des patients.
-              </p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-purple-200">
-                  <FileText className="h-5 w-5 text-purple-600 flex-shrink-0" />
-                  <div className="flex-grow">
-                    <h4 className="font-medium text-purple-800 text-sm">Directives anticipées</h4>
-                    <p className="text-xs text-purple-700">Consultation sécurisée</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-purple-200">
-                  <Heart className="h-5 w-5 text-purple-600 flex-shrink-0" />
-                  <div className="flex-grow">
-                    <h4 className="font-medium text-purple-800 text-sm">Suivi palliatif</h4>
-                    <p className="text-xs text-purple-700">Données en temps réel</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-purple-200">
-                  <BarChart3 className="h-5 w-5 text-purple-600 flex-shrink-0" />
-                  <div className="flex-grow">
-                    <h4 className="font-medium text-purple-800 text-sm">Tableau de bord</h4>
-                    <p className="text-xs text-purple-700">Vue d'ensemble patients</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-purple-200">
-                  <Shield className="h-5 w-5 text-purple-600 flex-shrink-0" />
-                  <div className="flex-grow">
-                    <h4 className="font-medium text-purple-800 text-sm">Accès sécurisé</h4>
-                    <p className="text-xs text-purple-700">Conforme RGPD</p>
-                  </div>
-                </div>
-              </div>
-
-              <Alert className="border-purple-200 bg-purple-50">
-                <Database className="h-4 w-4 text-purple-600" />
-                <AlertDescription className="text-purple-800">
-                  <strong>Intégration API disponible :</strong> Connectez DirectivesPlus 
-                  à votre logiciel de dossier de soins via notre API sécurisée. 
-                  Documentation technique sur demande.
-                </AlertDescription>
-              </Alert>
-            </CardContent>
-          </Card>
-
-          {/* Section Abonnement Institutionnel */}
-          <Card className="mb-6 border-blue-200 bg-blue-50">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Building2 className="h-5 w-5 text-blue-600" />
-                Abonnement Institutionnel
-              </CardTitle>
-              <CardDescription>
-                Accès privilégié pour les établissements de santé
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-gray-600">
-                Les institutions partenaires peuvent accéder directement aux directives 
-                des patients selon les droits accordés par l'administration.
-              </p>
-              
-              <div className="flex items-center gap-3 p-4 bg-blue-100 rounded-lg border border-blue-200">
-                <UserPlus className="h-6 w-6 text-blue-600 flex-shrink-0" />
-                <div className="flex-grow">
-                  <h4 className="font-medium text-blue-800">Demande d'abonnement</h4>
-                  <p className="text-sm text-blue-700">
-                    Établissements de santé, EHPAD, cliniques - Accès sans code
-                  </p>
-                </div>
-                <Link to="/demande-abonnement-institutionnel">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    className="border-blue-600 text-blue-600 hover:bg-blue-100"
-                  >
-                    Demander un accès
-                  </Button>
-                </Link>
-              </div>
-
-              <div className="flex items-center gap-3 p-4 bg-green-100 rounded-lg border border-green-200">
-                <Building2 className="h-6 w-6 text-green-600 flex-shrink-0" />
-                <div className="flex-grow">
-                  <h4 className="font-medium text-green-800">Tableau de bord institution</h4>
-                  <p className="text-sm text-green-700">
-                    Accédez aux patients autorisés pour votre institution
-                  </p>
-                </div>
-                <Link to="/tableau-bord-institution">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    className="border-green-600 text-green-600 hover:bg-green-100"
-                  >
-                    Tableau de bord
-                  </Button>
-                </Link>
-              </div>
-
-              <Alert className="border-blue-200 bg-blue-50">
-                <Building2 className="h-4 w-4 text-blue-600" />
-                <AlertDescription className="text-blue-800">
-                  <strong>Avantages de l'abonnement :</strong> Accès direct aux directives 
-                  anticipées des patients selon les droits accordés, sans nécessité de code d'accès.
-                </AlertDescription>
-              </Alert>
-            </CardContent>
-          </Card>
-
-          {/* Section Directives Anticipées */}
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5 text-blue-600" />
-                Accès Institution - Directives Anticipées
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <InstitutionAccessFormComplete />
-            </CardContent>
-          </Card>
-
-          {/* Section Dossier Soins Palliatifs */}
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Heart className="h-5 w-5 text-pink-600" />
-                Dossier Soins Palliatifs
-              </CardTitle>
-              <CardDescription>
-                Accès au suivi de symptômes des patients en soins palliatifs
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-gray-600">
-                Consultez en temps réel l'évolution des symptômes de vos patients 
-                grâce à leur code de partage personnel.
-              </p>
-              
-              <div className="flex items-center gap-3 p-4 bg-pink-50 rounded-lg border border-pink-200">
-                <Activity className="h-6 w-6 text-pink-600 flex-shrink-0" />
-                <div className="flex-grow">
-                  <h4 className="font-medium text-pink-800">Suivi des symptômes</h4>
-                  <p className="text-sm text-pink-700">
-                    Douleur, dyspnée, anxiété - Graphiques d'évolution
-                  </p>
-                </div>
-                <Link to="/acces-soins-palliatifs">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    className="border-pink-600 text-pink-600 hover:bg-pink-100"
-                  >
-                    Accéder
-                  </Button>
-                </Link>
-              </div>
-
-              <Alert className="border-pink-200 bg-pink-50">
-                <Heart className="h-4 w-4 text-pink-600" />
-                <AlertDescription className="text-pink-800">
-                  <strong>Code de partage requis :</strong> Demandez à votre patient son code 
-                  personnel de partage des symptômes pour accéder à son suivi et ses directives anticipées.
-                </AlertDescription>
-              </Alert>
-            </CardContent>
-          </Card>
-          
-          {/* Section Questionnaire */}
-          <div className="mt-8">
-            <Card className="border-blue-200 bg-blue-50">
-              <CardHeader>
-                <CardTitle className="text-lg text-blue-800">
-                  Votre avis nous intéresse
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-blue-700 mb-4">
-                  En tant que professionnel de santé, votre retour d'expérience est précieux pour améliorer notre plateforme.
-                </p>
-                <Button 
-                  asChild
-                  variant="outline"
-                  className="border-blue-600 text-blue-600 hover:bg-blue-100"
-                >
-                  <a 
-                    href="https://framaforms.org/questionnaire-sur-lapplication-de-redaction-des-directives-anticipees-directivesplus-1746994695" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                    Répondre au questionnaire
-                  </a>
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-          
-          {/* Informations de sécurité */}
-          <div className="mt-8">
-            <Alert>
-              <Shield className="h-4 w-4" />
-              <AlertDescription>
-                <strong>Sécurité et confidentialité :</strong> Cet accès est sécurisé et tracé. 
-                Seuls les professionnels de santé autorisés peuvent consulter les données 
-                avec le consentement du patient via son code d'accès personnel.
-              </AlertDescription>
-            </Alert>
-          </div>
+          <PageHeader />
+          <EmrIntegrationSection />
+          <InstitutionalSubscriptionSection />
+          <DirectivesAccessSection />
+          <PalliativeCareSection />
+          <FeedbackSection />
+          <SecurityInfoSection />
         </div>
       </main>
       
