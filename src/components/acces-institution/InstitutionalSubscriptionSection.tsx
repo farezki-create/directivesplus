@@ -99,8 +99,7 @@ export const InstitutionalSubscriptionSection: React.FC = () => {
         <Alert className="border-blue-200 bg-blue-50">
           <Building2 className="h-4 w-4 text-blue-600" />
           <AlertDescription className="text-blue-800">
-            <strong>Recommandé :</strong> L'abonnement institutionnel offre la meilleure 
-            expérience pour un accès régulier aux données patients dans le cadre de soins.
+            <strong>Important :</strong> Cette demande sera examinée par notre équipe. Un accès institutionnel permet de consulter les directives anticipées des patients et l'accès au suivi des symptômes selon les droits accordés par l'administration.
           </AlertDescription>
         </Alert>
       </CardContent>
