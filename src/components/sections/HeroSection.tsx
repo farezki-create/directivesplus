@@ -9,13 +9,13 @@ const HeroSection = () => {
   return (
     <section className="py-20 px-4">
       <div className="container mx-auto text-center">
-        {/* Logo au-dessus du titre */}
+        {/* Logo au-dessus du titre - responsive */}
         <div className="flex justify-center mb-8">
           <div className="p-8">
             <img 
               src="/lovable-uploads/b5d06491-daf5-4c47-84f7-6920d23506ff.png" 
               alt="DirectivesPlus" 
-              className="h-48 w-auto"
+              className="h-32 sm:h-40 md:h-48 w-auto object-contain"
             />
           </div>
         </div>

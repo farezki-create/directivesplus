@@ -28,7 +28,7 @@ const IndexHeader = () => {
               <img 
                 src="/lovable-uploads/b5d06491-daf5-4c47-84f7-6920d23506ff.png" 
                 alt="DirectivesPlus" 
-                className="h-16 w-auto"
+                className="h-12 sm:h-14 md:h-16 w-auto object-contain"
               />
             </div>
           </div>

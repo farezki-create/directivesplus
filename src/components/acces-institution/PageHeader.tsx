@@ -8,7 +8,7 @@ export const PageHeader: React.FC = () => {
         <img 
           src="/lovable-uploads/b5d06491-daf5-4c47-84f7-6920d23506ff.png" 
           alt="DirectivesPlus" 
-          className="h-24 w-auto"
+          className="h-20 sm:h-24 w-auto object-contain"
         />
       </div>
       <h1 className="text-3xl font-bold text-gray-900 mb-4">
