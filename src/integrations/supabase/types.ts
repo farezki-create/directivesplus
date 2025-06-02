@@ -18,6 +18,7 @@ export type Database = {
           id: string
           nom: string
           structure: string
+          structure_autorisee: string | null
           telephone: string | null
           updated_at: string | null
         }
@@ -29,6 +30,7 @@ export type Database = {
           id?: string
           nom: string
           structure: string
+          structure_autorisee?: string | null
           telephone?: string | null
           updated_at?: string | null
         }
@@ -40,6 +42,7 @@ export type Database = {
           id?: string
           nom?: string
           structure?: string
+          structure_autorisee?: string | null
           telephone?: string | null
           updated_at?: string | null
         }
@@ -709,6 +712,48 @@ export type Database = {
           },
         ]
       }
+      institution_structure_access: {
+        Row: {
+          created_by: string | null
+          date_autorisation: string | null
+          id: string
+          institution_id: string | null
+          notes: string | null
+          structure_id: string | null
+        }
+        Insert: {
+          created_by?: string | null
+          date_autorisation?: string | null
+          id?: string
+          institution_id?: string | null
+          notes?: string | null
+          structure_id?: string | null
+        }
+        Update: {
+          created_by?: string | null
+          date_autorisation?: string | null
+          id?: string
+          institution_id?: string | null
+          notes?: string | null
+          structure_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "institution_structure_access_institution_id_fkey"
+            columns: ["institution_id"]
+            isOneToOne: false
+            referencedRelation: "abonnes_institutions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "institution_structure_access_structure_id_fkey"
+            columns: ["structure_id"]
+            isOneToOne: false
+            referencedRelation: "structures_soins"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       logs_acces: {
         Row: {
           details: string | null
@@ -999,6 +1044,7 @@ export type Database = {
           date_of_birth: string
           id: string
           name: string
+          structure: string | null
         }
         Insert: {
           access_code?: string | null
@@ -1007,6 +1053,7 @@ export type Database = {
           date_of_birth: string
           id?: string
           name: string
+          structure?: string | null
         }
         Update: {
           access_code?: string | null
@@ -1015,6 +1062,7 @@ export type Database = {
           date_of_birth?: string
           id?: string
           name?: string
+          structure?: string | null
         }
         Relationships: []
       }
@@ -1846,6 +1894,45 @@ export type Database = {
         }
         Relationships: []
       }
+      structures_soins: {
+        Row: {
+          adresse: string | null
+          code_postal: string | null
+          created_at: string | null
+          email: string | null
+          id: string
+          nom: string
+          telephone: string | null
+          type_structure: string
+          updated_at: string | null
+          ville: string | null
+        }
+        Insert: {
+          adresse?: string | null
+          code_postal?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          nom: string
+          telephone?: string | null
+          type_structure: string
+          updated_at?: string | null
+          ville?: string | null
+        }
+        Update: {
+          adresse?: string | null
+          code_postal?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          nom?: string
+          telephone?: string | null
+          type_structure?: string
+          updated_at?: string | null
+          ville?: string | null
+        }
+        Relationships: []
+      }
       symptom_access_logs: {
         Row: {
           access_code: string
@@ -2321,6 +2408,10 @@ export type Database = {
           p_patient_prenom: string
           p_patient_naissance: string
         }
+        Returns: boolean
+      }
+      institution_has_structure_access: {
+        Args: { p_institution_email: string; p_structure_name: string }
         Returns: boolean
       }
       is_admin: {

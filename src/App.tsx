@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
@@ -25,6 +24,7 @@ import Synthesis from './pages/Synthesis';
 import MesDirectives from './pages/MesDirectives';
 import CarteAcces from './pages/CarteAcces';
 import Profile from './pages/Profile';
+import AdminInstitutions from './pages/AdminInstitutions';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -46,6 +46,16 @@ function App() {
               <Route path="/demande-abonnement-institutionnel" element={<DemandeAbonnementInstitutionnel />} />
               <Route path="/tableau-bord-institution" element={<TableauBordInstitution />} />
               <Route path="/espace-abonne-institution" element={<EspaceAbonneInstitution />} />
+              
+              {/* Nouvelle route pour l'administration des institutions */}
+              <Route 
+                path="/admin/institutions" 
+                element={
+                  <ProtectedRoute>
+                    <AdminInstitutions />
+                  </ProtectedRoute>
+                } 
+              />
               
               <Route 
                 path="/rediger" 
