@@ -3,7 +3,7 @@ import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Building2, UserPlus, CheckCircle } from "lucide-react";
+import { Building2, UserPlus, CheckCircle, Database } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export const InstitutionalSubscriptionSection: React.FC = () => {
@@ -50,6 +50,30 @@ export const InstitutionalSubscriptionSection: React.FC = () => {
               <p className="text-sm text-green-700">Accès aux données de symptômes en temps réel</p>
             </div>
           </div>
+
+          <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg border border-green-200">
+            <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
+            <div>
+              <h4 className="font-medium text-green-800">Intégration dossier de soins</h4>
+              <p className="text-sm text-green-700">API sécurisée pour intégration directe dans votre logiciel</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Intégration dossier de soins */}
+        <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+          <div className="flex items-center gap-2 mb-2">
+            <Database className="h-5 w-5 text-purple-600" />
+            <h4 className="font-medium text-purple-800">Intégration Dossier de Soins</h4>
+          </div>
+          <p className="text-sm text-purple-700 mb-3">
+            Intégrez DirectivesPlus directement dans votre système de dossiers de soins 
+            pour un accès transparent aux informations des patients.
+          </p>
+          <p className="text-xs text-purple-600">
+            <strong>API disponible :</strong> Documentation technique et support d'intégration 
+            fournis avec l'abonnement institutionnel.
+          </p>
         </div>
 
         {/* Actions d'abonnement */}

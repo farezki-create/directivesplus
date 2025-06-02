@@ -5,7 +5,6 @@ import ChatAssistant from "@/components/ChatAssistant";
 import { PageHeader } from "@/components/acces-institution/PageHeader";
 import { InstitutionalSubscriptionSection } from "@/components/acces-institution/InstitutionalSubscriptionSection";
 import { DirectivesAccessSection } from "@/components/acces-institution/DirectivesAccessSection";
-import { EmrIntegrationSection } from "@/components/acces-institution/EmrIntegrationSection";
 import { PalliativeCareSection } from "@/components/acces-institution/PalliativeCareSection";
 import { FeedbackSection } from "@/components/acces-institution/FeedbackSection";
 import { SecurityInfoSection } from "@/components/acces-institution/SecurityInfoSection";
@@ -25,8 +24,7 @@ const AccesInstitution = () => {
           {/* 2. Demande d'accès */}
           <DirectivesAccessSection />
           
-          {/* 3. Avantages et intégration */}
-          <EmrIntegrationSection />
+          {/* 3. Soins palliatifs */}
           <PalliativeCareSection />
           
           <FeedbackSection />
