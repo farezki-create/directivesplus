@@ -20,7 +20,7 @@ const HeroSection = () => {
           </div>
         </div>
         
-        <h3 className="text-5xl font-bold text-gray-900 mb-6">
+        <h3 className="text-4xl font-bold text-gray-900 mb-6">
           Vos volontés, <span className="text-directiveplus-600">protégées</span> et accessibles
         </h3>
         <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
