@@ -19,8 +19,8 @@ export const useRegisterWithSupabase = () => {
       // Nettoyer complètement l'état d'authentification
       await performGlobalSignOut();
 
-      // Configuration de l'URL de redirection pour la confirmation
-      const redirectUrl = `${window.location.origin}/auth`;
+      // Configuration de l'URL de redirection vers la page 2FA
+      const redirectUrl = `${window.location.origin}/auth/2fa?email_confirmed=true`;
       console.log("URL de redirection configurée:", redirectUrl);
 
       const { data, error } = await supabase.auth.signUp({
@@ -76,18 +76,8 @@ export const useRegisterWithSupabase = () => {
       if (data.user && !data.user.email_confirmed_at) {
         console.log("📧 Email de confirmation requis - envoi via Brevo");
         
-        // Stocker temporairement les données utilisateur pour le processus 2FA
-        if (data.user.id) {
-          localStorage.setItem('pending_2fa_user', JSON.stringify({
-            userId: data.user.id,
-            email: values.email,
-            firstName: values.firstName,
-            lastName: values.lastName
-          }));
-        }
-        
-        // Créer l'URL de confirmation avec un paramètre spécial pour déclencher le 2FA
-        const confirmationUrl = `${redirectUrl}?email_confirmed=true&user_id=${data.user.id}&type=signup`;
+        // L'URL de confirmation redirigera directement vers /auth/2fa avec l'ID utilisateur
+        const confirmationUrl = `${redirectUrl}&user_id=${data.user.id}`;
         
         // Appeler notre Edge Function Brevo pour envoyer l'email de confirmation
         try {
@@ -119,16 +109,19 @@ export const useRegisterWithSupabase = () => {
           success: true, 
           user: data.user, 
           needsEmailConfirmation: true,
-          message: "Inscription réussie ! Un email de confirmation a été envoyé à votre adresse. Cliquez sur le lien pour activer votre compte et finaliser l'inscription par SMS."
+          message: "Inscription réussie ! Un email de confirmation a été envoyé à votre adresse. Cliquez sur le lien pour continuer vers la vérification par SMS."
         };
       } else if (data.user?.email_confirmed_at) {
-        console.log("✅ Email déjà confirmé, inscription complète");
+        console.log("✅ Email déjà confirmé, redirection vers 2FA");
+        
+        // Rediriger directement vers la page 2FA
+        window.location.href = `/auth/2fa?user_id=${data.user.id}&email_confirmed=true`;
         
         return { 
           success: true, 
           user: data.user, 
           needsEmailConfirmation: false,
-          message: "Compte créé et activé avec succès !"
+          message: "Compte créé avec succès ! Redirection vers la vérification par SMS..."
         };
       }
 
