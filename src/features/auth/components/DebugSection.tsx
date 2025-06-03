@@ -2,12 +2,10 @@
 import { useState } from "react";
 import SMTPTestComponent from "@/components/debug/SMTPTestComponent";
 import EmailConfigDiagnostic from "@/components/debug/EmailConfigDiagnostic";
-import { BrevoEmailTest } from "@/components/debug/BrevoEmailTest";
 
 export const DebugSection = () => {
   const [showDebug, setShowDebug] = useState(false);
   const [showDiagnostic, setShowDiagnostic] = useState(false);
-  const [showBrevoTest, setShowBrevoTest] = useState(false);
 
   return (
     <>
@@ -27,13 +25,6 @@ export const DebugSection = () => {
           >
             {showDiagnostic ? "Masquer" : "🔧 Diagnostic"} Complet
           </button>
-          
-          <button
-            onClick={() => setShowBrevoTest(!showBrevoTest)}
-            className="text-sm text-green-600 hover:text-green-800 underline font-medium"
-          >
-            {showBrevoTest ? "Masquer" : "📧 Test"} Brevo
-          </button>
         </div>
         
         <a
@@ -44,13 +35,6 @@ export const DebugSection = () => {
         </a>
       </div>
 
-      {/* Composant de test Brevo */}
-      {showBrevoTest && (
-        <div className="mb-6">
-          <BrevoEmailTest />
-        </div>
-      )}
-
       {/* Composant de diagnostic principal */}
       {showDiagnostic && <EmailConfigDiagnostic />}
 
@@ -58,7 +42,7 @@ export const DebugSection = () => {
       {showDebug && <SMTPTestComponent />}
 
       {/* Retourner si on doit afficher le contenu principal */}
-      {showDiagnostic || showDebug || showBrevoTest ? null : true}
+      {showDiagnostic || showDebug ? null : true}
     </>
   );
 };
