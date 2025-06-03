@@ -45,7 +45,6 @@ function App() {
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
-              <Route path="/auth/confirm" element={<EmailConfirmation />} />
               <Route path="/auth/2fa" element={<TwoFactorAuth />} />
               <Route path="/auth-audit" element={<AuthAudit />} />
               <Route path="/auth-audit-complete" element={<AuthAuditComplete />} />

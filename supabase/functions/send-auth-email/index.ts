@@ -34,7 +34,8 @@ const handler = async (req: Request): Promise<Response> => {
     const baseUrl = req.headers.get('origin') || 'https://www.directivesplus.fr';
 
     if (type === 'confirmation') {
-      const confirmationUrl = `${baseUrl}/auth/confirm?token=${token}`;
+      // Créer un lien qui sera traité par Supabase Auth
+      const confirmationUrl = `${baseUrl}/auth#access_token=dummy&type=signup&redirect_to=${encodeURIComponent(baseUrl + '/auth/2fa')}`;
       subject = "Confirmez votre inscription - DirectivesPlus";
       html = `
         <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">

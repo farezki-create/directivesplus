@@ -19,12 +19,12 @@ export const useRegisterWithResend = () => {
       // Nettoyer complètement l'état d'authentification
       await performGlobalSignOut();
 
-      // Créer l'utilisateur SANS confirmation automatique
+      // Créer l'utilisateur avec confirmation automatique désactivée
       const { data, error } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/confirm`,
+          emailRedirectTo: `${window.location.origin}/auth`,
           data: {
             first_name: values.firstName,
             last_name: values.lastName,
@@ -70,16 +70,13 @@ export const useRegisterWithResend = () => {
       if (data.user) {
         console.log("✅ Utilisateur créé:", data.user.id);
         
-        // Générer un token de confirmation personnalisé
-        const confirmationToken = `${data.user.id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        
         // Envoyer l'email de confirmation via Resend
         try {
           const { data: emailData, error: emailError } = await supabase.functions.invoke('send-auth-email', {
             body: {
               email: values.email,
               type: 'confirmation',
-              token: confirmationToken,
+              token: data.user.id, // Utiliser l'ID utilisateur comme token
               firstName: values.firstName,
               lastName: values.lastName
             }
@@ -90,18 +87,10 @@ export const useRegisterWithResend = () => {
           if (emailData.success) {
             console.log("📧 Email de confirmation envoyé via Resend");
             
-            // Stocker le token temporairement (en production, utiliser la base de données)
-            localStorage.setItem(`confirmation_${confirmationToken}`, JSON.stringify({
-              userId: data.user.id,
-              email: values.email,
-              expires: Date.now() + (24 * 60 * 60 * 1000) // 24h
-            }));
-            
             return { 
               success: true, 
               user: data.user, 
               needsEmailConfirmation: true,
-              confirmationToken,
               message: "Inscription réussie ! Un email de confirmation a été envoyé à votre adresse. Cliquez sur le lien pour continuer vers la vérification SMS."
             };
           } else {
@@ -109,9 +98,6 @@ export const useRegisterWithResend = () => {
           }
         } catch (emailError: any) {
           console.error("❌ Erreur envoi email:", emailError);
-          
-          // Supprimer l'utilisateur si l'email n'a pas pu être envoyé
-          await supabase.auth.admin.deleteUser(data.user.id);
           
           toast({
             title: "Erreur d'envoi d'email",
