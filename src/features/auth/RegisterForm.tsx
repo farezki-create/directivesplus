@@ -7,7 +7,7 @@ import { PersonalInfoFields } from "./components/PersonalInfoFields";
 import { ContactInfoFields } from "./components/ContactInfoFields";
 import { PasswordFields } from "./components/PasswordFields";
 import { FormSubmitButton } from "./components/FormSubmitButton";
-import { useRegisterWithResend } from "./hooks/useRegisterWithResend";
+import { useRegisterComplete } from "./hooks/useRegisterComplete";
 import { useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle, Mail } from "lucide-react";
@@ -38,10 +38,10 @@ export const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
     },
   });
 
-  const { register, isLoading } = useRegisterWithResend();
+  const { register, isLoading } = useRegisterComplete();
 
   const handleSubmit = async (values: RegisterFormValues) => {
-    console.log("📝 Soumission du formulaire d'inscription");
+    console.log("📝 Soumission inscription avec téléphone:", values.phoneNumber);
     
     const result = await register(values);
     
@@ -76,13 +76,13 @@ export const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4" />
-                    <p>Un email de confirmation a été envoyé à votre adresse.</p>
+                    <p>Un email de confirmation et un SMS ont été envoyés.</p>
                   </div>
-                  <p className="text-sm">Consultez votre boîte de réception et cliquez sur le lien pour finaliser votre inscription.</p>
+                  <p className="text-sm">Consultez votre boîte de réception et vos SMS.</p>
                   <p className="text-xs text-green-600">Vérifiez vos spams si nécessaire.</p>
                 </div>
               ) : (
-                <p>Vous pouvez maintenant vous connecter à votre compte.</p>
+                <p>Vous pouvez maintenant vous connecter.</p>
               )}
             </div>
           </AlertDescription>
