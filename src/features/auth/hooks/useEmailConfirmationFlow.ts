@@ -1,20 +1,16 @@
 
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "@/hooks/use-toast";
 
 export const useEmailConfirmationFlow = () => {
   const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const location = useLocation();
-  const [showTwoFactorAuth, setShowTwoFactorAuth] = useState(false);
-  const [pendingUserId, setPendingUserId] = useState<string | null>(null);
   const [isProcessingConfirmation, setIsProcessingConfirmation] = useState(false);
 
   useEffect(() => {
-    // Vérifier si c'est une confirmation d'email standard (fragments d'URL Supabase)
+    // Vérifier si c'est une confirmation d'email (fragments d'URL Supabase)
     const fragment = location.hash;
     const fragmentParams = new URLSearchParams(fragment.substring(1));
     const fragmentAccessToken = fragmentParams.get('access_token');
@@ -28,77 +24,26 @@ export const useEmailConfirmationFlow = () => {
       user: user?.id
     });
 
-    // Si c'est une confirmation Supabase standard, rediriger vers la page 2FA
-    if (fragmentAccessToken && fragmentType === 'signup') {
+    // Si c'est une confirmation Supabase et on est sur /auth
+    if (fragmentAccessToken && fragmentType === 'signup' && location.pathname === '/auth') {
       console.log("✅ Confirmation Supabase détectée - redirection vers /auth/2fa");
       
-      // Nettoyer l'URL
-      window.history.replaceState({}, document.title, '/auth');
+      // Nettoyer l'URL pour éviter les boucles
+      window.history.replaceState({}, document.title, '/auth/2fa');
       
-      // Démarrer un processus de vérification de session
-      setIsProcessingConfirmation(true);
-      
-      setTimeout(() => {
-        // Rediriger vers la page 2FA avec l'ID utilisateur si disponible
-        if (user?.id) {
-          window.location.href = `/auth/2fa?user_id=${user.id}&email_confirmed=true`;
-        } else {
-          // Attendre encore un peu pour que l'auth se stabilise
-          setTimeout(() => {
-            if (user?.id) {
-              window.location.href = `/auth/2fa?user_id=${user.id}&email_confirmed=true`;
-            } else {
-              toast({
-                title: "Erreur",
-                description: "Problème lors de la confirmation. Veuillez réessayer.",
-                variant: "destructive"
-              });
-              navigate('/auth', { replace: true });
-            }
-            setIsProcessingConfirmation(false);
-          }, 2000);
-        }
-      }, 1000);
-      
+      // Rediriger vers la page 2FA
+      navigate('/auth/2fa', { replace: true });
       return;
     }
 
-    // Si l'utilisateur est authentifié et pas en cours de traitement
-    if (isAuthenticated && !isProcessingConfirmation) {
+    // Si l'utilisateur est authentifié et pas en cours de traitement sur /auth
+    if (isAuthenticated && !isProcessingConfirmation && location.pathname === '/auth') {
       console.log("🔄 Utilisateur déjà authentifié, redirection vers /rediger");
       navigate('/rediger', { replace: true });
     }
-  }, [searchParams, location.hash, isAuthenticated, user, navigate, isProcessingConfirmation]);
-
-  const handleTwoFactorSuccess = async () => {
-    console.log("✅ 2FA validée - finalisation de l'inscription");
-    setShowTwoFactorAuth(false);
-    setPendingUserId(null);
-    
-    toast({
-      title: "Inscription finalisée !",
-      description: "Votre compte a été créé avec succès. Bienvenue !",
-      duration: 4000
-    });
-    
-    // Forcer une redirection complète
-    window.location.href = '/rediger';
-  };
-
-  const handleTwoFactorCancel = () => {
-    console.log("❌ 2FA annulée");
-    setShowTwoFactorAuth(false);
-    setPendingUserId(null);
-    setIsProcessingConfirmation(false);
-    
-    navigate('/auth', { replace: true });
-  };
+  }, [location.hash, location.pathname, isAuthenticated, user, navigate, isProcessingConfirmation]);
 
   return {
-    showTwoFactorAuth,
-    pendingUserId,
-    handleTwoFactorSuccess,
-    handleTwoFactorCancel,
     isProcessingConfirmation
   };
 };

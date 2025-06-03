@@ -2,43 +2,43 @@
 import React from 'react';
 import Header from "@/components/Header";
 import { TwoFactorAuthView } from "@/features/auth/components/TwoFactorAuthView";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 
 const TwoFactorAuth = () => {
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [userId, setUserId] = useState<string | null>(null);
+  const { user, isAuthenticated, isLoading } = useAuth();
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    const userIdParam = searchParams.get('user_id');
-    const emailConfirmed = searchParams.get('email_confirmed');
+    console.log("🔐 Page 2FA - État auth:", { isAuthenticated, userId: user?.id, isLoading });
     
-    console.log("🔐 Page 2FA - Paramètres reçus:", { userIdParam, emailConfirmed });
-    
-    if (!userIdParam) {
-      console.log("❌ Pas d'ID utilisateur, redirection vers /auth");
+    if (isLoading) {
+      return;
+    }
+
+    if (!isAuthenticated || !user) {
+      console.log("❌ Pas d'utilisateur authentifié, redirection vers /auth");
       toast({
         title: "Erreur",
-        description: "Session expirée. Veuillez vous reconnecter.",
+        description: "Vous devez être connecté pour accéder à cette page.",
         variant: "destructive"
       });
       navigate('/auth', { replace: true });
       return;
     }
     
-    setUserId(userIdParam);
-    
-    // Nettoyer l'URL
-    window.history.replaceState({}, document.title, '/auth/2fa');
-  }, [searchParams, navigate]);
+    console.log("✅ Utilisateur authentifié trouvé:", user.id);
+    setIsReady(true);
+  }, [isAuthenticated, user, isLoading, navigate]);
 
   const handleTwoFactorSuccess = () => {
     console.log("✅ 2FA réussie - redirection vers /rediger");
     toast({
-      title: "Inscription finalisée !",
-      description: "Votre compte a été créé avec succès. Bienvenue !",
+      title: "Vérification réussie !",
+      description: "Votre compte a été sécurisé avec succès. Bienvenue !",
       duration: 4000
     });
     
@@ -51,12 +51,12 @@ const TwoFactorAuth = () => {
     navigate('/auth', { replace: true });
   };
 
-  if (!userId) {
+  if (isLoading || !isReady) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-directiveplus-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Vérification des paramètres...</p>
+          <p className="mt-4 text-gray-600">Vérification de la session...</p>
         </div>
       </div>
     );
@@ -69,7 +69,7 @@ const TwoFactorAuth = () => {
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-md mx-auto">
           <TwoFactorAuthView
-            userId={userId}
+            userId={user.id}
             onVerificationComplete={handleTwoFactorSuccess}
             onBack={handleTwoFactorCancel}
           />

@@ -13,15 +13,15 @@ export const useRegisterWithSupabase = () => {
     setIsLoading(true);
     
     try {
-      console.log("🔐 Inscription avec confirmation email obligatoire");
+      console.log("🔐 Inscription avec confirmation email standard Supabase");
       console.log("Email à inscrire:", values.email);
       
       // Nettoyer complètement l'état d'authentification
       await performGlobalSignOut();
 
-      // Configuration de l'URL de redirection vers la page 2FA
-      const redirectUrl = `${window.location.origin}/auth/2fa?email_confirmed=true`;
-      console.log("URL de redirection configurée:", redirectUrl);
+      // Configuration simple avec redirection vers /auth/2fa après confirmation
+      const redirectUrl = `${window.location.origin}/auth/2fa`;
+      console.log("URL de redirection après confirmation:", redirectUrl);
 
       const { data, error } = await supabase.auth.signUp({
         email: values.email,
@@ -74,54 +74,25 @@ export const useRegisterWithSupabase = () => {
       console.log("Email confirmé automatiquement:", !!data.user?.email_confirmed_at);
 
       if (data.user && !data.user.email_confirmed_at) {
-        console.log("📧 Email de confirmation requis - envoi via Brevo");
-        
-        // L'URL de confirmation redirigera directement vers /auth/2fa avec l'ID utilisateur
-        const confirmationUrl = `${redirectUrl}&user_id=${data.user.id}`;
-        
-        // Appeler notre Edge Function Brevo pour envoyer l'email de confirmation
-        try {
-          console.log("🚀 Envoi email de confirmation via Brevo...");
-          
-          const { data: brevoResult, error: brevoError } = await supabase.functions.invoke('send-auth-email', {
-            body: {
-              email: values.email,
-              type: 'signup',
-              confirmation_url: confirmationUrl,
-              user_data: {
-                first_name: values.firstName,
-                last_name: values.lastName
-              }
-            }
-          });
-
-          if (brevoError) {
-            console.error("❌ Erreur Edge Function Brevo:", brevoError);
-          } else {
-            console.log("✅ Email de confirmation envoyé via Brevo:", brevoResult);
-          }
-          
-        } catch (brevoErr) {
-          console.error("💥 Erreur lors de l'appel Edge Function:", brevoErr);
-        }
+        console.log("📧 Email de confirmation envoyé - attente de confirmation");
         
         return { 
           success: true, 
           user: data.user, 
           needsEmailConfirmation: true,
-          message: "Inscription réussie ! Un email de confirmation a été envoyé à votre adresse. Cliquez sur le lien pour continuer vers la vérification par SMS."
+          message: "Inscription réussie ! Un email de confirmation a été envoyé à votre adresse. Cliquez sur le lien pour continuer vers la vérification SMS."
         };
       } else if (data.user?.email_confirmed_at) {
         console.log("✅ Email déjà confirmé, redirection vers 2FA");
         
         // Rediriger directement vers la page 2FA
-        window.location.href = `/auth/2fa?user_id=${data.user.id}&email_confirmed=true`;
+        window.location.href = '/auth/2fa';
         
         return { 
           success: true, 
           user: data.user, 
           needsEmailConfirmation: false,
-          message: "Compte créé avec succès ! Redirection vers la vérification par SMS..."
+          message: "Compte créé avec succès ! Redirection vers la vérification SMS..."
         };
       }
 

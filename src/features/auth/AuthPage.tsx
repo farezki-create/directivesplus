@@ -9,7 +9,6 @@ import { useAuthRedirection } from "./hooks/useAuthRedirection";
 import { useEmailConfirmationFlow } from "./hooks/useEmailConfirmationFlow";
 import { LoadingView } from "./components/LoadingView";
 import { DebugSection } from "./components/DebugSection";
-import { TwoFactorAuthView } from "./components/TwoFactorAuthView";
 import { useAuth } from "@/contexts/AuthContext";
 
 const AuthPage = () => {
@@ -31,35 +30,12 @@ const AuthPage = () => {
   } = useAuthRedirection();
 
   const {
-    showTwoFactorAuth,
-    pendingUserId,
-    handleTwoFactorSuccess,
-    handleTwoFactorCancel,
     isProcessingConfirmation
   } = useEmailConfirmationFlow();
 
   // État de chargement (incluant le traitement de confirmation)
   if (isLoading || isProcessingConfirmation) {
     return <LoadingView />;
-  }
-
-  // Page de vérification 2FA par SMS après confirmation email
-  if (showTwoFactorAuth && pendingUserId) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Header />
-        
-        <main className="container mx-auto px-4 py-8">
-          <div className="max-w-md mx-auto">
-            <TwoFactorAuthView
-              userId={pendingUserId}
-              onVerificationComplete={handleTwoFactorSuccess}
-              onBack={handleTwoFactorCancel}
-            />
-          </div>
-        </main>
-      </div>
-    );
   }
 
   // Page mot de passe oublié
