@@ -13,13 +13,13 @@ export const useRegisterWithSupabase = () => {
     setIsLoading(true);
     
     try {
-      console.log("🔐 Inscription avec confirmation email standard Supabase");
+      console.log("🔐 Inscription avec système SMTP standard Supabase");
       console.log("Email à inscrire:", values.email);
       
       // Nettoyer complètement l'état d'authentification
       await performGlobalSignOut();
 
-      // Configuration simple avec redirection vers /auth/2fa après confirmation
+      // Configuration standard Supabase avec redirection vers /auth/2fa après confirmation
       const redirectUrl = `${window.location.origin}/auth/2fa`;
       console.log("URL de redirection après confirmation:", redirectUrl);
 
@@ -74,7 +74,7 @@ export const useRegisterWithSupabase = () => {
       console.log("Email confirmé automatiquement:", !!data.user?.email_confirmed_at);
 
       if (data.user && !data.user.email_confirmed_at) {
-        console.log("📧 Email de confirmation envoyé - attente de confirmation");
+        console.log("📧 Email de confirmation envoyé via système SMTP Supabase");
         
         return { 
           success: true, 
