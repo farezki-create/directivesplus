@@ -79,26 +79,39 @@ export const useRegisterWithSupabase = () => {
         console.log("📧 Email de confirmation requis pour:", data.user.email);
         console.log("Confirmation sent at:", data.user.confirmation_sent_at);
         
-        // Vérifier si l'email a été envoyé
-        if (data.user.confirmation_sent_at) {
-          console.log("✅ Email de confirmation envoyé avec succès à", data.user.confirmation_sent_at);
+        // Appeler directement notre Edge Function Brevo pour envoyer l'email
+        try {
+          console.log("🚀 Envoi direct via Edge Function Brevo...");
           
-          return { 
-            success: true, 
-            user: data.user, 
-            needsEmailConfirmation: true,
-            message: "Inscription réussie ! Un email de confirmation a été envoyé à votre adresse."
-          };
-        } else {
-          console.warn("⚠️ Utilisateur créé mais pas d'email de confirmation envoyé");
+          const { data: brevoResult, error: brevoError } = await supabase.functions.invoke('send-auth-email', {
+            body: {
+              email: values.email,
+              type: 'signup',
+              confirmation_url: redirectUrl,
+              user_data: {
+                first_name: values.firstName,
+                last_name: values.lastName
+              }
+            }
+          });
+
+          if (brevoError) {
+            console.error("❌ Erreur Edge Function Brevo:", brevoError);
+            console.log("⚠️ Supabase dit avoir envoyé l'email, mais notre Edge Function a échoué");
+          } else {
+            console.log("✅ Edge Function Brevo réussie:", brevoResult);
+          }
           
-          return { 
-            success: true, 
-            user: data.user, 
-            needsEmailConfirmation: true,
-            message: "Compte créé mais problème d'envoi d'email. Contactez le support."
-          };
+        } catch (brevoErr) {
+          console.error("💥 Erreur lors de l'appel Edge Function:", brevoErr);
         }
+        
+        return { 
+          success: true, 
+          user: data.user, 
+          needsEmailConfirmation: true,
+          message: "Inscription réussie ! Un email de confirmation a été envoyé à votre adresse."
+        };
       } else if (data.user?.email_confirmed_at) {
         console.log("✅ Email déjà confirmé, inscription complète");
         
