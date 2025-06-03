@@ -2,87 +2,126 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { RegisterFormValues } from "../schemas";
-
-interface RegisterResult {
-  success: boolean;
-  message: string;
-  needsEmailConfirmation: boolean;
-  user?: any;
-}
+import { z } from "zod";
+import { registerFormSchema } from "../schemas";
 
 export const useRegisterWithSupabase = () => {
   const [isLoading, setIsLoading] = useState(false);
 
-  const register = async (values: RegisterFormValues): Promise<RegisterResult> => {
+  const register = async (values: z.infer<typeof registerFormSchema>) => {
     setIsLoading(true);
     
     try {
       console.log("🔐 Inscription avec Supabase standard");
+      console.log("Email à inscrire:", values.email);
       
-      // Inscription avec Supabase Auth standard
+      // Nettoyer toute session existante
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+      } catch (e) {
+        console.log("Nettoyage préventif ignoré:", e);
+      }
+
+      // Configuration explicite de l'URL de redirection
+      const redirectUrl = `${window.location.origin}/auth?confirmed=true`;
+      console.log("URL de redirection configurée:", redirectUrl);
+
       const { data, error } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth`,
+          emailRedirectTo: redirectUrl,
           data: {
             first_name: values.firstName,
             last_name: values.lastName,
             birth_date: values.birthDate,
+            phone_number: values.phoneNumber,
             address: values.address,
-            phone_number: values.phoneNumber
-          }
+            gender: values.gender,
+          },
         }
       });
 
+      console.log("Réponse Supabase signUp:", { data, error });
+
       if (error) {
-        console.error("❌ Erreur Supabase Auth:", error);
+        console.error("❌ Erreur d'inscription:", error);
         
-        let errorMessage = "Erreur lors de l'inscription";
+        let errorMessage = "Une erreur est survenue lors de l'inscription";
         
-        if (error.message?.includes("email") && error.message?.includes("already")) {
-          errorMessage = "Cette adresse email est déjà utilisée";
-        } else if (error.message?.includes("password")) {
-          errorMessage = "Le mot de passe ne respecte pas les critères requis";
-        } else if (error.message?.includes("rate limit") || error.message?.includes("email_send_rate_limit")) {
-          errorMessage = "Trop de tentatives d'envoi d'email. Veuillez attendre quelques minutes avant de réessayer.";
+        if (error.message?.includes('already registered') || error.message?.includes('already been registered')) {
+          errorMessage = "Cette adresse email est déjà utilisée. Essayez de vous connecter ou utilisez une autre adresse.";
+        } else if (error.message?.includes('password')) {
+          errorMessage = "Le mot de passe ne respecte pas les critères de sécurité requis.";
+        } else if (error.message?.includes('email')) {
+          errorMessage = "Format d'email invalide. Veuillez vérifier votre adresse email.";
+        } else if (error.message?.includes('weak password')) {
+          errorMessage = "Mot de passe trop faible. Utilisez au moins 8 caractères avec majuscules, minuscules et chiffres.";
         }
         
-        return {
-          success: false,
-          message: errorMessage,
+        toast({
+          title: "Erreur d'inscription",
+          description: errorMessage,
+          variant: "destructive",
+          duration: 8000
+        });
+        
+        return { 
+          success: false, 
+          error: errorMessage,
           needsEmailConfirmation: false
         };
       }
 
-      if (data.user) {
-        console.log("✅ Utilisateur créé:", data.user.id);
+      console.log("✅ Utilisateur créé:", data.user?.id);
+
+      if (data.user && !data.user.email_confirmed_at) {
+        console.log("📧 Email de confirmation requis pour:", data.user.email);
+        console.log("Confirmation sent at:", data.user.confirmation_sent_at);
         
-        const needsConfirmation = !data.user.email_confirmed_at;
+        // Vérifier si l'email a été envoyé
+        if (data.user.confirmation_sent_at) {
+          console.log("✅ Email de confirmation envoyé avec succès à", data.user.confirmation_sent_at);
+          
+          return { 
+            success: true, 
+            user: data.user, 
+            needsEmailConfirmation: true,
+            message: "Inscription réussie ! Un email de confirmation a été envoyé à votre adresse."
+          };
+        } else {
+          console.warn("⚠️ Utilisateur créé mais pas d'email de confirmation envoyé");
+          
+          return { 
+            success: true, 
+            user: data.user, 
+            needsEmailConfirmation: true,
+            message: "Compte créé mais problème d'envoi d'email. Contactez le support."
+          };
+        }
+      } else if (data.user?.email_confirmed_at) {
+        console.log("✅ Email déjà confirmé, inscription complète");
         
-        return {
-          success: true,
-          message: needsConfirmation 
-            ? "Inscription réussie ! Un email de confirmation a été envoyé à votre adresse."
-            : "Inscription réussie ! Vous pouvez maintenant vous connecter.",
-          needsEmailConfirmation: needsConfirmation,
-          user: data.user
+        return { 
+          success: true, 
+          user: data.user, 
+          needsEmailConfirmation: false,
+          message: "Compte créé et activé avec succès !"
         };
       }
 
-      return {
-        success: false,
-        message: "Erreur inconnue lors de l'inscription",
-        needsEmailConfirmation: false
+      return { 
+        success: true, 
+        user: data.user,
+        needsEmailConfirmation: false,
+        message: "Inscription réussie !"
       };
-
-    } catch (error: any) {
-      console.error("💥 Erreur inscription:", error);
       
-      return {
-        success: false,
-        message: "Erreur technique lors de l'inscription",
+    } catch (error: any) {
+      console.error("❌ Erreur lors de l'inscription:", error);
+      return { 
+        success: false, 
+        error: error.message,
         needsEmailConfirmation: false
       };
     } finally {
@@ -90,5 +129,8 @@ export const useRegisterWithSupabase = () => {
     }
   };
 
-  return { register, isLoading };
+  return {
+    register,
+    isLoading,
+  };
 };

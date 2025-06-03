@@ -33,7 +33,7 @@ image_transformation = {enabled = true}
 enabled = true
 port = 54326
 site_url = "https://www.directivesplus.fr"
-additional_redirect_urls = ["https://www.directivesplus.fr", "http://localhost:3000"]
+additional_redirect_urls = ["https://www.directivesplus.fr", "http://localhost:3000", "https://24c30559-a746-463d-805e-d2330d3a13f4.lovableproject.com"]
 jwt_expiry = 3600
 refresh_token_rotation_enabled = true
 security_update_password_require_reauthentication = true
@@ -42,11 +42,13 @@ security_update_password_require_reauthentication = true
 enable_signup = true
 double_confirm_changes = true
 enable_confirmations = true
-
-# Hook désactivé pour permettre l'envoi d'emails standard Supabase
-# [auth.hook.send_email]
-# enabled = true
-# uri = "pg-functions://postgres/send_auth_email_via_brevo"
+template = {
+  invite = "{{ .ConfirmationURL }}",
+  confirmation = "{{ .ConfirmationURL }}",
+  recovery = "{{ .ConfirmationURL }}",
+  magic_link = "{{ .ConfirmationURL }}",
+  email_change = "{{ .ConfirmationURL }}"
+}
 
 [edge_functions]
 enabled = true
