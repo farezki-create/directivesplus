@@ -1,9 +1,9 @@
+
 import React from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import Auth from './pages/Auth';
 import TwoFactorAuth from './pages/TwoFactorAuth';
-import EmailConfirmation from './pages/EmailConfirmation';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './contexts/AuthContext';
 import SuiviPalliatif from './pages/SuiviPalliatif';

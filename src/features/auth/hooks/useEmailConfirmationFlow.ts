@@ -9,6 +9,7 @@ export const useEmailConfirmationFlow = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isProcessingConfirmation, setIsProcessingConfirmation] = useState(false);
+  const [hasProcessedConfirmation, setHasProcessedConfirmation] = useState(false);
 
   useEffect(() => {
     // Vérifier si c'est une confirmation d'email (fragments d'URL Supabase)
@@ -25,13 +26,16 @@ export const useEmailConfirmationFlow = () => {
       redirectTo,
       isAuthenticated,
       user: user?.id,
-      isLoading
+      isLoading,
+      hasProcessedConfirmation,
+      isProcessingConfirmation
     });
 
-    // Si c'est une confirmation Supabase et on est sur /auth
-    if (fragmentType === 'signup' && location.pathname === '/auth') {
+    // Si c'est une confirmation Supabase et on est sur /auth et pas encore traité
+    if (fragmentType === 'signup' && location.pathname === '/auth' && !hasProcessedConfirmation && !isProcessingConfirmation) {
       console.log("✅ Confirmation Supabase détectée - traitement en cours...");
       setIsProcessingConfirmation(true);
+      setHasProcessedConfirmation(true);
       
       toast({
         title: "Email confirmé !",
@@ -48,12 +52,12 @@ export const useEmailConfirmationFlow = () => {
       return;
     }
 
-    // Si l'utilisateur est authentifié et pas en cours de traitement sur /auth
-    if (isAuthenticated && !isProcessingConfirmation && location.pathname === '/auth' && !fragmentAccessToken) {
+    // Si l'utilisateur est authentifié et pas en cours de traitement sur /auth et pas de fragment de confirmation
+    if (isAuthenticated && !isProcessingConfirmation && location.pathname === '/auth' && !fragmentAccessToken && !hasProcessedConfirmation) {
       console.log("🔄 Utilisateur déjà authentifié, redirection vers /rediger");
       navigate('/rediger', { replace: true });
     }
-  }, [location.hash, location.pathname, isAuthenticated, user, navigate, isProcessingConfirmation, isLoading]);
+  }, [location.hash, location.pathname, isAuthenticated, user, navigate, isProcessingConfirmation, isLoading, hasProcessedConfirmation]);
 
   return {
     isProcessingConfirmation
