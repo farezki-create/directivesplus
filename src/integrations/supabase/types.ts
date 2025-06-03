@@ -2190,6 +2190,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      bytea_to_text: {
+        Args: { data: string }
+        Returns: string
+      }
       check_access_code_rate_limit: {
         Args: {
           p_ip_address: unknown
@@ -2401,6 +2405,57 @@ export type Database = {
         }
         Returns: boolean
       }
+      http: {
+        Args: { request: Database["public"]["CompositeTypes"]["http_request"] }
+        Returns: Database["public"]["CompositeTypes"]["http_response"]
+      }
+      http_delete: {
+        Args:
+          | { uri: string }
+          | { uri: string; content: string; content_type: string }
+        Returns: Database["public"]["CompositeTypes"]["http_response"]
+      }
+      http_get: {
+        Args: { uri: string } | { uri: string; data: Json }
+        Returns: Database["public"]["CompositeTypes"]["http_response"]
+      }
+      http_head: {
+        Args: { uri: string }
+        Returns: Database["public"]["CompositeTypes"]["http_response"]
+      }
+      http_header: {
+        Args: { field: string; value: string }
+        Returns: Database["public"]["CompositeTypes"]["http_header"]
+      }
+      http_list_curlopt: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          curlopt: string
+          value: string
+        }[]
+      }
+      http_patch: {
+        Args: { uri: string; content: string; content_type: string }
+        Returns: Database["public"]["CompositeTypes"]["http_response"]
+      }
+      http_post: {
+        Args:
+          | { uri: string; content: string; content_type: string }
+          | { uri: string; data: Json }
+        Returns: Database["public"]["CompositeTypes"]["http_response"]
+      }
+      http_put: {
+        Args: { uri: string; content: string; content_type: string }
+        Returns: Database["public"]["CompositeTypes"]["http_response"]
+      }
+      http_reset_curlopt: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      http_set_curlopt: {
+        Args: { curlopt: string; value: string }
+        Returns: boolean
+      }
       institution_has_patient_access: {
         Args: {
           p_institution_email: string
@@ -2491,9 +2546,23 @@ export type Database = {
           access_granted: boolean
         }[]
       }
+      send_auth_email_via_brevo: {
+        Args: {
+          email: string
+          type: string
+          confirmation_url?: string
+          recovery_url?: string
+          user_data?: Json
+        }
+        Returns: undefined
+      }
       send_sms_code: {
         Args: { phone: string }
         Returns: undefined
+      }
+      text_to_bytea: {
+        Args: { data: string }
+        Returns: string
       }
       update_sms_status: {
         Args: {
@@ -2503,6 +2572,10 @@ export type Database = {
           p_error_message?: string
         }
         Returns: undefined
+      }
+      urlencode: {
+        Args: { data: Json } | { string: string } | { string: string }
+        Returns: string
       }
       validate_and_use_access_code: {
         Args: {
@@ -2641,7 +2714,23 @@ export type Database = {
       app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
-      [_ in never]: never
+      http_header: {
+        field: string | null
+        value: string | null
+      }
+      http_request: {
+        method: unknown | null
+        uri: string | null
+        headers: Database["public"]["CompositeTypes"]["http_header"][] | null
+        content_type: string | null
+        content: string | null
+      }
+      http_response: {
+        status: number | null
+        content_type: string | null
+        headers: Database["public"]["CompositeTypes"]["http_header"][] | null
+        content: string | null
+      }
     }
   }
 }
