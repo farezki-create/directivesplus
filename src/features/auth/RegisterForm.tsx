@@ -41,12 +41,12 @@ export const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
   const { register, isLoading } = useRegisterWithResend();
 
   const handleSubmit = async (values: RegisterFormValues) => {
-    console.log("📝 Soumission du formulaire d'inscription avec Resend + Twilio");
+    console.log("📝 Soumission du formulaire d'inscription");
     
     const result = await register(values);
     
     if (result.success) {
-      console.log("✅ Inscription réussie avec Resend:", result);
+      console.log("✅ Inscription réussie:", result);
       
       form.reset();
       
@@ -71,15 +71,15 @@ export const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
           <CheckCircle className="h-4 w-4 text-green-600" />
           <AlertDescription className="text-green-800">
             <div className="space-y-2">
-              <p className="font-medium">Inscription réussie avec Resend !</p>
+              <p className="font-medium">Inscription réussie !</p>
               {registrationSuccess.needsEmailConfirmation ? (
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4" />
-                    <p>Un email de confirmation a été envoyé via Resend à votre adresse.</p>
+                    <p>Un email de confirmation a été envoyé à votre adresse.</p>
                   </div>
-                  <p className="text-sm">Consultez votre boîte de réception et cliquez sur le lien pour continuer vers la vérification SMS Twilio.</p>
-                  <p className="text-xs text-green-600">Email envoyé via Resend - Vérifiez vos spams si nécessaire.</p>
+                  <p className="text-sm">Consultez votre boîte de réception et cliquez sur le lien pour finaliser votre inscription.</p>
+                  <p className="text-xs text-green-600">Vérifiez vos spams si nécessaire.</p>
                 </div>
               ) : (
                 <p>Vous pouvez maintenant vous connecter à votre compte.</p>
@@ -105,8 +105,8 @@ export const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
       <PasswordFields form={form} />
       <FormSubmitButton 
         loading={isLoading} 
-        label="S'inscrire avec Resend + Twilio" 
-        loadingLabel="Inscription via Resend..." 
+        label="S'inscrire" 
+        loadingLabel="Inscription en cours..." 
       />
     </FormLayout>
   );

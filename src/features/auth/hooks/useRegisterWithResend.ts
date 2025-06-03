@@ -13,7 +13,7 @@ export const useRegisterWithResend = () => {
     setIsLoading(true);
     
     try {
-      console.log("🔐 Inscription avec Resend + Twilio");
+      console.log("🔐 Inscription avec Resend");
       console.log("Email à inscrire:", values.email);
       
       // Nettoyer complètement l'état d'authentification
@@ -70,16 +70,13 @@ export const useRegisterWithResend = () => {
       if (data.user) {
         console.log("✅ Utilisateur créé:", data.user.id);
         
-        // Envoyer l'email de confirmation via Resend en utilisant le token de confirmation
+        // Envoyer l'email de confirmation via Resend
         try {
-          // Récupérer le token de confirmation depuis la réponse
-          const confirmationToken = data.user.email_confirmed_at ? null : data.user.confirmation_token;
-          
           const { data: emailData, error: emailError } = await supabase.functions.invoke('send-auth-email', {
             body: {
               email: values.email,
               type: 'confirmation',
-              token: confirmationToken || data.user.id, // Utiliser le token ou l'ID utilisateur
+              token: data.user.id, // Utiliser l'ID utilisateur au lieu du token
               firstName: values.firstName,
               lastName: values.lastName
             }
@@ -94,7 +91,7 @@ export const useRegisterWithResend = () => {
               success: true, 
               user: data.user, 
               needsEmailConfirmation: true,
-              message: "Inscription réussie ! Un email de confirmation a été envoyé à votre adresse. Cliquez sur le lien pour continuer vers la vérification SMS."
+              message: "Inscription réussie ! Un email de confirmation a été envoyé à votre adresse. Cliquez sur le lien pour finaliser votre inscription."
             };
           } else {
             throw new Error(emailData.error || "Erreur lors de l'envoi de l'email");

@@ -19,14 +19,12 @@ export const useEmailConfirmationFlow = () => {
     const fragmentAccessToken = fragmentParams.get('access_token');
     const fragmentRefreshToken = fragmentParams.get('refresh_token');
     const fragmentType = fragmentParams.get('type');
-    const redirectTo = fragmentParams.get('redirect_to');
     
     console.log("🔍 Vérification confirmation email:", {
       fragment: location.hash,
       fragmentAccessToken: !!fragmentAccessToken,
       fragmentRefreshToken: !!fragmentRefreshToken,
       fragmentType,
-      redirectTo,
       isAuthenticated,
       user: user?.id,
       isLoading,
@@ -66,13 +64,13 @@ export const useEmailConfirmationFlow = () => {
             
             toast({
               title: "Email confirmé !",
-              description: "Votre adresse email a été confirmée. Redirection vers la vérification SMS...",
+              description: "Votre adresse email a été confirmée. Redirection vers votre espace...",
             });
             
-            // Nettoyer l'URL et rediriger vers 2FA après un délai
+            // Nettoyer l'URL et rediriger vers /rediger après un délai
             setTimeout(() => {
-              window.history.replaceState({}, document.title, '/auth/2fa');
-              navigate('/auth/2fa', { replace: true });
+              window.history.replaceState({}, document.title, '/rediger');
+              navigate('/rediger', { replace: true });
               setIsProcessingConfirmation(false);
             }, 2000);
           }
