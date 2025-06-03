@@ -7,10 +7,10 @@ import { PersonalInfoFields } from "./components/PersonalInfoFields";
 import { ContactInfoFields } from "./components/ContactInfoFields";
 import { PasswordFields } from "./components/PasswordFields";
 import { FormSubmitButton } from "./components/FormSubmitButton";
-import { useRegisterWithSupabase } from "./hooks/useRegisterWithSupabase";
+import { useRegisterWithResend } from "./hooks/useRegisterWithResend";
 import { useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, Mail } from "lucide-react";
 
 interface RegisterFormProps {
   onSuccess?: () => void;
@@ -38,15 +38,15 @@ export const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
     },
   });
 
-  const { register, isLoading } = useRegisterWithSupabase();
+  const { register, isLoading } = useRegisterWithResend();
 
   const handleSubmit = async (values: RegisterFormValues) => {
-    console.log("📝 Soumission du formulaire d'inscription avec Supabase standard");
+    console.log("📝 Soumission du formulaire d'inscription avec Resend + Twilio");
     
     const result = await register(values);
     
     if (result.success) {
-      console.log("✅ Inscription réussie:", result);
+      console.log("✅ Inscription réussie avec Resend:", result);
       
       form.reset();
       
@@ -71,12 +71,15 @@ export const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
           <CheckCircle className="h-4 w-4 text-green-600" />
           <AlertDescription className="text-green-800">
             <div className="space-y-2">
-              <p className="font-medium">Inscription réussie !</p>
+              <p className="font-medium">Inscription réussie avec Resend !</p>
               {registrationSuccess.needsEmailConfirmation ? (
                 <div className="space-y-1">
-                  <p>Un email de confirmation a été envoyé à votre adresse.</p>
-                  <p className="text-sm">Consultez votre boîte de réception et cliquez sur le lien pour activer votre compte.</p>
-                  <p className="text-xs text-green-600">N'oubliez pas de vérifier vos spams si vous ne trouvez pas l'email.</p>
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4" />
+                    <p>Un email de confirmation a été envoyé via Resend à votre adresse.</p>
+                  </div>
+                  <p className="text-sm">Consultez votre boîte de réception et cliquez sur le lien pour continuer vers la vérification SMS Twilio.</p>
+                  <p className="text-xs text-green-600">Email envoyé via Resend - Vérifiez vos spams si nécessaire.</p>
                 </div>
               ) : (
                 <p>Vous pouvez maintenant vous connecter à votre compte.</p>
@@ -102,8 +105,8 @@ export const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
       <PasswordFields form={form} />
       <FormSubmitButton 
         loading={isLoading} 
-        label="S'inscrire" 
-        loadingLabel="Inscription en cours..." 
+        label="S'inscrire avec Resend + Twilio" 
+        loadingLabel="Inscription via Resend..." 
       />
     </FormLayout>
   );

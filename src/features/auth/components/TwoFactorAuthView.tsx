@@ -60,9 +60,9 @@ export const TwoFactorAuthView: React.FC<TwoFactorAuthViewProps> = ({
     setLoading(true);
 
     try {
-      console.log("📱 Envoi du code SMS via Edge Function...");
+      console.log("📱 Envoi du code SMS via Twilio...");
       
-      const { data, error } = await supabase.functions.invoke('send-sms-code', {
+      const { data, error } = await supabase.functions.invoke('send-twilio-sms', {
         body: {
           phoneNumber: phoneNumber.replace(/\s/g, ''),
           userId: userId
@@ -72,7 +72,7 @@ export const TwoFactorAuthView: React.FC<TwoFactorAuthViewProps> = ({
       if (error) throw error;
 
       if (data.success) {
-        console.log("✅ SMS envoyé avec succès");
+        console.log("✅ SMS envoyé avec succès via Twilio");
         setSentCode(data.code); // Pour les tests - à supprimer en production
         setStep('code');
         setCountdown(300); // 5 minutes
@@ -80,16 +80,16 @@ export const TwoFactorAuthView: React.FC<TwoFactorAuthViewProps> = ({
         
         toast({
           title: "Code envoyé",
-          description: "Un code de vérification a été envoyé à votre téléphone"
+          description: "Un code de vérification a été envoyé à votre téléphone via Twilio"
         });
       } else {
         throw new Error(data.error || 'Erreur lors de l\'envoi du SMS');
       }
     } catch (error: any) {
-      console.error('❌ Erreur envoi SMS:', error);
+      console.error('❌ Erreur envoi SMS Twilio:', error);
       toast({
         title: "Erreur",
-        description: error.message || "Impossible d'envoyer le code SMS",
+        description: error.message || "Impossible d'envoyer le code SMS via Twilio",
         variant: "destructive"
       });
     } finally {
@@ -123,18 +123,14 @@ export const TwoFactorAuthView: React.FC<TwoFactorAuthViewProps> = ({
     try {
       // Vérification du code (temporaire - en production, vérifier via base de données)
       if (verificationCode === sentCode) {
-        console.log("✅ Code SMS vérifié avec succès");
-        
-        // Finaliser l'authentification
-        // Ici, nous devrions probablement créer une vraie session utilisateur
-        // Pour l'instant, on fait confiance au processus
+        console.log("✅ Code SMS Twilio vérifié avec succès");
         
         toast({
           title: "Vérification réussie",
-          description: "Inscription finalisée avec succès !"
+          description: "Inscription finalisée avec succès via Resend + Twilio !"
         });
         
-        // Déclencher la finalisation
+        // Finaliser l'authentification
         onVerificationComplete();
       } else {
         setAttempts(prev => prev + 1);
@@ -149,7 +145,7 @@ export const TwoFactorAuthView: React.FC<TwoFactorAuthViewProps> = ({
         setVerificationCode('');
       }
     } catch (error: any) {
-      console.error('❌ Erreur vérification code:', error);
+      console.error('❌ Erreur vérification code Twilio:', error);
       toast({
         title: "Erreur",
         description: "Erreur lors de la vérification du code",
@@ -173,9 +169,9 @@ export const TwoFactorAuthView: React.FC<TwoFactorAuthViewProps> = ({
           <div className="flex justify-center mb-4">
             <Shield className="h-12 w-12 text-directiveplus-600" />
           </div>
-          <CardTitle>Finalisation de l'inscription</CardTitle>
+          <CardTitle>Finalisation avec Twilio</CardTitle>
           <CardDescription>
-            Vérification par SMS requise pour sécuriser votre compte
+            Vérification par SMS Twilio requise pour sécuriser votre compte
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -197,7 +193,7 @@ export const TwoFactorAuthView: React.FC<TwoFactorAuthViewProps> = ({
 
           <Alert>
             <AlertDescription>
-              Utilisez le format international (+33 pour la France)
+              SMS envoyé via Twilio - Utilisez le format international (+33 pour la France)
             </AlertDescription>
           </Alert>
 
@@ -218,10 +214,10 @@ export const TwoFactorAuthView: React.FC<TwoFactorAuthViewProps> = ({
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Envoi...
+                  Envoi Twilio...
                 </>
               ) : (
-                'Envoyer le code'
+                'Envoyer via Twilio'
               )}
             </Button>
           </div>
@@ -236,14 +232,14 @@ export const TwoFactorAuthView: React.FC<TwoFactorAuthViewProps> = ({
         <div className="flex justify-center mb-4">
           <CheckCircle className="h-12 w-12 text-green-600" />
         </div>
-        <CardTitle>Vérification SMS</CardTitle>
+        <CardTitle>Vérification Twilio SMS</CardTitle>
         <CardDescription>
-          Entrez le code envoyé au {phoneNumber}
+          Entrez le code Twilio envoyé au {phoneNumber}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="code">Code de vérification</Label>
+          <Label htmlFor="code">Code de vérification Twilio</Label>
           <Input
             id="code"
             type="text"
@@ -259,7 +255,7 @@ export const TwoFactorAuthView: React.FC<TwoFactorAuthViewProps> = ({
         {countdown > 0 && (
           <Alert>
             <AlertDescription>
-              Code valide pendant encore {formatTime(countdown)}
+              Code Twilio valide pendant encore {formatTime(countdown)}
             </AlertDescription>
           </Alert>
         )}
@@ -292,7 +288,7 @@ export const TwoFactorAuthView: React.FC<TwoFactorAuthViewProps> = ({
                 Vérification...
               </>
             ) : (
-              'Vérifier'
+              'Vérifier Twilio'
             )}
           </Button>
         </div>
@@ -303,7 +299,7 @@ export const TwoFactorAuthView: React.FC<TwoFactorAuthViewProps> = ({
             onClick={() => setStep('phone')}
             className="w-full"
           >
-            Renvoyer un code
+            Renvoyer un code Twilio
           </Button>
         )}
       </CardContent>
