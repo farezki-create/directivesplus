@@ -34,7 +34,6 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import ScrollToTop from "@/components/ScrollToTop";
-import { OTPAuthPage } from './features/auth/components/OTPAuthPage';
 
 function App() {
   return (
@@ -46,7 +45,6 @@ function App() {
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
-              <Route path="/auth/otp" element={<OTPAuthPage />} />
               <Route path="/auth/2fa" element={<TwoFactorAuth />} />
               <Route path="/auth-audit" element={<AuthAudit />} />
               <Route path="/auth-audit-complete" element={<AuthAuditComplete />} />
