@@ -9,6 +9,7 @@ const corsHeaders = {
 interface SMSRequest {
   phoneNumber: string;
   userId: string;
+  message?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -19,13 +20,13 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     console.log("📱 Début de l'envoi SMS via Twilio");
     
-    const { phoneNumber, userId }: SMSRequest = await req.json();
+    const { phoneNumber, userId, message }: SMSRequest = await req.json();
     
-    console.log("Paramètres reçus:", { phoneNumber: phoneNumber.substring(0, 5) + "****", userId });
-
-    // Générer un code à 6 chiffres
-    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-    console.log("Code généré:", verificationCode);
+    console.log("Paramètres reçus:", { 
+      phoneNumber: phoneNumber.substring(0, 5) + "****", 
+      userId,
+      hasCustomMessage: !!message 
+    });
 
     // Préparer les credentials Twilio
     const accountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
@@ -33,23 +34,34 @@ const handler = async (req: Request): Promise<Response> => {
     const twilioPhoneNumber = Deno.env.get("TWILIO_PHONE_NUMBER");
 
     if (!accountSid || !authToken || !twilioPhoneNumber) {
+      console.error("❌ Configuration Twilio manquante");
       throw new Error("Configuration Twilio manquante");
     }
+
+    console.log("✅ Configuration Twilio trouvée");
 
     // Construire l'URL Twilio
     const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
     
-    // Préparer le message
-    const message = `DirectivesPlus - Votre code de vérification : ${verificationCode}. Ce code expire dans 5 minutes.`;
+    // Préparer le message - soit personnalisé, soit message de bienvenue par défaut
+    const smsMessage = message || `Bienvenue sur DirectivesPlus ! 🏥
+
+Votre inscription a été confirmée avec succès. Vous pouvez maintenant accéder à votre espace personnel sécurisé pour gérer vos directives anticipées.
+
+Votre santé, vos choix. 💙
+
+DirectivesPlus - www.directivesplus.fr`;
     
     // Préparer les données pour Twilio
     const formData = new URLSearchParams();
     formData.append('From', twilioPhoneNumber);
     formData.append('To', phoneNumber);
-    formData.append('Body', message);
+    formData.append('Body', smsMessage);
 
     // Créer l'authentification Basic
     const auth = btoa(`${accountSid}:${authToken}`);
+
+    console.log("📤 Envoi du SMS via l'API Twilio...");
 
     // Envoyer le SMS via Twilio
     const response = await fetch(twilioUrl, {
@@ -70,14 +82,12 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("✅ SMS envoyé avec succès via Twilio:", twilioResponse.sid);
 
-    // TODO: En production, stocker le code en base de données avec une expiration
-    // Pour l'instant, on retourne le code pour les tests
     return new Response(
       JSON.stringify({ 
         success: true,
-        code: verificationCode, // À supprimer en production
         messageSid: twilioResponse.sid,
-        message: "SMS envoyé avec succès"
+        message: "SMS envoyé avec succès",
+        phoneNumber: phoneNumber.substring(0, 5) + "****"
       }),
       {
         status: 200,
