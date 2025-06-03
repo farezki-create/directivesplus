@@ -12,7 +12,7 @@ export const useRegisterWithSupabase = () => {
     setIsLoading(true);
     
     try {
-      console.log("🔐 Inscription avec Supabase standard");
+      console.log("🔐 Inscription avec Supabase - confirmation désactivée");
       console.log("Email à inscrire:", values.email);
       
       // Nettoyer toute session existante
@@ -22,15 +22,10 @@ export const useRegisterWithSupabase = () => {
         console.log("Nettoyage préventif ignoré:", e);
       }
 
-      // Configuration explicite de l'URL de redirection
-      const redirectUrl = `${window.location.origin}/auth?confirmed=true`;
-      console.log("URL de redirection configurée:", redirectUrl);
-
       const { data, error } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
         options: {
-          emailRedirectTo: redirectUrl,
           data: {
             first_name: values.firstName,
             last_name: values.lastName,
@@ -74,52 +69,17 @@ export const useRegisterWithSupabase = () => {
       }
 
       console.log("✅ Utilisateur créé:", data.user?.id);
+      console.log("Email confirmé automatiquement:", !!data.user?.email_confirmed_at);
 
-      if (data.user && !data.user.email_confirmed_at) {
-        console.log("📧 Email de confirmation requis pour:", data.user.email);
-        console.log("Confirmation sent at:", data.user.confirmation_sent_at);
-        
-        // Appeler directement notre Edge Function Brevo pour envoyer l'email
-        try {
-          console.log("🚀 Envoi direct via Edge Function Brevo...");
-          
-          const { data: brevoResult, error: brevoError } = await supabase.functions.invoke('send-auth-email', {
-            body: {
-              email: values.email,
-              type: 'signup',
-              confirmation_url: redirectUrl,
-              user_data: {
-                first_name: values.firstName,
-                last_name: values.lastName
-              }
-            }
-          });
-
-          if (brevoError) {
-            console.error("❌ Erreur Edge Function Brevo:", brevoError);
-            console.log("⚠️ Supabase dit avoir envoyé l'email, mais notre Edge Function a échoué");
-          } else {
-            console.log("✅ Edge Function Brevo réussie:", brevoResult);
-          }
-          
-        } catch (brevoErr) {
-          console.error("💥 Erreur lors de l'appel Edge Function:", brevoErr);
-        }
-        
-        return { 
-          success: true, 
-          user: data.user, 
-          needsEmailConfirmation: true,
-          message: "Inscription réussie ! Un email de confirmation a été envoyé à votre adresse."
-        };
-      } else if (data.user?.email_confirmed_at) {
-        console.log("✅ Email déjà confirmé, inscription complète");
+      // Avec enable_confirmations = false, l'email devrait être confirmé automatiquement
+      if (data.user) {
+        console.log("✅ Inscription complète, utilisateur actif");
         
         return { 
           success: true, 
           user: data.user, 
           needsEmailConfirmation: false,
-          message: "Compte créé et activé avec succès !"
+          message: "Inscription réussie ! Vous pouvez maintenant vous connecter."
         };
       }
 
