@@ -9,6 +9,7 @@ import { useAuthRedirection } from "./hooks/useAuthRedirection";
 import { EmailConfirmationView } from "./components/EmailConfirmationView";
 import { LoadingView } from "./components/LoadingView";
 import { DebugSection } from "./components/DebugSection";
+import { TwoFactorAuthView } from "./components/TwoFactorAuthView";
 import { useAuth } from "@/contexts/AuthContext";
 
 const AuthPage = () => {
@@ -17,12 +18,15 @@ const AuthPage = () => {
   const {
     showForgotPassword,
     showPasswordReset,
+    showTwoFactorAuth,
     resetToken,
     accessToken,
     type,
+    pendingUserId,
     handleForgotPassword,
     handleBackToLogin,
-    handlePasswordResetSuccess
+    handlePasswordResetSuccess,
+    handleTwoFactorSuccess
   } = useAuthUrlHandling();
 
   const {
@@ -37,8 +41,27 @@ const AuthPage = () => {
   }
 
   // Affichage pendant la confirmation email
-  if (accessToken && type === 'signup') {
+  if (accessToken && type === 'signup' && !showTwoFactorAuth) {
     return <EmailConfirmationView />;
+  }
+
+  // Page de vérification 2FA par SMS
+  if (showTwoFactorAuth && pendingUserId) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        
+        <main className="container mx-auto px-4 py-8">
+          <div className="max-w-md mx-auto">
+            <TwoFactorAuthView
+              userId={pendingUserId}
+              onVerificationComplete={handleTwoFactorSuccess}
+              onBack={handleBackToLogin}
+            />
+          </div>
+        </main>
+      </div>
+    );
   }
 
   // Page mot de passe oublié
