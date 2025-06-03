@@ -32,8 +32,8 @@ image_transformation = {enabled = true}
 [auth]
 enabled = true
 port = 54326
-site_url = "http://localhost:3000"
-additional_redirect_urls = ["https://localhost:3000"]
+site_url = "https://www.directivesplus.fr"
+additional_redirect_urls = ["https://www.directivesplus.fr", "http://localhost:3000"]
 jwt_expiry = 3600
 refresh_token_rotation_enabled = true
 security_update_password_require_reauthentication = true
@@ -41,7 +41,7 @@ security_update_password_require_reauthentication = true
 [auth.email]
 enable_signup = true
 double_confirm_changes = true
-enable_confirmations = false
+enable_confirmations = true
 
 [edge_functions]
 enabled = true
