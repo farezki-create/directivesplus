@@ -6,7 +6,7 @@ import { ForgotPasswordView } from "./views/ForgotPasswordView";
 import { PasswordResetView } from "./views/PasswordResetView";
 import { useAuthUrlHandling } from "./hooks/useAuthUrlHandling";
 import { useAuthRedirection } from "./hooks/useAuthRedirection";
-import { EmailConfirmationView } from "./components/EmailConfirmationView";
+import { useEmailConfirmationFlow } from "./hooks/useEmailConfirmationFlow";
 import { LoadingView } from "./components/LoadingView";
 import { DebugSection } from "./components/DebugSection";
 import { TwoFactorAuthView } from "./components/TwoFactorAuthView";
@@ -18,34 +18,31 @@ const AuthPage = () => {
   const {
     showForgotPassword,
     showPasswordReset,
-    showTwoFactorAuth,
     resetToken,
-    accessToken,
-    type,
-    pendingUserId,
     handleForgotPassword,
     handleBackToLogin,
-    handlePasswordResetSuccess,
-    handleTwoFactorSuccess
+    handlePasswordResetSuccess
   } = useAuthUrlHandling();
 
   const {
     redirectInProgress,
     setRedirectInProgress,
     redirectPath
-  } = useAuthRedirection(accessToken);
+  } = useAuthRedirection();
+
+  const {
+    showTwoFactorAuth,
+    pendingUserId,
+    handleTwoFactorSuccess,
+    handleTwoFactorCancel
+  } = useEmailConfirmationFlow();
 
   // État de chargement
   if (isLoading) {
     return <LoadingView />;
   }
 
-  // Affichage pendant la confirmation email
-  if (accessToken && type === 'signup' && !showTwoFactorAuth) {
-    return <EmailConfirmationView />;
-  }
-
-  // Page de vérification 2FA par SMS
+  // Page de vérification 2FA par SMS après confirmation email
   if (showTwoFactorAuth && pendingUserId) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -56,7 +53,7 @@ const AuthPage = () => {
             <TwoFactorAuthView
               userId={pendingUserId}
               onVerificationComplete={handleTwoFactorSuccess}
-              onBack={handleBackToLogin}
+              onBack={handleTwoFactorCancel}
             />
           </div>
         </main>
@@ -79,7 +76,7 @@ const AuthPage = () => {
     );
   }
 
-  // Page principale d'authentification avec diagnostic
+  // Page principale d'authentification
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />

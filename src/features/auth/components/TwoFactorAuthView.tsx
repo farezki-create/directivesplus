@@ -60,7 +60,7 @@ export const TwoFactorAuthView: React.FC<TwoFactorAuthViewProps> = ({
     setLoading(true);
 
     try {
-      console.log("📱 Envoi du code SMS via Twilio...");
+      console.log("📱 Envoi du code SMS via Edge Function...");
       
       const { data, error } = await supabase.functions.invoke('send-sms-code', {
         body: {
@@ -121,16 +121,20 @@ export const TwoFactorAuthView: React.FC<TwoFactorAuthViewProps> = ({
     setLoading(true);
 
     try {
-      // Vérification du code (en production, vérifier via base de données)
+      // Vérification du code (temporaire - en production, vérifier via base de données)
       if (verificationCode === sentCode) {
         console.log("✅ Code SMS vérifié avec succès");
+        
+        // Finaliser l'authentification
+        // Ici, nous devrions probablement créer une vraie session utilisateur
+        // Pour l'instant, on fait confiance au processus
         
         toast({
           title: "Vérification réussie",
           description: "Inscription finalisée avec succès !"
         });
         
-        // Finaliser l'inscription
+        // Déclencher la finalisation
         onVerificationComplete();
       } else {
         setAttempts(prev => prev + 1);

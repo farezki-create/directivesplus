@@ -23,7 +23,7 @@ export const useRegisterWithSupabase = () => {
       }
 
       // Configuration de l'URL de redirection pour la confirmation
-      const redirectUrl = `${window.location.origin}/auth?confirmed=true`;
+      const redirectUrl = `${window.location.origin}/auth`;
       console.log("URL de redirection configurée:", redirectUrl);
 
       const { data, error } = await supabase.auth.signUp({
@@ -75,7 +75,6 @@ export const useRegisterWithSupabase = () => {
 
       console.log("✅ Utilisateur créé:", data.user?.id);
       console.log("Email confirmé automatiquement:", !!data.user?.email_confirmed_at);
-      console.log("Confirmation sent at:", data.user?.confirmation_sent_at);
 
       if (data.user && !data.user.email_confirmed_at) {
         console.log("📧 Email de confirmation requis - envoi via Brevo");
@@ -88,7 +87,7 @@ export const useRegisterWithSupabase = () => {
             body: {
               email: values.email,
               type: 'signup',
-              confirmation_url: redirectUrl,
+              confirmation_url: redirectUrl + `?type=signup&email=${encodeURIComponent(values.email)}`,
               user_data: {
                 first_name: values.firstName,
                 last_name: values.lastName
@@ -98,7 +97,6 @@ export const useRegisterWithSupabase = () => {
 
           if (brevoError) {
             console.error("❌ Erreur Edge Function Brevo:", brevoError);
-            console.log("⚠️ L'utilisateur est créé mais l'email de confirmation n'a pas pu être envoyé");
           } else {
             console.log("✅ Email de confirmation envoyé via Brevo:", brevoResult);
           }
@@ -111,7 +109,7 @@ export const useRegisterWithSupabase = () => {
           success: true, 
           user: data.user, 
           needsEmailConfirmation: true,
-          message: "Inscription réussie ! Un email de confirmation a été envoyé à votre adresse. Cliquez sur le lien pour activer votre compte."
+          message: "Inscription réussie ! Un email de confirmation a été envoyé à votre adresse. Cliquez sur le lien pour activer votre compte et finaliser l'inscription par SMS."
         };
       } else if (data.user?.email_confirmed_at) {
         console.log("✅ Email déjà confirmé, inscription complète");
