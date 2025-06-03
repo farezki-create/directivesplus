@@ -76,8 +76,18 @@ export const useRegisterWithSupabase = () => {
       if (data.user && !data.user.email_confirmed_at) {
         console.log("📧 Email de confirmation requis - envoi via Brevo");
         
-        // Créer l'URL de confirmation avec les bons paramètres
-        const confirmationUrl = `${redirectUrl}?type=signup&token=${data.user.id}`;
+        // Stocker temporairement les données utilisateur pour le processus 2FA
+        if (data.user.id) {
+          localStorage.setItem('pending_2fa_user', JSON.stringify({
+            userId: data.user.id,
+            email: values.email,
+            firstName: values.firstName,
+            lastName: values.lastName
+          }));
+        }
+        
+        // Créer l'URL de confirmation avec un paramètre spécial pour déclencher le 2FA
+        const confirmationUrl = `${redirectUrl}?email_confirmed=true&user_id=${data.user.id}&type=signup`;
         
         // Appeler notre Edge Function Brevo pour envoyer l'email de confirmation
         try {
