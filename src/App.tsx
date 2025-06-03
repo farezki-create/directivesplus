@@ -27,6 +27,8 @@ import MesDirectives from './pages/MesDirectives';
 import CarteAcces from './pages/CarteAcces';
 import Profile from './pages/Profile';
 import AdminInstitutions from './pages/AdminInstitutions';
+import AuthAudit from './pages/AuthAudit';
+import AuthAuditComplete from './pages/AuthAuditComplete';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -44,6 +46,8 @@ function App() {
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/auth/2fa" element={<TwoFactorAuth />} />
+              <Route path="/auth-audit" element={<AuthAudit />} />
+              <Route path="/auth-audit-complete" element={<AuthAuditComplete />} />
               <Route path="/acces-institution" element={<AccesInstitution />} />
               <Route path="/acces-soins-palliatifs" element={<AccesSoinsPalliatifs />} />
               <Route path="/demande-abonnement-institutionnel" element={<DemandeAbonnementInstitutionnel />} />
