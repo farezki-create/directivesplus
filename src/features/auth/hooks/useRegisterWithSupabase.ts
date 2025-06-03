@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { registerFormSchema } from "../schemas";
+import { performGlobalSignOut } from "@/utils/authUtils";
 
 export const useRegisterWithSupabase = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -15,12 +16,8 @@ export const useRegisterWithSupabase = () => {
       console.log("🔐 Inscription avec confirmation email obligatoire");
       console.log("Email à inscrire:", values.email);
       
-      // Nettoyer toute session existante
-      try {
-        await supabase.auth.signOut({ scope: 'global' });
-      } catch (e) {
-        console.log("Nettoyage préventif ignoré:", e);
-      }
+      // Nettoyer complètement l'état d'authentification
+      await performGlobalSignOut();
 
       // Configuration de l'URL de redirection pour la confirmation
       const redirectUrl = `${window.location.origin}/auth`;
@@ -79,6 +76,9 @@ export const useRegisterWithSupabase = () => {
       if (data.user && !data.user.email_confirmed_at) {
         console.log("📧 Email de confirmation requis - envoi via Brevo");
         
+        // Créer l'URL de confirmation avec les bons paramètres
+        const confirmationUrl = `${redirectUrl}?type=signup&token=${data.user.id}`;
+        
         // Appeler notre Edge Function Brevo pour envoyer l'email de confirmation
         try {
           console.log("🚀 Envoi email de confirmation via Brevo...");
@@ -87,7 +87,7 @@ export const useRegisterWithSupabase = () => {
             body: {
               email: values.email,
               type: 'signup',
-              confirmation_url: redirectUrl + `?type=signup&email=${encodeURIComponent(values.email)}`,
+              confirmation_url: confirmationUrl,
               user_data: {
                 first_name: values.firstName,
                 last_name: values.lastName

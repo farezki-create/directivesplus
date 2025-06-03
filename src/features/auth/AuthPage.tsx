@@ -34,11 +34,12 @@ const AuthPage = () => {
     showTwoFactorAuth,
     pendingUserId,
     handleTwoFactorSuccess,
-    handleTwoFactorCancel
+    handleTwoFactorCancel,
+    isProcessingConfirmation
   } = useEmailConfirmationFlow();
 
-  // État de chargement
-  if (isLoading) {
+  // État de chargement (incluant le traitement de confirmation)
+  if (isLoading || isProcessingConfirmation) {
     return <LoadingView />;
   }
 
