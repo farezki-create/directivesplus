@@ -56,5 +56,8 @@ verify_jwt = false
 [functions.send-twilio-sms]
 verify_jwt = false
 
+[functions.send-auth-code]
+verify_jwt = false
+
 [analytics]
 enabled = false

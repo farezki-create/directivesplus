@@ -288,6 +288,39 @@ export type Database = {
         }
         Relationships: []
       }
+      auth_codes: {
+        Row: {
+          channel: string
+          code: string
+          created_at: string
+          expires_at: string
+          id: string
+          target: string
+          used: boolean
+          user_id: string | null
+        }
+        Insert: {
+          channel: string
+          code: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          target: string
+          used?: boolean
+          user_id?: string | null
+        }
+        Update: {
+          channel?: string
+          code?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          target?: string
+          used?: boolean
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       configuration: {
         Row: {
           id: number
@@ -2221,6 +2254,10 @@ export type Database = {
         Args: { p_user_id: string; p_max_sms_per_hour?: number }
         Returns: boolean
       }
+      cleanup_expired_auth_codes: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       debug_institution_access_step_by_step: {
         Args: {
           input_last_name: string
@@ -2244,6 +2281,10 @@ export type Database = {
           birth_date: string
           institution_shared_code: string
         }[]
+      }
+      generate_auth_code: {
+        Args: { p_target: string; p_channel: string; p_user_id?: string }
+        Returns: string
       }
       generate_institution_code: {
         Args: Record<PropertyKey, never>
@@ -2630,6 +2671,14 @@ export type Database = {
           last_name: string
           medical_profile_id: string | null
           user_id: string | null
+        }[]
+      }
+      verify_auth_code: {
+        Args: { p_target: string; p_code: string }
+        Returns: {
+          is_valid: boolean
+          user_id: string
+          channel: string
         }[]
       }
       verify_directive_access: {
