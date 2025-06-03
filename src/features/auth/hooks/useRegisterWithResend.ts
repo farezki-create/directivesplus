@@ -70,13 +70,16 @@ export const useRegisterWithResend = () => {
       if (data.user) {
         console.log("✅ Utilisateur créé:", data.user.id);
         
-        // Envoyer l'email de confirmation via Resend
+        // Envoyer l'email de confirmation via Resend en utilisant le token de confirmation
         try {
+          // Récupérer le token de confirmation depuis la réponse
+          const confirmationToken = data.user.email_confirmed_at ? null : data.user.confirmation_token;
+          
           const { data: emailData, error: emailError } = await supabase.functions.invoke('send-auth-email', {
             body: {
               email: values.email,
               type: 'confirmation',
-              token: data.user.id, // Utiliser l'ID utilisateur comme token
+              token: confirmationToken || data.user.id, // Utiliser le token ou l'ID utilisateur
               firstName: values.firstName,
               lastName: values.lastName
             }

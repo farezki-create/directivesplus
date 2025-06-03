@@ -34,8 +34,10 @@ const handler = async (req: Request): Promise<Response> => {
     const baseUrl = req.headers.get('origin') || 'https://www.directivesplus.fr';
 
     if (type === 'confirmation') {
-      // Créer un lien qui sera traité par Supabase Auth
-      const confirmationUrl = `${baseUrl}/auth#access_token=dummy&type=signup&redirect_to=${encodeURIComponent(baseUrl + '/auth/2fa')}`;
+      // Créer un lien de confirmation qui utilise l'API Supabase pour générer les tokens
+      const supabaseUrl = Deno.env.get('SUPABASE_URL') || 'https://kytqqjnecezkxyhmmjrz.supabase.co';
+      const confirmationUrl = `${supabaseUrl}/auth/v1/verify?token=${token}&type=signup&redirect_to=${encodeURIComponent(baseUrl + '/auth')}`;
+      
       subject = "Confirmez votre inscription - DirectivesPlus";
       html = `
         <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
