@@ -5,38 +5,34 @@ export const cleanupAuthState = () => {
   console.log("🧹 Nettoyage complet de l'état d'authentification");
   
   // Nettoyer localStorage
-  Object.keys(localStorage).forEach(key => {
+  Object.keys(localStorage).forEach((key) => {
     if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
       localStorage.removeItem(key);
-      console.log(`Supprimé de localStorage: ${key}`);
+      console.log(`🗑️ Supprimé: ${key}`);
     }
   });
   
-  // Nettoyer sessionStorage
-  Object.keys(sessionStorage).forEach(key => {
-    if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-      sessionStorage.removeItem(key);
-      console.log(`Supprimé de sessionStorage: ${key}`);
-    }
-  });
-  
-  // Nettoyer les cookies d'authentification
-  document.cookie.split(";").forEach(cookie => {
-    const eqPos = cookie.indexOf("=");
-    const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
-    if (name.includes('supabase') || name.includes('sb-')) {
-      document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
-      console.log(`Cookie supprimé: ${name}`);
-    }
-  });
+  // Nettoyer sessionStorage si utilisé
+  try {
+    Object.keys(sessionStorage || {}).forEach((key) => {
+      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+        sessionStorage.removeItem(key);
+        console.log(`🗑️ Session supprimée: ${key}`);
+      }
+    });
+  } catch (e) {
+    console.log("⚠️ SessionStorage non disponible");
+  }
 };
 
 export const performGlobalSignOut = async () => {
   try {
+    console.log("🚪 Tentative de déconnexion globale");
     cleanupAuthState();
+    
     await supabase.auth.signOut({ scope: 'global' });
     console.log("✅ Déconnexion globale réussie");
   } catch (error) {
-    console.log("⚠️ Erreur lors de la déconnexion (ignorée):", error);
+    console.log("⚠️ Erreur déconnexion (non bloquante):", error);
   }
 };

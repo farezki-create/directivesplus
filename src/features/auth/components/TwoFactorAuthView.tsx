@@ -65,7 +65,8 @@ export const TwoFactorAuthView: React.FC<TwoFactorAuthViewProps> = ({
       const { data, error } = await supabase.functions.invoke('send-twilio-sms', {
         body: {
           phoneNumber: phoneNumber.replace(/\s/g, ''),
-          userId: userId
+          userId: userId,
+          codeOnly: true // Demander seulement un code de vérification
         }
       });
 
@@ -75,7 +76,7 @@ export const TwoFactorAuthView: React.FC<TwoFactorAuthViewProps> = ({
         console.log("✅ SMS envoyé avec succès via Twilio");
         setSentCode(data.code); // Pour les tests - à supprimer en production
         setStep('code');
-        setCountdown(300); // 5 minutes
+        setCountdown(600); // 10 minutes
         setAttempts(0);
         
         toast({

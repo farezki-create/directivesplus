@@ -1,100 +1,97 @@
 
 import { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
+import { toast } from "@/hooks/use-toast";
 
 export const useEmailConfirmationFlow = () => {
-  const { isAuthenticated, user, isLoading } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
   const [isProcessingConfirmation, setIsProcessingConfirmation] = useState(false);
-  const [hasProcessedConfirmation, setHasProcessedConfirmation] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Vérifier si c'est une confirmation d'email (fragments d'URL Supabase)
-    const fragment = location.hash;
-    const fragmentParams = new URLSearchParams(fragment.substring(1));
-    const fragmentAccessToken = fragmentParams.get('access_token');
-    const fragmentRefreshToken = fragmentParams.get('refresh_token');
-    const fragmentType = fragmentParams.get('type');
-    
-    console.log("🔍 Vérification confirmation email:", {
-      fragment: location.hash,
-      fragmentAccessToken: !!fragmentAccessToken,
-      fragmentRefreshToken: !!fragmentRefreshToken,
-      fragmentType,
-      isAuthenticated,
-      user: user?.id,
-      isLoading,
-      hasProcessedConfirmation,
-      isProcessingConfirmation
-    });
-
-    // Si c'est une confirmation Supabase avec tokens et on est sur /auth et pas encore traité
-    if (fragmentType === 'signup' && fragmentAccessToken && fragmentRefreshToken && location.pathname === '/auth' && !hasProcessedConfirmation && !isProcessingConfirmation) {
-      console.log("✅ Confirmation Supabase détectée - traitement en cours...");
-      setIsProcessingConfirmation(true);
-      setHasProcessedConfirmation(true);
+    const handleEmailConfirmation = async () => {
+      // Vérifier si nous sommes dans le processus de confirmation
+      const urlParams = new URLSearchParams(window.location.search);
+      const fragment = window.location.hash;
       
-      // Connecter l'utilisateur avec les tokens de confirmation
-      const connectUser = async () => {
-        try {
-          console.log("🔐 Connexion avec les tokens de confirmation...");
-          
-          const { data, error } = await supabase.auth.setSession({
-            access_token: fragmentAccessToken,
-            refresh_token: fragmentRefreshToken
-          });
+      console.log("🔍 Vérification confirmation email:", {
+        urlParams: Object.fromEntries(urlParams),
+        fragment
+      });
 
-          if (error) {
-            console.error("❌ Erreur lors de la connexion:", error);
-            toast({
-              title: "Erreur de confirmation",
-              description: "Impossible de finaliser la confirmation. Veuillez réessayer.",
-              variant: "destructive"
-            });
-            setIsProcessingConfirmation(false);
-            return;
+      // Chercher les tokens dans l'URL ou le fragment
+      const hasAccessToken = urlParams.has('access_token') || fragment.includes('access_token');
+      const hasRefreshToken = urlParams.has('refresh_token') || fragment.includes('refresh_token');
+      const hasType = urlParams.has('type') || fragment.includes('type');
+      
+      if (hasAccessToken && hasRefreshToken && hasType) {
+        console.log("📧 Confirmation d'email détectée - traitement en cours...");
+        setIsProcessingConfirmation(true);
+        
+        try {
+          // Récupérer la session actuelle pour obtenir les infos utilisateur
+          const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+          
+          if (sessionError) {
+            console.error("❌ Erreur récupération session:", sessionError);
+            throw sessionError;
           }
 
-          if (data.user) {
-            console.log("✅ Utilisateur connecté après confirmation:", data.user.id);
+          if (session?.user) {
+            console.log("✅ Email confirmé pour utilisateur:", session.user.id);
             
+            // Envoyer SMS via Twilio maintenant que l'email est confirmé
+            try {
+              console.log("📱 Envoi du SMS via Twilio après confirmation email...");
+              
+              const phoneNumber = session.user.user_metadata?.phone_number;
+              if (phoneNumber) {
+                const { data: smsData, error: smsError } = await supabase.functions.invoke('send-twilio-sms', {
+                  body: {
+                    phoneNumber: phoneNumber,
+                    userId: session.user.id
+                  }
+                });
+
+                if (smsError) {
+                  console.error("❌ Erreur SMS Twilio:", smsError);
+                } else {
+                  console.log("✅ SMS envoyé via Twilio");
+                }
+              }
+            } catch (smsErr) {
+              console.warn("⚠️ Erreur SMS (non bloquante):", smsErr);
+            }
+
             toast({
               title: "Email confirmé !",
-              description: "Votre adresse email a été confirmée. Redirection vers votre espace...",
+              description: "Un SMS de vérification a été envoyé à votre téléphone.",
+              duration: 4000
             });
-            
-            // Nettoyer l'URL et rediriger vers /rediger après un délai
+
+            // Rediriger vers la page 2FA
             setTimeout(() => {
-              window.history.replaceState({}, document.title, '/rediger');
-              navigate('/rediger', { replace: true });
-              setIsProcessingConfirmation(false);
-            }, 2000);
+              console.log("🚀 Redirection vers /auth/2fa");
+              navigate('/auth/2fa', { replace: true });
+            }, 1000);
           }
-        } catch (error) {
-          console.error("❌ Erreur lors de la connexion:", error);
+        } catch (error: any) {
+          console.error("❌ Erreur traitement confirmation:", error);
           toast({
             title: "Erreur de confirmation",
-            description: "Une erreur est survenue lors de la confirmation.",
+            description: "Impossible de confirmer votre email. Veuillez réessayer.",
             variant: "destructive"
           });
+          
+          navigate('/auth', { replace: true });
+        } finally {
           setIsProcessingConfirmation(false);
         }
-      };
+      }
+    };
 
-      connectUser();
-      return;
-    }
-
-    // Si l'utilisateur est authentifié et pas en cours de traitement sur /auth et pas de fragment de confirmation
-    if (isAuthenticated && !isProcessingConfirmation && location.pathname === '/auth' && !fragmentAccessToken && !hasProcessedConfirmation) {
-      console.log("🔄 Utilisateur déjà authentifié, redirection vers /rediger");
-      navigate('/rediger', { replace: true });
-    }
-  }, [location.hash, location.pathname, isAuthenticated, user, navigate, isProcessingConfirmation, isLoading, hasProcessedConfirmation]);
+    handleEmailConfirmation();
+  }, [navigate]);
 
   return {
     isProcessingConfirmation

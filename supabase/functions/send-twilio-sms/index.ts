@@ -10,6 +10,7 @@ interface SMSRequest {
   phoneNumber: string;
   userId: string;
   message?: string;
+  codeOnly?: boolean; // Nouveau paramètre pour envoyer seulement un code
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -20,12 +21,13 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     console.log("📱 Début de l'envoi SMS via Twilio");
     
-    const { phoneNumber, userId, message }: SMSRequest = await req.json();
+    const { phoneNumber, userId, message, codeOnly }: SMSRequest = await req.json();
     
     console.log("Paramètres reçus:", { 
       phoneNumber: phoneNumber.substring(0, 5) + "****", 
       userId,
-      hasCustomMessage: !!message 
+      hasCustomMessage: !!message,
+      codeOnly: !!codeOnly
     });
 
     // Préparer les credentials Twilio
@@ -43,14 +45,23 @@ const handler = async (req: Request): Promise<Response> => {
     // Construire l'URL Twilio
     const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
     
-    // Préparer le message - soit personnalisé, soit message de bienvenue par défaut
-    const smsMessage = message || `Bienvenue sur DirectivesPlus ! 🏥
+    let smsMessage: string;
+    let verificationCode: string | null = null;
+
+    if (codeOnly) {
+      // Générer un code de 6 chiffres pour la vérification
+      verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+      smsMessage = `DirectivesPlus - Votre code de vérification : ${verificationCode}. Ce code expire dans 10 minutes.`;
+    } else {
+      // Message de bienvenue par défaut ou personnalisé
+      smsMessage = message || `Bienvenue sur DirectivesPlus ! 🏥
 
 Votre inscription a été confirmée avec succès. Vous pouvez maintenant accéder à votre espace personnel sécurisé pour gérer vos directives anticipées.
 
 Votre santé, vos choix. 💙
 
 DirectivesPlus - www.directivesplus.fr`;
+    }
     
     // Préparer les données pour Twilio
     const formData = new URLSearchParams();
@@ -87,7 +98,8 @@ DirectivesPlus - www.directivesplus.fr`;
         success: true,
         messageSid: twilioResponse.sid,
         message: "SMS envoyé avec succès",
-        phoneNumber: phoneNumber.substring(0, 5) + "****"
+        phoneNumber: phoneNumber.substring(0, 5) + "****",
+        code: verificationCode // Retourner le code pour les tests (à supprimer en production)
       }),
       {
         status: 200,
