@@ -1,11 +1,10 @@
 
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
-import { RegisterFormValues } from "../schemas";
 
 interface ContactInfoFieldsProps {
-  form: UseFormReturn<RegisterFormValues>;
+  form: UseFormReturn<any>;
 }
 
 export const ContactInfoFields = ({ form }: ContactInfoFieldsProps) => {
@@ -18,27 +17,18 @@ export const ContactInfoFields = ({ form }: ContactInfoFieldsProps) => {
           <FormItem>
             <FormLabel>Email</FormLabel>
             <FormControl>
-              <Input placeholder="votre@email.com" {...field} />
+              <Input 
+                type="email" 
+                placeholder="votre@email.com" 
+                {...field}
+                value={field.value || ""}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
         )}
       />
-
-      <FormField
-        control={form.control}
-        name="phoneNumber"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Numéro de téléphone</FormLabel>
-            <FormControl>
-              <Input placeholder="+33 X XX XX XX XX" {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
+      
       <FormField
         control={form.control}
         name="address"
@@ -46,51 +36,30 @@ export const ContactInfoFields = ({ form }: ContactInfoFieldsProps) => {
           <FormItem>
             <FormLabel>Adresse</FormLabel>
             <FormControl>
-              <Input placeholder="Rue, numéro" {...field} />
+              <Input 
+                placeholder="Votre adresse complète" 
+                {...field}
+                value={field.value || ""}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
         )}
       />
-
-      <div className="grid grid-cols-2 gap-4">
-        <FormField
-          control={form.control}
-          name="postalCode"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Code postal</FormLabel>
-              <FormControl>
-                <Input placeholder="75000" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="city"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Ville</FormLabel>
-              <FormControl>
-                <Input placeholder="Paris" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
-
+      
       <FormField
         control={form.control}
-        name="country"
+        name="phoneNumber"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Pays</FormLabel>
+            <FormLabel>Numéro de téléphone (optionnel)</FormLabel>
             <FormControl>
-              <Input placeholder="France" {...field} />
+              <Input 
+                type="tel" 
+                placeholder="+33 1 23 45 67 89" 
+                {...field}
+                value={field.value || ""}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
