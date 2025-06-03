@@ -16,14 +16,15 @@ const TwoFactorAuth = () => {
     console.log("🔐 Page 2FA - État auth:", { isAuthenticated, userId: user?.id, isLoading });
     
     if (isLoading) {
+      console.log("⏳ Chargement en cours...");
       return;
     }
 
     if (!isAuthenticated || !user) {
       console.log("❌ Pas d'utilisateur authentifié, redirection vers /auth");
       toast({
-        title: "Erreur",
-        description: "Vous devez être connecté pour accéder à cette page.",
+        title: "Session requise",
+        description: "Veuillez confirmer votre email d'abord.",
         variant: "destructive"
       });
       navigate('/auth', { replace: true });
@@ -56,7 +57,9 @@ const TwoFactorAuth = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-directiveplus-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Vérification de la session...</p>
+          <p className="mt-4 text-gray-600">
+            {isLoading ? "Vérification de la session..." : "Préparation de la vérification SMS..."}
+          </p>
         </div>
       </div>
     );
