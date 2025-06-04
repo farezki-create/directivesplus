@@ -17,14 +17,25 @@ export const useSendOTP = () => {
     setIsLoading(true);
     
     try {
-      console.log("📧 Préparation envoi du code OTP");
-      console.log("Destinataire:", email);
-      console.log("Code:", code);
-      console.log("Nom/Prénom:", firstName, lastName);
+      console.log("📧 === DÉBUT ENVOI OTP ===");
+      console.log("📧 Email destinataire EXACT:", `"${email}"`);
+      console.log("📧 Code à envoyer:", code);
+      console.log("📧 Prénom:", firstName);
+      console.log("📧 Nom:", lastName);
+      console.log("📧 Type de l'email:", typeof email);
+      console.log("📧 Longueur de l'email:", email.length);
+      
+      // Vérification de la validité de l'email
+      if (!email || email.trim().length === 0) {
+        throw new Error("Email vide ou invalide");
+      }
+      
+      const cleanEmail = email.trim();
+      console.log("📧 Email nettoyé:", `"${cleanEmail}"`);
       
       const { data, error } = await supabase.functions.invoke('send-otp-email', {
         body: {
-          email: email.trim(),
+          email: cleanEmail,
           code: code.trim(),
           firstName: firstName?.trim(),
           lastName: lastName?.trim()
@@ -39,7 +50,7 @@ export const useSendOTP = () => {
       }
 
       if (data && data.success) {
-        console.log("✅ Code OTP envoyé avec succès");
+        console.log("✅ Code OTP envoyé avec succès à:", cleanEmail);
         console.log("Message ID:", data.messageId);
         
         return { 

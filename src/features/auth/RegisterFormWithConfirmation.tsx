@@ -25,10 +25,10 @@ interface RegisterFormWithConfirmationProps {
 export const RegisterFormWithConfirmation = ({ onSuccess }: RegisterFormWithConfirmationProps) => {
   const [registrationState, setRegistrationState] = useState<{
     step: 'form' | 'confirmation' | 'success';
-    email: string;
+    formData?: RegisterFormValues; // Stocker toutes les données du formulaire
     confirmationCode?: string;
     userId?: string;
-  }>({ step: 'form', email: '' });
+  }>({ step: 'form' });
 
   const [confirmationError, setConfirmationError] = useState<string>("");
   const [isConfirming, setIsConfirming] = useState(false);
@@ -55,15 +55,17 @@ export const RegisterFormWithConfirmation = ({ onSuccess }: RegisterFormWithConf
 
   const handleSubmit = async (values: RegisterFormValues) => {
     console.log("📝 Soumission inscription avec confirmation:", values.email);
+    console.log("📧 Email exact du formulaire:", values.email);
     
     const result = await register(values);
     
     if (result.success && result.needsEmailConfirmation) {
       console.log("✅ Inscription réussie, passage à l'étape de confirmation");
+      console.log("📧 Email stocké pour confirmation:", values.email);
       
       setRegistrationState({
         step: 'confirmation',
-        email: values.email,
+        formData: values, // Stocker toutes les données du formulaire
         confirmationCode: result.confirmationCode,
         userId: result.user?.id
       });
@@ -76,16 +78,16 @@ export const RegisterFormWithConfirmation = ({ onSuccess }: RegisterFormWithConf
     
     try {
       console.log("🔍 Vérification du code de confirmation");
+      console.log("📧 Email utilisé pour confirmation:", registrationState.formData?.email);
       
       // Vérifier le code (ici on compare avec le code généré)
       if (inputCode === registrationState.confirmationCode) {
         console.log("✅ Code de confirmation valide");
         
         // Maintenant on doit confirmer l'email dans Supabase
-        // Utiliser une Edge Function pour confirmer l'utilisateur côté serveur
         const { data, error } = await supabase.functions.invoke('confirm-user-email', {
           body: {
-            email: registrationState.email,
+            email: registrationState.formData?.email, // Utiliser l'email du formulaire
             confirmationCode: inputCode
           }
         });
@@ -128,27 +130,35 @@ export const RegisterFormWithConfirmation = ({ onSuccess }: RegisterFormWithConf
   const handleResendCode = async () => {
     try {
       console.log("📧 Renvoi du code de confirmation");
+      console.log("📧 Email pour renvoi:", registrationState.formData?.email);
       
       const newCode = generateOTP(6);
-      const formValues = form.getValues();
       
-      await sendOTP({
-        email: registrationState.email,
+      const emailResult = await sendOTP({
+        email: registrationState.formData?.email || '', // Utiliser l'email du formulaire
         code: newCode,
-        firstName: formValues.firstName,
-        lastName: formValues.lastName
+        firstName: registrationState.formData?.firstName,
+        lastName: registrationState.formData?.lastName
       });
       
-      setRegistrationState(prev => ({ 
-        ...prev, 
-        confirmationCode: newCode 
-      }));
-      
-      toast({
-        title: "Code renvoyé !",
-        description: "Un nouveau code de confirmation a été envoyé à votre email.",
-        duration: 4000
-      });
+      if (emailResult.success) {
+        setRegistrationState(prev => ({ 
+          ...prev, 
+          confirmationCode: newCode 
+        }));
+        
+        toast({
+          title: "Code renvoyé !",
+          description: "Un nouveau code de confirmation a été envoyé à votre email.",
+          duration: 4000
+        });
+      } else {
+        toast({
+          title: "Erreur",
+          description: "Impossible de renvoyer le code. Veuillez réessayer.",
+          variant: "destructive"
+        });
+      }
     } catch (error) {
       toast({
         title: "Erreur",
@@ -175,7 +185,7 @@ export const RegisterFormWithConfirmation = ({ onSuccess }: RegisterFormWithConf
   if (registrationState.step === 'confirmation') {
     return (
       <ConfirmationCodeInput
-        email={registrationState.email}
+        email={registrationState.formData?.email || ''} // Utiliser l'email du formulaire
         onConfirm={handleConfirmCode}
         onResend={handleResendCode}
         isLoading={isConfirming}
