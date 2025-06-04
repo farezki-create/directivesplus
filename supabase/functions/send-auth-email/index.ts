@@ -1,6 +1,6 @@
 
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { Resend } from "npm:resend@2.0.0"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -16,6 +16,8 @@ interface EmailRequest {
   user_data?: any;
 }
 
+const resend = new Resend(Deno.env.get('RESEND_API_KEY'))
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -26,17 +28,6 @@ serve(async (req) => {
     const { email, type, confirmation_url, recovery_url, code, user_data }: EmailRequest = await req.json()
 
     console.log(`📧 Envoi email ${type} pour:`, email)
-
-    // Configuration SMTP Hostinger (depuis les paramètres Supabase Auth)
-    const smtpConfig = {
-      host: 'smtp.hostinger.com',
-      port: 587,
-      secure: false, // true pour le port 465, false pour les autres ports
-      auth: {
-        user: 'contact@directivesplus.fr',
-        pass: Deno.env.get('SMTP_PASSWORD') // Mot de passe SMTP depuis les secrets
-      }
-    }
 
     let subject: string
     let htmlContent: string
@@ -102,33 +93,32 @@ serve(async (req) => {
         throw new Error(`Type d'email non supporté: ${type}`)
     }
 
-    // Envoyer l'email via SMTP en utilisant l'API Fetch avec nodemailer-like payload
-    console.log('📤 Envoi de l\'email via SMTP...')
+    // Envoyer l'email via Resend
+    console.log('📤 Envoi de l\'email via Resend...')
     
-    // Utiliser l'API d'envoi d'email intégrée de Deno
-    const emailPayload = {
+    const emailResponse = await resend.emails.send({
       from: 'DirectivesPlus <contact@directivesplus.fr>',
-      to: email,
+      to: [email],
       subject: subject,
       html: htmlContent
+    })
+
+    if (emailResponse.error) {
+      console.error('❌ Erreur Resend:', emailResponse.error)
+      throw new Error(`Erreur Resend: ${emailResponse.error.message}`)
     }
 
-    // Simuler l'envoi réussi pour le moment (en attendant la configuration SMTP complète)
-    console.log('✅ Email préparé pour envoi:', {
-      to: email,
-      subject: subject,
-      type: type
-    })
+    console.log('✅ Email envoyé avec succès via Resend:', emailResponse.data?.id)
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        messageId: `directivesplus-${Date.now()}`,
+        messageId: emailResponse.data?.id || `directivesplus-${Date.now()}`,
         type: type,
         debug: {
           email: email,
           subject: subject,
-          smtp_configured: !!Deno.env.get('SMTP_PASSWORD')
+          resend_configured: !!Deno.env.get('RESEND_API_KEY')
         }
       }),
       { 
@@ -157,4 +147,3 @@ serve(async (req) => {
     )
   }
 })
-
