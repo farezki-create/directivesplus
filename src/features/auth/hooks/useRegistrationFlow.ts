@@ -27,17 +27,36 @@ export const useRegistrationFlow = ({
   const { sendOTP } = useOTPEmailSender();
 
   const handleSubmit = async (values: RegisterFormValues) => {
-    console.log("📝 === SOUMISSION FORMULAIRE ===");
-    console.log("📧 Email du formulaire:", `"${values.email}"`);
+    console.log("🔍 === DEBUG REGISTRATION FLOW ===");
+    console.log("📧 Email REÇU dans handleSubmit:", `"${values.email}"`);
+    console.log("📧 Type de l'email:", typeof values.email);
+    console.log("📧 Longueur de l'email:", values.email?.length);
+    console.log("📝 Valeurs complètes du formulaire:", {
+      email: values.email,
+      firstName: values.firstName,
+      lastName: values.lastName
+    });
     
-    const result = await signUp(values);
+    // Nettoyer l'email au cas où
+    const cleanEmail = values.email?.trim();
+    console.log("📧 Email après nettoyage:", `"${cleanEmail}"`);
+    
+    const cleanedValues = {
+      ...values,
+      email: cleanEmail
+    };
+    
+    console.log("📧 Valeurs nettoyées envoyées à signUp:", cleanedValues.email);
+    
+    const result = await signUp(cleanedValues);
     
     if (result.success && result.needsEmailConfirmation) {
       console.log("✅ Passage à l'étape de confirmation");
+      console.log("📧 Email qui sera stocké dans l'état:", cleanEmail);
       
       updateRegistrationState({
         step: 'confirmation',
-        userEmail: values.email,
+        userEmail: cleanEmail,
         confirmationCode: result.confirmationCode!,
         firstName: values.firstName,
         lastName: values.lastName,
@@ -50,8 +69,8 @@ export const useRegistrationFlow = ({
     setIsConfirming(true);
     resetConfirmationError();
     
-    console.log("🔍 === CONFIRMATION CODE ===");
-    console.log("📧 Email utilisé:", `"${registrationState.userEmail}"`);
+    console.log("🔍 === CONFIRMATION CODE DEBUG ===");
+    console.log("📧 Email depuis registrationState:", `"${registrationState.userEmail}"`);
     console.log("🔢 Code saisi:", inputCode);
     console.log("🔢 Code attendu:", registrationState.confirmationCode);
     
@@ -103,8 +122,8 @@ export const useRegistrationFlow = ({
   };
 
   const handleResendCode = async () => {
-    console.log("📧 === RENVOI CODE ===");
-    console.log("📧 Email pour renvoi:", `"${registrationState.userEmail}"`);
+    console.log("📧 === RENVOI CODE DEBUG ===");
+    console.log("📧 Email pour renvoi depuis state:", `"${registrationState.userEmail}"`);
     
     try {
       const newCode = generateOTP(6);

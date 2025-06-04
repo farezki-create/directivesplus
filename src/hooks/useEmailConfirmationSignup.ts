@@ -22,8 +22,14 @@ export const useEmailConfirmationSignup = () => {
   const signUp = async (formData: RegisterFormValues): Promise<SignupResult> => {
     setIsLoading(true);
     
-    console.log("🚀 === DÉBUT PROCESSUS INSCRIPTION ===");
-    console.log("📧 Email du formulaire:", `"${formData.email}"`);
+    console.log("🔍 === DEBUG EMAIL CONFIRMATION SIGNUP ===");
+    console.log("📧 Email REÇU dans signUp:", `"${formData.email}"`);
+    console.log("📧 Type:", typeof formData.email);
+    console.log("📧 Données complètes:", {
+      email: formData.email,
+      firstName: formData.firstName,
+      lastName: formData.lastName
+    });
     
     try {
       // Étape 1: Générer le code OTP
@@ -32,6 +38,8 @@ export const useEmailConfirmationSignup = () => {
 
       // Étape 2: Envoyer l'email de confirmation
       console.log("📧 === ENVOI EMAIL ===");
+      console.log("📧 Email qui sera envoyé à sendOTP:", `"${formData.email}"`);
+      
       const emailResult = await sendOTP(
         formData.email,
         confirmationCode,
@@ -57,6 +65,8 @@ export const useEmailConfirmationSignup = () => {
 
       // Étape 3: Créer l'utilisateur Supabase
       console.log("🔐 === CRÉATION UTILISATEUR ===");
+      console.log("📧 Email qui sera envoyé à supabaseSignUp:", `"${formData.email}"`);
+      
       const signupResult = await supabaseSignUp({
         ...formData,
         confirmationCode
@@ -77,6 +87,7 @@ export const useEmailConfirmationSignup = () => {
       }
 
       console.log("✅ Processus d'inscription terminé avec succès");
+      console.log("📧 Email final dans le résultat:", `"${formData.email}"`);
       
       toast({
         title: "Inscription réussie !",
