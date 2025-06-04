@@ -27,39 +27,66 @@ export const useRegistrationFlow = ({
   const { sendOTP } = useOTPEmailSender();
 
   const handleSubmit = async (values: RegisterFormValues) => {
-    console.log("🔍 === DEBUG REGISTRATION FLOW ===");
-    console.log("📧 Email REÇU dans handleSubmit:", `"${values.email}"`);
+    console.log("🔍 === DEBUG REGISTRATION FLOW - FORMULAIRE ===");
+    console.log("📧 Email EXACT du formulaire:", `"${values.email}"`);
     console.log("📧 Type de l'email:", typeof values.email);
     console.log("📧 Longueur de l'email:", values.email?.length);
-    console.log("📝 Valeurs complètes du formulaire:", {
-      email: values.email,
-      firstName: values.firstName,
-      lastName: values.lastName
-    });
+    console.log("📝 TOUTES les valeurs du formulaire:", JSON.stringify(values, null, 2));
     
-    // Nettoyer l'email au cas où
-    const cleanEmail = values.email?.trim();
-    console.log("📧 Email après nettoyage:", `"${cleanEmail}"`);
+    // Vérification stricte que l'email n'est pas vide
+    if (!values.email || values.email.trim().length === 0) {
+      console.error("❌ Email vide détecté !");
+      toast({
+        title: "Erreur",
+        description: "L'adresse email est requise",
+        variant: "destructive"
+      });
+      return;
+    }
     
-    const cleanedValues = {
-      ...values,
-      email: cleanEmail
+    // Nettoyage strict de l'email
+    const cleanEmail = values.email.trim().toLowerCase();
+    console.log("📧 Email après nettoyage strict:", `"${cleanEmail}"`);
+    
+    // Vérification que l'email nettoyé n'est pas l'ancien email
+    if (cleanEmail === "arezki_farid@hotmail.com") {
+      console.error("❌ DÉTECTION DE L'ANCIEN EMAIL ! Email détecté:", cleanEmail);
+      toast({
+        title: "Erreur de formulaire",
+        description: "Veuillez saisir votre nouvelle adresse email",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Création d'un nouvel objet avec l'email nettoyé
+    const cleanedValues: RegisterFormValues = {
+      firstName: values.firstName?.trim() || "",
+      lastName: values.lastName?.trim() || "",
+      gender: values.gender,
+      birthDate: values.birthDate || "",
+      email: cleanEmail,
+      address: values.address?.trim() || "",
+      phoneNumber: values.phoneNumber?.trim() || "",
+      password: values.password || "",
+      passwordConfirm: values.passwordConfirm || ""
     };
     
-    console.log("📧 Valeurs nettoyées envoyées à signUp:", cleanedValues.email);
+    console.log("📧 VALEURS FINALES envoyées à signUp:", JSON.stringify(cleanedValues, null, 2));
+    console.log("📧 EMAIL FINAL qui sera traité:", `"${cleanedValues.email}"`);
     
     const result = await signUp(cleanedValues);
     
     if (result.success && result.needsEmailConfirmation) {
       console.log("✅ Passage à l'étape de confirmation");
-      console.log("📧 Email qui sera stocké dans l'état:", cleanEmail);
+      console.log("📧 Email qui sera stocké dans l'état:", `"${cleanedValues.email}"`);
       
       updateRegistrationState({
         step: 'confirmation',
-        userEmail: cleanEmail,
+        userEmail: cleanedValues.email,
         confirmationCode: result.confirmationCode!,
-        firstName: values.firstName,
-        lastName: values.lastName,
+        firstName: cleanedValues.firstName,
+        lastName: cleanedValues.lastName,
         userId: result.user?.id
       });
     }
