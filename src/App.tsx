@@ -3,7 +3,6 @@ import React from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import Auth from './pages/Auth';
-import TwoFactorAuth from './pages/TwoFactorAuth';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './contexts/AuthContext';
 import SuiviPalliatif from './pages/SuiviPalliatif';
@@ -45,7 +44,6 @@ function App() {
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
-              <Route path="/auth/2fa" element={<TwoFactorAuth />} />
               <Route path="/auth-audit" element={<AuthAudit />} />
               <Route path="/auth-audit-complete" element={<AuthAuditComplete />} />
               <Route path="/acces-institution" element={<AccesInstitution />} />
