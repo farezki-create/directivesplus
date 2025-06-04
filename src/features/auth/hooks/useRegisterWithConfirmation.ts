@@ -16,7 +16,7 @@ export const useRegisterWithConfirmation = () => {
     setIsLoading(true);
     
     try {
-      console.log("🔐 Inscription avec envoi manuel d'email de confirmation");
+      console.log("🔐 Début inscription avec confirmation email");
       console.log("Email à inscrire:", values.email);
       
       // Nettoyer complètement l'état d'authentification
@@ -24,8 +24,37 @@ export const useRegisterWithConfirmation = () => {
 
       // Générer un code OTP pour la confirmation
       const confirmationCode = generateOTP(6);
+      console.log("🔢 Code OTP généré:", confirmationCode);
 
-      // Créer l'utilisateur avec confirmation email désactivée temporairement
+      // D'abord envoyer l'email de confirmation
+      console.log("📧 Envoi de l'email de confirmation en cours...");
+      
+      const emailResult = await sendOTP({
+        email: values.email,
+        code: confirmationCode,
+        firstName: values.firstName,
+        lastName: values.lastName
+      });
+
+      if (!emailResult.success) {
+        console.error("❌ Échec envoi email:", emailResult.error);
+        toast({
+          title: "Erreur d'envoi d'email",
+          description: "Impossible d'envoyer l'email de confirmation. Veuillez vérifier votre adresse email.",
+          variant: "destructive",
+          duration: 8000
+        });
+        
+        return { 
+          success: false, 
+          error: "Impossible d'envoyer l'email de confirmation",
+          needsEmailConfirmation: false
+        };
+      }
+
+      console.log("✅ Email de confirmation envoyé avec succès");
+
+      // Ensuite créer l'utilisateur
       const { data, error } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
@@ -43,10 +72,10 @@ export const useRegisterWithConfirmation = () => {
         }
       });
 
-      console.log("Réponse Supabase signUp:", { data, error });
+      console.log("📝 Réponse Supabase signUp:", { data, error });
 
       if (error) {
-        console.error("❌ Erreur d'inscription:", error);
+        console.error("❌ Erreur d'inscription Supabase:", error);
         
         let errorMessage = "Une erreur est survenue lors de l'inscription";
         
@@ -75,51 +104,21 @@ export const useRegisterWithConfirmation = () => {
       }
 
       if (data.user) {
-        console.log("✅ Utilisateur créé:", data.user.id);
+        console.log("✅ Utilisateur créé avec succès:", data.user.id);
         
-        // Envoyer l'email de confirmation personnalisé
-        try {
-          console.log("📧 Envoi de l'email de confirmation personnalisé");
-          
-          const emailResult = await sendOTP({
-            email: values.email,
-            code: confirmationCode,
-            firstName: values.firstName,
-            lastName: values.lastName
-          });
-
-          if (emailResult.success) {
-            console.log("✅ Email de confirmation envoyé avec succès");
-            
-            return { 
-              success: true, 
-              user: data.user, 
-              needsEmailConfirmation: true,
-              confirmationCode,
-              message: "Inscription réussie ! Un email de confirmation avec un code a été envoyé à votre adresse. Saisissez le code pour finaliser votre inscription."
-            };
-          } else {
-            throw new Error("Échec de l'envoi de l'email de confirmation");
-          }
-        } catch (emailError: any) {
-          console.error("❌ Erreur envoi email:", emailError);
-          
-          // L'utilisateur est créé mais l'email n'a pas pu être envoyé
-          toast({
-            title: "Compte créé mais email non envoyé",
-            description: "Votre compte a été créé mais l'email de confirmation n'a pas pu être envoyé. Contactez le support.",
-            variant: "destructive",
-            duration: 10000
-          });
-          
-          return { 
-            success: true, 
-            user: data.user, 
-            needsEmailConfirmation: true,
-            error: "Email de confirmation non envoyé",
-            message: "Compte créé mais email de confirmation non envoyé"
-          };
-        }
+        toast({
+          title: "Inscription réussie !",
+          description: "Un email avec un code de confirmation a été envoyé à votre adresse.",
+          duration: 6000
+        });
+        
+        return { 
+          success: true, 
+          user: data.user, 
+          needsEmailConfirmation: true,
+          confirmationCode,
+          message: "Inscription réussie ! Un email de confirmation avec un code a été envoyé à votre adresse. Saisissez le code pour finaliser votre inscription."
+        };
       }
 
       return { 
@@ -129,10 +128,18 @@ export const useRegisterWithConfirmation = () => {
       };
       
     } catch (error: any) {
-      console.error("❌ Erreur lors de l'inscription:", error);
+      console.error("❌ Erreur globale lors de l'inscription:", error);
+      
+      toast({
+        title: "Erreur d'inscription",
+        description: error.message || "Une erreur inattendue s'est produite",
+        variant: "destructive",
+        duration: 8000
+      });
+      
       return { 
         success: false, 
-        error: error.message,
+        error: error.message || "Erreur inattendue",
         needsEmailConfirmation: false
       };
     } finally {
