@@ -1,5 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -26,10 +27,16 @@ serve(async (req) => {
 
     console.log(`📧 Envoi email ${type} pour:`, email)
 
-    const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY')
-    if (!BREVO_API_KEY) {
-      throw new Error('BREVO_API_KEY not configured')
-    }
+    // Créer le client Supabase
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    })
 
     let subject: string
     let htmlContent: string
@@ -95,41 +102,32 @@ serve(async (req) => {
         throw new Error(`Type d'email non supporté: ${type}`)
     }
 
-    // Send email via Brevo
-    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'api-key': BREVO_API_KEY
-      },
-      body: JSON.stringify({
-        sender: {
-          name: 'DirectivesPlus',
-          email: 'noreply@directivesplus.fr'
-        },
-        to: [{
-          email: email,
-          name: user_data?.first_name || 'Utilisateur'
-        }],
-        subject: subject,
-        htmlContent: htmlContent
-      })
+    // Envoyer l'email via l'API Admin de Supabase
+    const { data, error } = await supabase.auth.admin.generateLink({
+      type: 'email',
+      email: email,
+      options: {
+        emailRedirectTo: confirmation_url || recovery_url,
+        data: {
+          custom_subject: subject,
+          custom_html: htmlContent,
+          email_type: type,
+          code: code
+        }
+      }
     })
 
-    if (!response.ok) {
-      const errorData = await response.text()
-      console.error('❌ Erreur Brevo:', errorData)
-      throw new Error(`Erreur Brevo: ${response.status}`)
+    if (error) {
+      console.error('❌ Erreur Supabase Auth:', error)
+      throw new Error(`Erreur Supabase: ${error.message}`)
     }
 
-    const result = await response.json()
-    console.log('✅ Email envoyé avec succès:', result.messageId)
+    console.log('✅ Email envoyé avec succès via Supabase')
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        messageId: result.messageId,
+        messageId: data?.properties?.message_id || 'supabase-email',
         type: type 
       }),
       { 
