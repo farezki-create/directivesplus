@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LoginForm } from "./LoginForm";
+import { LoginForm } from "../LoginForm";
 import { RegisterFormWithConfirmation } from "../RegisterFormWithConfirmation";
 import { DebugSection } from "./DebugSection";
 
@@ -48,8 +48,9 @@ export const AuthContent = ({ redirectPath, setRedirectInProgress, onForgotPassw
             
             <TabsContent value="login" className="space-y-4">
               <LoginForm 
-                onSuccess={handleLoginSuccess}
-                onForgotPassword={onForgotPassword}
+                redirectPath={redirectPath || "/rediger"}
+                setRedirectInProgress={setRedirectInProgress || (() => {})}
+                onForgotPassword={onForgotPassword || (() => {})}
               />
             </TabsContent>
             
