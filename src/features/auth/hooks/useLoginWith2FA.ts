@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -60,7 +61,7 @@ export const useLoginWith2FA = ({
         if (!data.user.email_confirmed_at) {
           console.log("📧 Email non confirmé, déconnexion et message d'erreur...");
           
-          // Déconnecter l'utilisateur APRÈS avoir vérifié le statut
+          // Déconnecter l'utilisateur
           await supabase.auth.signOut();
           
           toast({
@@ -73,21 +74,25 @@ export const useLoginWith2FA = ({
           return;
         }
         
-        console.log("✅ Email confirmé, activation 2FA...");
+        console.log("✅ Email confirmé, envoi du code 2FA...");
         
-        // Déconnecter temporairement jusqu'à validation 2FA
-        await supabase.auth.signOut();
-        
-        // Stocker les informations pour la 2FA
+        // Stocker les informations pour la 2FA AVANT de déconnecter
         setPendingUserId(data.user.id);
         setPendingEmail(values.email);
         
-        // Envoyer le code 2FA
+        // Envoyer le code 2FA AVANT de déconnecter
         const result = await sendTwoFactorCode(values.email, data.user.id);
         
         if (result.success) {
+          console.log("✅ Code 2FA envoyé, déconnexion temporaire...");
+          
+          // Déconnecter temporairement APRÈS envoi du code
+          await supabase.auth.signOut();
+          
           setRequiresTwoFactor(true);
         } else {
+          // Si l'envoi échoue, nettoyer et afficher l'erreur
+          await supabase.auth.signOut();
           throw new Error("Impossible d'envoyer le code 2FA");
         }
       }
