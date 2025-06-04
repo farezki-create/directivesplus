@@ -8,11 +8,13 @@ import { use2FA } from "./use2FA";
 interface UseLoginWith2FAProps {
   onSuccessfulLogin: (email: string) => void;
   setRedirectInProgress: (value: boolean) => void;
+  redirectPath: string;
 }
 
 export const useLoginWith2FA = ({
   onSuccessfulLogin,
-  setRedirectInProgress
+  setRedirectInProgress,
+  redirectPath
 }: UseLoginWith2FAProps) => {
   const [loading, setLoading] = useState(false);
   const [requiresTwoFactor, setRequiresTwoFactor] = useState(false);
@@ -101,8 +103,8 @@ export const useLoginWith2FA = ({
       resetTwoFactor();
       
       setTimeout(() => {
-        console.log("🚀 Redirection vers /rediger");
-        window.location.href = "/rediger";
+        console.log(`🚀 Redirection vers ${redirectPath}`);
+        window.location.href = redirectPath;
       }, 1000);
       
     } catch (error: any) {
