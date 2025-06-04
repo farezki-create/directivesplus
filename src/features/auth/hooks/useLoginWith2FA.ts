@@ -40,7 +40,7 @@ export const useLoginWith2FA = ({
         let errorMessage = "Identifiants incorrects. Vérifiez votre email et mot de passe.";
         
         if (error.message.includes("Email not confirmed")) {
-          errorMessage = "Votre email n'a pas encore été vérifié. Consultez votre boîte de réception pour confirmer votre compte.";
+          errorMessage = "Votre email n'a pas encore été vérifié. Consultez votre boîte de réception.";
         } else if (error.message.includes("Invalid login credentials")) {
           errorMessage = "Email ou mot de passe incorrect.";
         }
@@ -55,44 +55,21 @@ export const useLoginWith2FA = ({
       }
       
       if (data.user) {
-        console.log("✅ Connexion initiale réussie, vérification statut email...");
+        console.log("✅ Connexion initiale réussie, activation 2FA...");
         
-        // Vérifier si l'email est confirmé
-        if (!data.user.email_confirmed_at) {
-          console.log("📧 Email non confirmé, déconnexion et message d'erreur...");
-          
-          // Déconnecter l'utilisateur
-          await supabase.auth.signOut();
-          
-          toast({
-            title: "Email non confirmé",
-            description: "Votre email n'a pas encore été vérifié. Consultez votre boîte de réception pour confirmer votre compte.",
-            variant: "destructive"
-          });
-          
-          setLoading(false);
-          return;
-        }
+        // Déconnecter temporairement jusqu'à validation 2FA
+        await supabase.auth.signOut();
         
-        console.log("✅ Email confirmé, envoi du code 2FA...");
-        
-        // Stocker les informations pour la 2FA AVANT de déconnecter
+        // Stocker les informations pour la 2FA
         setPendingUserId(data.user.id);
         setPendingEmail(values.email);
         
-        // Envoyer le code 2FA AVANT de déconnecter
+        // Envoyer le code 2FA
         const result = await sendTwoFactorCode(values.email, data.user.id);
         
         if (result.success) {
-          console.log("✅ Code 2FA envoyé, déconnexion temporaire...");
-          
-          // Déconnecter temporairement APRÈS envoi du code
-          await supabase.auth.signOut();
-          
           setRequiresTwoFactor(true);
         } else {
-          // Si l'envoi échoue, nettoyer et afficher l'erreur
-          await supabase.auth.signOut();
           throw new Error("Impossible d'envoyer le code 2FA");
         }
       }

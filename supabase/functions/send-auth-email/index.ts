@@ -1,6 +1,5 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { Resend } from "npm:resend@2.0.0"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -23,22 +22,14 @@ serve(async (req) => {
   }
 
   try {
-    console.log('🚀 Edge function send-auth-email démarrée')
-    
-    // Vérifier la clé API Resend
-    const resendApiKey = Deno.env.get('RESEND_API_KEY')
-    if (!resendApiKey) {
-      console.error('❌ RESEND_API_KEY non trouvée dans les variables d\'environnement')
-      throw new Error('RESEND_API_KEY non configurée')
-    }
-    console.log('✅ RESEND_API_KEY trouvée:', resendApiKey.substring(0, 10) + '...')
-    
-    const resend = new Resend(resendApiKey)
-
     const { email, type, confirmation_url, recovery_url, code, user_data }: EmailRequest = await req.json()
 
     console.log(`📧 Envoi email ${type} pour:`, email)
-    console.log('📝 Données reçues:', { email, type, confirmation_url, recovery_url, code })
+
+    const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY')
+    if (!BREVO_API_KEY) {
+      throw new Error('BREVO_API_KEY not configured')
+    }
 
     let subject: string
     let htmlContent: string
@@ -104,47 +95,42 @@ serve(async (req) => {
         throw new Error(`Type d'email non supporté: ${type}`)
     }
 
-    // Utiliser l'adresse par défaut de Resend si le domaine custom n'est pas validé
-    const fromAddress = 'DirectivesPlus <onboarding@resend.dev>'
-    
-    console.log('📤 Préparation envoi email via Resend...')
-    console.log('📧 De:', fromAddress)
-    console.log('📧 À:', email)
-    console.log('📧 Sujet:', subject)
-    
-    const emailPayload = {
-      from: fromAddress,
-      to: [email],
-      subject: subject,
-      html: htmlContent
+    // Send email via Brevo
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'api-key': BREVO_API_KEY
+      },
+      body: JSON.stringify({
+        sender: {
+          name: 'DirectivesPlus',
+          email: 'noreply@directivesplus.fr'
+        },
+        to: [{
+          email: email,
+          name: user_data?.first_name || 'Utilisateur'
+        }],
+        subject: subject,
+        htmlContent: htmlContent
+      })
+    })
+
+    if (!response.ok) {
+      const errorData = await response.text()
+      console.error('❌ Erreur Brevo:', errorData)
+      throw new Error(`Erreur Brevo: ${response.status}`)
     }
-    
-    console.log('📦 Payload email:', JSON.stringify(emailPayload, null, 2))
-    
-    const emailResponse = await resend.emails.send(emailPayload)
 
-    console.log('📧 Réponse Resend complète:', JSON.stringify(emailResponse, null, 2))
-
-    if (emailResponse.error) {
-      console.error('❌ Erreur Resend détaillée:', JSON.stringify(emailResponse.error, null, 2))
-      throw new Error(`Erreur Resend: ${JSON.stringify(emailResponse.error)}`)
-    }
-
-    console.log('✅ Email envoyé avec succès via Resend')
-    console.log('📧 ID de l\'email:', emailResponse.data?.id)
+    const result = await response.json()
+    console.log('✅ Email envoyé avec succès:', result.messageId)
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        messageId: emailResponse.data?.id || `directivesplus-${Date.now()}`,
-        type: type,
-        debug: {
-          email: email,
-          subject: subject,
-          from: fromAddress,
-          resend_configured: !!Deno.env.get('RESEND_API_KEY'),
-          resend_response: emailResponse
-        }
+        messageId: result.messageId,
+        type: type 
       }),
       { 
         headers: { 
@@ -155,14 +141,12 @@ serve(async (req) => {
     )
 
   } catch (error) {
-    console.error('❌ Erreur envoi email complète:', error)
-    console.error('❌ Stack trace:', error.stack)
+    console.error('❌ Erreur envoi email:', error)
     
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: error.message,
-        details: error.stack 
+        error: error.message 
       }),
       { 
         status: 500,
