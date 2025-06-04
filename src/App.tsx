@@ -26,8 +26,6 @@ import MesDirectives from './pages/MesDirectives';
 import CarteAcces from './pages/CarteAcces';
 import Profile from './pages/Profile';
 import AdminInstitutions from './pages/AdminInstitutions';
-import AuthAudit from './pages/AuthAudit';
-import AuthAuditComplete from './pages/AuthAuditComplete';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -44,15 +42,12 @@ function App() {
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
-              <Route path="/auth-audit" element={<AuthAudit />} />
-              <Route path="/auth-audit-complete" element={<AuthAuditComplete />} />
               <Route path="/acces-institution" element={<AccesInstitution />} />
               <Route path="/acces-soins-palliatifs" element={<AccesSoinsPalliatifs />} />
               <Route path="/demande-abonnement-institutionnel" element={<DemandeAbonnementInstitutionnel />} />
               <Route path="/tableau-bord-institution" element={<TableauBordInstitution />} />
               <Route path="/espace-abonne-institution" element={<EspaceAbonneInstitution />} />
               
-              {/* Nouvelle route pour l'administration des institutions */}
               <Route 
                 path="/admin/institutions" 
                 element={
@@ -71,7 +66,6 @@ function App() {
                 } 
               />
               
-              {/* Pages de rédaction des directives */}
               <Route 
                 path="/avis-general" 
                 element={
@@ -135,7 +129,6 @@ function App() {
                 } 
               />
               
-              {/* Pages Mes Directives et Carte d'Accès */}
               <Route 
                 path="/mes-directives" 
                 element={
@@ -154,7 +147,6 @@ function App() {
                 } 
               />
               
-              {/* Page Profile */}
               <Route 
                 path="/profile" 
                 element={

@@ -3,21 +3,23 @@ import React from 'react';
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { AuthContent } from "@/features/auth/components/AuthContent";
-import { useState } from "react";
+import { SimpleAuthForm } from "@/components/auth/SimpleAuthForm";
 import { useAuth } from "@/contexts/AuthContext";
-import { useEmailConfirmationFlow } from "@/features/auth/hooks/useEmailConfirmationFlow";
-import { LoadingView } from "@/features/auth/components/LoadingView";
 
 const Auth = () => {
   const navigate = useNavigate();
   const { isAuthenticated, isLoading } = useAuth();
-  const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const { isProcessingConfirmation } = useEmailConfirmationFlow();
 
   // État de chargement
-  if (isLoading || isProcessingConfirmation) {
-    return <LoadingView />;
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Chargement...</p>
+        </div>
+      </div>
+    );
   }
 
   // Redirection si authentifié
@@ -25,14 +27,6 @@ const Auth = () => {
     navigate('/rediger');
     return null;
   }
-
-  const handleForgotPassword = () => {
-    setShowForgotPassword(true);
-  };
-
-  const handleBackToLogin = () => {
-    setShowForgotPassword(false);
-  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -48,11 +42,7 @@ const Auth = () => {
             ← Retour à l'accueil
           </Button>
 
-          <AuthContent
-            redirectPath="/rediger"
-            setRedirectInProgress={() => {}}
-            onForgotPassword={handleForgotPassword}
-          />
+          <SimpleAuthForm />
         </div>
       </main>
     </div>

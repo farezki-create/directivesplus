@@ -1,6 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { Resend } from "npm:resend@2.0.0";
+import { Resend } from "npm:resend@2.0.0"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -9,22 +9,20 @@ const corsHeaders = {
 
 interface EmailRequest {
   email: string;
-  type: 'confirmation' | 'recovery' | '2fa_code';
+  type: 'confirmation' | 'recovery';
   confirmation_url?: string;
   recovery_url?: string;
-  code?: string;
   user_data?: any;
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    const { email, type, confirmation_url, recovery_url, code, user_data }: EmailRequest = await req.json()
-
+    const { email, type, confirmation_url, recovery_url, user_data }: EmailRequest = await req.json()
+    
     console.log(`📧 Envoi email ${type} pour:`, email)
 
     const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
@@ -32,7 +30,7 @@ serve(async (req) => {
       throw new Error('RESEND_API_KEY not configured')
     }
 
-    const resend = new Resend(RESEND_API_KEY);
+    const resend = new Resend(RESEND_API_KEY)
 
     let subject: string
     let htmlContent: string
@@ -70,43 +68,18 @@ serve(async (req) => {
         `
         break
 
-      case '2fa_code':
-        subject = 'Code de sécurité DirectivesPlus'
-        htmlContent = `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #2563eb;">Code de sécurité</h2>
-            <p>Voici votre code de sécurité pour accéder à DirectivesPlus :</p>
-            <div style="text-align: center; margin: 30px 0;">
-              <div style="background-color: #f3f4f6; border: 2px solid #e5e7eb; padding: 20px; border-radius: 8px; display: inline-block;">
-                <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #1f2937;">${code}</span>
-              </div>
-            </div>
-            <p style="color: #ef4444; font-weight: bold;">⚠️ Ce code expire dans 10 minutes</p>
-            <p style="color: #666; font-size: 14px;">
-              Si vous n'avez pas demandé ce code, ignorez cet email et vérifiez la sécurité de votre compte.
-            </p>
-            <div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0;">
-              <p style="margin: 0; color: #92400e; font-size: 14px;">
-                <strong>Sécurité :</strong> Ne partagez jamais ce code avec personne. L'équipe DirectivesPlus ne vous demandera jamais ce code par téléphone ou email.
-              </p>
-            </div>
-          </div>
-        `
-        break
-
       default:
         throw new Error(`Type d'email non supporté: ${type}`)
     }
 
-    // Send email via Resend
     const emailResponse = await resend.emails.send({
       from: 'DirectivesPlus <onboarding@resend.dev>',
       to: [email],
       subject: subject,
       html: htmlContent
-    });
+    })
 
-    console.log('✅ Email envoyé avec succès via Resend:', emailResponse.data?.id)
+    console.log('✅ Email envoyé avec succès:', emailResponse.data?.id)
 
     return new Response(
       JSON.stringify({ 
