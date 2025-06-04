@@ -41,7 +41,7 @@ export const RegisterFormWithSupabase = ({ onSuccess }: RegisterFormWithSupabase
   const { register, isLoading } = useRegisterWithSupabase();
 
   const handleSubmit = async (values: RegisterFormValues) => {
-    console.log("📝 Soumission inscription Supabase avec téléphone:", values.phoneNumber);
+    console.log("📝 Soumission inscription Supabase avec Resend:", values.email);
     
     const result = await register(values);
     
@@ -76,13 +76,13 @@ export const RegisterFormWithSupabase = ({ onSuccess }: RegisterFormWithSupabase
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4" />
-                    <p>Un email de confirmation a été envoyé.</p>
+                    <p>Un email de confirmation a été envoyé via Resend.</p>
                   </div>
-                  <p className="text-sm">Cliquez sur le lien dans l'email pour continuer vers la vérification SMS.</p>
+                  <p className="text-sm">Cliquez sur le lien dans l'email pour finaliser votre inscription.</p>
                   <p className="text-xs text-green-600">Vérifiez vos spams si nécessaire.</p>
                 </div>
               ) : (
-                <p>Redirection vers la vérification SMS...</p>
+                <p>Connexion en cours...</p>
               )}
             </div>
           </AlertDescription>

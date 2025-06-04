@@ -13,21 +13,18 @@ export const useRegisterWithSupabase = () => {
     setIsLoading(true);
     
     try {
-      console.log("🔐 Inscription avec système SMTP standard Supabase");
+      console.log("🔐 Inscription avec Resend uniquement");
       console.log("Email à inscrire:", values.email);
       
       // Nettoyer complètement l'état d'authentification
       await performGlobalSignOut();
 
-      // Configuration standard Supabase avec redirection vers /auth/2fa après confirmation
-      const redirectUrl = `${window.location.origin}/auth/2fa`;
-      console.log("URL de redirection après confirmation:", redirectUrl);
-
+      // Créer l'utilisateur avec confirmation automatique désactivée
       const { data, error } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
         options: {
-          emailRedirectTo: redirectUrl,
+          emailRedirectTo: `${window.location.origin}/auth`,
           data: {
             first_name: values.firstName,
             last_name: values.lastName,
@@ -70,37 +67,56 @@ export const useRegisterWithSupabase = () => {
         };
       }
 
-      console.log("✅ Utilisateur créé:", data.user?.id);
-      console.log("Email confirmé automatiquement:", !!data.user?.email_confirmed_at);
+      if (data.user) {
+        console.log("✅ Utilisateur créé:", data.user.id);
+        
+        // Envoyer l'email de confirmation via Resend uniquement
+        try {
+          const { data: emailData, error: emailError } = await supabase.functions.invoke('send-auth-email', {
+            body: {
+              email: values.email,
+              type: 'confirmation',
+              token: data.user.id,
+              firstName: values.firstName,
+              lastName: values.lastName
+            }
+          });
 
-      if (data.user && !data.user.email_confirmed_at) {
-        console.log("📧 Email de confirmation envoyé via système SMTP Supabase");
-        
-        return { 
-          success: true, 
-          user: data.user, 
-          needsEmailConfirmation: true,
-          message: "Inscription réussie ! Un email de confirmation a été envoyé à votre adresse. Cliquez sur le lien pour continuer vers la vérification SMS."
-        };
-      } else if (data.user?.email_confirmed_at) {
-        console.log("✅ Email déjà confirmé, redirection vers 2FA");
-        
-        // Rediriger directement vers la page 2FA
-        window.location.href = '/auth/2fa';
-        
-        return { 
-          success: true, 
-          user: data.user, 
-          needsEmailConfirmation: false,
-          message: "Compte créé avec succès ! Redirection vers la vérification SMS..."
-        };
+          if (emailError) throw emailError;
+
+          if (emailData.success) {
+            console.log("📧 Email de confirmation envoyé via Resend");
+            
+            return { 
+              success: true, 
+              user: data.user, 
+              needsEmailConfirmation: true,
+              message: "Inscription réussie ! Un email de confirmation a été envoyé à votre adresse. Cliquez sur le lien pour finaliser votre inscription."
+            };
+          } else {
+            throw new Error(emailData.error || "Erreur lors de l'envoi de l'email");
+          }
+        } catch (emailError: any) {
+          console.error("❌ Erreur envoi email:", emailError);
+          
+          toast({
+            title: "Erreur d'envoi d'email",
+            description: "Impossible d'envoyer l'email de confirmation. Veuillez réessayer.",
+            variant: "destructive"
+          });
+          
+          return { 
+            success: false, 
+            error: "Impossible d'envoyer l'email de confirmation",
+            needsEmailConfirmation: false
+          };
+        }
       }
 
       return { 
-        success: true, 
-        user: data.user,
-        needsEmailConfirmation: true,
-        message: "Inscription en cours de validation."
+        success: false, 
+        error: "Erreur inattendue lors de l'inscription",
+        needsEmailConfirmation: false
       };
       
     } catch (error: any) {

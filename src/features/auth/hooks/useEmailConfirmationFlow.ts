@@ -40,39 +40,16 @@ export const useEmailConfirmationFlow = () => {
           if (session?.user) {
             console.log("✅ Email confirmé pour utilisateur:", session.user.id);
             
-            // Envoyer SMS via Twilio maintenant que l'email est confirmé
-            try {
-              console.log("📱 Envoi du SMS via Twilio après confirmation email...");
-              
-              const phoneNumber = session.user.user_metadata?.phone_number;
-              if (phoneNumber) {
-                const { data: smsData, error: smsError } = await supabase.functions.invoke('send-twilio-sms', {
-                  body: {
-                    phoneNumber: phoneNumber,
-                    userId: session.user.id
-                  }
-                });
-
-                if (smsError) {
-                  console.error("❌ Erreur SMS Twilio:", smsError);
-                } else {
-                  console.log("✅ SMS envoyé via Twilio");
-                }
-              }
-            } catch (smsErr) {
-              console.warn("⚠️ Erreur SMS (non bloquante):", smsErr);
-            }
-
             toast({
               title: "Email confirmé !",
-              description: "Un SMS de vérification a été envoyé à votre téléphone.",
+              description: "Votre inscription a été finalisée avec succès. Bienvenue !",
               duration: 4000
             });
 
-            // Rediriger vers la page 2FA
+            // Rediriger vers l'application
             setTimeout(() => {
-              console.log("🚀 Redirection vers /auth/2fa");
-              navigate('/auth/2fa', { replace: true });
+              console.log("🚀 Redirection vers /rediger");
+              navigate('/rediger', { replace: true });
             }, 1000);
           }
         } catch (error: any) {

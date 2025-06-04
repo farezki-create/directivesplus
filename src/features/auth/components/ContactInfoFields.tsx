@@ -3,21 +3,11 @@ import { UseFormReturn } from "react-hook-form";
 import { RegisterFormValues } from "../schemas";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Mail, MapPin, Phone } from "lucide-react";
 
 interface ContactInfoFieldsProps {
   form: UseFormReturn<RegisterFormValues>;
 }
-
-const countryCodes = [
-  { code: "+33", country: "France", flag: "🇫🇷" },
-  { code: "+32", country: "Belgique", flag: "🇧🇪" },
-  { code: "+41", country: "Suisse", flag: "🇨🇭" },
-  { code: "+1", country: "USA/Canada", flag: "🇺🇸" },
-  { code: "+44", country: "Royaume-Uni", flag: "🇬🇧" },
-  { code: "+49", country: "Allemagne", flag: "🇩🇪" },
-];
 
 export const ContactInfoFields = ({ form }: ContactInfoFieldsProps) => {
   return (
