@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -41,13 +40,6 @@ export const useLoginWith2FA = ({
         
         if (error.message.includes("Email not confirmed")) {
           errorMessage = "Votre email n'a pas encore été vérifié. Consultez votre boîte de réception pour confirmer votre compte.";
-          toast({
-            title: "Email non confirmé",
-            description: errorMessage,
-            variant: "destructive"
-          });
-          setLoading(false);
-          return;
         } else if (error.message.includes("Invalid login credentials")) {
           errorMessage = "Email ou mot de passe incorrect.";
         }
@@ -66,9 +58,9 @@ export const useLoginWith2FA = ({
         
         // Vérifier si l'email est confirmé
         if (!data.user.email_confirmed_at) {
-          console.log("📧 Email non confirmé, envoi de confirmation...");
+          console.log("📧 Email non confirmé, déconnexion et message d'erreur...");
           
-          // Déconnecter l'utilisateur
+          // Déconnecter l'utilisateur APRÈS avoir vérifié le statut
           await supabase.auth.signOut();
           
           toast({
