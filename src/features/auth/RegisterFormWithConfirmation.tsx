@@ -7,7 +7,6 @@ import { PersonalInfoFields } from "./components/PersonalInfoFields";
 import { ContactInfoFields } from "./components/ContactInfoFields";
 import { PasswordFields } from "./components/PasswordFields";
 import { FormSubmitButton } from "./components/FormSubmitButton";
-import { useRegisterWithConfirmation } from "./hooks/useRegisterWithConfirmation";
 import { useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle } from "lucide-react";
@@ -15,26 +14,38 @@ import { ConfirmationCodeInput } from "./components/ConfirmationCodeInput";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { useSendOTP } from "@/hooks/useSendOTP";
+import { useEmailConfirmationSignup } from "@/hooks/useEmailConfirmationSignup";
+import { useOTPEmailSender } from "@/hooks/useOTPEmailSender";
 import { generateOTP } from "@/utils/otpGenerator";
 
 interface RegisterFormWithConfirmationProps {
   onSuccess?: () => void;
 }
 
+interface RegistrationState {
+  step: 'form' | 'confirmation' | 'success';
+  userEmail: string;
+  confirmationCode: string;
+  firstName: string;
+  lastName: string;
+  userId?: string;
+}
+
 export const RegisterFormWithConfirmation = ({ onSuccess }: RegisterFormWithConfirmationProps) => {
-  const [registrationState, setRegistrationState] = useState<{
-    step: 'form' | 'confirmation' | 'success';
-    formData?: RegisterFormValues; // Stocker toutes les données du formulaire
-    confirmationCode?: string;
-    userId?: string;
-  }>({ step: 'form' });
+  const [registrationState, setRegistrationState] = useState<RegistrationState>({
+    step: 'form',
+    userEmail: '',
+    confirmationCode: '',
+    firstName: '',
+    lastName: ''
+  });
 
   const [confirmationError, setConfirmationError] = useState<string>("");
   const [isConfirming, setIsConfirming] = useState(false);
   
   const navigate = useNavigate();
-  const { sendOTP } = useSendOTP();
+  const { signUp, isLoading } = useEmailConfirmationSignup();
+  const { sendOTP } = useOTPEmailSender();
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerFormSchema),
@@ -51,22 +62,21 @@ export const RegisterFormWithConfirmation = ({ onSuccess }: RegisterFormWithConf
     },
   });
 
-  const { register, isLoading } = useRegisterWithConfirmation();
-
   const handleSubmit = async (values: RegisterFormValues) => {
-    console.log("📝 Soumission inscription avec confirmation:", values.email);
-    console.log("📧 Email exact du formulaire:", values.email);
+    console.log("📝 === SOUMISSION FORMULAIRE ===");
+    console.log("📧 Email du formulaire:", `"${values.email}"`);
     
-    const result = await register(values);
+    const result = await signUp(values);
     
     if (result.success && result.needsEmailConfirmation) {
-      console.log("✅ Inscription réussie, passage à l'étape de confirmation");
-      console.log("📧 Email stocké pour confirmation:", values.email);
+      console.log("✅ Passage à l'étape de confirmation");
       
       setRegistrationState({
         step: 'confirmation',
-        formData: values, // Stocker toutes les données du formulaire
-        confirmationCode: result.confirmationCode,
+        userEmail: values.email,
+        confirmationCode: result.confirmationCode!,
+        firstName: values.firstName,
+        lastName: values.lastName,
         userId: result.user?.id
       });
     }
@@ -76,18 +86,18 @@ export const RegisterFormWithConfirmation = ({ onSuccess }: RegisterFormWithConf
     setIsConfirming(true);
     setConfirmationError("");
     
+    console.log("🔍 === CONFIRMATION CODE ===");
+    console.log("📧 Email utilisé:", `"${registrationState.userEmail}"`);
+    console.log("🔢 Code saisi:", inputCode);
+    console.log("🔢 Code attendu:", registrationState.confirmationCode);
+    
     try {
-      console.log("🔍 Vérification du code de confirmation");
-      console.log("📧 Email utilisé pour confirmation:", registrationState.formData?.email);
-      
-      // Vérifier le code (ici on compare avec le code généré)
       if (inputCode === registrationState.confirmationCode) {
-        console.log("✅ Code de confirmation valide");
+        console.log("✅ Code valide - confirmation email Supabase");
         
-        // Maintenant on doit confirmer l'email dans Supabase
         const { data, error } = await supabase.functions.invoke('confirm-user-email', {
           body: {
-            email: registrationState.formData?.email, // Utiliser l'email du formulaire
+            email: registrationState.userEmail,
             confirmationCode: inputCode
           }
         });
@@ -117,6 +127,7 @@ export const RegisterFormWithConfirmation = ({ onSuccess }: RegisterFormWithConf
           setConfirmationError("Code de confirmation invalide. Veuillez vérifier et réessayer.");
         }
       } else {
+        console.error("❌ Code invalide");
         setConfirmationError("Code de confirmation invalide. Veuillez vérifier et réessayer.");
       }
     } catch (error: any) {
@@ -128,18 +139,19 @@ export const RegisterFormWithConfirmation = ({ onSuccess }: RegisterFormWithConf
   };
 
   const handleResendCode = async () => {
+    console.log("📧 === RENVOI CODE ===");
+    console.log("📧 Email pour renvoi:", `"${registrationState.userEmail}"`);
+    
     try {
-      console.log("📧 Renvoi du code de confirmation");
-      console.log("📧 Email pour renvoi:", registrationState.formData?.email);
-      
       const newCode = generateOTP(6);
+      console.log("🔢 Nouveau code généré:", newCode);
       
-      const emailResult = await sendOTP({
-        email: registrationState.formData?.email || '', // Utiliser l'email du formulaire
-        code: newCode,
-        firstName: registrationState.formData?.firstName,
-        lastName: registrationState.formData?.lastName
-      });
+      const emailResult = await sendOTP(
+        registrationState.userEmail,
+        newCode,
+        registrationState.firstName,
+        registrationState.lastName
+      );
       
       if (emailResult.success) {
         setRegistrationState(prev => ({ 
@@ -149,7 +161,7 @@ export const RegisterFormWithConfirmation = ({ onSuccess }: RegisterFormWithConf
         
         toast({
           title: "Code renvoyé !",
-          description: "Un nouveau code de confirmation a été envoyé à votre email.",
+          description: `Un nouveau code de confirmation a été envoyé à ${registrationState.userEmail}`,
           duration: 4000
         });
       } else {
@@ -160,6 +172,7 @@ export const RegisterFormWithConfirmation = ({ onSuccess }: RegisterFormWithConf
         });
       }
     } catch (error) {
+      console.error("❌ Erreur renvoi code:", error);
       toast({
         title: "Erreur",
         description: "Impossible de renvoyer le code. Veuillez réessayer.",
@@ -185,7 +198,7 @@ export const RegisterFormWithConfirmation = ({ onSuccess }: RegisterFormWithConf
   if (registrationState.step === 'confirmation') {
     return (
       <ConfirmationCodeInput
-        email={registrationState.formData?.email || ''} // Utiliser l'email du formulaire
+        email={registrationState.userEmail}
         onConfirm={handleConfirmCode}
         onResend={handleResendCode}
         isLoading={isConfirming}
