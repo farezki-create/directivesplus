@@ -25,7 +25,7 @@ export const useRegisterWithConfirmation = () => {
       // Générer un code OTP pour la confirmation
       const confirmationCode = generateOTP(6);
 
-      // Créer l'utilisateur avec confirmation email désactivée
+      // Créer l'utilisateur avec confirmation email désactivée temporairement
       const { data, error } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,

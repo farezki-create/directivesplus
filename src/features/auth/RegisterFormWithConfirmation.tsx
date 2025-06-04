@@ -81,19 +81,39 @@ export const RegisterFormWithConfirmation = ({ onSuccess }: RegisterFormWithConf
       if (inputCode === registrationState.confirmationCode) {
         console.log("✅ Code de confirmation valide");
         
-        // Le compte est déjà créé dans Supabase, on peut rediriger
-        toast({
-          title: "Email confirmé !",
-          description: "Votre inscription a été finalisée avec succès. Bienvenue !",
-          duration: 4000
+        // Maintenant on doit confirmer l'email dans Supabase
+        // Utiliser une Edge Function pour confirmer l'utilisateur côté serveur
+        const { data, error } = await supabase.functions.invoke('confirm-user-email', {
+          body: {
+            email: registrationState.email,
+            confirmationCode: inputCode
+          }
         });
 
-        setRegistrationState(prev => ({ ...prev, step: 'success' }));
-        
-        setTimeout(() => {
-          console.log("🚀 Redirection vers /rediger");
-          navigate('/rediger', { replace: true });
-        }, 1500);
+        if (error) {
+          console.error("❌ Erreur confirmation Supabase:", error);
+          setConfirmationError("Erreur lors de la confirmation. Veuillez réessayer.");
+          return;
+        }
+
+        if (data.success) {
+          console.log("✅ Email confirmé dans Supabase");
+          
+          toast({
+            title: "Email confirmé !",
+            description: "Votre inscription a été finalisée avec succès. Bienvenue !",
+            duration: 4000
+          });
+
+          setRegistrationState(prev => ({ ...prev, step: 'success' }));
+          
+          setTimeout(() => {
+            console.log("🚀 Redirection vers /rediger");
+            navigate('/rediger', { replace: true });
+          }, 1500);
+        } else {
+          setConfirmationError("Code de confirmation invalide. Veuillez vérifier et réessayer.");
+        }
       } else {
         setConfirmationError("Code de confirmation invalide. Veuillez vérifier et réessayer.");
       }
