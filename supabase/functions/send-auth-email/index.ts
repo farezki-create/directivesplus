@@ -1,216 +1,160 @@
 
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@2.0.0";
-
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
 
 interface EmailRequest {
   email: string;
-  type: 'confirmation' | 'reset' | 'welcome';
-  token?: string;
-  firstName?: string;
-  lastName?: string;
+  type: 'confirmation' | 'recovery' | '2fa_code';
+  confirmation_url?: string;
+  recovery_url?: string;
+  code?: string;
+  user_data?: any;
 }
 
-const handler = async (req: Request): Promise<Response> => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    console.log("📧 Début de l'envoi d'email via Resend");
-    
-    const { email, type, token, firstName, lastName }: EmailRequest = await req.json();
-    
-    console.log("Paramètres reçus:", { 
-      email: email.substring(0, 3) + "****",
-      type, 
-      hasToken: !!token,
-      hasName: !!(firstName && lastName)
-    });
+    const { email, type, confirmation_url, recovery_url, code, user_data }: EmailRequest = await req.json()
 
-    // Vérifier la configuration Resend
-    const resendApiKey = Deno.env.get("RESEND_API_KEY");
-    if (!resendApiKey) {
-      console.error("❌ RESEND_API_KEY non configuré");
-      throw new Error("RESEND_API_KEY non configuré");
+    console.log(`📧 Envoi email ${type} pour:`, email)
+
+    const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY')
+    if (!BREVO_API_KEY) {
+      throw new Error('BREVO_API_KEY not configured')
     }
 
-    console.log("✅ Configuration Resend trouvée");
+    let subject: string
+    let htmlContent: string
 
-    let subject: string;
-    let html: string;
-    const baseUrl = req.headers.get('origin') || 'https://www.directivesplus.fr';
-
-    if (type === 'confirmation') {
-      // Email de confirmation d'inscription
-      subject = "Confirmez votre inscription - DirectivesPlus";
-      html = `
-        <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif; background: #f8fafc;">
-          <!-- Header -->
-          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 20px; text-align: center;">
-            <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold;">DirectivesPlus</h1>
-            <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 16px;">Vos directives anticipées sécurisées</p>
-          </div>
-          
-          <!-- Content -->
-          <div style="padding: 40px 20px; background: white;">
-            <h2 style="color: #1e293b; margin-bottom: 20px; font-size: 24px;">
-              Bienvenue${firstName ? ` ${firstName}` : ''} ! 👋
-            </h2>
-            
-            <p style="color: #475569; line-height: 1.6; margin-bottom: 30px; font-size: 16px;">
-              Merci de vous être inscrit(e) sur <strong>DirectivesPlus</strong>. Votre compte a été créé avec succès !
-            </p>
-
-            <div style="background: #f1f5f9; border-left: 4px solid #667eea; padding: 20px; margin: 30px 0; border-radius: 0 8px 8px 0;">
-              <h3 style="color: #1e293b; margin: 0 0 10px 0; font-size: 18px;">✅ Votre inscription est confirmée</h3>
-              <p style="color: #475569; margin: 0; line-height: 1.5;">
-                Vous pouvez maintenant accéder à votre espace personnel pour créer et gérer vos directives anticipées en toute sécurité.
-              </p>
-            </div>
-            
-            <div style="text-align: center; margin: 40px 0;">
-              <a href="${baseUrl}/auth" 
-                 style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                        color: white; 
-                        padding: 15px 30px; 
-                        text-decoration: none; 
-                        border-radius: 8px; 
-                        font-weight: 600;
-                        font-size: 16px;
-                        display: inline-block;
-                        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-                🔐 Accéder à mon espace
+    switch (type) {
+      case 'confirmation':
+        subject = 'Confirmez votre inscription à DirectivesPlus'
+        htmlContent = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #2563eb;">Bienvenue sur DirectivesPlus</h2>
+            <p>Merci de vous être inscrit. Veuillez cliquer sur le lien ci-dessous pour confirmer votre adresse email :</p>
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${confirmation_url}" style="background-color: #2563eb; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block;">
+                Confirmer mon email
               </a>
             </div>
+            <p style="color: #666; font-size: 14px;">Si vous n'avez pas créé de compte, ignorez cet email.</p>
+          </div>
+        `
+        break
 
-            <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 20px; margin: 30px 0;">
-              <h4 style="color: #92400e; margin: 0 0 10px 0; font-size: 16px;">💡 Prochaines étapes</h4>
-              <ul style="color: #92400e; margin: 0; padding-left: 20px; line-height: 1.6;">
-                <li>Connectez-vous à votre espace personnel</li>
-                <li>Complétez vos informations de profil</li>
-                <li>Rédigez vos directives anticipées</li>
-                <li>Définissez votre personne de confiance</li>
-              </ul>
-            </div>
-            
-            <p style="color: #64748b; font-size: 14px; margin-top: 30px; line-height: 1.5;">
-              Si vous avez des questions, notre équipe est là pour vous aider. 
-              N'hésitez pas à nous contacter à <a href="mailto:support@directivesplus.fr" style="color: #667eea;">support@directivesplus.fr</a>
-            </p>
-          </div>
-          
-          <!-- Footer -->
-          <div style="background: #f1f5f9; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0;">
-            <p style="color: #64748b; font-size: 12px; margin: 0; line-height: 1.4;">
-              DirectivesPlus - Plateforme sécurisée de directives anticipées<br>
-              Conforme RGPD • Hébergement sécurisé en France 🇫🇷<br>
-              <a href="${baseUrl}" style="color: #667eea; text-decoration: none;">www.directivesplus.fr</a>
-            </p>
-          </div>
-        </div>
-      `;
-    } else if (type === 'reset') {
-      // Email de réinitialisation de mot de passe
-      const resetUrl = `${baseUrl}/auth?reset=${token}`;
-      subject = "Réinitialisation de votre mot de passe - DirectivesPlus";
-      html = `
-        <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
-          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px; text-align: center;">
-            <h1 style="color: white; margin: 0; font-size: 28px;">DirectivesPlus</h1>
-            <p style="color: white; margin: 10px 0 0 0; opacity: 0.9;">Réinitialisation de mot de passe</p>
-          </div>
-          
-          <div style="padding: 40px; background: white;">
-            <h2 style="color: #333; margin-bottom: 20px;">
-              Réinitialisation demandée
-            </h2>
-            
-            <p style="color: #666; line-height: 1.6; margin-bottom: 30px;">
-              Vous avez demandé à réinitialiser votre mot de passe. Cliquez sur le bouton ci-dessous pour créer un nouveau mot de passe :
-            </p>
-            
-            <div style="text-align: center; margin: 40px 0;">
-              <a href="${resetUrl}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
+      case 'recovery':
+        subject = 'Réinitialisation de votre mot de passe DirectivesPlus'
+        htmlContent = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #2563eb;">Réinitialisation de mot de passe</h2>
+            <p>Vous avez demandé la réinitialisation de votre mot de passe. Cliquez sur le lien ci-dessous :</p>
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${recovery_url}" style="background-color: #2563eb; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block;">
                 Réinitialiser mon mot de passe
               </a>
             </div>
-            
-            <p style="color: #999; font-size: 14px; margin-top: 30px;">
-              Si le bouton ne fonctionne pas, copiez ce lien dans votre navigateur :<br>
-              <a href="${resetUrl}" style="color: #667eea; word-break: break-all;">${resetUrl}</a>
-            </p>
-            
-            <p style="color: #999; font-size: 12px; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
-              Ce lien expire dans 1 heure. Si vous n'avez pas demandé cette réinitialisation, ignorez cet email.
-            </p>
+            <p style="color: #666; font-size: 14px;">Si vous n'avez pas demandé cette réinitialisation, ignorez cet email.</p>
           </div>
-        </div>
-      `;
-    } else {
-      // Email de bienvenue simple
-      subject = "Bienvenue sur DirectivesPlus !";
-      html = `
-        <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
-          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px; text-align: center;">
-            <h1 style="color: white; margin: 0; font-size: 28px;">DirectivesPlus</h1>
-          </div>
-          
-          <div style="padding: 40px; background: white;">
-            <h2 style="color: #333; margin-bottom: 20px;">
-              Bienvenue${firstName ? ` ${firstName}` : ''} !
-            </h2>
-            
-            <p style="color: #666; line-height: 1.6;">
-              Votre inscription sur DirectivesPlus a été confirmée. Vous pouvez maintenant accéder à votre espace personnel sécurisé.
+        `
+        break
+
+      case '2fa_code':
+        subject = 'Code de sécurité DirectivesPlus'
+        htmlContent = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #2563eb;">Code de sécurité</h2>
+            <p>Voici votre code de sécurité pour accéder à DirectivesPlus :</p>
+            <div style="text-align: center; margin: 30px 0;">
+              <div style="background-color: #f3f4f6; border: 2px solid #e5e7eb; padding: 20px; border-radius: 8px; display: inline-block;">
+                <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #1f2937;">${code}</span>
+              </div>
+            </div>
+            <p style="color: #ef4444; font-weight: bold;">⚠️ Ce code expire dans 10 minutes</p>
+            <p style="color: #666; font-size: 14px;">
+              Si vous n'avez pas demandé ce code, ignorez cet email et vérifiez la sécurité de votre compte.
             </p>
+            <div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0;">
+              <p style="margin: 0; color: #92400e; font-size: 14px;">
+                <strong>Sécurité :</strong> Ne partagez jamais ce code avec personne. L'équipe DirectivesPlus ne vous demandera jamais ce code par téléphone ou email.
+              </p>
+            </div>
           </div>
-        </div>
-      `;
+        `
+        break
+
+      default:
+        throw new Error(`Type d'email non supporté: ${type}`)
     }
 
-    console.log("📤 Envoi de l'email via Resend...");
+    // Send email via Brevo
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'api-key': BREVO_API_KEY
+      },
+      body: JSON.stringify({
+        sender: {
+          name: 'DirectivesPlus',
+          email: 'noreply@directivesplus.fr'
+        },
+        to: [{
+          email: email,
+          name: user_data?.first_name || 'Utilisateur'
+        }],
+        subject: subject,
+        htmlContent: htmlContent
+      })
+    })
 
-    const emailResponse = await resend.emails.send({
-      from: "DirectivesPlus <noreply@directivesplus.fr>",
-      to: [email],
-      subject,
-      html,
-    });
+    if (!response.ok) {
+      const errorData = await response.text()
+      console.error('❌ Erreur Brevo:', errorData)
+      throw new Error(`Erreur Brevo: ${response.status}`)
+    }
 
-    console.log("✅ Email envoyé avec succès:", emailResponse);
+    const result = await response.json()
+    console.log('✅ Email envoyé avec succès:', result.messageId)
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        messageId: emailResponse.data?.id,
-        message: "Email envoyé avec succès"
+        messageId: result.messageId,
+        type: type 
       }),
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
+      { 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        } 
       }
-    );
+    )
 
-  } catch (error: any) {
-    console.error("❌ Erreur lors de l'envoi d'email:", error);
+  } catch (error) {
+    console.error('❌ Erreur envoi email:', error)
+    
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: error.message || "Erreur lors de l'envoi d'email"
+        error: error.message 
       }),
-      {
+      { 
         status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        } 
       }
-    );
+    )
   }
-};
-
-serve(handler);
+})

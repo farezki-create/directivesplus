@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { loginFormSchema, type LoginFormValues } from "./schemas";
 import { useLoginSecurity } from "./hooks/useLoginSecurity";
-import { useLoginSubmit } from "./hooks/useLoginSubmit";
+import { useLoginWith2FA } from "./hooks/useLoginWith2FA";
 import { LoginFormFields } from "./components/LoginFormFields";
 import { SecurityWarningAlert } from "./components/SecurityWarningAlert";
+import { TwoFactorForm } from "./components/TwoFactorForm";
 
 interface LoginFormProps {
   redirectPath: string;
@@ -23,7 +24,15 @@ export const LoginForm = ({ redirectPath, setRedirectInProgress, onForgotPasswor
     handleSuccessfulLogin
   } = useLoginSecurity();
 
-  const { loading, handleSubmit } = useLoginSubmit({
+  const { 
+    loading, 
+    requiresTwoFactor,
+    pendingUserId,
+    pendingEmail,
+    handleInitialLogin,
+    completeTwoFactorAuth,
+    resetTwoFactor
+  } = useLoginWith2FA({
     redirectPath,
     setRedirectInProgress,
     onSuccessfulLogin: handleSuccessfulLogin
@@ -41,8 +50,20 @@ export const LoginForm = ({ redirectPath, setRedirectInProgress, onForgotPasswor
     const securityCheck = await checkSecurityConstraints(values.email);
     if (!securityCheck.allowed) return;
     
-    await handleSubmit(values);
+    await handleInitialLogin(values);
   };
+
+  // Afficher le formulaire 2FA si nécessaire
+  if (requiresTwoFactor && pendingEmail && pendingUserId) {
+    return (
+      <TwoFactorForm
+        email={pendingEmail}
+        userId={pendingUserId}
+        onSuccess={completeTwoFactorAuth}
+        onBack={resetTwoFactor}
+      />
+    );
+  }
 
   return (
     <Form {...form}>

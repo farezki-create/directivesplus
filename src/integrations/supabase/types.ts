@@ -321,6 +321,42 @@ export type Database = {
         }
         Relationships: []
       }
+      auth_codes_2fa: {
+        Row: {
+          code: string
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          ip_address: unknown | null
+          used: boolean
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          ip_address?: unknown | null
+          used?: boolean
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          ip_address?: unknown | null
+          used?: boolean
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       configuration: {
         Row: {
           id: number
@@ -2254,6 +2290,10 @@ export type Database = {
         Args: { p_user_id: string; p_max_sms_per_hour?: number }
         Returns: boolean
       }
+      cleanup_expired_2fa_codes: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       cleanup_expired_auth_codes: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -2281,6 +2321,15 @@ export type Database = {
           birth_date: string
           institution_shared_code: string
         }[]
+      }
+      generate_2fa_code: {
+        Args: {
+          p_email: string
+          p_user_id: string
+          p_ip_address?: unknown
+          p_user_agent?: string
+        }
+        Returns: string
       }
       generate_auth_code: {
         Args: { p_target: string; p_channel: string; p_user_id?: string }
@@ -2653,6 +2702,13 @@ export type Database = {
           p_browser_fingerprint?: string
         }
         Returns: boolean
+      }
+      verify_2fa_code: {
+        Args: { p_email: string; p_code: string }
+        Returns: {
+          is_valid: boolean
+          user_id: string
+        }[]
       }
       verify_access_identity: {
         Args: {

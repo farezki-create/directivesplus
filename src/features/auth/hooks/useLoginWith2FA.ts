@@ -3,6 +3,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { LoginFormValues } from "../schemas";
+import { use2FA } from "./use2FA";
 
 interface UseLoginWith2FAProps {
   onSuccessfulLogin: (email: string) => void;
@@ -16,12 +17,15 @@ export const useLoginWith2FA = ({
   const [loading, setLoading] = useState(false);
   const [requiresTwoFactor, setRequiresTwoFactor] = useState(false);
   const [pendingUserId, setPendingUserId] = useState<string | null>(null);
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
+  
+  const { sendTwoFactorCode, reset2FA } = use2FA();
 
   const handleInitialLogin = async (values: LoginFormValues) => {
     setLoading(true);
     
     try {
-      console.log("🔐 Tentative de connexion pour:", values.email);
+      console.log("🔐 Tentative de connexion avec 2FA pour:", values.email);
       
       const { data, error } = await supabase.auth.signInWithPassword({
         email: values.email,
@@ -49,31 +53,41 @@ export const useLoginWith2FA = ({
       }
       
       if (data.user) {
-        console.log("✅ Connexion initiale réussie, vérification 2FA...");
+        console.log("✅ Connexion initiale réussie, activation 2FA...");
         
-        // For demo purposes, we'll require 2FA for all users
-        // In production, you'd check user preferences or security requirements
-        setPendingUserId(data.user.id);
-        setRequiresTwoFactor(true);
-        
-        // Sign out temporarily until 2FA is complete
+        // Déconnecter temporairement jusqu'à validation 2FA
         await supabase.auth.signOut();
+        
+        // Stocker les informations pour la 2FA
+        setPendingUserId(data.user.id);
+        setPendingEmail(values.email);
+        
+        // Envoyer le code 2FA
+        const result = await sendTwoFactorCode(values.email, data.user.id);
+        
+        if (result.success) {
+          setRequiresTwoFactor(true);
+        } else {
+          throw new Error("Impossible d'envoyer le code 2FA");
+        }
       }
       
     } catch (error: any) {
       console.error("❌ Erreur lors de la connexion:", error);
+      resetTwoFactor();
     } finally {
       setLoading(false);
     }
   };
 
   const completeTwoFactorAuth = async () => {
-    if (!pendingUserId) return;
+    if (!pendingEmail) return;
     
     try {
       console.log("✅ 2FA validée, finalisation de la connexion...");
       
-      onSuccessfulLogin("user@example.com"); // In production, use actual email
+      // Marquer comme réussi
+      onSuccessfulLogin(pendingEmail);
       
       toast({
         title: "Connexion réussie !",
@@ -82,6 +96,9 @@ export const useLoginWith2FA = ({
       });
       
       setRedirectInProgress(true);
+      
+      // Réinitialiser l'état 2FA
+      resetTwoFactor();
       
       setTimeout(() => {
         console.log("🚀 Redirection vers /rediger");
@@ -101,12 +118,15 @@ export const useLoginWith2FA = ({
   const resetTwoFactor = () => {
     setRequiresTwoFactor(false);
     setPendingUserId(null);
+    setPendingEmail(null);
+    reset2FA();
   };
 
   return {
     loading,
     requiresTwoFactor,
     pendingUserId,
+    pendingEmail,
     handleInitialLogin,
     completeTwoFactorAuth,
     resetTwoFactor
