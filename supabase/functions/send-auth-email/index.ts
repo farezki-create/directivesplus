@@ -96,8 +96,11 @@ serve(async (req) => {
     // Envoyer l'email via Resend
     console.log('📤 Envoi de l\'email via Resend...')
     
+    // Utiliser l'adresse par défaut de Resend si le domaine custom n'est pas validé
+    const fromAddress = 'DirectivesPlus <onboarding@resend.dev>'
+    
     const emailResponse = await resend.emails.send({
-      from: 'DirectivesPlus <contact@directivesplus.fr>',
+      from: fromAddress,
       to: [email],
       subject: subject,
       html: htmlContent
@@ -118,6 +121,7 @@ serve(async (req) => {
         debug: {
           email: email,
           subject: subject,
+          from: fromAddress,
           resend_configured: !!Deno.env.get('RESEND_API_KEY')
         }
       }),
