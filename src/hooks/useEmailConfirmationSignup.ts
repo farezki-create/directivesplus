@@ -4,17 +4,7 @@ import { toast } from "@/hooks/use-toast";
 import { generateOTP } from "@/utils/otpGenerator";
 import { useOTPEmailSender } from "./useOTPEmailSender";
 import { useSupabaseSignup } from "./useSupabaseSignup";
-
-interface SignupFormData {
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-  birthDate: string;
-  phoneNumber: string;
-  address: string;
-  gender: string;
-}
+import { RegisterFormValues } from "@/features/auth/schemas";
 
 interface SignupResult {
   success: boolean;
@@ -29,7 +19,7 @@ export const useEmailConfirmationSignup = () => {
   const { sendOTP } = useOTPEmailSender();
   const { signUp: supabaseSignUp } = useSupabaseSignup();
 
-  const signUp = async (formData: SignupFormData): Promise<SignupResult> => {
+  const signUp = async (formData: RegisterFormValues): Promise<SignupResult> => {
     setIsLoading(true);
     
     console.log("🚀 === DÉBUT PROCESSUS INSCRIPTION ===");

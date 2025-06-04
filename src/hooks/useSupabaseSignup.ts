@@ -2,16 +2,9 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { performGlobalSignOut } from "@/utils/authUtils";
+import { RegisterFormValues } from "@/features/auth/schemas";
 
-interface SignupData {
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-  birthDate: string;
-  phoneNumber: string;
-  address: string;
-  gender: string;
+interface SignupData extends RegisterFormValues {
   confirmationCode: string;
 }
 
@@ -44,8 +37,8 @@ export const useSupabaseSignup = () => {
             last_name: data.lastName,
             birth_date: data.birthDate,
             phone_number: data.phoneNumber,
-            address: data.address,
-            gender: data.gender,
+            address: data.address || "",
+            gender: data.gender || "",
             confirmation_code: data.confirmationCode,
           },
         }
