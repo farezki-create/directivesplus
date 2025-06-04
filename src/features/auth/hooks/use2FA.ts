@@ -18,7 +18,7 @@ export const use2FA = () => {
       const { data, error } = await supabase.rpc('generate_2fa_code', {
         p_email: email,
         p_user_id: userId,
-        p_ip_address: null, // Vous pouvez ajouter la détection IP si nécessaire
+        p_ip_address: null,
         p_user_agent: navigator.userAgent
       });
 
@@ -31,7 +31,9 @@ export const use2FA = () => {
       console.log("✅ Code 2FA généré:", code);
 
       // Envoyer l'email avec le code
-      const { error: emailError } = await supabase.functions.invoke('send-auth-email', {
+      console.log("📧 Appel de l'edge function send-auth-email...");
+      
+      const { data: emailData, error: emailError } = await supabase.functions.invoke('send-auth-email', {
         body: {
           email: email,
           type: '2fa_code',
@@ -39,6 +41,8 @@ export const use2FA = () => {
           user_data: { email }
         }
       });
+
+      console.log("📧 Réponse de l'edge function:", { emailData, emailError });
 
       if (emailError) {
         console.error("❌ Erreur envoi email 2FA:", emailError);
