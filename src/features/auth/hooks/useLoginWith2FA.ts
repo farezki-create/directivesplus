@@ -40,7 +40,14 @@ export const useLoginWith2FA = ({
         let errorMessage = "Identifiants incorrects. Vérifiez votre email et mot de passe.";
         
         if (error.message.includes("Email not confirmed")) {
-          errorMessage = "Votre email n'a pas encore été vérifié. Consultez votre boîte de réception.";
+          errorMessage = "Votre email n'a pas encore été vérifié. Consultez votre boîte de réception pour confirmer votre compte.";
+          toast({
+            title: "Email non confirmé",
+            description: errorMessage,
+            variant: "destructive"
+          });
+          setLoading(false);
+          return;
         } else if (error.message.includes("Invalid login credentials")) {
           errorMessage = "Email ou mot de passe incorrect.";
         }
@@ -55,7 +62,26 @@ export const useLoginWith2FA = ({
       }
       
       if (data.user) {
-        console.log("✅ Connexion initiale réussie, activation 2FA...");
+        console.log("✅ Connexion initiale réussie, vérification statut email...");
+        
+        // Vérifier si l'email est confirmé
+        if (!data.user.email_confirmed_at) {
+          console.log("📧 Email non confirmé, envoi de confirmation...");
+          
+          // Déconnecter l'utilisateur
+          await supabase.auth.signOut();
+          
+          toast({
+            title: "Email non confirmé",
+            description: "Votre email n'a pas encore été vérifié. Consultez votre boîte de réception pour confirmer votre compte.",
+            variant: "destructive"
+          });
+          
+          setLoading(false);
+          return;
+        }
+        
+        console.log("✅ Email confirmé, activation 2FA...");
         
         // Déconnecter temporairement jusqu'à validation 2FA
         await supabase.auth.signOut();
