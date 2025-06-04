@@ -1,5 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { Resend } from "npm:resend@2.0.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -26,10 +27,12 @@ serve(async (req) => {
 
     console.log(`📧 Envoi email ${type} pour:`, email)
 
-    const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY')
-    if (!BREVO_API_KEY) {
-      throw new Error('BREVO_API_KEY not configured')
+    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
+    if (!RESEND_API_KEY) {
+      throw new Error('RESEND_API_KEY not configured')
     }
+
+    const resend = new Resend(RESEND_API_KEY);
 
     let subject: string
     let htmlContent: string
@@ -95,41 +98,20 @@ serve(async (req) => {
         throw new Error(`Type d'email non supporté: ${type}`)
     }
 
-    // Send email via Brevo
-    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'api-key': BREVO_API_KEY
-      },
-      body: JSON.stringify({
-        sender: {
-          name: 'DirectivesPlus',
-          email: 'noreply@directivesplus.fr'
-        },
-        to: [{
-          email: email,
-          name: user_data?.first_name || 'Utilisateur'
-        }],
-        subject: subject,
-        htmlContent: htmlContent
-      })
-    })
+    // Send email via Resend
+    const emailResponse = await resend.emails.send({
+      from: 'DirectivesPlus <onboarding@resend.dev>',
+      to: [email],
+      subject: subject,
+      html: htmlContent
+    });
 
-    if (!response.ok) {
-      const errorData = await response.text()
-      console.error('❌ Erreur Brevo:', errorData)
-      throw new Error(`Erreur Brevo: ${response.status}`)
-    }
-
-    const result = await response.json()
-    console.log('✅ Email envoyé avec succès:', result.messageId)
+    console.log('✅ Email envoyé avec succès via Resend:', emailResponse.data?.id)
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        messageId: result.messageId,
+        messageId: emailResponse.data?.id,
         type: type 
       }),
       { 
