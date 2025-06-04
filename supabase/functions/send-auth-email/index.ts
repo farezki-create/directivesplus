@@ -16,8 +16,6 @@ interface EmailRequest {
   user_data?: any;
 }
 
-const resend = new Resend(Deno.env.get('RESEND_API_KEY'))
-
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -25,9 +23,22 @@ serve(async (req) => {
   }
 
   try {
+    console.log('🚀 Edge function send-auth-email démarrée')
+    
+    // Vérifier la clé API Resend
+    const resendApiKey = Deno.env.get('RESEND_API_KEY')
+    if (!resendApiKey) {
+      console.error('❌ RESEND_API_KEY non trouvée dans les variables d\'environnement')
+      throw new Error('RESEND_API_KEY non configurée')
+    }
+    console.log('✅ RESEND_API_KEY trouvée:', resendApiKey.substring(0, 10) + '...')
+    
+    const resend = new Resend(resendApiKey)
+
     const { email, type, confirmation_url, recovery_url, code, user_data }: EmailRequest = await req.json()
 
     console.log(`📧 Envoi email ${type} pour:`, email)
+    console.log('📝 Données reçues:', { email, type, confirmation_url, recovery_url, code })
 
     let subject: string
     let htmlContent: string
@@ -93,25 +104,34 @@ serve(async (req) => {
         throw new Error(`Type d'email non supporté: ${type}`)
     }
 
-    // Envoyer l'email via Resend
-    console.log('📤 Envoi de l\'email via Resend...')
-    
     // Utiliser l'adresse par défaut de Resend si le domaine custom n'est pas validé
     const fromAddress = 'DirectivesPlus <onboarding@resend.dev>'
     
-    const emailResponse = await resend.emails.send({
+    console.log('📤 Préparation envoi email via Resend...')
+    console.log('📧 De:', fromAddress)
+    console.log('📧 À:', email)
+    console.log('📧 Sujet:', subject)
+    
+    const emailPayload = {
       from: fromAddress,
       to: [email],
       subject: subject,
       html: htmlContent
-    })
+    }
+    
+    console.log('📦 Payload email:', JSON.stringify(emailPayload, null, 2))
+    
+    const emailResponse = await resend.emails.send(emailPayload)
+
+    console.log('📧 Réponse Resend complète:', JSON.stringify(emailResponse, null, 2))
 
     if (emailResponse.error) {
-      console.error('❌ Erreur Resend:', emailResponse.error)
-      throw new Error(`Erreur Resend: ${emailResponse.error.message}`)
+      console.error('❌ Erreur Resend détaillée:', JSON.stringify(emailResponse.error, null, 2))
+      throw new Error(`Erreur Resend: ${JSON.stringify(emailResponse.error)}`)
     }
 
-    console.log('✅ Email envoyé avec succès via Resend:', emailResponse.data?.id)
+    console.log('✅ Email envoyé avec succès via Resend')
+    console.log('📧 ID de l\'email:', emailResponse.data?.id)
 
     return new Response(
       JSON.stringify({ 
@@ -122,7 +142,8 @@ serve(async (req) => {
           email: email,
           subject: subject,
           from: fromAddress,
-          resend_configured: !!Deno.env.get('RESEND_API_KEY')
+          resend_configured: !!Deno.env.get('RESEND_API_KEY'),
+          resend_response: emailResponse
         }
       }),
       { 
@@ -134,12 +155,14 @@ serve(async (req) => {
     )
 
   } catch (error) {
-    console.error('❌ Erreur envoi email:', error)
+    console.error('❌ Erreur envoi email complète:', error)
+    console.error('❌ Stack trace:', error.stack)
     
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: error.message 
+        error: error.message,
+        details: error.stack 
       }),
       { 
         status: 500,
