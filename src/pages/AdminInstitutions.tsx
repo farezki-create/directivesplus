@@ -2,11 +2,11 @@
 import React from "react";
 import AppNavigation from "@/components/AppNavigation";
 import InstitutionManagement from "@/components/admin/InstitutionManagement";
-import { useSecureAuth } from "@/hooks/useSecureAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 
 const AdminInstitutions = () => {
-  const { isAdmin, loading } = useSecureAuth();
+  const { isAdmin, loading } = useAuth();
 
   if (loading) {
     return (
