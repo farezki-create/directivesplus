@@ -1,22 +1,22 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { registerFormSchema, type RegisterFormValues } from "./schemas";
-import { FormLayout } from "./components/FormLayout";
-import { PersonalInfoFields } from "./components/PersonalInfoFields";
-import { ContactInfoFields } from "./components/ContactInfoFields";
-import { PasswordFields } from "./components/PasswordFields";
-import { FormSubmitButton } from "./components/FormSubmitButton";
-import { useRegister } from "./hooks/useRegister";
+import { registerFormSchema, type RegisterFormValues } from "../schemas";
+import { FormLayout } from "./FormLayout";
+import { PersonalInfoFields } from "./PersonalInfoFields";
+import { ContactInfoFields } from "./ContactInfoFields";
+import { PasswordFields } from "./PasswordFields";
+import { FormSubmitButton } from "./FormSubmitButton";
+import { useSimpleRegister } from "../hooks/useSimpleRegister";
 import { useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle, Mail } from "lucide-react";
 
-interface RegisterFormProps {
+interface SimpleRegisterFormProps {
   onSuccess?: () => void;
 }
 
-export const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
+export const SimpleRegisterForm = ({ onSuccess }: SimpleRegisterFormProps) => {
   const [registrationSuccess, setRegistrationSuccess] = useState<{
     show: boolean;
     message: string;
@@ -38,10 +38,10 @@ export const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
     },
   });
 
-  const { register, isLoading } = useRegister();
+  const { register, isLoading } = useSimpleRegister();
 
   const handleSubmit = async (values: RegisterFormValues) => {
-    console.log("📝 Soumission inscription");
+    console.log("📝 Soumission formulaire inscription simple");
     
     const result = await register(values);
     
@@ -76,9 +76,9 @@ export const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4" />
-                    <p>Un email de confirmation a été envoyé.</p>
+                    <p>Un email de confirmation a été envoyé à votre adresse.</p>
                   </div>
-                  <p className="text-sm">Cliquez sur le lien pour activer votre compte.</p>
+                  <p className="text-sm font-medium">Cliquez sur le lien dans l'email pour activer votre compte et vous connecter.</p>
                   <p className="text-xs text-green-600">Vérifiez vos spams si nécessaire.</p>
                 </div>
               ) : (

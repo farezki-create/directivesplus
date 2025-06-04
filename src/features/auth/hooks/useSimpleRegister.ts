@@ -5,19 +5,20 @@ import { toast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { registerFormSchema } from "../schemas";
 
-export const useRegister = () => {
+export const useSimpleRegister = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const register = async (values: z.infer<typeof registerFormSchema>) => {
     setIsLoading(true);
     
     try {
-      console.log("🚀 Inscription avec Supabase Auth natif");
+      console.log("🚀 Inscription simple avec Supabase Auth natif");
       console.log("📧 Email:", values.email);
       
-      // Nettoyer l'état d'authentification
+      // Nettoyer complètement l'état d'authentification
       await supabase.auth.signOut();
 
+      // Inscription avec confirmation email automatique
       const { data, error } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
@@ -58,23 +59,24 @@ export const useRegister = () => {
 
       if (data.user) {
         console.log("✅ Utilisateur créé:", data.user.id);
+        console.log("📧 Email confirmé automatiquement:", !!data.user.email_confirmed_at);
         
         if (!data.user.email_confirmed_at) {
           toast({
             title: "Inscription réussie !",
-            description: "Un email de confirmation a été envoyé. Cliquez sur le lien pour activer votre compte.",
+            description: "Un email de confirmation a été envoyé à votre adresse. Cliquez sur le lien pour activer votre compte.",
             duration: 8000
           });
           
           return { 
             success: true, 
             needsEmailConfirmation: true,
-            message: "Email de confirmation envoyé"
+            message: "Vérifiez votre email pour confirmer votre inscription"
           };
         } else {
           toast({
             title: "Inscription réussie !",
-            description: "Votre compte a été créé. Vous pouvez maintenant vous connecter.",
+            description: "Votre compte a été créé et activé. Vous pouvez maintenant vous connecter.",
           });
           
           return { 
@@ -88,7 +90,7 @@ export const useRegister = () => {
       return { success: false, error: "Erreur inattendue" };
       
     } catch (error: any) {
-      console.error("❌ Erreur:", error);
+      console.error("❌ Erreur globale:", error);
       
       toast({
         title: "Erreur d'inscription",
