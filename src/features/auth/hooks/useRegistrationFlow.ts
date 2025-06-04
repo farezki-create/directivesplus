@@ -96,30 +96,51 @@ export const useRegistrationFlow = ({
     setIsConfirming(true);
     resetConfirmationError();
     
-    console.log("🔍 === CONFIRMATION CODE DEBUG ===");
+    console.log("🔍 === CONFIRMATION CODE DEBUG DÉTAILLÉ ===");
     console.log("📧 Email depuis registrationState:", `"${registrationState.userEmail}"`);
-    console.log("🔢 Code saisi:", inputCode);
-    console.log("🔢 Code attendu:", registrationState.confirmationCode);
+    console.log("🔢 Code saisi par l'utilisateur:", `"${inputCode}"`);
+    console.log("🔢 Code attendu dans l'état:", `"${registrationState.confirmationCode}"`);
+    console.log("🔢 Type du code saisi:", typeof inputCode);
+    console.log("🔢 Type du code attendu:", typeof registrationState.confirmationCode);
+    console.log("🔢 Longueur code saisi:", inputCode?.length);
+    console.log("🔢 Longueur code attendu:", registrationState.confirmationCode?.length);
+    console.log("👤 User ID:", registrationState.userId);
     
     try {
-      if (inputCode === registrationState.confirmationCode) {
-        console.log("✅ Code valide - confirmation email Supabase");
+      // Nettoyage des codes pour comparaison
+      const cleanInputCode = inputCode.trim();
+      const cleanExpectedCode = registrationState.confirmationCode?.trim();
+      
+      console.log("🔢 Codes après nettoyage:");
+      console.log("  - Code saisi nettoyé:", `"${cleanInputCode}"`);
+      console.log("  - Code attendu nettoyé:", `"${cleanExpectedCode}"`);
+      console.log("🔢 Comparaison exacte:", cleanInputCode === cleanExpectedCode);
+      
+      if (cleanInputCode === cleanExpectedCode) {
+        console.log("✅ Code valide - tentative confirmation email Supabase");
+        console.log("📤 Envoi vers confirm-user-email avec:");
+        console.log("  - Email:", `"${registrationState.userEmail}"`);
+        console.log("  - Code:", `"${cleanInputCode}"`);
         
         const { data, error } = await supabase.functions.invoke('confirm-user-email', {
           body: {
             email: registrationState.userEmail,
-            confirmationCode: inputCode
+            confirmationCode: cleanInputCode
           }
         });
 
+        console.log("📥 Réponse de confirm-user-email:");
+        console.log("  - Data:", JSON.stringify(data, null, 2));
+        console.log("  - Error:", JSON.stringify(error, null, 2));
+
         if (error) {
-          console.error("❌ Erreur confirmation Supabase:", error);
-          setConfirmationError("Erreur lors de la confirmation. Veuillez réessayer.");
+          console.error("❌ Erreur Edge Function:", error);
+          setConfirmationError(`Erreur technique: ${error.message}. Veuillez réessayer.`);
           return;
         }
 
-        if (data.success) {
-          console.log("✅ Email confirmé dans Supabase");
+        if (data?.success) {
+          console.log("✅ Email confirmé avec succès dans Supabase");
           
           toast({
             title: "Email confirmé !",
@@ -134,15 +155,19 @@ export const useRegistrationFlow = ({
             navigate('/rediger', { replace: true });
           }, 1500);
         } else {
-          setConfirmationError("Code de confirmation invalide. Veuillez vérifier et réessayer.");
+          console.error("❌ Réponse négative de l'Edge Function:", data);
+          setConfirmationError(data?.error || "Code de confirmation invalide selon le serveur. Veuillez vérifier et réessayer.");
         }
       } else {
-        console.error("❌ Code invalide");
+        console.error("❌ Code invalide - comparaison locale échouée");
+        console.error("  Expected:", `"${cleanExpectedCode}"`);
+        console.error("  Received:", `"${cleanInputCode}"`);
         setConfirmationError("Code de confirmation invalide. Veuillez vérifier et réessayer.");
       }
     } catch (error: any) {
-      console.error("❌ Erreur confirmation:", error);
-      setConfirmationError("Erreur lors de la vérification du code. Veuillez réessayer.");
+      console.error("❌ Erreur inattendue lors de la confirmation:", error);
+      console.error("Stack trace:", error.stack);
+      setConfirmationError(`Erreur inattendue: ${error.message}. Veuillez réessayer.`);
     } finally {
       setIsConfirming(false);
     }
