@@ -13,18 +13,18 @@ export const useRegisterWithSupabase = () => {
     setIsLoading(true);
     
     try {
-      console.log("🔐 Inscription avec Resend uniquement");
+      console.log("🔐 Inscription avec confirmation email Supabase");
       console.log("Email à inscrire:", values.email);
       
       // Nettoyer complètement l'état d'authentification
       await performGlobalSignOut();
 
-      // Créer l'utilisateur avec confirmation automatique désactivée
+      // Créer l'utilisateur avec confirmation email obligatoire
       const { data, error } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth`,
+          emailRedirectTo: `${window.location.origin}/rediger`,
           data: {
             first_name: values.firstName,
             last_name: values.lastName,
@@ -69,46 +69,26 @@ export const useRegisterWithSupabase = () => {
 
       if (data.user) {
         console.log("✅ Utilisateur créé:", data.user.id);
+        console.log("Email confirmé:", !!data.user.email_confirmed_at);
         
-        // Envoyer l'email de confirmation via Resend uniquement
-        try {
-          const { data: emailData, error: emailError } = await supabase.functions.invoke('send-auth-email', {
-            body: {
-              email: values.email,
-              type: 'confirmation',
-              token: data.user.id,
-              firstName: values.firstName,
-              lastName: values.lastName
-            }
-          });
-
-          if (emailError) throw emailError;
-
-          if (emailData.success) {
-            console.log("📧 Email de confirmation envoyé via Resend");
-            
-            return { 
-              success: true, 
-              user: data.user, 
-              needsEmailConfirmation: true,
-              message: "Inscription réussie ! Un email de confirmation a été envoyé à votre adresse. Cliquez sur le lien pour finaliser votre inscription."
-            };
-          } else {
-            throw new Error(emailData.error || "Erreur lors de l'envoi de l'email");
-          }
-        } catch (emailError: any) {
-          console.error("❌ Erreur envoi email:", emailError);
-          
-          toast({
-            title: "Erreur d'envoi d'email",
-            description: "Impossible d'envoyer l'email de confirmation. Veuillez réessayer.",
-            variant: "destructive"
-          });
+        // Si l'email n'est pas confirmé, c'est normal - Supabase enverra automatiquement un email
+        if (!data.user.email_confirmed_at) {
+          console.log("📧 Email de confirmation envoyé automatiquement par Supabase");
           
           return { 
-            success: false, 
-            error: "Impossible d'envoyer l'email de confirmation",
-            needsEmailConfirmation: false
+            success: true, 
+            user: data.user, 
+            needsEmailConfirmation: true,
+            message: "Inscription réussie ! Un email de confirmation a été envoyé à votre adresse. Cliquez sur le lien pour finaliser votre inscription et accéder à votre espace."
+          };
+        } else {
+          console.log("✅ Email déjà confirmé, inscription complète");
+          
+          return { 
+            success: true, 
+            user: data.user, 
+            needsEmailConfirmation: false,
+            message: "Compte créé et activé avec succès !"
           };
         }
       }
