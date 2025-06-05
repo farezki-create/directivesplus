@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,13 +12,12 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import OTPAuth from "./pages/OTPAuth";
 import Rediger from "./pages/Rediger";
-import Contact from "./pages/Contact";
-import ActualitesSante from "./pages/ActualitesSante";
+import HealthNews from "./pages/HealthNews";
 import MentionsLegales from "./pages/MentionsLegales";
-import AccessInstitution from "./pages/AccessInstitution";
-import PolitiqueConfidentialite from "./pages/PolitiqueConfidentialite";
-import ConditionsGeneralesUtilisation from "./pages/ConditionsGeneralesUtilisation";
-import Directives from "./pages/Directives";
+import InstitutionAccess from "./pages/InstitutionAccess";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import LegalMentions from "./pages/LegalMentions";
+import DirectivesAccess from "./pages/DirectivesAccess";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,13 +36,13 @@ function App() {
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/otp-auth" element={<OTPAuth />} />
                 <Route path="/rediger" element={<Rediger />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/actualites-sante" element={<ActualitesSante />} />
+                <Route path="/contact" element={<HealthNews />} />
+                <Route path="/actualites-sante" element={<HealthNews />} />
                 <Route path="/mentions-legales" element={<MentionsLegales />} />
-                <Route path="/acces-institution" element={<AccessInstitution />} />
-                <Route path="/politique-confidentialite" element={<PolitiqueConfidentialite />} />
-                <Route path="/conditions-generales-utilisation" element={<ConditionsGeneralesUtilisation />} />
-                <Route path="/directives/:id" element={<Directives />} />
+                <Route path="/acces-institution" element={<InstitutionAccess />} />
+                <Route path="/politique-confidentialite" element={<PrivacyPolicy />} />
+                <Route path="/conditions-generales-utilisation" element={<LegalMentions />} />
+                <Route path="/directives/:id" element={<DirectivesAccess />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </div>
