@@ -2146,6 +2146,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_otp: {
+        Row: {
+          created_at: string | null
+          email: string
+          expires_at: string
+          otp_code: string
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          expires_at: string
+          otp_code: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          expires_at?: string
+          otp_code?: string
+        }
+        Relationships: []
+      }
       user_profiles: {
         Row: {
           birth_date: string | null
