@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -19,6 +18,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import LegalMentions from "./pages/LegalMentions";
 import DirectivesAccess from "./pages/DirectivesAccess";
 import NotFound from "./pages/NotFound";
+import SupabaseDiagnosticPage from "./pages/SupabaseDiagnosticPage";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +43,7 @@ function App() {
                 <Route path="/politique-confidentialite" element={<PrivacyPolicy />} />
                 <Route path="/conditions-generales-utilisation" element={<LegalMentions />} />
                 <Route path="/directives/:id" element={<DirectivesAccess />} />
+                <Route path="/diagnostic-supabase" element={<SupabaseDiagnosticPage />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </div>
