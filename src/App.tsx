@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,6 +10,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import OTPAuth from "./pages/OTPAuth";
+import EmailConfirmation from "./pages/EmailConfirmation";
 import Rediger from "./pages/Rediger";
 import HealthNews from "./pages/HealthNews";
 import MentionsLegales from "./pages/MentionsLegales";
@@ -36,6 +36,7 @@ function App() {
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/otp-auth" element={<OTPAuth />} />
+                <Route path="/email-confirmation" element={<EmailConfirmation />} />
                 <Route path="/rediger" element={<Rediger />} />
                 <Route path="/contact" element={<HealthNews />} />
                 <Route path="/actualites-sante" element={<HealthNews />} />
