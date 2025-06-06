@@ -24,6 +24,15 @@ serve(async (req) => {
       )
     }
 
+    // Validation email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      return new Response(
+        JSON.stringify({ error: 'Format email invalide' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     // Générer un code OTP à 6 chiffres
     const otp = Math.floor(100000 + Math.random() * 900000).toString()
     const expires_at = new Date(Date.now() + 10 * 60 * 1000).toISOString() // 10 minutes
@@ -33,25 +42,37 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('❌ Variables d\'environnement Supabase manquantes')
+      return new Response(
+        JSON.stringify({ error: 'Configuration serveur incorrecte' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+    
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    // Stocker le code OTP dans la base de données
+    // Supprimer les anciens codes OTP pour cet email
+    console.log('🧹 Nettoyage anciens codes OTP...')
+    await supabase.from('user_otp').delete().eq('email', email)
+
+    // Stocker le nouveau code OTP dans la base de données
     console.log('💾 Stockage du code OTP en base...')
     const { error: dbError } = await supabase
       .from('user_otp')
-      .upsert({ email, otp_code: otp, expires_at })
+      .insert({ email, otp_code: otp, expires_at })
 
     if (dbError) {
       console.error('❌ Erreur DB:', dbError)
       return new Response(
-        JSON.stringify({ error: 'Erreur interne' }),
+        JSON.stringify({ error: 'Erreur interne - base de données' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
     console.log('✅ Code OTP stocké en base')
 
-    // Envoyer l'email directement avec Resend
+    // Envoyer l'email avec Resend
     console.log('📧 Envoi de l\'email avec Resend...')
     
     const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
@@ -106,17 +127,18 @@ serve(async (req) => {
         })
       })
 
+      const responseText = await resendResponse.text()
+      console.log('📧 Réponse Resend status:', resendResponse.status, 'body:', responseText)
+
       if (!resendResponse.ok) {
-        const errorText = await resendResponse.text()
-        console.error('❌ Erreur Resend:', resendResponse.status, errorText)
+        console.error('❌ Erreur Resend:', resendResponse.status, responseText)
         return new Response(
           JSON.stringify({ error: 'Erreur lors de l\'envoi de l\'email' }),
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
 
-      const resendResult = await resendResponse.json()
-      console.log('✅ Email envoyé avec succès:', resendResult)
+      console.log('✅ Email envoyé avec succès')
 
     } catch (emailError) {
       console.error('❌ Erreur envoi email:', emailError)
