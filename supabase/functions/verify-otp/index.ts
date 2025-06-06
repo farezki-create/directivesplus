@@ -107,71 +107,64 @@ serve(async (req) => {
       console.log('⚠️ Warning deleting OTP code:', deleteError)
     }
 
-    // Vérifier ou créer l'utilisateur dans Supabase Auth
-    console.log('👤 Checking if user exists for email:', email)
+    // Créer ou récupérer l'utilisateur Supabase
+    console.log('👤 Creating/retrieving Supabase user for email:', email)
     
-    const { data: userExists, error: userError } = await supabase.auth.admin.getUserByEmail(email)
-    let userId
-
-    if (userExists?.user) {
-      console.log('✅ User exists:', userExists.user.email)
-      userId = userExists.user.id
-    } else {
-      console.log('👤 Creating new user for email:', email)
-      const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
+    try {
+      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
         email: email,
         email_confirm: true
       })
 
-      if (createError || !newUser?.user) {
-        console.error('❌ Error creating user:', createError)
+      if (authError && !authError.message.includes('User already registered')) {
+        console.error('❌ Auth error creating user:', authError)
         return new Response(
-          JSON.stringify({ error: 'Erreur création utilisateur: ' + createError?.message }),
+          JSON.stringify({ 
+            success: false, 
+            message: 'Erreur d\'authentification: ' + authError.message 
+          }),
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
-      
-      console.log('✅ New user created:', newUser.user.email)
-      userId = newUser.user.id
-    }
 
-    // Créer une session directement avec les tokens
-    console.log('🔐 Creating session tokens for user:', userId)
-    
-    try {
-      const { data: sessionData, error: sessionError } = await supabase.auth.admin.generateAccessToken({
-        user_id: userId,
-        expires_in: 3600 // 1 heure
+      console.log('✅ User created/retrieved:', authData?.user?.email)
+
+      // Générer un lien de connexion magique
+      console.log('🔗 Generating magic link for authentication...')
+      const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+        type: 'magiclink',
+        email: email
       })
 
-      if (sessionError || !sessionData) {
-        console.error('❌ Error creating session:', sessionError)
+      if (linkError) {
+        console.error('❌ Magic link generation error:', linkError)
         return new Response(
-          JSON.stringify({ error: 'Erreur création session: ' + sessionError?.message }),
+          JSON.stringify({ 
+            success: false, 
+            message: 'Erreur génération session: ' + linkError.message 
+          }),
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
 
-      console.log('✅ Session tokens created successfully')
+      console.log('✅ Magic link generated successfully')
 
       return new Response(
         JSON.stringify({ 
           success: true, 
           message: 'Code OTP vérifié avec succès',
-          access_token: sessionData.access_token,
-          refresh_token: sessionData.refresh_token,
-          user_id: userId,
+          auth_url: linkData.properties?.action_link,
           email: email
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
 
-    } catch (tokenError) {
-      console.error('❌ Token generation error:', tokenError)
+    } catch (userError) {
+      console.error('❌ User management error:', userError)
       return new Response(
         JSON.stringify({ 
           success: false, 
-          message: 'Erreur génération tokens: ' + tokenError.message 
+          message: 'Erreur gestion utilisateur: ' + userError.message 
         }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
