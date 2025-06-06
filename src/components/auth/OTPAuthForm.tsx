@@ -1,82 +1,24 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Mail, Shield, CheckCircle, XCircle } from 'lucide-react';
+import { Loader2, Mail, Shield } from 'lucide-react';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
-import { useSearchParams } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
 
 export const OTPAuthForm: React.FC = () => {
-  const [searchParams] = useSearchParams();
-  const [email, setEmail] = useState(''); // Pas de valeur par défaut
+  const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [step, setStep] = useState<'email' | 'otp'>('email');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Invalider toute session Supabase existante et nettoyer le storage
-  useEffect(() => {
-    console.log('🧹 Nettoyage de la session et du storage');
-    
-    // Forcer la déconnexion Supabase
-    supabase.auth.signOut().catch(() => {
-      // Ignorer les erreurs de déconnexion
-    });
-    
-    // Nettoyer le localStorage et sessionStorage
-    localStorage.removeItem('user_email');
-    sessionStorage.removeItem('user_email');
-    
-    // Nettoyer toutes les clés Supabase auth
-    Object.keys(localStorage).forEach((key) => {
-      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-        localStorage.removeItem(key);
-      }
-    });
-    
-    try {
-      Object.keys(sessionStorage || {}).forEach((key) => {
-        if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-          sessionStorage.removeItem(key);
-        }
-      });
-    } catch (e) {
-      console.log("⚠️ SessionStorage non disponible");
-    }
-  }, []);
-
-  // Pré-remplir l'email depuis l'URL seulement si explicitement fourni
-  useEffect(() => {
-    const emailFromUrl = searchParams.get('email');
-    if (emailFromUrl && emailFromUrl.trim()) {
-      const decodedEmail = decodeURIComponent(emailFromUrl);
-      console.log('📧 Email récupéré depuis URL:', decodedEmail);
-      setEmail(decodedEmail);
-      // Ne PAS envoyer automatiquement l'OTP, laisser l'utilisateur vérifier l'email
-    }
-  }, [searchParams]);
-
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
   const sendOtp = async () => {
-    // Utiliser uniquement l'email saisi manuellement
-    const targetEmail = email.trim();
-    
-    if (!targetEmail) {
+    if (!email) {
       setError('Veuillez entrer votre email');
-      return;
-    }
-
-    if (!validateEmail(targetEmail)) {
-      setError('Veuillez entrer un email valide');
       return;
     }
 
@@ -84,42 +26,23 @@ export const OTPAuthForm: React.FC = () => {
     setError('');
     setMessage('');
 
-    // Nettoyer encore une fois avant l'envoi
-    localStorage.removeItem('user_email');
-    sessionStorage.removeItem('user_email');
-
     try {
-      console.log('📧 Envoi OTP pour email saisi:', targetEmail);
-      
-      const response = await fetch('https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/send-otp', {
+      const response = await fetch('/functions/v1/send-otp', {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5dHFxam5lY2V6a3h5aG1tanJ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzcxOTc5MjUsImV4cCI6MjA1Mjc3MzkyNX0.uocoNg-le-iv0pw7c99mthQ6gxGHyXGyQqgxo9_3CPc`
-        },
-        body: JSON.stringify({ email: targetEmail }), // Utiliser l'email saisi uniquement
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
       });
 
-      console.log('📧 Réponse status:', response.status);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('❌ Erreur HTTP:', response.status, errorText);
-        throw new Error(`Erreur HTTP ${response.status}: ${errorText}`);
-      }
-
       const data = await response.json();
-      console.log('📧 Réponse data:', data);
 
-      if (data.success) {
+      if (response.ok) {
         setStep('otp');
-        setMessage(`Code envoyé à ${targetEmail}. Vérifiez votre boîte de réception et vos spams.`);
+        setMessage('Code envoyé par email. Vérifiez votre boîte de réception.');
       } else {
         setError(data.error || 'Erreur lors de l\'envoi du code');
       }
     } catch (err) {
-      console.error('💥 Erreur envoi OTP:', err);
-      setError('Erreur de connexion. Vérifiez votre connexion internet.');
+      setError('Erreur de connexion');
     } finally {
       setLoading(false);
     }
@@ -131,55 +54,36 @@ export const OTPAuthForm: React.FC = () => {
       return;
     }
 
-    if (!/^\d{6}$/.test(otp)) {
-      setError('Le code doit contenir uniquement des chiffres');
-      return;
-    }
-
     setLoading(true);
     setError('');
     setMessage('');
 
     try {
-      console.log('🔍 Vérification OTP:', { email, otp });
-      
-      const response = await fetch('https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/verify-otp', {
+      const response = await fetch('/functions/v1/verify-otp', {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5dHFxam5lY2V6a3h5aG1tanJ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzcxOTc5MjUsImV4cCI6MjA1Mjc3MzkyNX0.uocoNg-le-iv0pw7c99mthQ6gxGHyXGyQqgxo9_3CPc`
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, otp_code: otp }),
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('❌ Erreur HTTP vérification:', response.status, errorText);
-        throw new Error(`Erreur HTTP ${response.status}`);
-      }
-
       const data = await response.json();
-      console.log('🔍 Réponse vérification:', data);
 
-      if (data.success) {
-        setMessage('Connexion réussie ! Redirection en cours...');
+      if (response.ok && data.success) {
+        setMessage('Connexion réussie ! Redirection...');
         
         // Si on a une URL d'authentification, rediriger
         if (data.auth_url) {
-          console.log('🔗 Redirection vers:', data.auth_url);
           window.location.href = data.auth_url;
         } else {
-          // Sinon rediriger vers la page principale après un délai
+          // Sinon rediriger vers la page principale
           setTimeout(() => {
             window.location.href = '/rediger';
-          }, 2000);
+          }, 1000);
         }
       } else {
         setError(data.message || 'Code invalide ou expiré');
       }
     } catch (err) {
-      console.error('💥 Erreur vérification OTP:', err);
-      setError('Erreur de connexion. Veuillez réessayer.');
+      setError('Erreur de connexion');
     } finally {
       setLoading(false);
     }
@@ -187,21 +91,10 @@ export const OTPAuthForm: React.FC = () => {
 
   const resetForm = () => {
     setStep('email');
-    setEmail(''); // Remettre à zéro l'email
+    setEmail('');
     setOtp('');
     setMessage('');
     setError('');
-    
-    // Nettoyer encore le storage
-    localStorage.removeItem('user_email');
-    sessionStorage.removeItem('user_email');
-  };
-
-  const resendCode = () => {
-    setOtp('');
-    setError('');
-    setMessage('');
-    sendOtp(); // Utilise l'email déjà saisi
   };
 
   return (
@@ -209,7 +102,7 @@ export const OTPAuthForm: React.FC = () => {
       <Card className="w-full max-w-md mx-auto shadow-xl border-0 bg-white/80 backdrop-blur-sm">
         <CardHeader className="text-center pb-2">
           <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Connexion par code email
+            Connexion sécurisée
           </CardTitle>
           <CardDescription className="text-gray-600">
             {step === 'email' 
@@ -222,7 +115,6 @@ export const OTPAuthForm: React.FC = () => {
         <CardContent className="space-y-6">
           {message && (
             <Alert className="border-green-200 bg-green-50">
-              <CheckCircle className="h-4 w-4 text-green-600" />
               <AlertDescription className="text-green-800">
                 {message}
               </AlertDescription>
@@ -231,7 +123,6 @@ export const OTPAuthForm: React.FC = () => {
 
           {error && (
             <Alert className="border-red-200 bg-red-50">
-              <XCircle className="h-4 w-4 text-red-600" />
               <AlertDescription className="text-red-800">
                 {error}
               </AlertDescription>
@@ -250,7 +141,7 @@ export const OTPAuthForm: React.FC = () => {
                   type="email"
                   placeholder="votre@email.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value.trim())}
+                  onChange={(e) => setEmail(e.target.value)}
                   disabled={loading}
                   className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                   onKeyPress={(e) => e.key === 'Enter' && sendOtp()}
@@ -306,31 +197,19 @@ export const OTPAuthForm: React.FC = () => {
                 Vérifier le code
               </Button>
 
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={resetForm}
-                  disabled={loading}
-                  className="flex-1"
-                >
-                  Changer d'email
-                </Button>
-                
-                <Button
-                  variant="outline"
-                  onClick={resendCode}
-                  disabled={loading}
-                  className="flex-1"
-                >
-                  Renvoyer le code
-                </Button>
-              </div>
+              <Button
+                variant="outline"
+                onClick={resetForm}
+                disabled={loading}
+                className="w-full"
+              >
+                Changer d'email
+              </Button>
             </div>
           )}
 
-          <div className="text-center text-xs text-gray-500 space-y-1">
-            <p>Le code est valable 10 minutes</p>
-            <p>Vérifiez vos spams si vous ne recevez pas l'email</p>
+          <div className="text-center text-xs text-gray-500">
+            Le code est valable 10 minutes
           </div>
         </CardContent>
       </Card>
