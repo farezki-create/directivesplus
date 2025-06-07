@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,56 +7,25 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Mail, Shield, CheckCircle, XCircle } from 'lucide-react';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { useSearchParams } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
 
 export const OTPAuthForm: React.FC = () => {
   const [searchParams] = useSearchParams();
-  const [email, setEmail] = useState(''); // Pas de valeur par défaut
+  const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [step, setStep] = useState<'email' | 'otp'>('email');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Invalider toute session Supabase existante et nettoyer le storage
-  useEffect(() => {
-    console.log('🧹 Nettoyage de la session et du storage');
-    
-    // Forcer la déconnexion Supabase
-    supabase.auth.signOut().catch(() => {
-      // Ignorer les erreurs de déconnexion
-    });
-    
-    // Nettoyer le localStorage et sessionStorage
-    localStorage.removeItem('user_email');
-    sessionStorage.removeItem('user_email');
-    
-    // Nettoyer toutes les clés Supabase auth
-    Object.keys(localStorage).forEach((key) => {
-      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-        localStorage.removeItem(key);
-      }
-    });
-    
-    try {
-      Object.keys(sessionStorage || {}).forEach((key) => {
-        if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-          sessionStorage.removeItem(key);
-        }
-      });
-    } catch (e) {
-      console.log("⚠️ SessionStorage non disponible");
-    }
-  }, []);
-
-  // Pré-remplir l'email depuis l'URL seulement si explicitement fourni
+  // Pré-remplir l'email depuis l'URL
   useEffect(() => {
     const emailFromUrl = searchParams.get('email');
-    if (emailFromUrl && emailFromUrl.trim()) {
-      const decodedEmail = decodeURIComponent(emailFromUrl);
-      console.log('📧 Email récupéré depuis URL:', decodedEmail);
-      setEmail(decodedEmail);
-      // Ne PAS envoyer automatiquement l'OTP, laisser l'utilisateur vérifier l'email
+    if (emailFromUrl) {
+      setEmail(decodeURIComponent(emailFromUrl));
+      // Si un email est fourni via URL, passer directement à l'étape OTP
+      if (emailFromUrl.trim()) {
+        sendOtp(decodeURIComponent(emailFromUrl));
+      }
     }
   }, [searchParams]);
 
@@ -66,9 +34,8 @@ export const OTPAuthForm: React.FC = () => {
     return emailRegex.test(email);
   };
 
-  const sendOtp = async () => {
-    // Utiliser uniquement l'email saisi manuellement
-    const targetEmail = email.trim();
+  const sendOtp = async (emailToUse?: string) => {
+    const targetEmail = emailToUse || email;
     
     if (!targetEmail) {
       setError('Veuillez entrer votre email');
@@ -84,12 +51,8 @@ export const OTPAuthForm: React.FC = () => {
     setError('');
     setMessage('');
 
-    // Nettoyer encore une fois avant l'envoi
-    localStorage.removeItem('user_email');
-    sessionStorage.removeItem('user_email');
-
     try {
-      console.log('📧 Envoi OTP pour email saisi:', targetEmail);
+      console.log('📧 Envoi OTP pour:', targetEmail);
       
       const response = await fetch('https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/send-otp', {
         method: 'POST',
@@ -97,7 +60,7 @@ export const OTPAuthForm: React.FC = () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5dHFxam5lY2V6a3h5aG1tanJ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzcxOTc5MjUsImV4cCI6MjA1Mjc3MzkyNX0.uocoNg-le-iv0pw7c99mthQ6gxGHyXGyQqgxo9_3CPc`
         },
-        body: JSON.stringify({ email: targetEmail }), // Utiliser l'email saisi uniquement
+        body: JSON.stringify({ email: targetEmail }),
       });
 
       console.log('📧 Réponse status:', response.status);
@@ -112,8 +75,9 @@ export const OTPAuthForm: React.FC = () => {
       console.log('📧 Réponse data:', data);
 
       if (data.success) {
+        setEmail(targetEmail); // S'assurer que l'email est bien défini
         setStep('otp');
-        setMessage(`Code envoyé à ${targetEmail}. Vérifiez votre boîte de réception et vos spams.`);
+        setMessage('Code envoyé par email. Vérifiez votre boîte de réception et vos spams.');
       } else {
         setError(data.error || 'Erreur lors de l\'envoi du code');
       }
@@ -187,21 +151,17 @@ export const OTPAuthForm: React.FC = () => {
 
   const resetForm = () => {
     setStep('email');
-    setEmail(''); // Remettre à zéro l'email
+    setEmail('');
     setOtp('');
     setMessage('');
     setError('');
-    
-    // Nettoyer encore le storage
-    localStorage.removeItem('user_email');
-    sessionStorage.removeItem('user_email');
   };
 
   const resendCode = () => {
     setOtp('');
     setError('');
     setMessage('');
-    sendOtp(); // Utilise l'email déjà saisi
+    sendOtp();
   };
 
   return (
@@ -209,7 +169,7 @@ export const OTPAuthForm: React.FC = () => {
       <Card className="w-full max-w-md mx-auto shadow-xl border-0 bg-white/80 backdrop-blur-sm">
         <CardHeader className="text-center pb-2">
           <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Connexion par code email
+            Connexion sécurisée
           </CardTitle>
           <CardDescription className="text-gray-600">
             {step === 'email' 
@@ -258,7 +218,7 @@ export const OTPAuthForm: React.FC = () => {
               </div>
               
               <Button 
-                onClick={sendOtp}
+                onClick={() => sendOtp()}
                 disabled={loading || !email}
                 className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-3 rounded-lg transition-all duration-200 transform hover:scale-[1.02]"
               >

@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Mail, ArrowRight, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { cleanupEmailData } from '@/utils/authCleanup';
 
 interface EmailConfirmationPromptProps {
   email: string;
@@ -19,18 +18,6 @@ export const EmailConfirmationPrompt: React.FC<EmailConfirmationPromptProps> = (
   isLoadingOTP = false
 }) => {
   const navigate = useNavigate();
-
-  const handleOTPRequest = () => {
-    // Nettoyer les données email précédentes
-    cleanupEmailData();
-    onRequestOTPCode();
-  };
-
-  const handleBackToAuth = () => {
-    // Nettoyer les données email avant de retourner
-    cleanupEmailData();
-    navigate('/auth');
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
@@ -66,7 +53,7 @@ export const EmailConfirmationPrompt: React.FC<EmailConfirmationPromptProps> = (
               </p>
               
               <Button 
-                onClick={handleOTPRequest}
+                onClick={onRequestOTPCode}
                 disabled={isLoadingOTP}
                 className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-medium py-3 rounded-lg transition-all duration-200"
               >
@@ -87,7 +74,7 @@ export const EmailConfirmationPrompt: React.FC<EmailConfirmationPromptProps> = (
             <div className="pt-4 border-t">
               <Button
                 variant="outline"
-                onClick={handleBackToAuth}
+                onClick={() => navigate('/auth')}
                 className="w-full"
               >
                 Retour à la connexion
