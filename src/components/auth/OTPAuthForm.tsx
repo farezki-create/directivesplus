@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,29 +27,21 @@ export const OTPAuthForm: React.FC = () => {
     setMessage('');
 
     try {
-      console.log('📧 Envoi OTP pour:', email);
-      
-      const response = await fetch('https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/send-otp', {
+      const response = await fetch('/functions/v1/send-otp', {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5dHFxam5lY2V6a3h5aG1tanJ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzcxOTc5MjUsImV4cCI6MjA1Mjc3MzkyNX0.uocoNg-le-iv0pw7c99mthQ6gxGHyXGyQqgxo9_3CPc`
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       });
 
-      console.log('📧 Réponse status:', response.status);
       const data = await response.json();
-      console.log('📧 Réponse data:', data);
 
-      if (response.ok && data.success) {
+      if (response.ok) {
         setStep('otp');
-        setMessage('Code envoyé par email. Vérifiez votre boîte de réception et vos spams.');
+        setMessage('Code envoyé par email. Vérifiez votre boîte de réception.');
       } else {
         setError(data.error || 'Erreur lors de l\'envoi du code');
       }
     } catch (err) {
-      console.error('Erreur envoi OTP:', err);
       setError('Erreur de connexion');
     } finally {
       setLoading(false);
@@ -66,19 +59,13 @@ export const OTPAuthForm: React.FC = () => {
     setMessage('');
 
     try {
-      console.log('🔍 Vérification OTP:', { email, otp });
-      
-      const response = await fetch('https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/verify-otp', {
+      const response = await fetch('/functions/v1/verify-otp', {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5dHFxam5lY2V6a3h5aG1tanJ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzcxOTc5MjUsImV4cCI6MjA1Mjc3MzkyNX0.uocoNg-le-iv0pw7c99mthQ6gxGHyXGyQqgxo9_3CPc`
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, otp_code: otp }),
       });
 
       const data = await response.json();
-      console.log('🔍 Réponse vérification:', data);
 
       if (response.ok && data.success) {
         setMessage('Connexion réussie ! Redirection...');
@@ -96,7 +83,6 @@ export const OTPAuthForm: React.FC = () => {
         setError(data.message || 'Code invalide ou expiré');
       }
     } catch (err) {
-      console.error('Erreur vérification OTP:', err);
       setError('Erreur de connexion');
     } finally {
       setLoading(false);
