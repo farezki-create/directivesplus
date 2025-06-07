@@ -1,4 +1,3 @@
-
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { registerFormSchema, type RegisterFormValues } from "../schemas";
@@ -9,8 +8,8 @@ import { PasswordFields } from "./PasswordFields";
 import { FormSubmitButton } from "./FormSubmitButton";
 import { useSimpleRegister } from "../hooks/useSimpleRegister";
 import { useState } from "react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CheckCircle, Mail } from "lucide-react";
+import { EmailConfirmationPrompt } from "@/components/auth/EmailConfirmationPrompt";
+import { useNavigate } from "react-router-dom";
 
 interface SimpleRegisterFormProps {
   onSuccess?: () => void;
@@ -21,7 +20,11 @@ export const SimpleRegisterForm = ({ onSuccess }: SimpleRegisterFormProps) => {
     show: boolean;
     message: string;
     needsEmailConfirmation: boolean;
+    userEmail?: string;
   }>({ show: false, message: "", needsEmailConfirmation: false });
+  
+  const [isRequestingOTP, setIsRequestingOTP] = useState(false);
+  const navigate = useNavigate();
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerFormSchema),
@@ -53,7 +56,8 @@ export const SimpleRegisterForm = ({ onSuccess }: SimpleRegisterFormProps) => {
       setRegistrationSuccess({
         show: true,
         message: result.message,
-        needsEmailConfirmation: result.needsEmailConfirmation
+        needsEmailConfirmation: result.needsEmailConfirmation,
+        userEmail: values.email
       });
       
       if (onSuccess && !result.needsEmailConfirmation) {
@@ -64,29 +68,54 @@ export const SimpleRegisterForm = ({ onSuccess }: SimpleRegisterFormProps) => {
     }
   };
 
-  if (registrationSuccess.show) {
+  const handleRequestOTPCode = async () => {
+    if (!registrationSuccess.userEmail) return;
+    
+    setIsRequestingOTP(true);
+    
+    try {
+      console.log('📧 Demande de code OTP pour:', registrationSuccess.userEmail);
+      
+      const response = await fetch('https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/send-otp', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5dHFxam5lY2V6a3h5aG1tanJ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzcxOTc5MjUsImV4cCI6MjA1Mjc3MzkyNX0.uocoNg-le-iv0pw7c99mthQ6gxGHyXGyQqgxo9_3CPc`
+        },
+        body: JSON.stringify({ email: registrationSuccess.userEmail }),
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        // Rediriger vers la page OTP avec l'email pré-rempli
+        navigate(`/otp-auth?email=${encodeURIComponent(registrationSuccess.userEmail)}`);
+      } else {
+        console.error('Erreur envoi OTP:', data.error);
+      }
+    } catch (error) {
+      console.error('Erreur demande OTP:', error);
+    } finally {
+      setIsRequestingOTP(false);
+    }
+  };
+
+  if (registrationSuccess.show && registrationSuccess.needsEmailConfirmation) {
+    return (
+      <EmailConfirmationPrompt
+        email={registrationSuccess.userEmail || ''}
+        onRequestOTPCode={handleRequestOTPCode}
+        isLoadingOTP={isRequestingOTP}
+      />
+    );
+  }
+
+  if (registrationSuccess.show && !registrationSuccess.needsEmailConfirmation) {
     return (
       <div className="space-y-4">
-        <Alert className="border-green-200 bg-green-50">
-          <CheckCircle className="h-4 w-4 text-green-600" />
-          <AlertDescription className="text-green-800">
-            <div className="space-y-2">
-              <p className="font-medium">Inscription réussie !</p>
-              {registrationSuccess.needsEmailConfirmation ? (
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <Mail className="h-4 w-4" />
-                    <p>Un email de confirmation a été envoyé à votre adresse.</p>
-                  </div>
-                  <p className="text-sm font-medium">Cliquez sur le lien dans l'email pour activer votre compte et vous connecter.</p>
-                  <p className="text-xs text-green-600">Vérifiez vos spams si nécessaire.</p>
-                </div>
-              ) : (
-                <p>Vous pouvez maintenant vous connecter.</p>
-              )}
-            </div>
-          </AlertDescription>
-        </Alert>
+        <div className="text-center">
+          <p className="text-green-600 font-medium">✅ {registrationSuccess.message}</p>
+        </div>
         
         <button
           onClick={() => setRegistrationSuccess({ show: false, message: "", needsEmailConfirmation: false })}

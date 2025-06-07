@@ -1,14 +1,15 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Mail, Shield } from 'lucide-react';
+import { Loader2, Mail, Shield, CheckCircle, XCircle } from 'lucide-react';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
+import { useSearchParams } from 'react-router-dom';
 
 export const OTPAuthForm: React.FC = () => {
+  const [searchParams] = useSearchParams();
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [step, setStep] = useState<'email' | 'otp'>('email');
@@ -16,9 +17,33 @@ export const OTPAuthForm: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const sendOtp = async () => {
-    if (!email) {
+  // Pré-remplir l'email depuis l'URL
+  useEffect(() => {
+    const emailFromUrl = searchParams.get('email');
+    if (emailFromUrl) {
+      setEmail(decodeURIComponent(emailFromUrl));
+      // Si un email est fourni via URL, passer directement à l'étape OTP
+      if (emailFromUrl.trim()) {
+        sendOtp(decodeURIComponent(emailFromUrl));
+      }
+    }
+  }, [searchParams]);
+
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const sendOtp = async (emailToUse?: string) => {
+    const targetEmail = emailToUse || email;
+    
+    if (!targetEmail) {
       setError('Veuillez entrer votre email');
+      return;
+    }
+
+    if (!validateEmail(targetEmail)) {
+      setError('Veuillez entrer un email valide');
       return;
     }
 
@@ -27,22 +52,38 @@ export const OTPAuthForm: React.FC = () => {
     setMessage('');
 
     try {
-      const response = await fetch('/functions/v1/send-otp', {
+      console.log('📧 Envoi OTP pour:', targetEmail);
+      
+      const response = await fetch('https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/send-otp', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5dHFxam5lY2V6a3h5aG1tanJ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzcxOTc5MjUsImV4cCI6MjA1Mjc3MzkyNX0.uocoNg-le-iv0pw7c99mthQ6gxGHyXGyQqgxo9_3CPc`
+        },
+        body: JSON.stringify({ email: targetEmail }),
       });
 
-      const data = await response.json();
+      console.log('📧 Réponse status:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Erreur HTTP:', response.status, errorText);
+        throw new Error(`Erreur HTTP ${response.status}: ${errorText}`);
+      }
 
-      if (response.ok) {
+      const data = await response.json();
+      console.log('📧 Réponse data:', data);
+
+      if (data.success) {
+        setEmail(targetEmail); // S'assurer que l'email est bien défini
         setStep('otp');
-        setMessage('Code envoyé par email. Vérifiez votre boîte de réception.');
+        setMessage('Code envoyé par email. Vérifiez votre boîte de réception et vos spams.');
       } else {
         setError(data.error || 'Erreur lors de l\'envoi du code');
       }
     } catch (err) {
-      setError('Erreur de connexion');
+      console.error('💥 Erreur envoi OTP:', err);
+      setError('Erreur de connexion. Vérifiez votre connexion internet.');
     } finally {
       setLoading(false);
     }
@@ -54,36 +95,55 @@ export const OTPAuthForm: React.FC = () => {
       return;
     }
 
+    if (!/^\d{6}$/.test(otp)) {
+      setError('Le code doit contenir uniquement des chiffres');
+      return;
+    }
+
     setLoading(true);
     setError('');
     setMessage('');
 
     try {
-      const response = await fetch('/functions/v1/verify-otp', {
+      console.log('🔍 Vérification OTP:', { email, otp });
+      
+      const response = await fetch('https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/verify-otp', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5dHFxam5lY2V6a3h5aG1tanJ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzcxOTc5MjUsImV4cCI6MjA1Mjc3MzkyNX0.uocoNg-le-iv0pw7c99mthQ6gxGHyXGyQqgxo9_3CPc`
+        },
         body: JSON.stringify({ email, otp_code: otp }),
       });
 
-      const data = await response.json();
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Erreur HTTP vérification:', response.status, errorText);
+        throw new Error(`Erreur HTTP ${response.status}`);
+      }
 
-      if (response.ok && data.success) {
-        setMessage('Connexion réussie ! Redirection...');
+      const data = await response.json();
+      console.log('🔍 Réponse vérification:', data);
+
+      if (data.success) {
+        setMessage('Connexion réussie ! Redirection en cours...');
         
         // Si on a une URL d'authentification, rediriger
         if (data.auth_url) {
+          console.log('🔗 Redirection vers:', data.auth_url);
           window.location.href = data.auth_url;
         } else {
-          // Sinon rediriger vers la page principale
+          // Sinon rediriger vers la page principale après un délai
           setTimeout(() => {
             window.location.href = '/rediger';
-          }, 1000);
+          }, 2000);
         }
       } else {
         setError(data.message || 'Code invalide ou expiré');
       }
     } catch (err) {
-      setError('Erreur de connexion');
+      console.error('💥 Erreur vérification OTP:', err);
+      setError('Erreur de connexion. Veuillez réessayer.');
     } finally {
       setLoading(false);
     }
@@ -95,6 +155,13 @@ export const OTPAuthForm: React.FC = () => {
     setOtp('');
     setMessage('');
     setError('');
+  };
+
+  const resendCode = () => {
+    setOtp('');
+    setError('');
+    setMessage('');
+    sendOtp();
   };
 
   return (
@@ -115,6 +182,7 @@ export const OTPAuthForm: React.FC = () => {
         <CardContent className="space-y-6">
           {message && (
             <Alert className="border-green-200 bg-green-50">
+              <CheckCircle className="h-4 w-4 text-green-600" />
               <AlertDescription className="text-green-800">
                 {message}
               </AlertDescription>
@@ -123,6 +191,7 @@ export const OTPAuthForm: React.FC = () => {
 
           {error && (
             <Alert className="border-red-200 bg-red-50">
+              <XCircle className="h-4 w-4 text-red-600" />
               <AlertDescription className="text-red-800">
                 {error}
               </AlertDescription>
@@ -141,7 +210,7 @@ export const OTPAuthForm: React.FC = () => {
                   type="email"
                   placeholder="votre@email.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => setEmail(e.target.value.trim())}
                   disabled={loading}
                   className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                   onKeyPress={(e) => e.key === 'Enter' && sendOtp()}
@@ -149,7 +218,7 @@ export const OTPAuthForm: React.FC = () => {
               </div>
               
               <Button 
-                onClick={sendOtp}
+                onClick={() => sendOtp()}
                 disabled={loading || !email}
                 className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-3 rounded-lg transition-all duration-200 transform hover:scale-[1.02]"
               >
@@ -197,19 +266,31 @@ export const OTPAuthForm: React.FC = () => {
                 Vérifier le code
               </Button>
 
-              <Button
-                variant="outline"
-                onClick={resetForm}
-                disabled={loading}
-                className="w-full"
-              >
-                Changer d'email
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={resetForm}
+                  disabled={loading}
+                  className="flex-1"
+                >
+                  Changer d'email
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  onClick={resendCode}
+                  disabled={loading}
+                  className="flex-1"
+                >
+                  Renvoyer le code
+                </Button>
+              </div>
             </div>
           )}
 
-          <div className="text-center text-xs text-gray-500">
-            Le code est valable 10 minutes
+          <div className="text-center text-xs text-gray-500 space-y-1">
+            <p>Le code est valable 10 minutes</p>
+            <p>Vérifiez vos spams si vous ne recevez pas l'email</p>
           </div>
         </CardContent>
       </Card>

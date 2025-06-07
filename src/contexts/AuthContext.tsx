@@ -48,17 +48,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (profileData) {
-        // Assigner l'email depuis l'utilisateur si pas dans le profil
-        const profileWithEmail = {
-          ...profileData,
-          email: user?.email
-        };
-        setProfile(profileWithEmail);
+        setProfile(profileData);
       }
     } catch (error) {
       console.error('Error loading profile:', error);
     }
-  }, [user?.email]);
+  }, []);
 
   const refreshProfile = useCallback(async () => {
     if (user?.id) {
@@ -67,57 +62,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [user?.id, loadProfile]);
 
   const signOut = useCallback(async () => {
-    console.log("🔴 === AuthContext: DÉCONNEXION INITIÉE === 🔴");
-    
     try {
-      // Nettoyer l'état local immédiatement
+      await supabase.auth.signOut();
       setUser(null);
       setSession(null);
       setProfile(null);
-      
-      // Nettoyer le localStorage
-      Object.keys(localStorage).forEach((key) => {
-        if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-          localStorage.removeItem(key);
-        }
-      });
-      
-      console.log("🧹 État local nettoyé");
-      
-      // Tentative de déconnexion avec Supabase
-      await supabase.auth.signOut({ scope: 'global' });
-      console.log("✅ Déconnexion Supabase réussie");
-      
-      // Redirection forcée
-      console.log("🔄 Redirection vers /auth");
       window.location.href = '/auth';
-      
     } catch (error) {
-      console.error('❌ Erreur lors de la déconnexion:', error);
-      // Même en cas d'erreur, forcer la redirection
-      console.log("🚨 Redirection de secours");
-      window.location.href = '/auth';
+      console.error('Error signing out:', error);
     }
   }, []);
 
   useEffect(() => {
-    console.log("🔐 Initialisation AuthContext");
-    
     // Configuration du listener d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('🔄 Auth state changed:', event);
+        console.log('Auth state changed:', event);
         
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          console.log("✅ Utilisateur connecté:", session.user.email);
-          setTimeout(() => {
-            loadProfile(session.user.id);
-          }, 0);
+          await loadProfile(session.user.id);
         } else {
-          console.log("❌ Utilisateur déconnecté");
           setProfile(null);
         }
         
@@ -127,9 +94,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Vérification de session initiale
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        console.log("✅ Session existante trouvée:", session.user.email);
-      }
       setSession(session);
       setUser(session?.user ?? null);
       

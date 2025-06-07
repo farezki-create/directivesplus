@@ -15,9 +15,20 @@ serve(async (req) => {
   try {
     const { email } = await req.json()
     
+    console.log('🔍 Demande OTP pour email:', email)
+    
     if (!email) {
       return new Response(
         JSON.stringify({ error: 'Email requis' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Validation email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      return new Response(
+        JSON.stringify({ error: 'Format email invalide' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
@@ -26,44 +37,115 @@ serve(async (req) => {
     const otp = Math.floor(100000 + Math.random() * 900000).toString()
     const expires_at = new Date(Date.now() + 10 * 60 * 1000).toISOString() // 10 minutes
 
+    console.log('🎲 Code OTP généré:', otp)
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('❌ Variables d\'environnement Supabase manquantes')
+      return new Response(
+        JSON.stringify({ error: 'Configuration serveur incorrecte' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+    
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    // Stocker le code OTP dans la base de données
+    // Supprimer les anciens codes OTP pour cet email
+    console.log('🧹 Nettoyage anciens codes OTP...')
+    await supabase.from('user_otp').delete().eq('email', email)
+
+    // Stocker le nouveau code OTP dans la base de données
+    console.log('💾 Stockage du code OTP en base...')
     const { error: dbError } = await supabase
       .from('user_otp')
-      .upsert({ email, otp_code: otp, expires_at })
+      .insert({ email, otp_code: otp, expires_at })
 
     if (dbError) {
-      console.error('Erreur DB:', dbError)
+      console.error('❌ Erreur DB:', dbError)
       return new Response(
-        JSON.stringify({ error: 'Erreur interne' }),
+        JSON.stringify({ error: 'Erreur interne - base de données' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    // Envoyer l'email via l'Edge Function existante send-auth-email
+    console.log('✅ Code OTP stocké en base')
+
+    // Envoyer l'email avec Resend
+    console.log('📧 Envoi de l\'email avec Resend...')
+    
+    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
+    if (!RESEND_API_KEY) {
+      console.error('❌ RESEND_API_KEY manquante')
+      return new Response(
+        JSON.stringify({ error: 'Configuration email manquante' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     try {
-      const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-auth-email`, {
+      const resendResponse = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${supabaseServiceKey}`,
+          'Authorization': `Bearer ${RESEND_API_KEY}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          email,
-          type: 'otp',
-          user_data: { otp_code: otp }
+          from: 'DirectivesPlus <noreply@directivesplus.fr>',
+          to: [email],
+          subject: 'Votre code de connexion DirectivesPlus',
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+              <div style="text-align: center; margin-bottom: 30px;">
+                <h1 style="color: #2563eb; margin: 0;">DirectivesPlus</h1>
+              </div>
+              
+              <h2 style="color: #333; text-align: center;">Votre code de connexion</h2>
+              
+              <div style="background-color: #f8fafc; border: 2px solid #2563eb; border-radius: 8px; padding: 30px; text-align: center; margin: 30px 0;">
+                <div style="font-size: 36px; font-weight: bold; color: #2563eb; letter-spacing: 8px; font-family: monospace;">
+                  ${otp}
+                </div>
+              </div>
+              
+              <p style="text-align: center; color: #666; margin: 20px 0; font-size: 16px;">
+                Entrez ce code sur la page de connexion pour accéder à votre compte.
+              </p>
+              
+              <div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0;">
+                <p style="margin: 0; color: #92400e; font-size: 14px;">
+                  <strong>Important :</strong> Ce code est valable 10 minutes seulement.
+                </p>
+              </div>
+              
+              <p style="color: #666; font-size: 14px; text-align: center; margin-top: 30px;">
+                Si vous n'avez pas demandé ce code, ignorez cet email.
+              </p>
+            </div>
+          `
         })
       })
 
-      if (!emailResponse.ok) {
-        console.warn('Erreur envoi email, mais OTP stocké')
+      const responseText = await resendResponse.text()
+      console.log('📧 Réponse Resend status:', resendResponse.status, 'body:', responseText)
+
+      if (!resendResponse.ok) {
+        console.error('❌ Erreur Resend:', resendResponse.status, responseText)
+        return new Response(
+          JSON.stringify({ error: 'Erreur lors de l\'envoi de l\'email' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
       }
+
+      console.log('✅ Email envoyé avec succès')
+
     } catch (emailError) {
-      console.warn('Erreur envoi email:', emailError)
+      console.error('❌ Erreur envoi email:', emailError)
+      return new Response(
+        JSON.stringify({ error: 'Erreur lors de l\'envoi de l\'email' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
     return new Response(
@@ -72,7 +154,7 @@ serve(async (req) => {
     )
 
   } catch (error) {
-    console.error('Erreur:', error)
+    console.error('❌ Erreur générale:', error)
     return new Response(
       JSON.stringify({ error: 'Erreur serveur' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

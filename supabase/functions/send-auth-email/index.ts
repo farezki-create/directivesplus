@@ -9,7 +9,7 @@ const corsHeaders = {
 
 interface EmailRequest {
   email: string;
-  type: 'confirmation' | 'recovery';
+  type: 'confirmation' | 'recovery' | 'otp';
   confirmation_url?: string;
   recovery_url?: string;
   user_data?: any;
@@ -64,6 +64,44 @@ serve(async (req) => {
               </a>
             </div>
             <p style="color: #666; font-size: 14px;">Si vous n'avez pas demandé cette réinitialisation, ignorez cet email.</p>
+          </div>
+        `
+        break
+
+      case 'otp':
+        const otpCode = user_data?.otp_code
+        if (!otpCode) {
+          throw new Error('Code OTP manquant dans user_data')
+        }
+        
+        subject = 'Votre code de connexion DirectivesPlus'
+        htmlContent = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="color: #2563eb; margin: 0;">DirectivesPlus</h1>
+            </div>
+            
+            <h2 style="color: #333; text-align: center;">Votre code de connexion</h2>
+            
+            <div style="background-color: #f8fafc; border: 2px dashed #e2e8f0; border-radius: 8px; padding: 30px; text-align: center; margin: 30px 0;">
+              <div style="font-size: 32px; font-weight: bold; color: #2563eb; letter-spacing: 4px; font-family: monospace;">
+                ${otpCode}
+              </div>
+            </div>
+            
+            <p style="text-align: center; color: #666; margin: 20px 0;">
+              Entrez ce code sur la page de connexion pour accéder à votre compte.
+            </p>
+            
+            <div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0;">
+              <p style="margin: 0; color: #92400e; font-size: 14px;">
+                <strong>Important :</strong> Ce code est valable 10 minutes seulement.
+              </p>
+            </div>
+            
+            <p style="color: #666; font-size: 14px; text-align: center; margin-top: 30px;">
+              Si vous n'avez pas demandé ce code, ignorez cet email.
+            </p>
           </div>
         `
         break
