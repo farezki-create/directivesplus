@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -6,10 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Mail, Shield, CheckCircle, XCircle } from 'lucide-react';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
-import { useSearchParams } from 'react-router-dom';
 
 export const OTPAuthForm: React.FC = () => {
-  const [searchParams] = useSearchParams();
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [step, setStep] = useState<'email' | 'otp'>('email');
@@ -17,32 +16,18 @@ export const OTPAuthForm: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Pré-remplir l'email depuis l'URL
-  useEffect(() => {
-    const emailFromUrl = searchParams.get('email');
-    if (emailFromUrl) {
-      setEmail(decodeURIComponent(emailFromUrl));
-      // Si un email est fourni via URL, passer directement à l'étape OTP
-      if (emailFromUrl.trim()) {
-        sendOtp(decodeURIComponent(emailFromUrl));
-      }
-    }
-  }, [searchParams]);
-
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
 
-  const sendOtp = async (emailToUse?: string) => {
-    const targetEmail = emailToUse || email;
-    
-    if (!targetEmail) {
+  const sendOtp = async () => {
+    if (!email) {
       setError('Veuillez entrer votre email');
       return;
     }
 
-    if (!validateEmail(targetEmail)) {
+    if (!validateEmail(email)) {
       setError('Veuillez entrer un email valide');
       return;
     }
@@ -52,7 +37,7 @@ export const OTPAuthForm: React.FC = () => {
     setMessage('');
 
     try {
-      console.log('📧 Envoi OTP pour:', targetEmail);
+      console.log('📧 Envoi OTP pour:', email);
       
       const response = await fetch('https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/send-otp', {
         method: 'POST',
@@ -60,7 +45,7 @@ export const OTPAuthForm: React.FC = () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5dHFxam5lY2V6a3h5aG1tanJ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzcxOTc5MjUsImV4cCI6MjA1Mjc3MzkyNX0.uocoNg-le-iv0pw7c99mthQ6gxGHyXGyQqgxo9_3CPc`
         },
-        body: JSON.stringify({ email: targetEmail }),
+        body: JSON.stringify({ email }),
       });
 
       console.log('📧 Réponse status:', response.status);
@@ -75,7 +60,6 @@ export const OTPAuthForm: React.FC = () => {
       console.log('📧 Réponse data:', data);
 
       if (data.success) {
-        setEmail(targetEmail); // S'assurer que l'email est bien défini
         setStep('otp');
         setMessage('Code envoyé par email. Vérifiez votre boîte de réception et vos spams.');
       } else {
@@ -218,7 +202,7 @@ export const OTPAuthForm: React.FC = () => {
               </div>
               
               <Button 
-                onClick={() => sendOtp()}
+                onClick={sendOtp}
                 disabled={loading || !email}
                 className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-3 rounded-lg transition-all duration-200 transform hover:scale-[1.02]"
               >
