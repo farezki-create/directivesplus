@@ -51,7 +51,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Assigner l'email depuis l'utilisateur si pas dans le profil
         const profileWithEmail = {
           ...profileData,
-          email: profileData.email || user?.email
+          email: user?.email
         };
         setProfile(profileWithEmail);
       }
