@@ -15,8 +15,6 @@ serve(async (req) => {
   try {
     const { email, otp_code } = await req.json()
     
-    console.log('🔍 Vérification OTP pour email:', email, 'code:', otp_code)
-    
     if (!email || !otp_code) {
       return new Response(
         JSON.stringify({ error: 'Email et code OTP requis' }),
@@ -30,7 +28,6 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
     // Vérifier le code OTP
-    console.log('🔍 Recherche du code OTP en base...')
     const { data, error } = await supabase
       .from('user_otp')
       .select('*')
@@ -39,7 +36,6 @@ serve(async (req) => {
       .single()
 
     if (error || !data) {
-      console.error('❌ Code OTP non trouvé:', error)
       return new Response(
         JSON.stringify({ success: false, message: 'Code OTP invalide' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -48,27 +44,26 @@ serve(async (req) => {
 
     // Vérifier si le code n'est pas expiré
     if (new Date(data.expires_at) < new Date()) {
-      console.log('❌ Code OTP expiré')
-      await supabase.from('user_otp').delete().eq('email', email)
       return new Response(
         JSON.stringify({ success: false, message: 'Code OTP expiré' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    console.log('✅ Code OTP valide, suppression du code...')
     // Supprimer le code OTP utilisé
-    await supabase.from('user_otp').delete().eq('email', email)
+    await supabase
+      .from('user_otp')
+      .delete()
+      .eq('email', email)
 
     // Créer ou récupérer l'utilisateur Supabase
-    console.log('👤 Création/récupération utilisateur...')
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email,
       email_confirm: true
     })
 
-    if (authError && !authError.message.includes('User already registered')) {
-      console.error('❌ Erreur auth:', authError)
+    if (authError && authError.message !== 'User already registered') {
+      console.error('Erreur auth:', authError)
       return new Response(
         JSON.stringify({ success: false, message: 'Erreur d\'authentification' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -76,21 +71,19 @@ serve(async (req) => {
     }
 
     // Générer un lien de connexion magique
-    console.log('🔗 Génération du lien de connexion...')
     const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
       type: 'magiclink',
       email
     })
 
     if (linkError) {
-      console.error('❌ Erreur génération lien:', linkError)
+      console.error('Erreur génération lien:', linkError)
       return new Response(
         JSON.stringify({ success: false, message: 'Erreur génération session' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    console.log('✅ Authentification réussie')
     return new Response(
       JSON.stringify({ 
         success: true, 
@@ -101,7 +94,7 @@ serve(async (req) => {
     )
 
   } catch (error) {
-    console.error('❌ Erreur générale:', error)
+    console.error('Erreur:', error)
     return new Response(
       JSON.stringify({ error: 'Erreur serveur' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

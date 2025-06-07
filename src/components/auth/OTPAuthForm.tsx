@@ -1,11 +1,10 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Mail, Shield, CheckCircle, XCircle } from 'lucide-react';
+import { Loader2, Mail, Shield } from 'lucide-react';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 
 export const OTPAuthForm: React.FC = () => {
@@ -16,19 +15,9 @@ export const OTPAuthForm: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
   const sendOtp = async () => {
     if (!email) {
       setError('Veuillez entrer votre email');
-      return;
-    }
-
-    if (!validateEmail(email)) {
-      setError('Veuillez entrer un email valide');
       return;
     }
 
@@ -49,25 +38,18 @@ export const OTPAuthForm: React.FC = () => {
       });
 
       console.log('📧 Réponse status:', response.status);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('❌ Erreur HTTP:', response.status, errorText);
-        throw new Error(`Erreur HTTP ${response.status}: ${errorText}`);
-      }
-
       const data = await response.json();
       console.log('📧 Réponse data:', data);
 
-      if (data.success) {
+      if (response.ok && data.success) {
         setStep('otp');
         setMessage('Code envoyé par email. Vérifiez votre boîte de réception et vos spams.');
       } else {
         setError(data.error || 'Erreur lors de l\'envoi du code');
       }
     } catch (err) {
-      console.error('💥 Erreur envoi OTP:', err);
-      setError('Erreur de connexion. Vérifiez votre connexion internet.');
+      console.error('Erreur envoi OTP:', err);
+      setError('Erreur de connexion');
     } finally {
       setLoading(false);
     }
@@ -76,11 +58,6 @@ export const OTPAuthForm: React.FC = () => {
   const verifyOtp = async () => {
     if (otp.length !== 6) {
       setError('Veuillez entrer un code à 6 chiffres');
-      return;
-    }
-
-    if (!/^\d{6}$/.test(otp)) {
-      setError('Le code doit contenir uniquement des chiffres');
       return;
     }
 
@@ -100,34 +77,27 @@ export const OTPAuthForm: React.FC = () => {
         body: JSON.stringify({ email, otp_code: otp }),
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('❌ Erreur HTTP vérification:', response.status, errorText);
-        throw new Error(`Erreur HTTP ${response.status}`);
-      }
-
       const data = await response.json();
       console.log('🔍 Réponse vérification:', data);
 
-      if (data.success) {
-        setMessage('Connexion réussie ! Redirection en cours...');
+      if (response.ok && data.success) {
+        setMessage('Connexion réussie ! Redirection...');
         
         // Si on a une URL d'authentification, rediriger
         if (data.auth_url) {
-          console.log('🔗 Redirection vers:', data.auth_url);
           window.location.href = data.auth_url;
         } else {
-          // Sinon rediriger vers la page principale après un délai
+          // Sinon rediriger vers la page principale
           setTimeout(() => {
             window.location.href = '/rediger';
-          }, 2000);
+          }, 1000);
         }
       } else {
         setError(data.message || 'Code invalide ou expiré');
       }
     } catch (err) {
-      console.error('💥 Erreur vérification OTP:', err);
-      setError('Erreur de connexion. Veuillez réessayer.');
+      console.error('Erreur vérification OTP:', err);
+      setError('Erreur de connexion');
     } finally {
       setLoading(false);
     }
@@ -139,13 +109,6 @@ export const OTPAuthForm: React.FC = () => {
     setOtp('');
     setMessage('');
     setError('');
-  };
-
-  const resendCode = () => {
-    setOtp('');
-    setError('');
-    setMessage('');
-    sendOtp();
   };
 
   return (
@@ -166,7 +129,6 @@ export const OTPAuthForm: React.FC = () => {
         <CardContent className="space-y-6">
           {message && (
             <Alert className="border-green-200 bg-green-50">
-              <CheckCircle className="h-4 w-4 text-green-600" />
               <AlertDescription className="text-green-800">
                 {message}
               </AlertDescription>
@@ -175,7 +137,6 @@ export const OTPAuthForm: React.FC = () => {
 
           {error && (
             <Alert className="border-red-200 bg-red-50">
-              <XCircle className="h-4 w-4 text-red-600" />
               <AlertDescription className="text-red-800">
                 {error}
               </AlertDescription>
@@ -194,7 +155,7 @@ export const OTPAuthForm: React.FC = () => {
                   type="email"
                   placeholder="votre@email.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value.trim())}
+                  onChange={(e) => setEmail(e.target.value)}
                   disabled={loading}
                   className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                   onKeyPress={(e) => e.key === 'Enter' && sendOtp()}
@@ -250,31 +211,19 @@ export const OTPAuthForm: React.FC = () => {
                 Vérifier le code
               </Button>
 
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={resetForm}
-                  disabled={loading}
-                  className="flex-1"
-                >
-                  Changer d'email
-                </Button>
-                
-                <Button
-                  variant="outline"
-                  onClick={resendCode}
-                  disabled={loading}
-                  className="flex-1"
-                >
-                  Renvoyer le code
-                </Button>
-              </div>
+              <Button
+                variant="outline"
+                onClick={resetForm}
+                disabled={loading}
+                className="w-full"
+              >
+                Changer d'email
+              </Button>
             </div>
           )}
 
-          <div className="text-center text-xs text-gray-500 space-y-1">
-            <p>Le code est valable 10 minutes</p>
-            <p>Vérifiez vos spams si vous ne recevez pas l'email</p>
+          <div className="text-center text-xs text-gray-500">
+            Le code est valable 10 minutes
           </div>
         </CardContent>
       </Card>
