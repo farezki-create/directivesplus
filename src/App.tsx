@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -19,7 +18,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import LegalMentions from "./pages/LegalMentions";
 import DirectivesAccess from "./pages/DirectivesAccess";
 import NotFound from "./pages/NotFound";
-import SupabaseDiagnosticPage from "./pages/SupabaseDiagnostic";
+import SupabaseDiagnosticPage from "./pages/SupabaseDiagnosticPage";
 
 const queryClient = new QueryClient();
 
