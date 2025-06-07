@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { cleanupAuthState, performGlobalSignOut } from '@/utils/authUtils';
 
 export interface Profile {
   id: string;
@@ -48,12 +49,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (profileData) {
-        setProfile(profileData);
+        // Use the user email instead of profileData.email
+        const profileWithEmail = {
+          ...profileData,
+          email: user?.email || profileData.email
+        };
+        setProfile(profileWithEmail);
       }
     } catch (error) {
       console.error('Error loading profile:', error);
     }
-  }, []);
+  }, [user?.email]);
 
   const refreshProfile = useCallback(async () => {
     if (user?.id) {
@@ -63,27 +69,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = useCallback(async () => {
     try {
-      await supabase.auth.signOut();
+      console.log("🔴 === AuthContext: DÉBUT DÉCONNEXION === 🔴");
+      
+      // Nettoyer l'état local immédiatement
       setUser(null);
       setSession(null);
       setProfile(null);
+      
+      // Effectuer une déconnexion complète
+      await performGlobalSignOut();
+      
+      console.log("🚀 AuthContext: REDIRECTION VERS /auth");
       window.location.href = '/auth';
     } catch (error) {
-      console.error('Error signing out:', error);
+      console.error('❌ AuthContext: Erreur lors de la déconnexion:', error);
+      // Même en cas d'erreur, forcer la redirection
+      window.location.href = '/auth';
     }
   }, []);
 
   useEffect(() => {
+    console.log("🔄 AuthContext: Initialisation des listeners d'authentification");
+    
     // Configuration du listener d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event);
+        console.log('🔄 Auth state changed:', event, session?.user?.email);
         
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          await loadProfile(session.user.id);
+          // Déférer le chargement du profil pour éviter les deadlocks
+          setTimeout(() => {
+            loadProfile(session.user.id);
+          }, 0);
         } else {
           setProfile(null);
         }
@@ -94,6 +114,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Vérification de session initiale
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('🔍 Session initiale:', session?.user?.email);
       setSession(session);
       setUser(session?.user ?? null);
       

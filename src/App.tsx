@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,7 +10,6 @@ import ScrollToTop from "./components/ScrollToTop";
 // Import des pages
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
-import OTPAuth from "./pages/OTPAuth";
 import Rediger from "./pages/Rediger";
 import Contact from "./pages/Contact";
 import ActualitesSante from "./pages/ActualitesSante";
@@ -19,6 +19,23 @@ import PolitiqueConfidentialite from "./pages/PolitiqueConfidentialite";
 import ConditionsGeneralesUtilisation from "./pages/ConditionsGeneralesUtilisation";
 import Directives from "./pages/Directives";
 import NotFound from "./pages/NotFound";
+import Community from "./pages/Community";
+import Soutenir from "./pages/Soutenir";
+import EnSavoirPlus from "./pages/EnSavoirPlus";
+import Confidentialite from "./pages/Confidentialite";
+
+// Import des pages de questionnaire
+import AvisGeneral from "./pages/AvisGeneral";
+import MaintienVie from "./pages/MaintienVie";
+import MaladieAvancee from "./pages/MaladieAvancee";
+import GoutsPeurs from "./pages/GoutsPeurs";
+import ExemplesPhrases from "./pages/ExemplesPhrases";
+import PersonneConfiance from "./pages/PersonneConfiance";
+import Synthese from "./pages/Synthese";
+import MesDirectives from "./pages/MesDirectives";
+import CarteAcces from "./pages/CarteAcces";
+import SuiviPalliatif from "./pages/SuiviPalliatif";
+import AccesSoinsPalliatifs from "./pages/AccesSoinsPalliatifs";
 
 const queryClient = new QueryClient();
 
@@ -34,7 +51,6 @@ function App() {
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />
-                <Route path="/otp-auth" element={<OTPAuth />} />
                 <Route path="/rediger" element={<Rediger />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/actualites-sante" element={<ActualitesSante />} />
@@ -43,6 +59,24 @@ function App() {
                 <Route path="/politique-confidentialite" element={<PolitiqueConfidentialite />} />
                 <Route path="/conditions-generales-utilisation" element={<ConditionsGeneralesUtilisation />} />
                 <Route path="/directives/:id" element={<Directives />} />
+                <Route path="/community" element={<Community />} />
+                <Route path="/soutenir" element={<Soutenir />} />
+                <Route path="/en-savoir-plus" element={<EnSavoirPlus />} />
+                <Route path="/confidentialite" element={<Confidentialite />} />
+                
+                {/* Routes du questionnaire */}
+                <Route path="/avis-general" element={<AvisGeneral />} />
+                <Route path="/maintien-vie" element={<MaintienVie />} />
+                <Route path="/maladie-avancee" element={<MaladieAvancee />} />
+                <Route path="/gouts-peurs" element={<GoutsPeurs />} />
+                <Route path="/exemples-phrases" element={<ExemplesPhrases />} />
+                <Route path="/personne-confiance" element={<PersonneConfiance />} />
+                <Route path="/synthese" element={<Synthese />} />
+                <Route path="/mes-directives" element={<MesDirectives />} />
+                <Route path="/carte-acces" element={<CarteAcces />} />
+                <Route path="/suivi-palliatif" element={<SuiviPalliatif />} />
+                <Route path="/acces-soins-palliatifs" element={<AccesSoinsPalliatifs />} />
+                
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </div>
