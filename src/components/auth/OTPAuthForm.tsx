@@ -2,217 +2,215 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Mail, Shield } from 'lucide-react';
-import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { toast } from '@/hooks/use-toast';
+import { Mail, Key, ArrowLeft } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
-export const OTPAuthForm: React.FC = () => {
+export const OTPAuthForm = () => {
+  const navigate = useNavigate();
+  const [step, setStep] = useState<'email' | 'otp'>('email');
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
-  const [step, setStep] = useState<'email' | 'otp'>('email');
-  const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
 
-  const sendOtp = async () => {
-    if (!email) {
-      setError('Veuillez entrer votre email');
-      return;
-    }
-
+  const handleSendOTP = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
-    setError('');
-    setMessage('');
 
     try {
-      const response = await fetch('/functions/v1/send-otp', {
+      console.log('📧 Envoi OTP pour:', email);
+      
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-otp`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        },
         body: JSON.stringify({ email }),
       });
 
-      const data = await response.json();
+      const result = await response.json();
+      console.log('📧 Réponse send-otp:', result);
 
-      if (response.ok) {
-        setStep('otp');
-        setMessage('Code envoyé par email. Vérifiez votre boîte de réception.');
-      } else {
-        setError(data.error || 'Erreur lors de l\'envoi du code');
+      if (!response.ok) {
+        throw new Error(result.error || 'Erreur envoi OTP');
       }
-    } catch (err) {
-      setError('Erreur de connexion');
+
+      toast({
+        title: "Code envoyé !",
+        description: "Un code de vérification a été envoyé à votre email.",
+      });
+      
+      setStep('otp');
+    } catch (error: any) {
+      console.error('❌ Erreur envoi OTP:', error);
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible d'envoyer le code.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const verifyOtp = async () => {
-    if (otp.length !== 6) {
-      setError('Veuillez entrer un code à 6 chiffres');
-      return;
-    }
-
+  const handleVerifyOTP = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
-    setError('');
-    setMessage('');
 
     try {
-      const response = await fetch('/functions/v1/verify-otp', {
+      console.log('🔐 Vérification OTP pour:', email, 'Code:', otp);
+      
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/verify-otp`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        },
         body: JSON.stringify({ email, otp_code: otp }),
       });
 
-      const data = await response.json();
+      const result = await response.json();
+      console.log('🔐 Réponse verify-otp:', result);
 
-      if (response.ok && data.success) {
-        setMessage('Connexion réussie ! Redirection...');
-        
-        // Si on a une URL d'authentification, rediriger
-        if (data.auth_url) {
-          window.location.href = data.auth_url;
-        } else {
-          // Sinon rediriger vers la page principale
-          setTimeout(() => {
-            window.location.href = '/rediger';
-          }, 1000);
-        }
-      } else {
-        setError(data.message || 'Code invalide ou expiré');
+      if (!response.ok) {
+        throw new Error(result.message || 'Code OTP invalide');
       }
-    } catch (err) {
-      setError('Erreur de connexion');
+
+      if (result.success) {
+        toast({
+          title: "Connexion réussie !",
+          description: "Redirection vers votre espace...",
+        });
+        
+        // Redirection forcée vers /rediger
+        setTimeout(() => {
+          window.location.href = '/rediger';
+        }, 1000);
+      }
+    } catch (error: any) {
+      console.error('❌ Erreur vérification OTP:', error);
+      toast({
+        title: "Erreur",
+        description: error.message || "Code invalide ou expiré.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const resetForm = () => {
-    setStep('email');
-    setEmail('');
-    setOtp('');
-    setMessage('');
-    setError('');
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md mx-auto shadow-xl border-0 bg-white/80 backdrop-blur-sm">
-        <CardHeader className="text-center pb-2">
-          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Connexion sécurisée
-          </CardTitle>
-          <CardDescription className="text-gray-600">
+    <div className="min-h-screen bg-gradient-to-br from-directiveplus-50 to-blue-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <Link to="/">
+            <img 
+              src="/lovable-uploads/b5d06491-daf5-4c47-84f7-6920d23506ff.png" 
+              alt="DirectivesPlus" 
+              className="h-16 w-auto mx-auto mb-4"
+            />
+          </Link>
+          <h1 className="text-2xl font-bold text-directiveplus-800">
+            Connexion par email
+          </h1>
+          <p className="text-gray-600 mt-2">
             {step === 'email' 
-              ? 'Entrez votre email pour recevoir un code de connexion'
-              : 'Entrez le code reçu par email'
+              ? "Entrez votre email pour recevoir un code de connexion"
+              : "Entrez le code reçu par email"
             }
-          </CardDescription>
-        </CardHeader>
-        
-        <CardContent className="space-y-6">
-          {message && (
-            <Alert className="border-green-200 bg-green-50">
-              <AlertDescription className="text-green-800">
-                {message}
-              </AlertDescription>
-            </Alert>
-          )}
+          </p>
+        </div>
 
-          {error && (
-            <Alert className="border-red-200 bg-red-50">
-              <AlertDescription className="text-red-800">
-                {error}
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {step === 'email' && (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium flex items-center gap-2">
-                  <Mail className="w-4 h-4" />
-                  Adresse email *
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="votre@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={loading}
-                  className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                  onKeyPress={(e) => e.key === 'Enter' && sendOtp()}
-                />
-              </div>
-              
-              <Button 
-                onClick={sendOtp}
-                disabled={loading || !email}
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-3 rounded-lg transition-all duration-200 transform hover:scale-[1.02]"
-              >
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Envoyer le code
-              </Button>
-            </div>
-          )}
-
-          {step === 'otp' && (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="otp" className="text-sm font-medium flex items-center gap-2">
-                  <Shield className="w-4 h-4" />
-                  Code de vérification
-                </Label>
-                <div className="flex justify-center">
-                  <InputOTP
-                    value={otp}
-                    onChange={setOtp}
-                    maxLength={6}
-                    disabled={loading}
-                  >
-                    <InputOTPGroup>
-                      <InputOTPSlot index={0} />
-                      <InputOTPSlot index={1} />
-                      <InputOTPSlot index={2} />
-                      <InputOTPSlot index={3} />
-                      <InputOTPSlot index={4} />
-                      <InputOTPSlot index={5} />
-                    </InputOTPGroup>
-                  </InputOTP>
+        <Card className="shadow-xl border-0">
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-center flex items-center justify-center">
+              {step === 'otp' && (
+                <button
+                  onClick={() => setStep('email')}
+                  className="mr-2 p-1 hover:bg-gray-100 rounded"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </button>
+              )}
+              {step === 'email' ? 'Votre email' : 'Code de vérification'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {step === 'email' ? (
+              <form onSubmit={handleSendOTP} className="space-y-4">
+                <div className="relative">
+                  <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Input
+                    type="email"
+                    placeholder="votre.email@exemple.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="pl-10"
+                    required
+                  />
                 </div>
-                <p className="text-xs text-gray-500 text-center">
-                  Code envoyé à {email}
-                </p>
-              </div>
-              
-              <Button 
-                onClick={verifyOtp}
-                disabled={loading || otp.length !== 6}
-                className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-medium py-3 rounded-lg transition-all duration-200 transform hover:scale-[1.02]"
-              >
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Vérifier le code
-              </Button>
-
-              <Button
-                variant="outline"
-                onClick={resetForm}
-                disabled={loading}
-                className="w-full"
-              >
-                Changer d'email
-              </Button>
-            </div>
-          )}
-
-          <div className="text-center text-xs text-gray-500">
-            Le code est valable 10 minutes
-          </div>
-        </CardContent>
-      </Card>
+                
+                <Button 
+                  type="submit" 
+                  className="w-full bg-directiveplus-600 hover:bg-directiveplus-700"
+                  disabled={loading}
+                >
+                  {loading ? "Envoi en cours..." : "Envoyer le code"}
+                </Button>
+              </form>
+            ) : (
+              <form onSubmit={handleVerifyOTP} className="space-y-4">
+                <div className="text-sm text-gray-600 text-center mb-4">
+                  Code envoyé à : <strong>{email}</strong>
+                </div>
+                
+                <div className="relative">
+                  <Key className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Input
+                    type="text"
+                    placeholder="123456"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    className="pl-10 text-center text-lg tracking-widest"
+                    maxLength={6}
+                    required
+                  />
+                </div>
+                
+                <Button 
+                  type="submit" 
+                  className="w-full bg-directiveplus-600 hover:bg-directiveplus-700"
+                  disabled={loading || otp.length !== 6}
+                >
+                  {loading ? "Vérification..." : "Se connecter"}
+                </Button>
+                
+                <Button 
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setStep('email')}
+                  disabled={loading}
+                >
+                  Renvoyer un code
+                </Button>
+              </form>
+            )}
+          </CardContent>
+        </Card>
+        
+        <div className="text-center mt-6">
+          <p className="text-sm text-gray-600">
+            Vous préférez la connexion classique ?{' '}
+            <Link to="/auth" className="text-directiveplus-600 hover:underline">
+              Connexion par mot de passe
+            </Link>
+          </p>
+        </div>
+      </div>
     </div>
   );
 };

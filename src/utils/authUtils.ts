@@ -1,33 +1,43 @@
 
-import { supabase } from "@/integrations/supabase/client";
-
 export const cleanupAuthState = () => {
-  console.log("🧹 Nettoyage de l'état d'authentification");
-  
-  // Nettoyer localStorage
-  Object.keys(localStorage).forEach((key) => {
-    if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-      localStorage.removeItem(key);
-    }
-  });
-  
-  // Nettoyer sessionStorage
   try {
-    Object.keys(sessionStorage || {}).forEach((key) => {
+    // Supprimer toutes les clés Supabase du localStorage
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+        localStorage.removeItem(key);
+      }
+    });
+    
+    // Supprimer toutes les clés Supabase du sessionStorage
+    Object.keys(sessionStorage).forEach((key) => {
       if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
         sessionStorage.removeItem(key);
       }
     });
-  } catch (e) {
-    console.log("⚠️ SessionStorage non disponible");
+    
+    console.log('🧹 État d\'authentification nettoyé');
+  } catch (error) {
+    console.error('❌ Erreur lors du nettoyage:', error);
   }
 };
 
-export const performGlobalSignOut = async () => {
+export const validateTokenIntegrity = (token: string): boolean => {
   try {
-    cleanupAuthState();
-    await supabase.auth.signOut({ scope: 'global' });
+    if (!token || typeof token !== 'string') {
+      return false;
+    }
+    
+    if (token.length < 20) {
+      return false;
+    }
+    
+    if (token.includes(' ') || token.includes('\n') || token.includes('\t')) {
+      return false;
+    }
+    
+    return true;
   } catch (error) {
-    console.log("⚠️ Erreur déconnexion:", error);
+    console.error('❌ Erreur validation token:', error);
+    return false;
   }
 };

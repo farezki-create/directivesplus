@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { cleanupAuthState } from '@/utils/authUtils';
 
 export interface Profile {
   id: string;
@@ -43,15 +44,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .single();
 
       if (error && error.code !== 'PGRST116') {
-        console.error('Error loading profile:', error);
+        console.error('❌ Erreur chargement profil:', error);
         return;
       }
 
       if (profileData) {
         setProfile(profileData);
+        console.log('✅ Profil chargé:', profileData.email);
       }
     } catch (error) {
-      console.error('Error loading profile:', error);
+      console.error('❌ Erreur chargement profil:', error);
     }
   }, []);
 
@@ -62,29 +64,55 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [user?.id, loadProfile]);
 
   const signOut = useCallback(async () => {
+    console.log('🔴 === AuthContext: DÉBUT DÉCONNEXION === 🔴');
+    
     try {
-      await supabase.auth.signOut();
+      // 1. Nettoyer l'état local immédiatement
       setUser(null);
       setSession(null);
       setProfile(null);
+      
+      // 2. Nettoyer le stockage
+      cleanupAuthState();
+      
+      // 3. Déconnexion Supabase (sans bloquer si erreur)
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+        console.log('✅ Déconnexion Supabase réussie');
+      } catch (authError) {
+        console.warn('⚠️ Erreur déconnexion Supabase (ignorée):', authError);
+      }
+      
+      // 4. Redirection forcée
+      console.log('🚀 Redirection vers /auth');
       window.location.href = '/auth';
+      
     } catch (error) {
-      console.error('Error signing out:', error);
+      console.error('❌ Erreur générale déconnexion:', error);
+      // Même en cas d'erreur, forcer la redirection
+      window.location.href = '/auth';
     }
   }, []);
 
   useEffect(() => {
+    console.log('🔐 Initialisation AuthContext');
+    
     // Configuration du listener d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event);
+        console.log('🔄 Auth state changed:', event);
         
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          await loadProfile(session.user.id);
+          console.log('✅ Utilisateur connecté:', session.user.email);
+          // Différer le chargement du profil pour éviter les blocages
+          setTimeout(() => {
+            loadProfile(session.user.id);
+          }, 100);
         } else {
+          console.log('❌ Aucun utilisateur connecté');
           setProfile(null);
         }
         
@@ -93,16 +121,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
 
     // Vérification de session initiale
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        loadProfile(session.user.id);
+    const checkInitialSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('❌ Erreur récupération session:', error);
+          cleanupAuthState();
+        }
+        
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          console.log('✅ Session existante trouvée:', session.user.email);
+          setTimeout(() => {
+            loadProfile(session.user.id);
+          }, 100);
+        }
+      } catch (error) {
+        console.error('❌ Erreur vérification session:', error);
+        cleanupAuthState();
+      } finally {
+        setIsLoading(false);
       }
-      
-      setIsLoading(false);
-    });
+    };
+
+    checkInitialSession();
 
     return () => {
       subscription.unsubscribe();
