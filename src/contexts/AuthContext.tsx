@@ -49,13 +49,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (profileData) {
-        setProfile(profileData);
-        console.log('✅ Profil chargé:', profileData.email);
+        // Ajouter l'email du user si manquant dans le profil
+        const profileWithEmail = {
+          ...profileData,
+          email: profileData.email || user?.email
+        };
+        setProfile(profileWithEmail);
+        console.log('✅ Profil chargé:', profileWithEmail.email);
       }
     } catch (error) {
       console.error('❌ Erreur chargement profil:', error);
     }
-  }, []);
+  }, [user?.email]);
 
   const refreshProfile = useCallback(async () => {
     if (user?.id) {

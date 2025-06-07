@@ -5,7 +5,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { User, LogOut, Home } from 'lucide-react';
 
-const AppNavigation = () => {
+interface AppNavigationProps {
+  hideEditingFeatures?: boolean;
+}
+
+const AppNavigation: React.FC<AppNavigationProps> = ({ hideEditingFeatures = false }) => {
   const { user, signOut } = useAuth();
 
   const handleSignOut = async () => {
