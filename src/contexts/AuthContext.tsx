@@ -48,10 +48,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (profileData) {
-        // Ajouter l'email du user si manquant dans le profil
+        // Add the email from user auth since it's not stored in the profiles table
         const profileWithEmail = {
           ...profileData,
-          email: profileData.email || user?.email
+          email: user?.email
         };
         setProfile(profileWithEmail);
         console.log('✅ Profil chargé:', profileWithEmail.email);
