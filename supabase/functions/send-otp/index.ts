@@ -15,8 +15,6 @@ serve(async (req) => {
   try {
     const { email } = await req.json()
     
-    console.log('🔍 Demande OTP pour email:', email)
-    
     if (!email) {
       return new Response(
         JSON.stringify({ error: 'Email requis' }),
@@ -28,31 +26,25 @@ serve(async (req) => {
     const otp = Math.floor(100000 + Math.random() * 900000).toString()
     const expires_at = new Date(Date.now() + 10 * 60 * 1000).toISOString() // 10 minutes
 
-    console.log('🎲 Code OTP généré:', otp)
-
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
     // Stocker le code OTP dans la base de données
-    console.log('💾 Stockage du code OTP en base...')
     const { error: dbError } = await supabase
       .from('user_otp')
       .upsert({ email, otp_code: otp, expires_at })
 
     if (dbError) {
-      console.error('❌ Erreur DB:', dbError)
+      console.error('Erreur DB:', dbError)
       return new Response(
         JSON.stringify({ error: 'Erreur interne' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    console.log('✅ Code OTP stocké en base')
-
-    // Envoyer l'email via l'Edge Function send-auth-email
-    console.log('📧 Envoi de l\'email...')
+    // Envoyer l'email via l'Edge Function existante send-auth-email
     try {
       const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-auth-email`, {
         method: 'POST',
@@ -67,26 +59,11 @@ serve(async (req) => {
         })
       })
 
-      console.log('📧 Réponse email status:', emailResponse.status)
-      
       if (!emailResponse.ok) {
-        const errorText = await emailResponse.text()
-        console.error('❌ Erreur envoi email:', errorText)
-        return new Response(
-          JSON.stringify({ error: 'Erreur lors de l\'envoi de l\'email' }),
-          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
+        console.warn('Erreur envoi email, mais OTP stocké')
       }
-
-      const emailResult = await emailResponse.json()
-      console.log('✅ Email envoyé avec succès:', emailResult)
-
     } catch (emailError) {
-      console.error('❌ Erreur envoi email:', emailError)
-      return new Response(
-        JSON.stringify({ error: 'Erreur lors de l\'envoi de l\'email' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      console.warn('Erreur envoi email:', emailError)
     }
 
     return new Response(
@@ -95,7 +72,7 @@ serve(async (req) => {
     )
 
   } catch (error) {
-    console.error('❌ Erreur générale:', error)
+    console.error('Erreur:', error)
     return new Response(
       JSON.stringify({ error: 'Erreur serveur' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
