@@ -9,11 +9,10 @@ import { Loader2, Mail, Shield, CheckCircle, XCircle } from 'lucide-react';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { useSearchParams } from 'react-router-dom';
 import { cleanupAuthState } from '@/utils/authCleanup';
-import { supabase } from '@/integrations/supabase/client';
 
 export const OTPAuthForm: React.FC = () => {
   const [searchParams] = useSearchParams();
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(''); // Pas de valeur par défaut
   const [otp, setOtp] = useState('');
   const [step, setStep] = useState<'email' | 'otp'>('email');
   const [message, setMessage] = useState('');
@@ -59,7 +58,7 @@ export const OTPAuthForm: React.FC = () => {
     setMessage('');
 
     try {
-      console.log('📧 Sending OTP to email:', targetEmail);
+      console.log('📧 Sending OTP to manually entered email:', targetEmail);
       
       const response = await fetch('https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/send-otp', {
         method: 'POST',
@@ -149,28 +148,21 @@ export const OTPAuthForm: React.FC = () => {
         throw new Error(data.error || `HTTP ${response.status}`);
       }
 
-      if (data.success && data.access_token && data.refresh_token) {
-        console.log('✅ OTP verification successful, setting session');
+      if (data.success) {
+        console.log('✅ OTP verification successful');
         setMessage('Connexion réussie ! Redirection en cours...');
         
-        // Appliquer la session avec les tokens reçus
-        const { error: sessionError } = await supabase.auth.setSession({
-          access_token: data.access_token,
-          refresh_token: data.refresh_token
-        });
-
-        if (sessionError) {
-          console.error('❌ Session error:', sessionError);
-          setError('Erreur lors de l\'établissement de la session');
-          return;
+        if (data.auth_url) {
+          console.log('🔗 Redirecting to auth URL:', data.auth_url);
+          setTimeout(() => {
+            window.location.href = data.auth_url;
+          }, 1000);
+        } else {
+          console.log('🔗 No auth URL, redirecting to /rediger');
+          setTimeout(() => {
+            window.location.href = '/rediger';
+          }, 2000);
         }
-
-        console.log('✅ Session established successfully');
-        
-        // Redirection après succès
-        setTimeout(() => {
-          window.location.href = '/rediger';
-        }, 1000);
       } else {
         console.error('❌ OTP verification failed:', data);
         setError(data.message || 'Code invalide ou expiré');
