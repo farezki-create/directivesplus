@@ -1,7 +1,7 @@
+
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { cleanupAuthState } from '@/utils/authUtils';
 
 export interface Profile {
   id: string;
@@ -43,23 +43,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .single();
 
       if (error && error.code !== 'PGRST116') {
-        console.error('❌ Erreur chargement profil:', error);
+        console.error('Error loading profile:', error);
         return;
       }
 
       if (profileData) {
-        // Add the email from user auth since it's not stored in the profiles table
-        const profileWithEmail = {
-          ...profileData,
-          email: user?.email
-        };
-        setProfile(profileWithEmail);
-        console.log('✅ Profil chargé:', profileWithEmail.email);
+        setProfile(profileData);
       }
     } catch (error) {
-      console.error('❌ Erreur chargement profil:', error);
+      console.error('Error loading profile:', error);
     }
-  }, [user?.email]);
+  }, []);
 
   const refreshProfile = useCallback(async () => {
     if (user?.id) {
@@ -68,55 +62,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [user?.id, loadProfile]);
 
   const signOut = useCallback(async () => {
-    console.log('🔴 === AuthContext: DÉBUT DÉCONNEXION === 🔴');
-    
     try {
-      // 1. Nettoyer l'état local immédiatement
+      await supabase.auth.signOut();
       setUser(null);
       setSession(null);
       setProfile(null);
-      
-      // 2. Nettoyer le stockage
-      cleanupAuthState();
-      
-      // 3. Déconnexion Supabase (sans bloquer si erreur)
-      try {
-        await supabase.auth.signOut({ scope: 'global' });
-        console.log('✅ Déconnexion Supabase réussie');
-      } catch (authError) {
-        console.warn('⚠️ Erreur déconnexion Supabase (ignorée):', authError);
-      }
-      
-      // 4. Redirection forcée
-      console.log('🚀 Redirection vers /auth');
       window.location.href = '/auth';
-      
     } catch (error) {
-      console.error('❌ Erreur générale déconnexion:', error);
-      // Même en cas d'erreur, forcer la redirection
-      window.location.href = '/auth';
+      console.error('Error signing out:', error);
     }
   }, []);
 
   useEffect(() => {
-    console.log('🔐 Initialisation AuthContext');
-    
     // Configuration du listener d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('🔄 Auth state changed:', event);
+        console.log('Auth state changed:', event);
         
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          console.log('✅ Utilisateur connecté:', session.user.email);
-          // Différer le chargement du profil pour éviter les blocages
-          setTimeout(() => {
-            loadProfile(session.user.id);
-          }, 100);
+          await loadProfile(session.user.id);
         } else {
-          console.log('❌ Aucun utilisateur connecté');
           setProfile(null);
         }
         
@@ -125,33 +93,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
 
     // Vérification de session initiale
-    const checkInitialSession = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error('❌ Erreur récupération session:', error);
-          cleanupAuthState();
-        }
-        
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (session?.user) {
-          console.log('✅ Session existante trouvée:', session.user.email);
-          setTimeout(() => {
-            loadProfile(session.user.id);
-          }, 100);
-        }
-      } catch (error) {
-        console.error('❌ Erreur vérification session:', error);
-        cleanupAuthState();
-      } finally {
-        setIsLoading(false);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        loadProfile(session.user.id);
       }
-    };
-
-    checkInitialSession();
+      
+      setIsLoading(false);
+    });
 
     return () => {
       subscription.unsubscribe();

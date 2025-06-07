@@ -1,69 +1,257 @@
 
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { User, LogOut, Home } from 'lucide-react';
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { 
+  User, 
+  LogOut, 
+  Menu, 
+  X, 
+  FileText,
+  CreditCard,
+  Activity,
+  Users
+} from "lucide-react";
 
 interface AppNavigationProps {
   hideEditingFeatures?: boolean;
 }
 
-const AppNavigation: React.FC<AppNavigationProps> = ({ hideEditingFeatures = false }) => {
-  const { user, signOut } = useAuth();
+const AppNavigation = ({ hideEditingFeatures = false }: AppNavigationProps) => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-    } catch (error) {
-      console.error('Erreur lors de la déconnexion:', error);
-    }
+  const handleLogout = async () => {
+    // Simple navigation to home on logout
+    navigate("/");
   };
 
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  // Vérifier si l'utilisateur est un soignant
+  const isSoignant = user?.email?.endsWith('@directivesplus.fr');
+
   return (
-    <nav className="bg-white shadow-sm border-b">
+    <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          <div className="flex items-center space-x-4">
-            <Link to="/" className="flex items-center">
-              <img 
-                src="/lovable-uploads/b5d06491-daf5-4c47-84f7-6920d23506ff.png" 
-                alt="DirectivesPlus" 
-                className="h-8 w-auto"
-              />
-              <span className="ml-2 text-lg font-semibold text-directiveplus-600">
-                DirectivesPlus
-              </span>
-            </Link>
-          </div>
-          
-          <div className="flex items-center space-x-4">
-            <Link to="/">
-              <Button variant="ghost" size="sm">
-                <Home className="w-4 h-4 mr-2" />
-                Accueil
-              </Button>
-            </Link>
+        <div className="flex justify-between items-center h-16">
+          {/* Logo */}
+          <Link to="/" className="flex items-center space-x-2">
+            <span className="text-xl font-bold text-directiveplus-700">
+              DirectivesPlus
+            </span>
+          </Link>
+
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-6">
+            {user && !hideEditingFeatures && (
+              <>
+                <Link 
+                  to="/rediger" 
+                  className="flex items-center space-x-1 text-gray-700 hover:text-directiveplus-600 transition-colors"
+                >
+                  <FileText size={16} />
+                  <span>Rédiger</span>
+                </Link>
+                
+                <Link 
+                  to="/mes-directives" 
+                  className="flex items-center space-x-1 text-gray-700 hover:text-directiveplus-600 transition-colors"
+                >
+                  <FileText size={16} />
+                  <span>Mes Directives</span>
+                </Link>
+                
+                <Link 
+                  to="/suivi-palliatif" 
+                  className="flex items-center space-x-1 text-gray-700 hover:text-directiveplus-600 transition-colors"
+                >
+                  <Activity size={16} />
+                  <span>Suivi Palliatif</span>
+                </Link>
+
+                {/* Navigation pour soignants */}
+                {isSoignant && (
+                  <>
+                    <Link 
+                      to="/alertes-soignants" 
+                      className="flex items-center space-x-1 text-gray-700 hover:text-directiveplus-600 transition-colors"
+                    >
+                      <Activity size={16} />
+                      <span>Alertes</span>
+                    </Link>
+                    
+                    <Link 
+                      to="/suivi-multi-patients" 
+                      className="flex items-center space-x-1 text-gray-700 hover:text-directiveplus-600 transition-colors"
+                    >
+                      <Users size={16} />
+                      <span>Multi-Patients</span>
+                    </Link>
+                  </>
+                )}
+                
+                <Link 
+                  to="/carte-acces" 
+                  className="flex items-center space-x-1 text-gray-700 hover:text-directiveplus-600 transition-colors"
+                >
+                  <CreditCard size={16} />
+                  <span>Carte d'Accès</span>
+                </Link>
+              </>
+            )}
             
-            {user && (
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-600">
-                  <User className="w-4 h-4 inline mr-1" />
-                  {user.email}
-                </span>
+            {user ? (
+              <div className="flex items-center space-x-4">
+                {!hideEditingFeatures && (
+                  <Link 
+                    to="/profile" 
+                    className="flex items-center space-x-1 text-gray-700 hover:text-directiveplus-600 transition-colors"
+                  >
+                    <User size={16} />
+                    <span>Profil</span>
+                  </Link>
+                )}
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  onClick={handleSignOut}
-                  className="text-red-600 border-red-300 hover:bg-red-50"
+                  onClick={handleLogout}
+                  className="flex items-center space-x-1"
                 >
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Déconnexion
+                  <LogOut size={16} />
+                  <span>Déconnexion</span>
                 </Button>
               </div>
+            ) : (
+              <Link to="/auth">
+                <Button variant="default" size="sm">
+                  Connexion
+                </Button>
+              </Link>
             )}
           </div>
+
+          {/* Mobile menu button */}
+          <div className="md:hidden">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={toggleMenu}
+            >
+              {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            </Button>
+          </div>
         </div>
+
+        {/* Mobile Navigation */}
+        {isMenuOpen && (
+          <div className="md:hidden border-t py-4">
+            <div className="flex flex-col space-y-4">
+              {user && !hideEditingFeatures && (
+                <>
+                  <Link 
+                    to="/rediger" 
+                    className="flex items-center space-x-2 text-gray-700 hover:text-directiveplus-600 transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <FileText size={16} />
+                    <span>Rédiger</span>
+                  </Link>
+                  
+                  <Link 
+                    to="/mes-directives" 
+                    className="flex items-center space-x-2 text-gray-700 hover:text-directiveplus-600 transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <FileText size={16} />
+                    <span>Mes Directives</span>
+                  </Link>
+                  
+                  <Link 
+                    to="/suivi-palliatif" 
+                    className="flex items-center space-x-2 text-gray-700 hover:text-directiveplus-600 transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Activity size={16} />
+                    <span>Suivi Palliatif</span>
+                  </Link>
+
+                  {/* Navigation mobile pour soignants */}
+                  {isSoignant && (
+                    <>
+                      <Link 
+                        to="/alertes-soignants" 
+                        className="flex items-center space-x-2 text-gray-700 hover:text-directiveplus-600 transition-colors"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <Activity size={16} />
+                        <span>Alertes</span>
+                      </Link>
+                      
+                      <Link 
+                        to="/suivi-multi-patients" 
+                        className="flex items-center space-x-2 text-gray-700 hover:text-directiveplus-600 transition-colors"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <Users size={16} />
+                        <span>Multi-Patients</span>
+                      </Link>
+                    </>
+                  )}
+                  
+                  <Link 
+                    to="/carte-acces" 
+                    className="flex items-center space-x-2 text-gray-700 hover:text-directiveplus-600 transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <CreditCard size={16} />
+                    <span>Carte d'Accès</span>
+                  </Link>
+                </>
+              )}
+              
+              {user ? (
+                <>
+                  {!hideEditingFeatures && (
+                    <Link 
+                      to="/profile" 
+                      className="flex items-center space-x-2 text-gray-700 hover:text-directiveplus-600 transition-colors"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <User size={16} />
+                      <span>Profil</span>
+                    </Link>
+                  )}
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => {
+                      handleLogout();
+                      setIsMenuOpen(false);
+                    }}
+                    className="flex items-center space-x-2 justify-start"
+                  >
+                    <LogOut size={16} />
+                    <span>Déconnexion</span>
+                  </Button>
+                </>
+              ) : (
+                <Link 
+                  to="/auth" 
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <Button variant="default" size="sm" className="w-full">
+                    Connexion
+                  </Button>
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </nav>
   );
