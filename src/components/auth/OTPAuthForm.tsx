@@ -8,7 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Mail, Shield, CheckCircle, XCircle } from 'lucide-react';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { useSearchParams } from 'react-router-dom';
-import { cleanupAuthState } from '@/utils/authCleanup';
+import { supabase } from '@/integrations/supabase/client';
 
 export const OTPAuthForm: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -19,10 +19,35 @@ export const OTPAuthForm: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Nettoyer complètement au montage
+  // Invalider toute session Supabase existante et nettoyer le storage
   useEffect(() => {
-    console.log('🧹 Complete auth cleanup on component mount');
-    cleanupAuthState();
+    console.log('🧹 Nettoyage de la session et du storage');
+    
+    // Forcer la déconnexion Supabase
+    supabase.auth.signOut().catch(() => {
+      // Ignorer les erreurs de déconnexion
+    });
+    
+    // Nettoyer le localStorage et sessionStorage
+    localStorage.removeItem('user_email');
+    sessionStorage.removeItem('user_email');
+    
+    // Nettoyer toutes les clés Supabase auth
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+        localStorage.removeItem(key);
+      }
+    });
+    
+    try {
+      Object.keys(sessionStorage || {}).forEach((key) => {
+        if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+          sessionStorage.removeItem(key);
+        }
+      });
+    } catch (e) {
+      console.log("⚠️ SessionStorage non disponible");
+    }
   }, []);
 
   // Pré-remplir l'email depuis l'URL seulement si explicitement fourni
@@ -30,8 +55,9 @@ export const OTPAuthForm: React.FC = () => {
     const emailFromUrl = searchParams.get('email');
     if (emailFromUrl && emailFromUrl.trim()) {
       const decodedEmail = decodeURIComponent(emailFromUrl);
-      console.log('📧 Email from URL:', decodedEmail);
+      console.log('📧 Email récupéré depuis URL:', decodedEmail);
       setEmail(decodedEmail);
+      // Ne PAS envoyer automatiquement l'OTP, laisser l'utilisateur vérifier l'email
     }
   }, [searchParams]);
 
@@ -41,6 +67,7 @@ export const OTPAuthForm: React.FC = () => {
   };
 
   const sendOtp = async () => {
+    // Utiliser uniquement l'email saisi manuellement
     const targetEmail = email.trim();
     
     if (!targetEmail) {
@@ -57,8 +84,12 @@ export const OTPAuthForm: React.FC = () => {
     setError('');
     setMessage('');
 
+    // Nettoyer encore une fois avant l'envoi
+    localStorage.removeItem('user_email');
+    sessionStorage.removeItem('user_email');
+
     try {
-      console.log('📧 Sending OTP to manually entered email:', targetEmail);
+      console.log('📧 Envoi OTP pour email saisi:', targetEmail);
       
       const response = await fetch('https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/send-otp', {
         method: 'POST',
@@ -66,38 +97,29 @@ export const OTPAuthForm: React.FC = () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5dHFxam5lY2V6a3h5aG1tanJ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzcxOTc5MjUsImV4cCI6MjA1Mjc3MzkyNX0.uocoNg-le-iv0pw7c99mthQ6gxGHyXGyQqgxo9_3CPc`
         },
-        body: JSON.stringify({ email: targetEmail }),
+        body: JSON.stringify({ email: targetEmail }), // Utiliser l'email saisi uniquement
       });
 
-      console.log('📧 Send OTP response status:', response.status);
+      console.log('📧 Réponse status:', response.status);
       
-      const responseText = await response.text();
-      console.log('📧 Send OTP response text:', responseText);
-      
-      let data;
-      try {
-        data = JSON.parse(responseText);
-      } catch (parseError) {
-        console.error('❌ Failed to parse response:', parseError);
-        throw new Error(`Invalid server response: ${response.status}`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Erreur HTTP:', response.status, errorText);
+        throw new Error(`Erreur HTTP ${response.status}: ${errorText}`);
       }
 
-      if (!response.ok) {
-        console.error('❌ HTTP error:', response.status, data);
-        throw new Error(data.error || `HTTP ${response.status}`);
-      }
+      const data = await response.json();
+      console.log('📧 Réponse data:', data);
 
       if (data.success) {
-        console.log('✅ OTP sent successfully');
         setStep('otp');
         setMessage(`Code envoyé à ${targetEmail}. Vérifiez votre boîte de réception et vos spams.`);
       } else {
-        console.error('❌ Send OTP failed:', data);
         setError(data.error || 'Erreur lors de l\'envoi du code');
       }
     } catch (err) {
-      console.error('💥 Send OTP error:', err);
-      setError(`Erreur: ${err.message}`);
+      console.error('💥 Erreur envoi OTP:', err);
+      setError('Erreur de connexion. Vérifiez votre connexion internet.');
     } finally {
       setLoading(false);
     }
@@ -119,7 +141,7 @@ export const OTPAuthForm: React.FC = () => {
     setMessage('');
 
     try {
-      console.log('🔍 Verifying OTP for email:', email, 'code:', otp);
+      console.log('🔍 Vérification OTP:', { email, otp });
       
       const response = await fetch('https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/verify-otp', {
         method: 'POST',
@@ -130,46 +152,34 @@ export const OTPAuthForm: React.FC = () => {
         body: JSON.stringify({ email, otp_code: otp }),
       });
 
-      console.log('🔍 Verify OTP response status:', response.status);
-      
-      const responseText = await response.text();
-      console.log('🔍 Verify OTP response text:', responseText);
-
-      let data;
-      try {
-        data = JSON.parse(responseText);
-      } catch (parseError) {
-        console.error('❌ Failed to parse verify response:', parseError);
-        throw new Error(`Invalid server response: ${response.status}`);
-      }
-
       if (!response.ok) {
-        console.error('❌ Verify HTTP error:', response.status, data);
-        throw new Error(data.error || `HTTP ${response.status}`);
+        const errorText = await response.text();
+        console.error('❌ Erreur HTTP vérification:', response.status, errorText);
+        throw new Error(`Erreur HTTP ${response.status}`);
       }
+
+      const data = await response.json();
+      console.log('🔍 Réponse vérification:', data);
 
       if (data.success) {
-        console.log('✅ OTP verification successful');
         setMessage('Connexion réussie ! Redirection en cours...');
         
+        // Si on a une URL d'authentification, rediriger
         if (data.auth_url) {
-          console.log('🔗 Redirecting to auth URL:', data.auth_url);
-          setTimeout(() => {
-            window.location.href = data.auth_url;
-          }, 1000);
+          console.log('🔗 Redirection vers:', data.auth_url);
+          window.location.href = data.auth_url;
         } else {
-          console.log('🔗 No auth URL, redirecting to /rediger');
+          // Sinon rediriger vers la page principale après un délai
           setTimeout(() => {
             window.location.href = '/rediger';
           }, 2000);
         }
       } else {
-        console.error('❌ OTP verification failed:', data);
         setError(data.message || 'Code invalide ou expiré');
       }
     } catch (err) {
-      console.error('💥 Verify OTP error:', err);
-      setError(`Erreur: ${err.message}`);
+      console.error('💥 Erreur vérification OTP:', err);
+      setError('Erreur de connexion. Veuillez réessayer.');
     } finally {
       setLoading(false);
     }
@@ -177,18 +187,21 @@ export const OTPAuthForm: React.FC = () => {
 
   const resetForm = () => {
     setStep('email');
-    setEmail('');
+    setEmail(''); // Remettre à zéro l'email
     setOtp('');
     setMessage('');
     setError('');
-    cleanupAuthState();
+    
+    // Nettoyer encore le storage
+    localStorage.removeItem('user_email');
+    sessionStorage.removeItem('user_email');
   };
 
   const resendCode = () => {
     setOtp('');
     setError('');
     setMessage('');
-    sendOtp();
+    sendOtp(); // Utilise l'email déjà saisi
   };
 
   return (
