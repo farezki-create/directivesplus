@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -39,6 +38,8 @@ import AccesSoinsPalliatifs from "./pages/AccesSoinsPalliatifs";
 import Profile from "./pages/Profile";
 import DemandeAbonnementInstitutionnel from "./pages/DemandeAbonnementInstitutionnel";
 
+import AuthAuditComplete from "./pages/AuthAuditComplete";
+
 const queryClient = new QueryClient();
 
 function App() {
@@ -76,10 +77,13 @@ function App() {
                 <Route path="/exemples-phrases" element={<ExemplesPhrases />} />
                 <Route path="/personne-confiance" element={<PersonneConfiance />} />
                 <Route path="/synthese" element={<Synthesis />} />
+                <Route path="/synthesis" element={<Synthesis />} />
                 <Route path="/mes-directives" element={<MesDirectives />} />
                 <Route path="/carte-acces" element={<CarteAcces />} />
                 <Route path="/suivi-palliatif" element={<SuiviPalliatif />} />
                 <Route path="/acces-soins-palliatifs" element={<AccesSoinsPalliatifs />} />
+                
+                <Route path="/auth-audit-complete" element={<AuthAuditComplete />} />
                 
                 <Route path="*" element={<NotFound />} />
               </Routes>
