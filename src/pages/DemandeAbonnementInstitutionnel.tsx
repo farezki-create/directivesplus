@@ -33,6 +33,7 @@ const DemandeAbonnementInstitutionnel = () => {
     setIsSubmitting(true);
 
     try {
+      // Enregistrer en base de données
       const { error } = await supabase
         .from('abonnes_institutions')
         .insert([{
@@ -50,6 +51,23 @@ const DemandeAbonnementInstitutionnel = () => {
           variant: "destructive"
         });
       } else {
+        // Créer le lien mailto pour envoyer à contact@directivesplus.fr
+        const subject = encodeURIComponent("Nouvelle demande d'abonnement institutionnel");
+        const body = encodeURIComponent(`
+Nouvelle demande d'abonnement institutionnel :
+
+Nom du référent: ${formData.nom}
+Structure: ${formData.structure}
+Email: ${formData.email}
+Téléphone: ${formData.telephone}
+Notes: ${formData.notes}
+
+Demande soumise le: ${new Date().toLocaleString()}
+        `);
+        
+        const mailtoLink = `mailto:contact@directivesplus.fr?subject=${subject}&body=${body}`;
+        window.location.href = mailtoLink;
+        
         setIsSubmitted(true);
         toast({
           title: "Demande envoyée",
@@ -108,6 +126,10 @@ const DemandeAbonnementInstitutionnel = () => {
                     <li>• Configuration de votre accès institutionnel</li>
                     <li>• Formation à l'utilisation de la plateforme</li>
                   </ul>
+                </div>
+                <div className="bg-blue-100 p-4 rounded-lg">
+                  <p className="text-blue-800 font-medium">Contact direct :</p>
+                  <p className="text-blue-700">contact@directivesplus.fr</p>
                 </div>
                 <Button 
                   onClick={() => window.location.href = '/'}
@@ -227,12 +249,32 @@ const DemandeAbonnementInstitutionnel = () => {
                   />
                 </div>
 
+                <div className="space-y-2">
+                  <Label htmlFor="notes">Notes complémentaires</Label>
+                  <Textarea
+                    id="notes"
+                    name="notes"
+                    value={formData.notes}
+                    onChange={handleChange}
+                    placeholder="Informations complémentaires sur votre établissement ou vos besoins..."
+                    rows={3}
+                  />
+                </div>
+
                 <Alert>
                   <Building2 className="h-4 w-4" />
                   <AlertDescription>
                     <strong>Important :</strong> Cette demande sera examinée par notre équipe. 
                     Un accès institutionnel permet de consulter les directives anticipées des patients 
                     selon les droits accordés par l'administration.
+                  </AlertDescription>
+                </Alert>
+
+                <Alert className="bg-blue-50 border-blue-200">
+                  <Mail className="h-4 w-4 text-blue-600" />
+                  <AlertDescription className="text-blue-800">
+                    Votre demande sera automatiquement envoyée à <strong>contact@directivesplus.fr</strong> 
+                    et enregistrée dans notre système pour suivi administratif.
                   </AlertDescription>
                 </Alert>
 
