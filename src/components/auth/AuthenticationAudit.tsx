@@ -210,7 +210,7 @@ const AuthenticationAudit = () => {
                   <Alert>
                     <AlertDescription>
                       <strong>Recommandation:</strong> {result.recommendation}
-                    </Alert>
+                    </AlertDescription>
                   </Alert>
                 )}
               </div>
