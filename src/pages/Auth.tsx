@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useNavigate } from "react-router-dom";
-import { ModernAuthForm } from "@/components/auth/ModernAuthForm";
+import EnhancedAuthForm from "@/components/auth/EnhancedAuthForm";
 import { useAuth } from "@/contexts/AuthContext";
 
 const Auth = () => {
@@ -28,7 +28,7 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen">
-      <ModernAuthForm />
+      <EnhancedAuthForm />
     </div>
   );
 };

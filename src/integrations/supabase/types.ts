@@ -357,6 +357,45 @@ export type Database = {
         }
         Relationships: []
       }
+      auth_codes_verification: {
+        Row: {
+          code: string
+          created_at: string | null
+          email: string
+          expires_at: string
+          id: string
+          ip_address: unknown | null
+          used: boolean
+          user_agent: string | null
+          user_id: string | null
+          verification_type: string
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          email: string
+          expires_at?: string
+          id?: string
+          ip_address?: unknown | null
+          used?: boolean
+          user_agent?: string | null
+          user_id?: string | null
+          verification_type?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          email?: string
+          expires_at?: string
+          id?: string
+          ip_address?: unknown | null
+          used?: boolean
+          user_agent?: string | null
+          user_id?: string | null
+          verification_type?: string
+        }
+        Relationships: []
+      }
       configuration: {
         Row: {
           id: number
@@ -2319,6 +2358,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      cleanup_expired_verification_codes: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       debug_institution_access_step_by_step: {
         Args: {
           input_last_name: string
@@ -2378,6 +2421,16 @@ export type Database = {
       }
       generate_unique_access_code: {
         Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      generate_verification_code: {
+        Args: {
+          p_email: string
+          p_user_id?: string
+          p_verification_type?: string
+          p_ip_address?: unknown
+          p_user_agent?: string
+        }
         Returns: string
       }
       get_directives_by_institution_code: {
@@ -2756,6 +2809,14 @@ export type Database = {
           is_valid: boolean
           user_id: string
           channel: string
+        }[]
+      }
+      verify_code: {
+        Args: { p_email: string; p_code: string; p_verification_type?: string }
+        Returns: {
+          is_valid: boolean
+          user_id: string
+          verification_type: string
         }[]
       }
       verify_directive_access: {
