@@ -49,10 +49,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (profileData) {
-        // Use the user email instead of profileData.email
+        // Use the user email instead of profileData.email if profileData doesn't have email field
         const profileWithEmail = {
           ...profileData,
-          email: user?.email || profileData.email
+          email: user?.email || profileData.email || ""
         };
         setProfile(profileWithEmail);
       }

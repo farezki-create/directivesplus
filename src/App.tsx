@@ -31,7 +31,7 @@ import MaladieAvancee from "./pages/MaladieAvancee";
 import GoutsPeurs from "./pages/GoutsPeurs";
 import ExemplesPhrases from "./pages/ExemplesPhrases";
 import PersonneConfiance from "./pages/PersonneConfiance";
-import Synthese from "./pages/Synthese";
+import Synthesis from "./pages/Synthesis";
 import MesDirectives from "./pages/MesDirectives";
 import CarteAcces from "./pages/CarteAcces";
 import SuiviPalliatif from "./pages/SuiviPalliatif";
@@ -71,7 +71,7 @@ function App() {
                 <Route path="/gouts-peurs" element={<GoutsPeurs />} />
                 <Route path="/exemples-phrases" element={<ExemplesPhrases />} />
                 <Route path="/personne-confiance" element={<PersonneConfiance />} />
-                <Route path="/synthese" element={<Synthese />} />
+                <Route path="/synthese" element={<Synthesis />} />
                 <Route path="/mes-directives" element={<MesDirectives />} />
                 <Route path="/carte-acces" element={<CarteAcces />} />
                 <Route path="/suivi-palliatif" element={<SuiviPalliatif />} />
