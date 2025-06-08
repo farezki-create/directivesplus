@@ -36,6 +36,7 @@ import MesDirectives from "./pages/MesDirectives";
 import CarteAcces from "./pages/CarteAcces";
 import SuiviPalliatif from "./pages/SuiviPalliatif";
 import AccesSoinsPalliatifs from "./pages/AccesSoinsPalliatifs";
+import Profile from "./pages/Profile";
 
 const queryClient = new QueryClient();
 
@@ -63,6 +64,7 @@ function App() {
                 <Route path="/soutenir" element={<Soutenir />} />
                 <Route path="/en-savoir-plus" element={<EnSavoirPlus />} />
                 <Route path="/confidentialite" element={<Confidentialite />} />
+                <Route path="/profile" element={<Profile />} />
                 
                 {/* Routes du questionnaire */}
                 <Route path="/avis-general" element={<AvisGeneral />} />
