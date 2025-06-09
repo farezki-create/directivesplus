@@ -48,7 +48,15 @@ export class SecureDocumentAccess {
         };
       }
 
-      const result = data?.[0];
+      // Check if data is null or empty
+      if (!data || !Array.isArray(data) || data.length === 0) {
+        return {
+          accessGranted: false,
+          errorMessage: 'Invalid response from server'
+        };
+      }
+
+      const result = data[0];
       if (!result) {
         return {
           accessGranted: false,

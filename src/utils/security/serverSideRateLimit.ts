@@ -34,7 +34,12 @@ export class ServerSideRateLimit {
         return { allowed: false, remainingAttempts: 0 };
       }
 
-      const result = data?.[0];
+      // Check if data is null or empty
+      if (!data || !Array.isArray(data) || data.length === 0) {
+        return { allowed: false, remainingAttempts: 0 };
+      }
+      
+      const result = data[0];
       if (!result) {
         return { allowed: false, remainingAttempts: 0 };
       }
