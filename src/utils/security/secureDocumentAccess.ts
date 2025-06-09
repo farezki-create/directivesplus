@@ -21,6 +21,12 @@ interface DocumentData {
   file_size?: number;
 }
 
+interface RPCResponse {
+  access_granted: boolean;
+  document_data?: DocumentData;
+  error_message?: string;
+}
+
 export class SecureDocumentAccess {
   static async validateAccess(
     documentId: string,
@@ -56,7 +62,7 @@ export class SecureDocumentAccess {
         };
       }
 
-      const result = data[0];
+      const result = data[0] as RPCResponse;
       if (!result) {
         return {
           accessGranted: false,
@@ -66,7 +72,7 @@ export class SecureDocumentAccess {
 
       if (result.access_granted && result.document_data) {
         // Type assertion for the document data from JSON - convert to unknown first
-        const docData = result.document_data as unknown as DocumentData;
+        const docData = result.document_data;
         return {
           accessGranted: true,
           documentData: {

@@ -7,6 +7,12 @@ interface RateLimitResult {
   retryAfter?: number;
 }
 
+interface RPCRateLimitResponse {
+  allowed: boolean;
+  remaining_attempts: number;
+  retry_after?: number;
+}
+
 export class ServerSideRateLimit {
   static async checkRateLimit(
     identifier: string,
@@ -39,7 +45,7 @@ export class ServerSideRateLimit {
         return { allowed: false, remainingAttempts: 0 };
       }
       
-      const result = data[0];
+      const result = data[0] as RPCRateLimitResponse;
       if (!result) {
         return { allowed: false, remainingAttempts: 0 };
       }
