@@ -40,7 +40,7 @@ export class ServerSideRateLimit {
         return { allowed: false, remainingAttempts: 0 };
       }
 
-      // Check if data is null or empty
+      // Check if data is valid array with content
       if (!data || !Array.isArray(data) || data.length === 0) {
         return { allowed: false, remainingAttempts: 0 };
       }

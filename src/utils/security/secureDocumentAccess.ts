@@ -54,7 +54,7 @@ export class SecureDocumentAccess {
         };
       }
 
-      // Check if data is null or empty
+      // Check if data is valid array with content
       if (!data || !Array.isArray(data) || data.length === 0) {
         return {
           accessGranted: false,
