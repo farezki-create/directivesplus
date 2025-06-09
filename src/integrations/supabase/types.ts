@@ -2319,6 +2319,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      bytea_to_text: {
+        Args: { data: string }
+        Returns: string
+      }
       check_access_code_rate_limit: {
         Args: {
           p_ip_address: unknown
@@ -2328,23 +2332,23 @@ export type Database = {
         Returns: boolean
       }
       check_rate_limit_secure: {
-        Args:
-          | Record<PropertyKey, never>
-          | {
-              p_identifier: string
-              p_attempt_type: string
-              p_max_attempts?: number
-              p_window_minutes?: number
-              p_ip_address?: unknown
-              p_user_agent?: string
-            }
-        Returns: undefined
+        Args: {
+          p_identifier: string
+          p_attempt_type: string
+          p_max_attempts?: number
+          p_window_minutes?: number
+          p_ip_address?: unknown
+          p_user_agent?: string
+        }
+        Returns: {
+          allowed: boolean
+          remaining_attempts: number
+          retry_after: number
+        }[]
       }
       check_sms_rate_limit: {
-        Args:
-          | Record<PropertyKey, never>
-          | { p_user_id: string; p_max_sms_per_hour?: number }
-        Returns: undefined
+        Args: { p_user_id: string; p_max_sms_per_hour?: number }
+        Returns: boolean
       }
       cleanup_expired_2fa_codes: {
         Args: Record<PropertyKey, never>
@@ -2392,13 +2396,7 @@ export type Database = {
         Returns: string
       }
       generate_auth_code: {
-        Args:
-          | Record<PropertyKey, never>
-          | { p_target: string; p_channel: string; p_user_id?: string }
-        Returns: undefined
-      }
-      generate_confirmation_code: {
-        Args: { target_email: string }
+        Args: { p_target: string; p_channel: string; p_user_id?: string }
         Returns: string
       }
       generate_institution_code: {
@@ -2410,7 +2408,7 @@ export type Database = {
         Returns: string
       }
       generate_random_code: {
-        Args: Record<PropertyKey, never> | { length: number }
+        Args: { length: number }
         Returns: string
       }
       generate_shared_access_code: {
@@ -2564,15 +2562,62 @@ export type Database = {
           shared_at: string
         }[]
       }
-      get_user_by_email: {
-        Args: { target_email: string }
-        Returns: Json
-      }
       has_role: {
         Args: {
           _user_id: string
           _role: Database["public"]["Enums"]["app_role"]
         }
+        Returns: boolean
+      }
+      http: {
+        Args: { request: Database["public"]["CompositeTypes"]["http_request"] }
+        Returns: Database["public"]["CompositeTypes"]["http_response"]
+      }
+      http_delete: {
+        Args:
+          | { uri: string }
+          | { uri: string; content: string; content_type: string }
+        Returns: Database["public"]["CompositeTypes"]["http_response"]
+      }
+      http_get: {
+        Args: { uri: string } | { uri: string; data: Json }
+        Returns: Database["public"]["CompositeTypes"]["http_response"]
+      }
+      http_head: {
+        Args: { uri: string }
+        Returns: Database["public"]["CompositeTypes"]["http_response"]
+      }
+      http_header: {
+        Args: { field: string; value: string }
+        Returns: Database["public"]["CompositeTypes"]["http_header"]
+      }
+      http_list_curlopt: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          curlopt: string
+          value: string
+        }[]
+      }
+      http_patch: {
+        Args: { uri: string; content: string; content_type: string }
+        Returns: Database["public"]["CompositeTypes"]["http_response"]
+      }
+      http_post: {
+        Args:
+          | { uri: string; content: string; content_type: string }
+          | { uri: string; data: Json }
+        Returns: Database["public"]["CompositeTypes"]["http_response"]
+      }
+      http_put: {
+        Args: { uri: string; content: string; content_type: string }
+        Returns: Database["public"]["CompositeTypes"]["http_response"]
+      }
+      http_reset_curlopt: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      http_set_curlopt: {
+        Args: { curlopt: string; value: string }
         Returns: boolean
       }
       institution_has_patient_access: {
@@ -2597,7 +2642,7 @@ export type Database = {
         Returns: boolean
       }
       is_user_admin: {
-        Args: Record<PropertyKey, never> | { user_id?: string }
+        Args: { user_id?: string }
         Returns: boolean
       }
       log_security_event: {
@@ -2612,18 +2657,16 @@ export type Database = {
         Returns: undefined
       }
       log_security_event_enhanced: {
-        Args:
-          | Record<PropertyKey, never>
-          | {
-              p_event_type: string
-              p_user_id?: string
-              p_ip_address?: unknown
-              p_user_agent?: string
-              p_details?: Json
-              p_risk_level?: string
-              p_resource_id?: string
-              p_resource_type?: string
-            }
+        Args: {
+          p_event_type: string
+          p_user_id?: string
+          p_ip_address?: unknown
+          p_user_agent?: string
+          p_details?: Json
+          p_risk_level?: string
+          p_resource_id?: string
+          p_resource_type?: string
+        }
         Returns: string
       }
       log_security_event_secure: {
@@ -2640,17 +2683,15 @@ export type Database = {
         Returns: string
       }
       log_sms_attempt: {
-        Args:
-          | Record<PropertyKey, never>
-          | {
-              p_user_id: string
-              p_recipient_phone: string
-              p_message_content: string
-              p_sender_name: string
-              p_ip_address?: unknown
-              p_user_agent?: string
-            }
-        Returns: undefined
+        Args: {
+          p_user_id: string
+          p_recipient_phone: string
+          p_message_content: string
+          p_sender_name: string
+          p_ip_address?: unknown
+          p_user_agent?: string
+        }
+        Returns: string
       }
       secure_document_access: {
         Args: {
@@ -2680,19 +2721,25 @@ export type Database = {
         Returns: undefined
       }
       send_sms_code: {
-        Args: Record<PropertyKey, never> | { phone: string }
+        Args: { phone: string }
         Returns: undefined
       }
+      text_to_bytea: {
+        Args: { data: string }
+        Returns: string
+      }
       update_sms_status: {
-        Args:
-          | Record<PropertyKey, never>
-          | {
-              p_log_id: string
-              p_status: string
-              p_brevo_message_id?: string
-              p_error_message?: string
-            }
+        Args: {
+          p_log_id: string
+          p_status: string
+          p_brevo_message_id?: string
+          p_error_message?: string
+        }
         Returns: undefined
+      }
+      urlencode: {
+        Args: { data: Json } | { string: string } | { string: string }
+        Returns: string
       }
       validate_and_use_access_code: {
         Args: {
@@ -2708,27 +2755,27 @@ export type Database = {
         }[]
       }
       validate_secure_document_access: {
-        Args:
-          | Record<PropertyKey, never>
-          | {
-              p_document_id: string
-              p_access_code?: string
-              p_user_id?: string
-              p_ip_address?: unknown
-              p_user_agent?: string
-            }
-        Returns: undefined
+        Args: {
+          p_document_id: string
+          p_access_code?: string
+          p_user_id?: string
+          p_ip_address?: unknown
+          p_user_agent?: string
+        }
+        Returns: {
+          access_granted: boolean
+          document_data: Json
+          error_message: string
+        }[]
       }
       validate_session_security: {
-        Args:
-          | Record<PropertyKey, never>
-          | {
-              p_user_id: string
-              p_ip_address: unknown
-              p_user_agent: string
-              p_browser_fingerprint?: string
-            }
-        Returns: undefined
+        Args: {
+          p_user_id: string
+          p_ip_address: unknown
+          p_user_agent: string
+          p_browser_fingerprint?: string
+        }
+        Returns: boolean
       }
       verify_2fa_code: {
         Args: { p_email: string; p_code: string }
@@ -2854,7 +2901,23 @@ export type Database = {
       app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
-      [_ in never]: never
+      http_header: {
+        field: string | null
+        value: string | null
+      }
+      http_request: {
+        method: unknown | null
+        uri: string | null
+        headers: Database["public"]["CompositeTypes"]["http_header"][] | null
+        content_type: string | null
+        content: string | null
+      }
+      http_response: {
+        status: number | null
+        content_type: string | null
+        headers: Database["public"]["CompositeTypes"]["http_header"][] | null
+        content: string | null
+      }
     }
   }
 }

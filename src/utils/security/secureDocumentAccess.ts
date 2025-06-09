@@ -21,12 +21,6 @@ interface DocumentData {
   file_size?: number;
 }
 
-interface SecureAccessResponse {
-  access_granted: boolean;
-  document_data?: DocumentData;
-  error_message?: string;
-}
-
 export class SecureDocumentAccess {
   static async validateAccess(
     documentId: string,
@@ -54,17 +48,7 @@ export class SecureDocumentAccess {
         };
       }
 
-      // Type assertion and validation for the response
-      const responseData = data as SecureAccessResponse[] | null;
-
-      if (!responseData || !Array.isArray(responseData) || responseData.length === 0) {
-        return {
-          accessGranted: false,
-          errorMessage: 'Invalid response from server'
-        };
-      }
-
-      const result = responseData[0];
+      const result = data?.[0];
       if (!result) {
         return {
           accessGranted: false,
@@ -73,7 +57,8 @@ export class SecureDocumentAccess {
       }
 
       if (result.access_granted && result.document_data) {
-        const docData = result.document_data;
+        // Type assertion for the document data from JSON - convert to unknown first
+        const docData = result.document_data as unknown as DocumentData;
         return {
           accessGranted: true,
           documentData: {

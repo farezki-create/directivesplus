@@ -1,50 +1,77 @@
 
-import React from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import AppNavigation from "@/components/AppNavigation";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileForm from "@/components/profile/ProfileForm";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import ProfileFooter from "@/components/profile/ProfileFooter";
+import ProfileSkeleton from "@/components/profile/ProfileSkeleton";
+import { useProfileData } from "@/components/profile/useProfileData";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { cn } from "@/lib/utils";
+import BackButton from "@/components/ui/back-button";
+import DeleteAccountSection from "@/components/profile/DeleteAccountSection";
 
-const Profile = () => {
-  const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
-
-  if (!isAuthenticated) {
-    navigate("/auth");
-    return null;
-  }
+export default function Profile() {
+  const {
+    profile,
+    isLoading,
+    setIsLoading,
+    formValues,
+    handleProfileUpdate,
+    handleLogout
+  } = useProfileData();
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <AppNavigation />
-      
-      <main className="flex-grow container mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto">
-          <Button
-            variant="outline"
-            onClick={() => navigate("/dashboard")}
-            className="flex items-center gap-2 mb-6"
-          >
-            <ArrowLeft size={16} />
-            Retour au tableau de bord
-          </Button>
-          
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-directiveplus-800 mb-4">
-              Mon Profil
-            </h1>
-            <p className="text-lg text-gray-600">
-              Gérez vos informations personnelles
-            </p>
+    <div className="container mx-auto py-10">
+      <BackButton />
+      <div className="space-y-6">
+        <Card className={cn(
+          "max-w-2xl mx-auto transition-all duration-300",
+          isLoading ? "opacity-75" : "opacity-100"
+        )}>
+          {isLoading ? (
+            <ProfileSkeleton />
+          ) : (
+            <>
+              <CardHeader>
+                <CardTitle>Votre profil</CardTitle>
+                <CardDescription>
+                  Gérez vos informations personnelles
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <ProfileHeader 
+                  firstName={profile?.first_name} 
+                  lastName={profile?.last_name}
+                  role={profile?.role} 
+                />
+                {!profile?.birth_date && (
+                  <Alert className="bg-blue-50 border-blue-200 animate-fade-in">
+                    <AlertDescription className="text-blue-800">
+                      Complétez votre profil pour une meilleure prise en charge de vos demandes.
+                    </AlertDescription>
+                  </Alert>
+                )}
+                <ProfileForm 
+                  initialValues={formValues} 
+                  profileId={profile?.id || ''} 
+                  onProfileUpdate={handleProfileUpdate}
+                  isLoading={isLoading}
+                  setIsLoading={setIsLoading}
+                />
+              </CardContent>
+              <CardFooter className="flex justify-center">
+                <ProfileFooter onLogout={handleLogout} />
+              </CardFooter>
+            </>
+          )}
+        </Card>
+        
+        {!isLoading && (
+          <div className="max-w-2xl mx-auto mt-8">
+            <DeleteAccountSection />
           </div>
-
-          <ProfileForm />
-        </div>
-      </main>
+        )}
+      </div>
     </div>
   );
-};
-
-export default Profile;
+}

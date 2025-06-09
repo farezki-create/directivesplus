@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useState } from "react";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import PersonalInformationFields from "./PersonalInformationFields";
 import AddressInformationFields from "./AddressInformationFields";
@@ -34,27 +34,33 @@ const profileSchema = z.object({
 
 export type ProfileFormValues = z.infer<typeof profileSchema>;
 
-export default function ProfileForm() {
+interface ProfileFormProps {
+  initialValues: ProfileFormValues;
+  profileId: string;
+  onProfileUpdate: (updatedProfile: any) => void;
+  isLoading: boolean;
+  setIsLoading: (loading: boolean) => void;
+}
+
+export default function ProfileForm({ 
+  initialValues, 
+  profileId, 
+  onProfileUpdate,
+  isLoading,
+  setIsLoading
+}: ProfileFormProps) {
   const [formState, setFormState] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [submitProgress, setSubmitProgress] = useState(0);
   
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
-    defaultValues: {
-      firstName: "",
-      lastName: "",
-      email: "",
-      phoneNumber: "",
-      address: "",
-      city: "",
-      postalCode: "",
-      country: "France",
-    }
+    defaultValues: initialValues
   });
 
   async function onSubmit(values: ProfileFormValues) {
     try {
       setFormState('submitting');
+      setIsLoading(true);
       
       // Start progress animation
       let progress = 0;
@@ -63,17 +69,48 @@ export default function ProfileForm() {
         setSubmitProgress(progress > 90 ? 90 : progress);
       }, 100);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      // Format the birthDate for the database if it exists
+      const formattedBirthDate = values.birthDate ? values.birthDate.toISOString().split('T')[0] : null;
+
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          first_name: values.firstName,
+          last_name: values.lastName,
+          birth_date: formattedBirthDate,
+          phone_number: values.phoneNumber,
+          address: values.address,
+          city: values.city,
+          postal_code: values.postalCode,
+          country: values.country,
+        })
+        .eq("id", profileId);
+
       // Clear interval and complete progress
       clearInterval(interval);
       setSubmitProgress(100);
       
+      if (error) {
+        setFormState('error');
+        toast.error("Erreur lors de la mise à jour du profil", {
+          description: error.message,
+        });
+        return;
+      }
+
       setFormState('success');
-      toast({
-        title: "Profil mis à jour avec succès",
-        description: "Vos informations ont été sauvegardées."
+      toast.success("Profil mis à jour avec succès");
+      
+      // Update parent component's state
+      onProfileUpdate({
+        first_name: values.firstName,
+        last_name: values.lastName,
+        birth_date: formattedBirthDate,
+        phone_number: values.phoneNumber,
+        address: values.address,
+        city: values.city,
+        postal_code: values.postalCode,
+        country: values.country,
       });
       
       // Reset form state after success
@@ -82,11 +119,11 @@ export default function ProfileForm() {
       }, 2000);
     } catch (error: any) {
       setFormState('error');
-      toast({
-        title: "Une erreur est survenue",
+      toast.error("Une erreur est survenue", {
         description: error.message || "Veuillez réessayer plus tard",
-        variant: "destructive"
       });
+    } finally {
+      setIsLoading(false);
     }
   }
   
@@ -126,7 +163,7 @@ export default function ProfileForm() {
               formState === 'error' && "bg-red-600 hover:bg-red-700",
               formState === 'idle' && "bg-directiveplus-600 hover:bg-directiveplus-700"
             )}
-            disabled={formState === 'submitting'}
+            disabled={isLoading || formState === 'submitting'}
           >
             <span className="flex items-center gap-2">
               <ButtonIcon />

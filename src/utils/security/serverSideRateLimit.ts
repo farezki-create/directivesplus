@@ -7,12 +7,6 @@ interface RateLimitResult {
   retryAfter?: number;
 }
 
-interface RateLimitResponse {
-  allowed: boolean;
-  remaining_attempts: number;
-  retry_after?: number;
-}
-
 export class ServerSideRateLimit {
   static async checkRateLimit(
     identifier: string,
@@ -40,14 +34,7 @@ export class ServerSideRateLimit {
         return { allowed: false, remainingAttempts: 0 };
       }
 
-      // Type assertion and validation for the response
-      const responseData = data as RateLimitResponse[] | null;
-      
-      if (!responseData || !Array.isArray(responseData) || responseData.length === 0) {
-        return { allowed: false, remainingAttempts: 0 };
-      }
-      
-      const result = responseData[0];
+      const result = data?.[0];
       if (!result) {
         return { allowed: false, remainingAttempts: 0 };
       }
