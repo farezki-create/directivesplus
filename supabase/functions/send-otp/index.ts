@@ -31,6 +31,35 @@ serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
+    // Créer ou récupérer l'utilisateur
+    let { data: user, error: userError } = await supabase.auth.admin.getUserByEmail(email)
+    
+    if (userError && userError.message !== 'User not found') {
+      console.error('Erreur récupération utilisateur:', userError)
+      return new Response(
+        JSON.stringify({ error: 'Erreur interne' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Si l'utilisateur n'existe pas, le créer
+    if (!user) {
+      const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
+        email,
+        email_confirm: false,
+        user_metadata: { registration_method: 'otp' }
+      })
+      
+      if (createError) {
+        console.error('Erreur création utilisateur:', createError)
+        return new Response(
+          JSON.stringify({ error: 'Erreur création utilisateur' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+      user = newUser
+    }
+
     // Stocker le code OTP dans la base de données
     const { error: dbError } = await supabase
       .from('user_otp')

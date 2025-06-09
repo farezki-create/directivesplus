@@ -76,9 +76,28 @@ const OTPAuthForm: React.FC<OTPAuthFormProps> = ({ onSuccess }) => {
 
       if (error) throw error;
 
-      if (data?.success && data?.auth_url) {
-        // Utiliser l'URL d'authentification pour établir la session
-        window.location.href = data.auth_url;
+      if (data?.success && data?.access_token) {
+        // Établir la session avec les tokens reçus
+        const { error: sessionError } = await supabase.auth.setSession({
+          access_token: data.access_token,
+          refresh_token: data.refresh_token
+        });
+
+        if (sessionError) {
+          throw new Error('Erreur lors de l\'établissement de la session');
+        }
+
+        toast({
+          title: "Connexion réussie",
+          description: "Vous êtes maintenant connecté",
+        });
+
+        // Appeler le callback de succès ou rediriger
+        if (onSuccess) {
+          onSuccess();
+        } else {
+          window.location.href = '/dashboard';
+        }
       } else {
         throw new Error(data?.message || 'Code OTP invalide');
       }
@@ -130,7 +149,7 @@ const OTPAuthForm: React.FC<OTPAuthFormProps> = ({ onSuccess }) => {
           {step === 'email' ? (
             <>
               <Mail className="h-5 w-5" />
-              Connexion par email
+              Connexion / Inscription
             </>
           ) : (
             <>
@@ -173,6 +192,10 @@ const OTPAuthForm: React.FC<OTPAuthFormProps> = ({ onSuccess }) => {
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Envoyer le code
             </Button>
+            
+            <div className="text-center text-sm text-gray-500">
+              Un compte sera créé automatiquement si vous n'en avez pas.
+            </div>
           </form>
         ) : (
           <form onSubmit={handleOTPSubmit} className="space-y-4">

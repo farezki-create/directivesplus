@@ -33,6 +33,7 @@ serve(async (req) => {
       .select('*')
       .eq('email', email)
       .eq('otp_code', otp_code)
+      .eq('used', false)
       .single()
 
     if (error || !data) {
@@ -50,27 +51,28 @@ serve(async (req) => {
       )
     }
 
-    // Supprimer le code OTP utilisé
+    // Marquer le code comme utilisé
     await supabase
       .from('user_otp')
-      .delete()
-      .eq('email', email)
+      .update({ used: true })
+      .eq('id', data.id)
 
-    // Créer ou récupérer l'utilisateur Supabase
-    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-      email,
-      email_confirm: true
-    })
-
-    if (authError && authError.message !== 'User already registered') {
-      console.error('Erreur auth:', authError)
+    // Récupérer l'utilisateur et confirmer son email
+    const { data: user, error: userError } = await supabase.auth.admin.getUserByEmail(email)
+    
+    if (userError || !user) {
       return new Response(
-        JSON.stringify({ success: false, message: 'Erreur d\'authentification' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ success: false, message: 'Utilisateur introuvable' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    // Générer un lien de connexion magique
+    // Confirmer l'email de l'utilisateur
+    await supabase.auth.admin.updateUserById(user.user.id, {
+      email_confirm: true
+    })
+
+    // Générer une session pour l'utilisateur
     const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
       type: 'magiclink',
       email
@@ -88,7 +90,9 @@ serve(async (req) => {
       JSON.stringify({ 
         success: true, 
         message: 'Code OTP vérifié avec succès',
-        auth_url: linkData.properties?.action_link
+        access_token: linkData.properties?.access_token,
+        refresh_token: linkData.properties?.refresh_token,
+        user: user.user
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )

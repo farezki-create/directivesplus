@@ -8,7 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import OTPAuthForm from "@/components/auth/OTPAuthForm";
-import { Mail, Lock } from "lucide-react";
+import { Mail, Lock, Info } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const Auth = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -28,7 +29,7 @@ const Auth = () => {
 
   const handleAuthSuccess = () => {
     // La redirection sera gérée automatiquement par le contexte d'authentification
-    window.location.href = '/dashboard';
+    console.log("Authentification réussie");
   };
 
   return (
@@ -38,12 +39,27 @@ const Auth = () => {
         <div className="max-w-md mx-auto">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Connexion
+              Connexion / Inscription
             </h1>
             <p className="text-gray-600">
               Accédez à vos directives anticipées
             </p>
           </div>
+
+          <Alert className="mb-6">
+            <Info className="h-4 w-4" />
+            <AlertDescription>
+              <strong>Nouvelle méthode de connexion sécurisée :</strong>
+              <br />
+              1. Saisissez votre email
+              <br />
+              2. Recevez un code à 6 chiffres par email
+              <br />
+              3. Saisissez le code pour vous connecter
+              <br />
+              Un compte sera créé automatiquement si vous n'en avez pas.
+            </AlertDescription>
+          </Alert>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2">
@@ -73,6 +89,8 @@ const Auth = () => {
                   <div className="text-center py-8">
                     <p className="text-gray-500 mb-4">
                       Cette méthode de connexion sera bientôt disponible.
+                      <br />
+                      Pour l'instant, utilisez la méthode par code email qui est plus sécurisée.
                     </p>
                     <Button
                       variant="outline"
