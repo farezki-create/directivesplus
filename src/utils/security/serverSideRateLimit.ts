@@ -34,7 +34,7 @@ export class ServerSideRateLimit {
         return { allowed: false, remainingAttempts: 0 };
       }
 
-      const result = data?.[0];
+      const result = data && data.length > 0 ? data[0] : null;
       if (!result) {
         return { allowed: false, remainingAttempts: 0 };
       }
