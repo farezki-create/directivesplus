@@ -13,9 +13,6 @@ interface SymptomEntry {
   douleur: number;
   dyspnee: number;
   anxiete: number;
-  fatigue: number;
-  appetit: number;
-  nausees: number;
   remarque: string | null;
 }
 
@@ -31,7 +28,7 @@ const SymptomHistory = () => {
       try {
         const { data, error } = await supabase
           .from("symptom_tracking")
-          .select("*")
+          .select("id, created_at, douleur, dyspnee, anxiete, remarque")
           .eq("patient_id", user.id)
           .order("created_at", { ascending: false })
           .limit(10);
@@ -65,10 +62,7 @@ const SymptomHistory = () => {
     date: format(new Date(entry.created_at), "dd/MM", { locale: fr }),
     douleur: entry.douleur,
     dyspnee: entry.dyspnee,
-    anxiete: entry.anxiete,
-    fatigue: entry.fatigue,
-    appetit: entry.appetit,
-    nausees: entry.nausees
+    anxiete: entry.anxiete
   }));
 
   return (
@@ -89,9 +83,6 @@ const SymptomHistory = () => {
                 <Line type="monotone" dataKey="douleur" stroke="#ef4444" name="Douleur" />
                 <Line type="monotone" dataKey="dyspnee" stroke="#3b82f6" name="Dyspnée" />
                 <Line type="monotone" dataKey="anxiete" stroke="#f59e0b" name="Anxiété" />
-                <Line type="monotone" dataKey="fatigue" stroke="#8b5cf6" name="Fatigue" />
-                <Line type="monotone" dataKey="appetit" stroke="#10b981" name="Appétit" />
-                <Line type="monotone" dataKey="nausees" stroke="#f97316" name="Nausées" />
               </LineChart>
             </ResponsiveContainer>
           ) : (
@@ -118,9 +109,6 @@ const SymptomHistory = () => {
                     <span>Douleur: {entry.douleur}/10</span>
                     <span>Dyspnée: {entry.dyspnee}/10</span>
                     <span>Anxiété: {entry.anxiete}/10</span>
-                    <span>Fatigue: {entry.fatigue}/10</span>
-                    <span>Appétit: {entry.appetit}/10</span>
-                    <span>Nausées: {entry.nausees}/10</span>
                   </div>
                   {entry.remarque && (
                     <p className="text-sm text-gray-600 mt-2 italic">

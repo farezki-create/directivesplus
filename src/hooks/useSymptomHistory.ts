@@ -8,9 +8,6 @@ interface SymptomEntry {
   douleur: number;
   dyspnee: number;
   anxiete: number;
-  fatigue: number;
-  appetit: number;
-  nausees: number;
   remarque: string | null;
   auteur: string;
   created_at: string;
@@ -42,9 +39,6 @@ export const useSymptomHistory = (patientId?: string) => {
           douleur,
           dyspnee,
           anxiete,
-          fatigue,
-          appetit,
-          nausees,
           remarque,
           auteur,
           created_at,
@@ -64,9 +58,6 @@ export const useSymptomHistory = (patientId?: string) => {
           douleur: item.douleur || 0,
           dyspnee: item.dyspnee || 0,
           anxiete: item.anxiete || 0,
-          fatigue: item.fatigue || 0,
-          appetit: item.appetit || 0,
-          nausees: item.nausees || 0,
           remarque: item.remarque,
           auteur: item.auteur || 'patient',
           created_at: item.created_at,
