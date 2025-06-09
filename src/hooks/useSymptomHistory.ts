@@ -37,7 +37,19 @@ export const useSymptomHistory = (patientId?: string) => {
 
       const { data, error: fetchError } = await supabase
         .from("symptom_tracking")
-        .select("*")
+        .select(`
+          id,
+          douleur,
+          dyspnee,
+          anxiete,
+          fatigue,
+          appetit,
+          nausees,
+          remarque,
+          auteur,
+          created_at,
+          updated_at
+        `)
         .eq("patient_id", currentPatientId)
         .order("created_at", { ascending: false })
         .limit(50);
@@ -46,7 +58,21 @@ export const useSymptomHistory = (patientId?: string) => {
         console.error("Erreur lors du chargement des symptômes:", fetchError);
         setError("Erreur lors du chargement des données");
       } else {
-        setSymptoms(data || []);
+        // Ensure all required fields are present with default values
+        const formattedData = (data || []).map(item => ({
+          id: item.id,
+          douleur: item.douleur || 0,
+          dyspnee: item.dyspnee || 0,
+          anxiete: item.anxiete || 0,
+          fatigue: item.fatigue || 0,
+          appetit: item.appetit || 0,
+          nausees: item.nausees || 0,
+          remarque: item.remarque,
+          auteur: item.auteur || 'patient',
+          created_at: item.created_at,
+          updated_at: item.updated_at
+        }));
+        setSymptoms(formattedData);
       }
     } catch (err) {
       console.error("Erreur:", err);
