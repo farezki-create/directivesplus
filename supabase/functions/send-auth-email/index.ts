@@ -1,115 +1,113 @@
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { Resend } from "npm:resend@2.0.0"
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-interface EmailRequest {
-  email: string;
-  type: 'confirmation' | 'recovery';
-  confirmation_url?: string;
-  recovery_url?: string;
-  user_data?: any;
-}
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    const { email, type, confirmation_url, recovery_url, user_data }: EmailRequest = await req.json()
+    const { email, type, user_data } = await req.json()
     
-    console.log(`📧 Envoi email ${type} pour:`, email)
-
-    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
-    if (!RESEND_API_KEY) {
-      throw new Error('RESEND_API_KEY not configured')
+    console.log(`📧 Traitement email "${type}" pour: ${email}`)
+    
+    const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY')
+    
+    if (!BREVO_API_KEY) {
+      console.error('❌ BREVO_API_KEY non configurée')
+      throw new Error('Configuration email manquante')
     }
 
-    const resend = new Resend(RESEND_API_KEY)
-
-    let subject: string
-    let htmlContent: string
+    let subject = ''
+    let htmlContent = ''
 
     switch (type) {
-      case 'confirmation':
-        subject = 'Confirmez votre inscription à DirectivesPlus'
+      case 'signup':
+        subject = 'Bienvenue sur DirectivesPlus'
         htmlContent = `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #2563eb;">Bienvenue sur DirectivesPlus</h2>
-            <p>Merci de vous être inscrit. Veuillez cliquer sur le lien ci-dessous pour confirmer votre adresse email :</p>
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${confirmation_url}" style="background-color: #2563eb; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block;">
-                Confirmer mon email
-              </a>
-            </div>
-            <p style="color: #666; font-size: 14px;">Si vous n'avez pas créé de compte, ignorez cet email.</p>
-          </div>
+          <h1>Bienvenue sur DirectivesPlus !</h1>
+          <p>Votre compte a été créé avec succès.</p>
+          <p>Vous pouvez maintenant accéder à vos directives anticipées.</p>
         `
         break
-
+      
       case 'recovery':
-        subject = 'Réinitialisation de votre mot de passe DirectivesPlus'
+        subject = 'Réinitialisation de votre mot de passe'
+        htmlContent = `
+          <h1>Réinitialisation de mot de passe</h1>
+          <p>Une demande de réinitialisation de mot de passe a été effectuée.</p>
+        `
+        break
+      
+      case 'otp':
+        const otpCode = user_data?.otp_code || 'Code non disponible'
+        subject = 'Votre code de connexion DirectivesPlus'
         htmlContent = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #2563eb;">Réinitialisation de mot de passe</h2>
-            <p>Vous avez demandé la réinitialisation de votre mot de passe. Cliquez sur le lien ci-dessous :</p>
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${recovery_url}" style="background-color: #2563eb; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block;">
-                Réinitialiser mon mot de passe
-              </a>
+            <h1 style="color: #2563eb;">DirectivesPlus</h1>
+            <h2>Votre code de connexion</h2>
+            <p>Voici votre code de connexion à usage unique :</p>
+            <div style="background: #f3f4f6; padding: 20px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 3px; margin: 20px 0;">
+              ${otpCode}
             </div>
-            <p style="color: #666; font-size: 14px;">Si vous n'avez pas demandé cette réinitialisation, ignorez cet email.</p>
+            <p><strong>Ce code expire dans 10 minutes.</strong></p>
+            <p>Si vous n'avez pas demandé ce code, vous pouvez ignorer cet email.</p>
+            <hr style="margin: 30px 0;">
+            <p style="color: #666; font-size: 12px;">
+              DirectivesPlus - Vos directives anticipées en sécurité
+            </p>
           </div>
         `
         break
-
+      
       default:
-        throw new Error(`Type d'email non supporté: ${type}`)
+        throw new Error(`Type d'email non supporté : ${type}`)
     }
 
-    const emailResponse = await resend.emails.send({
-      from: 'DirectivesPlus <onboarding@resend.dev>',
-      to: [email],
-      subject: subject,
-      html: htmlContent
+    const emailData = {
+      sender: { email: 'noreply@directivesplus.fr', name: 'DirectivesPlus' },
+      to: [{ email }],
+      subject,
+      htmlContent
+    }
+
+    console.log('📤 Envoi email via Brevo...')
+    
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'api-key': BREVO_API_KEY
+      },
+      body: JSON.stringify(emailData)
     })
 
-    console.log('✅ Email envoyé avec succès:', emailResponse.data?.id)
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('❌ Erreur Brevo:', errorText)
+      throw new Error(`Erreur Brevo: ${response.status}`)
+    }
+
+    const result = await response.json()
+    console.log('✅ Email envoyé avec succès:', result)
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        messageId: emailResponse.data?.id,
-        type: type 
-      }),
-      { 
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json' 
-        } 
-      }
+      JSON.stringify({ success: true, messageId: result.messageId }),
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
 
   } catch (error) {
     console.error('❌ Erreur envoi email:', error)
-    
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: error.message 
-      }),
-      { 
-        status: 500,
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json' 
-        } 
-      }
+      JSON.stringify({ error: error.message }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
 })
