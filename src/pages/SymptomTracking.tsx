@@ -1,15 +1,16 @@
 
 import React from "react";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import AppNavigation from "@/components/AppNavigation";
-import ProfileForm from "@/components/profile/ProfileForm";
+import SymptomForm from "@/components/symptom/SymptomForm";
+import SymptomHistory from "@/components/symptom/SymptomHistory";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-const Profile = () => {
+const SymptomTracking = () => {
+  const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
 
   if (!isAuthenticated) {
     navigate("/auth");
@@ -21,30 +22,37 @@ const Profile = () => {
       <AppNavigation />
       
       <main className="flex-grow container mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           <Button
             variant="outline"
-            onClick={() => navigate("/dashboard")}
+            onClick={() => navigate("/donnees-medicales")}
             className="flex items-center gap-2 mb-6"
           >
             <ArrowLeft size={16} />
-            Retour au tableau de bord
+            Retour aux données médicales
           </Button>
           
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-directiveplus-800 mb-4">
-              Mon Profil
+              Suivi en Soins Palliatifs/HAD
             </h1>
             <p className="text-lg text-gray-600">
-              Gérez vos informations personnelles
+              Suivez vos symptômes au quotidien pour améliorer votre prise en charge
             </p>
           </div>
 
-          <ProfileForm />
+          <div className="grid lg:grid-cols-2 gap-8">
+            <div>
+              <SymptomForm />
+            </div>
+            <div>
+              <SymptomHistory />
+            </div>
+          </div>
         </div>
       </main>
     </div>
   );
 };
 
-export default Profile;
+export default SymptomTracking;
