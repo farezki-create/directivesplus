@@ -40,12 +40,14 @@ export class ServerSideRateLimit {
         return { allowed: false, remainingAttempts: 0 };
       }
 
-      // Check if data is valid array with content
-      if (!data || !Array.isArray(data) || data.length === 0) {
+      // Type the data properly and check for valid response
+      const responseData = data as RPCRateLimitResponse[] | null;
+      
+      if (!responseData || !Array.isArray(responseData) || responseData.length === 0) {
         return { allowed: false, remainingAttempts: 0 };
       }
       
-      const result = data[0] as RPCRateLimitResponse;
+      const result = responseData[0];
       if (!result) {
         return { allowed: false, remainingAttempts: 0 };
       }

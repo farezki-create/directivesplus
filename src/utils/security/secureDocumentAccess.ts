@@ -54,15 +54,17 @@ export class SecureDocumentAccess {
         };
       }
 
-      // Check if data is valid array with content
-      if (!data || !Array.isArray(data) || data.length === 0) {
+      // Type the data properly and check for valid response
+      const responseData = data as RPCResponse[] | null;
+      
+      if (!responseData || !Array.isArray(responseData) || responseData.length === 0) {
         return {
           accessGranted: false,
           errorMessage: 'Invalid response from server'
         };
       }
 
-      const result = data[0] as RPCResponse;
+      const result = responseData[0];
       if (!result) {
         return {
           accessGranted: false,
