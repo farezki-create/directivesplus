@@ -8,6 +8,9 @@ interface SymptomEntry {
   douleur: number;
   dyspnee: number;
   anxiete: number;
+  fatigue: number;
+  appetit: number;
+  nausees: number;
   remarque: string | null;
   auteur: string;
   created_at: string;

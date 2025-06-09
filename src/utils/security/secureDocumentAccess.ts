@@ -48,7 +48,7 @@ export class SecureDocumentAccess {
         };
       }
 
-      const result = data && data.length > 0 ? data[0] : null;
+      const result = data && Array.isArray(data) && data.length > 0 ? data[0] : null;
       if (!result) {
         return {
           accessGranted: false,
