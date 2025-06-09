@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,6 +10,7 @@ import ScrollToTop from "./components/ScrollToTop";
 // Import des pages
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import Dashboard from "./pages/Dashboard";
 import Rediger from "./pages/Rediger";
 import Contact from "./pages/Contact";
 import ActualitesSante from "./pages/ActualitesSante";
@@ -22,6 +24,9 @@ import Community from "./pages/Community";
 import Soutenir from "./pages/Soutenir";
 import EnSavoirPlus from "./pages/EnSavoirPlus";
 import Confidentialite from "./pages/Confidentialite";
+import PdfViewer from "./pages/PdfViewer";
+import PdfDirect from "./pages/PdfDirect";
+import Partage from "./pages/Partage";
 
 // Import des pages de questionnaire
 import AvisGeneral from "./pages/AvisGeneral";
@@ -54,6 +59,7 @@ function App() {
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />
+                <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/rediger" element={<Rediger />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/actualites-sante" element={<ActualitesSante />} />
@@ -68,6 +74,9 @@ function App() {
                 <Route path="/confidentialite" element={<Confidentialite />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/demande-abonnement-institutionnel" element={<DemandeAbonnementInstitutionnel />} />
+                <Route path="/pdf-viewer" element={<PdfViewer />} />
+                <Route path="/pdf-direct/:documentId" element={<PdfDirect />} />
+                <Route path="/partage/:shareCode" element={<Partage />} />
                 
                 {/* Routes du questionnaire */}
                 <Route path="/avis-general" element={<AvisGeneral />} />

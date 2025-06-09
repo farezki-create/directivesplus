@@ -1,11 +1,8 @@
 
-import { useState, useEffect } from "react";
-import { QRCodeSVG } from "qrcode.react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Copy, Printer, QrCode, AlertCircle, CheckCircle2, ExternalLink } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { toast } from "@/hooks/use-toast";
+import { Copy, Download, Printer, QrCode } from "lucide-react";
 import { useQRCodeGeneration } from "@/hooks/useQRCodeGeneration";
 
 interface QRCodeShareMesDirectivesProps {
@@ -15,193 +12,198 @@ interface QRCodeShareMesDirectivesProps {
   onClose?: () => void;
 }
 
-export function QRCodeShareMesDirectives({ 
-  documentId, 
+export const QRCodeShareMesDirectives: React.FC<QRCodeShareMesDirectivesProps> = ({
+  documentId,
   documentName,
   filePath,
-  onClose 
-}: QRCodeShareMesDirectivesProps) {
-  const { 
-    qrCodeData, 
-    isGenerating, 
-    error, 
-    generateQRCode, 
-    copyShareUrl 
-  } = useQRCodeGeneration();
-  
-  const [printReady, setPrintReady] = useState(false);
+  onClose
+}) => {
+  const { qrCodeData, isGenerating, error, generateQRCode, copyShareUrl } = useQRCodeGeneration();
+  const [qrCodeImageUrl, setQrCodeImageUrl] = useState<string>("");
 
-  // Générer le QR code au montage du composant
   useEffect(() => {
-    if (documentId && documentName) {
-      console.log("Génération QR code pour:", { documentId, documentName, filePath });
+    if (documentId) {
       generateQRCode(documentId, documentName, filePath);
     }
   }, [documentId, documentName, filePath, generateQRCode]);
 
-  // Préparer l'impression
   useEffect(() => {
-    if (qrCodeData && !isGenerating) {
-      setPrintReady(true);
+    if (qrCodeData?.qrCodeValue) {
+      // Générer l'image QR code avec une API externe
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrCodeData.qrCodeValue)}`;
+      setQrCodeImageUrl(qrUrl);
     }
-  }, [qrCodeData, isGenerating]);
+  }, [qrCodeData]);
 
-  const handlePrint = () => {
-    if (!printReady) {
-      console.warn("QR code pas encore prêt pour l'impression");
-      return;
+  const handlePrintQRCode = () => {
+    if (!qrCodeImageUrl) return;
+
+    const printWindow = window.open('', '_blank', 'width=600,height=400');
+    if (printWindow) {
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>QR Code - ${documentName}</title>
+            <style>
+              body { 
+                font-family: Arial, sans-serif; 
+                text-align: center; 
+                padding: 20px; 
+                margin: 0;
+              }
+              .container {
+                max-width: 400px;
+                margin: 0 auto;
+              }
+              h1 { 
+                font-size: 18px; 
+                margin-bottom: 10px; 
+                color: #333;
+              }
+              .qr-code { 
+                margin: 20px 0;
+              }
+              .qr-code img {
+                max-width: 250px;
+                height: auto;
+                border: 1px solid #ddd;
+                padding: 10px;
+                background: white;
+              }
+              .instructions {
+                font-size: 12px;
+                color: #666;
+                margin-top: 15px;
+                line-height: 1.4;
+              }
+              @media print {
+                body { margin: 0; }
+              }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <h1>QR Code d'accès direct</h1>
+              <h2 style="font-size: 14px; color: #666; margin-bottom: 20px;">${documentName}</h2>
+              <div class="qr-code">
+                <img src="${qrCodeImageUrl}" alt="QR Code" onload="window.print();" />
+              </div>
+              <div class="instructions">
+                Scanner ce QR code pour accéder directement au document.<br>
+                Aucun code d'accès supplémentaire requis.
+              </div>
+            </div>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
     }
+  };
+
+  const handleDownloadQRCode = async () => {
+    if (!qrCodeImageUrl) return;
 
     try {
-      window.print();
-    } catch (err) {
-      console.error("Erreur lors de l'impression:", err);
+      const response = await fetch(qrCodeImageUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `qr-code-${documentName.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      window.URL.revokeObjectURL(url);
+      
+      toast({
+        title: "QR Code téléchargé",
+        description: "L'image du QR code a été téléchargée",
+      });
+    } catch (error) {
+      console.error('Erreur téléchargement QR code:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de télécharger le QR code",
+        variant: "destructive"
+      });
     }
   };
 
-  const handleTestLink = () => {
-    if (qrCodeData?.qrCodeValue) {
-      console.log("Test du lien QR code:", qrCodeData.qrCodeValue);
-      window.open(qrCodeData.qrCodeValue, '_blank');
-    }
-  };
-
-  // Affichage d'erreur
-  if (error) {
+  if (isGenerating) {
     return (
-      <Card className="max-w-md mx-auto">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-red-600">
-            <AlertCircle className="h-5 w-5" />
-            Erreur de génération
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-          
-          {onClose && (
-            <Button onClick={onClose} className="mt-4 w-full">
-              Fermer
-            </Button>
-          )}
-        </CardContent>
-      </Card>
+      <div className="text-center py-8">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-directiveplus-600 mx-auto"></div>
+        <p className="mt-4 text-gray-600">Génération du QR Code...</p>
+      </div>
     );
   }
 
-  // Affichage de chargement
-  if (isGenerating || !qrCodeData) {
+  if (error) {
     return (
-      <Card className="max-w-md mx-auto">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <QrCode className="h-5 w-5 animate-spin" />
-            Génération du QR Code...
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Préparation du code QR...</p>
-        </CardContent>
-      </Card>
+      <div className="text-center py-8">
+        <p className="text-red-600 mb-4">Erreur : {error}</p>
+        <Button variant="outline" onClick={onClose}>
+          Fermer
+        </Button>
+      </div>
+    );
+  }
+
+  if (!qrCodeData || !qrCodeImageUrl) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-gray-600">Impossible de générer le QR code</p>
+        <Button variant="outline" onClick={onClose} className="mt-4">
+          Fermer
+        </Button>
+      </div>
     );
   }
 
   return (
-    <Card className="printable max-w-md mx-auto print:border-none print:shadow-none">
-      <CardHeader className="text-center pb-4">
-        <CardTitle className="flex items-center justify-center gap-2">
-          <QrCode className="h-5 w-5" />
-          {qrCodeData.documentName}
-        </CardTitle>
-      </CardHeader>
+    <div className="text-center space-y-6">
+      <div className="p-4 bg-white rounded-lg border">
+        <img 
+          src={qrCodeImageUrl} 
+          alt={`QR Code pour ${documentName}`}
+          className="mx-auto max-w-[250px] h-auto"
+        />
+      </div>
       
-      <CardContent className="space-y-4 text-center">
-        {/* QR Code */}
-        <div className="flex justify-center">
-          <div className="p-4 bg-white rounded-lg border">
-            <QRCodeSVG 
-              value={qrCodeData.qrCodeValue} 
-              size={160}
-              level="M"
-              includeMargin={true}
-              className="w-full h-auto"
-            />
-          </div>
-        </div>
+      <div className="space-y-2">
+        <h3 className="font-medium">QR Code d'accès direct</h3>
+        <p className="text-sm text-gray-600">
+          Scanner ce code ouvre directement le PDF sans code d'accès supplémentaire
+        </p>
+      </div>
+      
+      <div className="flex flex-col gap-2">
+        <Button onClick={copyShareUrl} variant="outline" className="w-full">
+          <Copy className="w-4 h-4 mr-2" />
+          Copier le lien
+        </Button>
         
-        {/* URL de partage */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Lien d'accès :</label>
-          <div className="flex items-center gap-2">
-            <Input 
-              value={qrCodeData.qrCodeValue} 
-              readOnly 
-              className="text-xs bg-gray-50" 
-            />
-            <Button 
-              variant="outline" 
-              size="icon"
-              onClick={copyShareUrl}
-              className="flex-shrink-0"
-              title="Copier le lien"
-            >
-              <Copy className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className="flex gap-2 justify-center print:hidden">
-          <Button 
-            onClick={handleTestLink} 
-            variant="default" 
-            size="sm"
-          >
-            <ExternalLink className="w-4 h-4 mr-2" /> 
-            Tester
+        <div className="grid grid-cols-2 gap-2">
+          <Button onClick={handleDownloadQRCode} variant="outline" size="sm">
+            <Download className="w-4 h-4 mr-2" />
+            Télécharger
           </Button>
           
-          <Button 
-            onClick={handlePrint} 
-            variant="outline" 
-            size="sm"
-            disabled={!printReady}
-          >
-            <Printer className="w-4 h-4 mr-2" /> 
+          <Button onClick={handlePrintQRCode} variant="outline" size="sm">
+            <Printer className="w-4 h-4 mr-2" />
             Imprimer
           </Button>
-          
-          {onClose && (
-            <Button onClick={onClose} variant="outline" size="sm">
-              Fermer
-            </Button>
-          )}
         </div>
+      </div>
 
-        {/* Statut */}
-        {printReady && (
-          <Alert className="bg-green-50 border-green-200">
-            <CheckCircle2 className="h-4 w-4 text-green-600" />
-            <AlertDescription className="text-green-800">
-              ✅ QR Code prêt - Scanner pour accéder au document
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {/* Informations d'usage */}
-        <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-          <p className="text-sm text-blue-800 font-medium mb-1">
-            📱 Scanner avec votre téléphone
-          </p>
-          <p className="text-xs text-blue-700">
-            Ce QR code ouvre directement le document dans n'importe quel navigateur.
-          </p>
-        </div>
-      </CardContent>
-    </Card>
+      <div className="p-3 bg-green-50 rounded-lg">
+        <p className="text-sm text-green-800">
+          ✅ <strong>Accès direct :</strong> Le QR code pointe directement vers le PDF.
+          Scanner = ouverture immédiate !
+        </p>
+      </div>
+    </div>
   );
-}
+};

@@ -84,30 +84,35 @@ export const printDocument = async (filePath: string, contentType?: string) => {
     
     if (filePath.startsWith('data:')) {
       // Data URL - impression directe
-      const printWindow = window.open('', '_blank');
+      const printWindow = window.open('', '_blank', 'width=800,height=600');
       if (printWindow) {
         if (filePath.includes('application/pdf')) {
           printWindow.document.write(`
             <html>
-              <head><title>Impression du document</title></head>
-              <body style="margin:0;">
-                <iframe src="${filePath}" width="100%" height="100%" frameborder="0"></iframe>
-                <script>
-                  window.onload = function() {
-                    setTimeout(function() {
-                      window.print();
-                    }, 1000);
-                  };
-                </script>
+              <head>
+                <title>Impression du document</title>
+                <style>
+                  body { margin: 0; padding: 0; }
+                  iframe { width: 100%; height: 100vh; border: none; }
+                </style>
+              </head>
+              <body>
+                <iframe src="${filePath}" onload="setTimeout(() => window.print(), 1000);"></iframe>
               </body>
             </html>
           `);
         } else {
           printWindow.document.write(`
             <html>
-              <head><title>Impression du document</title></head>
+              <head>
+                <title>Impression du document</title>
+                <style>
+                  body { margin: 0; padding: 20px; text-align: center; }
+                  img { max-width: 100%; height: auto; }
+                </style>
+              </head>
               <body>
-                <img src="${filePath}" style="max-width:100%;" onload="window.print();" />
+                <img src="${filePath}" onload="window.print();" />
               </body>
             </html>
           `);
@@ -120,10 +125,12 @@ export const printDocument = async (filePath: string, contentType?: string) => {
     }
 
     // URL de fichier stocké - impression directe
-    const printWindow = window.open(filePath, '_blank');
+    const printWindow = window.open(filePath, '_blank', 'width=800,height=600');
     if (printWindow) {
       printWindow.onload = () => {
-        printWindow.print();
+        setTimeout(() => {
+          printWindow.print();
+        }, 1000);
       };
     } else {
       throw new Error('Impossible d\'ouvrir la fenêtre d\'impression');

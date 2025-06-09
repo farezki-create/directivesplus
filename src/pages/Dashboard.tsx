@@ -1,144 +1,119 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+
+import React from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import AppNavigation from "@/components/AppNavigation";
-import DirectivesGrid from "@/components/DirectivesGrid";
-import InfoSteps from "@/components/InfoSteps";
-import { toast } from "@/hooks/use-toast";
+import { Navigate } from "react-router-dom";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, FileText, Users, CreditCard, Settings } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { FileText, User, Settings, Heart } from "lucide-react";
 
 const Dashboard = () => {
-  const { user, isAuthenticated, isLoading, profile } = useAuth();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      navigate("/auth", { state: { from: "/dashboard" } });
-    }
-  }, [isAuthenticated, isLoading, navigate]);
-
-  useEffect(() => {
-    if (!isLoading && isAuthenticated && user) {
-      toast({
-        title: "Bienvenue sur votre tableau de bord",
-        description: "Gérez vos directives anticipées et vos données médicales",
-      });
-    }
-  }, [isAuthenticated, isLoading, user]);
+  const { user, profile, isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
     return (
-      <div className="h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-directiveplus-600"></div>
       </div>
     );
   }
 
   if (!isAuthenticated) {
-    return null;
+    return <Navigate to="/auth" replace />;
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <AppNavigation />
-      
-      <main className="flex-grow container mx-auto px-4 py-8">
-        <div className="mb-6">
-          <Button
-            variant="outline"
-            onClick={() => navigate("/")}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft size={16} />
-            Retour à l'accueil
-          </Button>
-        </div>
-        
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl md:text-4xl font-bold text-directiveplus-800 mb-4">
-              Tableau de bord
-            </h1>
-            <p className="text-gray-600 text-lg">
-              Bienvenue {profile?.first_name || user?.user_metadata?.first_name || 'utilisateur'} ! 
-              Gérez vos directives anticipées et vos données médicales en toute simplicité.
-            </p>
-          </div>
-
-          {/* Actions rapides */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate("/mes-directives")}>
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      <main className="container mx-auto py-8 px-4">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-3xl font-bold text-gray-900 mb-8">
+            Tableau de bord
+          </h1>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <Card className="hover:shadow-lg transition-shadow">
               <CardHeader className="pb-3">
-                <div className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2">
                   <FileText className="h-5 w-5 text-directiveplus-600" />
-                  <CardTitle className="text-lg">Mes Directives</CardTitle>
-                </div>
+                  Mes Directives
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <CardDescription>
-                  Consultez et gérez vos directives anticipées
-                </CardDescription>
+                <p className="text-gray-600 mb-4">
+                  Gérez vos directives anticipées et documents médicaux
+                </p>
+                <Button 
+                  onClick={() => window.location.href = '/mes-directives'}
+                  className="w-full"
+                >
+                  Accéder
+                </Button>
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate("/donnees-medicales")}>
+            <Card className="hover:shadow-lg transition-shadow">
               <CardHeader className="pb-3">
-                <div className="flex items-center gap-2">
-                  <FileText className="h-5 w-5 text-blue-600" />
-                  <CardTitle className="text-lg">Données Médicales</CardTitle>
-                </div>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="h-5 w-5 text-directiveplus-600" />
+                  Mon Profil
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <CardDescription>
-                  Gérez vos documents et données médicales
-                </CardDescription>
-              </CardContent>
-            </Card>
-
-            <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate("/codes-acces")}>
-              <CardHeader className="pb-3">
-                <div className="flex items-center gap-2">
-                  <CreditCard className="h-5 w-5 text-green-600" />
-                  <CardTitle className="text-lg">Codes d'Accès</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <CardDescription>
-                  Gérez vos codes de partage sécurisés
-                </CardDescription>
-              </CardContent>
-            </Card>
-
-            <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate("/profile")}>
-              <CardHeader className="pb-3">
-                <div className="flex items-center gap-2">
-                  <Settings className="h-5 w-5 text-gray-600" />
-                  <CardTitle className="text-lg">Profil</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <CardDescription>
+                <p className="text-gray-600 mb-4">
                   Modifiez vos informations personnelles
-                </CardDescription>
+                </p>
+                <Button 
+                  variant="outline"
+                  onClick={() => window.location.href = '/profile'}
+                  className="w-full"
+                >
+                  Voir le profil
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2">
+                  <Heart className="h-5 w-5 text-directiveplus-600" />
+                  Suivi Palliatif
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 mb-4">
+                  Accès aux soins palliatifs et suivi médical
+                </p>
+                <Button 
+                  variant="outline"
+                  onClick={() => window.location.href = '/suivi-palliatif'}
+                  className="w-full"
+                >
+                  Accéder
+                </Button>
               </CardContent>
             </Card>
           </div>
 
-          {/* Contenu principal */}
-          <div className="space-y-8">
-            <InfoSteps />
-            <DirectivesGrid />
+          <div className="mt-8">
+            <Card>
+              <CardHeader>
+                <CardTitle>Bienvenue, {profile?.first_name || 'Utilisateur'}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">
+                  Vous êtes connecté en tant que <strong>{user?.email}</strong>
+                </p>
+                <p className="text-sm text-gray-500 mt-2">
+                  Utilisez le menu ci-dessus pour accéder à vos différents services.
+                </p>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </main>
-      
-      <footer className="bg-white py-6 border-t">
-        <div className="container mx-auto px-4 text-center text-gray-500">
-          <p>© 2025 DirectivesPlus. Tous droits réservés.</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };
