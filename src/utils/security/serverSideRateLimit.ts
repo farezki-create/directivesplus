@@ -34,7 +34,12 @@ export class ServerSideRateLimit {
         return { allowed: false, remainingAttempts: 0 };
       }
 
-      const result = data && Array.isArray(data) && data.length > 0 ? data[0] : null;
+      // Check if data exists and is an array before accessing length
+      if (!data || !Array.isArray(data) || data.length === 0) {
+        return { allowed: false, remainingAttempts: 0 };
+      }
+      
+      const result = data[0];
       if (!result) {
         return { allowed: false, remainingAttempts: 0 };
       }

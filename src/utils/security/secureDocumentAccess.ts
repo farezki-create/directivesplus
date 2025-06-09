@@ -48,7 +48,15 @@ export class SecureDocumentAccess {
         };
       }
 
-      const result = data && Array.isArray(data) && data.length > 0 ? data[0] : null;
+      // Check if data exists and is an array before accessing length
+      if (!data || !Array.isArray(data) || data.length === 0) {
+        return {
+          accessGranted: false,
+          errorMessage: 'Invalid response from server'
+        };
+      }
+
+      const result = data[0];
       if (!result) {
         return {
           accessGranted: false,
