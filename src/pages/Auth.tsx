@@ -5,15 +5,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import OTPAuthForm from "@/components/auth/OTPAuthForm";
-import { Mail, Lock, Info } from "lucide-react";
+import { Mail, Info } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const Auth = () => {
   const { isAuthenticated, isLoading } = useAuth();
-  const [activeTab, setActiveTab] = useState("otp");
 
   if (isLoading) {
     return (
@@ -24,11 +21,11 @@ const Auth = () => {
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/profile" replace />;
   }
 
   const handleAuthSuccess = () => {
-    // La redirection sera gérée automatiquement par le contexte d'authentification
+    // La redirection sera gérée automatiquement par le composant OTPAuthForm
     console.log("Authentification réussie");
   };
 
@@ -49,7 +46,7 @@ const Auth = () => {
           <Alert className="mb-6">
             <Info className="h-4 w-4" />
             <AlertDescription>
-              <strong>Nouvelle méthode de connexion sécurisée :</strong>
+              <strong>Connexion sécurisée par email :</strong>
               <br />
               1. Saisissez votre email
               <br />
@@ -61,48 +58,7 @@ const Auth = () => {
             </AlertDescription>
           </Alert>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="otp" className="flex items-center gap-2">
-                <Mail className="h-4 w-4" />
-                Code par email
-              </TabsTrigger>
-              <TabsTrigger value="traditional" className="flex items-center gap-2">
-                <Lock className="h-4 w-4" />
-                Traditionnel
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="otp" className="mt-6">
-              <OTPAuthForm onSuccess={handleAuthSuccess} />
-            </TabsContent>
-            
-            <TabsContent value="traditional" className="mt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Connexion traditionnelle</CardTitle>
-                  <CardDescription>
-                    Mode de connexion classique (bientôt disponible)
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8">
-                    <p className="text-gray-500 mb-4">
-                      Cette méthode de connexion sera bientôt disponible.
-                      <br />
-                      Pour l'instant, utilisez la méthode par code email qui est plus sécurisée.
-                    </p>
-                    <Button
-                      variant="outline"
-                      onClick={() => setActiveTab("otp")}
-                    >
-                      Utiliser le code par email
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+          <OTPAuthForm onSuccess={handleAuthSuccess} />
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-500">

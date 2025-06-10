@@ -2208,25 +2208,37 @@ export type Database = {
       }
       user_profiles: {
         Row: {
-          birth_date: string | null
-          first_name: string | null
+          adresse: string | null
+          created_at: string | null
+          date_naissance: string | null
+          email: string
           id: string
-          institution_shared_code: string | null
-          last_name: string | null
+          nom: string | null
+          prenom: string | null
+          telephone: string | null
+          updated_at: string | null
         }
         Insert: {
-          birth_date?: string | null
-          first_name?: string | null
+          adresse?: string | null
+          created_at?: string | null
+          date_naissance?: string | null
+          email: string
           id: string
-          institution_shared_code?: string | null
-          last_name?: string | null
+          nom?: string | null
+          prenom?: string | null
+          telephone?: string | null
+          updated_at?: string | null
         }
         Update: {
-          birth_date?: string | null
-          first_name?: string | null
+          adresse?: string | null
+          created_at?: string | null
+          date_naissance?: string | null
+          email?: string
           id?: string
-          institution_shared_code?: string | null
-          last_name?: string | null
+          nom?: string | null
+          prenom?: string | null
+          telephone?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }

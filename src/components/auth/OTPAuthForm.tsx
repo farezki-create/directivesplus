@@ -89,14 +89,14 @@ const OTPAuthForm: React.FC<OTPAuthFormProps> = ({ onSuccess }) => {
 
         toast({
           title: "Connexion réussie",
-          description: "Vous êtes maintenant connecté",
+          description: "Redirection vers votre profil",
         });
 
-        // Appeler le callback de succès ou rediriger
+        // Rediriger vers la page de profil pour compléter les informations
         if (onSuccess) {
           onSuccess();
         } else {
-          window.location.href = '/dashboard';
+          window.location.href = '/profile';
         }
       } else {
         throw new Error(data?.message || 'Code OTP invalide');
