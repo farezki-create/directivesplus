@@ -29,9 +29,9 @@ export const getAuthUserDossier = async (userId: string, type: string): Promise<
         userId: data.id,
         contenu: { documents: [] },
         profileData: {
-          first_name: data.first_name,
-          last_name: data.last_name,
-          birth_date: data.birth_date
+          first_name: data.prenom,
+          last_name: data.nom,
+          birth_date: data.date_naissance
         }
       }
     };
