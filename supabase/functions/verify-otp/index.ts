@@ -13,14 +13,19 @@ serve(async (req) => {
   }
 
   try {
+    console.log('🔐 Début de vérification OTP');
+    
     const { email, otp_code } = await req.json()
     
     if (!email || !otp_code) {
+      console.error('❌ Email ou code OTP manquant');
       return new Response(
         JSON.stringify({ error: 'Email et code OTP requis' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
+
+    console.log('🔐 Vérification OTP pour:', email, 'code:', otp_code);
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -36,7 +41,10 @@ serve(async (req) => {
       .eq('used', false)
       .single()
 
+    console.log('🔍 Résultat recherche OTP:', data ? 'trouvé' : 'non trouvé', error?.message || '');
+
     if (error || !data) {
+      console.error('❌ Code OTP invalide ou non trouvé');
       return new Response(
         JSON.stringify({ success: false, message: 'Code OTP invalide' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -45,6 +53,7 @@ serve(async (req) => {
 
     // Vérifier si le code n'est pas expiré
     if (new Date(data.expires_at) < new Date()) {
+      console.error('❌ Code OTP expiré');
       return new Response(
         JSON.stringify({ success: false, message: 'Code OTP expiré' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -57,20 +66,27 @@ serve(async (req) => {
       .update({ used: true })
       .eq('id', data.id)
 
+    console.log('✅ Code OTP marqué comme utilisé');
+
     // Récupérer l'utilisateur et confirmer son email
     const { data: user, error: userError } = await supabase.auth.admin.getUserByEmail(email)
     
     if (userError || !user) {
+      console.error('❌ Utilisateur introuvable:', userError?.message);
       return new Response(
         JSON.stringify({ success: false, message: 'Utilisateur introuvable' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
+    console.log('👤 Utilisateur trouvé:', user.user.id);
+
     // Confirmer l'email de l'utilisateur
     await supabase.auth.admin.updateUserById(user.user.id, {
       email_confirm: true
     })
+
+    console.log('✅ Email confirmé pour l\'utilisateur');
 
     // Générer une session pour l'utilisateur
     const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
@@ -79,12 +95,14 @@ serve(async (req) => {
     })
 
     if (linkError) {
-      console.error('Erreur génération lien:', linkError)
+      console.error('❌ Erreur génération lien:', linkError)
       return new Response(
         JSON.stringify({ success: false, message: 'Erreur génération session' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
+
+    console.log('✅ Session générée avec succès');
 
     return new Response(
       JSON.stringify({ 
@@ -98,9 +116,12 @@ serve(async (req) => {
     )
 
   } catch (error) {
-    console.error('Erreur:', error)
+    console.error('❌ Erreur générale:', error)
     return new Response(
-      JSON.stringify({ error: 'Erreur serveur' }),
+      JSON.stringify({ 
+        error: 'Erreur serveur',
+        details: error.message 
+      }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }

@@ -33,11 +33,18 @@ const OTPAuthForm: React.FC<OTPAuthFormProps> = ({ onSuccess }) => {
     setError('');
 
     try {
+      console.log('📧 Envoi du code OTP pour:', email);
+
       const { data, error } = await supabase.functions.invoke('send-otp', {
         body: { email: email.trim() }
       });
 
-      if (error) throw error;
+      console.log('📧 Réponse send-otp:', data, error);
+
+      if (error) {
+        console.error('❌ Erreur fonction send-otp:', error);
+        throw error;
+      }
 
       if (data?.success) {
         setStep('otp');
@@ -45,11 +52,21 @@ const OTPAuthForm: React.FC<OTPAuthFormProps> = ({ onSuccess }) => {
           title: "Code envoyé",
           description: "Vérifiez votre boîte email pour le code OTP",
         });
+        
+        // En mode développement, afficher le code dans la console
+        if (data.debug?.otp) {
+          console.log('🔢 Code OTP (dev mode):', data.debug.otp);
+          toast({
+            title: "Mode développement",
+            description: `Code OTP: ${data.debug.otp}`,
+            duration: 10000
+          });
+        }
       } else {
         throw new Error(data?.error || 'Erreur lors de l\'envoi du code');
       }
     } catch (err: any) {
-      console.error('Erreur envoi OTP:', err);
+      console.error('❌ Erreur envoi OTP:', err);
       setError(err.message || 'Erreur lors de l\'envoi du code OTP');
     } finally {
       setLoading(false);
@@ -67,6 +84,8 @@ const OTPAuthForm: React.FC<OTPAuthFormProps> = ({ onSuccess }) => {
     setError('');
 
     try {
+      console.log('🔐 Vérification du code OTP:', otpCode);
+
       const { data, error } = await supabase.functions.invoke('verify-otp', {
         body: { 
           email: email.trim(),
@@ -74,9 +93,16 @@ const OTPAuthForm: React.FC<OTPAuthFormProps> = ({ onSuccess }) => {
         }
       });
 
-      if (error) throw error;
+      console.log('🔐 Réponse verify-otp:', data, error);
+
+      if (error) {
+        console.error('❌ Erreur fonction verify-otp:', error);
+        throw error;
+      }
 
       if (data?.success && data?.access_token) {
+        console.log('✅ Tokens reçus, établissement de la session...');
+        
         // Établir la session avec les tokens reçus
         const { error: sessionError } = await supabase.auth.setSession({
           access_token: data.access_token,
@@ -84,8 +110,11 @@ const OTPAuthForm: React.FC<OTPAuthFormProps> = ({ onSuccess }) => {
         });
 
         if (sessionError) {
+          console.error('❌ Erreur établissement session:', sessionError);
           throw new Error('Erreur lors de l\'établissement de la session');
         }
+
+        console.log('✅ Session établie avec succès');
 
         toast({
           title: "Connexion réussie",
@@ -102,7 +131,7 @@ const OTPAuthForm: React.FC<OTPAuthFormProps> = ({ onSuccess }) => {
         throw new Error(data?.message || 'Code OTP invalide');
       }
     } catch (err: any) {
-      console.error('Erreur vérification OTP:', err);
+      console.error('❌ Erreur vérification OTP:', err);
       setError(err.message || 'Code OTP invalide');
     } finally {
       setLoading(false);
@@ -125,11 +154,21 @@ const OTPAuthForm: React.FC<OTPAuthFormProps> = ({ onSuccess }) => {
           title: "Code renvoyé",
           description: "Un nouveau code a été envoyé à votre email",
         });
+        
+        // En mode développement, afficher le code dans la console
+        if (data.debug?.otp) {
+          console.log('🔢 Nouveau code OTP (dev mode):', data.debug.otp);
+          toast({
+            title: "Mode développement",
+            description: `Nouveau code OTP: ${data.debug.otp}`,
+            duration: 10000
+          });
+        }
       } else {
         throw new Error(data?.error || 'Erreur lors du renvoi du code');
       }
     } catch (err: any) {
-      console.error('Erreur renvoi OTP:', err);
+      console.error('❌ Erreur renvoi OTP:', err);
       setError(err.message || 'Erreur lors du renvoi du code');
     } finally {
       setResendLoading(false);

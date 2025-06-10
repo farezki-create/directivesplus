@@ -13,29 +13,46 @@ serve(async (req) => {
   }
 
   try {
+    console.log('📧 Début de l\'envoi d\'OTP');
+    
     const { email } = await req.json()
     
     if (!email) {
+      console.error('❌ Email manquant dans la requête');
       return new Response(
         JSON.stringify({ error: 'Email requis' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
+    console.log('📧 Email reçu:', email);
+
     // Générer un code OTP à 6 chiffres
     const otp = Math.floor(100000 + Math.random() * 900000).toString()
     const expires_at = new Date(Date.now() + 10 * 60 * 1000).toISOString() // 10 minutes
 
+    console.log('🔢 Code OTP généré:', otp);
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('❌ Variables d\'environnement manquantes');
+      return new Response(
+        JSON.stringify({ error: 'Configuration serveur incorrecte' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
     // Créer ou récupérer l'utilisateur
     let { data: user, error: userError } = await supabase.auth.admin.getUserByEmail(email)
     
+    console.log('👤 Recherche utilisateur pour:', email, user ? 'trouvé' : 'non trouvé');
+
     if (userError && userError.message !== 'User not found') {
-      console.error('Erreur récupération utilisateur:', userError)
+      console.error('❌ Erreur récupération utilisateur:', userError)
       return new Response(
         JSON.stringify({ error: 'Erreur interne' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -44,6 +61,7 @@ serve(async (req) => {
 
     // Si l'utilisateur n'existe pas, le créer
     if (!user) {
+      console.log('👤 Création d\'un nouvel utilisateur pour:', email);
       const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
         email,
         email_confirm: false,
@@ -51,30 +69,45 @@ serve(async (req) => {
       })
       
       if (createError) {
-        console.error('Erreur création utilisateur:', createError)
+        console.error('❌ Erreur création utilisateur:', createError)
         return new Response(
           JSON.stringify({ error: 'Erreur création utilisateur' }),
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
       user = newUser
+      console.log('✅ Utilisateur créé avec succès');
     }
+
+    // Supprimer les anciens codes OTP non utilisés pour cet email
+    await supabase
+      .from('user_otp')
+      .delete()
+      .eq('email', email)
+      .eq('used', false)
 
     // Stocker le code OTP dans la base de données
     const { error: dbError } = await supabase
       .from('user_otp')
-      .upsert({ email, otp_code: otp, expires_at })
+      .insert({ 
+        email, 
+        otp_code: otp, 
+        expires_at 
+      })
 
     if (dbError) {
-      console.error('Erreur DB:', dbError)
+      console.error('❌ Erreur stockage OTP en DB:', dbError)
       return new Response(
         JSON.stringify({ error: 'Erreur interne' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
+    console.log('✅ Code OTP stocké en base de données');
+
     // Envoyer l'email via l'Edge Function existante send-auth-email
     try {
+      console.log('📧 Tentative d\'envoi d\'email...');
       const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-auth-email`, {
         method: 'POST',
         headers: {
@@ -88,22 +121,34 @@ serve(async (req) => {
         })
       })
 
+      const emailResult = await emailResponse.text()
+      console.log('📧 Réponse email service:', emailResponse.status, emailResult);
+
       if (!emailResponse.ok) {
-        console.warn('Erreur envoi email, mais OTP stocké')
+        console.warn('⚠️ Erreur envoi email, mais OTP stocké. Status:', emailResponse.status)
+      } else {
+        console.log('✅ Email envoyé avec succès');
       }
     } catch (emailError) {
-      console.warn('Erreur envoi email:', emailError)
+      console.warn('⚠️ Erreur envoi email:', emailError)
     }
 
     return new Response(
-      JSON.stringify({ success: true, message: 'Code OTP envoyé par email' }),
+      JSON.stringify({ 
+        success: true, 
+        message: 'Code OTP envoyé par email',
+        debug: { email, otp: otp } // À supprimer en production
+      }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
 
   } catch (error) {
-    console.error('Erreur:', error)
+    console.error('❌ Erreur générale:', error)
     return new Response(
-      JSON.stringify({ error: 'Erreur serveur' }),
+      JSON.stringify({ 
+        error: 'Erreur serveur', 
+        details: error.message 
+      }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
