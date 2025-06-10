@@ -9,6 +9,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   signOut: () => Promise<void>;
+  profile: any | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -16,7 +17,32 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [profile, setProfile] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Function to fetch user profile
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      console.log('🔍 Fetching profile for user:', userId);
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('❌ Error fetching profile:', error);
+        // Don't throw error, just set profile to null
+        setProfile(null);
+      } else {
+        console.log('✅ Profile fetched:', data);
+        setProfile(data);
+      }
+    } catch (error) {
+      console.error('❌ Unexpected error fetching profile:', error);
+      setProfile(null);
+    }
+  };
 
   useEffect(() => {
     console.log('🔄 AuthContext: Initialisation des listeners d\'authentification');
@@ -28,6 +54,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         setSession(session);
         setUser(session?.user ?? null);
+        
+        // Fetch profile when user is authenticated
+        if (session?.user?.id) {
+          setTimeout(() => {
+            fetchUserProfile(session.user.id);
+          }, 0);
+        } else {
+          setProfile(null);
+        }
+        
         setIsLoading(false);
       }
     );
@@ -44,6 +80,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         setSession(session);
         setUser(session?.user ?? null);
+        
+        // Fetch profile for initial session
+        if (session?.user?.id) {
+          await fetchUserProfile(session.user.id);
+        }
       } catch (error) {
         console.error('❌ Erreur inattendue lors de la récupération de la session:', error);
       } finally {
@@ -66,6 +107,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.error('❌ Erreur lors de la déconnexion:', error);
         throw error;
       }
+      
+      // Clear profile on logout
+      setProfile(null);
       console.log('✅ Déconnexion réussie');
     } catch (error) {
       console.error('❌ Erreur de déconnexion:', error);
@@ -79,6 +123,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isAuthenticated: !!user,
     isLoading,
     signOut,
+    profile,
   };
 
   return (
