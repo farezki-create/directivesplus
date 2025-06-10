@@ -44,47 +44,69 @@ serve(async (req) => {
       )
     }
     
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: { autoRefreshToken: false, persistSession: false }
+    })
 
-    // Créer ou récupérer l'utilisateur
-    let { data: user, error: userError } = await supabase.auth.admin.getUserByEmail(email)
-    
-    console.log('👤 Recherche utilisateur pour:', email, user ? 'trouvé' : 'non trouvé');
+    // Vérifier si l'utilisateur existe déjà dans la table auth.users
+    let userExists = false;
+    let userId = null;
 
-    if (userError && userError.message !== 'User not found') {
-      console.error('❌ Erreur récupération utilisateur:', userError)
-      return new Response(
-        JSON.stringify({ error: 'Erreur interne' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+    try {
+      const { data: users, error: listError } = await supabase.auth.admin.listUsers()
+      if (!listError && users) {
+        const existingUser = users.users.find(u => u.email === email)
+        if (existingUser) {
+          userExists = true;
+          userId = existingUser.id;
+          console.log('👤 Utilisateur existant trouvé:', existingUser.id);
+        }
+      }
+    } catch (error) {
+      console.log('⚠️ Erreur lors de la vérification utilisateur:', error);
     }
 
     // Si l'utilisateur n'existe pas, le créer
-    if (!user) {
+    if (!userExists) {
       console.log('👤 Création d\'un nouvel utilisateur pour:', email);
-      const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
-        email,
-        email_confirm: false,
-        user_metadata: { registration_method: 'otp' }
-      })
-      
-      if (createError) {
-        console.error('❌ Erreur création utilisateur:', createError)
+      try {
+        const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
+          email,
+          email_confirm: false,
+          user_metadata: { registration_method: 'otp' }
+        })
+        
+        if (createError) {
+          console.error('❌ Erreur création utilisateur:', createError);
+          return new Response(
+            JSON.stringify({ error: 'Erreur création utilisateur' }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+        
+        if (newUser.user) {
+          userId = newUser.user.id;
+          console.log('✅ Utilisateur créé avec succès:', userId);
+        }
+      } catch (error) {
+        console.error('❌ Erreur inattendue création utilisateur:', error);
         return new Response(
           JSON.stringify({ error: 'Erreur création utilisateur' }),
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
-      user = newUser
-      console.log('✅ Utilisateur créé avec succès');
     }
 
     // Supprimer les anciens codes OTP non utilisés pour cet email
-    await supabase
-      .from('user_otp')
-      .delete()
-      .eq('email', email)
-      .eq('used', false)
+    try {
+      await supabase
+        .from('user_otp')
+        .delete()
+        .eq('email', email)
+        .eq('used', false)
+    } catch (error) {
+      console.warn('⚠️ Erreur suppression anciens OTP:', error);
+    }
 
     // Stocker le code OTP dans la base de données
     const { error: dbError } = await supabase

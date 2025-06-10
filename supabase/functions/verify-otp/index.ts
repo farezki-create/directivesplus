@@ -30,7 +30,9 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: { autoRefreshToken: false, persistSession: false }
+    })
 
     // Vérifier le code OTP
     const { data, error } = await supabase
@@ -68,25 +70,38 @@ serve(async (req) => {
 
     console.log('✅ Code OTP marqué comme utilisé');
 
-    // Récupérer l'utilisateur et confirmer son email
-    const { data: user, error: userError } = await supabase.auth.admin.getUserByEmail(email)
+    // Récupérer l'utilisateur avec la nouvelle méthode
+    let user = null;
+    try {
+      const { data: users, error: listError } = await supabase.auth.admin.listUsers()
+      if (!listError && users) {
+        const foundUser = users.users.find(u => u.email === email)
+        if (foundUser) {
+          user = { user: foundUser };
+          console.log('👤 Utilisateur trouvé:', foundUser.id);
+        }
+      }
+    } catch (error) {
+      console.error('❌ Erreur récupération utilisateur:', error);
+    }
     
-    if (userError || !user) {
-      console.error('❌ Utilisateur introuvable:', userError?.message);
+    if (!user) {
+      console.error('❌ Utilisateur introuvable:', email);
       return new Response(
         JSON.stringify({ success: false, message: 'Utilisateur introuvable' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    console.log('👤 Utilisateur trouvé:', user.user.id);
-
     // Confirmer l'email de l'utilisateur
-    await supabase.auth.admin.updateUserById(user.user.id, {
-      email_confirm: true
-    })
-
-    console.log('✅ Email confirmé pour l\'utilisateur');
+    try {
+      await supabase.auth.admin.updateUserById(user.user.id, {
+        email_confirm: true
+      })
+      console.log('✅ Email confirmé pour l\'utilisateur');
+    } catch (error) {
+      console.warn('⚠️ Erreur confirmation email:', error);
+    }
 
     // Générer une session pour l'utilisateur
     const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
