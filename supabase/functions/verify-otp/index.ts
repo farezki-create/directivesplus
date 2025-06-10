@@ -41,6 +41,9 @@ serve(async (req) => {
       .eq('email', email)
       .eq('otp_code', otp_code)
       .eq('used', false)
+      .gte('expires_at', new Date().toISOString())
+      .order('created_at', { ascending: false })
+      .limit(1)
       .single()
 
     console.log('🔍 Résultat recherche OTP:', data ? 'trouvé' : 'non trouvé', error?.message || '');
@@ -48,36 +51,35 @@ serve(async (req) => {
     if (error || !data) {
       console.error('❌ Code OTP invalide ou non trouvé');
       return new Response(
-        JSON.stringify({ success: false, message: 'Code OTP invalide' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    // Vérifier si le code n'est pas expiré
-    if (new Date(data.expires_at) < new Date()) {
-      console.error('❌ Code OTP expiré');
-      return new Response(
-        JSON.stringify({ success: false, message: 'Code OTP expiré' }),
+        JSON.stringify({ success: false, message: 'Code OTP invalide ou expiré' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
     // Marquer le code comme utilisé
-    await supabase
+    const { error: updateError } = await supabase
       .from('user_otp')
       .update({ used: true })
       .eq('id', data.id)
 
+    if (updateError) {
+      console.error('❌ Erreur marquage code utilisé:', updateError);
+      return new Response(
+        JSON.stringify({ success: false, message: 'Erreur interne' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     console.log('✅ Code OTP marqué comme utilisé');
 
-    // Récupérer l'utilisateur avec la nouvelle méthode
+    // Récupérer l'utilisateur
     let user = null;
     try {
       const { data: users, error: listError } = await supabase.auth.admin.listUsers()
       if (!listError && users) {
         const foundUser = users.users.find(u => u.email === email)
         if (foundUser) {
-          user = { user: foundUser };
+          user = foundUser;
           console.log('👤 Utilisateur trouvé:', foundUser.id);
         }
       }
@@ -93,42 +95,52 @@ serve(async (req) => {
       )
     }
 
-    // Confirmer l'email de l'utilisateur
+    // Confirmer l'email de l'utilisateur s'il n'est pas confirmé
     try {
-      await supabase.auth.admin.updateUserById(user.user.id, {
-        email_confirm: true
-      })
-      console.log('✅ Email confirmé pour l\'utilisateur');
+      if (!user.email_confirmed_at) {
+        await supabase.auth.admin.updateUserById(user.id, {
+          email_confirm: true
+        })
+        console.log('✅ Email confirmé pour l\'utilisateur');
+      }
     } catch (error) {
       console.warn('⚠️ Erreur confirmation email:', error);
     }
 
     // Générer une session pour l'utilisateur
-    const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
-      type: 'magiclink',
-      email
-    })
+    try {
+      const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+        type: 'magiclink',
+        email
+      })
 
-    if (linkError) {
-      console.error('❌ Erreur génération lien:', linkError)
+      if (linkError) {
+        console.error('❌ Erreur génération lien:', linkError)
+        return new Response(
+          JSON.stringify({ success: false, message: 'Erreur génération session' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      console.log('✅ Session générée avec succès');
+
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: 'Code OTP vérifié avec succès',
+          access_token: linkData.properties?.access_token,
+          refresh_token: linkData.properties?.refresh_token,
+          user: user
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    } catch (error) {
+      console.error('❌ Erreur génération session:', error)
       return new Response(
         JSON.stringify({ success: false, message: 'Erreur génération session' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
-
-    console.log('✅ Session générée avec succès');
-
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: 'Code OTP vérifié avec succès',
-        access_token: linkData.properties?.access_token,
-        refresh_token: linkData.properties?.refresh_token,
-        user: user.user
-      }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
 
   } catch (error) {
     console.error('❌ Erreur générale:', error)

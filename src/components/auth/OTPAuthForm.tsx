@@ -43,7 +43,19 @@ const OTPAuthForm: React.FC<OTPAuthFormProps> = ({ onSuccess }) => {
 
       if (error) {
         console.error('❌ Erreur fonction send-otp:', error);
-        throw error;
+        
+        // Gestion d'erreurs spécifiques
+        let errorMessage = 'Erreur lors de l\'envoi du code OTP';
+        if (error.message?.includes('non-2xx status')) {
+          errorMessage = 'Erreur serveur. Veuillez réessayer dans quelques instants.';
+        } else if (error.message?.includes('Email requis')) {
+          errorMessage = 'Veuillez saisir un email valide';
+        } else if (error.message?.includes('Configuration serveur')) {
+          errorMessage = 'Service temporairement indisponible. Veuillez réessayer plus tard.';
+        }
+        
+        setError(errorMessage);
+        return;
       }
 
       if (data?.success) {
@@ -97,7 +109,15 @@ const OTPAuthForm: React.FC<OTPAuthFormProps> = ({ onSuccess }) => {
 
       if (error) {
         console.error('❌ Erreur fonction verify-otp:', error);
-        throw error;
+        
+        // Gestion d'erreurs spécifiques
+        let errorMessage = 'Code OTP invalide';
+        if (error.message?.includes('non-2xx status')) {
+          errorMessage = 'Erreur serveur lors de la vérification. Veuillez réessayer.';
+        }
+        
+        setError(errorMessage);
+        return;
       }
 
       if (data?.success && data?.access_token) {
@@ -111,7 +131,8 @@ const OTPAuthForm: React.FC<OTPAuthFormProps> = ({ onSuccess }) => {
 
         if (sessionError) {
           console.error('❌ Erreur établissement session:', sessionError);
-          throw new Error('Erreur lors de l\'établissement de la session');
+          setError('Erreur lors de l\'établissement de la session');
+          return;
         }
 
         console.log('✅ Session établie avec succès');
@@ -128,7 +149,7 @@ const OTPAuthForm: React.FC<OTPAuthFormProps> = ({ onSuccess }) => {
           window.location.href = '/profile';
         }
       } else {
-        throw new Error(data?.message || 'Code OTP invalide');
+        setError(data?.message || 'Code OTP invalide');
       }
     } catch (err: any) {
       console.error('❌ Erreur vérification OTP:', err);
@@ -147,7 +168,11 @@ const OTPAuthForm: React.FC<OTPAuthFormProps> = ({ onSuccess }) => {
         body: { email: email.trim() }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Erreur renvoi OTP:', error);
+        setError('Erreur lors du renvoi du code');
+        return;
+      }
 
       if (data?.success) {
         toast({

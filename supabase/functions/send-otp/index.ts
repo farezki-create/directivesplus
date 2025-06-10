@@ -99,33 +99,48 @@ serve(async (req) => {
 
     // Supprimer les anciens codes OTP non utilisés pour cet email
     try {
-      await supabase
+      const { error: deleteError } = await supabase
         .from('user_otp')
         .delete()
         .eq('email', email)
         .eq('used', false)
+      
+      if (deleteError) {
+        console.warn('⚠️ Erreur suppression anciens OTP:', deleteError);
+      } else {
+        console.log('🗑️ Anciens codes OTP supprimés pour:', email);
+      }
     } catch (error) {
-      console.warn('⚠️ Erreur suppression anciens OTP:', error);
+      console.warn('⚠️ Erreur inattendue suppression anciens OTP:', error);
     }
 
-    // Stocker le code OTP dans la base de données
-    const { error: dbError } = await supabase
-      .from('user_otp')
-      .insert({ 
-        email, 
-        otp_code: otp, 
-        expires_at 
-      })
+    // Stocker le nouveau code OTP dans la base de données
+    try {
+      const { data: insertData, error: insertError } = await supabase
+        .from('user_otp')
+        .insert({ 
+          email, 
+          otp_code: otp, 
+          expires_at 
+        })
+        .select()
 
-    if (dbError) {
-      console.error('❌ Erreur stockage OTP en DB:', dbError)
+      if (insertError) {
+        console.error('❌ Erreur insertion OTP en DB:', insertError)
+        return new Response(
+          JSON.stringify({ error: 'Erreur stockage code OTP' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      console.log('✅ Code OTP stocké en base de données:', insertData);
+    } catch (error) {
+      console.error('❌ Erreur inattendue insertion OTP:', error);
       return new Response(
-        JSON.stringify({ error: 'Erreur interne' }),
+        JSON.stringify({ error: 'Erreur stockage code OTP' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
-
-    console.log('✅ Code OTP stocké en base de données');
 
     // Envoyer l'email via l'Edge Function existante send-auth-email
     try {
