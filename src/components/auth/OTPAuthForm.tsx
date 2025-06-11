@@ -7,11 +7,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Mail, Shield, ArrowLeft } from "lucide-react";
+import { Loader2, Mail, Shield, ArrowLeft, AlertCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 interface OTPAuthFormProps {
   onSuccess?: () => void;
+}
+
+interface ApiError {
+  success: boolean;
+  error?: string;
+  message?: string;
 }
 
 const OTPAuthForm: React.FC<OTPAuthFormProps> = ({ onSuccess }) => {
@@ -22,6 +28,25 @@ const OTPAuthForm: React.FC<OTPAuthFormProps> = ({ onSuccess }) => {
   const [error, setError] = useState('');
   const [resendLoading, setResendLoading] = useState(false);
 
+  const handleApiError = (error: any, defaultMessage: string): string => {
+    console.error('🔍 [OTP-FORM] Analyse erreur:', error);
+    
+    if (error?.message?.includes('non-2xx status')) {
+      return 'Erreur de communication avec le serveur. Veuillez réessayer.';
+    }
+    
+    if (typeof error === 'object' && error !== null) {
+      if (error.error) return error.error;
+      if (error.message) return error.message;
+    }
+    
+    if (typeof error === 'string') {
+      return error;
+    }
+    
+    return defaultMessage;
+  };
+
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) {
@@ -29,31 +54,27 @@ const OTPAuthForm: React.FC<OTPAuthFormProps> = ({ onSuccess }) => {
       return;
     }
 
+    // Validation email simple
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      setError('Veuillez saisir un email valide');
+      return;
+    }
+
     setLoading(true);
     setError('');
 
     try {
-      console.log('📧 Envoi du code OTP pour:', email);
+      console.log('📧 [OTP-FORM] Envoi du code OTP pour:', email);
 
-      const { data, error } = await supabase.functions.invoke('send-otp', {
+      const { data, error: functionError } = await supabase.functions.invoke('send-otp', {
         body: { email: email.trim() }
       });
 
-      console.log('📧 Réponse send-otp:', data, error);
+      console.log('📧 [OTP-FORM] Réponse send-otp:', { data, error: functionError });
 
-      if (error) {
-        console.error('❌ Erreur fonction send-otp:', error);
-        
-        // Gestion d'erreurs spécifiques
-        let errorMessage = 'Erreur lors de l\'envoi du code OTP';
-        if (error.message?.includes('non-2xx status')) {
-          errorMessage = 'Erreur serveur. Veuillez réessayer dans quelques instants.';
-        } else if (error.message?.includes('Email requis')) {
-          errorMessage = 'Veuillez saisir un email valide';
-        } else if (error.message?.includes('Configuration serveur')) {
-          errorMessage = 'Service temporairement indisponible. Veuillez réessayer plus tard.';
-        }
-        
+      if (functionError) {
+        const errorMessage = handleApiError(functionError, 'Erreur lors de l\'envoi du code OTP');
         setError(errorMessage);
         return;
       }
@@ -62,24 +83,26 @@ const OTPAuthForm: React.FC<OTPAuthFormProps> = ({ onSuccess }) => {
         setStep('otp');
         toast({
           title: "Code envoyé",
-          description: "Vérifiez votre boîte email pour le code OTP",
+          description: "Vérifiez votre boîte email pour le code OTP à 6 chiffres",
         });
         
         // En mode développement, afficher le code dans la console
         if (data.debug?.otp) {
-          console.log('🔢 Code OTP (dev mode):', data.debug.otp);
+          console.log('🔢 [OTP-FORM] Code OTP (dev mode):', data.debug.otp);
           toast({
             title: "Mode développement",
             description: `Code OTP: ${data.debug.otp}`,
-            duration: 10000
+            duration: 15000
           });
         }
       } else {
-        throw new Error(data?.error || 'Erreur lors de l\'envoi du code');
+        const errorMessage = data?.error || 'Erreur lors de l\'envoi du code';
+        setError(errorMessage);
       }
     } catch (err: any) {
-      console.error('❌ Erreur envoi OTP:', err);
-      setError(err.message || 'Erreur lors de l\'envoi du code OTP');
+      console.error('❌ [OTP-FORM] Erreur envoi OTP:', err);
+      const errorMessage = handleApiError(err, 'Erreur lors de l\'envoi du code OTP');
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -88,7 +111,12 @@ const OTPAuthForm: React.FC<OTPAuthFormProps> = ({ onSuccess }) => {
   const handleOTPSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (otpCode.length !== 6) {
-      setError('Le code OTP doit contenir 6 chiffres');
+      setError('Le code OTP doit contenir exactement 6 chiffres');
+      return;
+    }
+
+    if (!/^\d{6}$/.test(otpCode)) {
+      setError('Le code OTP ne doit contenir que des chiffres');
       return;
     }
 
@@ -96,32 +124,25 @@ const OTPAuthForm: React.FC<OTPAuthFormProps> = ({ onSuccess }) => {
     setError('');
 
     try {
-      console.log('🔐 Vérification du code OTP:', otpCode);
+      console.log('🔐 [OTP-FORM] Vérification du code OTP:', otpCode);
 
-      const { data, error } = await supabase.functions.invoke('verify-otp', {
+      const { data, error: functionError } = await supabase.functions.invoke('verify-otp', {
         body: { 
           email: email.trim(),
           otp_code: otpCode 
         }
       });
 
-      console.log('🔐 Réponse verify-otp:', data, error);
+      console.log('🔐 [OTP-FORM] Réponse verify-otp:', { data, error: functionError });
 
-      if (error) {
-        console.error('❌ Erreur fonction verify-otp:', error);
-        
-        // Gestion d'erreurs spécifiques
-        let errorMessage = 'Code OTP invalide';
-        if (error.message?.includes('non-2xx status')) {
-          errorMessage = 'Erreur serveur lors de la vérification. Veuillez réessayer.';
-        }
-        
+      if (functionError) {
+        const errorMessage = handleApiError(functionError, 'Erreur lors de la vérification du code');
         setError(errorMessage);
         return;
       }
 
       if (data?.success && data?.access_token) {
-        console.log('✅ Tokens reçus, établissement de la session...');
+        console.log('✅ [OTP-FORM] Tokens reçus, établissement de la session...');
         
         // Établir la session avec les tokens reçus
         const { error: sessionError } = await supabase.auth.setSession({
@@ -130,30 +151,32 @@ const OTPAuthForm: React.FC<OTPAuthFormProps> = ({ onSuccess }) => {
         });
 
         if (sessionError) {
-          console.error('❌ Erreur établissement session:', sessionError);
+          console.error('❌ [OTP-FORM] Erreur établissement session:', sessionError);
           setError('Erreur lors de l\'établissement de la session');
           return;
         }
 
-        console.log('✅ Session établie avec succès');
+        console.log('✅ [OTP-FORM] Session établie avec succès');
 
         toast({
           title: "Connexion réussie",
-          description: "Redirection vers votre profil",
+          description: "Vous êtes maintenant connecté",
         });
 
-        // Rediriger vers la page de profil pour compléter les informations
+        // Redirection
         if (onSuccess) {
           onSuccess();
         } else {
           window.location.href = '/profile';
         }
       } else {
-        setError(data?.message || 'Code OTP invalide');
+        const errorMessage = data?.error || data?.message || 'Code OTP invalide';
+        setError(errorMessage);
       }
     } catch (err: any) {
-      console.error('❌ Erreur vérification OTP:', err);
-      setError(err.message || 'Code OTP invalide');
+      console.error('❌ [OTP-FORM] Erreur vérification OTP:', err);
+      const errorMessage = handleApiError(err, 'Code OTP invalide');
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -164,13 +187,13 @@ const OTPAuthForm: React.FC<OTPAuthFormProps> = ({ onSuccess }) => {
     setError('');
 
     try {
-      const { data, error } = await supabase.functions.invoke('send-otp', {
+      const { data, error: functionError } = await supabase.functions.invoke('send-otp', {
         body: { email: email.trim() }
       });
 
-      if (error) {
-        console.error('❌ Erreur renvoi OTP:', error);
-        setError('Erreur lors du renvoi du code');
+      if (functionError) {
+        const errorMessage = handleApiError(functionError, 'Erreur lors du renvoi du code');
+        setError(errorMessage);
         return;
       }
 
@@ -182,19 +205,21 @@ const OTPAuthForm: React.FC<OTPAuthFormProps> = ({ onSuccess }) => {
         
         // En mode développement, afficher le code dans la console
         if (data.debug?.otp) {
-          console.log('🔢 Nouveau code OTP (dev mode):', data.debug.otp);
+          console.log('🔢 [OTP-FORM] Nouveau code OTP (dev mode):', data.debug.otp);
           toast({
             title: "Mode développement",
             description: `Nouveau code OTP: ${data.debug.otp}`,
-            duration: 10000
+            duration: 15000
           });
         }
       } else {
-        throw new Error(data?.error || 'Erreur lors du renvoi du code');
+        const errorMessage = data?.error || 'Erreur lors du renvoi du code';
+        setError(errorMessage);
       }
     } catch (err: any) {
-      console.error('❌ Erreur renvoi OTP:', err);
-      setError(err.message || 'Erreur lors du renvoi du code');
+      console.error('❌ [OTP-FORM] Erreur renvoi OTP:', err);
+      const errorMessage = handleApiError(err, 'Erreur lors du renvoi du code');
+      setError(errorMessage);
     } finally {
       setResendLoading(false);
     }
@@ -233,6 +258,7 @@ const OTPAuthForm: React.FC<OTPAuthFormProps> = ({ onSuccess }) => {
       <CardContent>
         {error && (
           <Alert variant="destructive" className="mb-4">
+            <AlertCircle className="h-4 w-4" />
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
@@ -249,6 +275,7 @@ const OTPAuthForm: React.FC<OTPAuthFormProps> = ({ onSuccess }) => {
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={loading}
                 required
+                autoComplete="email"
               />
             </div>
             
@@ -270,6 +297,7 @@ const OTPAuthForm: React.FC<OTPAuthFormProps> = ({ onSuccess }) => {
                   value={otpCode}
                   onChange={setOtpCode}
                   maxLength={6}
+                  disabled={loading}
                 >
                   <InputOTPGroup>
                     <InputOTPSlot index={0} />

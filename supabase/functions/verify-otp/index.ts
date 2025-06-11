@@ -7,149 +7,240 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+interface VerifyOTPRequest {
+  email: string;
+  otp_code: string;
+}
+
+interface VerifyOTPResponse {
+  success: boolean;
+  message: string;
+  access_token?: string;
+  refresh_token?: string;
+  user?: any;
+  error?: string;
+}
+
 serve(async (req) => {
+  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    console.log('🔐 Début de vérification OTP');
+    console.log('🔐 [VERIFY-OTP] Début de la vérification OTP');
     
-    const { email, otp_code } = await req.json()
-    
-    if (!email || !otp_code) {
-      console.error('❌ Email ou code OTP manquant');
+    // Parse request body
+    let requestBody: VerifyOTPRequest;
+    try {
+      requestBody = await req.json();
+    } catch (error) {
+      console.error('❌ [VERIFY-OTP] Erreur parsing JSON:', error);
       return new Response(
-        JSON.stringify({ error: 'Email et code OTP requis' }),
+        JSON.stringify({ 
+          success: false, 
+          error: 'Corps de requête invalide' 
+        }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      );
     }
 
-    console.log('🔐 Vérification OTP pour:', email, 'code:', otp_code);
+    const { email, otp_code } = requestBody;
+    
+    // Validate inputs
+    if (!email || !otp_code) {
+      console.error('❌ [VERIFY-OTP] Paramètres manquants:', { email: !!email, otp_code: !!otp_code });
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Email et code OTP requis' 
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    if (typeof otp_code !== 'string' || otp_code.length !== 6 || !/^\d{6}$/.test(otp_code)) {
+      console.error('❌ [VERIFY-OTP] Format de code OTP invalide:', otp_code);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Code OTP invalide (doit être 6 chiffres)' 
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log('🔍 [VERIFY-OTP] Vérification pour email:', email, 'code:', otp_code);
+
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('❌ [VERIFY-OTP] Variables d\'environnement manquantes');
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Configuration serveur incorrecte' 
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: { autoRefreshToken: false, persistSession: false }
-    })
+    });
 
-    // Vérifier le code OTP
-    const { data, error } = await supabase
+    // Verify OTP code
+    const { data: otpRecord, error: otpError } = await supabase
       .from('user_otp')
       .select('*')
-      .eq('email', email)
+      .eq('email', email.toLowerCase().trim())
       .eq('otp_code', otp_code)
       .eq('used', false)
       .gte('expires_at', new Date().toISOString())
       .order('created_at', { ascending: false })
       .limit(1)
-      .single()
+      .single();
 
-    console.log('🔍 Résultat recherche OTP:', data ? 'trouvé' : 'non trouvé', error?.message || '');
+    console.log('🔍 [VERIFY-OTP] Résultat recherche OTP:', otpRecord ? 'trouvé' : 'non trouvé', otpError?.message || '');
 
-    if (error || !data) {
-      console.error('❌ Code OTP invalide ou non trouvé');
+    if (otpError || !otpRecord) {
+      console.error('❌ [VERIFY-OTP] Code OTP invalide ou non trouvé');
       return new Response(
-        JSON.stringify({ success: false, message: 'Code OTP invalide ou expiré' }),
+        JSON.stringify({ 
+          success: false, 
+          error: 'Code OTP invalide ou expiré' 
+        }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      );
     }
 
-    // Marquer le code comme utilisé
+    // Mark OTP as used
     const { error: updateError } = await supabase
       .from('user_otp')
-      .update({ used: true })
-      .eq('id', data.id)
+      .update({ 
+        used: true,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', otpRecord.id);
 
     if (updateError) {
-      console.error('❌ Erreur marquage code utilisé:', updateError);
+      console.error('❌ [VERIFY-OTP] Erreur marquage code utilisé:', updateError);
       return new Response(
-        JSON.stringify({ success: false, message: 'Erreur interne' }),
+        JSON.stringify({ 
+          success: false, 
+          error: 'Erreur lors de la validation du code' 
+        }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      );
     }
 
-    console.log('✅ Code OTP marqué comme utilisé');
+    console.log('✅ [VERIFY-OTP] Code OTP marqué comme utilisé');
 
-    // Récupérer l'utilisateur
+    // Find user in auth.users
     let user = null;
     try {
-      const { data: users, error: listError } = await supabase.auth.admin.listUsers()
-      if (!listError && users) {
-        const foundUser = users.users.find(u => u.email === email)
+      const { data: { users }, error: listError } = await supabase.auth.admin.listUsers();
+      
+      if (listError) {
+        console.error('❌ [VERIFY-OTP] Erreur listUsers:', listError);
+      } else if (users) {
+        const foundUser = users.find(u => u.email === email);
         if (foundUser) {
           user = foundUser;
-          console.log('👤 Utilisateur trouvé:', foundUser.id);
+          console.log('👤 [VERIFY-OTP] Utilisateur trouvé:', foundUser.id);
         }
       }
     } catch (error) {
-      console.error('❌ Erreur récupération utilisateur:', error);
+      console.error('❌ [VERIFY-OTP] Erreur récupération utilisateur:', error);
     }
     
     if (!user) {
-      console.error('❌ Utilisateur introuvable:', email);
+      console.error('❌ [VERIFY-OTP] Utilisateur introuvable pour email:', email);
       return new Response(
-        JSON.stringify({ success: false, message: 'Utilisateur introuvable' }),
+        JSON.stringify({ 
+          success: false, 
+          error: 'Compte utilisateur introuvable' 
+        }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      );
     }
 
-    // Confirmer l'email de l'utilisateur s'il n'est pas confirmé
+    // Confirm user email if not confirmed
     try {
       if (!user.email_confirmed_at) {
-        await supabase.auth.admin.updateUserById(user.id, {
+        const { error: confirmError } = await supabase.auth.admin.updateUserById(user.id, {
           email_confirm: true
-        })
-        console.log('✅ Email confirmé pour l\'utilisateur');
+        });
+        
+        if (confirmError) {
+          console.warn('⚠️ [VERIFY-OTP] Erreur confirmation email:', confirmError);
+        } else {
+          console.log('✅ [VERIFY-OTP] Email confirmé pour utilisateur');
+        }
       }
     } catch (error) {
-      console.warn('⚠️ Erreur confirmation email:', error);
+      console.warn('⚠️ [VERIFY-OTP] Erreur inattendue confirmation email:', error);
     }
 
-    // Générer une session pour l'utilisateur
+    // Generate access tokens
     try {
       const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
         type: 'magiclink',
-        email
-      })
+        email: email
+      });
 
       if (linkError) {
-        console.error('❌ Erreur génération lien:', linkError)
+        console.error('❌ [VERIFY-OTP] Erreur génération tokens:', linkError);
         return new Response(
-          JSON.stringify({ success: false, message: 'Erreur génération session' }),
+          JSON.stringify({ 
+            success: false, 
+            error: 'Erreur lors de la génération de la session' 
+          }),
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
+        );
       }
 
-      console.log('✅ Session générée avec succès');
+      console.log('✅ [VERIFY-OTP] Tokens générés avec succès');
+
+      const response: VerifyOTPResponse = {
+        success: true,
+        message: 'Code OTP vérifié avec succès',
+        access_token: linkData.properties?.access_token,
+        refresh_token: linkData.properties?.refresh_token,
+        user: {
+          id: user.id,
+          email: user.email,
+          email_confirmed_at: user.email_confirmed_at,
+          user_metadata: user.user_metadata
+        }
+      };
 
       return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: 'Code OTP vérifié avec succès',
-          access_token: linkData.properties?.access_token,
-          refresh_token: linkData.properties?.refresh_token,
-          user: user
-        }),
+        JSON.stringify(response),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      );
+
     } catch (error) {
-      console.error('❌ Erreur génération session:', error)
+      console.error('❌ [VERIFY-OTP] Erreur génération session:', error);
       return new Response(
-        JSON.stringify({ success: false, message: 'Erreur génération session' }),
+        JSON.stringify({ 
+          success: false, 
+          error: 'Erreur lors de la génération de la session' 
+        }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      );
     }
 
   } catch (error) {
-    console.error('❌ Erreur générale:', error)
+    console.error('❌ [VERIFY-OTP] Erreur générale:', error);
     return new Response(
       JSON.stringify({ 
-        error: 'Erreur serveur',
-        details: error.message 
+        success: false,
+        error: 'Erreur serveur interne'
       }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+    );
   }
-})
+});

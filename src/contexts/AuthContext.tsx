@@ -23,7 +23,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Function to fetch user profile
   const fetchUserProfile = async (userId: string) => {
     try {
-      console.log('🔍 Fetching profile for user:', userId);
+      console.log('🔍 [AUTH-CONTEXT] Récupération profil pour utilisateur:', userId);
       const { data, error } = await supabase
         .from('user_profiles')
         .select('*')
@@ -31,32 +31,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .single();
 
       if (error) {
-        console.error('❌ Error fetching profile:', error);
-        // Don't throw error, just set profile to null
+        console.error('❌ [AUTH-CONTEXT] Erreur récupération profil:', error);
         setProfile(null);
       } else {
-        console.log('✅ Profile fetched:', data);
+        console.log('✅ [AUTH-CONTEXT] Profil récupéré:', data);
         setProfile(data);
       }
     } catch (error) {
-      console.error('❌ Unexpected error fetching profile:', error);
+      console.error('❌ [AUTH-CONTEXT] Erreur inattendue récupération profil:', error);
       setProfile(null);
     }
   };
 
   useEffect(() => {
-    console.log('🔄 AuthContext: Initialisation des listeners d\'authentification');
+    console.log('🔄 [AUTH-CONTEXT] Initialisation des listeners d\'authentification');
 
     // Configuration du listener d'état d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('🔄 Auth state changed:', event, session?.user?.id || 'no user');
+        console.log('🔄 [AUTH-CONTEXT] Auth state changed:', event, session?.user?.id || 'no user');
         
         setSession(session);
         setUser(session?.user ?? null);
         
         // Fetch profile when user is authenticated
         if (session?.user?.id) {
+          // Use setTimeout to defer the profile fetch and prevent auth state callback deadlock
           setTimeout(() => {
             fetchUserProfile(session.user.id);
           }, 0);
@@ -72,10 +72,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const getInitialSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
-        console.log('🔍 Session initiale:', session?.user?.id || 'aucune session');
+        console.log('🔍 [AUTH-CONTEXT] Session initiale:', session?.user?.id || 'aucune session');
         
         if (error) {
-          console.error('❌ Erreur lors de la récupération de la session:', error);
+          console.error('❌ [AUTH-CONTEXT] Erreur lors de la récupération de la session:', error);
         }
         
         setSession(session);
@@ -86,7 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           await fetchUserProfile(session.user.id);
         }
       } catch (error) {
-        console.error('❌ Erreur inattendue lors de la récupération de la session:', error);
+        console.error('❌ [AUTH-CONTEXT] Erreur inattendue lors de la récupération de la session:', error);
       } finally {
         setIsLoading(false);
       }
@@ -101,18 +101,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      console.log('🚪 Déconnexion en cours...');
+      console.log('🚪 [AUTH-CONTEXT] Déconnexion en cours...');
       const { error } = await supabase.auth.signOut();
       if (error) {
-        console.error('❌ Erreur lors de la déconnexion:', error);
+        console.error('❌ [AUTH-CONTEXT] Erreur lors de la déconnexion:', error);
         throw error;
       }
       
       // Clear profile on logout
       setProfile(null);
-      console.log('✅ Déconnexion réussie');
+      console.log('✅ [AUTH-CONTEXT] Déconnexion réussie');
     } catch (error) {
-      console.error('❌ Erreur de déconnexion:', error);
+      console.error('❌ [AUTH-CONTEXT] Erreur de déconnexion:', error);
       throw error;
     }
   };
