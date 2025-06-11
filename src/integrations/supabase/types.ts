@@ -2187,22 +2187,31 @@ export type Database = {
       }
       user_otp: {
         Row: {
-          created_at: string | null
+          created_at: string
           email: string
           expires_at: string
+          id: string
           otp_code: string
+          updated_at: string
+          used: boolean
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
           email: string
-          expires_at: string
+          expires_at?: string
+          id?: string
           otp_code: string
+          updated_at?: string
+          used?: boolean
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
           email?: string
           expires_at?: string
+          id?: string
           otp_code?: string
+          updated_at?: string
+          used?: boolean
         }
         Relationships: []
       }
@@ -2363,6 +2372,10 @@ export type Database = {
         Returns: undefined
       }
       cleanup_expired_auth_codes: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      cleanup_expired_otp_codes: {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
