@@ -91,7 +91,7 @@ serve(async (req) => {
       auth: { autoRefreshToken: false, persistSession: false }
     });
 
-    // Verify OTP code - Use single() carefully with proper error handling
+    // Verify OTP code
     let otpRecord = null;
     try {
       const { data, error: otpError } = await supabase
@@ -210,25 +210,31 @@ serve(async (req) => {
       console.warn('⚠️ [VERIFY-OTP] Erreur inattendue confirmation email:', error);
     }
 
-    // Generate access tokens
+    // Generate session tokens using sign in with password bypass
     try {
+      console.log('🔐 [VERIFY-OTP] Génération session pour utilisateur:', user.id);
+      
+      // Use admin.generateLink to create session tokens
       const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
         type: 'magiclink',
-        email: email
+        email: email,
+        options: {
+          redirectTo: `${req.headers.get('origin') || 'http://localhost:3000'}/profile`
+        }
       });
 
       if (linkError) {
-        console.error('❌ [VERIFY-OTP] Erreur génération tokens:', linkError);
+        console.error('❌ [VERIFY-OTP] Erreur génération session tokens:', linkError);
         return new Response(
           JSON.stringify({ 
             success: false, 
-            error: 'Erreur lors de la génération de la session' 
+            error: 'Erreur lors de la génération des tokens de session' 
           }),
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      console.log('✅ [VERIFY-OTP] Tokens générés avec succès');
+      console.log('✅ [VERIFY-OTP] Session tokens générés avec succès');
 
       const response: VerifyOTPResponse = {
         success: true,
@@ -238,10 +244,12 @@ serve(async (req) => {
         user: {
           id: user.id,
           email: user.email,
-          email_confirmed_at: user.email_confirmed_at,
+          email_confirmed_at: user.email_confirmed_at || new Date().toISOString(),
           user_metadata: user.user_metadata
         }
       };
+
+      console.log('🎉 [VERIFY-OTP] Réponse succès préparée');
 
       return new Response(
         JSON.stringify(response),

@@ -144,30 +144,39 @@ const OTPAuthForm: React.FC<OTPAuthFormProps> = ({ onSuccess }) => {
       if (data?.success && data?.access_token) {
         console.log('✅ [OTP-FORM] Tokens reçus, établissement de la session...');
         
-        // Établir la session avec les tokens reçus
-        const { error: sessionError } = await supabase.auth.setSession({
-          access_token: data.access_token,
-          refresh_token: data.refresh_token
-        });
+        try {
+          // Établir la session avec les tokens reçus
+          const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
+            access_token: data.access_token,
+            refresh_token: data.refresh_token
+          });
 
-        if (sessionError) {
-          console.error('❌ [OTP-FORM] Erreur établissement session:', sessionError);
+          if (sessionError) {
+            console.error('❌ [OTP-FORM] Erreur établissement session:', sessionError);
+            setError('Erreur lors de l\'établissement de la session');
+            return;
+          }
+
+          console.log('✅ [OTP-FORM] Session établie avec succès:', sessionData);
+
+          toast({
+            title: "Connexion réussie",
+            description: "Vous êtes maintenant connecté",
+          });
+
+          // Petite pause pour laisser le temps à la session de s'établir
+          await new Promise(resolve => setTimeout(resolve, 500));
+
+          // Redirection ou callback
+          if (onSuccess) {
+            onSuccess();
+          } else {
+            // Force la redirection
+            window.location.href = '/profile';
+          }
+        } catch (sessionErr: any) {
+          console.error('❌ [OTP-FORM] Erreur inattendue session:', sessionErr);
           setError('Erreur lors de l\'établissement de la session');
-          return;
-        }
-
-        console.log('✅ [OTP-FORM] Session établie avec succès');
-
-        toast({
-          title: "Connexion réussie",
-          description: "Vous êtes maintenant connecté",
-        });
-
-        // Redirection
-        if (onSuccess) {
-          onSuccess();
-        } else {
-          window.location.href = '/profile';
         }
       } else {
         const errorMessage = data?.error || data?.message || 'Code OTP invalide';

@@ -30,12 +30,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .eq('id', userId)
         .single();
 
-      if (error) {
+      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
         console.error('❌ [AUTH-CONTEXT] Erreur récupération profil:', error);
         setProfile(null);
-      } else {
+      } else if (data) {
         console.log('✅ [AUTH-CONTEXT] Profil récupéré:', data);
         setProfile(data);
+      } else {
+        console.log('ℹ️ [AUTH-CONTEXT] Aucun profil trouvé pour cet utilisateur');
+        setProfile(null);
       }
     } catch (error) {
       console.error('❌ [AUTH-CONTEXT] Erreur inattendue récupération profil:', error);
@@ -51,6 +54,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       async (event, session) => {
         console.log('🔄 [AUTH-CONTEXT] Auth state changed:', event, session?.user?.id || 'no user');
         
+        // Mise à jour immédiate des états
         setSession(session);
         setUser(session?.user ?? null);
         
@@ -59,11 +63,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // Use setTimeout to defer the profile fetch and prevent auth state callback deadlock
           setTimeout(() => {
             fetchUserProfile(session.user.id);
-          }, 0);
+          }, 100);
         } else {
           setProfile(null);
         }
         
+        // Marquer comme non en cours de chargement
         setIsLoading(false);
       }
     );
@@ -71,12 +76,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Récupération de la session initiale
     const getInitialSession = async () => {
       try {
+        console.log('🔍 [AUTH-CONTEXT] Récupération session initiale...');
         const { data: { session }, error } = await supabase.auth.getSession();
-        console.log('🔍 [AUTH-CONTEXT] Session initiale:', session?.user?.id || 'aucune session');
         
         if (error) {
           console.error('❌ [AUTH-CONTEXT] Erreur lors de la récupération de la session:', error);
         }
+        
+        console.log('🔍 [AUTH-CONTEXT] Session initiale:', session?.user?.id || 'aucune session');
         
         setSession(session);
         setUser(session?.user ?? null);
