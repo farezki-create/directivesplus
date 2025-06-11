@@ -91,28 +91,54 @@ serve(async (req) => {
       auth: { autoRefreshToken: false, persistSession: false }
     });
 
-    // Verify OTP code
-    const { data: otpRecord, error: otpError } = await supabase
-      .from('user_otp')
-      .select('*')
-      .eq('email', email.toLowerCase().trim())
-      .eq('otp_code', otp_code)
-      .eq('used', false)
-      .gte('expires_at', new Date().toISOString())
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
+    // Verify OTP code - Use single() carefully with proper error handling
+    let otpRecord = null;
+    try {
+      const { data, error: otpError } = await supabase
+        .from('user_otp')
+        .select('*')
+        .eq('email', email.toLowerCase().trim())
+        .eq('otp_code', otp_code)
+        .eq('used', false)
+        .gte('expires_at', new Date().toISOString())
+        .order('created_at', { ascending: false })
+        .limit(1);
 
-    console.log('🔍 [VERIFY-OTP] Résultat recherche OTP:', otpRecord ? 'trouvé' : 'non trouvé', otpError?.message || '');
+      console.log('🔍 [VERIFY-OTP] Résultat recherche OTP:', data ? `trouvé ${data.length} résultat(s)` : 'non trouvé', otpError?.message || '');
 
-    if (otpError || !otpRecord) {
-      console.error('❌ [VERIFY-OTP] Code OTP invalide ou non trouvé');
+      if (otpError) {
+        console.error('❌ [VERIFY-OTP] Erreur recherche OTP:', otpError);
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: 'Erreur lors de la vérification du code' 
+          }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      if (!data || data.length === 0) {
+        console.error('❌ [VERIFY-OTP] Code OTP invalide ou non trouvé');
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: 'Code OTP invalide ou expiré' 
+          }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Take the most recent valid OTP
+      otpRecord = data[0];
+      
+    } catch (error) {
+      console.error('❌ [VERIFY-OTP] Erreur inattendue recherche OTP:', error);
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: 'Code OTP invalide ou expiré' 
+          error: 'Erreur lors de la vérification du code' 
         }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 

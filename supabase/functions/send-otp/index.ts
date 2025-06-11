@@ -86,6 +86,22 @@ serve(async (req) => {
 
     console.log('🔢 [SEND-OTP] Code OTP généré:', otpCode);
 
+    // Clean up old OTP codes for this email (critical fix)
+    try {
+      const { error: deleteError } = await supabase
+        .from('user_otp')
+        .delete()
+        .eq('email', email.toLowerCase().trim());
+      
+      if (deleteError) {
+        console.warn('⚠️ [SEND-OTP] Erreur suppression anciens OTP:', deleteError);
+      } else {
+        console.log('🗑️ [SEND-OTP] Anciens codes OTP supprimés pour:', email);
+      }
+    } catch (error) {
+      console.warn('⚠️ [SEND-OTP] Erreur inattendue suppression anciens OTP:', error);
+    }
+
     // Check if user exists in auth.users
     let userExists = false;
     let userId = null;
@@ -145,22 +161,6 @@ serve(async (req) => {
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-    }
-
-    // Clean up old OTP codes for this email
-    try {
-      const { error: deleteError } = await supabase
-        .from('user_otp')
-        .delete()
-        .eq('email', email);
-      
-      if (deleteError) {
-        console.warn('⚠️ [SEND-OTP] Erreur suppression anciens OTP:', deleteError);
-      } else {
-        console.log('🗑️ [SEND-OTP] Anciens codes OTP supprimés pour:', email);
-      }
-    } catch (error) {
-      console.warn('⚠️ [SEND-OTP] Erreur inattendue suppression anciens OTP:', error);
     }
 
     // Insert new OTP code
