@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ProfileFormValues } from "./ProfileForm";
@@ -15,6 +16,7 @@ export function useProfileSubmit({
   onProfileUpdate, 
   setIsLoading 
 }: UseProfileSubmitProps) {
+  const navigate = useNavigate();
   const [formState, setFormState] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [submitProgress, setSubmitProgress] = useState(0);
 
@@ -69,7 +71,7 @@ export function useProfileSubmit({
 
       setFormState('success');
       toast.success("Profil mis à jour avec succès", {
-        description: "Vos informations ont été sauvegardées",
+        description: "Vous allez être redirigé vers l'accueil",
       });
       
       // Mettre à jour l'état parent
@@ -86,10 +88,11 @@ export function useProfileSubmit({
       
       console.log('✅ [PROFILE-SUBMIT] Mise à jour réussie');
       
-      // Reset après succès
+      // Redirection vers l'accueil après succès
       setTimeout(() => {
         setFormState('idle');
         setSubmitProgress(0);
+        navigate('/', { replace: true });
       }, 2000);
       
     } catch (error: any) {
