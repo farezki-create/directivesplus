@@ -4,16 +4,14 @@ import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useState } from "react";
-import { toast } from "@/components/ui/sonner";
-import { supabase } from "@/integrations/supabase/client";
 import PersonalInformationFields from "./PersonalInformationFields";
 import AddressInformationFields from "./AddressInformationFields";
 import { Progress } from "@/components/ui/progress";
 import { LoaderCircle, Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useProfileSubmit } from "./useProfileSubmit";
 
-// Profile schema with validation
+// Schema de validation du profil
 const profileSchema = z.object({
   firstName: z.string().min(2, "Prénom requis (2 caractères minimum)"),
   lastName: z.string().min(2, "Nom requis (2 caractères minimum)"),
@@ -49,85 +47,19 @@ export default function ProfileForm({
   isLoading,
   setIsLoading
 }: ProfileFormProps) {
-  const [formState, setFormState] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
-  const [submitProgress, setSubmitProgress] = useState(0);
   
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: initialValues
   });
 
-  async function onSubmit(values: ProfileFormValues) {
-    try {
-      setFormState('submitting');
-      setIsLoading(true);
-      
-      // Start progress animation
-      let progress = 0;
-      const interval = setInterval(() => {
-        progress += 10;
-        setSubmitProgress(progress > 90 ? 90 : progress);
-      }, 100);
-      
-      // Format the birthDate for the database if it exists
-      const formattedBirthDate = values.birthDate ? values.birthDate.toISOString().split('T')[0] : null;
+  const { submitProfile, formState, submitProgress } = useProfileSubmit({
+    profileId,
+    onProfileUpdate,
+    setIsLoading
+  });
 
-      const { error } = await supabase
-        .from("profiles")
-        .update({
-          first_name: values.firstName,
-          last_name: values.lastName,
-          birth_date: formattedBirthDate,
-          phone_number: values.phoneNumber,
-          address: values.address,
-          city: values.city,
-          postal_code: values.postalCode,
-          country: values.country,
-        })
-        .eq("id", profileId);
-
-      // Clear interval and complete progress
-      clearInterval(interval);
-      setSubmitProgress(100);
-      
-      if (error) {
-        setFormState('error');
-        toast.error("Erreur lors de la mise à jour du profil", {
-          description: error.message,
-        });
-        return;
-      }
-
-      setFormState('success');
-      toast.success("Profil mis à jour avec succès");
-      
-      // Update parent component's state
-      onProfileUpdate({
-        first_name: values.firstName,
-        last_name: values.lastName,
-        birth_date: formattedBirthDate,
-        phone_number: values.phoneNumber,
-        address: values.address,
-        city: values.city,
-        postal_code: values.postalCode,
-        country: values.country,
-      });
-      
-      // Reset form state after success
-      setTimeout(() => {
-        setFormState('idle');
-      }, 2000);
-    } catch (error: any) {
-      setFormState('error');
-      toast.error("Une erreur est survenue", {
-        description: error.message || "Veuillez réessayer plus tard",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }
-  
-  // Button icon based on form state
+  // Icône du bouton selon l'état
   const ButtonIcon = () => {
     switch(formState) {
       case 'submitting':
@@ -143,14 +75,16 @@ export default function ProfileForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(submitProfile)} className="space-y-4">
         <PersonalInformationFields />
         <AddressInformationFields />
         
         {formState === 'submitting' && (
           <div className="my-4">
             <Progress value={submitProgress} className="h-2" />
-            <p className="text-sm text-center mt-1 text-muted-foreground">Mise à jour du profil...</p>
+            <p className="text-sm text-center mt-1 text-muted-foreground">
+              Mise à jour du profil...
+            </p>
           </div>
         )}
         
