@@ -29,10 +29,28 @@ const OTPAuthForm: React.FC<OTPAuthFormProps> = ({ onSuccess }) => {
   const [resendLoading, setResendLoading] = useState(false);
 
   const handleApiError = (error: any, defaultMessage: string): string => {
-    console.error('🔍 [OTP-FORM] Analyse erreur:', error);
+    console.error('🔍 [OTP-FORM] Analyse erreur complète:', {
+      error,
+      type: typeof error,
+      message: error?.message,
+      code: error?.code,
+      status: error?.status,
+      details: error?.details,
+      stack: error?.stack
+    });
     
-    if (error?.message?.includes('non-2xx status')) {
-      return 'Erreur de communication avec le serveur. Veuillez réessayer.';
+    // Plus de détails sur l'erreur
+    if (error?.message) {
+      if (error.message.includes('non-2xx status')) {
+        return `Erreur serveur (${error.status || 'code inconnu'}). Vérifiez que les fonctions Edge sont bien déployées.`;
+      }
+      if (error.message.includes('fetch')) {
+        return `Erreur de connexion réseau. Vérifiez votre connexion internet.`;
+      }
+      if (error.message.includes('timeout')) {
+        return `Timeout de la requête. Le serveur met trop de temps à répondre.`;
+      }
+      return error.message;
     }
     
     if (typeof error === 'object' && error !== null) {
@@ -66,6 +84,22 @@ const OTPAuthForm: React.FC<OTPAuthFormProps> = ({ onSuccess }) => {
 
     try {
       console.log('📧 [OTP-FORM] Envoi du code OTP pour:', email);
+      console.log('📧 [OTP-FORM] URL Supabase:', supabase.supabaseUrl);
+      console.log('📧 [OTP-FORM] Tentative d\'appel de la fonction send-otp...');
+
+      // Test de connectivité avant l'appel
+      const testResponse = await fetch(`${supabase.supabaseUrl}/functions/v1/send-otp`, {
+        method: 'OPTIONS',
+        headers: {
+          'Origin': window.location.origin
+        }
+      });
+      
+      console.log('📧 [OTP-FORM] Test CORS/connectivité:', {
+        status: testResponse.status,
+        ok: testResponse.ok,
+        headers: Object.fromEntries(testResponse.headers.entries())
+      });
 
       const { data, error: functionError } = await supabase.functions.invoke('send-otp', {
         body: { email: email.trim() }
@@ -74,6 +108,7 @@ const OTPAuthForm: React.FC<OTPAuthFormProps> = ({ onSuccess }) => {
       console.log('📧 [OTP-FORM] Réponse send-otp:', { data, error: functionError });
 
       if (functionError) {
+        console.error('❌ [OTP-FORM] Erreur de fonction:', functionError);
         const errorMessage = handleApiError(functionError, 'Erreur lors de l\'envoi du code OTP');
         setError(errorMessage);
         return;
@@ -125,6 +160,22 @@ const OTPAuthForm: React.FC<OTPAuthFormProps> = ({ onSuccess }) => {
 
     try {
       console.log('🔐 [OTP-FORM] Vérification du code OTP:', otpCode);
+      console.log('🔐 [OTP-FORM] URL Supabase:', supabase.supabaseUrl);
+      console.log('🔐 [OTP-FORM] Tentative d\'appel de la fonction verify-otp...');
+
+      // Test de connectivité avant l'appel
+      const testResponse = await fetch(`${supabase.supabaseUrl}/functions/v1/verify-otp`, {
+        method: 'OPTIONS',
+        headers: {
+          'Origin': window.location.origin
+        }
+      });
+      
+      console.log('🔐 [OTP-FORM] Test CORS/connectivité verify-otp:', {
+        status: testResponse.status,
+        ok: testResponse.ok,
+        headers: Object.fromEntries(testResponse.headers.entries())
+      });
 
       const { data, error: functionError } = await supabase.functions.invoke('verify-otp', {
         body: { 
@@ -136,6 +187,7 @@ const OTPAuthForm: React.FC<OTPAuthFormProps> = ({ onSuccess }) => {
       console.log('🔐 [OTP-FORM] Réponse verify-otp:', { data, error: functionError });
 
       if (functionError) {
+        console.error('❌ [OTP-FORM] Erreur de fonction verify-otp:', functionError);
         const errorMessage = handleApiError(functionError, 'Erreur lors de la vérification du code');
         setError(errorMessage);
         return;

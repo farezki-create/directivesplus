@@ -2383,6 +2383,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      create_user_session: {
+        Args: { user_email: string; user_otp: string }
+        Returns: string
+      }
       debug_institution_access_step_by_step: {
         Args: {
           input_last_name: string
@@ -2847,6 +2851,10 @@ export type Database = {
           is_valid: boolean
           medical_data_content: Json
         }[]
+      }
+      verify_otp: {
+        Args: { user_email_input: string; user_otp_input: string }
+        Returns: boolean
       }
       verify_patient_access_with_code: {
         Args: {

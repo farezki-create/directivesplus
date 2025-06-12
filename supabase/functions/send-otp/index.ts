@@ -22,18 +22,29 @@ interface SendOTPResponse {
 }
 
 serve(async (req) => {
+  console.log('📨 [SEND-OTP] Nouvelle requête reçue:', req.method);
+
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
+    console.log('✅ [SEND-OTP] Réponse CORS preflight');
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
     console.log('🚀 [SEND-OTP] Début du processus d\'envoi OTP');
+    console.log('🔧 [SEND-OTP] Variables d\'environnement disponibles:', {
+      hasSupabaseUrl: !!Deno.env.get('SUPABASE_URL'),
+      hasServiceKey: !!Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'),
+      supabaseUrl: Deno.env.get('SUPABASE_URL')?.substring(0, 30) + '...'
+    });
     
     // Parse request body
     let requestBody: SendOTPRequest;
     try {
-      requestBody = await req.json();
+      const bodyText = await req.text();
+      console.log('📝 [SEND-OTP] Corps de la requête brut:', bodyText);
+      requestBody = JSON.parse(bodyText);
+      console.log('📝 [SEND-OTP] Corps de la requête parsé:', requestBody);
     } catch (error) {
       console.error('❌ [SEND-OTP] Erreur parsing JSON:', error);
       return new Response(
@@ -76,6 +87,7 @@ serve(async (req) => {
       );
     }
     
+    console.log('🔗 [SEND-OTP] Initialisation client Supabase...');
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: { autoRefreshToken: false, persistSession: false }
     });
@@ -88,6 +100,7 @@ serve(async (req) => {
 
     // Clean up old OTP codes for this email (critical fix)
     try {
+      console.log('🗑️ [SEND-OTP] Suppression des anciens codes...');
       const { error: deleteError } = await supabase
         .from('user_otp')
         .delete()
@@ -96,7 +109,7 @@ serve(async (req) => {
       if (deleteError) {
         console.warn('⚠️ [SEND-OTP] Erreur suppression anciens OTP:', deleteError);
       } else {
-        console.log('🗑️ [SEND-OTP] Anciens codes OTP supprimés pour:', email);
+        console.log('✅ [SEND-OTP] Anciens codes OTP supprimés pour:', email);
       }
     } catch (error) {
       console.warn('⚠️ [SEND-OTP] Erreur inattendue suppression anciens OTP:', error);
@@ -107,6 +120,7 @@ serve(async (req) => {
     let userId = null;
 
     try {
+      console.log('👤 [SEND-OTP] Vérification utilisateur existant...');
       const { data: { users }, error: listError } = await supabase.auth.admin.listUsers();
       
       if (listError) {
@@ -117,6 +131,8 @@ serve(async (req) => {
           userExists = true;
           userId = existingUser.id;
           console.log('👤 [SEND-OTP] Utilisateur existant trouvé:', userId);
+        } else {
+          console.log('👤 [SEND-OTP] Aucun utilisateur existant trouvé');
         }
       }
     } catch (error) {
@@ -165,6 +181,7 @@ serve(async (req) => {
 
     // Insert new OTP code
     try {
+      console.log('💾 [SEND-OTP] Insertion du code OTP en base...');
       const { data: otpData, error: insertError } = await supabase
         .from('user_otp')
         .insert({ 

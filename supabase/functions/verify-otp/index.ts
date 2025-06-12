@@ -22,18 +22,29 @@ interface VerifyOTPResponse {
 }
 
 serve(async (req) => {
+  console.log('🔐 [VERIFY-OTP] Nouvelle requête reçue:', req.method);
+
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
+    console.log('✅ [VERIFY-OTP] Réponse CORS preflight');
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
     console.log('🔐 [VERIFY-OTP] Début de la vérification OTP');
+    console.log('🔧 [VERIFY-OTP] Variables d\'environnement disponibles:', {
+      hasSupabaseUrl: !!Deno.env.get('SUPABASE_URL'),
+      hasServiceKey: !!Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'),
+      supabaseUrl: Deno.env.get('SUPABASE_URL')?.substring(0, 30) + '...'
+    });
     
     // Parse request body
     let requestBody: VerifyOTPRequest;
     try {
-      requestBody = await req.json();
+      const bodyText = await req.text();
+      console.log('📝 [VERIFY-OTP] Corps de la requête brut:', bodyText);
+      requestBody = JSON.parse(bodyText);
+      console.log('📝 [VERIFY-OTP] Corps de la requête parsé:', requestBody);
     } catch (error) {
       console.error('❌ [VERIFY-OTP] Erreur parsing JSON:', error);
       return new Response(
@@ -87,6 +98,7 @@ serve(async (req) => {
       );
     }
     
+    console.log('🔗 [VERIFY-OTP] Initialisation client Supabase...');
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: { autoRefreshToken: false, persistSession: false }
     });
@@ -94,6 +106,7 @@ serve(async (req) => {
     // Verify OTP code
     let otpRecord = null;
     try {
+      console.log('🔍 [VERIFY-OTP] Recherche du code OTP dans la base...');
       const { data, error: otpError } = await supabase
         .from('user_otp')
         .select('*')
@@ -130,6 +143,7 @@ serve(async (req) => {
 
       // Take the most recent valid OTP
       otpRecord = data[0];
+      console.log('✅ [VERIFY-OTP] Code OTP valide trouvé:', otpRecord.id);
       
     } catch (error) {
       console.error('❌ [VERIFY-OTP] Erreur inattendue recherche OTP:', error);
@@ -143,30 +157,43 @@ serve(async (req) => {
     }
 
     // Mark OTP as used
-    const { error: updateError } = await supabase
-      .from('user_otp')
-      .update({ 
-        used: true,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', otpRecord.id);
+    try {
+      console.log('🔄 [VERIFY-OTP] Marquage du code comme utilisé...');
+      const { error: updateError } = await supabase
+        .from('user_otp')
+        .update({ 
+          used: true,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', otpRecord.id);
 
-    if (updateError) {
-      console.error('❌ [VERIFY-OTP] Erreur marquage code utilisé:', updateError);
+      if (updateError) {
+        console.error('❌ [VERIFY-OTP] Erreur marquage code utilisé:', updateError);
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: 'Erreur lors de la validation du code' 
+          }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      console.log('✅ [VERIFY-OTP] Code OTP marqué comme utilisé');
+    } catch (error) {
+      console.error('❌ [VERIFY-OTP] Erreur inattendue marquage:', error);
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: 'Erreur lors de la validation du code' 
+          error: 'Erreur lors du marquage du code' 
         }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log('✅ [VERIFY-OTP] Code OTP marqué comme utilisé');
-
     // Find user in auth.users
     let user = null;
     try {
+      console.log('👤 [VERIFY-OTP] Recherche utilisateur...');
       const { data: { users }, error: listError } = await supabase.auth.admin.listUsers();
       
       if (listError) {
@@ -176,6 +203,8 @@ serve(async (req) => {
         if (foundUser) {
           user = foundUser;
           console.log('👤 [VERIFY-OTP] Utilisateur trouvé:', foundUser.id);
+        } else {
+          console.error('❌ [VERIFY-OTP] Utilisateur non trouvé dans auth.users');
         }
       }
     } catch (error) {
@@ -195,7 +224,9 @@ serve(async (req) => {
 
     // Confirm user email if not confirmed
     try {
+      console.log('📧 [VERIFY-OTP] Vérification statut email...');
       if (!user.email_confirmed_at) {
+        console.log('📧 [VERIFY-OTP] Confirmation de l\'email...');
         const { error: confirmError } = await supabase.auth.admin.updateUserById(user.id, {
           email_confirm: true
         });
@@ -205,12 +236,14 @@ serve(async (req) => {
         } else {
           console.log('✅ [VERIFY-OTP] Email confirmé pour utilisateur');
         }
+      } else {
+        console.log('✅ [VERIFY-OTP] Email déjà confirmé');
       }
     } catch (error) {
       console.warn('⚠️ [VERIFY-OTP] Erreur inattendue confirmation email:', error);
     }
 
-    // Generate session tokens using sign in with password bypass
+    // Generate session tokens using generateLink
     try {
       console.log('🔐 [VERIFY-OTP] Génération session pour utilisateur:', user.id);
       
