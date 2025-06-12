@@ -4,10 +4,9 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import OTPAuthForm from "@/components/auth/OTPAuthForm";
-import { Mail, Info } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import SimpleOTPAuth from "@/components/auth/SimpleOTPAuth";
+import { Info } from "lucide-react";
 
 const Auth = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -25,7 +24,6 @@ const Auth = () => {
   }
 
   const handleAuthSuccess = () => {
-    // La redirection sera gérée automatiquement par le composant OTPAuthForm
     console.log("Authentification réussie");
   };
 
@@ -36,7 +34,7 @@ const Auth = () => {
         <div className="max-w-md mx-auto">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Connexion / Inscription
+              Connexion Sécurisée
             </h1>
             <p className="text-gray-600">
               Accédez à vos directives anticipées
@@ -46,7 +44,7 @@ const Auth = () => {
           <Alert className="mb-6">
             <Info className="h-4 w-4" />
             <AlertDescription>
-              <strong>Connexion sécurisée par email :</strong>
+              <strong>Authentification simplifiée :</strong>
               <br />
               1. Saisissez votre email
               <br />
@@ -54,11 +52,11 @@ const Auth = () => {
               <br />
               3. Saisissez le code pour vous connecter
               <br />
-              Un compte sera créé automatiquement si vous n'en avez pas.
+              Un compte sera créé automatiquement si nécessaire.
             </AlertDescription>
           </Alert>
 
-          <OTPAuthForm onSuccess={handleAuthSuccess} />
+          <SimpleOTPAuth onSuccess={handleAuthSuccess} />
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-500">

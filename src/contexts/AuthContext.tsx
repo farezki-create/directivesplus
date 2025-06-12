@@ -20,7 +20,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Function to fetch user profile
   const fetchUserProfile = async (userId: string) => {
     try {
       console.log('🔍 [AUTH-CONTEXT] Récupération profil pour utilisateur:', userId);
@@ -30,7 +29,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .eq('id', userId)
         .single();
 
-      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+      if (error && error.code !== 'PGRST116') {
         console.error('❌ [AUTH-CONTEXT] Erreur récupération profil:', error);
         setProfile(null);
       } else if (data) {
@@ -47,20 +46,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    console.log('🔄 [AUTH-CONTEXT] Initialisation des listeners d\'authentification');
+    console.log('🔄 [AUTH-CONTEXT] Initialisation AuthContext simplifié');
 
-    // Configuration du listener d'état d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('🔄 [AUTH-CONTEXT] Auth state changed:', event, session?.user?.id || 'no user');
         
-        // Mise à jour immédiate des états
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Fetch profile when user is authenticated
         if (session?.user?.id) {
-          // Use setTimeout to defer the profile fetch and prevent auth state callback deadlock
           setTimeout(() => {
             fetchUserProfile(session.user.id);
           }, 100);
@@ -68,19 +63,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setProfile(null);
         }
         
-        // Marquer comme non en cours de chargement
         setIsLoading(false);
       }
     );
 
-    // Récupération de la session initiale
     const getInitialSession = async () => {
       try {
-        console.log('🔍 [AUTH-CONTEXT] Récupération session initiale...');
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
-          console.error('❌ [AUTH-CONTEXT] Erreur lors de la récupération de la session:', error);
+          console.error('❌ [AUTH-CONTEXT] Erreur session initiale:', error);
         }
         
         console.log('🔍 [AUTH-CONTEXT] Session initiale:', session?.user?.id || 'aucune session');
@@ -88,12 +80,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Fetch profile for initial session
         if (session?.user?.id) {
           await fetchUserProfile(session.user.id);
         }
       } catch (error) {
-        console.error('❌ [AUTH-CONTEXT] Erreur inattendue lors de la récupération de la session:', error);
+        console.error('❌ [AUTH-CONTEXT] Erreur inattendue session:', error);
       } finally {
         setIsLoading(false);
       }
@@ -108,14 +99,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      console.log('🚪 [AUTH-CONTEXT] Déconnexion en cours...');
+      console.log('🚪 [AUTH-CONTEXT] Déconnexion...');
       const { error } = await supabase.auth.signOut();
       if (error) {
-        console.error('❌ [AUTH-CONTEXT] Erreur lors de la déconnexion:', error);
+        console.error('❌ [AUTH-CONTEXT] Erreur déconnexion:', error);
         throw error;
       }
       
-      // Clear profile on logout
       setProfile(null);
       console.log('✅ [AUTH-CONTEXT] Déconnexion réussie');
     } catch (error) {
