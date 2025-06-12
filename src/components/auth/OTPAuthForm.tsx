@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +18,8 @@ interface ApiError {
   error?: string;
   message?: string;
 }
+
+const SUPABASE_URL = "https://kytqqjnecezkxyhmmjrz.supabase.co";
 
 const OTPAuthForm: React.FC<OTPAuthFormProps> = ({ onSuccess }) => {
   const [step, setStep] = useState<'email' | 'otp'>('email');
@@ -84,11 +85,11 @@ const OTPAuthForm: React.FC<OTPAuthFormProps> = ({ onSuccess }) => {
 
     try {
       console.log('📧 [OTP-FORM] Envoi du code OTP pour:', email);
-      console.log('📧 [OTP-FORM] URL Supabase:', supabase.supabaseUrl);
+      console.log('📧 [OTP-FORM] URL Supabase:', SUPABASE_URL);
       console.log('📧 [OTP-FORM] Tentative d\'appel de la fonction send-otp...');
 
       // Test de connectivité avant l'appel
-      const testResponse = await fetch(`${supabase.supabaseUrl}/functions/v1/send-otp`, {
+      const testResponse = await fetch(`${SUPABASE_URL}/functions/v1/send-otp`, {
         method: 'OPTIONS',
         headers: {
           'Origin': window.location.origin
@@ -160,11 +161,11 @@ const OTPAuthForm: React.FC<OTPAuthFormProps> = ({ onSuccess }) => {
 
     try {
       console.log('🔐 [OTP-FORM] Vérification du code OTP:', otpCode);
-      console.log('🔐 [OTP-FORM] URL Supabase:', supabase.supabaseUrl);
+      console.log('🔐 [OTP-FORM] URL Supabase:', SUPABASE_URL);
       console.log('🔐 [OTP-FORM] Tentative d\'appel de la fonction verify-otp...');
 
       // Test de connectivité avant l'appel
-      const testResponse = await fetch(`${supabase.supabaseUrl}/functions/v1/verify-otp`, {
+      const testResponse = await fetch(`${SUPABASE_URL}/functions/v1/verify-otp`, {
         method: 'OPTIONS',
         headers: {
           'Origin': window.location.origin
