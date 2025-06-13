@@ -296,7 +296,7 @@ const SupabaseOptimizationPanel = () => {
                   <li>Connexions DB : 200 max, timeout 30s</li>
                   <li>Stockage : Limite 100MB par fichier</li>
                   <li>Cache : Activation du cache de requêtes</li>
-                  <li>Monitoring : Alertes sur CPU >80%, Mémoire >85%</li>
+                  <li>Monitoring : Alertes sur CPU {'>'}80%, Mémoire {'>'}85%</li>
                 </ul>
               </div>
             </AlertDescription>
