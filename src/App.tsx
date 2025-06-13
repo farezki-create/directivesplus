@@ -10,12 +10,10 @@ import ScrollToTop from "@/components/ScrollToTop";
 // Pages
 import Index from "./pages/Index";
 import Rediger from "./pages/Rediger";
-import Questionnaire from "./pages/Questionnaire";
 import Synthesis from "./pages/Synthesis";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import DirectivesAccess from "./pages/DirectivesAccess";
-import SharedDocument from "./pages/SharedDocument";
 import AccessCode from "./pages/AccessCode";
 import MesDirectives from "./pages/MesDirectives";
 import AccesInstitution from "./pages/AccesInstitution";
@@ -25,11 +23,8 @@ import AdminInstitutions from "./pages/AdminInstitutions";
 import AdminSupabaseAudit from "./pages/AdminSupabaseAudit";
 import AuthAudit from "./pages/AuthAudit";
 import DirectivesInfo from "./pages/DirectivesInfo";
-import ProtectionDonnees from "./pages/ProtectionDonnees";
 import Soutenir from "./pages/Soutenir";
-import Social from "./pages/Social";
-import SymptomTracker from "./pages/SymptomTracker";
-import { AuthAuditPage } from "./features/auth/AuthAuditPage";
+import AuthAuditPage from "./features/auth/AuthAuditPage";
 
 const queryClient = new QueryClient();
 
@@ -45,12 +40,10 @@ function App() {
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/rediger" element={<Rediger />} />
-              <Route path="/questionnaire" element={<Questionnaire />} />
               <Route path="/synthesis" element={<Synthesis />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/directives-access" element={<DirectivesAccess />} />
-              <Route path="/shared/:documentId" element={<SharedDocument />} />
               <Route path="/access-code" element={<AccessCode />} />
               <Route path="/mes-directives" element={<MesDirectives />} />
               <Route path="/acces-institution" element={<AccesInstitution />} />
@@ -61,10 +54,7 @@ function App() {
               <Route path="/auth-audit" element={<AuthAudit />} />
               <Route path="/auth-audit-detailed" element={<AuthAuditPage />} />
               <Route path="/directives-info" element={<DirectivesInfo />} />
-              <Route path="/protection-donnees" element={<ProtectionDonnees />} />
               <Route path="/soutenir" element={<Soutenir />} />
-              <Route path="/social" element={<Social />} />
-              <Route path="/symptom-tracker" element={<SymptomTracker />} />
             </Routes>
           </BrowserRouter>
         </TooltipProvider>

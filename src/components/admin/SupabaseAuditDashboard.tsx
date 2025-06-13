@@ -96,11 +96,11 @@ const SupabaseAuditDashboard = () => {
     const results: AuditResult[] = [];
     
     try {
-      // Vérifier les tables principales
+      // Vérifier les tables principales avec des noms de tables valides
       const criticalTables = [
         'profiles', 'pdf_documents', 'directives', 'questionnaire_responses',
         'security_audit_logs', 'medical_data', 'institution_access_codes'
-      ];
+      ] as const;
 
       for (const table of criticalTables) {
         try {
@@ -293,8 +293,8 @@ const SupabaseAuditDashboard = () => {
         });
       }
 
-      // Vérifier la taille des tables principales
-      const tables = ['profiles', 'pdf_documents', 'directives', 'security_audit_logs'];
+      // Vérifier la taille des tables principales avec des noms valides
+      const tables = ['profiles', 'pdf_documents', 'directives', 'security_audit_logs'] as const;
       
       for (const table of tables) {
         try {
