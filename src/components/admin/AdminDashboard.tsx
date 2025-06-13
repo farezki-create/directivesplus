@@ -1,6 +1,7 @@
+
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Users, Shield, Building2 } from "lucide-react";
+import { Users, Shield, Building2, Database, Activity, Settings } from "lucide-react";
 import AppNavigation from "@/components/AppNavigation";
 import { Link } from "react-router-dom";
 import { UsersTable } from "./UsersTable";
@@ -30,6 +31,20 @@ export function AdminDashboard({ users, isLoading, onViewUserDetails }: AdminDas
 
           {/* Navigation Admin */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <Link to="/admin/dashboard">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer border-purple-200 bg-purple-50">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3">
+                    <Activity className="h-8 w-8 text-purple-600" />
+                    <div>
+                      <h3 className="font-semibold text-purple-800">Tableau de bord complet</h3>
+                      <p className="text-sm text-purple-700">Centre de surveillance et gestion</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
             <Link to="/admin/institutions">
               <Card className="hover:shadow-lg transition-shadow cursor-pointer border-blue-200 bg-blue-50">
                 <CardContent className="p-6">
@@ -56,6 +71,20 @@ export function AdminDashboard({ users, isLoading, onViewUserDetails }: AdminDas
               </CardContent>
             </Card>
 
+            <Link to="/admin/supabase-audit">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer border-orange-200 bg-orange-50">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3">
+                    <Database className="h-8 w-8 text-orange-600" />
+                    <div>
+                      <h3 className="font-semibold text-orange-800">Base de données</h3>
+                      <p className="text-sm text-orange-700">Audit et optimisation Supabase</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
             <Card className="border-purple-200 bg-purple-50">
               <CardContent className="p-6">
                 <div className="flex items-center gap-3">
@@ -63,6 +92,18 @@ export function AdminDashboard({ users, isLoading, onViewUserDetails }: AdminDas
                   <div>
                     <h3 className="font-semibold text-purple-800">Sécurité</h3>
                     <p className="text-sm text-purple-700">Audits et logs de sécurité</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-gray-200 bg-gray-50">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3">
+                  <Settings className="h-8 w-8 text-gray-600" />
+                  <div>
+                    <h3 className="font-semibold text-gray-800">Configuration</h3>
+                    <p className="text-sm text-gray-700">Paramètres système</p>
                   </div>
                 </div>
               </CardContent>

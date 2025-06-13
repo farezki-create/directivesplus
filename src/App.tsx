@@ -19,6 +19,7 @@ import MesDirectives from "./pages/MesDirectives";
 import AccesInstitution from "./pages/AccesInstitution";
 import PdfViewer from "./pages/PdfViewer";
 import Admin from "./pages/Admin";
+import AdminMainDashboardPage from "./pages/AdminMainDashboard";
 import AdminInstitutions from "./pages/AdminInstitutions";
 import AdminSupabaseAudit from "./pages/AdminSupabaseAudit";
 import AuthAudit from "./pages/AuthAudit";
@@ -49,6 +50,7 @@ function App() {
               <Route path="/acces-institution" element={<AccesInstitution />} />
               <Route path="/pdf-viewer/:documentId" element={<PdfViewer />} />
               <Route path="/admin" element={<Admin />} />
+              <Route path="/admin/dashboard" element={<AdminMainDashboardPage />} />
               <Route path="/admin/institutions" element={<AdminInstitutions />} />
               <Route path="/admin/supabase-audit" element={<AdminSupabaseAudit />} />
               <Route path="/auth-audit" element={<AuthAudit />} />
