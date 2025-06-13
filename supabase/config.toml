@@ -6,12 +6,13 @@ enabled = true
 port = 54321
 schemas = ["public", "graphql_public"]
 extra_search_path = ["public", "extensions"]
-max_rows = 1000
+max_rows = 10000
 
 [db]
 port = 54322
 shadow_port = 54320
 major_version = 15
+max_connections = 200
 
 [studio]
 enabled = true
@@ -26,7 +27,7 @@ pop3_port = 54326
 [storage]
 enabled = true
 port = 54325
-file_size_limit = "50MiB"
+file_size_limit = "100MiB"
 image_transformation = {enabled = true}
 
 [auth]
@@ -34,14 +35,26 @@ enabled = true
 port = 54326
 site_url = "https://www.directivesplus.fr"
 additional_redirect_urls = ["https://www.directivesplus.fr", "http://localhost:3000", "https://24c30559-a746-463d-805e-d2330d3a13f4.lovableproject.com"]
-jwt_expiry = 3600
+jwt_expiry = 7200
 refresh_token_rotation_enabled = true
 security_update_password_require_reauthentication = true
+enable_signup = true
+enable_confirmations = true
+password_min_length = 8
+password_requirements = ["lowercase", "uppercase", "numbers"]
 
 [auth.email]
 enable_signup = true
 double_confirm_changes = true
-enable_confirmations = false
+enable_confirmations = true
+max_frequency = "1m"
+
+# Configuration pour supporter des milliers d'inscriptions
+[auth.rate_limits]
+signup = {period = "1h", requests = 100}
+signin = {period = "1m", requests = 60}
+password_reset = {period = "1h", requests = 30}
+email_change = {period = "1h", requests = 10}
 
 [edge_functions]
 enabled = true
@@ -60,4 +73,9 @@ verify_jwt = false
 verify_jwt = false
 
 [analytics]
-enabled = false
+enabled = true
+
+# Configuration pour la performance
+[performance]
+statement_timeout = "30s"
+idle_in_transaction_session_timeout = "10m"
