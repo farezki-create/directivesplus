@@ -36,35 +36,44 @@ export const DirectivesResetSection: React.FC = () => {
         console.error("Erreur suppression réponses:", responsesError);
       }
 
-      // Supprimer les phrases personnalisées
-      const { error: phrasesError } = await supabase
-        .from("custom_phrases")
+      // Supprimer les réponses aux questionnaires de préférences
+      const { error: preferencesError } = await supabase
+        .from("questionnaire_preferences_responses")
         .delete()
         .eq("user_id", user.id);
 
-      if (phrasesError) {
-        console.error("Erreur suppression phrases:", phrasesError);
+      if (preferencesError) {
+        console.error("Erreur suppression préférences:", preferencesError);
       }
 
-      // Supprimer les personnes de confiance
-      const { error: trustedError } = await supabase
-        .from("trusted_persons")
-        .delete()
-        .eq("user_id", user.id);
-
-      if (trustedError) {
-        console.error("Erreur suppression personnes de confiance:", trustedError);
-      }
-
-      // Supprimer les documents de directives
+      // Supprimer les documents PDF
       const { error: documentsError } = await supabase
-        .from("user_documents")
+        .from("pdf_documents")
         .delete()
-        .eq("user_id", user.id)
-        .eq("document_type", "directive");
+        .eq("user_id", user.id);
 
       if (documentsError) {
         console.error("Erreur suppression documents:", documentsError);
+      }
+
+      // Supprimer les directives
+      const { error: directivesError } = await supabase
+        .from("directives")
+        .delete()
+        .eq("user_id", user.id);
+
+      if (directivesError) {
+        console.error("Erreur suppression directives:", directivesError);
+      }
+
+      // Supprimer la synthèse du questionnaire
+      const { error: synthesisError } = await supabase
+        .from("questionnaire_synthesis")
+        .delete()
+        .eq("user_id", user.id);
+
+      if (synthesisError) {
+        console.error("Erreur suppression synthèse:", synthesisError);
       }
 
       toast({
@@ -106,7 +115,7 @@ export const DirectivesResetSection: React.FC = () => {
         <CardContent>
           <p className="text-sm text-orange-700 mb-4">
             Cette action supprimera définitivement tous vos questionnaires remplis, 
-            phrases personnalisées, personnes de confiance et documents générés.
+            documents générés et directives sauvegardées.
           </p>
           <Button 
             onClick={() => setShowConfirm(true)}
