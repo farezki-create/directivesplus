@@ -2814,16 +2814,15 @@ export type Database = {
         }[]
       }
       verify_document_access: {
-        Args: {
-          p_access_code: string
-          p_first_name: string
-          p_last_name: string
-          p_birth_date: string
-        }
-        Returns: {
-          document_id: string
-          is_full_access: boolean
-        }[]
+        Args:
+          | Record<PropertyKey, never>
+          | {
+              p_access_code: string
+              p_first_name: string
+              p_last_name: string
+              p_birth_date: string
+            }
+        Returns: undefined
       }
       verify_institution_access: {
         Args: {

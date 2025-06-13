@@ -6,6 +6,8 @@ interface CriticalSymptomAlertProps {
   douleur: number;
   dyspnee: number;
   anxiete: number;
+  fatigue?: number;
+  sommeil?: number;
   className?: string;
 }
 
@@ -13,13 +15,17 @@ export default function CriticalSymptomAlert({
   douleur, 
   dyspnee, 
   anxiete, 
+  fatigue = 0,
+  sommeil = 0,
   className = "" 
 }: CriticalSymptomAlertProps) {
   const criticalSymptoms = [];
   
   if (douleur >= 8) criticalSymptoms.push("Douleur élevée");
   if (dyspnee >= 7) criticalSymptoms.push("Dyspnée sévère");
-  if (anxiete >= 8) criticalSymptoms.push("Anxiété critique");
+  if (anxiete >= 8) criticalSymptoms.push("Anxiété/Angoisse critique");
+  if (fatigue >= 8) criticalSymptoms.push("Fatigue extrême");
+  if (sommeil >= 8) criticalSymptoms.push("Troubles du sommeil sévères");
 
   if (criticalSymptoms.length === 0) return null;
 

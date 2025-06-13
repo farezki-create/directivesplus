@@ -1,4 +1,5 @@
 
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/sonner";
@@ -88,12 +89,12 @@ export function useProfileSubmit({
       
       console.log('✅ [PROFILE-SUBMIT] Mise à jour réussie');
       
-      // Redirection vers l'accueil après succès
+      // Redirection vers l'accueil après succès (délai réduit à 1 seconde)
       setTimeout(() => {
         setFormState('idle');
         setSubmitProgress(0);
         navigate('/', { replace: true });
-      }, 2000);
+      }, 1000);
       
     } catch (error: any) {
       console.error('❌ [PROFILE-SUBMIT] Erreur inattendue:', error);
@@ -112,3 +113,4 @@ export function useProfileSubmit({
     submitProgress
   };
 }
+

@@ -1,273 +1,177 @@
 
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CheckCircle, AlertCircle, AlertTriangle } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "@/hooks/use-toast";
+import { Heart, Save } from "lucide-react";
+import CriticalSymptomAlert from "./CriticalSymptomAlert";
 import { useSymptomAlerts } from "@/hooks/useSymptomAlerts";
 
-interface SymptomTrackerProps {
-  patientId?: string;
-}
-
-export default function SymptomTracker({ patientId }: SymptomTrackerProps) {
+export default function SymptomTracker() {
   const { user } = useAuth();
   const { checkAndCreateAlert, alerting } = useSymptomAlerts();
-  const [douleur, setDouleur] = useState([0]);
-  const [dyspnee, setDyspnee] = useState([0]);
-  const [anxiete, setAnxiete] = useState([0]);
+  
+  const [symptoms, setSymptoms] = useState({
+    douleur: 0,
+    dyspnee: 0,
+    anxiete: 0,
+    fatigue: 0,
+    sommeil: 0
+  });
+  
   const [remarque, setRemarque] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
-  const [messageType, setMessageType] = useState<"success" | "error" | "warning" | null>(null);
+  const [saving, setSaving] = useState(false);
 
-  // Utiliser l'ID utilisateur connecté si patientId n'est pas fourni
-  const currentPatientId = patientId || user?.id;
+  const handleSymptomChange = (symptom: string, value: number[]) => {
+    setSymptoms(prev => ({
+      ...prev,
+      [symptom]: value[0]
+    }));
+  };
 
-  const handleSubmit = async () => {
-    if (!currentPatientId) {
-      setMessage("Erreur: Utilisateur non connecté");
-      setMessageType("error");
+  const handleSave = async () => {
+    if (!user?.id) {
+      toast({
+        title: "Erreur",
+        description: "Vous devez être connecté pour enregistrer vos symptômes",
+        variant: "destructive"
+      });
       return;
     }
 
-    setLoading(true);
-    setMessage("");
-    setMessageType(null);
+    setSaving(true);
 
     try {
-      const { error } = await supabase.from("symptom_tracking").insert({
-        patient_id: currentPatientId,
-        douleur: douleur[0],
-        dyspnee: dyspnee[0],
-        anxiete: anxiete[0],
-        remarque: remarque.trim() || null,
-        auteur: user?.email || "patient"
-      });
+      const { error } = await supabase
+        .from("symptom_tracking")
+        .insert({
+          patient_id: user.id,
+          douleur: symptoms.douleur,
+          dyspnee: symptoms.dyspnee,
+          anxiete: symptoms.anxiete,
+          fatigue: symptoms.fatigue,
+          sommeil: symptoms.sommeil,
+          remarque: remarque || null,
+          auteur: user.email || "patient"
+        });
 
       if (error) {
-        console.error("Erreur Supabase:", error);
-        setMessage("Erreur lors de l'enregistrement: " + error.message);
-        setMessageType("error");
-      } else {
-        // Vérifier et créer des alertes si nécessaire
-        const alertCreated = await checkAndCreateAlert(douleur[0], dyspnee[0], anxiete[0]);
-        
-        if (alertCreated) {
-          setMessage("Symptômes enregistrés avec succès ! Une alerte a été envoyée à l'équipe soignante en raison de valeurs critiques.");
-          setMessageType("warning");
-        } else {
-          setMessage("Symptômes enregistrés avec succès !");
-          setMessageType("success");
-        }
-        
-        // Réinitialiser le formulaire
-        setRemarque("");
-        setDouleur([0]);
-        setDyspnee([0]);
-        setAnxiete([0]);
+        console.error("Erreur lors de l'enregistrement:", error);
+        toast({
+          title: "Erreur",
+          description: "Impossible d'enregistrer vos symptômes",
+          variant: "destructive"
+        });
+        return;
       }
-    } catch (error) {
-      console.error("Erreur:", error);
-      setMessage("Erreur inattendue lors de l'enregistrement");
-      setMessageType("error");
+
+      // Vérifier les seuils critiques et créer une alerte si nécessaire
+      await checkAndCreateAlert(symptoms.douleur, symptoms.dyspnee, symptoms.anxiete);
+
+      toast({
+        title: "Symptômes enregistrés",
+        description: "Vos symptômes ont été sauvegardés avec succès"
+      });
+
+      // Reset du formulaire
+      setSymptoms({
+        douleur: 0,
+        dyspnee: 0,
+        anxiete: 0,
+        fatigue: 0,
+        sommeil: 0
+      });
+      setRemarque("");
+
+    } catch (err) {
+      console.error("Erreur:", err);
+      toast({
+        title: "Erreur",
+        description: "Une erreur inattendue s'est produite",
+        variant: "destructive"
+      });
+    } finally {
+      setSaving(false);
     }
-
-    setLoading(false);
   };
 
-  const getSeverityColor = (value: number) => {
-    if (value <= 3) return "text-green-600";
-    if (value <= 6) return "text-yellow-600";
-    return "text-red-600";
-  };
-
-  const getSeverityLabel = (value: number) => {
-    if (value === 0) return "Aucun";
-    if (value <= 3) return "Léger";
-    if (value <= 6) return "Modéré";
-    return "Sévère";
-  };
-
-  const isCriticalValue = (value: number, type: "douleur" | "dyspnee" | "anxiete") => {
-    if (type === "douleur" && value >= 8) return true;
-    if (type === "dyspnee" && value >= 7) return true;
-    if (type === "anxiete" && value >= 8) return true;
-    return false;
+  const symptomLabels = {
+    douleur: "Douleur",
+    dyspnee: "Dyspnée (essoufflement)",
+    anxiete: "Anxiété/Angoisse",
+    fatigue: "Fatigue/État général",
+    sommeil: "Sommeil/Confort global"
   };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
+    <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <span>📊</span>
-          Suivi des Symptômes
+          <Heart className="h-6 w-6 text-pink-600" />
+          Évaluation des symptômes
         </CardTitle>
-        <CardDescription>
-          Évaluez vos symptômes sur une échelle de 0 à 10
-        </CardDescription>
       </CardHeader>
-      
       <CardContent className="space-y-6">
-        {/* Douleur */}
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <Label className="text-base font-medium flex items-center gap-2">
-              Douleur
-              {isCriticalValue(douleur[0], "douleur") && (
-                <AlertTriangle className="h-4 w-4 text-red-600" />
-              )}
-            </Label>
-            <span className={`font-semibold ${getSeverityColor(douleur[0])}`}>
-              {douleur[0]}/10 - {getSeverityLabel(douleur[0])}
-            </span>
-          </div>
-          <Slider
-            min={0}
-            max={10}
-            step={1}
-            value={douleur}
-            onValueChange={setDouleur}
-            className="w-full"
-          />
-          {isCriticalValue(douleur[0], "douleur") && (
-            <Alert className="border-red-200 bg-red-50">
-              <AlertTriangle className="h-4 w-4 text-red-600" />
-              <AlertDescription className="text-red-800">
-                Niveau de douleur critique détecté. Une alerte sera envoyée à l'équipe soignante.
-              </AlertDescription>
-            </Alert>
-          )}
+        <CriticalSymptomAlert 
+          douleur={symptoms.douleur}
+          dyspnee={symptoms.dyspnee}
+          anxiete={symptoms.anxiete}
+          className="mb-4"
+        />
+
+        <div className="grid gap-6">
+          {Object.entries(symptoms).map(([symptom, value]) => (
+            <div key={symptom} className="space-y-3">
+              <div className="flex justify-between items-center">
+                <Label className="font-medium">
+                  {symptomLabels[symptom as keyof typeof symptomLabels]}
+                </Label>
+                <span className="text-sm font-bold text-gray-600">
+                  {value}/10
+                </span>
+              </div>
+              <Slider
+                value={[value]}
+                onValueChange={(newValue) => handleSymptomChange(symptom, newValue)}
+                max={10}
+                step={1}
+                className="w-full"
+              />
+              <div className="flex justify-between text-xs text-gray-500">
+                <span>Aucun</span>
+                <span>Léger</span>
+                <span>Modéré</span>
+                <span>Sévère</span>
+                <span>Insupportable</span>
+              </div>
+            </div>
+          ))}
         </div>
 
-        {/* Dyspnée */}
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <Label className="text-base font-medium flex items-center gap-2">
-              Dyspnée (Essoufflement)
-              {isCriticalValue(dyspnee[0], "dyspnee") && (
-                <AlertTriangle className="h-4 w-4 text-red-600" />
-              )}
-            </Label>
-            <span className={`font-semibold ${getSeverityColor(dyspnee[0])}`}>
-              {dyspnee[0]}/10 - {getSeverityLabel(dyspnee[0])}
-            </span>
-          </div>
-          <Slider
-            min={0}
-            max={10}
-            step={1}
-            value={dyspnee}
-            onValueChange={setDyspnee}
-            className="w-full"
-          />
-          {isCriticalValue(dyspnee[0], "dyspnee") && (
-            <Alert className="border-red-200 bg-red-50">
-              <AlertTriangle className="h-4 w-4 text-red-600" />
-              <AlertDescription className="text-red-800">
-                Niveau de dyspnée critique détecté. Une alerte sera envoyée à l'équipe soignante.
-              </AlertDescription>
-            </Alert>
-          )}
-        </div>
-
-        {/* Anxiété */}
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <Label className="text-base font-medium flex items-center gap-2">
-              Anxiété
-              {isCriticalValue(anxiete[0], "anxiete") && (
-                <AlertTriangle className="h-4 w-4 text-red-600" />
-              )}
-            </Label>
-            <span className={`font-semibold ${getSeverityColor(anxiete[0])}`}>
-              {anxiete[0]}/10 - {getSeverityLabel(anxiete[0])}
-            </span>
-          </div>
-          <Slider
-            min={0}
-            max={10}
-            step={1}
-            value={anxiete}
-            onValueChange={setAnxiete}
-            className="w-full"
-          />
-          {isCriticalValue(anxiete[0], "anxiete") && (
-            <Alert className="border-red-200 bg-red-50">
-              <AlertTriangle className="h-4 w-4 text-red-600" />
-              <AlertDescription className="text-red-800">
-                Niveau d'anxiété critique détecté. Une alerte sera envoyée à l'équipe soignante.
-              </AlertDescription>
-            </Alert>
-          )}
-        </div>
-
-        {/* Remarque */}
         <div className="space-y-2">
-          <Label htmlFor="remarque" className="text-base font-medium">
-            Remarques ou commentaires
-          </Label>
+          <Label htmlFor="remarque">Remarques ou observations</Label>
           <Textarea
             id="remarque"
             value={remarque}
             onChange={(e) => setRemarque(e.target.value)}
-            placeholder="Décrivez vos symptômes ou ajoutez des détails..."
-            rows={3}
-            className="resize-none"
+            placeholder="Décrivez vos sensations, ce qui améliore ou aggrave vos symptômes..."
+            className="min-h-[100px]"
           />
         </div>
 
-        {/* Message de retour */}
-        {message && (
-          <Alert className={
-            messageType === "success" 
-              ? "border-green-200 bg-green-50" 
-              : messageType === "warning"
-              ? "border-orange-200 bg-orange-50"
-              : "border-red-200 bg-red-50"
-          }>
-            {messageType === "success" ? (
-              <CheckCircle className="h-4 w-4 text-green-600" />
-            ) : messageType === "warning" ? (
-              <AlertTriangle className="h-4 w-4 text-orange-600" />
-            ) : (
-              <AlertCircle className="h-4 w-4 text-red-600" />
-            )}
-            <AlertDescription className={
-              messageType === "success" 
-                ? "text-green-800" 
-                : messageType === "warning"
-                ? "text-orange-800"
-                : "text-red-800"
-            }>
-              {message}
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {/* Bouton d'enregistrement */}
         <Button 
-          onClick={handleSubmit} 
-          disabled={loading || alerting || !currentPatientId}
-          className="w-full"
-          size="lg"
+          onClick={handleSave}
+          disabled={saving || alerting}
+          className="w-full bg-pink-600 hover:bg-pink-700"
         >
-          {loading || alerting ? "Enregistrement..." : "Enregistrer les symptômes"}
+          <Save className="h-4 w-4 mr-2" />
+          {saving ? "Enregistrement..." : alerting ? "Création d'alerte..." : "Enregistrer"}
         </Button>
-
-        {!currentPatientId && (
-          <Alert className="border-yellow-200 bg-yellow-50">
-            <AlertCircle className="h-4 w-4 text-yellow-600" />
-            <AlertDescription className="text-yellow-800">
-              Vous devez être connecté pour enregistrer vos symptômes.
-            </AlertDescription>
-          </Alert>
-        )}
       </CardContent>
     </Card>
   );
