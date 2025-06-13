@@ -16,7 +16,7 @@ const profileSchema = z.object({
   firstName: z.string().min(2, "Prénom requis (2 caractères minimum)"),
   lastName: z.string().min(2, "Nom requis (2 caractères minimum)"),
   email: z.string().email("Email invalide").optional(),
-  birthDate: z.date().optional(),
+  birthDate: z.date({ required_error: "Date de naissance requise" }),
   phoneNumber: z.string()
     .regex(/^[0-9+\s-]{6,15}$/, "Numéro de téléphone invalide")
     .optional()

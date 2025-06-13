@@ -47,7 +47,7 @@ export default function PersonalInformationFields() {
         name="birthDate"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Date de naissance</FormLabel>
+            <FormLabel>Date de naissance *</FormLabel>
             <FormControl>
               <ManualDateInput
                 value={field.value}
@@ -115,6 +115,7 @@ function ManualDateInput({ value, onChange }: ManualDateInputProps) {
       value={displayValue}
       onChange={handleInputChange}
       className="w-full"
+      required
     />
   );
 }

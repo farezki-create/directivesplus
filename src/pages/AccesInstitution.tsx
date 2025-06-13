@@ -9,6 +9,7 @@ import { PalliativeCareSection } from "@/components/acces-institution/Palliative
 import { FeedbackSection } from "@/components/acces-institution/FeedbackSection";
 import { SecurityInfoSection } from "@/components/acces-institution/SecurityInfoSection";
 import { ProfessionalFieldsSection } from "@/components/institution-access/ProfessionalFieldsSection";
+import { toast } from "@/hooks/use-toast";
 
 const AccesInstitution = () => {
   const [professionalData, setProfessionalData] = useState({
@@ -71,6 +72,7 @@ const AccesInstitution = () => {
       <footer className="bg-white py-6 border-t mt-auto">
         <div className="container mx-auto px-4 text-center text-gray-500">
           <p>© 2025 DirectivesPlus. Tous droits réservés.</p>
+          <p className="mt-2">Contact: <a href="mailto:contact@mesdirectives.fr" className="text-directiveplus-600 hover:underline">contact@mesdirectives.fr</a></p>
         </div>
       </footer>
       

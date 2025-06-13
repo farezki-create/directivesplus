@@ -3,8 +3,9 @@ import React from "react";
 import Header from "@/components/Header";
 import PageFooter from "@/components/layout/PageFooter";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Heart, CreditCard, Users, Star } from "lucide-react";
+import { ArrowLeft, Heart, CreditCard, Users, Star, Building2, Mail, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 const Soutenir = () => {
   const navigate = useNavigate();
@@ -37,39 +38,113 @@ const Soutenir = () => {
             </p>
           </div>
 
+          {/* Options de don */}
           <div className="grid md:grid-cols-3 gap-8 mb-12">
-            <div className="bg-white border border-gray-200 rounded-lg p-6 text-center shadow-sm">
-              <CreditCard className="w-12 h-12 text-green-600 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-3">Don ponctuel</h3>
-              <p className="text-gray-600 mb-4">
-                Faites un don unique pour soutenir notre mission.
-              </p>
-              <Button className="w-full">
-                Faire un don
-              </Button>
-            </div>
+            <Card className="shadow-lg hover:shadow-xl transition-shadow">
+              <CardHeader className="text-center">
+                <CreditCard className="w-12 h-12 text-green-600 mx-auto mb-4" />
+                <CardTitle className="text-xl">Paiement par carte</CardTitle>
+                <CardDescription>
+                  Paiement sécurisé par carte bancaire
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <Check className="w-4 h-4 text-green-600" />
+                  <span>Paiement instantané</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <Check className="w-4 h-4 text-green-600" />
+                  <span>Sécurisé SSL</span>
+                </div>
+                <Button className="w-full bg-green-600 hover:bg-green-700">
+                  Faire un don par carte
+                </Button>
+              </CardContent>
+            </Card>
 
-            <div className="bg-white border border-gray-200 rounded-lg p-6 text-center shadow-sm">
-              <Users className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-3">Parrainage</h3>
-              <p className="text-gray-600 mb-4">
-                Parrainez DirectivesPlus et bénéficiez d'avantages exclusifs.
-              </p>
-              <Button variant="outline" className="w-full">
-                En savoir plus
-              </Button>
-            </div>
+            <Card className="shadow-lg hover:shadow-xl transition-shadow">
+              <CardHeader className="text-center">
+                <Building2 className="w-12 h-12 text-blue-600 mx-auto mb-4" />
+                <CardTitle className="text-xl">Virement bancaire</CardTitle>
+                <CardDescription>
+                  Don par virement bancaire SEPA
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="bg-gray-50 p-3 rounded-lg text-sm">
+                  <p><strong>IBAN:</strong> FR76 XXXX XXXX XXXX XXXX XXXX XXX</p>
+                  <p><strong>BIC:</strong> BNPAFRPPXXX</p>
+                  <p><strong>Bénéficiaire:</strong> DirectivesPlus</p>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <Check className="w-4 h-4 text-green-600" />
+                  <span>Aucuns frais</span>
+                </div>
+                <Button variant="outline" className="w-full">
+                  Copier les coordonnées
+                </Button>
+              </CardContent>
+            </Card>
 
-            <div className="bg-white border border-gray-200 rounded-lg p-6 text-center shadow-sm">
-              <Star className="w-12 h-12 text-yellow-600 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-3">Bénévolat</h3>
-              <p className="text-gray-600 mb-4">
-                Contribuez en tant que bénévole à notre communauté.
-              </p>
-              <Button variant="outline" className="w-full">
-                Nous rejoindre
-              </Button>
-            </div>
+            <Card className="shadow-lg hover:shadow-xl transition-shadow">
+              <CardHeader className="text-center">
+                <Mail className="w-12 h-12 text-purple-600 mx-auto mb-4" />
+                <CardTitle className="text-xl">Envoi de chèque</CardTitle>
+                <CardDescription>
+                  Don par courrier postal
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="bg-gray-50 p-3 rounded-lg text-sm">
+                  <p><strong>À l'ordre de:</strong> DirectivesPlus</p>
+                  <p><strong>Adresse:</strong></p>
+                  <p>DirectivesPlus<br/>
+                     123 Rue de la Santé<br/>
+                     75014 Paris, France</p>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <Check className="w-4 h-4 text-green-600" />
+                  <span>Accusé de réception</span>
+                </div>
+                <Button variant="outline" className="w-full">
+                  Imprimer l'adresse
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Section supplémentaire */}
+          <div className="grid md:grid-cols-2 gap-8 mb-12">
+            <Card>
+              <CardHeader>
+                <Users className="w-8 h-8 text-blue-600 mb-2" />
+                <CardTitle>Parrainage</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 mb-4">
+                  Parrainez DirectivesPlus et bénéficiez d'avantages exclusifs pour votre institution.
+                </p>
+                <Button variant="outline" className="w-full">
+                  En savoir plus
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <Star className="w-8 h-8 text-yellow-600 mb-2" />
+                <CardTitle>Bénévolat</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 mb-4">
+                  Contribuez en tant que bénévole à notre communauté et partagez votre expertise.
+                </p>
+                <Button variant="outline" className="w-full">
+                  Nous rejoindre
+                </Button>
+              </CardContent>
+            </Card>
           </div>
 
           <div className="bg-gray-50 rounded-lg p-8">
@@ -112,8 +187,10 @@ const Soutenir = () => {
             <p className="text-gray-600 mb-4">
               Vous avez des questions sur les façons de soutenir DirectivesPlus ?
             </p>
-            <Button variant="outline">
-              Nous contacter
+            <Button variant="outline" asChild>
+              <a href="mailto:contact@mesdirectives.fr">
+                Nous contacter
+              </a>
             </Button>
           </div>
         </div>
