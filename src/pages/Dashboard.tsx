@@ -13,7 +13,6 @@ import {
   Settings,
   Activity
 } from "lucide-react";
-import { DirectivesResetSection } from "@/components/directives/DirectivesResetSection";
 
 const Dashboard = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -119,14 +118,6 @@ const Dashboard = () => {
                 </Card>
               );
             })}
-          </div>
-
-          {/* Section de réinitialisation */}
-          <div className="mt-12">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-              Gestion avancée
-            </h2>
-            <DirectivesResetSection />
           </div>
 
           {/* Statistiques rapides */}

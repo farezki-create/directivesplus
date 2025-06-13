@@ -3,6 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import AppNavigation from "@/components/AppNavigation";
 import DirectivesGrid from "@/components/DirectivesGrid";
 import InfoSteps from "@/components/InfoSteps";
+import { DirectivesResetSection } from "@/components/directives/DirectivesResetSection";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -48,6 +49,14 @@ const Rediger = () => {
         <InfoSteps />
         
         <DirectivesGrid />
+        
+        {/* Section de réinitialisation déplacée ici */}
+        <div className="mt-12 max-w-2xl mx-auto">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
+            Gestion avancée
+          </h2>
+          <DirectivesResetSection />
+        </div>
       </main>
       
       <footer className="bg-white py-6 border-t">
