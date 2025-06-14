@@ -3,24 +3,17 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import AppNavigation from "@/components/AppNavigation";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, User, AlertCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useAccessCard } from "@/hooks/useAccessCard";
-import AccessCard from "@/components/carte-acces/AccessCard";
-import ActionButtons from "@/components/carte-acces/ActionButtons";
-import InstructionsCard from "@/components/carte-acces/InstructionsCard";
+import CarteAccesHeader from "@/components/carte-acces/CarteAccesHeader";
+import ProfileIncompleteAlert from "@/components/carte-acces/ProfileIncompleteAlert";
+import QRCodeStatus from "@/components/carte-acces/QRCodeStatus";
+import DirectivesAccessSection from "@/components/carte-acces/DirectivesAccessSection";
+import PalliativeCareSection from "@/components/carte-acces/PalliativeCareSection";
 import { InstitutionCodeSection } from "@/components/directives/InstitutionCodeSection";
-import { PalliativeCareAccessCard } from "@/components/carte-acces/PalliativeCareAccessCard";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const CarteAcces = () => {
-  const {
-    isAuthenticated,
-    isLoading,
-    profile,
-    user
-  } = useAuth();
+  const { isAuthenticated, isLoading, profile, user } = useAuth();
   const navigate = useNavigate();
   const {
     codeAcces,
@@ -55,9 +48,7 @@ const CarteAcces = () => {
         variant: "destructive"
       });
       navigate("/auth", {
-        state: {
-          from: "/carte-acces"
-        }
+        state: { from: "/carte-acces" }
       });
     }
   }, [isAuthenticated, isLoading, navigate]);
@@ -98,115 +89,32 @@ const CarteAcces = () => {
       
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
-          <div className="mb-6">
-            <Button variant="outline" onClick={() => navigate("/rediger")} className="flex items-center gap-2">
-              <ArrowLeft size={16} />
-              Retour
-            </Button>
-          </div>
+          <CarteAccesHeader />
+          
+          <ProfileIncompleteAlert isProfileIncomplete={isProfileIncomplete} />
+          
+          <QRCodeStatus isGenerating={isGenerating} isQrCodeValid={isQrCodeValid} />
 
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-directiveplus-800 mb-4">
-              Cartes d'Accès
-            </h1>
-            <p className="text-lg text-gray-600">
-              Vos cartes d'accès pour les professionnels de santé
-            </p>
-          </div>
-
-          {/* Alerte profil incomplet */}
-          {isProfileIncomplete && (
-            <Alert className="mb-6 bg-blue-50 border-blue-200">
-              <User className="h-4 w-4" />
-              <AlertDescription>
-                <strong>Complétez votre profil</strong> pour personnaliser votre carte d'accès.{" "}
-                <Button 
-                  variant="link" 
-                  className="p-0 h-auto font-normal underline text-blue-600"
-                  onClick={() => navigate("/profile")}
-                >
-                  Aller au profil
-                </Button>
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {/* Status de génération */}
-          {isGenerating && (
-            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <h3 className="font-medium text-blue-800 mb-2">🔄 Génération du QR Code en cours</h3>
-              <p className="text-sm text-blue-700">
-                Nous préparons votre carte d'accès avec le QR code pointant vers vos directives. 
-                Cela peut prendre quelques secondes...
-              </p>
-            </div>
-          )}
-
-          {/* Statut QR Code */}
-          {!isGenerating && (
-            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-              <h3 className="font-medium text-green-800 mb-2">
-                {isQrCodeValid ? "✅ QR Code généré avec succès" : "⚠️ QR Code en préparation"}
-              </h3>
-              <p className="text-sm text-green-700">
-                {isQrCodeValid 
-                  ? "Votre carte d'accès est prête avec un QR code fonctionnel."
-                  : "Le QR code sera généré automatiquement. Actualisation en cours..."
-                }
-              </p>
-            </div>
-          )}
-
-          {/* Grid des cartes */}
           <div className="space-y-12">
-            {/* Carte d'accès aux directives anticipées */}
-            <div className="space-y-6">
-              <div className="text-center">
-                <h2 className="text-2xl font-bold text-directiveplus-800 mb-2">
-                  Carte d'Accès aux Directives Anticipées
-                </h2>
-                <p className="text-gray-600">
-                  Pour l'accès aux directives anticipées en situation d'urgence
-                </p>
-              </div>
+            <DirectivesAccessSection
+              firstName={firstName}
+              lastName={lastName}
+              birthDate={birthDate}
+              codeAcces={codeAcces}
+              qrCodeUrl={qrCodeUrl}
+              isGenerating={isGenerating}
+              isQrCodeValid={isQrCodeValid}
+              onPrint={handlePrint}
+              onDownload={handleDownload}
+            />
 
-              <ActionButtons onPrint={handlePrint} onDownload={handleDownload} />
-
-              {/* Carte d'accès format bancaire */}
-              <div className="flex justify-center">
-                <AccessCard 
-                  firstName={firstName} 
-                  lastName={lastName} 
-                  birthDate={birthDate} 
-                  codeAcces={codeAcces} 
-                  qrCodeUrl={qrCodeUrl}
-                  isGenerating={isGenerating}
-                  isQrCodeValid={isQrCodeValid}
-                />
-              </div>
-
-              <InstructionsCard codeAcces={codeAcces} />
-            </div>
-
-            {/* Nouvelle carte d'accès suivi palliatif */}
-            <div className="space-y-6 border-t pt-8">
-              <div className="text-center">
-                <h2 className="text-2xl font-bold text-pink-800 mb-2">
-                  Carte d'Accès Suivi Palliatif
-                </h2>
-                <p className="text-gray-600">
-                  Pour le partage sécurisé du suivi des symptômes avec les professionnels
-                </p>
-              </div>
-
-              <PalliativeCareAccessCard 
-                patientId={user?.id}
-                patientName={firstName && lastName ? `${firstName} ${lastName}` : undefined}
-              />
-            </div>
+            <PalliativeCareSection 
+              userId={user?.id}
+              firstName={firstName}
+              lastName={lastName}
+            />
           </div>
 
-          {/* Section Accès Institution */}
           <div className="mt-8">
             <InstitutionCodeSection />
           </div>
