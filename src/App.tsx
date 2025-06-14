@@ -31,6 +31,7 @@ import Auth from "./pages/Auth";
 import SuiviPalliatif from "./pages/SuiviPalliatif";
 import AccesSoinsPalliatifs from "./pages/AccesSoinsPalliatifs";
 import PersonneConfiance from "./pages/PersonneConfiance";
+import Community from "./pages/Community";
 
 // Pages de questionnaires
 import AvisGeneral from "./pages/AvisGeneral";
@@ -79,6 +80,7 @@ function App() {
                 <Route path="/suivi-palliatif" element={<SuiviPalliatif />} />
                 <Route path="/acces-soins-palliatifs" element={<AccesSoinsPalliatifs />} />
                 <Route path="/personne-confiance" element={<PersonneConfiance />} />
+                <Route path="/community" element={<Community />} />
                 
                 {/* Routes des questionnaires */}
                 <Route path="/avis-general" element={<AvisGeneral />} />
