@@ -439,7 +439,7 @@ export const SupabaseWarningsAnalyzer = () => {
                 <div className="font-medium">Actions immédiates recommandées :</div>
                 <ul className="list-disc list-inside text-sm space-y-1">
                   <li>Corriger les problèmes CRITIQUES en priorité</li>
-                  <li>Vérifier la configuration SMTP dans Auth > Email Templates</li>
+                  <li>Vérifier la configuration SMTP dans Auth &gt; Email Templates</li>
                   <li>Réviser les politiques RLS sur toutes les tables sensibles</li>
                   <li>Nettoyer les fonctions database non utilisées</li>
                   <li>Configurer la limitation de taux sur les endpoints sensibles</li>
