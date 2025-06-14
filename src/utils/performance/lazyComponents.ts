@@ -15,6 +15,14 @@ export const LazySupabaseWarningsAnalyzer = lazy(() => import('@/components/audi
 export const LazySimpleOTPAuth = lazy(() => import('@/components/auth/SimpleOTPAuth'));
 export const LazyPdfViewerContainer = lazy(() => import('@/components/pdf-viewer/PdfViewerContainer'));
 
+// Pages de questionnaires
+export const LazyAvisGeneral = lazy(() => import('@/pages/AvisGeneral'));
+export const LazyMaintienVie = lazy(() => import('@/pages/MaintienVie'));
+export const LazyMaladieAvancee = lazy(() => import('@/pages/MaladieAvancee'));
+export const LazyGoutsPeurs = lazy(() => import('@/pages/GoutsPeurs'));
+export const LazyPersonneConfiance = lazy(() => import('@/pages/PersonneConfiance'));
+export const LazyExemplesPhrases = lazy(() => import('@/pages/ExemplesPhrases'));
+
 // Fallback de chargement
 export const LoadingFallback = () => (
   <div className="min-h-screen bg-gray-50 flex items-center justify-center">
