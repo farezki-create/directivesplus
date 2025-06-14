@@ -20,7 +20,7 @@ import { Link } from "react-router-dom";
 import AppNavigation from "@/components/AppNavigation";
 import SupabaseAuditDashboard from "./SupabaseAuditDashboard";
 import SupabaseOptimizationPanel from "./SupabaseOptimizationPanel";
-import SecurityAuditDashboard from "@/components/security/SecurityAuditDashboard";
+import SecurityAuditReport from "./SecurityAuditReport";
 import SystemMonitoringDashboard from "./SystemMonitoringDashboard";
 import UserManagementDashboard from "./UserManagementDashboard";
 import InstitutionManagement from "./InstitutionManagement";
@@ -218,7 +218,7 @@ const AdminMainDashboard = () => {
             </TabsContent>
 
             <TabsContent value="security">
-              <SecurityAuditDashboard />
+              <SecurityAuditReport />
             </TabsContent>
 
             <TabsContent value="database">

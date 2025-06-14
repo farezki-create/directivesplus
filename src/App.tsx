@@ -26,6 +26,7 @@ import AuthAudit from "./pages/AuthAudit";
 import DirectivesInfo from "./pages/DirectivesInfo";
 import Soutenir from "./pages/Soutenir";
 import AuthAuditPage from "./features/auth/AuthAuditPage";
+import Auth from "./pages/Auth";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ function App() {
             <ScrollToTop />
             <Routes>
               <Route path="/" element={<Index />} />
+              <Route path="/auth" element={<Auth />} />
               <Route path="/rediger" element={<Rediger />} />
               <Route path="/synthesis" element={<Synthesis />} />
               <Route path="/dashboard" element={<Dashboard />} />
