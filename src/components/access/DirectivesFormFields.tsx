@@ -3,7 +3,6 @@ import React from "react";
 import { UseFormReturn } from "react-hook-form";
 import FormField from "./FormField";
 import SecurityAlerts from "./SecurityAlerts";
-import { FormField as HookFormField } from "@/components/ui/form";
 import DatePickerField from "./calendar/DatePickerField";
 
 interface DirectivesFormFieldsProps {
@@ -12,6 +11,8 @@ interface DirectivesFormFieldsProps {
   blockedAccess: boolean;
   errorMessage: string | null;
   remainingAttempts: number | null;
+  calendarDate: Date;
+  setCalendarDate: (date: Date) => void;
 }
 
 const DirectivesFormFields: React.FC<DirectivesFormFieldsProps> = ({
@@ -20,6 +21,8 @@ const DirectivesFormFields: React.FC<DirectivesFormFieldsProps> = ({
   blockedAccess,
   errorMessage,
   remainingAttempts,
+  calendarDate,
+  setCalendarDate,
 }) => {
   return (
     <div className="space-y-4">
@@ -39,16 +42,11 @@ const DirectivesFormFields: React.FC<DirectivesFormFieldsProps> = ({
         disabled={loading || blockedAccess}
       />
       
-      <HookFormField
+      <DatePickerField 
         control={form.control}
-        name="birthDate"
-        render={({ field }) => (
-          <DatePickerField 
-            value={field.value}
-            onChange={field.onChange}
-            disabled={loading || blockedAccess}
-          />
-        )}
+        loading={loading || blockedAccess}
+        calendarDate={calendarDate}
+        setCalendarDate={setCalendarDate}
       />
       
       <FormField 

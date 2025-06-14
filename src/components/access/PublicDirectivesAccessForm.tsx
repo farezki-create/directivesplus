@@ -39,6 +39,7 @@ const PublicDirectivesAccessForm: React.FC<PublicDirectivesAccessFormProps> = ({
       firstName: "",
       lastName: "",
       accessCode: "",
+      birthDate: undefined,
     },
   });
 
