@@ -34,21 +34,12 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
     showToast: false 
   });
 
-  const isRateLimitActive = rateLimitExpiry ? new Date() < rateLimitExpiry : false;
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
   useEffect(() => {
     if (rateLimitExpiry && new Date() >= rateLimitExpiry) {
-      setRateLimitExpiry(null);
+      resetRateLimit();
       setError('');
     }
-  }, [rateLimitExpiry]);
+  }, [rateLimitExpiry, resetRateLimit]);
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
