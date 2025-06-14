@@ -10,18 +10,18 @@ export const useAccessCardGeneration = () => {
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
 
   useEffect(() => {
-    if (user && profile) {
+    if (user) {
+      console.log("AccessCardGeneration - Starting generation for user:", {
+        userId: user.id,
+        hasProfile: !!profile,
+        email: user.email
+      });
+
       // Générer un code d'accès institution basé sur l'ID utilisateur
       const generatedCode = `DA${user.id.substring(0, 8).toUpperCase()}`;
       setCodeAcces(generatedCode);
       
-      console.log("AccessCardGeneration - Generating for user:", {
-        userId: user.id,
-        profile: profile,
-        generatedCode
-      });
-      
-      // Récupérer le document des directives anticipées
+      // Générer le QR code même sans profil complet
       generateQRCodeForDirectives(user.id);
     }
   }, [user, profile]);
@@ -55,17 +55,15 @@ export const useAccessCardGeneration = () => {
           finalUrl = document.file_path;
         } else if (document.file_path.startsWith('data:')) {
           // Data URL - créer une URL de visualisation
-          finalUrl = `${window.location.origin}/pdf-viewer?id=${document.id}&direct=true`;
+          finalUrl = `${window.location.origin}/pdf-viewer/${document.id}`;
         } else {
           // Chemin relatif - construire l'URL complète
-          finalUrl = `${window.location.origin}/pdf-viewer?id=${document.id}`;
+          finalUrl = `${window.location.origin}/pdf-viewer/${document.id}`;
         }
         
-        console.log("AccessCardGeneration - Generated URL:", {
+        console.log("AccessCardGeneration - Generated URL from PDF:", {
           originalPath: document.file_path,
           finalUrl,
-          urlType: document.file_path.startsWith('http') ? 'direct' : 
-                   document.file_path.startsWith('data:') ? 'data' : 'relative',
           urlLength: finalUrl.length
         });
         
@@ -91,7 +89,7 @@ export const useAccessCardGeneration = () => {
 
       if (!directivesError && directives && directives.length > 0) {
         const directive = directives[0];
-        const directiveUrl = `${window.location.origin}/pdf-viewer?id=${directive.id}&type=directive`;
+        const directiveUrl = `${window.location.origin}/pdf-viewer/${directive.id}?type=directive`;
         
         console.log("AccessCardGeneration - Generated directive URL:", {
           directiveUrl,
@@ -103,25 +101,28 @@ export const useAccessCardGeneration = () => {
         return;
       }
 
-      // 3. Fallback - utiliser mes-directives avec paramètre d'accès
-      console.log("AccessCardGeneration - No documents found, using fallback");
-      const fallbackUrl = `${window.location.origin}/mes-directives?access=card&user=${userId.substring(0, 8)}`;
+      // 3. Fallback amélioré - créer une URL vers mes-directives avec paramètres d'accès
+      console.log("AccessCardGeneration - No documents found, using improved fallback");
+      const fallbackUrl = `${window.location.origin}/mes-directives?access=emergency&code=${generatedCode}`;
       setQrCodeUrl(fallbackUrl);
+      
+      console.log("AccessCardGeneration - Fallback URL generated:", fallbackUrl);
       
     } catch (error) {
       console.error("AccessCardGeneration - Error during generation:", error);
-      // En cas d'erreur, utiliser une URL de fallback simple
-      const fallbackUrl = `${window.location.origin}/mes-directives`;
-      setQrCodeUrl(fallbackUrl);
+      // En cas d'erreur, utiliser une URL de fallback simple mais fonctionnelle
+      const errorFallbackUrl = `${window.location.origin}/directives-access?emergency=true&user=${userId.substring(0, 8)}`;
+      setQrCodeUrl(errorFallbackUrl);
+      console.log("AccessCardGeneration - Error fallback URL:", errorFallbackUrl);
     } finally {
       setIsGenerating(false);
     }
   };
 
-  // Validation robuste de l'URL générée
+  // Validation améliorée de l'URL générée
   const isQrCodeValid = qrCodeUrl && 
                        qrCodeUrl.trim() !== '' && 
-                       qrCodeUrl.length > 20 && // URL plus longue que minimum
+                       qrCodeUrl.length > 10 && // URL minimum viable
                        (qrCodeUrl.startsWith('http://') || qrCodeUrl.startsWith('https://')) &&
                        !isGenerating;
 

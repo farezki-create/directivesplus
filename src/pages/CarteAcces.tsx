@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import AppNavigation from "@/components/AppNavigation";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, User, AlertCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useAccessCard } from "@/hooks/useAccessCard";
 import AccessCard from "@/components/carte-acces/AccessCard";
@@ -12,6 +12,7 @@ import ActionButtons from "@/components/carte-acces/ActionButtons";
 import InstructionsCard from "@/components/carte-acces/InstructionsCard";
 import { InstitutionCodeSection } from "@/components/directives/InstitutionCodeSection";
 import { PalliativeCareAccessCard } from "@/components/carte-acces/PalliativeCareAccessCard";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const CarteAcces = () => {
   const {
@@ -78,12 +79,13 @@ const CarteAcces = () => {
   const firstName = profile?.first_name || "";
   const lastName = profile?.last_name || "";
   const birthDate = profile?.birth_date ? new Date(profile.birth_date).toLocaleDateString('fr-FR') : "";
+  const isProfileIncomplete = !firstName || !lastName || !birthDate;
 
   console.log("CarteAcces - Final profile data:", {
     firstName,
     lastName,
     birthDate,
-    profileComplete: !!(firstName && lastName && birthDate),
+    profileComplete: !isProfileIncomplete,
     qrCodeFinal: qrCodeUrl,
     qrCodeLength: qrCodeUrl?.length || 0,
     isGenerating,
@@ -112,6 +114,23 @@ const CarteAcces = () => {
             </p>
           </div>
 
+          {/* Alerte profil incomplet */}
+          {isProfileIncomplete && (
+            <Alert className="mb-6 bg-blue-50 border-blue-200">
+              <User className="h-4 w-4" />
+              <AlertDescription>
+                <strong>Complétez votre profil</strong> pour personnaliser votre carte d'accès.{" "}
+                <Button 
+                  variant="link" 
+                  className="p-0 h-auto font-normal underline text-blue-600"
+                  onClick={() => navigate("/profile")}
+                >
+                  Aller au profil
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
+
           {/* Status de génération */}
           {isGenerating && (
             <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
@@ -119,6 +138,21 @@ const CarteAcces = () => {
               <p className="text-sm text-blue-700">
                 Nous préparons votre carte d'accès avec le QR code pointant vers vos directives. 
                 Cela peut prendre quelques secondes...
+              </p>
+            </div>
+          )}
+
+          {/* Statut QR Code */}
+          {!isGenerating && (
+            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <h3 className="font-medium text-green-800 mb-2">
+                {isQrCodeValid ? "✅ QR Code généré avec succès" : "⚠️ QR Code en préparation"}
+              </h3>
+              <p className="text-sm text-green-700">
+                {isQrCodeValid 
+                  ? "Votre carte d'accès est prête avec un QR code fonctionnel."
+                  : "Le QR code sera généré automatiquement. Actualisation en cours..."
+                }
               </p>
             </div>
           )}
