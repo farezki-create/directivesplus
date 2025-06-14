@@ -29,10 +29,9 @@ export default defineConfig(({ mode }) => ({
           // Chunk vendor pour les dépendances principales
           vendor: ['react', 'react-dom'],
           
-          // Chunk UI pour les composants d'interface
+          // Chunk UI pour les composants d'interface - seulement les packages installés
           ui: [
             '@radix-ui/react-dialog',
-            '@radix-ui/react-button',
             '@radix-ui/react-card',
             '@radix-ui/react-alert',
             '@radix-ui/react-badge'
@@ -55,22 +54,7 @@ export default defineConfig(({ mode }) => ({
           icons: ['lucide-react'],
           
           // Chunk charts pour les graphiques
-          charts: ['recharts'],
-          
-          // Chunks par fonctionnalité
-          auth: [
-            'src/components/auth',
-            'src/features/auth'
-          ],
-          admin: [
-            'src/components/admin',
-            'src/pages/AdminMainDashboard'
-          ],
-          pdf: [
-            'src/components/pdf-viewer',
-            'src/utils/pdfGenerator',
-            'jspdf'
-          ]
+          charts: ['recharts']
         }
       }
     },
