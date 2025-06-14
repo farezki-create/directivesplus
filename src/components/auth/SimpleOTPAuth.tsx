@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -105,7 +104,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
         });
       } else {
         setError('Erreur lors de l\'envoi du code. Veuillez réessayer.');
-        await handleAuthError({ error: err, operation: 'signInWithOtp', showToast: true });
+        await handleAuthError(err, 'signInWithOtp', "Erreur lors de l'envoi du code OTP. Veuillez réessayer.");
       }
     } finally {
       setLoading(false);
@@ -150,37 +149,30 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
       if (onSuccess) {
         onSuccess();
       } else {
-        // Redirection vers la page de profil par exemple, ou la page d'origine
-        // window.location.href = data.session.user.user_metadata.emailRedirectTo || '/profile';
-        // Pour le moment, on force vers /profile pour simplifier
         window.location.href = '/profile';
       }
 
     } catch (err: any) {
       console.error('❌ [SIMPLE-OTP] Erreur vérification OTP Supabase:', err);
       setError('Code invalide, expiré, ou une erreur est survenue.');
-      await handleAuthError({ error: err, operation: 'verifyOtp', showToast: true, toastMessage: 'Code invalide ou expiré. Veuillez réessayer.' });
+      await handleAuthError(err, 'verifyOtp', 'Code invalide ou expiré. Veuillez réessayer.');
     } finally {
       setLoading(false);
     }
   };
 
   const handleResendCode = async () => {
-    // Pour renvoyer le code, on relance simplement le processus handleEmailSubmit
-    // Assurez-vous que l'email est toujours disponible
     if (!email) {
       setError("L'adresse email n'est plus disponible. Veuillez recommencer.");
       setStep('email');
       return;
     }
-    // Simuler un submit pour renvoyer, qui réutilise la logique de rate limit etc.
     await handleEmailSubmit(new Event('submit') as any as React.FormEvent);
   };
 
   const goBackToEmail = () => {
     setStep('email');
     setOtpCode('');
-    // setEmail(''); // Optionnel: garder l'email ou le vider
     setError('');
   };
 
