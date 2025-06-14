@@ -1,6 +1,5 @@
 
-import { useQuery, UseQueryOptions } from '@tanstack/react-query';
-import { useCallback } from 'react';
+import { useQuery, UseQueryOptions, keepPreviousData } from '@tanstack/react-query';
 
 interface OptimizedQueryOptions<T> extends Omit<UseQueryOptions<T>, 'queryKey' | 'queryFn'> {
   cacheTime?: number;
@@ -45,7 +44,7 @@ export const usePaginatedQuery = <T>(
     queryKey,
     () => queryFn(page, limit),
     {
-      keepPreviousData: true,
+      placeholderData: keepPreviousData,
       ...options
     }
   );
