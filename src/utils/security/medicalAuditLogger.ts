@@ -70,42 +70,36 @@ export class MedicalAuditLogger {
       // Générer une référence d'audit unique
       const auditReference = `HDS-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
 
-      // Préparer les données pour l'insertion
-      const logData = {
-        user_id: data.userId,
-        patient_profile_id: data.patientProfileId,
-        medical_context: data.medicalContext,
-        access_type: data.accessType,
-        medical_justification: data.medicalJustification,
-        resource_type: data.resourceType,
-        resource_id: data.resourceId,
-        action_performed: data.actionPerformed,
-        ip_address: data.ipAddress,
-        user_agent: data.userAgent,
-        geolocation_country: data.geolocationCountry,
-        geolocation_region: data.geolocationRegion,
-        institution_code: data.institutionCode,
-        healthcare_professional_role: data.healthcareRole,
-        hds_compliance_level: data.hdsComplianceLevel || 'standard',
-        consultation_duration_seconds: data.consultationDuration,
-        audit_trail_reference: auditReference,
-        access_granted: data.accessGranted,
-        security_flags: data.securityFlags || {},
-        data_sensitivity_level: this.determineSensitivityLevel(data),
-        session_start: new Date().toISOString()
-      };
-
-      // Insérer dans la table d'audit médical enrichi
-      const { data: result, error } = await supabase
-        .from('medical_access_audit_enhanced')
-        .insert(logData)
-        .select('id, audit_trail_reference')
-        .single();
+      // Utiliser le système de log de sécurité existant avec contexte médical enrichi
+      const { error } = await supabase.rpc('log_security_event_secure', {
+        p_event_type: 'medical_access_hds',
+        p_user_id: data.userId,
+        p_ip_address: data.ipAddress,
+        p_user_agent: data.userAgent,
+        p_details: {
+          audit_reference: auditReference,
+          medical_context: data.medicalContext,
+          access_type: data.accessType,
+          medical_justification: data.medicalJustification,
+          resource_type: data.resourceType,
+          resource_id: data.resourceId,
+          action_performed: data.actionPerformed,
+          institution_code: data.institutionCode,
+          healthcare_role: data.healthcareRole,
+          hds_compliance_level: data.hdsComplianceLevel || 'standard',
+          consultation_duration_seconds: data.consultationDuration,
+          access_granted: data.accessGranted,
+          security_flags: data.securityFlags || {},
+          data_sensitivity_level: this.determineSensitivityLevel(data),
+          geolocation_country: data.geolocationCountry,
+          geolocation_region: data.geolocationRegion,
+          patient_profile_id: data.patientProfileId
+        },
+        p_risk_level: data.hdsComplianceLevel === 'urgence_vitale' ? 'critical' : 'medium'
+      });
 
       if (error) {
         console.error("❌ Error logging medical access:", error);
-        // Fallback vers le système de log de sécurité existant
-        await this.fallbackToSecurityLog(data, auditReference);
         return null;
       }
 
@@ -114,13 +108,11 @@ export class MedicalAuditLogger {
         await this.logCriticalAccess(data, auditReference);
       }
 
-      console.log("✅ Medical access logged successfully:", result.audit_trail_reference);
-      return result.audit_trail_reference;
+      console.log("✅ Medical access logged successfully:", auditReference);
+      return auditReference;
 
     } catch (error) {
       console.error("❌ Failed to log medical access:", error);
-      // Fallback vers le système existant
-      await this.fallbackToSecurityLog(data, `FALLBACK-${Date.now()}`);
       return null;
     }
   }
@@ -215,13 +207,16 @@ export class MedicalAuditLogger {
    */
   static async endConsultationSession(auditReference: string, duration: number): Promise<void> {
     try {
-      await supabase
-        .from('medical_access_audit_enhanced')
-        .update({
-          session_end: new Date().toISOString(),
-          consultation_duration_seconds: duration
-        })
-        .eq('audit_trail_reference', auditReference);
+      // Log la fin de session via le système de sécurité
+      await supabase.rpc('log_security_event_secure', {
+        p_event_type: 'medical_consultation_end',
+        p_details: {
+          audit_reference: auditReference,
+          session_duration_seconds: duration,
+          session_end: new Date().toISOString()
+        },
+        p_risk_level: 'low'
+      });
 
       console.log(`📊 Consultation session ended: ${auditReference}, duration: ${duration}s`);
     } catch (error) {
@@ -235,11 +230,12 @@ export class MedicalAuditLogger {
   static async getAuditReport(startDate: Date, endDate: Date): Promise<any[]> {
     try {
       const { data, error } = await supabase
-        .from('hds_audit_summary')
+        .from('security_audit_logs')
         .select('*')
-        .gte('audit_date', startDate.toISOString())
-        .lte('audit_date', endDate.toISOString())
-        .order('audit_date', { ascending: false });
+        .eq('event_type', 'medical_access_hds')
+        .gte('created_at', startDate.toISOString())
+        .lte('created_at', endDate.toISOString())
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       return data || [];
@@ -267,7 +263,6 @@ export class MedicalAuditLogger {
    */
   private static async logCriticalAccess(data: MedicalAuditLogData, auditReference: string): Promise<void> {
     try {
-      // Utiliser le système de log de sécurité existant pour les accès critiques
       const { error } = await supabase.rpc('log_security_event_secure', {
         p_event_type: 'critical_medical_access',
         p_user_id: data.userId,
@@ -288,36 +283,6 @@ export class MedicalAuditLogger {
       }
     } catch (error) {
       console.error("❌ Failed to log critical medical access:", error);
-    }
-  }
-
-  /**
-   * Fallback vers le système de log de sécurité existant
-   */
-  private static async fallbackToSecurityLog(data: MedicalAuditLogData, auditReference: string): Promise<void> {
-    try {
-      const { error } = await supabase.rpc('log_security_event_secure', {
-        p_event_type: 'medical_access_fallback',
-        p_user_id: data.userId,
-        p_ip_address: data.ipAddress,
-        p_user_agent: data.userAgent,
-        p_details: {
-          audit_reference: auditReference,
-          medical_context: data.medicalContext,
-          access_type: data.accessType,
-          resource_type: data.resourceType,
-          resource_id: data.resourceId,
-          action: data.actionPerformed,
-          fallback_reason: 'enhanced_audit_table_unavailable'
-        },
-        p_risk_level: data.hdsComplianceLevel === 'urgence_vitale' ? 'critical' : 'medium'
-      });
-
-      if (error) {
-        console.error("❌ Fallback logging also failed:", error);
-      }
-    } catch (error) {
-      console.error("❌ Complete logging failure:", error);
     }
   }
 
