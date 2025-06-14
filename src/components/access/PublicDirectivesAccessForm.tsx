@@ -20,7 +20,12 @@ const formSchema = z.object({
   accessCode: z.string().min(1, "Le code d'accès est requis"),
 });
 
-type FormValues = z.infer<typeof formSchema>;
+type FormValues = {
+  firstName: string;
+  lastName: string;
+  birthDate: Date;
+  accessCode: string;
+};
 
 interface PublicDirectivesAccessFormProps {
   onSubmit: (data: FormValues) => void;
@@ -33,7 +38,7 @@ const PublicDirectivesAccessForm: React.FC<PublicDirectivesAccessFormProps> = ({
 }) => {
   const [calendarDate, setCalendarDate] = useState<Date>(new Date(1980, 0, 1));
 
-  // Ensure all default values are present and NOT optional!
+  // defaultValues must be strictly typed!
   const defaultValues: FormValues = {
     firstName: "",
     lastName: "",
@@ -43,7 +48,7 @@ const PublicDirectivesAccessForm: React.FC<PublicDirectivesAccessFormProps> = ({
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues,
+    defaultValues, // strictly typed to FormValues
   });
 
   const handleSubmit = (data: FormValues) => {
@@ -56,7 +61,6 @@ const PublicDirectivesAccessForm: React.FC<PublicDirectivesAccessFormProps> = ({
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)}>
           <CardContent className="space-y-4">
-            {/* The control type is "Control<FormValues>" */}
             <PersonalInfoFields control={form.control} loading={loading} />
             <DatePickerField
               control={form.control}
@@ -81,4 +85,3 @@ const PublicDirectivesAccessForm: React.FC<PublicDirectivesAccessFormProps> = ({
 };
 
 export default PublicDirectivesAccessForm;
-
