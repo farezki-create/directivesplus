@@ -1,35 +1,43 @@
 
 import { toast } from "@/hooks/use-toast";
-import { logDossierSecurityEvent } from "./securityEventLogger";
+import { HDSSessionManager } from "./hdsSessionManager";
 
 /**
- * Default timeout for security sessions (5 minutes)
+ * Timeout HDS conforme (8h max, auto-lock 30min)
+ */
+export const HDS_SESSION_TIMEOUT_MS = 8 * 60 * 60 * 1000; // 8 heures
+export const HDS_INACTIVITY_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
+
+/**
+ * Timeout de sécurité pour documents sensibles (5 minutes)
  */
 export const DEFAULT_SECURITY_TIMEOUT_MS = 5 * 60 * 1000;
 
 /**
- * Creates and manages a security timeout
- * @param onTimeout Function to call when timeout expires
- * @param timeoutMs Timeout in milliseconds
- * @returns Object with timeout management functions
+ * Créer un timeout de sécurité HDS
  */
-export const createSecurityTimeout = (onTimeout: () => void, timeoutMs: number) => {
+export const createHDSSecurityTimeout = (onTimeout: () => void, timeoutMs: number = DEFAULT_SECURITY_TIMEOUT_MS) => {
   let timeoutId: number | null = null;
 
   const startTimeout = () => {
-    // Clear any existing timeout
+    // Vérifier d'abord que la session HDS est valide
+    if (!HDSSessionManager.isSessionValid()) {
+      onTimeout();
+      return null;
+    }
+
+    // Nettoyer le timeout existant
     if (timeoutId) {
       window.clearTimeout(timeoutId);
     }
 
-    // Set new timeout
+    // Créer nouveau timeout
     const newTimeoutId = window.setTimeout(() => {
       toast({
-        title: "Session expirée",
-        description: "Votre session a expiré pour des raisons de sécurité.",
+        title: "Timeout de sécurité",
+        description: "L'accès au document a expiré pour des raisons de sécurité HDS.",
         variant: "destructive"
       });
-      logDossierSecurityEvent("timeout", true);
       onTimeout();
     }, timeoutMs);
 
@@ -49,3 +57,8 @@ export const createSecurityTimeout = (onTimeout: () => void, timeoutMs: number) 
     clearTimeout,
   };
 };
+
+/**
+ * Version legacy pour compatibilité
+ */
+export const createSecurityTimeout = createHDSSecurityTimeout;

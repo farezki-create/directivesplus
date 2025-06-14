@@ -3,38 +3,52 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { logDossierSecurityEvent } from "@/utils/security/securityEventLogger";
-import { createSecurityTimeout, DEFAULT_SECURITY_TIMEOUT_MS } from "@/utils/security/timeoutManager";
+import { createHDSSecurityTimeout, DEFAULT_SECURITY_TIMEOUT_MS } from "@/utils/security/timeoutManager";
+import { HDSSessionManager } from "@/utils/security/hdsSessionManager";
 
 /**
- * Hook to manage dossier security features including activity timeout
+ * Hook pour gérer la sécurité des dossiers avec conformité HDS
  */
 export const useDossierSecurity = () => {
   const [lastActivity, setLastActivity] = useState<number>(Date.now());
   const [timeoutId, setTimeoutId] = useState<number | null>(null);
   const navigate = useNavigate();
 
-  // Reset the activity timer
+  // Reset du timer d'activité
   const resetActivityTimer = useCallback(() => {
     setLastActivity(Date.now());
   }, []);
 
-  // Handle security close (redirect to home)
+  // Gestion de la fermeture sécurisée
   const handleSecurityClose = useCallback(() => {
-    logDossierSecurityEvent("close", true);
+    logDossierSecurityEvent("hds_document_close", true);
     navigate('/');
   }, [navigate]);
 
-  // Start security monitoring
+  // Démarrage du monitoring de sécurité
   const startSecurityMonitoring = useCallback(() => {
-    const { startTimeout } = createSecurityTimeout(() => {
+    // Vérifier d'abord la session HDS
+    if (!HDSSessionManager.isSessionValid()) {
+      navigate('/auth');
+      return;
+    }
+
+    const { startTimeout } = createHDSSecurityTimeout(() => {
+      toast({
+        title: "Timeout HDS",
+        description: "L'accès au document a expiré selon les règles HDS.",
+        variant: "destructive"
+      });
       navigate('/');
     }, DEFAULT_SECURITY_TIMEOUT_MS);
 
     const newTimeoutId = startTimeout();
-    setTimeoutId(newTimeoutId);
+    if (newTimeoutId) {
+      setTimeoutId(newTimeoutId);
+    }
   }, [navigate]);
 
-  // Stop security monitoring
+  // Arrêt du monitoring de sécurité
   const stopSecurityMonitoring = useCallback(() => {
     if (timeoutId) {
       window.clearTimeout(timeoutId);
@@ -42,18 +56,26 @@ export const useDossierSecurity = () => {
     }
   }, [timeoutId]);
 
-  // Reset timer when lastActivity changes
+  // Reset du timer lors des changements d'activité
   useEffect(() => {
     if (timeoutId) {
       window.clearTimeout(timeoutId);
     }
 
-    const { startTimeout } = createSecurityTimeout(() => {
+    // Vérifier la session HDS avant de créer un nouveau timeout
+    if (!HDSSessionManager.isSessionValid()) {
+      navigate('/auth');
+      return;
+    }
+
+    const { startTimeout } = createHDSSecurityTimeout(() => {
       navigate('/');
     }, DEFAULT_SECURITY_TIMEOUT_MS);
 
     const newTimeoutId = startTimeout();
-    setTimeoutId(Number(newTimeoutId));
+    if (newTimeoutId) {
+      setTimeoutId(Number(newTimeoutId));
+    }
 
     return () => {
       if (timeoutId) {
@@ -62,7 +84,7 @@ export const useDossierSecurity = () => {
     };
   }, [lastActivity, navigate]);
 
-  // Clean up on unmount
+  // Nettoyage au démontage
   useEffect(() => {
     return () => {
       if (timeoutId) {
