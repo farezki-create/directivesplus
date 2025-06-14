@@ -32,9 +32,10 @@ export default defineConfig(({ mode }) => ({
           // Chunk UI pour les composants d'interface - seulement les packages installés
           ui: [
             '@radix-ui/react-dialog',
-            '@radix-ui/react-card',
-            '@radix-ui/react-alert',
-            '@radix-ui/react-badge'
+            '@radix-ui/react-alert-dialog',
+            '@radix-ui/react-accordion',
+            '@radix-ui/react-avatar',
+            '@radix-ui/react-checkbox'
           ],
           
           // Chunk utils pour les utilitaires
