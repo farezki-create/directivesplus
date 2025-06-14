@@ -27,6 +27,7 @@ import DirectivesInfo from "./pages/DirectivesInfo";
 import Soutenir from "./pages/Soutenir";
 import AuthAuditPage from "./features/auth/AuthAuditPage";
 import Auth from "./pages/Auth";
+import CarteAcces from "./pages/CarteAcces";
 
 // Pages de questionnaires
 import AvisGeneral from "./pages/AvisGeneral";
@@ -68,6 +69,7 @@ function App() {
               <Route path="/auth-audit-detailed" element={<AuthAuditPage />} />
               <Route path="/directives-info" element={<DirectivesInfo />} />
               <Route path="/soutenir" element={<Soutenir />} />
+              <Route path="/carte-acces" element={<CarteAcces />} />
               
               {/* Routes pour les questionnaires */}
               <Route path="/avis-general" element={<AvisGeneral />} />
