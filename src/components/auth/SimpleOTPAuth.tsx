@@ -38,7 +38,6 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
 
   useEffect(() => {
     if (rateLimitExpiry && currentTime >= rateLimitExpiry) {
-      console.log('🕒 [RATE-LIMIT] Délai expiré, réactivation des boutons');
       setRateLimitExpiry(null);
       setError('');
     }
@@ -59,9 +58,6 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
 
     const now = new Date();
     if (rateLimitExpiry && now < rateLimitExpiry) {
-      const remainingTime = rateLimitExpiry.getTime() - now.getTime();
-      const remainingMinutes = Math.ceil(remainingTime / 60000);
-      setError(`Veuillez encore patienter ${remainingMinutes} minute(s) avant de réessayer.`);
       return;
     }
 
@@ -74,8 +70,8 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
       const { error: signInError } = await supabase.auth.signInWithOtp({
         email: email.trim(),
         options: {
-          shouldCreateUser: true, // Crée l'utilisateur s'il n'existe pas
-          emailRedirectTo: `${window.location.origin}/profile`, // Important pour certains flux, même si non utilisé directement ici
+          shouldCreateUser: true,
+          emailRedirectTo: `${window.location.origin}/profile`,
         },
       });
 
@@ -91,17 +87,13 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
 
     } catch (err: any) {
       console.error('❌ [SIMPLE-OTP] Erreur envoi OTP Supabase:', err);
-      
-      // Supabase Auth gère ses propres rate limits, l'erreur peut contenir des informations
+
+      // Supbase Auth gère ses propres rate limits, mais on ne montre plus ces alertes UI
       if (err.status === 429 || err.message?.includes('rate limit') || err.message?.includes('Too many requests')) {
-        const newExpiry = new Date(Date.now() + 5 * 60 * 1000); // Standard 5 min wait
+        const newExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 min d'attente (interne, non affichée)
         setRateLimitExpiry(newExpiry);
-        setError('Trop de tentatives. Veuillez patienter 5 minutes avant de réessayer.');
-        toast({
-          title: "Limite d'envois atteinte",
-          description: "Veuillez patienter 5 minutes avant de réessayer.",
-          variant: "destructive",
-        });
+        setError(''); // On ne met aucun message explicite
+        // Pas de toast destructif pour la limite
       } else {
         setError('Erreur lors de l\'envoi du code. Veuillez réessayer.');
         await handleAuthError(err, 'signInWithOtp');
@@ -199,7 +191,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
           }
         </CardDescription>
       </CardHeader>
-      
+
       <CardContent>
         {error && (
           <Alert variant="destructive" className="mb-4">
@@ -208,10 +200,13 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
           </Alert>
         )}
 
+        {/* --- SUPPRESSION DU RateLimitDisplay ici --- */}
+        {/* Le composant n'est plus affiché :
         <RateLimitDisplay 
           isActive={isRateLimitActive} 
           expiryDate={rateLimitExpiry} 
         />
+        */}
 
         {step === 'email' ? (
           <EmailStep
@@ -230,7 +225,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
             onResendCode={handleResendCode}
             onGoBack={goBackToEmail}
             loading={loading}
-            isRateLimitActive={isRateLimitActive} // Ce rate limit est pour l'UI, Supabase a ses propres limites
+            isRateLimitActive={isRateLimitActive}
             rateLimitExpiry={rateLimitExpiry}
           />
         )}
