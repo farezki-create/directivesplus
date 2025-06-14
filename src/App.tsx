@@ -28,6 +28,9 @@ import DirectivesInfo from "./pages/DirectivesInfo";
 import Soutenir from "./pages/Soutenir";
 import AuthAuditPage from "./features/auth/AuthAuditPage";
 import Auth from "./pages/Auth";
+import SuiviPalliatif from "./pages/SuiviPalliatif";
+import AccesSoinsPalliatifs from "./pages/AccesSoinsPalliatifs";
+import PersonneConfiance from "./pages/PersonneConfiance";
 
 // Pages de questionnaires
 import AvisGeneral from "./pages/AvisGeneral";
@@ -73,6 +76,9 @@ function App() {
                 <Route path="/directives-info" element={<DirectivesInfo />} />
                 <Route path="/soutenir" element={<Soutenir />} />
                 <Route path="/carte-acces" element={<CarteAcces />} />
+                <Route path="/suivi-palliatif" element={<SuiviPalliatif />} />
+                <Route path="/acces-soins-palliatifs" element={<AccesSoinsPalliatifs />} />
+                <Route path="/personne-confiance" element={<PersonneConfiance />} />
                 
                 {/* Routes des questionnaires */}
                 <Route path="/avis-general" element={<AvisGeneral />} />
