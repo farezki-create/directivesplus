@@ -74,8 +74,8 @@ const UserManagementDashboard = () => {
   };
 
   const filteredUsers = users.filter(user =>
-    user.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -88,10 +88,10 @@ const UserManagementDashboard = () => {
     const csvContent = [
       ['Nom', 'Prénom', 'Email', 'Date création', 'Statut'],
       ...filteredUsers.map(user => [
-        user.last_name || '',
-        user.first_name || '',
+        user.lastName || '',
+        user.firstName || '',
         user.email || '',
-        user.created_at ? new Date(user.created_at).toLocaleDateString() : '',
+        user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '',
         'Actif'
       ])
     ].map(row => row.join(',')).join('\n');
@@ -245,12 +245,12 @@ const UserManagementDashboard = () => {
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                             <span className="text-sm font-medium text-blue-600">
-                              {user.first_name?.[0]}{user.last_name?.[0]}
+                              {user.firstName?.[0]}{user.lastName?.[0]}
                             </span>
                           </div>
                           <div>
                             <div className="font-medium">
-                              {user.first_name} {user.last_name}
+                              {user.firstName} {user.lastName}
                             </div>
                             <div className="text-sm text-gray-600">{user.email}</div>
                           </div>
@@ -264,10 +264,10 @@ const UserManagementDashboard = () => {
                               <span className="truncate max-w-[200px]">{user.email}</span>
                             </div>
                           )}
-                          {user.phone_number && (
+                          {user.phoneNumber && (
                             <div className="flex items-center gap-1 text-sm">
                               <Phone className="w-3 h-3" />
-                              <span>{user.phone_number}</span>
+                              <span>{user.phoneNumber}</span>
                             </div>
                           )}
                         </div>
@@ -275,7 +275,7 @@ const UserManagementDashboard = () => {
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-1 text-sm">
                           <Calendar className="w-3 h-3" />
-                          {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}
+                          {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
                         </div>
                       </td>
                       <td className="py-3 px-4">
