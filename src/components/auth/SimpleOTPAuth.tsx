@@ -55,13 +55,16 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
 
   const sendEmailViaBrevo = async (email: string, otpCode: string) => {
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const authHeader = session?.access_token || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5dHFxam5lY2V6a3h5aG1tanJ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzcxOTc5MjUsImV4cCI6MjA1Mjc3MzkyNX0.uocoNg-le-iv0pw7c99mthQ6gxGHyXGyQqgxo9_3CPc";
+
       const response = await fetch(
         "https://kytqqjnecezkxyhmmjrz.supabase.co/functions/v1/send-auth-email",
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${supabase.supabaseKey}`,
+            "Authorization": `Bearer ${authHeader}`,
           },
           body: JSON.stringify({
             email: email,
@@ -209,36 +212,18 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
         .update({ used: true })
         .eq('id', otpData.id);
 
-      // Créer ou connecter l'utilisateur
+      // Créer ou connecter l'utilisateur avec Supabase OTP
       const { data, error: signInError } = await supabase.auth.signInWithOtp({
         email: email.trim(),
-        token: otpCode,
-        type: 'email'
+        options: {
+          shouldCreateUser: true
+        }
       });
 
       if (signInError) {
-        // Si l'utilisateur n'existe pas, le créer
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-          email: email.trim(),
-          password: Math.random().toString(36).substring(2, 15), // Mot de passe temporaire
-        });
-
-        if (signUpError) {
-          console.error('❌ [SIMPLE-OTP] Erreur création utilisateur:', signUpError);
-          setError('Erreur lors de la création du compte');
-          return;
-        }
-
-        // Connecter l'utilisateur directement
-        const { data: sessionData, error: sessionError } = await supabase.auth.signInWithPassword({
-          email: email.trim(),
-          password: Math.random().toString(36).substring(2, 15),
-        });
-
-        if (sessionError) {
-          // Utiliser une approche différente - créer une session manuelle
-          console.log('✅ [SIMPLE-OTP] Utilisateur créé, connexion en cours...');
-        }
+        console.error('❌ [SIMPLE-OTP] Erreur connexion:', signInError);
+        setError('Erreur lors de la connexion');
+        return;
       }
 
       console.log('✅ [SIMPLE-OTP] Connexion réussie');
