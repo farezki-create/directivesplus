@@ -41,6 +41,12 @@ import GoutsPeurs from "./pages/GoutsPeurs";
 import ExemplesPhrases from "./pages/ExemplesPhrases";
 import CarteAcces from "./pages/CarteAcces";
 
+// Pages légales
+import MentionsLegales from "./pages/MentionsLegales";
+import PolitiqueConfidentialite from "./pages/PolitiqueConfidentialite";
+import Confidentialite from "./pages/Confidentialite";
+import EnSavoirPlus from "./pages/EnSavoirPlus";
+
 // Composant de chargement
 import { LoadingFallback } from "@/utils/performance/lazyComponents";
 
@@ -88,6 +94,12 @@ function App() {
                 <Route path="/maladie-avancee" element={<MaladieAvancee />} />
                 <Route path="/gouts-peurs" element={<GoutsPeurs />} />
                 <Route path="/exemples-phrases" element={<ExemplesPhrases />} />
+
+                {/* Routes légales */}
+                <Route path="/mentions-legales" element={<MentionsLegales />} />
+                <Route path="/politique-confidentialite" element={<PolitiqueConfidentialite />} />
+                <Route path="/confidentialite" element={<Confidentialite />} />
+                <Route path="/en-savoir-plus" element={<EnSavoirPlus />} />
               </Routes>
             </Suspense>
           </BrowserRouter>
