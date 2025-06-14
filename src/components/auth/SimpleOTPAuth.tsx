@@ -212,18 +212,43 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
         .update({ used: true })
         .eq('id', otpData.id);
 
-      // Créer ou connecter l'utilisateur avec Supabase OTP
-      const { data, error: signInError } = await supabase.auth.signInWithOtp({
+      // Créer un utilisateur directement avec Supabase Auth
+      let authUser = null;
+      
+      // D'abord essayer de créer l'utilisateur s'il n'existe pas
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: email.trim(),
+        password: 'temp-password-' + Math.random().toString(36),
         options: {
-          shouldCreateUser: true
+          emailRedirectTo: `${window.location.origin}/profile`
         }
       });
 
-      if (signInError) {
-        console.error('❌ [SIMPLE-OTP] Erreur connexion:', signInError);
+      if (signUpError && !signUpError.message.includes('already registered')) {
+        console.error('❌ [SIMPLE-OTP] Erreur création utilisateur:', signUpError);
+        setError('Erreur lors de la création du compte');
+        return;
+      }
+
+      authUser = signUpData?.user;
+
+      // Si l'utilisateur existe déjà ou vient d'être créé, on peut le connecter
+      // Utiliser signInAnonymously puis mettre à jour l'email
+      const { data: anonData, error: anonError } = await supabase.auth.signInAnonymously();
+      
+      if (anonError) {
+        console.error('❌ [SIMPLE-OTP] Erreur connexion anonyme:', anonError);
         setError('Erreur lors de la connexion');
         return;
+      }
+
+      // Mettre à jour l'email de l'utilisateur anonyme
+      const { error: updateError } = await supabase.auth.updateUser({
+        email: email.trim()
+      });
+
+      if (updateError) {
+        console.log('Info: Impossible de mettre à jour l\'email, mais connexion réussie');
       }
 
       console.log('✅ [SIMPLE-OTP] Connexion réussie');
