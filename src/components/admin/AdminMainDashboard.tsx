@@ -1,279 +1,183 @@
 
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import { 
+  Users, 
   Database, 
   Shield, 
-  Users, 
-  Building2, 
   Activity, 
-  Settings,
   AlertTriangle,
-  TrendingUp,
-  Server,
-  FileText,
-  Globe,
-  Lock
+  Settings,
+  BarChart3
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import AppNavigation from "@/components/AppNavigation";
-import SupabaseAuditDashboard from "./SupabaseAuditDashboard";
-import SupabaseOptimizationPanel from "./SupabaseOptimizationPanel";
-import SecurityAuditReport from "./SecurityAuditReport";
-import SystemMonitoringDashboard from "./SystemMonitoringDashboard";
-import UserManagementDashboard from "./UserManagementDashboard";
-import InstitutionManagement from "./InstitutionManagement";
+import Header from "@/components/Header";
 
 const AdminMainDashboard = () => {
   const adminTools = [
     {
-      id: "users",
-      title: "Gestion Utilisateurs",
-      description: "Gérer les comptes utilisateurs et les profils",
+      title: "Gestion des Utilisateurs",
+      description: "Gérer les comptes utilisateurs et les permissions",
       icon: Users,
-      color: "bg-blue-50 border-blue-200 text-blue-800",
-      count: "1,234"
+      path: "/admin/users",
+      color: "text-blue-600"
     },
     {
-      id: "institutions",
-      title: "Institutions",
-      description: "Gérer les abonnements institutionnels",
-      icon: Building2,
-      color: "bg-green-50 border-green-200 text-green-800",
-      count: "56"
-    },
-    {
-      id: "security",
       title: "Audit Sécurité",
-      description: "Surveillance et conformité sécurité",
+      description: "Rapport d'audit de sécurité complet",
       icon: Shield,
-      color: "bg-red-50 border-red-200 text-red-800",
-      count: "98%"
+      path: "/admin/security-audit",
+      color: "text-green-600"
     },
     {
-      id: "database",
-      title: "Base de Données",
-      description: "Audit et optimisation Supabase",
+      title: "Audit Supabase",
+      description: "Diagnostic complet de Supabase (74 warnings détectés)",
       icon: Database,
-      color: "bg-purple-50 border-purple-200 text-purple-800",
-      count: "Optimal"
+      path: "/admin/supabase-audit",
+      color: "text-purple-600",
+      badge: "74 warnings"
     },
     {
-      id: "monitoring",
-      title: "Surveillance Système",
-      description: "Métriques et performance en temps réel",
+      title: "Analyse Warnings",
+      description: "Analyser et résoudre les 74 warnings Supabase",
+      icon: AlertTriangle,
+      path: "/supabase-audit",
+      color: "text-orange-600",
+      urgent: true
+    },
+    {
+      title: "Monitoring Système",
+      description: "Surveillance en temps réel du système",
       icon: Activity,
-      color: "bg-orange-50 border-orange-200 text-orange-800",
-      count: "99.9%"
+      path: "/admin/monitoring",
+      color: "text-red-600"
     },
     {
-      id: "optimization",
-      title: "Optimisation",
-      description: "Améliorations et configuration",
-      icon: TrendingUp,
-      color: "bg-yellow-50 border-yellow-200 text-yellow-800",
-      count: "85%"
+      title: "Optimisation Supabase",
+      description: "Outils d'optimisation de la base de données",
+      icon: Settings,
+      path: "/admin/optimization",
+      color: "text-gray-600"
+    },
+    {
+      title: "Statistiques",
+      description: "Tableaux de bord et analytics",
+      icon: BarChart3,
+      path: "/admin/stats",
+      color: "text-indigo-600"
     }
   ];
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <AppNavigation hideEditingFeatures={true} />
+      <Header />
       
       <main className="container mx-auto px-4 py-8">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Centre d'Administration
+              Dashboard Administrateur
             </h1>
             <p className="text-gray-600">
-              Tableau de bord complet pour la gestion et surveillance de DirectivesPlus
+              Gestion et supervision de la plateforme DirectivesPlus
             </p>
           </div>
 
-          {/* Vue d'ensemble rapide */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            {adminTools.map((tool) => {
-              const IconComponent = tool.icon;
-              return (
-                <Card key={tool.id} className={`${tool.color} hover:shadow-lg transition-shadow cursor-pointer`}>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium flex items-center gap-2">
-                      <IconComponent className="w-4 h-4" />
-                      {tool.title}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold mb-1">{tool.count}</div>
-                    <p className="text-xs opacity-80">{tool.description}</p>
-                  </CardContent>
-                </Card>
-              );
-            })}
+          {/* Alerte pour les warnings */}
+          <div className="mb-8">
+            <Card className="border-orange-200 bg-orange-50">
+              <CardContent className="pt-6">
+                <div className="flex items-start">
+                  <AlertTriangle className="h-6 w-6 text-orange-600 mt-0.5 mr-3" />
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-orange-800 mb-1">
+                      Attention : 74 warnings Supabase détectés
+                    </h3>
+                    <p className="text-orange-700 text-sm mb-3">
+                      Des problèmes de configuration et de sécurité ont été identifiés et nécessitent votre attention.
+                    </p>
+                    <Link to="/supabase-audit">
+                      <Button variant="outline" className="border-orange-300 text-orange-700 hover:bg-orange-100">
+                        Analyser maintenant
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
-          {/* Onglets principaux */}
-          <Tabs defaultValue="overview" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-6">
-              <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
-              <TabsTrigger value="users">Utilisateurs</TabsTrigger>
-              <TabsTrigger value="security">Sécurité</TabsTrigger>
-              <TabsTrigger value="database">Base de données</TabsTrigger>
-              <TabsTrigger value="monitoring">Surveillance</TabsTrigger>
-              <TabsTrigger value="optimization">Optimisation</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="overview">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Activity className="w-5 h-5 text-blue-600" />
-                      Statut Système
-                    </CardTitle>
+          {/* Grille des outils admin */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {adminTools.map((tool) => (
+              <Link key={tool.path} to={tool.path}>
+                <Card className={`h-full transition-all duration-200 hover:shadow-lg ${
+                  tool.urgent ? 'border-orange-300 hover:border-orange-400' : 'hover:border-gray-300'
+                }`}>
+                  <CardHeader className="pb-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center">
+                        <tool.icon className={`h-6 w-6 ${tool.color} mr-3`} />
+                        <CardTitle className="text-lg">{tool.title}</CardTitle>
+                      </div>
+                      {tool.badge && (
+                        <span className="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full">
+                          {tool.badge}
+                        </span>
+                      )}
+                    </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">Base de données</span>
-                        <span className="text-green-600 font-medium">Opérationnel</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">Authentification</span>
-                        <span className="text-green-600 font-medium">Opérationnel</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">Stockage</span>
-                        <span className="text-green-600 font-medium">Opérationnel</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">API</span>
-                        <span className="text-green-600 font-medium">Opérationnel</span>
-                      </div>
-                    </div>
+                    <p className="text-gray-600 text-sm leading-relaxed">
+                      {tool.description}
+                    </p>
                   </CardContent>
                 </Card>
+              </Link>
+            ))}
+          </div>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <AlertTriangle className="w-5 h-5 text-orange-600" />
-                      Alertes Récentes
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="flex items-start gap-3 p-3 bg-yellow-50 rounded-lg">
-                        <AlertTriangle className="w-4 h-4 text-yellow-600 mt-0.5" />
-                        <div>
-                          <div className="text-sm font-medium">Utilisation CPU élevée</div>
-                          <div className="text-xs text-gray-600">Base de données - 15:30</div>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
-                        <Shield className="w-4 h-4 text-blue-600 mt-0.5" />
-                        <div>
-                          <div className="text-sm font-medium">Nouvelle tentative d'accès</div>
-                          <div className="text-xs text-gray-600">Sécurité - 14:45</div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="lg:col-span-2">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <TrendingUp className="w-5 h-5 text-purple-600" />
-                      Métriques Rapides
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-blue-600">1,234</div>
-                        <div className="text-sm text-gray-600">Utilisateurs actifs</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-green-600">5,678</div>
-                        <div className="text-sm text-gray-600">Documents stockés</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-purple-600">99.8%</div>
-                        <div className="text-sm text-gray-600">Disponibilité</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-orange-600">245ms</div>
-                        <div className="text-sm text-gray-600">Temps de réponse</div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="users">
-              <UserManagementDashboard />
-            </TabsContent>
-
-            <TabsContent value="security">
-              <SecurityAuditReport />
-            </TabsContent>
-
-            <TabsContent value="database">
-              <Tabs defaultValue="audit" className="space-y-4">
-                <TabsList>
-                  <TabsTrigger value="audit">Audit Complet</TabsTrigger>
-                  <TabsTrigger value="optimization">Optimisation</TabsTrigger>
-                </TabsList>
-                <TabsContent value="audit">
-                  <SupabaseAuditDashboard />
-                </TabsContent>
-                <TabsContent value="optimization">
-                  <SupabaseOptimizationPanel />
-                </TabsContent>
-              </Tabs>
-            </TabsContent>
-
-            <TabsContent value="monitoring">
-              <SystemMonitoringDashboard />
-            </TabsContent>
-
-            <TabsContent value="optimization">
+          {/* Statistiques rapides */}
+          <div className="mt-12">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">
+              Vue d'ensemble
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <Card>
-                <CardHeader>
-                  <CardTitle>Optimisations Recommandées</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <Database className="w-5 h-5 text-blue-600" />
-                        <div>
-                          <div className="font-medium">Optimisation des index</div>
-                          <div className="text-sm text-gray-600">Améliorer les performances des requêtes</div>
-                        </div>
-                      </div>
-                      <Link to="/admin/supabase-audit" className="text-blue-600 hover:underline">
-                        Configurer
-                      </Link>
-                    </div>
-                    <div className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <Shield className="w-5 h-5 text-green-600" />
-                        <div>
-                          <div className="font-medium">Renforcement sécurité</div>
-                          <div className="text-sm text-gray-600">Mise à jour des politiques RLS</div>
-                        </div>
-                      </div>
-                      <span className="text-green-600 font-medium">Complété</span>
-                    </div>
+                <CardContent className="pt-6">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-blue-600">156</div>
+                    <div className="text-sm text-gray-500">Utilisateurs actifs</div>
                   </div>
                 </CardContent>
               </Card>
-            </TabsContent>
-          </Tabs>
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-green-600">342</div>
+                    <div className="text-sm text-gray-500">Directives créées</div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-orange-600">74</div>
+                    <div className="text-sm text-gray-500">Warnings actifs</div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-purple-600">98.5%</div>
+                    <div className="text-sm text-gray-500">Uptime</div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </div>
       </main>
     </div>
