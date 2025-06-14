@@ -33,14 +33,17 @@ const PublicDirectivesAccessForm: React.FC<PublicDirectivesAccessFormProps> = ({
 }) => {
   const [calendarDate, setCalendarDate] = useState<Date>(new Date(1980, 0, 1));
 
+  // Ensure all default values are present and NOT optional!
+  const defaultValues: FormValues = {
+    firstName: "",
+    lastName: "",
+    birthDate: new Date(1980, 0, 1),
+    accessCode: "",
+  };
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      firstName: "",
-      lastName: "",
-      accessCode: "",
-      birthDate: undefined,
-    },
+    defaultValues,
   });
 
   const handleSubmit = (data: FormValues) => {
@@ -53,8 +56,8 @@ const PublicDirectivesAccessForm: React.FC<PublicDirectivesAccessFormProps> = ({
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)}>
           <CardContent className="space-y-4">
+            {/* The control type is "Control<FormValues>" */}
             <PersonalInfoFields control={form.control} loading={loading} />
-            
             <DatePickerField
               control={form.control}
               loading={loading}
@@ -62,7 +65,6 @@ const PublicDirectivesAccessForm: React.FC<PublicDirectivesAccessFormProps> = ({
               setCalendarDate={setCalendarDate}
             />
           </CardContent>
-          
           <CardFooter>
             <Button 
               type="submit" 
@@ -79,3 +81,4 @@ const PublicDirectivesAccessForm: React.FC<PublicDirectivesAccessFormProps> = ({
 };
 
 export default PublicDirectivesAccessForm;
+
