@@ -1,0 +1,111 @@
+
+{
+  "app": {
+    "name": "DirectivesPlus",
+    "tagline": "Your advance directives safely stored"
+  },
+  "navigation": {
+    "home": "Home",
+    "myDirectives": "My Directives",
+    "write": "Write",
+    "profile": "Profile",
+    "logout": "Logout",
+    "login": "Login",
+    "register": "Register"
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "forgotPassword": "Forgot password?",
+    "signIn": "Sign In",
+    "signUp": "Create Account",
+    "alreadyHaveAccount": "Already have an account?",
+    "noAccount": "Don't have an account?",
+    "loginSuccess": "Login successful",
+    "logout": "Logout",
+    "loggingOut": "Logging out..."
+  },
+  "profile": {
+    "title": "My Profile",
+    "personalInfo": "Personal Information",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "email": "Email",
+    "birthDate": "Birth Date",
+    "phoneNumber": "Phone Number",
+    "address": "Address",
+    "city": "City",
+    "postalCode": "Postal Code",
+    "country": "Country",
+    "updateProfile": "Update Profile",
+    "updating": "Updating...",
+    "updateSuccess": "Successfully updated",
+    "updateError": "Error, please retry",
+    "deleteAccount": "Delete my account",
+    "deleteAccountConfirm": "Are you absolutely sure?",
+    "deleteAccountWarning": "This action is irreversible and will permanently delete",
+    "deleteAccountCancel": "Cancel",
+    "deleteAccountConfirmButton": "Delete permanently"
+  },
+  "directives": {
+    "title": "My Advance Directives",
+    "access": "Access my file",
+    "accessCode": "Access Code",
+    "accessInstructions": "Please enter your personal information and the access code provided to you.",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "birthDate": "Birth Date",
+    "verification": "Verifying...",
+    "accessError": "Access error",
+    "documentNotFound": "Document not found",
+    "invalidCode": "Invalid or expired access code"
+  },
+  "pdf": {
+    "loading": "Loading document...",
+    "error": "Loading error",
+    "download": "Download",
+    "print": "Print",
+    "open": "Open",
+    "back": "Back",
+    "instructions": "Navigation: Use the PDF toolbar to navigate between pages, zoom, or search for content in the document.",
+    "tip": "Tip: If the document seems incomplete, wait a few seconds for all pages to load, or use the \"Open\" button to display it in a new tab.",
+    "mobileAlert": "Mobile Device Detected",
+    "mobileInstructions": "For a better experience, use the green download button to open the PDF in your default application."
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "retry": "Retry",
+    "continue": "Continue",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "close": "Close",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No",
+    "required": "Required"
+  },
+  "footer": {
+    "copyright": "© 2025 DirectivesPlus. All rights reserved.",
+    "legalMentions": "Legal Terms & Conditions",
+    "privacyPolicy": "Privacy Policy",
+    "contact": "Contact"
+  },
+  "security": {
+    "hdsCompliance": "HDS Compliant",
+    "sessionLocked": "Session locked",
+    "sessionExpired": "Session expired",
+    "inactivityWarning": "Your session has been locked due to inactivity (HDS compliance)",
+    "sessionTimeout": "Session expiring soon",
+    "timeoutWarning": "Your session will expire in 5 minutes (8h HDS limit)"
+  }
+}

@@ -1,0 +1,111 @@
+
+{
+  "app": {
+    "name": "DirectivesPlus",
+    "tagline": "Vos directives anticipées en sécurité"
+  },
+  "navigation": {
+    "home": "Accueil",
+    "myDirectives": "Mes Directives",
+    "write": "Rédiger",
+    "profile": "Profil",
+    "logout": "Déconnexion",
+    "login": "Connexion",
+    "register": "S'inscrire"
+  },
+  "auth": {
+    "login": "Connexion",
+    "register": "Inscription",
+    "email": "Email",
+    "password": "Mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "forgotPassword": "Mot de passe oublié ?",
+    "signIn": "Se connecter",
+    "signUp": "Créer un compte",
+    "alreadyHaveAccount": "Vous avez déjà un compte ?",
+    "noAccount": "Vous n'avez pas de compte ?",
+    "loginSuccess": "Connexion réussie",
+    "logout": "Déconnexion",
+    "loggingOut": "Déconnexion en cours..."
+  },
+  "profile": {
+    "title": "Mon Profil",
+    "personalInfo": "Informations personnelles",
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "email": "Email",
+    "birthDate": "Date de naissance",
+    "phoneNumber": "Numéro de téléphone",
+    "address": "Adresse",
+    "city": "Ville",
+    "postalCode": "Code postal",
+    "country": "Pays",
+    "updateProfile": "Mettre à jour le profil",
+    "updating": "Mise à jour en cours...",
+    "updateSuccess": "Mis à jour avec succès",
+    "updateError": "Erreur, réessayer",
+    "deleteAccount": "Supprimer mon compte",
+    "deleteAccountConfirm": "Êtes-vous absolument sûr ?",
+    "deleteAccountWarning": "Cette action est irréversible et entraînera la suppression permanente de",
+    "deleteAccountCancel": "Annuler",
+    "deleteAccountConfirmButton": "Supprimer définitivement"
+  },
+  "directives": {
+    "title": "Mes Directives Anticipées",
+    "access": "Accéder à mon dossier",
+    "accessCode": "Code d'accès",
+    "accessInstructions": "Veuillez saisir vos informations personnelles et le code d'accès qui vous a été fourni.",
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "birthDate": "Date de naissance",
+    "verification": "Vérification...",
+    "accessError": "Erreur d'accès",
+    "documentNotFound": "Document non trouvé",
+    "invalidCode": "Code d'accès invalide ou expiré"
+  },
+  "pdf": {
+    "loading": "Chargement du document...",
+    "error": "Erreur de chargement",
+    "download": "Télécharger",
+    "print": "Imprimer",
+    "open": "Ouvrir",
+    "back": "Retour",
+    "instructions": "Navigation : Utilisez la barre d'outils du PDF pour naviguer entre les pages, zoomer, ou rechercher du contenu dans le document.",
+    "tip": "Astuce : Si le document semble incomplet, attendez quelques secondes que toutes les pages se chargent, ou utilisez le bouton \"Ouvrir\" pour l'afficher dans un nouvel onglet.",
+    "mobileAlert": "Appareil Mobile Détecté",
+    "mobileInstructions": "Pour une meilleure expérience, utilisez le bouton de téléchargement vert pour ouvrir le PDF dans votre application par défaut."
+  },
+  "common": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "retry": "Réessayer",
+    "continue": "Continuer",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "close": "Fermer",
+    "confirm": "Confirmer",
+    "yes": "Oui",
+    "no": "Non",
+    "required": "Obligatoire"
+  },
+  "footer": {
+    "copyright": "© 2025 DirectivesPlus. Tous droits réservés.",
+    "legalMentions": "Mentions légales & CGU",
+    "privacyPolicy": "Politique de confidentialité",
+    "contact": "Contact"
+  },
+  "security": {
+    "hdsCompliance": "Conforme HDS",
+    "sessionLocked": "Session verrouillée",
+    "sessionExpired": "Session expirée",
+    "inactivityWarning": "Votre session a été verrouillée pour inactivité (conformité HDS)",
+    "sessionTimeout": "Session expiration imminente",
+    "timeoutWarning": "Votre session expirera dans 5 minutes (limite HDS de 8h)"
+  }
+}
