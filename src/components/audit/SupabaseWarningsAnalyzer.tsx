@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -83,51 +82,80 @@ export const SupabaseWarningsAnalyzer = () => {
   };
 
   const analyzeRLSPolicies = async (warnings: WarningItem[]) => {
+    // Test des tables critiques une par une avec les noms exacts
     const criticalTables = [
-      'profiles', 'pdf_documents', 'directives', 'medical_data',
-      'institution_access_codes', 'document_access_codes', 'security_audit_logs'
+      { name: 'profiles', displayName: 'profiles' },
+      { name: 'pdf_documents', displayName: 'pdf_documents' },
+      { name: 'directives', displayName: 'directives' },
+      { name: 'medical_data', displayName: 'medical_data' },
+      { name: 'institution_access_codes', displayName: 'institution_access_codes' },
+      { name: 'document_access_codes', displayName: 'document_access_codes' },
+      { name: 'security_audit_logs', displayName: 'security_audit_logs' }
     ];
 
     for (const table of criticalTables) {
       try {
-        // Tester l'accès à la table
-        const { data, error } = await supabase
-          .from(table)
-          .select('*')
-          .limit(1);
+        let data, error;
+        
+        // Utiliser les noms de tables exacts selon les types Supabase
+        switch (table.name) {
+          case 'profiles':
+            ({ data, error } = await supabase.from('profiles').select('*').limit(1));
+            break;
+          case 'pdf_documents':
+            ({ data, error } = await supabase.from('pdf_documents').select('*').limit(1));
+            break;
+          case 'directives':
+            ({ data, error } = await supabase.from('directives').select('*').limit(1));
+            break;
+          case 'medical_data':
+            ({ data, error } = await supabase.from('medical_data').select('*').limit(1));
+            break;
+          case 'institution_access_codes':
+            ({ data, error } = await supabase.from('institution_access_codes').select('*').limit(1));
+            break;
+          case 'document_access_codes':
+            ({ data, error } = await supabase.from('document_access_codes').select('*').limit(1));
+            break;
+          case 'security_audit_logs':
+            ({ data, error } = await supabase.from('security_audit_logs').select('*').limit(1));
+            break;
+          default:
+            continue;
+        }
 
         if (error) {
           if (error.message.includes('permission denied') || error.message.includes('RLS')) {
             warnings.push({
-              id: `rls-${table}`,
+              id: `rls-${table.name}`,
               category: 'RLS',
               severity: 'HIGH',
-              title: `RLS mal configuré sur ${table}`,
-              description: `La table ${table} a des politiques RLS qui bloquent l'accès légitime`,
-              solution: `Vérifier et ajuster les politiques RLS pour la table ${table}`,
-              tableAffected: table
+              title: `RLS mal configuré sur ${table.displayName}`,
+              description: `La table ${table.displayName} a des politiques RLS qui bloquent l'accès légitime`,
+              solution: `Vérifier et ajuster les politiques RLS pour la table ${table.displayName}`,
+              tableAffected: table.displayName
             });
           } else {
             warnings.push({
-              id: `table-error-${table}`,
+              id: `table-error-${table.name}`,
               category: 'CONFIGURATION',
               severity: 'MEDIUM',
-              title: `Erreur d'accès à ${table}`,
+              title: `Erreur d'accès à ${table.displayName}`,
               description: `Erreur lors de l'accès à la table: ${error.message}`,
-              solution: `Vérifier la configuration de la table ${table}`,
-              tableAffected: table
+              solution: `Vérifier la configuration de la table ${table.displayName}`,
+              tableAffected: table.displayName
             });
           }
         }
       } catch (err) {
         warnings.push({
-          id: `access-error-${table}`,
+          id: `access-error-${table.name}`,
           category: 'SECURITY',
           severity: 'HIGH',
-          title: `Table ${table} inaccessible`,
-          description: `Impossible d'accéder à la table ${table}`,
-          solution: `Vérifier l'existence et les permissions de la table ${table}`,
-          tableAffected: table
+          title: `Table ${table.displayName} inaccessible`,
+          description: `Impossible d'accéder à la table ${table.displayName}`,
+          solution: `Vérifier l'existence et les permissions de la table ${table.displayName}`,
+          tableAffected: table.displayName
         });
       }
     }
