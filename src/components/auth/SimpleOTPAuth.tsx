@@ -8,6 +8,7 @@ import { useErrorHandler } from "@/hooks/useErrorHandler";
 import { EmailStep } from "./EmailStep";
 import { OTPStep } from "./OTPStep";
 import { RateLimitDisplay } from "./RateLimitDisplay";
+import { useRateLimitTimer } from "./useRateLimitTimer";
 
 interface SimpleOTPAuthProps {
   onSuccess?: () => void;
@@ -19,15 +20,21 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
   const [otpCode, setOtpCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [rateLimitExpiry, setRateLimitExpiry] = useState<Date | null>(null);
-  const [currentTime, setCurrentTime] = useState(new Date());
+
+  // Use the extracted rate limit timer hook!
+  const {
+    rateLimitExpiry,
+    isActive: isRateLimitActive,
+    start: startRateLimit,
+    reset: resetRateLimit,
+  } = useRateLimitTimer();
 
   const { handleError, handleAuthError } = useErrorHandler({ 
     component: 'SimpleOTPAuth',
     showToast: false 
   });
 
-  const isRateLimitActive = rateLimitExpiry ? currentTime < rateLimitExpiry : false;
+  const isRateLimitActive = rateLimitExpiry ? new Date() < rateLimitExpiry : false;
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -37,11 +44,11 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
   }, []);
 
   useEffect(() => {
-    if (rateLimitExpiry && currentTime >= rateLimitExpiry) {
+    if (rateLimitExpiry && new Date() >= rateLimitExpiry) {
       setRateLimitExpiry(null);
       setError('');
     }
-  }, [currentTime, rateLimitExpiry]);
+  }, [rateLimitExpiry]);
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,8 +63,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
       return;
     }
 
-    const now = new Date();
-    if (rateLimitExpiry && now < rateLimitExpiry) {
+    if (isRateLimitActive) {
       return;
     }
 
@@ -88,12 +94,9 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
     } catch (err: any) {
       console.error('❌ [SIMPLE-OTP] Erreur envoi OTP Supabase:', err);
 
-      // Supbase Auth gère ses propres rate limits, mais on ne montre plus ces alertes UI
       if (err.status === 429 || err.message?.includes('rate limit') || err.message?.includes('Too many requests')) {
-        const newExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 min d'attente (interne, non affichée)
-        setRateLimitExpiry(newExpiry);
-        setError(''); // On ne met aucun message explicite
-        // Pas de toast destructif pour la limite
+        startRateLimit(5 * 60 * 1000); // 5 min d'attente
+        setError(''); // No explicit error message for rate limit
       } else {
         setError('Erreur lors de l\'envoi du code. Veuillez réessayer.');
         await handleAuthError(err, 'signInWithOtp');
@@ -166,6 +169,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
     setStep('email');
     setOtpCode('');
     setError('');
+    resetRateLimit(); // Also reset timer for clean state
   };
 
   return (
@@ -200,13 +204,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
           </Alert>
         )}
 
-        {/* --- SUPPRESSION DU RateLimitDisplay ici --- */}
-        {/* Le composant n'est plus affiché :
-        <RateLimitDisplay 
-          isActive={isRateLimitActive} 
-          expiryDate={rateLimitExpiry} 
-        />
-        */}
+        {/* No more RateLimitDisplay here */}
 
         {step === 'email' ? (
           <EmailStep
