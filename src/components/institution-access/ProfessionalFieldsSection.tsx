@@ -1,17 +1,18 @@
 
 import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Shield, ExternalLink } from "lucide-react";
+import { UserCheck, Shield, ExternalLink } from "lucide-react";
 
 interface ProfessionalFieldsSectionProps {
   formData: {
-    rpps?: string;
-    finess?: string;
-    adeli?: string;
-    prosanteConnect?: boolean;
+    rpps: string;
+    finess: string;
+    adeli: string;
+    prosanteConnect: boolean;
   };
   onChange: (field: string, value: string | boolean) => void;
   onProsanteConnect: () => void;
@@ -22,84 +23,92 @@ export const ProfessionalFieldsSection: React.FC<ProfessionalFieldsSectionProps>
   onChange,
   onProsanteConnect
 }) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    // Only allow numbers for professional IDs
+    const numericValue = value.replace(/[^0-9]/g, '');
+    onChange(name, numericValue);
+  };
+
   return (
-    <div className="space-y-4">
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 className="font-medium text-blue-800 mb-3 flex items-center gap-2">
-          <Shield className="h-5 w-5" />
+    <Card className="border-blue-200 bg-blue-50">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-blue-800">
+          <UserCheck className="h-5 w-5" />
           Identification Professionnelle
-        </h3>
-        
-        <div className="grid gap-4">
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <Alert className="border-blue-200 bg-blue-100">
+          <Shield className="h-4 w-4 text-blue-600" />
+          <AlertDescription className="text-blue-800">
+            Saisissez votre numéro d'identification professionnel pour un accès sécurisé
+          </AlertDescription>
+        </Alert>
+
+        <div className="grid md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="rpps">Numéro RPPS (Répertoire Partagé des Professionnels de Santé)</Label>
+            <Label htmlFor="rpps">Numéro RPPS</Label>
             <Input
               id="rpps"
-              value={formData.rpps || ''}
-              onChange={(e) => onChange('rpps', e.target.value)}
-              placeholder="11 chiffres (ex: 12345678901)"
+              name="rpps"
+              value={formData.rpps}
+              onChange={handleInputChange}
+              placeholder="11 chiffres"
               maxLength={11}
-              inputMode="numeric"
-              pattern="[0-9]*"
+              autoComplete="off"
             />
-            <p className="text-xs text-gray-500">Pour médecins, pharmaciens, dentistes...</p>
+            <p className="text-xs text-gray-600">Répertoire Partagé des Professionnels de Santé</p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="adeli">Numéro ADELI (Automatisation DEs LIstes)</Label>
+            <Label htmlFor="adeli">Numéro ADELI</Label>
             <Input
               id="adeli"
-              value={formData.adeli || ''}
-              onChange={(e) => onChange('adeli', e.target.value)}
-              placeholder="9 chiffres (ex: 123456789)"
+              name="adeli"
+              value={formData.adeli}
+              onChange={handleInputChange}
+              placeholder="9 chiffres"
               maxLength={9}
-              inputMode="numeric"
-              pattern="[0-9]*"
+              autoComplete="off"
             />
-            <p className="text-xs text-gray-500">Pour infirmiers, kinésithérapeutes, psychologues...</p>
+            <p className="text-xs text-gray-600">Automatisation DEs LIstes</p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="finess">Numéro FINESS (Établissement)</Label>
+            <Label htmlFor="finess">Numéro FINESS</Label>
             <Input
               id="finess"
-              value={formData.finess || ''}
-              onChange={(e) => onChange('finess', e.target.value)}
-              placeholder="9 chiffres (ex: 123456789)"
+              name="finess"
+              value={formData.finess}
+              onChange={handleInputChange}
+              placeholder="9 chiffres"
               maxLength={9}
-              inputMode="numeric"
-              pattern="[0-9]*"
+              autoComplete="off"
             />
-            <p className="text-xs text-gray-500">Pour établissements de santé, EHPAD...</p>
+            <p className="text-xs text-gray-600">Fichier National des Établissements</p>
+          </div>
+
+          <div className="space-y-2">
+            <Label>ProSanté Connect</Label>
+            <Button
+              type="button"
+              onClick={onProsanteConnect}
+              variant="outline"
+              className="w-full border-blue-300 text-blue-700 hover:bg-blue-100"
+            >
+              <ExternalLink className="w-4 h-4 mr-2" />
+              Se connecter via ProSanté Connect
+            </Button>
+            <p className="text-xs text-gray-600">Authentification nationale sécurisée</p>
           </div>
         </div>
-      </div>
 
-      {/* Connexion ProSanté Connect */}
-      <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="font-medium text-green-800 mb-2">Connexion ProSanté Connect</h3>
-            <p className="text-sm text-green-700">
-              Authentification sécurisée via votre compte professionnel de santé
-            </p>
-          </div>
-          <Button 
-            onClick={onProsanteConnect}
-            className="bg-green-600 hover:bg-green-700 text-white"
-          >
-            <ExternalLink className="h-4 w-4 mr-2" />
-            Se connecter
-          </Button>
+        <div className="text-sm text-gray-600 bg-gray-100 p-3 rounded-lg">
+          <strong>Note :</strong> L'identification professionnelle permet de tracer les accès 
+          et garantit la sécurité des données médicales selon les exigences HDS.
         </div>
-      </div>
-
-      <Alert className="bg-yellow-50 border-yellow-200">
-        <Shield className="h-4 w-4 text-yellow-600" />
-        <AlertDescription className="text-yellow-800">
-          <strong>Information :</strong> Au moins un numéro d'identification professionnel est requis pour l'accès aux directives anticipées. ProSanté Connect est la méthode d'authentification recommandée.
-        </AlertDescription>
-      </Alert>
-    </div>
+      </CardContent>
+    </Card>
   );
 };

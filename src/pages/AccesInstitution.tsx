@@ -24,12 +24,11 @@ const AccesInstitution = () => {
       ...prev,
       [field]: value
     }));
+    console.log("Professional field updated:", { field, value });
   };
 
   const handleProsanteConnect = () => {
-    // Logique de connexion ProSanté Connect
     console.log('Redirection vers ProSanté Connect...');
-    // Ici, on redirigerait vers l'authentification ProSanté Connect
     toast({
       title: "Redirection",
       description: "Redirection vers ProSanté Connect en cours...",
