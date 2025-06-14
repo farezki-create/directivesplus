@@ -104,7 +104,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
         });
       } else {
         setError('Erreur lors de l\'envoi du code. Veuillez réessayer.');
-        await handleAuthError(err, 'signInWithOtp', "Erreur lors de l'envoi du code OTP. Veuillez réessayer.");
+        await handleAuthError(err, 'signInWithOtp');
       }
     } finally {
       setLoading(false);
@@ -155,7 +155,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
     } catch (err: any) {
       console.error('❌ [SIMPLE-OTP] Erreur vérification OTP Supabase:', err);
       setError('Code invalide, expiré, ou une erreur est survenue.');
-      await handleAuthError(err, 'verifyOtp', 'Code invalide ou expiré. Veuillez réessayer.');
+      await handleAuthError(err, 'verifyOtp');
     } finally {
       setLoading(false);
     }
