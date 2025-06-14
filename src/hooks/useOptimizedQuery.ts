@@ -45,7 +45,7 @@ export const usePaginatedQuery = <T>(
     queryKey,
     () => queryFn(page, limit),
     {
-      keepPreviousData: true,
+      placeholderData: (previousData) => previousData,
       ...options
     }
   );
