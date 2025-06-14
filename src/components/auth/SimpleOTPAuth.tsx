@@ -21,28 +21,42 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [rateLimitExpiry, setRateLimitExpiry] = useState<Date | null>(null);
+  const [isRateLimitActive, setIsRateLimitActive] = useState(false);
 
   const { handleError, handleAuthError } = useErrorHandler({ 
     component: 'SimpleOTPAuth',
     showToast: false 
   });
 
-  const isRateLimitActive = rateLimitExpiry && new Date() < rateLimitExpiry;
-
-  // Auto-update rate limit status every second
+  // Mettre à jour le statut de limite en temps réel
   useEffect(() => {
-    if (rateLimitExpiry) {
-      const interval = setInterval(() => {
-        if (new Date() >= rateLimitExpiry) {
-          console.log('🕒 [RATE-LIMIT] Délai expiré, réactivation des boutons');
-          setRateLimitExpiry(null);
-          setError('');
+    const updateRateLimitStatus = () => {
+      if (rateLimitExpiry) {
+        const now = new Date();
+        const isActive = now < rateLimitExpiry;
+        
+        if (isActive !== isRateLimitActive) {
+          setIsRateLimitActive(isActive);
+          
+          if (!isActive) {
+            console.log('🕒 [RATE-LIMIT] Délai expiré, réactivation des boutons');
+            setRateLimitExpiry(null);
+            setError('');
+          }
         }
-      }, 1000);
+      } else {
+        setIsRateLimitActive(false);
+      }
+    };
 
-      return () => clearInterval(interval);
-    }
-  }, [rateLimitExpiry]);
+    // Vérifier immédiatement
+    updateRateLimitStatus();
+
+    // Vérifier toutes les secondes
+    const interval = setInterval(updateRateLimitStatus, 1000);
+
+    return () => clearInterval(interval);
+  }, [rateLimitExpiry, isRateLimitActive]);
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,11 +71,14 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
       return;
     }
 
-    // Check if rate limit is still active
-    if (isRateLimitActive) {
-      const remainingMinutes = Math.ceil((rateLimitExpiry!.getTime() - Date.now()) / 60000);
-      setError(`Veuillez encore patienter ${remainingMinutes} minute(s) avant de réessayer.`);
-      return;
+    // Vérifier si la limite est encore active
+    if (isRateLimitActive && rateLimitExpiry) {
+      const remainingTime = rateLimitExpiry.getTime() - Date.now();
+      if (remainingTime > 0) {
+        const remainingMinutes = Math.ceil(remainingTime / 60000);
+        setError(`Veuillez encore patienter ${remainingMinutes} minute(s) avant de réessayer.`);
+        return;
+      }
     }
 
     setLoading(true);
@@ -83,6 +100,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
         if (magicLinkError.message.includes('rate limit') || magicLinkError.message.includes('email rate limit exceeded')) {
           const newExpiry = new Date(Date.now() + 5 * 60 * 1000);
           setRateLimitExpiry(newExpiry);
+          setIsRateLimitActive(true);
           setError('Limite d\'envoi d\'emails atteinte. Veuillez patienter 5 minutes avant de réessayer.');
           toast({
             title: "Limite d'emails atteinte",
@@ -159,14 +177,17 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
   };
 
   const handleResendCode = async () => {
-    if (isRateLimitActive) {
-      const remainingMinutes = Math.ceil((rateLimitExpiry!.getTime() - Date.now()) / 60000);
-      toast({
-        title: "Limite active",
-        description: `Veuillez patienter encore ${remainingMinutes} minute(s)`,
-        variant: "destructive",
-      });
-      return;
+    if (isRateLimitActive && rateLimitExpiry) {
+      const remainingTime = rateLimitExpiry.getTime() - Date.now();
+      if (remainingTime > 0) {
+        const remainingMinutes = Math.ceil(remainingTime / 60000);
+        toast({
+          title: "Limite active",
+          description: `Veuillez patienter encore ${remainingMinutes} minute(s)`,
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     setLoading(true);
@@ -185,6 +206,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
         if (resendError.message.includes('rate limit')) {
           const newExpiry = new Date(Date.now() + 5 * 60 * 1000);
           setRateLimitExpiry(newExpiry);
+          setIsRateLimitActive(true);
           setError('Limite d\'envoi atteinte. Veuillez patienter 5 minutes.');
         } else {
           setError(resendError.message);
@@ -244,7 +266,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
         )}
 
         <RateLimitDisplay 
-          isActive={!!isRateLimitActive} 
+          isActive={isRateLimitActive} 
           expiryDate={rateLimitExpiry} 
         />
 
@@ -254,7 +276,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
             setEmail={setEmail}
             onSubmit={handleEmailSubmit}
             loading={loading}
-            isRateLimitActive={!!isRateLimitActive}
+            isRateLimitActive={isRateLimitActive}
           />
         ) : (
           <OTPStep
@@ -265,7 +287,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
             onResendCode={handleResendCode}
             onGoBack={goBackToEmail}
             loading={loading}
-            isRateLimitActive={!!isRateLimitActive}
+            isRateLimitActive={isRateLimitActive}
             rateLimitExpiry={rateLimitExpiry}
           />
         )}
