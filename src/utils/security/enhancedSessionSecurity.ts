@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { HDSSessionManager } from './hdsSessionManager';
 import { EnhancedSecurityEventLogger } from './enhancedSecurityEventLogger';
@@ -155,7 +156,7 @@ export class EnhancedSessionSecurity {
 
   private static async logSessionEvent(eventType: string, userId?: string): Promise<void> {
     await EnhancedSecurityEventLogger.logEvent({
-      eventType: 'hds_session_security',
+      eventType: 'suspicious_activity', // Use valid SecurityEventType
       userId,
       success: false,
       riskLevel: 'high',
