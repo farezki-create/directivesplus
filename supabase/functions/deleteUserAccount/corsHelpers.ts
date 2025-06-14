@@ -1,43 +1,46 @@
 
+// CORS headers for cross-origin requests
 export const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-export function handleOptionsRequest(): Response {
-  return new Response('ok', { headers: corsHeaders });
+// Handle OPTIONS requests for CORS preflight
+export function handleOptionsRequest() {
+  return new Response(null, {
+    status: 204,
+    headers: corsHeaders,
+  });
 }
 
-export function createErrorResponse(message: string, status: number = 500, details?: string): Response {
-  console.error(`❌ [ERROR-RESPONSE] ${status}: ${message}`, details ? `Details: ${details}` : '');
-  
+// Create standard error response with CORS headers
+export function createErrorResponse(message: string, status = 400, details?: any) {
   return new Response(
-    JSON.stringify({
-      success: false,
+    JSON.stringify({ 
       error: message,
-      details: details || null,
+      details: details ? details : undefined,
+      success: false,
       timestamp: new Date().toISOString()
     }),
     {
       status,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     }
   );
 }
 
-export function createSuccessResponse(data: any): Response {
-  console.log('✅ [SUCCESS-RESPONSE] Operation completed successfully');
-  
+// Create standard success response with CORS headers
+export function createSuccessResponse(data: any, status = 200) {
   return new Response(
     JSON.stringify({
+      ...data,
       success: true,
-      data,
       timestamp: new Date().toISOString()
     }),
     {
-      status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     }
   );
 }

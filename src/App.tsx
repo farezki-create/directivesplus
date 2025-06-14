@@ -27,16 +27,6 @@ import DirectivesInfo from "./pages/DirectivesInfo";
 import Soutenir from "./pages/Soutenir";
 import AuthAuditPage from "./features/auth/AuthAuditPage";
 import Auth from "./pages/Auth";
-import CarteAcces from "./pages/CarteAcces";
-
-// Pages de questionnaires
-import AvisGeneral from "./pages/AvisGeneral";
-import MaintienVie from "./pages/MaintienVie";
-import MaladieAvancee from "./pages/MaladieAvancee";
-import GoutsPeurs from "./pages/GoutsPeurs";
-import PersonneConfiance from "./pages/PersonneConfiance";
-import ExemplesPhrases from "./pages/ExemplesPhrases";
-import PlaceholderPage from "./pages/PlaceholderPage";
 
 const queryClient = new QueryClient();
 
@@ -69,18 +59,6 @@ function App() {
               <Route path="/auth-audit-detailed" element={<AuthAuditPage />} />
               <Route path="/directives-info" element={<DirectivesInfo />} />
               <Route path="/soutenir" element={<Soutenir />} />
-              <Route path="/carte-acces" element={<CarteAcces />} />
-              
-              {/* Routes pour les questionnaires */}
-              <Route path="/avis-general" element={<AvisGeneral />} />
-              <Route path="/maintien-vie" element={<MaintienVie />} />
-              <Route path="/maladie-avancee" element={<MaladieAvancee />} />
-              <Route path="/gouts-peurs" element={<GoutsPeurs />} />
-              <Route path="/personne-confiance" element={<PersonneConfiance />} />
-              <Route path="/exemples-phrases" element={<ExemplesPhrases />} />
-              
-              {/* Route générique pour les autres pages */}
-              <Route path="/:pageId" element={<PlaceholderPage />} />
             </Routes>
           </BrowserRouter>
         </TooltipProvider>
