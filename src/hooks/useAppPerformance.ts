@@ -59,12 +59,15 @@ export const useAppPerformance = () => {
 
   // Monitoring des métriques de performance
   const getPerformanceMetrics = useCallback(() => {
+    // Vérification sécurisée de l'existence de performance.memory
+    const memoryInfo = (performance as any).memory;
+    
     return {
       webVitals: webVitalsMonitor.getVitals(),
       performance: performanceMonitor.generateReport(),
       cacheStats: {
         hitRate: cacheManager.get('cache_hit_rate') || 0,
-        memoryUsage: performance.memory ? (performance as any).memory.usedJSHeapSize : null
+        memoryUsage: memoryInfo ? memoryInfo.usedJSHeapSize : null
       }
     };
   }, []);

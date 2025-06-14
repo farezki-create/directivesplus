@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { DatePickerField } from "./calendar/DatePickerField";
+import DatePickerField from "./calendar/DatePickerField";
 import AccessFormHeader from "./form-fields/AccessFormHeader";
 import PersonalInfoFields from "./form-fields/PersonalInfoFields";
 
