@@ -22,11 +22,11 @@ export const useAccessCardGeneration = () => {
       setCodeAcces(generatedCode);
       
       // Générer le QR code même sans profil complet
-      generateQRCodeForDirectives(user.id);
+      generateQRCodeForDirectives(user.id, generatedCode);
     }
   }, [user, profile]);
 
-  const generateQRCodeForDirectives = async (userId: string) => {
+  const generateQRCodeForDirectives = async (userId: string, accessCode: string) => {
     setIsGenerating(true);
     try {
       console.log("AccessCardGeneration - Starting QR generation for user:", userId);
@@ -103,7 +103,7 @@ export const useAccessCardGeneration = () => {
 
       // 3. Fallback amélioré - créer une URL vers mes-directives avec paramètres d'accès
       console.log("AccessCardGeneration - No documents found, using improved fallback");
-      const fallbackUrl = `${window.location.origin}/mes-directives?access=emergency&code=${generatedCode}`;
+      const fallbackUrl = `${window.location.origin}/mes-directives?access=emergency&code=${accessCode}`;
       setQrCodeUrl(fallbackUrl);
       
       console.log("AccessCardGeneration - Fallback URL generated:", fallbackUrl);
