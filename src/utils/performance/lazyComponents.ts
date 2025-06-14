@@ -22,6 +22,7 @@ export const LazyMaladieAvancee = lazy(() => import('@/pages/MaladieAvancee'));
 export const LazyGoutsPeurs = lazy(() => import('@/pages/GoutsPeurs'));
 export const LazyPersonneConfiance = lazy(() => import('@/pages/PersonneConfiance'));
 export const LazyExemplesPhrases = lazy(() => import('@/pages/ExemplesPhrases'));
+export const LazyCarteAcces = lazy(() => import('@/pages/CarteAcces'));
 
 // Fallback de chargement
 export const LoadingFallback = () => (
