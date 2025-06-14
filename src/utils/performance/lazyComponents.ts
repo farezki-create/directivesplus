@@ -10,6 +10,13 @@ export const LazySupabaseAuditPage = lazy(() => import('@/pages/SupabaseAuditPag
 export const LazyAdminMainDashboard = lazy(() => import('@/pages/AdminMainDashboard'));
 export const LazyPdfViewer = lazy(() => import('@/pages/PdfViewer'));
 
+// Code splitting des pages de questionnaires
+export const LazyAvisGeneral = lazy(() => import('@/pages/AvisGeneral'));
+export const LazyMaintienVie = lazy(() => import('@/pages/MaintienVie'));
+export const LazyMaladieAvancee = lazy(() => import('@/pages/MaladieAvancee'));
+export const LazyGoutsPeurs = lazy(() => import('@/pages/GoutsPeurs'));
+export const LazyExemplesPhrases = lazy(() => import('@/pages/ExemplesPhrases'));
+
 // Code splitting des composants lourds
 export const LazySupabaseWarningsAnalyzer = lazy(() => import('@/components/audit/SupabaseWarningsAnalyzer'));
 export const LazySimpleOTPAuth = lazy(() => import('@/components/auth/SimpleOTPAuth'));
