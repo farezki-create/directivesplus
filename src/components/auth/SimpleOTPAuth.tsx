@@ -1,14 +1,14 @@
 
 import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Mail, Shield, ArrowLeft, AlertCircle, Clock, RefreshCw } from "lucide-react";
+import { Mail, Shield, AlertCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { useErrorHandler } from "@/hooks/useErrorHandler";
+import { EmailStep } from "./EmailStep";
+import { OTPStep } from "./OTPStep";
+import { RateLimitDisplay } from "./RateLimitDisplay";
 
 interface SimpleOTPAuthProps {
   onSuccess?: () => void;
@@ -22,7 +22,11 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
   const [error, setError] = useState('');
   const [rateLimitExpiry, setRateLimitExpiry] = useState<Date | null>(null);
 
-  // Check if rate limit has expired
+  const { handleError, handleAuthError } = useErrorHandler({ 
+    component: 'SimpleOTPAuth',
+    showToast: false 
+  });
+
   const isRateLimitActive = rateLimitExpiry && new Date() < rateLimitExpiry;
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
@@ -42,7 +46,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
     setError('');
 
     try {
-      console.log('📧 [SIMPLE-OTP] Envoi Magic Link pour:', email);
+      console.log('📧 [SIMPLE-OTP] Envoi Magic Link pour:', email.substring(0, 3) + '***');
       
       const { error: magicLinkError } = await supabase.auth.signInWithOtp({
         email: email.trim(),
@@ -52,11 +56,9 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
       });
 
       if (magicLinkError) {
-        console.error('❌ [SIMPLE-OTP] Erreur Magic Link:', magicLinkError);
+        await handleAuthError(magicLinkError, 'sendOTP');
         
-        // Handle rate limit specifically
         if (magicLinkError.message.includes('rate limit') || magicLinkError.message.includes('email rate limit exceeded')) {
-          // Set rate limit expiry to 5 minutes from now
           setRateLimitExpiry(new Date(Date.now() + 5 * 60 * 1000));
           setError('Limite d\'envoi d\'emails atteinte. Veuillez patienter 5 minutes avant de réessayer.');
           toast({
@@ -78,7 +80,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
       });
 
     } catch (err: any) {
-      console.error('❌ [SIMPLE-OTP] Erreur:', err);
+      await handleError(err, 'sendOTP');
       setError('Erreur lors de l\'envoi du code');
     } finally {
       setLoading(false);
@@ -96,7 +98,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
     setError('');
 
     try {
-      console.log('🔐 [SIMPLE-OTP] Vérification OTP:', otpCode);
+      console.log('🔐 [SIMPLE-OTP] Vérification OTP pour:', email.substring(0, 3) + '***');
       
       const { data, error: verifyError } = await supabase.auth.verifyOtp({
         email: email.trim(),
@@ -105,13 +107,13 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
       });
 
       if (verifyError) {
-        console.error('❌ [SIMPLE-OTP] Erreur vérification:', verifyError);
+        await handleAuthError(verifyError, 'verifyOTP');
         setError('Code invalide ou expiré');
         return;
       }
 
       if (data.user) {
-        console.log('✅ [SIMPLE-OTP] Connexion réussie:', data.user.id);
+        console.log('✅ [SIMPLE-OTP] Connexion réussie pour user:', data.user.id);
         
         toast({
           title: "Connexion réussie",
@@ -126,7 +128,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
       }
 
     } catch (err: any) {
-      console.error('❌ [SIMPLE-OTP] Erreur:', err);
+      await handleError(err, 'verifyOTP');
       setError('Erreur de vérification');
     } finally {
       setLoading(false);
@@ -156,6 +158,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
       });
 
       if (resendError) {
+        await handleAuthError(resendError, 'resendOTP');
         if (resendError.message.includes('rate limit')) {
           setRateLimitExpiry(new Date(Date.now() + 5 * 60 * 1000));
           setError('Limite d\'envoi atteinte. Veuillez patienter 5 minutes.');
@@ -171,6 +174,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
       });
 
     } catch (err: any) {
+      await handleError(err, 'resendOTP');
       setError('Erreur lors du renvoi');
     } finally {
       setLoading(false);
@@ -215,100 +219,31 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
           </Alert>
         )}
 
-        {isRateLimitActive && (
-          <Alert className="mb-4 border-orange-200 bg-orange-50">
-            <Clock className="h-4 w-4 text-orange-600" />
-            <AlertDescription className="text-orange-800">
-              Limite d'emails atteinte. Veuillez patienter {Math.ceil((rateLimitExpiry!.getTime() - Date.now()) / 60000)} minute(s).
-            </AlertDescription>
-          </Alert>
-        )}
+        <RateLimitDisplay 
+          isActive={!!isRateLimitActive} 
+          expiryDate={rateLimitExpiry} 
+        />
 
         {step === 'email' ? (
-          <form onSubmit={handleEmailSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Adresse email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="votre@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={loading}
-                required
-                autoComplete="email"
-              />
-            </div>
-            
-            <Button 
-              type="submit" 
-              className="w-full" 
-              disabled={loading || isRateLimitActive}
-            >
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Envoyer le code
-            </Button>
-          </form>
+          <EmailStep
+            email={email}
+            setEmail={setEmail}
+            onSubmit={handleEmailSubmit}
+            loading={loading}
+            isRateLimitActive={!!isRateLimitActive}
+          />
         ) : (
-          <form onSubmit={handleOTPSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="otp">Code de vérification (6 chiffres)</Label>
-              <div className="flex justify-center">
-                <InputOTP
-                  value={otpCode}
-                  onChange={setOtpCode}
-                  maxLength={6}
-                  disabled={loading}
-                >
-                  <InputOTPGroup>
-                    <InputOTPSlot index={0} />
-                    <InputOTPSlot index={1} />
-                    <InputOTPSlot index={2} />
-                    <InputOTPSlot index={3} />
-                    <InputOTPSlot index={4} />
-                    <InputOTPSlot index={5} />
-                  </InputOTPGroup>
-                </InputOTP>
-              </div>
-            </div>
-            
-            <Button type="submit" className="w-full" disabled={loading || otpCode.length !== 6}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Se connecter
-            </Button>
-            
-            <div className="flex flex-col gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleResendCode}
-                disabled={loading || isRateLimitActive}
-                className="w-full"
-              >
-                {loading ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : isRateLimitActive ? (
-                  <Clock className="mr-2 h-4 w-4" />
-                ) : (
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                )}
-                {isRateLimitActive 
-                  ? `Patienter ${Math.ceil((rateLimitExpiry!.getTime() - Date.now()) / 60000)}min`
-                  : 'Renvoyer le code'
-                }
-              </Button>
-              
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={goBackToEmail}
-                className="w-full"
-              >
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Changer d'email
-              </Button>
-            </div>
-          </form>
+          <OTPStep
+            email={email}
+            otpCode={otpCode}
+            setOtpCode={setOtpCode}
+            onSubmit={handleOTPSubmit}
+            onResendCode={handleResendCode}
+            onGoBack={goBackToEmail}
+            loading={loading}
+            isRateLimitActive={!!isRateLimitActive}
+            rateLimitExpiry={rateLimitExpiry}
+          />
         )}
       </CardContent>
     </Card>

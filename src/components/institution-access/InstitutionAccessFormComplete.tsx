@@ -1,12 +1,13 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, AlertCircle, Shield, CheckCircle } from "lucide-react";
+import { Loader2, AlertCircle, Shield } from "lucide-react";
 import { useInstitutionCodeAccess } from "@/hooks/useInstitutionCodeAccess";
 import { validateInstitutionAccessForm } from "@/hooks/access/institution/useInstitutionAccessValidation";
+import { useErrorHandler } from "@/hooks/useErrorHandler";
+import { FormFieldsSection } from "./FormFieldsSection";
+import { AccessSuccessView } from "./AccessSuccessView";
 
 export const InstitutionAccessFormComplete: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -19,7 +20,8 @@ export const InstitutionAccessFormComplete: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
-  // Use institution access hook
+  const { handleError } = useErrorHandler({ component: 'InstitutionAccessForm' });
+
   const institutionAccess = useInstitutionCodeAccess(
     submitted ? formData.accessCode : null,
     submitted ? formData.lastName : null,
@@ -31,9 +33,8 @@ export const InstitutionAccessFormComplete: React.FC = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    console.log(`Form field change - ${name}:`, value);
+    console.log(`Form field change - ${name}`);
     
-    // Clear validation errors when user starts typing
     if (validationErrors[name]) {
       setValidationErrors(prev => {
         const newErrors = { ...prev };
@@ -42,7 +43,6 @@ export const InstitutionAccessFormComplete: React.FC = () => {
       });
     }
     
-    // Special handling for professional ID (numbers only)
     if (name === 'professionalId') {
       const numericValue = value.replace(/[^0-9]/g, '');
       setFormData(prev => ({ ...prev, [name]: numericValue }));
@@ -50,7 +50,6 @@ export const InstitutionAccessFormComplete: React.FC = () => {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
     
-    // Reset submission state if there was an error
     if (institutionAccess.error && submitted) {
       setSubmitted(false);
     }
@@ -58,9 +57,8 @@ export const InstitutionAccessFormComplete: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form submission attempt:", formData);
+    console.log("Form submission attempt");
     
-    // Validate form
     const errors = validateInstitutionAccessForm(formData);
     if (Object.keys(errors).length > 0) {
       console.log("Validation errors:", errors);
@@ -76,32 +74,8 @@ export const InstitutionAccessFormComplete: React.FC = () => {
   const isFormValid = formData.lastName && formData.firstName && formData.birthDate && formData.accessCode;
   const isLoading = submitted && institutionAccess.loading;
 
-  // Success state
   if (institutionAccess.accessGranted) {
-    return (
-      <div className="space-y-6">
-        <Alert className="bg-green-50 border-green-200">
-          <CheckCircle className="h-5 w-5 text-green-600" />
-          <AlertDescription className="text-green-800">
-            <strong>Accès autorisé</strong><br />
-            Vous avez maintenant accès aux directives anticipées de{" "}
-            <strong>
-              {institutionAccess.patientData?.first_name} {institutionAccess.patientData?.last_name}
-            </strong>
-          </AlertDescription>
-        </Alert>
-        
-        <div className="flex flex-col gap-3 mt-6">
-          <Button 
-            onClick={() => window.location.href = "/mes-directives"}
-            className="w-full bg-blue-600 hover:bg-blue-700"
-            size="lg"
-          >
-            Consulter les directives maintenant
-          </Button>
-        </div>
-      </div>
-    );
+    return <AccessSuccessView patientData={institutionAccess.patientData} />;
   }
 
   return (
@@ -115,78 +89,12 @@ export const InstitutionAccessFormComplete: React.FC = () => {
       </Alert>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="lastName">Nom de famille du patient *</Label>
-          <Input
-            id="lastName"
-            name="lastName"
-            value={formData.lastName}
-            onChange={handleChange}
-            placeholder="NOM"
-            required
-            disabled={isLoading}
-            autoComplete="family-name"
-            className={validationErrors.lastName ? "border-red-500" : ""}
-          />
-          {validationErrors.lastName && (
-            <p className="text-sm text-red-500">{validationErrors.lastName}</p>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="firstName">Prénom du patient *</Label>
-          <Input
-            id="firstName"
-            name="firstName"
-            value={formData.firstName}
-            onChange={handleChange}
-            placeholder="Prénom"
-            required
-            disabled={isLoading}
-            autoComplete="given-name"
-            className={validationErrors.firstName ? "border-red-500" : ""}
-          />
-          {validationErrors.firstName && (
-            <p className="text-sm text-red-500">{validationErrors.firstName}</p>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="birthDate">Date de naissance *</Label>
-          <Input
-            id="birthDate"
-            name="birthDate"
-            type="date"
-            value={formData.birthDate}
-            onChange={handleChange}
-            required
-            disabled={isLoading}
-            autoComplete="bday"
-            className={validationErrors.birthDate ? "border-red-500" : ""}
-          />
-          {validationErrors.birthDate && (
-            <p className="text-sm text-red-500">{validationErrors.birthDate}</p>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="accessCode">Code d'accès partagé *</Label>
-          <Input
-            id="accessCode"
-            name="accessCode"
-            type="text"
-            value={formData.accessCode}
-            onChange={handleChange}
-            placeholder="Code généré par le patient"
-            required
-            disabled={isLoading}
-            autoComplete="off"
-            className={validationErrors.accessCode ? "border-red-500" : ""}
-          />
-          {validationErrors.accessCode && (
-            <p className="text-sm text-red-500">{validationErrors.accessCode}</p>
-          )}
-        </div>
+        <FormFieldsSection
+          formData={formData}
+          onChange={handleChange}
+          validationErrors={validationErrors}
+          isLoading={isLoading}
+        />
 
         {institutionAccess.error && (
           <Alert variant="destructive">
