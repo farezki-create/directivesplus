@@ -15,14 +15,12 @@ interface SimpleOTPAuthProps {
 }
 
 const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
-  const [step, setStep] = useState<'email' | 'otp' | 'password'>('email');
+  const [step, setStep] = useState<'email' | 'otp'>('email');
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [otpCode, setOtpCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [rateLimitExpiry, setRateLimitExpiry] = useState<Date | null>(null);
-  const [showPasswordLogin, setShowPasswordLogin] = useState(false);
 
   // Check if rate limit has expired
   const isRateLimitActive = rateLimitExpiry && new Date() < rateLimitExpiry;
@@ -60,11 +58,10 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
         if (magicLinkError.message.includes('rate limit') || magicLinkError.message.includes('email rate limit exceeded')) {
           // Set rate limit expiry to 5 minutes from now
           setRateLimitExpiry(new Date(Date.now() + 5 * 60 * 1000));
-          setShowPasswordLogin(true);
-          setError('Limite d\'envoi d\'emails atteinte. Veuillez utiliser la connexion par mot de passe ou patienter 5 minutes.');
+          setError('Limite d\'envoi d\'emails atteinte. Veuillez patienter 5 minutes avant de réessayer.');
           toast({
             title: "Limite d'emails atteinte",
-            description: "Vous pouvez utiliser la connexion par mot de passe en attendant.",
+            description: "Veuillez patienter 5 minutes avant de réessayer.",
             variant: "destructive",
           });
           return;
@@ -83,60 +80,6 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
     } catch (err: any) {
       console.error('❌ [SIMPLE-OTP] Erreur:', err);
       setError('Erreur lors de l\'envoi du code');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handlePasswordLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email.trim() || !password.trim()) {
-      setError('Veuillez saisir votre email et mot de passe');
-      return;
-    }
-
-    setLoading(true);
-    setError('');
-
-    try {
-      console.log('🔐 [PASSWORD-LOGIN] Connexion par mot de passe pour:', email);
-      
-      const { data, error: loginError } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password: password
-      });
-
-      if (loginError) {
-        console.error('❌ [PASSWORD-LOGIN] Erreur connexion:', loginError);
-        
-        if (loginError.message.includes('Invalid login credentials')) {
-          setError('Email ou mot de passe incorrect');
-        } else if (loginError.message.includes('Email not confirmed')) {
-          setError('Veuillez confirmer votre email avant de vous connecter');
-        } else {
-          setError(loginError.message);
-        }
-        return;
-      }
-
-      if (data.user) {
-        console.log('✅ [PASSWORD-LOGIN] Connexion réussie:', data.user.id);
-        
-        toast({
-          title: "Connexion réussie",
-          description: "Vous êtes maintenant connecté",
-        });
-
-        if (onSuccess) {
-          onSuccess();
-        } else {
-          window.location.href = '/profile';
-        }
-      }
-
-    } catch (err: any) {
-      console.error('❌ [PASSWORD-LOGIN] Erreur:', err);
-      setError('Erreur de connexion');
     } finally {
       setLoading(false);
     }
@@ -237,19 +180,6 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
   const goBackToEmail = () => {
     setStep('email');
     setOtpCode('');
-    setPassword('');
-    setError('');
-    setShowPasswordLogin(false);
-  };
-
-  const switchToPasswordMode = () => {
-    setStep('password');
-    setError('');
-  };
-
-  const switchToEmailMode = () => {
-    setStep('email');
-    setShowPasswordLogin(false);
     setError('');
   };
 
@@ -262,11 +192,6 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
               <Mail className="h-5 w-5" />
               Connexion Sécurisée
             </>
-          ) : step === 'password' ? (
-            <>
-              <Shield className="h-5 w-5" />
-              Connexion par mot de passe
-            </>
           ) : (
             <>
               <Shield className="h-5 w-5" />
@@ -277,8 +202,6 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
         <CardDescription>
           {step === 'email' 
             ? 'Saisissez votre email pour recevoir un code'
-            : step === 'password'
-            ? 'Saisissez votre mot de passe'
             : `Code envoyé à ${email}`
           }
         </CardDescription>
@@ -296,7 +219,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
           <Alert className="mb-4 border-orange-200 bg-orange-50">
             <Clock className="h-4 w-4 text-orange-600" />
             <AlertDescription className="text-orange-800">
-              Limite d'emails atteinte. Vous pouvez utiliser la connexion par mot de passe ou patienter {Math.ceil((rateLimitExpiry!.getTime() - Date.now()) / 60000)} minute(s).
+              Limite d'emails atteinte. Veuillez patienter {Math.ceil((rateLimitExpiry!.getTime() - Date.now()) / 60000)} minute(s).
             </AlertDescription>
           </Alert>
         )}
@@ -324,63 +247,6 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
             >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Envoyer le code
-            </Button>
-
-            {showPasswordLogin && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={switchToPasswordMode}
-                className="w-full mt-2"
-              >
-                <Shield className="mr-2 h-4 w-4" />
-                Connexion par mot de passe
-              </Button>
-            )}
-          </form>
-        ) : step === 'password' ? (
-          <form onSubmit={handlePasswordLogin} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email-password">Adresse email</Label>
-              <Input
-                id="email-password"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={loading}
-                required
-                autoComplete="email"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="password">Mot de passe</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Votre mot de passe"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={loading}
-                required
-                autoComplete="current-password"
-              />
-            </div>
-            
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Se connecter
-            </Button>
-            
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={switchToEmailMode}
-              className="w-full"
-              disabled={isRateLimitActive}
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Retour à la connexion par email
             </Button>
           </form>
         ) : (
@@ -440,16 +306,6 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Changer d'email
-              </Button>
-              
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={switchToPasswordMode}
-                className="w-full"
-              >
-                <Shield className="mr-2 h-4 w-4" />
-                Connexion par mot de passe
               </Button>
             </div>
           </form>
