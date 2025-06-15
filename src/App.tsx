@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -59,6 +60,9 @@ import PolitiqueConfidentialite from "./pages/PolitiqueConfidentialite";
 import Confidentialite from "./pages/Confidentialite";
 import EnSavoirPlus from "./pages/EnSavoirPlus";
 
+// Ajout de la page Demande Abonnement Institutionnel
+import DemandeAbonnementInstitutionnel from "./pages/DemandeAbonnementInstitutionnel";
+
 // Composant de chargement
 import { LoadingFallback } from "@/utils/performance/lazyComponents";
 
@@ -87,7 +91,7 @@ function App() {
                   <Route path="/mes-directives" element={<MesDirectives />} />
                   <Route path="/acces-institution" element={<AccesInstitution />} />
                   <Route path="/pdf-viewer/:documentId" element={<ProtectedRoute><PdfViewer /></ProtectedRoute>} />
-                  
+                  <Route path="/demande-abonnement-institutionnel" element={<DemandeAbonnementInstitutionnel />} />
                   {/* Pages Admin avec protection renforcée */}
                   <Route path="/admin" element={
                     <ProtectedRoute requireAdmin={true}>
@@ -181,3 +185,4 @@ function App() {
 }
 
 export default App;
+
