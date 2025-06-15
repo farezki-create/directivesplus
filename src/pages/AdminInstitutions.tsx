@@ -3,11 +3,12 @@ import React from "react";
 import AppNavigation from "@/components/AppNavigation";
 import InstitutionManagement from "@/components/admin/InstitutionManagement";
 import { useAuth } from "@/hooks/useAuth";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import BackButton from '@/components/ui/back-button';
 
 const AdminInstitutions = () => {
   const { isAdmin, loading } = useAuth();
+  const navigate = useNavigate();
 
   if (loading) {
     return (
@@ -30,7 +31,7 @@ const AdminInstitutions = () => {
       
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
-          <BackButton label="Retour au Dashboard" onClick={() => window.location.href = '/admin/dashboard'} />
+          <BackButton label="Retour" onClick={() => navigate(-1)} />
           
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
