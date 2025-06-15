@@ -5,6 +5,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { SecurityProvider } from "@/components/security/SecurityProvider";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import ScrollToTop from "@/components/ScrollToTop";
 import { Suspense } from "react";
 
@@ -32,6 +34,8 @@ import SuiviPalliatif from "./pages/SuiviPalliatif";
 import AccesSoinsPalliatifs from "./pages/AccesSoinsPalliatifs";
 import PersonneConfiance from "./pages/PersonneConfiance";
 import Community from "./pages/Community";
+import SecurityAuditPage from "./pages/SecurityAuditPage";
+import SupabaseAuditPage from "./pages/SupabaseAuditPage";
 
 // Pages de questionnaires
 import AvisGeneral from "./pages/AvisGeneral";
@@ -56,54 +60,85 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <ScrollToTop />
-            <Suspense fallback={<LoadingFallback />}>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/rediger" element={<Rediger />} />
-                <Route path="/synthesis" element={<Synthesis />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/directives-access" element={<DirectivesAccess />} />
-                <Route path="/access-code" element={<AccessCode />} />
-                <Route path="/mes-directives" element={<MesDirectives />} />
-                <Route path="/acces-institution" element={<AccesInstitution />} />
-                <Route path="/pdf-viewer/:documentId" element={<PdfViewer />} />
-                <Route path="/admin" element={<Admin />} />
-                <Route path="/admin/dashboard" element={<AdminMainDashboardPage />} />
-                <Route path="/admin/institutions" element={<AdminInstitutions />} />
-                <Route path="/admin/supabase-audit" element={<AdminSupabaseAudit />} />
-                <Route path="/auth-audit" element={<AuthAudit />} />
-                <Route path="/auth-audit-detailed" element={<AuthAuditPage />} />
-                <Route path="/directives-info" element={<DirectivesInfo />} />
-                <Route path="/soutenir" element={<Soutenir />} />
-                <Route path="/carte-acces" element={<CarteAcces />} />
-                <Route path="/suivi-palliatif" element={<SuiviPalliatif />} />
-                <Route path="/acces-soins-palliatifs" element={<AccesSoinsPalliatifs />} />
-                <Route path="/personne-confiance" element={<PersonneConfiance />} />
-                <Route path="/community" element={<Community />} />
-                
-                {/* Routes des questionnaires */}
-                <Route path="/avis-general" element={<AvisGeneral />} />
-                <Route path="/maintien-vie" element={<MaintienVie />} />
-                <Route path="/maladie-avancee" element={<MaladieAvancee />} />
-                <Route path="/gouts-peurs" element={<GoutsPeurs />} />
-                <Route path="/exemples-phrases" element={<ExemplesPhrases />} />
+        <SecurityProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <ScrollToTop />
+              <Suspense fallback={<LoadingFallback />}>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/rediger" element={<ProtectedRoute><Rediger /></ProtectedRoute>} />
+                  <Route path="/synthesis" element={<ProtectedRoute><Synthesis /></ProtectedRoute>} />
+                  <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                  <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                  <Route path="/directives-access" element={<DirectivesAccess />} />
+                  <Route path="/access-code" element={<AccessCode />} />
+                  <Route path="/mes-directives" element={<MesDirectives />} />
+                  <Route path="/acces-institution" element={<AccesInstitution />} />
+                  <Route path="/pdf-viewer/:documentId" element={<ProtectedRoute><PdfViewer /></ProtectedRoute>} />
+                  
+                  {/* Pages Admin avec protection renforcée */}
+                  <Route path="/admin" element={
+                    <ProtectedRoute requireAdmin={true}>
+                      <Admin />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/admin/dashboard" element={
+                    <ProtectedRoute requireAdmin={true}>
+                      <AdminMainDashboardPage />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/admin/institutions" element={
+                    <ProtectedRoute requireAdmin={true}>
+                      <AdminInstitutions />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/admin/supabase-audit" element={
+                    <ProtectedRoute requireAdmin={true}>
+                      <AdminSupabaseAudit />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/security-audit" element={
+                    <ProtectedRoute requireAdmin={true}>
+                      <SecurityAuditPage />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/supabase-audit" element={
+                    <ProtectedRoute requireAdmin={true}>
+                      <SupabaseAuditPage />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/auth-audit" element={<AuthAudit />} />
+                  <Route path="/auth-audit-detailed" element={<AuthAuditPage />} />
+                  <Route path="/directives-info" element={<DirectivesInfo />} />
+                  <Route path="/soutenir" element={<Soutenir />} />
+                  <Route path="/carte-acces" element={<CarteAcces />} />
+                  <Route path="/suivi-palliatif" element={<SuiviPalliatif />} />
+                  <Route path="/acces-soins-palliatifs" element={<AccesSoinsPalliatifs />} />
+                  <Route path="/personne-confiance" element={<PersonneConfiance />} />
+                  <Route path="/community" element={<Community />} />
+                  
+                  {/* Routes des questionnaires */}
+                  <Route path="/avis-general" element={<ProtectedRoute><AvisGeneral /></ProtectedRoute>} />
+                  <Route path="/maintien-vie" element={<ProtectedRoute><MaintienVie /></ProtectedRoute>} />
+                  <Route path="/maladie-avancee" element={<ProtectedRoute><MaladieAvancee /></ProtectedRoute>} />
+                  <Route path="/gouts-peurs" element={<ProtectedRoute><GoutsPeurs /></ProtectedRoute>} />
+                  <Route path="/exemples-phrases" element={<ProtectedRoute><ExemplesPhrases /></ProtectedRoute>} />
 
-                {/* Routes légales */}
-                <Route path="/mentions-legales" element={<MentionsLegales />} />
-                <Route path="/politique-confidentialite" element={<PolitiqueConfidentialite />} />
-                <Route path="/confidentialite" element={<Confidentialite />} />
-                <Route path="/en-savoir-plus" element={<EnSavoirPlus />} />
-              </Routes>
-            </Suspense>
-          </BrowserRouter>
-        </TooltipProvider>
+                  {/* Routes légales */}
+                  <Route path="/mentions-legales" element={<MentionsLegales />} />
+                  <Route path="/politique-confidentialite" element={<PolitiqueConfidentialite />} />
+                  <Route path="/confidentialite" element={<Confidentialite />} />
+                  <Route path="/en-savoir-plus" element={<EnSavoirPlus />} />
+                </Routes>
+              </Suspense>
+            </BrowserRouter>
+          </TooltipProvider>
+        </SecurityProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

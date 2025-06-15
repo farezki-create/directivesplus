@@ -6,11 +6,21 @@ import { ReactNode } from "react";
 interface ProtectedRouteProps {
   children: ReactNode;
   requireAuth?: boolean;
+  requireAdmin?: boolean;
 }
 
-const ProtectedRoute = ({ children, requireAuth = true }: ProtectedRouteProps) => {
-  const { isAuthenticated, isLoading } = useAuth();
+const ProtectedRoute = ({ children, requireAuth = true, requireAdmin = false }: ProtectedRouteProps) => {
+  const { isAuthenticated, isLoading, user } = useAuth();
   const location = useLocation();
+
+  console.log('🛡️ [PROTECTED-ROUTE] Vérification accès:', {
+    pathname: location.pathname,
+    isAuthenticated,
+    isLoading,
+    requireAuth,
+    requireAdmin,
+    userEmail: user?.email
+  });
 
   // Show loading state while checking authentication
   if (isLoading) {
@@ -22,6 +32,26 @@ const ProtectedRoute = ({ children, requireAuth = true }: ProtectedRouteProps) =
         </div>
       </div>
     );
+  }
+
+  // Check admin access if required
+  if (requireAdmin) {
+    const isAdmin = user?.email?.endsWith('@directivesplus.fr') || false;
+    
+    console.log('🔐 [PROTECTED-ROUTE] Vérification admin:', {
+      userEmail: user?.email,
+      isAdmin,
+      isAuthenticated
+    });
+    
+    if (!isAuthenticated) {
+      return <Navigate to="/auth" state={{ from: location }} replace />;
+    }
+    
+    if (!isAdmin) {
+      console.log('❌ [PROTECTED-ROUTE] Accès admin refusé');
+      return <Navigate to="/" replace />;
+    }
   }
 
   // Define routes that should be publicly accessible
@@ -92,6 +122,7 @@ const ProtectedRoute = ({ children, requireAuth = true }: ProtectedRouteProps) =
     return <Navigate to="/profile" replace />;
   }
 
+  console.log('✅ [PROTECTED-ROUTE] Accès autorisé');
   return <>{children}</>;
 };
 
