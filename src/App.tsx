@@ -21,14 +21,6 @@ import AccessCode from "./pages/AccessCode";
 import MesDirectives from "./pages/MesDirectives";
 import AccesInstitution from "./pages/AccesInstitution";
 import PdfViewer from "./pages/PdfViewer";
-import Admin from "./pages/Admin";
-import AdminMainDashboardPage from "./pages/AdminMainDashboard";
-import AdminInstitutions from "./pages/AdminInstitutions";
-import AdminSupabaseAudit from "./pages/AdminSupabaseAudit";
-import AuthAudit from "./pages/AuthAudit";
-import DirectivesInfo from "./pages/DirectivesInfo";
-import Soutenir from "./pages/Soutenir";
-import AuthAuditPage from "./features/auth/AuthAuditPage";
 import Auth from "./pages/Auth";
 import SuiviPalliatif from "./pages/SuiviPalliatif";
 import AccesSoinsPalliatifs from "./pages/AccesSoinsPalliatifs";
@@ -36,6 +28,22 @@ import PersonneConfiance from "./pages/PersonneConfiance";
 import Community from "./pages/Community";
 import SecurityAuditPage from "./pages/SecurityAuditPage";
 import SupabaseAuditPage from "./pages/SupabaseAuditPage";
+
+// Pages Admin
+import Admin from "./pages/Admin";
+import AdminMainDashboardPage from "./pages/AdminMainDashboard";
+import AdminInstitutions from "./pages/AdminInstitutions";
+import AdminSupabaseAudit from "./pages/AdminSupabaseAudit";
+import AdminUsers from "./pages/AdminUsers";
+import AdminMonitoring from "./pages/AdminMonitoring";
+import AdminOptimization from "./pages/AdminOptimization";
+import AdminStats from "./pages/AdminStats";
+
+// Pages d'audit
+import AuthAudit from "./pages/AuthAudit";
+import DirectivesInfo from "./pages/DirectivesInfo";
+import Soutenir from "./pages/Soutenir";
+import AuthAuditPage from "./features/auth/AuthAuditPage";
 
 // Pages de questionnaires
 import AvisGeneral from "./pages/AvisGeneral";
@@ -91,9 +99,29 @@ function App() {
                       <AdminMainDashboardPage />
                     </ProtectedRoute>
                   } />
+                  <Route path="/admin/users" element={
+                    <ProtectedRoute requireAdmin={true}>
+                      <AdminUsers />
+                    </ProtectedRoute>
+                  } />
                   <Route path="/admin/institutions" element={
                     <ProtectedRoute requireAdmin={true}>
                       <AdminInstitutions />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/admin/monitoring" element={
+                    <ProtectedRoute requireAdmin={true}>
+                      <AdminMonitoring />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/admin/optimization" element={
+                    <ProtectedRoute requireAdmin={true}>
+                      <AdminOptimization />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/admin/stats" element={
+                    <ProtectedRoute requireAdmin={true}>
+                      <AdminStats />
                     </ProtectedRoute>
                   } />
                   <Route path="/admin/supabase-audit" element={
@@ -101,6 +129,13 @@ function App() {
                       <AdminSupabaseAudit />
                     </ProtectedRoute>
                   } />
+                  <Route path="/admin/security-audit" element={
+                    <ProtectedRoute requireAdmin={true}>
+                      <SecurityAuditPage />
+                    </ProtectedRoute>
+                  } />
+                  
+                  {/* Pages d'audit autonomes */}
                   <Route path="/security-audit" element={
                     <ProtectedRoute requireAdmin={true}>
                       <SecurityAuditPage />
