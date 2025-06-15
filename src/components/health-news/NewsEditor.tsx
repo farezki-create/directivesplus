@@ -41,6 +41,27 @@ const mediaTypeLabels = {
   link: "Lien externe",
 };
 
+// Ajout pour l’affichage intelligent de l’icône du média
+import { Image as ImageIcon, Video, FileAudio, FileText, Link2 } from "lucide-react";
+
+// Utilitaire pour trouver l’icône selon le type
+function getMediaIcon(mediaType: string) {
+  switch (mediaType) {
+    case "image":
+      return <ImageIcon className="h-4 w-4" />;
+    case "video":
+      return <Video className="h-4 w-4" />;
+    case "audio":
+      return <FileAudio className="h-4 w-4" />;
+    case "document":
+      return <FileText className="h-4 w-4" />;
+    case "link":
+      return <Link2 className="h-4 w-4" />;
+    default:
+      return <FileText className="h-4 w-4" />;
+  }
+}
+
 const NewsEditor = ({ onClose, onSave, existingNews }: NewsEditorProps) => {
   const { createNews, updateNews, addMedia } = useHealthNews();
   const [formData, setFormData] = useState<CreateHealthNewsData>({
@@ -72,20 +93,38 @@ const NewsEditor = ({ onClose, onSave, existingNews }: NewsEditorProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const newsId = existingNews
-      ? (await updateNews(existingNews.id, { ...formData })).id
-      : (await createNews(formData))?.id;
+    let newsId = existingNews?.id;
+    let createdNews = null;
+    let success = true;
+
+    if (existingNews) {
+      // updateNews retourne un booléen
+      success = await updateNews(existingNews.id, { ...formData });
+      newsId = existingNews.id;
+    } else {
+      // createNews retourne l’objet HealthNews ou null
+      createdNews = await createNews(formData);
+      newsId = createdNews?.id;
+      success = !!createdNews;
+    }
 
     // Envoi des médias
-    if (newsId && mediaList.length > 0) {
+    if (newsId && success && mediaList.length > 0) {
       for (const media of mediaList) {
         await addMedia(newsId, {
           ...media,
           news_id: newsId,
           display_order: 0,
+          // S’assurer que media_name est toujours défini (le champ est requis côté Typage)
+          media_name: media.media_name || "",
+          caption: media.caption,
+          media_type: media.media_type,
+          media_url: media.media_url,
+          // fields optionnels ignorés
         });
       }
     }
+
     onSave();
   };
 
@@ -262,7 +301,7 @@ const NewsEditor = ({ onClose, onSave, existingNews }: NewsEditorProps) => {
                         className="text-red-600"
                         onClick={() => removeMedia(idx)}
                       >
-                        <MediaIcon name="image" className="h-4 w-4" />
+                        {getMediaIcon(media.media_type)}
                       </Button>
                     </div>
                   ))}
