@@ -8,24 +8,37 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Shield, Eye, Lock, AlertTriangle, CheckCircle, RefreshCw } from 'lucide-react';
 import { StrictRLSManager } from '@/utils/security/strictRLSManager';
 import { useAuth } from '@/hooks/useAuth';
-
-interface LogEntry {
-  id: string;
-  created_at?: string;
-  accessed_at?: string;
-  attempt_time?: string;
-  date_consultation?: string;
-  event_type?: string;
-  user_id?: string;
-  success?: boolean;
-  ip_address?: string;
-  details?: any;
-  risk_level?: string;
-}
+import {
+  AccessLog,
+  AccessCodeAttempt,
+  DocumentAccessLog,
+  MedicalAccessAudit,
+  InstitutionAccessLog,
+  SecurityAuditLog,
+  SymptomAccessLog,
+  SmsLog
+} from '@/types/logs';
 
 const StrictRLSAuditDashboard = () => {
   const { isAdmin } = useAuth();
-  const [logs, setLogs] = useState<{[key: string]: LogEntry[]}>({});
+  const [logs, setLogs] = useState<{
+    security: SecurityAuditLog[];
+    medical: MedicalAccessAudit[];
+    documents: DocumentAccessLog[];
+    institution: InstitutionAccessLog[];
+    attempts?: AccessCodeAttempt[];
+    access: AccessLog[];
+    symptoms: SymptomAccessLog[];
+    sms: SmsLog[];
+  }>({
+    security: [],
+    medical: [],
+    documents: [],
+    institution: [],
+    access: [],
+    symptoms: [],
+    sms: []
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('security');
@@ -35,29 +48,79 @@ const StrictRLSAuditDashboard = () => {
     setError(null);
     
     try {
-      const logTypes = [
-        { key: 'security', fetcher: () => StrictRLSManager.getSecurityAuditLogs() },
-        { key: 'medical', fetcher: () => StrictRLSManager.getMedicalAccessAudit() },
-        { key: 'documents', fetcher: () => StrictRLSManager.getDocumentAccessLogs() },
-        { key: 'institution', fetcher: () => StrictRLSManager.getInstitutionAccessLogs() },
-      ];
+      const logData = {
+        security: [] as SecurityAuditLog[],
+        medical: [] as MedicalAccessAudit[],
+        documents: [] as DocumentAccessLog[],
+        institution: [] as InstitutionAccessLog[],
+        access: [] as AccessLog[],
+        symptoms: [] as SymptomAccessLog[],
+        sms: [] as SmsLog[]
+      };
+
+      // Charger les logs de sécurité
+      try {
+        const securityLogs = await StrictRLSManager.getSecurityAuditLogs();
+        logData.security = securityLogs;
+      } catch (err) {
+        console.warn('Failed to load security logs:', err);
+      }
+
+      // Charger les logs médicaux
+      try {
+        const medicalLogs = await StrictRLSManager.getMedicalAccessAudit();
+        logData.medical = medicalLogs;
+      } catch (err) {
+        console.warn('Failed to load medical logs:', err);
+      }
+
+      // Charger les logs de documents
+      try {
+        const documentLogs = await StrictRLSManager.getDocumentAccessLogs();
+        logData.documents = documentLogs;
+      } catch (err) {
+        console.warn('Failed to load document logs:', err);
+      }
+
+      // Charger les logs institutionnels
+      try {
+        const institutionLogs = await StrictRLSManager.getInstitutionAccessLogs();
+        logData.institution = institutionLogs;
+      } catch (err) {
+        console.warn('Failed to load institution logs:', err);
+      }
+
+      // Charger les logs d'accès général
+      try {
+        const accessLogs = await StrictRLSManager.getAccessLogs();
+        logData.access = accessLogs;
+      } catch (err) {
+        console.warn('Failed to load access logs:', err);
+      }
+
+      // Charger les logs de symptômes
+      try {
+        const symptomLogs = await StrictRLSManager.getSymptomAccessLogs();
+        logData.symptoms = symptomLogs;
+      } catch (err) {
+        console.warn('Failed to load symptom logs:', err);
+      }
+
+      // Charger les logs SMS
+      try {
+        const smsLogs = await StrictRLSManager.getSmsLogs();
+        logData.sms = smsLogs;
+      } catch (err) {
+        console.warn('Failed to load SMS logs:', err);
+      }
 
       // Ajouter les logs admin-only si l'utilisateur est admin
       if (isAdmin) {
-        logTypes.push(
-          { key: 'attempts', fetcher: () => StrictRLSManager.getAccessCodeAttempts() }
-        );
-      }
-
-      const logData: {[key: string]: LogEntry[]} = {};
-      
-      for (const { key, fetcher } of logTypes) {
         try {
-          const data = await fetcher();
-          logData[key] = data || [];
+          const attemptLogs = await StrictRLSManager.getAccessCodeAttempts();
+          logData.attempts = attemptLogs;
         } catch (err) {
-          console.warn(`Failed to load ${key} logs:`, err);
-          logData[key] = [];
+          console.warn('Failed to load attempt logs:', err);
         }
       }
 
@@ -94,7 +157,7 @@ const StrictRLSAuditDashboard = () => {
     return new Date(dateString).toLocaleString('fr-FR');
   };
 
-  const renderLogTable = (logEntries: LogEntry[], type: string) => {
+  const renderLogTable = (logEntries: any[], type: string) => {
     if (!logEntries.length) {
       return (
         <div className="text-center py-8 text-gray-500">
@@ -112,7 +175,7 @@ const StrictRLSAuditDashboard = () => {
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="font-medium text-sm">
-                    {log.event_type || 'Accès système'}
+                    {log.event_type || log.access_type || 'Accès système'}
                   </span>
                   {log.risk_level && getRiskBadge(log.risk_level)}
                   {log.success !== undefined && (
@@ -120,18 +183,27 @@ const StrictRLSAuditDashboard = () => {
                       {log.success ? <CheckCircle className="w-3 h-3" /> : <AlertTriangle className="w-3 h-3" />}
                     </Badge>
                   )}
+                  {log.access_granted !== undefined && (
+                    <Badge variant={log.access_granted ? 'default' : 'destructive'}>
+                      {log.access_granted ? <CheckCircle className="w-3 h-3" /> : <AlertTriangle className="w-3 h-3" />}
+                    </Badge>
+                  )}
                 </div>
                 <div className="text-xs text-gray-600 space-y-1">
                   <div>
                     Horodatage: {formatDate(
-                      log.created_at || log.accessed_at || log.attempt_time || log.date_consultation
+                      log.created_at || log.accessed_at || log.attempt_time || 
+                      log.date_consultation || log.sent_at
                     )}
                   </div>
                   {log.ip_address && (
-                    <div>IP: {log.ip_address}</div>
+                    <div>IP: {String(log.ip_address)}</div>
                   )}
                   {log.user_id && (
                     <div>Utilisateur: {log.user_id.substring(0, 8)}...</div>
+                  )}
+                  {log.patient_id && (
+                    <div>Patient: {log.patient_id.substring(0, 8)}...</div>
                   )}
                   {log.details && typeof log.details === 'object' && (
                     <div className="mt-2 p-2 bg-gray-50 rounded text-xs">
@@ -177,7 +249,7 @@ const StrictRLSAuditDashboard = () => {
         <AlertDescription className="text-blue-800">
           <strong>Conformité HDS</strong>
           <br />
-          Tous les accès aux logs sont auditĂ©s et protégés par des politiques RLS strictes.
+          Tous les accès aux logs sont audités et protégés par des politiques RLS strictes.
           {!isAdmin && " Accès limité aux logs personnels uniquement."}
         </AlertDescription>
       </Alert>
@@ -200,7 +272,7 @@ const StrictRLSAuditDashboard = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {renderLogTable(logs.security || [], 'security')}
+              {renderLogTable(logs.security, 'security')}
             </CardContent>
           </Card>
         </TabsContent>
@@ -214,7 +286,7 @@ const StrictRLSAuditDashboard = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {renderLogTable(logs.medical || [], 'medical')}
+              {renderLogTable(logs.medical, 'medical')}
             </CardContent>
           </Card>
         </TabsContent>
@@ -228,7 +300,7 @@ const StrictRLSAuditDashboard = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {renderLogTable(logs.documents || [], 'documents')}
+              {renderLogTable(logs.documents, 'documents')}
             </CardContent>
           </Card>
         </TabsContent>
@@ -242,12 +314,12 @@ const StrictRLSAuditDashboard = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {renderLogTable(logs.institution || [], 'institution')}
+              {renderLogTable(logs.institution, 'institution')}
             </CardContent>
           </Card>
         </TabsContent>
 
-        {isAdmin && (
+        {isAdmin && logs.attempts && (
           <TabsContent value="attempts">
             <Card>
               <CardHeader>
@@ -257,7 +329,7 @@ const StrictRLSAuditDashboard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {renderLogTable(logs.attempts || [], 'attempts')}
+                {renderLogTable(logs.attempts, 'attempts')}
               </CardContent>
             </Card>
           </TabsContent>

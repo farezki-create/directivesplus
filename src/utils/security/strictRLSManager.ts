@@ -10,14 +10,13 @@ export class StrictRLSManager {
    */
   static async isCurrentUserAdmin(): Promise<boolean> {
     try {
-      const { data, error } = await supabase.rpc('is_admin_user');
-      if (error) {
-        console.error('Error checking admin status:', error);
-        return false;
-      }
-      return data || false;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user?.email) return false;
+      
+      // Vérification simple basée sur l'email
+      return user.email.endsWith('@directivesplus.fr');
     } catch (error) {
-      console.error('Error in admin check:', error);
+      console.error('Error checking admin status:', error);
       return false;
     }
   }
@@ -27,20 +26,18 @@ export class StrictRLSManager {
    */
   static async getAccessLogs(userId?: string) {
     try {
-      // Logger l'accès aux logs
       await this.auditLogAccess('access_logs', 'SELECT');
 
       let query = supabase.from('access_logs').select('*');
       
       if (userId) {
-        // Filtrer par utilisateur si spécifié
-        query = query.eq('user_id', userId);
+        query = query.eq('directive_id', userId);
       }
 
       const { data, error } = await query.order('accessed_at', { ascending: false });
       
       if (error) throw error;
-      return data;
+      return data || [];
     } catch (error) {
       console.error('Error accessing access logs:', error);
       throw error;
@@ -66,7 +63,7 @@ export class StrictRLSManager {
         .limit(100);
 
       if (error) throw error;
-      return data;
+      return data || [];
     } catch (error) {
       console.error('Error accessing access code attempts:', error);
       throw error;
@@ -89,7 +86,7 @@ export class StrictRLSManager {
       const { data, error } = await query.order('date_consultation', { ascending: false });
       
       if (error) throw error;
-      return data;
+      return data || [];
     } catch (error) {
       console.error('Error accessing document access logs:', error);
       throw error;
@@ -112,7 +109,7 @@ export class StrictRLSManager {
       const { data, error } = await query.order('accessed_at', { ascending: false });
       
       if (error) throw error;
-      return data;
+      return data || [];
     } catch (error) {
       console.error('Error accessing medical access audit:', error);
       throw error;
@@ -135,7 +132,7 @@ export class StrictRLSManager {
       const { data, error } = await query.order('accessed_at', { ascending: false });
       
       if (error) throw error;
-      return data;
+      return data || [];
     } catch (error) {
       console.error('Error accessing institution access logs:', error);
       throw error;
@@ -158,7 +155,7 @@ export class StrictRLSManager {
       const { data, error } = await query.order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data;
+      return data || [];
     } catch (error) {
       console.error('Error accessing security audit logs:', error);
       throw error;
@@ -181,7 +178,7 @@ export class StrictRLSManager {
       const { data, error } = await query.order('accessed_at', { ascending: false });
       
       if (error) throw error;
-      return data;
+      return data || [];
     } catch (error) {
       console.error('Error accessing symptom access logs:', error);
       throw error;
@@ -204,7 +201,7 @@ export class StrictRLSManager {
       const { data, error } = await query.order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data;
+      return data || [];
     } catch (error) {
       console.error('Error accessing SMS logs:', error);
       throw error;
@@ -216,16 +213,21 @@ export class StrictRLSManager {
    */
   private static async auditLogAccess(tableName: string, operation: string) {
     try {
-      const { error } = await supabase.rpc('log_security_event_secure', {
-        p_event_type: 'log_table_access',
-        p_details: {
-          table_name: tableName,
-          operation: operation,
-          timestamp: new Date().toISOString(),
-          access_method: 'frontend_query'
-        },
-        p_risk_level: 'medium'
-      });
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      const { error } = await supabase
+        .from('security_audit_logs')
+        .insert({
+          event_type: 'log_table_access',
+          user_id: user?.id,
+          details: {
+            table_name: tableName,
+            operation: operation,
+            timestamp: new Date().toISOString(),
+            access_method: 'frontend_query'
+          },
+          risk_level: 'medium'
+        });
 
       if (error) {
         console.warn('Failed to audit log access:', error);
@@ -267,17 +269,22 @@ export class StrictRLSManager {
   /**
    * Log sécurisé d'événements système
    */
-  static async logSecurityEvent(eventType: string, details: any = {}, riskLevel: string = 'medium') {
+  static async logSecurityEvent(eventType: string, details: Record<string, any> = {}, riskLevel: string = 'medium') {
     try {
-      const { error } = await supabase.rpc('log_security_event_secure', {
-        p_event_type: eventType,
-        p_details: {
-          ...details,
-          timestamp: new Date().toISOString(),
-          source: 'strict_rls_manager'
-        },
-        p_risk_level: riskLevel
-      });
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      const { error } = await supabase
+        .from('security_audit_logs')
+        .insert({
+          event_type: eventType,
+          user_id: user?.id,
+          details: {
+            ...details,
+            timestamp: new Date().toISOString(),
+            source: 'strict_rls_manager'
+          },
+          risk_level: riskLevel
+        });
 
       if (error) {
         console.error('Failed to log security event:', error);
