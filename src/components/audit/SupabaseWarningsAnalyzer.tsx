@@ -316,15 +316,42 @@ export const SupabaseWarningsAnalyzer = () => {
     }
   };
 
-  const getSeverityColor = (severity: string) => {
+  const getSeverityBadge = (severity: string) => {
     switch (severity) {
-      case 'CRITICAL': return 'bg-red-100 text-red-800 border-red-200';
-      case 'HIGH': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'MEDIUM': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'LOW': return 'bg-blue-100 text-blue-800 border-blue-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'CRITICAL':
+        return (
+          <span className="inline-flex items-center uppercase font-bold text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200 tracking-tight">
+            CRITICAL
+          </span>
+        );
+      case 'HIGH':
+        return (
+          <span className="inline-flex items-center uppercase font-bold text-xs px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 border border-orange-200 tracking-tight">
+            HIGH
+          </span>
+        );
+      case 'MEDIUM':
+        return (
+          <span className="inline-flex items-center uppercase font-bold text-xs px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700 border border-yellow-200 tracking-tight">
+            MEDIUM
+          </span>
+        );
+      case 'LOW':
+        return (
+          <span className="inline-flex items-center uppercase font-bold text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 border border-blue-200 tracking-tight">
+            LOW
+          </span>
+        );
+      default:
+        return null;
     }
   };
+
+  const getCategoryBadge = (category: string) => (
+    <span className="inline-flex items-center font-medium text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 border border-gray-200 ml-2 uppercase tracking-tight">
+      {category}
+    </span>
+  );
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
@@ -401,51 +428,54 @@ export const SupabaseWarningsAnalyzer = () => {
         </Card>
       </div>
 
-      {/* Warnings par catégorie */}
+      {/* Warnings par catégorie - Améliore CRITICAL rendering */}
       {['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'].map(severity => {
         const severityWarnings = warnings.filter(w => w.severity === severity);
         if (severityWarnings.length === 0) return null;
 
+        // Modern Card style for CRITICAL section (main improvement)
         return (
-          <Card key={severity}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+          <Card key={severity} className={severity === 'CRITICAL' ? "border-2 border-red-200 shadow bg-white" : ""}>
+            <CardHeader className="pb-1">
+              <CardTitle className="flex items-center gap-2 text-base md:text-lg font-semibold">
+                {/* icon */}
                 {getSeverityIcon(severity)}
-                Warnings {severity}
+                <span className="tracking-tight">
+                  Warnings <span className="capitalize">{severity.toLowerCase()}</span>
+                </span>
                 <Badge variant="outline">{severityWarnings.length}</Badge>
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {severityWarnings.map((warning) => (
-                  <div key={warning.id} className="border rounded-lg p-4">
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex items-center gap-2">
+                  <div
+                    key={warning.id}
+                    className="border rounded-xl px-5 py-4 bg-white shadow-sm flex flex-col md:flex-row md:items-start gap-2 md:gap-6"
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
                         {getCategoryIcon(warning.category)}
-                        <h4 className="font-medium">{warning.title}</h4>
+                        <span className="font-semibold text-gray-800">{warning.title}</span>
+                        {getSeverityBadge(severity)}
+                        {getCategoryBadge(warning.category)}
                       </div>
-                      <div className="flex gap-2">
-                        <Badge className={getSeverityColor(warning.severity)}>
-                          {warning.severity}
-                        </Badge>
-                        <Badge variant="outline">
-                          {warning.category}
-                        </Badge>
-                      </div>
+                      <div className="text-gray-700 text-sm mb-2">{warning.description}</div>
+                      {warning.solution && (
+                        <div className="rounded-md bg-blue-50 px-4 py-2 my-2">
+                          <span className="block text-xs font-medium text-blue-800 mb-1">Solution :</span>
+                          <span className="text-sm text-blue-700">{warning.solution}</span>
+                        </div>
+                      )}
+                      {(warning.tableAffected || warning.functionAffected) && (
+                        <div className="mt-1">
+                          <Badge variant="secondary" className="text-xs">
+                            {warning.tableAffected ? `Table: ${warning.tableAffected}` :
+                              warning.functionAffected ? `Fonction: ${warning.functionAffected}` : ''}
+                          </Badge>
+                        </div>
+                      )}
                     </div>
-                    <p className="text-gray-600 mb-2">{warning.description}</p>
-                    <div className="bg-blue-50 p-3 rounded">
-                      <p className="text-sm font-medium text-blue-800 mb-1">Solution :</p>
-                      <p className="text-sm text-blue-700">{warning.solution}</p>
-                    </div>
-                    {(warning.tableAffected || warning.functionAffected) && (
-                      <div className="mt-2">
-                        <Badge variant="secondary" className="text-xs">
-                          {warning.tableAffected ? `Table: ${warning.tableAffected}` : 
-                           warning.functionAffected ? `Fonction: ${warning.functionAffected}` : ''}
-                        </Badge>
-                      </div>
-                    )}
                   </div>
                 ))}
               </div>
