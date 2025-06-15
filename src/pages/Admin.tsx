@@ -5,6 +5,7 @@ import { toast } from "@/components/ui/sonner";
 import { useNavigate } from "react-router-dom";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import { useUsersList } from "@/hooks/useUsersList";
+import BackButton from '@/components/ui/back-button';
 
 export default function AdminPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -44,10 +45,15 @@ export default function AdminPage() {
   }
 
   return (
-    <AdminDashboard 
-      users={users} 
-      isLoading={usersLoading || isLoading}
-      onViewUserDetails={handleViewUserDetails}
-    />
+    <div>
+      <div className="container mx-auto px-4 pt-4">
+        <BackButton label="Retour à l'accueil" onClick={() => window.location.href = '/'} />
+      </div>
+      <AdminDashboard 
+        users={users} 
+        isLoading={usersLoading || isLoading}
+        onViewUserDetails={handleViewUserDetails}
+      />
+    </div>
   );
 }

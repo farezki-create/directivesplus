@@ -6,6 +6,7 @@ import AppNavigation from "@/components/AppNavigation";
 import SupabaseAuditDashboard from "@/components/admin/SupabaseAuditDashboard";
 import SupabaseOptimizationPanel from "@/components/admin/SupabaseOptimizationPanel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import BackButton from '@/components/ui/back-button';
 
 const AdminSupabaseAudit = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -33,6 +34,8 @@ const AdminSupabaseAudit = () => {
       <AppNavigation hideEditingFeatures={true} />
       
       <main className="container mx-auto px-4 py-8">
+        <BackButton label="Retour au Dashboard" onClick={() => window.location.href = '/admin/dashboard'} />
+        
         <Tabs defaultValue="audit" className="space-y-6">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="audit">Audit Complet</TabsTrigger>

@@ -4,6 +4,7 @@ import Header from '@/components/Header';
 import SupabaseWarningsAnalyzer from '@/components/audit/SupabaseWarningsAnalyzer';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
+import BackButton from '@/components/ui/back-button';
 
 const SupabaseAuditPage = () => {
   const { isAdmin, isLoading } = useAuth();
@@ -27,7 +28,10 @@ const SupabaseAuditPage = () => {
     <div className="min-h-screen bg-gray-50">
       <Header />
       <main className="py-8">
-        <SupabaseWarningsAnalyzer />
+        <div className="container mx-auto px-4">
+          <BackButton label="Retour au Dashboard" onClick={() => window.location.href = '/admin/dashboard'} />
+          <SupabaseWarningsAnalyzer />
+        </div>
       </main>
     </div>
   );

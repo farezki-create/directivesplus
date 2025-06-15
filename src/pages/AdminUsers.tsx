@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import UserManagementDashboard from '@/components/admin/UserManagementDashboard';
+import BackButton from '@/components/ui/back-button';
 
 const AdminUsers = () => {
   const { isAdmin, isLoading } = useAuth();
@@ -27,7 +28,10 @@ const AdminUsers = () => {
     <div className="min-h-screen bg-gray-50">
       <Header />
       <main className="py-8">
-        <UserManagementDashboard />
+        <div className="container mx-auto px-4">
+          <BackButton label="Retour au Dashboard" onClick={() => window.location.href = '/admin/dashboard'} />
+          <UserManagementDashboard />
+        </div>
       </main>
     </div>
   );

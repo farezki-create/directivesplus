@@ -6,6 +6,7 @@ import Header from '@/components/Header';
 import SecurityAuditDashboard from '@/components/admin/SecurityAuditDashboard';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Shield } from 'lucide-react';
+import BackButton from '@/components/ui/back-button';
 
 const SecurityAuditPage = () => {
   const { isAdmin, isLoading } = useAuth();
@@ -30,6 +31,8 @@ const SecurityAuditPage = () => {
       <Header />
       
       <main className="container mx-auto px-4 py-8">
+        <BackButton label="Retour au Dashboard" onClick={() => window.location.href = '/admin/dashboard'} />
+        
         <Alert className="mb-6 border-blue-200 bg-blue-50">
           <Shield className="h-4 w-4 text-blue-600" />
           <AlertDescription className="text-blue-800">

@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import SupabaseOptimizationPanel from '@/components/admin/SupabaseOptimizationPanel';
+import BackButton from '@/components/ui/back-button';
 
 const AdminOptimization = () => {
   const { isAdmin, isLoading } = useAuth();
@@ -27,7 +28,10 @@ const AdminOptimization = () => {
     <div className="min-h-screen bg-gray-50">
       <Header />
       <main className="py-8">
-        <SupabaseOptimizationPanel />
+        <div className="container mx-auto px-4">
+          <BackButton label="Retour au Dashboard" onClick={() => window.location.href = '/admin/dashboard'} />
+          <SupabaseOptimizationPanel />
+        </div>
       </main>
     </div>
   );

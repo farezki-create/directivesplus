@@ -5,6 +5,7 @@ import { Navigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart3, Users, Database, Activity, TrendingUp } from 'lucide-react';
+import BackButton from '@/components/ui/back-button';
 
 const AdminStats = () => {
   const { isAdmin, isLoading } = useAuth();
@@ -29,6 +30,8 @@ const AdminStats = () => {
       <Header />
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
+          <BackButton label="Retour au Dashboard" onClick={() => window.location.href = '/admin/dashboard'} />
+          
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-2">
               <BarChart3 className="w-8 h-8" />
