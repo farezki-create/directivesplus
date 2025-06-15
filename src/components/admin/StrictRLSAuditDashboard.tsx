@@ -19,22 +19,25 @@ import {
   SmsLog
 } from '@/types/logs';
 
+interface LogsState {
+  security: SecurityAuditLog[];
+  medical: MedicalAccessAudit[];
+  documents: DocumentAccessLog[];
+  institution: InstitutionAccessLog[];
+  attempts: AccessCodeAttempt[];
+  access: AccessLog[];
+  symptoms: SymptomAccessLog[];
+  sms: SmsLog[];
+}
+
 const StrictRLSAuditDashboard = () => {
   const { isAdmin } = useAuth();
-  const [logs, setLogs] = useState<{
-    security: SecurityAuditLog[];
-    medical: MedicalAccessAudit[];
-    documents: DocumentAccessLog[];
-    institution: InstitutionAccessLog[];
-    attempts?: AccessCodeAttempt[];
-    access: AccessLog[];
-    symptoms: SymptomAccessLog[];
-    sms: SmsLog[];
-  }>({
+  const [logs, setLogs] = useState<LogsState>({
     security: [],
     medical: [],
     documents: [],
     institution: [],
+    attempts: [],
     access: [],
     symptoms: [],
     sms: []
@@ -48,20 +51,24 @@ const StrictRLSAuditDashboard = () => {
     setError(null);
     
     try {
-      const logData = {
-        security: [] as SecurityAuditLog[],
-        medical: [] as MedicalAccessAudit[],
-        documents: [] as DocumentAccessLog[],
-        institution: [] as InstitutionAccessLog[],
-        access: [] as AccessLog[],
-        symptoms: [] as SymptomAccessLog[],
-        sms: [] as SmsLog[]
+      const logData: LogsState = {
+        security: [],
+        medical: [],
+        documents: [],
+        institution: [],
+        attempts: [],
+        access: [],
+        symptoms: [],
+        sms: []
       };
 
       // Charger les logs de sécurité
       try {
         const securityLogs = await StrictRLSManager.getSecurityAuditLogs();
-        logData.security = securityLogs;
+        logData.security = securityLogs.map(log => ({
+          ...log,
+          ip_address: String(log.ip_address || '')
+        }));
       } catch (err) {
         console.warn('Failed to load security logs:', err);
       }
@@ -69,7 +76,10 @@ const StrictRLSAuditDashboard = () => {
       // Charger les logs médicaux
       try {
         const medicalLogs = await StrictRLSManager.getMedicalAccessAudit();
-        logData.medical = medicalLogs;
+        logData.medical = medicalLogs.map(log => ({
+          ...log,
+          ip_address: String(log.ip_address || '')
+        }));
       } catch (err) {
         console.warn('Failed to load medical logs:', err);
       }
@@ -77,7 +87,10 @@ const StrictRLSAuditDashboard = () => {
       // Charger les logs de documents
       try {
         const documentLogs = await StrictRLSManager.getDocumentAccessLogs();
-        logData.documents = documentLogs;
+        logData.documents = documentLogs.map(log => ({
+          ...log,
+          ip_address: String(log.ip_address || '')
+        }));
       } catch (err) {
         console.warn('Failed to load document logs:', err);
       }
@@ -85,7 +98,10 @@ const StrictRLSAuditDashboard = () => {
       // Charger les logs institutionnels
       try {
         const institutionLogs = await StrictRLSManager.getInstitutionAccessLogs();
-        logData.institution = institutionLogs;
+        logData.institution = institutionLogs.map(log => ({
+          ...log,
+          ip_address: String(log.ip_address || '')
+        }));
       } catch (err) {
         console.warn('Failed to load institution logs:', err);
       }
@@ -93,7 +109,10 @@ const StrictRLSAuditDashboard = () => {
       // Charger les logs d'accès général
       try {
         const accessLogs = await StrictRLSManager.getAccessLogs();
-        logData.access = accessLogs;
+        logData.access = accessLogs.map(log => ({
+          ...log,
+          ip_address: String(log.ip_address || '')
+        }));
       } catch (err) {
         console.warn('Failed to load access logs:', err);
       }
@@ -101,7 +120,10 @@ const StrictRLSAuditDashboard = () => {
       // Charger les logs de symptômes
       try {
         const symptomLogs = await StrictRLSManager.getSymptomAccessLogs();
-        logData.symptoms = symptomLogs;
+        logData.symptoms = symptomLogs.map(log => ({
+          ...log,
+          ip_address: String(log.ip_address || '')
+        }));
       } catch (err) {
         console.warn('Failed to load symptom logs:', err);
       }
@@ -109,7 +131,10 @@ const StrictRLSAuditDashboard = () => {
       // Charger les logs SMS
       try {
         const smsLogs = await StrictRLSManager.getSmsLogs();
-        logData.sms = smsLogs;
+        logData.sms = smsLogs.map(log => ({
+          ...log,
+          ip_address: String(log.ip_address || '')
+        }));
       } catch (err) {
         console.warn('Failed to load SMS logs:', err);
       }
@@ -118,7 +143,10 @@ const StrictRLSAuditDashboard = () => {
       if (isAdmin) {
         try {
           const attemptLogs = await StrictRLSManager.getAccessCodeAttempts();
-          logData.attempts = attemptLogs;
+          logData.attempts = attemptLogs.map(log => ({
+            ...log,
+            ip_address: String(log.ip_address || '')
+          }));
         } catch (err) {
           console.warn('Failed to load attempt logs:', err);
         }
@@ -197,7 +225,7 @@ const StrictRLSAuditDashboard = () => {
                     )}
                   </div>
                   {log.ip_address && (
-                    <div>IP: {String(log.ip_address)}</div>
+                    <div>IP: {log.ip_address}</div>
                   )}
                   {log.user_id && (
                     <div>Utilisateur: {log.user_id.substring(0, 8)}...</div>
@@ -319,7 +347,7 @@ const StrictRLSAuditDashboard = () => {
           </Card>
         </TabsContent>
 
-        {isAdmin && logs.attempts && (
+        {isAdmin && (
           <TabsContent value="attempts">
             <Card>
               <CardHeader>

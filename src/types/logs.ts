@@ -6,7 +6,7 @@ export interface AccessLog {
   accessed_at?: string;
   access_by?: string;
   access_type?: string;
-  ip_address?: string;
+  ip_address?: string | null;
   user_agent?: string;
 }
 
@@ -14,7 +14,7 @@ export interface AccessCodeAttempt {
   id: string;
   access_code?: string;
   attempt_time?: string;
-  ip_address?: string;
+  ip_address?: string | null;
   user_agent?: string;
   success: boolean;
 }
@@ -26,7 +26,7 @@ export interface DocumentAccessLog {
   date_consultation?: string;
   nom_consultant?: string;
   prenom_consultant?: string;
-  ip_address?: string;
+  ip_address?: string | null;
   user_agent?: string;
 }
 
@@ -38,7 +38,7 @@ export interface MedicalAccessAudit {
   access_method: string;
   access_granted: boolean;
   accessed_at?: string;
-  ip_address?: string;
+  ip_address?: string | null;
   user_agent?: string;
   session_id?: string;
   failure_reason?: string;
@@ -52,7 +52,7 @@ export interface InstitutionAccessLog {
   institution_name?: string;
   access_type?: string;
   accessed_at?: string;
-  ip_address?: string;
+  ip_address?: string | null;
   user_agent?: string;
 }
 
@@ -63,7 +63,7 @@ export interface SecurityAuditLog {
   created_at?: string;
   details?: any;
   risk_level?: string;
-  ip_address?: string;
+  ip_address?: string | null;
   user_agent?: string;
 }
 
@@ -76,7 +76,7 @@ export interface SymptomAccessLog {
   accessor_birth_date: string;
   accessed_at?: string;
   success: boolean;
-  ip_address?: string;
+  ip_address?: string | null;
   user_agent?: string;
 }
 
@@ -91,7 +91,7 @@ export interface SmsLog {
   brevo_message_id?: string;
   sender_name?: string;
   error_message?: string;
-  ip_address?: string;
+  ip_address?: string | null;
   user_agent?: string;
 }
 
