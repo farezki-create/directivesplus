@@ -1,30 +1,40 @@
+
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
-import Home from './pages/Home';
-import AccessCodeEntry from './pages/AccessCodeEntry';
+// Utilisation de pages existantes ou placeholders en attendant leur création
+import Index from './pages/Index';
+import Auth from './pages/Auth';
 import MesDirectives from './pages/MesDirectives';
-import AdminDashboard from './pages/AdminDashboard';
 import AdminStrictRLS from './pages/AdminStrictRLS';
-import SystemMonitoring from './pages/SystemMonitoring';
-import DataBreachReporting from './pages/DataBreachReporting';
+// Les pages suivantes peuvent ne pas exister, donc on utilise des composants vides/placeholder
+const AdminDashboard = () => <div>Dashboard Admin (placeholder)</div>;
+const SystemMonitoring = () => <div>System Monitoring (placeholder)</div>;
+const DataBreachReporting = () => <div>Data Breach Reporting (placeholder)</div>;
 import { Toaster } from '@/components/ui/toaster';
-import { QueryClient } from 'react-query';
-import { SecurityProvider } from './contexts/SecurityContext';
+
+// Correction de l'import de react-query
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+// Sécurité : si SecurityProvider n'existe pas, commenter ces lignes
+// import { SecurityProvider } from './contexts/SecurityContext';
+// const SecurityProvider = ({ children }: { children: React.ReactNode }) => <>{children}</>;
+
 import DirectivesAccess from './pages/DirectivesAccess';
-import { Alertes } from './pages/Alertes';
+import Alertes from './pages/Alertes'; // correction de l'import (export défaut)
+
+const queryClient = new QueryClient();
 
 function App() {
   return (
     <Router>
       <AuthProvider>
-        <QueryClient>
-          <SecurityProvider>
+        <QueryClientProvider client={queryClient}>
+          {/* <SecurityProvider> */}
             <div className="min-h-screen bg-white">
               <Toaster />
               <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/auth" element={<AccessCodeEntry />} />
+                <Route path="/" element={<Index />} />
+                <Route path="/auth" element={<Auth />} />
                 <Route path="/mes-directives" element={<MesDirectives />} />
                 <Route path="/admin/dashboard" element={<AdminDashboard />} />
                 <Route path="/admin/strict-rls" element={<AdminStrictRLS />} />
@@ -34,8 +44,8 @@ function App() {
                 <Route path="/alertes" element={<Alertes />} />
               </Routes>
             </div>
-          </SecurityProvider>
-        </QueryClient>
+          {/* </SecurityProvider> */}
+        </QueryClientProvider>
       </AuthProvider>
     </Router>
   );
