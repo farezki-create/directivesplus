@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useHealthNews } from '@/hooks/useHealthNews';
 import { CreateHealthNewsData } from '@/types/healthNews';
@@ -11,6 +10,8 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus, Upload, X } from 'lucide-react';
+import MediaIcon from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface NewsEditorProps {
   onClose: () => void;
@@ -18,32 +19,74 @@ interface NewsEditorProps {
   existingNews?: any;
 }
 
+type NewMedia = {
+  media_type: "image" | "video" | "audio" | "document" | "link";
+  media_url: string;
+  media_name?: string;
+  caption?: string;
+};
+
+const initialNewMedia: NewMedia = {
+  media_type: "image",
+  media_url: "",
+  media_name: "",
+  caption: "",
+};
+
+const mediaTypeLabels = {
+  image: "Image",
+  video: "Vidéo",
+  audio: "Audio",
+  document: "Document",
+  link: "Lien externe",
+};
+
 const NewsEditor = ({ onClose, onSave, existingNews }: NewsEditorProps) => {
-  const { createNews, updateNews } = useHealthNews();
+  const { createNews, updateNews, addMedia } = useHealthNews();
   const [formData, setFormData] = useState<CreateHealthNewsData>({
-    title: existingNews?.title || '',
-    content: existingNews?.content || '',
-    excerpt: existingNews?.excerpt || '',
-    featured_image_url: existingNews?.featured_image_url || '',
-    category: existingNews?.category || 'general',
-    status: existingNews?.status || 'draft',
-    publication_date: existingNews?.publication_date || '',
+    title: existingNews?.title || "",
+    content: existingNews?.content || "",
+    excerpt: existingNews?.excerpt || "",
+    featured_image_url: existingNews?.featured_image_url || "",
+    category: existingNews?.category || "general",
+    status: existingNews?.status || "draft",
+    publication_date: existingNews?.publication_date || "",
     tags: existingNews?.tags || [],
-    is_featured: existingNews?.is_featured || false
+    is_featured: existingNews?.is_featured || false,
   });
 
-  const [newTag, setNewTag] = useState('');
+  const [newTag, setNewTag] = useState("");
+  const [newMedia, setNewMedia] = useState<NewMedia>(initialNewMedia);
+  const [mediaList, setMediaList] = useState<NewMedia[]>(existingNews?.media ?? []);
+
+  const handleAddMedia = () => {
+    if (!newMedia.media_url) return;
+    setMediaList([...mediaList, newMedia]);
+    setNewMedia(initialNewMedia);
+  };
+
+  const removeMedia = (idx: number) => {
+    setMediaList((medias) => medias.filter((_, i) => i !== idx));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const success = existingNews
-      ? await updateNews(existingNews.id, formData)
-      : await createNews(formData);
 
-    if (success) {
-      onSave();
+    const newsId = existingNews
+      ? (await updateNews(existingNews.id, { ...formData })).id
+      : (await createNews(formData))?.id;
+
+    // Envoi des médias
+    if (newsId && mediaList.length > 0) {
+      for (const media of mediaList) {
+        await addMedia(newsId, {
+          ...media,
+          news_id: newsId,
+          display_order: 0,
+        });
+      }
     }
+    onSave();
   };
 
   const addTag = () => {
@@ -68,7 +111,7 @@ const NewsEditor = ({ onClose, onSave, existingNews }: NewsEditorProps) => {
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {existingNews ? 'Modifier l\'actualité' : 'Nouvelle actualité'}
+            {existingNews ? "Modifier l'actualité" : "Nouvelle actualité"}
           </DialogTitle>
         </DialogHeader>
 
@@ -116,24 +159,114 @@ const NewsEditor = ({ onClose, onSave, existingNews }: NewsEditorProps) => {
             </TabsContent>
 
             <TabsContent value="media" className="space-y-4">
-              <div>
-                <Label htmlFor="featured_image">Image à la une (URL)</Label>
-                <Input
-                  id="featured_image"
-                  type="url"
-                  value={formData.featured_image_url}
-                  onChange={(e) => setFormData(prev => ({ ...prev, featured_image_url: e.target.value }))}
-                  placeholder="https://example.com/image.jpg"
-                />
+              {/* Section Ajout de média */}
+              <div className="grid md:grid-cols-2 gap-4 items-end">
+                <div>
+                  <Label>Type de support</Label>
+                  <Select
+                    value={newMedia.media_type}
+                    onValueChange={(v) =>
+                      setNewMedia((prev) => ({
+                        ...prev,
+                        media_type: v as NewMedia["media_type"],
+                      }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue>{mediaTypeLabels[newMedia.media_type]}</SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="image">Image</SelectItem>
+                      <SelectItem value="video">Vidéo</SelectItem>
+                      <SelectItem value="audio">Audio</SelectItem>
+                      <SelectItem value="document">Document</SelectItem>
+                      <SelectItem value="link">Lien externe</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>URL ou chemin du média</Label>
+                  <Input
+                    value={newMedia.media_url}
+                    onChange={(e) =>
+                      setNewMedia((prev) => ({
+                        ...prev,
+                        media_url: e.target.value,
+                      }))
+                    }
+                    placeholder="https://..."
+                    required
+                  />
+                </div>
+                <div>
+                  <Label>Nom du fichier/support (optionnel)</Label>
+                  <Input
+                    value={newMedia.media_name}
+                    onChange={(e) =>
+                      setNewMedia((prev) => ({
+                        ...prev,
+                        media_name: e.target.value,
+                      }))
+                    }
+                    placeholder="Nom ou titre du média"
+                  />
+                </div>
+                <div>
+                  <Label>Légende (optionnel)</Label>
+                  <Input
+                    value={newMedia.caption}
+                    onChange={(e) =>
+                      setNewMedia((prev) => ({
+                        ...prev,
+                        caption: e.target.value,
+                      }))
+                    }
+                    placeholder="Légende, description, contexte…"
+                  />
+                </div>
+                <div className="md:col-span-2 flex justify-end">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleAddMedia}
+                    disabled={!newMedia.media_url}
+                  >
+                    <span>Ajouter ce support</span>
+                  </Button>
+                </div>
               </div>
 
-              <div className="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center">
-                <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                <p className="text-gray-600 mb-2">Glissez-déposez vos fichiers ici</p>
-                <p className="text-sm text-gray-500">ou cliquez pour sélectionner</p>
-                <p className="text-xs text-gray-400 mt-2">
-                  Formats supportés : images, vidéos, audio, documents
-                </p>
+              {/* Liste des médias ajoutés */}
+              <div>
+                <Label>Médias ajoutés</Label>
+                <div className="space-y-2">
+                  {mediaList.length === 0 && (
+                    <div className="text-gray-500 text-sm">Aucun support ajouté.</div>
+                  )}
+                  {mediaList.map((media, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center gap-3 border rounded p-2 bg-gray-50"
+                    >
+                      <Badge variant="secondary">{mediaTypeLabels[media.media_type]}</Badge>
+                      <span className="truncate flex-1">{media.media_url}</span>
+                      {media.caption && (
+                        <span className="text-xs text-gray-500 italic">
+                          [{media.caption}]
+                        </span>
+                      )}
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="outline"
+                        className="text-red-600"
+                        onClick={() => removeMedia(idx)}
+                      >
+                        <MediaIcon name="image" className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
               </div>
             </TabsContent>
 
@@ -233,7 +366,7 @@ const NewsEditor = ({ onClose, onSave, existingNews }: NewsEditorProps) => {
               Annuler
             </Button>
             <Button type="submit">
-              {existingNews ? 'Mettre à jour' : 'Créer l\'actualité'}
+              {existingNews ? "Mettre à jour" : "Créer l'actualité"}
             </Button>
           </div>
         </form>
