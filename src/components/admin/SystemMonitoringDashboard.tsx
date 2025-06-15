@@ -88,7 +88,7 @@ const SystemMonitoringDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-indigo-600">Optimale</div>
-                <p className="text-xs text-gray-500">Temps de réponse < 500ms</p>
+                <p className="text-xs text-gray-500">Temps de réponse &lt; 500ms</p>
               </CardContent>
             </Card>
           </div>
