@@ -862,6 +862,48 @@ export type Database = {
           },
         ]
       }
+      institution_subscriptions: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          institution_id: string
+          institution_type: string
+          status: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          subscription_end: string | null
+          subscription_start: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          institution_id: string
+          institution_type: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_end?: string | null
+          subscription_start?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          institution_id?: string
+          institution_type?: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_end?: string | null
+          subscription_start?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       logs_acces: {
         Row: {
           details: string | null
