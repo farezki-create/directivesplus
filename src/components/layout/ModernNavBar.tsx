@@ -25,10 +25,11 @@ const navItems = [
     icon: Bell,
     to: "/alertes",
   },
+  // Correction ici : le bon path pour Multi-Patients
   {
     label: "Multi-Patients",
     icon: Users,
-    to: "/multi-patients",
+    to: "/suivi-multi-patients",
   },
   {
     label: "Carte d'Accès",

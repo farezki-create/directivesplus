@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -23,6 +22,7 @@ import AccesInstitution from "./pages/AccesInstitution";
 import PdfViewer from "./pages/PdfViewer";
 import Auth from "./pages/Auth";
 import SuiviPalliatif from "./pages/SuiviPalliatif";
+import SuiviMultiPatients from "./pages/SuiviMultiPatients";
 import AccesSoinsPalliatifs from "./pages/AccesSoinsPalliatifs";
 import PersonneConfiance from "./pages/PersonneConfiance";
 import Community from "./pages/Community";
@@ -152,7 +152,8 @@ function App() {
                   <Route path="/directives-info" element={<DirectivesInfo />} />
                   <Route path="/soutenir" element={<Soutenir />} />
                   <Route path="/carte-acces" element={<CarteAcces />} />
-                  <Route path="/suivi-palliatif" element={<SuiviPalliatif />} />
+                  <Route path="/suivi-palliatif" element={<ProtectedRoute><SuiviPalliatif /></ProtectedRoute>} />
+                  <Route path="/suivi-multi-patients" element={<ProtectedRoute><SuiviMultiPatients /></ProtectedRoute>} />
                   <Route path="/acces-soins-palliatifs" element={<AccesSoinsPalliatifs />} />
                   <Route path="/personne-confiance" element={<PersonneConfiance />} />
                   <Route path="/community" element={<Community />} />
