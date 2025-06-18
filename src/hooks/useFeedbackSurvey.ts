@@ -6,7 +6,7 @@ import { toast } from '@/hooks/use-toast';
 export interface FeedbackQuestion {
   id: string;
   question_text: string;
-  question_type: 'single_choice' | 'rating' | 'text' | 'multiple_choice';
+  question_type: string; // Changed from union type to string to match Supabase
   options?: any;
   display_order: number;
   category: string;
@@ -32,7 +32,18 @@ export const useFeedbackSurvey = () => {
         .order('display_order');
 
       if (error) throw error;
-      setQuestions(data || []);
+      
+      // Transform the data to match our interface
+      const transformedData = data?.map(item => ({
+        id: item.id,
+        question_text: item.question_text,
+        question_type: item.question_type,
+        options: item.options,
+        display_order: item.display_order,
+        category: item.category
+      })) || [];
+      
+      setQuestions(transformedData);
     } catch (error) {
       console.error('Error fetching feedback questions:', error);
       toast({
