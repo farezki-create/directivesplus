@@ -4,6 +4,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SocialFeed from "@/components/social/SocialFeed";
 import ChatAssistant from "@/components/ChatAssistant";
+import FeedbackSurvey from "@/components/feedback/FeedbackSurvey";
 import { Users, MessageSquare, Heart, Share2 } from "lucide-react";
 
 const Community = () => {
@@ -81,8 +82,18 @@ const Community = () => {
       </div>
 
       {/* Main Content */}
-      <main className="container mx-auto py-8 px-4">        
-        <SocialFeed />
+      <main className="container mx-auto py-8 px-4">
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* Feed social principal */}
+          <div className="lg:col-span-2">
+            <SocialFeed />
+          </div>
+          
+          {/* Sidebar avec le questionnaire d'avis */}
+          <div className="space-y-6">
+            <FeedbackSurvey />
+          </div>
+        </div>
       </main>
       
       <Footer />

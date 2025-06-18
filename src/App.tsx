@@ -39,6 +39,7 @@ import AdminUsers from "./pages/AdminUsers";
 import AdminMonitoring from "./pages/AdminMonitoring";
 import AdminOptimization from "./pages/AdminOptimization";
 import AdminStats from "./pages/AdminStats";
+import AdminFeedback from "./pages/AdminFeedback";
 
 // Pages d'audit
 import AuthAudit from "./pages/AuthAudit";
@@ -92,6 +93,7 @@ function App() {
                   <Route path="/acces-institution" element={<AccesInstitution />} />
                   <Route path="/pdf-viewer/:documentId" element={<ProtectedRoute><PdfViewer /></ProtectedRoute>} />
                   <Route path="/demande-abonnement-institutionnel" element={<DemandeAbonnementInstitutionnel />} />
+                  
                   {/* Pages Admin avec protection renforcée */}
                   <Route path="/admin" element={
                     <ProtectedRoute requireAdmin={true}>
@@ -136,6 +138,11 @@ function App() {
                   <Route path="/admin/security-audit" element={
                     <ProtectedRoute requireAdmin={true}>
                       <SecurityAuditPage />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/admin/feedback" element={
+                    <ProtectedRoute requireAdmin={true}>
+                      <AdminFeedback />
                     </ProtectedRoute>
                   } />
                   
@@ -185,4 +192,3 @@ function App() {
 }
 
 export default App;
-

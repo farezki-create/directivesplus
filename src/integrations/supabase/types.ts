@@ -636,6 +636,71 @@ export type Database = {
           },
         ]
       }
+      feedback_questions: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          display_order: number
+          id: string
+          is_active: boolean | null
+          options: Json | null
+          question_text: string
+          question_type: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          display_order: number
+          id?: string
+          is_active?: boolean | null
+          options?: Json | null
+          question_text: string
+          question_type: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean | null
+          options?: Json | null
+          question_text?: string
+          question_type?: string
+        }
+        Relationships: []
+      }
+      feedback_responses: {
+        Row: {
+          created_at: string | null
+          id: string
+          question_id: string | null
+          response_value: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          question_id?: string | null
+          response_value: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          question_id?: string | null
+          response_value?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_responses_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "feedback_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       health_news: {
         Row: {
           category: string | null
