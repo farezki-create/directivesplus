@@ -45,7 +45,7 @@ const Soutenir = () => {
                 <CreditCard className="w-12 h-12 text-green-600 mx-auto mb-4" />
                 <CardTitle className="text-xl">Paiement par carte</CardTitle>
                 <CardDescription>
-                  Paiement sécurisé par carte bancaire
+                  Paiement sécurisé par carte bancaire via PayPal ou HelloAsso
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -57,7 +57,10 @@ const Soutenir = () => {
                   <Check className="w-4 h-4 text-green-600" />
                   <span>Sécurisé SSL</span>
                 </div>
-                <Button className="w-full bg-green-600 hover:bg-green-700">
+                <Button 
+                  className="w-full bg-green-600 hover:bg-green-700"
+                  onClick={() => navigate("/don-carte-bancaire")}
+                >
                   Faire un don par carte
                 </Button>
               </CardContent>
