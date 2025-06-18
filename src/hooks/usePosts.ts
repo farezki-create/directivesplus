@@ -1,11 +1,11 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Post, PostComment } from "@/types/social";
 import { toast } from "@/hooks/use-toast";
+import { Document } from "@/types/documents";
 
 export const usePosts = () => {
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchPosts = async () => {
@@ -14,35 +14,30 @@ export const usePosts = () => {
         .from('posts')
         .select(`
           *,
-          post_likes (
-            user_id
-          )
+          profiles:profiles!posts_user_id_fkey(first_name, last_name),
+          comments:post_comments(
+            id,
+            content,
+            created_at,
+            profiles:profiles!post_comments_user_id_fkey(first_name, last_name)
+          ),
+          likes:post_likes(user_id),
+          shared_document
         `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
+      // Ajouter les informations de like pour l'utilisateur actuel
       const { data: { user } } = await supabase.auth.getUser();
-      
-      const postsWithUserData = data?.map(post => ({
-        id: post.id,
-        user_id: post.user_id,
-        content: post.content,
-        image_url: post.image_url,
-        created_at: post.created_at,
-        updated_at: post.updated_at,
-        likes_count: post.likes_count || 0,
-        comments_count: post.comments_count || 0,
-        user_profile: {
-          first_name: 'Utilisateur',
-          last_name: ''
-        },
-        is_liked: post.post_likes?.some((like: any) => like.user_id === user?.id) || false
+      const postsWithLikes = data?.map(post => ({
+        ...post,
+        user_has_liked: post.likes?.some((like: any) => like.user_id === user?.id) || false
       })) || [];
 
-      setPosts(postsWithUserData);
+      setPosts(postsWithLikes);
     } catch (error) {
-      console.error('Error fetching posts:', error);
+      console.error('Erreur lors du chargement des posts:', error);
       toast({
         title: "Erreur",
         description: "Impossible de charger les posts",
@@ -53,32 +48,44 @@ export const usePosts = () => {
     }
   };
 
-  const createPost = async (content: string, imageUrl?: string) => {
+  const createPost = async (content: string, sharedDocument?: Document) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Non authentifié');
+      if (!user) throw new Error('Utilisateur non connecté');
+
+      const postData: any = {
+        content,
+        user_id: user.id
+      };
+
+      if (sharedDocument) {
+        postData.shared_document = {
+          id: sharedDocument.id,
+          file_name: sharedDocument.file_name,
+          file_path: sharedDocument.file_path,
+          description: sharedDocument.description,
+          created_at: sharedDocument.created_at,
+          file_type: sharedDocument.file_type
+        };
+      }
 
       const { error } = await supabase
         .from('posts')
-        .insert({
-          user_id: user.id,
-          content,
-          image_url: imageUrl
-        });
+        .insert([postData]);
 
       if (error) throw error;
 
       toast({
         title: "Succès",
-        description: "Post créé avec succès"
+        description: "Votre post a été publié avec succès"
       });
 
       fetchPosts();
     } catch (error) {
-      console.error('Error creating post:', error);
+      console.error('Erreur lors de la création du post:', error);
       toast({
         title: "Erreur",
-        description: "Impossible de créer le post",
+        description: "Impossible de publier le post",
         variant: "destructive"
       });
     }
@@ -87,64 +94,72 @@ export const usePosts = () => {
   const toggleLike = async (postId: string) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Non authentifié');
+      if (!user) throw new Error('Utilisateur non connecté');
 
-      const post = posts.find(p => p.id === postId);
-      if (!post) return;
+      // Vérifier si l'utilisateur a déjà liké ce post
+      const { data: existingLike } = await supabase
+        .from('post_likes')
+        .select('id')
+        .eq('post_id', postId)
+        .eq('user_id', user.id)
+        .single();
 
-      if (post.is_liked) {
-        const { error } = await supabase
+      if (existingLike) {
+        // Retirer le like
+        await supabase
           .from('post_likes')
           .delete()
           .eq('post_id', postId)
           .eq('user_id', user.id);
 
-        if (error) throw error;
+        // Décrémenter le compteur
+        await supabase
+          .from('posts')
+          .update({ likes_count: supabase.raw('likes_count - 1') })
+          .eq('id', postId);
       } else {
-        const { error } = await supabase
+        // Ajouter le like
+        await supabase
           .from('post_likes')
-          .insert({
-            post_id: postId,
-            user_id: user.id
-          });
+          .insert([{ post_id: postId, user_id: user.id }]);
 
-        if (error) throw error;
+        // Incrémenter le compteur
+        await supabase
+          .from('posts')
+          .update({ likes_count: supabase.raw('likes_count + 1') })
+          .eq('id', postId);
       }
 
       fetchPosts();
     } catch (error) {
-      console.error('Error toggling like:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de modifier le like",
-        variant: "destructive"
-      });
+      console.error('Erreur lors du toggle like:', error);
     }
   };
 
   const addComment = async (postId: string, content: string) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Non authentifié');
+      if (!user) throw new Error('Utilisateur non connecté');
 
       const { error } = await supabase
         .from('post_comments')
-        .insert({
+        .insert([{
           post_id: postId,
           user_id: user.id,
           content
-        });
+        }]);
 
       if (error) throw error;
 
-      toast({
-        title: "Succès",
-        description: "Commentaire ajouté"
-      });
+      // Incrémenter le compteur de commentaires
+      await supabase
+        .from('posts')
+        .update({ comments_count: supabase.raw('comments_count + 1') })
+        .eq('id', postId);
 
       fetchPosts();
     } catch (error) {
-      console.error('Error adding comment:', error);
+      console.error('Erreur lors de l\'ajout du commentaire:', error);
       toast({
         title: "Erreur",
         description: "Impossible d'ajouter le commentaire",
@@ -163,6 +178,6 @@ export const usePosts = () => {
     createPost,
     toggleLike,
     addComment,
-    refreshPosts: fetchPosts
+    refetch: fetchPosts
   };
 };

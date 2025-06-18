@@ -4,84 +4,98 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { toast } from "@/hooks/use-toast";
-import MoodSelector from "./MoodSelector";
-import ImageUpload from "./ImageUpload";
+import { Send, X } from "lucide-react";
+import DocumentSelector from "./DocumentSelector";
+import DocumentShareCard from "./DocumentShareCard";
+import { Document } from "@/types/documents";
 
 interface CreatePostProps {
   user: any;
-  onCreatePost: (content: string, imageUrl?: string) => Promise<void>;
+  onCreatePost: (content: string, sharedDocument?: Document) => void;
 }
 
 const CreatePost = ({ user, onCreatePost }: CreatePostProps) => {
-  const [newPostContent, setNewPostContent] = useState("");
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [selectedMood, setSelectedMood] = useState<string>("");
+  const [content, setContent] = useState("");
+  const [sharedDocument, setSharedDocument] = useState<Document | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleCreatePost = async () => {
-    if (!newPostContent.trim() && !selectedImage) return;
-    
-    let imageUrl = undefined;
-    if (selectedImage) {
-      // Pour l'instant, on simule l'upload d'image
-      // En production, il faudrait uploader vers Supabase Storage
-      toast({
-        title: "Info",
-        description: "L'upload d'images sera disponible prochainement"
-      });
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!content.trim() && !sharedDocument) return;
+
+    setIsSubmitting(true);
+    try {
+      await onCreatePost(content, sharedDocument || undefined);
+      setContent("");
+      setSharedDocument(null);
+    } finally {
+      setIsSubmitting(false);
     }
-
-    const contentWithMood = selectedMood 
-      ? `${selectedMood} ${newPostContent}` 
-      : newPostContent;
-
-    await onCreatePost(contentWithMood, imageUrl);
-    setNewPostContent("");
-    setSelectedImage(null);
-    setSelectedMood("");
   };
 
+  const handleDocumentSelect = (document: Document) => {
+    setSharedDocument(document);
+  };
+
+  const handleRemoveDocument = () => {
+    setSharedDocument(null);
+  };
+
+  const isPostValid = content.trim().length > 0 || sharedDocument !== null;
+
   return (
-    <Card className="bg-white shadow-lg">
+    <Card>
       <CardContent className="p-6">
-        <div className="flex items-start space-x-4">
-          <Avatar className="w-12 h-12">
-            <AvatarFallback className="bg-purple-100 text-purple-700 font-semibold">
+        <div className="flex gap-4">
+          <Avatar>
+            <AvatarFallback>
               {user?.email?.charAt(0).toUpperCase() || 'U'}
             </AvatarFallback>
           </Avatar>
-          <div className="flex-1">
+          
+          <form onSubmit={handleSubmit} className="flex-1 space-y-4">
             <Textarea
-              placeholder="Quoi de neuf ? Partagez vos réflexions avec la communauté..."
-              value={newPostContent}
-              onChange={(e) => setNewPostContent(e.target.value)}
-              className="min-h-[100px] border-gray-200 focus:border-purple-400 resize-none text-lg"
-            />
-            
-            <ImageUpload 
-              selectedImage={selectedImage}
-              onImageSelect={setSelectedImage}
+              placeholder="Partagez vos réflexions avec la communauté..."
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              className="min-h-[100px] resize-none border-gray-200 focus:border-blue-500"
             />
 
-            <MoodSelector
-              selectedMood={selectedMood}
-              onMoodSelect={setSelectedMood}
-              onMoodRemove={() => setSelectedMood("")}
-            />
-            
-            <div className="flex items-center justify-between mt-4">
-              <div className="flex space-x-2">
-                {/* Image upload and mood selector are now handled by their respective components */}
+            {sharedDocument && (
+              <div className="relative">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleRemoveDocument}
+                  className="absolute top-2 right-2 z-10"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+                <DocumentShareCard document={sharedDocument} />
               </div>
+            )}
+
+            <div className="flex items-center justify-between">
+              <DocumentSelector 
+                onDocumentSelect={handleDocumentSelect}
+                disabled={isSubmitting}
+              />
+              
               <Button 
-                onClick={handleCreatePost}
-                disabled={!newPostContent.trim() && !selectedImage}
-                className="bg-purple-600 hover:bg-purple-700 px-6"
+                type="submit" 
+                disabled={!isPostValid || isSubmitting}
+                className="flex items-center gap-2"
               >
+                {isSubmitting ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-white"></div>
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
                 Publier
               </Button>
             </div>
-          </div>
+          </form>
         </div>
       </CardContent>
     </Card>

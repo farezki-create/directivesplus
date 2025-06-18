@@ -1,135 +1,162 @@
 
 import React, { useState } from "react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Heart, MessageCircle, Send, MoreHorizontal } from "lucide-react";
-import { Post } from "@/types/social";
-import { formatDistanceToNow } from "date-fns";
-import { fr } from "date-fns/locale";
+import { Heart, MessageCircle, Send } from "lucide-react";
+import DocumentShareCard from "./DocumentShareCard";
+import { useDocumentViewer } from "@/hooks/useDocumentViewer";
+import { downloadDocument } from "@/utils/document-operations";
 
 interface PostCardProps {
-  post: Post;
+  post: any;
   user: any;
   onToggleLike: (postId: string) => void;
   onAddComment: (postId: string, content: string) => void;
 }
 
 const PostCard = ({ post, user, onToggleLike, onAddComment }: PostCardProps) => {
-  const [commentContent, setCommentContent] = useState("");
   const [showComments, setShowComments] = useState(false);
+  const [newComment, setNewComment] = useState("");
+  const { handleView } = useDocumentViewer();
 
-  const handleAddComment = async () => {
-    if (!commentContent.trim()) return;
-    await onAddComment(post.id, commentContent);
-    setCommentContent("");
+  const handleLike = () => {
+    onToggleLike(post.id);
   };
 
-  const toggleComments = () => {
-    setShowComments(!showComments);
+  const handleComment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newComment.trim()) return;
+    
+    await onAddComment(post.id, newComment);
+    setNewComment("");
+  };
+
+  const handleDocumentView = (filePath: string) => {
+    handleView(filePath);
+  };
+
+  const handleDocumentDownload = (filePath: string, fileName: string) => {
+    downloadDocument(filePath, fileName);
   };
 
   return (
-    <Card className="bg-white shadow-lg hover:shadow-xl transition-shadow">
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <Avatar className="w-12 h-12">
-              <AvatarFallback className="bg-blue-100 text-blue-700 font-semibold">
-                {post.user_profile?.first_name?.charAt(0) || 'U'}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <h4 className="font-semibold text-gray-900 text-lg">
-                {post.user_profile?.first_name} {post.user_profile?.last_name}
-              </h4>
-              <p className="text-sm text-gray-500">
-                {formatDistanceToNow(new Date(post.created_at), { 
-                  addSuffix: true, 
-                  locale: fr 
-                })}
-              </p>
+    <Card>
+      <CardContent className="p-6">
+        {/* En-tête du post */}
+        <div className="flex items-start gap-3 mb-4">
+          <Avatar>
+            <AvatarFallback>
+              {post.profiles?.first_name?.charAt(0) || post.user_id?.charAt(0).toUpperCase() || 'U'}
+            </AvatarFallback>
+          </Avatar>
+          
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <h3 className="font-semibold text-gray-900">
+                {post.profiles?.first_name && post.profiles?.last_name 
+                  ? `${post.profiles.first_name} ${post.profiles.last_name}`
+                  : 'Utilisateur anonyme'
+                }
+              </h3>
+              <span className="text-sm text-gray-500">
+                {new Date(post.created_at).toLocaleDateString('fr-FR')}
+              </span>
             </div>
           </div>
-          <Button variant="ghost" size="sm">
-            <MoreHorizontal className="h-5 w-5" />
-          </Button>
         </div>
-      </CardHeader>
-      
-      <CardContent className="space-y-4">
-        <p className="text-gray-800 text-lg leading-relaxed whitespace-pre-wrap">
-          {post.content}
-        </p>
-        
-        {post.image_url && (
-          <div className="rounded-lg overflow-hidden">
-            <img 
-              src={post.image_url} 
-              alt="Post image" 
-              className="w-full h-auto max-h-96 object-cover"
+
+        {/* Contenu du post */}
+        {post.content && (
+          <div className="mb-4">
+            <p className="text-gray-800 whitespace-pre-wrap">{post.content}</p>
+          </div>
+        )}
+
+        {/* Document partagé */}
+        {post.shared_document && (
+          <div className="mb-4">
+            <DocumentShareCard
+              document={post.shared_document}
+              onView={handleDocumentView}
+              onDownload={handleDocumentDownload}
             />
           </div>
         )}
 
-        {/* Engagement Stats */}
-        {(post.likes_count > 0 || post.comments_count > 0) && (
-          <div className="flex items-center justify-between text-sm text-gray-500 py-2 border-t border-gray-100">
-            <span>{post.likes_count} J'aime</span>
-            <span>{post.comments_count} commentaires</span>
-          </div>
-        )}
-
-        {/* Action Buttons */}
-        <div className="flex items-center justify-around py-2 border-t border-gray-100">
+        {/* Actions */}
+        <div className="flex items-center gap-4 mb-4 pt-4 border-t border-gray-100">
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => onToggleLike(post.id)}
-            className={`flex-1 ${post.is_liked ? "text-red-500 hover:text-red-600" : "text-gray-500 hover:text-red-500"}`}
+            onClick={handleLike}
+            className={`flex items-center gap-2 ${
+              post.user_has_liked ? 'text-red-600' : 'text-gray-600'
+            }`}
           >
-            <Heart className={`mr-2 h-5 w-5 ${post.is_liked ? 'fill-current' : ''}`} />
-            J'aime
+            <Heart className={`h-4 w-4 ${post.user_has_liked ? 'fill-current' : ''}`} />
+            {post.likes_count || 0}
           </Button>
           
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="flex-1 text-gray-500 hover:text-blue-500"
-            onClick={toggleComments}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowComments(!showComments)}
+            className="flex items-center gap-2 text-gray-600"
           >
-            <MessageCircle className="mr-2 h-5 w-5" />
-            Commenter
+            <MessageCircle className="h-4 w-4" />
+            {post.comments_count || 0}
           </Button>
         </div>
 
-        {/* Comments Section */}
+        {/* Section des commentaires */}
         {showComments && (
-          <div className="space-y-3 pt-3 border-t border-gray-100">
-            <div className="flex space-x-3">
-              <Avatar className="w-8 h-8">
-                <AvatarFallback className="bg-purple-100 text-purple-700 text-sm">
+          <div className="space-y-4">
+            {/* Commentaires existants */}
+            {post.comments?.map((comment: any) => (
+              <div key={comment.id} className="flex gap-3 p-3 bg-gray-50 rounded-lg">
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback className="text-xs">
+                    {comment.profiles?.first_name?.charAt(0) || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-sm font-medium">
+                      {comment.profiles?.first_name && comment.profiles?.last_name 
+                        ? `${comment.profiles.first_name} ${comment.profiles.last_name}`
+                        : 'Utilisateur anonyme'
+                      }
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {new Date(comment.created_at).toLocaleDateString('fr-FR')}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-800">{comment.content}</p>
+                </div>
+              </div>
+            ))}
+
+            {/* Formulaire de nouveau commentaire */}
+            <form onSubmit={handleComment} className="flex gap-3">
+              <Avatar className="h-8 w-8">
+                <AvatarFallback className="text-xs">
                   {user?.email?.charAt(0).toUpperCase() || 'U'}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex-1 flex space-x-2">
+              <div className="flex-1 flex gap-2">
                 <Textarea
-                  placeholder="Écrivez un commentaire..."
-                  value={commentContent}
-                  onChange={(e) => setCommentContent(e.target.value)}
-                  className="min-h-[40px] flex-1 resize-none"
+                  placeholder="Écrire un commentaire..."
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  className="min-h-[60px] resize-none"
                 />
-                <Button
-                  size="sm"
-                  onClick={handleAddComment}
-                  disabled={!commentContent.trim()}
-                  className="bg-purple-600 hover:bg-purple-700"
-                >
+                <Button type="submit" size="sm" disabled={!newComment.trim()}>
                   <Send className="h-4 w-4" />
                 </Button>
               </div>
-            </div>
+            </form>
           </div>
         )}
       </CardContent>
