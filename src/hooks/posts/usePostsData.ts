@@ -14,14 +14,14 @@ export const usePostsData = () => {
         .from('posts')
         .select(`
           *,
-          profiles:profiles!posts_user_id_fkey(first_name, last_name),
-          comments:post_comments(
+          profiles!posts_user_id_fkey(first_name, last_name),
+          post_comments(
             id,
             content,
             created_at,
-            profiles:profiles!post_comments_user_id_fkey(first_name, last_name)
+            profiles!post_comments_user_id_fkey(first_name, last_name)
           ),
-          likes:post_likes(user_id)
+          post_likes(user_id)
         `)
         .order('created_at', { ascending: false });
 
@@ -50,13 +50,21 @@ export const usePostsData = () => {
             created_at: sharedDocument.created_at,
             description: sharedDocument.description
           } : null,
-          profiles: post.profiles ? {
+          profiles: (post.profiles && typeof post.profiles === 'object' && 'first_name' in post.profiles) ? {
             first_name: post.profiles.first_name || '',
             last_name: post.profiles.last_name || ''
           } : undefined,
-          comments: post.comments || [],
-          likes: post.likes || [],
-          user_has_liked: post.likes?.some((like: any) => like.user_id === user?.id) || false
+          comments: (post.post_comments || []).map((comment: any) => ({
+            id: comment.id,
+            content: comment.content,
+            created_at: comment.created_at,
+            profiles: (comment.profiles && typeof comment.profiles === 'object' && 'first_name' in comment.profiles) ? {
+              first_name: comment.profiles.first_name || '',
+              last_name: comment.profiles.last_name || ''
+            } : undefined
+          })),
+          likes: post.post_likes || [],
+          user_has_liked: (post.post_likes || []).some((like: any) => like.user_id === user?.id) || false
         };
       }) || [];
 
