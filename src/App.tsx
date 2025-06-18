@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -66,6 +65,8 @@ import DemandeAbonnementInstitutionnel from "./pages/DemandeAbonnementInstitutio
 
 // Composant de chargement
 import { LoadingFallback } from "@/utils/performance/lazyComponents";
+
+import AlertManagement from "./pages/AlertManagement";
 
 const queryClient = new QueryClient();
 
@@ -181,6 +182,8 @@ function App() {
                   <Route path="/politique-confidentialite" element={<PolitiqueConfidentialite />} />
                   <Route path="/confidentialite" element={<Confidentialite />} />
                   <Route path="/en-savoir-plus" element={<EnSavoirPlus />} />
+                  
+                  <Route path="/alert-management" element={<ProtectedRoute><AlertManagement /></ProtectedRoute>} />
                 </Routes>
               </Suspense>
             </BrowserRouter>

@@ -213,6 +213,60 @@ export type Database = {
           },
         ]
       }
+      alert_notifications_sent: {
+        Row: {
+          contact_id: string | null
+          error_message: string | null
+          id: string
+          message_content: string | null
+          notification_type: string
+          patient_id: string
+          recipient_contact: string
+          sent_at: string | null
+          status: string | null
+          symptom_tracking_id: string | null
+        }
+        Insert: {
+          contact_id?: string | null
+          error_message?: string | null
+          id?: string
+          message_content?: string | null
+          notification_type: string
+          patient_id: string
+          recipient_contact: string
+          sent_at?: string | null
+          status?: string | null
+          symptom_tracking_id?: string | null
+        }
+        Update: {
+          contact_id?: string | null
+          error_message?: string | null
+          id?: string
+          message_content?: string | null
+          notification_type?: string
+          patient_id?: string
+          recipient_contact?: string
+          sent_at?: string | null
+          status?: string | null
+          symptom_tracking_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alert_notifications_sent_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "patient_alert_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "alert_notifications_sent_symptom_tracking_id_fkey"
+            columns: ["symptom_tracking_id"]
+            isOneToOne: false
+            referencedRelation: "symptom_tracking"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       alertes: {
         Row: {
           acquittee_le: string | null
@@ -1248,6 +1302,72 @@ export type Database = {
           status?: string | null
           stripe_payment_intent_id?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      patient_alert_contacts: {
+        Row: {
+          contact_name: string
+          contact_type: string
+          created_at: string | null
+          email: string | null
+          id: string
+          is_active: boolean | null
+          patient_id: string
+          phone_number: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          contact_name: string
+          contact_type: string
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          patient_id: string
+          phone_number?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          contact_name?: string
+          contact_type?: string
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          patient_id?: string
+          phone_number?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      patient_alert_settings: {
+        Row: {
+          alert_threshold: number | null
+          auto_alert_enabled: boolean | null
+          created_at: string | null
+          id: string
+          patient_id: string
+          symptom_types: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          alert_threshold?: number | null
+          auto_alert_enabled?: boolean | null
+          created_at?: string | null
+          id?: string
+          patient_id: string
+          symptom_types?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          alert_threshold?: number | null
+          auto_alert_enabled?: boolean | null
+          created_at?: string | null
+          id?: string
+          patient_id?: string
+          symptom_types?: string[] | null
+          updated_at?: string | null
         }
         Relationships: []
       }

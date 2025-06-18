@@ -8,13 +8,13 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
-import { Heart, Save } from "lucide-react";
+import { Heart, Save, AlertTriangle } from "lucide-react";
 import CriticalSymptomAlert from "./CriticalSymptomAlert";
-import { useSymptomAlerts } from "@/hooks/useSymptomAlerts";
+import { useSymptomAlerting } from "@/hooks/useSymptomAlerting";
 
 export default function SymptomTracker() {
   const { user } = useAuth();
-  const { checkAndCreateAlert, alerting } = useSymptomAlerts();
+  const { checkAndTriggerAlert, showAlertDialog, alerting } = useSymptomAlerting();
   
   const [symptoms, setSymptoms] = useState({
     douleur: 0,
@@ -47,6 +47,7 @@ export default function SymptomTracker() {
     setSaving(true);
 
     try {
+      // Enregistrer les symptômes
       const { error } = await supabase
         .from("symptom_tracking")
         .insert({
@@ -70,8 +71,18 @@ export default function SymptomTracker() {
         return;
       }
 
-      // Vérifier les seuils critiques et créer une alerte si nécessaire
-      await checkAndCreateAlert(symptoms.douleur, symptoms.dyspnee, symptoms.anxiete);
+      // Vérifier et déclencher les alertes
+      const alertResult = await checkAndTriggerAlert(
+        symptoms.douleur, 
+        symptoms.dyspnee, 
+        symptoms.anxiete,
+        symptoms.fatigue,
+        symptoms.sommeil
+      );
+
+      if (alertResult.redirectToAlerts) {
+        showAlertDialog(alertResult.criticalSymptoms);
+      }
 
       toast({
         title: "Symptômes enregistrés",
@@ -108,6 +119,9 @@ export default function SymptomTracker() {
     sommeil: "Sommeil/Confort global"
   };
 
+  // Vérifier s'il y a des symptômes critiques
+  const hasCriticalSymptoms = symptoms.douleur >= 7 || symptoms.dyspnee >= 7 || symptoms.anxiete >= 7;
+
   return (
     <Card>
       <CardHeader>
@@ -117,6 +131,20 @@ export default function SymptomTracker() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
+        {hasCriticalSymptoms && (
+          <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-start gap-2">
+              <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5" />
+              <div>
+                <h4 className="font-medium text-red-800">Symptômes critiques détectés</h4>
+                <p className="text-sm text-red-700">
+                  Des évaluations élevées seront signalées à vos contacts d'alerte après l'enregistrement.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         <CriticalSymptomAlert 
           douleur={symptoms.douleur}
           dyspnee={symptoms.dyspnee}
@@ -131,7 +159,7 @@ export default function SymptomTracker() {
                 <Label className="font-medium">
                   {symptomLabels[symptom as keyof typeof symptomLabels]}
                 </Label>
-                <span className="text-sm font-bold text-gray-600">
+                <span className={`text-sm font-bold ${value >= 7 ? 'text-red-600' : 'text-gray-600'}`}>
                   {value}/10
                 </span>
               </div>
@@ -170,7 +198,7 @@ export default function SymptomTracker() {
           className="w-full bg-pink-600 hover:bg-pink-700"
         >
           <Save className="h-4 w-4 mr-2" />
-          {saving ? "Enregistrement..." : alerting ? "Création d'alerte..." : "Enregistrer"}
+          {saving ? "Enregistrement..." : alerting ? "Vérification des alertes..." : "Enregistrer"}
         </Button>
       </CardContent>
     </Card>
