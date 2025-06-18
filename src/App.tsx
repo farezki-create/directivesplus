@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -280,79 +281,79 @@ function App() {
 
               {/* Admin routes */}
               <Route path="/admin" element={
-                <ProtectedRoute adminRequired>
+                <ProtectedRoute requireAdmin>
                   <Admin />
                 </ProtectedRoute>
               } />
               <Route path="/admin/users" element={
-                <ProtectedRoute adminRequired>
+                <ProtectedRoute requireAdmin>
                   <AdminUsers />
                 </ProtectedRoute>
               } />
               <Route path="/admin/dashboard" element={
-                <ProtectedRoute adminRequired>
+                <ProtectedRoute requireAdmin>
                   <AdminMainDashboard />
                 </ProtectedRoute>
               } />
               <Route path="/admin/institutions" element={
-                <ProtectedRoute adminRequired>
+                <ProtectedRoute requireAdmin>
                   <AdminInstitutions />
                 </ProtectedRoute>
               } />
               <Route path="/admin/feedback" element={
-                <ProtectedRoute adminRequired>
+                <ProtectedRoute requireAdmin>
                   <AdminFeedback />
                 </ProtectedRoute>
               } />
               <Route path="/admin/stats" element={
-                <ProtectedRoute adminRequired>
+                <ProtectedRoute requireAdmin>
                   <AdminStats />
                 </ProtectedRoute>
               } />
               <Route path="/admin/monitoring" element={
-                <ProtectedRoute adminRequired>
+                <ProtectedRoute requireAdmin>
                   <AdminMonitoring />
                 </ProtectedRoute>
               } />
               <Route path="/admin/optimization" element={
-                <ProtectedRoute adminRequired>
+                <ProtectedRoute requireAdmin>
                   <AdminOptimization />
                 </ProtectedRoute>
               } />
               <Route path="/admin/strict-rls" element={
-                <ProtectedRoute adminRequired>
+                <ProtectedRoute requireAdmin>
                   <AdminStrictRLS />
                 </ProtectedRoute>
               } />
               <Route path="/admin/supabase-audit" element={
-                <ProtectedRoute adminRequired>
+                <ProtectedRoute requireAdmin>
                   <AdminSupabaseAudit />
                 </ProtectedRoute>
               } />
               <Route path="/security-audit" element={
-                <ProtectedRoute adminRequired>
+                <ProtectedRoute requireAdmin>
                   <SecurityAuditPage />
                 </ProtectedRoute>
               } />
               <Route path="/supabase-audit" element={
-                <ProtectedRoute adminRequired>
+                <ProtectedRoute requireAdmin>
                   <SupabaseAuditPage />
                 </ProtectedRoute>
               } />
               <Route path="/auth-audit" element={
-                <ProtectedRoute adminRequired>
+                <ProtectedRoute requireAdmin>
                   <AuthAudit />
                 </ProtectedRoute>
               } />
               <Route path="/auth-audit-complete" element={
-                <ProtectedRoute adminRequired>
+                <ProtectedRoute requireAdmin>
                   <AuthAuditComplete />
                 </ProtectedRoute>
               } />
 
               {/* Debug and diagnostic */}
               <Route path="/diagnostic" element={
-                <ProtectedRoute adminRequired>
+                <ProtectedRoute requireAdmin>
                   <Diagnostic />
                 </ProtectedRoute>
               } />
