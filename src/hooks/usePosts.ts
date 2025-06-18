@@ -21,8 +21,7 @@ export const usePosts = () => {
             created_at,
             profiles:profiles!post_comments_user_id_fkey(first_name, last_name)
           ),
-          likes:post_likes(user_id),
-          shared_document
+          likes:post_likes(user_id)
         `)
         .order('created_at', { ascending: false });
 
@@ -113,10 +112,18 @@ export const usePosts = () => {
           .eq('user_id', user.id);
 
         // Décrémenter le compteur
-        await supabase
+        const { data: currentPost } = await supabase
           .from('posts')
-          .update({ likes_count: supabase.raw('likes_count - 1') })
-          .eq('id', postId);
+          .select('likes_count')
+          .eq('id', postId)
+          .single();
+
+        if (currentPost) {
+          await supabase
+            .from('posts')
+            .update({ likes_count: Math.max(0, (currentPost.likes_count || 0) - 1) })
+            .eq('id', postId);
+        }
       } else {
         // Ajouter le like
         await supabase
@@ -124,10 +131,18 @@ export const usePosts = () => {
           .insert([{ post_id: postId, user_id: user.id }]);
 
         // Incrémenter le compteur
-        await supabase
+        const { data: currentPost } = await supabase
           .from('posts')
-          .update({ likes_count: supabase.raw('likes_count + 1') })
-          .eq('id', postId);
+          .select('likes_count')
+          .eq('id', postId)
+          .single();
+
+        if (currentPost) {
+          await supabase
+            .from('posts')
+            .update({ likes_count: (currentPost.likes_count || 0) + 1 })
+            .eq('id', postId);
+        }
       }
 
       fetchPosts();
@@ -152,10 +167,18 @@ export const usePosts = () => {
       if (error) throw error;
 
       // Incrémenter le compteur de commentaires
-      await supabase
+      const { data: currentPost } = await supabase
         .from('posts')
-        .update({ comments_count: supabase.raw('comments_count + 1') })
-        .eq('id', postId);
+        .select('comments_count')
+        .eq('id', postId)
+        .single();
+
+      if (currentPost) {
+        await supabase
+          .from('posts')
+          .update({ comments_count: (currentPost.comments_count || 0) + 1 })
+          .eq('id', postId);
+      }
 
       fetchPosts();
     } catch (error) {
