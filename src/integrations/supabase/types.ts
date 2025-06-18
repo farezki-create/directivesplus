@@ -1410,6 +1410,7 @@ export type Database = {
           file_name: string
           file_path: string
           file_size: number | null
+          file_type: string | null
           id: string
           updated_at: string | null
           user_id: string | null
@@ -1422,6 +1423,7 @@ export type Database = {
           file_name: string
           file_path: string
           file_size?: number | null
+          file_type?: string | null
           id?: string
           updated_at?: string | null
           user_id?: string | null
@@ -1434,6 +1436,7 @@ export type Database = {
           file_name?: string
           file_path?: string
           file_size?: number | null
+          file_type?: string | null
           id?: string
           updated_at?: string | null
           user_id?: string | null
