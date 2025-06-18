@@ -50,7 +50,7 @@ export const usePostsData = () => {
             created_at: sharedDocument.created_at,
             description: sharedDocument.description
           } : null,
-          profiles: (post.profiles && typeof post.profiles === 'object' && 'first_name' in post.profiles) ? {
+          profiles: (post.profiles && post.profiles !== null && typeof post.profiles === 'object' && 'first_name' in post.profiles) ? {
             first_name: post.profiles.first_name || '',
             last_name: post.profiles.last_name || ''
           } : undefined,
@@ -58,7 +58,7 @@ export const usePostsData = () => {
             id: comment.id,
             content: comment.content,
             created_at: comment.created_at,
-            profiles: (comment.profiles && typeof comment.profiles === 'object' && 'first_name' in comment.profiles) ? {
+            profiles: (comment.profiles && comment.profiles !== null && typeof comment.profiles === 'object' && 'first_name' in comment.profiles) ? {
               first_name: comment.profiles.first_name || '',
               last_name: comment.profiles.last_name || ''
             } : undefined
