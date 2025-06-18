@@ -13,8 +13,8 @@ const DonCarteBancaire = () => {
   const navigate = useNavigate();
 
   const handleHelloAssoRedirect = () => {
-    // Redirection vers HelloAsso (à remplacer par votre lien réel)
-    window.open("https://www.helloasso.com/associations/directivesplus", "_blank");
+    // Lien HelloAsso temporaire - à remplacer par votre vrai lien d'association
+    window.open("https://www.helloasso.com/", "_blank");
   };
 
   return (
@@ -86,6 +86,13 @@ const DonCarteBancaire = () => {
                       </div>
                     </div>
                     
+                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-4">
+                      <p className="text-sm text-orange-800">
+                        <strong>Configuration en cours :</strong> Le lien HelloAsso spécifique à DirectivesPlus est en cours de configuration. 
+                        Vous serez redirigé vers HelloAsso pour le moment.
+                      </p>
+                    </div>
+                    
                     <Button 
                       className="w-full bg-blue-600 hover:bg-blue-700 flex items-center gap-2"
                       onClick={handleHelloAssoRedirect}
@@ -143,6 +150,9 @@ const DonCarteBancaire = () => {
                   <li>• Interface sécurisée reconnue</li>
                   <li>• Frais : ~2,9% + 0,35€</li>
                 </ul>
+                <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
+                  <strong>Note :</strong> Configuration PayPal en cours. Contactez l'administrateur si les paiements ne fonctionnent pas.
+                </div>
               </div>
 
               <div>
