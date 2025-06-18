@@ -30,7 +30,25 @@ export const usePostsData = () => {
       // Ajouter les informations de like pour l'utilisateur actuel
       const { data: { user } } = await supabase.auth.getUser();
       const postsWithLikes = data?.map(post => ({
-        ...post,
+        id: post.id,
+        content: post.content,
+        user_id: post.user_id,
+        created_at: post.created_at,
+        updated_at: post.updated_at,
+        likes_count: post.likes_count || 0,
+        comments_count: post.comments_count || 0,
+        shared_document: post.shared_document ? {
+          id: post.shared_document.id,
+          file_name: post.shared_document.file_name,
+          file_path: post.shared_document.file_path,
+          file_type: post.shared_document.file_type,
+          user_id: post.shared_document.user_id,
+          created_at: post.shared_document.created_at,
+          description: post.shared_document.description
+        } : null,
+        profiles: post.profiles,
+        comments: post.comments || [],
+        likes: post.likes || [],
         user_has_liked: post.likes?.some((like: any) => like.user_id === user?.id) || false
       })) || [];
 

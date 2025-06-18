@@ -3,11 +3,32 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Document } from "@/types/documents";
 
+// Formats de fichiers autorisés pour le partage
+const SAFE_FILE_FORMATS = [
+  'application/pdf',
+  'image/jpeg',
+  'image/jpg', 
+  'image/png',
+  'image/gif',
+  'image/webp',
+  'text/plain'
+];
+
 export const usePostActions = (refetchPosts: () => Promise<void>) => {
   const createPost = async (content: string, sharedDocument?: Document) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Utilisateur non connecté');
+
+      // Vérifier le format du document s'il est fourni
+      if (sharedDocument && !SAFE_FILE_FORMATS.includes(sharedDocument.file_type)) {
+        toast({
+          title: "Format non autorisé",
+          description: "Seuls les PDF, images et fichiers texte peuvent être partagés",
+          variant: "destructive"
+        });
+        return;
+      }
 
       const postData: any = {
         content,
@@ -21,7 +42,8 @@ export const usePostActions = (refetchPosts: () => Promise<void>) => {
           file_path: sharedDocument.file_path,
           description: sharedDocument.description,
           created_at: sharedDocument.created_at,
-          file_type: sharedDocument.file_type
+          file_type: sharedDocument.file_type,
+          user_id: sharedDocument.user_id
         };
       }
 
@@ -33,7 +55,9 @@ export const usePostActions = (refetchPosts: () => Promise<void>) => {
 
       toast({
         title: "Succès",
-        description: "Votre post a été publié avec succès"
+        description: sharedDocument 
+          ? "Votre post avec document a été publié avec succès"
+          : "Votre post a été publié avec succès"
       });
 
       refetchPosts();
