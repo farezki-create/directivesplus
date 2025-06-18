@@ -2,7 +2,11 @@
 import { useAuth } from "@/contexts/AuthContext";
 import ModernNavBar from "@/components/layout/ModernNavBar";
 
-const AppNavigation = () => {
+interface AppNavigationProps {
+  hideEditingFeatures?: boolean;
+}
+
+const AppNavigation = ({ hideEditingFeatures = false }: AppNavigationProps) => {
   const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
@@ -17,7 +21,7 @@ const AppNavigation = () => {
     return null;
   }
 
-  return <ModernNavBar />;
+  return <ModernNavBar hideEditingFeatures={hideEditingFeatures} />;
 };
 
 export default AppNavigation;
