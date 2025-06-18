@@ -35,9 +35,9 @@ export const usePostsData = () => {
         
         // Safely handle profiles with explicit type checking
         const profilesData = post.profiles;
-        const isValidProfile = profilesData && 
+        const isValidProfile = profilesData !== null && 
+          profilesData && 
           typeof profilesData === 'object' && 
-          profilesData !== null &&
           'first_name' in profilesData;
         
         return {
@@ -63,9 +63,9 @@ export const usePostsData = () => {
           } : undefined,
           comments: (post.post_comments || []).map((comment: any) => {
             const commentProfilesData = comment.profiles;
-            const isValidCommentProfile = commentProfilesData && 
+            const isValidCommentProfile = commentProfilesData !== null && 
+              commentProfilesData && 
               typeof commentProfilesData === 'object' && 
-              commentProfilesData !== null &&
               'first_name' in commentProfilesData;
               
             return {
