@@ -23,7 +23,7 @@ const navItems = [
   {
     label: "Alertes",
     icon: Bell,
-    to: "/alertes",
+    to: "/alert-management",
   },
   {
     label: "Multi-Patients",
