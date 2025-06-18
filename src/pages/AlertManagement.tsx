@@ -8,7 +8,7 @@ import { useAlertContacts } from '@/hooks/useAlertContacts';
 import AlertContactForm from '@/components/alerts/AlertContactForm';
 import AlertContactsList from '@/components/alerts/AlertContactsList';
 import AlertSettings from '@/components/alerts/AlertSettings';
-import Header from '@/components/Header';
+import AppNavigation from '@/components/AppNavigation';
 import Footer from '@/components/Footer';
 
 const AlertManagement = () => {
@@ -43,7 +43,7 @@ const AlertManagement = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
+      <AppNavigation />
       
       <main className="container mx-auto py-8 px-4">
         <div className="mb-6 flex items-center justify-between">

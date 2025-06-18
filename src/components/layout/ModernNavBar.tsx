@@ -25,7 +25,6 @@ const navItems = [
     icon: Bell,
     to: "/alertes",
   },
-  // Correction ici : le bon path pour Multi-Patients
   {
     label: "Multi-Patients",
     icon: Users,
@@ -43,7 +42,11 @@ const navItems = [
   }
 ];
 
-const ModernNavBar = () => {
+interface ModernNavBarProps {
+  hideEditingFeatures?: boolean;
+}
+
+const ModernNavBar = ({ hideEditingFeatures = false }: ModernNavBarProps) => {
   const { isAuthenticated, signOut } = useAuth();
   const navigate = useNavigate();
 
@@ -56,25 +59,14 @@ const ModernNavBar = () => {
     <nav className="w-full bg-white border-b shadow-sm sticky top-0 z-30">
       <div className="px-4 sm:px-8 md:px-12 lg:px-20">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <div className="flex items-center">
-            <NavLink to="/rediger" className="flex items-center group">
-              <span className="text-xl font-bold text-directiveplus-700 group-hover:text-directiveplus-800 transition-colors">
-                <span className="text-directiveplus-600">
-                  Directives
-                </span>
-                <span className="text-directiveplus-500">Plus</span>
-              </span>
-            </NavLink>
-          </div>
-          {/* Navigation */}
-          <ul className="flex-1 flex justify-center gap-2 md:gap-4 lg:gap-6">
+          {/* Navigation centrée - plus d'espace */}
+          <ul className="flex-1 flex justify-center gap-2 md:gap-4 lg:gap-8">
             {navItems.map(({ label, icon: Icon, to }) => (
               <li key={label} className="flex">
                 <NavLink
                   to={to}
                   className={({ isActive }) =>
-                    `flex items-center gap-2 px-3 py-1.5 rounded-md font-medium transition-all
+                    `flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-all
                       ${isActive
                         ? "bg-directiveplus-50 text-directiveplus-700 shadow border border-directiveplus-200"
                         : "text-gray-700 hover:bg-gray-50 hover:text-directiveplus-600"}`
