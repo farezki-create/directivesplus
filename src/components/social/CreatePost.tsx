@@ -4,9 +4,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Send, X } from "lucide-react";
+import { Send, X, Upload } from "lucide-react";
 import DocumentSelector from "./DocumentSelector";
 import DocumentShareCard from "./DocumentShareCard";
+import DocumentUploader from "@/components/documents/DocumentUploader";
 import { Document } from "@/types/documents";
 
 interface CreatePostProps {
@@ -18,6 +19,7 @@ const CreatePost = ({ user, onCreatePost }: CreatePostProps) => {
   const [content, setContent] = useState("");
   const [sharedDocument, setSharedDocument] = useState<Document | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showUploader, setShowUploader] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,6 +30,7 @@ const CreatePost = ({ user, onCreatePost }: CreatePostProps) => {
       await onCreatePost(content, sharedDocument || undefined);
       setContent("");
       setSharedDocument(null);
+      setShowUploader(false);
     } finally {
       setIsSubmitting(false);
     }
@@ -35,10 +38,17 @@ const CreatePost = ({ user, onCreatePost }: CreatePostProps) => {
 
   const handleDocumentSelect = (document: Document) => {
     setSharedDocument(document);
+    setShowUploader(false);
   };
 
   const handleRemoveDocument = () => {
     setSharedDocument(null);
+    setShowUploader(false);
+  };
+
+  const handleUploadComplete = () => {
+    setShowUploader(false);
+    // Le document sera automatiquement disponible dans la liste des documents
   };
 
   const isPostValid = content.trim().length > 0 || sharedDocument !== null;
@@ -76,11 +86,46 @@ const CreatePost = ({ user, onCreatePost }: CreatePostProps) => {
               </div>
             )}
 
+            {showUploader && (
+              <div className="border rounded-lg p-4 bg-gray-50">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-medium">Charger un nouveau document</h3>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowUploader(false)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+                <DocumentUploader
+                  userId={user?.id || ""}
+                  onUploadComplete={handleUploadComplete}
+                  documentType="directive"
+                />
+              </div>
+            )}
+
             <div className="flex items-center justify-between">
-              <DocumentSelector 
-                onDocumentSelect={handleDocumentSelect}
-                disabled={isSubmitting}
-              />
+              <div className="flex items-center gap-2">
+                <DocumentSelector 
+                  onDocumentSelect={handleDocumentSelect}
+                  disabled={isSubmitting}
+                />
+                
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowUploader(!showUploader)}
+                  disabled={isSubmitting}
+                  className="flex items-center gap-2"
+                >
+                  <Upload className="h-4 w-4" />
+                  Charger nouveau
+                </Button>
+              </div>
               
               <Button 
                 type="submit" 
