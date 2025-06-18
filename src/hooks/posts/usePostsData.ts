@@ -35,10 +35,11 @@ export const usePostsData = () => {
         
         // Safely handle profiles with explicit type checking
         const profilesData = post.profiles;
-        const isValidProfile = profilesData !== null && 
-          profilesData && 
-          typeof profilesData === 'object' && 
-          'first_name' in profilesData;
+        let isValidProfile = false;
+        
+        if (profilesData !== null && profilesData && typeof profilesData === 'object') {
+          isValidProfile = 'first_name' in profilesData;
+        }
         
         return {
           id: post.id,
@@ -57,22 +58,23 @@ export const usePostsData = () => {
             created_at: sharedDocument.created_at,
             description: sharedDocument.description
           } : null,
-          profiles: isValidProfile ? {
+          profiles: isValidProfile && profilesData ? {
             first_name: (profilesData as any).first_name || '',
             last_name: (profilesData as any).last_name || ''
           } : undefined,
           comments: (post.post_comments || []).map((comment: any) => {
             const commentProfilesData = comment.profiles;
-            const isValidCommentProfile = commentProfilesData !== null && 
-              commentProfilesData && 
-              typeof commentProfilesData === 'object' && 
-              'first_name' in commentProfilesData;
+            let isValidCommentProfile = false;
+            
+            if (commentProfilesData !== null && commentProfilesData && typeof commentProfilesData === 'object') {
+              isValidCommentProfile = 'first_name' in commentProfilesData;
+            }
               
             return {
               id: comment.id,
               content: comment.content,
               created_at: comment.created_at,
-              profiles: isValidCommentProfile ? {
+              profiles: isValidCommentProfile && commentProfilesData ? {
                 first_name: commentProfilesData.first_name || '',
                 last_name: commentProfilesData.last_name || ''
               } : undefined
