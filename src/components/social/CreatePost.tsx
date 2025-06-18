@@ -46,9 +46,11 @@ const CreatePost = ({ user, onCreatePost }: CreatePostProps) => {
     setShowUploader(false);
   };
 
-  const handleUploadComplete = () => {
+  const handleUploadComplete = (document?: Document) => {
     setShowUploader(false);
-    // Le document sera automatiquement disponible dans la liste des documents
+    if (document) {
+      setSharedDocument(document);
+    }
   };
 
   const isPostValid = content.trim().length > 0 || sharedDocument !== null;

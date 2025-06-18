@@ -6,10 +6,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Upload, File, X, CheckCircle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { Document } from '@/types/documents';
 
 interface DocumentUploaderProps {
   userId: string;
-  onUploadComplete?: () => void;
+  onUploadComplete?: (document?: Document) => void;
   documentType?: string;
   maxFileSize?: number; // en MB
 }
@@ -86,7 +87,8 @@ const DocumentUploader = ({
           description: description || `Document ${selectedFile.name}`,
           created_at: new Date().toISOString()
         })
-        .select();
+        .select()
+        .single();
 
       if (error) {
         console.error('Erreur lors de l\'upload:', error);
@@ -102,9 +104,9 @@ const DocumentUploader = ({
       setSelectedFile(null);
       setDescription('');
       
-      // Appeler le callback si fourni
-      if (onUploadComplete) {
-        onUploadComplete();
+      // Appeler le callback avec le document créé
+      if (onUploadComplete && data) {
+        onUploadComplete(data as Document);
       }
 
     } catch (error) {
