@@ -1544,6 +1544,7 @@ export type Database = {
           id: string
           image_url: string | null
           likes_count: number | null
+          shared_document: Json | null
           updated_at: string
           user_id: string
         }
@@ -1554,6 +1555,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           likes_count?: number | null
+          shared_document?: Json | null
           updated_at?: string
           user_id: string
         }
@@ -1564,6 +1566,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           likes_count?: number | null
+          shared_document?: Json | null
           updated_at?: string
           user_id?: string
         }
