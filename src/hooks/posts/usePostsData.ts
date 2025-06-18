@@ -38,7 +38,7 @@ export const usePostsData = () => {
         let isValidProfile = false;
         
         if (profilesData !== null && profilesData && typeof profilesData === 'object') {
-          isValidProfile = 'first_name' in profilesData;
+          isValidProfile = profilesData && 'first_name' in profilesData;
         }
         
         return {
@@ -67,7 +67,7 @@ export const usePostsData = () => {
             let isValidCommentProfile = false;
             
             if (commentProfilesData !== null && commentProfilesData && typeof commentProfilesData === 'object') {
-              isValidCommentProfile = 'first_name' in commentProfilesData;
+              isValidCommentProfile = commentProfilesData && 'first_name' in commentProfilesData;
             }
               
             return {
