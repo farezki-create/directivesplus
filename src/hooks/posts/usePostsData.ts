@@ -33,6 +33,13 @@ export const usePostsData = () => {
         // Type assertion pour shared_document en tant qu'objet Document ou null
         const sharedDocument = post.shared_document as any;
         
+        // Safely handle profiles with explicit type checking
+        const profilesData = post.profiles;
+        const isValidProfile = profilesData && 
+          typeof profilesData === 'object' && 
+          profilesData !== null &&
+          'first_name' in profilesData;
+        
         return {
           id: post.id,
           content: post.content,
@@ -50,19 +57,27 @@ export const usePostsData = () => {
             created_at: sharedDocument.created_at,
             description: sharedDocument.description
           } : null,
-          profiles: (post.profiles && post.profiles !== null && typeof post.profiles === 'object' && 'first_name' in post.profiles) ? {
-            first_name: post.profiles.first_name || '',
-            last_name: post.profiles.last_name || ''
+          profiles: isValidProfile ? {
+            first_name: (profilesData as any).first_name || '',
+            last_name: (profilesData as any).last_name || ''
           } : undefined,
-          comments: (post.post_comments || []).map((comment: any) => ({
-            id: comment.id,
-            content: comment.content,
-            created_at: comment.created_at,
-            profiles: (comment.profiles && comment.profiles !== null && typeof comment.profiles === 'object' && 'first_name' in comment.profiles) ? {
-              first_name: comment.profiles.first_name || '',
-              last_name: comment.profiles.last_name || ''
-            } : undefined
-          })),
+          comments: (post.post_comments || []).map((comment: any) => {
+            const commentProfilesData = comment.profiles;
+            const isValidCommentProfile = commentProfilesData && 
+              typeof commentProfilesData === 'object' && 
+              commentProfilesData !== null &&
+              'first_name' in commentProfilesData;
+              
+            return {
+              id: comment.id,
+              content: comment.content,
+              created_at: comment.created_at,
+              profiles: isValidCommentProfile ? {
+                first_name: commentProfilesData.first_name || '',
+                last_name: commentProfilesData.last_name || ''
+              } : undefined
+            };
+          }),
           likes: post.post_likes || [],
           user_has_liked: (post.post_likes || []).some((like: any) => like.user_id === user?.id) || false
         };
