@@ -3,7 +3,7 @@ import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 import Header from '@/components/Header';
-import AdminNewsManager from '@/components/health-news/AdminNewsManager';
+import SimpleAdminNewsManager from '@/components/health-news/SimpleAdminNewsManager';
 import BackButton from '@/components/ui/back-button';
 
 const AdminHealthNews = () => {
@@ -38,10 +38,10 @@ const AdminHealthNews = () => {
               Gestion des Actualités Santé
             </h1>
             <p className="text-gray-600 mt-2">
-              Créez et gérez les actualités santé visibles par tous les utilisateurs
+              Interface simplifiée pour gérer les actualités santé
             </p>
           </div>
-          <AdminNewsManager />
+          <SimpleAdminNewsManager />
         </div>
       </main>
     </div>
