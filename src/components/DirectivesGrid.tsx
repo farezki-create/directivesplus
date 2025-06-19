@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -127,31 +126,33 @@ const DirectivesGrid = () => {
       {/* Section des actions finales */}
       <div className="border-t pt-8">
         <h3 className="text-xl font-semibold mb-6 text-center text-gray-800">Actions finales</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-          {bottomCards.map((card, index) => (
-            <Card 
-              key={index} 
-              className={`cursor-pointer transition-all duration-200 ${card.color} relative`}
-              onClick={() => navigate(card.path)}
-            >
-              {/* Badge numéroté pour les actions finales */}
-              <div className={`absolute -top-3 -left-3 w-8 h-8 rounded-full ${card.badgeColor} flex items-center justify-center text-sm font-bold shadow-sm`}>
-                {card.badgeNumber}
-              </div>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3 text-gray-800">
-                  <card.icon className="h-6 w-6" />
-                  {card.title}
-                </CardTitle>
-                <CardDescription className="text-gray-600">{card.description}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-sm text-gray-500">
-                  Cliquez sur la carte pour accéder
+        <div className="flex justify-center">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl">
+            {bottomCards.map((card, index) => (
+              <Card 
+                key={index} 
+                className={`cursor-pointer transition-all duration-200 ${card.color} relative`}
+                onClick={() => navigate(card.path)}
+              >
+                {/* Badge numéroté pour les actions finales */}
+                <div className={`absolute -top-3 -left-3 w-8 h-8 rounded-full ${card.badgeColor} flex items-center justify-center text-sm font-bold shadow-sm`}>
+                  {card.badgeNumber}
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3 text-gray-800">
+                    <card.icon className="h-6 w-6" />
+                    {card.title}
+                  </CardTitle>
+                  <CardDescription className="text-gray-600">{card.description}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-sm text-gray-500">
+                    Cliquez sur la carte pour accéder
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       </div>
     </div>

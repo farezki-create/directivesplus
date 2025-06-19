@@ -76,10 +76,25 @@ export const useAlertContacts = () => {
     if (!user?.id) return false;
 
     try {
+      // Mapper les types de contact français vers les types de base de données
+      const contactTypeMapping: Record<string, string> = {
+        'soignant': 'doctor',
+        'famille': 'family',
+        'personne_confiance': 'family',
+        'had': 'doctor',
+        'soins_palliatifs': 'doctor',
+        'infirmiere': 'doctor',
+        'medecin_traitant': 'doctor',
+        'autre': 'friend'
+      };
+
+      const mappedContactType = contactTypeMapping[contact.contact_type] || 'friend';
+
       const { error } = await supabase
         .from('patient_alert_contacts')
         .insert({
           ...contact,
+          contact_type: mappedContactType,
           patient_id: user.id
         });
 
