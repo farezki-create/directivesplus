@@ -51,6 +51,14 @@ const MedicalDocumentsList: React.FC<MedicalDocumentsListProps> = ({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  const handleVisibilityToggle = (documentId: string, isVisible: boolean) => {
+    if (onVisibilityChange) {
+      // isVisible true = accessible aux institutions = is_private false
+      // isVisible false = privé = is_private true
+      onVisibilityChange(documentId, !isVisible);
+    }
+  };
+
   return (
     <div className="space-y-4">
       {documents.map((doc) => (
@@ -88,7 +96,7 @@ const MedicalDocumentsList: React.FC<MedicalDocumentsListProps> = ({
                   <MedicalDocumentVisibilityToggle
                     documentId={doc.id}
                     isVisibleToInstitutions={!doc.is_private}
-                    onVisibilityChange={(documentId, isVisible) => onVisibilityChange(documentId, !isVisible)}
+                    onVisibilityChange={handleVisibilityToggle}
                   />
                 )}
               </div>

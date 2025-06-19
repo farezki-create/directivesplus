@@ -37,7 +37,8 @@ export const useMedicalDocuments = (userId: string) => {
         description: doc.description,
         created_at: doc.created_at,
         user_id: doc.user_id,
-        extracted_content: doc.extracted_content
+        extracted_content: doc.extracted_content,
+        is_private: doc.is_private || false
       }));
 
       setDocuments(transformedData);
@@ -48,23 +49,33 @@ export const useMedicalDocuments = (userId: string) => {
     }
   };
 
-  const handleVisibilityToggle = async (documentId: string, isVisible: boolean) => {
+  const handleVisibilityToggle = async (documentId: string, isPrivate: boolean) => {
     try {
-      // Pour l'instant, on simule la fonctionnalité
-      // Plus tard, on pourra ajouter un champ visibility_institutions dans la table
-      toast({
-        title: isVisible ? "Document rendu accessible" : "Document rendu privé",
-        description: isVisible 
-          ? "Les institutions médicales autorisées pourront accéder à ce document"
-          : "Ce document est maintenant privé",
-      });
+      console.log('Toggling visibility for document:', documentId, 'isPrivate:', isPrivate);
+      
+      // Mettre à jour l'état local immédiatement pour un feedback instantané
+      setDocuments(prevDocs => 
+        prevDocs.map(doc => 
+          doc.id === documentId 
+            ? { ...doc, is_private: isPrivate }
+            : doc
+        )
+      );
 
       // TODO: Implémenter la mise à jour en base de données
+      // Pour l'instant, on simule la fonctionnalité
       // const { error } = await supabase
       //   .from('medical_documents')
-      //   .update({ visible_to_institutions: isVisible })
+      //   .update({ is_private: isPrivate })
       //   .eq('id', documentId);
       
+      toast({
+        title: isPrivate ? "Document rendu privé" : "Document accessible aux institutions",
+        description: isPrivate 
+          ? "Ce document est maintenant privé"
+          : "Les institutions médicales autorisées pourront accéder à ce document",
+      });
+
     } catch (error) {
       console.error('Error updating document visibility:', error);
       toast({
@@ -72,6 +83,9 @@ export const useMedicalDocuments = (userId: string) => {
         description: "Impossible de modifier la visibilité du document",
         variant: "destructive"
       });
+      
+      // Revenir à l'état précédent en cas d'erreur
+      await loadMedicalDocuments();
     }
   };
 
