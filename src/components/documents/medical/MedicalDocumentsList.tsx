@@ -6,23 +6,25 @@ import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { FileText, Eye, Download, Trash2, Calendar } from "lucide-react";
 import { MedicalDocument } from "./types";
+import MedicalDocumentVisibilityToggle from "./MedicalDocumentVisibilityToggle";
 
 interface MedicalDocumentsListProps {
   documents: MedicalDocument[];
   onView: (filePath: string) => void;
   onDownload: (filePath: string, fileName: string) => void;
   onDelete: (documentId: string) => void;
-  onVisibilityToggle?: (documentId: string, currentVisibility: boolean) => void;
+  onVisibilityChange?: (documentId: string, isVisible: boolean) => void;
 }
 
 export const MedicalDocumentsList: React.FC<MedicalDocumentsListProps> = ({
   documents,
   onView,
   onDownload,
-  onDelete
+  onDelete,
+  onVisibilityChange
 }) => {
   return (
-    <div className="space-y-4">
+    <>
       {documents.map((doc) => (
         <Card key={doc.id} className="border-l-4 border-l-blue-500">
           <CardContent className="p-4">
@@ -50,6 +52,15 @@ export const MedicalDocumentsList: React.FC<MedicalDocumentsListProps> = ({
                   )}
                 </div>
               </div>
+            </div>
+
+            {/* Section de gestion de la visibilité */}
+            <div className="mt-3">
+              <MedicalDocumentVisibilityToggle
+                documentId={doc.id}
+                isVisibleToInstitutions={false} // Par défaut privé, à connecter avec la base de données
+                onVisibilityChange={onVisibilityChange}
+              />
             </div>
 
             <div className="flex items-center gap-2 mt-3 pt-3 border-t">
@@ -107,6 +118,6 @@ export const MedicalDocumentsList: React.FC<MedicalDocumentsListProps> = ({
           </CardContent>
         </Card>
       ))}
-    </div>
+    </>
   );
 };

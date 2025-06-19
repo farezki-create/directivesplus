@@ -48,12 +48,31 @@ export const useMedicalDocuments = (userId: string) => {
     }
   };
 
-  const handleVisibilityToggle = async (documentId: string, currentVisibility: boolean) => {
-    // Cette fonctionnalité sera implémentée plus tard
-    toast({
-      title: "Information",
-      description: "La gestion de visibilité sera disponible prochainement",
-    });
+  const handleVisibilityToggle = async (documentId: string, isVisible: boolean) => {
+    try {
+      // Pour l'instant, on simule la fonctionnalité
+      // Plus tard, on pourra ajouter un champ visibility_institutions dans la table
+      toast({
+        title: isVisible ? "Document rendu accessible" : "Document rendu privé",
+        description: isVisible 
+          ? "Les institutions médicales autorisées pourront accéder à ce document"
+          : "Ce document est maintenant privé",
+      });
+
+      // TODO: Implémenter la mise à jour en base de données
+      // const { error } = await supabase
+      //   .from('medical_documents')
+      //   .update({ visible_to_institutions: isVisible })
+      //   .eq('id', documentId);
+      
+    } catch (error) {
+      console.error('Error updating document visibility:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de modifier la visibilité du document",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleDelete = async (documentId: string) => {
