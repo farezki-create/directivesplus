@@ -4,6 +4,7 @@ import AppNavigation from "@/components/AppNavigation";
 import DirectivesGrid from "@/components/DirectivesGrid";
 import InfoSteps from "@/components/InfoSteps";
 import { DirectivesResetSection } from "@/components/directives/DirectivesResetSection";
+import MedicalDocumentsQuickAccess from "@/components/documents/medical/MedicalDocumentsQuickAccess";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -50,12 +51,15 @@ const Rediger = () => {
         
         <DirectivesGrid />
         
-        {/* Section de réinitialisation déplacée ici */}
+        {/* Section de gestion avancée */}
         <div className="mt-12 max-w-2xl mx-auto">
           <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
             Gestion avancée
           </h2>
-          <DirectivesResetSection />
+          <div className="space-y-6">
+            <MedicalDocumentsQuickAccess />
+            <DirectivesResetSection />
+          </div>
         </div>
       </main>
       

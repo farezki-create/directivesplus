@@ -31,15 +31,13 @@ export const uploadFileToSupabase = async (
         const dataUrl = reader.result.toString();
         const fileType = file.type;
         
-        // Choisir la table selon le type de document et le paramètre saveToDirectives
-        let tableName: 'uploaded_documents' | 'medical_documents' | 'pdf_documents' = 'uploaded_documents'; // Par défaut
+        // Choisir la table selon le type de document
+        let tableName: 'uploaded_documents' | 'medical_documents' | 'pdf_documents' = 'uploaded_documents';
         
-        if (saveToDirectives) {
-          if (documentType === 'medical') {
-            tableName = 'medical_documents';
-          } else {
-            tableName = 'pdf_documents';
-          }
+        if (documentType === 'medical') {
+          tableName = 'medical_documents';
+        } else if (saveToDirectives) {
+          tableName = 'pdf_documents';
         }
         
         console.log(`Enregistrement du document dans la table: ${tableName}`);
@@ -52,7 +50,6 @@ export const uploadFileToSupabase = async (
             file_path: dataUrl,
             description: `Document ${documentType === 'medical' ? 'médical' : ''} (${new Date().toLocaleString('fr-FR')})`,
             file_type: fileType,
-            content_type: fileType,
             file_size: file.size,
             user_id: userId
           };
@@ -61,7 +58,9 @@ export const uploadFileToSupabase = async (
           if (tableName === 'medical_documents') {
             documentData = {
               ...documentData,
-              is_visible_to_institutions: false, // Par défaut privé
+              content_type: fileType,
+              is_visible_to_institutions: false,
+              medical_document_type: 'general',
               antivirus_status: 'pending'
             };
           }
