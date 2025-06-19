@@ -1,13 +1,14 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Camera, FileText, Heart, MessageCircle, Share2, Upload } from 'lucide-react';
+import { Camera, Upload, MessageCircle, Share2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { DocumentSelector } from './DocumentSelector';
-import { ImageUpload } from './ImageUpload';
-import { MoodSelector } from './MoodSelector';
+import DocumentSelector from './DocumentSelector';
+import ImageUpload from './ImageUpload';
+import MoodSelector from './MoodSelector';
 import { useFileUpload } from '@/hooks/useFileUpload';
 
 interface CreatePostProps {

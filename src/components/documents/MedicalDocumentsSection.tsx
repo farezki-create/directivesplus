@@ -2,10 +2,9 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Upload, FileText, Eye, Download, Trash2, Shield, ShieldCheck, Calendar, User } from "lucide-react";
+import { Upload, FileText, Eye, Download, Trash2, Calendar } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import DocumentUploader from "./DocumentUploader";
@@ -14,15 +13,12 @@ interface MedicalDocument {
   id: string;
   file_name: string;
   file_path: string;
-  file_type?: string;
-  content_type?: string;
-  file_size?: number;
+  file_type: string;
+  file_size: number;
   description: string;
-  is_visible_to_institutions: boolean;
-  medical_document_type?: string;
-  antivirus_status: string;
   created_at: string;
   user_id: string;
+  extracted_content?: string;
 }
 
 interface MedicalDocumentsSectionProps {
@@ -53,7 +49,20 @@ const MedicalDocumentsSection: React.FC<MedicalDocumentsSectionProps> = ({ userI
         return;
       }
 
-      setDocuments(data || []);
+      // Transform data to match MedicalDocument interface
+      const transformedData: MedicalDocument[] = (data || []).map(doc => ({
+        id: doc.id,
+        file_name: doc.file_name,
+        file_path: doc.file_path,
+        file_type: doc.file_type || '',
+        file_size: doc.file_size || 0,
+        description: doc.description,
+        created_at: doc.created_at,
+        user_id: doc.user_id,
+        extracted_content: doc.extracted_content
+      }));
+
+      setDocuments(transformedData);
     } catch (error) {
       console.error('Error loading medical documents:', error);
     } finally {
@@ -74,35 +83,6 @@ const MedicalDocumentsSection: React.FC<MedicalDocumentsSectionProps> = ({ userI
       title: "Document médical ajouté",
       description: "Votre document médical a été ajouté avec succès",
     });
-  };
-
-  const handleVisibilityToggle = async (documentId: string, currentVisibility: boolean) => {
-    try {
-      const { error } = await supabase
-        .from('medical_documents')
-        .update({ is_visible_to_institutions: !currentVisibility })
-        .eq('id', documentId);
-
-      if (error) {
-        console.error('Error updating visibility:', error);
-        toast({
-          title: "Erreur",
-          description: "Impossible de modifier la visibilité du document",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      await loadMedicalDocuments();
-      toast({
-        title: "Visibilité modifiée",
-        description: !currentVisibility 
-          ? "Le document est maintenant visible par les institutions" 
-          : "Le document est maintenant privé",
-      });
-    } catch (error) {
-      console.error('Error updating visibility:', error);
-    }
   };
 
   const handleDelete = async (documentId: string) => {
@@ -146,25 +126,6 @@ const MedicalDocumentsSection: React.FC<MedicalDocumentsSectionProps> = ({ userI
     document.body.removeChild(link);
   };
 
-  const getDocumentTypeColor = (type?: string) => {
-    switch (type) {
-      case 'radio': return 'bg-blue-100 text-blue-800';
-      case 'analyse': return 'bg-green-100 text-green-800';
-      case 'ordonnance': return 'bg-purple-100 text-purple-800';
-      case 'compte_rendu': return 'bg-orange-100 text-orange-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getAntivirusStatusColor = (status: string) => {
-    switch (status) {
-      case 'clean': return 'text-green-600';
-      case 'infected': return 'text-red-600';
-      case 'error': return 'text-orange-600';
-      default: return 'text-yellow-600';
-    }
-  };
-
   if (loading) {
     return (
       <div className="flex justify-center p-8">
@@ -182,8 +143,7 @@ const MedicalDocumentsSection: React.FC<MedicalDocumentsSectionProps> = ({ userI
             Documents Médicaux
           </CardTitle>
           <p className="text-sm text-gray-600">
-            Ajoutez vos documents médicaux (radiologies, analyses, ordonnances, etc.) 
-            et choisissez leur visibilité pour les institutions de soins.
+            Ajoutez vos documents médicaux (radiologies, analyses, ordonnances, etc.)
           </p>
         </CardHeader>
         <CardContent>
@@ -234,11 +194,9 @@ const MedicalDocumentsSection: React.FC<MedicalDocumentsSectionProps> = ({ userI
                         <div className="flex items-center gap-2 mb-2">
                           <FileText className="h-4 w-4 text-blue-600" />
                           <h3 className="font-medium truncate">{doc.file_name}</h3>
-                          {doc.medical_document_type && (
-                            <Badge className={getDocumentTypeColor(doc.medical_document_type)}>
-                              {doc.medical_document_type}
-                            </Badge>
-                          )}
+                          <Badge className="bg-blue-100 text-blue-800">
+                            médical
+                          </Badge>
                         </div>
                         
                         <p className="text-sm text-gray-600 mb-2">{doc.description}</p>
@@ -252,27 +210,6 @@ const MedicalDocumentsSection: React.FC<MedicalDocumentsSectionProps> = ({ userI
                             <div>
                               {(doc.file_size / (1024 * 1024)).toFixed(2)} MB
                             </div>
-                          )}
-                          <div className={`flex items-center gap-1 ${getAntivirusStatusColor(doc.antivirus_status)}`}>
-                            <Shield className="h-3 w-3" />
-                            {doc.antivirus_status === 'clean' ? 'Sécurisé' : 
-                             doc.antivirus_status === 'pending' ? 'En cours de vérification' : 
-                             doc.antivirus_status}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2 ml-4">
-                        <div className="flex items-center gap-2">
-                          <label className="text-xs text-gray-600">Visible institutions:</label>
-                          <Switch
-                            checked={doc.is_visible_to_institutions}
-                            onCheckedChange={() => handleVisibilityToggle(doc.id, doc.is_visible_to_institutions)}
-                          />
-                          {doc.is_visible_to_institutions ? (
-                            <ShieldCheck className="h-4 w-4 text-green-600" />
-                          ) : (
-                            <User className="h-4 w-4 text-gray-400" />
                           )}
                         </div>
                       </div>

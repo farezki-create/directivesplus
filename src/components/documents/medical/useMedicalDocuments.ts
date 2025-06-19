@@ -32,13 +32,9 @@ export const useMedicalDocuments = (userId: string) => {
         id: doc.id,
         file_name: doc.file_name,
         file_path: doc.file_path,
-        file_type: doc.file_type,
-        content_type: doc.content_type,
-        file_size: doc.file_size,
+        file_type: doc.file_type || '',
+        file_size: doc.file_size || 0,
         description: doc.description,
-        is_visible_to_institutions: doc.is_visible_to_institutions || false,
-        medical_document_type: doc.medical_document_type,
-        antivirus_status: doc.antivirus_status || 'pending',
         created_at: doc.created_at,
         user_id: doc.user_id,
         extracted_content: doc.extracted_content
@@ -53,32 +49,11 @@ export const useMedicalDocuments = (userId: string) => {
   };
 
   const handleVisibilityToggle = async (documentId: string, currentVisibility: boolean) => {
-    try {
-      const { error } = await supabase
-        .from('medical_documents')
-        .update({ is_visible_to_institutions: !currentVisibility })
-        .eq('id', documentId);
-
-      if (error) {
-        console.error('Error updating visibility:', error);
-        toast({
-          title: "Erreur",
-          description: "Impossible de modifier la visibilité du document",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      await loadMedicalDocuments();
-      toast({
-        title: "Visibilité modifiée",
-        description: !currentVisibility 
-          ? "Le document est maintenant visible par les institutions" 
-          : "Le document est maintenant privé",
-      });
-    } catch (error) {
-      console.error('Error updating visibility:', error);
-    }
+    // Since we simplified the interface, this is a no-op for now
+    toast({
+      title: "Information",
+      description: "La gestion de visibilité sera disponible prochainement",
+    });
   };
 
   const handleDelete = async (documentId: string) => {
