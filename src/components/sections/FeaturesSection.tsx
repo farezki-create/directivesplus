@@ -6,19 +6,23 @@ const FeaturesSection = () => {
     {
       title: "Sécurité maximale",
       description: "Vos données sont chiffrées et protégées par les plus hauts standards de sécurité.",
+      extendedDescription: "Hébergement en France Scalingo, Certifié HDS | Certifié Données Médicales",
       icon: Shield,
+      hasFlag: true,
     },
     {
       title: "Facile à utiliser",
       description:
         "Interface intuitive pour créer et gérer vos directives anticipées sans complexité.",
       icon: FileText,
+      hasFlag: false,
     },
     {
       title: "Partage sécurisé",
       description:
         "Partagez vos directives avec vos proches et professionnels de santé en toute confiance.",
       icon: Users,
+      hasFlag: false,
     },
   ];
 
@@ -35,7 +39,22 @@ const FeaturesSection = () => {
                 <feature.icon className="w-8 h-8 text-directiveplus-600" />
               </div>
               <h4 className="text-xl font-semibold mb-3">{feature.title}</h4>
-              <p className="text-gray-600">{feature.description}</p>
+              <p className="text-gray-600 mb-3">{feature.description}</p>
+              
+              {feature.hasFlag && (
+                <div className="flex flex-col items-center space-y-3">
+                  <div className="flex items-center justify-center">
+                    <div className="h-8 w-16 flex overflow-hidden rounded shadow-md border">
+                      <div className="bg-blue-700 w-1/3 h-full animate-pulse"></div>
+                      <div className="bg-white w-1/3 h-full"></div>
+                      <div className="bg-red-600 w-1/3 h-full animate-pulse"></div>
+                    </div>
+                  </div>
+                  <p className="text-sm font-medium text-directiveplus-700">
+                    {feature.extendedDescription}
+                  </p>
+                </div>
+              )}
             </div>
           ))}
         </div>
