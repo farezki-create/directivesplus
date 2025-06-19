@@ -3,7 +3,7 @@ import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 import Header from '@/components/Header';
-import SimpleAdminNewsManager from '@/components/health-news/SimpleAdminNewsManager';
+import SimpleDocumentNewsManager from '@/components/health-news/SimpleDocumentNewsManager';
 import BackButton from '@/components/ui/back-button';
 
 const AdminHealthNews = () => {
@@ -35,13 +35,13 @@ const AdminHealthNews = () => {
           />
           <div className="mb-6">
             <h1 className="text-3xl font-bold text-gray-900">
-              Gestion des Actualités Santé
+              Gestion des Documents - Actualités Santé
             </h1>
             <p className="text-gray-600 mt-2">
-              Interface simplifiée pour gérer les actualités santé
+              Ajoutez des documents aux actualités santé. Les documents s'affichent dans l'ordre d'ajout.
             </p>
           </div>
-          <SimpleAdminNewsManager />
+          <SimpleDocumentNewsManager />
         </div>
       </main>
     </div>
