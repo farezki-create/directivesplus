@@ -55,6 +55,25 @@ export const useAlertContactsData = () => {
       return false;
     }
 
+    // Validation des données
+    if (!contact.contact_name || !contact.contact_type) {
+      toast({
+        title: "Erreur",
+        description: "Le nom et le type de contact sont requis",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    if (!contact.phone_number && !contact.email) {
+      toast({
+        title: "Erreur",
+        description: "Au moins un numéro de téléphone ou un email est requis",
+        variant: "destructive"
+      });
+      return false;
+    }
+
     try {
       console.log('Saving contact:', contact);
       console.log('User ID for contact:', user.id);
@@ -63,9 +82,9 @@ export const useAlertContactsData = () => {
       
       const contactData = {
         contact_type: mappedContactType,
-        contact_name: contact.contact_name,
-        phone_number: contact.phone_number || null,
-        email: contact.email || null,
+        contact_name: contact.contact_name.trim(),
+        phone_number: contact.phone_number?.trim() || null,
+        email: contact.email?.trim() || null,
         is_active: true,
         patient_id: user.id
       };
