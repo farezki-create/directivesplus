@@ -67,35 +67,6 @@ export interface SecurityAuditLog {
   user_agent?: string;
 }
 
-export interface SymptomAccessLog {
-  id: string;
-  patient_id: string;
-  access_code: string;
-  accessor_name: string;
-  accessor_first_name: string;
-  accessor_birth_date: string;
-  accessed_at?: string;
-  success: boolean;
-  ip_address?: string | null;
-  user_agent?: string;
-}
-
-export interface SmsLog {
-  id: string;
-  user_id?: string;
-  recipient_phone: string;
-  message_content: string;
-  status: string;
-  created_at?: string;
-  sent_at?: string;
-  brevo_message_id?: string;
-  sender_name?: string;
-  error_message?: string;
-  ip_address?: string | null;
-  user_agent?: string;
-}
-
 // Type union pour tous les logs
 export type LogEntry = AccessLog | AccessCodeAttempt | DocumentAccessLog | 
-  MedicalAccessAudit | InstitutionAccessLog | SecurityAuditLog | 
-  SymptomAccessLog | SmsLog;
+  MedicalAccessAudit | InstitutionAccessLog | SecurityAuditLog;

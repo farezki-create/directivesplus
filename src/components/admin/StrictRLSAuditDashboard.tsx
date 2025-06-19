@@ -14,9 +14,7 @@ import {
   DocumentAccessLog,
   MedicalAccessAudit,
   InstitutionAccessLog,
-  SecurityAuditLog,
-  SymptomAccessLog,
-  SmsLog
+  SecurityAuditLog
 } from '@/types/logs';
 
 interface LogsState {
@@ -26,8 +24,6 @@ interface LogsState {
   institution: InstitutionAccessLog[];
   attempts: AccessCodeAttempt[];
   access: AccessLog[];
-  symptoms: SymptomAccessLog[];
-  sms: SmsLog[];
 }
 
 const StrictRLSAuditDashboard = () => {
@@ -38,9 +34,7 @@ const StrictRLSAuditDashboard = () => {
     documents: [],
     institution: [],
     attempts: [],
-    access: [],
-    symptoms: [],
-    sms: []
+    access: []
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -57,9 +51,7 @@ const StrictRLSAuditDashboard = () => {
         documents: [],
         institution: [],
         attempts: [],
-        access: [],
-        symptoms: [],
-        sms: []
+        access: []
       };
 
       // Charger les logs de sécurité
@@ -115,28 +107,6 @@ const StrictRLSAuditDashboard = () => {
         }));
       } catch (err) {
         console.warn('Failed to load access logs:', err);
-      }
-
-      // Charger les logs de symptômes
-      try {
-        const symptomLogs = await StrictRLSManager.getSymptomAccessLogs();
-        logData.symptoms = symptomLogs.map(log => ({
-          ...log,
-          ip_address: String(log.ip_address || '')
-        }));
-      } catch (err) {
-        console.warn('Failed to load symptom logs:', err);
-      }
-
-      // Charger les logs SMS
-      try {
-        const smsLogs = await StrictRLSManager.getSmsLogs();
-        logData.sms = smsLogs.map(log => ({
-          ...log,
-          ip_address: String(log.ip_address || '')
-        }));
-      } catch (err) {
-        console.warn('Failed to load SMS logs:', err);
       }
 
       // Ajouter les logs admin-only si l'utilisateur est admin
@@ -221,7 +191,7 @@ const StrictRLSAuditDashboard = () => {
                   <div>
                     Horodatage: {formatDate(
                       log.created_at || log.accessed_at || log.attempt_time || 
-                      log.date_consultation || log.sent_at
+                      log.date_consultation
                     )}
                   </div>
                   {log.ip_address && (
@@ -283,7 +253,7 @@ const StrictRLSAuditDashboard = () => {
       </Alert>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="security">Sécurité</TabsTrigger>
           <TabsTrigger value="medical">Médical</TabsTrigger>
           <TabsTrigger value="documents">Documents</TabsTrigger>
