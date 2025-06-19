@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useHealthNews } from '@/hooks/useHealthNews';
 import { useFileUpload } from '@/hooks/useFileUpload';
@@ -6,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Upload, Trash2, AlertCircle, FileText, Image, Video, Music, File } from 'lucide-react';
+import { Upload, Trash2, AlertCircle, FileText, Image, Video, Music, File, Link } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 
@@ -15,6 +14,9 @@ const SimpleDocumentNewsManager = () => {
   const { user } = useAuth();
   const [uploading, setUploading] = useState(false);
   const [uploadTitle, setUploadTitle] = useState('');
+  const [linkUrl, setLinkUrl] = useState('');
+  const [linkTitle, setLinkTitle] = useState('');
+  const [isAddingLink, setIsAddingLink] = useState(false);
 
   const {
     file,
@@ -81,6 +83,62 @@ const SimpleDocumentNewsManager = () => {
     }
   }
 
+  const handleAddLink = async () => {
+    if (!linkTitle.trim() || !linkUrl.trim()) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez saisir un titre et une URL",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!linkUrl.startsWith('http://') && !linkUrl.startsWith('https://')) {
+      toast({
+        title: "Erreur",
+        description: "L'URL doit commencer par http:// ou https://",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      setUploading(true);
+      
+      const newsData = {
+        title: linkTitle,
+        content: `Lien: ${linkUrl}`,
+        excerpt: `Lien ajouté: ${linkTitle}`,
+        featured_image_url: linkUrl,
+        category: 'link',
+        status: 'published' as const,
+        tags: ['link', 'external'],
+        is_featured: false
+      };
+
+      const success = await createNews(newsData);
+      
+      if (success) {
+        setLinkTitle('');
+        setLinkUrl('');
+        setIsAddingLink(false);
+        toast({
+          title: "Succès",
+          description: "Lien ajouté aux actualités"
+        });
+      }
+    } catch (error) {
+      console.error('Erreur lors de l\'ajout:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'ajouter le lien",
+        variant: "destructive"
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleFileSelect = () => {
     fileInputRef.current?.click();
   };
@@ -113,6 +171,16 @@ const SimpleDocumentNewsManager = () => {
       default:
         return <File className="h-4 w-4" />;
     }
+  };
+
+  const getContentIcon = (newsItem: any) => {
+    if (newsItem.category === 'link') {
+      return <Link className="h-4 w-4" />;
+    }
+    if (newsItem.featured_image_url && newsItem.category === 'document') {
+      return getFileIcon(newsItem.content.replace('Document: ', ''));
+    }
+    return <File className="h-4 w-4" />;
   };
 
   if (loading) {
@@ -152,70 +220,135 @@ const SimpleDocumentNewsManager = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Upload className="h-5 w-5" />
-            Ajouter un document aux actualités
+            Ajouter du contenu aux actualités
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
-            <label htmlFor="title" className="block text-sm font-medium mb-2">
-              Titre de l'actualité *
-            </label>
-            <Input
-              id="title"
-              value={uploadTitle}
-              onChange={(e) => setUploadTitle(e.target.value)}
-              placeholder="Saisissez le titre de l'actualité..."
-              required
-            />
-          </div>
+          {!isAddingLink ? (
+            // Section fichier
+            <>
+              <div>
+                <label htmlFor="title" className="block text-sm font-medium mb-2">
+                  Titre de l'actualité *
+                </label>
+                <Input
+                  id="title"
+                  value={uploadTitle}
+                  onChange={(e) => setUploadTitle(e.target.value)}
+                  placeholder="Saisissez le titre de l'actualité..."
+                  required
+                />
+              </div>
 
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center gap-4">
-              <Button
-                onClick={handleFileSelect}
-                disabled={uploading || fileUploading}
-                className="flex items-center gap-2"
-              >
-                <Upload className="h-4 w-4" />
-                Sélectionner un fichier
-              </Button>
-              
-              {file && (
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  {getFileIcon(file.name)}
-                  <span>{file.name}</span>
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center gap-4">
                   <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={clearFile}
-                    className="text-red-500 hover:text-red-700"
+                    onClick={handleFileSelect}
+                    disabled={uploading || fileUploading}
+                    className="flex items-center gap-2"
                   >
-                    <Trash2 className="h-3 w-3" />
+                    <Upload className="h-4 w-4" />
+                    Sélectionner un fichier
                   </Button>
+                  
+                  <Button
+                    onClick={() => setIsAddingLink(true)}
+                    disabled={uploading}
+                    variant="outline"
+                    className="flex items-center gap-2"
+                  >
+                    <Link className="h-4 w-4" />
+                    Ajouter un lien
+                  </Button>
+                  
+                  {file && (
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      {getFileIcon(file.name)}
+                      <span>{file.name}</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={clearFile}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
 
-            {file && uploadTitle.trim() && (
-              <Button
-                onClick={() => {
-                  if (file) {
-                    const reader = new FileReader();
-                    reader.onloadend = () => {
-                      if (reader.result) {
-                        handleUploadComplete(reader.result.toString(), file.name);
+                {file && uploadTitle.trim() && (
+                  <Button
+                    onClick={() => {
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          if (reader.result) {
+                            handleUploadComplete(reader.result.toString(), file.name);
+                          }
+                        };
+                        reader.readAsDataURL(file);
                       }
-                    };
-                    reader.readAsDataURL(file);
-                  }
-                }}
-                disabled={uploading || fileUploading}
-                className="w-fit bg-green-600 hover:bg-green-700"
-              >
-                {uploading ? 'Ajout en cours...' : 'Ajouter aux actualités'}
-              </Button>
-            )}
-          </div>
+                    }}
+                    disabled={uploading || fileUploading}
+                    className="w-fit bg-green-600 hover:bg-green-700"
+                  >
+                    {uploading ? 'Ajout en cours...' : 'Ajouter aux actualités'}
+                  </Button>
+                )}
+              </div>
+            </>
+          ) : (
+            // Section lien
+            <>
+              <div>
+                <label htmlFor="linkTitle" className="block text-sm font-medium mb-2">
+                  Titre du lien *
+                </label>
+                <Input
+                  id="linkTitle"
+                  value={linkTitle}
+                  onChange={(e) => setLinkTitle(e.target.value)}
+                  placeholder="Saisissez le titre du lien..."
+                  required
+                />
+              </div>
+
+              <div>
+                <label htmlFor="linkUrl" className="block text-sm font-medium mb-2">
+                  URL du lien *
+                </label>
+                <Input
+                  id="linkUrl"
+                  value={linkUrl}
+                  onChange={(e) => setLinkUrl(e.target.value)}
+                  placeholder="https://..."
+                  required
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={handleAddLink}
+                  disabled={uploading || !linkTitle.trim() || !linkUrl.trim()}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  {uploading ? 'Ajout en cours...' : 'Ajouter le lien'}
+                </Button>
+                
+                <Button
+                  onClick={() => {
+                    setIsAddingLink(false);
+                    setLinkTitle('');
+                    setLinkUrl('');
+                  }}
+                  variant="outline"
+                >
+                  Annuler
+                </Button>
+              </div>
+            </>
+          )}
 
           <input
             ref={fileInputRef}
@@ -230,13 +363,13 @@ const SimpleDocumentNewsManager = () => {
       {/* Liste des actualités */}
       <Card>
         <CardHeader>
-          <CardTitle>Documents dans les actualités ({news.length})</CardTitle>
+          <CardTitle>Contenu dans les actualités ({news.length})</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {news.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
-                Aucun document ajouté aux actualités
+                Aucun contenu ajouté aux actualités
               </div>
             ) : (
               news.map((newsItem) => (
@@ -244,9 +377,11 @@ const SimpleDocumentNewsManager = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        {newsItem.featured_image_url && getFileIcon(newsItem.content)}
+                        {getContentIcon(newsItem)}
                         <h4 className="font-medium">{newsItem.title}</h4>
-                        <Badge variant="secondary">Document</Badge>
+                        <Badge variant="secondary">
+                          {newsItem.category === 'link' ? 'Lien' : 'Document'}
+                        </Badge>
                         {newsItem.is_featured && (
                           <Badge variant="destructive">À la une</Badge>
                         )}
@@ -265,7 +400,7 @@ const SimpleDocumentNewsManager = () => {
                           size="sm"
                           onClick={() => window.open(newsItem.featured_image_url, '_blank')}
                         >
-                          Voir
+                          {newsItem.category === 'link' ? 'Ouvrir' : 'Voir'}
                         </Button>
                       )}
                       <Button
