@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +23,22 @@ export const MedicalDocumentsList: React.FC<MedicalDocumentsListProps> = ({
   onDelete,
   onVisibilityChange
 }) => {
+  // État local pour gérer la visibilité de chaque document
+  const [documentVisibility, setDocumentVisibility] = useState<Record<string, boolean>>({});
+
+  const handleVisibilityToggle = (documentId: string, isVisible: boolean) => {
+    // Mettre à jour l'état local
+    setDocumentVisibility(prev => ({
+      ...prev,
+      [documentId]: isVisible
+    }));
+    
+    // Appeler la fonction parent si elle existe
+    if (onVisibilityChange) {
+      onVisibilityChange(documentId, isVisible);
+    }
+  };
+
   return (
     <>
       {documents.map((doc) => (
@@ -58,8 +74,8 @@ export const MedicalDocumentsList: React.FC<MedicalDocumentsListProps> = ({
             <div className="mt-3">
               <MedicalDocumentVisibilityToggle
                 documentId={doc.id}
-                isVisibleToInstitutions={false} // Par défaut privé, à connecter avec la base de données
-                onVisibilityChange={onVisibilityChange}
+                isVisibleToInstitutions={documentVisibility[doc.id] || false}
+                onVisibilityChange={handleVisibilityToggle}
               />
             </div>
 
