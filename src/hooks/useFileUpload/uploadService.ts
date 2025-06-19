@@ -35,13 +35,12 @@ export const uploadFileToSupabase = async (
         console.log(`Type de fichier: ${fileType}`);
         
         try {
-          let documentData: any;
-          let tableName: string;
+          let data;
+          let error;
           
           if (documentType === 'medical') {
             // Enregistrer dans la table medical_documents
-            tableName = 'medical_documents';
-            documentData = {
+            const documentData = {
               file_name: finalFileName,
               file_path: dataUrl,
               description: `Document médical ajouté le ${new Date().toLocaleString('fr-FR')}`,
@@ -49,10 +48,19 @@ export const uploadFileToSupabase = async (
               file_size: file.size,
               user_id: userId
             };
+            
+            console.log('Enregistrement du document dans la table: medical_documents');
+            
+            const result = await supabase
+              .from('medical_documents')
+              .insert([documentData])
+              .select();
+            
+            data = result.data;
+            error = result.error;
           } else if (saveToDirectives) {
             // Enregistrer dans pdf_documents pour les directives
-            tableName = 'pdf_documents';
-            documentData = {
+            const documentData = {
               file_name: finalFileName,
               file_path: dataUrl,
               description: `Document directive ajouté le ${new Date().toLocaleString('fr-FR')}`,
@@ -61,10 +69,19 @@ export const uploadFileToSupabase = async (
               file_size: file.size,
               user_id: userId
             };
+            
+            console.log('Enregistrement du document dans la table: pdf_documents');
+            
+            const result = await supabase
+              .from('pdf_documents')
+              .insert([documentData])
+              .select();
+            
+            data = result.data;
+            error = result.error;
           } else {
             // Enregistrer dans uploaded_documents pour les autres cas
-            tableName = 'uploaded_documents';
-            documentData = {
+            const documentData = {
               file_name: finalFileName,
               file_path: dataUrl,
               description: `Document ajouté le ${new Date().toLocaleString('fr-FR')}`,
@@ -72,14 +89,17 @@ export const uploadFileToSupabase = async (
               file_size: file.size,
               user_id: userId
             };
+            
+            console.log('Enregistrement du document dans la table: uploaded_documents');
+            
+            const result = await supabase
+              .from('uploaded_documents')
+              .insert([documentData])
+              .select();
+            
+            data = result.data;
+            error = result.error;
           }
-          
-          console.log(`Enregistrement du document dans la table: ${tableName}`);
-          
-          const { data, error } = await supabase
-            .from(tableName)
-            .insert([documentData])
-            .select();
 
           if (error) {
             console.error("Erreur lors de l'enregistrement:", error);
