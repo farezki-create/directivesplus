@@ -1,3 +1,4 @@
+
 import { useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -17,7 +18,7 @@ export const useFileUpload = (
   userId: string, 
   onUploadComplete: (url: string, fileName: string, isPrivate: boolean) => void, 
   documentType = "directive",
-  saveToDirectives = true // Nouveau paramètre pour contrôler où sauver
+  saveToDirectives = true // Contrôle où sauver le document
 ) => {
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -95,24 +96,40 @@ export const useFileUpload = (
         const dataUrl = reader.result.toString();
         const fileType = file.type;
         
-        // Choisir la table selon le paramètre saveToDirectives
-        const tableName = saveToDirectives 
-          ? (documentType === 'medical' ? 'medical_documents' : 'pdf_documents')
-          : 'uploaded_documents';
+        // Choisir la table selon le type de document et le paramètre saveToDirectives
+        let tableName = 'uploaded_documents'; // Par défaut
+        
+        if (saveToDirectives) {
+          if (documentType === 'medical') {
+            tableName = 'medical_documents';
+          } else {
+            tableName = 'pdf_documents';
+          }
+        }
         
         console.log(`Enregistrement du document dans la table: ${tableName}`);
         console.log(`Type du document: ${fileType}`);
         
         try {
-          // Create document record
-          const documentData = {
+          // Créer les données du document selon la table
+          let documentData: any = {
             file_name: finalFileName,
             file_path: dataUrl,
             description: `Document ${documentType === 'medical' ? 'médical' : ''} (${new Date().toLocaleString('fr-FR')})`,
             file_type: fileType,
+            content_type: fileType,
             file_size: file.size,
             user_id: userId
           };
+
+          // Ajouter des champs spécifiques aux documents médicaux
+          if (tableName === 'medical_documents') {
+            documentData = {
+              ...documentData,
+              is_visible_to_institutions: false, // Par défaut privé
+              antivirus_status: 'pending'
+            };
+          }
           
           const { data, error } = await supabase
             .from(tableName)
@@ -125,7 +142,6 @@ export const useFileUpload = (
 
           clearFile();
           if (data && data[0]) {
-            // Passer isPrivate pour les besoins de l'UI même si non stocké dans la DB
             onUploadComplete(dataUrl, finalFileName, isPrivate);
           }
         } catch (error) {
@@ -155,7 +171,6 @@ export const useFileUpload = (
 
   const previewFile = () => {
     if (file) {
-      // Créer une URL pour prévisualiser le fichier
       const url = URL.createObjectURL(file);
       setPreviewUrl(url);
       setPreviewDialogOpen(true);

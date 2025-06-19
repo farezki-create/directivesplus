@@ -1,6 +1,7 @@
 
 import React from "react";
 import DirectivesDocumentList from "./DirectivesDocumentList";
+import MedicalDocumentsSection from "./MedicalDocumentsSection";
 import { Document } from "@/types/documents";
 
 interface DirectivesPageContentProps {
@@ -33,15 +34,23 @@ const DirectivesPageContent: React.FC<DirectivesPageContentProps> = ({
   profile
 }) => {
   return (
-    <DirectivesDocumentList 
-      documents={documents}
-      onDownload={onDownload}
-      onPrint={onPrint}
-      onView={onView}
-      onDelete={onDelete}
-      onVisibilityChange={onVisibilityChange}
-      showPrint={true}
-    />
+    <div className="space-y-8">
+      {/* Section documents de directives anticipées */}
+      <DirectivesDocumentList 
+        documents={documents}
+        onDownload={onDownload}
+        onPrint={onPrint}
+        onView={onView}
+        onDelete={onDelete}
+        onVisibilityChange={onVisibilityChange}
+        showPrint={true}
+      />
+      
+      {/* Section documents médicaux */}
+      {userId && (
+        <MedicalDocumentsSection userId={userId} />
+      )}
+    </div>
   );
 };
 
