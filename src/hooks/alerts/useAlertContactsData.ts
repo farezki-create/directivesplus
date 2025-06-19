@@ -57,6 +57,7 @@ export const useAlertContactsData = () => {
 
     try {
       console.log('Saving contact:', contact);
+      console.log('User ID for contact:', user.id);
       
       const mappedContactType = mapContactType(contact.contact_type);
       
@@ -79,7 +80,12 @@ export const useAlertContactsData = () => {
 
       if (error) {
         console.error('Database error when saving contact:', error);
-        throw error;
+        toast({
+          title: "Erreur de base de données",
+          description: `Erreur lors de l'enregistrement: ${error.message}`,
+          variant: "destructive"
+        });
+        return false;
       }
 
       console.log('Contact saved successfully:', data);

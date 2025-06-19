@@ -45,6 +45,7 @@ export const useAlertSettingsData = () => {
 
     try {
       console.log('Saving settings:', newSettings);
+      console.log('User ID for settings:', user.id);
       
       const settingsData = {
         ...newSettings,
@@ -57,7 +58,12 @@ export const useAlertSettingsData = () => {
 
       if (error) {
         console.error('Error saving settings:', error);
-        throw error;
+        toast({
+          title: "Erreur de base de données",
+          description: `Erreur lors de l'enregistrement: ${error.message}`,
+          variant: "destructive"
+        });
+        return false;
       }
 
       toast({
