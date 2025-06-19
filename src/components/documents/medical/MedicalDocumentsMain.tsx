@@ -103,7 +103,7 @@ export const MedicalDocumentsMain: React.FC<MedicalDocumentsMainProps> = ({ user
             onView={handleView}
             onDownload={handleDownload}
             onDelete={handleDelete}
-            onVisibilityToggle={handleVisibilityToggle}
+            onVisibilityChange={handleVisibilityToggle}
           />
         )}
       </CardContent>
