@@ -4,18 +4,18 @@ import { Shield, FileText, Users } from "lucide-react";
 const FeaturesSection = () => {
   const features = [
     {
-      title: "Sécurité maximale",
-      description: "Vos données sont chiffrées et protégées par les plus hauts standards de sécurité.",
-      extendedDescription: "Hébergement en France Scalingo, Certifié HDS | Certifié Données Médicales",
-      icon: Shield,
-      hasFlag: true,
-    },
-    {
       title: "Facile à utiliser",
       description:
         "Interface intuitive pour créer et gérer vos directives anticipées sans complexité.",
       icon: FileText,
       hasFlag: false,
+    },
+    {
+      title: "Sécurité maximale",
+      description: "Vos données sont chiffrées et protégées par les plus hauts standards de sécurité.",
+      extendedDescription: "Hébergement en France Scalingo, Certifié HDS | Certifié Données Médicales",
+      icon: Shield,
+      hasFlag: true,
     },
     {
       title: "Partage sécurisé",
