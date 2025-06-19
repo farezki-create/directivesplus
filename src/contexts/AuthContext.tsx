@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -8,6 +7,7 @@ interface AuthContextType {
   session: Session | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isAdmin: boolean;
   signOut: () => Promise<void>;
   profile: any | null;
 }
@@ -19,6 +19,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Calculer isAdmin basé sur l'email
+  const isAdmin = user?.email?.endsWith('@directivesplus.fr') || false;
 
   const fetchUserProfile = async (userId: string) => {
     try {
@@ -119,6 +122,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     session,
     isAuthenticated: !!user,
     isLoading,
+    isAdmin,
     signOut,
     profile,
   };

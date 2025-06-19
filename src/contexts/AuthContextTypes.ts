@@ -18,6 +18,7 @@ export interface AuthContextProps {
   session: Session | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  isAdmin: boolean;
   signOut: () => Promise<void>;
   profile: any | null;
 }

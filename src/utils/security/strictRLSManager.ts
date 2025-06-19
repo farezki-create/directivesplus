@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 /**
@@ -165,6 +164,52 @@ export class StrictRLSManager {
       return data || [];
     } catch (error) {
       console.error('Error accessing security audit logs:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Accède aux logs de symptômes avec sécurité renforcée
+   */
+  static async getSymptomAccessLogs(userId?: string) {
+    try {
+      await this.auditLogAccess('symptom_access_logs', 'SELECT');
+
+      let query = supabase.from('symptom_access_logs').select('*');
+      
+      if (userId) {
+        query = query.eq('patient_id', userId);
+      }
+
+      const { data, error } = await query.order('accessed_at', { ascending: false });
+      
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error accessing symptom access logs:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Accède aux logs SMS avec sécurité renforcée
+   */
+  static async getSmsLogs(userId?: string) {
+    try {
+      await this.auditLogAccess('sms_logs', 'SELECT');
+
+      let query = supabase.from('sms_logs').select('*');
+      
+      if (userId) {
+        query = query.eq('user_id', userId);
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error accessing SMS logs:', error);
       throw error;
     }
   }
