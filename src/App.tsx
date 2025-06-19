@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -97,6 +96,9 @@ import AvisGeneral from "@/pages/AvisGeneral";
 import Partage from "@/pages/Partage";
 import Dashboard from "@/pages/Dashboard";
 
+import AdminHealthNews from "@/pages/AdminHealthNews";
+import PublicHealthNews from "@/pages/PublicHealthNews";
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -157,18 +159,16 @@ function App() {
               <Route path="/tableau-bord-institution" element={<TableauBordInstitution />} />
               <Route path="/alertes-soignants" element={<AlertesSoignants />} />
 
-              {/* Health News */}
-              <Route path="/actualites-sante" element={<ActualitesSante />} />
-              <Route path="/health-news" element={<HealthNews />} />
-
-              {/* Legal and compliance */}
-              <Route path="/data-protection-impact" element={<DataProtectionImpact />} />
-              <Route path="/analyse-impact-protection-donnees" element={<AnalyseImpactProtectionDonnees />} />
-              <Route path="/data-breach-procedure" element={<DataBreachProcedure />} />
-              <Route path="/procedure-violation-donnees" element={<ProcedureViolationDonnees />} />
-              <Route path="/report-data-breach" element={<ReportDataBreach />} />
-              <Route path="/backup-policy" element={<BackupPolicy />} />
-              <Route path="/politique-sauvegarde" element={<PolitiqueSauvegarde />} />
+              {/* Health News Routes */}
+              <Route path="/actualites-sante" element={<PublicHealthNews />} />
+              <Route 
+                path="/admin/health-news" 
+                element={
+                  <ProtectedRoute requireAuth requireAdmin>
+                    <AdminHealthNews />
+                  </ProtectedRoute>
+                } 
+              />
 
               {/* Protected routes */}
               <Route path="/rediger" element={

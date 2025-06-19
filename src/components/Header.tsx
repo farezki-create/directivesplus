@@ -27,9 +27,9 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-white sticky top-0 z-10 border-b shadow-sm">
-      <div className="container mx-auto px-4 py-3">
-        <div className="flex justify-between items-center">
+    <header className="bg-white shadow-md sticky top-0 z-50">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
             <Link to={isAuthenticated ? "/rediger" : "/"} className="flex items-center">
               <div className="p-2 mr-3">
@@ -45,7 +45,8 @@ const Header = () => {
             </Link>
           </div>
 
-          <div className="hidden md:flex items-center space-x-4">
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex space-x-8">
             <Link
               to={isAuthenticated ? "/rediger" : "/"}
               className="text-gray-700 hover:text-directiveplus-600 transition-colors"
@@ -55,7 +56,7 @@ const Header = () => {
             
             <Link
               to="/actualites-sante"
-              className="text-gray-700 hover:text-directiveplus-600 transition-colors"
+              className="text-gray-600 hover:text-directiveplus-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
             >
               Actualités Santé
             </Link>
@@ -100,8 +101,9 @@ const Header = () => {
                 </Link>
               </>
             )}
-          </div>
+          </nav>
 
+          {/* User Menu */}
           <div className="md:hidden">
             <button onClick={toggleMobileMenu} className="text-gray-600 hover:text-directiveplus-600 focus:outline-none">
               {isMobileMenuOpen ? (
@@ -114,19 +116,20 @@ const Header = () => {
         </div>
       </div>
 
+      {/* Mobile Navigation Menu */}
       {isMobileMenuOpen && (
-        <div className="bg-gray-50 border-b py-2">
-          <div className="container mx-auto px-4 flex flex-col space-y-2">
+        <div className="md:hidden">
+          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t">
             <Link
               to={isAuthenticated ? "/rediger" : "/"}
-              className="text-gray-700 hover:text-directiveplus-600 transition-colors block"
+              className="text-gray-700 hover:text-directiveplus-600 block px-3 py-2 rounded-md text-base font-medium"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Accueil
             </Link>
             <Link
               to="/actualites-sante"
-              className="text-gray-700 hover:text-directiveplus-600 transition-colors block"
+              className="text-gray-600 hover:text-directiveplus-600 block px-3 py-2 rounded-md text-base font-medium"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Actualités Santé
@@ -134,7 +137,7 @@ const Header = () => {
             {isAuthenticated && (
               <Link
                 to="/community"
-                className="text-gray-700 hover:text-directiveplus-600 transition-colors block"
+                className="text-gray-700 hover:text-directiveplus-600 block px-3 py-2 rounded-md text-base font-medium"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Communauté
@@ -144,7 +147,7 @@ const Header = () => {
               <>
                 <Link
                   to="/profile"
-                  className="text-gray-700 hover:text-directiveplus-600 transition-colors block"
+                  className="text-gray-700 hover:text-directiveplus-600 block px-3 py-2 rounded-md text-base font-medium"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   Profil
@@ -160,14 +163,14 @@ const Header = () => {
               <>
                 <Link
                   to="/auth"
-                  className="text-gray-700 hover:text-directiveplus-600 transition-colors block"
+                  className="text-gray-700 hover:text-directiveplus-600 block px-3 py-2 rounded-md text-base font-medium"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   Connexion
                 </Link>
                 <Link
                   to="/auth"
-                  className="text-gray-700 hover:text-directiveplus-600 transition-colors block"
+                  className="text-gray-700 hover:text-directiveplus-600 block px-3 py-2 rounded-md text-base font-medium"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   Inscription

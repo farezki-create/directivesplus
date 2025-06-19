@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Users, Shield, Building2, Database, Activity, Settings } from "lucide-react";
@@ -6,6 +5,8 @@ import AppNavigation from "@/components/AppNavigation";
 import { Link } from "react-router-dom";
 import { UsersTable } from "./UsersTable";
 import { type UserProfile } from "@/hooks/useUsersList";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 type AdminDashboardProps = {
   users: UserProfile[];
@@ -13,24 +14,26 @@ type AdminDashboardProps = {
   onViewUserDetails?: (userId: string) => void;
 };
 
-export function AdminDashboard({ users, isLoading, onViewUserDetails }: AdminDashboardProps) {
+export const AdminDashboard = ({ users, isLoading, onViewUserDetails }: AdminDashboardProps) => {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen bg-gray-50">
       <AppNavigation hideEditingFeatures={true} />
       
-      <main className="container mx-auto px-4 py-8">
-        <div className="max-w-6xl mx-auto">
+      <main className="py-8">
+        <div className="container mx-auto px-4">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Administration
+              Tableau de bord administrateur
             </h1>
             <p className="text-gray-600">
-              Panneau d'administration de DirectivesPlus
+              Gérez les utilisateurs et surveillez l'activité du système
             </p>
           </div>
 
-          {/* Navigation Admin */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {/* Admin Quick Actions */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <Link to="/admin/dashboard">
               <Card className="hover:shadow-lg transition-shadow cursor-pointer border-purple-200 bg-purple-50">
                 <CardContent className="p-6">
@@ -108,6 +111,30 @@ export function AdminDashboard({ users, isLoading, onViewUserDetails }: AdminDas
                 </div>
               </CardContent>
             </Card>
+
+            {/* New Health News Management Card */}
+            <Card className="cursor-pointer hover:shadow-lg transition-shadow duration-200">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      Actualités Santé
+                    </h3>
+                    <p className="text-sm text-gray-600 mb-4">
+                      Gérer les articles et actualités
+                    </p>
+                    <Button 
+                      onClick={() => navigate('/admin/health-news')}
+                      size="sm"
+                      className="w-full"
+                    >
+                      Gérer les actualités
+                    </Button>
+                  </div>
+                  <div className="text-3xl">📰</div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Users Table */}
@@ -126,4 +153,4 @@ export function AdminDashboard({ users, isLoading, onViewUserDetails }: AdminDas
       </main>
     </div>
   );
-}
+};
