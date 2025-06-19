@@ -32,8 +32,8 @@ export const useMedicalDocuments = (userId: string) => {
         id: doc.id,
         file_name: doc.file_name,
         file_path: doc.file_path,
-        file_type: doc.file_type || '',
-        file_size: doc.file_size || 0,
+        file_type: doc.file_type,
+        file_size: doc.file_size,
         description: doc.description,
         created_at: doc.created_at,
         user_id: doc.user_id,
@@ -49,7 +49,7 @@ export const useMedicalDocuments = (userId: string) => {
   };
 
   const handleVisibilityToggle = async (documentId: string, currentVisibility: boolean) => {
-    // Since we simplified the interface, this is a no-op for now
+    // Cette fonctionnalité sera implémentée plus tard
     toast({
       title: "Information",
       description: "La gestion de visibilité sera disponible prochainement",

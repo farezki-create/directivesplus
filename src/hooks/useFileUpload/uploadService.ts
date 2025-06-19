@@ -31,39 +31,50 @@ export const uploadFileToSupabase = async (
         const dataUrl = reader.result.toString();
         const fileType = file.type;
         
-        // Choisir la table selon le type de document
-        let tableName: 'uploaded_documents' | 'medical_documents' | 'pdf_documents' = 'uploaded_documents';
-        
-        if (documentType === 'medical') {
-          tableName = 'medical_documents';
-        } else if (saveToDirectives) {
-          tableName = 'pdf_documents';
-        }
-        
-        console.log(`Enregistrement du document dans la table: ${tableName}`);
-        console.log(`Type du document: ${fileType}`);
+        console.log(`Type du document: ${documentType}`);
+        console.log(`Type de fichier: ${fileType}`);
         
         try {
-          // Créer les données du document selon la table
-          let documentData: any = {
-            file_name: finalFileName,
-            file_path: dataUrl,
-            description: `Document ${documentType === 'medical' ? 'médical' : ''} (${new Date().toLocaleString('fr-FR')})`,
-            file_type: fileType,
-            file_size: file.size,
-            user_id: userId
-          };
-
-          // Ajouter des champs spécifiques aux documents médicaux
-          if (tableName === 'medical_documents') {
+          let documentData: any;
+          let tableName: string;
+          
+          if (documentType === 'medical') {
+            // Enregistrer dans la table medical_documents
+            tableName = 'medical_documents';
             documentData = {
-              ...documentData,
+              file_name: finalFileName,
+              file_path: dataUrl,
+              description: `Document médical ajouté le ${new Date().toLocaleString('fr-FR')}`,
+              file_type: fileType,
+              file_size: file.size,
+              user_id: userId
+            };
+          } else if (saveToDirectives) {
+            // Enregistrer dans pdf_documents pour les directives
+            tableName = 'pdf_documents';
+            documentData = {
+              file_name: finalFileName,
+              file_path: dataUrl,
+              description: `Document directive ajouté le ${new Date().toLocaleString('fr-FR')}`,
+              file_type: fileType,
               content_type: fileType,
-              is_visible_to_institutions: false,
-              medical_document_type: 'general',
-              antivirus_status: 'pending'
+              file_size: file.size,
+              user_id: userId
+            };
+          } else {
+            // Enregistrer dans uploaded_documents pour les autres cas
+            tableName = 'uploaded_documents';
+            documentData = {
+              file_name: finalFileName,
+              file_path: dataUrl,
+              description: `Document ajouté le ${new Date().toLocaleString('fr-FR')}`,
+              file_type: fileType,
+              file_size: file.size,
+              user_id: userId
             };
           }
+          
+          console.log(`Enregistrement du document dans la table: ${tableName}`);
           
           const { data, error } = await supabase
             .from(tableName)
@@ -71,18 +82,24 @@ export const uploadFileToSupabase = async (
             .select();
 
           if (error) {
+            console.error("Erreur lors de l'enregistrement:", error);
             throw error;
           }
 
           if (data && data[0]) {
+            console.log("Document enregistré avec succès:", data[0]);
             onUploadComplete(dataUrl, finalFileName, isPrivate);
+            toast({
+              title: "Document enregistré",
+              description: `Votre document ${finalFileName} a été enregistré avec succès`,
+            });
           }
           resolve(data);
         } catch (error) {
           console.error("Erreur lors de l'enregistrement du document:", error);
           toast({
             title: "Erreur",
-            description: `Impossible d'enregistrer le document. ${error instanceof Error ? error.message : ''}`,
+            description: `Impossible d'enregistrer le document. ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
             variant: "destructive"
           });
           reject(error);
