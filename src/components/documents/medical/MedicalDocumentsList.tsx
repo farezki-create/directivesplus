@@ -1,139 +1,121 @@
 
-import React, { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import React from "react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Download, Trash2, FileText, Calendar, HardDrive } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { FileText, Eye, Download, Trash2, Calendar } from "lucide-react";
-import { MedicalDocument } from "./types";
-import MedicalDocumentVisibilityToggle from "./MedicalDocumentVisibilityToggle";
+import { Document } from "@/types/documents";
+import { MedicalDocumentVisibilityToggle } from "./MedicalDocumentVisibilityToggle";
 
 interface MedicalDocumentsListProps {
-  documents: MedicalDocument[];
-  onView: (filePath: string) => void;
+  documents: Document[];
   onDownload: (filePath: string, fileName: string) => void;
   onDelete: (documentId: string) => void;
-  onVisibilityChange?: (documentId: string, isVisible: boolean) => void;
+  onVisibilityChange?: (documentId: string, isPrivate: boolean) => void;
+  loading?: boolean;
 }
 
-export const MedicalDocumentsList: React.FC<MedicalDocumentsListProps> = ({
+const MedicalDocumentsList: React.FC<MedicalDocumentsListProps> = ({
   documents,
-  onView,
   onDownload,
   onDelete,
-  onVisibilityChange
+  onVisibilityChange,
+  loading = false
 }) => {
-  // État local pour gérer la visibilité de chaque document
-  const [documentVisibility, setDocumentVisibility] = useState<Record<string, boolean>>({});
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-8">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
-  const handleVisibilityToggle = (documentId: string, isVisible: boolean) => {
-    // Mettre à jour l'état local
-    setDocumentVisibility(prev => ({
-      ...prev,
-      [documentId]: isVisible
-    }));
-    
-    // Appeler la fonction parent si elle existe
-    if (onVisibilityChange) {
-      onVisibilityChange(documentId, isVisible);
-    }
+  if (documents.length === 0) {
+    return (
+      <div className="text-center py-8 text-gray-500">
+        <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+        <p>Aucun document médical ajouté</p>
+      </div>
+    );
+  }
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   return (
-    <>
+    <div className="space-y-4">
       {documents.map((doc) => (
         <Card key={doc.id} className="border-l-4 border-l-blue-500">
-          <CardContent className="p-4">
+          <CardHeader className="pb-3">
             <div className="flex items-start justify-between">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-2">
-                  <FileText className="h-4 w-4 text-blue-600" />
-                  <h3 className="font-medium truncate">{doc.file_name}</h3>
-                  <Badge className="bg-blue-100 text-blue-800">
-                    médical
-                  </Badge>
-                </div>
-                
-                <p className="text-sm text-gray-600 mb-2">{doc.description}</p>
-                
-                <div className="flex items-center gap-4 text-xs text-gray-500">
-                  <div className="flex items-center gap-1">
-                    <Calendar className="h-3 w-3" />
-                    {new Date(doc.created_at).toLocaleDateString('fr-FR')}
-                  </div>
-                  {doc.file_size && (
-                    <div>
-                      {(doc.file_size / (1024 * 1024)).toFixed(2)} MB
+              <div className="flex items-center gap-3">
+                <FileText className="h-6 w-6 text-blue-600" />
+                <div>
+                  <h3 className="font-semibold text-lg">{doc.file_name}</h3>
+                  <div className="flex items-center gap-4 text-sm text-gray-500 mt-1">
+                    <div className="flex items-center gap-1">
+                      <Calendar className="h-4 w-4" />
+                      <span>
+                        Document médical ajouté le {new Date(doc.created_at).toLocaleDateString('fr-FR')} {new Date(doc.created_at).toLocaleTimeString('fr-FR')}
+                      </span>
                     </div>
-                  )}
+                    {doc.file_size && (
+                      <div className="flex items-center gap-1">
+                        <HardDrive className="h-4 w-4" />
+                        <span>{formatFileSize(doc.file_size)}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
+              <Badge variant="secondary">médical</Badge>
             </div>
-
-            {/* Section de gestion de la visibilité */}
-            <div className="mt-3">
-              <MedicalDocumentVisibilityToggle
-                documentId={doc.id}
-                isVisibleToInstitutions={documentVisibility[doc.id] || false}
-                onVisibilityChange={handleVisibilityToggle}
-              />
-            </div>
-
-            <div className="flex items-center gap-2 mt-3 pt-3 border-t">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onView(doc.file_path)}
-                className="flex items-center gap-1"
-              >
-                <Eye className="h-4 w-4" />
-                Consulter
-              </Button>
+          </CardHeader>
+          
+          <CardContent className="pt-0">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {onVisibilityChange && (
+                  <MedicalDocumentVisibilityToggle
+                    documentId={doc.id}
+                    isPrivate={doc.is_private || false}
+                    onVisibilityChange={onVisibilityChange}
+                  />
+                )}
+              </div>
               
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onDownload(doc.file_path, doc.file_name)}
-                className="flex items-center gap-1"
-              >
-                <Download className="h-4 w-4" />
-                Télécharger
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onDownload(doc.file_path, doc.file_name)}
+                  className="flex items-center gap-1"
+                >
+                  <Download size={16} />
+                  Télécharger
+                </Button>
 
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex items-center gap-1 text-red-600 hover:text-red-700"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    Supprimer
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Supprimer le document médical</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Êtes-vous sûr de vouloir supprimer "{doc.file_name}" ? 
-                      Cette action est irréversible.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Annuler</AlertDialogCancel>
-                    <AlertDialogAction 
-                      onClick={() => onDelete(doc.id)}
-                      className="bg-red-600 hover:bg-red-700"
-                    >
-                      Supprimer
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onDelete(doc.id)}
+                  className="flex items-center gap-1 text-red-600 hover:bg-red-50"
+                >
+                  <Trash2 size={16} />
+                  Supprimer
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
       ))}
-    </>
+    </div>
   );
 };
+
+export default MedicalDocumentsList;
