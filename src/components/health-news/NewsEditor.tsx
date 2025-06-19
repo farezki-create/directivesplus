@@ -158,7 +158,7 @@ const NewsEditor = ({ onClose, onSave, existingNews }: NewsEditorProps) => {
             </TabsContent>
 
             <TabsContent value="media" className="space-y-4">
-              {/* Formulaire d’ajout de média */}
+              {/* Formulaire d'ajout de média */}
               <NewsMediaForm
                 newMedia={newMedia}
                 setNewMedia={setNewMedia}
