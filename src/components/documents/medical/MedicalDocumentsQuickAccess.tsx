@@ -2,21 +2,48 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, Plus } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { FileText, Plus, Eye, Download, Trash2, Calendar } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
+import { useMedicalDocuments } from "./useMedicalDocuments";
+import { MedicalDocumentsList } from "./MedicalDocumentsList";
 import DocumentUploader from "../DocumentUploader";
 
 const MedicalDocumentsQuickAccess: React.FC = () => {
   const { user } = useAuth();
   const [showUploader, setShowUploader] = useState(false);
+  
+  // Utiliser le hook pour gérer les documents médicaux
+  const {
+    documents,
+    loading,
+    loadMedicalDocuments,
+    handleDelete
+  } = useMedicalDocuments(user?.id || '');
 
   const handleUploadComplete = () => {
     setShowUploader(false);
+    // Recharger la liste des documents après l'ajout
+    loadMedicalDocuments();
     toast({
       title: "Document médical ajouté",
       description: "Votre document médical a été ajouté avec succès",
     });
+  };
+
+  const handleView = (filePath: string) => {
+    window.open(filePath, '_blank');
+  };
+
+  const handleDownload = (filePath: string, fileName: string) => {
+    const link = document.createElement('a');
+    link.href = filePath;
+    link.download = fileName;
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   if (!user) return null;
@@ -30,18 +57,18 @@ const MedicalDocumentsQuickAccess: React.FC = () => {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <p className="text-sm text-blue-700">
-          Ajoutez vos documents médicaux (radiologies, analyses, ordonnances, etc.) 
-          pour compléter votre dossier médical.
-        </p>
-        
-        <Button 
-          onClick={() => setShowUploader(!showUploader)}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
-        >
-          <Plus className="h-4 w-4" />
-          Ajouter un document médical
-        </Button>
+        <div className="flex justify-between items-center">
+          <p className="text-sm text-blue-700">
+            {documents.length} document{documents.length !== 1 ? 's' : ''} médical{documents.length !== 1 ? 'aux' : ''}
+          </p>
+          <Button 
+            onClick={() => setShowUploader(!showUploader)}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
+          >
+            <Plus className="h-4 w-4" />
+            Ajouter un document médical
+          </Button>
+        </div>
 
         {showUploader && (
           <div className="mt-4 p-4 border rounded-lg bg-white">
@@ -49,7 +76,7 @@ const MedicalDocumentsQuickAccess: React.FC = () => {
               userId={user.id}
               onUploadComplete={handleUploadComplete}
               documentType="medical"
-              saveToDirectives={true}
+              saveToDirectives={false}
             />
             <Button 
               variant="outline" 
@@ -58,6 +85,26 @@ const MedicalDocumentsQuickAccess: React.FC = () => {
             >
               Annuler
             </Button>
+          </div>
+        )}
+
+        {loading ? (
+          <div className="flex justify-center p-4">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600"></div>
+          </div>
+        ) : documents.length === 0 ? (
+          <div className="text-center py-4 text-gray-500">
+            <FileText className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+            <p className="text-sm">Aucun document médical ajouté</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <MedicalDocumentsList
+              documents={documents}
+              onView={handleView}
+              onDownload={handleDownload}
+              onDelete={handleDelete}
+            />
           </div>
         )}
       </CardContent>
