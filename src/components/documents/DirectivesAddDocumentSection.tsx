@@ -26,6 +26,7 @@ const DirectivesAddDocumentSection: FC<DirectivesAddDocumentSectionProps> = ({
         userId=""
         onUploadComplete={onUploadComplete}
         documentType="directive"
+        saveToDirectives={true}
       />
     </div>
   );

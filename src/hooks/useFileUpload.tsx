@@ -1,4 +1,3 @@
-
 import { useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -14,7 +13,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-export const useFileUpload = (userId: string, onUploadComplete: (url: string, fileName: string, isPrivate: boolean) => void, documentType = "directive") => {
+export const useFileUpload = (
+  userId: string, 
+  onUploadComplete: (url: string, fileName: string, isPrivate: boolean) => void, 
+  documentType = "directive",
+  saveToDirectives = true // Nouveau paramètre pour contrôler où sauver
+) => {
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [isPrivate, setIsPrivate] = useState(false);
@@ -90,7 +94,11 @@ export const useFileUpload = (userId: string, onUploadComplete: (url: string, fi
 
         const dataUrl = reader.result.toString();
         const fileType = file.type;
-        const tableName = documentType === 'medical' ? 'medical_documents' : 'pdf_documents';
+        
+        // Choisir la table selon le paramètre saveToDirectives
+        const tableName = saveToDirectives 
+          ? (documentType === 'medical' ? 'medical_documents' : 'pdf_documents')
+          : 'uploaded_documents';
         
         console.log(`Enregistrement du document dans la table: ${tableName}`);
         console.log(`Type du document: ${fileType}`);

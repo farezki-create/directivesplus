@@ -104,7 +104,8 @@ const CreatePost = ({ user, onCreatePost }: CreatePostProps) => {
                 <DocumentUploader
                   userId={user?.id || ""}
                   onUploadComplete={handleUploadComplete}
-                  documentType="directive"
+                  documentType="share"
+                  saveToDirectives={false}
                 />
               </div>
             )}

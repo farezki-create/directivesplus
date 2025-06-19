@@ -8,9 +8,14 @@ import { supabase } from "@/integrations/supabase/client";
 interface AudioRecorderProps {
   userId: string;
   onRecordingComplete: (url: string, fileName: string) => void;
+  saveToDirectives?: boolean; // Nouveau prop pour contrôler où sauver
 }
 
-const AudioRecorder = ({ userId, onRecordingComplete }: AudioRecorderProps) => {
+const AudioRecorder = ({ 
+  userId, 
+  onRecordingComplete, 
+  saveToDirectives = true 
+}: AudioRecorderProps) => {
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -83,9 +88,12 @@ const AudioRecorder = ({ userId, onRecordingComplete }: AudioRecorderProps) => {
       reader.onloadend = async () => {
         const base64data = reader.result as string;
         
-        // Créer un nouvel enregistrement dans pdf_documents
+        // Choisir la table selon le prop saveToDirectives
+        const tableName = saveToDirectives ? 'pdf_documents' : 'uploaded_documents';
+        
+        // Créer un nouvel enregistrement
         const { data, error } = await supabase
-          .from('pdf_documents')
+          .from(tableName)
           .insert({
             user_id: userId,
             file_name: fileName,
@@ -105,7 +113,9 @@ const AudioRecorder = ({ userId, onRecordingComplete }: AudioRecorderProps) => {
         
         toast({
           title: "Audio sauvegardé",
-          description: "Votre enregistrement a été sauvegardé avec succès"
+          description: saveToDirectives 
+            ? "Votre enregistrement a été sauvegardé dans vos directives"
+            : "Votre enregistrement a été sauvegardé avec succès"
         });
       };
     } catch (error: any) {

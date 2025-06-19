@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -13,13 +12,15 @@ interface DocumentUploaderProps {
   onUploadComplete?: (document?: Document) => void;
   documentType?: string;
   maxFileSize?: number; // en MB
+  saveToDirectives?: boolean; // Nouveau prop pour déterminer où sauver
 }
 
 const DocumentUploader = ({ 
   userId, 
   onUploadComplete, 
   documentType = "document",
-  maxFileSize = 10 
+  maxFileSize = 10,
+  saveToDirectives = false // Par défaut, sauver dans uploaded_documents
 }: DocumentUploaderProps) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [description, setDescription] = useState('');
@@ -74,19 +75,24 @@ const DocumentUploader = ({
 
       const fileData = await fileDataPromise;
 
-      // Insérer le document dans la base de données
+      // Choisir la table selon le prop saveToDirectives
+      const tableName = saveToDirectives ? 'pdf_documents' : 'uploaded_documents';
+      
+      const documentData = {
+        user_id: userId,
+        file_name: selectedFile.name,
+        file_path: fileData,
+        file_type: selectedFile.type,
+        content_type: selectedFile.type,
+        file_size: selectedFile.size,
+        description: description || `Document ${selectedFile.name}`,
+        created_at: new Date().toISOString()
+      };
+
+      // Insérer le document dans la table appropriée
       const { data, error } = await supabase
-        .from('pdf_documents')
-        .insert({
-          user_id: userId,
-          file_name: selectedFile.name,
-          file_path: fileData,
-          file_type: selectedFile.type,
-          content_type: selectedFile.type,
-          file_size: selectedFile.size,
-          description: description || `Document ${selectedFile.name}`,
-          created_at: new Date().toISOString()
-        })
+        .from(tableName)
+        .insert(documentData)
         .select()
         .single();
 
@@ -95,9 +101,13 @@ const DocumentUploader = ({
         throw error;
       }
 
+      const successMessage = saveToDirectives 
+        ? "Document sauvegardé dans vos directives avec succès"
+        : "Document téléchargé avec succès";
+
       toast({
         title: "Succès",
-        description: "Document téléchargé avec succès"
+        description: successMessage
       });
 
       setUploadSuccess(true);
@@ -132,7 +142,11 @@ const DocumentUploader = ({
         {uploadSuccess ? (
           <div className="text-center py-8">
             <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-4" />
-            <p className="text-green-600 font-medium">Document téléchargé avec succès !</p>
+            <p className="text-green-600 font-medium">
+              {saveToDirectives 
+                ? "Document sauvegardé dans vos directives !" 
+                : "Document téléchargé avec succès !"}
+            </p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -211,7 +225,7 @@ const DocumentUploader = ({
                 ) : (
                   <>
                     <Upload className="h-4 w-4 mr-2" />
-                    Télécharger le document
+                    {saveToDirectives ? "Sauvegarder dans mes directives" : "Télécharger le document"}
                   </>
                 )}
               </Button>
