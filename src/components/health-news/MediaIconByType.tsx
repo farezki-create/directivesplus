@@ -1,26 +1,26 @@
 
-import React from "react";
-import { Image as ImageIcon, Video, FileAudio, FileText, Link2 } from "lucide-react";
+import React from 'react';
+import { Image, Video, Music, FileText, File, Link, ExternalLink } from 'lucide-react';
 
-type MediaIconByTypeProps = {
-  type: "image" | "video" | "audio" | "document" | "link" | string;
+interface MediaIconByTypeProps {
+  type: string;
   className?: string;
-};
+}
 
-const MediaIconByType = ({ type, className }: MediaIconByTypeProps) => {
-  switch (type) {
-    case "image":
-      return <ImageIcon className={className ?? "h-4 w-4"} />;
-    case "video":
-      return <Video className={className ?? "h-4 w-4"} />;
-    case "audio":
-      return <FileAudio className={className ?? "h-4 w-4"} />;
-    case "document":
-      return <FileText className={className ?? "h-4 w-4"} />;
-    case "link":
-      return <Link2 className={className ?? "h-4 w-4"} />;
+const MediaIconByType = ({ type, className = "h-4 w-4" }: MediaIconByTypeProps) => {
+  switch (type.toLowerCase()) {
+    case 'image':
+      return <Image className={className} />;
+    case 'video':
+      return <Video className={className} />;
+    case 'audio':
+      return <Music className={className} />;
+    case 'document':
+      return <FileText className={className} />;
+    case 'link':
+      return <ExternalLink className={className} />;
     default:
-      return <FileText className={className ?? "h-4 w-4"} />;
+      return <File className={className} />;
   }
 };
 

@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Eye, User, Tag } from 'lucide-react';
+import { Calendar, Eye, User, Tag, ExternalLink } from 'lucide-react';
 import { HealthNews } from '@/types/healthNews';
 import MediaIconByType from './MediaIconByType';
 
@@ -19,6 +19,8 @@ const NewsCard = ({ news, onClick }: NewsCardProps) => {
       case 'nutrition': return 'bg-orange-100 text-orange-800';
       case 'mental': return 'bg-purple-100 text-purple-800';
       case 'actualite': return 'bg-red-100 text-red-800';
+      case 'link': return 'bg-indigo-100 text-indigo-800';
+      case 'document': return 'bg-gray-100 text-gray-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -30,9 +32,32 @@ const NewsCard = ({ news, onClick }: NewsCardProps) => {
       recherche: 'Recherche',
       nutrition: 'Nutrition',
       mental: 'Santé mentale',
-      actualite: 'Actualités'
+      actualite: 'Actualités',
+      link: 'Lien externe',
+      document: 'Document'
     };
     return labels[category] || category;
+  };
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    
+    // Si c'est un lien, ouvrir directement l'URL
+    if (news.category === 'link' && news.featured_image_url) {
+      window.open(news.featured_image_url, '_blank', 'noopener,noreferrer');
+      return;
+    }
+    
+    // Si c'est un document, ouvrir le fichier
+    if (news.category === 'document' && news.featured_image_url) {
+      window.open(news.featured_image_url, '_blank', 'noopener,noreferrer');
+      return;
+    }
+    
+    // Sinon, utiliser le onClick par défaut
+    if (onClick) {
+      onClick();
+    }
   };
 
   return (
@@ -40,15 +65,14 @@ const NewsCard = ({ news, onClick }: NewsCardProps) => {
       className={`hover:shadow-lg transition-shadow cursor-pointer ${
         news.is_featured ? 'ring-2 ring-blue-500 border-blue-200' : ''
       }`}
-      onClick={onClick}
+      onClick={handleCardClick}
     >
-      {news.featured_image_url && (
-        <div className="aspect-video overflow-hidden rounded-t-lg">
-          <img 
-            src={news.featured_image_url} 
-            alt={news.title}
-            className="w-full h-full object-cover"
-          />
+      {news.featured_image_url && news.category === 'document' && (
+        <div className="aspect-video overflow-hidden rounded-t-lg bg-gray-100 flex items-center justify-center">
+          <div className="text-center p-4">
+            <MediaIconByType type="document" className="h-12 w-12 mx-auto mb-2 text-gray-400" />
+            <p className="text-sm text-gray-600">Document</p>
+          </div>
         </div>
       )}
       
@@ -68,8 +92,11 @@ const NewsCard = ({ news, onClick }: NewsCardProps) => {
           </div>
         </div>
         
-        <CardTitle className="text-lg line-clamp-2 hover:text-blue-600">
+        <CardTitle className="text-lg line-clamp-2 hover:text-blue-600 flex items-center gap-2">
           {news.title}
+          {news.category === 'link' && (
+            <ExternalLink className="h-4 w-4 text-blue-500 flex-shrink-0" />
+          )}
         </CardTitle>
       </CardHeader>
       
@@ -78,6 +105,16 @@ const NewsCard = ({ news, onClick }: NewsCardProps) => {
           <p className="text-gray-600 text-sm mb-4 line-clamp-3">
             {news.excerpt}
           </p>
+        )}
+        
+        {/* Affichage spécial pour les liens */}
+        {news.category === 'link' && news.featured_image_url && (
+          <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="flex items-center gap-2 text-sm text-blue-700">
+              <ExternalLink className="h-4 w-4" />
+              <span className="truncate">{news.featured_image_url}</span>
+            </div>
+          </div>
         )}
         
         {/* Médias associés */}
