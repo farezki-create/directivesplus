@@ -6,7 +6,7 @@ import { Upload, FileText } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import DocumentUploader from "../DocumentUploader";
 import { useMedicalDocuments } from "./useMedicalDocuments";
-import { MedicalDocumentsList } from "./MedicalDocumentsList";
+import MedicalDocumentsList from "./MedicalDocumentsList";
 
 interface MedicalDocumentsMainProps {
   userId: string;
@@ -100,7 +100,6 @@ export const MedicalDocumentsMain: React.FC<MedicalDocumentsMainProps> = ({ user
         ) : (
           <MedicalDocumentsList
             documents={documents}
-            onView={handleView}
             onDownload={handleDownload}
             onDelete={handleDelete}
             onVisibilityChange={handleVisibilityToggle}

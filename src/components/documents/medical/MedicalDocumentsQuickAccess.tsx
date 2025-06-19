@@ -7,7 +7,7 @@ import { FileText, Plus, Eye, Download, Trash2, Calendar } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { useMedicalDocuments } from "./useMedicalDocuments";
-import { MedicalDocumentsList } from "./MedicalDocumentsList";
+import MedicalDocumentsList from "./MedicalDocumentsList";
 import DocumentUploader from "../DocumentUploader";
 import DocumentPreviewDialog from "../DocumentPreviewDialog";
 import { useDocumentOperations } from "@/hooks/useDocumentOperations";
@@ -104,7 +104,6 @@ const MedicalDocumentsQuickAccess: React.FC = () => {
             <div className="space-y-3">
               <MedicalDocumentsList
                 documents={documents}
-                onView={handleView}
                 onDownload={handleDownload}
                 onDelete={handleDelete}
                 onVisibilityChange={handleVisibilityChange}

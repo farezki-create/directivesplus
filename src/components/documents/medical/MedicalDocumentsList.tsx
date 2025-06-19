@@ -5,10 +5,14 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Download, Trash2, FileText, Calendar, HardDrive } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Document } from "@/types/documents";
-import { MedicalDocumentVisibilityToggle } from "./MedicalDocumentVisibilityToggle";
+import MedicalDocumentVisibilityToggle from "./MedicalDocumentVisibilityToggle";
+
+interface MedicalDocument extends Document {
+  is_private?: boolean;
+}
 
 interface MedicalDocumentsListProps {
-  documents: Document[];
+  documents: MedicalDocument[];
   onDownload: (filePath: string, fileName: string) => void;
   onDelete: (documentId: string) => void;
   onVisibilityChange?: (documentId: string, isPrivate: boolean) => void;
@@ -83,8 +87,8 @@ const MedicalDocumentsList: React.FC<MedicalDocumentsListProps> = ({
                 {onVisibilityChange && (
                   <MedicalDocumentVisibilityToggle
                     documentId={doc.id}
-                    isPrivate={doc.is_private || false}
-                    onVisibilityChange={onVisibilityChange}
+                    isVisibleToInstitutions={!doc.is_private}
+                    onVisibilityChange={(documentId, isVisible) => onVisibilityChange(documentId, !isVisible)}
                   />
                 )}
               </div>
