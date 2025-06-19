@@ -12,6 +12,8 @@ export const useHealthNews = () => {
   const fetchNews = async (includeUnpublished = false) => {
     try {
       setLoading(true);
+      console.log('🔍 Fetching health news, includeUnpublished:', includeUnpublished);
+      
       let query = supabase
         .from('health_news')
         .select(`
@@ -24,9 +26,14 @@ export const useHealthNews = () => {
         query = query.eq('status', 'published');
       }
 
+      console.log('📊 Executing query...');
       const { data, error } = await query;
+      console.log('📊 Query result:', { data: data?.length || 0, error });
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Database error:', error);
+        throw error;
+      }
 
       const newsWithMedia = data?.map((item: any) => ({
         id: item.id,
@@ -57,12 +64,16 @@ export const useHealthNews = () => {
         })) || []
       })) || [];
 
+      console.log('✅ Processed news data:', newsWithMedia.length, 'articles');
       setNews(newsWithMedia);
+      setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur lors du chargement des actualités');
+      const errorMessage = err instanceof Error ? err.message : 'Erreur lors du chargement des actualités';
+      console.error('❌ fetchNews error:', err);
+      setError(errorMessage);
       toast({
-        title: "Erreur",
-        description: "Impossible de charger les actualités",
+        title: "Erreur de chargement",
+        description: `Détails: ${errorMessage}`,
         variant: "destructive"
       });
     } finally {
@@ -175,7 +186,10 @@ export const useHealthNews = () => {
   };
 
   useEffect(() => {
-    fetchNews();
+    // Détecter si on est en mode admin pour charger tous les articles
+    const isAdminRoute = window.location.pathname.includes('/admin');
+    console.log('🔧 Initial fetch, admin route:', isAdminRoute);
+    fetchNews(isAdminRoute);
   }, []);
 
   return {

@@ -1,17 +1,23 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useHealthNews } from '@/hooks/useHealthNews';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BarChart3, Plus, Edit, Trash2, Eye, TrendingUp } from 'lucide-react';
+import { BarChart3, Plus, Edit, Trash2, Eye, TrendingUp, AlertCircle } from 'lucide-react';
 import NewsEditor from './NewsEditor';
 
 const AdminNewsManager = () => {
-  const { news, deleteNews, fetchNews } = useHealthNews();
+  const { news, deleteNews, fetchNews, loading, error } = useHealthNews();
   const [editingNews, setEditingNews] = useState<any>(null);
   const [showEditor, setShowEditor] = useState(false);
+
+  useEffect(() => {
+    console.log('🏥 AdminNewsManager mounted, loading admin data...');
+    // Forcer le rechargement avec les brouillons pour l'admin
+    fetchNews(true);
+  }, []);
 
   const handleEdit = (newsItem: any) => {
     setEditingNews(newsItem);
@@ -50,6 +56,36 @@ const AdminNewsManager = () => {
     draft: news.filter(n => n.status === 'draft').length,
     totalViews: news.reduce((sum, n) => sum + n.view_count, 0)
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Chargement des actualités...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center">
+          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <p className="text-red-600 font-medium">Erreur de chargement</p>
+          <p className="text-gray-600 text-sm mt-2">{error}</p>
+          <Button 
+            onClick={() => fetchNews(true)} 
+            className="mt-4"
+            variant="outline"
+          >
+            Réessayer
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
