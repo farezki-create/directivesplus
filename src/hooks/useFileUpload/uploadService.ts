@@ -32,7 +32,7 @@ export const uploadFileToSupabase = async (
         const fileType = file.type;
         
         // Choisir la table selon le type de document et le paramètre saveToDirectives
-        let tableName = 'uploaded_documents'; // Par défaut
+        let tableName: 'uploaded_documents' | 'medical_documents' | 'pdf_documents' = 'uploaded_documents'; // Par défaut
         
         if (saveToDirectives) {
           if (documentType === 'medical') {
