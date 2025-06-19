@@ -19,7 +19,7 @@ const SocialFeed = () => {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       {/* Create Post */}
-      <CreatePost user={user} onCreatePost={createPost} />
+      <CreatePost onPostCreated={() => {}} />
 
       {/* Posts Feed */}
       {loading ? (

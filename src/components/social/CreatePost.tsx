@@ -33,6 +33,10 @@ const CreatePost: React.FC<CreatePostProps> = ({ onPostCreated }) => {
     }
   };
 
+  const handleMoodRemove = () => {
+    setSelectedMood('');
+  };
+
   const {
     file,
     uploading,
@@ -100,7 +104,11 @@ const CreatePost: React.FC<CreatePostProps> = ({ onPostCreated }) => {
           className="min-h-[100px]"
         />
 
-        <MoodSelector selectedMood={selectedMood} onMoodSelect={setSelectedMood} />
+        <MoodSelector 
+          selectedMood={selectedMood} 
+          onMoodSelect={setSelectedMood}
+          onMoodRemove={handleMoodRemove}
+        />
 
         <div className="flex flex-wrap gap-2">
           <Button
