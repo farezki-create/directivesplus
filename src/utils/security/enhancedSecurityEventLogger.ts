@@ -11,7 +11,9 @@ export type SecurityEventType =
   | 'suspicious_activity'
   | 'data_export'
   | 'user_registration'
-  | 'password_reset';
+  | 'password_reset'
+  | 'security_audit'
+  | 'log_table_access';
 
 export type RiskLevel = 'low' | 'medium' | 'high' | 'critical';
 
@@ -30,7 +32,7 @@ interface SecurityEventData {
 export class EnhancedSecurityEventLogger {
   static async logEvent(eventData: SecurityEventData): Promise<void> {
     try {
-      // Use the new secure logging function
+      // Utiliser la nouvelle fonction SQL sécurisée avec validation
       const { error } = await supabase.rpc('log_security_event_secure', {
         p_event_type: eventData.eventType,
         p_user_id: eventData.userId,
@@ -47,10 +49,11 @@ export class EnhancedSecurityEventLogger {
 
       if (error) {
         console.error('Failed to log security event:', error);
+        // Ne pas faire échouer l'application si le logging échoue
       }
     } catch (error) {
       console.error('Failed to log security event:', error);
-      // Don't throw - logging failures shouldn't break the application
+      // Ne pas faire échouer l'application si le logging échoue
     }
   }
 
@@ -108,6 +111,36 @@ export class EnhancedSecurityEventLogger {
       success: false,
       riskLevel: 'high',
       details: { activity_type: activityType, ...details }
+    });
+  }
+
+  static async logSecurityAudit(
+    auditType: string,
+    userId?: string,
+    details?: Record<string, any>
+  ): Promise<void> {
+    await this.logEvent({
+      eventType: 'security_audit',
+      userId,
+      success: true,
+      riskLevel: 'medium',
+      details: { audit_type: auditType, ...details }
+    });
+  }
+
+  static async logAdminAction(
+    action: string,
+    userId?: string,
+    targetResource?: string,
+    details?: Record<string, any>
+  ): Promise<void> {
+    await this.logEvent({
+      eventType: 'admin_action',
+      userId,
+      success: true,
+      riskLevel: 'medium',
+      resourceType: targetResource,
+      details: { admin_action: action, ...details }
     });
   }
 }

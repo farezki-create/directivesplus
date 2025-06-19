@@ -2616,6 +2616,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      cleanup_old_security_logs: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       create_user_session: {
         Args: { user_email: string; user_otp: string }
         Returns: string

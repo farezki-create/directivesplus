@@ -2,7 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 
 /**
- * Gestionnaire pour l'accès strict aux logs avec RLS
+ * Gestionnaire pour l'accès strict aux logs avec RLS renforcé
  */
 export class StrictRLSManager {
   /**
@@ -13,8 +13,15 @@ export class StrictRLSManager {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user?.email) return false;
       
-      // Vérification simple basée sur l'email
-      return user.email.endsWith('@directivesplus.fr');
+      // Vérification basée sur l'email et la fonction SQL
+      const { data, error } = await supabase.rpc('is_current_user_admin');
+      
+      if (error) {
+        console.error('Error checking admin status:', error);
+        return false;
+      }
+      
+      return data === true;
     } catch (error) {
       console.error('Error checking admin status:', error);
       return false;
@@ -71,7 +78,7 @@ export class StrictRLSManager {
   }
 
   /**
-   * Accède aux logs d'accès aux documents
+   * Accède aux logs d'accès aux documents avec sécurité renforcée
    */
   static async getDocumentAccessLogs(userId?: string) {
     try {
@@ -140,7 +147,7 @@ export class StrictRLSManager {
   }
 
   /**
-   * Accède aux logs d'audit de sécurité
+   * Accède aux logs d'audit de sécurité avec fonction SQL sécurisée
    */
   static async getSecurityAuditLogs(userId?: string) {
     try {
@@ -163,71 +170,24 @@ export class StrictRLSManager {
   }
 
   /**
-   * Accède aux logs d'accès aux symptômes
-   */
-  static async getSymptomAccessLogs(patientId?: string) {
-    try {
-      await this.auditLogAccess('symptom_access_logs', 'SELECT');
-
-      let query = supabase.from('symptom_access_logs').select('*');
-      
-      if (patientId) {
-        query = query.eq('patient_id', patientId);
-      }
-
-      const { data, error } = await query.order('accessed_at', { ascending: false });
-      
-      if (error) throw error;
-      return data || [];
-    } catch (error) {
-      console.error('Error accessing symptom access logs:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Accède aux logs d'envoi SMS
-   */
-  static async getSmsLogs(userId?: string) {
-    try {
-      await this.auditLogAccess('sms_send_logs', 'SELECT');
-
-      let query = supabase.from('sms_send_logs').select('*');
-      
-      if (userId) {
-        query = query.eq('user_id', userId);
-      }
-
-      const { data, error } = await query.order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      return data || [];
-    } catch (error) {
-      console.error('Error accessing SMS logs:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Audit des accès aux logs
+   * Audit des accès aux logs avec logging sécurisé
    */
   private static async auditLogAccess(tableName: string, operation: string) {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
-      const { error } = await supabase
-        .from('security_audit_logs')
-        .insert({
-          event_type: 'log_table_access',
-          user_id: user?.id,
-          details: {
-            table_name: tableName,
-            operation: operation,
-            timestamp: new Date().toISOString(),
-            access_method: 'frontend_query'
-          },
-          risk_level: 'medium'
-        });
+      // Utiliser la nouvelle fonction de logging sécurisé
+      const { error } = await supabase.rpc('log_security_event_secure', {
+        p_event_type: 'log_table_access',
+        p_user_id: user?.id,
+        p_details: {
+          table_name: tableName,
+          operation: operation,
+          access_method: 'frontend_query'
+        },
+        p_risk_level: 'medium',
+        p_resource_type: 'log_table'
+      });
 
       if (error) {
         console.warn('Failed to audit log access:', error);
@@ -248,7 +208,7 @@ export class StrictRLSManager {
       if (isAdmin) return true;
 
       // Pour les tables nécessitant des privilèges admin
-      const adminOnlyTables = ['access_code_attempts', 'logs_acces'];
+      const adminOnlyTables = ['access_code_attempts', 'logs_acces', 'institution_access_logs'];
       if (adminOnlyTables.includes(tableName)) {
         return false;
       }
@@ -267,30 +227,60 @@ export class StrictRLSManager {
   }
 
   /**
-   * Log sécurisé d'événements système
+   * Log sécurisé d'événements système avec validation
    */
-  static async logSecurityEvent(eventType: string, details: Record<string, any> = {}, riskLevel: string = 'medium') {
+  static async logSecurityEvent(
+    eventType: string, 
+    details: Record<string, any> = {}, 
+    riskLevel: string = 'medium'
+  ) {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
-      const { error } = await supabase
-        .from('security_audit_logs')
-        .insert({
-          event_type: eventType,
-          user_id: user?.id,
-          details: {
-            ...details,
-            timestamp: new Date().toISOString(),
-            source: 'strict_rls_manager'
-          },
-          risk_level: riskLevel
-        });
+      // Utiliser la fonction SQL sécurisée
+      const { error } = await supabase.rpc('log_security_event_secure', {
+        p_event_type: eventType,
+        p_user_id: user?.id,
+        p_details: {
+          ...details,
+          source: 'strict_rls_manager'
+        },
+        p_risk_level: riskLevel
+      });
 
       if (error) {
         console.error('Failed to log security event:', error);
       }
     } catch (error) {
       console.error('Error logging security event:', error);
+    }
+  }
+
+  /**
+   * Nettoie automatiquement les anciens logs
+   */
+  static async cleanupOldLogs(): Promise<void> {
+    try {
+      const isAdmin = await this.isCurrentUserAdmin();
+      if (!isAdmin) {
+        throw new Error('Accès non autorisé - privilèges administrateur requis');
+      }
+
+      const { error } = await supabase.rpc('cleanup_old_security_logs');
+      
+      if (error) {
+        console.error('Failed to cleanup old logs:', error);
+        throw error;
+      }
+
+      await this.logSecurityEvent('logs_cleanup_completed', {
+        action: 'automatic_cleanup',
+        completed_at: new Date().toISOString()
+      }, 'low');
+
+    } catch (error) {
+      console.error('Error cleaning up old logs:', error);
+      throw error;
     }
   }
 }
