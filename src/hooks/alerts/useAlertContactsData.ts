@@ -1,0 +1,178 @@
+
+import { useState, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from '@/hooks/use-toast';
+import { AlertContact, ContactFormData } from './types';
+import { mapContactType } from './utils';
+
+export const useAlertContactsData = () => {
+  const { user } = useAuth();
+  const [contacts, setContacts] = useState<AlertContact[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchContacts = useCallback(async () => {
+    if (!user?.id) {
+      console.log('No user ID available for fetching contacts');
+      return;
+    }
+
+    try {
+      console.log('Fetching contacts for user:', user.id);
+      
+      const { data, error } = await supabase
+        .from('patient_alert_contacts')
+        .select('*')
+        .eq('patient_id', user.id)
+        .eq('is_active', true)
+        .order('contact_type');
+
+      if (error) {
+        console.error('Error fetching contacts:', error);
+        throw error;
+      }
+      
+      console.log('Contacts fetched successfully:', data);
+      setContacts(data || []);
+    } catch (error) {
+      console.error('Error fetching alert contacts:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les contacts d'alerte",
+        variant: "destructive"
+      });
+    }
+  }, [user?.id]);
+
+  const saveContact = useCallback(async (contact: ContactFormData) => {
+    if (!user?.id) {
+      console.error('No user ID available for saving contact');
+      toast({
+        title: "Erreur",
+        description: "Vous devez être connecté pour ajouter un contact",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    try {
+      console.log('Saving contact:', contact);
+      
+      const mappedContactType = mapContactType(contact.contact_type);
+      
+      const contactData = {
+        contact_type: mappedContactType,
+        contact_name: contact.contact_name,
+        phone_number: contact.phone_number || null,
+        email: contact.email || null,
+        is_active: true,
+        patient_id: user.id
+      };
+      
+      console.log('Contact data to insert:', contactData);
+
+      const { data, error } = await supabase
+        .from('patient_alert_contacts')
+        .insert(contactData)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Database error when saving contact:', error);
+        throw error;
+      }
+
+      console.log('Contact saved successfully:', data);
+
+      toast({
+        title: "Contact ajouté",
+        description: "Le contact d'alerte a été enregistré avec succès"
+      });
+
+      await fetchContacts();
+      return true;
+    } catch (error: any) {
+      console.error('Error saving contact:', error);
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible d'enregistrer le contact",
+        variant: "destructive"
+      });
+      return false;
+    }
+  }, [user?.id, fetchContacts]);
+
+  const updateContact = useCallback(async (id: string, updates: Partial<AlertContact>) => {
+    try {
+      console.log('Updating contact:', id, updates);
+      
+      const { error } = await supabase
+        .from('patient_alert_contacts')
+        .update(updates)
+        .eq('id', id);
+
+      if (error) {
+        console.error('Error updating contact:', error);
+        throw error;
+      }
+
+      toast({
+        title: "Contact modifié",
+        description: "Le contact a été mis à jour avec succès"
+      });
+
+      await fetchContacts();
+      return true;
+    } catch (error: any) {
+      console.error('Error updating contact:', error);
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible de modifier le contact",
+        variant: "destructive"
+      });
+      return false;
+    }
+  }, [fetchContacts]);
+
+  const deleteContact = useCallback(async (id: string) => {
+    try {
+      console.log('Deleting contact:', id);
+      
+      const { error } = await supabase
+        .from('patient_alert_contacts')
+        .update({ is_active: false })
+        .eq('id', id);
+
+      if (error) {
+        console.error('Error deleting contact:', error);
+        throw error;
+      }
+
+      toast({
+        title: "Contact supprimé",
+        description: "Le contact a été supprimé avec succès"
+      });
+
+      await fetchContacts();
+      return true;
+    } catch (error: any) {
+      console.error('Error deleting contact:', error);
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible de supprimer le contact",
+        variant: "destructive"
+      });
+      return false;
+    }
+  }, [fetchContacts]);
+
+  return {
+    contacts,
+    loading,
+    fetchContacts,
+    saveContact,
+    updateContact,
+    deleteContact,
+    setLoading
+  };
+};
