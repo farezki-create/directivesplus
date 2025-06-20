@@ -2,7 +2,8 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Plus, Save } from "lucide-react";
+import { ArrowLeft, Plus, Save, AlertTriangle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertContactCard } from "./AlertContactCard";
 import { useAlertContacts } from "@/hooks/alerts/useAlertContacts";
 
@@ -35,9 +36,12 @@ const AlertContactsManager = () => {
   if (!isAuthenticated || !user) {
     return (
       <div className="text-center p-8">
-        <p className="text-gray-600 mb-4">
-          Vous devez être connecté pour gérer vos contacts d'alerte.
-        </p>
+        <Alert variant="destructive" className="mb-4">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            Vous devez être connecté pour gérer vos contacts d'alerte.
+          </AlertDescription>
+        </Alert>
         <Button onClick={() => navigate("/auth")}>
           Se connecter
         </Button>
@@ -55,6 +59,12 @@ const AlertContactsManager = () => {
         <p className="text-gray-600 mb-4">
           Configurez vos contacts d'alerte qui seront prévenus automatiquement en cas de symptômes critiques.
         </p>
+        <Alert className="mb-4">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            Assurez-vous d'avoir une connexion internet stable pour enregistrer vos modifications.
+          </AlertDescription>
+        </Alert>
       </div>
 
       {loading ? (
@@ -97,6 +107,12 @@ const AlertContactsManager = () => {
               )}
               Enregistrer
             </Button>
+            
+            {alertContacts.length === 0 && (
+              <p className="text-sm text-gray-500 mt-2">
+                Ajoutez au moins un contact pour pouvoir enregistrer
+              </p>
+            )}
           </div>
         </>
       )}

@@ -19,6 +19,15 @@ export const useAlertContacts = (userId: string | undefined) => {
     try {
       console.log("Fetching alert contacts for user:", userId);
       setLoading(true);
+      
+      // First check if user is authenticated
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.log("User not authenticated");
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from("patient_alert_contacts")
         .select("*")
@@ -53,7 +62,6 @@ export const useAlertContacts = (userId: string | undefined) => {
       email: "",
     };
     
-    // Add temporary ID for UI purposes
     setAlertContacts([...alertContacts, { ...newContact, id: `temp-${Date.now()}` }]);
   };
 
@@ -85,6 +93,17 @@ export const useAlertContacts = (userId: string | undefined) => {
     try {
       console.log("Saving alert contacts for user:", userId);
       setSaving(true);
+
+      // Verify user is still authenticated
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Session expirée",
+          description: "Votre session a expiré. Veuillez vous reconnecter.",
+          variant: "destructive",
+        });
+        return;
+      }
 
       // Filter out invalid entries (must have at least a name and contact method)
       const validContacts = alertContacts.filter(contact => 
@@ -141,9 +160,21 @@ export const useAlertContacts = (userId: string | undefined) => {
       await fetchAlertContacts();
     } catch (error: any) {
       console.error("Error saving alert contacts:", error);
+      
+      // Provide more specific error messages
+      let errorMessage = "Impossible d'enregistrer vos contacts d'alerte.";
+      
+      if (error.code === 'PGRST301') {
+        errorMessage = "Problème de permissions. Veuillez vous reconnecter.";
+      } else if (error.message?.includes('policy')) {
+        errorMessage = "Erreur de permissions de base de données.";
+      } else if (error.message?.includes('network')) {
+        errorMessage = "Problème de connexion réseau.";
+      }
+      
       toast({
         title: "Erreur de sauvegarde",
-        description: "Impossible d'enregistrer vos contacts d'alerte. Vérifiez votre connexion et réessayez.",
+        description: errorMessage + " Vérifiez votre connexion et réessayez.",
         variant: "destructive",
       });
     } finally {
