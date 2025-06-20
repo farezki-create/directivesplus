@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -52,6 +51,7 @@ import AdminStats from "./pages/AdminStats";
 import AdminInstitutions from "./pages/AdminInstitutions";
 import AdminHealthNews from "./pages/AdminHealthNews";
 import AlertContactsPage from "./pages/AlertContactsPage";
+import AlertManagementPage from "./pages/AlertManagementPage";
 
 const queryClient = new QueryClient();
 
@@ -97,6 +97,7 @@ function App() {
                   <Route path="/alertes-soignants" element={<AlertesSoignants />} />
                   <Route path="/alertes" element={<AlertesSoignants />} />
                   <Route path="/alert-contacts" element={<AlertContactsPage />} />
+                  <Route path="/alert-management" element={<AlertManagementPage />} />
                   <Route 
                     path="/admin" 
                     element={
