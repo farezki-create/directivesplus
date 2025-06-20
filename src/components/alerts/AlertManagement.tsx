@@ -53,6 +53,7 @@ const AlertManagement = () => {
 
     try {
       setLoading(true);
+      console.log("Fetching alert settings for user:", user.id);
       
       const { data, error } = await supabase
         .from('patient_alert_settings')
@@ -66,6 +67,7 @@ const AlertManagement = () => {
       }
 
       if (data) {
+        console.log("Settings loaded:", data);
         // Vérifier que sms_provider est valide, sinon utiliser 'twilio' par défaut
         const validProvider = data.sms_provider === 'whatsapp' ? 'whatsapp' : 'twilio';
         
@@ -87,43 +89,60 @@ const AlertManagement = () => {
   };
 
   const saveSettings = async () => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      toast({
+        title: "Session expirée",
+        description: "Veuillez vous reconnecter pour sauvegarder vos paramètres.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
       setSaving(true);
+      console.log("Saving alert settings for user:", user.id);
+      console.log("Settings to save:", settings);
+
+      // Valider les données avant la sauvegarde
+      const dataToSave = {
+        patient_id: user.id,
+        auto_alert_enabled: Boolean(settings.auto_alert_enabled),
+        alert_threshold: Number(settings.alert_threshold),
+        symptom_types: Array.isArray(settings.symptom_types) ? settings.symptom_types : ['douleur', 'dyspnee', 'anxiete'],
+        sms_enabled: Boolean(settings.sms_enabled),
+        sms_provider: settings.sms_provider === 'whatsapp' ? 'whatsapp' : 'twilio',
+        phone_number: settings.phone_number || null,
+        whatsapp_number: settings.whatsapp_number || null
+      };
+
+      console.log("Validated data to save:", dataToSave);
 
       const { error } = await supabase
         .from('patient_alert_settings')
-        .upsert({
-          patient_id: user.id,
-          auto_alert_enabled: settings.auto_alert_enabled,
-          alert_threshold: settings.alert_threshold,
-          symptom_types: settings.symptom_types,
-          sms_enabled: settings.sms_enabled,
-          sms_provider: settings.sms_provider,
-          phone_number: settings.phone_number,
-          whatsapp_number: settings.whatsapp_number
+        .upsert(dataToSave, {
+          onConflict: 'patient_id'
         });
 
       if (error) {
         console.error('Error saving settings:', error);
         toast({
           title: "Erreur de sauvegarde",
-          description: "Impossible de sauvegarder les paramètres d'alerte.",
+          description: `Erreur: ${error.message}`,
           variant: "destructive",
         });
         return;
       }
 
+      console.log("Settings saved successfully");
       toast({
         title: "Paramètres sauvegardés",
         description: "Vos paramètres d'alerte ont été enregistrés avec succès.",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving settings:', error);
       toast({
         title: "Erreur",
-        description: "Une erreur inattendue s'est produite.",
+        description: `Une erreur inattendue s'est produite: ${error.message || 'Problème technique'}`,
         variant: "destructive",
       });
     } finally {
