@@ -38,7 +38,7 @@ export const useMedicalDocuments = (userId: string) => {
         created_at: doc.created_at,
         user_id: doc.user_id,
         extracted_content: doc.extracted_content,
-        is_private: doc.is_private || false
+        is_private: doc.is_private ?? false // Use nullish coalescing to handle undefined/null values
       }));
 
       setDocuments(transformedData);
@@ -62,12 +62,24 @@ export const useMedicalDocuments = (userId: string) => {
         )
       );
 
-      // TODO: Implémenter la mise à jour en base de données
-      // Pour l'instant, on simule la fonctionnalité
-      // const { error } = await supabase
-      //   .from('medical_documents')
-      //   .update({ is_private: isPrivate })
-      //   .eq('id', documentId);
+      // Mettre à jour en base de données
+      const { error } = await supabase
+        .from('medical_documents')
+        .update({ is_private: isPrivate })
+        .eq('id', documentId);
+
+      if (error) {
+        console.error('Error updating document visibility:', error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de modifier la visibilité du document",
+          variant: "destructive"
+        });
+        
+        // Revenir à l'état précédent en cas d'erreur
+        await loadMedicalDocuments();
+        return;
+      }
       
       toast({
         title: isPrivate ? "Document rendu privé" : "Document accessible aux institutions",

@@ -9,4 +9,5 @@ export interface MedicalDocument {
   created_at: string;
   user_id: string;
   extracted_content?: string;
+  is_private?: boolean;
 }
