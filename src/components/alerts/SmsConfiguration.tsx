@@ -1,11 +1,14 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { MessageSquare, Phone } from 'lucide-react';
+import { MessageSquare, Phone, Send } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
 interface SmsConfigurationProps {
   smsEnabled: boolean;
@@ -28,6 +31,67 @@ const SmsConfiguration: React.FC<SmsConfigurationProps> = ({
   onPhoneNumberChange,
   onWhatsappNumberChange
 }) => {
+  const [testLoading, setTestLoading] = useState(false);
+
+  const handleTestMessage = async () => {
+    if (!smsEnabled) {
+      toast({
+        title: "Configuration requise",
+        description: "Veuillez d'abord activer les notifications SMS/WhatsApp",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const targetNumber = smsProvider === 'twilio' ? phoneNumber : whatsappNumber;
+    if (!targetNumber?.trim()) {
+      toast({
+        title: "Numéro manquant",
+        description: `Veuillez saisir un numéro ${smsProvider === 'twilio' ? 'de téléphone' : 'WhatsApp'}`,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setTestLoading(true);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('send-test-alert', {
+        body: {
+          sms_provider: smsProvider,
+          phone_number: smsProvider === 'twilio' ? phoneNumber : undefined,
+          whatsapp_number: smsProvider === 'whatsapp' ? whatsappNumber : undefined,
+          message: `Message de test DirectivePlus - ${new Date().toLocaleString('fr-FR')}`
+        }
+      });
+
+      if (error) {
+        console.error('Erreur lors de l\'envoi du message de test:', error);
+        toast({
+          title: "Erreur d'envoi",
+          description: error.message || "Impossible d'envoyer le message de test",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      toast({
+        title: "Message envoyé",
+        description: data.message || "Message de test envoyé avec succès"
+      });
+
+    } catch (error: any) {
+      console.error('Erreur lors de l\'envoi du message de test:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'envoyer le message de test",
+        variant: "destructive"
+      });
+    } finally {
+      setTestLoading(false);
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -110,6 +174,25 @@ const SmsConfiguration: React.FC<SmsConfigurationProps> = ({
                 </p>
               </div>
             )}
+
+            <div className="flex items-center justify-between pt-2 border-t">
+              <div>
+                <Label>Test de réception</Label>
+                <p className="text-sm text-gray-600">
+                  Envoyer un message de test pour vérifier la configuration
+                </p>
+              </div>
+              <Button
+                onClick={handleTestMessage}
+                disabled={testLoading}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <Send className="h-4 w-4" />
+                {testLoading ? 'Envoi...' : 'Tester'}
+              </Button>
+            </div>
 
             <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
               <div className="flex items-start gap-2">

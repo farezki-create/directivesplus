@@ -2511,6 +2511,8 @@ export type Database = {
       user_profiles: {
         Row: {
           adresse: string | null
+          alert_contacts: Json | null
+          alert_settings: Json | null
           created_at: string | null
           date_naissance: string | null
           email: string
@@ -2522,6 +2524,8 @@ export type Database = {
         }
         Insert: {
           adresse?: string | null
+          alert_contacts?: Json | null
+          alert_settings?: Json | null
           created_at?: string | null
           date_naissance?: string | null
           email: string
@@ -2533,6 +2537,8 @@ export type Database = {
         }
         Update: {
           adresse?: string | null
+          alert_contacts?: Json | null
+          alert_settings?: Json | null
           created_at?: string | null
           date_naissance?: string | null
           email?: string
