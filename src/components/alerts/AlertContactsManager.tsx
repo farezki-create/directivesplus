@@ -33,17 +33,6 @@ const AlertContactsManager = () => {
 
   return (
     <div className="space-y-8 max-w-3xl mx-auto">
-      <div className="mb-6">
-        <Button
-          variant="outline"
-          onClick={() => navigate("/profile")}
-          className="flex items-center gap-2"
-        >
-          <ArrowLeft size={16} />
-          Retour au profil
-        </Button>
-      </div>
-
       <h1 className="text-2xl font-bold text-center mb-6">
         Contacts d'Alerte
       </h1>
