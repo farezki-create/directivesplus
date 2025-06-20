@@ -12,6 +12,7 @@ import AuthAudit from "./pages/AuthAudit";
 import SecurityAuditPage from "./pages/SecurityAuditPage";
 import Admin from "./pages/Admin";
 import AdminStrictRLS from "./pages/AdminStrictRLS";
+import Rediger from "./pages/Rediger";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +25,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/rediger" element={<Rediger />} />
             <Route path="/auth-audit" element={<AuthAudit />} />
             <Route 
               path="/admin" 
