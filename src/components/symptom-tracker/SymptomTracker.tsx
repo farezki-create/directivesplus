@@ -45,43 +45,56 @@ export default function SymptomTracker() {
     }
 
     setSaving(true);
+    console.log("Début de l'enregistrement des symptômes pour l'utilisateur:", user.id);
+    console.log("Symptômes à enregistrer:", symptoms);
 
     try {
       // Enregistrer les symptômes
+      const symptomData = {
+        patient_id: user.id,
+        douleur: symptoms.douleur,
+        dyspnee: symptoms.dyspnee,
+        anxiete: symptoms.anxiete,
+        fatigue: symptoms.fatigue,
+        sommeil: symptoms.sommeil,
+        remarque: remarque || null,
+        auteur: user.email || "patient"
+      };
+
+      console.log("Données à insérer:", symptomData);
+
       const { error } = await supabase
         .from("symptom_tracking")
-        .insert({
-          patient_id: user.id,
-          douleur: symptoms.douleur,
-          dyspnee: symptoms.dyspnee,
-          anxiete: symptoms.anxiete,
-          fatigue: symptoms.fatigue,
-          sommeil: symptoms.sommeil,
-          remarque: remarque || null,
-          auteur: user.email || "patient"
-        });
+        .insert(symptomData);
 
       if (error) {
-        console.error("Erreur lors de l'enregistrement:", error);
+        console.error("Erreur Supabase lors de l'enregistrement:", error);
         toast({
-          title: "Erreur",
-          description: "Impossible d'enregistrer vos symptômes",
+          title: "Erreur de base de données",
+          description: `Erreur: ${error.message}`,
           variant: "destructive"
         });
         return;
       }
 
-      // Vérifier et déclencher les alertes
-      const alertResult = await checkAndTriggerAlert(
-        symptoms.douleur, 
-        symptoms.dyspnee, 
-        symptoms.anxiete,
-        symptoms.fatigue,
-        symptoms.sommeil
-      );
+      console.log("Symptômes enregistrés avec succès");
 
-      if (alertResult.redirectToAlerts) {
-        showAlertDialog(alertResult.criticalSymptoms);
+      // Vérifier et déclencher les alertes
+      try {
+        const alertResult = await checkAndTriggerAlert(
+          symptoms.douleur, 
+          symptoms.dyspnee, 
+          symptoms.anxiete,
+          symptoms.fatigue,
+          symptoms.sommeil
+        );
+
+        if (alertResult && alertResult.redirectToAlerts) {
+          showAlertDialog(alertResult.criticalSymptoms);
+        }
+      } catch (alertError) {
+        console.error("Erreur lors de la vérification des alertes:", alertError);
+        // Ne pas faire échouer l'enregistrement si les alertes échouent
       }
 
       toast({
@@ -100,10 +113,10 @@ export default function SymptomTracker() {
       setRemarque("");
 
     } catch (err) {
-      console.error("Erreur:", err);
+      console.error("Erreur générale:", err);
       toast({
         title: "Erreur",
-        description: "Une erreur inattendue s'est produite",
+        description: "Une erreur inattendue s'est produite lors de l'enregistrement",
         variant: "destructive"
       });
     } finally {
