@@ -27,6 +27,11 @@ import Soutenir from "./pages/Soutenir";
 import DirectivesInfo from "./pages/DirectivesInfo";
 import AdminUsers from "./pages/AdminUsers";
 import AdminMainDashboard from "./pages/AdminMainDashboard";
+import AvisGeneral from "./pages/AvisGeneral";
+import MaintienVie from "./pages/MaintienVie";
+import MaladieAvancee from "./pages/MaladieAvancee";
+import GoutsPeurs from "./pages/GoutsPeurs";
+import ExemplesPhrases from "./pages/ExemplesPhrases";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +58,11 @@ const App = () => (
             <Route path="/soutenir" element={<Soutenir />} />
             <Route path="/directives-info" element={<DirectivesInfo />} />
             <Route path="/auth-audit" element={<AuthAudit />} />
+            <Route path="/avis-general" element={<AvisGeneral />} />
+            <Route path="/maintien-vie" element={<MaintienVie />} />
+            <Route path="/maladie-avancee" element={<MaladieAvancee />} />
+            <Route path="/gouts-peurs" element={<GoutsPeurs />} />
+            <Route path="/exemples-phrases" element={<ExemplesPhrases />} />
             <Route 
               path="/admin" 
               element={
