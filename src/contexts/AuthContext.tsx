@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { HDSSessionManager } from '@/utils/security/hdsSessionManager';
 
 interface AuthContextType {
   user: User | null;
@@ -50,7 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    console.log('🔄 [AUTH-CONTEXT] Initialisation AuthContext simplifié');
+    console.log('🔄 [AUTH-CONTEXT] Initialisation AuthContext avec gestion HDS');
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
@@ -60,10 +61,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session?.user ?? null);
         
         if (session?.user?.id) {
+          // Initialiser la session HDS pour les utilisateurs authentifiés
+          HDSSessionManager.setSessionStartTime();
+          HDSSessionManager.initializeHDSSession();
+          console.log("🏥 Session HDS initialisée - Timeout: 8h, Auto-lock: 30min");
+          
           setTimeout(() => {
             fetchUserProfile(session.user.id);
           }, 100);
         } else {
+          // Nettoyer la session HDS lors de la déconnexion
+          HDSSessionManager.destroy();
           setProfile(null);
         }
         
@@ -85,6 +93,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session?.user ?? null);
         
         if (session?.user?.id) {
+          // Initialiser la session HDS dès le démarrage si utilisateur connecté
+          HDSSessionManager.setSessionStartTime();
+          HDSSessionManager.initializeHDSSession();
+          console.log("🏥 Session HDS initialisée au démarrage");
+          
           await fetchUserProfile(session.user.id);
         }
       } catch (error) {
@@ -98,12 +111,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => {
       subscription.unsubscribe();
+      // Nettoyer la session HDS au démontage du contexte
+      HDSSessionManager.destroy();
     };
   }, []);
 
+  // Vérification périodique de la validité de session HDS
+  useEffect(() => {
+    if (!user) return;
+
+    const sessionCheckInterval = setInterval(() => {
+      const isValid = HDSSessionManager.isSessionValid();
+      if (!isValid) {
+        console.log("❌ Session HDS expirée - déconnexion automatique");
+        signOut();
+      }
+    }, 60000); // Vérifier toutes les minutes
+
+    return () => clearInterval(sessionCheckInterval);
+  }, [user]);
+
   const signOut = async () => {
     try {
-      console.log('🚪 [AUTH-CONTEXT] Déconnexion...');
+      console.log('🚪 [AUTH-CONTEXT] Déconnexion avec nettoyage HDS...');
+      
+      // Nettoyer la session HDS avant la déconnexion Supabase
+      HDSSessionManager.destroy();
+      
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error('❌ [AUTH-CONTEXT] Erreur déconnexion:', error);
@@ -111,9 +145,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       
       setProfile(null);
-      console.log('✅ [AUTH-CONTEXT] Déconnexion réussie');
+      console.log('✅ [AUTH-CONTEXT] Déconnexion réussie avec nettoyage HDS');
     } catch (error) {
       console.error('❌ [AUTH-CONTEXT] Erreur de déconnexion:', error);
+      // Forcer le nettoyage même en cas d'erreur
+      HDSSessionManager.destroy();
       throw error;
     }
   };
