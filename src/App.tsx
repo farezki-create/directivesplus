@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -42,6 +43,7 @@ import DonCarteBancaire from "./pages/DonCarteBancaire";
 import SuiviPalliatif from "./pages/SuiviPalliatif";
 import SuiviMultiPatients from "./pages/SuiviMultiPatients";
 import AlertesSoignants from "./pages/AlertesSoignants";
+import AlertManagement from "./pages/AlertManagement";
 
 const queryClient = new QueryClient();
 
@@ -85,6 +87,7 @@ const App = () => (
             <Route path="/suivi-multi-patients" element={<SuiviMultiPatients />} />
             <Route path="/alertes-soignants" element={<AlertesSoignants />} />
             <Route path="/alertes" element={<AlertesSoignants />} />
+            <Route path="/alert-management" element={<AlertManagement />} />
             <Route 
               path="/admin" 
               element={
