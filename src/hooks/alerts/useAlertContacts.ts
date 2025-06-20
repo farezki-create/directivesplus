@@ -14,9 +14,18 @@ export const useAlertContacts = (userId: string | undefined) => {
       console.log("Fetching alert contacts...");
       setLoading(true);
       
+      // Récupérer l'utilisateur authentifié
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        console.log("User not authenticated:", authError);
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from("patient_alert_contacts")
         .select("*")
+        .eq("patient_id", user.id)
         .eq("is_active", true)
         .order("created_at", { ascending: false });
 
