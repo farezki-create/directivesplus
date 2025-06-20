@@ -13,7 +13,6 @@ interface AlertContactFormProps {
     contact_name: string;
     phone_number?: string;
     email?: string;
-    is_active: boolean;
   }) => Promise<boolean>;
 }
 
@@ -43,10 +42,10 @@ const AlertContactForm: React.FC<AlertContactFormProps> = ({ onSave }) => {
     setSaving(true);
 
     const success = await onSave({
-      ...formData,
+      contact_type: formData.contact_type,
+      contact_name: formData.contact_name,
       phone_number: formData.phone_number || undefined,
-      email: formData.email || undefined,
-      is_active: true
+      email: formData.email || undefined
     });
 
     if (success) {

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Bell } from 'lucide-react';
-import { useProfileAlertContacts } from '@/hooks/useProfileAlertContacts';
+import { useProfileAlertSettings } from '@/hooks/alerts/useProfileAlertSettings';
 import AlertContactForm from '@/components/alerts/AlertContactForm';
 import AlertContactsList from '@/components/alerts/AlertContactsList';
 import AlertSettings from '@/components/alerts/AlertSettings';
@@ -21,7 +21,7 @@ const AlertManagement = () => {
     saveContact,
     deleteContact,
     saveSettings
-  } = useProfileAlertContacts();
+  } = useProfileAlertSettings();
 
   React.useEffect(() => {
     if (!isLoading && !isAuthenticated) {
