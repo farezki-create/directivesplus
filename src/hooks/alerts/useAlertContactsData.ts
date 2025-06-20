@@ -3,7 +3,7 @@ import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import { AlertContact, ContactFormData } from './types';
+import { AlertContact, ContactFormData, ContactType } from './types';
 import { mapContactType } from './utils';
 
 export const useAlertContactsData = () => {
@@ -33,7 +33,14 @@ export const useAlertContactsData = () => {
       }
       
       console.log('Contacts fetched successfully:', data);
-      setContacts(data || []);
+      
+      // Transformer les données pour s'assurer que contact_type est du bon type
+      const transformedContacts = (data || []).map(contact => ({
+        ...contact,
+        contact_type: contact.contact_type as ContactType
+      }));
+      
+      setContacts(transformedContacts);
     } catch (error) {
       console.error('Error fetching alert contacts:', error);
       toast({

@@ -31,7 +31,17 @@ export const useAlertSettingsData = () => {
       }
       
       console.log('Settings fetched successfully:', data);
-      setSettings(data);
+      
+      // Transformer les données pour s'assurer que sms_provider est du bon type
+      if (data) {
+        const transformedSettings: AlertSettings = {
+          ...data,
+          sms_provider: (data.sms_provider === 'whatsapp' ? 'whatsapp' : 'twilio') as 'twilio' | 'whatsapp'
+        };
+        setSettings(transformedSettings);
+      } else {
+        setSettings(null);
+      }
     } catch (error) {
       console.error('Error fetching alert settings:', error);
     }
