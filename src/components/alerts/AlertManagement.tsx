@@ -63,6 +63,11 @@ const AlertManagement = () => {
 
       if (error && error.code !== 'PGRST116') {
         console.error('Error fetching alert settings:', error);
+        toast({
+          title: "Erreur de chargement",
+          description: `Impossible de charger les paramètres: ${error.message}`,
+          variant: "destructive",
+        });
         return;
       }
 
@@ -83,6 +88,11 @@ const AlertManagement = () => {
       }
     } catch (error) {
       console.error('Error fetching settings:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur inattendue s'est produite lors du chargement des paramètres.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }

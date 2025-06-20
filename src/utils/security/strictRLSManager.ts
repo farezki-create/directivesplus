@@ -13,15 +13,11 @@ export class StrictRLSManager {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user?.email) return false;
       
-      // Vérification basée sur l'email et la fonction SQL
-      const { data, error } = await supabase.rpc('is_current_user_admin');
+      // Vérification basée sur l'email (admin si email se termine par @directivesplus.fr)
+      const isAdmin = user.email.endsWith('@directivesplus.fr');
       
-      if (error) {
-        console.error('Error checking admin status:', error);
-        return false;
-      }
-      
-      return data === true;
+      console.log('Admin check:', { email: user.email, isAdmin });
+      return isAdmin;
     } catch (error) {
       console.error('Error checking admin status:', error);
       return false;

@@ -1,46 +1,46 @@
 
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
-import { AlertContact } from "./types";
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
+import { AlertContact } from './types';
 
-export const useAlertContacts = (userId: string | undefined) => {
+export const useAlertContacts = (userId?: string) => {
   const [alertContacts, setAlertContacts] = useState<AlertContact[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   const fetchAlertContacts = async () => {
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
+
     try {
-      console.log("Fetching alert contacts...");
       setLoading(true);
+      console.log("Fetching alert contacts for user:", userId);
       
-      // Récupérer l'utilisateur authentifié
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError || !user) {
-        console.log("User not authenticated:", authError);
-        setLoading(false);
+      const { data, error } = await supabase
+        .from('patient_alert_contacts')
+        .select('*')
+        .eq('patient_id', userId);
+
+      if (error) {
+        console.error('Error fetching alert contacts:', error);
+        toast({
+          title: "Erreur de chargement",
+          description: `Impossible de charger les contacts: ${error.message}`,
+          variant: "destructive",
+        });
         return;
       }
 
-      const { data, error } = await supabase
-        .from("patient_alert_contacts")
-        .select("*")
-        .eq("patient_id", user.id)
-        .eq("is_active", true)
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        console.error("Error fetching alert contacts:", error);
-        throw error;
-      }
-
-      setAlertContacts(data || []);
       console.log("Alert contacts loaded:", data);
-    } catch (error: any) {
-      console.error("Error fetching alert contacts:", error);
+      setAlertContacts(data || []);
+    } catch (error) {
+      console.error('Error fetching alert contacts:', error);
       toast({
-        title: "Erreur de chargement",
-        description: "Impossible de charger vos contacts d'alerte.",
+        title: "Erreur",
+        description: "Une erreur inattendue s'est produite lors du chargement des contacts.",
         variant: "destructive",
       });
     } finally {
@@ -49,106 +49,114 @@ export const useAlertContacts = (userId: string | undefined) => {
   };
 
   const handleAddContact = () => {
-    const newContact: Omit<AlertContact, "id"> = {
-      contact_type: "",
-      contact_name: "",
-      phone_number: "",
-      email: "",
+    const newContact: AlertContact = {
+      id: undefined,
+      patient_id: userId || '',
+      contact_type: '',
+      contact_name: '',
+      phone_number: '',
+      email: '',
+      is_active: true
     };
-    
-    setAlertContacts([...alertContacts, { ...newContact, id: `temp-${Date.now()}` }]);
+    setAlertContacts(prev => [...prev, newContact]);
   };
 
   const handleChange = (index: number, field: keyof AlertContact, value: string) => {
-    const updatedContacts = [...alertContacts];
-    updatedContacts[index] = {
-      ...updatedContacts[index],
-      [field]: value,
-    };
-    setAlertContacts(updatedContacts);
+    setAlertContacts(prev => 
+      prev.map((contact, i) => 
+        i === index ? { ...contact, [field]: value } : contact
+      )
+    );
   };
 
   const handleRemove = (index: number) => {
-    const updatedContacts = [...alertContacts];
-    updatedContacts.splice(index, 1);
-    setAlertContacts(updatedContacts);
+    setAlertContacts(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSave = async () => {
+    if (!userId) {
+      toast({
+        title: "Session expirée",
+        description: "Veuillez vous reconnecter pour sauvegarder vos contacts.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
-      console.log("Saving alert contacts...");
       setSaving(true);
-
-      // Récupérer l'utilisateur authentifié
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError || !user) {
-        toast({
-          title: "Session expirée",
-          description: "Veuillez vous reconnecter.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Filtrer les contacts valides
-      const validContacts = alertContacts.filter(contact => 
-        contact.contact_name.trim() !== "" && 
-        contact.contact_type.trim() !== "" &&
-        (contact.phone_number?.trim() || contact.email?.trim())
-      );
+      console.log("Saving alert contacts for user:", userId);
       
+      // Valider les contacts
+      const validContacts = alertContacts.filter(contact => 
+        contact.contact_type && 
+        contact.contact_name && 
+        (contact.phone_number || contact.email)
+      );
+
       if (validContacts.length === 0) {
         toast({
-          title: "Aucun contact valide",
-          description: "Veuillez ajouter au moins un contact avec un nom, un type et un moyen de contact.",
+          title: "Validation échouée",
+          description: "Veuillez remplir au moins un contact avec toutes les informations requises.",
           variant: "destructive",
         });
         return;
       }
 
-      // Désactiver tous les contacts existants pour cet utilisateur
-      const { error: deactivateError } = await supabase
-        .from("patient_alert_contacts")
-        .update({ is_active: false })
-        .eq("patient_id", user.id);
+      // Supprimer les anciens contacts
+      const { error: deleteError } = await supabase
+        .from('patient_alert_contacts')
+        .delete()
+        .eq('patient_id', userId);
 
-      if (deactivateError) {
-        console.error("Error deactivating old contacts:", deactivateError);
-        throw deactivateError;
+      if (deleteError) {
+        console.error('Error deleting old contacts:', deleteError);
+        toast({
+          title: "Erreur de suppression",
+          description: `Erreur lors de la suppression des anciens contacts: ${deleteError.message}`,
+          variant: "destructive",
+        });
+        return;
       }
 
       // Insérer les nouveaux contacts
       const contactsToInsert = validContacts.map(contact => ({
+        patient_id: userId,
         contact_type: contact.contact_type,
         contact_name: contact.contact_name,
         phone_number: contact.phone_number || null,
         email: contact.email || null,
-        patient_id: user.id,
         is_active: true
       }));
 
       const { error: insertError } = await supabase
-        .from("patient_alert_contacts")
+        .from('patient_alert_contacts')
         .insert(contactsToInsert);
 
       if (insertError) {
-        console.error("Error inserting new contacts:", insertError);
-        throw insertError;
+        console.error('Error inserting contacts:', insertError);
+        toast({
+          title: "Erreur de sauvegarde",
+          description: `Erreur lors de la sauvegarde: ${insertError.message}`,
+          variant: "destructive",
+        });
+        return;
       }
 
+      console.log("Alert contacts saved successfully");
       toast({
-        title: "Sauvegarde réussie",
+        title: "Contacts sauvegardés",
         description: "Vos contacts d'alerte ont été enregistrés avec succès.",
       });
 
-      // Recharger la liste
+      // Recharger les contacts
       await fetchAlertContacts();
+
     } catch (error: any) {
-      console.error("Error saving alert contacts:", error);
-      
+      console.error('Error saving alert contacts:', error);
       toast({
-        title: "Erreur de sauvegarde",
-        description: `Erreur: ${error.message || 'Problème technique'}`,
+        title: "Erreur",
+        description: `Une erreur inattendue s'est produite: ${error.message || 'Problème technique'}`,
         variant: "destructive",
       });
     } finally {
@@ -156,10 +164,9 @@ export const useAlertContacts = (userId: string | undefined) => {
     }
   };
 
-  // Charger les contacts au démarrage
   useEffect(() => {
     fetchAlertContacts();
-  }, []);
+  }, [userId]);
 
   return {
     alertContacts,
