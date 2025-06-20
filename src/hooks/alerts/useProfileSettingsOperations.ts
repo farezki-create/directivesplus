@@ -22,7 +22,7 @@ export const useProfileSettingsOperations = (
       const { error } = await supabase
         .from('user_profiles')
         .update({
-          alert_settings: newSettings
+          alert_settings: newSettings as any
         })
         .eq('id', user.id);
 

@@ -38,7 +38,7 @@ export const useProfileContactOperations = (
       const { error } = await supabase
         .from('user_profiles')
         .update({
-          alert_contacts: updatedContacts
+          alert_contacts: updatedContacts as any
         })
         .eq('id', user.id);
 
@@ -85,7 +85,7 @@ export const useProfileContactOperations = (
       const { error } = await supabase
         .from('user_profiles')
         .update({
-          alert_contacts: updatedContacts
+          alert_contacts: updatedContacts as any
         })
         .eq('id', user.id);
 
