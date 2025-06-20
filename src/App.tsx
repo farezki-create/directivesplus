@@ -11,6 +11,7 @@ import NotFound from "./pages/NotFound";
 import AuthAudit from "./pages/AuthAudit";
 import SecurityAuditPage from "./pages/SecurityAuditPage";
 import Admin from "./pages/Admin";
+import AdminStrictRLS from "./pages/AdminStrictRLS";
 
 const queryClient = new QueryClient();
 
@@ -45,6 +46,14 @@ const App = () => (
               element={
                 <ProtectedRoute requireAdmin={true}>
                   <SecurityAuditPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/strict-rls" 
+              element={
+                <ProtectedRoute requireAdmin={true}>
+                  <AdminStrictRLS />
                 </ProtectedRoute>
               } 
             />
