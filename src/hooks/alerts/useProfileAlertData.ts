@@ -22,17 +22,22 @@ export const useProfileAlertData = () => {
   const [loading, setLoading] = useState(false);
 
   const parseAlertContacts = (contacts: any): ProfileAlertContact[] => {
-    if (!contacts || !Array.isArray(contacts)) return [];
-    return contacts.filter(contact => 
-      contact && 
-      typeof contact === 'object' && 
-      contact.id && 
-      contact.contact_name && 
-      contact.contact_type
-    ) as ProfileAlertContact[];
+    console.log('Parsing alert contacts:', contacts);
+    if (!contacts) return [];
+    if (Array.isArray(contacts)) {
+      return contacts.filter(contact => 
+        contact && 
+        typeof contact === 'object' && 
+        contact.id && 
+        contact.contact_name && 
+        contact.contact_type
+      ) as ProfileAlertContact[];
+    }
+    return [];
   };
 
   const parseAlertSettings = (settings: any): ProfileAlertSettings => {
+    console.log('Parsing alert settings:', settings);
     if (!settings || typeof settings !== 'object') {
       return {
         auto_alert_enabled: false,
@@ -73,16 +78,43 @@ export const useProfileAlertData = () => {
 
       if (error) {
         console.error('Error fetching alert settings:', error);
-        throw error;
+        
+        // Si les colonnes n'existent pas, on essaie de créer un profil
+        if (error.code === 'PGRST116' || error.message.includes('column')) {
+          console.log('Columns may not exist, trying to create profile...');
+          const { error: insertError } = await supabase
+            .from('user_profiles')
+            .insert({
+              id: user.id,
+              alert_contacts: [],
+              alert_settings: {
+                auto_alert_enabled: false,
+                alert_threshold: 7,
+                symptom_types: ['douleur', 'dyspnee', 'anxiete'],
+                sms_enabled: false,
+                sms_provider: 'twilio',
+                phone_number: '',
+                whatsapp_number: ''
+              }
+            });
+          
+          if (insertError) {
+            console.error('Error creating profile:', insertError);
+          }
+        }
+        return;
       }
       
       console.log('Alert settings fetched successfully:', data);
       
       if (data) {
-        setAlertData({
+        const newAlertData = {
           alert_contacts: parseAlertContacts(data.alert_contacts),
           alert_settings: parseAlertSettings(data.alert_settings)
-        });
+        };
+        
+        console.log('Setting alert data:', newAlertData);
+        setAlertData(newAlertData);
       }
     } catch (error) {
       console.error('Error fetching alert settings:', error);

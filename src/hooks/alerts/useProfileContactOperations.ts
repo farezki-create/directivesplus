@@ -34,19 +34,27 @@ export const useProfileContactOperations = (
       };
 
       const updatedContacts = [...alertData.alert_contacts, newContact];
+      
+      console.log('Saving contact:', newContact);
+      console.log('Updated contacts array:', updatedContacts);
 
+      // Utiliser upsert pour gérer le cas où le profil n'existe pas encore
       const { error } = await supabase
         .from('user_profiles')
-        .update({
-          alert_contacts: updatedContacts as any
-        })
-        .eq('id', user.id);
+        .upsert({
+          id: user.id,
+          alert_contacts: updatedContacts as any,
+          alert_settings: alertData.alert_settings as any
+        }, {
+          onConflict: 'id'
+        });
 
       if (error) {
         console.error('Error saving contact:', error);
         throw error;
       }
 
+      // Mettre à jour l'état local
       setAlertData(prev => ({
         ...prev,
         alert_contacts: updatedContacts
@@ -56,6 +64,9 @@ export const useProfileContactOperations = (
         title: "Contact ajouté",
         description: "Le contact d'alerte a été enregistré avec succès"
       });
+
+      // Recharger les données pour s'assurer de la cohérence
+      await fetchAlertSettings();
 
       return true;
     } catch (error: any) {
@@ -67,7 +78,7 @@ export const useProfileContactOperations = (
       });
       return false;
     }
-  }, [user?.id, alertData.alert_contacts, setAlertData]);
+  }, [user?.id, alertData, setAlertData, fetchAlertSettings]);
 
   const deleteContact = useCallback(async (contactId: string) => {
     if (!user?.id) {
@@ -81,6 +92,9 @@ export const useProfileContactOperations = (
 
     try {
       const updatedContacts = alertData.alert_contacts.filter(c => c.id !== contactId);
+      
+      console.log('Deleting contact with ID:', contactId);
+      console.log('Updated contacts after deletion:', updatedContacts);
 
       const { error } = await supabase
         .from('user_profiles')

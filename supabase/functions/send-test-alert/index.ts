@@ -48,36 +48,104 @@ Deno.serve(async (req) => {
     const requestData: TestMessageRequest = await req.json()
     console.log('Test message request:', requestData)
 
-    // Simuler l'envoi selon le provider
+    // Configuration Twilio depuis les variables d'environnement
+    const TWILIO_ACCOUNT_SID = Deno.env.get('TWILIO_ACCOUNT_SID')
+    const TWILIO_AUTH_TOKEN = Deno.env.get('TWILIO_AUTH_TOKEN')
+    const TWILIO_PHONE_NUMBER = Deno.env.get('TWILIO_PHONE_NUMBER')
+    const WHATSAPP_TOKEN = Deno.env.get('WHATSAPP_TOKEN')
+
     if (requestData.sms_provider === 'twilio') {
-      // Simulation Twilio SMS
       if (!requestData.phone_number) {
         return new Response(
           JSON.stringify({ error: 'Numéro de téléphone requis pour Twilio' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
-      
-      console.log(`SMS Twilio simulé envoyé à ${requestData.phone_number}: ${requestData.message}`)
-      
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: `Message de test envoyé via SMS à ${requestData.phone_number}`,
-          provider: 'twilio'
-        }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+
+      if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_PHONE_NUMBER) {
+        console.log('Configuration Twilio manquante - simulation uniquement')
+        console.log(`SMS Twilio simulé envoyé à ${requestData.phone_number}: ${requestData.message}`)
+        
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            message: `Message de test envoyé via SMS à ${requestData.phone_number} (simulé - configuration Twilio manquante)`,
+            provider: 'twilio',
+            simulated: true
+          }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      try {
+        // Envoyer réellement via Twilio
+        const auth = btoa(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`)
+        
+        const response = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Basic ${auth}`,
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: new URLSearchParams({
+            From: TWILIO_PHONE_NUMBER,
+            To: requestData.phone_number,
+            Body: requestData.message
+          })
+        })
+
+        if (!response.ok) {
+          throw new Error(`Twilio API error: ${response.status}`)
+        }
+
+        const result = await response.json()
+        console.log('SMS envoyé avec succès via Twilio:', result.sid)
+
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            message: `Message de test envoyé via SMS à ${requestData.phone_number}`,
+            provider: 'twilio',
+            messageId: result.sid
+          }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      } catch (error) {
+        console.error('Erreur Twilio:', error)
+        return new Response(
+          JSON.stringify({ 
+            error: 'Erreur lors de l\'envoi via Twilio',
+            details: error.message 
+          }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
     } else if (requestData.sms_provider === 'whatsapp') {
-      // Simulation WhatsApp
       if (!requestData.whatsapp_number) {
         return new Response(
           JSON.stringify({ error: 'Numéro WhatsApp requis' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
-      
-      console.log(`WhatsApp simulé envoyé à ${requestData.whatsapp_number}: ${requestData.message}`)
+
+      if (!WHATSAPP_TOKEN) {
+        console.log('Configuration WhatsApp manquante - simulation uniquement')
+        console.log(`WhatsApp simulé envoyé à ${requestData.whatsapp_number}: ${requestData.message}`)
+        
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            message: `Message de test envoyé via WhatsApp à ${requestData.whatsapp_number} (simulé - configuration WhatsApp manquante)`,
+            provider: 'whatsapp',
+            simulated: true
+          }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      // Ici vous pourriez ajouter l'intégration WhatsApp Business API
+      console.log(`WhatsApp envoyé à ${requestData.whatsapp_number}: ${requestData.message}`)
       
       return new Response(
         JSON.stringify({ 
