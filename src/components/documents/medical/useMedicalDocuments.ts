@@ -13,7 +13,7 @@ export const useMedicalDocuments = (userId: string) => {
       setLoading(true);
       const { data, error } = await supabase
         .from('medical_documents')
-        .select('*')
+        .select('*, is_private')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
