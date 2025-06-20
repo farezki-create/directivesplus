@@ -26,15 +26,18 @@ export const useAlertContacts = (userId: string | undefined) => {
         .eq("is_active", true)
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching alert contacts:", error);
+        throw error;
+      }
 
       setAlertContacts(data || []);
       console.log("Alert contacts loaded:", data);
     } catch (error: any) {
-      console.error("Error fetching alert contacts:", error.message);
+      console.error("Error fetching alert contacts:", error);
       toast({
-        title: "Erreur",
-        description: "Impossible de charger vos contacts d'alerte.",
+        title: "Erreur de chargement",
+        description: "Impossible de charger vos contacts d'alerte. Veuillez réessayer.",
         variant: "destructive",
       });
     } finally {
@@ -71,7 +74,11 @@ export const useAlertContacts = (userId: string | undefined) => {
 
   const handleSave = async () => {
     if (!userId) {
-      console.log("No user ID provided, cannot save alert contacts");
+      toast({
+        title: "Erreur",
+        description: "Utilisateur non identifié. Veuillez vous reconnecter.",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -87,18 +94,24 @@ export const useAlertContacts = (userId: string | undefined) => {
       );
       
       if (validContacts.length === 0) {
-        // If no valid contacts, just refresh the list from database
-        await fetchAlertContacts();
+        toast({
+          title: "Aucun contact valide",
+          description: "Veuillez ajouter au moins un contact avec un nom, un type et un moyen de contact.",
+          variant: "destructive",
+        });
         return;
       }
 
-      // First delete all existing contacts for this user
+      // First delete all existing contacts for this user by marking them as inactive
       const { error: deleteError } = await supabase
         .from("patient_alert_contacts")
         .update({ is_active: false })
         .eq("patient_id", userId);
 
-      if (deleteError) throw deleteError;
+      if (deleteError) {
+        console.error("Error deactivating old contacts:", deleteError);
+        throw deleteError;
+      }
 
       // Then insert all current contacts
       const contactsWithUserId = validContacts.map(contact => ({
@@ -114,20 +127,23 @@ export const useAlertContacts = (userId: string | undefined) => {
         .from("patient_alert_contacts")
         .insert(contactsWithUserId);
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        console.error("Error inserting new contacts:", insertError);
+        throw insertError;
+      }
 
       toast({
         title: "Sauvegarde réussie",
-        description: "Vos contacts d'alerte ont été enregistrés.",
+        description: "Vos contacts d'alerte ont été enregistrés avec succès.",
       });
 
       // Refresh the list to get the server-generated IDs
       await fetchAlertContacts();
     } catch (error: any) {
-      console.error("Error saving alert contacts:", error.message);
+      console.error("Error saving alert contacts:", error);
       toast({
-        title: "Erreur",
-        description: "Impossible d'enregistrer vos contacts d'alerte.",
+        title: "Erreur de sauvegarde",
+        description: "Impossible d'enregistrer vos contacts d'alerte. Vérifiez votre connexion et réessayez.",
         variant: "destructive",
       });
     } finally {

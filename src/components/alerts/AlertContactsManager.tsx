@@ -8,9 +8,9 @@ import { useAlertContacts } from "@/hooks/alerts/useAlertContacts";
 
 const AlertContactsManager = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
   
-  console.log("AlertContactsManager - userId:", user?.id);
+  console.log("AlertContactsManager - user:", user?.id, "authenticated:", isAuthenticated);
   
   const {
     alertContacts,
@@ -22,11 +22,25 @@ const AlertContactsManager = () => {
     handleSave
   } = useAlertContacts(user?.id);
 
-  if (!user) {
-    console.error("No user found in AlertContactsManager");
+  // Show loading while auth is being checked
+  if (isLoading) {
+    return (
+      <div className="flex justify-center my-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-directiveplus-600"></div>
+      </div>
+    );
+  }
+
+  // Show authentication message if not logged in
+  if (!isAuthenticated || !user) {
     return (
       <div className="text-center p-8">
-        <p>Utilisateur non connecté. Veuillez vous connecter pour gérer vos contacts d'alerte.</p>
+        <p className="text-gray-600 mb-4">
+          Vous devez être connecté pour gérer vos contacts d'alerte.
+        </p>
+        <Button onClick={() => navigate("/auth")}>
+          Se connecter
+        </Button>
       </div>
     );
   }
@@ -73,7 +87,7 @@ const AlertContactsManager = () => {
 
             <Button
               onClick={handleSave}
-              disabled={saving}
+              disabled={saving || alertContacts.length === 0}
               className="bg-directiveplus-600 hover:bg-directiveplus-700"
             >
               {saving ? (
