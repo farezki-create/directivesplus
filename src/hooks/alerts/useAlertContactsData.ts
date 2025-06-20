@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -100,8 +99,14 @@ export const useAlertContactsData = () => {
       if (error) {
         console.error('Database error when saving contact:', error);
         
-        // Gestion spécifique des erreurs de permission
-        if (error.message.includes('permission denied')) {
+        // Gestion spécifique des erreurs RLS
+        if (error.message.includes('row-level security') || error.message.includes('permission denied')) {
+          toast({
+            title: "Erreur de sécurité",
+            description: "Problème de permissions. Veuillez vous reconnecter.",
+            variant: "destructive"
+          });
+        } else if (error.code === '42501') {
           toast({
             title: "Erreur de permission",
             description: "Vous n'avez pas les droits nécessaires pour cette action",
