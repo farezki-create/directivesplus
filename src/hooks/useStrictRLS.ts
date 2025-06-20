@@ -7,185 +7,137 @@ import { toast } from '@/hooks/use-toast';
 
 export const useStrictRLS = () => {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { user, isAdmin } = useAuth();
 
-  const checkLogAccess = useCallback(async (tableName: string, targetUserId?: string) => {
+  const handleSecureLogAccess = useCallback(async (
+    tableName: string,
+    operation: string = 'SELECT',
+    userId?: string
+  ) => {
+    setLoading(true);
+    setError(null);
+
     try {
-      const hasAccess = await StrictRLSManager.checkLogAccess(tableName, targetUserId);
+      // Vérifier les permissions d'accès
+      const hasAccess = await StrictRLSManager.checkLogAccess(tableName, userId);
       
       if (!hasAccess) {
+        const errorMsg = 'Accès non autorisé à cette table de logs';
+        setError(errorMsg);
+        
+        // Logger la tentative d'accès non autorisé
         await EnhancedSecurityEventLogger.logSuspiciousActivity(
           'unauthorized_log_access_attempt',
           user?.id,
           undefined,
           navigator.userAgent,
           { 
-            table_name: tableName,
-            target_user_id: targetUserId,
-            reason: 'insufficient_permissions'
+            table_name: tableName, 
+            operation: operation,
+            attempted_user_filter: userId 
           }
         );
         
         toast({
           title: "Accès refusé",
-          description: "Vous n'avez pas les permissions pour accéder à ces logs.",
+          description: errorMsg,
           variant: "destructive"
         });
+        
+        return null;
       }
+
+      // Accéder aux logs selon le type de table
+      let data;
+      switch (tableName) {
+        case 'access_logs':
+          data = await StrictRLSManager.getAccessLogs(userId);
+          break;
+        case 'access_code_attempts':
+          data = await StrictRLSManager.getAccessCodeAttempts();
+          break;
+        case 'document_access_logs':
+          data = await StrictRLSManager.getDocumentAccessLogs(userId);
+          break;
+        case 'medical_access_audit':
+          data = await StrictRLSManager.getMedicalAccessAudit(userId);
+          break;
+        case 'institution_access_logs':
+          data = await StrictRLSManager.getInstitutionAccessLogs(userId);
+          break;
+        case 'security_audit_logs':
+          data = await StrictRLSManager.getSecurityAuditLogs(userId);
+          break;
+        case 'sms_send_logs':
+          data = await StrictRLSManager.getSMSLogs(userId);
+          break;
+        default:
+          throw new Error(`Table de logs non supportée: ${tableName}`);
+      }
+
+      return data;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Erreur lors de l\'accès aux logs';
+      setError(errorMessage);
       
-      return hasAccess;
-    } catch (error) {
-      console.error('Error checking log access:', error);
-      
+      // Logger l'erreur d'accès
       await EnhancedSecurityEventLogger.logSuspiciousActivity(
-        'log_access_check_error',
+        'log_access_error',
         user?.id,
         undefined,
         navigator.userAgent,
         { 
-          table_name: tableName,
-          error: error instanceof Error ? error.message : 'Unknown error'
+          table_name: tableName, 
+          error_message: errorMessage 
         }
       );
       
-      toast({
-        title: "Erreur de vérification",
-        description: "Impossible de vérifier les permissions d'accès.",
-        variant: "destructive"
-      });
-      return false;
-    }
-  }, [user?.id]);
-
-  const secureLogAccess = useCallback(async <T>(
-    operation: () => Promise<T>,
-    tableName: string,
-    targetUserId?: string
-  ): Promise<T | null> => {
-    setLoading(true);
-    
-    try {
-      // Vérifier les permissions d'accès
-      const hasAccess = await checkLogAccess(tableName, targetUserId);
-      if (!hasAccess) {
-        return null;
-      }
-
-      // Exécuter l'opération sécurisée
-      const result = await operation();
-      
-      // Logger l'accès réussi avec la nouvelle fonction
-      await EnhancedSecurityEventLogger.logSecurityAudit(
-        'secure_log_access_success',
-        user?.id,
-        {
-          table_name: tableName,
-          target_user_id: targetUserId,
-          is_admin: isAdmin,
-          access_type: 'read_operation'
-        }
-      );
-
-      return result;
-    } catch (error) {
-      console.error('Secure log access failed:', error);
-      
-      // Logger l'échec d'accès
-      await EnhancedSecurityEventLogger.logSuspiciousActivity(
-        'secure_log_access_failed',
-        user?.id,
-        undefined,
-        navigator.userAgent,
-        {
-          table_name: tableName,
-          target_user_id: targetUserId,
-          error: error instanceof Error ? error.message : 'Unknown error',
-          is_admin: isAdmin
-        }
-      );
-
-      toast({
-        title: "Erreur d'accès",
-        description: "Impossible d'accéder aux logs demandés.",
-        variant: "destructive"
-      });
-      
+      console.error('Error in secure log access:', err);
       return null;
     } finally {
       setLoading(false);
     }
-  }, [checkLogAccess, user?.id, isAdmin]);
+  }, [user, isAdmin]);
 
-  const getSecurityLogs = useCallback(async (userId?: string) => {
-    return secureLogAccess(
-      () => StrictRLSManager.getSecurityAuditLogs(userId),
-      'security_audit_logs',
-      userId
-    );
-  }, [secureLogAccess]);
-
-  const getMedicalLogs = useCallback(async (userId?: string) => {
-    return secureLogAccess(
-      () => StrictRLSManager.getMedicalAccessAudit(userId),
-      'medical_access_audit',
-      userId
-    );
-  }, [secureLogAccess]);
-
-  const getDocumentLogs = useCallback(async (userId?: string) => {
-    return secureLogAccess(
-      () => StrictRLSManager.getDocumentAccessLogs(userId),
-      'document_access_logs',
-      userId
-    );
-  }, [secureLogAccess]);
-
-  const getAccessCodeAttempts = useCallback(async () => {
-    if (!isAdmin) {
-      toast({
-        title: "Accès refusé",
-        description: "Seuls les administrateurs peuvent voir les tentatives de code d'accès.",
-        variant: "destructive"
-      });
-      return null;
+  const logSecurityEvent = useCallback(async (
+    eventType: string,
+    details: Record<string, any> = {},
+    riskLevel: 'low' | 'medium' | 'high' | 'critical' = 'medium'
+  ) => {
+    try {
+      await StrictRLSManager.logSecurityEvent(eventType, details, riskLevel);
+    } catch (err) {
+      console.error('Error logging security event:', err);
     }
-
-    return secureLogAccess(
-      () => StrictRLSManager.getAccessCodeAttempts(),
-      'access_code_attempts'
-    );
-  }, [secureLogAccess, isAdmin]);
+  }, []);
 
   const cleanupOldLogs = useCallback(async () => {
     if (!isAdmin) {
       toast({
         title: "Accès refusé",
-        description: "Seuls les administrateurs peuvent nettoyer les logs.",
+        description: "Seuls les administrateurs peuvent nettoyer les logs",
         variant: "destructive"
       });
       return false;
     }
 
+    setLoading(true);
     try {
-      setLoading(true);
-      
       await StrictRLSManager.cleanupOldLogs();
-      
       toast({
-        title: "Nettoyage réussi",
-        description: "Les anciens logs ont été supprimés avec succès.",
+        title: "Nettoyage terminé",
+        description: "Les anciens logs ont été nettoyés avec succès"
       });
-      
       return true;
-    } catch (error) {
-      console.error('Error cleaning up logs:', error);
-      
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Erreur lors du nettoyage';
+      setError(errorMessage);
       toast({
         title: "Erreur de nettoyage",
-        description: "Impossible de nettoyer les anciens logs.",
+        description: errorMessage,
         variant: "destructive"
       });
-      
       return false;
     } finally {
       setLoading(false);
@@ -194,12 +146,9 @@ export const useStrictRLS = () => {
 
   return {
     loading,
-    checkLogAccess,
-    secureLogAccess,
-    getSecurityLogs,
-    getMedicalLogs,
-    getDocumentLogs,
-    getAccessCodeAttempts,
+    error,
+    handleSecureLogAccess,
+    logSecurityEvent,
     cleanupOldLogs,
     isAdmin
   };
