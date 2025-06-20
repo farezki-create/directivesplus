@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertTriangle, Settings, Users, MessageSquare, Save } from 'lucide-react';
+import { AlertTriangle, Settings, Users, MessageSquare, Save, Lock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import AlertContactsManager from './AlertContactsManager';
@@ -35,7 +34,7 @@ const SYMPTOM_OPTIONS = [
 ];
 
 const AlertManagement = () => {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [settings, setSettings] = useState<AlertSettings>({
@@ -199,19 +198,33 @@ const AlertManagement = () => {
                 <CardTitle className="flex items-center gap-2">
                   <AlertTriangle className="h-5 w-5" />
                   Paramètres d'alerte automatique
+                  {!isAdmin && <Lock className="h-4 w-4 text-gray-400" />}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
+                {!isAdmin && (
+                  <Alert>
+                    <Lock className="h-4 w-4" />
+                    <AlertDescription>
+                      Seuls les administrateurs peuvent configurer les alertes automatiques. 
+                      Contactez votre administrateur pour modifier ces paramètres.
+                    </AlertDescription>
+                  </Alert>
+                )}
+
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label htmlFor="auto_alert">Alertes automatiques</Label>
-                    <p className="text-sm text-gray-600">
+                    <Label htmlFor="auto_alert" className={!isAdmin ? "text-gray-400" : ""}>
+                      Alertes automatiques
+                    </Label>
+                    <p className={`text-sm ${!isAdmin ? "text-gray-400" : "text-gray-600"}`}>
                       Activer les alertes automatiques en cas de symptômes critiques
                     </p>
                   </div>
                   <Switch
                     id="auto_alert"
                     checked={settings.auto_alert_enabled}
+                    disabled={!isAdmin}
                     onCheckedChange={(checked) => 
                       setSettings(prev => ({ ...prev, auto_alert_enabled: checked }))
                     }
@@ -221,7 +234,9 @@ const AlertManagement = () => {
                 {settings.auto_alert_enabled && (
                   <>
                     <div className="space-y-3">
-                      <Label>Seuil d'alerte: {settings.alert_threshold}/10</Label>
+                      <Label className={!isAdmin ? "text-gray-400" : ""}>
+                        Seuil d'alerte: {settings.alert_threshold}/10
+                      </Label>
                       <Slider
                         value={[settings.alert_threshold]}
                         onValueChange={(value) => 
@@ -230,21 +245,25 @@ const AlertManagement = () => {
                         max={10}
                         min={1}
                         step={1}
+                        disabled={!isAdmin}
                         className="w-full"
                       />
-                      <p className="text-sm text-gray-600">
+                      <p className={`text-sm ${!isAdmin ? "text-gray-400" : "text-gray-600"}`}>
                         Une alerte sera déclenchée si un symptôme atteint ou dépasse ce niveau
                       </p>
                     </div>
 
                     <div className="space-y-3">
-                      <Label>Symptômes surveillés</Label>
+                      <Label className={!isAdmin ? "text-gray-400" : ""}>
+                        Symptômes surveillés
+                      </Label>
                       <div className="grid grid-cols-2 gap-3">
                         {SYMPTOM_OPTIONS.map((symptom) => (
                           <div key={symptom.id} className="flex items-center space-x-2">
                             <Checkbox
                               id={symptom.id}
                               checked={settings.symptom_types.includes(symptom.id)}
+                              disabled={!isAdmin}
                               onCheckedChange={(checked) => {
                                 if (checked) {
                                   setSettings(prev => ({
@@ -259,7 +278,10 @@ const AlertManagement = () => {
                                 }
                               }}
                             />
-                            <Label htmlFor={symptom.id} className="text-sm">
+                            <Label 
+                              htmlFor={symptom.id} 
+                              className={`text-sm ${!isAdmin ? "text-gray-400" : ""}`}
+                            >
                               {symptom.label}
                             </Label>
                           </div>
@@ -269,20 +291,22 @@ const AlertManagement = () => {
                   </>
                 )}
 
-                <div className="flex justify-end">
-                  <Button 
-                    onClick={saveSettings} 
-                    disabled={saving}
-                    className="bg-directiveplus-600 hover:bg-directiveplus-700"
-                  >
-                    {saving ? (
-                      <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
-                    ) : (
-                      <Save className="mr-2 h-4 w-4" />
-                    )}
-                    Sauvegarder
-                  </Button>
-                </div>
+                {isAdmin && (
+                  <div className="flex justify-end">
+                    <Button 
+                      onClick={saveSettings} 
+                      disabled={saving}
+                      className="bg-directiveplus-600 hover:bg-directiveplus-700"
+                    >
+                      {saving ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
+                      ) : (
+                        <Save className="mr-2 h-4 w-4" />
+                      )}
+                      Sauvegarder
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
