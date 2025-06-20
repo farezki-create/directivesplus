@@ -9,18 +9,26 @@ import DeleteAccountSection from '@/components/profile/DeleteAccountSection';
 import AlertContactsSection from '@/components/profile/AlertContactsSection';
 import AppNavigation from '@/components/AppNavigation';
 import Footer from '@/components/Footer';
+import { useProfileData } from '@/components/profile/useProfileData';
 
 const Profile = () => {
   const navigate = useNavigate();
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { 
+    profile, 
+    isLoading, 
+    setIsLoading, 
+    formValues, 
+    handleProfileUpdate 
+  } = useProfileData();
 
   React.useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (!authLoading && !isAuthenticated) {
       navigate("/auth", { state: { from: "/profile" } });
     }
-  }, [isAuthenticated, isLoading, navigate]);
+  }, [isAuthenticated, authLoading, navigate]);
 
-  if (isLoading) {
+  if (authLoading || isLoading) {
     return (
       <div className="h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-directiveplus-600"></div>
@@ -28,7 +36,7 @@ const Profile = () => {
     );
   }
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || !profile) {
     return null;
   }
 
@@ -42,7 +50,13 @@ const Profile = () => {
           
           <div className="grid lg:grid-cols-1 gap-8">
             <div className="space-y-8">
-              <ProfileForm />
+              <ProfileForm 
+                initialValues={formValues}
+                profileId={profile.id}
+                onProfileUpdate={handleProfileUpdate}
+                isLoading={isLoading}
+                setIsLoading={setIsLoading}
+              />
               <AlertContactsSection />
               <DeleteAccountSection />
             </div>
