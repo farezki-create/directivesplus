@@ -1351,8 +1351,12 @@ export type Database = {
           created_at: string | null
           id: string
           patient_id: string
+          phone_number: string | null
+          sms_enabled: boolean | null
+          sms_provider: string | null
           symptom_types: string[] | null
           updated_at: string | null
+          whatsapp_number: string | null
         }
         Insert: {
           alert_threshold?: number | null
@@ -1360,8 +1364,12 @@ export type Database = {
           created_at?: string | null
           id?: string
           patient_id: string
+          phone_number?: string | null
+          sms_enabled?: boolean | null
+          sms_provider?: string | null
           symptom_types?: string[] | null
           updated_at?: string | null
+          whatsapp_number?: string | null
         }
         Update: {
           alert_threshold?: number | null
@@ -1369,8 +1377,12 @@ export type Database = {
           created_at?: string | null
           id?: string
           patient_id?: string
+          phone_number?: string | null
+          sms_enabled?: boolean | null
+          sms_provider?: string | null
           symptom_types?: string[] | null
           updated_at?: string | null
+          whatsapp_number?: string | null
         }
         Relationships: []
       }
