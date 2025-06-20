@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,7 +12,7 @@ export const useMedicalDocuments = (userId: string) => {
       setLoading(true);
       const { data, error } = await supabase
         .from('medical_documents')
-        .select('*, is_private')
+        .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
@@ -38,7 +37,7 @@ export const useMedicalDocuments = (userId: string) => {
         created_at: doc.created_at,
         user_id: doc.user_id,
         extracted_content: doc.extracted_content,
-        is_private: doc.is_private ?? false // Use nullish coalescing to handle undefined/null values
+        is_private: doc.is_private ?? false // Handle null values properly
       }));
 
       setDocuments(transformedData);
