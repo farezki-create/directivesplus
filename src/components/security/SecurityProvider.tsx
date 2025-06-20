@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useEffect, ReactNode } from 'react';
 import { useSecurityHeaders } from '@/hooks/useSecurityHeaders';
-import { HDSSessionManager } from '@/utils/security/hdsSessionManager';
+import { EnhancedSessionSecurity } from '@/utils/security/enhancedSessionSecurity';
 import { EnhancedSecurityEventLogger } from '@/utils/security/enhancedSecurityEventLogger';
 import { ServerSideRateLimit } from '@/utils/security/serverSideRateLimit';
 import { useAuth } from '@/contexts/AuthContext';
@@ -25,16 +25,18 @@ export const SecurityProvider: React.FC<SecurityProviderProps> = ({ children }) 
 
   useEffect(() => {
     if (user) {
-      // Initialiser la gestion de session HDS conforme (8h max, auto-lock 30min)
-      HDSSessionManager.setSessionStartTime();
-      HDSSessionManager.initializeHDSSession();
-      
-      console.log("🏥 Session HDS initialisée - Timeout: 8h, Auto-lock: 30min d'inactivité");
+      // Initialize secure session when user is authenticated
+      EnhancedSessionSecurity.initializeSecureSession(user.id);
+
+      // Start periodic session validation
+      const cleanup = EnhancedSessionSecurity.startPeriodicValidation(user.id);
+
+      return cleanup;
     }
   }, [user]);
 
   useEffect(() => {
-    // Surveillance continue des patterns suspects
+    // Monitor for suspicious activity patterns
     let clickCount = 0;
     let rapidClickStartTime = 0;
 
@@ -47,13 +49,13 @@ export const SecurityProvider: React.FC<SecurityProviderProps> = ({ children }) 
       
       clickCount++;
       
-      // Reset après 10 secondes
+      // Reset counter after 10 seconds
       if (now - rapidClickStartTime > 10000) {
         clickCount = 1;
         rapidClickStartTime = now;
       }
       
-      // Détecter les clics rapides (comportement de bot potentiel)
+      // Detect rapid clicking (potential bot behavior)
       if (clickCount > 20) {
         await EnhancedSecurityEventLogger.logSuspiciousActivity(
           'rapid_clicking_detected',
@@ -62,27 +64,27 @@ export const SecurityProvider: React.FC<SecurityProviderProps> = ({ children }) 
           navigator.userAgent,
           { click_count: clickCount, time_window: now - rapidClickStartTime }
         );
-        clickCount = 0;
+        clickCount = 0; // Reset to avoid spam
       }
     };
 
-    // Surveiller les changements de visibilité pour la sécurité
+    // Monitor page visibility changes for security
     const handleVisibilityChange = async () => {
       if (!document.hidden && user) {
-        // Re-valider la session HDS quand la page devient visible
-        const isValid = HDSSessionManager.isSessionValid();
+        // Re-validate session when page becomes visible
+        const isValid = await EnhancedSessionSecurity.validateSecureSession(user.id);
         if (!isValid) {
           await EnhancedSecurityEventLogger.logSuspiciousActivity(
-            'hds_session_validation_failed_on_visibility',
+            'session_validation_failed_on_visibility',
             user.id
           );
-          // Redirection vers l'authentification
+          // Redirect to login
           window.location.href = '/auth';
         }
       }
     };
 
-    // Surveiller les tentatives XSS potentielles avec MutationObserver
+    // Monitor for potential XSS attempts using MutationObserver instead of deprecated DOMNodeInserted
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         mutation.addedNodes.forEach((node) => {
@@ -102,7 +104,7 @@ export const SecurityProvider: React.FC<SecurityProviderProps> = ({ children }) 
       });
     });
 
-    // Démarrer l'observation
+    // Start observing
     observer.observe(document.body, {
       childList: true,
       subtree: true
@@ -115,20 +117,15 @@ export const SecurityProvider: React.FC<SecurityProviderProps> = ({ children }) 
       observer.disconnect();
       document.removeEventListener('click', handleSuspiciousActivity);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
-      
-      // Nettoyage des sessions HDS au démontage
-      if (user) {
-        HDSSessionManager.destroy();
-      }
     };
   }, [user]);
 
   const validateSession = async () => {
-    return HDSSessionManager.isSessionValid();
+    return await EnhancedSessionSecurity.validateSecureSession(user?.id);
   };
 
   const clearSession = () => {
-    HDSSessionManager.destroy();
+    EnhancedSessionSecurity.clearSecureSession();
   };
 
   const logSecurityEvent = async (eventType: any, details?: any) => {
