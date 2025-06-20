@@ -1,9 +1,11 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { SecurityProvider } from "@/components/security/SecurityProvider";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -55,150 +57,160 @@ const queryClient = new QueryClient();
 
 function App() {
   return (
-    <Router>
-      <div className="App">
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/rediger" element={<Rediger />} />
-          <Route path="/directives" element={<Directives />} />
-          <Route path="/directives-access" element={<DirectivesAccess />} />
-          <Route path="/access-card" element={<AccessCard />} />
-          <Route path="/carte-acces" element={<CarteAcces />} />
-          <Route path="/mes-directives" element={<MesDirectives />} />
-          <Route path="/synthesis" element={<Synthesis />} />
-          <Route path="/community" element={<Community />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/soutenir" element={<Soutenir />} />
-          <Route path="/directives-info" element={<DirectivesInfo />} />
-          <Route path="/auth-audit" element={<AuthAudit />} />
-          <Route path="/avis-general" element={<AvisGeneral />} />
-          <Route path="/maintien-vie" element={<MaintienVie />} />
-          <Route path="/maladie-avancee" element={<MaladieAvancee />} />
-          <Route path="/gouts-peurs" element={<GoutsPeurs />} />
-          <Route path="/exemples-phrases" element={<ExemplesPhrases />} />
-          <Route path="/actualites-sante" element={<HealthNews />} />
-          <Route path="/acces-institution" element={<InstitutionAccess />} />
-          <Route path="/mentions-legales" element={<MentionsLegales />} />
-          <Route path="/legal-mentions" element={<LegalMentions />} />
-          <Route path="/en-savoir-plus" element={<EnSavoirPlus />} />
-          <Route path="/confidentialite" element={<Confidentialite />} />
-          <Route path="/politique-confidentialite" element={<PolitiqueConfidentialite />} />
-          <Route path="/don-carte-bancaire" element={<DonCarteBancaire />} />
-          <Route path="/suivi-palliatif" element={<SuiviPalliatif />} />
-          <Route path="/suivi-multi-patients" element={<SuiviMultiPatients />} />
-          <Route path="/alertes-soignants" element={<AlertesSoignants />} />
-          <Route path="/alertes" element={<AlertesSoignants />} />
-          <Route path="/alert-contacts" element={<AlertContactsPage />} />
-          <Route 
-            path="/admin" 
-            element={
-              <ProtectedRoute requireAdmin={true}>
-                <Admin />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/admin/users" 
-            element={
-              <ProtectedRoute requireAdmin={true}>
-                <AdminUsers />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/admin/dashboard" 
-            element={
-              <ProtectedRoute requireAdmin={true}>
-                <AdminMainDashboard />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/admin/security-audit" 
-            element={
-              <ProtectedRoute requireAdmin={true}>
-                <SecurityAuditPage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/security-audit-report" 
-            element={
-              <ProtectedRoute requireAdmin={true}>
-                <SecurityAuditPage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/admin/strict-rls" 
-            element={
-              <ProtectedRoute requireAdmin={true}>
-                <AdminStrictRLS />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/admin/supabase-audit" 
-            element={
-              <ProtectedRoute requireAdmin={true}>
-                <AdminSupabaseAudit />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/supabase-audit" 
-            element={
-              <ProtectedRoute requireAdmin={true}>
-                <SupabaseAuditPage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/admin/monitoring" 
-            element={
-              <ProtectedRoute requireAdmin={true}>
-                <AdminMonitoring />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/admin/optimization" 
-            element={
-              <ProtectedRoute requireAdmin={true}>
-                <AdminOptimization />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/admin/stats" 
-            element={
-              <ProtectedRoute requireAdmin={true}>
-                <AdminStats />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/admin/institutions" 
-            element={
-              <ProtectedRoute requireAdmin={true}>
-                <AdminInstitutions />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/admin/health-news" 
-            element={
-              <ProtectedRoute requireAdmin={true}>
-                <AdminHealthNews />
-              </ProtectedRoute>
-            } 
-          />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </div>
-    </Router>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <AuthProvider>
+          <SecurityProvider>
+            <Router>
+              <div className="App">
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/rediger" element={<Rediger />} />
+                  <Route path="/directives" element={<Directives />} />
+                  <Route path="/directives-access" element={<DirectivesAccess />} />
+                  <Route path="/access-card" element={<AccessCard />} />
+                  <Route path="/carte-acces" element={<CarteAcces />} />
+                  <Route path="/mes-directives" element={<MesDirectives />} />
+                  <Route path="/synthesis" element={<Synthesis />} />
+                  <Route path="/community" element={<Community />} />
+                  <Route path="/contact" element={<Contact />} />
+                  <Route path="/soutenir" element={<Soutenir />} />
+                  <Route path="/directives-info" element={<DirectivesInfo />} />
+                  <Route path="/auth-audit" element={<AuthAudit />} />
+                  <Route path="/avis-general" element={<AvisGeneral />} />
+                  <Route path="/maintien-vie" element={<MaintienVie />} />
+                  <Route path="/maladie-avancee" element={<MaladieAvancee />} />
+                  <Route path="/gouts-peurs" element={<GoutsPeurs />} />
+                  <Route path="/exemples-phrases" element={<ExemplesPhrases />} />
+                  <Route path="/actualites-sante" element={<HealthNews />} />
+                  <Route path="/acces-institution" element={<InstitutionAccess />} />
+                  <Route path="/mentions-legales" element={<MentionsLegales />} />
+                  <Route path="/legal-mentions" element={<LegalMentions />} />
+                  <Route path="/en-savoir-plus" element={<EnSavoirPlus />} />
+                  <Route path="/confidentialite" element={<Confidentialite />} />
+                  <Route path="/politique-confidentialite" element={<PolitiqueConfidentialite />} />
+                  <Route path="/don-carte-bancaire" element={<DonCarteBancaire />} />
+                  <Route path="/suivi-palliatif" element={<SuiviPalliatif />} />
+                  <Route path="/suivi-multi-patients" element={<SuiviMultiPatients />} />
+                  <Route path="/alertes-soignants" element={<AlertesSoignants />} />
+                  <Route path="/alertes" element={<AlertesSoignants />} />
+                  <Route path="/alert-contacts" element={<AlertContactsPage />} />
+                  <Route 
+                    path="/admin" 
+                    element={
+                      <ProtectedRoute requireAdmin={true}>
+                        <Admin />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/admin/users" 
+                    element={
+                      <ProtectedRoute requireAdmin={true}>
+                        <AdminUsers />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/admin/dashboard" 
+                    element={
+                      <ProtectedRoute requireAdmin={true}>
+                        <AdminMainDashboard />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/admin/security-audit" 
+                    element={
+                      <ProtectedRoute requireAdmin={true}>
+                        <SecurityAuditPage />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/security-audit-report" 
+                    element={
+                      <ProtectedRoute requireAdmin={true}>
+                        <SecurityAuditPage />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/admin/strict-rls" 
+                    element={
+                      <ProtectedRoute requireAdmin={true}>
+                        <AdminStrictRLS />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/admin/supabase-audit" 
+                    element={
+                      <ProtectedRoute requireAdmin={true}>
+                        <AdminSupabaseAudit />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/supabase-audit" 
+                    element={
+                      <ProtectedRoute requireAdmin={true}>
+                        <SupabaseAuditPage />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/admin/monitoring" 
+                    element={
+                      <ProtectedRoute requireAdmin={true}>
+                        <AdminMonitoring />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/admin/optimization" 
+                    element={
+                      <ProtectedRoute requireAdmin={true}>
+                        <AdminOptimization />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/admin/stats" 
+                    element={
+                      <ProtectedRoute requireAdmin={true}>
+                        <AdminStats />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/admin/institutions" 
+                    element={
+                      <ProtectedRoute requireAdmin={true}>
+                        <AdminInstitutions />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/admin/health-news" 
+                    element={
+                      <ProtectedRoute requireAdmin={true}>
+                        <AdminHealthNews />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+                <Toaster />
+                <Sonner />
+              </div>
+            </Router>
+          </SecurityProvider>
+        </AuthProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
   );
 }
 
