@@ -1,24 +1,12 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Plus, UserPlus, Phone, Mail, Users, Trash2 } from 'lucide-react';
-import { useProfileAlertSettings } from '@/hooks/alerts/useProfileAlertSettings';
-
-const CONTACT_TYPES = [
-  { value: 'soignant', label: 'Soignant' },
-  { value: 'famille', label: 'Membre de la famille' },
-  { value: 'personne_confiance', label: 'Personne de confiance' },
-  { value: 'had', label: 'HAD (Hospitalisation à domicile)' },
-  { value: 'soins_palliatifs', label: 'Unité mobile de soins palliatifs' },
-  { value: 'infirmiere', label: 'Infirmière' },
-  { value: 'medecin_traitant', label: 'Médecin traitant' },
-  { value: 'autre', label: 'Autre' }
-];
+import { Users, Phone, Mail, Settings } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useAlertContacts } from '@/hooks/alerts/useAlertContacts';
+import { useAuth } from '@/contexts/AuthContext';
 
 const CONTACT_TYPE_LABELS: Record<string, string> = {
   'soignant': 'Soignant',
@@ -32,42 +20,9 @@ const CONTACT_TYPE_LABELS: Record<string, string> = {
 };
 
 const AlertContactsSection: React.FC = () => {
-  const { contacts, saveContact, deleteContact, loading } = useProfileAlertSettings();
-  const [isAddingContact, setIsAddingContact] = useState(false);
-  const [formData, setFormData] = useState({
-    contact_type: '',
-    contact_name: '',
-    phone_number: '',
-    email: ''
-  });
-  const [saving, setSaving] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
-
-    const success = await saveContact({
-      contact_type: formData.contact_type,
-      contact_name: formData.contact_name,
-      phone_number: formData.phone_number || undefined,
-      email: formData.email || undefined
-    });
-
-    if (success) {
-      setFormData({
-        contact_type: '',
-        contact_name: '',
-        phone_number: '',
-        email: ''
-      });
-      setIsAddingContact(false);
-    }
-
-    setSaving(false);
-  };
-
-  const isValid = formData.contact_type && formData.contact_name && 
-                  (formData.phone_number || formData.email);
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { alertContacts, loading } = useAlertContacts(user?.id);
 
   if (loading) {
     return (
@@ -88,113 +43,39 @@ const AlertContactsSection: React.FC = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Users className="h-5 w-5" />
-          Contacts d'alerte
+        <CardTitle className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            Contacts d'alerte
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => navigate('/alert-contacts')}
+            className="flex items-center gap-2"
+          >
+            <Settings className="h-4 w-4" />
+            Gérer
+          </Button>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {!isAddingContact && (
-          <Button 
-            onClick={() => setIsAddingContact(true)} 
-            className="w-full"
-            variant="outline"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Ajouter un contact d'alerte
-          </Button>
-        )}
-
-        {isAddingContact && (
-          <div className="border rounded-lg p-4 space-y-4">
-            <div className="flex items-center gap-2 mb-4">
-              <UserPlus className="h-5 w-5" />
-              <h4 className="font-medium">Nouveau contact d'alerte</h4>
-            </div>
-            
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <Label htmlFor="contact_type">Type de contact</Label>
-                <Select 
-                  value={formData.contact_type} 
-                  onValueChange={(value) => setFormData({...formData, contact_type: value})}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionnez le type de contact" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {CONTACT_TYPES.map(type => (
-                      <SelectItem key={type.value} value={type.value}>
-                        {type.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="contact_name">Nom du contact</Label>
-                <Input
-                  id="contact_name"
-                  value={formData.contact_name}
-                  onChange={(e) => setFormData({...formData, contact_name: e.target.value})}
-                  placeholder="Dr. Martin, Marie Dupont..."
-                  required
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="phone_number">Numéro de téléphone</Label>
-                <Input
-                  id="phone_number"
-                  type="tel"
-                  value={formData.phone_number}
-                  onChange={(e) => setFormData({...formData, phone_number: e.target.value})}
-                  placeholder="+33 6 12 34 56 78"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  placeholder="contact@exemple.fr"
-                />
-              </div>
-
-              <div className="flex gap-2">
-                <Button 
-                  type="submit" 
-                  disabled={!isValid || saving}
-                  className="flex-1"
-                >
-                  {saving ? 'Enregistrement...' : 'Enregistrer'}
-                </Button>
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => setIsAddingContact(false)}
-                  disabled={saving}
-                >
-                  Annuler
-                </Button>
-              </div>
-            </form>
-          </div>
-        )}
-
-        {contacts.length === 0 && !isAddingContact ? (
+        {alertContacts.length === 0 ? (
           <div className="text-center text-gray-500 py-4">
             <Users className="h-12 w-12 mx-auto mb-4 text-gray-300" />
             <p>Aucun contact d'alerte configuré</p>
             <p className="text-sm">Ajoutez des contacts pour recevoir des alertes automatiques</p>
+            <Button 
+              onClick={() => navigate('/alert-contacts')} 
+              className="mt-4"
+              variant="outline"
+            >
+              Configurer les contacts
+            </Button>
           </div>
         ) : (
           <div className="space-y-3">
-            {contacts.map(contact => (
+            {alertContacts.slice(0, 3).map(contact => (
               <div key={contact.id} className="flex items-center justify-between p-3 border rounded-lg">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
@@ -218,16 +99,13 @@ const AlertContactsSection: React.FC = () => {
                     )}
                   </div>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => deleteContact(contact.id)}
-                  className="text-red-600 hover:text-red-700"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
               </div>
             ))}
+            {alertContacts.length > 3 && (
+              <div className="text-center text-sm text-gray-500">
+                Et {alertContacts.length - 3} autres contacts...
+              </div>
+            )}
           </div>
         )}
       </CardContent>
