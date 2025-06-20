@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -44,29 +45,43 @@ export const useAlertContactsData = () => {
   }, [user?.id]);
 
   const saveContact = useCallback(async (contact: ContactFormData) => {
+    console.log('=== DEBUT SAUVEGARDE CONTACT ===');
+    console.log('User from auth context:', user);
+    console.log('Contact data to save:', contact);
+
+    // Vérification stricte de l'utilisateur connecté
     if (!user?.id) {
       console.error('No user ID available for saving contact');
       toast({
-        title: "Erreur",
+        title: "Erreur d'authentification",
         description: "Vous devez être connecté pour ajouter un contact",
         variant: "destructive"
       });
       return false;
     }
 
-    // Validation des données
-    if (!contact.contact_name || !contact.contact_type) {
+    // Validation des données d'entrée
+    if (!contact.contact_name?.trim()) {
       toast({
-        title: "Erreur",
-        description: "Le nom et le type de contact sont requis",
+        title: "Erreur de validation",
+        description: "Le nom du contact est requis",
         variant: "destructive"
       });
       return false;
     }
 
-    if (!contact.phone_number && !contact.email) {
+    if (!contact.contact_type) {
       toast({
-        title: "Erreur",
+        title: "Erreur de validation",
+        description: "Le type de contact est requis",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    if (!contact.phone_number?.trim() && !contact.email?.trim()) {
+      toast({
+        title: "Erreur de validation",
         description: "Au moins un numéro de téléphone ou un email est requis",
         variant: "destructive"
       });
@@ -74,9 +89,33 @@ export const useAlertContactsData = () => {
     }
 
     try {
-      console.log('Saving contact:', contact);
-      console.log('User ID for contact:', user.id);
+      // Vérifier que l'utilisateur est bien authentifié dans Supabase
+      const { data: { user: supabaseUser }, error: userError } = await supabase.auth.getUser();
       
+      if (userError || !supabaseUser) {
+        console.error('Supabase user verification failed:', userError);
+        toast({
+          title: "Erreur d'authentification",
+          description: "Session expirée. Veuillez vous reconnecter.",
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      console.log('Supabase user verified:', supabaseUser.id);
+      console.log('Context user ID:', user.id);
+      
+      // S'assurer que les IDs correspondent
+      if (supabaseUser.id !== user.id) {
+        console.error('User ID mismatch between context and Supabase');
+        toast({
+          title: "Erreur de synchronisation",
+          description: "Problème de session. Veuillez vous reconnecter.",
+          variant: "destructive"
+        });
+        return false;
+      }
+
       const mappedContactType = mapContactType(contact.contact_type);
       
       const contactData = {
@@ -85,10 +124,10 @@ export const useAlertContactsData = () => {
         phone_number: contact.phone_number?.trim() || null,
         email: contact.email?.trim() || null,
         is_active: true,
-        patient_id: user.id
+        patient_id: user.id // Utiliser l'ID de l'utilisateur connecté
       };
       
-      console.log('Contact data to insert:', contactData);
+      console.log('Final contact data for insert:', contactData);
 
       const { data, error } = await supabase
         .from('patient_alert_contacts')
@@ -98,18 +137,22 @@ export const useAlertContactsData = () => {
 
       if (error) {
         console.error('Database error when saving contact:', error);
+        console.error('Error code:', error.code);
+        console.error('Error details:', error.details);
+        console.error('Error hint:', error.hint);
+        console.error('Error message:', error.message);
         
-        // Gestion spécifique des erreurs RLS
-        if (error.message.includes('row-level security') || error.message.includes('permission denied')) {
-          toast({
-            title: "Erreur de sécurité",
-            description: "Problème de permissions. Veuillez vous reconnecter.",
-            variant: "destructive"
-          });
-        } else if (error.code === '42501') {
+        // Gestion spécifique des erreurs
+        if (error.code === '42501' || error.message.includes('permission denied')) {
           toast({
             title: "Erreur de permission",
-            description: "Vous n'avez pas les droits nécessaires pour cette action",
+            description: "Problème d'autorisation. Vérifiez votre connexion.",
+            variant: "destructive"
+          });
+        } else if (error.code === '23514') {
+          toast({
+            title: "Erreur de validation",
+            description: "Données invalides. Vérifiez vos informations.",
             variant: "destructive"
           });
         } else {
@@ -129,27 +172,40 @@ export const useAlertContactsData = () => {
         description: "Le contact d'alerte a été enregistré avec succès"
       });
 
+      // Recharger la liste des contacts
       await fetchContacts();
       return true;
     } catch (error: any) {
-      console.error('Error saving contact:', error);
+      console.error('Unexpected error saving contact:', error);
       toast({
-        title: "Erreur",
+        title: "Erreur inattendue",
         description: error.message || "Impossible d'enregistrer le contact",
         variant: "destructive"
       });
       return false;
+    } finally {
+      console.log('=== FIN SAUVEGARDE CONTACT ===');
     }
   }, [user?.id, fetchContacts]);
 
   const updateContact = useCallback(async (id: string, updates: Partial<AlertContact>) => {
+    if (!user?.id) {
+      toast({
+        title: "Erreur",
+        description: "Vous devez être connecté pour modifier un contact",
+        variant: "destructive"
+      });
+      return false;
+    }
+
     try {
       console.log('Updating contact:', id, updates);
       
       const { error } = await supabase
         .from('patient_alert_contacts')
         .update(updates)
-        .eq('id', id);
+        .eq('id', id)
+        .eq('patient_id', user.id); // S'assurer que c'est bien le contact de l'utilisateur
 
       if (error) {
         console.error('Error updating contact:', error);
@@ -172,16 +228,26 @@ export const useAlertContactsData = () => {
       });
       return false;
     }
-  }, [fetchContacts]);
+  }, [user?.id, fetchContacts]);
 
   const deleteContact = useCallback(async (id: string) => {
+    if (!user?.id) {
+      toast({
+        title: "Erreur",
+        description: "Vous devez être connecté pour supprimer un contact",
+        variant: "destructive"
+      });
+      return false;
+    }
+
     try {
       console.log('Deleting contact:', id);
       
       const { error } = await supabase
         .from('patient_alert_contacts')
         .update({ is_active: false })
-        .eq('id', id);
+        .eq('id', id)
+        .eq('patient_id', user.id); // S'assurer que c'est bien le contact de l'utilisateur
 
       if (error) {
         console.error('Error deleting contact:', error);
@@ -204,7 +270,7 @@ export const useAlertContactsData = () => {
       });
       return false;
     }
-  }, [fetchContacts]);
+  }, [user?.id, fetchContacts]);
 
   return {
     contacts,
