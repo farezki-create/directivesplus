@@ -42,7 +42,6 @@ import DonCarteBancaire from "./pages/DonCarteBancaire";
 import SuiviPalliatif from "./pages/SuiviPalliatif";
 import SuiviMultiPatients from "./pages/SuiviMultiPatients";
 import AlertesSoignants from "./pages/AlertesSoignants";
-import AlertManagement from "./pages/AlertManagement";
 import AdminSupabaseAudit from "./pages/AdminSupabaseAudit";
 import SupabaseAuditPage from "./pages/SupabaseAuditPage";
 import AdminMonitoring from "./pages/AdminMonitoring";
@@ -91,7 +90,7 @@ function App() {
           <Route path="/suivi-multi-patients" element={<SuiviMultiPatients />} />
           <Route path="/alertes-soignants" element={<AlertesSoignants />} />
           <Route path="/alertes" element={<AlertesSoignants />} />
-          <Route path="/alert-management" element={<AlertManagement />} />
+          <Route path="/alert-contacts" element={<AlertContactsPage />} />
           <Route 
             path="/admin" 
             element={
@@ -196,7 +195,6 @@ function App() {
               </ProtectedRoute>
             } 
           />
-          <Route path="/alert-contacts" element={<AlertContactsPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
