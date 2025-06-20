@@ -66,12 +66,15 @@ const AlertManagement = () => {
       }
 
       if (data) {
+        // Vérifier que sms_provider est valide, sinon utiliser 'twilio' par défaut
+        const validProvider = data.sms_provider === 'whatsapp' ? 'whatsapp' : 'twilio';
+        
         setSettings({
           auto_alert_enabled: data.auto_alert_enabled || false,
           alert_threshold: data.alert_threshold || 7,
           symptom_types: data.symptom_types || ['douleur', 'dyspnee', 'anxiete'],
           sms_enabled: data.sms_enabled || false,
-          sms_provider: data.sms_provider || 'twilio',
+          sms_provider: validProvider,
           phone_number: data.phone_number || '',
           whatsapp_number: data.whatsapp_number || ''
         });
