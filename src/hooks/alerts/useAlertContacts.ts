@@ -14,18 +14,9 @@ export const useAlertContacts = (userId: string | undefined) => {
       console.log("Fetching alert contacts...");
       setLoading(true);
       
-      // Récupérer l'utilisateur authentifié directement depuis Supabase
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError || !user) {
-        console.log("User not authenticated:", authError);
-        setLoading(false);
-        return;
-      }
-
       const { data, error } = await supabase
         .from("patient_alert_contacts")
         .select("*")
-        .eq("patient_id", user.id)
         .eq("is_active", true)
         .order("created_at", { ascending: false });
 
@@ -79,7 +70,7 @@ export const useAlertContacts = (userId: string | undefined) => {
       console.log("Saving alert contacts...");
       setSaving(true);
 
-      // Récupérer l'utilisateur authentifié directement depuis Supabase
+      // Récupérer l'utilisateur authentifié
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       if (authError || !user) {
         toast({
@@ -106,7 +97,7 @@ export const useAlertContacts = (userId: string | undefined) => {
         return;
       }
 
-      // D'abord, désactiver tous les contacts existants
+      // Désactiver tous les contacts existants pour cet utilisateur
       const { error: deactivateError } = await supabase
         .from("patient_alert_contacts")
         .update({ is_active: false })
@@ -117,7 +108,7 @@ export const useAlertContacts = (userId: string | undefined) => {
         throw deactivateError;
       }
 
-      // Ensuite, insérer les nouveaux contacts
+      // Insérer les nouveaux contacts
       const contactsToInsert = validContacts.map(contact => ({
         contact_type: contact.contact_type,
         contact_name: contact.contact_name,

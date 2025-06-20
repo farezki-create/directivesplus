@@ -2,7 +2,7 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Plus, Save, AlertTriangle } from "lucide-react";
+import { Plus, Save, AlertTriangle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertContactCard } from "./AlertContactCard";
 import { useAlertContacts } from "@/hooks/alerts/useAlertContacts";
