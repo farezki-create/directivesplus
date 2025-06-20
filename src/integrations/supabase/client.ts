@@ -11,8 +11,7 @@ const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJh
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
-// Environment variables will be used in production if available
-// Fallback values ensure the application continues to work in development
+// Environment variables are now properly configured
 console.log('🔐 Supabase client initialized:', {
   url: SUPABASE_URL,
   usingEnvVars: !!import.meta.env.VITE_SUPABASE_URL,
