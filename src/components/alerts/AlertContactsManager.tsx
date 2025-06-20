@@ -11,8 +11,6 @@ const AlertContactsManager = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, isLoading } = useAuth();
   
-  console.log("AlertContactsManager - user:", user?.id, "authenticated:", isAuthenticated);
-  
   const {
     alertContacts,
     loading,
@@ -23,7 +21,7 @@ const AlertContactsManager = () => {
     handleSave
   } = useAlertContacts(user?.id);
 
-  // Show loading while auth is being checked
+  // Afficher le loading pendant la vérification de l'auth
   if (isLoading) {
     return (
       <div className="flex justify-center my-12">
@@ -32,7 +30,7 @@ const AlertContactsManager = () => {
     );
   }
 
-  // Show authentication message if not logged in
+  // Afficher le message si pas connecté
   if (!isAuthenticated || !user) {
     return (
       <div className="text-center p-8">
@@ -59,12 +57,6 @@ const AlertContactsManager = () => {
         <p className="text-gray-600 mb-4">
           Configurez vos contacts d'alerte qui seront prévenus automatiquement en cas de symptômes critiques.
         </p>
-        <Alert className="mb-4">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>
-            Assurez-vous d'avoir une connexion internet stable pour enregistrer vos modifications.
-          </AlertDescription>
-        </Alert>
       </div>
 
       {loading ? (
