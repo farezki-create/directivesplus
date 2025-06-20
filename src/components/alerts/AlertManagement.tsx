@@ -73,7 +73,6 @@ const AlertManagement = () => {
 
       if (data) {
         console.log("Settings loaded:", data);
-        // Vérifier que sms_provider est valide, sinon utiliser 'twilio' par défaut
         const validProvider = data.sms_provider === 'whatsapp' ? 'whatsapp' : 'twilio';
         
         setSettings({
@@ -113,7 +112,6 @@ const AlertManagement = () => {
       console.log("Saving alert settings for user:", user.id);
       console.log("Settings to save:", settings);
 
-      // Valider les données avant la sauvegarde
       const dataToSave = {
         patient_id: user.id,
         auto_alert_enabled: Boolean(settings.auto_alert_enabled),
@@ -125,7 +123,7 @@ const AlertManagement = () => {
         whatsapp_number: settings.whatsapp_number || null
       };
 
-      console.log("Validated data to save:", dataToSave);
+      console.log("Data to save:", dataToSave);
 
       const { error } = await supabase
         .from('patient_alert_settings')

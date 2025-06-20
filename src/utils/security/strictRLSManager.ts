@@ -13,7 +13,6 @@ export class StrictRLSManager {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user?.email) return false;
       
-      // Vérification basée sur l'email (admin si email se termine par @directivesplus.fr)
       const isAdmin = user.email.endsWith('@directivesplus.fr');
       
       console.log('Admin check:', { email: user.email, isAdmin });
@@ -195,7 +194,6 @@ export class StrictRLSManager {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
-      // Utiliser la nouvelle fonction de logging sécurisé
       const { error } = await supabase.rpc('log_security_event_secure', {
         p_event_type: 'log_table_access',
         p_user_id: user?.id,
@@ -223,16 +221,13 @@ export class StrictRLSManager {
     try {
       const isAdmin = await this.isCurrentUserAdmin();
       
-      // Les admins ont accès à tous les logs
       if (isAdmin) return true;
 
-      // Pour les tables nécessitant des privilèges admin
       const adminOnlyTables = ['access_code_attempts', 'logs_acces', 'institution_access_logs', 'sms_send_logs'];
       if (adminOnlyTables.includes(tableName)) {
         return false;
       }
 
-      // Pour les autres tables, vérifier si l'utilisateur accède à ses propres logs
       if (targetUserId) {
         const { data: { user } } = await supabase.auth.getUser();
         return user?.id === targetUserId;
@@ -256,7 +251,6 @@ export class StrictRLSManager {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
-      // Utiliser la fonction SQL sécurisée
       const { error } = await supabase.rpc('log_security_event_secure', {
         p_event_type: eventType,
         p_user_id: user?.id,

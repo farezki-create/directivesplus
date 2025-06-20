@@ -50,7 +50,6 @@ export const useAlertContacts = (userId?: string) => {
 
   const handleAddContact = () => {
     const newContact: AlertContact = {
-      id: undefined,
       patient_id: userId || '',
       contact_type: '',
       contact_name: '',
@@ -87,7 +86,6 @@ export const useAlertContacts = (userId?: string) => {
       setSaving(true);
       console.log("Saving alert contacts for user:", userId);
       
-      // Valider les contacts
       const validContacts = alertContacts.filter(contact => 
         contact.contact_type && 
         contact.contact_name && 
@@ -103,7 +101,6 @@ export const useAlertContacts = (userId?: string) => {
         return;
       }
 
-      // Supprimer les anciens contacts
       const { error: deleteError } = await supabase
         .from('patient_alert_contacts')
         .delete()
@@ -119,7 +116,6 @@ export const useAlertContacts = (userId?: string) => {
         return;
       }
 
-      // Insérer les nouveaux contacts
       const contactsToInsert = validContacts.map(contact => ({
         patient_id: userId,
         contact_type: contact.contact_type,
@@ -149,7 +145,6 @@ export const useAlertContacts = (userId?: string) => {
         description: "Vos contacts d'alerte ont été enregistrés avec succès.",
       });
 
-      // Recharger les contacts
       await fetchAlertContacts();
 
     } catch (error: any) {
