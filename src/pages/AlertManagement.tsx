@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Bell } from 'lucide-react';
-import { useAlertContacts } from '@/hooks/useAlertContacts';
+import { useProfileAlertContacts } from '@/hooks/useProfileAlertContacts';
 import AlertContactForm from '@/components/alerts/AlertContactForm';
 import AlertContactsList from '@/components/alerts/AlertContactsList';
 import AlertSettings from '@/components/alerts/AlertSettings';
@@ -21,7 +21,7 @@ const AlertManagement = () => {
     saveContact,
     deleteContact,
     saveSettings
-  } = useAlertContacts();
+  } = useProfileAlertContacts();
 
   React.useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -40,6 +40,33 @@ const AlertManagement = () => {
   if (!isAuthenticated) {
     return null;
   }
+
+  // Transformer les données pour la compatibilité avec les composants existants
+  const transformedSettings = settings ? {
+    id: 'profile-settings',
+    patient_id: user?.id || '',
+    auto_alert_enabled: settings.auto_alert_enabled,
+    alert_threshold: settings.alert_threshold,
+    symptom_types: settings.symptom_types,
+    sms_enabled: settings.sms_enabled,
+    sms_provider: settings.sms_provider,
+    phone_number: settings.phone_number,
+    whatsapp_number: settings.whatsapp_number,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  } : null;
+
+  const transformedContacts = contacts.map(contact => ({
+    id: contact.id,
+    patient_id: user?.id || '',
+    contact_type: contact.contact_type as any,
+    contact_name: contact.contact_name,
+    phone_number: contact.phone_number,
+    email: contact.email,
+    is_active: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  }));
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -76,14 +103,14 @@ const AlertManagement = () => {
             <div className="space-y-6">
               <AlertContactForm onSave={saveContact} />
               <AlertContactsList 
-                contacts={contacts} 
+                contacts={transformedContacts} 
                 onDelete={deleteContact} 
               />
             </div>
             
             <div>
               <AlertSettings 
-                settings={settings} 
+                settings={transformedSettings} 
                 onSave={saveSettings} 
               />
             </div>
