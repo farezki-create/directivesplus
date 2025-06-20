@@ -170,29 +170,6 @@ export class StrictRLSManager {
   }
 
   /**
-   * Accède aux logs SMS (nouveau)
-   */
-  static async getSMSLogs(userId?: string) {
-    try {
-      await this.auditLogAccess('sms_send_logs', 'SELECT');
-
-      let query = supabase.from('sms_send_logs').select('*');
-      
-      if (userId) {
-        query = query.eq('user_id', userId);
-      }
-
-      const { data, error } = await query.order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      return data || [];
-    } catch (error) {
-      console.error('Error accessing SMS logs:', error);
-      throw error;
-    }
-  }
-
-  /**
    * Audit des accès aux logs avec logging sécurisé
    */
   private static async auditLogAccess(tableName: string, operation: string) {
@@ -231,7 +208,7 @@ export class StrictRLSManager {
       if (isAdmin) return true;
 
       // Pour les tables nécessitant des privilèges admin
-      const adminOnlyTables = ['access_code_attempts', 'logs_acces', 'institution_access_logs', 'sms_send_logs'];
+      const adminOnlyTables = ['access_code_attempts', 'logs_acces', 'institution_access_logs'];
       if (adminOnlyTables.includes(tableName)) {
         return false;
       }
