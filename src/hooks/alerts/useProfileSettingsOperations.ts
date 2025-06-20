@@ -17,14 +17,20 @@ export const useProfileSettingsOperations = (
     }
 
     try {
-      console.log('Saving alert settings to profile:', newSettings);
+      console.log('Saving alert settings:', newSettings);
 
       const { error } = await supabase
-        .from('user_profiles')
-        .update({
-          alert_settings: newSettings as any
-        })
-        .eq('id', user.id);
+        .from('patient_alert_settings')
+        .upsert({
+          patient_id: user.id,
+          auto_alert_enabled: newSettings.auto_alert_enabled,
+          alert_threshold: newSettings.alert_threshold,
+          symptom_types: newSettings.symptom_types,
+          sms_enabled: newSettings.sms_enabled,
+          sms_provider: newSettings.sms_provider,
+          phone_number: newSettings.phone_number || null,
+          whatsapp_number: newSettings.whatsapp_number || null
+        });
 
       if (error) {
         console.error('Error saving settings:', error);

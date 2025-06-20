@@ -21,19 +21,23 @@ export const useProfileAlertData = () => {
   });
   const [loading, setLoading] = useState(false);
 
-  const parseAlertContacts = (contacts: any): ProfileAlertContact[] => {
+  const parseAlertContacts = (contacts: any[]): ProfileAlertContact[] => {
     console.log('Parsing alert contacts:', contacts);
-    if (!contacts) return [];
-    if (Array.isArray(contacts)) {
-      return contacts.filter(contact => 
-        contact && 
-        typeof contact === 'object' && 
-        contact.id && 
-        contact.contact_name && 
-        contact.contact_type
-      ) as ProfileAlertContact[];
-    }
-    return [];
+    if (!contacts || !Array.isArray(contacts)) return [];
+    
+    return contacts.filter(contact => 
+      contact && 
+      typeof contact === 'object' && 
+      contact.id && 
+      contact.contact_name && 
+      contact.contact_type
+    ).map(contact => ({
+      id: contact.id,
+      contact_type: contact.contact_type,
+      contact_name: contact.contact_name,
+      phone_number: contact.phone_number || undefined,
+      email: contact.email || undefined
+    }));
   };
 
   const parseAlertSettings = (settings: any): ProfileAlertSettings => {
@@ -68,54 +72,43 @@ export const useProfileAlertData = () => {
     }
 
     try {
-      console.log('Fetching alert settings from profile for user:', user.id);
+      console.log('Fetching alert settings for user:', user.id);
       
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('alert_contacts, alert_settings')
-        .eq('id', user.id)
+      // Fetch contacts from patient_alert_contacts table
+      const { data: contactsData, error: contactsError } = await supabase
+        .from('patient_alert_contacts')
+        .select('*')
+        .eq('patient_id', user.id)
+        .eq('is_active', true);
+
+      if (contactsError) {
+        console.error('Error fetching contacts:', contactsError);
+      }
+
+      // Fetch settings from patient_alert_settings table
+      const { data: settingsData, error: settingsError } = await supabase
+        .from('patient_alert_settings')
+        .select('*')
+        .eq('patient_id', user.id)
         .single();
 
-      if (error) {
-        console.error('Error fetching alert settings:', error);
-        
-        // Si les colonnes n'existent pas, on essaie de créer un profil
-        if (error.code === 'PGRST116' || error.message.includes('column')) {
-          console.log('Columns may not exist, trying to create profile...');
-          const { error: insertError } = await supabase
-            .from('user_profiles')
-            .insert({
-              id: user.id,
-              alert_contacts: [],
-              alert_settings: {
-                auto_alert_enabled: false,
-                alert_threshold: 7,
-                symptom_types: ['douleur', 'dyspnee', 'anxiete'],
-                sms_enabled: false,
-                sms_provider: 'twilio',
-                phone_number: '',
-                whatsapp_number: ''
-              }
-            });
-          
-          if (insertError) {
-            console.error('Error creating profile:', insertError);
-          }
-        }
-        return;
+      if (settingsError && settingsError.code !== 'PGRST116') {
+        console.error('Error fetching settings:', settingsError);
       }
       
-      console.log('Alert settings fetched successfully:', data);
+      console.log('Contacts fetched:', contactsData);
+      console.log('Settings fetched:', settingsData);
       
-      if (data) {
-        const newAlertData = {
-          alert_contacts: parseAlertContacts(data.alert_contacts),
-          alert_settings: parseAlertSettings(data.alert_settings)
-        };
-        
-        console.log('Setting alert data:', newAlertData);
-        setAlertData(newAlertData);
-      }
+      const contacts = parseAlertContacts(contactsData || []);
+      const settings = parseAlertSettings(settingsData);
+      
+      const newAlertData = {
+        alert_contacts: contacts,
+        alert_settings: settings
+      };
+      
+      console.log('Setting alert data:', newAlertData);
+      setAlertData(newAlertData);
     } catch (error) {
       console.error('Error fetching alert settings:', error);
       toast({
