@@ -1,167 +1,23 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { Slider } from '@/components/ui/slider';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertTriangle, Settings, Users, MessageSquare, Save, Lock } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import { Save, Settings, Users, MessageSquare } from 'lucide-react';
 import AlertContactsManager from './AlertContactsManager';
 import SmsConfiguration from './SmsConfiguration';
-
-interface AlertSettings {
-  auto_alert_enabled: boolean;
-  alert_threshold: number;
-  symptom_types: string[];
-  sms_enabled: boolean;
-  sms_provider: 'twilio' | 'whatsapp';
-  phone_number: string;
-  whatsapp_number: string;
-}
-
-const SYMPTOM_OPTIONS = [
-  { id: 'douleur', label: 'Douleur' },
-  { id: 'dyspnee', label: 'Dyspnée' },
-  { id: 'anxiete', label: 'Anxiété/Angoisse' },
-  { id: 'fatigue', label: 'Fatigue' },
-  { id: 'sommeil', label: 'Troubles du sommeil' },
-  { id: 'nausee', label: 'Nausées/Vomissements' },
-  { id: 'appetit', label: 'Perte d\'appétit' }
-];
+import AlertSettingsSection from './AlertSettingsSection';
+import { useAlertSettings } from '@/hooks/alerts/useAlertSettings';
 
 const AlertManagement = () => {
   const { user, isAdmin } = useAuth();
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [settings, setSettings] = useState<AlertSettings>({
-    auto_alert_enabled: false,
-    alert_threshold: 7,
-    symptom_types: ['douleur', 'dyspnee', 'anxiete'],
-    sms_enabled: false,
-    sms_provider: 'twilio',
-    phone_number: '',
-    whatsapp_number: ''
-  });
-
-  const fetchSettings = async () => {
-    if (!user?.id) return;
-
-    try {
-      setLoading(true);
-      console.log("Fetching alert settings for user:", user.id);
-      
-      const { data, error } = await supabase
-        .from('patient_alert_settings')
-        .select('*')
-        .eq('patient_id', user.id)
-        .single();
-
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching alert settings:', error);
-        toast({
-          title: "Erreur de chargement",
-          description: `Impossible de charger les paramètres: ${error.message}`,
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (data) {
-        console.log("Settings loaded:", data);
-        const validProvider = data.sms_provider === 'whatsapp' ? 'whatsapp' : 'twilio';
-        
-        setSettings({
-          auto_alert_enabled: data.auto_alert_enabled || false,
-          alert_threshold: data.alert_threshold || 7,
-          symptom_types: data.symptom_types || ['douleur', 'dyspnee', 'anxiete'],
-          sms_enabled: data.sms_enabled || false,
-          sms_provider: validProvider,
-          phone_number: data.phone_number || '',
-          whatsapp_number: data.whatsapp_number || ''
-        });
-      }
-    } catch (error) {
-      console.error('Error fetching settings:', error);
-      toast({
-        title: "Erreur",
-        description: "Une erreur inattendue s'est produite lors du chargement des paramètres.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const saveSettings = async () => {
-    if (!user?.id) {
-      toast({
-        title: "Session expirée",
-        description: "Veuillez vous reconnecter pour sauvegarder vos paramètres.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      setSaving(true);
-      console.log("Saving alert settings for user:", user.id);
-      console.log("Settings to save:", settings);
-
-      const dataToSave = {
-        patient_id: user.id,
-        auto_alert_enabled: Boolean(settings.auto_alert_enabled),
-        alert_threshold: Number(settings.alert_threshold),
-        symptom_types: Array.isArray(settings.symptom_types) ? settings.symptom_types : ['douleur', 'dyspnee', 'anxiete'],
-        sms_enabled: Boolean(settings.sms_enabled),
-        sms_provider: settings.sms_provider === 'whatsapp' ? 'whatsapp' : 'twilio',
-        phone_number: settings.phone_number || null,
-        whatsapp_number: settings.whatsapp_number || null
-      };
-
-      console.log("Data to save:", dataToSave);
-
-      const { error } = await supabase
-        .from('patient_alert_settings')
-        .upsert(dataToSave, {
-          onConflict: 'patient_id'
-        });
-
-      if (error) {
-        console.error('Error saving settings:', error);
-        toast({
-          title: "Erreur de sauvegarde",
-          description: `Erreur: ${error.message}`,
-          variant: "destructive",
-        });
-        return;
-      }
-
-      console.log("Settings saved successfully");
-      toast({
-        title: "Paramètres sauvegardés",
-        description: "Vos paramètres d'alerte ont été enregistrés avec succès.",
-      });
-    } catch (error: any) {
-      console.error('Error saving settings:', error);
-      toast({
-        title: "Erreur",
-        description: `Une erreur inattendue s'est produite: ${error.message || 'Problème technique'}`,
-        variant: "destructive",
-      });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchSettings();
-  }, [user?.id]);
+  const {
+    settings,
+    setSettings,
+    loading,
+    saving,
+    saveSettings
+  } = useAlertSettings(user?.id);
 
   if (loading) {
     return (
@@ -194,124 +50,13 @@ const AlertManagement = () => {
         </TabsList>
 
         <TabsContent value="settings">
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <AlertTriangle className="h-5 w-5" />
-                  Paramètres d'alerte automatique
-                  {!isAdmin && <Lock className="h-4 w-4 text-gray-400" />}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {!isAdmin && (
-                  <Alert>
-                    <Lock className="h-4 w-4" />
-                    <AlertDescription>
-                      Seuls les administrateurs peuvent configurer les alertes automatiques. 
-                      Contactez votre administrateur pour modifier ces paramètres.
-                    </AlertDescription>
-                  </Alert>
-                )}
-
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="auto_alert" className={!isAdmin ? "text-gray-400" : ""}>
-                      Alertes automatiques
-                    </Label>
-                    <p className={`text-sm ${!isAdmin ? "text-gray-400" : "text-gray-600"}`}>
-                      Activer les alertes automatiques en cas de symptômes critiques
-                    </p>
-                  </div>
-                  <Switch
-                    id="auto_alert"
-                    checked={settings.auto_alert_enabled}
-                    disabled={!isAdmin}
-                    onCheckedChange={(checked) => 
-                      setSettings(prev => ({ ...prev, auto_alert_enabled: checked }))
-                    }
-                  />
-                </div>
-
-                {settings.auto_alert_enabled && (
-                  <>
-                    <div className="space-y-3">
-                      <Label className={!isAdmin ? "text-gray-400" : ""}>
-                        Seuil d'alerte: {settings.alert_threshold}/10
-                      </Label>
-                      <Slider
-                        value={[settings.alert_threshold]}
-                        onValueChange={(value) => 
-                          setSettings(prev => ({ ...prev, alert_threshold: value[0] }))
-                        }
-                        max={10}
-                        min={1}
-                        step={1}
-                        disabled={!isAdmin}
-                        className="w-full"
-                      />
-                      <p className={`text-sm ${!isAdmin ? "text-gray-400" : "text-gray-600"}`}>
-                        Une alerte sera déclenchée si un symptôme atteint ou dépasse ce niveau
-                      </p>
-                    </div>
-
-                    <div className="space-y-3">
-                      <Label className={!isAdmin ? "text-gray-400" : ""}>
-                        Symptômes surveillés
-                      </Label>
-                      <div className="grid grid-cols-2 gap-3">
-                        {SYMPTOM_OPTIONS.map((symptom) => (
-                          <div key={symptom.id} className="flex items-center space-x-2">
-                            <Checkbox
-                              id={symptom.id}
-                              checked={settings.symptom_types.includes(symptom.id)}
-                              disabled={!isAdmin}
-                              onCheckedChange={(checked) => {
-                                if (checked) {
-                                  setSettings(prev => ({
-                                    ...prev,
-                                    symptom_types: [...prev.symptom_types, symptom.id]
-                                  }));
-                                } else {
-                                  setSettings(prev => ({
-                                    ...prev,
-                                    symptom_types: prev.symptom_types.filter(id => id !== symptom.id)
-                                  }));
-                                }
-                              }}
-                            />
-                            <Label 
-                              htmlFor={symptom.id} 
-                              className={`text-sm ${!isAdmin ? "text-gray-400" : ""}`}
-                            >
-                              {symptom.label}
-                            </Label>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </>
-                )}
-
-                {isAdmin && (
-                  <div className="flex justify-end">
-                    <Button 
-                      onClick={saveSettings} 
-                      disabled={saving}
-                      className="bg-directiveplus-600 hover:bg-directiveplus-700"
-                    >
-                      {saving ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
-                      ) : (
-                        <Save className="mr-2 h-4 w-4" />
-                      )}
-                      Sauvegarder
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+          <AlertSettingsSection
+            settings={settings}
+            setSettings={setSettings}
+            saving={saving}
+            onSave={saveSettings}
+            isAdmin={isAdmin}
+          />
         </TabsContent>
 
         <TabsContent value="contacts">
