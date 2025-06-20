@@ -99,11 +99,21 @@ export const useAlertContactsData = () => {
 
       if (error) {
         console.error('Database error when saving contact:', error);
-        toast({
-          title: "Erreur de base de données",
-          description: `Erreur lors de l'enregistrement: ${error.message}`,
-          variant: "destructive"
-        });
+        
+        // Gestion spécifique des erreurs de permission
+        if (error.message.includes('permission denied')) {
+          toast({
+            title: "Erreur de permission",
+            description: "Vous n'avez pas les droits nécessaires pour cette action",
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Erreur de base de données",
+            description: `Erreur lors de l'enregistrement: ${error.message}`,
+            variant: "destructive"
+          });
+        }
         return false;
       }
 
