@@ -40,6 +40,9 @@ import EnSavoirPlus from "./pages/EnSavoirPlus";
 import Confidentialite from "./pages/Confidentialite";
 import PolitiqueConfidentialite from "./pages/PolitiqueConfidentialite";
 import DonCarteBancaire from "./pages/DonCarteBancaire";
+import SuiviPalliatif from "./pages/SuiviPalliatif";
+import SuiviMultiPatients from "./pages/SuiviMultiPatients";
+import AlertesSoignants from "./pages/AlertesSoignants";
 
 const queryClient = new QueryClient();
 
@@ -79,6 +82,9 @@ const App = () => (
             <Route path="/confidentialite" element={<Confidentialite />} />
             <Route path="/politique-confidentialite" element={<PolitiqueConfidentialite />} />
             <Route path="/don-carte-bancaire" element={<DonCarteBancaire />} />
+            <Route path="/suivi-palliatif" element={<SuiviPalliatif />} />
+            <Route path="/suivi-multi-patients" element={<SuiviMultiPatients />} />
+            <Route path="/alertes-soignants" element={<AlertesSoignants />} />
             <Route 
               path="/admin" 
               element={
