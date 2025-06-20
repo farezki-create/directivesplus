@@ -80,11 +80,33 @@ export const useProfileContactOperations = (
 
       if (error) {
         console.error('Database error when saving contact:', error);
-        toast({
-          title: "Erreur lors de l'enregistrement",
-          description: "Impossible d'ajouter le contact. Veuillez réessayer.",
-          variant: "destructive"
+        console.error('Error details:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
         });
+        
+        // Messages d'erreur plus spécifiques
+        if (error.code === 'PGRST301') {
+          toast({
+            title: "Erreur de permission",
+            description: "Vous n'avez pas les droits pour ajouter ce contact",
+            variant: "destructive"
+          });
+        } else if (error.code === '23505') {
+          toast({
+            title: "Contact déjà existant",
+            description: "Ce contact existe déjà",
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Erreur lors de l'enregistrement",
+            description: `Erreur: ${error.message}`,
+            variant: "destructive"
+          });
+        }
         return false;
       }
 

@@ -72,10 +72,24 @@ export const useProfileAlertData = () => {
     }
 
     try {
+      console.log('=== DEBUT FETCH ALERT SETTINGS ===');
       console.log('Fetching alert settings for user:', user.id);
       setLoading(true);
       
-      // Fetch contacts from patient_alert_contacts table avec un timestamp pour forcer le refresh
+      // Test de connectivité avec Supabase
+      console.log('Testing Supabase connection...');
+      const { data: testData, error: testError } = await supabase
+        .from('patient_alert_contacts')
+        .select('count', { count: 'exact', head: true });
+      
+      if (testError) {
+        console.error('Supabase connection test failed:', testError);
+      } else {
+        console.log('Supabase connection OK');
+      }
+      
+      // Fetch contacts from patient_alert_contacts table
+      console.log('Fetching contacts...');
       const { data: contactsData, error: contactsError } = await supabase
         .from('patient_alert_contacts')
         .select('*')
@@ -85,21 +99,38 @@ export const useProfileAlertData = () => {
 
       if (contactsError) {
         console.error('Error fetching contacts:', contactsError);
+        console.error('Contacts error details:', {
+          message: contactsError.message,
+          details: contactsError.details,
+          hint: contactsError.hint,
+          code: contactsError.code
+        });
+      } else {
+        console.log('Contacts fetched successfully:', contactsData);
       }
 
       // Fetch settings from patient_alert_settings table
+      console.log('Fetching settings...');
       const { data: settingsData, error: settingsError } = await supabase
         .from('patient_alert_settings')
         .select('*')
         .eq('patient_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (settingsError && settingsError.code !== 'PGRST116') {
         console.error('Error fetching settings:', settingsError);
+        console.error('Settings error details:', {
+          message: settingsError.message,
+          details: settingsError.details,
+          hint: settingsError.hint,
+          code: settingsError.code
+        });
+      } else {
+        console.log('Settings fetched successfully:', settingsData);
       }
       
-      console.log('Contacts fetched from DB:', contactsData);
-      console.log('Settings fetched from DB:', settingsData);
+      console.log('Raw contacts data from DB:', contactsData);
+      console.log('Raw settings data from DB:', settingsData);
       
       const contacts = parseAlertContacts(contactsData || []);
       const settings = parseAlertSettings(settingsData);
@@ -109,11 +140,11 @@ export const useProfileAlertData = () => {
         alert_settings: settings
       };
       
-      console.log('Setting new alert data:', newAlertData);
+      console.log('Final parsed alert data:', newAlertData);
       setAlertData(newAlertData);
       
     } catch (error) {
-      console.error('Error fetching alert settings:', error);
+      console.error('Unexpected error fetching alert settings:', error);
       toast({
         title: "Erreur",
         description: "Impossible de charger les paramètres d'alerte",
@@ -121,6 +152,7 @@ export const useProfileAlertData = () => {
       });
     } finally {
       setLoading(false);
+      console.log('=== FIN FETCH ALERT SETTINGS ===');
     }
   }, [user?.id]);
 
