@@ -2335,10 +2335,12 @@ export type Database = {
           created_at: string
           douleur: number
           dyspnee: number
+          fatigue: number | null
           id: string
           patient_id: string
           remarque: string | null
           shared_access_expires_at: string | null
+          sommeil: number | null
           symptome_access_code: string | null
           updated_at: string
         }
@@ -2348,10 +2350,12 @@ export type Database = {
           created_at?: string
           douleur: number
           dyspnee: number
+          fatigue?: number | null
           id?: string
           patient_id: string
           remarque?: string | null
           shared_access_expires_at?: string | null
+          sommeil?: number | null
           symptome_access_code?: string | null
           updated_at?: string
         }
@@ -2361,10 +2365,12 @@ export type Database = {
           created_at?: string
           douleur?: number
           dyspnee?: number
+          fatigue?: number | null
           id?: string
           patient_id?: string
           remarque?: string | null
           shared_access_expires_at?: string | null
+          sommeil?: number | null
           symptome_access_code?: string | null
           updated_at?: string
         }
