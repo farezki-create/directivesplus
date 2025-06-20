@@ -30,7 +30,7 @@ export const useProfileContactOperations = (
     try {
       console.log('Saving contact:', contact);
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('patient_alert_contacts')
         .insert({
           patient_id: user.id,
@@ -39,19 +39,23 @@ export const useProfileContactOperations = (
           phone_number: contact.phone_number || null,
           email: contact.email || null,
           is_active: true
-        });
+        })
+        .select();
 
       if (error) {
         console.error('Error saving contact:', error);
         throw error;
       }
 
+      console.log('Contact saved successfully:', data);
+
       toast({
         title: "Contact ajouté",
         description: "Le contact d'alerte a été enregistré avec succès"
       });
 
-      // Recharger les données pour s'assurer de la cohérence
+      // Recharger immédiatement les données pour s'assurer de la cohérence
+      console.log('Reloading alert settings after contact save...');
       await fetchAlertSettings();
 
       return true;
@@ -83,7 +87,7 @@ export const useProfileContactOperations = (
         .from('patient_alert_contacts')
         .update({ is_active: false })
         .eq('id', contactId)
-        .eq('patient_id', user.id); // Ensure we only delete user's own contacts
+        .eq('patient_id', user.id);
 
       if (error) {
         console.error('Error deleting contact:', error);
@@ -95,7 +99,8 @@ export const useProfileContactOperations = (
         description: "Le contact a été supprimé avec succès"
       });
 
-      // Recharger les données
+      // Recharger les données après suppression
+      console.log('Reloading alert settings after contact deletion...');
       await fetchAlertSettings();
 
       return true;

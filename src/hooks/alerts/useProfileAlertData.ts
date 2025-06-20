@@ -73,13 +73,15 @@ export const useProfileAlertData = () => {
 
     try {
       console.log('Fetching alert settings for user:', user.id);
+      setLoading(true);
       
-      // Fetch contacts from patient_alert_contacts table
+      // Fetch contacts from patient_alert_contacts table avec un timestamp pour forcer le refresh
       const { data: contactsData, error: contactsError } = await supabase
         .from('patient_alert_contacts')
         .select('*')
         .eq('patient_id', user.id)
-        .eq('is_active', true);
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
 
       if (contactsError) {
         console.error('Error fetching contacts:', contactsError);
@@ -96,8 +98,8 @@ export const useProfileAlertData = () => {
         console.error('Error fetching settings:', settingsError);
       }
       
-      console.log('Contacts fetched:', contactsData);
-      console.log('Settings fetched:', settingsData);
+      console.log('Contacts fetched from DB:', contactsData);
+      console.log('Settings fetched from DB:', settingsData);
       
       const contacts = parseAlertContacts(contactsData || []);
       const settings = parseAlertSettings(settingsData);
@@ -107,8 +109,9 @@ export const useProfileAlertData = () => {
         alert_settings: settings
       };
       
-      console.log('Setting alert data:', newAlertData);
+      console.log('Setting new alert data:', newAlertData);
       setAlertData(newAlertData);
+      
     } catch (error) {
       console.error('Error fetching alert settings:', error);
       toast({
@@ -116,6 +119,8 @@ export const useProfileAlertData = () => {
         description: "Impossible de charger les paramètres d'alerte",
         variant: "destructive"
       });
+    } finally {
+      setLoading(false);
     }
   }, [user?.id]);
 

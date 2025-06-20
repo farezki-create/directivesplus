@@ -1,4 +1,5 @@
 
+import { useEffect } from 'react';
 import { useProfileAlertData } from './useProfileAlertData';
 import { useProfileContactOperations } from './useProfileContactOperations';
 import { useProfileSettingsOperations } from './useProfileSettingsOperations';
@@ -19,6 +20,12 @@ export const useProfileAlertSettings = () => {
   );
 
   const { saveSettings } = useProfileSettingsOperations(setAlertData);
+
+  // Charger les données au montage du hook
+  useEffect(() => {
+    console.log('useProfileAlertSettings mounted, loading data...');
+    fetchAlertSettings();
+  }, [fetchAlertSettings]);
 
   return {
     contacts: alertData.alert_contacts,
