@@ -1,4 +1,5 @@
 
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -44,6 +45,13 @@ import SuiviPalliatif from "./pages/SuiviPalliatif";
 import SuiviMultiPatients from "./pages/SuiviMultiPatients";
 import AlertesSoignants from "./pages/AlertesSoignants";
 import AlertManagement from "./pages/AlertManagement";
+import AdminSupabaseAudit from "./pages/AdminSupabaseAudit";
+import SupabaseAuditPage from "./pages/SupabaseAuditPage";
+import AdminMonitoring from "./pages/AdminMonitoring";
+import AdminOptimization from "./pages/AdminOptimization";
+import AdminStats from "./pages/AdminStats";
+import AdminInstitutions from "./pages/AdminInstitutions";
+import AdminHealthNews from "./pages/AdminHealthNews";
 
 const queryClient = new QueryClient();
 
@@ -136,6 +144,62 @@ const App = () => (
                 </ProtectedRoute>
               } 
             />
+            <Route 
+              path="/admin/supabase-audit" 
+              element={
+                <ProtectedRoute requireAdmin={true}>
+                  <AdminSupabaseAudit />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/supabase-audit" 
+              element={
+                <ProtectedRoute requireAdmin={true}>
+                  <SupabaseAuditPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/monitoring" 
+              element={
+                <ProtectedRoute requireAdmin={true}>
+                  <AdminMonitoring />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/optimization" 
+              element={
+                <ProtectedRoute requireAdmin={true}>
+                  <AdminOptimization />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/stats" 
+              element={
+                <ProtectedRoute requireAdmin={true}>
+                  <AdminStats />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/institutions" 
+              element={
+                <ProtectedRoute requireAdmin={true}>
+                  <AdminInstitutions />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/health-news" 
+              element={
+                <ProtectedRoute requireAdmin={true}>
+                  <AdminHealthNews />
+                </ProtectedRoute>
+              } 
+            />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
@@ -145,3 +209,4 @@ const App = () => (
 );
 
 export default App;
+
