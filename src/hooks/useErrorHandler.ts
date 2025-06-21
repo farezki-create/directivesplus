@@ -1,6 +1,7 @@
 
-import { toast } from '@/hooks/use-toast';
-import { handleError, ErrorType } from '@/utils/error-handling/error-handler';
+import { useCallback } from 'react';
+import { toast } from "@/hooks/use-toast";
+import { ErrorType, handleError as centralHandleError } from "@/utils/error-handling";
 
 interface UseErrorHandlerOptions {
   component: string;
@@ -8,34 +9,53 @@ interface UseErrorHandlerOptions {
 }
 
 export const useErrorHandler = ({ component, showToast = true }: UseErrorHandlerOptions) => {
-  const handleAuthError = async (error: any, operation: string) => {
-    console.error(`❌ [${component}] Erreur ${operation}:`, error);
+  const handleError = useCallback(async (
+    error: any,
+    operation: string,
+    customMessage?: string
+  ) => {
+    // Determine error type
+    let errorType = ErrorType.UNKNOWN;
     
-    await handleError({
-      error,
-      type: ErrorType.AUTH,
-      component,
-      operation,
-      showToast,
-      toastMessage: error.message || "Une erreur d'authentification s'est produite"
-    });
-  };
+    if (error?.message?.includes('rate limit')) {
+      errorType = ErrorType.AUTH_SECURITY;
+    } else if (error?.message?.includes('auth') || error?.message?.includes('unauthorized')) {
+      errorType = ErrorType.AUTH;
+    } else if (error?.message?.includes('network') || error?.name === 'NetworkError') {
+      errorType = ErrorType.NETWORK;
+    } else if (error?.message?.includes('validation')) {
+      errorType = ErrorType.VALIDATION;
+    }
 
-  const handleGenericError = async (error: any, operation: string) => {
-    console.error(`❌ [${component}] Erreur ${operation}:`, error);
-    
-    await handleError({
+    // Use centralized error handler
+    await centralHandleError({
       error,
-      type: ErrorType.CLIENT,
+      type: errorType,
       component,
       operation,
       showToast,
-      toastMessage: error.message || "Une erreur s'est produite"
+      toastMessage: customMessage
     });
-  };
+
+    return errorType;
+  }, [component, showToast]);
+
+  const handleNetworkError = useCallback((error: any, operation: string) => {
+    return handleError(error, operation, "Problème de connexion. Veuillez réessayer.");
+  }, [handleError]);
+
+  const handleAuthError = useCallback((error: any, operation: string) => {
+    return handleError(error, operation, "Erreur d'authentification. Veuillez vous reconnecter.");
+  }, [handleError]);
+
+  const handleValidationError = useCallback((error: any, operation: string) => {
+    return handleError(error, operation, "Les données saisies ne sont pas valides.");
+  }, [handleError]);
 
   return {
-    handleError: handleGenericError,
+    handleError,
+    handleNetworkError,
     handleAuthError,
+    handleValidationError
   };
 };

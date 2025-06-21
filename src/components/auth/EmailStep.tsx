@@ -31,20 +31,18 @@ export const EmailStep: React.FC<EmailStepProps> = ({
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           disabled={loading}
+          required
+          autoComplete="email"
         />
       </div>
       
       <Button 
         type="submit" 
         className="w-full" 
-        disabled={loading || !email.trim() || isRateLimitActive}
+        disabled={loading || isRateLimitActive}
       >
-        {loading ? (
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-        ) : (
-          <Mail className="mr-2 h-4 w-4" />
-        )}
-        {isRateLimitActive ? 'Veuillez patienter...' : 'Envoyer le code'}
+        {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        Envoyer le code
       </Button>
     </form>
   );
