@@ -17,6 +17,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
   const [step, setStep] = useState<'email' | 'otp'>('email');
   const [email, setEmail] = useState('');
   const [otpCode, setOtpCode] = useState('');
+  const [otpSent, setOtpSent] = useState(false); // Track if OTP was successfully sent
 
   const {
     attemptCount,
@@ -31,7 +32,11 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
   } = useOTPCooldown();
 
   const emailSubmit = useOTPEmailSubmit({
-    onSuccess: () => setStep('otp'),
+    onSuccess: () => {
+      console.log('📧 [SIMPLE-OTP] Email envoyé avec succès, passage à l\'étape OTP');
+      setOtpSent(true);
+      setStep('otp');
+    },
     onAttemptIncrement: startCooldown,
     onRateLimitError: handleRateLimitError,
     checkCooldown,
@@ -42,11 +47,13 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('📧 [SIMPLE-OTP] Tentative envoi email pour:', email.substring(0, 3) + '***');
     await emailSubmit.submitEmail(email);
   };
 
   const handleOTPSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('🔐 [SIMPLE-OTP] Tentative vérification OTP');
     await otpVerification.verifyOTP(email, otpCode);
   };
 
@@ -54,27 +61,43 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
     if (!email) {
       emailSubmit.setError("L'adresse email n'est plus disponible. Veuillez recommencer.");
       setStep('email');
+      setOtpSent(false);
       return;
     }
+    console.log('🔄 [SIMPLE-OTP] Renvoi du code OTP');
     await emailSubmit.submitEmail(email);
   };
 
   const goBackToEmail = () => {
+    console.log('⬅️ [SIMPLE-OTP] Retour à l\'étape email');
     setStep('email');
     setOtpCode('');
+    setOtpSent(false);
     emailSubmit.setError('');
+    otpVerification.setError('');
     resetAttemptCount();
   };
 
+  // Determine which step to show - prioritize OTP if it was sent successfully
+  const currentStep = otpSent && step === 'otp' ? 'otp' : 'email';
+
   // Get current error from active hook
-  const currentError = step === 'email' ? emailSubmit.error : otpVerification.error;
-  const currentLoading = step === 'email' ? emailSubmit.loading : otpVerification.loading;
+  const currentError = currentStep === 'email' ? emailSubmit.error : otpVerification.error;
+  const currentLoading = currentStep === 'email' ? emailSubmit.loading : otpVerification.loading;
+
+  console.log('🔍 [SIMPLE-OTP] État actuel:', {
+    step: currentStep,
+    otpSent,
+    email: email.substring(0, 3) + '***',
+    cooldownActive,
+    attemptCount
+  });
 
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader className="text-center">
         <CardTitle className="flex items-center justify-center gap-2">
-          {step === 'email' ? (
+          {currentStep === 'email' ? (
             <>
               <Mail className="h-5 w-5" />
               Connexion Sécurisée
@@ -87,7 +110,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
           )}
         </CardTitle>
         <CardDescription>
-          {step === 'email' 
+          {currentStep === 'email' 
             ? 'Saisissez votre email pour recevoir un code'
             : `Un code a été envoyé à ${email}`
           }
@@ -118,7 +141,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
           </Alert>
         )}
 
-        {step === 'email' ? (
+        {currentStep === 'email' ? (
           <EmailStep
             email={email}
             setEmail={setEmail}

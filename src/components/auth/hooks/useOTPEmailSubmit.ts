@@ -57,21 +57,26 @@ export const useOTPEmailSubmit = ({
         throw signInError;
       }
 
-      // Success - increment attempt count and set last sent time
+      // Success - increment attempt count and call onSuccess
       const newAttemptCount = attemptCount + 1;
       onAttemptIncrement(newAttemptCount);
       
-      onSuccess();
+      console.log('✅ [SIMPLE-OTP] Email envoyé avec succès');
       
       toast({
         title: "Code envoyé",
         description: "Vérifiez votre boîte email pour le code à 6 chiffres.",
       });
 
+      // Clear any previous errors before calling onSuccess
+      setError('');
+      onSuccess();
+
     } catch (err: any) {
       console.error('❌ [SIMPLE-OTP] Erreur envoi OTP:', err);
 
       if (err.status === 429 || err.message?.includes('rate limit') || err.message?.includes('Too many requests')) {
+        console.log('⚠️ [SIMPLE-OTP] Rate limit détecté');
         onRateLimitError();
         setError('');
       } else {
