@@ -15,7 +15,7 @@ interface AlertSettingsSectionProps {
   settings: AlertSettings;
   setSettings: React.Dispatch<React.SetStateAction<AlertSettings>>;
   saving: boolean;
-  onSave: (adminCode?: string) => void;
+  onSave: () => void;
   isAdmin: boolean;
 }
 
@@ -39,10 +39,10 @@ const AlertSettingsSection: React.FC<AlertSettingsSectionProps> = ({
   const handleAdminConfirm = (code: string) => {
     if (code === "ALERT_ADMIN_2024") {
       setShowAdminDialog(false);
-      onSave(code);
+      onSave();
     } else {
       // Le hook gérera l'erreur
-      onSave(code);
+      onSave();
     }
   };
 
