@@ -1,0 +1,98 @@
+
+import { useState, useEffect } from "react";
+import { toast } from "@/hooks/use-toast";
+
+export const useOTPCooldown = () => {
+  const [attemptCount, setAttemptCount] = useState(0);
+  const [lastSentTime, setLastSentTime] = useState<number>(0);
+  const [cooldownActive, setCooldownActive] = useState(false);
+  const [cooldownSeconds, setCooldownSeconds] = useState(0);
+
+  // Cooldown timer
+  useEffect(() => {
+    if (!cooldownActive) return;
+
+    const interval = setInterval(() => {
+      const now = Date.now();
+      const timeElapsed = now - lastSentTime;
+      const remainingTime = Math.max(0, 60000 - timeElapsed); // 1 minute cooldown
+      
+      if (remainingTime <= 0) {
+        setCooldownActive(false);
+        setCooldownSeconds(0);
+        setAttemptCount(0); // Reset attempt count when cooldown expires
+      } else {
+        setCooldownSeconds(Math.ceil(remainingTime / 1000));
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [cooldownActive, lastSentTime]);
+
+  const startCooldown = (newAttemptCount: number) => {
+    const now = Date.now();
+    setAttemptCount(newAttemptCount);
+    setLastSentTime(now);
+    
+    // Only activate cooldown after 3 attempts
+    if (newAttemptCount >= 3) {
+      setCooldownActive(true);
+    }
+  };
+
+  const handleRateLimitError = () => {
+    const now = Date.now();
+    const newAttemptCount = attemptCount + 1;
+    setAttemptCount(newAttemptCount);
+    setLastSentTime(now);
+    setCooldownActive(true);
+    
+    toast({
+      title: "Limite d'envoi atteinte",
+      description: "Trop de demandes récentes. Veuillez patienter 1 minute.",
+      variant: "destructive",
+    });
+  };
+
+  const resetCooldown = () => {
+    setCooldownActive(false);
+    setCooldownSeconds(0);
+    setLastSentTime(0);
+    setAttemptCount(0);
+    
+    toast({
+      title: "Cooldown supprimé",
+      description: "Vous pouvez maintenant renvoyer un code.",
+    });
+  };
+
+  const checkCooldown = () => {
+    const now = Date.now();
+    
+    // Check local cooldown only if we have 3+ attempts
+    if (attemptCount >= 3 && now - lastSentTime < 60000) {
+      const remainingSeconds = Math.ceil((60000 - (now - lastSentTime)) / 1000);
+      return `Veuillez patienter ${remainingSeconds} secondes avant de renvoyer un code.`;
+    }
+    
+    return null;
+  };
+
+  const resetAttemptCount = () => {
+    setAttemptCount(0);
+    setCooldownActive(false);
+    setCooldownSeconds(0);
+  };
+
+  return {
+    attemptCount,
+    cooldownActive,
+    cooldownSeconds,
+    lastSentTime,
+    startCooldown,
+    handleRateLimitError,
+    resetCooldown,
+    checkCooldown,
+    resetAttemptCount
+  };
+};

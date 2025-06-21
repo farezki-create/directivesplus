@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from "react";
+
+import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { supabase } from "@/integrations/supabase/client";
 import { Mail, Shield, AlertCircle, Clock } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
 import { EmailStep } from "./EmailStep";
 import { OTPStep } from "./OTPStep";
+import { useOTPCooldown } from "./hooks/useOTPCooldown";
+import { useOTPEmailSubmit } from "./hooks/useOTPEmailSubmit";
+import { useOTPVerification } from "./hooks/useOTPVerification";
 
 interface SimpleOTPAuthProps {
   onSuccess?: () => void;
@@ -15,202 +17,58 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
   const [step, setStep] = useState<'email' | 'otp'>('email');
   const [email, setEmail] = useState('');
   const [otpCode, setOtpCode] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [attemptCount, setAttemptCount] = useState(0);
-  const [lastSentTime, setLastSentTime] = useState<number>(0);
-  const [cooldownActive, setCooldownActive] = useState(false);
-  const [cooldownSeconds, setCooldownSeconds] = useState(0);
 
-  // Cooldown timer
-  useEffect(() => {
-    if (!cooldownActive) return;
+  const {
+    attemptCount,
+    cooldownActive,
+    cooldownSeconds,
+    lastSentTime,
+    startCooldown,
+    handleRateLimitError,
+    resetCooldown,
+    checkCooldown,
+    resetAttemptCount
+  } = useOTPCooldown();
 
-    const interval = setInterval(() => {
-      const now = Date.now();
-      const timeElapsed = now - lastSentTime;
-      const remainingTime = Math.max(0, 60000 - timeElapsed); // 1 minute cooldown
-      
-      if (remainingTime <= 0) {
-        setCooldownActive(false);
-        setCooldownSeconds(0);
-        setError('');
-        setAttemptCount(0); // Reset attempt count when cooldown expires
-      } else {
-        setCooldownSeconds(Math.ceil(remainingTime / 1000));
-      }
-    }, 1000);
+  const emailSubmit = useOTPEmailSubmit({
+    onSuccess: () => setStep('otp'),
+    onAttemptIncrement: startCooldown,
+    onRateLimitError: handleRateLimitError,
+    checkCooldown,
+    attemptCount
+  });
 
-    return () => clearInterval(interval);
-  }, [cooldownActive, lastSentTime]);
+  const otpVerification = useOTPVerification({ onSuccess });
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const now = Date.now();
-    
-    // Check local cooldown only if we have 3+ attempts
-    if (attemptCount >= 3 && now - lastSentTime < 60000) {
-      const remainingSeconds = Math.ceil((60000 - (now - lastSentTime)) / 1000);
-      setError(`Veuillez patienter ${remainingSeconds} secondes avant de renvoyer un code.`);
-      return;
-    }
-
-    if (!email.trim()) {
-      setError('Veuillez saisir votre email');
-      return;
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email.trim())) {
-      setError('Veuillez saisir un email valide');
-      return;
-    }
-
-    setLoading(true);
-    setError('');
-
-    try {
-      console.log('📧 [SIMPLE-OTP] Tentative envoi OTP pour:', email.substring(0, 3) + '***');
-      
-      const { error: signInError } = await supabase.auth.signInWithOtp({
-        email: email.trim(),
-        options: {
-          shouldCreateUser: true,
-          emailRedirectTo: `${window.location.origin}/profile`,
-        },
-      });
-
-      if (signInError) {
-        throw signInError;
-      }
-
-      // Success - increment attempt count and set last sent time
-      const newAttemptCount = attemptCount + 1;
-      setAttemptCount(newAttemptCount);
-      setLastSentTime(now);
-      
-      // Only activate cooldown after 3 attempts
-      if (newAttemptCount >= 3) {
-        setCooldownActive(true);
-      }
-      
-      setStep('otp');
-      
-      toast({
-        title: "Code envoyé",
-        description: "Vérifiez votre boîte email pour le code à 6 chiffres.",
-      });
-
-    } catch (err: any) {
-      console.error('❌ [SIMPLE-OTP] Erreur envoi OTP:', err);
-
-      // Increment attempt count even on error
-      const newAttemptCount = attemptCount + 1;
-      setAttemptCount(newAttemptCount);
-
-      if (err.status === 429 || err.message?.includes('rate limit') || err.message?.includes('Too many requests')) {
-        // Set longer cooldown for rate limit (always activate on server rate limit)
-        setLastSentTime(now);
-        setCooldownActive(true);
-        setError('');
-        
-        toast({
-          title: "Limite d'envoi atteinte",
-          description: "Trop de demandes récentes. Veuillez patienter 1 minute.",
-          variant: "destructive",
-        });
-      } else {
-        setError('Erreur lors de l\'envoi du code. Vérifiez votre email et réessayez.');
-        toast({
-          title: "Erreur d'envoi",
-          description: "Impossible d'envoyer le code. Vérifiez votre email.",
-          variant: "destructive",
-        });
-      }
-    } finally {
-      setLoading(false);
-    }
+    await emailSubmit.submitEmail(email);
   };
 
   const handleOTPSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (otpCode.length !== 6) {
-      setError('Le code doit contenir exactement 6 chiffres');
-      return;
-    }
-
-    setLoading(true);
-    setError('');
-
-    try {
-      console.log('🔐 [SIMPLE-OTP] Vérification OTP pour:', email.substring(0, 3) + '***');
-      
-      const { data, error: verifyError } = await supabase.auth.verifyOtp({
-        email: email.trim(),
-        token: otpCode,
-        type: 'email',
-      });
-
-      if (verifyError) {
-        throw verifyError;
-      }
-
-      if (!data.session) {
-        setError('Code invalide ou session non créée. Veuillez réessayer.');
-        return;
-      }
-      
-      console.log('✅ [SIMPLE-OTP] Connexion réussie');
-      
-      toast({
-        title: "Connexion réussie",
-        description: "Vous êtes maintenant connecté.",
-      });
-
-      if (onSuccess) {
-        onSuccess();
-      } else {
-        window.location.href = '/profile';
-      }
-
-    } catch (err: any) {
-      console.error('❌ [SIMPLE-OTP] Erreur vérification OTP:', err);
-      setError('Code invalide ou expiré. Veuillez réessayer.');
-    } finally {
-      setLoading(false);
-    }
+    await otpVerification.verifyOTP(email, otpCode);
   };
 
   const handleResendCode = async () => {
     if (!email) {
-      setError("L'adresse email n'est plus disponible. Veuillez recommencer.");
+      emailSubmit.setError("L'adresse email n'est plus disponible. Veuillez recommencer.");
       setStep('email');
       return;
     }
-    await handleEmailSubmit(new Event('submit') as any as React.FormEvent);
+    await emailSubmit.submitEmail(email);
   };
 
   const goBackToEmail = () => {
     setStep('email');
     setOtpCode('');
-    setError('');
-    setCooldownActive(false);
-    setCooldownSeconds(0);
-    setAttemptCount(0); // Reset attempt count when going back
+    emailSubmit.setError('');
+    resetAttemptCount();
   };
 
-  const resetCooldown = () => {
-    setCooldownActive(false);
-    setCooldownSeconds(0);
-    setLastSentTime(0);
-    setAttemptCount(0); // Reset attempt count when manually resetting
-    setError('');
-    toast({
-      title: "Cooldown supprimé",
-      description: "Vous pouvez maintenant renvoyer un code.",
-    });
-  };
+  // Get current error from active hook
+  const currentError = step === 'email' ? emailSubmit.error : otpVerification.error;
+  const currentLoading = step === 'email' ? emailSubmit.loading : otpVerification.loading;
 
   return (
     <Card className="w-full max-w-md mx-auto">
@@ -237,10 +95,10 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
       </CardHeader>
 
       <CardContent>
-        {error && (
+        {currentError && (
           <Alert variant="destructive" className="mb-4">
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
+            <AlertDescription>{currentError}</AlertDescription>
           </Alert>
         )}
 
@@ -265,7 +123,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
             email={email}
             setEmail={setEmail}
             onSubmit={handleEmailSubmit}
-            loading={loading}
+            loading={currentLoading}
             isRateLimitActive={cooldownActive}
           />
         ) : (
@@ -276,7 +134,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
             onSubmit={handleOTPSubmit}
             onResendCode={handleResendCode}
             onGoBack={goBackToEmail}
-            loading={loading}
+            loading={currentLoading}
             isRateLimitActive={cooldownActive}
             rateLimitExpiry={cooldownActive ? new Date(lastSentTime + 60000) : null}
           />
