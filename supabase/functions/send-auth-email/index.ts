@@ -2,15 +2,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { corsHeaders } from '../_shared/cors.ts'
 
-const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY')
-const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email'
-
 interface EmailRequest {
   email: string;
   type: string;
   confirmation_url?: string;
   recovery_url?: string;
-  user_data?: any;
 }
 
 serve(async (req) => {
@@ -19,13 +15,9 @@ serve(async (req) => {
   }
 
   try {
-    const { email, type, confirmation_url, recovery_url, user_data }: EmailRequest = await req.json()
+    const { email, type, confirmation_url, recovery_url }: EmailRequest = await req.json()
     
     console.log(`📧 Traitement email "${type}" pour: ${email}`)
-
-    if (!BREVO_API_KEY) {
-      throw new Error('BREVO_API_KEY not configured')
-    }
 
     let subject = ''
     let htmlContent = ''
@@ -54,75 +46,19 @@ serve(async (req) => {
         textContent = `Réinitialisez votre mot de passe : ${recovery_url}`
         break
 
-      case 'symptom_alert':
-        subject = '🚨 DirectivesPlus - Alerte Symptômes Critiques'
-        const patientName = user_data?.patient_name || 'Patient'
-        const contactName = user_data?.contact_name || 'Contact'
-        const criticalSymptoms = user_data?.critical_symptoms || []
-        const alertMessage = user_data?.alert_message || 'Symptômes critiques détectés'
-        
-        htmlContent = `
-          <div style="background-color: #fee2e2; border: 1px solid #fecaca; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h2 style="color: #dc2626; margin: 0 0 16px 0;">🚨 ALERTE SYMPTÔMES CRITIQUES</h2>
-            <p><strong>Patient :</strong> ${patientName}</p>
-            <p><strong>Contact :</strong> ${contactName}</p>
-            <div style="margin: 16px 0;">
-              <strong>Symptômes critiques détectés :</strong>
-              <ul style="margin: 8px 0;">
-                ${criticalSymptoms.map((symptom: string) => `<li style="color: #dc2626;">${symptom}</li>`).join('')}
-              </ul>
-            </div>
-            <p style="color: #dc2626; font-weight: bold;">
-              Contactez immédiatement le patient ou les services d'urgence si nécessaire.
-            </p>
-            <p style="font-size: 12px; color: #666; margin-top: 20px;">
-              DirectivesPlus - ${new Date().toLocaleString('fr-FR')}
-            </p>
-          </div>
-        `
-        textContent = alertMessage
-        break
-
       default:
         throw new Error(`Type d'email non supporté : ${type}`)
     }
 
-    const emailData = {
-      sender: {
-        name: "DirectivesPlus",
-        email: "noreply@directivesplus.fr"
-      },
-      to: [{ email: email }],
-      subject: subject,
-      htmlContent: htmlContent,
-      textContent: textContent
-    }
-
-    const response = await fetch(BREVO_API_URL, {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Api-Key': BREVO_API_KEY,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(emailData)
-    })
-
-    if (!response.ok) {
-      const errorData = await response.text()
-      throw new Error(`Brevo API error: ${response.status} - ${errorData}`)
-    }
-
-    const result = await response.json()
-    console.log('✅ Email envoyé via Brevo:', result)
+    console.log('✅ Email traité (pas d\'envoi configuré)')
 
     return new Response(
-      JSON.stringify({ success: true, messageId: result.messageId }),
+      JSON.stringify({ success: true, message: 'Email traité' }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
 
   } catch (error) {
-    console.error('❌ Erreur envoi email:', error)
+    console.error('❌ Erreur traitement email:', error)
     return new Response(
       JSON.stringify({ success: false, error: error.message }),
       { 
