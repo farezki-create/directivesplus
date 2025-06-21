@@ -1,36 +1,43 @@
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useEffect, useCallback } from "react";
 
-export const useRateLimitTimer = () => {
-  const [rateLimitExpiry, setRateLimitExpiry] = useState<Date | null>(null);
+/**
+ * Custom hook to manage a rate limit timer (expiry, current time, active state).
+ */
+export function useRateLimitTimer(initialExpiry: Date | null = null) {
+  const [rateLimitExpiry, setRateLimitExpiry] = useState<Date | null>(initialExpiry);
+  const [currentTime, setCurrentTime] = useState<Date>(new Date());
 
-  const isActive = rateLimitExpiry ? new Date() < rateLimitExpiry : false;
-
-  const start = useCallback((durationMs: number) => {
-    const expiryDate = new Date(Date.now() + durationMs);
-    setRateLimitExpiry(expiryDate);
-  }, []);
-
-  const reset = useCallback(() => {
-    setRateLimitExpiry(null);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
-    if (!rateLimitExpiry) return;
+    if (rateLimitExpiry && currentTime >= rateLimitExpiry) {
+      setRateLimitExpiry(null);
+    }
+  }, [currentTime, rateLimitExpiry]);
 
-    const timer = setInterval(() => {
-      if (new Date() >= rateLimitExpiry) {
-        setRateLimitExpiry(null);
-      }
-    }, 1000);
+  const start = useCallback((durationMs: number) => {
+    setRateLimitExpiry(new Date(Date.now() + durationMs));
+  }, []);
 
-    return () => clearInterval(timer);
-  }, [rateLimitExpiry]);
+  const reset = useCallback(() => setRateLimitExpiry(null), []);
+
+  const isActive = !!(rateLimitExpiry && currentTime < rateLimitExpiry);
+
+  const remainingMs = isActive ? rateLimitExpiry!.getTime() - currentTime.getTime() : 0;
 
   return {
     rateLimitExpiry,
+    currentTime,
     isActive,
+    remainingMs,
+    setRateLimitExpiry,
     start,
     reset,
   };
-};
+}
