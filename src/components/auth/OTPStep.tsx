@@ -28,9 +28,9 @@ export const OTPStep: React.FC<OTPStepProps> = ({
   isRateLimitActive,
   rateLimitExpiry
 }) => {
-  const getRemainingMinutes = () => {
+  const getRemainingSeconds = () => {
     if (!rateLimitExpiry) return 0;
-    return Math.ceil((rateLimitExpiry.getTime() - Date.now()) / 60000);
+    return Math.max(0, Math.ceil((rateLimitExpiry.getTime() - Date.now()) / 1000));
   };
 
   return (
@@ -77,7 +77,7 @@ export const OTPStep: React.FC<OTPStepProps> = ({
             <RefreshCw className="mr-2 h-4 w-4" />
           )}
           {isRateLimitActive 
-            ? `Patienter ${getRemainingMinutes()}min`
+            ? `Patienter ${getRemainingSeconds()}s`
             : 'Renvoyer le code'
           }
         </Button>

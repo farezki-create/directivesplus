@@ -18,29 +18,43 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
   const [otpCode, setOtpCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [rateLimitUntil, setRateLimitUntil] = useState<Date | null>(null);
-  const [timeRemaining, setTimeRemaining] = useState<number>(0);
+  const [lastSentTime, setLastSentTime] = useState<number>(0);
+  const [cooldownActive, setCooldownActive] = useState(false);
+  const [cooldownSeconds, setCooldownSeconds] = useState(0);
 
-  // Timer pour afficher le temps restant
+  // Cooldown timer
   useEffect(() => {
-    if (!rateLimitUntil) return;
+    if (!cooldownActive) return;
 
     const interval = setInterval(() => {
-      const now = new Date().getTime();
-      const remaining = Math.max(0, rateLimitUntil.getTime() - now);
-      setTimeRemaining(remaining);
-
-      if (remaining <= 0) {
-        setRateLimitUntil(null);
+      const now = Date.now();
+      const timeElapsed = now - lastSentTime;
+      const remainingTime = Math.max(0, 60000 - timeElapsed); // 1 minute cooldown
+      
+      if (remainingTime <= 0) {
+        setCooldownActive(false);
+        setCooldownSeconds(0);
         setError('');
+      } else {
+        setCooldownSeconds(Math.ceil(remainingTime / 1000));
       }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [rateLimitUntil]);
+  }, [cooldownActive, lastSentTime]);
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    const now = Date.now();
+    
+    // Check local cooldown (1 minute between requests)
+    if (now - lastSentTime < 60000) {
+      const remainingSeconds = Math.ceil((60000 - (now - lastSentTime)) / 1000);
+      setError(`Veuillez patienter ${remainingSeconds} secondes avant de renvoyer un code.`);
+      return;
+    }
+
     if (!email.trim()) {
       setError('Veuillez saisir votre email');
       return;
@@ -52,15 +66,11 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
       return;
     }
 
-    if (rateLimitUntil && new Date() < rateLimitUntil) {
-      return;
-    }
-
     setLoading(true);
     setError('');
 
     try {
-      console.log('📧 [SIMPLE-OTP] Demande OTP via Supabase pour:', email.substring(0, 3) + '***');
+      console.log('📧 [SIMPLE-OTP] Tentative envoi OTP pour:', email.substring(0, 3) + '***');
       
       const { error: signInError } = await supabase.auth.signInWithOtp({
         email: email.trim(),
@@ -74,7 +84,11 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
         throw signInError;
       }
 
+      // Success - set cooldown and proceed to OTP step
+      setLastSentTime(now);
+      setCooldownActive(true);
       setStep('otp');
+      
       toast({
         title: "Code envoyé",
         description: "Vérifiez votre boîte email pour le code à 6 chiffres.",
@@ -84,18 +98,18 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
       console.error('❌ [SIMPLE-OTP] Erreur envoi OTP:', err);
 
       if (err.status === 429 || err.message?.includes('rate limit') || err.message?.includes('Too many requests')) {
-        // Rate limit détecté - attendre 2 minutes
-        const waitTime = 2 * 60 * 1000;
-        setRateLimitUntil(new Date(Date.now() + waitTime));
+        // Set longer cooldown for rate limit
+        setLastSentTime(now);
+        setCooldownActive(true);
         setError('');
         
         toast({
           title: "Limite d'envoi atteinte",
-          description: "Veuillez patienter 2 minutes avant de réessayer.",
+          description: "Trop de demandes récentes. Veuillez patienter 1 minute.",
           variant: "destructive",
         });
       } else {
-        setError('Erreur lors de l\'envoi du code. Veuillez réessayer.');
+        setError('Erreur lors de l\'envoi du code. Vérifiez votre email et réessayez.');
         toast({
           title: "Erreur d'envoi",
           description: "Impossible d'envoyer le code. Vérifiez votre email.",
@@ -169,11 +183,20 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
     setStep('email');
     setOtpCode('');
     setError('');
-    setRateLimitUntil(null);
+    setCooldownActive(false);
+    setCooldownSeconds(0);
   };
 
-  const isRateLimited = rateLimitUntil && new Date() < rateLimitUntil;
-  const remainingMinutes = Math.ceil(timeRemaining / 60000);
+  const resetCooldown = () => {
+    setCooldownActive(false);
+    setCooldownSeconds(0);
+    setLastSentTime(0);
+    setError('');
+    toast({
+      title: "Cooldown supprimé",
+      description: "Vous pouvez maintenant renvoyer un code.",
+    });
+  };
 
   return (
     <Card className="w-full max-w-md mx-auto">
@@ -207,11 +230,18 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
           </Alert>
         )}
 
-        {isRateLimited && (
+        {cooldownActive && (
           <Alert className="mb-4 border-orange-200 bg-orange-50">
             <Clock className="h-4 w-4 text-orange-600" />
-            <AlertDescription className="text-orange-800">
-              Limite d'emails atteinte. Veuillez patienter {remainingMinutes} minute(s).
+            <AlertDescription className="text-orange-800 flex items-center justify-between">
+              <span>Limite atteinte. Attendre {cooldownSeconds} seconde(s).</span>
+              <button
+                onClick={resetCooldown}
+                className="text-xs underline hover:no-underline ml-2"
+                type="button"
+              >
+                Supprimer limite
+              </button>
             </AlertDescription>
           </Alert>
         )}
@@ -222,7 +252,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
             setEmail={setEmail}
             onSubmit={handleEmailSubmit}
             loading={loading}
-            isRateLimitActive={!!isRateLimited}
+            isRateLimitActive={cooldownActive}
           />
         ) : (
           <OTPStep
@@ -233,8 +263,8 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
             onResendCode={handleResendCode}
             onGoBack={goBackToEmail}
             loading={loading}
-            isRateLimitActive={!!isRateLimited}
-            rateLimitExpiry={rateLimitUntil}
+            isRateLimitActive={cooldownActive}
+            rateLimitExpiry={cooldownActive ? new Date(lastSentTime + 60000) : null}
           />
         )}
       </CardContent>
