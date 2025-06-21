@@ -22,12 +22,8 @@ export const useOTPEmailSubmit = ({
   const [error, setError] = useState('');
 
   const submitEmail = async (email: string) => {
-    const cooldownError = checkCooldown();
-    if (cooldownError) {
-      setError(cooldownError);
-      return;
-    }
-
+    // Suppression de la vérification du cooldown
+    
     if (!email.trim()) {
       setError('Veuillez saisir votre email');
       return;
@@ -57,50 +53,45 @@ export const useOTPEmailSubmit = ({
         throw signInError;
       }
 
-      // Success - gestion plus simple des tentatives
+      // Success - pas de gestion de tentatives restrictive
       const newAttemptCount = attemptCount + 1;
       onAttemptIncrement(newAttemptCount);
       
       console.log('✅ [SIMPLE-OTP] Email envoyé avec succès');
       
       toast({
-        title: "Code envoyé avec succès !",
+        title: "Code envoyé !",
         description: "Consultez votre boîte email (et les spams) pour le code à 6 chiffres.",
       });
 
-      // Clear any previous errors before calling onSuccess
       setError('');
       onSuccess();
 
     } catch (err: any) {
       console.error('❌ [SIMPLE-OTP] Erreur envoi OTP:', err);
 
-      // Gestion simplifiée des erreurs de rate limit
+      // Gestion simplifiée des erreurs - pas de rate limiting côté client
+      let errorMessage = 'Impossible d\'envoyer le code pour le moment.';
+      
       if (err.status === 429 || err.message?.includes('rate limit') || err.message?.includes('Too many requests')) {
-        console.log('⚠️ [SIMPLE-OTP] Rate limit détecté - gestion simplifiée');
+        errorMessage = 'Le serveur est temporairement surchargé. Réessayez dans quelques instants.';
         onRateLimitError();
-        setError('Le système d\'envoi d\'emails est temporairement surchargé. Veuillez patienter avant de réessayer.');
-      } else {
-        // Messages d'erreur plus simples et moins techniques
-        let errorMessage = 'Impossible d\'envoyer le code pour le moment.';
-        
-        if (err.message?.includes('Invalid email')) {
-          errorMessage = 'Format d\'email invalide. Vérifiez votre adresse.';
-        } else if (err.message?.includes('network') || err.message?.includes('fetch')) {
-          errorMessage = 'Problème de connexion. Vérifiez votre internet et réessayez.';
-        }
-        
-        // Incrémenter les tentatives même en cas d'erreur, mais de façon plus tolérante
-        const newAttemptCount = attemptCount + 1;
-        onAttemptIncrement(newAttemptCount);
-        
-        setError(errorMessage);
-        toast({
-          title: "Envoi temporairement indisponible",
-          description: errorMessage + " Réessayez dans quelques instants.",
-          variant: "default", // Moins alarmant
-        });
+      } else if (err.message?.includes('Invalid email')) {
+        errorMessage = 'Format d\'email invalide. Vérifiez votre adresse.';
+      } else if (err.message?.includes('network') || err.message?.includes('fetch')) {
+        errorMessage = 'Problème de connexion. Vérifiez votre internet et réessayez.';
       }
+      
+      // Pas de restriction sur les tentatives
+      const newAttemptCount = attemptCount + 1;
+      onAttemptIncrement(newAttemptCount);
+      
+      setError(errorMessage);
+      toast({
+        title: "Envoi temporairement indisponible",
+        description: errorMessage,
+        variant: "default",
+      });
     } finally {
       setLoading(false);
     }
