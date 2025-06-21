@@ -28,11 +28,7 @@ export const useAlertSettings = (userId?: string) => {
       console.log("Fetching alert settings for user:", userId);
       
       const { data, error } = await supabase.functions.invoke('manage-alert-settings', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ userId })
+        method: 'GET'
       });
 
       if (error) {
@@ -78,13 +74,9 @@ export const useAlertSettings = (userId?: string) => {
 
       const { data, error } = await supabase.functions.invoke('manage-alert-settings', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          userId,
+        body: { 
           settings
-        })
+        }
       });
 
       if (error) {

@@ -31,6 +31,7 @@ Deno.serve(async (req) => {
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
     
     if (authError || !user) {
+      console.error('Auth error:', authError);
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -86,10 +87,14 @@ Deno.serve(async (req) => {
       
       try {
         const bodyText = await req.text();
+        console.log('Received body text:', bodyText);
+        
         if (!bodyText || bodyText.trim() === '') {
-          throw new Error('Empty request body');
+          console.log('Empty body received, using default settings');
+          body = { settings: {} };
+        } else {
+          body = JSON.parse(bodyText);
         }
-        body = JSON.parse(bodyText);
       } catch (parseError) {
         console.error('JSON parsing error:', parseError);
         return new Response(
@@ -98,18 +103,31 @@ Deno.serve(async (req) => {
         );
       }
 
-      const settings: AlertSettings = body.settings;
+      // Extraire les settings du body, avec des valeurs par défaut
+      const settings: AlertSettings = body.settings || {
+        auto_alert_enabled: false,
+        alert_threshold: 7,
+        symptom_types: ['douleur', 'dyspnee', 'anxiete'],
+        sms_enabled: false,
+        sms_provider: 'twilio',
+        phone_number: '',
+        whatsapp_number: ''
+      };
+
+      console.log('Processing settings:', settings);
 
       const dataToSave = {
         patient_id: userId,
         auto_alert_enabled: Boolean(settings.auto_alert_enabled),
-        alert_threshold: Number(settings.alert_threshold),
+        alert_threshold: Number(settings.alert_threshold) || 7,
         symptom_types: Array.isArray(settings.symptom_types) ? settings.symptom_types : ['douleur', 'dyspnee', 'anxiete'],
         sms_enabled: Boolean(settings.sms_enabled),
         sms_provider: settings.sms_provider === 'whatsapp' ? 'whatsapp' : 'twilio',
         phone_number: settings.phone_number || null,
         whatsapp_number: settings.whatsapp_number || null
       };
+
+      console.log('Data to save:', dataToSave);
 
       const { error } = await supabaseClient
         .from('patient_alert_settings')
@@ -124,6 +142,8 @@ Deno.serve(async (req) => {
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
+
+      console.log('Settings saved successfully');
 
       return new Response(
         JSON.stringify({ 
