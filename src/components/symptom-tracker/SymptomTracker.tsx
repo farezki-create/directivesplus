@@ -180,15 +180,15 @@ export default function SymptomTracker() {
                 value={[value]}
                 onValueChange={(newValue) => handleSymptomChange(symptom, newValue)}
                 max={10}
-                step={1}
+                step={0.5}
                 className="w-full"
               />
               <div className="flex justify-between text-xs text-gray-500">
-                <span>Aucun</span>
-                <span>Léger</span>
-                <span>Modéré</span>
-                <span>Sévère</span>
-                <span>Insupportable</span>
+                <span>0</span>
+                <span>2.5</span>
+                <span>5</span>
+                <span>7.5</span>
+                <span>10</span>
               </div>
             </div>
           ))}
