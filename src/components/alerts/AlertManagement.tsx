@@ -3,7 +3,7 @@ import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Save, Users, MessageSquare, Settings } from 'lucide-react';
+import { Save, Users, MessageSquare } from 'lucide-react';
 import AlertContactsManager from './AlertContactsManager';
 import SmsConfiguration from './SmsConfiguration';
 import AlertSettingsSection from './AlertSettingsSection';
