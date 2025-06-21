@@ -19,6 +19,8 @@ interface SymptomEntry {
   douleur: number;
   dyspnee: number;
   anxiete: number;
+  fatigue: number;
+  sommeil: number;
   remarque: string | null;
   auteur: string;
   created_at: string;
