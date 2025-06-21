@@ -9,6 +9,8 @@ interface SymptomEntry {
   douleur: number;
   dyspnee: number;
   anxiete: number;
+  fatigue: number;
+  sommeil: number;
   remarque: string | null;
   auteur: string;
   created_at: string;
@@ -20,7 +22,7 @@ interface SymptomHistoryCardProps {
 }
 
 export default function SymptomHistoryCard({ symptom }: SymptomHistoryCardProps) {
-  const getSeverityBadge = (value: number, type: "douleur" | "dyspnee" | "anxiete") => {
+  const getSeverityBadge = (value: number, type: "douleur" | "dyspnee" | "anxiete" | "fatigue" | "sommeil") => {
     let color = "bg-gray-100 text-gray-800";
     let label = "Aucun";
 
@@ -38,7 +40,9 @@ export default function SymptomHistoryCard({ symptom }: SymptomHistoryCardProps)
     const typeLabels = {
       douleur: "Douleur",
       dyspnee: "Dyspnée",
-      anxiete: "Anxiété"
+      anxiete: "Anxiété",
+      fatigue: "Fatigue",
+      sommeil: "Sommeil"
     };
 
     return (
@@ -86,6 +90,8 @@ export default function SymptomHistoryCard({ symptom }: SymptomHistoryCardProps)
         {getSeverityBadge(symptom.douleur, "douleur")}
         {getSeverityBadge(symptom.dyspnee, "dyspnee")}
         {getSeverityBadge(symptom.anxiete, "anxiete")}
+        {getSeverityBadge(symptom.fatigue, "fatigue")}
+        {getSeverityBadge(symptom.sommeil, "sommeil")}
       </div>
 
       {symptom.remarque && (

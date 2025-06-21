@@ -61,14 +61,14 @@ export const useSymptomForm = () => {
     console.log("Symptômes à enregistrer:", symptoms);
 
     try {
-      // Enregistrer les symptômes
+      // Enregistrer les symptômes - les valeurs décimales sont maintenant supportées
       const symptomData = {
         patient_id: user.id,
-        douleur: symptoms.douleur,
-        dyspnee: symptoms.dyspnee,
-        anxiete: symptoms.anxiete,
-        fatigue: symptoms.fatigue,
-        sommeil: symptoms.sommeil,
+        douleur: Number(symptoms.douleur), // Assurer que c'est un nombre
+        dyspnee: Number(symptoms.dyspnee),
+        anxiete: Number(symptoms.anxiete),
+        fatigue: Number(symptoms.fatigue),
+        sommeil: Number(symptoms.sommeil),
         remarque: remarque || null,
         auteur: user.email || "patient"
       };
