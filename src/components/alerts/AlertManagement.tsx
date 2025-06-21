@@ -3,7 +3,7 @@ import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Save, Users, MessageSquare } from 'lucide-react';
+import { Save, Settings, Users, MessageSquare } from 'lucide-react';
 import AlertContactsManager from './AlertContactsManager';
 import SmsConfiguration from './SmsConfiguration';
 import AlertSettingsSection from './AlertSettingsSection';
@@ -37,17 +37,15 @@ const AlertManagement = () => {
         Gestion des Alertes
       </h1>
 
-      <Tabs defaultValue="contacts" className="w-full">
-        <TabsList className={`grid w-full ${isAdmin ? 'grid-cols-3' : 'grid-cols-2'}`}>
-          {isAdmin && (
-            <TabsTrigger value="settings" className="flex items-center gap-2">
-              <Settings className="h-4 w-4" />
-              Paramètres Globaux
-            </TabsTrigger>
-          )}
+      <Tabs defaultValue="settings" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="settings" className="flex items-center gap-2">
+            <Settings className="h-4 w-4" />
+            Paramètres
+          </TabsTrigger>
           <TabsTrigger value="contacts" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
-            Mes Contacts
+            Contacts
           </TabsTrigger>
           <TabsTrigger value="sms" className="flex items-center gap-2">
             <MessageSquare className="h-4 w-4" />
@@ -55,17 +53,15 @@ const AlertManagement = () => {
           </TabsTrigger>
         </TabsList>
 
-        {isAdmin && (
-          <TabsContent value="settings">
-            <AlertSettingsSection
-              settings={settings}
-              setSettings={setSettings}
-              saving={saving}
-              onSave={saveSettings}
-              isAdmin={isAdmin}
-            />
-          </TabsContent>
-        )}
+        <TabsContent value="settings">
+          <AlertSettingsSection
+            settings={settings}
+            setSettings={setSettings}
+            saving={saving}
+            onSave={saveSettings}
+            isAdmin={isAdmin}
+          />
+        </TabsContent>
 
         <TabsContent value="contacts">
           <AlertContactsManager />

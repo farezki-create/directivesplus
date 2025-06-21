@@ -28,42 +28,22 @@ export const useSymptomAlerting = () => {
     setAlerting(true);
 
     try {
-      // Récupérer les paramètres d'alerte du patient (ou les paramètres par défaut)
+      // Récupérer les paramètres d'alerte du patient
       const { data: settings } = await supabase
         .from('patient_alert_settings')
         .select('*')
         .eq('patient_id', user.id)
         .single();
 
-      // Si l'utilisateur n'a pas de paramètres personnalisés, utiliser les paramètres par défaut
-      // Les paramètres par défaut sont définis par l'administrateur
-      const defaultSettings = {
-        auto_alert_enabled: true, // Activé par défaut selon les paramètres admin
-        alert_threshold: 7,
-        symptom_types: ['douleur', 'dyspnee', 'anxiete', 'fatigue', 'sommeil']
-      };
-
-      const effectiveSettings = settings || defaultSettings;
-      
-      // Vérifier quels symptômes dépassent le seuil
-      const threshold = effectiveSettings.alert_threshold || 7;
+      // Vérifier quels symptômes dépassent le seuil (par défaut 7)
+      const threshold = settings?.alert_threshold || 7;
       const criticalSymptoms: string[] = [];
       
-      if (douleur >= threshold && effectiveSettings.symptom_types.includes('douleur')) {
-        criticalSymptoms.push(`Douleur (${douleur}/10)`);
-      }
-      if (dyspnee >= threshold && effectiveSettings.symptom_types.includes('dyspnee')) {
-        criticalSymptoms.push(`Dyspnée (${dyspnee}/10)`);
-      }
-      if (anxiete >= threshold && effectiveSettings.symptom_types.includes('anxiete')) {
-        criticalSymptoms.push(`Anxiété (${anxiete}/10)`);
-      }
-      if (fatigue && fatigue >= threshold && effectiveSettings.symptom_types.includes('fatigue')) {
-        criticalSymptoms.push(`Fatigue (${fatigue}/10)`);
-      }
-      if (sommeil && sommeil >= threshold && effectiveSettings.symptom_types.includes('sommeil')) {
-        criticalSymptoms.push(`Sommeil (${sommeil}/10)`);
-      }
+      if (douleur >= threshold) criticalSymptoms.push(`Douleur (${douleur}/10)`);
+      if (dyspnee >= threshold) criticalSymptoms.push(`Dyspnée (${dyspnee}/10)`);
+      if (anxiete >= threshold) criticalSymptoms.push(`Anxiété (${anxiete}/10)`);
+      if (fatigue && fatigue >= threshold) criticalSymptoms.push(`Fatigue (${fatigue}/10)`);
+      if (sommeil && sommeil >= threshold) criticalSymptoms.push(`Sommeil (${sommeil}/10)`);
 
       // Si aucun symptôme critique
       if (criticalSymptoms.length === 0) {
@@ -77,8 +57,8 @@ export const useSymptomAlerting = () => {
         .eq('patient_id', user.id)
         .eq('is_active', true);
 
-      // Si les alertes auto sont activées ET le patient a des contacts
-      if (effectiveSettings.auto_alert_enabled && contacts && contacts.length > 0) {
+      // Si le patient a des contacts ET les alertes auto sont activées
+      if (settings?.auto_alert_enabled && contacts && contacts.length > 0) {
         // Créer une alerte dans la table alertes
         const { error: alertError } = await supabase
           .from('alertes')
