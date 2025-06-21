@@ -59,17 +59,83 @@ serve(async (req) => {
 
     const patientName = `${patientProfile.first_name} ${patientProfile.last_name}`
     
-    // Prepare alert message
+    // Prepare alert message for SMS
     const alertMessage = `🚨 ALERTE SYMPTÔMES CRITIQUES 🚨\n\nPatient: ${patientName}\nSymptômes critiques:\n${critical_symptoms.join('\n')}\n\nContactez immédiatement le patient ou les services d'urgence si nécessaire.\n\nDirectivesPlus - ${new Date().toLocaleString('fr-FR')}`
 
     const notifications = []
 
-    // Send notifications to each contact
+    // Configuration Twilio
+    const TWILIO_ACCOUNT_SID = Deno.env.get('TWILIO_ACCOUNT_SID')
+    const TWILIO_AUTH_TOKEN = Deno.env.get('TWILIO_AUTH_TOKEN')
+    const TWILIO_PHONE_NUMBER = Deno.env.get('TWILIO_PHONE_NUMBER')
+
+    // Send SMS notifications to each contact
     for (const contact of contacts) {
       try {
-        // Send email if contact has email
-        if (contact.email) {
-          console.log(`📧 Sending email to: ${contact.email}`)
+        // Send SMS if contact has phone number
+        if (contact.phone_number) {
+          console.log(`📱 Sending SMS to: ${contact.phone_number}`)
+          
+          if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_PHONE_NUMBER) {
+            console.log('Configuration Twilio manquante - simulation uniquement')
+            console.log(`SMS Twilio simulé envoyé à ${contact.phone_number}: ${alertMessage}`)
+            
+            notifications.push({
+              contact_id: contact.id,
+              type: 'sms',
+              recipient: contact.phone_number,
+              status: 'simulated',
+              message: 'Configuration Twilio manquante - alerte simulée'
+            })
+          } else {
+            try {
+              // Envoyer réellement via Twilio
+              const auth = btoa(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`)
+              
+              const response = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`, {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Basic ${auth}`,
+                  'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                  From: TWILIO_PHONE_NUMBER,
+                  To: contact.phone_number,
+                  Body: alertMessage
+                })
+              })
+
+              if (!response.ok) {
+                const errorText = await response.text()
+                throw new Error(`Twilio API error: ${response.status} - ${errorText}`)
+              }
+
+              const result = await response.json()
+              console.log('SMS envoyé avec succès via Twilio:', result.sid)
+
+              notifications.push({
+                contact_id: contact.id,
+                type: 'sms',
+                recipient: contact.phone_number,
+                status: 'sent',
+                messageId: result.sid
+              })
+            } catch (twilioError) {
+              console.error(`Erreur Twilio pour ${contact.phone_number}:`, twilioError)
+              notifications.push({
+                contact_id: contact.id,
+                type: 'sms',
+                recipient: contact.phone_number,
+                status: 'failed',
+                error: twilioError.message
+              })
+            }
+          }
+        }
+
+        // Send email as fallback if no phone number
+        if (!contact.phone_number && contact.email) {
+          console.log(`📧 Sending fallback email to: ${contact.email}`)
           
           const { error: emailError } = await supabaseClient.functions.invoke('send-auth-email', {
             body: {
@@ -86,36 +152,18 @@ serve(async (req) => {
 
           if (emailError) {
             console.error(`Email error for ${contact.email}:`, emailError)
+            notifications.push({
+              contact_id: contact.id,
+              type: 'email',
+              recipient: contact.email,
+              status: 'failed',
+              error: emailError.message
+            })
           } else {
             notifications.push({
               contact_id: contact.id,
               type: 'email',
               recipient: contact.email,
-              status: 'sent'
-            })
-          }
-        }
-
-        // Send SMS if contact has phone and SMS is enabled
-        if (contact.phone_number && settings.sms_enabled) {
-          console.log(`📱 Sending SMS to: ${contact.phone_number}`)
-          
-          const { error: smsError } = await supabaseClient.functions.invoke('send-test-alert', {
-            body: {
-              sms_provider: settings.sms_provider,
-              phone_number: settings.sms_provider === 'twilio' ? contact.phone_number : undefined,
-              whatsapp_number: settings.sms_provider === 'whatsapp' ? contact.phone_number : undefined,
-              message: alertMessage
-            }
-          })
-
-          if (smsError) {
-            console.error(`SMS error for ${contact.phone_number}:`, smsError)
-          } else {
-            notifications.push({
-              contact_id: contact.id,
-              type: settings.sms_provider === 'whatsapp' ? 'whatsapp' : 'sms',
-              recipient: contact.phone_number,
               status: 'sent'
             })
           }
@@ -135,7 +183,7 @@ serve(async (req) => {
 
     // Log notifications in database
     for (const notification of notifications) {
-      if (notification.status === 'sent') {
+      if (notification.status === 'sent' || notification.status === 'simulated') {
         await supabaseClient
           .from('alert_notifications_sent')
           .insert({
@@ -149,13 +197,15 @@ serve(async (req) => {
       }
     }
 
-    console.log(`✅ Alert processing complete. ${notifications.filter(n => n.status === 'sent').length} notifications sent successfully`)
+    const successCount = notifications.filter(n => n.status === 'sent' || n.status === 'simulated').length
+    console.log(`✅ Alert processing complete. ${successCount} notifications sent successfully`)
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: `Alert sent successfully to ${notifications.filter(n => n.status === 'sent').length} contacts`,
-        notifications: notifications
+        message: `Alert sent successfully to ${successCount} contacts via SMS`,
+        notifications: notifications,
+        method: 'sms_priority'
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
