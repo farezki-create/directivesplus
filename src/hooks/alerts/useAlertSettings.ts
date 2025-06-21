@@ -66,7 +66,7 @@ export const useAlertSettings = (userId?: string) => {
     }
   };
 
-  const saveSettings = async () => {
+  const saveSettings = async (adminCode?: string) => {
     if (!userId) {
       toast({
         title: "Session expirée",
@@ -74,6 +74,23 @@ export const useAlertSettings = (userId?: string) => {
         variant: "destructive",
       });
       return;
+    }
+
+    // Vérifier si l'utilisateur est admin
+    const { data: { user } } = await supabase.auth.getUser();
+    const isAdmin = user?.email?.endsWith('@directivesplus.fr');
+
+    // Si c'est un admin qui modifie les paramètres globaux, demander un code de sécurité
+    if (isAdmin && !adminCode) {
+      const code = prompt("Code administrateur requis pour modifier les paramètres globaux d'alerte :");
+      if (!code || code !== "ALERT_ADMIN_2024") {
+        toast({
+          title: "Code incorrect",
+          description: "Code administrateur invalide.",
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     try {
@@ -113,7 +130,9 @@ export const useAlertSettings = (userId?: string) => {
       console.log("Settings saved successfully");
       toast({
         title: "Paramètres sauvegardés",
-        description: "Vos paramètres d'alerte ont été enregistrés avec succès.",
+        description: isAdmin 
+          ? "Les paramètres d'alerte globaux ont été enregistrés avec succès."
+          : "Vos paramètres d'alerte ont été enregistrés avec succès.",
       });
     } catch (error: any) {
       console.error('Error saving settings:', error);
