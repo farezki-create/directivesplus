@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertTriangle, Save, Lock } from 'lucide-react';
+import { AlertTriangle, Save, Lock, Info } from 'lucide-react';
 import { AlertSettings, SYMPTOM_OPTIONS } from './types';
 
 interface AlertSettingsSectionProps {
@@ -36,12 +36,22 @@ const AlertSettingsSection: React.FC<AlertSettingsSectionProps> = ({
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
+          {/* Info pour tous les utilisateurs */}
+          <Alert>
+            <Info className="h-4 w-4" />
+            <AlertDescription>
+              {isAdmin ? 
+                "En tant qu'administrateur, vous pouvez configurer les paramètres d'alerte automatique qui s'appliqueront à tous les utilisateurs." :
+                "Ces paramètres d'alerte automatique sont configurés par l'administrateur et s'appliquent à votre compte. Contactez votre administrateur pour toute modification."
+              }
+            </AlertDescription>
+          </Alert>
+
           {!isAdmin && (
             <Alert>
               <Lock className="h-4 w-4" />
               <AlertDescription>
-                Seuls les administrateurs peuvent configurer les alertes automatiques. 
-                Contactez votre administrateur pour modifier ces paramètres.
+                Seuls les administrateurs peuvent modifier ces paramètres d'alerte automatique.
               </AlertDescription>
             </Alert>
           )}

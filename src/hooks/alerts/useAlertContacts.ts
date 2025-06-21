@@ -101,6 +101,7 @@ export const useAlertContacts = (userId?: string) => {
         return;
       }
 
+      // Supprimer tous les anciens contacts
       const { error: deleteError } = await supabase
         .from('patient_alert_contacts')
         .delete()
@@ -116,6 +117,7 @@ export const useAlertContacts = (userId?: string) => {
         return;
       }
 
+      // Insérer les nouveaux contacts valides
       const contactsToInsert = validContacts.map(contact => ({
         patient_id: userId,
         contact_type: contact.contact_type,
