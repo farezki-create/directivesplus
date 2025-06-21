@@ -19,6 +19,10 @@ const AlertManagement = () => {
     saveSettings
   } = useAlertSettings(user?.id);
 
+  const handleSaveSmsSettings = () => {
+    saveSettings();
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center my-12">
@@ -84,7 +88,7 @@ const AlertManagement = () => {
           />
           <div className="flex justify-end mt-6">
             <Button 
-              onClick={saveSettings} 
+              onClick={handleSaveSmsSettings} 
               disabled={saving}
               className="bg-directiveplus-600 hover:bg-directiveplus-700"
             >
