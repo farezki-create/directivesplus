@@ -38,10 +38,7 @@ Deno.serve(async (req) => {
     }
 
     const method = req.method;
-    let userId = user.id;
-    
-    // Vérifier que l'utilisateur peut accéder à ces paramètres
-    const isAdmin = user.email?.endsWith('@directivesplus.fr') || false;
+    const userId = user.id; // Toujours utiliser l'ID de l'utilisateur connecté
 
     if (method === 'GET') {
       // Récupérer les paramètres
@@ -102,18 +99,6 @@ Deno.serve(async (req) => {
       }
 
       const settings: AlertSettings = body.settings;
-      
-      if (body.userId) {
-        userId = body.userId;
-      }
-
-      // Vérifier les permissions pour modifier les paramètres d'un autre utilisateur
-      if (userId !== user.id && !isAdmin) {
-        return new Response(
-          JSON.stringify({ error: 'Access denied' }),
-          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
 
       const dataToSave = {
         patient_id: userId,
@@ -143,9 +128,7 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           success: true, 
-          message: isAdmin ? 
-            'Les paramètres d\'alerte ont été enregistrés avec succès.' :
-            'Vos paramètres d\'alerte ont été enregistrés avec succès.'
+          message: 'Vos paramètres d\'alerte ont été enregistrés avec succès.'
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
