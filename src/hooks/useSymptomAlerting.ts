@@ -26,24 +26,32 @@ export const useSymptomAlerting = () => {
     if (!user?.id) return { shouldAlert: false, criticalSymptoms: [], redirectToAlerts: false };
 
     setAlerting(true);
+    console.log("🔍 Vérification des alertes pour:", { douleur, dyspnee, anxiete, fatigue, sommeil });
 
     try {
-      // Récupérer les paramètres d'alerte du patient (ou les paramètres par défaut)
-      const { data: settings } = await supabase
+      // Récupérer les paramètres d'alerte du patient
+      const { data: settings, error: settingsError } = await supabase
         .from('patient_alert_settings')
         .select('*')
         .eq('patient_id', user.id)
         .single();
 
-      // Si l'utilisateur n'a pas de paramètres personnalisés, utiliser les paramètres par défaut
-      // Les paramètres par défaut sont définis par l'administrateur
-      const defaultSettings = {
-        auto_alert_enabled: true, // Activé par défaut selon les paramètres admin
+      if (settingsError && settingsError.code !== 'PGRST116') {
+        console.error('Erreur lors de la récupération des paramètres:', settingsError);
+      }
+
+      // Paramètres par défaut si pas de configuration personnalisée
+      const effectiveSettings = settings || {
+        auto_alert_enabled: true,
         alert_threshold: 7,
-        symptom_types: ['douleur', 'dyspnee', 'anxiete', 'fatigue', 'sommeil']
+        symptom_types: ['douleur', 'dyspnee', 'anxiete', 'fatigue', 'sommeil'],
+        sms_enabled: false,
+        sms_provider: 'twilio',
+        phone_number: '',
+        whatsapp_number: ''
       };
 
-      const effectiveSettings = settings || defaultSettings;
+      console.log("⚙️ Paramètres d'alerte:", effectiveSettings);
       
       // Vérifier quels symptômes dépassent le seuil
       const threshold = effectiveSettings.alert_threshold || 7;
@@ -65,20 +73,31 @@ export const useSymptomAlerting = () => {
         criticalSymptoms.push(`Sommeil (${sommeil}/10)`);
       }
 
+      console.log("🚨 Symptômes critiques détectés:", criticalSymptoms);
+
       // Si aucun symptôme critique
       if (criticalSymptoms.length === 0) {
+        console.log("✅ Aucun symptôme critique, pas d'alerte nécessaire");
         return { shouldAlert: false, criticalSymptoms: [], redirectToAlerts: false };
       }
 
       // Récupérer les contacts d'alerte
-      const { data: contacts } = await supabase
+      const { data: contacts, error: contactsError } = await supabase
         .from('patient_alert_contacts')
         .select('*')
         .eq('patient_id', user.id)
         .eq('is_active', true);
 
+      if (contactsError) {
+        console.error('Erreur lors de la récupération des contacts:', contactsError);
+      }
+
+      console.log("👥 Contacts d'alerte trouvés:", contacts?.length || 0);
+
       // Si les alertes auto sont activées ET le patient a des contacts
       if (effectiveSettings.auto_alert_enabled && contacts && contacts.length > 0) {
+        console.log("📧 Envoi d'alertes automatiques...");
+        
         // Créer une alerte dans la table alertes
         const { error: alertError } = await supabase
           .from('alertes')
@@ -92,16 +111,45 @@ export const useSymptomAlerting = () => {
         if (alertError) {
           console.error('Erreur lors de la création de l\'alerte:', alertError);
         } else {
-          toast({
-            title: "🚨 Alerte envoyée",
-            description: "Vos contacts ont été notifiés de votre état critique",
-            variant: "destructive"
-          });
+          console.log("✅ Alerte créée en base de données");
         }
+
+        // Envoyer les notifications via l'Edge Function
+        try {
+          console.log("📱 Envoi des notifications SMS/Email...");
+          
+          // Préparer les données pour l'Edge Function
+          const alertData = {
+            patient_id: user.id,
+            critical_symptoms: criticalSymptoms,
+            contacts: contacts,
+            settings: effectiveSettings
+          };
+
+          const { data: alertResponse, error: alertFunctionError } = await supabase.functions.invoke('send-symptom-alert', {
+            body: alertData
+          });
+
+          if (alertFunctionError) {
+            console.error('Erreur Edge Function:', alertFunctionError);
+          } else {
+            console.log("✅ Notifications envoyées:", alertResponse);
+          }
+        } catch (functionError) {
+          console.error('Erreur lors de l\'appel à l\'Edge Function:', functionError);
+        }
+
+        toast({
+          title: "🚨 Alerte envoyée",
+          description: "Vos contacts ont été notifiés de votre état critique",
+          variant: "destructive"
+        });
 
         return { shouldAlert: true, criticalSymptoms, redirectToAlerts: false };
       } else {
         // Si pas de contacts ou alertes auto désactivées, proposer la redirection
+        console.log("⚠️ Pas de contacts ou alertes désactivées");
+        
         toast({
           title: "⚠️ Symptômes critiques détectés",
           description: "Configurez vos contacts d'alerte pour notifier automatiquement vos proches",
