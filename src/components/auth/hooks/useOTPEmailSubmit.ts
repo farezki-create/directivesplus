@@ -22,8 +22,6 @@ export const useOTPEmailSubmit = ({
   const [error, setError] = useState('');
 
   const submitEmail = async (email: string) => {
-    // Suppression de la vérification du cooldown
-    
     if (!email.trim()) {
       setError('Veuillez saisir votre email');
       return;
@@ -39,58 +37,66 @@ export const useOTPEmailSubmit = ({
     setError('');
 
     try {
-      console.log('📧 [SIMPLE-OTP] Tentative envoi OTP pour:', email.substring(0, 3) + '***');
+      console.log('📧 [AUTH-OTP] Tentative envoi OTP pour:', email.substring(0, 3) + '***');
       
       const { error: signInError } = await supabase.auth.signInWithOtp({
         email: email.trim(),
         options: {
           shouldCreateUser: true,
-          emailRedirectTo: `${window.location.origin}/profile`,
+          emailRedirectTo: `${window.location.origin}/auth`,
+          data: {
+            email_confirmed: false
+          }
         },
       });
 
       if (signInError) {
+        console.error('❌ [AUTH-OTP] Erreur Supabase:', signInError);
         throw signInError;
       }
 
-      // Success - pas de gestion de tentatives restrictive
-      const newAttemptCount = attemptCount + 1;
-      onAttemptIncrement(newAttemptCount);
-      
-      console.log('✅ [SIMPLE-OTP] Email envoyé avec succès');
+      console.log('✅ [AUTH-OTP] Email envoyé avec succès');
       
       toast({
         title: "Code envoyé !",
         description: "Consultez votre boîte email (et les spams) pour le code à 6 chiffres.",
+        duration: 5000
       });
 
       setError('');
       onSuccess();
 
     } catch (err: any) {
-      console.error('❌ [SIMPLE-OTP] Erreur envoi OTP:', err);
+      console.error('❌ [AUTH-OTP] Erreur envoi OTP:', err);
 
-      // Gestion simplifiée des erreurs - pas de rate limiting côté client
       let errorMessage = 'Impossible d\'envoyer le code pour le moment.';
+      let isRateLimit = false;
       
+      // Gestion spécifique des erreurs Supabase
       if (err.status === 429 || err.message?.includes('rate limit') || err.message?.includes('Too many requests')) {
-        errorMessage = 'Le serveur est temporairement surchargé. Réessayez dans quelques instants.';
-        onRateLimitError();
+        errorMessage = 'Trop de tentatives. Veuillez patienter quelques minutes avant de réessayer.';
+        isRateLimit = true;
       } else if (err.message?.includes('Invalid email')) {
         errorMessage = 'Format d\'email invalide. Vérifiez votre adresse.';
       } else if (err.message?.includes('network') || err.message?.includes('fetch')) {
         errorMessage = 'Problème de connexion. Vérifiez votre internet et réessayez.';
+      } else if (err.message?.includes('signup disabled')) {
+        errorMessage = 'Les inscriptions sont temporairement désactivées.';
+      } else if (err.message) {
+        // Afficher le message d'erreur exact de Supabase pour debug
+        console.log('Message d\'erreur détaillé:', err.message);
       }
       
-      // Pas de restriction sur les tentatives
-      const newAttemptCount = attemptCount + 1;
-      onAttemptIncrement(newAttemptCount);
+      if (isRateLimit) {
+        onRateLimitError();
+      }
       
       setError(errorMessage);
       toast({
-        title: "Envoi temporairement indisponible",
+        title: "Envoi impossible",
         description: errorMessage,
-        variant: "default",
+        variant: "destructive",
+        duration: 8000
       });
     } finally {
       setLoading(false);

@@ -21,7 +21,7 @@ export const useOTPVerification = ({ onSuccess }: UseOTPVerificationProps) => {
     setError('');
 
     try {
-      console.log('🔐 [SIMPLE-OTP] Vérification OTP pour:', email.substring(0, 3) + '***');
+      console.log('🔐 [AUTH-OTP] Vérification OTP pour:', email.substring(0, 3) + '***');
       
       const { data, error: verifyError } = await supabase.auth.verifyOtp({
         email: email.trim(),
@@ -30,30 +30,47 @@ export const useOTPVerification = ({ onSuccess }: UseOTPVerificationProps) => {
       });
 
       if (verifyError) {
+        console.error('❌ [AUTH-OTP] Erreur vérification:', verifyError);
         throw verifyError;
       }
 
-      if (!data.session) {
+      if (!data.session || !data.user) {
         setError('Code invalide ou session non créée. Veuillez réessayer.');
         return;
       }
       
-      console.log('✅ [SIMPLE-OTP] Connexion réussie');
+      console.log('✅ [AUTH-OTP] Connexion réussie pour utilisateur:', data.user.id);
       
       toast({
-        title: "Connexion réussie",
+        title: "Connexion réussie !",
         description: "Vous êtes maintenant connecté.",
+        duration: 3000
       });
 
+      // Redirection après succès
       if (onSuccess) {
         onSuccess();
       } else {
-        window.location.href = '/profile';
+        // Attendre un peu avant la redirection pour que l'utilisateur voit le message de succès
+        setTimeout(() => {
+          window.location.href = '/profile';
+        }, 1500);
       }
 
     } catch (err: any) {
-      console.error('❌ [SIMPLE-OTP] Erreur vérification OTP:', err);
-      setError('Code invalide ou expiré. Veuillez réessayer.');
+      console.error('❌ [AUTH-OTP] Erreur vérification OTP:', err);
+      
+      let errorMessage = 'Code invalide ou expiré. Veuillez réessayer.';
+      
+      if (err.message?.includes('invalid_token')) {
+        errorMessage = 'Code invalide. Vérifiez le code reçu par email.';
+      } else if (err.message?.includes('expired')) {
+        errorMessage = 'Code expiré. Demandez un nouveau code.';
+      } else if (err.message?.includes('signup disabled')) {
+        errorMessage = 'Les inscriptions sont temporairement désactivées.';
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

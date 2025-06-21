@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Mail, Shield, AlertCircle } from "lucide-react";
+import { Mail, Shield, AlertCircle, Info } from "lucide-react";
 import { EmailStep } from "./EmailStep";
 import { OTPStep } from "./OTPStep";
 import { useOTPCooldown } from "./hooks/useOTPCooldown";
@@ -33,7 +33,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
 
   const emailSubmit = useOTPEmailSubmit({
     onSuccess: () => {
-      console.log('📧 [SIMPLE-OTP] Email envoyé avec succès, passage à l\'étape OTP');
+      console.log('📧 [AUTH-OTP] Email envoyé avec succès, passage à l\'étape OTP');
       setEmailSentSuccessfully(true);
       setStep('otp');
     },
@@ -47,13 +47,13 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('📧 [SIMPLE-OTP] Tentative envoi email pour:', email.substring(0, 3) + '***');
+    console.log('📧 [AUTH-OTP] Tentative envoi email pour:', email.substring(0, 3) + '***');
     await emailSubmit.submitEmail(email);
   };
 
   const handleOTPSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('🔐 [SIMPLE-OTP] Tentative vérification OTP');
+    console.log('🔐 [AUTH-OTP] Tentative vérification OTP');
     await otpVerification.verifyOTP(email, otpCode);
   };
 
@@ -64,12 +64,12 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
       setEmailSentSuccessfully(false);
       return;
     }
-    console.log('🔄 [SIMPLE-OTP] Renvoi du code OTP');
+    console.log('🔄 [AUTH-OTP] Renvoi du code OTP');
     await emailSubmit.submitEmail(email);
   };
 
   const goBackToEmail = () => {
-    console.log('⬅️ [SIMPLE-OTP] Retour à l\'étape email');
+    console.log('⬅️ [AUTH-OTP] Retour à l\'étape email');
     setStep('email');
     setOtpCode('');
     setEmailSentSuccessfully(false);
@@ -82,7 +82,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
   const currentError = currentStep === 'email' ? emailSubmit.error : otpVerification.error;
   const currentLoading = currentStep === 'email' ? emailSubmit.loading : otpVerification.loading;
 
-  console.log('🔍 [SIMPLE-OTP] État actuel:', {
+  console.log('🔍 [AUTH-OTP] État actuel:', {
     step: currentStep,
     emailSentSuccessfully,
     email: email.substring(0, 3) + '***',
@@ -114,6 +114,15 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
       </CardHeader>
 
       <CardContent>
+        {currentStep === 'email' && (
+          <Alert className="mb-4">
+            <Info className="h-4 w-4" />
+            <AlertDescription>
+              <strong>Conseil :</strong> Vérifiez vos spams si vous ne recevez pas l'email rapidement.
+            </AlertDescription>
+          </Alert>
+        )}
+
         {currentError && (
           <Alert variant="destructive" className="mb-4">
             <AlertCircle className="h-4 w-4" />
@@ -127,7 +136,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
             setEmail={setEmail}
             onSubmit={handleEmailSubmit}
             loading={currentLoading}
-            isRateLimitActive={false}
+            isRateLimitActive={cooldownActive}
           />
         ) : (
           <OTPStep
@@ -138,7 +147,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
             onResendCode={handleResendCode}
             onGoBack={goBackToEmail}
             loading={currentLoading}
-            isRateLimitActive={false}
+            isRateLimitActive={cooldownActive}
             rateLimitExpiry={null}
           />
         )}
