@@ -6,12 +6,9 @@ export const useLoginSecurity = () => {
   const [securityWarning, setSecurityWarning] = useState<string | null>(null);
 
   const checkSecurityConstraints = async (email: string) => {
-    // Suppression de toutes les vérifications de rate limiting côté client
-    // pour éviter les blocages d'envoi d'emails
-    
     console.log('🔐 Vérification de sécurité simplifiée pour:', email);
     
-    // Toujours autoriser la connexion
+    // Toujours autoriser la connexion - pas de rate limiting
     return { allowed: true };
   };
 

@@ -30,20 +30,11 @@ export const useSimpleOTPAuth = () => {
 
       if (error) {
         console.error('Erreur envoi OTP:', error);
-        
-        if (error.message?.includes('rate limit') || error.message?.includes('429')) {
-          toast({
-            title: "Trop de tentatives",
-            description: "Veuillez patienter quelques minutes avant de réessayer",
-            variant: "destructive"
-          });
-        } else {
-          toast({
-            title: "Erreur d'envoi",
-            description: "Impossible d'envoyer le code. Vérifiez votre email.",
-            variant: "destructive"
-          });
-        }
+        toast({
+          title: "Erreur d'envoi",
+          description: "Impossible d'envoyer le code. Vérifiez votre email.",
+          variant: "destructive"
+        });
         return false;
       }
 
@@ -90,20 +81,11 @@ export const useSimpleOTPAuth = () => {
 
       if (error) {
         console.error('Erreur vérification OTP:', error);
-        
-        if (error.message?.includes('invalid') || error.message?.includes('expired')) {
-          toast({
-            title: "Code invalide",
-            description: "Code incorrect ou expiré. Demandez un nouveau code.",
-            variant: "destructive"
-          });
-        } else {
-          toast({
-            title: "Erreur de vérification",
-            description: "Impossible de vérifier le code. Réessayez.",
-            variant: "destructive"
-          });
-        }
+        toast({
+          title: "Code invalide",
+          description: "Code incorrect ou expiré. Demandez un nouveau code.",
+          variant: "destructive"
+        });
         return false;
       }
 
