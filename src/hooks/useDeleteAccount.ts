@@ -86,8 +86,8 @@ export const useDeleteAccount = () => {
     } catch (error: any) {
       console.error('❌ [DELETE-ACCOUNT] Error during deletion:', error);
       
-      // Utiliser le gestionnaire d'erreur centralisé
-      await handleError(error, 'deleteAccount', error.message);
+      // Utiliser le gestionnaire d'erreur centralisé avec seulement 2 arguments
+      await handleError(error, 'deleteAccount');
       
       // Toast d'erreur plus spécifique
       toast({
