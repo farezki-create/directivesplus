@@ -6,10 +6,12 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import SimpleOTPAuth from "@/components/auth/SimpleOTPAuth";
+import AuthDiagnostic from "@/components/debug/AuthDiagnostic";
 import { Info } from "lucide-react";
 
 const Auth = () => {
   const { isAuthenticated, isLoading } = useAuth();
+  const [showDiagnostic, setShowDiagnostic] = React.useState(false);
 
   if (isLoading) {
     return (
@@ -56,7 +58,33 @@ const Auth = () => {
             </AlertDescription>
           </Alert>
 
-          <SimpleOTPAuth onSuccess={handleAuthSuccess} />
+          {!showDiagnostic ? (
+            <>
+              <SimpleOTPAuth onSuccess={handleAuthSuccess} />
+              
+              <div className="mt-4 text-center">
+                <button 
+                  onClick={() => setShowDiagnostic(true)}
+                  className="text-sm text-gray-500 hover:text-gray-700"
+                >
+                  Problème d'envoi ? Diagnostic →
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <AuthDiagnostic />
+              
+              <div className="mt-4 text-center">
+                <button 
+                  onClick={() => setShowDiagnostic(false)}
+                  className="text-sm text-gray-500 hover:text-gray-700"
+                >
+                  ← Retour à la connexion
+                </button>
+              </div>
+            </>
+          )}
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-500">
