@@ -42,6 +42,7 @@ export const EmailStep: React.FC<EmailStepProps> = ({
         disabled={loading || isRateLimitActive}
       >
         {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        <Mail className="mr-2 h-4 w-4" />
         Envoyer le code
       </Button>
     </form>

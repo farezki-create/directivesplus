@@ -1,14 +1,12 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";
-import { Mail, Shield, AlertCircle } from "lucide-react";
+import { Mail, Shield, AlertCircle, Clock } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { useErrorHandler } from "@/hooks/useErrorHandler";
 import { EmailStep } from "./EmailStep";
 import { OTPStep } from "./OTPStep";
-import { RateLimitDisplay } from "./RateLimitDisplay";
-import { useRateLimitTimer } from "./useRateLimitTimer";
 
 interface SimpleOTPAuthProps {
   onSuccess?: () => void;
@@ -20,26 +18,26 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
   const [otpCode, setOtpCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [rateLimitUntil, setRateLimitUntil] = useState<Date | null>(null);
+  const [timeRemaining, setTimeRemaining] = useState<number>(0);
 
-  // Use the extracted rate limit timer hook!
-  const {
-    rateLimitExpiry,
-    isActive: isRateLimitActive,
-    start: startRateLimit,
-    reset: resetRateLimit,
-  } = useRateLimitTimer();
-
-  const { handleError, handleAuthError } = useErrorHandler({ 
-    component: 'SimpleOTPAuth',
-    showToast: false 
-  });
-
+  // Timer pour afficher le temps restant
   useEffect(() => {
-    if (rateLimitExpiry && new Date() >= rateLimitExpiry) {
-      resetRateLimit();
-      setError('');
-    }
-  }, [rateLimitExpiry, resetRateLimit]);
+    if (!rateLimitUntil) return;
+
+    const interval = setInterval(() => {
+      const now = new Date().getTime();
+      const remaining = Math.max(0, rateLimitUntil.getTime() - now);
+      setTimeRemaining(remaining);
+
+      if (remaining <= 0) {
+        setRateLimitUntil(null);
+        setError('');
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [rateLimitUntil]);
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,7 +52,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
       return;
     }
 
-    if (isRateLimitActive) {
+    if (rateLimitUntil && new Date() < rateLimitUntil) {
       return;
     }
 
@@ -79,18 +77,30 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
       setStep('otp');
       toast({
         title: "Code envoyé",
-        description: "Vérifiez votre boîte email pour le code à 6 chiffres envoyé par Supabase.",
+        description: "Vérifiez votre boîte email pour le code à 6 chiffres.",
       });
 
     } catch (err: any) {
-      console.error('❌ [SIMPLE-OTP] Erreur envoi OTP Supabase:', err);
+      console.error('❌ [SIMPLE-OTP] Erreur envoi OTP:', err);
 
       if (err.status === 429 || err.message?.includes('rate limit') || err.message?.includes('Too many requests')) {
-        startRateLimit(5 * 60 * 1000); // 5 min d'attente
-        setError(''); // No explicit error message for rate limit
+        // Rate limit détecté - attendre 2 minutes
+        const waitTime = 2 * 60 * 1000;
+        setRateLimitUntil(new Date(Date.now() + waitTime));
+        setError('');
+        
+        toast({
+          title: "Limite d'envoi atteinte",
+          description: "Veuillez patienter 2 minutes avant de réessayer.",
+          variant: "destructive",
+        });
       } else {
         setError('Erreur lors de l\'envoi du code. Veuillez réessayer.');
-        await handleAuthError(err, 'signInWithOtp');
+        toast({
+          title: "Erreur d'envoi",
+          description: "Impossible d'envoyer le code. Vérifiez votre email.",
+          variant: "destructive",
+        });
       }
     } finally {
       setLoading(false);
@@ -108,12 +118,12 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
     setError('');
 
     try {
-      console.log('🔐 [SIMPLE-OTP] Vérification OTP via Supabase pour:', email.substring(0, 3) + '***');
+      console.log('🔐 [SIMPLE-OTP] Vérification OTP pour:', email.substring(0, 3) + '***');
       
       const { data, error: verifyError } = await supabase.auth.verifyOtp({
         email: email.trim(),
         token: otpCode,
-        type: 'email', // ou 'sms' si vous utilisez le téléphone, ici c'est 'email'
+        type: 'email',
       });
 
       if (verifyError) {
@@ -125,7 +135,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
         return;
       }
       
-      console.log('✅ [SIMPLE-OTP] Connexion réussie via Supabase OTP', data.session.user.id);
+      console.log('✅ [SIMPLE-OTP] Connexion réussie');
       
       toast({
         title: "Connexion réussie",
@@ -139,9 +149,8 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
       }
 
     } catch (err: any) {
-      console.error('❌ [SIMPLE-OTP] Erreur vérification OTP Supabase:', err);
-      setError('Code invalide, expiré, ou une erreur est survenue.');
-      await handleAuthError(err, 'verifyOtp');
+      console.error('❌ [SIMPLE-OTP] Erreur vérification OTP:', err);
+      setError('Code invalide ou expiré. Veuillez réessayer.');
     } finally {
       setLoading(false);
     }
@@ -160,8 +169,11 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
     setStep('email');
     setOtpCode('');
     setError('');
-    resetRateLimit(); // Also reset timer for clean state
+    setRateLimitUntil(null);
   };
+
+  const isRateLimited = rateLimitUntil && new Date() < rateLimitUntil;
+  const remainingMinutes = Math.ceil(timeRemaining / 60000);
 
   return (
     <Card className="w-full max-w-md mx-auto">
@@ -195,7 +207,14 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
           </Alert>
         )}
 
-        {/* No more RateLimitDisplay here */}
+        {isRateLimited && (
+          <Alert className="mb-4 border-orange-200 bg-orange-50">
+            <Clock className="h-4 w-4 text-orange-600" />
+            <AlertDescription className="text-orange-800">
+              Limite d'emails atteinte. Veuillez patienter {remainingMinutes} minute(s).
+            </AlertDescription>
+          </Alert>
+        )}
 
         {step === 'email' ? (
           <EmailStep
@@ -203,7 +222,7 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
             setEmail={setEmail}
             onSubmit={handleEmailSubmit}
             loading={loading}
-            isRateLimitActive={isRateLimitActive}
+            isRateLimitActive={!!isRateLimited}
           />
         ) : (
           <OTPStep
@@ -214,8 +233,8 @@ const SimpleOTPAuth: React.FC<SimpleOTPAuthProps> = ({ onSuccess }) => {
             onResendCode={handleResendCode}
             onGoBack={goBackToEmail}
             loading={loading}
-            isRateLimitActive={isRateLimitActive}
-            rateLimitExpiry={rateLimitExpiry}
+            isRateLimitActive={!!isRateLimited}
+            rateLimitExpiry={rateLimitUntil}
           />
         )}
       </CardContent>
